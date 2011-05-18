@@ -1,0 +1,2 @@
+class EventHandler(object):
+    pass

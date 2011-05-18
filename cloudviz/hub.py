@@ -1,0 +1,2 @@
+class Hub(object):
+    pass

@@ -1,0 +1,2 @@
+class Tree(object):
+    pass
