@@ -6,8 +6,9 @@ def extract_data_fits(filename, use_hdu='all'):
     '''
     Extract non-tabular HDUs from a FITS file. If `use_hdu` is 'all', then
     all non-tabular HDUs are extracted, otherwise only the ones specified
-    by `use_hdu` are extracted. If the requested HDUs do not have the same
-    dimensions, an Exception is raised.
+    by `use_hdu` are extracted (`use_hdu` should then contain a list of
+    integers). If the requested HDUs do not have the same dimensions, an
+    Exception is raised.
     '''
 
     # Read in all HDUs
@@ -38,6 +39,11 @@ def extract_data_fits(filename, use_hdu='all'):
 
 
 def extract_hdf5_datasets(handle):
+    '''
+    Recursive function that returns a dictionary with all the datasets
+    found in an HDF5 file or group. `handle` should be an instance of
+    h5py.highlevel.File or h5py.highlevel.Group.
+    '''
     datasets = {}
     for group in handle:
         if isinstance(handle[group], h5py.highlevel.Group):
@@ -50,7 +56,13 @@ def extract_hdf5_datasets(handle):
 
 
 def extract_data_hdf5(filename, use_datasets='all'):
-
+    '''
+    Extract non-tabular datasets from an HDF5 file. If `use_datasets` is
+    'all', then all non-tabular datasets are extracted, otherwise only the
+    ones specified by `use_datasets` are extracted (`use_datasets` should
+    then contain a list of paths). If the requested datasets do not have
+    the same dimensions, an Exception is raised.
+    '''
     # Open file
     file_handle = h5py.File(filename, 'r')
 
