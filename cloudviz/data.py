@@ -16,25 +16,31 @@ class Component(object):
         # The actual data
         self.data = data
 
-
 class Data(object):
 
+    # Coordinate conversion object
+    coords = None
+    
+    # Number of dimensions
+    ndim = None
+    
+    # Dataset shape
+    shape = None
+    
+    # Components
+    components = {}
+
+    # Tree description of the data
+    tree = None
+
+    # Subsets of the data
+    subsets = []
+
+    # Hub that the data is attached to
+    hub = None
+
     def __init__(self):
-
-        # Coordinate conversion object
-        self.coords = None
-
-        # Number of dimensions
-        self.ndim = None
-
-        # Dataset shape
-        self.shape = None
-
-        # Components
-        self.components = {}
-
-        # Tree description of the data
-        self.tree = None
+        pass
 
     def read_tree(self, filename):
         '''
@@ -50,6 +56,11 @@ class Data(object):
         for component in self.components:
             s += " * %s\n" % component
         return s[:-1]
+
+    def __setattr__(self, name, value):
+        if (name == "hub" and self.hub and self.hub != value):
+            raise AttributeError("Data has already been assigned to a different hub")
+        object.__setattr__(self, name, value)
 
 
 class TabularData(Data):
