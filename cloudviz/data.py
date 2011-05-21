@@ -18,29 +18,27 @@ class Component(object):
 
 class Data(object):
 
-    # Coordinate conversion object
-    coords = None
-    
-    # Number of dimensions
-    ndim = None
-    
-    # Dataset shape
-    shape = None
-    
-    # Components
-    components = {}
-
-    # Tree description of the data
-    tree = None
-
-    # Subsets of the data
-    subsets = []
-
-    # Hub that the data is attached to
-    hub = None
-
     def __init__(self):
-        pass
+        # Coordinate conversion object
+        self.coords = None
+    
+        # Number of dimensions
+        self.ndim = None
+    
+        # Dataset shape
+        self.shape = None
+    
+        # Components
+        self.components = {}
+
+        # Tree description of the data
+        self.tree = None
+
+        # Subsets of the data
+        self.subsets = []
+
+        # Hub that the data is attached to
+        self.hub = None
 
     def read_tree(self, filename):
         '''
