@@ -31,13 +31,9 @@ class Subset(object):
 
         self._broadcasting = True
 
-        # self.data = None
-
-        # whether state changes should be sent to the hub
-        # self._broadcasting = False
-
     def do_broadcast(self, value):
-        """ Set whether state changes to the subset are relayed to a hub.
+        """
+        Set whether state changes to the subset are relayed to a hub.
 
         It can be useful to turn off broadcasting, when modifying the
         subset in ways that don't impact any of the clients.
@@ -46,11 +42,12 @@ class Subset(object):
         value: Whether the subset should broadcast state changes (True/False)
 
         """
-        object.__setattr__(self, '_Subset_broadcasting', value)
+        object.__setattr__(self, '_broadcasting', value)
 
     def __setattr__(self, name, value):
         object.__setattr__(self, name, value)
-        if not hasattr(self, '_broadcasting') or not self._broadcasting:
+        if not hasattr(self, '_broadcasting') \
+           or not self._broadcasting or name == '_broadcasting':
             return
         elif self.data is not None and self.data.hub is not None:
             self.data.hub.broadcast_subset_update(self, attr=name)
