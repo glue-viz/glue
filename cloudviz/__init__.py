@@ -1,4 +1,6 @@
 from hub import Hub
 from client import Client
-from data import TabularData, GriddedData
+from data import Data, TabularData, GriddedData
 from tree import Tree
+from subset import Subset
+from translator import Translator

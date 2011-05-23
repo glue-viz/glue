@@ -1,7 +1,5 @@
 import string
-
 import atpy
-
 from io import extract_data_fits, extract_data_hdf5
 from tree import Tree
 
@@ -16,31 +14,30 @@ class Component(object):
         # The actual data
         self.data = data
 
+
 class Data(object):
 
-    # Coordinate conversion object
-    coords = None
-    
-    # Number of dimensions
-    ndim = None
-    
-    # Dataset shape
-    shape = None
-    
-    # Components
-    components = {}
-
-    # Tree description of the data
-    tree = None
-
-    # Subsets of the data
-    subsets = []
-
-    # Hub that the data is attached to
-    hub = None
-
     def __init__(self):
-        pass
+        # Coordinate conversion object
+        self.coords = None
+
+        # Number of dimensions
+        self.ndim = None
+
+        # Dataset shape
+        self.shape = None
+
+        # Components
+        self.components = {}
+
+        # Tree description of the data
+        self.tree = None
+
+        # Subsets of the data
+        self.subsets = []
+
+        # Hub that the data is attached to
+        self.hub = None
 
     def read_tree(self, filename):
         '''
@@ -59,14 +56,15 @@ class Data(object):
 
     def __setattr__(self, name, value):
         if (name == "hub" and self.hub and self.hub != value):
-            raise AttributeError("Data has already been assigned to a different hub")
+            raise AttributeError("Data has already been assigned "
+                                 "to a different hub")
         object.__setattr__(self, name, value)
 
 
 class TabularData(Data):
     '''
-    A class to represent any form of tabular data. We restrict ourselves to
-    tables with 1D columns.
+    A class to represent any form of tabular data. We restrict
+    ourselves to tables with 1D columns.
     '''
 
     def read_data(self, *args, **kwargs):
@@ -80,7 +78,8 @@ class TabularData(Data):
 
         # Loop through columns and make component list
         for column_name in table.columns:
-            self.components[column_name] = Component(table[column_name], units=table.columns[column_name].units)
+            self.components[column_name] = Component(table[column_name],
+                                                     units=table.columns[column_name].units)
 
         # Set number of dimensions
         self.ndim = 1

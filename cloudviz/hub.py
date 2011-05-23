@@ -1,3 +1,7 @@
+from translator import Translator
+from data import Data
+
+
 class Hub(object):
     """The hub manages the communication between visualization clients.
 
@@ -13,29 +17,27 @@ class Hub(object):
 
     """
 
-    # collection of viz/interaction clients
-    _clients = []
-
-    # Translator object will translate subsets across data sets
-    translator = None
-
     # do not allow more than MAX_CLIENTS clients
     _MAX_CLIENTS = 50
 
     def __init__(self):
         """Create an empty hub."""
-        pass
+        # collection of viz/interaction clients
+        self._clients = []
+
+        # Translator object will translate subsets across data sets
+        self.translator = None
 
     def __setattr__(self, name, value):
         if name == "translator" and not isinstance(value, Translator):
             raise AttributeError("input is not a Translator object: %s" %
-                                  type(value))
+                                 type(value))
         object.__setattr__(self, name, value)
 
     def add_client(self, client):
         """ Register a new client with the hub
 
-        This will also attach the client's data attribute to the 
+        This will also attach the client's data attribute to the
         hub. Trying to attach the same data set to multiple,
         different hubs will cause an error.
 
@@ -47,14 +49,15 @@ class Hub(object):
         Exception: If too many clients are added.
 
         """
-        
+
         if (len(self._clients) == self._MAX_CLIENTS):
             raise AttributeError("Exceeded maximum number of clients: %i" %
                             self._MAX_CLIENTS)
+        from client import Client  # avoid a circular import
         if (not isinstance(client, Client)):
             raise Exception("Input is not a Client object: %s" %
                             type(client))
-        
+
         self._clients.append(client)
         client.data.hub = self
 
@@ -89,9 +92,7 @@ class Hub(object):
 
         """
 
-        d = subset.data
-        cs = (c for c in self._clients if c.data == d)
-        for c in cs:
+        for c in self._clients:
             c.update_subset(subset, attr=attr, new=new, delete=delete)
 
     def translate_subset(self, subset, *args, **kwargs):
