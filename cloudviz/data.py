@@ -1,7 +1,8 @@
 import string
 import atpy
-from io import extract_data_fits, extract_data_hdf5
-from tree import Tree
+
+import cloudviz
+from cloudviz.io import extract_data_fits, extract_data_hdf5
 
 
 class Component(object):
@@ -43,7 +44,7 @@ class Data(object):
         '''
         Read a tree describing the data from a file
         '''
-        self.tree = Tree(filename)
+        self.tree = cloudviz.Tree(filename)
 
     def __str__(self):
         s = ""
@@ -55,7 +56,7 @@ class Data(object):
         return s[:-1]
 
     def __setattr__(self, name, value):
-        if (name == "hub" and self.hub and self.hub != value):
+        if name == "hub" and hasattr(self, 'hub') and self.hub is not value and self.hub is not None:
             raise AttributeError("Data has already been assigned "
                                  "to a different hub")
         object.__setattr__(self, name, value)

@@ -25,15 +25,16 @@ class Subset(object):
         """
 
         self.data = data
-        hub = self.data.hub
-        if(hub):
-            hub.broadcast_subset_update(self, new=True)
-        self.__broadcasting = True
 
-        self.data = None
+        if self.data.hub is not None:
+            self.data.hub.broadcast_subset_update(self, new=True)
+
+        self._broadcasting = True
+
+        # self.data = None
 
         # whether state changes should be sent to the hub
-        self.__broadcasting = False
+        # self._broadcasting = False
 
     def do_broadcast(self, value):
         """ Set whether state changes to the subset are relayed to a hub.
@@ -45,15 +46,14 @@ class Subset(object):
         value: Whether the subset should broadcast state changes (True/False)
 
         """
-        object.__setattr__(self, '_Subset__broadcasting', value)
+        object.__setattr__(self, '_Subset_broadcasting', value)
 
     def __setattr__(self, name, value):
         object.__setattr__(self, name, value)
-        if (not self.__broadcasting):
+        if not hasattr(self, '_broadcasting') or not self._broadcasting:
             return
-        hub = self.data.hub
-        if(hub):
-            hub.broadcast_subset_update(self, attr=name)
+        elif self.data is not None and self.data.hub is not None:
+            self.data.hub.broadcast_subset_update(self, attr=name)
 
 
 class TreeSubset(Subset):
