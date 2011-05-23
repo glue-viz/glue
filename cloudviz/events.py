@@ -1,2 +1,2 @@
-class EventHandler(object):
+class EventListener(object):
     pass

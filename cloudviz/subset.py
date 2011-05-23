@@ -4,7 +4,7 @@ class Subset(object):
     These objects both describe subsets of a dataset, and relay any
     state changes to the hub that their parent data are assigned to.
 
-    This base class only directly impements the logic that relays 
+    This base class only directly impements the logic that relays
     state changes back to the hub. Subclasses implement the actual
     description and manipulation of data subsets
 
@@ -16,7 +16,7 @@ class Subset(object):
         """ Create a new subclass object.
 
         This method should always be called by subclasses. It attaches
-        data to the subset, and starts listening for state changes to 
+        data to the subset, and starts listening for state changes to
         send to the hub
 
         Attributes:
@@ -31,14 +31,14 @@ class Subset(object):
         self.__broadcasting = True
 
         self.data = None
-        
+
         # whether state changes should be sent to the hub
         self.__broadcasting = False
 
-    def do_broadcast(value):
+    def do_broadcast(self, value):
         """ Set whether state changes to the subset are relayed to a hub.
 
-        It can be useful to turn off broadcasting, when modifying the 
+        It can be useful to turn off broadcasting, when modifying the
         subset in ways that don't impact any of the clients.
 
         Attributes:
@@ -49,7 +49,8 @@ class Subset(object):
 
     def __setattr__(self, name, value):
         object.__setattr__(self, name, value)
-        if (not self.__broadcasting): return
+        if (not self.__broadcasting):
+            return
         hub = self.data.hub
         if(hub):
             hub.broadcast_subset_update(self, attr=name)
