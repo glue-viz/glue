@@ -3,5 +3,4 @@ Installation
 
 To install cloudviz, simply type:
 
-  python setup.py install
-
+    python setup.py install
