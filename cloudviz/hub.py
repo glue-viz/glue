@@ -21,8 +21,11 @@ class Hub(object):
     _MAX_CLIENTS = 50
 
     def __init__(self):
-        """Create an empty hub."""
-        # collection of viz/interaction clients
+        """
+        Create an empty hub.
+        """
+
+        # Collection of viz/interaction clients
         self._clients = []
 
         # Translator object will translate subsets across data sets
@@ -62,7 +65,10 @@ class Hub(object):
             raise Exception("Input is not a Client object: %s" %
                             type(client))
 
+        # Add client to list of clients associated with current hub
         self._clients.append(client)
+
+        # Give the Data instance a pointer to the Hub
         client.data.hub = self
 
     def remove_client(self, client):
@@ -75,15 +81,17 @@ class Hub(object):
         ----------
         client: Client instance
             The client to remove
-        """
-        try:
-            self._clients.remove(client)
-        except ValueError:
-            pass
 
-    def broadcast_subset_update(self, subset,
-                                attr=None,
-                                new=False,
+        Raises
+        ------
+        Exception: if client does not exist in hub
+        """
+        if client in self._clients:
+            self._clients.remove(client)
+        else:
+            raise Exception("Hub does not contain client")
+
+    def broadcast_subset_update(self, subset, attr=None, new=False,
                                 delete=False):
         """
         Communicate to relevant clients that a subset has changed.
