@@ -32,25 +32,67 @@ class Client(object):
         self.data = data
         self._event_listener = None
 
-    def update_subset(self, subset, attr=None, new=False, delete=False):
+    def update(self, subset=None, attribute=None, action='update'):
+        '''
+        Update the view in the client. If no arguments are specified, the
+        whole view of the data is updated.
 
-        if new:
+        Parameters
+        ----------
+        subset: Subset instance, optional
+            The subset being added/updated/removed
+        attribute: str, optional
+            The specific data or subset attribute to update
+        action: str
+            Can be one of add/remove/update. If no subset is specified,
+            this should be set to 'update'.
+        '''
+
+        if subset is None and action != 'update':
+            raise Exception("Cannot specify action=%s if subset=None" % action)
+
+        if subset not in self.data.subsets:
+            raise Exception("subset is not part of the dataset being shown by this client")
+
+        if action == 'add':
             self._add_subset(subset)
-
-        if delete:
-            self._delete_subset(subset)
-
-        if attr is not None:
-            self._refresh_subset(subset, attr)
+        elif action == 'remove':
+            self._remove_subset(subset)
+        elif action == 'update':
+            if subset is None:
+                self._update_all(attribute=attribute)
+            else:
+                self._update_subset(subset, attribute=attribute)
+        else:
+            raise Exception("Unknown action: %s (should be one of add/remove/update)" % action)
 
     def _add_subset(self, subset):
         pass
 
-    def _delete_subset(self, subset):
+    def _remove_subset(self, subset):
         pass
 
-    def _refresh_subset(self, subset, attr):
+    def _update_all(attribute=None):
         pass
+
+    def _update_subset(self, subset, attribute=None):
+        pass
+
+    def select(self):
+        """
+        General purpose function for selecting a subset
+        """
+
+        # Initialize a new empty subset
+        subset = self.data.new_subset()
+
+        # Here would be some code for (e.g. GUI) selection, which would
+        # define some parameters for the selection, e.g a polygon. The client
+        # then calls the following each time the GUI selection changes, and
+        # until the user validates the selection:
+        subset.modify()
+
+        # Once the section is done, just leave the function
 
     def __setattr__(self, name, value):
 

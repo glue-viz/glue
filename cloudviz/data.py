@@ -40,6 +40,21 @@ class Data(object):
         # Hub that the data is attached to
         self.hub = None
 
+    def new_subset(self):
+        subset = cloudviz.Subset()
+        self.add_subset(subset)
+        return subset
+
+    def add_subset(self, subset):
+        self.subsets.append(subset)
+        if self.hub is not None:
+            self.hub.broadcast(subset, action='add')
+
+    def remove_subset(self, subset):
+        if self.hub is not None:
+            self.hub.broadcast(subset, action='remove')
+        self.subsets.pop(subset)
+
     def read_tree(self, filename):
         '''
         Read a tree describing the data from a file

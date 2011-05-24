@@ -25,10 +25,7 @@ class Subset(object):
         """
 
         self.data = data
-
-        if self.data.hub is not None:
-            self.data.hub.broadcast_subset_update(self, new=True)
-
+        self.data.add_subset(self)  # this will broadcast the message
         self._broadcasting = True
 
     def do_broadcast(self, value):
@@ -44,14 +41,21 @@ class Subset(object):
         """
         object.__setattr__(self, '_broadcasting', value)
 
-    def __setattr__(self, name, value):
-        object.__setattr__(self, name, value)
+    def modify(self, *args, **kwargs):
+
+        # Modify the selection based on arguments
+
+        # Broadcast changes
+        if self.data.hub is not None:
+            self.data.hub.broadcast(self, action='update')
+
+    def __setattr__(self, attribute, value):
+        object.__setattr__(self, attribute, value)
         if not hasattr(self, '_broadcasting') \
-           or not self._broadcasting or name == '_broadcasting':
+           or not self._broadcasting or attribute == '_broadcasting':
             return
         elif self.data is not None and self.data.hub is not None:
-            self.data.hub.broadcast_subset_update(self, attr=name)
-
+            self.data.hub.broadcast(self, attribute=attribute, action='update')
 
 class TreeSubset(Subset):
     pass

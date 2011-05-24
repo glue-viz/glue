@@ -91,28 +91,35 @@ class Hub(object):
         else:
             raise Exception("Hub does not contain client")
 
-    def broadcast_subset_update(self, subset, attr=None, new=False,
-                                delete=False):
+    def broadcast(self, item, subset=None, attribute=None, action='update'):
         """
-        Communicate to relevant clients that a subset has changed.
-
-        For each client using the same dataset as the input subset,
-        the hub will issue a call to update_subset.
+        Communicate to relevant clients that things have changed. This can
+        be either a whole dataset, a subset, or a specific attribute of a
+        dataset or subset.
 
         Parameters
         ----------
-        subset: Subset instance
-            The subset object that has been modified
-        attr: str
-            The name of the attribute that has been changed, if any
-        new: bool
-            Set to True if the subset is being created
-        delete: bool
-            Set to True if the subset is being deleted
+        item: Data or Subset instance
+            The data or the subset that has changed
+        attribute: str, optional
+            The specific data or subset attribute to update
+        action: str
+            Can be one of add/remove/update. If no subset is specified,
+            this should be set to 'update'.
         """
 
-        for c in self._clients:
-            c.update_subset(subset, attr=attr, new=new, delete=delete)
+        if isinstance(item, cloudviz.Data):
+            data = item
+            subset = None
+        elif isinstance(item, cloudviz.Subset):
+            data = item.data
+            subset = item
+        else:
+            raise Exception("item should be an instance of Data or Subset")
+
+        for client in self._clients:
+            if client.data is data:
+                client.update(subset=subset, attribute=attribute, action=action)
 
     def translate_subset(self, subset, *args, **kwargs):
         """

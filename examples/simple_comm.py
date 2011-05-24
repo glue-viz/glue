@@ -18,28 +18,25 @@ class SimpleClient(Client):
     """
 
     def __init__(self, data, name="SimpleClient"):
-        Client.__init__(self, data)
         self.name = name
+        Client.__init__(self, data)
 
     def __str__(self):
         return self.name
 
-    def update_subset(self, subset, attr=None, new=False, delete=False):
-        if (subset.data != self.data):
-            return
-        Client.update_subset(self, subset, attr=attr,
-                             new=new,
-                             delete=delete)
-
     def _add_subset(self, subset):
-        print "Client is %s\n    Added a subset: %s" % (self, subset)
+        print "Client is %s" % self
+        print"    Added a subset: %s" % subset
 
-    def _delete_subset(self, subset):
-        print "Client is %s\n    Deleted subset: %s" % (self, subset)
+    def _remove_subset(self, subset):
+        print "Client is %s" % self
+        print "    Removed subset: %s" % subset
 
-    def _refresh_subset(self, subset, attr):
-        print ("Client is %s\n    Modified a subset: %s\n    "
-               "Changed attribute %s" % (self, subset, attr))
+    def _update_subset(self, subset, attribute=None):
+        print "Client is %s" % self
+        print "    Modified a subset: %s" % subset
+        if attribute is not None:
+            print "    Changed an attribute: %s" % attribute
 
 
 class SimpleSubset(Subset):
@@ -61,28 +58,28 @@ def run_tests():
     >>> run_tests()
         Client is C1
             Modified a subset: S1
-            Changed attribute modification1
+            Changed an attribute: modification1
         Client is C1
             Added a subset: S2
         Client is C2
             Added a subset: S2
         Client is C1
             Modified a subset: S2
-            Changed attribute modification2
+            Changed an attribute: modification2
         Client is C2
             Modified a subset: S2
-            Changed attribute modification2
+            Changed an attribute: modification2
         Client is C3
             Added a subset: S3
         Client is C1
             Modified a subset: S1
-            Changed attribute modification3
+            Changed an attribute: modification3
         Client is C2
             Modified a subset: S1
-            Changed attribute modification3
+            Changed an attribute: modification3
         Client is C1
             Modified a subset: S1
-            Changed attribute modification4
+            Changed an attribute: modification4
     """
 
     d = Data()
