@@ -1,8 +1,0 @@
-import unittest
-
-from tree import Tree
-
-class TestTree(unittest.TestCase):
-
-    def test_basic_tree(self):
-        
