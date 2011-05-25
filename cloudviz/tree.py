@@ -278,13 +278,31 @@ class DendroMerge(Tree):
             self.add_child(c2)
 
     def validate_mergelist(self, merge_list):
+        """ 
+        Ensure that merge_list is a vlid merge list
+
+        A valid merge_list is a [nleaf - 1, 2] numpy array, 
+        that includes the numbers 0 through 2 * nleaf - 3 
+        exactly once.
+
+        Parameters
+        ----------
+        merge_list: ndarray instance
+
+        Outputs
+        -------
+        True if merge_list is valid
+        """
+
         if (not isinstance(merge_list, np.ndarray)):
             return False
         if (merge_list.shape[1] != 2):
             return False
 
-        s = set(merge_list.flatten())
-        if ((min(s) != 0) or (max(s) != len(s) - 1)):
+        f = merge_list.flatten()
+        if (len(f) != len(set(f))):
+            return False
+        if ((min(f) != 0) or (max(f) != len(f) - 1)):
             return False
 
         return True
