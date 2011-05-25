@@ -119,7 +119,9 @@ class Hub(object):
 
         for client in self._clients:
             if client.data is data:
-                client.update(subset=subset, attribute=attribute, action=action)
+                client.update(subset=subset,
+                              attribute=attribute,
+                              action=action)
 
     def translate_subset(self, subset, *args, **kwargs):
         """

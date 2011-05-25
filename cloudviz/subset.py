@@ -57,6 +57,7 @@ class Subset(object):
         elif self.data is not None and self.data.hub is not None:
             self.data.hub.broadcast(self, attribute=attribute, action='update')
 
+
 class TreeSubset(Subset):
     pass
 

@@ -52,7 +52,8 @@ class Client(object):
             raise Exception("Cannot specify action=%s if subset=None" % action)
 
         if subset not in self.data.subsets:
-            raise Exception("subset is not part of the dataset being shown by this client")
+            raise Exception("subset is not part of the "
+                            "dataset being shown by this client")
 
         if action == 'add':
             self._add_subset(subset)
@@ -64,7 +65,8 @@ class Client(object):
             else:
                 self._update_subset(subset, attribute=attribute)
         else:
-            raise Exception("Unknown action: %s (should be one of add/remove/update)" % action)
+            raise Exception("Unknown action: %s (should be one of "
+                            "add/remove/update)" % action)
 
     def _add_subset(self, subset):
         pass

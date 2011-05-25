@@ -49,7 +49,8 @@ class WCSCoordinates(Coordinates):
         '''
 
         if type(xpix) is not type(ypix):
-            raise Exception("xpix and ypix types do not match: %s/%s" % (type(xpix), type(ypix)))
+            raise Exception("xpix and ypix types do not match: %s/%s" %
+                            (type(xpix), type(ypix)))
 
         if np.isscalar(xpix):
             xworld, yworld = self._wcs.wcs_pix2sky(np.array([xpix]),
@@ -62,7 +63,8 @@ class WCSCoordinates(Coordinates):
         elif np.isarray(xpix):
             return self._wcs.wcs_pix2sky(xpix, ypix, 1)
         else:
-            raise Exception("Unexpected type for pixel coordinates: %s" % type(xpix))
+            raise Exception("Unexpected type for pixel coordinates: %s"
+                            % type(xpix))
 
     def world2pixel(self, xworld, yworld):
         '''
@@ -80,7 +82,8 @@ class WCSCoordinates(Coordinates):
         '''
 
         if type(xworld) is not type(yworld):
-            raise Exception("xworld and yworld types do not match: %s/%s" % (type(xworld), type(yworld)))
+            raise Exception("xworld and yworld types do not match: %s/%s" %
+                            (type(xworld), type(yworld)))
 
         if np.isscalar(xworld):
             xpix, ypix = self._wcs.wcs_sky2pix(np.array([xworld]),
@@ -93,4 +96,5 @@ class WCSCoordinates(Coordinates):
         elif np.isarray(xworld):
             return self._wcs.wcs_sky2pix(xworld, yworld, 1)
         else:
-            raise Exception("Unexpected type for world coordinates: %s" % type(xworld))
+            raise Exception("Unexpected type for world coordinates: %s" %
+                            type(xworld))

@@ -95,8 +95,9 @@ class TabularData(Data):
 
         # Loop through columns and make component list
         for column_name in table.columns:
-            self.components[column_name] = Component(table[column_name],
-                                                     units=table.columns[column_name].units)
+            c = Component(table[column_name],
+                          units=table.columns[column_name].units)
+            self.components[column_name] = c
 
         # Set number of dimensions
         self.ndim = 1
@@ -128,11 +129,13 @@ class GriddedData(Data):
         if format in ['fits', 'fit']:
             arrays = extract_data_fits(filename)
             for component_name in arrays:
-                self.components[component_name] = Component(arrays[component_name])
+                self.components[component_name] = \
+                    Component(arrays[component_name])
         elif format in ['hdf', 'hdf5', 'h5']:
             arrays = extract_data_hdf5(filename)
             for component_name in arrays:
-                self.components[component_name] = Component(arrays[component_name])
+                self.components[component_name] = \
+                    Component(arrays[component_name])
         else:
             raise Exception("Unkonwn format: %s" % format)
 
