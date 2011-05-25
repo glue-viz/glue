@@ -1,6 +1,6 @@
 import unittest
-
-from cloudviz.tree import Tree, NewickTree
+import numpy as np
+from cloudviz.tree import Tree, NewickTree, DendroMerge
 
 class TestTree(unittest.TestCase):
 
@@ -51,23 +51,23 @@ class TestTree(unittest.TestCase):
         tree3 = NewickTree(n3)
         tree4 = NewickTree(n4)
         
-        self.assertEquals(tree1.id, '2')
+        self.assertEquals(tree1.id, 2)
         self.assertFalse(tree1.value)
-        self.assertIn('0', [x.id for x in tree1.children])
-        self.assertIn('1', [x.id for x in tree1.children])
+        self.assertIn(0, [x.id for x in tree1.children])
+        self.assertIn(1, [x.id for x in tree1.children])
 
-        self.assertEquals(tree2.id, '6')
+        self.assertEquals(tree2.id, 6)
         self.assertFalse(tree1.value)
-        self.assertIn('4', [x.id for x in tree2.children])
-        self.assertIn('5', [x.id for x in tree2.children])
-        self.assertNotIn('0', [x.id for x in tree2.children])
-        self.assertNotIn('1', [x.id for x in tree2.children])
+        self.assertIn(4, [x.id for x in tree2.children])
+        self.assertIn(5, [x.id for x in tree2.children])
+        self.assertNotIn(0, [x.id for x in tree2.children])
+        self.assertNotIn(1, [x.id for x in tree2.children])
         
 
-        self.assertIn('1', [x.id for x in tree4.children])
-        self.assertIn('2', [x.id for x in tree4.children])
-        self.assertIn('3', [x.id for x in tree4.children])
-        self.assertIn('4', [x.id for x in tree4.children])
+        self.assertIn(1, [x.id for x in tree4.children])
+        self.assertIn(2, [x.id for x in tree4.children])
+        self.assertIn(3, [x.id for x in tree4.children])
+        self.assertIn(4, [x.id for x in tree4.children])
 
         self.assertEqual(n1, tree1.to_newick())
         self.assertEqual(n2, tree2.to_newick())
@@ -88,6 +88,29 @@ class TestTree(unittest.TestCase):
         self.assertEqual(n1, tree1.to_newick())
         self.assertEqual(n2, tree2.to_newick())
         self.assertEqual(n3, tree3.to_newick())
+
+    def test_dendro_merge(self):
+        m1 = np.array( [ [0,1], [2,3], [4,5] ] )
+        n1 = "((0,1)4,(2,3)5)6;"
+        m2 = np.array( [ [0,1], [4,2], [5,3] ])
+        n2 = "(3,(2,(0,1)4)5)6;"
+        t1 = DendroMerge(m1)
+        t2 = DendroMerge(m2)
+
+        #invalid merge lists
+        m3 = np.array( [ [0,1], [5,2], [5,3] ] )
+        m4 = np.array( [ [-1,1], [4,2], [5,3] ] )
+        m5 = np.array( [ [0,1], [6,2], [5,3] ] )
+
+
+        self.assertEqual(t1.to_newick(), n1)
+        self.assertEqual(t2.to_newick(), n2)
+        self.assertEquals(t1.id, 6)
+        self.assertEquals(t2.id, 6)
+
+        self.assertRaises(TypeError, DendroMerge, m3)
+        self.assertRaises(TypeError, DendroMerge, m4)
+        self.assertRaises(TypeError, DendroMerge, m5)
 
 if __name__ == "__main__":
     unittest.main()

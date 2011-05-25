@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Tree(object):
     """
     Base class for hierarchical segmentations of data sets.
@@ -35,7 +38,20 @@ class Tree(object):
         index_map: Component instance
               index_map of the data
 
+              
+        Raises
+        ------
+        TypeError: if any of the inputs are the wrong type
         """
+
+        if (parent and not isinstance(parent, Tree)):
+            raise TypeError("Parent must be a tree instance")
+
+        if (id != None):
+            try:
+                id = int(id)
+            except ValueError:
+                raise TypeError("Input id must be in integer")
 
         self.id = id
 
@@ -97,9 +113,9 @@ class Tree(object):
         if (self.children):
             result = '(' + ','.join([c.to_newick()[0:-1]
                                      for c in self.children]) + ')'
-        if (self.id):
+        if (self.id != None):
             result += ('%s' % self.id)
-        if (self.value):
+        if (self.value != None):
             result += (':%s' % self.value)
         return result + ';'
 
@@ -127,12 +143,14 @@ class NewickTree(Tree):
         index_map: Component
               The index map of the data
         """
-        Tree.__init__(self, parent=parent, index_map=index_map)
         self.newick = newick
 
         self.__validateNewick()
-        self.__parse_id_value()
+        (id, value) = self.__parse_id_value()
+        Tree.__init__(self, parent=parent, index_map=index_map,
+                      id = id, value = value)
         self.__parse_children()
+
 
     def __validateNewick(self):
         """
@@ -148,6 +166,10 @@ class NewickTree(Tree):
     def __parse_id_value(self):
         """
         Parse the root node id and value
+
+        Returns
+        -------
+        The root's id and value, as a list
         """
 
         newick = self.newick
@@ -164,11 +186,12 @@ class NewickTree(Tree):
         mid = newick.find(':', first)
 
         if (mid != -1):
-            self.id = newick[first:mid]
-            self.value = newick[mid + 1:last]
+            id = newick[first:mid]
+            value = newick[mid + 1:last]
         else:
-            self.id = newick[first:last]
-            self.value = None
+            id = newick[first:last]
+            value = None
+        return (id, value)
 
     def __parse_children(self):
         """
@@ -200,3 +223,69 @@ class NewickTree(Tree):
                                    index_map=self.index_map)
                 self.children.append(child)
                 start = i + 1
+
+
+class DendroMerge(Tree):
+    """
+    A dendrogram created from a merge array.
+
+    The merge array is a [nleaf - 1, 2] array where the ith row lists
+    the 2 nodes merge to form node nleaf + i.  This data structure is
+    used in many older dendrogram creation tools (e.g., that of
+    Rosolowsky et al. 2008ApJ...679.1338R)
+    """
+
+    def __init__(self, merge_list, parent=None, 
+                 index_map=None, _id=-1):
+        """
+        Create a new DendroMerge tree
+        
+        Parameters
+        ----------
+        merge_list: numpy array
+                  a [nleaf - 1, 2] merge list (see class description above)
+        parent: Tree instance
+                Any parent of the root node
+        index_map: Component
+                 See Tree documentation
+       
+        """
+       
+        if(_id == -1):
+            if (not self.validate_mergelist(merge_list)):
+                raise TypeError("input is not a valid mergelist")    
+            nleaf = merge_list.shape[0] + 1
+            _id = 2 * nleaf - 2
+        else:
+            nleaf = merge_list.shape[0] + 1
+        
+        Tree.__init__(self, parent=parent, id=_id, 
+                      index_map=index_map)
+            
+        # base case: leaf
+        if (_id < nleaf):
+            return
+        # recursive case: branch. Create children
+        else:
+            c1 = min(merge_list[_id - nleaf, :])
+            c2 = max(merge_list[_id - nleaf, :])
+            c1 = DendroMerge(merge_list,
+                             index_map=index_map,
+                             _id=c1)
+            c2 = DendroMerge(merge_list, 
+                             index_map=index_map,
+                             _id=c2)
+            self.add_child(c1)
+            self.add_child(c2)
+
+    def validate_mergelist(self, merge_list):
+        if (not isinstance(merge_list, np.ndarray)):
+            return False
+        if (merge_list.shape[1] != 2):
+            return False
+
+        s = set(merge_list.flatten())
+        if ((min(s) != 0) or (max(s) != len(s)-1)):
+            return False
+        
+        return True
