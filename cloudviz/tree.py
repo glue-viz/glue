@@ -38,7 +38,7 @@ class Tree(object):
         index_map: Component instance
               index_map of the data
 
-              
+
         Raises
         ------
         TypeError: if any of the inputs are the wrong type
@@ -148,9 +148,8 @@ class NewickTree(Tree):
         self.__validateNewick()
         (id, value) = self.__parse_id_value()
         Tree.__init__(self, parent=parent, index_map=index_map,
-                      id = id, value = value)
+                      id=id, value=value)
         self.__parse_children()
-
 
     def __validateNewick(self):
         """
@@ -235,11 +234,11 @@ class DendroMerge(Tree):
     Rosolowsky et al. 2008ApJ...679.1338R)
     """
 
-    def __init__(self, merge_list, parent=None, 
+    def __init__(self, merge_list, parent=None,
                  index_map=None, _id=-1):
         """
         Create a new DendroMerge tree
-        
+
         Parameters
         ----------
         merge_list: numpy array
@@ -248,20 +247,20 @@ class DendroMerge(Tree):
                 Any parent of the root node
         index_map: Component
                  See Tree documentation
-       
+
         """
-       
+
         if(_id == -1):
             if (not self.validate_mergelist(merge_list)):
-                raise TypeError("input is not a valid mergelist")    
+                raise TypeError("input is not a valid mergelist")
             nleaf = merge_list.shape[0] + 1
             _id = 2 * nleaf - 2
         else:
             nleaf = merge_list.shape[0] + 1
-        
-        Tree.__init__(self, parent=parent, id=_id, 
+
+        Tree.__init__(self, parent=parent, id=_id,
                       index_map=index_map)
-            
+
         # base case: leaf
         if (_id < nleaf):
             return
@@ -272,7 +271,7 @@ class DendroMerge(Tree):
             c1 = DendroMerge(merge_list,
                              index_map=index_map,
                              _id=c1)
-            c2 = DendroMerge(merge_list, 
+            c2 = DendroMerge(merge_list,
                              index_map=index_map,
                              _id=c2)
             self.add_child(c1)
@@ -285,7 +284,7 @@ class DendroMerge(Tree):
             return False
 
         s = set(merge_list.flatten())
-        if ((min(s) != 0) or (max(s) != len(s)-1)):
+        if ((min(s) != 0) or (max(s) != len(s) - 1)):
             return False
-        
+
         return True
