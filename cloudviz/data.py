@@ -37,6 +37,9 @@ class Data(object):
         # Subsets of the data
         self.subsets = []
 
+        # The default-edible subset
+        self.active_subset = None
+
         # Hub that the data is attached to
         self._hub = None
 
@@ -44,6 +47,14 @@ class Data(object):
         subset = cloudviz.Subset()
         self.add_subset(subset)
         return subset
+
+    def set_active_subset(self, subset):
+        if subset not in self.subsets:
+            raise Exception("Input not in data's collection of subsets")
+        self.active_subset = subset
+
+    def get_active_subset(self):
+        return self.active_subset
 
     def add_subset(self, subset):
         subset.data = self
