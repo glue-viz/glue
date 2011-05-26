@@ -54,7 +54,8 @@ class ScatterWidget(Client):
 
         self.remove_subset(subset)
 
-        self.scatter_object[subset] = self.ax.scatter(x[subset.mask], y[subset.mask], color='r', zorder=20, s=5)
+        if subset.mask.sum() > 0: 
+            self.scatter_object[subset] = self.ax.scatter(x[subset.mask], y[subset.mask], color='r', zorder=20, s=5)
 
         self.refresh()
 
