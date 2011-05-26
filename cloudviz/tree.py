@@ -23,14 +23,12 @@ class Tree(object):
           element in the original data belongs.
     """
 
-    def __init__(self, parent=None, id=None, value=None, index_map=None):
+    def __init__(self, id=None, value=None, index_map=None):
         """
         Create a new Tree object.
 
         Parameters
         ----------
-        parent: Tree instance
-              The new tree's parent
         id: Integer
               Id of the tree
         value:
@@ -43,10 +41,6 @@ class Tree(object):
         ------
         TypeError: if any of the inputs are the wrong type
         """
-
-        if (parent and not isinstance(parent, Tree)):
-            raise TypeError("Parent must be a tree instance")
-
         if (id != None):
             try:
                 id = int(id)
@@ -55,11 +49,11 @@ class Tree(object):
 
         self.id = id
 
-        self.parent = parent
-
         self.value = value
 
         self.children = []
+
+        self.parent = None
 
         self.index_map = index_map
 
@@ -129,7 +123,7 @@ class NewickTree(Tree):
     newick: The newick string
     """
 
-    def __init__(self, newick, parent=None, index_map=None):
+    def __init__(self, newick, index_map=None):
         """
         Create a new tree from a newick string representation of a
         tree
@@ -138,8 +132,6 @@ class NewickTree(Tree):
         ----------
         newick: String
               The newick string
-        parent: Tree instance
-              The parent of this tree
         index_map: Component
               The index map of the data
         """
@@ -147,7 +139,7 @@ class NewickTree(Tree):
 
         self.__validateNewick()
         (id, value) = self.__parse_id_value()
-        Tree.__init__(self, parent=parent, index_map=index_map,
+        Tree.__init__(self, index_map=index_map,
                       id=id, value=value)
         self.__parse_children()
 
@@ -218,9 +210,8 @@ class NewickTree(Tree):
             elif ((newick[i] == ',' or newick[i] == ')')
                   and depth == 0):
                 child = NewickTree(newick[start:i] + ';',
-                                   parent=self,
                                    index_map=self.index_map)
-                self.children.append(child)
+                self.add_child(child)
                 start = i + 1
 
 
@@ -234,7 +225,7 @@ class DendroMerge(Tree):
     Rosolowsky et al. 2008ApJ...679.1338R)
     """
 
-    def __init__(self, merge_list, parent=None,
+    def __init__(self, merge_list,
                  index_map=None, _id=-1):
         """
         Create a new DendroMerge tree
@@ -243,22 +234,19 @@ class DendroMerge(Tree):
         ----------
         merge_list: numpy array
                   a [nleaf - 1, 2] merge list (see class description above)
-        parent: Tree instance
-                Any parent of the root node
         index_map: Component
                  See Tree documentation
 
         """
 
         if(_id == -1):
-            if (not self.validate_mergelist(merge_list)):
-                raise TypeError("input is not a valid mergelist")
+            self.validate_mergelist(merge_list)
             nleaf = merge_list.shape[0] + 1
             _id = 2 * nleaf - 2
         else:
             nleaf = merge_list.shape[0] + 1
 
-        Tree.__init__(self, parent=parent, id=_id,
+        Tree.__init__(self, id=_id,
                       index_map=index_map)
 
         # base case: leaf
@@ -277,32 +265,31 @@ class DendroMerge(Tree):
             self.add_child(c1)
             self.add_child(c2)
 
-    def validate_mergelist(self, merge_list):
-        """ 
+    def validate_mergelist(self, merge_list, msg=None):
+        """
         Ensure that merge_list is a vlid merge list
 
-        A valid merge_list is a [nleaf - 1, 2] numpy array, 
-        that includes the numbers 0 through 2 * nleaf - 3 
+        A valid merge_list is a [nleaf - 1, 2] numpy array,
+        that includes the numbers 0 through 2 * nleaf - 3
         exactly once.
 
         Parameters
         ----------
         merge_list: ndarray instance
 
-        Outputs
-        -------
-        True if merge_list is valid
+        Raises
+        ------
+        TypeError: If the merge_list is invalid
         """
 
         if (not isinstance(merge_list, np.ndarray)):
-            return False
+            raise TypeError("Invalid mergelist: not a numpy array")
         if (merge_list.shape[1] != 2):
-            return False
+            raise TypeError("Invalid mergelist: not a 2 column array")
 
         f = merge_list.flatten()
         if (len(f) != len(set(f))):
-            return False
+            raise TypeError("Invalid mergelist: contains duplicates")
         if ((min(f) != 0) or (max(f) != len(f) - 1)):
-            return False
-
-        return True
+            raise TypeError("Invalid mergelist: does not "
+                            "run from 0-nleaf")
