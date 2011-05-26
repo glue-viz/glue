@@ -38,7 +38,7 @@ class Data(object):
         self.subsets = []
 
         # Hub that the data is attached to
-        self.hub = None
+        self._hub = None
 
     def new_subset(self):
         subset = cloudviz.Subset()
@@ -46,13 +46,15 @@ class Data(object):
         return subset
 
     def add_subset(self, subset):
+        subset.data = self
+        subset.do_broadcast(True)
         self.subsets.append(subset)
-        if self.hub is not None:
-            self.hub.broadcast(subset, action='add')
+        if self._hub is not None:
+            self._hub.broadcast(subset, action='add')
 
     def remove_subset(self, subset):
-        if self.hub is not None:
-            self.hub.broadcast(subset, action='remove')
+        if self._hub is not None:
+            self._hub.broadcast(subset, action='remove')
         self.subsets.pop(subset)
 
     def read_tree(self, filename):
@@ -72,7 +74,7 @@ class Data(object):
 
     def __setattr__(self, name, value):
         if name == "hub" and hasattr(self, 'hub') \
-           and self.hub is not value and self.hub is not None:
+           and self._hub is not value and self._hub is not None:
             raise AttributeError("Data has already been assigned "
                                  "to a different hub")
         object.__setattr__(self, name, value)
@@ -96,7 +98,7 @@ class TabularData(Data):
         # Loop through columns and make component list
         for column_name in table.columns:
             c = Component(table[column_name],
-                          units=table.columns[column_name].units)
+                          units=table.columns[column_name].unit)
             self.components[column_name] = c
 
         # Set number of dimensions

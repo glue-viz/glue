@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Subset(object):
     """Base class to handle subsets of data.
 
@@ -18,15 +21,10 @@ class Subset(object):
         This method should always be called by subclasses. It attaches
         data to the subset, and starts listening for state changes to
         send to the hub
-
-        Attributes:
-        data: A data set that this subset will describe
-
         """
 
         self.data = data
-        self.data.add_subset(self)  # this will broadcast the message
-        self._broadcasting = True
+        self.data.add_subset(self)
 
     def do_broadcast(self, value):
         """
@@ -46,21 +44,30 @@ class Subset(object):
         # Modify the selection based on arguments
 
         # Broadcast changes
-        if self.data.hub is not None:
-            self.data.hub.broadcast(self, action='update')
+        if self.data._hub is not None:
+            self.data._hub.broadcast(self, action='update')
 
     def __setattr__(self, attribute, value):
         object.__setattr__(self, attribute, value)
         if not hasattr(self, '_broadcasting') \
            or not self._broadcasting or attribute == '_broadcasting':
             return
-        elif self.data is not None and self.data.hub is not None:
-            self.data.hub.broadcast(self, attribute=attribute, action='update')
+        elif self.data is not None and self.data._hub is not None:
+            self.data._hub.broadcast(self, attribute=attribute, action='update')
 
 
 class TreeSubset(Subset):
     pass
 
 
-class PixelSubset(Subset):
-    pass
+class ElementSubset(Subset):
+
+    def __init__(self, data):
+        self.mask = np.zeros(data.shape, dtype=bool)
+        Subset.__init__(self, data)
+
+    def __setattr__(self, attribute, value):
+        if hasattr(self, 'mask') and attribute == 'mask':
+            if value.shape != self.data.shape:
+                raise Exception("Mask has wrong shape")
+        Subset.__setattr__(self, attribute, value)

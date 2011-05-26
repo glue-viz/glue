@@ -51,7 +51,7 @@ class Client(object):
         if subset is None and action != 'update':
             raise Exception("Cannot specify action=%s if subset=None" % action)
 
-        if subset not in self.data.subsets:
+        if subset is not None and subset.data is not self.data:
             raise Exception("subset is not part of the "
                             "dataset being shown by this client")
 
@@ -74,7 +74,7 @@ class Client(object):
     def _remove_subset(self, subset):
         pass
 
-    def _update_all(attribute=None):
+    def _update_all(self, attribute=None):
         pass
 
     def _update_subset(self, subset, attribute=None):

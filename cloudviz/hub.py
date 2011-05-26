@@ -69,7 +69,9 @@ class Hub(object):
         self._clients.append(client)
 
         # Give the Data instance a pointer to the Hub
-        client.data.hub = self
+        client.data._hub = self
+
+        client.update()
 
     def remove_client(self, client):
         """
@@ -91,7 +93,7 @@ class Hub(object):
         else:
             raise Exception("Hub does not contain client")
 
-    def broadcast(self, item, subset=None, attribute=None, action='update'):
+    def broadcast(self, item, attribute=None, action='update'):
         """
         Communicate to relevant clients that things have changed. This can
         be either a whole dataset, a subset, or a specific attribute of a
