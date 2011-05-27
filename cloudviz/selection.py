@@ -1,6 +1,7 @@
 import time
 
 import numpy as np
+np.seterr(all='ignore')
 from matplotlib.patches import Rectangle, Polygon
 
 
@@ -19,10 +20,11 @@ def point_in_polygon(vx, vy, x, y):
 
 class Selection(object):
 
-    def __init__(self, ax, points):
+    def __init__(self, ax, points, subset):
         self.ax = ax
         self.points = points
-        self.mask = np.zeros(points.get_offsets().shape[1])
+        self.subset = subset
+        self.subset.mask = np.zeros(points.get_offsets().shape[1])
 
     def refresh(self):
         self.ax.figure.canvas.draw()
@@ -50,6 +52,7 @@ class BasePolygonSelection(Selection):
         for i in range(positions.shape[0]):
             mask.append(point_in_polygon(self.x, self.y,
                                          positions[i, 0], positions[i, 1]))
+        self.subset.mask = np.array(mask, dtype=bool)
 
         # Change the color of the selected points
         facecolors = ['red' if x else 'green' for x in mask]
@@ -65,9 +68,9 @@ class BasePolygonSelection(Selection):
 
 class RectangleSelection(Selection):
 
-    def __init__(self, ax, points):
+    def __init__(self, ax, points, subset):
 
-        Selection.__init__(self, ax, points)
+        Selection.__init__(self, ax, points, subset)
 
         self.box = None
 
@@ -129,6 +132,7 @@ class RectangleSelection(Selection):
                         positions[i, 0] < self.xmax and \
                         positions[i, 1] > self.ymin and \
                         positions[i, 1] < self.ymax)
+        self.subset.mask = np.array(mask, dtype=bool)
 
         # Change the color of the selected points
         facecolors = ['red' if x else 'green' for x in mask]
@@ -144,9 +148,9 @@ class RectangleSelection(Selection):
 
 class LassoSelection(BasePolygonSelection):
 
-    def __init__(self, ax, points):
+    def __init__(self, ax, points, subset):
 
-        BasePolygonSelection.__init__(self, ax, points)
+        BasePolygonSelection.__init__(self, ax, points, subset)
 
         self._initialize_polygon()
 
@@ -211,9 +215,9 @@ class LassoSelection(BasePolygonSelection):
 
 class PolygonSelection(BasePolygonSelection):
 
-    def __init__(self, ax, points):
+    def __init__(self, ax, points, subset):
 
-        BasePolygonSelection.__init__(self, ax, points)
+        BasePolygonSelection.__init__(self, ax, points, subset)
 
         self._initialize_polygon()
 
