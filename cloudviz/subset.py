@@ -1,5 +1,7 @@
 import numpy as np
 
+import cloudviz
+
 
 class Subset(object):
     """Base class to handle subsets of data.
@@ -22,8 +24,10 @@ class Subset(object):
         data to the subset, and starts listening for state changes to
         send to the hub
         """
-
         self.data = data
+        self._broadcasting = False
+
+    def register(self):
         self.data.add_subset(self)
 
     def do_broadcast(self, value):
@@ -39,21 +43,15 @@ class Subset(object):
         """
         object.__setattr__(self, '_broadcasting', value)
 
-    def modify(self, *args, **kwargs):
-
-        # Modify the selection based on arguments
-
-        # Broadcast changes
-        if self.data._hub is not None:
-            self.data._hub.broadcast(self, action='update')
-
     def __setattr__(self, attribute, value):
         object.__setattr__(self, attribute, value)
         if not hasattr(self, '_broadcasting') \
            or not self._broadcasting or attribute == '_broadcasting':
             return
-        elif self.data is not None and self.data._hub is not None:
-            self.data._hub.broadcast(self, attribute=attribute, action='update')
+        elif self.data is not None and self.data.hub is not None:
+            msg = cloudviz.message.SubsetUpdateMessage(self,
+                                                       attribute=attribute)
+            self.data.hub.broadcast(msg)
 
 
 class TreeSubset(Subset):

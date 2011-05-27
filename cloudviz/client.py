@@ -1,7 +1,7 @@
 import cloudviz
 
 
-class Client(object):
+class Client(cloudviz.HubListener):
     """
     Base class for interaction / visualization modules
 
@@ -32,52 +32,57 @@ class Client(object):
         self.data = data
         self._event_listener = None
 
-    def update(self, subset=None, attribute=None, action='update'):
-        '''
-        Update the view in the client. If no arguments are specified, the
-        whole view of the data is updated.
+    def register_to_hub(self, hub):
+        """
+        The main method to establish a link with a hub,
+        and set up event handlers.
 
-        Parameters
+        This method subscribes to 4 basic message types:
+        SubsetCreateMessage, SubsetUpdateMessage, SubsetRemoveMessage,
+        and DataMessage. It defines filter methods so that only
+        messages related to self.data are relayed. These 4 messages
+        are relayed to the _add_subset, _update_subset,
+        _remove_subset, and _update_all methods, respectively
+
+        Client subclasses at a minimum should override these methods
+        to provide functionality. They can also override
+        register_to_hub to add additional event handlers.
+
+        Attributes
         ----------
-        subset: Subset instance, optional
-            The subset being added/updated/removed
-        attribute: str, optional
-            The specific data or subset attribute to update
-        action: str
-            Can be one of add/remove/update. If no subset is specified,
-            this should be set to 'update'.
-        '''
+        hub: The hub to subscribe to
+        """
 
-        if subset is None and action != 'update':
-            raise Exception("Cannot specify action=%s if subset=None" % action)
+        hub.subscribe_client(self,
+                             cloudviz.SubsetCreateMessage,
+                             handler=self._add_subset,
+                             filter=lambda x: x.sender.data is self.data)
 
-        if subset is not None and subset.data is not self.data:
-            raise Exception("subset is not part of the "
-                            "dataset being shown by this client")
+        hub.subscribe_client(self,
+                             cloudviz.SubsetUpdateMessage,
+                             handler=self._update_subset,
+                             filter=lambda x: x.sender.data is self.data)
 
-        if action == 'add':
-            self._add_subset(subset)
-        elif action == 'remove':
-            self._remove_subset(subset)
-        elif action == 'update':
-            if subset is None:
-                self._update_all(attribute=attribute)
-            else:
-                self._update_subset(subset, attribute=attribute)
-        else:
-            raise Exception("Unknown action: %s (should be one of "
-                            "add/remove/update)" % action)
+        hub.subscribe_client(self,
+                             cloudviz.SubsetDeleteMessage,
+                             handler=self._remove_subset,
+                             filter=lambda x: x.sender.data is self.data)
 
-    def _add_subset(self, subset):
+        hub.subscribe_client(self,
+                             cloudviz.DataMessage,
+                             handler=self._update_all,
+                             filter=lambda x: x.sender is self.data)
+
+    def _add_subset(self, message):
         pass
 
-    def _remove_subset(self, subset):
+    def _remove_subset(self, message):
         pass
 
-    def _update_all(self, attribute=None):
+    def _update_all(self, message):
         pass
 
-    def _update_subset(self, subset, attribute=None):
+    def _update_subset(self, message):
         pass
 
     def select(self):

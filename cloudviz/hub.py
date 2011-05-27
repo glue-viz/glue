@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import cloudviz
 
 
@@ -6,27 +8,25 @@ class Hub(object):
     The hub manages the communication between visualization clients.
 
     Ths hub holds references to 0 or more client objects, and 0 or 1
-    translator object. When subsets within clients are modified (e.g,,
-    via a client), these changes are automatically broadcast to all
-    the clients within the hub that share that data. In addition, the
-    translator can attempt to translate a subset across datasets if
-    requested.
+    translator objects. Clients subscribe to specific message
+    classes. When a message is passed to the hub, the hub relays this
+    message to all subscribed clients.
+
+    Message classes are hierarchical, and all subclass from cloudviz.Message.
 
     Attributes
     ----------
+    (XXX how to handle this under publish/subscribe paradigm?)
     translator: Translator instance, optional
     """
-
-    # do not allow more than MAX_CLIENTS clients
-    _MAX_CLIENTS = 50
 
     def __init__(self):
         """
         Create an empty hub.
         """
 
-        # Collection of viz/interaction clients
-        self._clients = []
+        # Dictionary of client subscriptions
+        self._subscriptions = defaultdict(dict)
 
         # Translator object will translate subsets across data sets
         self.translator = None
@@ -38,119 +38,119 @@ class Hub(object):
                                  type(value))
         object.__setattr__(self, name, value)
 
-    def add_client(self, client):
+    def subscribe_client(self, client, message_class,
+                         handler=None,
+                         filter=lambda x: True):
         """
-        Register a new client with the hub
+        Subscribe a client to a type of message class.
 
-        This will also attach the client's data attribute to the
-        hub. Trying to attach the same data set to multiple,
-        different hubs will cause an error.
+        The subscription is associated with an optional handler
+        function, which will receive the message (the default is
+        client.notify()), and a filter function, which provides extra
+        control over whether the message is passed to handler.
+
+        After subscribing, the handler will receive all messages of type
+        message_class or its subclass when both of the following are true.
+          - If the message is a subset of message_class, the client
+            has not explicitly subscribed to any subsets of
+            message_class (if so, the handler for that subscription
+            receives the message)
+          - The function filter(message) evaluates to true
 
         Parameters
         ----------
-        client: Client instance
-            The new client to add.
+        client: HubListener instance
+           The subscribing client.
+
+        message_class: message class type (not instance)
+           The class of messages to subscribe to
+
+        handler: Function reference
+           An optional function of the form handler(message) that will
+           receive the message on behalf of the client. If not provided,
+           this defaults to the client's notify method
+
+        filter: Function reference
+           An optional function of the form filter(message). Messages
+           are only passed to the client if filter(message) == True.
+           The default is to always pass messages.
 
         Raises
         ------
-        TypeError: If the input is not a Client object.
-        Exception: If too many clients are added.
+        TypeError: If the input class isn't a cloudviz.Message class,
+                   or if the input client isn't a HubListener object.
         """
 
-        if len(self._clients) == self._MAX_CLIENTS:
-            raise AttributeError("Exceeded maximum number of clients: %i" %
-                            self._MAX_CLIENTS)
-
-        if not isinstance(client, cloudviz.Client):
-            raise Exception("Input is not a Client object: %s" %
+        if not isinstance(client, HubListener):
+            raise TypeError("Client must be a HubListener: %s" %
                             type(client))
 
-        # Add client to list of clients associated with current hub
-        self._clients.append(client)
+        if not isinstance(message_class, type) or \
+                not issubclass(message_class, cloudviz.Message):
+            raise TypeError("message class must be a subclass of "
+                            "cloudviz.Message: %s" % type(message_class))
+        if not handler:
+            handler = client.notify
 
-        # Give the Data instance a pointer to the Hub
-        client.data._hub = self
+        self._subscriptions[client][message_class] = (filter, handler)
 
-        client.update()
+    def unsubscribe_client(self, client, message):
+        if client not in self._subscriptions:
+            return
+        if message in self._subscriptions[client]:
+            self._subscriptions[client].pop(message)
 
     def remove_client(self, client):
         """
-        Remove a client from the hub.
-
-        This stops any communication between the hub and client.
+        Unsubscribe the client from any subscriptions.
 
         Parameters
         ----------
         client: Client instance
             The client to remove
 
-        Raises
-        ------
-        Exception: if client does not exist in hub
         """
-        if client in self._clients:
-            self._clients.remove(client)
-        else:
-            raise Exception("Hub does not contain client")
+        if client in self._subscriptions:
+            # remove from client collection
+            self._subscriptions.pop(client)
 
-    def broadcast(self, item, attribute=None, action='update'):
+    def broadcast(self, message):
         """
-        Communicate to relevant clients that things have changed. This can
-        be either a whole dataset, a subset, or a specific attribute of a
-        dataset or subset.
+        Broadcasts a message to all the clients subscribed
+        to that kind of message.
 
-        Parameters
-        ----------
-        item: Data or Subset instance
-            The data or the subset that has changed
-        attribute: str, optional
-            The specific data or subset attribute to update
-        action: str
-            Can be one of add/remove/update. If no subset is specified,
-            this should be set to 'update'.
+        See subscribe_client for details of when a message
+        is passed to the client
         """
 
-        if isinstance(item, cloudviz.Data):
-            data = item
-            subset = None
-        elif isinstance(item, cloudviz.Subset):
-            data = item.data
-            subset = item
-        else:
-            raise Exception("item should be an instance of Data or Subset")
+        # loop over each (client, subscription_list) pair
+        for c, sub in self._subscriptions.iteritems():
+            # find all messages in c's subscription list
+            # that are superclasses of message
+            # consider only the most-subclassed of these
+            candidates = [m for m in sub if
+                          issubclass(type(message), m)]
+            if len(candidates) == 0:
+                continue
+            candidate = max(candidates)
 
-        for client in self._clients:
-            if client.data is data:
-                client.update(subset=subset,
-                              attribute=attribute,
-                              action=action)
+            # only pass to handler if filter allows it
+            filter, handler = sub[candidate]
+            if filter(message):
+                handler(message)
 
     def translate_subset(self, subset, *args, **kwargs):
-        """
-        Translate a subset to all clients, even if they use different data.
+        #XXX don't know how to do this yet
+        raise NotImplementedError("Translation not implemented")
 
-        The translator object attempts to translate the subset for each unique
-        dataset used by the clients. If successful, the translated subset is
-        added to the appropriate data set.
 
-        If the translator cannot translate the subset to a given dataset,
-        it is quietly skipped. If there is no translator in the hub, the
-        method quietly exits.
+class HubListener(object):
+    """
+    The base class for any object that subscribes to hub messages.
+    This interface defines a single method, notify, that receives
+    messages
 
-        Parameters
-        ----------
-        subset: Subset instance
-            The subset to translate
+    """
 
-        Any additional arguments and keyword arguments are passed to the
-        translator.
-        """
-        if self.translator is None:
-            return
-
-        data = [c.data for c in self._clients]
-        data = list(set(data))  # remove duplicates
-        for d in data:
-            new_subset = self.translator.translate(subset, d, *args, **kwargs)
-            if new_subset is not None:
-                d.add_subset(new_subset)
+    def notify(self, message):
+        raise NotImplementedError("Message has no handler: %s" % message)

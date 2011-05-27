@@ -18,7 +18,7 @@ class Message(object):
     tag: An optional string describing the message
 
     """
-    def __init__(self, sender, tag=None):
+    def __init__(self, sender, tag=None, _level=0):
         """
         Create a new message
 
@@ -30,9 +30,18 @@ class Message(object):
         """
         self.sender = sender
         self.tag = tag
+        self._level = _level  # setting this manually is fragile
+
+    def __lt__(self, other):
+        """
+        Compares 2 message objects. message 1 < message 2 if it is
+        further up the hierarchy (i.e. closer to the Message superclass).
+        """
+
+        return self._level < other._level
 
     def __str__(self):
-        return 'Message: "%s"\n\t Sent from: %s', self.tag, self.sender
+        return 'Message: "%s"\n\t Sent from: %s' % (self.tag, self.sender)
 
 
 class SubsetMessage(Message):
@@ -41,12 +50,23 @@ class SubsetMessage(Message):
 
     """
 
-    def __init__(self, sender, tag=None):
+    def __init__(self, sender, tag=None, _level=0):
         if (not isinstance(sender, cloudviz.Subset)):
             raise TypeError("Sender must be a subset: %s"
                             % type(sender))
-        Message.__init__(self, sender, tag=tag)
-    pass
+        Message.__init__(self, sender, tag=tag, _level=_level + 1)
+        self.subset = self.sender
+
+
+class SubsetCreateMessage(SubsetMessage):
+    """
+    A message that a subset issues when its state changes
+
+    """
+    def __init__(self, sender, tag=None,
+                 _level=0):
+        SubsetMessage.__init__(self, sender, tag=tag,
+                               _level=_level + 1)
 
 
 class SubsetUpdateMessage(SubsetMessage):
@@ -58,8 +78,10 @@ class SubsetUpdateMessage(SubsetMessage):
     attribute: string
              An optional label of what attribute has changed
     """
-    def __init__(self, sender, attribute=None, tag=None):
-        SubsetMessage.__init__(self, sender, tag=tag)
+    def __init__(self, sender, attribute=None, tag=None,
+                 _level=0):
+        SubsetMessage.__init__(self, sender, tag=tag,
+                               _level=_level + 1)
         self.attribute = attribute
 
 
@@ -67,15 +89,19 @@ class SubsetDeleteMessage(SubsetMessage):
     """
     A message that a subset issues when it is deleted
     """
-    pass
+    def __init__(self, sender, tag=None, _level=0):
+        SubsetMessage.__init__(self, sender, tag=tag,
+                               _level=_level + 1)
 
 
 class DataMessage(Message):
     """
     The base class for messages that data objects issue
     """
-    def __init__(self, sender, tag=None):
+    def __init__(self, sender, tag=None, _level=0):
         if (not isinstance(sender, cloudviz.Data)):
             raise TypeError("Sender must be a data instance: %s"
                             % type(sender))
-        Message.__init__(self, sender, tag=tag)
+        Message.__init__(self, sender, tag=tag,
+                         _level=_level + 1)
+        self.data = self.sender

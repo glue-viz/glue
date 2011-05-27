@@ -41,7 +41,7 @@ class Data(object):
         self.active_subset = None
 
         # Hub that the data is attached to
-        self._hub = None
+        self.hub = None
 
     def new_subset(self):
         subset = cloudviz.Subset()
@@ -57,16 +57,22 @@ class Data(object):
         return self.active_subset
 
     def add_subset(self, subset):
-        subset.data = self
         subset.do_broadcast(True)
         self.subsets.append(subset)
-        if self._hub is not None:
-            self._hub.broadcast(subset, action='add')
+        if self.hub is not None:
+            msg = cloudviz.SubsetCreateMessage(subset)
+            self.hub.broadcast(msg)
 
     def remove_subset(self, subset):
-        if self._hub is not None:
-            self._hub.broadcast(subset, action='remove')
+        if self.hub is not None:
+            msg = cloudviz.SubsetDeleteMessage(subset)
+            self.hub.boradcast(msg)
         self.subsets.pop(subset)
+
+    def register_to_hub(self, hub):
+        if not isinstance(hub, cloudviz.Hub):
+            raise TypeError("input is not a Hub object: %s" % type(hub))
+        self.hub = hub
 
     def read_tree(self, filename):
         '''
@@ -85,7 +91,7 @@ class Data(object):
 
     def __setattr__(self, name, value):
         if name == "hub" and hasattr(self, 'hub') \
-           and self._hub is not value and self._hub is not None:
+           and self.hub is not value and self.hub is not None:
             raise AttributeError("Data has already been assigned "
                                  "to a different hub")
         object.__setattr__(self, name, value)
