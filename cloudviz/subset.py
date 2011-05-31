@@ -14,7 +14,12 @@ class Subset(object):
     description and manipulation of data subsets
 
     Attributes:
-    data: The dataset that this subset describes
+    -----------
+    data: data instance
+        The dataset that this subset describes
+    style: dict
+        A dictionary of visualization style properties (e.g., color)
+        Clients are free to use this information when making plots.
     """
 
     def __init__(self, data):
@@ -26,6 +31,8 @@ class Subset(object):
         """
         self.data = data
         self._broadcasting = False
+        self.style={}
+        self.style['color']='r'
 
     def register(self):
         self.data.add_subset(self)
