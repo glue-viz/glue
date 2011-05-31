@@ -5,6 +5,9 @@ class Client(cloudviz.HubListener):
     """
     Base class for interaction / visualization modules
 
+    Subclasses should override the _add_subset, _remove_subset, 
+    _update_subset, and  _update_all methods.
+
     Attributes
     ----------
     data: Data instance

@@ -139,5 +139,22 @@ class TestCommunication(unittest.TestCase):
         self.hub.broadcast(self.m2)
         self.assertIs(self.c1.last_message, self.m1)
 
+    def test_subset_relay(self):
+        #make sure subset modification
+        #sends messages
+        self.c1.register_to_hub(self.hub)
+        self.d1.register_to_hub(self.hub)
+        self.s1.no_echo_before_registration = 1
+        
+        self.assertIsNone(self.c1.last_message)
+        self.s1.register()
+        self.assertIsNotNone(self.c1.last_message)
+        self.assertIs(self.c1.last_message.sender, self.s1)
+        self.assertEquals(self.c1.call, self.c1._add_subset)
+        
+        self.s1.echo_after_registration = "1"
+        self.assertEquals(self.c1.call, self.c1._update_subset)
+        self.assertEquals(self.c1.last_message.attribute, 'echo_after_registration')
+
 if __name__ == "__main__":
     unittest.main()
