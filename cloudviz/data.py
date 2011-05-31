@@ -122,7 +122,7 @@ class TabularData(Data):
         self.ndim = 1
 
         # Set data shape
-        self.shape = len(table)
+        self.shape = (len(table),)
 
 
 class GriddedData(Data):
