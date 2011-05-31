@@ -31,8 +31,8 @@ class Subset(object):
         """
         self.data = data
         self._broadcasting = False
-        self.style={}
-        self.style['color']='r'
+        self.style = {}
+        self.style['color'] = 'r'
 
     def register(self):
         self.data.add_subset(self)
