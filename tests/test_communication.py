@@ -1,5 +1,6 @@
 import unittest
 from cloudviz import *
+from cloudviz.message import *
 
 class C(Client):
     def __init__(self, data):

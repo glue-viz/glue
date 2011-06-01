@@ -1,5 +1,5 @@
 import cloudviz
-
+import cloudviz.message as msg
 
 class Client(cloudviz.HubListener):
     """
@@ -57,22 +57,22 @@ class Client(cloudviz.HubListener):
         """
 
         hub.subscribe_client(self,
-                             cloudviz.SubsetCreateMessage,
+                             msg.SubsetCreateMessage,
                              handler=self._add_subset,
                              filter=lambda x: x.sender.data is self.data)
 
         hub.subscribe_client(self,
-                             cloudviz.SubsetUpdateMessage,
+                             msg.SubsetUpdateMessage,
                              handler=self._update_subset,
                              filter=lambda x: x.sender.data is self.data)
 
         hub.subscribe_client(self,
-                             cloudviz.SubsetDeleteMessage,
+                             msg.SubsetDeleteMessage,
                              handler=self._remove_subset,
                              filter=lambda x: x.sender.data is self.data)
 
         hub.subscribe_client(self,
-                             cloudviz.DataMessage,
+                             msg.DataMessage,
                              handler=self._update_all,
                              filter=lambda x: x.sender is self.data)
 

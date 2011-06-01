@@ -60,7 +60,7 @@ class Data(object):
         subset.do_broadcast(True)
         self.subsets.append(subset)
         if self.hub is not None:
-            msg = cloudviz.SubsetCreateMessage(subset)
+            msg = cloudviz.message.SubsetCreateMessage(subset)
             self.hub.broadcast(msg)
 
     def remove_subset(self, subset):
