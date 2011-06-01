@@ -24,7 +24,7 @@ class Selection(object):
         self.ax = ax
         self.points = points
         self.subset = subset
-        self.subset.mask = np.zeros(points.get_offsets().shape[1])
+        self.subset.mask = np.zeros(points.get_offsets().shape[0])
 
     def refresh(self):
         self.ax.figure.canvas.draw()

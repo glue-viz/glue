@@ -44,7 +44,7 @@ class Data(object):
         self.hub = None
 
     def new_subset(self):
-        subset = cloudviz.Subset()
+        subset = cloudviz.Subset(self)
         self.add_subset(subset)
         return subset
 
