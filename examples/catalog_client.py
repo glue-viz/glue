@@ -146,6 +146,15 @@ class CatalogClient(Client):
         """
         if s not in self.data.subsets:
             raise Exception("Input is not one of data's subsets: %s" % s)
+        if self._xdata is None or self._ydata is None:
+            return
+
+        # handle special case of empty subset
+        isEmpty = s.mask.sum() == 0
+        if isEmpty:
+            if s in self._scatter:
+                self._scatter[s].set_visible(False)
+            return
 
         if s not in self._scatter:
             plot = self._ax.scatter(self._xdata[s.mask],
@@ -154,6 +163,8 @@ class CatalogClient(Client):
         else:
             self._scatter[s].set_offsets(
                 zip(self._xdata[s.mask], self._ydata[s.mask]))
+
+        self._scatter[s].set_visible(True)
         self._scatter[s].set(**s.style)
 
     def set_xdata(self, attribute):
@@ -251,11 +262,11 @@ if __name__ == "__main__":
     s.register()
     sleep(1)
 
-    #change plot properties. This gets updated autmatically
+    #change plot properties. Updated autmatically
     s.style['color'] = 'm'
     s.style['alpha'] = .8
     sleep(1)
 
-    #change one of the axes
+    #change one of the axes. Automatically updated
     c2.set_ydata('IR3_flux_1')
     sleep(1)

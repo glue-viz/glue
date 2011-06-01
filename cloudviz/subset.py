@@ -22,6 +22,20 @@ class Subset(object):
         Clients are free to use this information when making plots.
     """
 
+    class ListenDict(dict):
+        """
+        A small dictionary class to keep track of visual subset
+        properties. Updates are broadcasted through the subset
+
+        """
+        def __init__(self, subset):
+            dict.__init__(self)
+            self._subset = subset
+
+        def __setitem__(self, key, value):
+            dict.__setitem__(self, key, value)
+            self._subset.broadcast(self)
+
     def __init__(self, data):
         """ Create a new subclass object.
 
@@ -31,11 +45,12 @@ class Subset(object):
         """
         self.data = data
         self._broadcasting = False
-        self.style = {}
+        self.style = self.ListenDict(self)
         self.style['color'] = 'r'
 
     def register(self):
         self.data.add_subset(self)
+        self.do_broadcast(True)
 
     def do_broadcast(self, value):
         """
@@ -50,15 +65,18 @@ class Subset(object):
         """
         object.__setattr__(self, '_broadcasting', value)
 
-    def __setattr__(self, attribute, value):
-        object.__setattr__(self, attribute, value)
+    def broadcast(self, attribute=None):
         if not hasattr(self, '_broadcasting') \
-           or not self._broadcasting or attribute == '_broadcasting':
+                or not self._broadcasting or attribute == '_broadcasting':
             return
         elif self.data is not None and self.data.hub is not None:
             msg = cloudviz.message.SubsetUpdateMessage(self,
                                                        attribute=attribute)
             self.data.hub.broadcast(msg)
+
+    def __setattr__(self, attribute, value):
+        object.__setattr__(self, attribute, value)
+        self.broadcast(attribute)
 
 
 class TreeSubset(Subset):

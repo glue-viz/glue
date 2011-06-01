@@ -1,6 +1,7 @@
 import cloudviz
 import cloudviz.message as msg
 
+
 class Client(cloudviz.HubListener):
     """
     Base class for interaction / visualization modules

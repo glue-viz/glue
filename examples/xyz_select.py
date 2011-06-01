@@ -22,8 +22,7 @@ class ScatterWidget(Client):
 
         self.scatter_object = {}
 
-        self.figure.canvas.mpl_connect('key_press_event', self.new_selection)
-
+        self.figure.canvas.mpl_connect('button_press_event', self.new_selection)
         self.selection = None
 
     def plot_data(self):
@@ -79,7 +78,7 @@ class ScatterWidget(Client):
         self.refresh()
 
     def new_selection(self, event):
-        if event.key != 'n':
+        if event.button != 3: 
             return
         if self.selection is not None:
             return
@@ -87,27 +86,31 @@ class ScatterWidget(Client):
             subset = ElementSubset(self.data)
         else:
             subset = self.data.subsets[0]
+        subset.register()
         self.selection = LassoSelection(self.ax, self.scatter_object[self.data], subset)
 
     def refresh(self):
         print "refresh in %s" % self.name
         self.figure.canvas.draw()
 
-    def _add_subset(self, subset):
+    def _add_subset(self, message):
         print "_add_subset in %s" % self.name
+        subset = message.subset
         self.plot_subset(subset)
 
-    def _remove_subset(self, subset):
+    def _remove_subset(self, message):
         print "_remove_subset in %s" % self.name
+        subset = message.subset
         self.remove_subset(subset)
 
-    def _update_all(self, attribute=None):
+    def _update_all(self, message):
         print "_update_all in %s" % self.name
         self.plot_data()
         self.plot_subsets()
 
-    def _update_subset(self, subset, attribute=None):
-        print "_update_subset in %s with attribute=%s" % (self.name, attribute)
+    def _update_subset(self, message):
+        print "_update_subset in %s with attribute=%s" % (self.name, message.attribute)
+        subset = message.subset
         self.plot_data()
         self.plot_subset(subset)
 
@@ -130,5 +133,9 @@ w2.yattribute = 'z'
 w2.name = "Widget 2"
 
 h = Hub()
-h.add_client(w1)
-h.add_client(w2)
+w1.register_to_hub(h)
+w2.register_to_hub(h)
+data.register_to_hub(h)
+
+w1.plot_data()
+w2.plot_data()
