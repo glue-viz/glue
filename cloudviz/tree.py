@@ -112,7 +112,7 @@ class Tree(object):
         if (self.value != None):
             result += (':%s' % self.value)
         return result + ';'
-
+    
 
 class NewickTree(Tree):
     """
