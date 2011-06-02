@@ -78,16 +78,16 @@ class Client(cloudviz.HubListener):
                              filter=lambda x: x.sender is self.data)
 
     def _add_subset(self, message):
-        pass
+        raise NotImplementedError("_add_subset not implemented")
 
     def _remove_subset(self, message):
-        pass
+        raise NotImplementedError("_remove_subset not implemented")
 
     def _update_all(self, message):
-        pass
+        raise NotImplementedError("_update_all not implemented")
 
     def _update_subset(self, message):
-        pass
+        raise NotImplementedError("_update_subset not implemented")
 
     def select(self):
         """

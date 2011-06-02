@@ -12,7 +12,8 @@ class Hub(object):
     classes. When a message is passed to the hub, the hub relays this
     message to all subscribed clients.
 
-    Message classes are hierarchical, and all subclass from cloudviz.Message.
+    Message classes are hierarchical, and all subclass from 
+    :class:`cloudviz.Message`.
 
     Attributes
     ----------
@@ -50,7 +51,7 @@ class Hub(object):
         control over whether the message is passed to handler.
 
         After subscribing, the handler will receive all messages of type
-        message_class or its subclass when both of the following are true.
+        message_class or its subclass when both of the following are true:
           - If the message is a subset of message_class, the client
             has not explicitly subscribed to any subsets of
             message_class (if so, the handler for that subscription

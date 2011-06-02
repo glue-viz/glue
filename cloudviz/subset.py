@@ -66,13 +66,13 @@ class Subset(object):
         object.__setattr__(self, '_broadcasting', value)
 
     def broadcast(self, attribute=None):
-        if not hasattr(self, '_broadcasting') \
-                or not self._broadcasting or attribute == '_broadcasting':
-            return
-        elif self.data is not None and self.data.hub is not None:
-            msg = cloudviz.message.SubsetUpdateMessage(self,
-                                                       attribute=attribute)
-            self.data.hub.broadcast(msg)
+        try:
+            if self._broadcasting and self.data.hub:
+                msg = cloudviz.message.SubsetUpdateMessage(self,
+                                                           attribute=attribute)
+                self.data.hub.broadcast(msg)
+        except (AttributeError):
+            pass
 
     def __setattr__(self, attribute, value):
         object.__setattr__(self, attribute, value)

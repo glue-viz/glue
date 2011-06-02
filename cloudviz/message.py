@@ -1,3 +1,7 @@
+"""
+.. module::cloudviz.message
+
+"""
 import cloudviz
 
 
