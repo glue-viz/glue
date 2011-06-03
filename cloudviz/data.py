@@ -43,6 +43,8 @@ class Data(object):
         # Hub that the data is attached to
         self.hub = None
 
+        self.metadata = {}
+
     def new_subset(self):
         subset = cloudviz.Subset(self)
         self.add_subset(subset)
