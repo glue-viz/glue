@@ -6,3 +6,5 @@ from subset import Subset
 from translator import Translator
 from message import Message
 from roi import Roi
+from scatter_client import ScatterClient
+from mpl_scatter_client import MplScatterClient

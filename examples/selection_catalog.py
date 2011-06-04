@@ -1,8 +1,8 @@
 import cloudviz as cv
-from catalog_client import CatalogClient
+from cloudviz.mpl_scatter_client import MplScatterClient
 
 
-""" An example of using the catalog client with a lasso-based ROI
+""" An example of using the scatter client with a lasso-based ROI
 object.  For simplicity, all mouse events are sent to global functions
 which update the ROI
 
@@ -39,8 +39,8 @@ d.read_data('oph_c2d_yso_catalog.tbl')
 h = cv.Hub()
 
 # create the 2 clients
-c = CatalogClient(d)
-c2 = CatalogClient(d)
+c = MplScatterClient(d)
+c2 = MplScatterClient(d)
 c.set_xdata('ra')
 c.set_ydata('dec')
 c2.set_xdata('IR1_flux_1')

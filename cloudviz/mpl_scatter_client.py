@@ -1,4 +1,4 @@
-from scatter_client import ScatterClient
+from cloudviz.scatter_client import ScatterClient
 import matplotlib.pyplot as plt
 
 
@@ -18,6 +18,15 @@ class MplScatterClient(ScatterClient):
         Re-render the screen
         """
         self._figure.canvas.draw()
+
+
+    def _remove_subset(self, message):
+
+        s = message.subset
+        if s in self._scatter:
+            self._scatter[s].remove()
+
+        CatalogClient._remove_subset(self, message)
 
     def _update_axis_labels(self):
         """
@@ -51,17 +60,6 @@ class MplScatterClient(ScatterClient):
         else:
             self._scatter[self.data].set_offsets(
                 zip(self._xdata, self._ydata))
-
-    def _update_subset_plots(self):
-        """
-        Sync the location and visual properties
-        of each point in each subset
-        """
-        if self._xdata is None or self._ydata is None:
-            return
-
-        for s in self.data.subsets:
-            self._update_subset_single(s)
 
     def _update_subset_single(self, s):
         """
