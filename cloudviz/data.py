@@ -27,7 +27,7 @@ class Component(object):
             """
             try:
                 return self.data[key.to_mask()]
-            except AttributeEroror:
+            except AttributeError:
                 raise AttributeError("Components can only ge indexed by subset"
                                      "objects that implement the to_mask() method")
 

@@ -128,14 +128,13 @@ class TreeSubset(Subset):
                   A list of node ids, defining which parts of the data's tree 
                   belong to this subset.
         """
-        if not hasattr(data, tree):
+        if not hasattr(data, 'tree'):
             raise AttributeError("Input data must contain a tree object")
 
         if not data.tree.index_map:
             raise AttributeError("Input data's tree must have an index map")
 
         Subset.__init__(self, data)        
-        self._single = single
         if not node_list: 
             self._node_list = []
         else:
