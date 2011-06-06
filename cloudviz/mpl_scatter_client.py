@@ -4,14 +4,20 @@ import matplotlib.pyplot as plt
 
 class MplScatterClient(ScatterClient):
     
-    def __init__(self, data):
+    def __init__(self, data, figure=None, axes=None):
+        if axes is not None and figure is not None and \
+                axes.figure is not figure:
+            raise Exception("Axes and figure are incompatible")
+
         ScatterClient.__init__(self, data)
 
-        # figure object
-        self._figure = plt.figure()
-
-        # plot / axes object
-        self._ax = self._figure.add_subplot(1,1,1)
+        if axes is not None:
+            self._ax = axes
+            self._figure = axes.figure
+        else:
+            if figure is None:
+                self._figure = plt.figure()
+            self._ax = self._figure.add_subplot(1,1,1)
 
     def _redraw(self):
         """
@@ -23,10 +29,10 @@ class MplScatterClient(ScatterClient):
     def _remove_subset(self, message):
 
         s = message.subset
-        if s in self._scatter:
-            self._scatter[s].remove()
+        if s in self._plots:
+            self._plots[s].remove()
 
-        CatalogClient._remove_subset(self, message)
+        super(MplScatterClient, self)._remove_subset(self, message)
 
     def _update_axis_labels(self):
         """
@@ -54,11 +60,11 @@ class MplScatterClient(ScatterClient):
         """
         if self._xdata is None or self._ydata is None:
             return
-        if self.data not in self._scatter:
+        if self.data not in self._plots:
             plot = self._ax.scatter(self._xdata, self._ydata, color='k')
-            self._scatter[self.data] = plot
+            self._plots[self.data] = plot
         else:
-            self._scatter[self.data].set_offsets(
+            self._plots[self.data].set_offsets(
                 zip(self._xdata, self._ydata))
 
     def _update_subset_single(self, s):
@@ -72,6 +78,9 @@ class MplScatterClient(ScatterClient):
         The subset to refresh.
 
         """
+        if self._xdata is None or self._ydata is None:
+            return
+
         if s not in self.data.subsets:
             raise Exception("Input is not one of data's subsets: %s" % s)
         if self._xdata is None or self._ydata is None:
@@ -80,20 +89,20 @@ class MplScatterClient(ScatterClient):
         # handle special case of empty subset
         isEmpty = s.mask.sum() == 0
         if isEmpty:
-            if s in self._scatter:
-                self._scatter[s].set_visible(False)
+            if s in self._plots:
+                self._plots[s].set_visible(False)
             return
 
-        if s not in self._scatter:
+        if s not in self._plots:
             plot = self._ax.scatter(self._xdata[s.to_mask()],
                               self._ydata[s.to_mask()], s=5)
-            self._scatter[s] = plot
+            self._plots[s] = plot
         else:
-            self._scatter[s].set_offsets(
+            self._plots[s].set_offsets(
                 zip(self._xdata[s.to_mask()], self._ydata[s.to_mask()]))
 
-        self._scatter[s].set_visible(True)
-        self._scatter[s].set(**s.style)
+        self._plots[s].set_visible(True)
+        self._plots[s].set(**s.style)
 
 
     
