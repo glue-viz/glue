@@ -36,12 +36,10 @@ class Subset(object):
             dict.__setitem__(self, key, value)
             self._subset.broadcast(self)
 
+
     def __init__(self, data):
         """ Create a new subclass object.
 
-        This method should always be called by subclasses. It attaches
-        data to the subset, and starts listening for state changes to
-        send to the hub
         """
         self.data = data
         self._broadcasting = False
@@ -49,9 +47,40 @@ class Subset(object):
         self.style['color'] = 'r'
 
     def register(self):
+        """ Register a subset to its data, and start broadcasting 
+        state changes
+        
+        """
         self.data.add_subset(self)
         self.do_broadcast(True)
 
+    def to_index_list(self):
+        """
+        Convert the current subset to a list of indices. These index
+        the elements in the data object that belong to the subset.
+
+        This method must be overridden by subclasses
+
+        Returns:
+        --------
+
+        A numpy array, giving the indices of elements in the data that
+        belong to this subset.
+        """
+        raise NotImplementedError("must be overridden by a subclass")
+
+    def to_mask(self):
+        """
+        Convert the current subset to a mask. 
+        
+        Returns:
+        --------
+
+        A boolean numpy array, the same shape as the data, that
+        defines whether each element belongs to the subset.
+        """
+        raise NotImplementedError("must be overridden by a subclass")
+            
     def do_broadcast(self, value):
         """
         Set whether state changes to the subset are relayed to a hub.
@@ -80,14 +109,99 @@ class Subset(object):
 
 
 class TreeSubset(Subset):
-    pass
+    """ Subsets defined using a data's Tree attribute.
+
+    The tree attribute in a data set defines a hierarchical
+    partitioning of the data. This subset class represents subsets
+    that consist of portions of this tree (i.e., a subset of the nodes
+    in the tree)
+    """
+    def __init__(self, data, node_list = None):
+        """ Create a new subset instance
+        
+        Parameters:
+        -----------
+        data: A data instance
+              The data must have a tree attribute with a populated index_map
+
+        node_list: List
+                  A list of node ids, defining which parts of the data's tree 
+                  belong to this subset.
+        """
+        if not hasattr(data, tree):
+            raise AttributeError("Input data must contain a tree object")
+
+        if not data.tree.index_map:
+            raise AttributeError("Input data's tree must have an index map")
+
+        Subset.__init__(self, data)        
+        self._single = single
+        if not node_list: 
+            self._node_list = []
+        else:
+            self._node_list = node_list
+
+    def set_node_list(self, node_list):
+        """ Update the list of tree indices that belong to the subset.
+
+        Parameters:
+        -----------
+        node_list: A list
+            A list of node ids, defining which parts of the data's tree belong
+            to the subset
+
+        """
+        self._node_list = node_list
+
+    def to_mask(self):
+        t = self.data.tree
+        im = t.index_map
+        mask = np.zeros(self.data.shape, dtype=bool)
+        for n in self._node_list:
+            mask |= im == n
+        return mask
+            
+    def to_index_list(self):
+        # this is inefficient for small subsets.
+        return self.to_mask().nonzero()[0]
 
 
 class ElementSubset(Subset):
+    """
+    This is a simple subset object that explicitly defines
+    which elements of the data set are included in the subset
 
-    def __init__(self, data):
-        self.mask = np.zeros(data.shape, dtype=bool)
+    Attributes:
+    -----------
+    
+    mask: A boolean numpy array, the same shape as the data.
+          The true/false value determines whether each element
+          belongs to the subset.
+    """
+
+    def __init__(self, data, mask=None):
+        """
+        Create a new subset object.
+
+        Parameters:
+        -----------
+        data: data instance.
+              The data to attach this subset to
+              
+        mask: Numpy array
+              The mask attribute for this subset
+        """
+        if not mask:
+            self.mask = np.zeros(data.shape, dtype=bool)
+        else:
+            self.mask = mask
         Subset.__init__(self, data)
+
+    def to_mask(self):
+        return self.mask
+
+    def to_index_list(self):
+        return self.mask.nonzero()[0]
 
     def __setattr__(self, attribute, value):
         if hasattr(self, 'mask') and attribute == 'mask':

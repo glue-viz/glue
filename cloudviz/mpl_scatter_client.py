@@ -85,12 +85,12 @@ class MplScatterClient(ScatterClient):
             return
 
         if s not in self._scatter:
-            plot = self._ax.scatter(self._xdata[s.mask],
-                              self._ydata[s.mask], s=5)
+            plot = self._ax.scatter(self._xdata[s.to_mask()],
+                              self._ydata[s.to_mask()], s=5)
             self._scatter[s] = plot
         else:
             self._scatter[s].set_offsets(
-                zip(self._xdata[s.mask], self._ydata[s.mask]))
+                zip(self._xdata[s.to_mask()], self._ydata[s.to_mask()]))
 
         self._scatter[s].set_visible(True)
         self._scatter[s].set(**s.style)
@@ -131,9 +131,8 @@ if __name__ == "__main__":
     sleep(1)
 
     # create a new subset. Note we need to register() each subset
-    s = cv.subset.ElementSubset(d)
     mask = d.components['ra'].data.ravel() > 248
-    s.mask = mask
+    s = cv.subset.ElementSubset(d, mask=mask)
     s.register()
     sleep(1)
 

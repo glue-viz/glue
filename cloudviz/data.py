@@ -15,6 +15,21 @@ class Component(object):
         # The actual data
         self.data = data
 
+        def __getitem__(self, key):
+            """ Extract the data values for each element in a subset
+            
+            Parameters:
+            -----------
+            key: Subset instance
+                 The subset to use when extracting elements from the
+                 component
+            
+            """
+            try:
+                return self.data[key.to_mask()]
+            except AttributeEroror:
+                raise AttributeError("Components can only ge indexed by subset"
+                                     "objects that implement the to_mask() method")
 
 class Data(object):
 
