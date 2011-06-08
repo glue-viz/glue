@@ -88,7 +88,7 @@ class MplImageClient(ImageClient):
         if s.mask.sum() == 0:
             return
 
-        if area_style == 'contour':
+        if self.area_style == 'contour':
             self._plots[s] = self._ax.contour(s.mask.astype(float),
                                               levels=[0.5],
                                               colors=s.style['color'])
