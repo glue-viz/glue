@@ -94,4 +94,4 @@ class MplImageClient(ImageClient):
                                               colors=s.style['color'])
         else:
             self._plots[s] = self._ax.contourf(s.mask.astype(float),
-                                               levels=[0.5, 0.5], alpha=0.3)
+                                               levels=[0.5, 1.0], alpha=0.3)
