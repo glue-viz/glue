@@ -71,9 +71,9 @@ class ScatterClient(VizClient):
             if self._xatt == attribute:
                 return
             self._xatt = attribute
-            self._xdata = self.data.components[attribute].data.ravel()
+            self._xdata = self.data.components[attribute].data
         if axis == 'y':
             if self._yatt == attribute:
                 return
             self._yatt = attribute
-            self._ydata = self.data.components[attribute].data.ravel()
+            self._ydata = self.data.components[attribute].data
