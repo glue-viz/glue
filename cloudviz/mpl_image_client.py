@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 class MplImageClient(ImageClient):
 
-    def __init__(self, data, figure=None, axes=None):
+    def __init__(self, data, figure=None, axes=None, area_style='filled'):
 
         if axes is not None and figure is not None and \
                 axes.figure is not figure:
@@ -19,6 +19,11 @@ class MplImageClient(ImageClient):
             if figure is None:
                 self._figure = plt.figure()
             self._ax = self._figure.add_subplot(1, 1, 1)
+
+        if area_style in ['contour', 'filled']:
+            self.area_style = area_style
+        else:
+            raise Exception("area_style should be one of contour/filled")
 
     def _redraw(self):
         """
@@ -83,5 +88,10 @@ class MplImageClient(ImageClient):
         if s.mask.sum() == 0:
             return
 
-        self._plots[s] = self._ax.contour(s.mask.astype(float), levels=[0.5],
-                                          colors=s.style['color'])
+        if area_style == 'contour':
+            self._plots[s] = self._ax.contour(s.mask.astype(float),
+                                              levels=[0.5],
+                                              colors=s.style['color'])
+        else:
+            self._plots[s] = self._ax.contourf(s.mask.astype(float),
+                                               levels=[0.5, 0.5], alpha=0.3)
