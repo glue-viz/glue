@@ -28,7 +28,7 @@ class Roi(object):
         A list of True/False values, for whether each (x,y)
         point falls within the ROI
         """
-        result = np.zeros(x.shape, dtype=bool)
+        result = np.zeros(x.shape, dtype=int)
 
         #special case of empty ROI
         if not self.vx:
@@ -38,11 +38,13 @@ class Roi(object):
         xj = np.roll(xi, 1)
         yi = np.array(self.vy)
         yj = np.roll(yi, 1)
-        for i in range(len(result)):
-            c = ((yi > y[i]) != (yj > y[i])) & \
-                (x[i] < (xj - xi) * (y[i] - yi) / (yj - yi) + xi)
-            result[i] = np.sum(c) % 2 == 1
-        return result
+
+        for i in range(len(xi)):
+            result += ((yi[i] > y) != (yj[i] > y)) & \
+                       (x < (xj[i] - xi[i]) * (y - yi[i])
+                        / (yj[i] - yi[i]) + xi[i])
+
+        return np.mod(result, 2) == 1
 
     def add_point(self, x, y):
         """
