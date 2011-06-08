@@ -6,8 +6,7 @@ import cloudviz as cv
 
 #set up the data
 d = cv.GriddedData()
-d.read_data('test.fits')
-d.components['INDEX_MAP'] = cv.Component((d.components['PRIMARY'].data > 3).astype(float))
+d.read_data('dendro_oph.fits', use_hdu=[0,1])
 
 # create the hub
 h = cv.Hub()
