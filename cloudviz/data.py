@@ -147,7 +147,7 @@ class GriddedData(Data):
     A class to represent uniformly gridded data (images, data cubes, etc.)
     '''
 
-    def read_data(self, filename, format='auto'):
+    def read_data(self, filename, format='auto', **kwargs):
         '''
         Read n-dimensional data from `filename`. If the format cannot be
         determined from the extension, it can be specified using the
@@ -163,12 +163,12 @@ class GriddedData(Data):
 
         # Read in the data
         if format in ['fits', 'fit']:
-            arrays = extract_data_fits(filename)
+            arrays = extract_data_fits(filename, **kwargs)
             for component_name in arrays:
                 self.components[component_name] = \
                     Component(arrays[component_name])
         elif format in ['hdf', 'hdf5', 'h5']:
-            arrays = extract_data_hdf5(filename)
+            arrays = extract_data_hdf5(filename, **kwargs)
             for component_name in arrays:
                 self.components[component_name] = \
                     Component(arrays[component_name])
