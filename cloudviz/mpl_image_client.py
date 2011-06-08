@@ -46,7 +46,8 @@ class MplImageClient(ImageClient):
             return
 
         if self.data not in self._plots:
-            plot = self._ax.imshow(self._image, cmap=plt.cm.gray)
+            plot = self._ax.imshow(self._image, cmap=plt.cm.gray,
+                                   interpolation='nearest', origin='lower')
             self._plots[self.data] = plot
         else:
             self._plots[self.data].set_data(self._image)
@@ -73,16 +74,14 @@ class MplImageClient(ImageClient):
         if s not in self.data.subsets:
             raise Exception("Input is not one of data's subsets: %s" % s)
 
-        # Handle special case of empty subset
-        if s.mask.sum() == 0:
-            if s in self._plots:
-                self._plots[s].set_visible(False)
-            return
-
         if s in self._plots:
             for item in self._plots[s].collections:
                 item.remove()
             self._plots.pop(s)
+
+        # Handle special case of empty subset
+        if s.mask.sum() == 0:
+            return
 
         self._plots[s] = self._ax.contour(s.mask.astype(float), levels=[0.5],
                                           colors=s.style['color'])
