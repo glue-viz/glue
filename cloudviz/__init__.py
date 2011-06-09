@@ -8,3 +8,6 @@ from message import Message
 from roi import Roi
 from scatter_client import ScatterClient
 from mpl_scatter_client import MplScatterClient
+from data_dendro_cpp import data_dendro_cpp
+from mpl_tree_client import MplTreeClient
+from tree_layout import TreeLayout

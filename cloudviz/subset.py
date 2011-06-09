@@ -36,7 +36,6 @@ class Subset(object):
             dict.__setitem__(self, key, value)
             self._subset.broadcast(self)
 
-
     def __init__(self, data):
         """ Create a new subclass object.
 
@@ -47,9 +46,9 @@ class Subset(object):
         self.style['color'] = 'r'
 
     def register(self):
-        """ Register a subset to its data, and start broadcasting 
+        """ Register a subset to its data, and start broadcasting
         state changes
-        
+
         """
         self.data.add_subset(self)
         self.do_broadcast(True)
@@ -71,8 +70,8 @@ class Subset(object):
 
     def to_mask(self):
         """
-        Convert the current subset to a mask. 
-        
+        Convert the current subset to a mask.
+
         Returns:
         --------
 
@@ -80,7 +79,7 @@ class Subset(object):
         defines whether each element belongs to the subset.
         """
         raise NotImplementedError("must be overridden by a subclass")
-            
+
     def do_broadcast(self, value):
         """
         Set whether state changes to the subset are relayed to a hub.
@@ -95,6 +94,19 @@ class Subset(object):
         object.__setattr__(self, '_broadcasting', value)
 
     def broadcast(self, attribute=None):
+        """
+        Explicitly broadcast a SubsetUpdateMessage to the hub
+
+        Note that in most situations, broadcasting happens
+        automatically.
+
+        Parameters:
+        -----------
+        attribute: string
+                   The name of the attribute (if any) that should be
+                   broadcast as updated.
+        """
+
         try:
             if self._broadcasting and self.data.hub:
                 msg = cloudviz.message.SubsetUpdateMessage(self,
@@ -102,6 +114,20 @@ class Subset(object):
                 self.data.hub.broadcast(msg)
         except (AttributeError):
             pass
+
+    def unregister(self):
+        """Broadcast a SubsetDeleteMessage to the hub, and stop braodcasting"""
+
+        try:
+            if self._broadcasting and self.data.hub:
+                msg = cloudviz.message.SubsetDeleteMessage(self)
+                self.data.hub.broadcast(msg)
+        except (AttributeError):
+            pass
+        self._broadcasting = False
+
+    def __del__(self):
+        self.unregister()
 
     def __setattr__(self, attribute, value):
         object.__setattr__(self, attribute, value)
@@ -115,54 +141,48 @@ class TreeSubset(Subset):
     partitioning of the data. This subset class represents subsets
     that consist of portions of this tree (i.e., a subset of the nodes
     in the tree)
+
+    Attributes:
+    -----------
+    node_list: A list of integers, specifying which nodes in the tree
+               belong to the subset.
+
     """
-    def __init__(self, data, node_list = None):
+    def __init__(self, data, node_list=None):
         """ Create a new subset instance
-        
+
         Parameters:
         -----------
         data: A data instance
               The data must have a tree attribute with a populated index_map
 
         node_list: List
-                  A list of node ids, defining which parts of the data's tree 
+                  A list of node ids, defining which parts of the data's tree
                   belong to this subset.
         """
         if not hasattr(data, 'tree'):
             raise AttributeError("Input data must contain a tree object")
 
-        if not data.tree.index_map:
+        if data.tree.index_map is None:
             raise AttributeError("Input data's tree must have an index map")
 
-        Subset.__init__(self, data)        
-        if not node_list: 
-            self._node_list = []
+        Subset.__init__(self, data)
+        if not node_list:
+            self.node_list = []
         else:
-            self._node_list = node_list
-
-    def set_node_list(self, node_list):
-        """ Update the list of tree indices that belong to the subset.
-
-        Parameters:
-        -----------
-        node_list: A list
-            A list of node ids, defining which parts of the data's tree belong
-            to the subset
-
-        """
-        self._node_list = node_list
+            self.node_list = node_list
 
     def to_mask(self):
         t = self.data.tree
         im = t.index_map
         mask = np.zeros(self.data.shape, dtype=bool)
-        for n in self._node_list:
+        for n in self.node_list:
             mask |= im == n
-        return mask
-            
+        return mask.ravel()
+
     def to_index_list(self):
         # this is inefficient for small subsets.
-        return self.to_mask().nonzero()[0]
+        return self.to_mask().nonzero()[0].ravel()
 
 
 class ElementSubset(Subset):
@@ -172,7 +192,7 @@ class ElementSubset(Subset):
 
     Attributes:
     -----------
-    
+
     mask: A boolean numpy array, the same shape as the data.
           The true/false value determines whether each element
           belongs to the subset.
@@ -186,7 +206,7 @@ class ElementSubset(Subset):
         -----------
         data: data instance.
               The data to attach this subset to
-              
+
         mask: Numpy array
               The mask attribute for this subset
         """

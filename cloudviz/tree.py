@@ -57,6 +57,8 @@ class Tree(object):
 
         self.index_map = index_map
 
+        self._index = None
+
     def add_child(self, child):
         """
         Add a new child node to this tree.
@@ -81,19 +83,6 @@ class Tree(object):
         self.children.append(child)
         child.parent = self
 
-    def to_subset(self, single=False):
-        """
-        Convert the current (sub)tree to a subset object
-
-        Parameters
-        ----------
-        single:
-              True to use only the root node as the subset. Otherwise,
-              use the root node and all descendents.
-
-        """
-        pass
-
     def to_newick(self):
         """
         Convert the tree to a newick string
@@ -112,7 +101,39 @@ class Tree(object):
         if (self.value != None):
             result += (':%s' % self.value)
         return result + ';'
-    
+
+    def index(self):
+        """
+        Create a flattened index of all the nodes at and below this
+        branch, and store them in the _index attribute.
+
+        The _index attribute is a dictionary holding each node in the
+        tree, keyed by the node ids. Index will only work if the node
+        id's are unique.
+
+        The user of the index is responsible for making sure that the
+        tree hasn't changed since the index was created.
+        """
+        self._index = {}
+        stack = [self]
+        while stack:
+            s = stack.pop()
+            if s.id in self._index:
+                raise KeyError("Cannot index this tree -- "
+                               "node id's are non-unique")
+            self._index[s.id] = s
+            for c in s.children:
+                stack.append(c)
+
+    def get_subtree_indices(self):
+        result = []
+        stack = [self]
+        while stack:
+            s = stack.pop()
+            result.append(s.id)
+            stack += s.children
+        return result
+
 
 class NewickTree(Tree):
     """
