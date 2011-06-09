@@ -84,8 +84,7 @@ class MplScatterClient(ScatterClient):
             raise Exception("Input is not one of data's subsets: %s" % s)
 
         # handle special case of empty subset
-        isEmpty = s.to_mask().sum() == 0
-        if isEmpty:
+        if s.to_mask().sum() == 0:
             if s in self._plots:
                 self._plots[s].set_visible(False)
             return
@@ -136,7 +135,7 @@ if __name__ == "__main__":
     sleep(1)
 
     # create a new subset. Note we need to register() each subset
-    mask = d.components['ra'].data.ravel() > 248
+    mask = d.components['ra'].data > 248
     s = cv.subset.ElementSubset(d, mask=mask)
     s.register()
     sleep(1)
