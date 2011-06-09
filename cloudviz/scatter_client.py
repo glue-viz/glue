@@ -23,7 +23,6 @@ class ScatterClient(VizClient):
         # numerical data on the y axis
         self._ydata = None
 
-        
     def set_xdata(self, attribute):
         """
         Redefine which component gets plotted on the x axis

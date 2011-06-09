@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 
 class MplScatterClient(ScatterClient):
-    
+
     def __init__(self, data, figure=None, axes=None):
         if axes is not None and figure is not None and \
                 axes.figure is not figure:
@@ -17,7 +17,7 @@ class MplScatterClient(ScatterClient):
         else:
             if figure is None:
                 self._figure = plt.figure()
-            self._ax = self._figure.add_subplot(1,1,1)
+            self._ax = self._figure.add_subplot(1, 1, 1)
 
     def _redraw(self):
         """
@@ -25,18 +25,17 @@ class MplScatterClient(ScatterClient):
         """
         self._figure.canvas.draw()
 
-
     def _remove_subset(self, message):
 
         s = message.subset
         if s in self._plots:
             self._plots[s].remove()
 
-        super(MplScatterClient, self)._remove_subset(self, message)
+        super(MplScatterClient, self)._remove_subset(message)
 
     def _update_axis_labels(self):
         """
-        Sync the axis labels to reflect which components are currently 
+        Sync the axis labels to reflect which components are currently
         being plotted
         """
 
@@ -83,11 +82,9 @@ class MplScatterClient(ScatterClient):
 
         if s not in self.data.subsets:
             raise Exception("Input is not one of data's subsets: %s" % s)
-        if self._xdata is None or self._ydata is None:
-            return
 
         # handle special case of empty subset
-        isEmpty = s.mask.sum() == 0
+        isEmpty = s.to_mask().sum() == 0
         if isEmpty:
             if s in self._plots:
                 self._plots[s].set_visible(False)
@@ -105,7 +102,6 @@ class MplScatterClient(ScatterClient):
         self._plots[s].set(**s.style)
 
 
-    
 if __name__ == "__main__":
     """
     This is a self contained (non-interactive) example of setting up

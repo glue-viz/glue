@@ -12,7 +12,7 @@ class Hub(object):
     classes. When a message is passed to the hub, the hub relays this
     message to all subscribed clients.
 
-    Message classes are hierarchical, and all subclass from 
+    Message classes are hierarchical, and all subclass from
     :class:`cloudviz.Message`.
 
     Attributes

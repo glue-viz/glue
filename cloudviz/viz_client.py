@@ -6,7 +6,7 @@ class VizClient(Client):
     The VizClient class provides an interface (and minimal
     implementation) for a generic client that creates
     visualizations. The goal of VizClient is to provide a reusable way
-    to organize client plotting code. 
+    to organize client plotting code.
 
     Clients which extend VizClient should override the following methods
     to perform specific visualization tasks
@@ -121,5 +121,3 @@ class VizClient(Client):
 
         """
         raise NotImplementedError("VizClient Cannot Draw!")
-
-
