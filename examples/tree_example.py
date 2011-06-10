@@ -32,12 +32,13 @@ c.refresh()
 
 # scatter client
 # set data plot to invisible initially.
-c2 = cv.MplScatterClient(data)
-c2.set_xdata('PRIMARY')
-c2.set_ydata('ha')
-c2._plots[data].set_visible(False)
+#c2 = cv.MplScatterClient(data)
+c2 = cv.MplImageClient(data)
+#c2.set_xdata('PRIMARY')
+#c2.set_ydata('ha')
+#c2._plots[data].set_visible(False)
 c2.register_to_hub(h)
-
+c2.set_component('PRIMARY')
 
 # create some subsets
 data.tree.index()
@@ -51,7 +52,7 @@ s2.node_list = id2
 s.register()
 s2.register()
 
-s.style['color'] = 'black'
+#s.style['color'] = 'black'
 
 
 # attach some event handlers

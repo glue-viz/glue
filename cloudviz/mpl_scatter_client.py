@@ -95,7 +95,8 @@ class MplScatterClient(ScatterClient):
             self._plots[s] = plot
         else:
             self._plots[s].set_offsets(
-                zip(self._xdata[s.to_mask()], self._ydata[s.to_mask()]))
+                zip(self._xdata[s.to_mask()], 
+                    self._ydata[s.to_mask()]))
 
         self._plots[s].set_visible(True)
         self._plots[s].set(**s.style)

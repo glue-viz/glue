@@ -85,13 +85,13 @@ class MplImageClient(ImageClient):
             self._plots.pop(s)
 
         # Handle special case of empty subset
-        if s.mask.sum() == 0:
+        if s.to_mask().sum() == 0:
             return
 
         if self.area_style == 'contour':
-            self._plots[s] = self._ax.contour(s.mask.astype(float),
+            self._plots[s] = self._ax.contour(s.to_mask().astype(float),
                                               levels=[0.5],
                                               colors=s.style['color'])
         else:
-            self._plots[s] = self._ax.contourf(s.mask.astype(float),
+            self._plots[s] = self._ax.contourf(s.to_mask().astype(float),
                                                levels=[0.5, 1.0], alpha=0.3)

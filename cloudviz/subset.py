@@ -178,11 +178,11 @@ class TreeSubset(Subset):
         mask = np.zeros(self.data.shape, dtype=bool)
         for n in self.node_list:
             mask |= im == n
-        return mask.ravel()
+        return mask
 
     def to_index_list(self):
         # this is inefficient for small subsets.
-        return self.to_mask().nonzero()[0].ravel()
+        return self.to_mask().nonzero()[0]
 
 
 class ElementSubset(Subset):
