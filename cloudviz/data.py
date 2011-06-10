@@ -1,4 +1,6 @@
 import string
+
+import numpy as np
 import atpy
 
 import cloudviz
@@ -182,6 +184,14 @@ class GriddedData(Data):
 
         # Set data shape
         self.shape = self.components[self.components.keys()[0]].data.shape
+
+        # If 2D, then set XPIX and YPIX
+        if self.ndim == 2:
+            x = np.arange(self.shape[1])
+            y = np.arange(self.shape[0])
+            x, y = np.meshgrid(x, y)
+            self.components['XPIX'] = Component(x)
+            self.components['YPIX'] = Component(y)
 
 
 class AMRData(Data):

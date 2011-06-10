@@ -4,6 +4,9 @@ a cloudviz environment with 2 catalog clients linked to the same data.
 """
 import cloudviz as cv
 
+import matplotlib.pyplot as plt
+from cloudviz import RasterAxes
+
 #set up the data
 d = cv.GriddedData()
 d.read_data('dendro_oph.fits', use_hdu=[0, 1])
@@ -12,7 +15,10 @@ d.read_data('dendro_oph.fits', use_hdu=[0, 1])
 h = cv.Hub()
 
 # create the 2 clients
-c1 = cv.MplScatterClient(d)
+fig = plt.figure()
+ax = RasterAxes(fig, [0.1,0.1,0.8,0.8])
+fig.add_axes(ax)
+c1 = cv.MplScatterClient(d, axes=ax)
 c2 = cv.MplImageClient(d)
 
 # register the clients and data to the hub
