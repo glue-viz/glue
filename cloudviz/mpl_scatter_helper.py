@@ -4,19 +4,23 @@ import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
+from scipy.ndimage import convolve
+
+kernel = np.array([[0.8, 1.0, 0.8], [1.0, 1.0, 1.0], [0.8, 1.0, 0.8]])
+
 
 def make_colormap(color):
 
     r, g, b = colors.colorConverter.to_rgb(color)
 
-    cdict = {'red': [(0.0, r, r),
-                    (1.0, 1.0, 1.0)],
+    cdict = {'red': [(0.0, 1.0, 1.0),
+                    (1.0, r, r)],
 
-             'green': [(0.0, g, g),
-                       (1.0, 1.0, 1.0)],
+             'green': [(0.0, 1.0, 1.0),
+                       (1.0, g, g)],
 
-             'blue':  [(0.0, b, b),
-                       (1.0, 1.0, 1.0)]}
+             'blue':  [(0.0, 1.0, 1.0),
+                       (1.0, b, b)]}
 
     return colors.LinearSegmentedColormap('custom', cdict)
 
@@ -67,7 +71,6 @@ class Scatter(object):
         if self._color == 'red':
             self._raster.set_zorder(20)
 
-
         self._ax.figure.canvas.draw()
 
     def _update(self, event):
@@ -93,13 +96,15 @@ class Scatter(object):
         ix = ((self.x - xmin) / (xmax - xmin) * float(nx)).astype(int)
         iy = ((self.y - ymin) / (ymax - ymin) * float(ny)).astype(int)
 
-        array = ma.zeros((nx, ny), dtype=int)
+        array = np.zeros((nx, ny), dtype=int)
 
         keep = (ix >= 0) & (ix < nx) & (iy >= 0) & (iy < ny)
 
         array[ix[keep], iy[keep]] += 1
 
         array = array.transpose()
+
+        array = ma.array(convolve(array, kernel))
 
         array.mask = array == 0
 
@@ -109,7 +114,8 @@ class Scatter(object):
                                            aspect='auto',
                                            cmap=make_colormap(self._color),
                                            interpolation='nearest',
-                                           alpha=self._alpha, origin='lower', zorder=10)
+                                           alpha=self._alpha, origin='lower',
+                                           zorder=10, vmin=0, vmax=1.)
         else:
             self._raster.set_data(array)
             self._raster.set_extent([xmin, xmax, ymin, ymax])
