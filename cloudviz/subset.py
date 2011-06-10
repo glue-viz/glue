@@ -133,6 +133,28 @@ class Subset(object):
         object.__setattr__(self, attribute, value)
         self.broadcast(attribute)
 
+    def _check_compatibility(self, other):
+        if not isinstance(other, Subset):
+            raise TypeError("Incompatible types: %s vs %s" %
+                            (type(self), type(other)))
+        if self.data is not other.data:
+            raise TypeError("Subsets describe different data")
+
+    def __or__(self, other):
+        self._check_compatibility(self, other)
+        m = self.to_mask() | other.to_mask()
+        return ElementSubset(self.data, mask=m)
+
+    def __and__(self, other):
+        self._check_compatibility(self, other)
+        m = self.to_mask() & other.to_mask()
+        return ElementSubset(self.data, mask=m)
+
+    def __xor__(self, other):
+        self._check_compatibility(self, other)
+        m = self.to_mask() ^ other.to_mask()
+        return ElementSubset(self.data, mask=m)
+
 
 class TreeSubset(Subset):
     """ Subsets defined using a data's Tree attribute.
@@ -183,6 +205,57 @@ class TreeSubset(Subset):
     def to_index_list(self):
         # this is inefficient for small subsets.
         return self.to_mask().nonzero()[0]
+
+    def __or__(self, other):
+        self.check_compatibility(other)
+        if isinstance(other, TreeSubset):
+            nl = list(set(self.node_list) | set(other.node_list))
+            return TreeSubset(self.data, node_list=nl)
+        else:
+            return Subset.__or__(self, other)
+
+    def __and__(self, other):
+        self.check_compatibility(other)
+        if isinstance(other, TreeSubset):
+            nl = list(set(self.node_list) & set(other.node_list))
+            return TreeSubset(self.data, node_list=nl)
+        else:
+            return Subset.__and__(self, other)
+
+    def __xor__(self, other):
+        self.check_compatibility(other)
+        if isinstance(other, TreeSubset):
+            nl = list(set(self.node_list) ^ set(other.node_list))
+            return TreeSubset(self.data, node_list=nl)
+        else:
+            return Subset.__xor__(self, other)
+
+    def __ior__(self, other):
+        self.check_compatibility(other)
+        if isinstance(other, TreeSubset):
+            nl = list(set(self.node_list) | set(other.node_list))
+            self.node_list = nl
+            return self
+        else:
+            return Subset.__ior__(self, other)
+
+    def __iand__(self, other):
+        self.check_compatibility(other)
+        if isinstance(other, TreeSubset):
+            nl = list(set(self.node_list) & set(other.node_list))
+            self.node_list = nl
+            return self
+        else:
+            return Subset.__iand__(self, other)
+
+    def __ixor__(self, other):
+        self.check_compatibility(other)
+        if isinstance(other, TreeSubset):
+            nl = list(set(self.node_list) ^ set(other.node_list))
+            self.node_list = nl
+            return self
+        else:
+            return Subset.__ixor__(self, other)
 
 
 class ElementSubset(Subset):
