@@ -5,7 +5,7 @@ from tree import Tree, NewickTree
 from subset import Subset
 from translator import Translator
 from message import Message
-from roi import Roi
+from roi import MplBoxTool, MplCircleTool, MplPolygonTool, MplLassoTool
 from scatter_client import ScatterClient
 from data_dendro_cpp import data_dendro_cpp
 from mpl_tree_client import MplTreeClient
