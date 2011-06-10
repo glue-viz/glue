@@ -6,24 +6,24 @@ import cloudviz as cv
 
 #set up the data
 d = cv.GriddedData()
-d.read_data('dendro_oph.fits', use_hdu=[0,1])
+d.read_data('dendro_oph.fits', use_hdu=[0, 1])
 
 # create the hub
 h = cv.Hub()
 
 # create the 2 clients
-c = cv.MplScatterClient(d)
+c1 = cv.MplScatterClient(d)
 c2 = cv.MplImageClient(d)
 
 # register the clients and data to the hub
 # (to receive and send events, respectively)
-c.register_to_hub(h)
+c1.register_to_hub(h)
 c2.register_to_hub(h)
 d.register_to_hub(h)
 
 # #define the axes to plot
-c.set_xdata('PRIMARY')
-c.set_ydata('INDEX_MAP')
+c1.set_xdata('PRIMARY')
+c1.set_ydata('INDEX_MAP')
 c2.set_component('PRIMARY')
 
 # create a new subset. Note we need to register() each subset
@@ -35,40 +35,19 @@ s.register()
 s.style['color'] = 'm'
 s.style['alpha'] = .8
 
+selection_type = 'box'
 
-class Selection(object):
-
-    def __init__(self, ax, client, subset):
-        self.ax = ax
-        self.subset = subset
-        self.client = client
-        self.roi = cv.roi.MplRoi(ax)
-        self.client._figure.canvas.mpl_connect('button_press_event',
-                                                self.button_press_event)
-
-        self.client._figure.canvas.mpl_connect('motion_notify_event',
-                                                self.motion_notify_event)
-
-        self.client._figure.canvas.mpl_connect('button_release_event',
-                                                self.button_release_event)
-
-    def button_press_event(self, event, **kwargs):
-        """ Button presses start a new roi definition"""
-        if not event.inaxes:
-            return
-        self.roi.reset()
-        self.roi.add_point(event.xdata, event.ydata)
-
-    def motion_notify_event(self, event, **kwargs):
-        """ Button motion adds new points to the roi"""
-        if not event.inaxes or event.button is None:
-            return
-        self.roi.add_point(event.xdata, event.ydata)
-
-    def button_release_event(self, event, **kwargs):
-        """ Button releases translate the roi to a subset"""
-        mask = self.roi.contains(self.client._xdata, self.client._ydata)
-        self.subset.mask = mask.reshape(s.mask.shape)
-
-s1 = Selection(c._ax, c, s)
-s2 = Selection(c2._ax, c2, s)
+if selection_type == 'box':
+    t1 = cv.MplBoxTool(s, 'PRIMARY', 'INDEX_MAP', c1._ax)
+    t2 = cv.MplBoxTool(s, 'XPIX', 'YPIX', c2._ax)
+elif selection_type == 'circle':
+    t1 = cv.MplCircleTool(s, 'PRIMARY', 'INDEX_MAP', c1._ax)
+    t2 = cv.MplCircleTool(s, 'XPIX', 'YPIX', c2._ax)
+elif selection_type == 'polygon':
+    t1 = cv.MplPolygonTool(s, 'PRIMARY', 'INDEX_MAP', c1._ax)
+    t2 = cv.MplPolygonTool(s, 'XPIX', 'YPIX', c2._ax)
+elif selection_type == 'lasso':
+    t1 = cv.MplLassoTool(s, 'PRIMARY', 'INDEX_MAP', c1._ax)
+    t2 = cv.MplLassoTool(s, 'XPIX', 'YPIX', c2._ax)
+else:
+    raise Exception("Unknown selection type: %s" % selection_type)

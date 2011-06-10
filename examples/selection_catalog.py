@@ -9,28 +9,6 @@ which update the ROI
 In a real application, the client would manage the ROI object manually
 """
 
-
-def button_press_event(event, **kwargs):
-    """ Button presses start a new roi definition"""
-    if not event.inaxes:
-        return
-    roi.reset()
-    roi.add_point(event.xdata, event.ydata)
-
-
-def motion_notify_event(event, **kwargs):
-    """ Button motion adds new points to the roi"""
-    if not event.inaxes:
-        return
-    roi.add_point(event.xdata, event.ydata)
-
-
-def button_release_event(event, **kwargs):
-    """ Button releases translate the roi to a subset"""
-    mask = roi.contains(c2._xdata, c2._ydata)
-    s.mask = mask
-
-
 # set up the data
 d = cv.TabularData()
 d.read_data('oph_c2d_yso_catalog.tbl')
@@ -39,10 +17,10 @@ d.read_data('oph_c2d_yso_catalog.tbl')
 h = cv.Hub()
 
 # create the 2 clients
-c = MplScatterClient(d)
+c1 = MplScatterClient(d)
 c2 = MplScatterClient(d)
-c.set_xdata('ra')
-c.set_ydata('dec')
+c1.set_xdata('ra')
+c1.set_ydata('dec')
 c2.set_xdata('IR1_flux_1')
 c2.set_ydata('IR2_flux_1')
 
@@ -54,18 +32,24 @@ s.mask = mask
 # register clients and data to hub
 # (to receive and send events, respectively)
 # register subset to send events
-c.register_to_hub(h)
+c1.register_to_hub(h)
 c2.register_to_hub(h)
 d.register_to_hub(h)
 s.register()
 
-# create an ROI. Attacht to c2
-roi = cv.roi.MplRoi(c2._ax)
-c2._figure.canvas.mpl_connect('button_press_event',
-                              button_press_event)
+selection_type = 'box'
 
-c2._figure.canvas.mpl_connect('motion_notify_event',
-                              motion_notify_event)
-
-c2._figure.canvas.mpl_connect('button_release_event',
-                              button_release_event)
+if selection_type == 'box':
+    t1 = cv.MplBoxTool(s, 'ra', 'dec', c1._ax)
+    t2 = cv.MplBoxTool(s, 'IR1_flux_1', 'IR2_flux_1', c2._ax)
+elif selection_type == 'circle':
+    t1 = cv.MplCircleTool(s, 'ra', 'dec', c1._ax)
+    t2 = cv.MplCircleTool(s, 'IR1_flux_1', 'IR2_flux_1', c2._ax)
+elif selection_type == 'polygon':
+    t1 = cv.MplPolygonTool(s, 'ra', 'dec', c1._ax)
+    t2 = cv.MplPolygonTool(s, 'IR1_flux_1', 'IR2_flux_1', c2._ax)
+elif selection_type == 'lasso':
+    t1 = cv.MplLassoTool(s, 'ra', 'dec', c1._ax)
+    t2 = cv.MplLassoTool(s, 'IR1_flux_1', 'IR2_flux_1', c2._ax)
+else:
+    raise Exception("Unknown selection type: %s" % selection_type)
