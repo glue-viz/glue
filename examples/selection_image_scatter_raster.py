@@ -41,7 +41,7 @@ s.register()
 s.style['color'] = 'm'
 s.style['alpha'] = .8
 
-selection_type = 'box'
+selection_type = 'circle'
 
 if selection_type == 'box':
     t1 = cv.MplBoxTool(s, 'PRIMARY', 'INDEX_MAP', c1._ax)

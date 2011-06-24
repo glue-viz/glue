@@ -1,5 +1,5 @@
 from cloudviz import Client
-
+import matplotlib.pyplot as plt
 
 class VizClient(Client):
     """
@@ -27,12 +27,19 @@ class VizClient(Client):
     _plots: A dictionary keyed by subset and data objects. Each entry
     holds the plot object associated with the key
 
+    options: A dictionary of global plot options, to be handled by
+             subclasses.
+
     """
 
-    def __init__(self, data):
+    def __init__(self, data, options=None):
         Client.__init__(self, data)
 
         self._plots = {}
+        if not options:
+            self.options = {}
+        else:
+            self.options = options
 
     def _update_all(self, message):
         """
@@ -121,3 +128,20 @@ class VizClient(Client):
 
         """
         raise NotImplementedError("VizClient Cannot Draw!")
+
+
+def init_mpl(figure, axes):
+    if axes is not None and figure is not None and \
+            axes.figure is not figure:
+        raise Exception("Axes and figure are incompatible")
+        
+    if axes is not None:
+        _ax = axes
+        _figure = axes.figure
+    else:
+        if figure is None:
+            _figure = plt.figure()
+        _ax = _figure.add_subplot(1, 1, 1)
+
+    return _figure, _ax
+            
