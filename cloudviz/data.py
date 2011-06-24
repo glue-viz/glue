@@ -117,6 +117,12 @@ class Data(object):
                                  "to a different hub")
         object.__setattr__(self, name, value)
 
+    def __getitem__(self, key):
+        if type(key) != str or key not in self.components:
+            raise KeyError("Input must be the name of "
+                           " a valid component: %s" % str(key))
+        return self.components[key]
+
 
 class TabularData(Data):
     '''

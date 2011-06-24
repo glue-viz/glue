@@ -1,6 +1,7 @@
 import numpy as np
 
 import cloudviz
+from cloudviz.exceptions import IncompatibleDataException
 
 
 class Subset(object):
@@ -53,24 +54,46 @@ class Subset(object):
         self.data.add_subset(self)
         self.do_broadcast(True)
 
-    def to_index_list(self):
+    def to_index_list(self, data=None):
         """
         Convert the current subset to a list of indices. These index
         the elements in the data object that belong to the subset.
 
         This method must be overridden by subclasses
 
+        Parameters:
+        -----------
+        data: Data instance
+              If this is provided, return an index list for the
+              elements in this data set (if possible). Otherwise,
+              return an index list for the data associated with this
+              subset (if any)
+
         Returns:
         --------
 
         A numpy array, giving the indices of elements in the data that
         belong to this subset.
+
+        Raises:
+        -------
+        IncompatibleDataException: if an index list cannot be created
+        for the requested data set.
+
         """
         raise NotImplementedError("must be overridden by a subclass")
 
-    def to_mask(self):
+    def to_mask(self, data=None):
         """
         Convert the current subset to a mask.
+
+        Parameters:
+        -----------
+        data: Data instance
+              If this is provided, return a mask for the
+              elements in this data set (if possible). Otherwise,
+              return a mask list for the data associated with this
+              subset (if any)
 
         Returns:
         --------
@@ -155,6 +178,24 @@ class Subset(object):
         m = self.to_mask() ^ other.to_mask()
         return ElementSubset(self.data, mask=m)
 
+    def is_compatible(self, data):
+        """
+        Return whether or not this subset is compatible with a data
+        set.  If a subset and data set are compatible, then
+        subset.to_mask(data=data) and subset.to_index_map(data=data)
+        should return appropriate values.
+
+        Parameters:
+        -----------
+        data: data instance
+        the data set to check for compatibility
+
+        Returns:
+        --------
+        True if the data is compatible with this subset. Else false
+        """
+        return data is self.data
+
 
 class TreeSubset(Subset):
     """ Subsets defined using a data's Tree attribute.
@@ -194,7 +235,12 @@ class TreeSubset(Subset):
         else:
             self.node_list = node_list
 
-    def to_mask(self):
+    def to_mask(self, data=None):
+
+        if data is not None and data is not self.data:
+            raise IncompatibleDataException("TreeSubsets cannot cross "
+                                            "data sets")
+
         t = self.data.tree
         im = t.index_map
         mask = np.zeros(self.data.shape, dtype=bool)
@@ -202,7 +248,12 @@ class TreeSubset(Subset):
             mask |= im == n
         return mask
 
-    def to_index_list(self):
+    def to_index_list(self, data=None):
+
+        if data is not None and data is not self.data:
+            raise IncompatibleDataException("TreeSubsets cannot cross"
+                                            " data sets")
+
         # this is inefficient for small subsets.
         return self.to_mask().nonzero()[0]
 
@@ -289,10 +340,19 @@ class ElementSubset(Subset):
             self.mask = mask
         Subset.__init__(self, data)
 
-    def to_mask(self):
+    def to_mask(self, data=None):
+
+        if data is not None and data is not self.data:
+            raise IncompatibleDataException("Element subsets cannot "
+                                            "cross data sets")
+
         return self.mask
 
-    def to_index_list(self):
+    def to_index_list(self, data=None):
+
+        if data is not None and data is not self.data:
+            raise IncompatibleDataException("Element subsets cannot "
+                                            "cross data sets")
         return self.mask.nonzero()[0]
 
     def __setattr__(self, attribute, value):

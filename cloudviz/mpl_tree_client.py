@@ -1,4 +1,3 @@
-import cloudviz as cv
 from cloudviz.tree_client import TreeClient
 
 import matplotlib.pyplot as plt

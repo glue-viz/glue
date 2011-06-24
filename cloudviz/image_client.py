@@ -10,6 +10,9 @@ class ImageClient(VizClient):
 
     def __init__(self, data):
 
+        if len(data.shape) != 2:
+            raise TypeError("Data must be 2 dimensional")
+
         VizClient.__init__(self, data)
 
         # The image data

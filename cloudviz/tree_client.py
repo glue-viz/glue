@@ -33,7 +33,7 @@ class TreeClient(VizClient):
             self.layout = cv.TreeLayout(data.tree)
 
     def register_to_hub(self, hub):
-        """ 
+        """
         Override the default message handling to only receive messages
         from TreeSubset objects
         """

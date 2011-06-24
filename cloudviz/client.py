@@ -60,17 +60,20 @@ class Client(cloudviz.HubListener):
         hub.subscribe_client(self,
                              msg.SubsetCreateMessage,
                              handler=self._add_subset,
-                             filter=lambda x: x.sender.data is self.data)
+                             filter=lambda x: \
+                                 x.sender.is_compatible(self.data))
 
         hub.subscribe_client(self,
                              msg.SubsetUpdateMessage,
                              handler=self._update_subset,
-                             filter=lambda x: x.sender.data is self.data)
+                             filter=lambda x: \
+                                 x.sender.is_compatible(self.data))
 
         hub.subscribe_client(self,
                              msg.SubsetDeleteMessage,
                              handler=self._remove_subset,
-                             filter=lambda x: x.sender.data is self.data)
+                             filter=lambda x: \
+                                 x.sender.is_compatible(self.data))
 
         hub.subscribe_client(self,
                              msg.DataMessage,

@@ -13,3 +13,4 @@ from tree_layout import TreeLayout
 from mpl_scatter_client import MplScatterClient
 from mpl_image_client import MplImageClient
 from mpl_scatter_helper import RasterAxes
+from mpl_histogram_client import MplHistogramClient

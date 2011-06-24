@@ -77,7 +77,7 @@ class MplImageClient(ImageClient):
             return
 
         if s not in self.data.subsets:
-            raise Exception("Input is not one of data's subsets: %s" % s)
+            raise KeyError("Input is not one of data's subsets: %s" % s)
 
         if s in self._plots:
             for item in self._plots[s].collections:
@@ -94,4 +94,5 @@ class MplImageClient(ImageClient):
                                               colors=s.style['color'])
         else:
             self._plots[s] = self._ax.contourf(s.to_mask().astype(float),
-                                               levels=[0.5, 1.0], alpha=0.3)
+                                               levels=[0.5, 1.0], alpha=0.3,
+                                               colors = s.style['color'])

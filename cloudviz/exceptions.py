@@ -1,0 +1,2 @@
+class IncompatibleDataException(Exception):
+    pass
