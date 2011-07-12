@@ -25,9 +25,7 @@ def data_dendro_cpp(file):
 
     c = cv.data.Component(val)
 
-    result = cv.Data()
-    result.components['PRIMARY'] = c
-    result.shape = val.shape
-    result.ndim = len(val.shape)
+    result = cv.data.GriddedData()
+    result.read_data(file, use_hdu=['PRIMARY', 'INDEX_MAP'])
     result.tree = cv.tree.DendroMerge(merge_list, index_map=im)
     return result

@@ -2,9 +2,13 @@ import string
 
 import numpy as np
 import atpy
+import pyfits
 
 import cloudviz
 from cloudviz.io import extract_data_fits, extract_data_hdf5
+from cloudviz.coordinates import WCSCoordinates
+from cloudviz.coordinates import WCSCubeCoordinates
+
 
 
 class Component(object):
@@ -79,7 +83,10 @@ class Data(object):
 
     def add_subset(self, subset):
         subset.do_broadcast(True)
+        first = len(self.subsets) == 0
         self.subsets.append(subset)
+        if first:
+            self.set_active_subset(subset)
         if self.hub is not None:
             msg = cloudviz.message.SubsetCreateMessage(subset)
             self.hub.broadcast(msg)
@@ -177,6 +184,14 @@ class GriddedData(Data):
             for component_name in arrays:
                 self.components[component_name] = \
                     Component(arrays[component_name])
+
+            # parse header, create coordinate object
+            header = pyfits.open(filename)[0].header
+            if 'NAXIS' in header and header['NAXIS'] == 2:
+                self.coords = WCSCoordinates(header)
+            elif 'NAXIS' in header and header['NAXIS'] == 3:
+                self.coords = WCSCubeCoordinates(header)            
+            
         elif format in ['hdf', 'hdf5', 'h5']:
             arrays = extract_data_hdf5(filename, **kwargs)
             for component_name in arrays:
