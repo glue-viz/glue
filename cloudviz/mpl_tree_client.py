@@ -2,7 +2,6 @@ from cloudviz.tree_client import TreeClient
 
 import matplotlib.pyplot as plt
 
-
 class MplTreeClient(TreeClient):
     """ A tree client based on matplotlib """
 
@@ -33,12 +32,14 @@ class MplTreeClient(TreeClient):
 
     def _update_data_plot(self):
         """ update state information for main data plot """
+        data = self.layout.tree_to_xy(self.data.tree)
+
+        # updating for the first time
         if self.data not in self._plots:
-            p = self._axes.plot([0, 0], linewidth=2)[0]
+            p = self._axes.plot(data[0], data[1], linewidth=2, picker=5)[0]
             self._plots[self.data] = p
 
         p = self._plots[self.data]
-        data = self.layout.tree_to_xy(self.data.tree)
         p.set_data(data)
 
     def _update_subset_single(self, subset):

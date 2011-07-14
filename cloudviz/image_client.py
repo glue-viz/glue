@@ -17,6 +17,7 @@ class ImageClient(VizClient):
 
         # The image data
         self._image = None
+        self._component = None
 
         # Pixel coordinates for selection
         self._xdata = None
@@ -32,6 +33,7 @@ class ImageClient(VizClient):
             The name of the new data component to plot
         """
         self._image = self.data.components[component].data
+        self._component = component
         x = np.arange(self._image.shape[1])
         y = np.arange(self._image.shape[0])
         self._xdata, self._ydata = np.meshgrid(x, y)

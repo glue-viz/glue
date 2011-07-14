@@ -2,6 +2,7 @@ import numpy as np
 np.seterr(all='ignore')
 from matplotlib.patches import Polygon, Rectangle, Ellipse
 
+import cloudviz as cv
 
 class RectangularROI(object):
     """
@@ -208,6 +209,54 @@ class PolygonalROI(object):
     def defined(self):
         return len(self.vx) > 0
 
+class AbstractMplRoiTool(object):
+    def __init__(self, subset, ax):
+
+        self._ax = ax
+        self._mid_selection = False
+        self._active = True
+
+        self._press = None
+        self._motion = None
+        self._release = None
+        self._subset = subset
+
+        self.connect()
+        
+
+    def set_active(self, state):
+        self._active = state
+
+    def start_selection(self, event):
+        raise NotImplementedError()
+
+    def update_selection(self, event):
+        raise NotImplementedError()
+
+    def finalize_selection(self, event):
+        raise NotImplementedError()
+        
+    def connect(self):
+        self.disconnect()
+        canvas = self._ax.figure.canvas
+        self._press = canvas.mpl_connect('button_press_event',
+                                         self.start_selection)
+        self._motion = canvas.mpl_connect('motion_notify_event',
+                                          self.update_selection)
+        self._release = canvas.mpl_connect('button_release_event',
+                                           self.finalize_selection)
+
+    def disconnect(self):
+        if self._press is not None:
+            self._ax.figure.canvas.mpl_disconnect(self._press)
+            self._press = None
+        if self._motion is not None:
+            self._ax.figure.canvas.mpl_disconnect(self._motion)
+            self._motion = None
+        if self._release is not None:
+            self._ax.figure.canvas.mpl_disconnect(self._release)
+            self._release = None
+        
 
 class MplRectangularROI(RectangularROI):
     """
@@ -408,30 +457,27 @@ class MplPolygonalROI(PolygonalROI):
         self._sync_patch()
 
 
-class MplBoxTool(MplRectangularROI):
+class MplBoxTool(MplRectangularROI, AbstractMplRoiTool):
 
     def __init__(self, subset, component_x, component_y, ax):
 
         MplRectangularROI.__init__(self, ax)
+        AbstractMplRoiTool.__init__(self, subset, ax)
 
-        self._subset = subset
+        if not isinstance(subset, cv.subset.ElementSubset):
+            raise TypeError("MplRoiTool must be used on an element subset: %s" 
+                            % type(subset))
+
+
         self._component_x = component_x
         self._component_y = component_y
 
-        self._ax.figure.canvas.mpl_connect('button_press_event',
-                                           self.start_selection)
-
-        self._ax.figure.canvas.mpl_connect('motion_notify_event',
-                                           self.update_selection)
-
-        self._ax.figure.canvas.mpl_connect('button_release_event',
-                                           self.finalize_selection)
-
-        self._active = False
-
     def start_selection(self, event):
 
-        if not event.inaxes:
+        if not (event.inaxes and self._active):
+            return
+
+        if not self._active:
             return
 
         self.reset()
@@ -440,14 +486,17 @@ class MplBoxTool(MplRectangularROI):
         self._xi = event.xdata
         self._yi = event.ydata
 
-        self._active = True
+        self._mid_selection = True
 
     def update_selection(self, event):
 
-        if not event.inaxes:
+        if not (event.inaxes and self._active):
             return
 
         if not self._active:
+            return
+
+        if not self._mid_selection:
             return
 
         self.update_limits(min(event.xdata, self._xi),
@@ -457,10 +506,10 @@ class MplBoxTool(MplRectangularROI):
 
     def finalize_selection(self, event):
 
-        if not event.inaxes:
+        if not (event.inaxes and self._active):
             return
 
-        if not self._active:
+        if not self._mid_selection:
             return
 
         x = self._subset.data.components[self._component_x].data
@@ -470,33 +519,27 @@ class MplBoxTool(MplRectangularROI):
 
         self.reset()
 
-        self._active = False
+        self._mid_selection = False
 
 
-class MplCircleTool(MplCircularROI):
+class MplCircleTool(MplCircularROI, AbstractMplRoiTool):
 
     def __init__(self, subset, component_x, component_y, ax):
 
         MplCircularROI.__init__(self, ax)
+        AbstractMplRoiTool.__init__(self, subset, ax)
 
-        self._subset = subset
+        if not isinstance(subset, cv.subset.ElementSubset):
+            raise TypeError("MplRoiTool must be used on an element subset: %s" 
+                            % type(subset))
+
+
         self._component_x = component_x
         self._component_y = component_y
 
-        self._ax.figure.canvas.mpl_connect('button_press_event',
-                                           self.start_selection)
-
-        self._ax.figure.canvas.mpl_connect('motion_notify_event',
-                                           self.update_selection)
-
-        self._ax.figure.canvas.mpl_connect('button_release_event',
-                                           self.finalize_selection)
-
-        self._active = False
-
     def start_selection(self, event):
 
-        if not event.inaxes:
+        if not (event.inaxes and self._active):
             return
 
         self.reset()
@@ -506,14 +549,14 @@ class MplCircleTool(MplCircularROI):
         self._xi = event.xdata
         self._yi = event.ydata
 
-        self._active = True
+        self._mid_selection = True
 
     def update_selection(self, event):
 
-        if not event.inaxes:
+        if not (event.inaxes and self._active):
             return
 
-        if not self._active:
+        if not self._mid_selection:
             return
 
         dx = event.xdata - self._xi
@@ -523,10 +566,10 @@ class MplCircleTool(MplCircularROI):
 
     def finalize_selection(self, event):
 
-        if not event.inaxes:
+        if not (event.inaxes and self._active):
             return
 
-        if not self._active:
+        if not self._mid_selection:
             return
 
         x = self._subset.data.components[self._component_x].data
@@ -536,36 +579,59 @@ class MplCircleTool(MplCircularROI):
 
         self.reset()
 
-        self._active = False
+        self._mid_selection = False
 
+class MplTreeTool(AbstractMplRoiTool):
+    def __init__(self, subset, ax):
+        AbstractMplRoiTool.__init__(self, subset, ax)
 
-class MplPolygonTool(MplPolygonalROI):
+        if not isinstance(subset, cv.subset.TreeSubset):
+            raise TypeError("MplTreeTool must be used on Tree Subset: %s" %
+                            type(subset))
+
+    def start_selection(self, event):
+        pass
+
+    def update_selection(self, event):
+        pass
+    
+    def finalize_selection(self, event):
+        if not event.inaxes:
+            return
+        
+        subset = self._subset
+        x = int(event.xdata)
+        y = int(event.ydata)
+        
+        #only works for 2D data!
+        assert( len(subset.data.shape) == 2)
+        index = subset.data['INDEX_MAP'].data[y][x]
+
+        id = subset.data.tree._index[index].get_subtree_indices()
+        subset.node_list = id
+                         
+class MplPolygonTool(MplPolygonalROI, AbstractMplRoiTool):
 
     def __init__(self, subset, component_x, component_y, ax):
 
         MplPolygonalROI.__init__(self, ax)
+        AbtractMplRoiTool.__init__(self, ax)
 
-        self._subset = subset
+        if not isinstance(subset, cv.subset.ElementSubset):
+            raise TypeError("MplRoiTool must be used on an element subset: %s" 
+                            % type(subset))
+
+
         self._component_x = component_x
         self._component_y = component_y
 
         self.vx = [0.]
         self.vy = [0.]
 
-        self._ax.figure.canvas.mpl_connect('motion_notify_event',
-                                           self.update_selection)
-
-        self._ax.figure.canvas.mpl_connect('button_press_event',
-                                           self.add_vertex)
-
-        self._ax.figure.canvas.mpl_connect('button_press_event',
-                                           self.finalize_selection)
-
-        self._active = True
-
+        
     def add_vertex(self, event):
 
-        if not event.inaxes:
+        if not (event.inaxes and self._active):
             return
 
         if event.button != 1:
@@ -573,24 +639,24 @@ class MplPolygonTool(MplPolygonalROI):
 
         self.add_point(event.xdata, event.ydata)
 
-        self._active = True
+        self._mid_selection = True
 
     def update_selection(self, event):
 
-        if not event.inaxes:
+        if not (event.inaxes and self._active):
             return
 
-        if not self._active:
+        if not self._mid_selection:
             return
 
         self.replace_last_point(event.xdata, event.ydata)
 
     def finalize_selection(self, event):
 
-        if not event.inaxes:
+        if not (event.inaxes and self._active):
             return
 
-        if not self._active:
+        if not self._mid_selection:
             return
 
         if event.button != 3:
@@ -606,46 +672,35 @@ class MplPolygonTool(MplPolygonalROI):
         self.vx = [0.]
         self.vy = [0.]
 
-        self._active = True
+        self._mid_selection = False
 
 
-class MplLassoTool(MplPolygonalROI):
+class MplLassoTool(MplPolygonalROI, AbstractMplRoiTool):
 
     def __init__(self, subset, component_x, component_y, ax):
 
         MplPolygonalROI.__init__(self, ax)
+        AbstractMplRoiTool.__init__(self, subset, ax)
 
-        self._subset = subset
         self._component_x = component_x
         self._component_y = component_y
 
-        self._ax.figure.canvas.mpl_connect('button_press_event',
-                                           self.start_selection)
-
-        self._ax.figure.canvas.mpl_connect('motion_notify_event',
-                                           self.update_selection)
-
-        self._ax.figure.canvas.mpl_connect('button_release_event',
-                                           self.finalize_selection)
-
-        self._active = False
-
     def start_selection(self, event):
 
-        if not event.inaxes:
+        if not (event.inaxes and self._active):
             return
 
         self.reset()
         self.add_point(event.xdata, event.ydata)
 
-        self._active = True
+        self._mid_selection = True
 
     def update_selection(self, event):
 
-        if not event.inaxes:
+        if not (event.inaxes and self._active):
             return
 
-        if not self._active:
+        if not self._mid_selection:
             return
 
         self.add_point(event.xdata, event.ydata)
@@ -655,7 +710,7 @@ class MplLassoTool(MplPolygonalROI):
         if self._polygon is None:
             return
 
-        if not self._active:
+        if not self._mid_selection:
             return
 
         x = self._subset.data.components[self._component_x].data
@@ -665,4 +720,4 @@ class MplLassoTool(MplPolygonalROI):
 
         self.reset()
 
-        self._active = False
+        self._mid_selection = False

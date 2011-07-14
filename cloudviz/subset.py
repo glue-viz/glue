@@ -1,4 +1,5 @@
 import numpy as np
+import pyfits
 
 import cloudviz
 from cloudviz.exceptions import IncompatibleDataException
@@ -148,6 +149,26 @@ class Subset(object):
         except (AttributeError):
             pass
         self._broadcasting = False
+
+    def write_mask(self, file_name, format="fits"):
+        """ Write a subset mask out to file
+        
+        Inputs:
+        -------
+        file_name: String
+                   name of file to write to
+        format: String
+                Name of format to write to. Currently, only "fits" is
+                supported
+                
+        """
+
+        mask = np.short(self.to_mask())
+        if format == 'fits':
+            pyfits.writeto(file_name, mask, clobber=True)
+        else:
+            raise AttributeError("format not supported: %s" % format)
+                    
 
     def __del__(self):
         self.unregister()

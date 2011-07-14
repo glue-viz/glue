@@ -1,6 +1,6 @@
 import pywcs
 import numpy as np
-
+from pyfits.core import Header
 
 class Coordinates(object):
     '''
@@ -10,17 +10,18 @@ class Coordinates(object):
     def __init__(self):
         pass
 
-    def pixel2world(self, x, y):
+    def pixel2world(self, x, y, z):
         return x, y
 
-    def world2pixel(self, x, y):
+    def world2pixel(self, x, y, z):
         return x, y
 
 
 class WCSCoordinates(Coordinates):
     '''
-    Class for coordinate transformation based on the WCS FITS standard.
-    This class does not take into account distortions.
+    Class for coordinate transformation based on the WCS FITS
+    standard.  This class does not take into account
+    distortions. Restricted to 2D images
 
     References
     ----------
@@ -31,6 +32,7 @@ class WCSCoordinates(Coordinates):
     '''
 
     def __init__(self, header):
+        self._header = header
         self._wcs = pywcs.WCS(header)
 
     def pixel2world(self, xpix, ypix):
@@ -98,3 +100,42 @@ class WCSCoordinates(Coordinates):
         else:
             raise Exception("Unexpected type for world coordinates: %s" %
                             type(xworld))
+
+class WCSCubeCoordinates(WCSCoordinates):
+    
+    def __init__(self, header):
+        if not isinstance(header, pyfits.core.Header):
+            raise TypeError("Header must by a pyfits header instance")
+
+        if 'NAXIS' not in header or header['NAXIS'] != 3:
+            raise AttributeError("Header must describe a 3D array")
+
+        self._header = header
+        self._wcs = pywcs.WCS(header)
+
+        try:
+            self._cdelt3 = header['CDELT3'] if 'CDELT3' in header else header['CD3_3']
+            self._crpix3 = header['CRPIX3']
+            self._crval3 = header['CRVAL3']
+        except KeyError:
+            raise AttributeError("Input header must have CRPIX3, CRVAL3, and "
+                             "CDELT3 or CD3_3 keywords")
+
+        # make sure there is no non-standard rotation
+        keys = ['CD1_3', 'CD2_3', 'CD3_2', 'CD3_1']
+        for k in keys:
+            if k in header and header[k] != 0:
+                raise AttributeError("Cannot handle non-zero keyword: %s = %s" %
+                                     (k, header[k]))
+        
+    def pixel2world(self, xpix, ypix, zpix):
+        xout, yout = WCSCoordinates.pixel2world(self, xpix, ypix)
+        zout = (zpix - self._crpix3) * self._cdelt3 + self._crval3
+        return xout, yout, zout
+
+    def world2pixel(self, xworld, yworld):
+        xout, yout = WCSCoordinates.world2pixel(self, xworld, yworld)
+        zout = (zworld - self._crval3) / self._cdelt3 + self._crpix3
+        return xout, yout, zout
+
+
