@@ -1,4 +1,7 @@
+from time import sleep
+
 from PyQt4.QtCore import SIGNAL
+from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QMainWindow 
 from PyQt4.QtGui import QPushButton
 from PyQt4.QtGui import QHBoxLayout
@@ -13,7 +16,7 @@ from PyQt4.QtGui import QIcon
 from matplotlib.colors import ColorConverter
 
 import cloudviz as cv
-
+import cloudviz.message as msg
 
 def mpl_to_qt4_color(color):
     """ Convert a matplotlib color stirng into a PyQT4 QColor object 
@@ -60,6 +63,23 @@ class QtSubsetBrowserClient(QMainWindow, cv.Client):
         
         self.create_main_frame()
 
+    def register_to_hub(self, hub):
+        cv.Client.register_to_hub(self, hub)
+
+        hub.subscribe_client(self, 
+                             msg.ActiveSubsetUpdateMessage,
+                             handler=self._update_active_subset,
+                             filter=lambda x:  \
+                                 x.sender.is_compatible(self.data))
+
+
+    def _update_active_subset(self, message):
+        subset = message.sender
+        widget = self.subset_widgets[subset]
+
+        if not widget['check'].isChecked():
+            widget['check'].toggle()
+
     def _add_subset(self, message):
         """ Add a new subset to the panel """
         s = message.sender
@@ -80,7 +100,8 @@ class QtSubsetBrowserClient(QMainWindow, cv.Client):
         layer.addWidget(check)
         layer.addWidget(widget)
         self.layout.addLayout(layer)
-        self.subset_widgets[s] = {'layer':layer, 'widget':widget, 'check':check, 'pixmap':pm}
+        self.subset_widgets[s] = {'layer':layer, 'widget':widget, 
+                                  'check':check, 'pixmap':pm}
 
         # make sure buttons are exclusive
         self.check_group.addButton(check)
@@ -100,7 +121,6 @@ class QtSubsetBrowserClient(QMainWindow, cv.Client):
         pm.fill(color)
         icon = QIcon(pm)
         self.subset_widgets[subset]['widget'].setIcon(icon)
-
 
     def on_check(self):
         """ When a checkbox is pressed, update the active subset """

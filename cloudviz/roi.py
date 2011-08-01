@@ -11,6 +11,7 @@ class RectangularROI(object):
 
     def __init__(self):
         """ Create a new ROI """
+
         self.xmin = None
         self.xmax = None
         self.ymin = None
@@ -210,19 +211,43 @@ class PolygonalROI(object):
         return len(self.vx) > 0
 
 class AbstractMplRoiTool(object):
-    def __init__(self, subset, ax):
+    def __init__(self, data, component_x, component_y, ax):
 
         self._ax = ax
         self._mid_selection = False
         self._active = True
+        self._data = data
 
-        self._press = None
-        self._motion = None
-        self._release = None
-        self._subset = subset
-
+        self.set_x_attribute(component_x)
+        self.set_y_attribute(component_y)
+        
+        self._press = None  # id of MPL connection to button_press
+        self._motion = None # id of MPL connection to motion_notify
+        self._release = None # id of MPL connection to button_release
         self.connect()
         
+    def get_subset(self):
+        subset = self._data.get_active_subset()
+        if subset is None: return subset
+
+        if not self.check_compatible_subset(subset):
+            raise TypeError("ROI and Subset are incompatible: %s, %s" %
+                            (type(self), type(subset)))
+        return subset
+
+    def set_x_attribute(self, attribute):
+        if attribute not in self._data.components:
+            raise KeyError("%s is not a valid component" % attribute)
+        self._component_x = attribute
+
+    def set_y_attribute(self, attribute):
+        if attribute not in self._data.components:
+            raise KeyError("%s is not a valid component" % attribute)
+        self._component_y = attribute
+
+
+    def check_compatible_subset(self, subset):
+        raise NotImplementedError()
 
     def set_active(self, state):
         self._active = state
@@ -459,19 +484,14 @@ class MplPolygonalROI(PolygonalROI):
 
 class MplBoxTool(MplRectangularROI, AbstractMplRoiTool):
 
-    def __init__(self, subset, component_x, component_y, ax):
+    def __init__(self, data, component_x, component_y, ax):
 
         MplRectangularROI.__init__(self, ax)
-        AbstractMplRoiTool.__init__(self, subset, ax)
+        AbstractMplRoiTool.__init__(self, data, component_x, component_y, ax)
 
-        if not isinstance(subset, cv.subset.ElementSubset):
-            raise TypeError("MplRoiTool must be used on an element subset: %s" 
-                            % type(subset))
-
-
-        self._component_x = component_x
-        self._component_y = component_y
-
+    def check_compatible_subset(self, subset):
+        return isinstance(subset, cv.subset.ElementSubset)
+        
     def start_selection(self, event):
 
         if not (event.inaxes and self._active):
@@ -512,10 +532,13 @@ class MplBoxTool(MplRectangularROI, AbstractMplRoiTool):
         if not self._mid_selection:
             return
 
-        x = self._subset.data.components[self._component_x].data
-        y = self._subset.data.components[self._component_y].data
+        subset = self.get_subset()
+        if subset is None:
+            return
+        x = self._data.components[self._component_x].data
+        y = self._data.components[self._component_y].data
 
-        self._subset.mask = self.contains(x, y)
+        subset.mask = self.contains(x, y)
 
         self.reset()
 
@@ -524,18 +547,13 @@ class MplBoxTool(MplRectangularROI, AbstractMplRoiTool):
 
 class MplCircleTool(MplCircularROI, AbstractMplRoiTool):
 
-    def __init__(self, subset, component_x, component_y, ax):
+    def __init__(self, data, component_x, component_y, ax):
 
         MplCircularROI.__init__(self, ax)
-        AbstractMplRoiTool.__init__(self, subset, ax)
-
-        if not isinstance(subset, cv.subset.ElementSubset):
-            raise TypeError("MplRoiTool must be used on an element subset: %s" 
-                            % type(subset))
-
-
-        self._component_x = component_x
-        self._component_y = component_y
+        AbstractMplRoiTool.__init__(self, data, component_x, component_y, ax)
+        
+    def check_compatible_subset(self, subset):
+        return isinstance(subset, cv.subset.ElementSubset)
 
     def start_selection(self, event):
 
@@ -572,63 +590,74 @@ class MplCircleTool(MplCircularROI, AbstractMplRoiTool):
         if not self._mid_selection:
             return
 
-        x = self._subset.data.components[self._component_x].data
-        y = self._subset.data.components[self._component_y].data
+        subset = self.get_subset()
+        if subset is None: return
 
-        self._subset.mask = self.contains(x, y)
+        x = self._data.components[self._component_x].data
+        y = self._data.components[self._component_y].data
+
+        subset.mask = self.contains(x, y)
 
         self.reset()
 
         self._mid_selection = False
 
 class MplTreeTool(AbstractMplRoiTool):
-    def __init__(self, subset, ax):
-        AbstractMplRoiTool.__init__(self, subset, ax)
+    def __init__(self, data, ax):
 
-        if not isinstance(subset, cv.subset.TreeSubset):
-            raise TypeError("MplTreeTool must be used on Tree Subset: %s" %
-                            type(subset))
+        # feed in dummy components -- they aren't needed
+        c = data.components.keys()
+        AbstractMplRoiTool.__init__(self, data, c[0], c[0], ax)
+
+    def check_compatible_subset(self, subset):
+        return isinstance(subset, cv.subset.TreeSubset)
 
     def start_selection(self, event):
-        pass
+        if not (event.inaxes and self._active):
+            return
+
+        self._mid_selection = True
 
     def update_selection(self, event):
-        pass
-    
-    def finalize_selection(self, event):
-        if not event.inaxes:
+        if not (event.inaxes and self._active and self._mid_selection):
             return
-        
-        subset = self._subset
+
+        subset = self.get_subset()
+        if subset is None: return
+
         x = int(event.xdata)
         y = int(event.ydata)
         
         #only works for 2D data!
         assert( len(subset.data.shape) == 2)
-        index = subset.data['INDEX_MAP'].data[y][x]
+        im = subset.data['INDEX_MAP'].data
+        index = im[y][x]
 
         id = subset.data.tree._index[index].get_subtree_indices()
         subset.node_list = id
+        
+    
+    def finalize_selection(self, event):
+        if not (event.inaxes and self._active and self._mid_selection):
+            return
+        self.update_selection(event)
+        
+        self._mid_selection = False
+        
                          
 class MplPolygonTool(MplPolygonalROI, AbstractMplRoiTool):
 
-    def __init__(self, subset, component_x, component_y, ax):
+    def __init__(self, data, component_x, component_y, ax):
 
         MplPolygonalROI.__init__(self, ax)
-        AbtractMplRoiTool.__init__(self, ax)
-
-        if not isinstance(subset, cv.subset.ElementSubset):
-            raise TypeError("MplRoiTool must be used on an element subset: %s" 
-                            % type(subset))
-
-
-        self._component_x = component_x
-        self._component_y = component_y
+        AbstractMplRoiTool.__init__(self, data, component_x, component_y, ax)
 
         self.vx = [0.]
         self.vy = [0.]
-
         
+    def check_compatible_subset(self, subset):
+        return isinstance(subset, cv.subset.ElementSubset)
+
     def add_vertex(self, event):
 
         if not (event.inaxes and self._active):
@@ -662,10 +691,13 @@ class MplPolygonTool(MplPolygonalROI, AbstractMplRoiTool):
         if event.button != 3:
             return
 
-        x = self._subset.data.components[self._component_x].data
-        y = self._subset.data.components[self._component_y].data
+        subset = self.get_subset()
+        if subset is None: return
 
-        self._subset.mask = self.contains(x, y)
+        x = self._data.components[self._component_x].data
+        y = self._data.components[self._component_y].data
+
+        subset.mask = self.contains(x, y)
 
         self.reset()
 
@@ -677,13 +709,13 @@ class MplPolygonTool(MplPolygonalROI, AbstractMplRoiTool):
 
 class MplLassoTool(MplPolygonalROI, AbstractMplRoiTool):
 
-    def __init__(self, subset, component_x, component_y, ax):
+    def __init__(self, data, component_x, component_y, ax):
 
         MplPolygonalROI.__init__(self, ax)
-        AbstractMplRoiTool.__init__(self, subset, ax)
+        AbstractMplRoiTool.__init__(self, data, component_x, component_y, ax)
 
-        self._component_x = component_x
-        self._component_y = component_y
+    def check_compatible_subset(self, subset):
+        return isinstance(subset, cv.subset.ElementSubset)
 
     def start_selection(self, event):
 
@@ -713,10 +745,13 @@ class MplLassoTool(MplPolygonalROI, AbstractMplRoiTool):
         if not self._mid_selection:
             return
 
-        x = self._subset.data.components[self._component_x].data
-        y = self._subset.data.components[self._component_y].data
+        subset = self.get_subset()
+        if subset is None: return
 
-        self._subset.mask = self.contains(x, y)
+        x = self._data.components[self._component_x].data
+        y = self._data.components[self._component_y].data
+
+        subset.mask = self.contains(x, y)
 
         self.reset()
 

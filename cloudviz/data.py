@@ -74,9 +74,13 @@ class Data(object):
         return subset
 
     def set_active_subset(self, subset):
+        if subset == self.active_subset: return
         if subset not in self.subsets:
             raise Exception("Input not in data's collection of subsets")
         self.active_subset = subset
+        if self.hub is not None:
+            msg = cloudviz.message.ActiveSubsetUpdateMessage(subset)
+            self.hub.broadcast(msg)
 
     def get_active_subset(self):
         return self.active_subset
@@ -85,11 +89,12 @@ class Data(object):
         subset.do_broadcast(True)
         first = len(self.subsets) == 0
         self.subsets.append(subset)
-        if first:
-            self.set_active_subset(subset)
         if self.hub is not None:
             msg = cloudviz.message.SubsetCreateMessage(subset)
             self.hub.broadcast(msg)
+        if first:
+            self.set_active_subset(subset)
+
 
     def remove_subset(self, subset):
         if self.hub is not None:

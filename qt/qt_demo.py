@@ -9,6 +9,7 @@ from cloudviz.io import extract_data_fits
 from qt_tree_client import QtTreeClient
 from qt_subset_browser_client import QtSubsetBrowserClient
 from qt_image_client import QtImageClient
+from qt_scatter_client import QtScatterClient
 
 def main():
     app = QApplication(sys.argv)
@@ -33,6 +34,10 @@ def main():
     image_client = QtImageClient(data, parent=tree_client)
     image_client.set_component('PRIMARY')
     
+    #scatter client
+    scatter_client = QtScatterClient(data, parent=tree_client)
+    scatter_client.set_xdata('PRIMARY')
+    scatter_client.set_ydata('ha')
 
     # the subsets
     data.tree.index()
@@ -48,6 +53,8 @@ def main():
     tree_client.refresh()
     subset_client.register_to_hub(hub)
     image_client.register_to_hub(hub)
+    scatter_client.register_to_hub(hub)
+
     s.register()
     s2.register()
 
@@ -56,16 +63,19 @@ def main():
     pos = tree_client.pos()
     width = tree_client.width()
     pos.setX(pos.x() + width * 1.1)
+    pos.setY(pos.y() - .1 * tree_client.width())    
     subset_client.move(pos)
     pos = tree_client.pos()
     pos.setX(pos.x() - width - image_client.width() * 1.5)
+
     image_client.move(pos)
 
     subset_client.show()
     image_client.show()
+    scatter_client.show()
 
     # start event processing
     app.exec_()
 
-if "__name__" == "__main__":
+if __name__ == "__main__":
     main()

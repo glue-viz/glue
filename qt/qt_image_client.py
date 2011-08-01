@@ -1,8 +1,13 @@
-import sys
+from PyQt4.QtCore import SIGNAL
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QMainWindow 
+from PyQt4.QtGui import QPushButton
+from PyQt4.QtGui import QHBoxLayout
+from PyQt4.QtGui import QCheckBox
+from PyQt4.QtGui import QComboBox
+from PyQt4.QtGui import QVBoxLayout
+from PyQt4.QtGui import QWidget
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-import matplotlib
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 from matplotlib.figure import Figure
@@ -30,12 +35,16 @@ class QtImageClient(QMainWindow, MplImageClient):
     def on_motion(self, event):
         self.check_ignore_canvas()
         
+
     def check_ignore_canvas(self):
         if self.mpl_toolbar.mode != '':
             if self.selector is not None:
                 self.selector.disconnect()
                 self.selector = None
+                #uncheck check boxes
+                self.treeWidget.setChecked(Qt.Unchecked)
                 
+
     def on_push(self):
         subset = self.data.get_active_subset()
         if not subset:
@@ -46,30 +55,34 @@ class QtImageClient(QMainWindow, MplImageClient):
             self.selector = None
 
         sender = self.sender()
+
+        if sender.checkState() == Qt.Unchecked:
+            return
+
         if sender is self.boxWidget:
-            if not isinstance(subset, cv.subset.ElementSubset):
-                return
-            self.selector = cv.roi.MplBoxTool(subset, 'XPIX', 'YPIX', 
+            self.selector = cv.roi.MplBoxTool(self.data, 'XPIX', 'YPIX', 
                                               self.axes)
         elif sender is self.circleWidget:
-            if not isinstance(subset, cv.subset.ElementSubset):
-                return
-            self.selector = cv.roi.MplCircleTool(subset, 'XPIX', 'YPIX',
+            self.selector = cv.roi.MplCircleTool(self.data, 'XPIX', 'YPIX',
                                                  self.axes)
         elif sender is self.lassoWidget:
-            if not isinstance(subset, cv.subset.ElementSubset):
-                return
-            self.selector = cv.roi.MplLassoTool(subset, 'XPIX', 'YPIX',
+            self.selector = cv.roi.MplLassoTool(self.data, 'XPIX', 'YPIX',
                                                 self.axes)
 
         elif sender is self.treeWidget:
-            if not isinstance(subset, cv.subset.TreeSubset):
-                return
-            self.selector = cv.roi.MplTreeTool(subset, self.axes)
+            self.selector = cv.roi.MplTreeTool(self.data, self.axes)
             
     def select_component(self):
-        component = str(self.componentWidget.currentItem().text())
-        self.set_component(component)
+        component = str(self.componentWidget.currentText())
+        MplImageClient.set_component(self, component)
+
+    def set_component(self, component):
+        # update combo box, which will take care of rest
+        index = self.componentWidget.findText(component)
+        if index == -1:
+            raise KeyError("Not a valid component: %s" %component)
+        
+        self.componentWidget.setCurrentIndex(index)
 
     def create_main_frame(self, data):
         self.main_frame = QWidget()
@@ -92,25 +105,25 @@ class QtImageClient(QMainWindow, MplImageClient):
         self.boxWidget = QPushButton("Box")
         self.circleWidget = QPushButton("Circle")
         self.lassoWidget = QPushButton("Lasso")
-        self.treeWidget = QPushButton("Tree-Based Selection")
-        self.componentWidget = QListWidget()
+        self.treeWidget = QCheckBox("Tree-Based Selection")
+        self.componentWidget = QComboBox()
         for c in data.components:
             self.componentWidget.addItem(c)
-        self.connect(self.componentWidget, SIGNAL('itemSelectionChanged()'), 
+        self.connect(self.componentWidget, SIGNAL('currentIndexChanged(int)'), 
                      self.select_component)
         
 
         #self.connect(self.boxWidget, SIGNAL('clicked()'), self.on_push)
         #self.connect(self.circleWidget, SIGNAL('clicked()'), self.on_push)
         #self.connect(self.lassoWidget, SIGNAL('clicked()'), self.on_push)
-        self.connect(self.treeWidget, SIGNAL('clicked()'), self.on_push)
+        self.connect(self.treeWidget, SIGNAL('stateChanged(int)'), self.on_push)
 
         #hbox.addWidget(self.boxWidget)
         #hbox.addWidget(self.circleWidget)
         #hbox.addWidget(self.lassoWidget)
         hbox.addWidget(self.treeWidget)
+        hbox.addWidget(self.componentWidget)
         vbox.addLayout(hbox)
-        vbox.addWidget(self.componentWidget)
         
         
         self.main_frame.setLayout(vbox)

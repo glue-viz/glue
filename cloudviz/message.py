@@ -109,3 +109,12 @@ class DataMessage(Message):
         Message.__init__(self, sender, tag=tag,
                          _level=_level + 1)
         self.data = self.sender
+
+class ActiveSubsetUpdateMessage(SubsetMessage):
+    """ 
+    A message that the active subset has been changed
+    """
+    def __init__(self, sender, tag=None, _level=0):
+        SubsetMessage.__init__(self, sender, tag=tag,
+                               _level=_level + 1)
+        

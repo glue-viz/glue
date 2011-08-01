@@ -44,16 +44,16 @@ s.style['alpha'] = .8
 selection_type = 'circle'
 
 if selection_type == 'box':
-    t1 = cv.MplBoxTool(s, 'PRIMARY', 'INDEX_MAP', c1._ax)
-    t2 = cv.MplBoxTool(s, 'XPIX', 'YPIX', c2._ax)
+    t1 = cv.MplBoxTool(d, 'PRIMARY', 'INDEX_MAP', c1._ax)
+    t2 = cv.MplBoxTool(d, 'XPIX', 'YPIX', c2._ax)
 elif selection_type == 'circle':
-    t1 = cv.MplCircleTool(s, 'PRIMARY', 'INDEX_MAP', c1._ax)
-    t2 = cv.MplCircleTool(s, 'XPIX', 'YPIX', c2._ax)
+    t1 = cv.MplCircleTool(d, 'PRIMARY', 'INDEX_MAP', c1._ax)
+    t2 = cv.MplCircleTool(d, 'XPIX', 'YPIX', c2._ax)
 elif selection_type == 'polygon':
-    t1 = cv.MplPolygonTool(s, 'PRIMARY', 'INDEX_MAP', c1._ax)
-    t2 = cv.MplPolygonTool(s, 'XPIX', 'YPIX', c2._ax)
+    t1 = cv.MplPolygonTool(d, 'PRIMARY', 'INDEX_MAP', c1._ax)
+    t2 = cv.MplPolygonTool(d, 'XPIX', 'YPIX', c2._ax)
 elif selection_type == 'lasso':
-    t1 = cv.MplLassoTool(s, 'PRIMARY', 'INDEX_MAP', c1._ax)
-    t2 = cv.MplLassoTool(s, 'XPIX', 'YPIX', c2._ax)
+    t1 = cv.MplLassoTool(d, 'PRIMARY', 'INDEX_MAP', c1._ax)
+    t2 = cv.MplLassoTool(d, 'XPIX', 'YPIX', c2._ax)
 else:
     raise Exception("Unknown selection type: %s" % selection_type)

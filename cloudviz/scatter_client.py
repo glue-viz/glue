@@ -64,7 +64,7 @@ class ScatterClient(VizClient):
             raise AttributeError("axis must be one of 'x', 'y'")
         if attribute not in self.data.components:
             raise AttributeError("attribute must be a valid "
-                                 "component in the data")
+                                 "component in the data: %s" % attribute)
 
         if axis == 'x':
             if self._xatt == attribute:
@@ -76,3 +76,9 @@ class ScatterClient(VizClient):
                 return
             self._yatt = attribute
             self._ydata = self.data.components[attribute].data
+            
+    def get_x_attribute(self):
+        return self._xatt
+
+    def get_y_attribute(self):
+        return self._yatt

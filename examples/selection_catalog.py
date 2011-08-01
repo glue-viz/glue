@@ -40,16 +40,16 @@ s.register()
 selection_type = 'box'
 
 if selection_type == 'box':
-    t1 = cv.MplBoxTool(s, 'ra', 'dec', c1._ax)
-    t2 = cv.MplBoxTool(s, 'IR1_flux_1', 'IR2_flux_1', c2._ax)
+    t1 = cv.MplBoxTool(d, 'ra', 'dec', c1._ax)
+    t2 = cv.MplBoxTool(d, 'IR1_flux_1', 'IR2_flux_1', c2._ax)
 elif selection_type == 'circle':
-    t1 = cv.MplCircleTool(s, 'ra', 'dec', c1._ax)
-    t2 = cv.MplCircleTool(s, 'IR1_flux_1', 'IR2_flux_1', c2._ax)
+    t1 = cv.MplCircleTool(d, 'ra', 'dec', c1._ax)
+    t2 = cv.MplCircleTool(d, 'IR1_flux_1', 'IR2_flux_1', c2._ax)
 elif selection_type == 'polygon':
-    t1 = cv.MplPolygonTool(s, 'ra', 'dec', c1._ax)
-    t2 = cv.MplPolygonTool(s, 'IR1_flux_1', 'IR2_flux_1', c2._ax)
+    t1 = cv.MplPolygonTool(d, 'ra', 'dec', c1._ax)
+    t2 = cv.MplPolygonTool(d, 'IR1_flux_1', 'IR2_flux_1', c2._ax)
 elif selection_type == 'lasso':
-    t1 = cv.MplLassoTool(s, 'ra', 'dec', c1._ax)
-    t2 = cv.MplLassoTool(s, 'IR1_flux_1', 'IR2_flux_1', c2._ax)
+    t1 = cv.MplLassoTool(d, 'ra', 'dec', c1._ax)
+    t2 = cv.MplLassoTool(d, 'IR1_flux_1', 'IR2_flux_1', c2._ax)
 else:
     raise Exception("Unknown selection type: %s" % selection_type)
