@@ -57,29 +57,29 @@ class Client(cloudviz.HubListener):
         hub: The hub to subscribe to
         """
 
-        hub.subscribe_client(self,
-                             msg.SubsetCreateMessage,
-                             handler=self._add_subset,
-                             filter=lambda x: \
-                                 x.sender.is_compatible(self.data))
+        hub.subscribe(self,
+                      msg.SubsetCreateMessage,
+                      handler=self._add_subset,
+                      filter=lambda x: \
+                          x.sender.is_compatible(self.data))
+        
+        hub.subscribe(self,
+                      msg.SubsetUpdateMessage,
+                      handler=self._update_subset,
+                      filter=lambda x: \
+                          x.sender.is_compatible(self.data))
 
-        hub.subscribe_client(self,
-                             msg.SubsetUpdateMessage,
-                             handler=self._update_subset,
-                             filter=lambda x: \
-                                 x.sender.is_compatible(self.data))
+        hub.subscribe(self,
+                      msg.SubsetDeleteMessage,
+                      handler=self._remove_subset,
+                      filter=lambda x: \
+                          x.sender.is_compatible(self.data))
 
-        hub.subscribe_client(self,
-                             msg.SubsetDeleteMessage,
-                             handler=self._remove_subset,
-                             filter=lambda x: \
-                                 x.sender.is_compatible(self.data))
-
-        hub.subscribe_client(self,
-                             msg.DataMessage,
-                             handler=self._update_all,
-                             filter=lambda x: x.sender is self.data)
-
+        hub.subscribe(self,
+                      msg.DataMessage,
+                      handler=self._update_all,
+                      filter=lambda x: x.sender is self.data)
+        
     def _add_subset(self, message):
         raise NotImplementedError("_add_subset not implemented")
 

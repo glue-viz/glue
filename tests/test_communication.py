@@ -92,7 +92,7 @@ class TestCommunication(unittest.TestCase):
 
     def test_uncaught_message(self):
         #broadcast a message without a message handler
-        self.hub.subscribe_client(self.c1, Message)
+        self.hub.subscribe(self.c1, Message)
         self.assertRaises(NotImplementedError, 
                           self.hub.broadcast, Message(None))
 
@@ -125,8 +125,8 @@ class TestCommunication(unittest.TestCase):
         self.c1.register_to_hub(self.hub)
         self.hub.broadcast(self.m1)
         self.assertIs(self.c1.last_message, self.m1)
-
-        self.hub.unsubscribe_client(self.c1, type(self.m2))
+        
+        self.hub.unsubscribe(self.c1, type(self.m2))
         self.hub.broadcast(self.m2)
         self.assertIs(self.c1.last_message, self.m1)
 
@@ -136,7 +136,7 @@ class TestCommunication(unittest.TestCase):
         self.hub.broadcast(self.m1)
         self.assertIs(self.c1.last_message, self.m1)
 
-        self.hub.remove_client(self.c1)
+        self.hub.remove(self.c1)
         self.hub.broadcast(self.m2)
         self.assertIs(self.c1.last_message, self.m1)
 

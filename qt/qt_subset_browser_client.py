@@ -66,11 +66,11 @@ class QtSubsetBrowserClient(QMainWindow, cv.Client):
     def register_to_hub(self, hub):
         cv.Client.register_to_hub(self, hub)
 
-        hub.subscribe_client(self, 
-                             msg.ActiveSubsetUpdateMessage,
-                             handler=self._update_active_subset,
-                             filter=lambda x:  \
-                                 x.sender.is_compatible(self.data))
+        hub.subscribe(self, 
+                      msg.ActiveSubsetUpdateMessage,
+                      handler=self._update_active_subset,
+                      filter=lambda x:  \
+                          x.sender.is_compatible(self.data))
 
 
     def _update_active_subset(self, message):
