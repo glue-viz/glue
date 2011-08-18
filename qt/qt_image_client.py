@@ -70,7 +70,8 @@ class QtImageClient(QMainWindow, MplImageClient):
                                                 self.axes)
 
         elif sender is self.treeWidget:
-            self.selector = cv.roi.MplTreeTool(self.data, self.axes)
+            self.selector = cv.roi.MplTreeTool(self.data, 'XPIX', 'YPIX', 
+                                               self.axes)
             
     def select_component(self):
         component = str(self.componentWidget.currentText())

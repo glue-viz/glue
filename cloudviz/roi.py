@@ -4,6 +4,26 @@ from matplotlib.patches import Polygon, Rectangle, Ellipse
 
 import cloudviz as cv
 
+def data_to_norm(ax, x, y):
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+    xlog = ax.get_xscale() == 'log'
+    ylog = ax.get_yscale() == 'log'
+
+    if not xlog:
+        xnorm = (x - xlim[0]) / (xlim[1] - xlim[0])
+    else:
+        xnorm = np.log(x / xlim[0]) / np.log(xlim[1] / xlim[0])
+
+    if not ylog:
+        ynorm = (y - ylim[0]) / (ylim[1] - ylim[0])
+    else:
+        ynorm = np.log(y / ylim[0]) / np.log(ylim[1] / ylim[0])
+    
+    return xnorm, ynorm
+
+
+
 class RectangularROI(object):
     """
     A class to define a 2D rectangular region of interest.
@@ -597,17 +617,16 @@ class MplCircleTool(MplCircularROI, AbstractMplRoiTool):
         y = self._data.components[self._component_y].data
 
         subset.mask = self.contains(x, y)
-
+        
         self.reset()
 
         self._mid_selection = False
 
 class MplTreeTool(AbstractMplRoiTool):
-    def __init__(self, data, ax):
+    def __init__(self, data, xdata, ydata, ax, single=False):
 
-        # feed in dummy components -- they aren't needed
-        c = data.components.keys()
-        AbstractMplRoiTool.__init__(self, data, c[0], c[0], ax)
+        AbstractMplRoiTool.__init__(self, data, xdata, ydata, ax)
+        self.single = single
 
     def check_compatible_subset(self, subset):
         return isinstance(subset, cv.subset.TreeSubset)
@@ -625,17 +644,31 @@ class MplTreeTool(AbstractMplRoiTool):
         subset = self.get_subset()
         if subset is None: return
 
-        x = int(event.xdata)
-        y = int(event.ydata)
+        x = event.xdata
+        y = event.ydata
         
-        #only works for 2D data!
-        assert( len(subset.data.shape) == 2)
-        im = subset.data['INDEX_MAP'].data
-        index = im[y][x]
+        #find the closest point to xy
+        xx = self._data.components[self._component_x].data
+        yy = self._data.components[self._component_y].data
+        
+        xxn, yyn = data_to_norm(self._ax, xx, yy)
+        xn, yn = data_to_norm(self._ax, x, y)
 
-        id = subset.data.tree._index[index].get_subtree_indices()
+        xbad = np.isnan(xxn)
+        ybad = np.isnan(yyn)
+        xxn[xbad] = 10 * np.nanmax(xxn)
+        yyn[ybad] = 10 * np.nanmax(yyn)
+
+        d = [(xn - xxn[i])**2 + (yn - yyn[i])**2 for i in range(len(xxn))]
+        best = np.argmin(d)
+        index = self._data.tree.index_map.flatten()[best]
+
+        if self.single:
+            id = [index]
+        else:
+            id = subset.data.tree._index[index].get_subtree_indices()
+
         subset.node_list = id
-        
     
     def finalize_selection(self, event):
         if not (event.inaxes and self._active and self._mid_selection):

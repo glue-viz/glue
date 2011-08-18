@@ -261,7 +261,10 @@ class DendrogramLayout(TreeLayout):
             if id < nleaf:
                 self[id].y = self.data[hit].max()
 
-            loval = self.data[hit].min()
+            if len(hit) == 0:
+                loval = 0
+            else:
+                loval = self.data[hit].min()
             parent = self[id].node.parent
             if not parent:
                 continue

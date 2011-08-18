@@ -1,6 +1,6 @@
 from cloudviz.scatter_client import ScatterClient
 import matplotlib.pyplot as plt
-
+import numpy as np
 
 class MplScatterClient(ScatterClient):
 
@@ -18,6 +18,15 @@ class MplScatterClient(ScatterClient):
             if figure is None:
                 self._figure = plt.figure()
             self._ax = self._figure.add_subplot(1, 1, 1)
+
+    def set_xlog(self, state):
+        value = "log" if state else "linear"
+        self._ax.set_xscale(value)
+
+    def set_ylog(self, state):
+        value = "log" if state else "linear"
+        self._ax.set_yscale(value)
+
 
     def _redraw(self):
         """
@@ -100,6 +109,20 @@ class MplScatterClient(ScatterClient):
 
         self._plots[s].set_visible(True)
         self._plots[s].set(**s.style)
+        
+    def set_xdata(self, component):
+        self._set_attribute(component, axis='x')
+        range = (np.nanmin(self._xdata), np.nanmax(self._xdata))
+        wid = 0 * (range[1] - range[0]) / 20.
+        self._ax.set_xlim((range[0] - wid, range[1] + wid))
+        self.refresh()
+
+    def set_ydata(self, component):
+        self._set_attribute(component, axis='y')
+        range = (np.nanmin(self._ydata), np.nanmax(self._ydata))
+        wid = 0 * (range[1] - range[0]) / 20.
+        self._ax.set_ylim((range[0] - wid, range[1] + wid))
+        self.refresh()
 
 
 if __name__ == "__main__":

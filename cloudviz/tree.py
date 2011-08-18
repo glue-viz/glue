@@ -134,6 +134,18 @@ class Tree(object):
             stack += s.children
         return result
 
+    def get_leaves(self):
+        st = self.get_subtree_indices()
+        return [x for x in st if len(st.children) == 0]
+
+    def get_ancestors(self):
+        if self.parent is None: 
+            return []
+        result = [self.parent]
+        while result[-1].parent is not None:
+            result.append(result[-1].parent)
+        return result
+
 
 class NewickTree(Tree):
     """
