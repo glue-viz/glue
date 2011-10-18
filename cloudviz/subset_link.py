@@ -1,6 +1,6 @@
 from cloudviz.hub import HubListener
 import cloudviz.message as msg
-
+from cloudbiz.subset import RoiSubset
 
 class SubsetLink(HubListener):
     """ The base class for representing subsets linked across data.
@@ -9,37 +9,33 @@ class SubsetLink(HubListener):
     however, logical connections exist between datasets. For example,
     two datasets may both describe objects in the same area of the
     sky. This class facilitates syncing subset descriptions from
-    different data, in situations where such syncing logically
+    different data, in situations where such syncing is logically
     well-defined.
 
-    Here is the typical usage pattern: two datasets (d1 and d2) each
-    have one subset (s1 and s2, respectively). A SubsetLink object is
-    created with references to s1 and s2. It then subscribes to a hub,
-    to receive messages anytime either s1 or s2 are updated. When the
-    link receives one of these messages (say, when s1 is updated), it
-    implements the logic to echo this modificaion to the other subset
-    (i.e., s2 is modified to reflect s1's new description).
+    A SubsetLink object is created with references to one subset in
+    two or more datasets. It subscribes to the hub to receive messages
+    when any of these subsets are modified. At this point, it alters
+    the subsets in the other datasets to logically duplicate the
+    original change. In this way, the subsets across different data
+    sets are linked.
     """
     
 
-    def __init__(self, s1, s2):
+    def __init__(self, subsets):
         """ Create a new link instance
         
         Parameters
         ==========
-        s1: class:`cloudviz.subset.Subset` instance
-            The first subset to link
-        s2: class:`cloudviz.subset.Subset` instance
-            The second subset to link
+        subsets : A list of class:`cloudviz.subset.Subset` instances
+           The subsets to link together
         """
-        self._s1 = s1
-        self._s2 = s2
+        self._subsets = subsets
         self._listen = True
 
     def register_to_hub(self, hub):
         """
         Register the link object to the hub, to receive messages when
-        either subset is updated.
+        any subset is updated.
 
         Parameters
         ==========
@@ -49,12 +45,16 @@ class SubsetLink(HubListener):
         hub.subscribe(self, 
                       msg.SubsetUpdateMessage,
                       filter=lambda x: \
-                          x.sender in [self._s1, self._s2])
+                          x.sender in self._subsets)
                 
     def notify(self, message):
         """ Message handling event when one of the subsets is updated.
         
-        This class calls the convert method
+        This class calls the convert method, which actually modifies
+        the appropriate subsets. The extra notify method is needed to
+        temporarly disable message processing from the hub. If this
+        step isn't done, then SubsetLinks would create infinite message
+        loops.
 
         Parameters:
         ===========
@@ -64,15 +64,30 @@ class SubsetLink(HubListener):
         if not self._listen:
             return
         self._listen = False
-        if message.sender is self._s1:
-            self.convert(self._s1, self._s2)
-        elif message.sender is self._s2:
-            self.convert(self._s2, self._s1)
+        if message.sender in self._subsets:
+            self.convert(message)
         else:
             raise TypeError("Linker can't handle message sent from %s " %
                             message.sender)
         self._listen = True
 
-    def convert(self, source, target):
+    def convert(self, message):
         """ Updates the description of the target """
         raise NotImplementedError()
+
+
+class RoiLink(SubsetLink):
+    """ A class:`cloudviz.subset_link.SubsetLink` object that links
+    RoiSubsets by syncing their roi descriptions
+    """
+
+    def __init__(self, subsets):
+        SubsetLink.__init__(self, subsets)
+        for s in subsets:
+            if not isinstance(s, RoiSubset):
+                raise TypeError("All subsets must be ROI subsets")
+
+    def convert(self, message):
+        for s in subsets:
+            if s.roi is not message.sender.roi:
+                s.roi = message.sender.roi

@@ -22,9 +22,14 @@ def data_to_norm(ax, x, y):
     
     return xnorm, ynorm
 
+class Roi(object):
+    def contains(self, x, y):
+        raise NotImplementedError()
 
+    def defined(self):
+        raise NotImplementedError()
 
-class RectangularROI(object):
+class RectangularROI(Roi):
     """
     A class to define a 2D rectangular region of interest.
     """
@@ -77,7 +82,7 @@ class RectangularROI(object):
         return self.xmin is not None
 
 
-class CircularROI(object):
+class CircularROI(Roi):
     """
     A class to define a 2D circular region of interest.
     """
@@ -130,7 +135,7 @@ class CircularROI(object):
         return self.xc is not None
 
 
-class PolygonalROI(object):
+class PolygonalROI(Roi):
     """
     A class to define 2D polygonal regions-of-interest
     """

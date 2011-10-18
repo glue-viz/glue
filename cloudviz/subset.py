@@ -349,7 +349,7 @@ class ElementSubset(Subset):
 
         Parameters:
         -----------
-        data: data instance.
+        data: class:`cloudviz.data.Data` instance.
               The data to attach this subset to
 
         mask: Numpy array
@@ -381,3 +381,39 @@ class ElementSubset(Subset):
             if value.shape != self.data.shape:
                 raise Exception("Mask has wrong shape")
         Subset.__setattr__(self, attribute, value)
+
+
+class RoiSubset(Subset):
+    """ This subset is defined by a class:`cloudviz.roi.Roi` object,
+    interpreted using a data set's coordinate object.
+
+    Attributes:
+    -----------
+    roi: A class:`cloudviz.roi.Roi` instance
+         The roi that describes the subset boundaries.
+    """
+
+    def __init__(self, data):
+        """ Create a new subset 
+        
+        Parameters:
+        -----------
+        data: a class:`cloudviz.data.Data` instance
+              Which data set to attach this subset to.
+        """
+        Subset.__init__(self, data)
+        self.roi = None
+    
+    def to_mask(self):
+        if self.roi is None or not self.roi.defined():
+            return np.zeros_like(self.data, 'bool')
+
+        ind = np.arange(np.product(self.data.shape))
+        ind.shape = self.data.shape
+        x = ind % self.data.shape[0]
+        y = (ind / self.data.shape[0]) % self.data.shape[1]
+        xx, yy = self.data.coordinates.pixel2world(self, x, y)
+        
+        return self.roi.contains(xx, yy)
+
+        
