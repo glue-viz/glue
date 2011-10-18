@@ -65,7 +65,7 @@ class MplTreeClient(TreeClient):
 
         # update plot visual properties
         self._plots[subset].set_visible(True)
-        self._plots[subset].set(**subset.style)
+        self._plots[subset].set_color(subset.style.color)
 
     def _update_axis_labels(self):
         pass

@@ -12,6 +12,9 @@ from PyQt4.QtGui import QButtonGroup
 from PyQt4.QtGui import QPixmap
 from PyQt4.QtGui import QColor
 from PyQt4.QtGui import QIcon
+from PyQt4.QtGui import QAction
+from PyQt4.QtGui import QActionGroup
+from PyQt4 import QtGui
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
@@ -31,11 +34,76 @@ class QtScatterClient(QMainWindow, MplScatterClient):
 
         QMainWindow.__init__(self, parent)
         self.setWindowTitle("Scatter Client")
-
+        self.create_actions()
         self.create_main_frame(data, raster=raster)
+        self.create_menu()
+        self.create_toolbar()
+
         MplScatterClient.__init__(self, data, axes=self.axes, **kwargs)
 
         self.selector = None
+                
+
+    def create_actions(self):
+        exit_action = QAction('Close', self)        
+        exit_action.setShortcut('Ctrl+Q')
+        exit_action.setStatusTip('Exit application')
+        exit_action.triggered.connect(QtGui.qApp.quit)
+        self.exit_action = exit_action
+
+        circle = QAction(QIcon("circle.png"), 'Circle', self)
+        circle.setStatusTip('Select using a circle')
+        circle.setCheckable(True)
+        self.circle = circle
+
+        box = QAction(QIcon("square.png"), 'Box', self)
+        box.setStatusTip('Select using a box')
+        box.setCheckable(True)
+        self.box = box
+
+        lasso = QAction(QIcon("lasso.png"), 'lasso', self)
+        lasso.setStatusTip('Select using a lasso')
+        lasso.setCheckable(True)
+        self.lasso = lasso
+
+        move = QAction(QIcon("move.png"), 'move', self)
+        move.setStatusTip("Pan axes with left mouse, zoom with right")
+        move.setCheckable(True)
+        self.move = move
+
+        zoom = QAction(QIcon("zoom.png"), 'zoom', self)
+        zoom.setStatusTip("Zoom to Rectangle")
+        zoom.setCheckable(True)
+        self.zoom = zoom
+        
+        self.connect(self.circle, SIGNAL('triggered(bool)'), self.update_selector)
+        self.connect(self.box, SIGNAL('triggered(bool)'), self.update_selector)
+        self.connect(self.lasso, SIGNAL('triggered(bool)'), self.update_selector)
+        self.connect(self.move, SIGNAL('triggered(bool)'), self.mpl_move)
+        self.connect(self.zoom, SIGNAL('triggered(bool)'), self.mpl_zoom)
+
+        self.interaction_group = QActionGroup(self)
+        self.interaction_group.addAction(circle)
+        self.interaction_group.addAction(box)
+        self.interaction_group.addAction(lasso)
+        self.interaction_group.addAction(move)
+        self.interaction_group.addAction(zoom)
+
+        self.interaction_group.setExclusive(True)
+
+
+    def create_menu(self):        
+        menu = self.menuBar().addMenu("&File")
+        menu.addAction(self.exit_action)
+
+    def create_toolbar(self):            
+        self.toolbar = self.addToolBar('interaction')
+        self.toolbar.addAction(self.circle)
+        self.toolbar.addAction(self.box)
+        self.toolbar.addAction(self.lasso)
+        self.toolbar.addAction(self.move)
+        self.toolbar.addAction(self.zoom)
+
 
     def on_button_press(self, event):
         self.check_ignore_canvas()
@@ -44,11 +112,8 @@ class QtScatterClient(QMainWindow, MplScatterClient):
         self.check_ignore_canvas()
 
     def check_ignore_canvas(self):
-        if self.mpl_toolbar.mode != '':
-            if self.selector is not None:
-                self.selector.disconnect()
-                self.selector = None
-    
+        pass
+
     def _set_attribute(self, attribute, axis=None):
         ScatterClient._set_attribute(self, attribute, axis)
         
@@ -75,7 +140,13 @@ class QtScatterClient(QMainWindow, MplScatterClient):
         component = str(self.y_component.currentText())
         self.set_ydata(component)
 
-    def select_selector(self):
+    def mpl_move(self):
+        pass
+
+    def mpl_zoom(self):
+        pass
+
+    def update_selector(self):
         subset = self.data.get_active_subset()
         if not subset:
             return
@@ -86,18 +157,15 @@ class QtScatterClient(QMainWindow, MplScatterClient):
 
         sender = self.sender()
 
-        if sender.checkState() == Qt.Unchecked:
-            return
-
         x = self.get_x_attribute()
         y = self.get_y_attribute()
-        if sender is self.boxWidget:
+        if sender is self.box:
             self.selector = cv.roi.MplBoxTool(self.data, x, y, 
                                               self.axes)
-        elif sender is self.circleWidget:
+        elif sender is self.circle:
             self.selector = cv.roi.MplCircleTool(self.data, x, y,
                                                  self.axes)
-        elif sender is self.lassoWidget:
+        elif sender is self.lasso:
             self.selector = cv.roi.MplLassoTool(self.data, x, y,
                                                 self.axes)
 
@@ -116,19 +184,20 @@ class QtScatterClient(QMainWindow, MplScatterClient):
 
         self.canvas.mpl_connect('motion_notify_event', self.on_motion)
         self.canvas.mpl_connect('button_press_event', self.on_button_press)
-        self.mpl_toolbar = NavigationToolbar(self.canvas, self.main_frame)
 
         vbox = QVBoxLayout()
         vbox.addWidget(self.canvas)
-        vbox.addWidget(self.mpl_toolbar)
-        
-        self.boxWidget = QCheckBox("Box")
-        self.circleWidget = QCheckBox("Circle")
-        self.lassoWidget = QCheckBox("Lasso")
-        
+                
         self.x_component = QComboBox()
         self.y_component = QComboBox()
         for c in data.components:
+
+            # only add numeric columns
+            try:
+                junk = float(data[c].flat[0])
+            except ValueError:
+                continue
+
             self.x_component.addItem(c)
             self.y_component.addItem(c)
 
@@ -137,23 +206,7 @@ class QtScatterClient(QMainWindow, MplScatterClient):
 
         self.connect(self.y_component, SIGNAL('currentIndexChanged(int)'), 
                      self.gui_select_y)
-        
-        self.connect(self.boxWidget, SIGNAL('stateChanged(int)'), self.select_selector)
-        self.connect(self.circleWidget, SIGNAL('stateChanged(int)'), self.select_selector)
-        self.connect(self.lassoWidget, SIGNAL('stateChanged(int)'), self.select_selector)
-
-        group = QButtonGroup()
-        group.setExclusive(True)
-        group.addButton(self.boxWidget)
-        group.addButton(self.circleWidget)
-        group.addButton(self.lassoWidget)
-        
-        hbox = QHBoxLayout()
-        hbox.addWidget(self.boxWidget)
-        hbox.addWidget(self.circleWidget)
-        hbox.addWidget(self.lassoWidget)
-        vbox.addLayout(hbox)
-        
+                
         hbox = QHBoxLayout()
         hbox.addWidget(self.x_component)
         hbox.addWidget(self.y_component)

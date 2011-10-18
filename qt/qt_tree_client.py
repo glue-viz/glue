@@ -3,7 +3,8 @@ from PyQt4.QtGui import QVBoxLayout
 from PyQt4.QtGui import QWidget
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
+#from matplotlib.backends.backend_qt4 import NavigationToolbar2QT as NavigationToolbar
+from custom_toolbar import CustomToolbar as NavigationToolbar
 from matplotlib.figure import Figure
 
 from cloudviz.mpl_tree_client import MplTreeClient
@@ -62,11 +63,11 @@ class QtTreeClient(QMainWindow, MplTreeClient):
         self.canvas.mpl_connect('button_press_event', self.on_button_press)
         self.canvas.mpl_connect('button_release_event', self.on_button_release)
         self.mpl_toolbar = NavigationToolbar(self.canvas, self.main_frame)
-
+        self.addToolBar(self.mpl_toolbar)
+        assert self.mpl_toolbar
 
         vbox = QVBoxLayout()
         vbox.addWidget(self.canvas)
-        vbox.addWidget(self.mpl_toolbar)
         
         self.main_frame.setLayout(vbox)
         self.setCentralWidget(self.main_frame)

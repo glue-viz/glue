@@ -41,7 +41,6 @@ s2.node_list = id2
 s.register()
 s2.register()
 
-#s.style['color'] = 'black'
 
 
 # attach some event handlers

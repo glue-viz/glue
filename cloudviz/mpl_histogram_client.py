@@ -22,7 +22,7 @@ class MplHistogramClient(HistogramClient):
         # get data and colors
         keys = [k for k in self._plots.keys() if k is not self.data]
         subset_data = [self._plots[k] for k in keys]
-        colors = [k.style.setdefault('color', 'red') 
+        colors = [k.style.color
                   if k in self.data.subsets else 'black'
                   for k in keys]
         

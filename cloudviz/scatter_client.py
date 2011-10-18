@@ -23,6 +23,12 @@ class ScatterClient(VizClient):
         # numerical data on the y axis
         self._ydata = None
 
+    def _snap_xlim(self):
+        pass
+
+    def _snap_ylim(self):
+        pass
+
     def set_xdata(self, attribute):
         """
         Redefine which component gets plotted on the x axis
@@ -33,6 +39,7 @@ class ScatterClient(VizClient):
                  The name of the new data component to plot
         """
         self._set_attribute(attribute, axis='x')
+        self._snap_xlim()
         self.refresh()
 
     def set_ydata(self, attribute):
@@ -45,6 +52,7 @@ class ScatterClient(VizClient):
                   The name of the new data component to plot
         """
         self._set_attribute(attribute, axis='y')
+        self._snap_ylim()
         self.refresh()
 
     def _set_attribute(self, attribute, axis=None):
@@ -66,16 +74,22 @@ class ScatterClient(VizClient):
             raise AttributeError("attribute must be a valid "
                                  "component in the data: %s" % attribute)
 
+        data = self.data[attribute]
+        try:
+            junk = float(data.flat[0])
+        except ValueError:
+            raise ValueError("Cannot select non-numeric attribute")
+
         if axis == 'x':
             if self._xatt == attribute:
                 return
             self._xatt = attribute
-            self._xdata = self.data.components[attribute].data
+            self._xdata = data
         if axis == 'y':
             if self._yatt == attribute:
                 return
             self._yatt = attribute
-            self._ydata = self.data.components[attribute].data
+            self._ydata = data
             
     def get_x_attribute(self):
         return self._xatt

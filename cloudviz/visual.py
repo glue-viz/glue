@@ -44,3 +44,5 @@ class VisualAttributes(object):
         # Check that the attribute exists (don't allow new attributes)
         if attribute not in ['color', 'linewidth', 'linestyle']:
             raise Exception("Attribute %s does not exist" % value)
+        
+        object.__setattr__(self, attribute, value)

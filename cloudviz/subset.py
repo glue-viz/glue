@@ -3,7 +3,7 @@ import pyfits
 
 import cloudviz
 from cloudviz.exceptions import IncompatibleDataException
-
+from cloudviz.visual import VisualAttributes
 
 class Subset(object):
     """Base class to handle subsets of data.
@@ -17,11 +17,10 @@ class Subset(object):
 
     Attributes:
     -----------
-    data: data instance
+    data : data instance
         The dataset that this subset describes
-    style: dict
-        A dictionary of visualization style properties (e.g., color)
-        Clients are free to use this information when making plots.
+    style : VisualAttributes instance
+        Describes visual attributes of the subset
     """
 
     class ListenDict(dict):
@@ -38,14 +37,13 @@ class Subset(object):
             dict.__setitem__(self, key, value)
             self._subset.broadcast(self)
 
-    def __init__(self, data):
+    def __init__(self, data, color='r', alpha=1.0):
         """ Create a new subclass object.
 
         """
         self.data = data
         self._broadcasting = False
-        self.style = self.ListenDict(self)
-        self.style['color'] = 'r'
+        self.style = VisualAttributes()
 
     def register(self):
         """ Register a subset to its data, and start broadcasting

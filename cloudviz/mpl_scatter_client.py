@@ -1,6 +1,7 @@
-from cloudviz.scatter_client import ScatterClient
 import matplotlib.pyplot as plt
 import numpy as np
+
+from cloudviz.scatter_client import ScatterClient
 
 class MplScatterClient(ScatterClient):
 
@@ -61,6 +62,38 @@ class MplScatterClient(ScatterClient):
         self._ax.set_xlabel(xlabel)
         self._ax.set_ylabel(ylabel)
 
+    def _snap_xlim(self):
+        lo = np.nanmin(self._xdata)
+        hi = np.nanmax(self._xdata)
+        range = hi - lo
+        if range == 0:
+            range = 1
+        lo = lo - .03 * range
+        hi = hi + .03 * range
+        if self._ax.get_xscale() == 'log':
+            if hi < 0:
+                hi = 1.
+            if lo < 0:
+                lo = hi / 1000.
+            
+        self._ax.set_xlim([lo, hi])
+
+    def _snap_ylim(self):
+        lo = np.nanmin(self._ydata)
+        hi = np.nanmax(self._ydata)
+        range = hi - lo
+        if range == 0:
+            range = 1
+        lo = lo - .03 * range
+        hi = hi + .03 * range
+        if self._ax.get_yscale() == 'log':
+            if hi < 0:
+                hi = 1.
+            if lo < 0:
+                lo = hi / 1000.
+            
+        self._ax.set_ylim([lo, hi])
+        
     def _update_data_plot(self):
         """
         Sync the location of the scatter points to
@@ -108,7 +141,6 @@ class MplScatterClient(ScatterClient):
                     self._ydata[s.to_mask()]))
 
         self._plots[s].set_visible(True)
-        self._plots[s].set(**s.style)
         
     def set_xdata(self, component):
         self._set_attribute(component, axis='x')
@@ -124,6 +156,11 @@ class MplScatterClient(ScatterClient):
         self._ax.set_ylim((range[0] - wid, range[1] + wid))
         self.refresh()
 
+        try:
+            self._plots[s].set_color(s.style.color)
+        except:
+            #XXX FIX THIS
+            print "WARNING FIX"
 
 if __name__ == "__main__":
     """
@@ -165,8 +202,8 @@ if __name__ == "__main__":
     sleep(1)
 
     #change plot properties. Updated autmatically
-    s.style['color'] = 'm'
-    s.style['alpha'] = .8
+    s.style.color = 'm'
+    s.alpha = 0.8
     sleep(1)
 
     #change one of the axes. Automatically updated
