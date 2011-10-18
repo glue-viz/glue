@@ -30,7 +30,7 @@ def main():
     # the subsets
     s = cv.subset.ElementSubset(data)
     s2 = cv.subset.ElementSubset(data)
-    s2.style['color'] = 'green'
+    s2.style.color = 'green'
 
     # register everything
     data.register_to_hub(hub)

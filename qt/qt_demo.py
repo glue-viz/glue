@@ -45,7 +45,7 @@ def main():
     s = cv.subset.TreeSubset(data, node_list=id)
     id = data.tree._index[80].get_subtree_indices()
     s2 = cv.subset.TreeSubset(data, node_list=id)
-    s2.style['color'] = 'green'
+    s2.style.color = 'green'
 
     # register everything
     data.register_to_hub(hub)

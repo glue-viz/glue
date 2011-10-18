@@ -87,7 +87,7 @@ class QtSubsetBrowserClient(QMainWindow, cv.Client):
         height = 50
         pm = QPixmap(width, height)
 
-        color = mpl_to_qt4_color(s.style['color'])
+        color = mpl_to_qt4_color(s.style.color)
         pm.fill(color)
         icon = QIcon(pm)
 
@@ -116,7 +116,7 @@ class QtSubsetBrowserClient(QMainWindow, cv.Client):
     def _update_subset(self, message):
         """ When a subset is updated, sync its color on the browser """
         subset = message.sender
-        color = mpl_to_qt4_color(subset.style['color'])
+        color = mpl_to_qt4_color(subset.style.color)
         pm = self.subset_widgets[subset]['pixmap']
         pm.fill(color)
         icon = QIcon(pm)
@@ -139,9 +139,9 @@ class QtSubsetBrowserClient(QMainWindow, cv.Client):
             button = self.subset_widgets[key]['widget']
             if button == source:
                 dialog = QColorDialog()
-                initial = mpl_to_qt4_color(key.style['color'])
+                initial = mpl_to_qt4_color(key.style.color)
                 color = dialog.getColor(initial = initial)
-                key.style['color'] = qt4_to_mpl_color(color)
+                key.style.color = qt4_to_mpl_color(color)
 
     def create_main_frame(self):
         """ Create the main UI """

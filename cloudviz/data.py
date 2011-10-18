@@ -130,10 +130,18 @@ class Data(object):
         object.__setattr__(self, name, value)
 
     def __getitem__(self, key):
+        """ Shortcut syntax to access the raw data in a component
+
+        Parameters:
+        -----------
+        key : string
+          The component to fetch data from
+        """        
         if type(key) != str or key not in self.components:
             raise KeyError("Input must be the name of "
                            " a valid component: %s" % str(key))
-        return self.components[key]
+        return self.components[key].data
+
 
 
 class TabularData(Data):

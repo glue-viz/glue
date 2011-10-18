@@ -38,8 +38,7 @@ s.mask = d.components['INDEX_MAP'].data > 0.5
 s.register()
 
 #change plot properties. Updated autmatically
-s.style['color'] = 'm'
-s.style['alpha'] = .8
+s.style.color = 'm'
 
 selection_type = 'lasso'
 
