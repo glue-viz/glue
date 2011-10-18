@@ -24,15 +24,6 @@ class Hub(object):
         # Dictionary of subscriptions
         self._subscriptions = defaultdict(dict)
 
-        # Translator object will translate subsets across data sets
-        self.translator = None
-
-    def __setattr__(self, name, value):
-        if name == "translator" and hasattr(self, 'translator') and \
-           not isinstance(value, cloudviz.Translator):
-            raise AttributeError("input is not a Translator object: %s" %
-                                 type(value))
-        object.__setattr__(self, name, value)
 
     def subscribe(self, subscriber, message_class,
                   handler=None,
@@ -132,10 +123,6 @@ class Hub(object):
             filter, handler = sub[candidate]
             if filter(message):
                 handler(message)
-
-    def translate_subset(self, subset, *args, **kwargs):
-        #XXX don't know how to do this yet
-        raise NotImplementedError("Translation not implemented")
 
 
 class HubListener(object):
