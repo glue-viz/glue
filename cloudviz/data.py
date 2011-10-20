@@ -41,7 +41,7 @@ class Component(object):
 
 class Data(object):
 
-    def __init__(self):
+    def __init__(self, label=None):
         # Coordinate conversion object
         self.coords = None
 
@@ -67,6 +67,8 @@ class Data(object):
         self.hub = None
 
         self.metadata = {}
+
+        self.label = label
 
     def new_subset(self):
         subset = cloudviz.Subset(self)

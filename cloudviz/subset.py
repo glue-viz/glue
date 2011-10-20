@@ -37,13 +37,14 @@ class Subset(object):
             dict.__setitem__(self, key, value)
             self._subset.broadcast(self)
 
-    def __init__(self, data, color='r', alpha=1.0):
+    def __init__(self, data, color='r', alpha=1.0, label=None):
         """ Create a new subclass object.
 
         """
         self.data = data
         self._broadcasting = False
         self.style = VisualAttributes()
+        self.label = label
 
     def register(self):
         """ Register a subset to its data, and start broadcasting

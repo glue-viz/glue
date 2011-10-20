@@ -4,7 +4,19 @@ from matplotlib.patches import Polygon, Rectangle, Ellipse
 
 import cloudviz as cv
 
+def aspect_ratio(ax):
+    width = ax.get_position().width * ax.figure.get_figwidth()
+    height = ax.get_position().height * ax.figure.get_figheight()
+    xmin, xmax = ax.get_xlim()
+    ymin, ymax = ax.get_ylim()
+    return height / width / (ymax - ymin) * (xmax - xmin)
+
+
 def data_to_norm(ax, x, y):
+    pixel = ax.transData(zip(x, y))
+    norm = ax.transAxes.inverted()(pixel)
+    return zip(*norm)
+
     xlim = ax.get_xlim()
     ylim = ax.get_ylim()
     xlog = ax.get_xscale() == 'log'
@@ -235,25 +247,16 @@ class PolygonalROI(Roi):
     def defined(self):
         return len(self.vx) > 0
 
-class AbstractMplRoiTool(object):
-    def __init__(self, data, component_x, component_y, ax):
-
-        self._ax = ax
-        self._mid_selection = False
-        self._active = True
+class RoiSubsetEditor(object):
+    def __init__(self, data, component_x, component_y):
         self._data = data
-
         self.set_x_attribute(component_x)
         self.set_y_attribute(component_y)
-        
-        self._press = None  # id of MPL connection to button_press
-        self._motion = None # id of MPL connection to motion_notify
-        self._release = None # id of MPL connection to button_release
-        self.connect()
-        
+
     def get_subset(self):
         subset = self._data.get_active_subset()
-        if subset is None: return subset
+        if subset is None: 
+            return
 
         if not self.check_compatible_subset(subset):
             raise TypeError("ROI and Subset are incompatible: %s, %s" %
@@ -270,10 +273,23 @@ class AbstractMplRoiTool(object):
             raise KeyError("%s is not a valid component" % attribute)
         self._component_y = attribute
 
-
     def check_compatible_subset(self, subset):
         raise NotImplementedError()
 
+
+
+class AbstractMplRoi(object):
+    def __init__(self, ax):
+
+        self._ax = ax
+        self._mid_selection = False
+        self._active = True
+        
+        self._press = None  # id of MPL connection to button_press
+        self._motion = None # id of MPL connection to motion_notify
+        self._release = None # id of MPL connection to button_release
+        self.connect()
+        
     def set_active(self, state):
         self._active = state
 
@@ -308,7 +324,7 @@ class AbstractMplRoiTool(object):
             self._release = None
         
 
-class MplRectangularROI(RectangularROI):
+class MplRectangularROI(RectangularROI, AbstractMplROI):
     """
     A subclass of RectangularROI that also renders the ROI to a plot
 
@@ -330,6 +346,7 @@ class MplRectangularROI(RectangularROI):
         """
 
         RectangularROI.__init__(self)
+        AbstractMplRoi.__init__(self, ax)
 
         self.plot_opts = {'edgecolor': 'red', 'facecolor': 'none',
                           'alpha': 0.3}
@@ -337,7 +354,6 @@ class MplRectangularROI(RectangularROI):
         self._rectangle = Rectangle((0., 0.), 1., 1.)
         self._rectangle.set(**self.plot_opts)
 
-        self._ax = ax
         self._ax.add_patch(self._rectangle)
 
         self._sync_patch()
@@ -367,156 +383,6 @@ class MplRectangularROI(RectangularROI):
         RectangularROI.reset(self)
         self._sync_patch()
 
-
-def aspect_ratio(ax):
-    width = ax.get_position().width * ax.figure.get_figwidth()
-    height = ax.get_position().height * ax.figure.get_figheight()
-    xmin, xmax = ax.get_xlim()
-    ymin, ymax = ax.get_ylim()
-    return height / width / (ymax - ymin) * (xmax - xmin)
-
-
-class MplCircularROI(CircularROI):
-    """
-    A subclass of CircularROI that also renders the ROI to a plot
-
-    Attributes:
-    -----------
-    plot_opts: Dictionary instance
-               A dictionary of plot keywords that are passed to
-               the patch representing the ROI. These control
-               the visual properties of the ROI
-    """
-
-    def __init__(self, ax):
-        """
-        Create a new ROI
-
-        Parameters
-        ----------
-        ax: A matplotlib Axes object to attach the graphical ROI to
-        """
-
-        CircularROI.__init__(self)
-
-        self.plot_opts = {'edgecolor': 'red', 'facecolor': 'none',
-                          'alpha': 0.3}
-
-        self._circle = Ellipse((0., 0.), width=0., height=0.)
-        self._circle.set(**self.plot_opts)
-
-        self._ax = ax
-        self._ax.add_patch(self._circle)
-
-        self._sync_patch()
-
-    def _sync_patch(self):
-
-        # Update geometry
-        if not self.defined():
-            self._circle.set_visible(False)
-        else:
-            self._circle.center = (self.xc, self.yc)
-            self._circle.width = 2. * self.radius
-            self._circle.height = 2. * self.radius / aspect_ratio(self._ax)
-            self._circle.set_visible(True)
-
-        # Update appearance
-        self._circle.set(**self.plot_opts)
-
-        # Refresh
-        self._ax.figure.canvas.draw()
-
-    def set_center(self, x, y):
-        CircularROI.set_center(self, x, y)
-        self._sync_patch()
-
-    def set_radius(self, radius):
-        CircularROI.set_radius(self, radius)
-        self._sync_patch()
-
-    def reset(self):
-        CircularROI.reset(self)
-        self._sync_patch()
-
-
-class MplPolygonalROI(PolygonalROI):
-    """
-    A subclass of PolygonalROI that also renders the ROI to a plot
-
-    Attributes:
-    -----------
-    plot_opts: Dictionary instance
-               A dictionary of plot keywords that are passed to
-               the patch representing the ROI. These control
-               the visual properties of the ROI
-    """
-
-    def __init__(self, ax):
-        """
-        Create a new ROI
-
-        Parameters
-        ----------
-        ax: A matplotlib Axes object to attach the graphical ROI to
-        """
-
-        PolygonalROI.__init__(self)
-
-        self.plot_opts = {'edgecolor': 'red', 'facecolor': 'none',
-                          'alpha': 0.3}
-
-        self._polygon = Polygon(np.array(zip([0, 1], [0, 1])))
-        self._polygon.set(**self.plot_opts)
-
-        self._ax = ax
-        self._ax.add_patch(self._polygon)
-
-        self._sync_patch()
-
-    def _sync_patch(self):
-
-        # Update geometry
-        if not self.defined():
-            self._polygon.set_visible(False)
-        else:
-            self._polygon.set_xy(np.array(zip(self.vx + [self.vx[0]],
-                                              self.vy + [self.vy[0]])))
-            self._polygon.set_visible(True)
-
-        # Update appearance
-        self._polygon.set(**self.plot_opts)
-
-        # Refresh
-        self._ax.figure.canvas.draw()
-
-    def add_point(self, x, y):
-        PolygonalROI.add_point(self, x, y)
-        self._sync_patch()
-
-    def reset(self):
-        PolygonalROI.reset(self)
-        self._sync_patch()
-
-    def replace_last_point(self, x, y):
-        PolygonalROI.replace_last_point(self, x, y)
-        self._sync_patch()
-
-    def remove_point(self, x, y, thresh=None):
-        PolygonalROI.reset(self, x, y, thresh=None)
-        self._sync_patch()
-
-
-class MplBoxTool(MplRectangularROI, AbstractMplRoiTool):
-
-    def __init__(self, data, component_x, component_y, ax):
-
-        MplRectangularROI.__init__(self, ax)
-        AbstractMplRoiTool.__init__(self, data, component_x, component_y, ax)
-
-    def check_compatible_subset(self, subset):
-        return isinstance(subset, cv.subset.ElementSubset)
-        
     def start_selection(self, event):
 
         if not (event.inaxes and self._active):
@@ -557,28 +423,72 @@ class MplBoxTool(MplRectangularROI, AbstractMplRoiTool):
         if not self._mid_selection:
             return
 
-        subset = self.get_subset()
-        if subset is None:
-            return
-        x = self._data.components[self._component_x].data
-        y = self._data.components[self._component_y].data
-
-        subset.mask = self.contains(x, y)
-
         self.reset()
-
         self._mid_selection = False
 
 
-class MplCircleTool(MplCircularROI, AbstractMplRoiTool):
+class MplCircularROI(CircularROI, AbstractMplRoi):
+    """
+    A subclass of CircularROI that also renders the ROI to a plot
 
-    def __init__(self, data, component_x, component_y, ax):
+    Attributes:
+    -----------
+    plot_opts: Dictionary instance
+               A dictionary of plot keywords that are passed to
+               the patch representing the ROI. These control
+               the visual properties of the ROI
+    """
 
-        MplCircularROI.__init__(self, ax)
-        AbstractMplRoiTool.__init__(self, data, component_x, component_y, ax)
-        
-    def check_compatible_subset(self, subset):
-        return isinstance(subset, cv.subset.ElementSubset)
+    def __init__(self, ax):
+        """
+        Create a new ROI
+
+        Parameters
+        ----------
+        ax: A matplotlib Axes object to attach the graphical ROI to
+        """
+
+        CircularROI.__init__(self)
+        AbstractMplROI.__init__(self, ax)
+
+        self.plot_opts = {'edgecolor': 'red', 'facecolor': 'none',
+                          'alpha': 0.3}
+
+        self._circle = Ellipse((0., 0.), width=0., height=0.)
+        self._circle.set(**self.plot_opts)
+
+        self._ax.add_patch(self._circle)
+
+        self._sync_patch()
+
+    def _sync_patch(self):
+
+        # Update geometry
+        if not self.defined():
+            self._circle.set_visible(False)
+        else:
+            self._circle.center = (self.xc, self.yc)
+            self._circle.width = 2. * self.radius
+            self._circle.height = 2. * self.radius / aspect_ratio(self._ax)
+            self._circle.set_visible(True)
+
+        # Update appearance
+        self._circle.set(**self.plot_opts)
+
+        # Refresh
+        self._ax.figure.canvas.draw()
+
+    def set_center(self, x, y):
+        CircularROI.set_center(self, x, y)
+        self._sync_patch()
+
+    def set_radius(self, radius):
+        CircularROI.set_radius(self, radius)
+        self._sync_patch()
+
+    def reset(self):
+        CircularROI.reset(self)
+        self._sync_patch()
 
     def start_selection(self, event):
 
@@ -614,6 +524,113 @@ class MplCircleTool(MplCircularROI, AbstractMplRoiTool):
 
         if not self._mid_selection:
             return
+        
+        self.reset()
+
+        self._mid_selection = False
+
+
+
+class MplPolygonalROI(PolygonalROI, AbstractMplRoi):
+    """
+    A subclass of PolygonalROI that also renders the ROI to a plot
+
+    Attributes:
+    -----------
+    plot_opts: Dictionary instance
+               A dictionary of plot keywords that are passed to
+               the patch representing the ROI. These control
+               the visual properties of the ROI
+    """
+
+    def __init__(self, ax, lasso=False):
+        """
+        Create a new ROI
+
+        Parameters
+        ----------
+        ax: A matplotlib Axes object to attach the graphical ROI to
+        """
+
+        PolygonalROI.__init__(self)
+        AbstractMplRoi.__init__(self, ax)
+
+        self.plot_opts = {'edgecolor': 'red', 'facecolor': 'none',
+                          'alpha': 0.3}
+
+        self._polygon = Polygon(np.array(zip([0, 1], [0, 1])))
+        self._polygon.set(**self.plot_opts)
+        self.vx = [0.]
+        self.vy = [0.]
+
+        self._ax.add_patch(self._polygon)
+        self.lasso = lasso
+        self._sync_patch()
+
+    def connect(self):
+        if self.lasso:
+            AbstractMplRoi.connect(self)
+            return
+
+        self.disconnect()
+        canvas = self._ax.figure.canvas
+        self._press = canvas.mpl_connect('button_press_event', 
+                                         self.update_selection)
+        self._release = canvas.mpl_connect('button_release_event',
+                                           self.finalize_selection)
+
+    def _sync_patch(self):
+
+        # Update geometry
+        if not self.defined():
+            self._polygon.set_visible(False)
+        else:
+            self._polygon.set_xy(np.array(zip(self.vx + [self.vx[0]],
+                                              self.vy + [self.vy[0]])))
+            self._polygon.set_visible(True)
+
+        # Update appearance
+        self._polygon.set(**self.plot_opts)
+
+        # Refresh
+        self._ax.figure.canvas.draw()
+
+    def add_point(self, x, y):
+        PolygonalROI.add_point(self, x, y)
+        self._sync_patch()
+
+    def reset(self):
+        PolygonalROI.reset(self)
+        self._sync_patch()
+
+    def replace_last_point(self, x, y):
+        PolygonalROI.replace_last_point(self, x, y)
+        self._sync_patch()
+
+    def remove_point(self, x, y, thresh=None):
+        PolygonalROI.reset(self, x, y, thresh=None)
+        self._sync_patch()
+
+    def update_selection(self, event):
+
+        if not (event.inaxes and self._active):
+            return
+
+        if not self._mid_selection:
+            return
+
+        self.replace_last_point(event.xdata, event.ydata)
+
+    def finalize_selection(self, event):
+
+        if not (event.inaxes and self._active):
+            return
+
+        if not self._mid_selection:
+            return
+
+        if event.button != 3:
+            return
 
         subset = self.get_subset()
         if subset is None: return
@@ -622,15 +639,66 @@ class MplCircleTool(MplCircularROI, AbstractMplRoiTool):
         y = self._data.components[self._component_y].data
 
         subset.mask = self.contains(x, y)
-        
         self.reset()
+
+        self.vx = [0.]
+        self.vy = [0.]
 
         self._mid_selection = False
 
-class MplTreeTool(AbstractMplRoiTool):
+
+
+class MplBoxTool(MplRectangularROI, RoiSubsetEditor):
+
+    def __init__(self, data, component_x, component_y, ax):
+
+        MplRectangularROI.__init__(self, ax)
+        RoiSubsetEditor.__init__(self, data, component_x, component_y)
+
+    def check_compatible_subset(self, subset):
+        return isinstance(subset, cv.subset.ElementSubset)
+        
+    def finalize_selection(self, event):
+        if not (event.inaxes and self._active):
+            return
+
+        if not self._mid_selection:
+            return
+
+        subset = self.get_subset()
+        if subset is None:
+            return
+        x = self._data.components[self._component_x].data
+        y = self._data.components[self._component_y].data
+        subset.mask = self.contains(x,y)
+        MplRectangularRoi.finalize_selection(self, event)
+
+
+class MplCircleTool(MplCircularROI, RoiSubsetEditor):
+
+    def __init__(self, data, component_x, component_y, ax):
+
+        MplCircularROI.__init__(self, ax)
+        RoiSubsetEditor.__init__(self, data, component_x, component_y)
+
+    def check_compatible_subset(self, subset):
+        return isinstance(subset, cv.subset.ElementSubset)
+
+    def finalize_selection(self, event):
+        subset = self.get_subset()
+        if subset is None: return
+
+        x = self._data.components[self._component_x].data
+        y = self._data.components[self._component_y].data
+
+        subset.mask = self.contains(x, y)
+        MplCircularROI.finalize_selection(self, event)
+
+class MplTreeTool(AbstractMplRoi, RoiSubsetEditor):
     def __init__(self, data, xdata, ydata, ax, single=False):
 
-        AbstractMplRoiTool.__init__(self, data, xdata, ydata, ax)
+        AbstractMplRoi.__init__(self, ax)
+        RoiSubsetEditor.__init__(self, data, xdata, ydata)
         self.single = single
 
     def check_compatible_subset(self, subset):
@@ -683,15 +751,12 @@ class MplTreeTool(AbstractMplRoiTool):
         self._mid_selection = False
         
                          
-class MplPolygonTool(MplPolygonalROI, AbstractMplRoiTool):
+class MplPolygonTool(MplPolygonalROI, RoiSubsetEditor):
 
     def __init__(self, data, component_x, component_y, ax):
 
         MplPolygonalROI.__init__(self, ax)
-        AbstractMplRoiTool.__init__(self, data, component_x, component_y, ax)
-
-        self.vx = [0.]
-        self.vy = [0.]
+        RoiSubsetEditor.__init__(self, data, component_x, component_y)
         
     def check_compatible_subset(self, subset):
         return isinstance(subset, cv.subset.ElementSubset)
@@ -708,18 +773,7 @@ class MplPolygonTool(MplPolygonalROI, AbstractMplRoiTool):
 
         self._mid_selection = True
 
-    def update_selection(self, event):
-
-        if not (event.inaxes and self._active):
-            return
-
-        if not self._mid_selection:
-            return
-
-        self.replace_last_point(event.xdata, event.ydata)
-
     def finalize_selection(self, event):
-
         if not (event.inaxes and self._active):
             return
 
@@ -736,21 +790,14 @@ class MplPolygonTool(MplPolygonalROI, AbstractMplRoiTool):
         y = self._data.components[self._component_y].data
 
         subset.mask = self.contains(x, y)
+        MplPolygonROI.finalize_selection(self, event)
 
-        self.reset()
-
-        self.vx = [0.]
-        self.vy = [0.]
-
-        self._mid_selection = False
-
-
-class MplLassoTool(MplPolygonalROI, AbstractMplRoiTool):
+class MplLassoTool(MplPolygonalROI, RoiSubsetEditor):
 
     def __init__(self, data, component_x, component_y, ax):
 
-        MplPolygonalROI.__init__(self, ax)
-        AbstractMplRoiTool.__init__(self, data, component_x, component_y, ax)
+        MplPolygonalROI.__init__(self, ax, lasso=True)
+        RoiSubsetEditor.__init__(self, data, component_x, component_y)
 
     def check_compatible_subset(self, subset):
         return isinstance(subset, cv.subset.ElementSubset)

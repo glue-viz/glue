@@ -33,8 +33,22 @@ class Client(cloudviz.HubListener):
         if not isinstance(data, cloudviz.Data):
             raise TypeError("Input data is not a Data object: %s" % type(data))
 
-        self.data = data
+        self._data = [data]
         self._event_listener = None
+
+    @property
+    def data(self):
+        return self._data[0]
+
+    def add_data(self, data):
+        if data in self._data: return
+        self._data.append(data)
+
+    def get_data(self, index=None):
+        if index is not None:
+            return self._data[index]
+        else:
+            return self._data
 
     def register_to_hub(self, hub):
         """
@@ -61,24 +75,24 @@ class Client(cloudviz.HubListener):
                       msg.SubsetCreateMessage,
                       handler=self._add_subset,
                       filter=lambda x: \
-                          x.sender.is_compatible(self.data))
+                          x.sender.data in self._data)
         
         hub.subscribe(self,
                       msg.SubsetUpdateMessage,
                       handler=self._update_subset,
                       filter=lambda x: \
-                          x.sender.is_compatible(self.data))
+                          x.sender.data in self._data)
 
         hub.subscribe(self,
                       msg.SubsetDeleteMessage,
                       handler=self._remove_subset,
                       filter=lambda x: \
-                          x.sender.is_compatible(self.data))
+                          x.sender.data in self._data)
 
         hub.subscribe(self,
                       msg.DataMessage,
                       handler=self._update_all,
-                      filter=lambda x: x.sender is self.data)
+                      filter=lambda x: x.sender in self.data)
         
     def _add_subset(self, message):
         raise NotImplementedError("_add_subset not implemented")
