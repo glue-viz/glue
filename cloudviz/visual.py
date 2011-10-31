@@ -9,7 +9,7 @@ class VisualAttributes(object):
     This class is used to define visual attributes for any kind of objects
     '''
 
-    def __init__(self):
+    def __init__(self, subset=None):
 
         # Color can be specified using Matplotlib notation. Specifically, it
         # can be:
@@ -27,6 +27,9 @@ class VisualAttributes(object):
         # 'dotted', or 'none'
         self.linestyle = 'solid'
 
+        self.alpha = 1.
+        self.subset = subset
+
     def __setattr__(self, attribute, value):
 
         # Check that line style is valid
@@ -42,7 +45,11 @@ class VisualAttributes(object):
                 raise Exception("Line width should be positive")
 
         # Check that the attribute exists (don't allow new attributes)
-        if attribute not in ['color', 'linewidth', 'linestyle']:
-            raise Exception("Attribute %s does not exist" % value)
+        if attribute not in ['color', 'linewidth', 'linestyle', 'alpha', 'subset']:
+            raise Exception("Attribute %s does not exist" % attribute)
         
         object.__setattr__(self, attribute, value)
+
+        # broadcast state change
+        if hasattr(self, 'subset') and self.subset is not None:
+            self.subset.broadcast(self)

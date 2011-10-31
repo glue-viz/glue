@@ -88,6 +88,6 @@ class RoiLink(SubsetLink):
                 raise TypeError("All subsets must be ROI subsets")
 
     def convert(self, message):
-        for s in subsets:
+        for s in self.subsets:
             if s.roi is not message.sender.roi:
                 s.roi = message.sender.roi

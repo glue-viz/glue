@@ -8,8 +8,7 @@ import cloudviz
 from cloudviz.io import extract_data_fits, extract_data_hdf5
 from cloudviz.coordinates import WCSCoordinates
 from cloudviz.coordinates import WCSCubeCoordinates
-
-
+from cloudviz.coordinates import Coordinates
 
 class Component(object):
 
@@ -43,7 +42,7 @@ class Data(object):
 
     def __init__(self, label=None):
         # Coordinate conversion object
-        self.coords = None
+        self.coords = Coordinates()
 
         # Number of dimensions
         self.ndim = None

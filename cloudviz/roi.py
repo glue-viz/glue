@@ -2,7 +2,6 @@ import numpy as np
 np.seterr(all='ignore')
 from matplotlib.patches import Polygon, Rectangle, Ellipse
 
-import cloudviz as cv
 
 def aspect_ratio(ax):
     width = ax.get_position().width * ax.figure.get_figwidth()
@@ -177,7 +176,7 @@ class PolygonalROI(Roi):
         result = np.zeros(x.shape, dtype=int)
 
         # Treat special case of empty ROI
-        if not self.vx:
+        if len(self.vx) == 0:
             return result
 
         xi = np.array(self.vx)
@@ -229,7 +228,7 @@ class PolygonalROI(Roi):
                 than thresh
 
         """
-        if not self.vx:
+        if len(self.vx) == 0:
             return
 
         # find distance between vertices and input
@@ -247,52 +246,23 @@ class PolygonalROI(Roi):
     def defined(self):
         return len(self.vx) > 0
 
-class RoiSubsetEditor(object):
-    def __init__(self, data, component_x, component_y):
-        self._data = data
-        self.set_x_attribute(component_x)
-        self.set_y_attribute(component_y)
-
-    def get_subset(self):
-        subset = self._data.get_active_subset()
-        if subset is None: 
-            return
-
-        if not self.check_compatible_subset(subset):
-            raise TypeError("ROI and Subset are incompatible: %s, %s" %
-                            (type(self), type(subset)))
-        return subset
-
-    def set_x_attribute(self, attribute):
-        if attribute not in self._data.components:
-            raise KeyError("%s is not a valid component" % attribute)
-        self._component_x = attribute
-
-    def set_y_attribute(self, attribute):
-        if attribute not in self._data.components:
-            raise KeyError("%s is not a valid component" % attribute)
-        self._component_y = attribute
-
-    def check_compatible_subset(self, subset):
-        raise NotImplementedError()
-
-
 
 class AbstractMplRoi(object):
-    def __init__(self, ax):
+    """ Base class for objects which display
+    ROIs on Matplotlib plots and, optionally,
+    edit subset ROIs 
+    """
+    def __init__(self, ax, subset=None):
 
         self._ax = ax
         self._mid_selection = False
-        self._active = True
-        
+        self._subset = subset
+
         self._press = None  # id of MPL connection to button_press
         self._motion = None # id of MPL connection to motion_notify
         self._release = None # id of MPL connection to button_release
         self.connect()
         
-    def set_active(self, state):
-        self._active = state
-
     def start_selection(self, event):
         raise NotImplementedError()
 
@@ -300,8 +270,14 @@ class AbstractMplRoi(object):
         raise NotImplementedError()
 
     def finalize_selection(self, event):
-        raise NotImplementedError()
-        
+        if not (self._mid_selection):
+            return
+        if self._subset is not None:
+            self._subset.roi = self.to_polygon()
+        self.reset()
+        self._mid_selection = False
+        self._sync_patch()
+            
     def connect(self):
         self.disconnect()
         canvas = self._ax.figure.canvas
@@ -322,9 +298,12 @@ class AbstractMplRoi(object):
         if self._release is not None:
             self._ax.figure.canvas.mpl_disconnect(self._release)
             self._release = None
+
+    def to_polygon(self):
+        raise NotImplementedError()
         
 
-class MplRectangularROI(RectangularROI, AbstractMplROI):
+class MplRectangularROI(RectangularROI, AbstractMplRoi):
     """
     A subclass of RectangularROI that also renders the ROI to a plot
 
@@ -336,7 +315,7 @@ class MplRectangularROI(RectangularROI, AbstractMplROI):
                the visual properties of the ROI
     """
 
-    def __init__(self, ax):
+    def __init__(self, ax, subset=None):
         """
         Create a new ROI
 
@@ -346,7 +325,7 @@ class MplRectangularROI(RectangularROI, AbstractMplROI):
         """
 
         RectangularROI.__init__(self)
-        AbstractMplRoi.__init__(self, ax)
+        AbstractMplRoi.__init__(self, ax, subset=subset)
 
         self.plot_opts = {'edgecolor': 'red', 'facecolor': 'none',
                           'alpha': 0.3}
@@ -379,16 +358,9 @@ class MplRectangularROI(RectangularROI, AbstractMplROI):
         RectangularROI.update_limits(self, xmin, ymin, xmax, ymax)
         self._sync_patch()
 
-    def reset(self):
-        RectangularROI.reset(self)
-        self._sync_patch()
-
     def start_selection(self, event):
 
-        if not (event.inaxes and self._active):
-            return
-
-        if not self._active:
+        if not (event.inaxes):
             return
 
         self.reset()
@@ -401,10 +373,7 @@ class MplRectangularROI(RectangularROI, AbstractMplROI):
 
     def update_selection(self, event):
 
-        if not (event.inaxes and self._active):
-            return
-
-        if not self._active:
+        if not (event.inaxes):
             return
 
         if not self._mid_selection:
@@ -414,18 +383,14 @@ class MplRectangularROI(RectangularROI, AbstractMplROI):
                            min(event.ydata, self._yi),
                            max(event.xdata, self._xi),
                            max(event.ydata, self._yi))
-
-    def finalize_selection(self, event):
-
-        if not (event.inaxes and self._active):
-            return
-
-        if not self._mid_selection:
-            return
-
-        self.reset()
-        self._mid_selection = False
-
+        
+    def to_polygon(self):
+        x = [self.xmin, self.xmax, self.xmax, self.xmin]
+        y = [self.ymin, self.ymin, self.ymax, self.ymax]
+        result = PolygonalROI()
+        result.vx = x
+        result.vy = y
+        return result
 
 class MplCircularROI(CircularROI, AbstractMplRoi):
     """
@@ -439,7 +404,7 @@ class MplCircularROI(CircularROI, AbstractMplRoi):
                the visual properties of the ROI
     """
 
-    def __init__(self, ax):
+    def __init__(self, ax, subset=None):
         """
         Create a new ROI
 
@@ -449,12 +414,13 @@ class MplCircularROI(CircularROI, AbstractMplRoi):
         """
 
         CircularROI.__init__(self)
-        AbstractMplROI.__init__(self, ax)
+        AbstractMplRoi.__init__(self, ax, subset=subset)
 
         self.plot_opts = {'edgecolor': 'red', 'facecolor': 'none',
                           'alpha': 0.3}
 
         self._circle = Ellipse((0., 0.), width=0., height=0.)
+
         self._circle.set(**self.plot_opts)
 
         self._ax.add_patch(self._circle)
@@ -486,13 +452,9 @@ class MplCircularROI(CircularROI, AbstractMplRoi):
         CircularROI.set_radius(self, radius)
         self._sync_patch()
 
-    def reset(self):
-        CircularROI.reset(self)
-        self._sync_patch()
-
     def start_selection(self, event):
 
-        if not (event.inaxes and self._active):
+        if not (event.inaxes):
             return
 
         self.reset()
@@ -506,10 +468,7 @@ class MplCircularROI(CircularROI, AbstractMplRoi):
 
     def update_selection(self, event):
 
-        if not (event.inaxes and self._active):
-            return
-
-        if not self._mid_selection:
+        if not (event.inaxes and self._mid_selection):
             return
 
         dx = event.xdata - self._xi
@@ -517,18 +476,18 @@ class MplCircularROI(CircularROI, AbstractMplRoi):
 
         self.set_radius(np.sqrt(dx * dx + dy * dy))
 
-    def finalize_selection(self, event):
-
-        if not (event.inaxes and self._active):
-            return
-
-        if not self._mid_selection:
-            return
-        
-        self.reset()
-
-        self._mid_selection = False
-
+    def to_polygon(self):
+        ar = aspect_ratio(self._ax)
+        self._circle.center = (self.xc, self.yc)
+        self._circle.width = 2. * self.radius
+        self._circle.height = 2. * self.radius / ar
+        theta = np.linspace(0, 2 * np.pi, num = 100)
+        x = self.xc + self._circle.width * np.cos(theta) / 2.
+        y = self.yc + self._circle.height * np.sin(theta) / 2.
+        result = PolygonalROI()
+        result.vx = x
+        result.vy = y
+        return result
 
 
 class MplPolygonalROI(PolygonalROI, AbstractMplRoi):
@@ -543,7 +502,7 @@ class MplPolygonalROI(PolygonalROI, AbstractMplRoi):
                the visual properties of the ROI
     """
 
-    def __init__(self, ax, lasso=False):
+    def __init__(self, ax, lasso=False, subset=None):
         """
         Create a new ROI
 
@@ -553,7 +512,7 @@ class MplPolygonalROI(PolygonalROI, AbstractMplRoi):
         """
 
         PolygonalROI.__init__(self)
-        AbstractMplRoi.__init__(self, ax)
+        AbstractMplRoi.__init__(self, ax, subset=subset)
 
         self.plot_opts = {'edgecolor': 'red', 'facecolor': 'none',
                           'alpha': 0.3}
@@ -613,105 +572,27 @@ class MplPolygonalROI(PolygonalROI, AbstractMplRoi):
 
     def update_selection(self, event):
 
-        if not (event.inaxes and self._active):
-            return
-
-        if not self._mid_selection:
+        if not (event.inaxes and self._mid_selection):
             return
 
         self.replace_last_point(event.xdata, event.ydata)
 
-    def finalize_selection(self, event):
-
-        if not (event.inaxes and self._active):
-            return
-
-        if not self._mid_selection:
-            return
-
-        if event.button != 3:
-            return
-
-        subset = self.get_subset()
-        if subset is None: return
-
-        x = self._data.components[self._component_x].data
-        y = self._data.components[self._component_y].data
-
-        subset.mask = self.contains(x, y)
-        self.reset()
-
-        self.vx = [0.]
-        self.vy = [0.]
-
-        self._mid_selection = False
 
 
+class MplTreeROI(AbstractMplRoi):
+    def __init__(self, ax, single=False, subset=None):
 
-class MplBoxTool(MplRectangularROI, RoiSubsetEditor):
-
-    def __init__(self, data, component_x, component_y, ax):
-
-        MplRectangularROI.__init__(self, ax)
-        RoiSubsetEditor.__init__(self, data, component_x, component_y)
-
-    def check_compatible_subset(self, subset):
-        return isinstance(subset, cv.subset.ElementSubset)
-        
-    def finalize_selection(self, event):
-        if not (event.inaxes and self._active):
-            return
-
-        if not self._mid_selection:
-            return
-
-        subset = self.get_subset()
-        if subset is None:
-            return
-        x = self._data.components[self._component_x].data
-        y = self._data.components[self._component_y].data
-        subset.mask = self.contains(x,y)
-        MplRectangularRoi.finalize_selection(self, event)
-
-
-class MplCircleTool(MplCircularROI, RoiSubsetEditor):
-
-    def __init__(self, data, component_x, component_y, ax):
-
-        MplCircularROI.__init__(self, ax)
-        RoiSubsetEditor.__init__(self, data, component_x, component_y)
-
-    def check_compatible_subset(self, subset):
-        return isinstance(subset, cv.subset.ElementSubset)
-
-    def finalize_selection(self, event):
-        subset = self.get_subset()
-        if subset is None: return
-
-        x = self._data.components[self._component_x].data
-        y = self._data.components[self._component_y].data
-
-        subset.mask = self.contains(x, y)
-        MplCircularROI.finalize_selection(self, event)
-
-class MplTreeTool(AbstractMplRoi, RoiSubsetEditor):
-    def __init__(self, data, xdata, ydata, ax, single=False):
-
-        AbstractMplRoi.__init__(self, ax)
-        RoiSubsetEditor.__init__(self, data, xdata, ydata)
+        AbstractMplRoi.__init__(self, ax, subset=subset)
         self.single = single
 
-    def check_compatible_subset(self, subset):
-        return isinstance(subset, cv.subset.TreeSubset)
-
     def start_selection(self, event):
-        if not (event.inaxes and self._active):
+        if not (event.inaxes):
             return
 
         self._mid_selection = True
 
     def update_selection(self, event):
-        if not (event.inaxes and self._active and self._mid_selection):
+        if not (event.inaxes and self._mid_selection):
             return
 
         subset = self.get_subset()
@@ -744,100 +625,8 @@ class MplTreeTool(AbstractMplRoi, RoiSubsetEditor):
         subset.node_list = id
     
     def finalize_selection(self, event):
-        if not (event.inaxes and self._active and self._mid_selection):
+        if not (event.inaxes and self._mid_selection):
             return
         self.update_selection(event)
         
-        self._mid_selection = False
-        
-                         
-class MplPolygonTool(MplPolygonalROI, RoiSubsetEditor):
-
-    def __init__(self, data, component_x, component_y, ax):
-
-        MplPolygonalROI.__init__(self, ax)
-        RoiSubsetEditor.__init__(self, data, component_x, component_y)
-        
-    def check_compatible_subset(self, subset):
-        return isinstance(subset, cv.subset.ElementSubset)
-
-    def add_vertex(self, event):
-
-        if not (event.inaxes and self._active):
-            return
-
-        if event.button != 1:
-            return
-
-        self.add_point(event.xdata, event.ydata)
-
-        self._mid_selection = True
-
-    def finalize_selection(self, event):
-        if not (event.inaxes and self._active):
-            return
-
-        if not self._mid_selection:
-            return
-
-        if event.button != 3:
-            return
-
-        subset = self.get_subset()
-        if subset is None: return
-
-        x = self._data.components[self._component_x].data
-        y = self._data.components[self._component_y].data
-
-        subset.mask = self.contains(x, y)
-        MplPolygonROI.finalize_selection(self, event)
-
-class MplLassoTool(MplPolygonalROI, RoiSubsetEditor):
-
-    def __init__(self, data, component_x, component_y, ax):
-
-        MplPolygonalROI.__init__(self, ax, lasso=True)
-        RoiSubsetEditor.__init__(self, data, component_x, component_y)
-
-    def check_compatible_subset(self, subset):
-        return isinstance(subset, cv.subset.ElementSubset)
-
-    def start_selection(self, event):
-
-        if not (event.inaxes and self._active):
-            return
-
-        self.reset()
-        self.add_point(event.xdata, event.ydata)
-
-        self._mid_selection = True
-
-    def update_selection(self, event):
-
-        if not (event.inaxes and self._active):
-            return
-
-        if not self._mid_selection:
-            return
-
-        self.add_point(event.xdata, event.ydata)
-
-    def finalize_selection(self, event):
-
-        if self._polygon is None:
-            return
-
-        if not self._mid_selection:
-            return
-
-        subset = self.get_subset()
-        if subset is None: return
-
-        x = self._data.components[self._component_x].data
-        y = self._data.components[self._component_y].data
-
-        subset.mask = self.contains(x, y)
-
-        self.reset()
-
         self._mid_selection = False

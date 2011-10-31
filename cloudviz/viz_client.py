@@ -52,7 +52,7 @@ class VizClient(Client):
         Method to handle messages sent when subsets are created.
         """
         s = message.subset
-        self._update_subset_single(s)
+        self._update_layer(s)
         self._redraw()
 
     def _update_subset(self, message):
@@ -62,7 +62,7 @@ class VizClient(Client):
 
         """
         s = message.subset
-        self._update_subset_single(s)
+        self._update_layer(s)
         self._redraw()
 
     def _remove_subset(self, message):

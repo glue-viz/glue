@@ -23,27 +23,15 @@ class Subset(object):
         Describes visual attributes of the subset
     """
 
-    class ListenDict(dict):
-        """
-        A small dictionary class to keep track of visual subset
-        properties. Updates are broadcasted through the subset
-
-        """
-        def __init__(self, subset):
-            dict.__init__(self)
-            self._subset = subset
-
-        def __setitem__(self, key, value):
-            dict.__setitem__(self, key, value)
-            self._subset.broadcast(self)
-
     def __init__(self, data, color='r', alpha=1.0, label=None):
         """ Create a new subclass object.
 
         """
         self.data = data
         self._broadcasting = False
-        self.style = VisualAttributes()
+        self.style = VisualAttributes(subset=self)
+        self.style.color = color
+        self.style.alpha = alpha
         self.label = label
 
     def register(self):
@@ -54,20 +42,12 @@ class Subset(object):
         self.data.add_subset(self)
         self.do_broadcast(True)
 
-    def to_index_list(self, data=None):
+    def to_index_list(self):
         """
         Convert the current subset to a list of indices. These index
         the elements in the data object that belong to the subset.
 
-        This method must be overridden by subclasses
-
-        Parameters:
-        -----------
-        data: Data instance
-              If this is provided, return an index list for the
-              elements in this data set (if possible). Otherwise,
-              return an index list for the data associated with this
-              subset (if any)
+        By default, this uses the output from to_mask.
 
         Returns:
         --------
@@ -81,19 +61,13 @@ class Subset(object):
         for the requested data set.
 
         """
-        raise NotImplementedError("must be overridden by a subclass")
+        mask = self.to_mask()
+        result, = np.where(mask)
+        return result
 
-    def to_mask(self, data=None):
+    def to_mask(self):
         """
         Convert the current subset to a mask.
-
-        Parameters:
-        -----------
-        data: Data instance
-              If this is provided, return a mask for the
-              elements in this data set (if possible). Otherwise,
-              return a mask list for the data associated with this
-              subset (if any)
 
         Returns:
         --------
@@ -129,24 +103,27 @@ class Subset(object):
                    The name of the attribute (if any) that should be
                    broadcast as updated.
         """
+        if not hasattr(self, 'data') or not hasattr(self.data, 'hub'):
+            return
+        if not hasattr(self, '_broadcasting'):
+            return
 
-        try:
-            if self._broadcasting and self.data.hub:
-                msg = cloudviz.message.SubsetUpdateMessage(self,
-                                                           attribute=attribute)
-                self.data.hub.broadcast(msg)
-        except (AttributeError):
-            pass
+        if self._broadcasting and self.data.hub:
+            msg = cloudviz.message.SubsetUpdateMessage(self,
+                                                       attribute=attribute)
+            self.data.hub.broadcast(msg)
 
     def unregister(self):
         """Broadcast a SubsetDeleteMessage to the hub, and stop braodcasting"""
+        if not hasattr(self, 'data') or not hasattr(self.data, 'hub'):
+            return
+        if not hasattr(self, '_broadcasting'):
+            return
 
-        try:
-            if self._broadcasting and self.data.hub:
-                msg = cloudviz.message.SubsetDeleteMessage(self)
-                self.data.hub.broadcast(msg)
-        except (AttributeError):
-            pass
+        if self._broadcasting and self.data.hub:
+            msg = cloudviz.message.SubsetDeleteMessage(self)
+            self.data.hub.broadcast(msg)
+
         self._broadcasting = False
 
     def write_mask(self, file_name, format="fits"):
@@ -171,6 +148,7 @@ class Subset(object):
 
     def __del__(self):
         self.unregister()
+        object.__del__(self)
 
     def __setattr__(self, attribute, value):
         object.__setattr__(self, attribute, value)
@@ -383,8 +361,10 @@ class ElementSubset(Subset):
 
 
 class RoiSubset(Subset):
-    """ This subset is defined by a class:`cloudviz.roi.Roi` object,
-    interpreted using a data set's coordinate object.
+    """ This subset is defined by a class:`cloudviz.roi.Roi` object.
+    The ROI coordinate system can be either the pixel location of each data element
+    (as stored in that component's numpy array), or the units of the 
+    components themselves.
 
     Attributes:
     -----------
@@ -392,27 +372,67 @@ class RoiSubset(Subset):
          The roi that describes the subset boundaries.
     """
 
-    def __init__(self, data):
+    def __init__(self, data, xatt=None, yatt=None, roi=None):
         """ Create a new subset 
         
         Parameters:
         -----------
         data: a class:`cloudviz.data.Data` instance
               Which data set to attach this subset to.
+
+        xatt : string (optional)
+            Which coordinate system to use for the x axis of the
+            ROI. The default is None, which means the pixel location
+            of each data element is used. Alternatively, xatt can a name
+            of one of the components in the data set.
+
+        yatt : string (optional)
+            See xatt.
         """
         Subset.__init__(self, data)
-        self.roi = None
+        self.roi = roi
+        self.xatt = xatt
+        self.yatt = yatt
+        
+    @property
+    def xatt(self):
+        return self._xatt
+
+    @xatt.setter
+    def xatt(self, att):
+        if att is not None and att not in self.data.components:
+            raise TypeError("Not a valid component: %s" % att)
+        self._xatt = att
     
+    @property
+    def yatt(self):
+        return self._yatt
+
+    @yatt.setter
+    def yatt(self, att):
+        if att is not None and att not in self.data.components:
+            raise TypeError("Not a valid component: %s" % att)
+        self._yatt = att
+    
+
     def to_mask(self):
         if self.roi is None or not self.roi.defined():
             return np.zeros_like(self.data, 'bool')
 
-        ind = np.arange(np.product(self.data.shape))
-        ind.shape = self.data.shape
-        x = ind % self.data.shape[0]
-        y = (ind / self.data.shape[0]) % self.data.shape[1]
-        xx, yy = self.data.coordinates.pixel2world(self, x, y)
+        if self.xatt is None or self.yatt is None:
+            ind = np.arange(np.product(self.data.shape))
+            shape = self.data.shape
+            if len(shape) < 2:
+                shape = (shape[0], 1)
+            x = ind % shape[0]
+            y = (ind / shape[0]) % shape[1]
+            xx, yy = self.data.coords.pixel2world(x, y, None)
         
+        if self.xatt is not None:
+            xx = self.data[self.xatt]
+            
+        if self.yatt is not None:
+            yy = self.data[self.yatt]
+            
+        print self.xatt, self.yatt
         return self.roi.contains(xx, yy)
-
-        

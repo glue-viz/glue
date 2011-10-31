@@ -9,7 +9,7 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    inkscape:version="0.48.2 r9819"
-   sodipodi:docname="plus.svg"
+   sodipodi:docname="minus.svg"
    height="2.029"
    width="7.9999499"
    sodipodi:version="0.32"
@@ -5309,8 +5309,8 @@
      pagecolor="#e8e8e4"
      snaptoguides="true"
      showguides="true"
-     inkscape:window-y="0"
-     inkscape:window-x="0"
+     inkscape:window-y="354"
+     inkscape:window-x="314"
      inkscape:window-height="852"
      inkscape:window-width="1440"
      inkscape:cy="-1.9936005"
@@ -6695,7 +6695,10 @@ http://www.inkscape.org/</dc:description>
        id="path10652"
        d="m -16.904483,267.25687 -0.0039,2.029 -7.99605,0 0.0039,-2.029 7.99605,0 z"
        style="color:#000000;fill:url(#linearGradient3208);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;marker:none;display:inline"
-       inkscape:connector-curvature="0" />
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/Users/beaumont/hyperviz/qt/icons/minus.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
   </g>
   <g
      id="zoom-half-size"

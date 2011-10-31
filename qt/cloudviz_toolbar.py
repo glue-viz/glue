@@ -3,10 +3,16 @@ import os
 import matplotlib
 from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
 from PyQt4 import QtCore, QtGui, Qt
+from PyQt4.QtGui import QIcon
 
-from cloudviz.roi import MplCircleTool
+from cloudviz.roi import MplCircularROI, MplRectangularROI, MplPolygonalROI
+import cloudviz as cv
 
 class CloudvizToolbar(NavigationToolbar2QT):
+    def __init__(self, parent):
+        super(CloudvizToolbar, self).__init__(parent.canvas, parent.frame)
+        self.parent = parent
+
     def _init_toolbar(self):
         self.basedir = os.path.join(matplotlib.rcParams[ 'datapath' ],'images')
         self.buttons = {}
@@ -31,17 +37,17 @@ class CloudvizToolbar(NavigationToolbar2QT):
 
         a = self.addAction(QIcon('icons/circle.png'), 'Circle', self.circle)
         a.setToolTip('Modify current subset using circular selection')
-        self.setCheckable(True)
+        a.setCheckable(True)
         self.buttons['circle'] = a
-
+        
         a = self.addAction(QIcon('icons/square.png'), 'Box', self.box)
         a.setToolTip('Modify current subset using box selection')
-        self.setCheckable(True)
+        a.setCheckable(True)
         self.buttons['box'] = a
 
         a = self.addAction(QIcon('icons/lasso.png'), 'Lasso', self.lasso)
         a.setToolTip('Modify current subset using lasso selection')
-        self.setCheckable(True)
+        a.setCheckable(True)
         self.buttons['lasso'] = a
         
         self.addSeparator()
@@ -75,60 +81,58 @@ class CloudvizToolbar(NavigationToolbar2QT):
         self.adj_window = None
             
     def zoom(self, *args):
-        super(CustomToolbar, self).zoom(self, *args)
+        super(CloudvizToolbar, self).zoom(self, *args)
         self.update_boxes()
 
     def pan(self, *args):
-        super(CustomToolbar, self).pan(self, *args)
+        super(CloudvizToolbar, self).pan(self, *args)
         self.update_boxes()
 
-    def circle(self, *args):
+    def shape_button(self, mode, roi, **kwargs):
+        if not isinstance(self.parent.active_layer, cv.subset.RoiSubset):
+            return
+
         'activate circle selection mode'
-        if self_active == 'CIRCLE':
+        if self._active == mode.upper():
             self._active = None
+            if self.roi: 
+                self.roi.disconnect()
+                self.roi = None
         else:
-            self._active = 'CIRCLE'
+            self._active = mode.upper()
 
         if self._idPress is not None:
             self._idPress = self.canvas.mpl_disconnect(self._idPress)
             self.mode = ''
 
         if self._idRelease is not None:
-            self._idRelease = self.mpl_disconnect(self._idRelease)
+            self._idRelease = self.canvas.mpl_disconnect(self._idRelease)
             self.mode = ''
 
         if self._active:
-            self._idPress = self.canvas.mpl_connect('button_press_event', self.press_circle)
-            self._idRelease = self.canvas.mpl_connect('button_release_event', self.release_circle)
-            self.mode = 'circle'
+            subset = self.parent.active_layer
+            ax, = self.canvas.figure.get_axes()
+            self.roi = roi(ax, subset=subset, **kwargs)
+            self._idPress = self.roi._press
+            self._idMotion = self.roi._motion
+            self._idRelease = self.roi._release
+
+            self.mode = mode.lower()
             self.canvas.widgetlock(self)
         else:
             self.canvas.widgetlock.release(self)
 
-        for i in self.canvas.figure.get_axes():
-            a.set_navigate_mode(self._active)
-
         self.set_message(self.mode)
+        self.update_boxes()
+
+    def circle(self, *args):
+        self.shape_button('circle', MplCircularROI)
 
     def box(self, *args):
-        pass
+        self.shape_button('box', MplRectangularROI)
 
     def lasso(self, *args):
-        pass
-
-    def press_circle(self, event):
-        'the press mouse button in circle mode callback'
-        if event.button == 1:
-            self._button_pressed=1
-        elif  event.button == 3:
-            self._button_pressed=3
-        else:
-            self._button_pressed=None
-            return
-
-        self._roi = MplCirculeTool(self.canvas.figure.get_axes())
-        self._roi.connect()
-        self.press(event)
+        self.shape_button('lasso', MplPolygonalROI, lasso=True)
 
     def update_boxes(self):
         self.buttons['zoom'].setChecked(self._active == 'ZOOM')
