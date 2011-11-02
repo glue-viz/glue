@@ -16,7 +16,7 @@ class Client(cloudviz.HubListener):
 
     """
 
-    def __init__(self, data):
+    def __init__(self, data=None):
         """
         Create a new client object.
 
@@ -30,17 +30,25 @@ class Client(cloudviz.HubListener):
         TypeError: If the data input is not a Data instance.
         """
 
-        if not isinstance(data, cloudviz.Data):
+        if data is None:
+            self._data = []
+        elif isinstance(data, cloudviz.Data):
+            self._data = [data]
+        elif isinstance(data, list):
+            for d in data:
+                if not isinstance(d, cloudviz.Data):
+                    raise TypeError("Input data is not a Data object: %s" % type(data))
+            self._data = data
+        else:
             raise TypeError("Input data is not a Data object: %s" % type(data))
-
-        self._data = [data]
-        self._event_listener = None
 
     @property
     def data(self):
         return self._data[0]
 
     def add_data(self, data):
+        #XXX if data added after subscribing to client,
+        # must update subscription rules
         if data in self._data: return
         self._data.append(data)
 

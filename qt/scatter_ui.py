@@ -14,10 +14,10 @@ from cloudviz import RasterAxes
 from cloudviz_toolbar import CloudvizToolbar
 
 class ScatterUI(QMainWindow, cv.ScatterClient):
-    def __init__(self, data, parent=None):
+    def __init__(self, data=None, parent=None):
         QMainWindow.__init__(self, parent)
-        self.setWindowTitle("Scatter Plot")
 
+        self.setWindowTitle("Scatter Plot")
         self.frame = QWidget()
         self.setCentralWidget(self.frame)
         layout = QVBoxLayout()
@@ -29,51 +29,23 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
         self.canvas = FigureCanvas(self.fig)
         self.canvas.setParent(self.frame)
         self.frame.layout().addWidget(self.canvas)
-        cv.ScatterClient.__init__(self, data, figure=self.fig)
 
         self.create_actions()
         self.create_toolbar()
         self.create_menu()
-        self.create_secondary_navigator()        
-        
-        self.active_layer = None
+        self.create_secondary_navigator()                
+        self._active_layer = None
 
-    @property
-    def active_layer(self):
-        return self._active_layer
+        cv.ScatterClient.__init__(self, data=data, figure=self.fig)
 
-    @active_layer.setter
-    def active_layer(self, layer):
-        if layer is not None and layer not in self.layers:
-            raise TypeError("Invalid layer")
-        self._active_layer = layer
-        isSubset = isinstance(layer, cv.subset.RoiSubset)
-        self.toolbar.buttons['circle'].setDisabled(not isSubset)
-        self.toolbar.buttons['box'].setDisabled(not isSubset)
-        self.toolbar.buttons['lasso'].setDisabled(not isSubset)
-        if not isSubset:
-            self.toolbar.buttons['circle'].setChecked(False)
-            self.toolbar.buttons['box'].setChecked(False)
-            self.toolbar.buttons['lasso'].setChecked(False)
-            self.toolbar._active = None
+
     def create_actions(self):
         pass
 
     def create_toolbar(self):
         tb = CloudvizToolbar(self)
         self.toolbar = tb
-        print self.toolbar
         self.addToolBar(tb)
-        
-
-    def create_plot_window(self):
-        self.dpi = 60
-        self.fig = Figure((7.0, 6.0), dpi=self.dpi, facecolor='#ededed')
-        self.canvas = FigureCanvas(self.fig)
-        self.canvas.setParent(self.frame)
-
-        self.frame.layout().addWidget(self.canvas)
-
         
     def create_menu(self):
         pass
@@ -82,8 +54,22 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
         layout = self.frame.layout()
         bottom = QHBoxLayout()
         left = QVBoxLayout()
+        right = QVBoxLayout()
 
-        # select which variables to plot
+        xrow, yrow = self.create_variable_droplists()
+        tree, row = self.create_layer_tree()
+        
+        left.addLayout(xrow)
+        left.addLayout(yrow)        
+        right.addWidget(tree)
+        right.addLayout(row)
+        right.setContentsMargins(0,0,0,0)
+
+        bottom.addLayout(left)
+        bottom.addLayout(right)
+        layout.addLayout(bottom)
+
+    def create_variable_droplists(self):
         xrow = QHBoxLayout()
         xlabel = QLabel("x axis")
         xcombo = QComboBox()
@@ -103,18 +89,10 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
         yrow.addWidget(ycombo)
         yrow.addWidget(ylog)
         yrow.addWidget(yflip)
-        
-        self.combo_data = {}
-        self.combo_data['current'] = None
-        self.combo_data['xcombo'] = xcombo
-        self.combo_data['ycombo'] = ycombo
-        for d in self._data:
-            c = [c for c in data.components if
-                 np.can_cast(data[c].dtype, np.float)]
-            self.combo_data[d] = {'fields': c, 'x': 0, 'y': 1}
-        self.set_combos(self.data)
-        left.addLayout(xrow)
-        left.addLayout(yrow)
+
+
+        self.xcombo = xcombo
+        self.ycombo = ycombo
 
         self.connect(xcombo, SIGNAL('currentIndexChanged(int)'), 
                      self.update_xcombo)
@@ -129,36 +107,18 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
         self.connect(yflip, SIGNAL('stateChanged(int)'),
                      self.toggle_yflip)
 
-        # layer tree display
-        right = QVBoxLayout()
+        return xrow, yrow
+
+    def create_layer_tree(self):
         self.tree = {}
         tree = QTreeWidget()
+        self.tree['root'] = tree
         tree.setHeaderLabels(["Layers"])
-        items = []
-        for i,d in enumerate(self._data):
-            label = d.label
-            if label is None:
-                label = "Data %i" % i
-            item = QTreeWidgetItem([label])
-            self.tree[d] = item
-            items.append(item)
-            for j, s in enumerate(d.subsets):
-                label = s.label
-                if label is None:
-                    label = "Subset %i.%i" % (i, j)
-                item = QTreeWidgetItem(items[-1], [label])
-                self.tree[s] = item
-        tree.addTopLevelItems(items)
-        tree.expandAll()
+
         self.connect(tree, SIGNAL('itemPressed(QTreeWidgetItem *,int)'),
-                     self.highlight_layer)
+                     self.activate_new_layer)
         self.connect(tree, SIGNAL('itemChanged(QTreeWidgetItem *,int)'), 
                      self.toggle_layer_visibility)
-
-        iterator = QTreeWidgetItemIterator(tree)
-        while iterator.value():
-            iterator.value().setCheckState(0, Qt.Checked)
-            iterator += 1
 
         add = QPushButton(QIcon("icons/plus.png"), "Add")
         subtract = QPushButton(QIcon("icons/minus.png"), "Subtract")
@@ -166,103 +126,116 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
         row.addWidget(add)
         row.addWidget(subtract)
         row.setContentsMargins(0,0,0,0)
-        
-        right.addWidget(tree)
-        right.addLayout(row)
-        right.setContentsMargins(0,0,0,0)
-        bottom.addLayout(left)
-        bottom.addLayout(right)
-        layout.addLayout(bottom)
+        return tree, row
+
+    def notify_layer_change(self, old, new):
+        super(ScatterUI, self).notify_layer_change(old, new)
+        if self.toolbar is not None:
+            self.toolbar.deselect_roi()
+            self.toolbar.set_roi_enabled(isinstance(new, cv.subset.RoiSubset))
+        self.tree['root'].setCurrentItem(self.tree[new])
+
+    def notify_data_layer_change(self, old, new):
+        super(ScatterUI, self).notify_data_layer_change(old, new)
+        self.toolbar.deselect_roi()
+        self.set_combos(new)
 
     def set_combos(self, data):
-        current = self.combo_data['current']
-        xcombo = self.combo_data['xcombo']
-        ycombo = self.combo_data['ycombo']
+        if data is None:
+            return
 
-        if current is not None:
-            x = xcombo.currentIndex()
-            y = ycombo.currentIndex()
-            self.combo_data[current]['x'] = x
-            self.combo_data[current]['y'] = y
-
-        self.combo_data['current'] = data
-        fields = self.combo_data[data]['fields']
+        xcombo = self.xcombo
+        ycombo = self.ycombo
+        fields = self.layers[data]['attributes']
+        
+        s1 = self.disconnect(xcombo, SIGNAL('currentIndexChanged(int)'), 
+                                  self.update_xcombo)
+        s2 = self.disconnect(ycombo, SIGNAL('currentIndexChanged(int)'), 
+                                   self.update_ycombo)
         xcombo.clear()
         ycombo.clear()
         xcombo.addItems(fields)
         ycombo.addItems(fields)
-        xcombo.setCurrentIndex(self.combo_data[data]['x'])
-        ycombo.setCurrentIndex(self.combo_data[data]['y'])
-        self.update_xcombo()
-        self.update_ycombo()
+        xcombo.setCurrentIndex(fields.index(self.layers[data]['x']))
+        ycombo.setCurrentIndex(fields.index(self.layers[data]['y']))
 
+        if s1:
+            self.connect(xcombo, SIGNAL('currentIndexChanged(int)'), 
+                         self.update_xcombo)
+        if s2:
+            self.connect(ycombo, SIGNAL('currentIndexChanged(int)'), 
+                         self.update_ycombo)
+            
     def treecheck(self):
         print 'check'
         return
 
-    def update_xcombo(self):
-        data = self.combo_data['current']
-        combo = self.combo_data['xcombo']
+    def update_xcombo(self, **kwargs):
+        data = self.active_data
+        if data is None: 
+            return
+        combo = self.xcombo
         att = str(combo.currentText())
-        self.set_xdata(att, data=data)
+        self.set_xdata(att, data=data, **kwargs)
 
-    def update_ycombo(self):
-        print 'update_ycombo'
-        data = self.combo_data['current']
-        combo = self.combo_data['ycombo']
+    def update_ycombo(self, **kwargs):
+        data = self.active_data
+        if data is None:
+            return
+        combo = self.ycombo
         att = str(combo.currentText())
-        print att
-        self.set_ydata(att, data=data)
+        self.set_ydata(att, data=data, **kwargs)
     
     def toggle_xlog(self):
         source = self.sender()
         state = source.checkState()
-        mode = 'linear' if state == Qt.Unchecked else 'log'
-        self.ax.set_xscale(mode)
-        self._redraw()
+        self.set_xlog(state == Qt.Checked)
 
     def toggle_ylog(self):
         source = self.sender()
         state = source.checkState()
-        mode = 'linear' if state == Qt.Unchecked else 'log'
-        self.ax.set_yscale(mode)
-        self._redraw()
+        self.set_ylog(state == Qt.Checked)
 
     def toggle_xflip(self):
         source = self.sender()
         state = source.checkState()
-        flip = state == Qt.Checked
-        range = self.ax.get_xlim()
-        if flip:
-            self.ax.set_xlim(max(range), min(range))
-        else:
-            self.ax.set_xlim(min(range), max(range))        
-        self._redraw()
+        self.set_xflip(state == Qt.Checked)
 
     def toggle_yflip(self):
         source = self.sender()
         state = source.checkState()
-        flip = state == Qt.Checked
-        range = self.ax.get_ylim()
-        if flip:
-            self.ax.set_ylim(max(range), min(range))
+        self.set_yflip(state == Qt.Checked)
+
+
+    def _add_tree_item(self, item):
+        tree = self.tree['root']
+        if isinstance(item, cv.Subset):
+            d = item.data
+            parent = self.tree[d]
+            label = item.label
+            if label is None:
+                ct = parent.childCount()
+                datanum = tree.indexOfTopLevelItem(parent)
+                label = "Subset %i.%i" % (datanum, ct)
+            branch = QTreeWidgetItem(self.tree[d], [label])
+        elif isinstance(item, cv.Data):
+            label = item.label
+            if label is None:
+                num = tree.topLevelItemCount()
+                label = "Data %i" % num
+            branch = QTreeWidgetItem(tree, [label])
         else:
-            self.ax.set_ylim(min(range), max(range))        
-        self._redraw()
+            raise TypeError("Item is not data or subset: %s" % type(item))
 
-    def _add_subset(self, message):
-        super(ScatterUI, self)._add_subset(message)
-        s = message.sender
-        d = s.data
-        parent = self.tree[d]
-        ct = parent.childCount()
-        datanum = int(str(parent.text(0)).split()[-1])
-        label = "Subset %i.%i" % (datanum, ct)
-        item = QTreeWidgetItem(self.tree[d], [label])
-        self.tree[s] = item
-        item.setCheckState(0, Qt.Checked)
+        branch.setCheckState(0, Qt.Checked)        
+        self.tree[item] = branch
+        tree.expanItem(branch)
 
-    def highlight_layer(self):
+    def init_layer(self, layer):
+        super(ScatterUI, self).init_layer(layer)
+        self._add_tree_item(layer)
+        
+    def activate_new_layer(self):
         """ When the user clicks on a layer in the layer tree,
         set the active_layer to match the selection"""
         sender = self.sender()
@@ -287,22 +260,28 @@ if __name__=="__main__":
 
     app = QApplication(sys.argv)
 
-    data = cv.data.TabularData()
-    data.read_data('../examples/oph_c2d_yso_catalog.tbl')
-    s = cv.subset.RoiSubset(data)
+    data = cv.data.TabularData(label="Primary Data Set")
+    data2 = cv.data.TabularData(label="Secondary data Set")
+    data.read_data('test_table_1.vot', tid=0)
+    data2.read_data('test_table_2.vot')
+    s = cv.subset.RoiSubset(data, label="First Subset")
     s.style.color = 'red'
+    s2 = cv.subset.RoiSubset(data2, label="Second Subset")
+    s2.style.color='#aaaaaa'
     
     hub = cv.Hub()
-    subset_client = QtSubsetBrowserClient(data)
-    scatter_client = ScatterUI(data)
+    subset_client = QtSubsetBrowserClient([data, data2])
+    scatter_client = ScatterUI([data, data2])
     
 
     data.register_to_hub(hub)
+    data2.register_to_hub(hub)
     subset_client.register_to_hub(hub)
     scatter_client.register_to_hub(hub)
 
     s.register()
-    
+    s2.register()
+
     subset_client.show()
     scatter_client.show()
 

@@ -13,10 +13,11 @@ class ScatterClient(VizClient):
     The subset style dictionaries are passed directly to the
     scatter plot's 'set' method.
     """
-    def __init__(self, data, figure=None, axes=None):
-        VizClient.__init__(self, data)
+    def __init__(self, data=None, figure=None, axes=None):
+        VizClient.__init__(self, data=data)
 
         self.layers = {}
+        self._active_layer = None
 
         if figure is None: 
             if axes is not None:
@@ -32,17 +33,57 @@ class ScatterClient(VizClient):
             ax = axes
             
         self.ax = ax
-        self.init_plot()
-        
-    def init_plot(self):
+
         for d in self.get_data():
-            xatt = d.components.keys()[0]
-            yatt = d.components.keys()[1]            
-            self.init_layer(d, xatt=xatt, yatt=yatt)
-            self.set_xdata(xatt, data=d)
-            self.set_ydata(yatt, data=d)
+            self.init_layer(d)
             for s in d.subsets:
-                self.init_layer(s, xatt=xatt, yatt=yatt)
+                self.init_layer(s)
+
+    @property
+    def active_data(self):
+        l = self.active_layer
+        if isinstance(l, cv.Data):
+            return l
+        if isinstance(l, cv.Subset):
+            return l.data
+        return None
+
+    @property
+    def active_layer(self):
+        return self._active_layer
+
+    @active_layer.setter
+    def active_layer(self, layer):
+        if layer is not None and layer not in self.layers:
+            raise TypeError("Invalid layer")
+        
+        changed = self._active_layer != layer
+        isData = isinstance(layer, cv.Data)
+        
+        if isinstance(self._active_layer, cv.Data):
+            old_data = self._active_layer
+        elif isinstance(self._active_layer, cv.Subset):
+            old_data = self._active_layer.data
+        else:
+            old_data = None
+
+        if isData:
+            data = layer
+        else:
+            data = layer.data
+
+        if changed:
+            self.notify_layer_change(self._active_layer, layer)
+            if data != old_data:
+                self.notify_data_layer_change(old_data, data)
+
+        self._active_layer = layer            
+
+    def notify_layer_change(self, old, new):
+        pass
+    
+    def notify_data_layer_change(self, old, new):
+        pass
 
     def init_layer(self, layer, xatt=None, yatt=None):
 
@@ -59,17 +100,18 @@ class ScatterClient(VizClient):
             data = layer
         else:
             data = layer.data
+            
+        attributes = [c for c in data.components if
+                      np.can_cast(data[c].dtype, np.float)]
 
         if xatt is None:
-            if isSubset:
+            xatt = attributes[0]
+            if data in self.layers:
                 xatt = self.layers[data]['x']
-            else:
-                data.components.keys()[0]
         if yatt is None:
-            if isSubset:
+            yatt = attributes[1]
+            if data in self.layers:
                 yatt = self.layers[data]['y']
-            else:
-                yatt = data.components.keys()[1]
 
         x = data[xatt]
         y = data[yatt]
@@ -85,14 +127,16 @@ class ScatterClient(VizClient):
             
         artist = self.ax.scatter(x, y)
         artist.set_edgecolor('none')
-        self.layers[layer] = {'artist':artist, 'x': xatt, 'y':yatt}
+        self.layers[layer] = {'artist':artist, 
+                              'x': xatt, 'y':yatt, 
+                              'attributes':attributes}
 
         if isSubset:
             artist.set_facecolor(layer.style.color)
             artist.set_alpha(layer.style.alpha)
     
+
     def update_layer(self, layer):
-        print 'updating layer'
         if isinstance(layer, cv.Data):
             data = layer
             xatt = self.layers[layer]['x']
@@ -126,12 +170,10 @@ class ScatterClient(VizClient):
         """
         Reset the plotted x range to show all the data
         """
-        if data is not None: 
-            box = self.layers[data]['artist'].get_datalim(self.ax.transData)
-        else:
-            box = Bbox.union([l['artist'].get_datalim(self.ax.transData) 
-                              for l in self.layers if isinstance(l, cv.Data)])
-        range = relim(box.extents[0], box.extents[2], self.ax.get_xscale() == 'log')
+        if data is None: 
+            data = self.data
+        xy = self.layers[data]['artist'].get_offsets()
+        range = relim(min(xy[:,0]), max(xy[:,0]), self.ax.get_xscale() == 'log')
         if self.ax.xaxis_inverted():
             range = [rage[1], range[0]]
             
@@ -141,12 +183,10 @@ class ScatterClient(VizClient):
         """
         Reset the plotted y range to show all the data
         """
-        if data is not None: 
-            box = self.layers[data]['artist'].get_datalim(self.ax.transData)
-        else:
-            box = Bbox.union([l['artist'].get_datalim(self.ax.transData) 
-                              for l in self.layers if isinstance(l, cv.Data)])
-        range = relim(box.extents[1], box.extents[3], self.ax.get_yscale() == 'log')
+        if data is None: 
+            data = self.data
+        xy = self.layers[data]['artist'].get_offsets()
+        range = relim(min(xy[:,1]), max(xy[:,1]), self.ax.get_yscale() == 'log')
         if self.ax.yaxis_inverted():
             range = [range[1], range[0]]
         self.ax.set_ylim(range)
@@ -162,7 +202,7 @@ class ScatterClient(VizClient):
         self.layers[layer].set_visible(False)
 
         
-    def set_xydata(self, coord, attribute, data=None):
+    def set_xydata(self, coord, attribute, data=None, snap=True):
         if data is None:
             data = self.data
 
@@ -186,15 +226,15 @@ class ScatterClient(VizClient):
         self.update_layer(data)
         map(self.update_layer, (l for l in self.layers if l in data.subsets))
     
-        if coord == 'x':
+        if coord == 'x' and snap:
             self._snap_xlim(data)
-        else:
+        elif coord == 'y' and snap:
             self._snap_ylim(data)
 
         self.refresh()
 
 
-    def set_xdata(self, attribute, data=None):
+    def set_xdata(self, attribute, data=None, snap=True):
         """
         Redefine which component gets plotted on the x axis
 
@@ -206,9 +246,9 @@ class ScatterClient(VizClient):
                which data set to apply to. Defaults to the first data set
                if not provided.
         """
-        self.set_xydata('x', attribute, data=data)
+        self.set_xydata('x', attribute, data=data, snap=snap)
 
-    def set_ydata(self, attribute, data=None):
+    def set_ydata(self, attribute, data=None, snap=True):
         """
         Redefine which component gets plotted on the y axis
 
@@ -221,7 +261,33 @@ class ScatterClient(VizClient):
                which data set to apply to. Defaults to the first data set
                if not provided.
         """
-        self.set_xydata('y', attribute, data=data)
+        self.set_xydata('y', attribute, data=data, snap=snap)
+
+    def set_xlog(self, state):
+        mode = 'log' if state else 'linear'
+        self.ax.set_xscale(mode)
+        self._redraw()
+
+    def set_ylog(self, state):
+        mode = 'log' if state else 'linear'
+        self.ax.set_yscale(mode)
+        self._redraw()
+
+    def set_xflip(self, state):
+        range = self.ax.get_xlim()
+        if state:
+            self.ax.set_xlim(max(range), min(range))
+        else:
+            self.ax.set_xlim(min(range), max(range))
+        self._redraw()
+
+    def set_yflip(self, state):
+        range = self.ax.set_ylim()
+        if state:
+            self.ax.set_ylim(max(range), min(range))
+        else:
+            self.ax.set_ylim(min(range), max(range))
+        self._redraw()
 
     def _update_data_plot(self):
         self.update_layer(self.data)
@@ -238,10 +304,25 @@ class ScatterClient(VizClient):
     def _add_subset(self, message):
         subset = message.sender
         subset.do_broadcast(False)
-        self.init_layer(message.sender)
+        if not isinstance(subset, cv.subset.RoiSubset):
+            raise TypeError("Only ROI subsets supported")
+
+        self.init_layer(message.subset)
+        self.active_layer = subset
+        
         subset.xatt = self.layers[subset]['x']
         subset.yatt = self.layers[subset]['y']
         subset.do_broadcast(True)
 
+
     def _update_subset(self, message):
         self.update_layer(message.sender)
+
+    def add_data(self, data):
+        super(ScatterClient, self).add_data(data)
+        self.init_layer(data)
+        for s in data.subsets:
+            self.init_layer(s)
+        self.active_layer = data
+        
+        

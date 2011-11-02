@@ -209,7 +209,7 @@ class TreeSubset(Subset):
                belong to the subset.
 
     """
-    def __init__(self, data, node_list=None):
+    def __init__(self, data, node_list=None, **kwargs):
         """ Create a new subset instance
 
         Parameters:
@@ -227,7 +227,7 @@ class TreeSubset(Subset):
         if data.tree.index_map is None:
             raise AttributeError("Input data's tree must have an index map")
 
-        Subset.__init__(self, data)
+        Subset.__init__(self, data, **kwargs)
         if not node_list:
             self.node_list = []
         else:
@@ -320,7 +320,7 @@ class ElementSubset(Subset):
           belongs to the subset.
     """
 
-    def __init__(self, data, mask=None):
+    def __init__(self, data, mask=None, **kwargs):
         """
         Create a new subset object.
 
@@ -336,7 +336,7 @@ class ElementSubset(Subset):
             self.mask = np.zeros(data.shape, dtype=bool)
         else:
             self.mask = mask
-        Subset.__init__(self, data)
+        Subset.__init__(self, data, **kwargs)
 
     def to_mask(self, data=None):
 
@@ -372,7 +372,7 @@ class RoiSubset(Subset):
          The roi that describes the subset boundaries.
     """
 
-    def __init__(self, data, xatt=None, yatt=None, roi=None):
+    def __init__(self, data, xatt=None, yatt=None, roi=None, **kwargs):
         """ Create a new subset 
         
         Parameters:
@@ -389,7 +389,7 @@ class RoiSubset(Subset):
         yatt : string (optional)
             See xatt.
         """
-        Subset.__init__(self, data)
+        Subset.__init__(self, data, **kwargs)
         self.roi = roi
         self.xatt = xatt
         self.yatt = yatt
@@ -434,5 +434,4 @@ class RoiSubset(Subset):
         if self.yatt is not None:
             yy = self.data[self.yatt]
             
-        print self.xatt, self.yatt
         return self.roi.contains(xx, yy)

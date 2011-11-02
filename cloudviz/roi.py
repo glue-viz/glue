@@ -261,7 +261,6 @@ class AbstractMplRoi(object):
         self._press = None  # id of MPL connection to button_press
         self._motion = None # id of MPL connection to motion_notify
         self._release = None # id of MPL connection to button_release
-        self.connect()
         
     def start_selection(self, event):
         raise NotImplementedError()
@@ -336,6 +335,7 @@ class MplRectangularROI(RectangularROI, AbstractMplRoi):
         self._ax.add_patch(self._rectangle)
 
         self._sync_patch()
+        self.connect()
 
     def _sync_patch(self):
 
@@ -358,8 +358,7 @@ class MplRectangularROI(RectangularROI, AbstractMplRoi):
         RectangularROI.update_limits(self, xmin, ymin, xmax, ymax)
         self._sync_patch()
 
-    def start_selection(self, event):
-
+    def start_selection(self, event):        
         if not (event.inaxes):
             return
 
@@ -372,9 +371,6 @@ class MplRectangularROI(RectangularROI, AbstractMplRoi):
         self._mid_selection = True
 
     def update_selection(self, event):
-
-        if not (event.inaxes):
-            return
 
         if not self._mid_selection:
             return
@@ -425,8 +421,9 @@ class MplCircularROI(CircularROI, AbstractMplRoi):
 
         self._ax.add_patch(self._circle)
 
+        self.connect()
         self._sync_patch()
-
+        
     def _sync_patch(self):
 
         # Update geometry
@@ -502,7 +499,7 @@ class MplPolygonalROI(PolygonalROI, AbstractMplRoi):
                the visual properties of the ROI
     """
 
-    def __init__(self, ax, lasso=False, subset=None):
+    def __init__(self, ax, lasso = True, subset=None):
         """
         Create a new ROI
 
@@ -514,7 +511,7 @@ class MplPolygonalROI(PolygonalROI, AbstractMplRoi):
         PolygonalROI.__init__(self)
         AbstractMplRoi.__init__(self, ax, subset=subset)
 
-        self.plot_opts = {'edgecolor': 'red', 'facecolor': 'none',
+        self.plot_opts = {'edgecolor': 'red', 'facecolor': 'red',
                           'alpha': 0.3}
 
         self._polygon = Polygon(np.array(zip([0, 1], [0, 1])))
@@ -524,6 +521,7 @@ class MplPolygonalROI(PolygonalROI, AbstractMplRoi):
 
         self._ax.add_patch(self._polygon)
         self.lasso = lasso
+        self.connect()
         self._sync_patch()
 
     def connect(self):
@@ -539,7 +537,6 @@ class MplPolygonalROI(PolygonalROI, AbstractMplRoi):
                                            self.finalize_selection)
 
     def _sync_patch(self):
-
         # Update geometry
         if not self.defined():
             self._polygon.set_visible(False)
@@ -570,13 +567,23 @@ class MplPolygonalROI(PolygonalROI, AbstractMplRoi):
         PolygonalROI.reset(self, x, y, thresh=None)
         self._sync_patch()
 
-    def update_selection(self, event):
-
-        if not (event.inaxes and self._mid_selection):
+    def start_selection(self, event):
+        if not (event.inaxes):
             return
+        self._mid_selection = True
+        self.reset()
+        self.add_point(event.xdata, event.ydata)
+    
+    def update_selection(self, event):
+        if not self._mid_selection:
+            return        
+        self.add_point(event.xdata, event.ydata)
 
-        self.replace_last_point(event.xdata, event.ydata)
-
+    def to_polygon(self):
+        result = PolygonalROI()
+        result.vx = self.vx
+        result.vy = self.vy
+        return result
 
 
 class MplTreeROI(AbstractMplRoi):
@@ -584,6 +591,7 @@ class MplTreeROI(AbstractMplRoi):
 
         AbstractMplRoi.__init__(self, ax, subset=subset)
         self.single = single
+        self.connect()
 
     def start_selection(self, event):
         if not (event.inaxes):

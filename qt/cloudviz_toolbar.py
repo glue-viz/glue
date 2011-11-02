@@ -140,3 +140,25 @@ class CloudvizToolbar(NavigationToolbar2QT):
         self.buttons['circle'].setChecked(self._active == 'CIRCLE')
         self.buttons['box'].setChecked(self._active == 'BOX')
         self.buttons['lasso'].setChecked(self._active == 'LASSO')
+        
+    def deselect_roi(self):
+        self.buttons['circle'].setChecked(False)        
+        self.buttons['box'].setChecked(False)
+        self.buttons['lasso'].setChecked(False)
+        if self._active in ['CIRCLE', 'BOX' 'LASSO']:
+            if self._idPress is not None:
+                self._idPress = self.canvas.mpl_disconnect(self._idPress)
+            if self._idMotion is not None:
+                self._idMotion = self.canvas.mpl_disconnect(self._idMotion)
+            if self._idRelease is not None:
+                self._idRelease = self.canvas.mpl_disconnect(self._idRelease)
+            self._active = None
+        
+    def set_roi_enabled(self, state):
+        if not state:
+            self.deselect_roi()
+        self.buttons['circle'].setDisabled(not state)
+        self.buttons['box'].setDisabled(not state)
+        self.buttons['lasso'].setDisabled(not state)
+        
+
