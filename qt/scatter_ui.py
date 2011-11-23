@@ -229,7 +229,7 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
 
         branch.setCheckState(0, Qt.Checked)        
         self.tree[item] = branch
-        tree.expanItem(branch)
+        tree.expandItem(branch)
 
     def init_layer(self, layer):
         super(ScatterUI, self).init_layer(layer)
