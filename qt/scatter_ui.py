@@ -249,7 +249,8 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
         item = sender.currentItem()
         for k,v in self.tree.iteritems():
             if v is not item: continue
-            self.layers[k]['artist'].set_visible(v.checkState(0) == Qt.Checked)
+            artist = self.layers[k]['artist']
+            artist.set_visible(v.checkState(0) == Qt.Checked)
             self._redraw()
 
 if __name__=="__main__":

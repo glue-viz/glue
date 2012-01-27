@@ -47,8 +47,9 @@ class Client(cloudviz.HubListener):
         return self._data[0]
 
     def add_data(self, data):
-        #XXX if data added after subscribing to client,
-        # must update subscription rules
+        # note: default subscription filters
+        # should automatically capture messages
+        # from this new dataset by default
         if data in self._data: return
         self._data.append(data)
 
@@ -66,8 +67,8 @@ class Client(cloudviz.HubListener):
         This method subscribes to 4 basic message types:
         SubsetCreateMessage, SubsetUpdateMessage, SubsetRemoveMessage,
         and DataMessage. It defines filter methods so that only
-        messages related to self.data are relayed. These 4 messages
-        are relayed to the _add_subset, _update_subset,
+        messages related to the client's data sets' are relayed. These
+        4 messages are relayed to the _add_subset, _update_subset,
         _remove_subset, and _update_all methods, respectively
 
         Client subclasses at a minimum should override these methods
@@ -100,7 +101,7 @@ class Client(cloudviz.HubListener):
         hub.subscribe(self,
                       msg.DataMessage,
                       handler=self._update_all,
-                      filter=lambda x: x.sender in self.data)
+                      filter=lambda x: x.sender in self._data)
         
     def _add_subset(self, message):
         raise NotImplementedError("_add_subset not implemented")
