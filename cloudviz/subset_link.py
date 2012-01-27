@@ -1,6 +1,6 @@
 from cloudviz.hub import HubListener
 import cloudviz.message as msg
-from cloudbiz.subset import RoiSubset
+from cloudviz.subset import RoiSubset
 
 class SubsetLink(HubListener):
     """ The base class for representing subsets linked across data.
