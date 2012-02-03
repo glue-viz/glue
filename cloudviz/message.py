@@ -16,21 +16,20 @@ class Message(object):
     The message class family is hierarchical, and a client subscribing
     to a message class implicitly subscribes to all of its subclasses.
 
-    Attributes
-    ----------
-    sender: The object which sent the message
-    tag: An optional string describing the message
+    Attributes :
 
+    ----------
+    sender : The object which sent the message
+    tag : An optional string describing the message   
     """
     def __init__(self, sender, tag=None, _level=0):
-        """
-        Create a new message
+        """Create a new message
 
         Parameters
         ----------
-        sender: The object sending the message
-        tag: An optional string describing the message
-
+        sender : The object sending the message
+        
+        tag : An optional string describing the message
         """
         self.sender = sender
         self.tag = tag
@@ -78,8 +77,8 @@ class SubsetUpdateMessage(SubsetMessage):
     A message that a subset issues when its state changes
 
     Attributes
-    ----------
-    attribute: string
+    -----------
+    attribute : string
              An optional label of what attribute has changed
     """
     def __init__(self, sender, attribute=None, tag=None,
@@ -117,4 +116,3 @@ class ActiveSubsetUpdateMessage(SubsetMessage):
     def __init__(self, sender, tag=None, _level=0):
         SubsetMessage.__init__(self, sender, tag=tag,
                                _level=_level + 1)
-        

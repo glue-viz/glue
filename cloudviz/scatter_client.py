@@ -6,14 +6,24 @@ from cloudviz.viz_client import VizClient
 from cloudviz.util import relim
 import cloudviz as cv
 
+
 class ScatterClient(VizClient):
     """
     A client class that uses matplotlib to visualize tables as scatter plots.
-
-    The subset style dictionaries are passed directly to the
-    scatter plot's 'set' method.
     """
     def __init__(self, data=None, figure=None, axes=None):
+        """
+        Create a new ScatterClient object
+
+        Inputs:
+        =======
+        data : `cloudviz.data.Data` instance, or a list of instances
+           Initial data to show
+        figure : matplotlib Figure instance (optional)
+           Which figure instance to draw to. One will be created if not provided
+        axes : matplotlib Axes instance (optional)
+           Which axes instance to use. Will be created if necessary
+        """
         VizClient.__init__(self, data=data)
 
         #layers keyed by layer (data/subset) objects.
@@ -25,7 +35,7 @@ class ScatterClient(VizClient):
         self.layers = {}
         self._active_layer = None
 
-        if figure is None: 
+        if figure is None:
             if axes is not None:
                 figure = axes.figure
             else:
@@ -37,9 +47,9 @@ class ScatterClient(VizClient):
                 raise TypeError("Axes and Figure inputs do not "
                                 "belong to each other")
             ax = axes
-            
         self.ax = ax
 
+        #each data set and subset is stored is a layer
         for d in self.get_data():
             self.init_layer(d)
             for s in d.subsets:
@@ -47,6 +57,7 @@ class ScatterClient(VizClient):
 
     @property
     def active_data(self):
+        """ The data set associated with the active layer. """
         l = self.active_layer
         if isinstance(l, cv.Data):
             return l
@@ -57,7 +68,7 @@ class ScatterClient(VizClient):
     @property
     def active_layer(self):
         """ The active layer, which is affected
-        by user interations (subset selection, etc.) 
+        by user interations (subset selection, etc.)
         """
         return self._active_layer
 
@@ -74,10 +85,10 @@ class ScatterClient(VizClient):
         """
         if layer is not None and layer not in self.layers:
             raise TypeError("Invalid layer")
-        
+
         changed = self._active_layer != layer
         isData = isinstance(layer, cv.Data)
-        
+
         if isinstance(self._active_layer, cv.Data):
             old_data = self._active_layer
         elif isinstance(self._active_layer, cv.Subset):
@@ -95,12 +106,14 @@ class ScatterClient(VizClient):
             if data != old_data:
                 self.notify_data_layer_change(old_data, data)
 
-        self._active_layer = layer            
+        self._active_layer = layer
 
     def notify_layer_change(self, old, new):
+        """ Called whenever the active layer changes """
         pass
-    
+
     def notify_data_layer_change(self, old, new):
+        """ Called whenever the dataset of the active layer changes """
         pass
 
     def init_layer(self, layer, xatt=None, yatt=None):
@@ -117,7 +130,7 @@ class ScatterClient(VizClient):
             The attribute to map onto the x axis
         yatt : string (optional)
             The attribute to map onto the y axis
-        """        
+        """
 
         # remove existing artist
         if layer in self.layers:
@@ -132,7 +145,7 @@ class ScatterClient(VizClient):
             data = layer
         else:
             data = layer.data
-            
+
         attributes = [c for c in data.components if
                       np.can_cast(data[c].dtype, np.float)]
 
@@ -154,24 +167,32 @@ class ScatterClient(VizClient):
             x = x.flat[ind]
             y = y.flat[ind]
             if x.size == 0:
-                x =[1]
-                y =[1]
+                x = [1]
+                y = [1]
                 empty = True
-                
+
         artist = self.ax.scatter(x, y)
         if empty:
-            artist.set_offsets(np.zeros((0,2)))
+            artist.set_offsets(np.zeros((0, 2)))
 
         artist.set_edgecolor('none')
-        
-        self.layers[layer] = {'artist':artist, 
-                              'x': xatt, 'y':yatt, 
-                              'attributes':attributes}
 
-        if isSubset:
-            artist.set_facecolor(layer.style.color)
-            artist.set_alpha(layer.style.alpha)
-    
+        self.layers[layer] = {'artist': artist,
+                              'x': xatt, 'y': yatt,
+                              'attributes': attributes}
+
+        self._sync_visual(artist, layer.style)
+
+    def _sync_visual(self, plot, style):
+        """ Make sure that each dataset / subset's style
+        property is accurately reflected in the visualization """
+        plot.set_facecolor(style.color)
+        try:
+            plot.get_sizes().data[0] = style.markersize
+        except TypeError:
+            plot.get_sizes()[0] = style.markersize
+
+        plot.set_alpha(style.alpha)
 
     def update_artist(self, layer):
         """ Update the matplotlib artist for the requested layer """
@@ -181,7 +202,7 @@ class ScatterClient(VizClient):
             yatt = self.layers[layer]['y']
             x = data[xatt]
             y = data[yatt]
-        else: #Layer is a subset
+        else:  # Layer is a subset
             data = layer.data
             ind = layer.to_index_list()
             xatt = self.layers[layer]['x']
@@ -190,59 +211,102 @@ class ScatterClient(VizClient):
             y = data[yatt]
             x = x.flat[ind]
             y = y.flat[ind]
-            artist = self.layers[layer]['artist']
-            artist.set_facecolor(layer.style.color)
-            artist.set_alpha(layer.style.alpha)
 
         xy = np.zeros((x.size, 2))
         xy[:, 0] = x
         xy[:, 1] = y
         artist = self.layers[layer]['artist']
         artist.set_offsets(xy)
-        
+        self._sync_visual(artist, layer.style)
+
         self._redraw()
 
     def add_data(self, data):
+        """ Add a new data set. Called automatically by hub """
         super(ScatterClient, self).add_data(data)
         self.init_layer(data)
 
     def _snap_xlim(self, data=None):
         """
         Reset the plotted x range to show all the data
+
+        Inputs:
+        =======
+        data : `cloudviz.data.Data` instance
+             If provided, will snap using values in this data set
         """
-        if data is None: 
+        if data is None:
             data = self.data
         xy = self.layers[data]['artist'].get_offsets()
-        range = relim(min(xy[:,0]), max(xy[:,0]), self.ax.get_xscale() == 'log')
+        range = relim(min(xy[:, 0]), max(xy[:, 0]), self.ax.get_xscale() == 'log')
         if self.ax.xaxis_inverted():
             range = [rage[1], range[0]]
-            
+
         self.ax.set_xlim(range)
 
     def _snap_ylim(self, data=None):
         """
         Reset the plotted y range to show all the data
+
+        Inputs:
+        =======
+        data : `cloudviz.data.Data` instance
+             If provided, will snap using values in this data set
         """
-        if data is None: 
+        if data is None:
             data = self.data
         xy = self.layers[data]['artist'].get_offsets()
-        range = relim(min(xy[:,1]), max(xy[:,1]), self.ax.get_yscale() == 'log')
+        range = relim(min(xy[:, 1]), max(xy[:, 1]),
+                      self.ax.get_yscale() == 'log')
         if self.ax.yaxis_inverted():
             range = [range[1], range[0]]
         self.ax.set_ylim(range)
 
-        
     def set_visible(self, layer, state):
+        """ Toggle a layer's visibility
+
+        Inputs:
+        =======
+        layer : `cloudviz.data.Data` or `cloudviz.subset.Subset` instance
+              Which layer to modify
+        state : boolean
+              True to show. False to hide
+        """
         self.layers[layer].set_visible(state)
 
     def show(self, layer):
+        """ Show a layer
+        Inputs:
+        =======
+        layer : `cloudviz.data.Data` or `cloudviz.subset.Subset` instance
+              Which layer to modify
+        """
         self.layers[layer].set_visible(True)
 
     def hide(self, layer):
+        """ Hide a layer
+        Inputs:
+        =======
+        layer : `cloudviz.data.Data` or `cloudviz.subset.Subset` instance
+              Which layer to modify
+        """
         self.layers[layer].set_visible(False)
 
-        
     def set_xydata(self, coord, attribute, data=None, snap=True):
+        """ Redefine which components get assigned to the x/y axes
+
+        Inputs:
+        =======
+        coord : 'x' or 'y'
+           Which axis to reassign
+        attribute : string
+           Which attribute of the data to use.
+        data : `cloudviz.data.Data` instance
+           Which dataset to use. Defaults to first data set added to client
+        snap : bool
+           If True, will rescale x/y axes to fit the data
+        """
+
         if data is None:
             data = self.data
 
@@ -255,7 +319,8 @@ class ScatterClient(VizClient):
         #update coordinates of data and subsets
         self.layers[data][coord] = attribute
         for s in data.subsets:
-            if s not in self.layers: continue
+            if s not in self.layers:
+                continue
             self.layers[s][coord] = attribute
             if coord == 'x':
                 s.xatt = attribute
@@ -265,14 +330,13 @@ class ScatterClient(VizClient):
         #update plots
         self.update_artist(data)
         map(self.update_artist, (l for l in self.layers if l in data.subsets))
-    
+
         if coord == 'x' and snap:
             self._snap_xlim(data)
         elif coord == 'y' and snap:
             self._snap_ylim(data)
 
         self.refresh()
-
 
     def set_xdata(self, attribute, data=None, snap=True):
         """
@@ -285,6 +349,8 @@ class ScatterClient(VizClient):
         data : class:`cloudviz.data.Data` instance (optional)
                which data set to apply to. Defaults to the first data set
                if not provided.
+        snap : bool
+             If true, re-scale x axis to show all values
         """
         self.set_xydata('x', attribute, data=data, snap=snap)
 
@@ -300,12 +366,15 @@ class ScatterClient(VizClient):
         data : class:`cloudviz.data.Data` instance (optional)
                which data set to apply to. Defaults to the first data set
                if not provided.
+
+        snap : bool
+               If True, re-scale y axis to show all values
         """
         self.set_xydata('y', attribute, data=data, snap=snap)
 
     def set_xlog(self, state):
-        """ Set the x axis scaling 
-        
+        """ Set the x axis scaling
+
         Inputs:
         =======
         state : string ('log' or 'linear')
@@ -316,8 +385,8 @@ class ScatterClient(VizClient):
         self._redraw()
 
     def set_ylog(self, state):
-        """ Set the y axis scaling 
-        
+        """ Set the y axis scaling
+
         Inputs:
         =======
         state : string ('log' or 'linear')
@@ -329,7 +398,7 @@ class ScatterClient(VizClient):
 
     def set_xflip(self, state):
         """ Set whether the x axis increases or decreases to the right.
-        
+
         Inputs:
         =======
         state : bool
@@ -361,7 +430,7 @@ class ScatterClient(VizClient):
 
     def _update_axis_labels(self):
         pass
-    
+
     def _add_subset(self, message):
         subset = message.sender
         subset.do_broadcast(False)
@@ -370,11 +439,10 @@ class ScatterClient(VizClient):
 
         self.init_layer(message.subset)
         self.active_layer = subset
-        
+
         subset.xatt = self.layers[subset]['x']
         subset.yatt = self.layers[subset]['y']
         subset.do_broadcast(True)
-
 
     def _update_subset(self, message):
         self.update_artist(message.sender)
@@ -385,5 +453,3 @@ class ScatterClient(VizClient):
         for s in data.subsets:
             self.init_layer(s)
         self.active_layer = data
-        
-        

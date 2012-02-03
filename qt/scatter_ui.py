@@ -13,6 +13,8 @@ import cloudviz.message as msg
 from cloudviz import RasterAxes
 from cloudviz_toolbar import CloudvizToolbar
 
+from qtutil import mpl_to_qt4_color, qt4_to_mpl_color
+
 class ScatterUI(QMainWindow, cv.ScatterClient):
     def __init__(self, data=None, parent=None):
         QMainWindow.__init__(self, parent)
@@ -49,6 +51,25 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
         
     def create_menu(self):
         pass
+
+    def _sync_visual(self, plot, style):
+        super(ScatterUI, self)._sync_visual(plot, style)
+        item = style.parent
+        self._update_layer_row(item)
+
+    def _update_layer_row(self, item):
+        if item not in self.tree:
+            return
+        style = item.style
+        row = self.tree[item]
+        pm = QPixmap(20, 20)
+        pm.fill(mpl_to_qt4_color(style.color))
+        self.tree[item].setIcon(1, QIcon(pm))
+        size = style.markersize
+        marker = style.marker
+        self.tree[item].setText(2, marker)
+        self.tree[item].setText(3, '%i' % size)
+        [self.tree['root'].resizeColumnToContents(i) for i in range(self.tree['root'].columnCount())]
 
     def create_secondary_navigator(self):
         layout = self.frame.layout()
@@ -109,17 +130,48 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
 
         return xrow, yrow
 
+    def click_layer(self):
+        sender = self.sender()
+        item = sender.currentItem()
+        column = sender.currentColumn()
+
+        f = lambda x: self.tree[x] == item
+        layer = filter(f, self.tree)[0]
+        
+        if column == 1:
+            # update color
+            dialog = QColorDialog()
+            initial = mpl_to_qt4_color(layer.style.color)
+            color = dialog.getColor(initial = initial)
+            layer.style.color = qt4_to_mpl_color(color)
+        elif column == 2:
+            # update symbol
+            dialog = QInputDialog()
+            symb, ok = dialog.getItem(None, 'Pick a Symbol', 'Pick a Symbol', ['.', 'o', 'v', '>', '<', '^'])
+            print symb, ok
+            if ok: layer.style.marker = symb
+            print layer.style.marker
+        elif column == 3:
+            #update point size
+            dialog = QInputDialog()
+            size, ok = dialog.getInt(None, 'Point Size', 'Point Size', value = layer.style.markersize, 
+                                      min = 1, max = 1000, step = 1)
+            if ok: layer.style.markersize = size
+            pass
+
     def create_layer_tree(self):
         self.tree = {}
         tree = QTreeWidget()
         self.tree['root'] = tree
-        tree.setHeaderLabels(["Layers"])
+        tree.setHeaderLabels(["Layer", "Color", "Symbol", "Size"])
 
         self.connect(tree, SIGNAL('itemPressed(QTreeWidgetItem *,int)'),
                      self.activate_new_layer)
         self.connect(tree, SIGNAL('itemChanged(QTreeWidgetItem *,int)'), 
                      self.toggle_layer_visibility)
-
+        self.connect(tree, SIGNAL('itemClicked(QTreeWidgetItem *,int)'),
+                     self.click_layer)
+                                  
         add = QPushButton(QIcon("icons/plus.png"), "Add")
         subtract = QPushButton(QIcon("icons/minus.png"), "Subtract")
         row = QHBoxLayout()
@@ -217,19 +269,21 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
                 ct = parent.childCount()
                 datanum = tree.indexOfTopLevelItem(parent)
                 label = "Subset %i.%i" % (datanum, ct)
-            branch = QTreeWidgetItem(self.tree[d], [label])
+            parent = self.tree[d]
         elif isinstance(item, cv.Data):
             label = item.label
             if label is None:
                 num = tree.topLevelItemCount()
                 label = "Data %i" % num
-            branch = QTreeWidgetItem(tree, [label])
+            parent = tree
         else:
             raise TypeError("Item is not data or subset: %s" % type(item))
 
+        branch = QTreeWidgetItem(parent, [label, '', '', ''])
         branch.setCheckState(0, Qt.Checked)        
         self.tree[item] = branch
         tree.expandItem(branch)
+        self._update_layer_row(item)
 
     def init_layer(self, layer):
         super(ScatterUI, self).init_layer(layer)
@@ -261,14 +315,14 @@ if __name__=="__main__":
 
     app = QApplication(sys.argv)
 
-    data = cv.data.TabularData(label="Primary Data Set")
-    data2 = cv.data.TabularData(label="Secondary data Set")
-    data.read_data('test_table_1.vot', tid=0)
-    data2.read_data('test_table_2.vot')
-    s = cv.subset.RoiSubset(data, label="First Subset")
+    data = cv.data.TabularData(label="Pipe YSOs")
+    data2 = cv.data.TabularData(label="Pipe Cores")
+    data.read_data('../examples/pipe_yso.txt', type='ascii', delimiter='\t', data_start = 2)
+    data2.read_data('../examples/pipe_cores.vot')
+    s = cv.subset.RoiSubset(data, label="YSO subset")
     s.style.color = 'red'
-    s2 = cv.subset.RoiSubset(data2, label="Second Subset")
-    s2.style.color='#aaaaaa'
+    s2 = cv.subset.RoiSubset(data2, label="Core Subset")
+    s2.style.color='green'
     
     hub = cv.Hub()
     subset_client = QtSubsetBrowserClient([data, data2])

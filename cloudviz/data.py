@@ -9,6 +9,7 @@ from cloudviz.io import extract_data_fits, extract_data_hdf5
 from cloudviz.coordinates import WCSCoordinates
 from cloudviz.coordinates import WCSCubeCoordinates
 from cloudviz.coordinates import Coordinates
+from cloudviz.visual import VisualAttributes
 
 class Component(object):
 
@@ -64,6 +65,9 @@ class Data(object):
 
         # Hub that the data is attached to
         self.hub = None
+
+        #visual attributes
+        self.style = VisualAttributes(parent=self)
 
         self.metadata = {}
 

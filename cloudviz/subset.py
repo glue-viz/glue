@@ -29,7 +29,7 @@ class Subset(object):
         """
         self.data = data
         self._broadcasting = False
-        self.style = VisualAttributes(subset=self)
+        self.style = VisualAttributes(parent=self)
         self.style.color = color
         self.style.alpha = alpha
         self.label = label

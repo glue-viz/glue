@@ -93,7 +93,7 @@ class MplScatterClient(ScatterClient):
                 lo = hi / 1000.
             
         self._ax.set_ylim([lo, hi])
-        
+
     def _update_data_plot(self):
         """
         Sync the location of the scatter points to
@@ -102,12 +102,15 @@ class MplScatterClient(ScatterClient):
         if self._xdata is None or self._ydata is None:
             return
         if self.data not in self._plots:
-            plot = self._ax.scatter(self._xdata, self._ydata, color='k')
+            plot = self._ax.scatter(self._xdata, self._ydata)
             self._plots[self.data] = plot
         else:
             self._plots[self.data].set_offsets(
                 zip(self._xdata, self._ydata))
 
+        self._sync_visual(self._plots[self.data], data.style)
+
+        
     def _update_subset_single(self, s):
         """
         Update the location and visual properties
@@ -128,6 +131,7 @@ class MplScatterClient(ScatterClient):
         # handle special case of empty subset
         if s.to_mask().sum() == 0:
             if s in self._plots:
+                self._sync_visual(self._plots[s], s.style)
                 self._plots[s].set_visible(False)
             return
 
