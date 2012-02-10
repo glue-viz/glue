@@ -16,14 +16,28 @@ class Hub(object):
     :class:`cloudviz.Message`.
     """
 
-    def __init__(self):
+    def __init__(self, *args):
         """
         Create an empty hub.
+
+        Inputs:
+        -------
+        Any dataset, subset, or client. If these are provided,
+        they will automatically be registered with the new hub.
         """
 
         # Dictionary of subscriptions
         self._subscriptions = defaultdict(dict)
 
+        clients = filter(lambda x: isinstance(x, cloudviz.client.Client), args)
+        data = filter(lambda x: isinstance(x, cloudviz.data.Data), args)
+        subsets = filter(lambda x: isinstance(x, cloudviz.subset.Subset), args)
+        for d in data:
+            d.register_to_hub(self)
+        for c in clients:
+            c.register_to_hub(self)
+        for s in subsets:
+            s.register()
 
     def subscribe(self, subscriber, message_class,
                   handler=None,
