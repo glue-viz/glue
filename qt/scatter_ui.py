@@ -25,7 +25,7 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
         layout = QVBoxLayout()
         layout.setContentsMargins(5, 5, 5, 5)
         self.frame.setLayout(layout)
-        
+
         dpi = 60
         self.fig = Figure((7.0, 6.0), dpi = dpi, facecolor='#ededed')
         self.canvas = FigureCanvas(self.fig)
@@ -35,7 +35,7 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
         self.create_actions()
         self.create_toolbar()
         self.create_menu()
-        self.create_secondary_navigator()                
+        self.create_secondary_navigator()
         self._active_layer = None
 
         cv.ScatterClient.__init__(self, data=data, figure=self.fig)
@@ -48,7 +48,7 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
         tb = CloudvizToolbar(self)
         self.toolbar = tb
         self.addToolBar(tb)
-        
+
     def create_menu(self):
         pass
 
@@ -79,9 +79,9 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
 
         xrow, yrow = self.create_variable_droplists()
         tree, row = self.create_layer_tree()
-        
+
         left.addLayout(xrow)
-        left.addLayout(yrow)        
+        left.addLayout(yrow)
         right.addWidget(tree)
         right.addLayout(row)
         right.setContentsMargins(0,0,0,0)
@@ -115,11 +115,11 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
         self.xcombo = xcombo
         self.ycombo = ycombo
 
-        self.connect(xcombo, SIGNAL('currentIndexChanged(int)'), 
+        self.connect(xcombo, SIGNAL('currentIndexChanged(int)'),
                      self.update_xcombo)
-        self.connect(ycombo, SIGNAL('currentIndexChanged(int)'), 
+        self.connect(ycombo, SIGNAL('currentIndexChanged(int)'),
                      self.update_ycombo)
-        self.connect(xlog, SIGNAL('stateChanged(int)'), 
+        self.connect(xlog, SIGNAL('stateChanged(int)'),
                      self.toggle_xlog)
         self.connect(ylog, SIGNAL('stateChanged(int)'),
                      self.toggle_ylog)
@@ -137,7 +137,7 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
 
         f = lambda x: self.tree[x] == item
         layer = filter(f, self.tree)[0]
-        
+
         if column == 1:
             # update color
             dialog = QColorDialog()
@@ -154,7 +154,7 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
         elif column == 3:
             #update point size
             dialog = QInputDialog()
-            size, ok = dialog.getInt(None, 'Point Size', 'Point Size', value = layer.style.markersize, 
+            size, ok = dialog.getInt(None, 'Point Size', 'Point Size', value = layer.style.markersize,
                                       min = 1, max = 1000, step = 1)
             if ok: layer.style.markersize = size
             pass
@@ -167,11 +167,11 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
 
         self.connect(tree, SIGNAL('itemPressed(QTreeWidgetItem *,int)'),
                      self.activate_new_layer)
-        self.connect(tree, SIGNAL('itemChanged(QTreeWidgetItem *,int)'), 
+        self.connect(tree, SIGNAL('itemChanged(QTreeWidgetItem *,int)'),
                      self.toggle_layer_visibility)
         self.connect(tree, SIGNAL('itemClicked(QTreeWidgetItem *,int)'),
                      self.click_layer)
-                                  
+
         add = QPushButton(QIcon("icons/plus.png"), "Add")
         subtract = QPushButton(QIcon("icons/minus.png"), "Subtract")
         row = QHBoxLayout()
@@ -199,10 +199,10 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
         xcombo = self.xcombo
         ycombo = self.ycombo
         fields = self.layers[data]['attributes']
-        
-        s1 = self.disconnect(xcombo, SIGNAL('currentIndexChanged(int)'), 
+
+        s1 = self.disconnect(xcombo, SIGNAL('currentIndexChanged(int)'),
                                   self.update_xcombo)
-        s2 = self.disconnect(ycombo, SIGNAL('currentIndexChanged(int)'), 
+        s2 = self.disconnect(ycombo, SIGNAL('currentIndexChanged(int)'),
                                    self.update_ycombo)
         xcombo.clear()
         ycombo.clear()
@@ -212,19 +212,19 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
         ycombo.setCurrentIndex(fields.index(self.layers[data]['y']))
 
         if s1:
-            self.connect(xcombo, SIGNAL('currentIndexChanged(int)'), 
+            self.connect(xcombo, SIGNAL('currentIndexChanged(int)'),
                          self.update_xcombo)
         if s2:
-            self.connect(ycombo, SIGNAL('currentIndexChanged(int)'), 
+            self.connect(ycombo, SIGNAL('currentIndexChanged(int)'),
                          self.update_ycombo)
-            
+
     def treecheck(self):
         print 'check'
         return
 
     def update_xcombo(self, **kwargs):
         data = self.active_data
-        if data is None: 
+        if data is None:
             return
         combo = self.xcombo
         att = str(combo.currentText())
@@ -237,7 +237,7 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
         combo = self.ycombo
         att = str(combo.currentText())
         self.set_ydata(att, data=data, **kwargs)
-    
+
     def toggle_xlog(self):
         source = self.sender()
         state = source.checkState()
@@ -280,7 +280,7 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
             raise TypeError("Item is not data or subset: %s" % type(item))
 
         branch = QTreeWidgetItem(parent, [label, '', '', ''])
-        branch.setCheckState(0, Qt.Checked)        
+        branch.setCheckState(0, Qt.Checked)
         self.tree[item] = branch
         tree.expandItem(branch)
         self._update_layer_row(item)
@@ -288,7 +288,7 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
     def init_layer(self, layer):
         super(ScatterUI, self).init_layer(layer)
         self._add_tree_item(layer)
-        
+
     def activate_new_layer(self):
         """ When the user clicks on a layer in the layer tree,
         set the active_layer to match the selection"""
@@ -297,7 +297,7 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
         for k,v in self.tree.iteritems():
             if v is not item: continue
             self.active_layer = k
-        
+
     def toggle_layer_visibility(self):
         sender = self.sender()
         item = sender.currentItem()
@@ -309,33 +309,17 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
 
 if __name__=="__main__":
     from PyQt4.QtGui import QApplication
-    import sys 
+    import sys
     import cloudviz as cv
     from qt_subset_browser_client import QtSubsetBrowserClient
 
     app = QApplication(sys.argv)
 
-    data = cv.data.TabularData(label="Pipe YSOs")
-    data2 = cv.data.TabularData(label="Pipe Cores")
-    data.read_data('../examples/pipe_yso.txt', type='ascii', delimiter='\t', data_start = 2)
-    data2.read_data('../examples/pipe_cores.vot')
-    s = cv.subset.RoiSubset(data, label="YSO subset")
-    s.style.color = 'red'
-    s2 = cv.subset.RoiSubset(data2, label="Core Subset")
-    s2.style.color='green'
-    
-    hub = cv.Hub()
+    data, data2, s, s2 = cv.example_data.pipe()
+
     subset_client = QtSubsetBrowserClient([data, data2])
     scatter_client = ScatterUI([data, data2])
-    
-
-    data.register_to_hub(hub)
-    data2.register_to_hub(hub)
-    subset_client.register_to_hub(hub)
-    scatter_client.register_to_hub(hub)
-
-    s.register()
-    s2.register()
+    hub = cv.Hub(subset_client, scatter_client, data, data2, s, s2)
 
     subset_client.show()
     scatter_client.show()

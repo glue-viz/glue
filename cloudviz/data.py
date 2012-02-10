@@ -141,7 +141,7 @@ class Data(object):
         -----------
         key : string
           The component to fetch data from
-        """        
+        """
         if type(key) != str or key not in self.components:
             raise KeyError("Input must be the name of "
                            " a valid component: %s" % str(key))
@@ -208,8 +208,8 @@ class GriddedData(Data):
             if 'NAXIS' in header and header['NAXIS'] == 2:
                 self.coords = WCSCoordinates(header)
             elif 'NAXIS' in header and header['NAXIS'] == 3:
-                self.coords = WCSCubeCoordinates(header)            
-            
+                self.coords = WCSCubeCoordinates(header)
+
         elif format in ['hdf', 'hdf5', 'h5']:
             arrays = extract_data_hdf5(filename, **kwargs)
             for component_name in arrays:
