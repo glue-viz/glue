@@ -2,6 +2,7 @@
 .. module::cloudviz.message
 
 """
+from inspect import getmro
 import cloudviz
 
 
@@ -20,7 +21,7 @@ class Message(object):
 
     ----------
     sender : The object which sent the message
-    tag : An optional string describing the message   
+    tag : An optional string describing the message
     """
     def __init__(self, sender, tag=None, _level=0):
         """Create a new message
@@ -28,17 +29,20 @@ class Message(object):
         Parameters
         ----------
         sender : The object sending the message
-        
+
         tag : An optional string describing the message
         """
         self.sender = sender
         self.tag = tag
-        self._level = _level  # setting this manually is fragile
+        self._level = len(getmro(type(self)))  # number of super-classes.
 
     def __lt__(self, other):
         """
         Compares 2 message objects. message 1 < message 2 if it is
         further up the hierarchy (i.e. closer to the Message superclass).
+
+        Note:
+        This comparison breaks down slightly if messages are multiply inherited.
         """
 
         return self._level < other._level
@@ -53,24 +57,19 @@ class SubsetMessage(Message):
 
     """
 
-    def __init__(self, sender, tag=None, _level=0):
+    def __init__(self, sender, tag=None):
         if (not isinstance(sender, cloudviz.Subset)):
             raise TypeError("Sender must be a subset: %s"
                             % type(sender))
-        Message.__init__(self, sender, tag=tag, _level=_level + 1)
+        Message.__init__(self, sender, tag=tag)
         self.subset = self.sender
 
 
 class SubsetCreateMessage(SubsetMessage):
     """
     A message that a subset issues when its state changes
-
     """
-    def __init__(self, sender, tag=None,
-                 _level=0):
-        SubsetMessage.__init__(self, sender, tag=tag,
-                               _level=_level + 1)
-
+    pass
 
 class SubsetUpdateMessage(SubsetMessage):
     """
@@ -81,8 +80,7 @@ class SubsetUpdateMessage(SubsetMessage):
     attribute : string
              An optional label of what attribute has changed
     """
-    def __init__(self, sender, attribute=None, tag=None,
-                 _level=0):
+    def __init__(self, sender, attribute=None, tag=None)
         SubsetMessage.__init__(self, sender, tag=tag,
                                _level=_level + 1)
         self.attribute = attribute
@@ -92,27 +90,38 @@ class SubsetDeleteMessage(SubsetMessage):
     """
     A message that a subset issues when it is deleted
     """
-    def __init__(self, sender, tag=None, _level=0):
-        SubsetMessage.__init__(self, sender, tag=tag,
-                               _level=_level + 1)
-
+    pass
 
 class DataMessage(Message):
     """
     The base class for messages that data objects issue
     """
-    def __init__(self, sender, tag=None, _level=0):
+    def __init__(self, sender, tag=None):
         if (not isinstance(sender, cloudviz.Data)):
             raise TypeError("Sender must be a data instance: %s"
                             % type(sender))
-        Message.__init__(self, sender, tag=tag,
-                         _level=_level + 1)
+        Message.__init__(self, sender, tag=tag)
         self.data = self.sender
 
-class ActiveSubsetUpdateMessage(SubsetMessage):
-    """ 
-    A message that the active subset has been changed
-    """
-    def __init__(self, sender, tag=None, _level=0):
-        SubsetMessage.__init__(self, sender, tag=tag,
-                               _level=_level + 1)
+class DataCollectionMessage(Message):
+    def __init__(self, sender, tag=None):
+        if (not isinstance(sender, cloudviz.DataCollection)):
+            raise TypeError("Sender must be a DataCollection instance: %s"
+                            % type(sender))
+        Message.__init__(self, sender, tag=tag)
+
+class DataCollectionActiveChange(DataCollectionMessage):
+    pass
+
+class DataCollectionActiveDataChange(DataCollectionMessage):
+    pass
+
+class DataCollectionAddMessage(DataCollectionMessage):
+    def __init__(self, sender, data, tag=None):
+        DataCollectionMessage.__init__(self, sender, tag=tag)
+        self.data = data
+
+class DataCollectionDeleteMessage(DataCollectionMessage):
+    def __init__(self, sender, data, tag=None):
+        DataCollectionMessage.__init__(self, sender, tag=tag)
+        self.data = data
