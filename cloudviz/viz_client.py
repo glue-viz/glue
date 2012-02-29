@@ -113,8 +113,7 @@ class VizClient(Client):
         Sync the location and visual properties
         of each point in each subset
         """
-        for s in self.data.subsets:
-            self._update_subset_single(s)
+        [self._update_subset_single(s) for d in self.data for s in d.subsets]
 
     def _update_subset_single(self, s):
         """
@@ -134,7 +133,7 @@ def init_mpl(figure, axes):
     if axes is not None and figure is not None and \
             axes.figure is not figure:
         raise Exception("Axes and figure are incompatible")
-        
+
     if axes is not None:
         _ax = axes
         _figure = axes.figure
@@ -144,4 +143,4 @@ def init_mpl(figure, axes):
         _ax = _figure.add_subplot(1, 1, 1)
 
     return _figure, _ax
-            
+

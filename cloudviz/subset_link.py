@@ -19,11 +19,11 @@ class SubsetLink(HubListener):
     original change. In this way, the subsets across different data
     sets are linked.
     """
-    
+
 
     def __init__(self, subsets):
         """ Create a new link instance
-        
+
         Parameters
         ==========
         subsets : A list of class:`cloudviz.subset.Subset` instances
@@ -42,14 +42,14 @@ class SubsetLink(HubListener):
         hub: class:`cloudviz.hub.Hub` instance
              The hub to register to
         """
-        hub.subscribe(self, 
+        hub.subscribe(self,
                       msg.SubsetUpdateMessage,
                       filter=lambda x: \
                           x.sender in self._subsets)
-                
+
     def notify(self, message):
         """ Message handling event when one of the subsets is updated.
-        
+
         This class calls the convert method, which actually modifies
         the appropriate subsets. The extra notify method is needed to
         temporarly disable message processing from the hub. If this
@@ -74,6 +74,10 @@ class SubsetLink(HubListener):
     def convert(self, message):
         """ Updates the description of the target """
         raise NotImplementedError()
+
+    @property
+    def subsets(self):
+        return self._subsets
 
 
 class RoiLink(SubsetLink):

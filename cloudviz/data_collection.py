@@ -68,9 +68,11 @@ class DataCollection(object):
         old_data = self.active.data if self._active else None
         data = new.data
         self._active = new
+
         if changed and self.hub is not None:
             msg = cv.message.DataCollectionActiveChange(self)
             self.hub.broadcast(msg)
+
         if data != old_data and self.hub is not None:
             msg = cv.message.DataCollectionActiveDataChange(self)
             self.hub.broadcast(msg)
