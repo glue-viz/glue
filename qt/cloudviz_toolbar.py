@@ -7,11 +7,46 @@ from PyQt4.QtGui import QIcon
 
 from cloudviz.roi import MplCircularROI, MplRectangularROI, MplPolygonalROI
 import cloudviz as cv
+import cloudviz.message as msg
+import cv_qt_resources
 
-class CloudvizToolbar(NavigationToolbar2QT):
-    def __init__(self, parent):
-        super(CloudvizToolbar, self).__init__(parent.canvas, parent.frame)
-        self.parent = parent
+class CloudvizToolbar(NavigationToolbar2QT, cv.HubListener):
+    """ This toolbar extends the standard matplotlib toolbar with extra
+    buttons for manipulating subsets. The extra buttons are configured to
+    edit RoiSubsets.
+
+    The toolbar is a cloudviz listener, and needs to subscribe to a hub
+    to stay in sync with other components
+    """
+    def __init__(self, data_collection, canvas, frame):
+        """ Create a new toolbar object
+
+        Parameters
+        ----------
+        data_collection : DataCollection instance
+         The data collection that this toolbar is meant to edit.
+         The toolbar looks to this collection for the available subsets
+         to manipulate.
+        canvas : Maptloblib canvas instance
+         The drawing canvas to interact with
+        frame : QWidget
+         The QT frame that the canvas is embedded within.
+        """
+        NavigationToolbar2QT.__init__(self, canvas, frame)
+        self._dc = data_collection
+        self.roi = None
+        self.check_roi_active(None)
+
+    def register_to_hub(self, hub):
+        # process all DataCollectionActiveChange events
+        hub.subscribe(self, msg.DataCollectionActiveChange,
+                      handler=self.check_roi_active,
+                      filter=lambda x: x.sender is self._dc)
+
+    def check_roi_active(self, messsage):
+        """ Enable/disable ROI buttons, depending on the active layer"""
+        self.deselect_roi()
+        self.set_roi_enabled(isinstance(self._dc.active, cv.subset.RoiSubset))
 
     def _init_toolbar(self):
         self.basedir = os.path.join(matplotlib.rcParams[ 'datapath' ],'images')
@@ -35,30 +70,30 @@ class CloudvizToolbar(NavigationToolbar2QT):
         a.setCheckable(True)
         self.buttons['zoom'] = a
 
-        a = self.addAction(QIcon('icons/circle.png'), 'Circle', self.circle)
+        a = self.addAction(QIcon(':icons/circle.png'), 'Circle', self.circle)
         a.setToolTip('Modify current subset using circular selection')
         a.setCheckable(True)
         self.buttons['circle'] = a
-        
-        a = self.addAction(QIcon('icons/square.png'), 'Box', self.box)
+
+        a = self.addAction(QIcon(':icons/square.png'), 'Box', self.box)
         a.setToolTip('Modify current subset using box selection')
         a.setCheckable(True)
         self.buttons['box'] = a
 
-        a = self.addAction(QIcon('icons/lasso.png'), 'Lasso', self.lasso)
+        a = self.addAction(QIcon(':icons/lasso.png'), 'Lasso', self.lasso)
         a.setToolTip('Modify current subset using lasso selection')
         a.setCheckable(True)
         self.buttons['lasso'] = a
-        
+
         self.addSeparator()
         a = self.addAction(self._icon('subplots.png'), 'Subplots',
                            self.configure_subplots)
         a.setToolTip('Configure subplots')
-        
+
         a = self.addAction(self._icon("qt4_editor_options.svg"),
                            'Customize', self.edit_parameters)
         a.setToolTip('Edit curves line and axes parameters')
-        
+
         a = self.addAction(self._icon('filesave.svg'), 'Save',
                            self.save_figure)
         a.setToolTip('Save the figure')
@@ -76,10 +111,10 @@ class CloudvizToolbar(NavigationToolbar2QT):
                                   QtGui.QSizePolicy.Ignored))
             labelAction = self.addWidget(self.locLabel)
             labelAction.setVisible(True)
-            
+
         # reference holder for subplots_adjust window
         self.adj_window = None
-            
+
     def zoom(self, *args):
         super(CloudvizToolbar, self).zoom(self, *args)
         self.update_boxes()
@@ -89,13 +124,13 @@ class CloudvizToolbar(NavigationToolbar2QT):
         self.update_boxes()
 
     def shape_button(self, mode, roi, **kwargs):
-        if not isinstance(self.parent.active_layer, cv.subset.RoiSubset):
+        if not isinstance(self._dc.active, cv.subset.RoiSubset):
             return
 
         'activate circle selection mode'
         if self._active == mode.upper():
             self._active = None
-            if self.roi: 
+            if self.roi:
                 self.roi.disconnect()
                 self.roi = None
         else:
@@ -110,7 +145,7 @@ class CloudvizToolbar(NavigationToolbar2QT):
             self.mode = ''
 
         if self._active:
-            subset = self.parent.active_layer
+            subset = self._dc.active
             ax, = self.canvas.figure.get_axes()
             self.roi = roi(ax, subset=subset, **kwargs)
             self._idPress = self.roi._press
@@ -140,9 +175,9 @@ class CloudvizToolbar(NavigationToolbar2QT):
         self.buttons['circle'].setChecked(self._active == 'CIRCLE')
         self.buttons['box'].setChecked(self._active == 'BOX')
         self.buttons['lasso'].setChecked(self._active == 'LASSO')
-        
+
     def deselect_roi(self):
-        self.buttons['circle'].setChecked(False)        
+        self.buttons['circle'].setChecked(False)
         self.buttons['box'].setChecked(False)
         self.buttons['lasso'].setChecked(False)
         if self._active in ['CIRCLE', 'BOX' 'LASSO']:
@@ -153,12 +188,15 @@ class CloudvizToolbar(NavigationToolbar2QT):
             if self._idRelease is not None:
                 self._idRelease = self.canvas.mpl_disconnect(self._idRelease)
             self._active = None
-        
+
+        if self.roi:
+            self.roi.disconnect()
+            self.roi = None
+
     def set_roi_enabled(self, state):
         if not state:
             self.deselect_roi()
         self.buttons['circle'].setDisabled(not state)
         self.buttons['box'].setDisabled(not state)
         self.buttons['lasso'].setDisabled(not state)
-        
 
