@@ -22,20 +22,26 @@ class Hub(object):
 
         Inputs:
         -------
-        Any dataset, subset, or client. If these are provided,
+        Any dataset, subset, client, or DataCollection. If these are provided,
         they will automatically be registered with the new hub.
         """
 
         # Dictionary of subscriptions
         self._subscriptions = defaultdict(dict)
 
-        clients = filter(lambda x: isinstance(x, cloudviz.client.Client), args)
+        listeners = filter(lambda x: isinstance(x, HubListener), args)
         data = filter(lambda x: isinstance(x, cloudviz.data.Data), args)
         subsets = filter(lambda x: isinstance(x, cloudviz.subset.Subset), args)
+        dcs = filter(lambda x: isinstance(x, cloudviz.data_collection.DataCollection), args)
+        if len(dcs) + len(subsets) + len(data) + len(listeners) != len(args):
+            raise TypeError("Inputs must be HubListener, data, subset, or data collection objects")
+
+        for l in listeners:
+            l.register_to_hub(self)
         for d in data:
             d.register_to_hub(self)
-        for c in clients:
-            c.register_to_hub(self)
+        for dc in dcs:
+            dc.register_to_hub(self)
         for s in subsets:
             s.register()
 
