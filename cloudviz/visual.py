@@ -15,7 +15,7 @@ class VisualAttributes(object):
     This class is used to define visual attributes for any kind of objects
     '''
 
-    def __init__(self, parent=None):        
+    def __init__(self, parent=None):
 
         # Color can be specified using Matplotlib notation. Specifically, it
         # can be:
@@ -28,7 +28,7 @@ class VisualAttributes(object):
         self.color = default_colors[color_pos % len(default_colors)]
         color_pos += 1
         self.alpha = 1.
-        
+
         # Line width in points (float or int)
         self.linewidth = 1
 
@@ -60,9 +60,9 @@ class VisualAttributes(object):
         allowed = set(['color', 'linewidth', 'linestyle', 'alpha', 'parent', 'marker', 'markersize'])
         if attribute not in allowed:
             raise Exception("Attribute %s does not exist" % attribute)
-        
+
         object.__setattr__(self, attribute, value)
 
-        # if a subset, broadcast state change
-        if hasattr(self, 'parent') and isinstance(self.parent, cv.subset.Subset): 
+        # if parent has a broadcast method, broadcast the change
+        if hasattr(self, 'parent') and hasattr(self.parent, 'broadcast'):
             self.parent.broadcast(self)
