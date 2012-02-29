@@ -80,9 +80,8 @@ class SubsetUpdateMessage(SubsetMessage):
     attribute : string
              An optional label of what attribute has changed
     """
-    def __init__(self, sender, attribute=None, tag=None)
-        SubsetMessage.__init__(self, sender, tag=tag,
-                               _level=_level + 1)
+    def __init__(self, sender, attribute=None, tag=None):
+        SubsetMessage.__init__(self, sender, tag=tag)
         self.attribute = attribute
 
 
@@ -102,6 +101,11 @@ class DataMessage(Message):
                             % type(sender))
         Message.__init__(self, sender, tag=tag)
         self.data = self.sender
+
+class DataUpdateMessage(DataMessage):
+    def __init__(self, sender, attribute, tag=None):
+        super(DataUpdateMessage, self).__init__(sender, tag=tag)
+        self.attribute=attribute
 
 class DataCollectionMessage(Message):
     def __init__(self, sender, tag=None):
