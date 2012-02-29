@@ -73,33 +73,20 @@ class Data(object):
 
         self.label = label
 
+        self.data = self  # a handy reference when dealing with subset + data collections
+
     def new_subset(self):
         subset = cloudviz.Subset(self)
         self.add_subset(subset)
         return subset
 
-    def set_active_subset(self, subset):
-        if subset == self.active_subset: return
-        if subset not in self.subsets:
-            raise Exception("Input not in data's collection of subsets")
-        self.active_subset = subset
-        if self.hub is not None:
-            msg = cloudviz.message.ActiveSubsetUpdateMessage(subset)
-            self.hub.broadcast(msg)
-
-    def get_active_subset(self):
-        return self.active_subset
-
     def add_subset(self, subset):
+        print 'adding subset', self.hub
         subset.do_broadcast(True)
-        first = len(self.subsets) == 0
         self.subsets.append(subset)
         if self.hub is not None:
             msg = cloudviz.message.SubsetCreateMessage(subset)
             self.hub.broadcast(msg)
-        if first:
-            self.set_active_subset(subset)
-
 
     def remove_subset(self, subset):
         if self.hub is not None:
@@ -117,6 +104,12 @@ class Data(object):
         Read a tree describing the data from a file
         '''
         self.tree = cloudviz.Tree(filename)
+
+    def broadcast(self, attribute=None):
+        if not self.hub: return
+        msg = cloudviz.message.DataUpdateMessage(self, attribute=attribute)
+        self.hub.broadcast(msg)
+
 
     def __str__(self):
         s = ""
