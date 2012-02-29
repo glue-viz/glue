@@ -17,8 +17,8 @@ class ScatterClient(VizClient):
 
         Inputs:
         =======
-        data : `cloudviz.data.Data` instance, or a list of instances
-           Initial data to show
+        data : `cloudviz.data.Data` instance, DataCollection, or a list of data
+             Initial data to show
         figure : matplotlib Figure instance (optional)
            Which figure instance to draw to. One will be created if not provided
         axes : matplotlib Axes instance (optional)
@@ -50,71 +50,10 @@ class ScatterClient(VizClient):
         self.ax = ax
 
         #each data set and subset is stored is a layer
-        for d in self.get_data():
+        for d in self.data:
             self.init_layer(d)
             for s in d.subsets:
                 self.init_layer(s)
-
-    @property
-    def active_data(self):
-        """ The data set associated with the active layer. """
-        l = self.active_layer
-        if isinstance(l, cv.Data):
-            return l
-        if isinstance(l, cv.Subset):
-            return l.data
-        return None
-
-    @property
-    def active_layer(self):
-        """ The active layer, which is affected
-        by user interations (subset selection, etc.)
-        """
-        return self._active_layer
-
-    @active_layer.setter
-    def active_layer(self, layer):
-        """ Redefine the active layer. The active layer is affected
-        by UI (selection, etc.)
-
-        Inputs
-        ======
-        layer : `cloudviz.subset.Subset` or `cloudviz.data.Data` instance
-              The subset or data instance to set as active
-
-        """
-        if layer is not None and layer not in self.layers:
-            raise TypeError("Invalid layer")
-
-        changed = self._active_layer != layer
-        isData = isinstance(layer, cv.Data)
-
-        if isinstance(self._active_layer, cv.Data):
-            old_data = self._active_layer
-        elif isinstance(self._active_layer, cv.Subset):
-            old_data = self._active_layer.data
-        else:
-            old_data = None
-
-        if isData:
-            data = layer
-        else:
-            data = layer.data
-
-        if changed:
-            self.notify_layer_change(self._active_layer, layer)
-            if data != old_data:
-                self.notify_data_layer_change(old_data, data)
-
-        self._active_layer = layer
-
-    def notify_layer_change(self, old, new):
-        """ Called whenever the active layer changes """
-        pass
-
-    def notify_data_layer_change(self, old, new):
-        """ Called whenever the dataset of the active layer changes """
-        pass
 
     def init_layer(self, layer, xatt=None, yatt=None):
         """ Adds a new visual layer to a client, to display either a dataset
@@ -218,7 +157,6 @@ class ScatterClient(VizClient):
         artist = self.layers[layer]['artist']
         artist.set_offsets(xy)
         self._sync_visual(artist, layer.style)
-
         self._redraw()
 
     def add_data(self, data):
@@ -236,7 +174,7 @@ class ScatterClient(VizClient):
              If provided, will snap using values in this data set
         """
         if data is None:
-            data = self.data
+            data = self.data[0]
         xy = self.layers[data]['artist'].get_offsets()
         range = relim(min(xy[:, 0]), max(xy[:, 0]), self.ax.get_xscale() == 'log')
         if self.ax.xaxis_inverted():
@@ -272,7 +210,17 @@ class ScatterClient(VizClient):
         state : boolean
               True to show. False to hide
         """
-        self.layers[layer].set_visible(state)
+        self.layers[layer]['artist'].set_visible(state)
+        self._redraw()
+
+    def get_attributes(self, layer):
+        return self.layers[layer]['attributes']
+
+    def current_x_attribute(self, layer):
+        return self.layers[layer]['x']
+
+    def current_y_attribute(self, layer):
+        return self.layers[layer]['y']
 
     def show(self, layer):
         """ Show a layer
@@ -281,7 +229,7 @@ class ScatterClient(VizClient):
         layer : `cloudviz.data.Data` or `cloudviz.subset.Subset` instance
               Which layer to modify
         """
-        self.layers[layer].set_visible(True)
+        self.layers[layer]['artist'].set_visible(True)
 
     def hide(self, layer):
         """ Hide a layer
@@ -308,7 +256,7 @@ class ScatterClient(VizClient):
         """
 
         if data is None:
-            data = self.data
+            data = self.data.data[0]
 
         if coord not in ('x', 'y'):
             raise TypeError("coord must be one of x,y")
@@ -420,7 +368,7 @@ class ScatterClient(VizClient):
         self._redraw()
 
     def _update_data_plot(self):
-        self.update_artist(self.data)
+        [self.update_artist(d) for d in self.data]
 
     def _update_subset_single(self, s):
         self.update_artist(s)
