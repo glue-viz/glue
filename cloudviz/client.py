@@ -11,8 +11,8 @@ class Client(cloudviz.HubListener):
 
     Attributes
     ----------
-    data: Data instance
-        The primary data associated with this client.
+    data: DataCollection instance
+        The data associated with this client.
 
     """
 
@@ -22,42 +22,27 @@ class Client(cloudviz.HubListener):
 
         Parameters
         ----------
-        data: Data instance
+        data: Data, DataCollection, or list of data
             The primary data associated with this client.
 
         Raises
         ------
-        TypeError: If the data input is not a Data instance.
+        TypeError: If the data input is the wrong type
         """
 
-        if data is None:
-            self._data = []
-        elif isinstance(data, cloudviz.Data):
-            self._data = [data]
+        self._data = data
+        if isinstance(data, cloudviz.Data):
+            self._data = cloudviz.DataCollection(data)
         elif isinstance(data, list):
-            for d in data:
-                if not isinstance(d, cloudviz.Data):
-                    raise TypeError("Input data is not a Data object: %s" % type(data))
+            self._data = cloudviz.DataCollection(data)
+        elif isinstance(data, cloudviz.DataCollection):
             self._data = data
         else:
-            raise TypeError("Input data is not a Data object: %s" % type(data))
+            raise TypeError("Input data must be a Data object, list of Data, or DatCollection: %s" % type(data))
 
     @property
     def data(self):
-        return self._data[0]
-
-    def add_data(self, data):
-        # note: default subscription filters
-        # should automatically capture messages
-        # from this new dataset by default
-        if data in self._data: return
-        self._data.append(data)
-
-    def get_data(self, index=None):
-        if index is not None:
-            return self._data[index]
-        else:
-            return self._data
+        return self._data
 
     def register_to_hub(self, hub):
         """
@@ -85,7 +70,7 @@ class Client(cloudviz.HubListener):
                       handler=self._add_subset,
                       filter=lambda x: \
                           x.sender.data in self._data)
-        
+
         hub.subscribe(self,
                       msg.SubsetUpdateMessage,
                       handler=self._update_subset,
@@ -102,7 +87,7 @@ class Client(cloudviz.HubListener):
                       msg.DataMessage,
                       handler=self._update_all,
                       filter=lambda x: x.sender in self._data)
-        
+
     def _add_subset(self, message):
         raise NotImplementedError("_add_subset not implemented")
 
