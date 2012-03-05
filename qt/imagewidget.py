@@ -27,8 +27,8 @@ class ImageWidget(QWidget, cv.HubListener):
         self.client.set_data(self.client.data[0])
 
     def init_widgets(self):
-        self.ui.imageSlider.setEnabled(False)
-        self.ui.sliceComboBox.setEnabled(False)
+        self.ui.imageSlider.hide()
+        self.ui.sliceComboBox.hide()
         self.ui.sliceComboBox.addItems(["xy", "xz", "yz"])
         for d in self.client.data:
             self.add_data(d)
@@ -44,17 +44,14 @@ class ImageWidget(QWidget, cv.HubListener):
         self.ui.displayDataCombo.setCurrentIndex(index)
         self.set_attribute_combo(data)
         if not self.client.is_3D:
-            self.ui.imageSlider.setEnabled(False)
-            self.ui.sliceComboBox.setEnabled(False)
             self.ui.imageSlider.hide()
             self.ui.sliceComboBox.hide()
             self.ui.orientationLabel.hide()
         else:
-            self.ui.imageSlider.setEnabled(True)
-            self.ui.sliceComboBox.setEnabled(True)
             self.ui.imageSlider.show()
             self.ui.sliceComboBox.show()
             self.ui.orientationLabel.show()
+        self.set_slider_range()
 
     def set_attribute(self, index):
         att = self.ui.attributeComboBox.itemText(index)
@@ -72,11 +69,14 @@ class ImageWidget(QWidget, cv.HubListener):
 
     def set_slider(self, index):
         self.client.slice_ind = index
-        self.ui.setSliderPosition(index)
+        self.ui.imageSlider.setValue(index)
 
     def set_orientation(self, ori):
         self.client.set_slice_ori(ori)
         self.ui.sliceComboBox.setCurrentIndex(ori)
+        self.set_slider_range()
+
+    def set_slider_range(self):
         self.ui.imageSlider.setRange(*self.client.slice_bounds())
 
     def connect(self):
@@ -89,6 +89,7 @@ class ImageWidget(QWidget, cv.HubListener):
 
         #connect MPL draw widget mouse events (RMB) to color map manipulation
         ui.imageSlider.sliderMoved.connect(self.set_slider)
+        ui.mplWidget.rightDrag.connect(self.set_norm)
 
 
     def register_to_hub(self, hub):
@@ -111,7 +112,17 @@ class ImageWidget(QWidget, cv.HubListener):
                 combo.removeItem(item)
                 break
 
-
+    def set_norm(self, x, y):
+        if self.client._image is None:
+            return
+        lo = np.min(self.client._image)
+        hi = np.max(self.client._image)
+        theta = np.pi - max(min(y, 1), 0) * np.pi
+        ra = hi - lo
+        bias = lo + ra / 2 * x
+        vmin = bias - ra * np.tan(theta)
+        vmax = bias + ra * np.tan(theta)
+        self.client.set_norm(vmin, vmax)
 
 if __name__ == "__main__":
     import sys
@@ -119,13 +130,17 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     win = QMainWindow()
 
-    data, subset = cv.example_data.simple_image()
-    dc = cv.DataCollection([data])
+    data, subset = cv.example_data.simple_cube()
+    d2, s2 = cv.example_data.simple_image()
+
+    dc = cv.DataCollection([data, d2])
     image_client = ImageWidget(dc)
-    hub = cv.Hub(data, subset, dc, image_client)
+
+    hub = cv.Hub(data, subset, d2, s2, dc, image_client)
 
     win.setCentralWidget(image_client)
     win.show()
-
+    #image_client.client.set_norm(1, 2000)
+    image_client.client.set_cmap('hot')
     sys.exit(app.exec_())
 

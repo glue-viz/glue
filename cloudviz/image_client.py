@@ -1,8 +1,24 @@
 from collections import defaultdict
 import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
+import numpy as np
 
 import cloudviz as cv
 from cloudviz import VizClient
+
+
+class InvNormalize(Normalize):
+    """ Simple wrapper to matplotlib Normalize object, that
+    handles the case where vmax <= vmin """
+    def __call__(self, value):
+        if self.vmax <= self.vmin:
+            self.vmax, self.vmin = self.vmin, self.vmax
+            result = 1 - Normalize.__call__(self, value)
+            self.vmax, self.vmin = self.vmin, self.vmax
+        else:
+            result = Normalize.__call__(self, value)
+        return result
+
 
 class ImageClient(VizClient):
 
@@ -17,10 +33,10 @@ class ImageClient(VizClient):
         # layers dict is keyed by data sets. Values are dicts with keys:
         # 'artist' : mpl artist
         # 'att': attribute to display
+        # 'cmap' : the color map object
         self.layers = defaultdict(dict)
         self.display_data = None
-        self.display_component = None
-        self.is_3D = False
+        self.display_attribute = None
         self.slice_ori = 0
         self._slice_ind = 0
 
@@ -36,6 +52,10 @@ class ImageClient(VizClient):
             self.area_style = area_style
         else:
             raise Exception("area_style should be one of contour/filled")
+    @property
+    def is_3D(self):
+        if not self.display_data: return False
+        return len(self.display_data.shape) == 3
 
     @property
     def slice_ind(self):
@@ -45,6 +65,7 @@ class ImageClient(VizClient):
     def slice_ind(self, value):
         self._slice_ind = value
         self._update_data_plot()
+        self._redraw()
 
     def set_data(self, data, attribute=None):
         if data not in self.data:
@@ -61,23 +82,24 @@ class ImageClient(VizClient):
         #pick which attribute to show
         self.display_data = data
         self.display_attribute = attribute
-
-        self.is_3D = len(data.shape) == 3
         self._update_data_plot()
+        self._redraw()
 
     def slice_bounds(self):
         if not self.is_3D: return (0,0)
         if self.slice_ori == 0:
-            return self.display_data.shape[2]
+            return (0, self.display_data.shape[2]-1)
         if self.slice_ori == 1:
-            return self.display_data.shape[1]
+            return (0, self.display_data.shape[1]-1)
         if self.slice_ori == 2:
-            return self.display_data.shape[0]
+            return (0, self.display_data.shape[0]-1)
 
     def set_slice_ori(self, ori):
         if ori not in [0,1,2]:
             raise TypeError("Orientation must be 0, 1, or 2")
         self.slice_ori = ori
+        self._update_data_plot()
+        self._redraw()
 
     def set_attribute(self, attribute):
         if not self.display_data or \
@@ -103,13 +125,34 @@ class ImageClient(VizClient):
 
         super(VizClient, self)._remove_subset(self, message)
 
+    def set_norm(self, vmin=None, vmax=None):
+        if not self.display_data:
+            return
+        n = self.layers[self.display_data]['norm']
+        if not n:
+            n = InvNormalize()
+            n.autoscale(self.display_data[self.display_attribute])
+
+        if vmin: n.vmin = vmin
+        if vmax: n.vmax = vmax
+        self.layers[self.display_data]['norm'] = n
+        self._update_data_plot()
+        self._redraw()
+
+    def set_cmap(self, cmap):
+        if not self.display_data:
+            return
+        self.layers[self.display_data]['cmap'] = cmap
+        self._update_data_plot()
+        self._redraw()
+
     def _update_data_plot(self):
         """
         Sync the location of the scatter points to
         reflect what components are being plotted
         """
 
-        if self.display_data is None:
+        if not self.display_data:
             return
         data = self.display_data[self.display_attribute]
 
@@ -124,12 +167,35 @@ class ImageClient(VizClient):
                 self._image = data[self.slice_ind, :, :]
 
         data = self.display_data
+        if 'cmap' not in self.layers[data]:
+            self.layers[data]['cmap'] = plt.cm.gray
+        if  'norm' not in self.layers[data]:
+            self.layers[data]['norm'] = InvNormalize()
+            self.layers[data]['norm'].autoscale(self._image)
+
+        cmap = self.layers[data]['cmap']
+        norm = self.layers[data]['norm']
+
         if 'artist' not in self.layers[data]:
-            plot = self._ax.imshow(self._image, cmap=plt.cm.gray,
+            plot = self._ax.imshow(self._image, cmap=cmap, norm=norm,
                                    interpolation='nearest', origin='lower')
             self.layers[data]['artist'] = plot
         else:
             self.layers[data]['artist'].set_data(self._image)
+            self.layers[data]['artist'].set_norm(norm)
+            self.layers[data]['artist'].set_cmap(cmap)
+
+
+        for layer in self.layers:
+            if layer is data:
+                self.layers[layer]['artist'].set_visible(True)
+                continue
+            self.layers[layer]['artist'].set_visible(False)
+        self.relim()
+
+    def relim(self):
+        self._ax.set_xlim(0, self._image.shape[1])
+        self._ax.set_ylim(0, self._image.shape[0])
 
     def _update_axis_labels(self):
         self._ax.set_xlabel('X')

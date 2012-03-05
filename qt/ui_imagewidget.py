@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'imagewidget.ui'
 #
-# Created: Sun Mar  4 19:44:27 2012
+# Created: Sun Mar  4 20:45:22 2012
 #      by: PyQt4 UI code generator 4.8.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -38,7 +38,7 @@ class Ui_ImageWidget(object):
         self.mplWidget.setObjectName(_fromUtf8("mplWidget"))
         self.verticalLayout_3.addWidget(self.mplWidget)
         self.imageSlider = QtGui.QSlider(self.widget)
-        self.imageSlider.setEnabled(False)
+        self.imageSlider.setEnabled(True)
         self.imageSlider.setOrientation(QtCore.Qt.Horizontal)
         self.imageSlider.setInvertedAppearance(False)
         self.imageSlider.setInvertedControls(False)

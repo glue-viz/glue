@@ -22,3 +22,16 @@ def simple_image():
     s = cv.subset.RoiSubset(data, label="Subset")
     return data, s
 
+
+def simple_cube():
+    data = cv.io.extract_data_fits('../examples/cube.fits')
+    comp = cv.data.Component(data['PRIMARY'])
+    comp2 = cv.data.Component(data['PRIMARY'] * -1)
+    data = cv.Data(label="Dummy Cube")
+    data.components['main'] = comp
+    data.components['invert'] = comp2
+    data.shape = comp.data.shape
+    data.ndim = len(data.shape)
+    s = cv.subset.RoiSubset(data, label="Subset")
+    return data, s
+

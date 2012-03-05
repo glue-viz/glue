@@ -40,7 +40,7 @@
        <item>
         <widget class="QSlider" name="imageSlider">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="toolTip">
           <string>Adjust the position of the slice plane</string>
