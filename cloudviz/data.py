@@ -135,7 +135,7 @@ class Data(object):
         key : string
           The component to fetch data from
         """
-        if type(key) != str or key not in self.components:
+        if key not in self.components:
             raise KeyError("Input must be the name of "
                            " a valid component: %s" % str(key))
         return self.components[key].data
