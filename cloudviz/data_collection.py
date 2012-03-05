@@ -23,6 +23,18 @@ class DataCollection(object):
             self._active = data[0]
 
 
+        self._links = []
+
+    def add_link(self, link):
+        self._links.append(link)
+        if self.hub:
+            link.register_to_hub(self.hub)
+
+    def remove_link(self, link):
+        if link not in self._links: return
+        self._links.remove(link)
+        self.hub.remove(link)
+
     def append(self, data):
         self._data.append(data)
         if self.hub:
@@ -31,6 +43,7 @@ class DataCollection(object):
         if len(self._data) == 1: self._active = data
 
     def remove(self, data):
+        if data not in self._data: return
         self._data.remove(data)
         if self.hub:
             msg = cv.message.DataCollectionDeleteMessage(self, data)
@@ -91,3 +104,6 @@ class DataCollection(object):
 
     def __iter__(self):
         return iter(self._data)
+
+    def __len__(self):
+        return len(self._data)
