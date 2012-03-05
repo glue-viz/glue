@@ -30,7 +30,7 @@ def data_to_norm(ax, x, y):
         ynorm = (y - ylim[0]) / (ylim[1] - ylim[0])
     else:
         ynorm = np.log(y / ylim[0]) / np.log(ylim[1] / ylim[0])
-    
+
     return xnorm, ynorm
 
 class Roi(object):
@@ -250,7 +250,7 @@ class PolygonalROI(Roi):
 class AbstractMplRoi(object):
     """ Base class for objects which display
     ROIs on Matplotlib plots and, optionally,
-    edit subset ROIs 
+    edit subset ROIs
     """
     def __init__(self, ax, subset=None):
 
@@ -261,7 +261,7 @@ class AbstractMplRoi(object):
         self._press = None  # id of MPL connection to button_press
         self._motion = None # id of MPL connection to motion_notify
         self._release = None # id of MPL connection to button_release
-        
+
     def start_selection(self, event):
         raise NotImplementedError()
 
@@ -276,7 +276,7 @@ class AbstractMplRoi(object):
         self.reset()
         self._mid_selection = False
         self._sync_patch()
-            
+
     def connect(self):
         self.disconnect()
         canvas = self._ax.figure.canvas
@@ -300,7 +300,7 @@ class AbstractMplRoi(object):
 
     def to_polygon(self):
         raise NotImplementedError()
-        
+
 
 class MplRectangularROI(RectangularROI, AbstractMplRoi):
     """
@@ -358,7 +358,7 @@ class MplRectangularROI(RectangularROI, AbstractMplRoi):
         RectangularROI.update_limits(self, xmin, ymin, xmax, ymax)
         self._sync_patch()
 
-    def start_selection(self, event):        
+    def start_selection(self, event):
         if not (event.inaxes):
             return
 
@@ -379,7 +379,7 @@ class MplRectangularROI(RectangularROI, AbstractMplRoi):
                            min(event.ydata, self._yi),
                            max(event.xdata, self._xi),
                            max(event.ydata, self._yi))
-        
+
     def to_polygon(self):
         x = [self.xmin, self.xmax, self.xmax, self.xmin]
         y = [self.ymin, self.ymin, self.ymax, self.ymax]
@@ -423,7 +423,7 @@ class MplCircularROI(CircularROI, AbstractMplRoi):
 
         self.connect()
         self._sync_patch()
-        
+
     def _sync_patch(self):
 
         # Update geometry
@@ -531,7 +531,7 @@ class MplPolygonalROI(PolygonalROI, AbstractMplRoi):
 
         self.disconnect()
         canvas = self._ax.figure.canvas
-        self._press = canvas.mpl_connect('button_press_event', 
+        self._press = canvas.mpl_connect('button_press_event',
                                          self.update_selection)
         self._release = canvas.mpl_connect('button_release_event',
                                            self.finalize_selection)
@@ -573,10 +573,10 @@ class MplPolygonalROI(PolygonalROI, AbstractMplRoi):
         self._mid_selection = True
         self.reset()
         self.add_point(event.xdata, event.ydata)
-    
+
     def update_selection(self, event):
         if not self._mid_selection:
-            return        
+            return
         self.add_point(event.xdata, event.ydata)
 
     def to_polygon(self):
@@ -608,11 +608,11 @@ class MplTreeROI(AbstractMplRoi):
 
         x = event.xdata
         y = event.ydata
-        
+
         #find the closest point to xy
         xx = self._data.components[self._component_x].data
         yy = self._data.components[self._component_y].data
-        
+
         xxn, yyn = data_to_norm(self._ax, xx, yy)
         xn, yn = data_to_norm(self._ax, x, y)
 
@@ -631,10 +631,10 @@ class MplTreeROI(AbstractMplRoi):
             id = subset.data.tree._index[index].get_subtree_indices()
 
         subset.node_list = id
-    
+
     def finalize_selection(self, event):
         if not (event.inaxes and self._mid_selection):
             return
         self.update_selection(event)
-        
+
         self._mid_selection = False
