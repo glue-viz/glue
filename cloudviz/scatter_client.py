@@ -33,7 +33,6 @@ class ScatterClient(VizClient):
         #   'y' : yattribute
         #   'attributes' : list of plottable attributes (components of data)
         self.layers = {}
-        self._active_layer = None
 
         if figure is None:
             if axes is not None:
@@ -77,14 +76,7 @@ class ScatterClient(VizClient):
             if artist in self.ax.collections:
                 artist.remove()
 
-        isSubset = isinstance(layer, cv.Subset)
-        isData = isinstance(layer, cv.Data)
-
-        if isData:
-            data = layer
-        else:
-            data = layer.data
-
+        data = layer.data
         attributes = [c for c in data.components if
                       np.can_cast(data[c].dtype, np.float)]
 
@@ -133,7 +125,7 @@ class ScatterClient(VizClient):
 
         plot.set_alpha(style.alpha)
 
-    def update_artist(self, layer):
+    def update_layer(self, layer):
         """ Update the matplotlib artist for the requested layer """
         if isinstance(layer, cv.Data):
             data = layer
@@ -276,8 +268,8 @@ class ScatterClient(VizClient):
                 s.yatt = attribute
 
         #update plots
-        self.update_artist(data)
-        map(self.update_artist, (l for l in self.layers if l in data.subsets))
+        self.update_layer(data)
+        map(self.update_layer, (l for l in self.layers if l in data.subsets))
 
         if coord == 'x' and snap:
             self._snap_xlim(data)
@@ -367,11 +359,26 @@ class ScatterClient(VizClient):
             self.ax.set_ylim(min(range), max(range))
         self._redraw()
 
+    def _remove_data(self, message):
+        for s in message.data.subsets:
+            self.delete_layer(s)
+        self.delete_layer(message.data)
+
+    def _remove_subset(self, message):
+        self.delete_layer(message.subset)
+
+    def delete_layer(self, layer):
+        artist = self.layers[layer]['artist']
+        print artist, artist in self.ax.collections
+        if artist in self.ax.collections:
+            artist.remove()
+            self._redraw()
+
     def _update_data_plot(self):
-        [self.update_artist(d) for d in self.data]
+        [self.update_layer(d) for d in self.data]
 
     def _update_subset_single(self, s):
-        self.update_artist(s)
+        self.update_layer(s)
 
     def _redraw(self):
         self.ax.figure.canvas.draw()
@@ -393,11 +400,10 @@ class ScatterClient(VizClient):
         subset.do_broadcast(True)
 
     def _update_subset(self, message):
-        self.update_artist(message.sender)
+        self.update_layer(message.sender)
 
-    def add_data(self, data):
-        super(ScatterClient, self).add_data(data)
+    def _add_data(self, data):
+        super(ScatterClient, self)._add_data(data)
         self.init_layer(data)
         for s in data.subsets:
             self.init_layer(s)
-        self.active_layer = data
