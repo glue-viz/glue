@@ -23,14 +23,14 @@ class Subset(object):
         Describes visual attributes of the subset
     """
 
-    def __init__(self, data, color='r', alpha=1.0, label=None):
+    def __init__(self, data, color=None, alpha=1.0, label=None):
         """ Create a new subclass object.
 
         """
         self.data = data
         self._broadcasting = False
         self.style = VisualAttributes(parent=self)
-        self.style.color = color
+        if color: self.style.color = color
         self.style.alpha = alpha
         self.label = label
 
@@ -120,15 +120,15 @@ class Subset(object):
         if not hasattr(self, '_broadcasting'):
             return
 
-        if self._broadcasting and self.data.hub:
+        dobroad = self._broadcasting and self.data.hub
+        self.do_broadcast(False)
+        if dobroad:
             msg = cloudviz.message.SubsetDeleteMessage(self)
             self.data.hub.broadcast(msg)
 
-        self._broadcasting = False
-
     def write_mask(self, file_name, format="fits"):
         """ Write a subset mask out to file
-        
+
         Inputs:
         -------
         file_name: String
@@ -136,7 +136,7 @@ class Subset(object):
         format: String
                 Name of format to write to. Currently, only "fits" is
                 supported
-                
+
         """
 
         mask = np.short(self.to_mask())
@@ -144,7 +144,7 @@ class Subset(object):
             pyfits.writeto(file_name, mask, clobber=True)
         else:
             raise AttributeError("format not supported: %s" % format)
-                    
+
 
     def __del__(self):
         self.unregister()
@@ -152,7 +152,8 @@ class Subset(object):
 
     def __setattr__(self, attribute, value):
         object.__setattr__(self, attribute, value)
-        self.broadcast(attribute)
+        if attribute != '_braodcasting':
+            self.broadcast(attribute)
 
     def _check_compatibility(self, other):
         if not isinstance(other, Subset):
@@ -363,7 +364,7 @@ class ElementSubset(Subset):
 class RoiSubset(Subset):
     """ This subset is defined by a class:`cloudviz.roi.Roi` object.
     The ROI coordinate system can be either the pixel location of each data element
-    (as stored in that component's numpy array), or the units of the 
+    (as stored in that component's numpy array), or the units of the
     components themselves.
 
     Attributes:
@@ -373,8 +374,8 @@ class RoiSubset(Subset):
     """
 
     def __init__(self, data, xatt=None, yatt=None, roi=None, **kwargs):
-        """ Create a new subset 
-        
+        """ Create a new subset
+
         Parameters:
         -----------
         data: a class:`cloudviz.data.Data` instance
@@ -393,7 +394,7 @@ class RoiSubset(Subset):
         self.roi = roi
         self.xatt = xatt
         self.yatt = yatt
-        
+
     @property
     def xatt(self):
         return self._xatt
@@ -403,7 +404,7 @@ class RoiSubset(Subset):
         if att is not None and att not in self.data.components:
             raise TypeError("Not a valid component: %s" % att)
         self._xatt = att
-    
+
     @property
     def yatt(self):
         return self._yatt
@@ -413,7 +414,7 @@ class RoiSubset(Subset):
         if att is not None and att not in self.data.components:
             raise TypeError("Not a valid component: %s" % att)
         self._yatt = att
-    
+
 
     def to_mask(self):
         if self.roi is None or not self.roi.defined():
@@ -427,11 +428,11 @@ class RoiSubset(Subset):
             x = ind % shape[0]
             y = (ind / shape[0]) % shape[1]
             xx, yy = self.data.coords.pixel2world(x, y, None)
-        
+
         if self.xatt is not None:
             xx = self.data[self.xatt]
-            
+
         if self.yatt is not None:
             yy = self.data[self.yatt]
-            
+
         return self.roi.contains(xx, yy)
