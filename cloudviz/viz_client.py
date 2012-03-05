@@ -15,6 +15,7 @@ class VizClient(Client):
     * _update_data_plot
     * _update_subset_single
     * _redraw
+    * init_layer
 
     VizClient provides a public refresh() method that calls all of
     these methods. It also implements the _add_subset, _update_subset,
@@ -24,9 +25,6 @@ class VizClient(Client):
     Attributes:
     ----------
 
-    _plots: A dictionary keyed by subset and data objects. Each entry
-    holds the plot object associated with the key
-
     options: A dictionary of global plot options, to be handled by
              subclasses.
 
@@ -35,11 +33,17 @@ class VizClient(Client):
     def __init__(self, data, options=None):
         Client.__init__(self, data)
 
-        self._plots = {}
         if not options:
             self.options = {}
         else:
             self.options = options
+
+    def _add_data(self, message):
+        pass
+
+    def _remove_data(self, message):
+        pass
+
 
     def _update_all(self, message):
         """
@@ -52,7 +56,7 @@ class VizClient(Client):
         Method to handle messages sent when subsets are created.
         """
         s = message.subset
-        self._update_layer(s)
+        self.init_layer(s)
         self._redraw()
 
     def _update_subset(self, message):
@@ -62,22 +66,9 @@ class VizClient(Client):
 
         """
         s = message.subset
-        self._update_layer(s)
+        self._update_subset_single(s)
         self._redraw()
 
-    def _remove_subset(self, message):
-        """
-        Method to handle messages sent when subsets are removed.
-
-        """
-        s = message.subset
-        if s not in self._plots:
-            return
-
-        #remove from dictionary
-        self._plots.pop(s)
-
-        self._redraw()
 
     def refresh(self):
         """

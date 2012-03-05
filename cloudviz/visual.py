@@ -27,6 +27,7 @@ class VisualAttributes(object):
         global color_pos
         self.color = default_colors[color_pos % len(default_colors)]
         color_pos += 1
+        print 'color pos is ', color_pos
         self.alpha = 1.
 
         # Line width in points (float or int)
@@ -41,6 +42,14 @@ class VisualAttributes(object):
 
         self.parent = parent
 
+
+    def set(self, other):
+        self.color = other.color
+        self.alpha = other.alpha
+        self.linewidth = other.linewidth
+        self.linestyle = other.linestyle
+        self.marker = other.marker
+        self.markersize = other.markersize
 
     def __setattr__(self, attribute, value):
 

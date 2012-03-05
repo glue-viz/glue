@@ -1,7 +1,6 @@
 from PyQt4.QtCore import Qt, SIGNAL
 from PyQt4.QtGui import *
 
-from ui_scatterwidget import Ui_ScatterWidget
 import numpy as np
 
 import cloudviz as cv
@@ -9,6 +8,8 @@ import cloudviz.message as msg
 from cloudviz.scatter_client import ScatterClient
 
 from qtutil import mpl_to_qt4_color, qt4_to_mpl_color
+from ui_scatterwidget import Ui_ScatterWidget
+from linker_dialog import LinkerDialog
 
 class ScatterWidget(QWidget, cv.HubListener) :
     def __init__(self, data):
@@ -34,12 +35,18 @@ class ScatterWidget(QWidget, cv.HubListener) :
         ui.yAxisComboBox.currentIndexChanged.connect(self.update_yatt)
 
         ui.layerAddButton.pressed.connect(self.dummy)
-        ui.layerRemoveButton.pressed.connect(self.dummy)
-        ui.linkButton.pressed.connect(self.dummy)
+        ui.layerRemoveButton.pressed.connect(lambda: self.remove_layer(self.client.data.active))
+        ui.linkButton.pressed.connect(self.link_subsets)
 
         ui.layerTree.itemSelectionChanged.connect(self.set_active_layer_to_layer_tree)
         ui.layerTree.itemChanged.connect(self.toggle_layer_visibility)
         ui.layerTree.itemClicked.connect(self.edit_layer)
+
+    def link_subsets(self):
+        linker = LinkerDialog(self.client.data)
+        link = linker.getLink(link_class = cv.subset_link.HullLink)
+        if not link: return
+        self.client.data.add_link(link)
 
     def set_active_layer_to_layer_tree(self):
         current = self.ui.layerTree.currentItem()
@@ -75,7 +82,7 @@ class ScatterWidget(QWidget, cv.HubListener) :
                       filter=dc_filt)
         hub.subscribe(self,
                       msg.DataCollectionDeleteMessage,
-                      handler=lambda x:self.remove_layer(x.sender),
+                      handler=lambda x:self.remove_layer(x.data),
                       filter=dc_filt)
         hub.subscribe(self,
                       msg.DataUpdateMessage,
@@ -83,6 +90,7 @@ class ScatterWidget(QWidget, cv.HubListener) :
                       filter=data_filt)
 
     def set_active_layer(self, layer):
+        if layer is None: return
         self.client.data.active = self.layer_dict[layer]
         self.ui.layerTree.setCurrentItem(layer)
 
@@ -210,13 +218,29 @@ class ScatterWidget(QWidget, cv.HubListener) :
                 print 'adding s'
                 self.add_tree_item(s)
 
-
     def init_layer(self, layer):
         print 'init layer'
         self.add_tree_item(layer)
+        self.ui.layerRemoveButton.setEnabled(len(self.client.data) != 0)
 
     def remove_layer(self, layer):
-        self.layerTree.removeItemWidget(self.layer_dict[layer])
+        #remove from GUI
+        l = self.layer_dict[layer]
+        p = l.parent()
+        if p:
+            p.removeChild(self.layer_dict[layer])
+        else:
+            index = self.ui.layerTree.indexOfTopLevelItem(l)
+            if index >= 0:
+                self.ui.layerTree.takeTopLevelItem(index)
+
+        #disconnect from cloudviz
+        if isinstance(layer, cv.Subset):
+            layer.unregister()
+        elif isinstance(layer, cv.Data):
+            self.client.data.remove(layer)
+
+        self.ui.layerRemoveButton.setEnabled(len(self.client.data) != 0)
 
     def toggle_layer_visibility(self):
         item = self.ui.layerTree.currentItem()

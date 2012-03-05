@@ -7,7 +7,6 @@ from matplotlib.figure import Figure
 import numpy as np
 
 import cloudviz as cv
-from cloudviz.mpl_scatter_client import MplScatterClient
 from cloudviz.scatter_client import ScatterClient
 import cloudviz.message as msg
 from cloudviz import RasterAxes
@@ -82,6 +81,7 @@ class ScatterUI(QMainWindow, cv.ScatterClient):
 
         left.addLayout(xrow)
         left.addLayout(yrow)
+        left.addStretch()
         right.addWidget(tree)
         right.addLayout(row)
         right.setContentsMargins(0,0,0,0)
@@ -323,6 +323,5 @@ if __name__=="__main__":
 
     subset_client.show()
     scatter_client.show()
-
     sys.exit(app.exec_())
 

@@ -1,7 +1,7 @@
+import cloudviz as cv
 from cloudviz.hub import HubListener
 import cloudviz.message as msg
 from cloudviz.subset import RoiSubset
-
 class SubsetLink(HubListener):
     """ The base class for representing subsets linked across data.
 
@@ -63,12 +63,24 @@ class SubsetLink(HubListener):
         """
         if not self._listen:
             return
-        self._listen = False
-        if message.sender in self._subsets:
-            self.convert(message)
-        else:
+        if message.sender not in self._subsets:
             raise TypeError("Linker can't handle message sent from %s " %
                             message.sender)
+
+
+        #prob don't want to sync visual properties
+        if message.attribute is message.sender.style:
+            return
+
+        self._listen = False
+        #easy case of propagating style changes
+        #if message.attribute is message.sender.style:
+        #    for s in self._subsets:
+        #        s.style.set(message.attribute)
+        #else: # pass off harder cases
+
+        self.convert(message)
+
         self._listen = True
 
     def convert(self, message):
@@ -95,3 +107,63 @@ class RoiLink(SubsetLink):
         for s in self.subsets:
             if s.roi is not message.sender.roi:
                 s.roi = message.sender.roi
+
+class HullLink(SubsetLink):
+    def __init__(self, subsets, xatts=None, yatts=None):
+        SubsetLink.__init__(self, subsets)
+        self.xs = {}
+        self.ys = {}
+        for i,s in enumerate(subsets):
+            if not isinstance(s, RoiSubset):
+                raise TypeError("All subsets must be ROI subsets")
+            self.xs[s] = xatts[i] if xatts else s.xatt
+            self.ys[s] = yatts[i] if yatts else s.yatt
+
+    def convert(self, message):
+        from scipy.spatial import Delaunay
+        import numpy as np
+        from cloudviz.roi import PolygonalROI
+
+        indices = message.sender.to_index_list()
+        if indices.size == 0:
+            roi = PolygonalROI()
+            for s in self.subsets:
+                s.roi = roi
+            return
+
+        x = message.sender.data[self.xs[message.sender]][indices]
+        y = message.sender.data[self.ys[message.sender]][indices]
+        array = np.zeros((x.size, 2))
+        array[:,0] = x
+        array[:,1] = y
+        tri = Delaunay(array)
+        hull = tri.convex_hull
+        roi = PolygonalROI()
+
+        used = [0] * hull.shape[0]
+        roi.add_point(x[hull[0,0]], y[hull[0,0]])
+        used[0] = 1
+        look = hull[0,1]
+        for i in range(1, len(used)):
+            found=False
+            for j in range(len(used)):
+                if used[j]: continue
+                if hull[j,0] == look:
+                    found=True
+                    look = hull[j,1]
+                    roi.add_point(x[hull[j,1]], y[hull[j,1]])
+                elif hull[j,1] == look:
+                    found = True
+                    look = hull[j,0]
+                    roi.add_point(x[hull[j,0]], y[hull[j,0]])
+                if found:
+                    used[j] = 1
+                    break
+            assert(found)
+
+        for s in self.subsets:
+            if s is message.sender: continue
+            s.roi = roi
+
+
+
