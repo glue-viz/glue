@@ -64,29 +64,45 @@ class Client(cloudviz.HubListener):
         ----------
         hub: The hub to subscribe to
         """
+        dfilter = lambda x:x.sender.data in self._data
+        dcfilter = lambda x:x.sender is self._data
 
         hub.subscribe(self,
                       msg.SubsetCreateMessage,
                       handler=self._add_subset,
-                      filter=lambda x: \
-                          x.sender.data in self._data)
+                      filter=dfilter)
 
         hub.subscribe(self,
                       msg.SubsetUpdateMessage,
                       handler=self._update_subset,
-                      filter=lambda x: \
-                          x.sender.data in self._data)
+                      filter=dfilter)
 
         hub.subscribe(self,
                       msg.SubsetDeleteMessage,
                       handler=self._remove_subset,
-                      filter=lambda x: \
-                          x.sender.data in self._data)
+                      filter=dfilter)
 
         hub.subscribe(self,
                       msg.DataMessage,
                       handler=self._update_all,
-                      filter=lambda x: x.sender in self._data)
+                      filter=dfilter)
+
+        hub.subscribe(self,
+                      msg.DataCollectionAddMessage,
+                      handler=self._add_data,
+                      filter=dcfilter)
+
+        hub.subscribe(self,
+                      msg.DataCollectionDeleteMessage,
+                      handler=self._remove_data,
+                      filter=dcfilter)
+
+
+    def _add_data(self, message):
+        raise NotImplementedError("_add_subset not implemented")
+
+    def _remove_data(self, message):
+        raise NotImplementedError("_remove_subset not implemented")
 
     def _add_subset(self, message):
         raise NotImplementedError("_add_subset not implemented")
