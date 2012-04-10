@@ -38,6 +38,9 @@ class DataCollection(object):
     def append(self, data):
         self._data.append(data)
         if self.hub:
+            data.hub = self.hub
+            for s in data.subsets:
+                s.register()
             msg = cv.message.DataCollectionAddMessage(self, data)
             self.hub.broadcast(msg)
         if len(self._data) == 1: self._active = data
@@ -90,11 +93,16 @@ class DataCollection(object):
             msg = cv.message.DataCollectionActiveDataChange(self)
             self.hub.broadcast(msg)
 
-
     def register_to_hub(self, hub):
         if not isinstance(hub, cv.Hub):
             raise TypeError("Input is not a Hub object: %s" % type(hub))
         self.hub = hub
+
+        #re-assign all data, subset hub instances to this hub
+        for d in self._data:
+            d.hub = hub
+            for s in d.subsets:
+                s.register()
 
     def __contains__(self, obj):
         return obj in self._data
