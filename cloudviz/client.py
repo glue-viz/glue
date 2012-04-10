@@ -6,9 +6,6 @@ class Client(cloudviz.HubListener):
     """
     Base class for interaction / visualization modules
 
-    Subclasses should override the _add_subset, _remove_subset,
-    _update_subset, and  _update_all methods.
-
     Attributes
     ----------
     data: DataCollection instance
@@ -29,7 +26,7 @@ class Client(cloudviz.HubListener):
         ------
         TypeError: If the data input is the wrong type
         """
-
+        super(Client, self).__init__()
         self._data = data
         if isinstance(data, cloudviz.Data):
             self._data = cloudviz.DataCollection(data)
@@ -38,23 +35,24 @@ class Client(cloudviz.HubListener):
         elif isinstance(data, cloudviz.DataCollection):
             self._data = data
         else:
-            raise TypeError("Input data must be a Data object, list of Data, or DatCollection: %s" % type(data))
+            raise TypeError("Input data must be a Data object, "
+                            "list of Data, or DatCollection: %s"
+                            % type(data))
 
     @property
     def data(self):
+        """ Returns the data collection """
         return self._data
 
     def register_to_hub(self, hub):
-        """
-        The main method to establish a link with a hub,
+        """The main method to establish a link with a hub,
         and set up event handlers.
 
-        This method subscribes to 4 basic message types:
-        SubsetCreateMessage, SubsetUpdateMessage, SubsetRemoveMessage,
-        and DataMessage. It defines filter methods so that only
-        messages related to the client's data sets' are relayed. These
-        4 messages are relayed to the _add_subset, _update_subset,
-        _remove_subset, and _update_all methods, respectively
+        This method subscribes to 2 basic message types:
+        SubsetUpdateMessage and DataUpdateMessage. It defines filter
+        methods so that only messages related to the client's data
+        sets' are relayed. These 4 messages are relayed to the
+        _update_subset, and _update_data methods, respectively
 
         Client subclasses at a minimum should override these methods
         to provide functionality. They can also override
@@ -63,6 +61,7 @@ class Client(cloudviz.HubListener):
         Attributes
         ----------
         hub: The hub to subscribe to
+
         """
         dfilter = lambda x:x.sender.data in self._data
         dcfilter = lambda x:x.sender is self._data
@@ -71,49 +70,35 @@ class Client(cloudviz.HubListener):
                       msg.SubsetCreateMessage,
                       handler=self._add_subset,
                       filter=dfilter)
-
         hub.subscribe(self,
                       msg.SubsetUpdateMessage,
                       handler=self._update_subset,
                       filter=dfilter)
-
         hub.subscribe(self,
                       msg.SubsetDeleteMessage,
                       handler=self._remove_subset,
                       filter=dfilter)
-
         hub.subscribe(self,
-                      msg.DataMessage,
-                      handler=self._update_all,
+                      msg.DataUpdateMessage,
+                      handler=self._update_data,
                       filter=dfilter)
-
-        hub.subscribe(self,
-                      msg.DataCollectionAddMessage,
-                      handler=self._add_data,
-                      filter=dcfilter)
-
         hub.subscribe(self,
                       msg.DataCollectionDeleteMessage,
                       handler=self._remove_data,
                       filter=dcfilter)
 
-
-    def _add_data(self, message):
-        raise NotImplementedError("_add_subset not implemented")
-
     def _remove_data(self, message):
-        raise NotImplementedError("_remove_subset not implemented")
-
-    def _add_subset(self, message):
-        raise NotImplementedError("_add_subset not implemented")
+        raise NotImplementedError("_remove_data not implemented")
 
     def _remove_subset(self, message):
-        raise NotImplementedError("_remove_subset not implemented")
+        raise NotImplementedError("_remove_data not implemented")
 
-    def _update_all(self, message):
-        raise NotImplementedError("_update_all not implemented")
+    def _update_data(self, message):
+        """ Default handler for DataMessage """
+        raise NotImplementedError("_update_data not implemented")
 
     def _update_subset(self, message):
+        """ Default handler for SubsetUpdateMessage """
         raise NotImplementedError("_update_subset not implemented")
 
     def select(self):
@@ -138,11 +123,5 @@ class Client(cloudviz.HubListener):
         if name == "data" and hasattr(self, "data"):
             raise AttributeError("Cannot modify client's data"
                                  " assignment after creation")
-
-        # Check type of event listener
-        if name == "event_listener":
-            if not isinstance(value, cloudviz.EventListener):
-                raise TypeError("Input is not an event listener object: %s" %
-                                type(value))
 
         object.__setattr__(self, name, value)
