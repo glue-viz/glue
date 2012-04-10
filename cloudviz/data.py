@@ -10,6 +10,7 @@ from cloudviz.coordinates import WCSCoordinates
 from cloudviz.coordinates import WCSCubeCoordinates
 from cloudviz.coordinates import Coordinates
 from cloudviz.visual import VisualAttributes
+from cloudviz.exceptions import InvalidView
 
 class Component(object):
 
@@ -71,9 +72,14 @@ class Data(object):
 
         self.metadata = {}
 
-        self.label = label
+        self.style.label = label
 
-        self.data = self  # a handy reference when dealing with subset + data collections
+        self.data = self
+
+    @property
+    def label(self):
+        """ Convenience access to data set's label """
+        return self.style.label
 
     def new_subset(self):
         subset = cloudviz.Subset(self)
@@ -81,7 +87,6 @@ class Data(object):
         return subset
 
     def add_subset(self, subset):
-        print 'adding subset', self.hub
         subset.do_broadcast(True)
         self.subsets.append(subset)
         if self.hub is not None:
@@ -90,7 +95,7 @@ class Data(object):
 
     def remove_subset(self, subset):
         if self.hub is not None:
-            msg = cloudviz.SubsetDeleteMessage(subset)
+            msg = cloudviz.message.SubsetDeleteMessage(subset)
             self.hub.boradcast(msg)
         self.subsets.pop(subset)
 
@@ -110,6 +115,11 @@ class Data(object):
         msg = cloudviz.message.DataUpdateMessage(self, attribute=attribute)
         self.hub.broadcast(msg)
 
+
+    def create_subset(self):
+        result = cloudviz.Subset(self)
+        result.register()
+        return result
 
     def __str__(self):
         s = ""
@@ -136,8 +146,8 @@ class Data(object):
           The component to fetch data from
         """
         if key not in self.components:
-            raise KeyError("Input must be the name of "
-                           " a valid component: %s" % str(key))
+            raise InvalidView("Input must be the name of "
+                              " a valid component: %s" % str(key))
         return self.components[key].data
 
 
@@ -155,7 +165,8 @@ class TabularData(Data):
         '''
 
         # Read the table
-        table = atpy.Table(*args, **kwargs)
+        table = atpy.Table()
+        table.read(*args, **kwargs)
 
         # Loop through columns and make component list
         for column_name in table.columns:

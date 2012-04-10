@@ -32,7 +32,13 @@ class Subset(object):
         self.style = VisualAttributes(parent=self)
         if color: self.style.color = color
         self.style.alpha = alpha
-        self.label = label
+        self.style.label = label
+        self.subset_state = SubsetState(self)
+
+    @property
+    def label(self):
+        """ Convenience access to subset's label """
+        return self.style.label
 
     def register(self):
         """ Register a subset to its data, and start broadcasting
@@ -61,6 +67,8 @@ class Subset(object):
         for the requested data set.
 
         """
+        return self.subset_state.to_index_list()
+
         mask = self.to_mask()
         result, = np.where(mask)
         return result
@@ -75,7 +83,7 @@ class Subset(object):
         A boolean numpy array, the same shape as the data, that
         defines whether each element belongs to the subset.
         """
-        raise NotImplementedError("must be overridden by a subclass")
+        return self.subset_state.to_mask()
 
     def do_broadcast(self, value):
         """
@@ -148,7 +156,7 @@ class Subset(object):
 
     def __del__(self):
         self.unregister()
-        object.__del__(self)
+        super(Subset, self).__del__()
 
     def __setattr__(self, attribute, value):
         object.__setattr__(self, attribute, value)
@@ -177,6 +185,10 @@ class Subset(object):
         m = self.to_mask() ^ other.to_mask()
         return ElementSubset(self.data, mask=m)
 
+    def __getitem__(self, attribute):
+        return self.data[attribute][self.to_index_list()]
+
+
     def is_compatible(self, data):
         """
         Return whether or not this subset is compatible with a data
@@ -195,6 +207,16 @@ class Subset(object):
         """
         return data is self.data
 
+
+class SubsetState(object):
+    def __init__(self, parent):
+        self.parent = parent
+
+    def to_mask():
+        return np.where(self.to_mask())
+
+    def to_index_list(self):
+        return np.arange(np.product(self.parent.data.shape))
 
 class TreeSubset(Subset):
     """ Subsets defined using a data's Tree attribute.
@@ -257,7 +279,7 @@ class TreeSubset(Subset):
         return self.to_mask().nonzero()[0]
 
     def __or__(self, other):
-        self.check_compatibility(other)
+        self._check_compatibility(other)
         if isinstance(other, TreeSubset):
             nl = list(set(self.node_list) | set(other.node_list))
             return TreeSubset(self.data, node_list=nl)
@@ -265,7 +287,7 @@ class TreeSubset(Subset):
             return Subset.__or__(self, other)
 
     def __and__(self, other):
-        self.check_compatibility(other)
+        self._check_compatibility(other)
         if isinstance(other, TreeSubset):
             nl = list(set(self.node_list) & set(other.node_list))
             return TreeSubset(self.data, node_list=nl)
@@ -273,39 +295,12 @@ class TreeSubset(Subset):
             return Subset.__and__(self, other)
 
     def __xor__(self, other):
-        self.check_compatibility(other)
+        self._check_compatibility(other)
         if isinstance(other, TreeSubset):
             nl = list(set(self.node_list) ^ set(other.node_list))
             return TreeSubset(self.data, node_list=nl)
         else:
             return Subset.__xor__(self, other)
-
-    def __ior__(self, other):
-        self.check_compatibility(other)
-        if isinstance(other, TreeSubset):
-            nl = list(set(self.node_list) | set(other.node_list))
-            self.node_list = nl
-            return self
-        else:
-            return Subset.__ior__(self, other)
-
-    def __iand__(self, other):
-        self.check_compatibility(other)
-        if isinstance(other, TreeSubset):
-            nl = list(set(self.node_list) & set(other.node_list))
-            self.node_list = nl
-            return self
-        else:
-            return Subset.__iand__(self, other)
-
-    def __ixor__(self, other):
-        self.check_compatibility(other)
-        if isinstance(other, TreeSubset):
-            nl = list(set(self.node_list) ^ set(other.node_list))
-            self.node_list = nl
-            return self
-        else:
-            return Subset.__ixor__(self, other)
 
 
 class ElementSubset(Subset):
@@ -392,6 +387,8 @@ class RoiSubset(Subset):
         """
         Subset.__init__(self, data, **kwargs)
         self.roi = roi
+        self._xatt = None
+        self._yatt = None
         self.xatt = xatt
         self.yatt = yatt
 
@@ -417,17 +414,21 @@ class RoiSubset(Subset):
 
 
     def to_mask(self):
+        print self.xatt, self.yatt, self.data.shape
+
         if self.roi is None or not self.roi.defined():
-            return np.zeros_like(self.data, 'bool')
+            return np.zeros(self.data.shape, dtype='bool')
 
         if self.xatt is None or self.yatt is None:
             ind = np.arange(np.product(self.data.shape))
             shape = self.data.shape
             if len(shape) < 2:
-                shape = (shape[0], 1)
-            x = ind % shape[0]
-            y = (ind / shape[0]) % shape[1]
+                shape = (1, shape[0])
+            x = ind % shape[-1]
+            y = (ind / shape[-1]) % shape[-2]
             xx, yy = self.data.coords.pixel2world(x, y, None)
+            xx.shape = shape
+            yy.shape = shape
 
         if self.xatt is not None:
             xx = self.data[self.xatt]
@@ -435,4 +436,5 @@ class RoiSubset(Subset):
         if self.yatt is not None:
             yy = self.data[self.yatt]
 
+        print xx.shape, yy.shape
         return self.roi.contains(xx, yy)
