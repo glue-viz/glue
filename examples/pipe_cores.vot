@@ -9,10 +9,6 @@
  </DESCRIPTION>
 <!-- VOTable description at http://www.ivoa.net/Documents/latest/VOT.html -->
 
-<DEFINITIONS>
-  <COOSYS ID="J2000" system="eq_FK5" equinox="J2000"/>
-</DEFINITIONS>
-
 <INFO ID="Ref" name="-ref" value="VIZ4f2c03777048"/>
 <INFO ID="MaxTuples" name="-out.max" value="unlimited"/>
 
