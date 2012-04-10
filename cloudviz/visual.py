@@ -20,14 +20,15 @@ class VisualAttributes(object):
         # Color can be specified using Matplotlib notation. Specifically, it
         # can be:
         #  * A string with a common color (e.g. 'black', 'red', 'orange')
-        #  * A string containing a float in the range [0:1] for a shade of
+        #  * A string containing a float in the rng [0:1] for a shade of
         #    gray ('0.0' = black,'1.0' = white)
-        #  * A tuple of three floats in the range [0:1] for (R, G, B)
+        #  * A tuple of three floats in the rng [0:1] for (R, G, B)
         #  * An HTML hexadecimal string (e.g. '#eeefff')
         global color_pos
+        global default_colors
+
         self.color = default_colors[color_pos % len(default_colors)]
         color_pos += 1
-        print 'color pos is ', color_pos
         self.alpha = 1.
 
         # Line width in points (float or int)
@@ -39,6 +40,7 @@ class VisualAttributes(object):
 
         self.marker = 'o'
         self.markersize = 40
+        self.label = None
 
         self.parent = parent
 
@@ -66,7 +68,8 @@ class VisualAttributes(object):
                 raise Exception("Line width should be positive")
 
         # Check that the attribute exists (don't allow new attributes)
-        allowed = set(['color', 'linewidth', 'linestyle', 'alpha', 'parent', 'marker', 'markersize'])
+        allowed = set(['color', 'linewidth', 'linestyle',
+                       'alpha', 'parent', 'marker', 'markersize', 'label'])
         if attribute not in allowed:
             raise Exception("Attribute %s does not exist" % attribute)
 
