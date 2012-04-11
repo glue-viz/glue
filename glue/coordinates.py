@@ -1,6 +1,7 @@
 import pywcs
 import numpy as np
-from pyfits.core import Header
+
+import pyfits.core
 
 class Coordinates(object):
     '''
@@ -62,7 +63,7 @@ class WCSCoordinates(Coordinates):
             xworld, yworld = self._wcs.wcs_pix2sky(np.array(xpix),
                                                   np.array(ypix), 1)
             return xworld.tolist(), yworld.tolist()
-        elif np.isarray(xpix):
+        elif isinstance(xpix, np.ndarray):
             return self._wcs.wcs_pix2sky(xpix, ypix, 1)
         else:
             raise Exception("Unexpected type for pixel coordinates: %s"
@@ -95,14 +96,14 @@ class WCSCoordinates(Coordinates):
             xpix, ypix = self._wcs.wcs_sky2pix(np.array(xworld),
                                               np.array(yworld), 1)
             return xpix.tolist(), ypix.tolist()
-        elif np.isarray(xworld):
+        elif isinstance(xworld, np.ndarray):
             return self._wcs.wcs_sky2pix(xworld, yworld, 1)
         else:
             raise Exception("Unexpected type for world coordinates: %s" %
                             type(xworld))
 
 class WCSCubeCoordinates(WCSCoordinates):
-    
+
     def __init__(self, header):
         if not isinstance(header, pyfits.core.Header):
             raise TypeError("Header must by a pyfits header instance")
@@ -127,13 +128,13 @@ class WCSCubeCoordinates(WCSCoordinates):
             if k in header and header[k] != 0:
                 raise AttributeError("Cannot handle non-zero keyword: %s = %s" %
                                      (k, header[k]))
-        
+
     def pixel2world(self, xpix, ypix, zpix):
         xout, yout = WCSCoordinates.pixel2world(self, xpix, ypix)
         zout = (zpix - self._crpix3) * self._cdelt3 + self._crval3
         return xout, yout, zout
 
-    def world2pixel(self, xworld, yworld):
+    def world2pixel(self, xworld, yworld, zworld):
         xout, yout = WCSCoordinates.world2pixel(self, xworld, yworld)
         zout = (zworld - self._crval3) / self._cdelt3 + self._crpix3
         return xout, yout, zout
