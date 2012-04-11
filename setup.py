@@ -7,7 +7,9 @@ try:  # Python 3.x
 except ImportError:  # Python 2.x
     from distutils.command.build_py import build_py
 
-setup(name='CloudViz',
-      version='0.1.0',
-      packages=['cloudviz'],
-      cmdclass={'build_py': build_py})
+    setup(name='Glue',
+          version='0.1.0',
+          packages=['glue', 'glue.qt', 'glue.examples'],
+          cmdclass={'build_py': build_py},
+          package_data={'glue': ['examples/*']}
+      )
