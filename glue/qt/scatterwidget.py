@@ -4,6 +4,8 @@ from PyQt4 import QtGui
 import glue
 import glue.message as msg
 from glue.scatter_client import ScatterClient
+from glue.qt.glue_toolbar import GlueToolbar
+from glue.qt.mouse_mode import RectangleMode
 
 from ui_scatterwidget import Ui_ScatterWidget
 from linker_dialog import LinkerDialog
@@ -36,18 +38,32 @@ class ScatterWidget(QtGui.QWidget, glue.HubListener) :
         ui.yAxisComboBox.currentIndexChanged.connect(self.update_yatt)
         ui.layerTree.layer_check_changed.connect(cl.set_visible)
 
+    def make_toolbar(self):
+        result = GlueToolbar(self.ui.mplWidget.canvas, self)
+        for mode in self._mouse_modes():
+            result.add_mode(mode)
+        return result
+
+    def _mouse_modes(self):
+        axes = self.ui.mplWidget.canvas.ax
+        rect = RectangleMode(axes, callback=self._apply_roi)
+        return [rect]
+
+    def _apply_roi(self, mode):
+        roi = mode.roi()
+        self.client._apply_roi(roi)
+
     def update_combos(self, layer):
         """ Update combo boxes to incorporate attribute fields in layer"""
-        fields = self.client.plottable_attributes(layer)
+        layer_ids = self.client.plottable_attributes(layer)
         xcombo = self.ui.xAxisComboBox
         ycombo = self.ui.yAxisComboBox
 
-        for f in fields:
-            key = (layer.data, f)
-            if key not in self.unique_fields:
-                xcombo.addItem(f)
-                ycombo.addItem(f)
-            self.unique_fields.add(key)
+        for lid in layer_ids:
+            if lid not in self.unique_fields:
+                xcombo.addItem(lid.label, userData = lid)
+                ycombo.addItem(lid.label, userData = lid)
+            self.unique_fields.add(lid)
 
     def add_layer(self, layer):
         if layer in self.ui.layerTree:
@@ -66,10 +82,12 @@ class ScatterWidget(QtGui.QWidget, glue.HubListener) :
 
     def update_xatt(self, index):
         combo = self.ui.xAxisComboBox
-        att = str(combo.currentText())
-        self.client.set_xdata(att)
+        component_id = combo.itemData(combo.currentIndex()).toPyObject()
+        assert isinstance(component_id, glue.data.ComponentID)
+        self.client.set_xdata(component_id)
 
     def update_yatt(self, index):
         combo = self.ui.yAxisComboBox
-        att = str(combo.currentText())
-        self.client.set_ydata(att)
+        component_id = combo.itemData(combo.currentIndex()).toPyObject()
+        assert isinstance(component_id, glue.data.ComponentID)
+        self.client.set_ydata(component_id)

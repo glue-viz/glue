@@ -8,6 +8,8 @@ import matplotlib.cm as cm
 import glue
 import glue.message as msg
 from glue.image_client import ImageClient
+from glue.qt.mouse_mode import RectangleMode
+from glue.qt.glue_toolbar import GlueToolbar
 
 from qtutil import mpl_to_qt4_color, qt4_to_mpl_color
 from ui_imagewidget import Ui_ImageWidget
@@ -31,25 +33,32 @@ class ImageWidget(QWidget, glue.HubListener):
 
     def create_actions(self):
         self.cmap_heat_action = QAction("Hot", self)
-        self.cmap_heat_action.activated.connect(lambda: self.client.set_cmap(cm.hot))
-        self.cmap_heat_action.triggered.connect(lambda: self.client.set_cmap(cm.hot))
+        self.cmap_heat_action.activated.connect(
+            lambda: self.client.set_cmap(cm.hot))
+        self.cmap_heat_action.triggered.connect(
+            lambda: self.client.set_cmap(cm.hot))
 
         self.cmap_paired_action = QAction("Paired", self)
-        self.cmap_paired_action.triggered.connect(lambda: self.client.set_cmap(cm.Paired))
+        self.cmap_paired_action.triggered.connect(
+            lambda: self.client.set_cmap(cm.Paired))
 
         self.cmap_gray_action = QAction("Gray", self)
-        self.cmap_gray_action.triggered.connect(lambda: self.client.set_cmap(cm.gray))
+        self.cmap_gray_action.triggered.connect(
+            lambda: self.client.set_cmap(cm.gray))
 
         self.cmap_spectral_action = QAction("Spectral", self)
-        self.cmap_spectral_action.triggered.connect(lambda: self.client.set_cmap(cm.spectral))
+        self.cmap_spectral_action.triggered.connect(
+            lambda: self.client.set_cmap(cm.spectral))
 
         self.cmap_blue_action = QAction("Blues", self)
-        self.cmap_blue_action.triggered.connect(lambda: self.client.set_cmap(cm.Blues))
+        self.cmap_blue_action.triggered.connect(
+            lambda: self.client.set_cmap(cm.Blues))
 
         self.toggle_colorbar_action = QAction("Colorbar", self)
-        self.toggle_colorbar_action.triggered.connect(self.client.toggle_colorbar)
+        self.toggle_colorbar_action.triggered.connect(
+            self.client.toggle_colorbar)
 
-    def create_toolbars(self, parent=None):
+    def create_colormap_toolbar(self, parent=None):
         self.cmap_toolbar = QToolBar("Colormaps", parent)
         self.cmap_toolbar.addAction(self.cmap_heat_action)
         self.cmap_toolbar.addAction(self.cmap_paired_action)
@@ -58,6 +67,21 @@ class ImageWidget(QWidget, glue.HubListener):
         self.cmap_toolbar.addAction(self.cmap_blue_action)
         self.cmap_toolbar.addAction(self.toggle_colorbar_action)
         return self.cmap_toolbar
+
+    def make_toolbar(self):
+        result = GlueToolbar(self.ui.mplWidget.canvas, self)
+        for mode in self._mouse_modes():
+            result.add_mode(mode)
+        return result
+
+    def _apply_roi(self, mode):
+        roi = mode.roi()
+        self.client._apply_roi(roi)
+
+    def _mouse_modes(self):
+        axes = self.ui.mplWidget.canvas.ax
+        rect = RectangleMode(axes, callback=self._apply_roi)
+        return [rect]
 
     def init_widgets(self):
         self.ui.imageSlider.hide()
@@ -90,17 +114,18 @@ class ImageWidget(QWidget, glue.HubListener):
         self.set_slider_range()
 
     def set_attribute(self, index):
-        att = self.ui.attributeComboBox.itemText(index)
-        att = str(att) # cast from QString
-        self.client.set_attribute(att)
+        combo = self.ui.attributeComboBox
+        component_id = combo.itemData(index).toPyObject()
+        self.client.set_attribute(component_id)
         self.ui.attributeComboBox.setCurrentIndex(index)
 
     def set_attribute_combo(self, data):
         combo = self.ui.attributeComboBox
         combo.currentIndexChanged.disconnect(self.set_attribute)
         combo.clear()
-        fields = data.components.keys()
-        combo.addItems(fields)
+        fields = data.component_ids()
+        for f in fields:
+            combo.addItem(f.label, userData = f)
         combo.currentIndexChanged.connect(self.set_attribute)
 
     def set_slider(self, index):
@@ -159,33 +184,4 @@ class ImageWidget(QWidget, glue.HubListener):
         vmin = bias - ra * np.tan(theta)
         vmax = bias + ra * np.tan(theta)
         self.client.set_norm(vmin, vmax)
-
-if __name__ == "__main__":
-    import sys
-    from glue_toolbar import GlueToolbar
-    from messagewidget import MessageWidget
-
-    app = QApplication(sys.argv)
-    win = QMainWindow()
-
-    data, subset = glue.example_data.simple_cube()
-    d2, s2 = glue.example_data.simple_image()
-
-    dc = glue.DataCollection([data, d2, data])
-    image_client = ImageWidget(dc)
-    message_client = MessageWidget()
-
-    tb = image_client.create_toolbars(win)
-    tb2 = GlueToolbar(dc, image_client.ui.mplWidget.canvas,
-                          frame = image_client)
-    win.addToolBar(tb)
-    win.addToolBar(tb2)
-    hub = glue.Hub(data, subset, d2, s2, dc, image_client, tb2, message_client)
-    win.setCentralWidget(image_client)
-    win.show()
-    message_client.show()
-    dc.active = subset
-    #image_client.client.set_norm(1, 2000)
-    #image_client.client.set_cmap('hot')
-    sys.exit(app.exec_())
 

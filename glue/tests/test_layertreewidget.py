@@ -28,7 +28,7 @@ class TestLayerTree(unittest.TestCase):
         import sys
 
         self.app = QApplication(sys.argv)
-        self.data = glue.example_data.pipe()[:2]
+        self.data = glue.example_data.test_data()
         self.hub = glue.Hub()
         self.collect = glue.DataCollection(list(self.data))
         self.widget = LayerTreeWidget()

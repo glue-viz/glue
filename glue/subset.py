@@ -69,10 +69,6 @@ class Subset(object):
         """
         return self.subset_state.to_index_list()
 
-        mask = self.to_mask()
-        result, = np.where(mask)
-        return result
-
     def to_mask(self):
         """
         Convert the current subset to a mask.
@@ -101,9 +97,6 @@ class Subset(object):
     def broadcast(self, attribute=None):
         """
         Explicitly broadcast a SubsetUpdateMessage to the hub
-
-        Note that in most situations, broadcasting happens
-        automatically.
 
         Parameters:
         -----------
@@ -188,7 +181,6 @@ class Subset(object):
     def __getitem__(self, attribute):
         return self.data[attribute][self.to_index_list()]
 
-
     def is_compatible(self, data):
         """
         Return whether or not this subset is compatible with a data
@@ -212,11 +204,25 @@ class SubsetState(object):
     def __init__(self, parent):
         self.parent = parent
 
-    def to_mask():
+    def to_index_list(self):
         return np.where(self.to_mask())
 
-    def to_index_list(self):
-        return np.arange(np.product(self.parent.data.shape))
+    def to_mask(self):
+        return np.zeros(self.parent.data.shape, dtype=bool)
+
+
+class RoiSubsetState(SubsetState):
+    def __init__(self, parent):
+        super(RoiSubsetState, self).__init__(parent)
+        self.xatt = None
+        self.yatt = None
+        self.roi = None
+
+    def to_mask(self):
+        x = self.parent.data[self.xatt]
+        y = self.parent.data[self.yatt]
+        result = self.roi.contains(x, y)
+        return result
 
 class TreeSubset(Subset):
     """ Subsets defined using a data's Tree attribute.
@@ -230,7 +236,6 @@ class TreeSubset(Subset):
     -----------
     node_list: A list of integers, specifying which nodes in the tree
                belong to the subset.
-
     """
     def __init__(self, data, node_list=None, **kwargs):
         """ Create a new subset instance
@@ -356,85 +361,3 @@ class ElementSubset(Subset):
         Subset.__setattr__(self, attribute, value)
 
 
-class RoiSubset(Subset):
-    """ This subset is defined by a class:`glue.roi.Roi` object.
-    The ROI coordinate system can be either the pixel location of each data element
-    (as stored in that component's numpy array), or the units of the
-    components themselves.
-
-    Attributes:
-    -----------
-    roi: A class:`glue.roi.Roi` instance
-         The roi that describes the subset boundaries.
-    """
-
-    def __init__(self, data, xatt=None, yatt=None, roi=None, **kwargs):
-        """ Create a new subset
-
-        Parameters:
-        -----------
-        data: a class:`glue.data.Data` instance
-              Which data set to attach this subset to.
-
-        xatt : string (optional)
-            Which coordinate system to use for the x axis of the
-            ROI. The default is None, which means the pixel location
-            of each data element is used. Alternatively, xatt can a name
-            of one of the components in the data set.
-
-        yatt : string (optional)
-            See xatt.
-        """
-        Subset.__init__(self, data, **kwargs)
-        self.roi = roi
-        self._xatt = None
-        self._yatt = None
-        self.xatt = xatt
-        self.yatt = yatt
-
-    @property
-    def xatt(self):
-        return self._xatt
-
-    @xatt.setter
-    def xatt(self, att):
-        if att is not None and att not in self.data.components:
-            raise TypeError("Not a valid component: %s" % att)
-        self._xatt = att
-
-    @property
-    def yatt(self):
-        return self._yatt
-
-    @yatt.setter
-    def yatt(self, att):
-        if att is not None and att not in self.data.components:
-            raise TypeError("Not a valid component: %s" % att)
-        self._yatt = att
-
-
-    def to_mask(self):
-        print self.xatt, self.yatt, self.data.shape
-
-        if self.roi is None or not self.roi.defined():
-            return np.zeros(self.data.shape, dtype='bool')
-
-        if self.xatt is None or self.yatt is None:
-            ind = np.arange(np.product(self.data.shape))
-            shape = self.data.shape
-            if len(shape) < 2:
-                shape = (1, shape[0])
-            x = ind % shape[-1]
-            y = (ind / shape[-1]) % shape[-2]
-            xx, yy = self.data.coords.pixel2world(x, y, None)
-            xx.shape = shape
-            yy.shape = shape
-
-        if self.xatt is not None:
-            xx = self.data[self.xatt]
-
-        if self.yatt is not None:
-            yy = self.data[self.yatt]
-
-        print xx.shape, yy.shape
-        return self.roi.contains(xx, yy)

@@ -1,5 +1,6 @@
 import numpy as np
 np.seterr(all='ignore')
+
 from matplotlib.patches import Polygon, Rectangle, Ellipse
 
 
@@ -15,23 +16,6 @@ def data_to_norm(ax, x, y):
     pixel = ax.transData(zip(x, y))
     norm = ax.transAxes.inverted()(pixel)
     return zip(*norm)
-
-    xlim = ax.get_xlim()
-    ylim = ax.get_ylim()
-    xlog = ax.get_xscale() == 'log'
-    ylog = ax.get_yscale() == 'log'
-
-    if not xlog:
-        xnorm = (x - xlim[0]) / (xlim[1] - xlim[0])
-    else:
-        xnorm = np.log(x / xlim[0]) / np.log(xlim[1] / xlim[0])
-
-    if not ylog:
-        ynorm = (y - ylim[0]) / (ylim[1] - ylim[0])
-    else:
-        ynorm = np.log(y / ylim[0]) / np.log(ylim[1] / ylim[0])
-
-    return xnorm, ynorm
 
 class Roi(object):
     def contains(self, x, y):
@@ -53,6 +37,15 @@ class RectangularROI(Roi):
         self.ymin = None
         self.ymax = None
 
+    def corner(self):
+        return (self.xmin, self.ymin)
+
+    def width(self):
+        return self.xmax - self.xmin
+
+    def height(self):
+        return self.ymax - self.ymin
+
     def contains(self, x, y):
         """
         Test whether a set of (x,y) points falls within
@@ -60,8 +53,8 @@ class RectangularROI(Roi):
 
         Parameters:
         -----------
-        x: A list of x points
-        y: A list of y points
+        x: A scalar or numpy array of x points
+        y: A scalar or numpy array of y points
 
         Returns:
         --------
@@ -75,10 +68,10 @@ class RectangularROI(Roi):
         """
         Update the limits of the rectangle
         """
-        self.xmin = xmin
-        self.xmax = xmax
-        self.ymin = ymin
-        self.ymax = ymax
+        self.xmin = min(xmin, xmax)
+        self.xmax = max(xmin, xmax)
+        self.ymin = min(ymin, ymax)
+        self.ymax = max(ymin, ymax)
 
     def reset(self):
         """
@@ -252,67 +245,36 @@ class PolygonalROI(Roi):
 
 
 class AbstractMplRoi(object):
-    """ Base class for objects which display
-    ROIs on Matplotlib plots and, optionally,
-    edit subset ROIs
+    """ Base class for objects which use
+    Matplotlib user events to edit/display ROIs
     """
-    def __init__(self, ax, subset=None):
+    def __init__(self, ax):
 
         self._ax = ax
-        self._mid_selection = False
-        self._subset = subset
+        self._roi = self._roi_factory()
 
-        self._press = None  # id of MPL connection to button_press
-        self._motion = None # id of MPL connection to motion_notify
-        self._release = None # id of MPL connection to button_release
+    def _roi_factory(self):
+        raise NotImplementedError()
+
+    def roi(self):
+        return self._roi
 
     def start_selection(self, event):
         raise NotImplementedError()
 
-    def update_selection(self, event):
+    def _update_seleplction(self, event):
         raise NotImplementedError()
 
     def finalize_selection(self, event):
-        if not (self._mid_selection):
-            return
-        if self._subset is not None:
-            self._subset.roi = self.to_polygon()
-        self.reset()
-        self._mid_selection = False
-        self._sync_patch()
+        raise NotImplementedError()
 
-    def reset(self):
+    def _reset(self):
         raise NotImplementedError()
 
     def _sync_patch(self):
         raise NotImplementedError()
 
-    def connect(self):
-        self.disconnect()
-        canvas = self._ax.figure.canvas
-        self._press = canvas.mpl_connect('button_press_event',
-                                         self.start_selection)
-        self._motion = canvas.mpl_connect('motion_notify_event',
-                                          self.update_selection)
-        self._release = canvas.mpl_connect('button_release_event',
-                                           self.finalize_selection)
-
-    def disconnect(self):
-        if self._press is not None:
-            self._ax.figure.canvas.mpl_disconnect(self._press)
-            self._press = None
-        if self._motion is not None:
-            self._ax.figure.canvas.mpl_disconnect(self._motion)
-            self._motion = None
-        if self._release is not None:
-            self._ax.figure.canvas.mpl_disconnect(self._release)
-            self._release = None
-
-    def to_polygon(self):
-        raise NotImplementedError()
-
-
-class MplRectangularROI(RectangularROI, AbstractMplRoi):
+class MplRectangularROI(AbstractMplRoi):
     """
     A subclass of RectangularROI that also renders the ROI to a plot
 
@@ -324,7 +286,7 @@ class MplRectangularROI(RectangularROI, AbstractMplRoi):
                the visual properties of the ROI
     """
 
-    def __init__(self, ax, subset=None):
+    def __init__(self, ax):
         """
         Create a new ROI
 
@@ -333,70 +295,64 @@ class MplRectangularROI(RectangularROI, AbstractMplRoi):
         ax: A matplotlib Axes object to attach the graphical ROI to
         """
 
-        RectangularROI.__init__(self)
-        AbstractMplRoi.__init__(self, ax, subset=subset)
+        AbstractMplRoi.__init__(self, ax)
+
+        self._mid_selection = False
+        self._xi = None
+        self._yi = None
 
         self.plot_opts = {'edgecolor': 'red', 'facecolor': 'none',
                           'alpha': 0.3}
 
         self._rectangle = Rectangle((0., 0.), 1., 1.)
-        self._rectangle.set(**self.plot_opts)
-
         self._ax.add_patch(self._rectangle)
 
         self._sync_patch()
-        self.connect()
 
-    def _sync_patch(self):
+    def _roi_factory(self):
+        return RectangularROI()
 
-        # Update geometry
-        if self.xmin is None:
-            self._rectangle.set_visible(False)
-        else:
-            self._rectangle.set_xy((self.xmin, self.ymin))
-            self._rectangle.set_width(self.xmax - self.xmin)
-            self._rectangle.set_height(self.ymax - self.ymin)
-            self._rectangle.set_visible(True)
-
-        # Update appearance
-        self._rectangle.set(**self.plot_opts)
-
-        # Refresh
-        self._ax.figure.canvas.draw()
-
-    def update_limits(self, xmin, ymin, xmax, ymax):
-        RectangularROI.update_limits(self, xmin, ymin, xmax, ymax)
-        self._sync_patch()
 
     def start_selection(self, event):
         if not (event.inaxes):
             return
 
-        self.reset()
-        self.update_limits(event.xdata, event.ydata, event.xdata, event.ydata)
-
+        self._roi.reset()
+        self._roi.update_limits(event.xdata, event.ydata,
+                                event.xdata, event.ydata)
         self._xi = event.xdata
         self._yi = event.ydata
 
         self._mid_selection = True
+        self._sync_patch()
 
     def update_selection(self, event):
-
         if not self._mid_selection:
             return
 
-        self.update_limits(min(event.xdata, self._xi),
-                           min(event.ydata, self._yi),
-                           max(event.xdata, self._xi),
-                           max(event.ydata, self._yi))
+        self._roi.update_limits(min(event.xdata, self._xi),
+                                min(event.ydata, self._yi),
+                                max(event.xdata, self._xi),
+                                max(event.ydata, self._yi))
+        self._sync_patch()
 
-    def to_polygon(self):
-        x = [self.xmin, self.xmax, self.xmax, self.xmin]
-        y = [self.ymin, self.ymin, self.ymax, self.ymax]
-        result = PolygonalROI()
-        result.vx = x
-        result.vy = y
-        return result
+    def finalize_selection(self, event):
+        self._mid_selection = False
+        self._rectangle.set_visible(False)
+
+    def _sync_patch(self):
+        if self._roi.defined():
+            corner = self._roi.corner()
+            width = self._roi.width()
+            height = self._roi.height()
+            self._rectangle.set_xy(corner)
+            self._rectangle.set_width(width)
+            self._rectangle.set_height(height)
+            self._rectangle.set(**self.plot_opts)
+            self._rectangle.set_visible(True)
+        else:
+            self._rectangle.set_visible(False)
+        self._ax.figure.canvas.draw()
 
 class MplCircularROI(CircularROI, AbstractMplRoi):
     """
@@ -464,7 +420,7 @@ class MplCircularROI(CircularROI, AbstractMplRoi):
         if not (event.inaxes):
             return
 
-        self.reset()
+        self._reset()
         self.set_center(event.xdata, event.ydata)
         self.set_radius(0.)
 
@@ -565,8 +521,8 @@ class MplPolygonalROI(PolygonalROI, AbstractMplRoi):
         PolygonalROI.add_point(self, x, y)
         self._sync_patch()
 
-    def reset(self):
-        PolygonalROI.reset(self)
+    def _reset(self):
+        PolygonalROI._reset(self)
         self._sync_patch()
 
     def replace_last_point(self, x, y):
@@ -581,7 +537,7 @@ class MplPolygonalROI(PolygonalROI, AbstractMplRoi):
         if not (event.inaxes):
             return
         self._mid_selection = True
-        self.reset()
+        self._reset()
         self.add_point(event.xdata, event.ydata)
 
     def update_selection(self, event):
@@ -594,5 +550,3 @@ class MplPolygonalROI(PolygonalROI, AbstractMplRoi):
         result.vx = self.vx
         result.vy = self.vy
         return result
-
-

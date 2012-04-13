@@ -80,7 +80,7 @@ class ImageClient(VizClient):
         if attribute:
             self.layers[data]['att'] = attribute
         elif data not in self.layers:
-            self.layers[data]['att'] = data.components.keys()[0]
+            self.layers[data]['att'] = data.component_ids()[0]
         attribute = self.layers[data]['att']
 
         #pick which attribute to show
@@ -109,7 +109,7 @@ class ImageClient(VizClient):
 
     def set_attribute(self, attribute):
         if not self.display_data or \
-                attribute not in self.display_data.components.keys():
+                attribute not in self.display_data.component_ids():
             raise TypeError("Attribute not in data's attributes: %s" % attribute)
         self.display_attribute = attribute
         self._update_data_plot()
@@ -263,12 +263,15 @@ class ImageClient(VizClient):
         assert mask.shape == s.data.shape
         self.layers[s]['mask'] = mask
 
-        # Handle special case of empty subset
-        if mask.sum() == 0:
-            return
-
         self._update_subset_plot(s)
 
+    def _apply_roi(self, roi):
+        data = self.display_data
+        subset_state = glue.subset.RoiSubsetState(data)
+        subset_state.xatt = 'XPIX'
+        subset_state.yatt = 'YPIX'
+        subset_state.roi = roi
+        data.edit_subset.subset_state = subset_state
 
     def _remove_subset(self, message):
         self.delete_layer(message.sender)

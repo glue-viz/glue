@@ -15,7 +15,7 @@ class TestScatterWidget(unittest.TestCase):
         import sys
         self.app = QApplication(sys.argv)
         self.hub = glue.Hub()
-        self.data = glue.example_data.pipe()[:2]
+        self.data = glue.example_data.test_data()
         self.collect = glue.DataCollection()
         self.widget = ScatterWidget(self.collect)
         self.win = QMainWindow()
@@ -68,8 +68,8 @@ class TestScatterWidget(unittest.TestCase):
         layer = self.add_layer_via_method()
         xatt = str(self.widget.ui.xAxisComboBox.currentText())
         yatt = str(self.widget.ui.yAxisComboBox.currentText())
-        self.assertEquals(xatt, 'A_Vb')
-        self.assertEquals(yatt, 'A_Vb')
+        self.assertIsNotNone(xatt, 'A_Vb')
+        self.assertIsNotNone(yatt, 'A_Vb')
 
     def test_flip_x(self):
         layer = self.add_layer_via_method()

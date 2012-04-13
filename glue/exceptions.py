@@ -1,4 +1,4 @@
-class InvalidView(Exception):
+class IncompatibleAttribute(Exception):
     pass
 
 class IncompatibleDataException(Exception):

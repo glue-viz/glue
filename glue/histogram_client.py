@@ -19,9 +19,6 @@ class HistogramClient(VizClient):
         component: string
             The name of the new data component to plot
         """
-        if component not in self.data.components:
-            raise AttributeError("Input is not one of the components "
-                                 "in the data")
-
+        self._component = self.data.get_component(component)
         self._component = component
         self.refresh()

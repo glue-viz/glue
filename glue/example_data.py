@@ -1,5 +1,26 @@
-import glue
 import pkgutil
+
+import numpy as np
+
+import glue
+
+def test_data():
+    data = glue.Data(label="Test Data 1")
+    data.ndim = 1
+    data.shape = (3,)
+    data2 = glue.Data(label="Teset Data 2")
+    data2.ndim = 1
+    data2.shape = (3,)
+
+    comp_a = glue.Component(np.array([1,2,3]))
+    comp_b = glue.Component(np.array([1,2,3]))
+    comp_c = glue.Component(np.array([2,4,6]))
+    comp_d = glue.Component(np.array([1,3,5]))
+    data.add_component(comp_a, 'a')
+    data.add_component(comp_b, 'b')
+    data2.add_component(comp_c, 'c')
+    data2.add_component(comp_d, 'd')
+    return data, data2
 
 def pipe():
 
@@ -29,8 +50,8 @@ def simple_image():
     comp = glue.data.Component(data['PRIMARY'])
     comp2 = glue.data.Component(data['PRIMARY'] * -1)
     data = glue.Data(label="Pipe Extinction")
-    data.components['main'] = comp
-    data.components['invert'] = comp2
+    data.add_component(comp, 'main')
+    data.add_component(comp2, 'invert')
     data.shape = comp.data.shape
     data.ndim = len(data.shape)
     s = glue.subset.RoiSubset(data, label="Subset")
@@ -42,8 +63,8 @@ def simple_cube():
     comp = glue.data.Component(data['PRIMARY'])
     comp2 = glue.data.Component(data['PRIMARY'] * -1)
     data = glue.Data(label="Dummy Cube")
-    data.components['main'] = comp
-    data.components['invert'] = comp2
+    data.add_component(comp, 'main')
+    data.add_component(comp2, 'invert')
     data.shape = comp.data.shape
     data.ndim = len(data.shape)
     s = glue.subset.RoiSubset(data, label="Subset")

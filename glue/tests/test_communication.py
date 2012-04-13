@@ -2,6 +2,19 @@ import unittest
 from glue import *
 from glue.message import *
 
+"""
+Client communication protocol
+
+subsets added to data on creation
+subsets subscribe to hub when data does
+
+data are not added to clients automatically
+subsets added to client only if data is in client
+
+All create, update, delete events should emit signals
+Processed (or ignored!) by clients
+"""
+
 class C(Client):
     def __init__(self, data):
         Client.__init__(self, data)

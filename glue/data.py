@@ -10,7 +10,19 @@ from glue.coordinates import WCSCoordinates
 from glue.coordinates import WCSCubeCoordinates
 from glue.coordinates import Coordinates
 from glue.visual import VisualAttributes
-from glue.exceptions import InvalidView
+from glue.exceptions import IncompatibleAttribute
+
+class ComponentID(object):
+    def __init__(self, data, label):
+        self._data = data
+        self._label = label
+
+    @property
+    def label(self):
+        return self._label
+
+    def __str__(self):
+        return self._label
 
 class Component(object):
 
@@ -53,16 +65,14 @@ class Data(object):
         self.shape = None
 
         # Components
-        self.components = {}
+        self._components = {}
+        self.getters = {}
 
         # Tree description of the data
         self.tree = None
 
         # Subsets of the data
         self.subsets = []
-
-        # The default-edible subset
-        self.active_subset = None
 
         # Hub that the data is attached to
         self.hub = None
@@ -76,10 +86,28 @@ class Data(object):
 
         self.data = self
 
+        # The default-editable subset
+        self.edit_subset = glue.Subset(self, label='Editable Subset')
+        self.add_subset(self.edit_subset)
+
     @property
     def label(self):
         """ Convenience access to data set's label """
         return self.style.label
+
+    def add_component(self, component, label):
+        component_id = ComponentID(self, label)
+        self._components[component_id] = component
+        getter = lambda: self._components[component_id].data
+        self.getters[component_id] = getter
+        return component_id
+
+    def add_virtual_component(self, component_id, getter):
+        self.getters[component_id] = getter
+        self._components[component_id] = None
+
+    def component_ids(self):
+        return self._components.keys()
 
     def new_subset(self):
         subset = glue.Subset(self)
@@ -87,11 +115,13 @@ class Data(object):
         return subset
 
     def add_subset(self, subset):
-        subset.do_broadcast(True)
+        if subset in self.subsets:
+            return  # prevents infinite recursion
         self.subsets.append(subset)
         if self.hub is not None:
             msg = glue.message.SubsetCreateMessage(subset)
             self.hub.broadcast(msg)
+        subset.do_broadcast(True)
 
     def remove_subset(self, subset):
         if self.hub is not None:
@@ -126,7 +156,7 @@ class Data(object):
         s += "Number of dimensions: %i\n" % self.ndim
         s += "Shape: %s\n" % string.join([str(x) for x in self.shape], ' x ')
         s += "Components:\n"
-        for component in self.components:
+        for component in self._components:
             s += " * %s\n" % component
         return s[:-1]
 
@@ -145,12 +175,33 @@ class Data(object):
         key : string
           The component to fetch data from
         """
-        if key not in self.components:
-            raise InvalidView("Input must be the name of "
-                              " a valid component: %s" % str(key))
-        return self.components[key].data
+        if key in self.getters:
+            return self.getters[key]()
+        else:
+            raise IncompatibleAttribute
 
-
+        if key == 'XPIX':
+            result = np.arange(np.product(self.shape))
+            result.shape = self.shape
+            result %= self.shape[-1]
+            return result
+        elif key == 'YPIX':
+            result = np.arange(np.product(self.shape))
+            result.shape = self.shape
+            result /= self.shape[-1]
+            result %= self.shape[-2]
+            return result
+        elif key == 'ZPIX':
+            result = np.arange(np.product(self.shape))
+            result.shape = self.parent.shape
+            result /= self.shape[-1] * self.shape[-2]
+            return result
+        else:
+            if key not in self._components:
+                raise IncompatibleAttribute(
+                    "Input must be the name of "
+                    " a valid component: %s" % str(key))
+            return self._components[key].data
 
 class TabularData(Data):
     '''
@@ -172,7 +223,7 @@ class TabularData(Data):
         for column_name in table.columns:
             c = Component(table[column_name],
                           units=table.columns[column_name].unit)
-            self.components[column_name] = c
+            self.add_component(c, column_name)
 
         # Set number of dimensions
         self.ndim = 1
@@ -204,8 +255,8 @@ class GriddedData(Data):
         if format in ['fits', 'fit']:
             arrays = extract_data_fits(filename, **kwargs)
             for component_name in arrays:
-                self.components[component_name] = \
-                    Component(arrays[component_name])
+                comp = Component(arrays[component_name])
+                self.add_component(comp, component_name)
 
             # parse header, create coordinate object
             header = pyfits.open(filename)[0].header
@@ -217,24 +268,24 @@ class GriddedData(Data):
         elif format in ['hdf', 'hdf5', 'h5']:
             arrays = extract_data_hdf5(filename, **kwargs)
             for component_name in arrays:
-                self.components[component_name] = \
-                    Component(arrays[component_name])
+                comp = Component(arrays[component_name])
+                self.add_component(comp, component_name)
         else:
             raise Exception("Unkonwn format: %s" % format)
 
         # Set number of dimensions
-        self.ndim = self.components[self.components.keys()[0]].data.ndim
+        self.ndim = self._components[self._components.keys()[0]].data.ndim
 
         # Set data shape
-        self.shape = self.components[self.components.keys()[0]].data.shape
+        self.shape = self._components[self._components.keys()[0]].data.shape
 
         # If 2D, then set XPIX and YPIX
         if self.ndim == 2:
             x = np.arange(self.shape[1])
             y = np.arange(self.shape[0])
             x, y = np.meshgrid(x, y)
-            self.components['XPIX'] = Component(x)
-            self.components['YPIX'] = Component(y)
+            self.add_component(Component(x), 'XPIX')
+            self.add_component(Component(y), 'YPIX')
 
 
 class AMRData(Data):

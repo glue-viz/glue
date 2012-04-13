@@ -12,7 +12,6 @@ from tree_layout import TreeLayout
 from mpl_scatter_helper import RasterAxes
 from mpl_histogram_client import MplHistogramClient
 import example_data
-from subset_link import SubsetLink
 from data_collection import DataCollection
 from viz_client import VizClient
 import qt

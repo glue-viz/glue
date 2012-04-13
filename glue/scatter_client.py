@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+import glue
 from glue.client import Client
 from glue.util import relim
-from glue.exceptions import InvalidView
+from glue.exceptions import IncompatibleAttribute
 
 class ScatterClient(Client):
     """
@@ -63,14 +64,19 @@ class ScatterClient(Client):
         self.set_visible(layer, enabled)
         self.layers[layer]['enabled'] = enabled
 
+    def _get_layer_enabled(self, layer):
+        return layer in self.layers and \
+            'enabled' in self.layers[layer] and \
+            self.layers[layer]['enabled']
 
     def is_layer_present(self, layer):
         """ True if layer is plotted """
         return layer in self.layers and 'artist' in self.layers[layer]
 
 
-    def plottable_attributes(self, data):
-        return [c for c in data.components if
+    def plottable_attributes(self, layer):
+        data = layer.data
+        return [c for c in data.component_ids() if
                 np.can_cast(data[c].dtype, np.float)]
 
     def add_layer(self, layer):
@@ -102,7 +108,26 @@ class ScatterClient(Client):
 
         self.layers[layer] = {'artist': artist,
                               'attributes': attributes}
+        self._order_layers()
         self._update_layer(layer)
+        self._ensure_subsets_added(layer)
+
+    def _ensure_subsets_added(self, layer):
+        if not isinstance(layer, glue.Data):
+            return
+        for subset in layer.subsets:
+            self.add_layer(subset)
+
+    def _order_layers(self):
+        """ Make sure subsets are in front of data """
+        nlayers = len(self.layers)
+        for i, data in enumerate(self.data):
+            if data not in self.layers: continue
+            self.layers[data]['artist'].set_zorder(i * nlayers)
+            for j, sub in enumerate(data.subsets):
+                if sub not in self.layers:
+                    continue
+                self.layers[sub]['artist'].set_zorder(i * nlayers + j + 1)
 
     def _sync_style(self, layer):
         """ Make sure that each layer's style
@@ -130,6 +155,7 @@ class ScatterClient(Client):
             if not artist.get_visible():
                 continue
             xy = artist.get_offsets()
+            if xy.shape[0] == 0: continue
             rng0 = relim(min(xy[:, 0]), max(xy[:, 0]), is_log)
             rng[0] = min(rng[0], rng0[0])
             rng[1] = max(rng[1], rng0[1])
@@ -152,6 +178,7 @@ class ScatterClient(Client):
             if not artist.get_visible():
                 continue
             xy = artist.get_offsets()
+            if xy.shape[0] == 0: continue
             rng0 = relim(min(xy[:, 1]), max(xy[:, 1]), is_log)
             rng[0] = min(rng[0], rng0[0])
             rng[1] = max(rng[1], rng0[1])
@@ -210,6 +237,21 @@ class ScatterClient(Client):
             self._snap_ylim()
 
         self._update_axis_labels()
+
+    def _apply_roi(self, roi):
+        # every active data layer is set
+        # using specified ROI
+        for layer in self.layers:
+            if layer.data is not layer:
+                continue
+            if not self._get_layer_enabled(layer):
+                continue
+            subset_state = glue.subset.RoiSubsetState(layer)
+            subset_state.xatt = self.xatt
+            subset_state.yatt = self.yatt
+            subset_state.roi = roi
+            subset = layer.edit_subset
+            subset.subset_state = subset_state
 
     def set_xdata(self, attribute, snap=True):
         """
@@ -340,6 +382,11 @@ class ScatterClient(Client):
         self.add_layer(subset)
         subset.do_broadcast(True)
 
+    def add_data(self, data):
+        self.add_layer(data)
+        for subset in data.subsets:
+            self.add_layer(subset)
+
     def _update_subset(self, message):
         self._update_layer(message.sender)
 
@@ -354,7 +401,7 @@ class ScatterClient(Client):
         try:
             x = layer[self.xatt]
             y = layer[self.yatt]
-        except InvalidView:
+        except IncompatibleAttribute:
             self._set_layer_enabled(layer, False)
             return
 

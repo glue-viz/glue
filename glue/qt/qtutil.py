@@ -52,7 +52,7 @@ def data_wizard():
         data = glue.io.extract_data_fits(file)
         result = glue.Data(label=label)
         component = glue.data.Component(data['PRIMARY'])
-        result.components['main'] = component
+        result.add_component(component, 'main')
         result.shape = component.data.shape
         result.ndim = len(result.shape)
     else:
