@@ -100,7 +100,7 @@ class DataCollection(object):
 
         #re-assign all data, subset hub instances to this hub
         for d in self._data:
-            d.hub = hub
+            d.register_to_hub(hub)
             for s in d.subsets:
                 s.register()
 

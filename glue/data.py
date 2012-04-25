@@ -57,15 +57,12 @@ class Data(object):
     def __init__(self, label=None):
         # Coordinate conversion object
         self.coords = Coordinates()
-
-        # Number of dimensions
-        self.ndim = None
-
-        # Dataset shape
-        self.shape = None
+        self._shape = None
 
         # Components
         self._components = {}
+        self._pixel_component_ids = []
+        self._world_component_ids = []
         self.getters = {}
 
         # Tree description of the data
@@ -77,7 +74,6 @@ class Data(object):
         # Hub that the data is attached to
         self.hub = None
 
-        #visual attributes
         self.style = VisualAttributes(parent=self)
 
         self.metadata = {}
@@ -91,16 +87,67 @@ class Data(object):
         self.add_subset(self.edit_subset)
 
     @property
+    def ndim(self):
+        return len(self.shape)
+
+    @property
+    def shape(self):
+        return self._shape
+
+    @property
     def label(self):
         """ Convenience access to data set's label """
         return self.style.label
 
+
+    def _check_can_add(self, component):
+        if len(self._components) == 0:
+            return True
+        return component.data.shape == self.shape
+
     def add_component(self, component, label):
+        if not(self._check_can_add(component)):
+            raise TypeError("Compoment is incompatible with "
+                            "other components in this data")
+
         component_id = ComponentID(self, label)
         self._components[component_id] = component
         getter = lambda: self._components[component_id].data
         self.getters[component_id] = getter
+
+        if len(self._components) == 1:
+            self._shape = component.data.shape
+            self._create_pixel_and_world_components()
+
         return component_id
+
+    def _create_pixel_and_world_components(self):
+        shape = self.shape
+        slices = [slice(0, s, 1) for s in shape]
+        grids = np.mgrid[slices]
+        for i in range(len(shape)):
+            comp = Component(grids[i])
+            cid = self.add_component(comp, "Pixel Axis %i" %i)
+            self._pixel_component_ids.append(cid)
+        if self.coords:
+            world = self.coords.pixel2world(*grids[::-1])[::-1]
+            for i in range(len(shape)):
+                comp = Component(world[i])
+                label = self.coords.axis_label(i)
+                cid = self.add_component(comp, label)
+                self._world_component_ids.append(cid)
+
+    def find_component_id(self, label):
+        for cid in self.component_ids():
+            if cid.label.upper() == label.upper():
+                return cid
+        return None
+
+    def get_pixel_component_id(self, axis):
+        return self._pixel_component_ids[axis]
+
+    def get_world_component_id(self, axis):
+        return self._world_component_ids[axis]
 
     def add_virtual_component(self, component_id, getter):
         self.getters[component_id] = getter
@@ -146,9 +193,15 @@ class Data(object):
         self.hub.broadcast(msg)
 
 
-    def create_subset(self):
-        result = glue.Subset(self)
+    def create_subset(self, **kwargs):
+        result = glue.Subset(self, **kwargs)
         result.register()
+        return result
+
+    def create_subset_from_clone(self, subset, **kwargs):
+        result = glue.Subset(self, **kwargs)
+        result.register()
+        result.subset_state = subset.subset_state
         return result
 
     def __str__(self):
@@ -178,7 +231,8 @@ class Data(object):
         if key in self.getters:
             return self.getters[key]()
         else:
-            raise IncompatibleAttribute
+            raise IncompatibleAttribute("%s to in data set %s" %
+                                        (key.label, self.label))
 
         if key == 'XPIX':
             result = np.arange(np.product(self.shape))
@@ -225,12 +279,6 @@ class TabularData(Data):
                           units=table.columns[column_name].unit)
             self.add_component(c, column_name)
 
-        # Set number of dimensions
-        self.ndim = 1
-
-        # Set data shape
-        self.shape = (len(table),)
-
 
 class GriddedData(Data):
     '''
@@ -254,9 +302,6 @@ class GriddedData(Data):
         # Read in the data
         if format in ['fits', 'fit']:
             arrays = extract_data_fits(filename, **kwargs)
-            for component_name in arrays:
-                comp = Component(arrays[component_name])
-                self.add_component(comp, component_name)
 
             # parse header, create coordinate object
             header = pyfits.open(filename)[0].header
@@ -265,6 +310,10 @@ class GriddedData(Data):
             elif 'NAXIS' in header and header['NAXIS'] == 3:
                 self.coords = WCSCubeCoordinates(header)
 
+            for component_name in arrays:
+                comp = Component(arrays[component_name])
+                self.add_component(comp, component_name)
+
         elif format in ['hdf', 'hdf5', 'h5']:
             arrays = extract_data_hdf5(filename, **kwargs)
             for component_name in arrays:
@@ -272,20 +321,6 @@ class GriddedData(Data):
                 self.add_component(comp, component_name)
         else:
             raise Exception("Unkonwn format: %s" % format)
-
-        # Set number of dimensions
-        self.ndim = self._components[self._components.keys()[0]].data.ndim
-
-        # Set data shape
-        self.shape = self._components[self._components.keys()[0]].data.shape
-
-        # If 2D, then set XPIX and YPIX
-        if self.ndim == 2:
-            x = np.arange(self.shape[1])
-            y = np.arange(self.shape[0])
-            x, y = np.meshgrid(x, y)
-            self.add_component(Component(x), 'XPIX')
-            self.add_component(Component(y), 'YPIX')
 
 
 class AMRData(Data):

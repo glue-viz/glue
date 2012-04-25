@@ -8,30 +8,35 @@ import matplotlib.cm as cm
 import glue
 import glue.message as msg
 from glue.image_client import ImageClient
-from glue.qt.mouse_mode import RectangleMode
+from glue.qt.mouse_mode import RectangleMode, CircleMode, PolyMode
 from glue.qt.glue_toolbar import GlueToolbar
 
 from qtutil import mpl_to_qt4_color, qt4_to_mpl_color
 from ui_imagewidget import Ui_ImageWidget
 from linker_dialog import LinkerDialog
 
-class ImageWidget(QWidget, glue.HubListener):
+class ImageWidget(QMainWindow, glue.HubListener):
     def __init__(self, data, parent=None):
-        QWidget.__init__(self, parent)
+        QMainWindow.__init__(self, parent)
+        glue.HubListener.__init__(self)
+
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
         self.ui = Ui_ImageWidget()
-        self.ui.setupUi(self)
+        self.ui.setupUi(self.central_widget)
 
         self.client = ImageClient(data,
                                   self.ui.mplWidget.canvas.fig,
                                   self.ui.mplWidget.canvas.ax)
 
-        self.create_actions()
-        self.connect()
-        self.init_widgets()
+        self._create_actions()
+        self.make_toolbar()
+        self._connect()
+        self._init_widgets()
         self.set_data(0)
-        self.client.set_data(self.client.data[0])
+        self.set_orientation(0)
 
-    def create_actions(self):
+    def _create_actions(self):
         self.cmap_heat_action = QAction("Hot", self)
         self.cmap_heat_action.activated.connect(
             lambda: self.client.set_cmap(cm.hot))
@@ -69,9 +74,10 @@ class ImageWidget(QWidget, glue.HubListener):
         return self.cmap_toolbar
 
     def make_toolbar(self):
-        result = GlueToolbar(self.ui.mplWidget.canvas, self)
+        result = GlueToolbar(self.ui.mplWidget.canvas, self, name='Image')
         for mode in self._mouse_modes():
             result.add_mode(mode)
+        self.addToolBar(result)
         return result
 
     def _apply_roi(self, mode):
@@ -81,9 +87,11 @@ class ImageWidget(QWidget, glue.HubListener):
     def _mouse_modes(self):
         axes = self.ui.mplWidget.canvas.ax
         rect = RectangleMode(axes, callback=self._apply_roi)
-        return [rect]
+        circ = CircleMode(axes, callback=self._apply_roi)
+        poly = PolyMode(axes, callback=self._apply_roi)
+        return [rect, circ, poly]
 
-    def init_widgets(self):
+    def _init_widgets(self):
         self.ui.imageSlider.hide()
         self.ui.sliceComboBox.hide()
         self.ui.sliderLabel.hide()
@@ -92,11 +100,14 @@ class ImageWidget(QWidget, glue.HubListener):
             self.add_data(d)
 
     def add_data(self, data):
-        if len(data.shape) not in [2,3]:
+        if not self.client.can_handle_data(data):
             return
         self.ui.displayDataCombo.addItem(data.label, userData = QVariant(data))
 
     def set_data(self, index):
+        if self.ui.displayDataCombo.count() == 0:
+            return
+
         data = self.ui.displayDataCombo.itemData(index).toPyObject()
         self.client.set_data(data)
         self.ui.displayDataCombo.setCurrentIndex(index)
@@ -133,6 +144,10 @@ class ImageWidget(QWidget, glue.HubListener):
         self.ui.imageSlider.setValue(index)
 
     def set_orientation(self, ori):
+        # ignore for 2D data (sometimes gets triggered when widgets
+        # switch state
+        if not self.client.is_3D:
+            return
         self.client.set_slice_ori(ori)
         self.ui.sliceComboBox.setCurrentIndex(ori)
         self.set_slider_range()
@@ -140,7 +155,7 @@ class ImageWidget(QWidget, glue.HubListener):
     def set_slider_range(self):
         self.ui.imageSlider.setRange(*self.client.slice_bounds())
 
-    def connect(self):
+    def _connect(self):
         ui = self.ui
         client = self.client
 
@@ -159,11 +174,11 @@ class ImageWidget(QWidget, glue.HubListener):
 
         hub.subscribe(self,
                       msg.DataCollectionAddMessage,
-                      handler=lambda x:x.add_data(x.sender.data),
+                      handler=lambda x:self.add_data(x.data),
                       filter = dc_filt)
         hub.subscribe(self,
                       msg.DataCollectionDeleteMessage,
-                      handler=lambda x:x.remove_data(x.sender.data),
+                      handler=lambda x:self.remove_data(x.data),
                       filter = dc_filt)
 
     def remove_data(self, data):
@@ -185,3 +200,5 @@ class ImageWidget(QWidget, glue.HubListener):
         vmax = bias + ra * np.tan(theta)
         self.client.set_norm(vmin, vmax)
 
+    def __str__(self):
+        return "Image Widget"

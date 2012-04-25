@@ -6,11 +6,7 @@ import glue
 
 def test_data():
     data = glue.Data(label="Test Data 1")
-    data.ndim = 1
-    data.shape = (3,)
     data2 = glue.Data(label="Teset Data 2")
-    data2.ndim = 1
-    data2.shape = (3,)
 
     comp_a = glue.Component(np.array([1,2,3]))
     comp_b = glue.Component(np.array([1,2,3]))
@@ -21,6 +17,20 @@ def test_data():
     data2.add_component(comp_c, 'c')
     data2.add_component(comp_d, 'd')
     return data, data2
+
+def test_image():
+    data = glue.Data(label = "Test Image")
+    comp_a = glue.Component(np.ones((25, 25)))
+    data.add_component(comp_a, 'test_1')
+    comp_b = glue.Component(np.zeros((25, 25)))
+    data.add_component(comp_b, 'test_2')
+    return data
+
+def test_cube():
+    data = glue.Data(label = "Test Cube")
+    comp_a = glue.Component(np.ones((16, 16, 16)))
+    data.add_component(comp_a, 'test_3')
+    return data
 
 def pipe():
 
@@ -38,35 +48,23 @@ def pipe():
     data.read_data('.__junk1',
                    type='ascii',
                    delimiter='\t', data_start = 2)
-    s = glue.subset.RoiSubset(data, label="YSO subset")
+    s = glue.Subset(data, label="YSO subset")
     data2.read_data('.__junk2', type='vo')
 
-    s2 = glue.subset.RoiSubset(data2, label="Core Subset")
+    s2 = glue.Subset(data2, label="Core Subset")
 
     return data, data2, s, s2
 
 def simple_image():
-    data = glue.io.extract_data_fits('../examples/Pipe.fits')
-    comp = glue.data.Component(data['PRIMARY'])
-    comp2 = glue.data.Component(data['PRIMARY'] * -1)
-    data = glue.Data(label="Pipe Extinction")
-    data.add_component(comp, 'main')
-    data.add_component(comp2, 'invert')
-    data.shape = comp.data.shape
-    data.ndim = len(data.shape)
-    s = glue.subset.RoiSubset(data, label="Subset")
+    data = glue.GriddedData(label='Pipe Extinction')
+    data.read_data('../examples/Pipe.fits')
+    s = glue.Subset(data, label="Subset")
     return data, s
 
 
 def simple_cube():
-    data = glue.io.extract_data_fits('../examples/cps_12co_05.fits')
-    comp = glue.data.Component(data['PRIMARY'])
-    comp2 = glue.data.Component(data['PRIMARY'] * -1)
-    data = glue.Data(label="Dummy Cube")
-    data.add_component(comp, 'main')
-    data.add_component(comp2, 'invert')
-    data.shape = comp.data.shape
-    data.ndim = len(data.shape)
-    s = glue.subset.RoiSubset(data, label="Subset")
+    data = glue.GriddedData(label="Dummy Cube")
+    data.read_data('../examples/cps_12co_05.fits')
+    s = glue.Subset(data, label="Subset")
     return data, s
 

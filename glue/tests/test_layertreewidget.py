@@ -75,6 +75,15 @@ class TestLayerTree(unittest.TestCase):
         rect = self.widget.layerTree.visualItemRect(widget_item)
         return rect.center()
 
+    def test_current_layer(self):
+        layer = self.add_layer_via_method()
+        item = self.widget[layer]
+        self.widget.layerTree.setCurrentItem(item)
+        self.assertIs(self.widget.current_layer(), layer)
+
+    def test_current_layer_null(self):
+        self.assertIs(None, self.widget.current_layer())
+
     def test_add_layer(self):
         """ Test that a layer exists once added """
         layer = self.add_layer_via_method()

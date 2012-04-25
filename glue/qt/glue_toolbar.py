@@ -5,7 +5,7 @@ from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
 from PyQt4 import QtCore, QtGui
 
 class GlueToolbar(NavigationToolbar2QT):
-    def __init__(self, canvas, frame):
+    def __init__(self, canvas, frame, name=None):
         """ Create a new toolbar object
 
         Parameters
@@ -22,8 +22,9 @@ class GlueToolbar(NavigationToolbar2QT):
         self.buttons = {}
         self.basedir = None
         self._custom_idMove = None
-
         NavigationToolbar2QT.__init__(self, canvas, frame)
+        if name is not None:
+            self.setWindowTitle(name)
 
     def _init_toolbar(self):
         self.basedir = os.path.join(matplotlib.rcParams[ 'datapath' ],'images')
@@ -58,7 +59,6 @@ class GlueToolbar(NavigationToolbar2QT):
         a = self.addAction(self._icon('filesave.svg'), 'Save',
                            self.save_figure)
         a.setToolTip('Save the figure')
-
 
         # Add the x,y location widget at the right side of the toolbar
         # The stretch factor is 1 which means any resizing of the toolbar

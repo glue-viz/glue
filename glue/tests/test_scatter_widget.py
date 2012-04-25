@@ -53,7 +53,7 @@ class TestScatterWidget(unittest.TestCase):
         return self.widget.client.is_layer_present(layer)
 
     def is_layer_visible(self, layer):
-        return self.widget.client.layers[layer]['artist'].get_visible()
+        return self.widget.client.is_visible(layer)
 
     def test_hub_data_add_is_ignored(self):
         layer = self.add_layer_via_hub()

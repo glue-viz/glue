@@ -179,7 +179,11 @@ class Subset(object):
         return ElementSubset(self.data, mask=m)
 
     def __getitem__(self, attribute):
-        return self.data[attribute][self.to_index_list()]
+        il = self.to_index_list()
+        if len(il) == 0:
+            return np.array([])
+        data = self.data[attribute]
+        return data[il]
 
     def is_compatible(self, data):
         """
@@ -205,11 +209,13 @@ class SubsetState(object):
         self.parent = parent
 
     def to_index_list(self):
-        return np.where(self.to_mask())
+        return np.where(self.to_mask())[0]
 
     def to_mask(self):
         return np.zeros(self.parent.data.shape, dtype=bool)
 
+    def clone(self):
+        return SubsetState(self.parent)
 
 class RoiSubsetState(SubsetState):
     def __init__(self, parent):
@@ -223,6 +229,14 @@ class RoiSubsetState(SubsetState):
         y = self.parent.data[self.yatt]
         result = self.roi.contains(x, y)
         return result
+
+    def clone(self):
+        result = RoiSubsetState(self.parent)
+        result.xatt = self.xatt
+        result.yatt = self.yatt
+        result.roi = self.roi
+        return result
+
 
 class TreeSubset(Subset):
     """ Subsets defined using a data's Tree attribute.

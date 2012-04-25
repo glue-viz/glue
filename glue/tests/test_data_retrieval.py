@@ -6,19 +6,13 @@ import glue
 
 class TestDataRetrieval(unittest.TestCase):
     def setUp(self):
-        ndim = 1
-        shape = (5,)
         data1 = glue.Data()
-        data1.ndim = ndim
-        data1.shape = shape
         comp1 = glue.data.Component(np.arange(5))
         id1 = data1.add_component(comp1, 'comp_1')
         comp2 = glue.data.Component(np.arange(5)*2)
         id2 = data1.add_component(comp2, 'comp_2')
 
         data2 = glue.Data()
-        data2.ndim = ndim
-        data2.shape = shape
         comp3 = glue.data.Component(np.arange(5) * 3)
         id3 = data2.add_component(comp3, 'comp_3')
         comp4 = glue.data.Component(np.arange(5) * 4)

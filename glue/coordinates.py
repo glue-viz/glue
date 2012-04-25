@@ -11,12 +11,14 @@ class Coordinates(object):
     def __init__(self):
         pass
 
-    def pixel2world(self, x, y, z):
-        return x, y
+    def pixel2world(self, *args):
+        return args
 
-    def world2pixel(self, x, y, z):
-        return x, y
+    def world2pixel(self, *args):
+        return args
 
+    def axis_label(self, axis):
+        return "World %i" % axis
 
 class WCSCoordinates(Coordinates):
     '''
@@ -56,15 +58,20 @@ class WCSCoordinates(Coordinates):
                             (type(xpix), type(ypix)))
 
         if np.isscalar(xpix):
-            xworld, yworld = self._wcs.wcs_pix2sky(np.array([xpix]),
-                                                  np.array([ypix]), 1)
+            xworld, yworld = self._wcs.wcs_pix2sky(
+                np.array([xpix]),
+                np.array([ypix]))
             return xworld[0], yworld[0]
         elif type(xpix) == list:
             xworld, yworld = self._wcs.wcs_pix2sky(np.array(xpix),
-                                                  np.array(ypix), 1)
+                                                   np.array(ypix), 1)
             return xworld.tolist(), yworld.tolist()
         elif isinstance(xpix, np.ndarray):
-            return self._wcs.wcs_pix2sky(xpix, ypix, 1)
+            xworld, yworld = self._wcs.wcs_pix2sky(xpix,
+                                                   ypix, 1)
+            xworld.shape = xpix.shape
+            yworld.shape = ypix.shape
+            return xworld, yworld
         else:
             raise Exception("Unexpected type for pixel coordinates: %s"
                             % type(xpix))
@@ -102,6 +109,13 @@ class WCSCoordinates(Coordinates):
             raise Exception("Unexpected type for world coordinates: %s" %
                             type(xworld))
 
+    def axis_label(self, axis):
+        header = self._header
+        num = header['NAXIS'] - axis # number orientation reversed
+        key = 'CTYPE%i' % num
+        if key in header: return 'World %i: %s' % (axis, header[key])
+        return Coordinates.axis_label(self, axis)
+
 class WCSCubeCoordinates(WCSCoordinates):
 
     def __init__(self, header):
@@ -112,7 +126,6 @@ class WCSCubeCoordinates(WCSCoordinates):
             raise AttributeError("Header must describe a 3D array")
 
         self._header = header
-        self._wcs = pywcs.WCS(header)
 
         try:
             self._cdelt3 = header['CDELT3'] if 'CDELT3' in header else header['CD3_3']
@@ -128,6 +141,19 @@ class WCSCubeCoordinates(WCSCoordinates):
             if k in header and header[k] != 0:
                 raise AttributeError("Cannot handle non-zero keyword: %s = %s" %
                                      (k, header[k]))
+        #self._fix_header_for_2d()
+        self._wcs = pywcs.WCS(header)
+
+    def _fix_header_for_2d(self):
+        #workaround for pywcs -- need to remove 3D header keywords
+        self._header['NAXIS'] = 2
+        del self._header['NAXIS3']
+        if 'CDELT3' in self._header:
+            del self._header['CDELT3']
+        if 'CD3_3' in self._header:
+            del self._header['CD3_3']
+        del self._header['CRPIX3']
+        del self._header['CRVAL3']
 
     def pixel2world(self, xpix, ypix, zpix):
         xout, yout = WCSCoordinates.pixel2world(self, xpix, ypix)

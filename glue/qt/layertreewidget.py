@@ -1,7 +1,7 @@
 """ Class for a layer tree widget """
 
 from PyQt4.QtGui import QWidget, QTreeWidgetItem, QPixmap, QIcon, QInputDialog
-from PyQt4.QtGui import QColorDialog
+from PyQt4.QtGui import QColorDialog, QAction
 
 from PyQt4.QtCore import Qt, pyqtSignal, QObject
 from ui_layertree import Ui_LayerTree
@@ -9,6 +9,7 @@ from qtutil import mpl_to_qt4_color, qt4_to_mpl_color, data_wizard
 
 import glue
 import glue.message as msg
+from glue.qt.data_connector import DataConnector
 
 class LayerCommunicator(QObject):
     layer_check_changed = pyqtSignal(object, bool)
@@ -29,19 +30,111 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         glue.HubListener.__init__(self)
 
         self._signals = LayerCommunicator()
+        self._is_checkable = True
+        self._clipboard = None
         self.layer_check_changed = self._signals.layer_check_changed
         self._layer_dict = {}
         self.setupUi(self)
         self.setup_drag_drop()
+        self._create_actions()
         self._connect()
 
+
         self._data_collection = glue.DataCollection()
+
+    def is_checkable(self):
+        return self._is_checkable
+
+    def set_checkable(self, state):
+        self._is_checkable = state
+
+    def _create_actions(self):
+        tree = self.layerTree
+
+        act = QAction("Copy subset", tree)
+        act.setEnabled(False)
+        act.setToolTip("Copy the definition for the selected subset")
+        act.setShortcut(Qt.Key_Control and Qt.Key_C)
+        act.triggered.connect(self._copy_subset)
+        tree.addAction(act)
+        self._copy_action = act
+
+        act = QAction("Paste subset", tree)
+        act.setEnabled(False)
+        act.setToolTip("Overwite selected subset with contents from clipboard")
+        act.setShortcut(Qt.Key_Control and Qt.Key_V)
+        act.triggered.connect(self._paste_subset)
+        tree.addAction(act)
+        self._paste_action = act
+
+        act = QAction("New subset", tree)
+        act.setEnabled(False)
+        act.setToolTip("Create a new subset for the selected data")
+        act.setShortcut(Qt.Key_Control and Qt.Key_N)
+        act.triggered.connect(self._new_subset)
+        tree.addAction(act)
+        self._new_action = act
+
+        act = QAction("Duplicate subset", tree)
+        act.setEnabled(False)
+        act.setToolTip("Duplicate the current subset")
+        act.setShortcut(Qt.Key_Control and Qt.Key_M)
+        act.triggered.connect(self._duplicate_subset)
+        tree.addAction(act)
+        self._duplicate_action = act
+
+        tree.setContextMenuPolicy(Qt.ActionsContextMenu)
+
+    def _copy_subset(self):
+        layer = self.current_layer()
+        assert isinstance(layer, glue.Subset)
+        self._clipboard = layer.subset_state
+
+    def _paste_subset(self):
+        layer = self.current_layer()
+        assert isinstance(layer, glue.Subset)
+        state = self._clipboard.clone()
+        state.parent = layer
+        layer.subset_state = state
+
+    def _new_subset(self):
+        layer = self.current_layer()
+        layer.new_subset()
+
+    def _duplicate_subset(self):
+        layer = self.current_layer()
+        state = layer.subset_state.clone()
+        subset = layer.data.new_subset()
+        subset.subset_state = state
+
+    def _update_actions_enabled(self):
+        layer = self.current_layer()
+        has_clipboard = self._clipboard is not None
+        if isinstance(layer, glue.Data):
+            self._copy_action.setEnabled(False)
+            self._paste_action.setEnabled(False)
+            self._new_action.setEnabled(True)
+            self._duplicate_action.setEnabled(False)
+        elif isinstance(layer, glue.Subset):
+            self._copy_action.setEnabled(True)
+            self._paste_action.setEnabled(has_clipboard)
+            self._new_action.setEnabled(has_clipboard)
+            self._duplicate_action.setEnabled(True)
+        else:
+            self._copy_action.setEnabled(False)
+            self._paste_action.setEnabled(False)
+            self._new_action.setEnabled(False)
+            self._duplicate_action.setEnabled(False)
+
 
     def setup_drag_drop(self):
         self.layerTree.setDragEnabled(True)
 
     def current_layer(self):
-        return self[self.layerTree.currentItem()]
+        item = self.layerTree.currentItem()
+        if item is None:
+            return None
+        return self[item]
 
     @property
     def data_collection(self):
@@ -73,12 +166,16 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         self.layerTree.itemDoubleClicked.connect(self.edit_current_layer)
         self.layerAddButton.pressed.connect(self.load_data)
         self.layerRemoveButton.pressed.connect(self.remove_and_delete_selected)
+        self.linkButton.pressed.connect(
+            lambda: DataConnector.set_connections(self._data_collection)
+        )
         tree = self.layerTree
         rbut = self.layerRemoveButton
         can_remove = lambda: rbut.setEnabled(tree.currentItem() is not None and
                                              tree.currentItem().isSelected())
         self.layerTree.itemSelectionChanged.connect(can_remove)
         self.layerTree.itemChanged.connect(self._on_item_change)
+        self.layerTree.itemSelectionChanged.connect(self._update_actions_enabled)
 
     def _on_item_change(self, item, column):
         # emit check_state_changed signal when checkbox clicked
@@ -110,7 +207,8 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         dialog = QColorDialog()
         initial = mpl_to_qt4_color(layer.style.color)
         color = dialog.getColor(initial = initial)
-        layer.style.color = qt4_to_mpl_color(color)
+        if color.isValid():
+            layer.style.color = qt4_to_mpl_color(color)
 
     def _edit_layer_symbol(self, layer):
         """ Interactively edit a layer's symbol """
@@ -184,7 +282,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
                       filter=data_filt)
         hub.subscribe(self,
                       msg.DataCollectionAddMessage,
-                      handler=lambda x:self.add_layer(x.data),
+                      handler=lambda x:self._add_data_and_subsets(x.data),
                       filter=dc_filt)
         hub.subscribe(self,
                       msg.DataCollectionDeleteMessage,
@@ -220,6 +318,11 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         if layer.data in self:
             return
         self.add_layer(layer.data)
+
+    def _add_data_and_subsets(self, data):
+        self.add_layer(data)
+        for subset in data.subsets:
+            self.add_layer(subset)
 
     def add_layer(self, layer):
         """ Add a new object to the layer tree.
@@ -260,7 +363,8 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
             raise TypeError("Input not a data or subset: %s" % type(layer))
 
         branch = QTreeWidgetItem(parent, [label, '', '', ''])
-        branch.setCheckState(0, Qt.Checked)
+        if self.is_checkable():
+            branch.setCheckState(0, Qt.Checked)
 
         self[layer] = branch
         self[branch] = layer

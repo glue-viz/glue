@@ -5,24 +5,28 @@ import glue
 import glue.message as msg
 from glue.scatter_client import ScatterClient
 from glue.qt.glue_toolbar import GlueToolbar
-from glue.qt.mouse_mode import RectangleMode
+from glue.qt.mouse_mode import RectangleMode, CircleMode, PolyMode
 
 from ui_scatterwidget import Ui_ScatterWidget
 from linker_dialog import LinkerDialog
 
-class ScatterWidget(QtGui.QWidget, glue.HubListener) :
+class ScatterWidget(QtGui.QMainWindow, glue.HubListener) :
     def __init__(self, data, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QtGui.QMainWindow.__init__(self, parent)
         glue.HubListener.__init__(self)
+        self.central_widget = QtGui.QWidget()
+        self.setCentralWidget(self.central_widget)
         self.ui = Ui_ScatterWidget()
-        self.ui.setupUi(self)
+        self.ui.setupUi(self.central_widget)
         self.client = ScatterClient(data,
                                     self.ui.mplWidget.canvas.fig,
                                     self.ui.mplWidget.canvas.ax)
-        self.connect()
+        self._data = data
+        self._connect()
         self.unique_fields = set()
+        self.make_toolbar()
 
-    def connect(self):
+    def _connect(self):
         ui = self.ui
         cl = self.client
 
@@ -37,17 +41,34 @@ class ScatterWidget(QtGui.QWidget, glue.HubListener) :
         ui.xAxisComboBox.currentIndexChanged.connect(self.update_xatt)
         ui.yAxisComboBox.currentIndexChanged.connect(self.update_yatt)
         ui.layerTree.layer_check_changed.connect(cl.set_visible)
+        ui.layerTree.layerAddButton.pressed.disconnect()
+        ui.layerTree.layerAddButton.released.connect(self._add_data)
+
+    def _add_data(self):
+        choices = dict([(d.label, d) for d in self._data])
+        dialog = QtGui.QInputDialog()
+        choice, isok = dialog.getItem(self, "Data Chooser | Scatter Plot",
+                                      "Choose a data set to add",
+                                      choices.keys())
+        if not isok:
+            return
+        data = choices[str(choice)]
+        self.add_layer(data)
 
     def make_toolbar(self):
-        result = GlueToolbar(self.ui.mplWidget.canvas, self)
+        result = GlueToolbar(self.ui.mplWidget.canvas, self,
+                             name='Scatter Plot')
         for mode in self._mouse_modes():
             result.add_mode(mode)
+        self.addToolBar(result)
         return result
 
     def _mouse_modes(self):
         axes = self.ui.mplWidget.canvas.ax
         rect = RectangleMode(axes, callback=self._apply_roi)
-        return [rect]
+        circ = CircleMode(axes, callback=self._apply_roi)
+        poly = PolyMode(axes, callback=self._apply_roi)
+        return [rect, circ, poly]
 
     def _apply_roi(self, mode):
         roi = mode.roi()
@@ -91,3 +112,6 @@ class ScatterWidget(QtGui.QWidget, glue.HubListener) :
         component_id = combo.itemData(combo.currentIndex()).toPyObject()
         assert isinstance(component_id, glue.data.ComponentID)
         self.client.set_ydata(component_id)
+
+    def __str__(self):
+        return "Scatter Widget"

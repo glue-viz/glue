@@ -1,10 +1,15 @@
 import numpy as np
+from matplotlib.nxutils import points_inside_poly
+
 np.seterr(all='ignore')
 
 from matplotlib.patches import Polygon, Rectangle, Ellipse
-
+from glue.exceptions import UndefinedROI
 
 def aspect_ratio(ax):
+    """ Returns the pixel height / width of a box that spans 1
+    data unit in x and y
+    """
     width = ax.get_position().width * ax.figure.get_figwidth()
     height = ax.get_position().height * ax.figure.get_figheight()
     xmin, xmax = ax.get_xlim()
@@ -13,16 +18,35 @@ def aspect_ratio(ax):
 
 
 def data_to_norm(ax, x, y):
-    pixel = ax.transData(zip(x, y))
-    norm = ax.transAxes.inverted()(pixel)
-    return zip(*norm)
+    xy = np.column_stack( (np.asarray(x).flat, np.asarray(y).flat))
+    pixel = ax.transData.transform(xy)
+    norm = ax.transAxes.inverted().transform(pixel)
+    return norm
+
+def data_to_pixel(ax, x, y):
+    xy = np.column_stack( (np.asarray(x).flat, np.asarray(y).flat))
+    return ax.transData.transform(xy)
+
+def pixel_to_data(ax, x, y):
+    xy = np.column_stack( (np.asarray(x).flat, np.asarray(y).flat))
+    return ax.transData.inverted().transform(xy)
+
 
 class Roi(object):
     def contains(self, x, y):
+        """Return true/false for each x/y pair. Raises UndefinedROI
+        exception if not defined
+        """
         raise NotImplementedError()
 
     def defined(self):
+        """ Returns whether or not the subset is properly defined """
         raise NotImplementedError()
+
+    def to_polygon(self):
+        """ Returns a tuple of x and y points, approximating the ROI
+        as a polygon."""
+        raise NotImplementedError
 
 class RectangularROI(Roi):
     """
@@ -37,6 +61,9 @@ class RectangularROI(Roi):
         self.ymin = None
         self.ymax = None
 
+    def __str__(self):
+        return "x=[%0.3f, %0.3f], y=[%0.3f, %0.3f]" % (self.xmin, self.xmax,
+                                                       self.ymin, self.ymax)
     def corner(self):
         return (self.xmin, self.ymin)
 
@@ -61,6 +88,9 @@ class RectangularROI(Roi):
         A list of True/False values, for whether each (x,y)
         point falls within the ROI
         """
+        if not self.defined():
+            raise UndefinedROI
+
         return (x > self.xmin) & (x < self.xmax) & \
                (y > self.ymin) & (y < self.ymax)
 
@@ -85,6 +115,9 @@ class RectangularROI(Roi):
     def defined(self):
         return self.xmin is not None
 
+    def to_polygon(self):
+        return [self.xmin, self.xmax, self.xmax, self.xmin, self.xmin], \
+            [self.ymin, self.ymin, self.ymax, self.ymax, self.ymin]
 
 class CircularROI(Roi):
     """
@@ -95,7 +128,7 @@ class CircularROI(Roi):
         """ Create a new ROI """
         self.xc = None
         self.yc = None
-        self.radius = 0.
+        self.radius = None
 
     def contains(self, x, y):
         """
@@ -112,6 +145,13 @@ class CircularROI(Roi):
         A list of True/False values, for whether each (x,y)
         point falls within the ROI
         """
+        if not self.defined():
+            raise UndefinedROI
+
+        if not isinstance(x, np.ndarray):
+            x = np.asarray(x)
+        if not isinstance(y, np.ndarray):
+            y = np.asarray(y)
         return (x - self.xc) ** 2 + (y - self.yc) ** 2 < self.radius ** 2
 
 
@@ -128,6 +168,12 @@ class CircularROI(Roi):
         """
         self.radius = radius
 
+    def get_center(self):
+        return self.xc, self.yc
+
+    def get_radius(self):
+        return self.radius
+
     def reset(self):
         """
         Reset the rectangular region.
@@ -137,20 +183,37 @@ class CircularROI(Roi):
         self.radius = 0.
 
     def defined(self):
-        return self.xc is not None
+        return self.xc is not None and \
+            self.yc is not None and self.radius is not None
 
+    def to_polygon(self):
+        theta = np.linspace(0, 2 * np.pi, num = 20)
+        x = self.xc + self.radius * np.cos(theta)
+        y = self.yc + self.radius * np.sin(theta)
+        return x, y
 
 class PolygonalROI(Roi):
     """
     A class to define 2D polygonal regions-of-interest
     """
 
-    def __init__(self):
+    def __init__(self, vx=None, vy=None):
         """
         Create a new ROI
         """
-        self.vx = []
-        self.vy = []
+        self.vx = vx
+        self.vy = vy
+        if self.vx is None:
+            self.vx = []
+        if self.vy is None:
+            self.vy = []
+
+    def __str__(self):
+        result = 'Polygonal ROI ('
+        result += ','.join(['(%s, %s)' % (x,y)
+                            for x,y in zip(self.vx, self.vy)])
+        result += ')'
+        return result
 
     def contains(self, x, y):
         """
@@ -167,26 +230,18 @@ class PolygonalROI(Roi):
         A list of True/False values, for whether each (x,y)
         point falls within the ROI
         """
-        result = np.zeros(x.shape, dtype=int)
+        if not self.defined():
+            raise UndefinedROI
+        if not isinstance(x, np.ndarray):
+            x = np.asarray(x)
+        if not isinstance(y, np.ndarray):
+            y = np.asarray(y)
 
-        # Treat special case of empty ROI
-        if len(self.vx) == 0:
-            return result
-
-        xi = np.array(self.vx)
-        xj = np.roll(xi, 1)
-        yi = np.array(self.vy)
-        yj = np.roll(yi, 1)
-
-        from time import time
-        t0 = time()
-        for i in range(len(xi)):
-            result += ((yi[i] > y) != (yj[i] > y)) & \
-                       (x < (xj[i] - xi[i]) * (y - yi[i])
-                        / (yj[i] - yi[i]) + xi[i])
-        t1 = time()
-        print t1 - t0
-        return np.mod(result, 2) == 1
+        xypts = np.column_stack((x.flat,y.flat))
+        xyvts = np.column_stack((self.vx, self.vy))
+        result = points_inside_poly(xypts, xyvts)
+        result.shape = x.shape
+        return result
 
     def add_point(self, x, y):
         """
@@ -243,6 +298,8 @@ class PolygonalROI(Roi):
     def defined(self):
         return len(self.vx) > 0
 
+    def to_polygon(self):
+        return self.vx, self.vy
 
 class AbstractMplRoi(object):
     """ Base class for objects which use
@@ -339,6 +396,7 @@ class MplRectangularROI(AbstractMplRoi):
     def finalize_selection(self, event):
         self._mid_selection = False
         self._rectangle.set_visible(False)
+        self._ax.figure.canvas.draw()
 
     def _sync_patch(self):
         if self._roi.defined():
@@ -354,9 +412,16 @@ class MplRectangularROI(AbstractMplRoi):
             self._rectangle.set_visible(False)
         self._ax.figure.canvas.draw()
 
-class MplCircularROI(CircularROI, AbstractMplRoi):
+    def __str__(self):
+        return "MPL Rectangle: %s" % self._rectangle
+
+class MplCircularROI(AbstractMplRoi):
     """
-    A subclass of CircularROI that also renders the ROI to a plot
+    Class to display / edit circular ROIs using matplotlib
+
+    Since circles on the screen may not be circles in the data
+    (due, e.g., to logarithmic scalings on the axes), the
+    ultimate ROI that is created is a polygonal ROI
 
     Attributes:
     -----------
@@ -366,7 +431,7 @@ class MplCircularROI(CircularROI, AbstractMplRoi):
                the visual properties of the ROI
     """
 
-    def __init__(self, ax, subset=None):
+    def __init__(self, ax):
         """
         Create a new ROI
 
@@ -375,30 +440,34 @@ class MplCircularROI(CircularROI, AbstractMplRoi):
         ax: A matplotlib Axes object to attach the graphical ROI to
         """
 
-        CircularROI.__init__(self)
-        AbstractMplRoi.__init__(self, ax, subset=subset)
-
+        AbstractMplRoi.__init__(self, ax)
+        self._mid_selection = False
         self.plot_opts = {'edgecolor': 'red', 'facecolor': 'none',
                           'alpha': 0.3}
 
-        self._circle = Ellipse((0., 0.), width=0., height=0.)
+        self._xi = None
+        self._yi = None
 
+        self._circle = Ellipse((0., 0.), transform=None,
+                               width=0., height=0.,)
         self._circle.set(**self.plot_opts)
-
         self._ax.add_patch(self._circle)
 
-        self.connect()
         self._sync_patch()
 
-    def _sync_patch(self):
+    def _roi_factory(self):
+        return CircularROI()
 
+    def _sync_patch(self):
         # Update geometry
-        if not self.defined():
+        if not self._roi.defined():
             self._circle.set_visible(False)
         else:
-            self._circle.center = (self.xc, self.yc)
-            self._circle.width = 2. * self.radius
-            self._circle.height = 2. * self.radius / aspect_ratio(self._ax)
+            xy = self._roi.get_center()
+            r = self._roi.get_radius()
+            self._circle.center = xy
+            self._circle.width = 2. * r
+            self._circle.height = 2. * r
             self._circle.set_visible(True)
 
         # Update appearance
@@ -407,55 +476,53 @@ class MplCircularROI(CircularROI, AbstractMplRoi):
         # Refresh
         self._ax.figure.canvas.draw()
 
-    def set_center(self, x, y):
-        CircularROI.set_center(self, x, y)
-        self._sync_patch()
-
-    def set_radius(self, radius):
-        CircularROI.set_radius(self, radius)
-        self._sync_patch()
-
     def start_selection(self, event):
-
         if not (event.inaxes):
             return
 
-        self._reset()
-        self.set_center(event.xdata, event.ydata)
-        self.set_radius(0.)
-
-        self._xi = event.xdata
-        self._yi = event.ydata
+        xy = data_to_pixel(self._ax, [event.xdata], [event.ydata])
+        self._roi.set_center(xy[0,0], xy[0,1])
+        self._roi.set_radius(0.)
+        self._xi = xy[0,0]
+        self._yi = xy[0,1]
 
         self._mid_selection = True
+        self._sync_patch()
 
     def update_selection(self, event):
 
-        if not (event.inaxes and self._mid_selection):
+        if not self._mid_selection:
             return
 
-        dx = event.xdata - self._xi
-        dy = (event.ydata - self._yi) * aspect_ratio(self._ax)
+        xy = data_to_pixel(self._ax, [event.xdata], [event.ydata])
+        dx = xy[0,0] - self._xi
+        dy = xy[0,1] - self._yi
+        self._roi.set_radius(np.sqrt(dx * dx + dy * dy))
+        self._sync_patch()
 
-        self.set_radius(np.sqrt(dx * dx + dy * dy))
-
-    def to_polygon(self):
-        ar = aspect_ratio(self._ax)
-        self._circle.center = (self.xc, self.yc)
-        self._circle.width = 2. * self.radius
-        self._circle.height = 2. * self.radius / ar
-        theta = np.linspace(0, 2 * np.pi, num = 20)
-        x = self.xc + self._circle.width * np.cos(theta) / 2.
-        y = self.yc + self._circle.height * np.sin(theta) / 2.
-        result = PolygonalROI()
-        result.vx = x
-        result.vy = y
+    def roi(self):
+        theta = np.linspace(0, 2 * np.pi, num = 200)
+        xy_center = self._roi.get_center()
+        rad = self._roi.get_radius()
+        x = xy_center[0] + rad * np.cos(theta)
+        y = xy_center[1] + rad * np.sin(theta)
+        xy = np.zeros( (x.size, 2))
+        xy[:, 0] = x
+        xy[:, 1] = y
+        xy_data = self._ax.transData.inverted().transform(xy)
+        vx = xy_data[:,0].flatten().tolist()
+        vy = xy_data[:,1].flatten().tolist()
+        result = PolygonalROI(vx, vy)
         return result
 
+    def finalize_selection(self, event):
+        self._mid_selection = False
+        self._circle.set_visible(False)
+        self._ax.figure.canvas.draw()
 
-class MplPolygonalROI(PolygonalROI, AbstractMplRoi):
+class MplPolygonalROI(AbstractMplRoi):
     """
-    A subclass of PolygonalROI that also renders the ROI to a plot
+    Defines and displays polygonal ROIs on matplotlib plots
 
     Attributes:
     -----------
@@ -465,50 +532,33 @@ class MplPolygonalROI(PolygonalROI, AbstractMplRoi):
                the visual properties of the ROI
     """
 
-    def __init__(self, ax, lasso = True, subset=None):
+    def __init__(self, ax):
         """
-        Create a new ROI
-
         Parameters
         ----------
         ax: A matplotlib Axes object to attach the graphical ROI to
         """
-
-        PolygonalROI.__init__(self)
-        AbstractMplRoi.__init__(self, ax, subset=subset)
-
+        AbstractMplRoi.__init__(self, ax)
+        self._mid_selection = False
         self.plot_opts = {'edgecolor': 'red', 'facecolor': 'red',
                           'alpha': 0.3}
-
         self._polygon = Polygon(np.array(zip([0, 1], [0, 1])))
         self._polygon.set(**self.plot_opts)
-        self.vx = [0.]
-        self.vy = [0.]
 
         self._ax.add_patch(self._polygon)
-        self.lasso = lasso
-        self.connect()
         self._sync_patch()
 
-    def connect(self):
-        if self.lasso:
-            AbstractMplRoi.connect(self)
-            return
-
-        self.disconnect()
-        canvas = self._ax.figure.canvas
-        self._press = canvas.mpl_connect('button_press_event',
-                                         self.update_selection)
-        self._release = canvas.mpl_connect('button_release_event',
-                                           self.finalize_selection)
+    def _roi_factory(self):
+        return PolygonalROI()
 
     def _sync_patch(self):
         # Update geometry
-        if not self.defined():
+        if not self._roi.defined():
             self._polygon.set_visible(False)
         else:
-            self._polygon.set_xy(np.array(zip(self.vx + [self.vx[0]],
-                                              self.vy + [self.vy[0]])))
+            x,y = self._roi.to_polygon()
+            self._polygon.set_xy(zip(x + [x[0]],
+                                     y + [y[0]]))
             self._polygon.set_visible(True)
 
         # Update appearance
@@ -517,36 +567,23 @@ class MplPolygonalROI(PolygonalROI, AbstractMplRoi):
         # Refresh
         self._ax.figure.canvas.draw()
 
-    def add_point(self, x, y):
-        PolygonalROI.add_point(self, x, y)
-        self._sync_patch()
-
-    def _reset(self):
-        PolygonalROI._reset(self)
-        self._sync_patch()
-
-    def replace_last_point(self, x, y):
-        PolygonalROI.replace_last_point(self, x, y)
-        self._sync_patch()
-
-    def remove_point(self, x, y, thresh=None):
-        PolygonalROI.remove_point(self, x, y, thresh=None)
-        self._sync_patch()
-
     def start_selection(self, event):
         if not (event.inaxes):
             return
+
+        self._roi.reset()
+        self._roi.add_point(event.xdata, event.ydata)
         self._mid_selection = True
-        self._reset()
-        self.add_point(event.xdata, event.ydata)
+        self._sync_patch()
 
     def update_selection(self, event):
-        if not self._mid_selection:
+        if not self._mid_selection or not event.inaxes:
             return
-        self.add_point(event.xdata, event.ydata)
+        self._roi.add_point(event.xdata, event.ydata)
+        self._sync_patch()
 
-    def to_polygon(self):
-        result = PolygonalROI()
-        result.vx = self.vx
-        result.vy = self.vy
-        return result
+    def finalize_selection(self, event):
+        self._mid_selection = False
+        self._polygon.set_visible(False)
+        self._ax.figure.canvas.draw()
+

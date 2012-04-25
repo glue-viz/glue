@@ -7,23 +7,30 @@ from imagewidget import ImageWidget
 class GlueVizLoaderWidget(QWidget):
 
     @staticmethod
-    def wrapper_factory(data, parent=None):
+    def wrapper_factory(app, parent=None):
         parent = QWidget(parent)
-        child = GlueVizLoaderWidget(data, parent)
+        child = GlueVizLoaderWidget(app, parent)
         layout = QHBoxLayout()
+        layout.setContentsMargins(0,0,0,0)
+        layout.setSpacing(0)
         layout.addWidget(child)
         parent.setLayout(layout)
         return parent
 
-    def __init__(self, data, parent):
+    def __init__(self, app, parent):
         super(GlueVizLoaderWidget, self).__init__(parent)
 
         self.options = [ScatterWidget, ImageWidget]
-        self.data = data
+        self.names = ['Scatter Plot', 'Image Viewer']
+        self.data = app._data
+        self.hub = app._hub
+        self.app = app
 
         dl = QComboBox()
-        map(lambda x: dl.addItem("%s" % x), self.options)
+        map(lambda x: dl.addItem("%s" % x), self.names)
         layout = QVBoxLayout()
+        layout.setContentsMargins(2,2,2,2)
+        layout.setSpacing(0)
         layout.addWidget(dl)
 
         ok = QPushButton("OK")
@@ -36,10 +43,18 @@ class GlueVizLoaderWidget(QWidget):
         parent = self.parent()
         layout = parent.layout()
 
-        widget = self.options[index](self.data, parent)
+        print 'creating new widget'
+        widget = self.options[index](self.data)
+        print 'registering'
+        widget.register_to_hub(self.hub)
+
+        print 'removing wizard'
         layout.removeWidget(self)
         self.hide()
+
+        print 'adding widget to layout'
         layout.addWidget(widget)
+
 
 def test():
     import glue

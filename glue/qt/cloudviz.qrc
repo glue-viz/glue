@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+	<file>icons/circle.png</file>
+	<file>icons/lasso.png</file>
+	<file>icons/square.png</file>
+</qresource>
+</RCC>

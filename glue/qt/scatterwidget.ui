@@ -6,30 +6,36 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>823</width>
-    <height>752</height>
+    <width>555</width>
+    <height>500</height>
    </rect>
+  </property>
+  <property name="baseSize">
+   <size>
+    <width>555</width>
+    <height>500</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Scatter Plot</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="margin">
-    <number>5</number>
+    <number>2</number>
    </property>
    <item>
-    <widget class="QSplitter" name="splitter_2">
+    <widget class="QSplitter" name="splitter">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
-     <property name="handleWidth">
-      <number>7</number>
-     </property>
      <widget class="MplWidget" name="mplWidget" native="true">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
         <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
+        <verstretch>10</verstretch>
        </sizepolicy>
       </property>
       <property name="minimumSize">
@@ -42,116 +48,114 @@
        <string/>
       </property>
      </widget>
-     <widget class="QSplitter" name="splitter">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <widget class="QWidget" name="layoutWidget">
-       <layout class="QVBoxLayout" name="axisLayout">
-        <property name="sizeConstraint">
-         <enum>QLayout::SetMaximumSize</enum>
-        </property>
-        <item>
-         <layout class="QHBoxLayout" name="xAxisLayout">
-          <item>
-           <widget class="QLabel" name="xlabel">
-            <property name="text">
-             <string>x axis</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="xAxisComboBox">
-            <property name="toolTip">
-             <string>Set which attribute is plotted on the x axis</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="xLogCheckBox">
-            <property name="toolTip">
-             <string>Toggle on/off log scaling on the x axis</string>
-            </property>
-            <property name="text">
-             <string>log</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="xFlipCheckBox">
-            <property name="toolTip">
-             <string>Flip/unflip the order of the x axis</string>
-            </property>
-            <property name="text">
-             <string>flip</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="yAxisLayout">
-          <item>
-           <widget class="QLabel" name="ylabel">
-            <property name="text">
-             <string>y axis</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="yAxisComboBox">
-            <property name="toolTip">
-             <string>Set which attribute is plotted on the y axis</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="yLogCheckBox">
-            <property name="toolTip">
-             <string>Toggle on/off log scaling on the y axis</string>
-            </property>
-            <property name="text">
-             <string>log</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="yFlipCheckBox">
-            <property name="toolTip">
-             <string>Flip/unflip the order of the y axis</string>
-            </property>
-            <property name="text">
-             <string>flip</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Expanding</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="layoutWidget">
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <item>
-         <widget class="LayerTreeWidget" name="layerTree" native="true"/>
-        </item>
-       </layout>
-      </widget>
+     <widget class="QWidget" name="layoutWidget">
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <layout class="QHBoxLayout" name="xAxisLayout">
+           <property name="spacing">
+            <number>-1</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="xlabel">
+             <property name="text">
+              <string>x axis</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="xAxisComboBox">
+             <property name="toolTip">
+              <string>Set which attribute is plotted on the x axis</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="xLogCheckBox">
+             <property name="toolTip">
+              <string>Toggle on/off log scaling on the x axis</string>
+             </property>
+             <property name="text">
+              <string>log</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="xFlipCheckBox">
+             <property name="toolTip">
+              <string>Flip/unflip the order of the x axis</string>
+             </property>
+             <property name="text">
+              <string>flip</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="yAxisLayout">
+           <item>
+            <widget class="QLabel" name="ylabel">
+             <property name="text">
+              <string>y axis</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="yAxisComboBox">
+             <property name="toolTip">
+              <string>Set which attribute is plotted on the y axis</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="yLogCheckBox">
+             <property name="toolTip">
+              <string>Toggle on/off log scaling on the y axis</string>
+             </property>
+             <property name="text">
+              <string>log</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="yFlipCheckBox">
+             <property name="toolTip">
+              <string>Flip/unflip the order of the y axis</string>
+             </property>
+             <property name="text">
+              <string>flip</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="LayerTreeWidget" name="layerTree" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>40</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="baseSize">
+          <size>
+           <width>100</width>
+           <height>10</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </widget>
    </item>
@@ -159,15 +163,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>MplWidget</class>
+   <class>LayerTreeWidget</class>
    <extends>QWidget</extends>
-   <header>mplwidget</header>
+   <header>layertreewidget</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>LayerTreeWidget</class>
+   <class>MplWidget</class>
    <extends>QWidget</extends>
-   <header location="global">layertreewidget</header>
+   <header>mplwidget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

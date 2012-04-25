@@ -38,7 +38,6 @@ def qt4_to_mpl_color(color):
     return str(hex)
 
 
-
 def data_wizard():
     fd = QtGui.QFileDialog()
     if not fd.exec_(): return None
@@ -49,12 +48,8 @@ def data_wizard():
     label = label.split('\\')[-1]
 
     if extension in ['fits', 'fit', 'fts']:
-        data = glue.io.extract_data_fits(file)
-        result = glue.Data(label=label)
-        component = glue.data.Component(data['PRIMARY'])
-        result.add_component(component, 'main')
-        result.shape = component.data.shape
-        result.ndim = len(result.shape)
+        result = glue.GriddedData(label=label)
+        result.read_data(file)
     else:
         result = glue.data.TabularData(label=label)
         result.read_data(file)

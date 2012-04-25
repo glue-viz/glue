@@ -22,6 +22,7 @@ class MplCanvas(FigureCanvas):
         # setup Matplotlib Figure and Axis
         self.fig = Figure(facecolor='#ededed')
         self.ax = self.fig.add_subplot(111)
+        self.fig.subplots_adjust(right=.98, top=.98)
 
         # initialization of the canvas
         FigureCanvas.__init__(self, self.fig)
@@ -60,6 +61,7 @@ class MplWidget(QtGui.QWidget):
         # create a vertical box layout
         self.vbl = QtGui.QVBoxLayout()
         self.vbl.setContentsMargins(0,0,0,0)
+        self.vbl.setSpacing(0)
         # add mpl widget to the vertical box
         self.vbl.addWidget(self.canvas)
         # set the layout to the vertical box

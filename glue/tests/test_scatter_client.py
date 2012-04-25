@@ -2,6 +2,7 @@ import unittest
 from time import sleep
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 import glue
 from glue.scatter_client import ScatterClient
@@ -10,11 +11,17 @@ class TestScatterClient(unittest.TestCase):
 
     def setUp(self):
         self.data = glue.example_data.test_data()
-        self.ids = self.data[0].component_ids() + self.data[1].component_ids()
+        self.ids = [self.data[0].find_component_id('a'),
+                    self.data[0].find_component_id('b'),
+                    self.data[1].find_component_id('c'),
+                    self.data[1].find_component_id('d')]
         self.hub = glue.Hub()
         self.collect = glue.DataCollection()
         self.client = ScatterClient(self.collect)
         self.connect()
+
+    def tearDown(self):
+        plt.close('all')
 
     def add_data(self, data=None):
         if data == None:
@@ -30,8 +37,8 @@ class TestScatterClient(unittest.TestCase):
         return data
 
     def is_first_in_front(self, front, back):
-        z1 = self.client.layers[front]['artist'].get_zorder()
-        z2 = self.client.layers[back]['artist'].get_zorder()
+        z1 = self.client.get_layer_order(front)
+        z2 = self.client.get_layer_order(back)
         return z1 > z2
 
     def connect(self):
@@ -39,12 +46,12 @@ class TestScatterClient(unittest.TestCase):
         self.collect.register_to_hub(self.hub)
 
     def layer_drawn(self, layer):
-        if not self.client.layers[layer]['artist'].get_visible():
-            return False
-        return True
+        return self.client.is_layer_present(layer) and \
+            self.client.managers[layer].is_visible() and \
+            self.client.managers[layer].is_enabled()
 
     def layer_data_correct(self, layer, x, y):
-        artist = self.client.layers[layer]['artist']
+        artist = self.client.managers[layer]._artist
         xy = artist.get_offsets()
         if max(abs(xy[:,0] - x)) > .01:
             return False
@@ -156,7 +163,8 @@ class TestScatterClient(unittest.TestCase):
     def test_invalid_plot(self):
         layer = self.add_data_and_attributes()
         self.assertTrue(self.layer_drawn(layer))
-        self.client.set_xdata('attribute_does_not_exist')
+        c = glue.data.ComponentID(None, 'bad id')
+        self.client.set_xdata(c)
         self.assertFalse(self.layer_drawn(layer))
 
     def test_two_incompatible_data(self):
@@ -219,6 +227,43 @@ class TestScatterClient(unittest.TestCase):
         data = self.add_data_and_attributes()
         subset = data.new_subset()
         self.assertTrue(self.is_first_in_front(subset, data))
+
+    def test_log_sticky(self):
+        data = self.add_data_and_attributes()
+        self.assertFalse(self.client.is_xlog())
+        self.assertFalse(self.client.is_ylog())
+        self.client.set_xlog(True)
+        self.client.set_ylog(True)
+        self.assertTrue(self.client.is_xlog())
+        self.assertTrue(self.client.is_ylog())
+        self.client.set_xdata(data.find_component_id('b'))
+        self.client.set_ydata(data.find_component_id('b'))
+        self.assertTrue(self.client.is_xlog())
+        self.assertTrue(self.client.is_ylog())
+
+    def test_flip_sticky(self):
+        data = self.add_data_and_attributes()
+        self.client.set_xflip(True)
+        self.assertTrue(self.client.is_xflip())
+        self.client.set_xdata(data.find_component_id('b'))
+        self.assertTrue(self.client.is_xflip())
+        self.client.set_xdata(data.find_component_id('a'))
+        self.assertTrue(self.client.is_xflip())
+
+    def test_visibility_sticky(self):
+        data = self.add_data_and_attributes()
+        roi = glue.roi.RectangularROI()
+        roi.update_limits(.5, .5, 1.5, 1.5)
+        self.assertTrue(self.client.is_visible(data.edit_subset))
+        self.client._apply_roi(roi)
+        self.client.set_visible(data.edit_subset, False)
+        self.assertFalse(self.client.is_visible(data.edit_subset))
+        self.client._apply_roi(roi)
+        self.assertFalse(self.client.is_visible(data.edit_subset))
+
+
+
+
 
 if __name__ == "__main__":
     unittest.main()
