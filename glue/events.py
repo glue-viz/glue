@@ -1,2 +1,0 @@
-class EventListener(object):
-    pass
