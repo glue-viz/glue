@@ -9,7 +9,7 @@ except ImportError:  # Python 2.x
 
     setup(name='Glue',
           version='0.1.0',
-          packages=['glue', 'glue.qt', 'glue.examples'],
+          packages=['glue', 'glue.qt'],
           cmdclass={'build_py': build_py},
           package_data={'glue': ['examples/*']}
       )
