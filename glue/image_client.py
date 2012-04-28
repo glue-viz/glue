@@ -60,6 +60,7 @@ class DataLayerManager(LayerManager):
             self.norm.vmin = vmin
         if vmax is not None:
             self.norm.vmax = vmax
+
     def delete_artist(self):
         if self.artist is None:
             return
@@ -315,27 +316,43 @@ class ImageClient(VizClient):
 
         subset_state = glue.subset.RoiSubsetState()
         x,y = roi.to_polygon()
-        xw, yw = self.display_data.coords.pixel2world(x, y)
+
+        if not self.is_3D:
+            xroi, yroi = self.display_data.coords.pixel2world(x, y)
+        else:
+            hi, vi = self._horizontal_axis_index(), self._vertical_axis_index()
+            slice_val = [self.slice_ind] * len(x)
+            abc = [slice_val, slice_val, slice_val]
+            abc[hi] = x
+            abc[vi] = y
+            abc = abc[::-1] # from numpy (zyx) convention to xyz
+            xw, yw, zw = self.display_data.coords.pixel2world(*abc)
+            world = [zw, yw, xw]
+            xroi, yroi = world[hi], world[vi]
+
         x,y = self._get_axis_components()
         subset_state.xatt = x
         subset_state.yatt = y
-        subset_state.roi = glue.roi.PolygonalROI(xw, yw)
+        subset_state.roi = glue.roi.PolygonalROI(xroi, yroi)
         data.edit_subset.subset_state = subset_state
+
+    def _horizontal_axis_index(self):
+        """Which index (in numpy convention - zyx) does the horizontal
+        axis coorespond to?"""
+        if not self.is_3D or self.slice_ori == 2:
+            return 1
+        return 2
+
+    def _vertical_axis_index(self):
+        """Which index (in numpy convention - zyx) does the vertical
+        axis coorespond to?"""
+        if self.is_3D and self.slice_ori == 0:
+            return 1
+        return 0
 
     def _get_axis_components(self):
         data = self.display_data
-        ori = self.slice_ori
-        if not self.is_3D:
-            ids = [1, 0] # x,y
-        elif self.slice_ori == 2:
-            ids = [-2, -3]
-        elif self.slice_ori == 1:
-            ids = [-1, -3] # x, z
-        elif self.slice_ori == 0:
-            ids = [-1, -2] # y,z
-        else:
-            raise Exception("Invalid state. slice_ori = %i" % self.slice_ori)
-
+        ids = [self._horizontal_axis_index(), self._vertical_axis_index()]
         return map(data.get_world_component_id, ids)
 
     def _remove_subset(self, message):
