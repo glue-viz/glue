@@ -3,7 +3,10 @@ import os
 import matplotlib
 from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
 from PyQt4 import QtCore, QtGui
+from PyQt4.QtGui import QIcon
+from PyQt4.QtCore import Qt
 
+import glue_qt_resources
 class GlueToolbar(NavigationToolbar2QT):
     def __init__(self, canvas, frame, name=None):
         """ Create a new toolbar object
@@ -25,56 +28,68 @@ class GlueToolbar(NavigationToolbar2QT):
         NavigationToolbar2QT.__init__(self, canvas, frame)
         if name is not None:
             self.setWindowTitle(name)
+        self.setIconSize(QtCore.QSize(25, 25))
+        self.layout().setSpacing(1)
+        self.setFocusPolicy(Qt.StrongFocus)
 
     def _init_toolbar(self):
         self.basedir = os.path.join(matplotlib.rcParams[ 'datapath' ],'images')
+        parent = self.parent()
 
-        a = self.addAction(self._icon('home.svg'), 'Home', self.home)
+        a = QtGui.QAction(QIcon(':icons/glue_home.png'),
+                          'Home', parent)
+        a.triggered.connect(self.home)
         a.setToolTip('Reset original view')
-        a = self.addAction(self._icon('back.svg'), 'Back', self.back)
-        a.setToolTip('Back to previous view')
-        a = self.addAction(self._icon('forward.svg'), 'Forward', self.forward)
-        a.setToolTip('Forward to next view')
-        self.addSeparator()
+        a.setShortcut('H')
+        a.setShortcutContext(Qt.WidgetShortcut)
+        parent.addAction(a)
+        self.addAction(a)
 
-        a = self.addAction(self._icon('move.svg'), 'Pan', self.pan)
+        a = QtGui.QAction(QIcon(':icons/glue_filesave.png'),
+                          'Save', parent)
+        a.triggered.connect(self.save_figure)
+        a.setToolTip('Save the figure')
+        a.setShortcut('Ctrl+Shift+S')
+        parent.addAction(a)
+        self.addAction(a)
+
+        a = QtGui.QAction(QIcon(':icons/glue_back.png'),
+                          'Back', parent)
+        a.triggered.connect(self.back)
+        parent.addAction(a)
+        self.addAction(a)
+        a.setToolTip('Back to previous view')
+
+        a = QtGui.QAction(QIcon(':icons/glue_forward.png'),
+                          'Forward', parent)
+        a.triggered.connect(self.forward)
+        a.setToolTip('Forward to next view')
+        parent.addAction(a)
+        self.addAction(a)
+
+        a = QtGui.QAction(QIcon(':icons/glue_move.png'),
+                          'Pan', parent)
+        a.triggered.connect(self.pan)
         a.setToolTip('Pan axes with left mouse, zoom with right')
         a.setCheckable(True)
+        a.setShortcut('M')
+        a.setShortcutContext(Qt.WidgetShortcut)
+        parent.addAction(a)
+        self.addAction(a)
         self.buttons['PAN'] = a
 
-        a = self.addAction(self._icon('zoom_to_rect.svg'), 'Zoom', self.zoom)
+        a = QtGui.QAction(QIcon(':icons/glue_zoom_to_rect.png'),
+                    'Zoom', parent)
+        a.triggered.connect(self.zoom)
         a.setToolTip('Zoom to rectangle')
+        a.setShortcut('Z')
+        a.setShortcutContext(Qt.WidgetShortcut)
         a.setCheckable(True)
+        parent.addAction(a)
+        self.addAction(a)
         self.buttons['ZOOM'] = a
 
-        self.addSeparator()
-        a = self.addAction(self._icon('subplots.png'), 'Subplots',
-                           self.configure_subplots)
-        a.setToolTip('Configure subplots')
-
-        a = self.addAction(self._icon("qt4_editor_options.svg"),
-                           'Customize', self.edit_parameters)
-        a.setToolTip('Edit curves line and axes parameters')
-
-        a = self.addAction(self._icon('filesave.svg'), 'Save',
-                           self.save_figure)
-        a.setToolTip('Save the figure')
-
-        # Add the x,y location widget at the right side of the toolbar
-        # The stretch factor is 1 which means any resizing of the toolbar
-        # will resize this label instead of the buttons.
-        if self.coordinates:
-            self.locLabel = QtGui.QLabel( "", self )
-            self.locLabel.setAlignment(
-                QtCore.Qt.AlignRight | QtCore.Qt.AlignTop )
-            self.locLabel.setSizePolicy(
-                QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding,
-                                  QtGui.QSizePolicy.Ignored))
-            labelAction = self.addWidget(self.locLabel)
-            labelAction.setVisible(True)
-
-        # reference holder for subplots_adjust window
-        self.adj_window = None
+        #self.adj_window = None
 
     def zoom(self, *args):
         super(GlueToolbar, self).zoom(self, *args)
@@ -85,8 +100,18 @@ class GlueToolbar(NavigationToolbar2QT):
         self.update_boxes()
 
     def add_mode(self, mode):
+        parent = self.parent()
         receiver = lambda: self._custom_mode(mode)
-        action = self.addAction(mode.icon, mode.action_text, receiver)
+
+        action = QtGui.QAction(mode.icon, mode.action_text, parent)
+        action.triggered.connect(receiver)
+        parent.addAction(action)
+        self.addAction(action)
+
+        if mode.shortcut is not None:
+            action.setShortcut(mode.shortcut)
+            action.setShortcutContext(Qt.WidgetShortcut)
+
         action.setToolTip(mode.tool_tip)
         action.setCheckable(True)
         self.buttons[mode.mode_id] = action
@@ -130,4 +155,13 @@ class GlueToolbar(NavigationToolbar2QT):
         for mode in self.buttons:
             self.buttons[mode].setChecked(self._active == mode)
 
+    def set_message(self, s):
+        self.emit(QtCore.SIGNAL("message"), s)
+        parent = self.parent()
+        if parent is None:
+            return
+        sb = parent.statusBar()
+        if sb is None:
+            return
+        sb.showMessage(s.replace(', ', '\n'))
 
