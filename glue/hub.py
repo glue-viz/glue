@@ -142,7 +142,10 @@ class Hub(object):
             # only pass to handler if filter allows it
             filter, handler = sub[candidate]
             if filter(message):
-                handler(message)
+                try:
+                    handler(message)
+                except:
+                    pass
 
 
 class HubListener(object):
