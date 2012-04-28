@@ -267,7 +267,7 @@ class ScatterClient(Client):
                 continue
             if not self.managers[layer].is_enabled():
                 continue
-            subset_state = glue.subset.RoiSubsetState(layer)
+            subset_state = glue.subset.RoiSubsetState()
             subset_state.xatt = self.xatt
             subset_state.yatt = self.yatt
             x, y = roi.to_polygon()
