@@ -33,7 +33,18 @@ class Subset(object):
         if color: self.style.color = color
         self.style.alpha = alpha
         self.style.label = label
-        self.subset_state = SubsetState(self)
+        self._subset_state = None
+        self.subset_state = SubsetState()
+
+    @property
+    def subset_state(self):
+        return self._subset_state
+
+    @subset_state.setter
+    def subset_state(self, state):
+        state.parent = self
+        self._subset_state = state
+
 
     @property
     def label(self):
@@ -156,28 +167,6 @@ class Subset(object):
         if attribute != '_braodcasting':
             self.broadcast(attribute)
 
-    def _check_compatibility(self, other):
-        if not isinstance(other, Subset):
-            raise TypeError("Incompatible types: %s vs %s" %
-                            (type(self), type(other)))
-        if self.data is not other.data:
-            raise TypeError("Subsets describe different data")
-
-    def __or__(self, other):
-        self._check_compatibility(self, other)
-        m = self.to_mask() | other.to_mask()
-        return ElementSubset(self.data, mask=m)
-
-    def __and__(self, other):
-        self._check_compatibility(self, other)
-        m = self.to_mask() & other.to_mask()
-        return ElementSubset(self.data, mask=m)
-
-    def __xor__(self, other):
-        self._check_compatibility(self, other)
-        m = self.to_mask() ^ other.to_mask()
-        return ElementSubset(self.data, mask=m)
-
     def __getitem__(self, attribute):
         il = self.to_index_list()
         if len(il) == 0:
@@ -185,28 +174,15 @@ class Subset(object):
         data = self.data[attribute]
         return data[il]
 
-    def is_compatible(self, data):
-        """
-        Return whether or not this subset is compatible with a data
-        set.  If a subset and data set are compatible, then
-        subset.to_mask(data=data) and subset.to_index_map(data=data)
-        should return appropriate values.
-
-        Parameters:
-        -----------
-        data: data instance
-        the data set to check for compatibility
-
-        Returns:
-        --------
-        True if the data is compatible with this subset. Else false
-        """
-        return data is self.data
-
+    def paste(self, other_subset):
+        """paste subset state from other_subset onto self """
+        state = other_subset.subset_state.copy()
+        state.parent = self
+        self.subset_state = state
 
 class SubsetState(object):
-    def __init__(self, parent):
-        self.parent = parent
+    def __init__(self):
+        self.parent = None
 
     def to_index_list(self):
         return np.where(self.to_mask())[0]
@@ -214,12 +190,24 @@ class SubsetState(object):
     def to_mask(self):
         return np.zeros(self.parent.data.shape, dtype=bool)
 
-    def clone(self):
-        return SubsetState(self.parent)
+    def copy(self):
+        return SubsetState()
+
+    def __or__(self, other_state):
+        return OrState(self, other_state)
+
+    def __and__(self, other_state):
+        return AndState(self, other_state)
+
+    def __invert__(self):
+        return InvertState(self)
+
+    def __xor__(self, other_state):
+        return XorState(self, other_state)
 
 class RoiSubsetState(SubsetState):
-    def __init__(self, parent):
-        super(RoiSubsetState, self).__init__(parent)
+    def __init__(self):
+        super(RoiSubsetState, self).__init__()
         self.xatt = None
         self.yatt = None
         self.roi = None
@@ -230,13 +218,34 @@ class RoiSubsetState(SubsetState):
         result = self.roi.contains(x, y)
         return result
 
-    def clone(self):
-        result = RoiSubsetState(self.parent)
+    def copy(self):
+        result = RoiSubsetState()
         result.xatt = self.xatt
         result.yatt = self.yatt
         result.roi = self.roi
         return result
 
+class CompositeSubsetState(SubsetState):
+    def __init__(self, state1, state2=None):
+        super(CompositeSubsetState, self).__init__()
+        self.state1 = state1
+        self.state2 = state2
+
+class OrState(CompositeSubsetState):
+    def to_mask(self):
+        return self.state1.to_mask() | self.state2.to_mask()
+
+class AndState(CompositeSubsetState):
+    def to_mask(self):
+        return self.state1.to_mask() & self.state2.to_mask()
+
+class XorState(CompositeSubsetState):
+    def to_mask(self):
+        return self.state1.to_mask() ^ self.state2.to_mask()
+
+class InvertState(CompositeSubsetState):
+    def to_mask(self):
+        return ~self.state1.to_mask()
 
 class TreeSubset(Subset):
     """ Subsets defined using a data's Tree attribute.
