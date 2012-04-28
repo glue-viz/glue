@@ -313,8 +313,7 @@ class ImageClient(VizClient):
         if data is None:
             return
 
-        subset_state = glue.subset.RoiSubsetState(data)
-
+        subset_state = glue.subset.RoiSubsetState()
         x,y = roi.to_polygon()
         xw, yw = self.display_data.coords.pixel2world(x, y)
         x,y = self._get_axis_components()
