@@ -4,6 +4,14 @@ import numpy as np
 
 import glue
 
+def test_histogram_data():
+    data = glue.Data(label="Test Data")
+    comp_a = glue.Component(np.random.uniform(size=500))
+    comp_b = glue.Component(np.random.normal(size=500))
+    data.add_component(comp_a, 'uniform')
+    data.add_component(comp_b, 'normal')
+    return data
+
 def test_data():
     data = glue.Data(label="Test Data 1")
     data2 = glue.Data(label="Teset Data 2")
