@@ -1,6 +1,6 @@
 from matplotlib.colors import ColorConverter
 from PyQt4 import QtGui
-from PyQt4.QtGui import QColor
+from PyQt4.QtGui import QColor, QInputDialog, QColorDialog
 
 import glue
 
@@ -92,6 +92,37 @@ class DebugClipboard(QtGui.QWidget):
         self.text_edit.setPlainText("%s" % event.mimeData().text())
 
 
+def edit_layer_color(layer):
+    dialog = QColorDialog()
+    initial = mpl_to_qt4_color(layer.style.color)
+    color = dialog.getColor(initial = initial)
+    if color.isValid():
+        layer.style.color = qt4_to_mpl_color(color)
+
+def edit_layer_symbol(layer):
+    """ Interactively edit a layer's symbol """
+    dialog = QInputDialog()
+    symb, isok = dialog.getItem(None, 'Pick a Symbol',
+                                'Pick a Symbol',
+                                  ['.', 'o', 'v', '>', '<', '^'])
+    if isok:
+        layer.style.marker = symb
+
+def edit_layer_point_size(layer):
+    dialog = QInputDialog()
+    size, isok = dialog.getInt(None, 'Point Size', 'Point Size',
+                               value = layer.style.markersize,
+                               min = 1, max = 1000, step = 1)
+    if isok:
+        layer.style.markersize = size
+
+def edit_layer_label(layer):
+    """ Interactively edit a layer's label """
+    dialog = QInputDialog()
+    label, isok = dialog.getText(None, 'New Label:', 'New Label:')
+    if isok:
+        layer.style.label = str(label)
+
 if __name__ == "__main__":
     import sys
     app = QtGui.QApplication(sys.argv)
@@ -99,3 +130,4 @@ if __name__ == "__main__":
     dc = DebugClipboard()
     dc.show()
     sys.exit(app.exec_())
+
