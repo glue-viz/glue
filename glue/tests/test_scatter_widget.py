@@ -8,7 +8,6 @@ import glue
 from glue.qt import ScatterWidget
 
 
-
 class TestScatterWidget(unittest.TestCase):
 
     def setUp(self):
@@ -25,7 +24,7 @@ class TestScatterWidget(unittest.TestCase):
 
     def tearDown(self):
         self.win.close()
-        self.app.exit()
+        del self.win
         del self.app
 
     def connect_to_hub(self):
