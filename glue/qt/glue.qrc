@@ -1,7 +1,20 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
-	<file>icons/circle.png</file>
-	<file>icons/lasso.png</file>
-	<file>icons/square.png</file>
+	<file>icons/glue_and.png</file>
+	<file>icons/glue_andnot.png</file>
+	<file>icons/glue_back.png</file>
+	<file>icons/glue_circle.png</file>
+	<file>icons/glue_contour.png</file>
+	<file>icons/glue_contrast.png</file>
+	<file>icons/glue_filesave.png</file>
+	<file>icons/glue_forward.png</file>
+	<file>icons/glue_home.png</file>
+	<file>icons/glue_lasso.png</file>
+	<file>icons/glue_move.png</file>
+	<file>icons/glue_or.png</file>
+	<file>icons/glue_square.png</file>
+	<file>icons/glue_tree.png</file>
+	<file>icons/glue_xor.png</file>
+	<file>icons/glue_zoom_to_rect.png</file>
 </qresource>
 </RCC>
