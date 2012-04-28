@@ -103,6 +103,7 @@ class TestCommunication(unittest.TestCase):
         self.assertIsNone(self.c1.last_message)
         self.assertIsNone(self.c1.call)
 
+    @unittest.skip("Relaxed requirement. Hub now ignores exceptions")
     def test_uncaught_message(self):
         #broadcast a message without a message handler
         self.hub.subscribe(self.c1, Message)
