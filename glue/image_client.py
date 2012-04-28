@@ -357,8 +357,8 @@ class ImageClient(VizClient):
         self._redraw()
 
     def _remove_data(self, message):
-        self.delete_layer(message.sender)
-        for s in message.sender.subsets:
+        self.delete_layer(message.data)
+        for s in message.data.subsets:
             self.delete_layer(s)
 
     def init_layer(self, layer):
