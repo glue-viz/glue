@@ -1,6 +1,7 @@
 from hub import Hub, HubListener
 from client import Client
 from data import Component, Data, TabularData, GriddedData
+from viz_client import VizClient
 from tree import Tree, NewickTree
 from subset import Subset
 from message import Message
