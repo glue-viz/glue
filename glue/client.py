@@ -87,6 +87,9 @@ class Client(glue.HubListener):
                       handler=self._remove_data,
                       filter=dcfilter)
 
+    def _add_subset(self, message):
+        raise NotImplementedError("_add_subset not implemented")
+
     def _remove_data(self, message):
         raise NotImplementedError("_remove_data not implemented")
 
