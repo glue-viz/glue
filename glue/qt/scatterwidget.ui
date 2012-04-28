@@ -16,6 +16,9 @@
     <height>500</height>
    </size>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::StrongFocus</enum>
+  </property>
   <property name="windowTitle">
    <string>Scatter Plot</string>
   </property>
@@ -41,7 +44,7 @@
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>300</height>
+        <height>200</height>
        </size>
       </property>
       <property name="toolTip">

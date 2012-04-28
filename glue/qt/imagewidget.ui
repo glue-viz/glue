@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>555</width>
+    <width>537</width>
     <height>500</height>
    </rect>
   </property>
@@ -15,6 +15,9 @@
     <width>555</width>
     <height>500</height>
    </size>
+  </property>
+  <property name="focusPolicy">
+   <enum>Qt::StrongFocus</enum>
   </property>
   <property name="windowTitle">
    <string>Form</string>

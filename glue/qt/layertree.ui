@@ -45,6 +45,9 @@
          <height>16777215</height>
         </size>
        </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
        <column>
         <property name="text">
          <string>Layer</string>
