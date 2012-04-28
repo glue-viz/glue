@@ -361,14 +361,13 @@ class MplRectangularROI(AbstractMplRoi):
         self.plot_opts = {'edgecolor': 'red', 'facecolor': 'none',
                           'alpha': 0.3}
 
-        self._rectangle = Rectangle((0., 0.), 1., 1.)
-        self._ax.add_patch(self._rectangle)
+        self._patch = Rectangle((0., 0.), 1., 1.)
+        self._ax.add_patch(self._patch)
 
         self._sync_patch()
 
     def _roi_factory(self):
         return RectangularROI()
-
 
     def start_selection(self, event):
         if not (event.inaxes):
@@ -395,7 +394,10 @@ class MplRectangularROI(AbstractMplRoi):
 
     def finalize_selection(self, event):
         self._mid_selection = False
-        self._rectangle.set_visible(False)
+        self._patch.set_visible(False)
+        self._draw()
+
+    def _draw(self):
         self._ax.figure.canvas.draw()
 
     def _sync_patch(self):
@@ -403,17 +405,18 @@ class MplRectangularROI(AbstractMplRoi):
             corner = self._roi.corner()
             width = self._roi.width()
             height = self._roi.height()
-            self._rectangle.set_xy(corner)
-            self._rectangle.set_width(width)
-            self._rectangle.set_height(height)
-            self._rectangle.set(**self.plot_opts)
-            self._rectangle.set_visible(True)
+            self._patch.set_xy(corner)
+            self._patch.set_width(width)
+            self._patch.set_height(height)
+            self._patch.set(**self.plot_opts)
+            self._patch.set_visible(True)
         else:
-            self._rectangle.set_visible(False)
-        self._ax.figure.canvas.draw()
+            self._patch.set_visible(False)
+        self._draw()
 
     def __str__(self):
-        return "MPL Rectangle: %s" % self._rectangle
+        return "MPL Rectangle: %s" % self._patch
+
 
 class MplCircularROI(AbstractMplRoi):
     """
@@ -448,11 +451,10 @@ class MplCircularROI(AbstractMplRoi):
         self._xi = None
         self._yi = None
 
-        self._circle = Ellipse((0., 0.), transform=None,
+        self._patch = Ellipse((0., 0.), transform=None,
                                width=0., height=0.,)
-        self._circle.set(**self.plot_opts)
-        self._ax.add_patch(self._circle)
-
+        self._patch.set(**self.plot_opts)
+        self._ax.add_patch(self._patch)
         self._sync_patch()
 
     def _roi_factory(self):
@@ -461,17 +463,17 @@ class MplCircularROI(AbstractMplRoi):
     def _sync_patch(self):
         # Update geometry
         if not self._roi.defined():
-            self._circle.set_visible(False)
+            self._patch.set_visible(False)
         else:
             xy = self._roi.get_center()
             r = self._roi.get_radius()
-            self._circle.center = xy
-            self._circle.width = 2. * r
-            self._circle.height = 2. * r
-            self._circle.set_visible(True)
+            self._patch.center = xy
+            self._patch.width = 2. * r
+            self._patch.height = 2. * r
+            self._patch.set_visible(True)
 
         # Update appearance
-        self._circle.set(**self.plot_opts)
+        self._patch.set(**self.plot_opts)
 
         # Refresh
         self._ax.figure.canvas.draw()
@@ -490,7 +492,6 @@ class MplCircularROI(AbstractMplRoi):
         self._sync_patch()
 
     def update_selection(self, event):
-
         if not self._mid_selection:
             return
 
@@ -506,10 +507,7 @@ class MplCircularROI(AbstractMplRoi):
         rad = self._roi.get_radius()
         x = xy_center[0] + rad * np.cos(theta)
         y = xy_center[1] + rad * np.sin(theta)
-        xy = np.zeros( (x.size, 2))
-        xy[:, 0] = x
-        xy[:, 1] = y
-        xy_data = self._ax.transData.inverted().transform(xy)
+        xy_data = pixel_to_data(self._ax, x, y)
         vx = xy_data[:,0].flatten().tolist()
         vy = xy_data[:,1].flatten().tolist()
         result = PolygonalROI(vx, vy)
@@ -517,7 +515,7 @@ class MplCircularROI(AbstractMplRoi):
 
     def finalize_selection(self, event):
         self._mid_selection = False
-        self._circle.set_visible(False)
+        self._patch.set_visible(False)
         self._ax.figure.canvas.draw()
 
 class MplPolygonalROI(AbstractMplRoi):
@@ -542,10 +540,10 @@ class MplPolygonalROI(AbstractMplRoi):
         self._mid_selection = False
         self.plot_opts = {'edgecolor': 'red', 'facecolor': 'red',
                           'alpha': 0.3}
-        self._polygon = Polygon(np.array(zip([0, 1], [0, 1])))
-        self._polygon.set(**self.plot_opts)
+        self._patch = Polygon(np.array(zip([0, 1], [0, 1])))
+        self._patch.set(**self.plot_opts)
 
-        self._ax.add_patch(self._polygon)
+        self._ax.add_patch(self._patch)
         self._sync_patch()
 
     def _roi_factory(self):
@@ -554,15 +552,15 @@ class MplPolygonalROI(AbstractMplRoi):
     def _sync_patch(self):
         # Update geometry
         if not self._roi.defined():
-            self._polygon.set_visible(False)
+            self._patch.set_visible(False)
         else:
             x,y = self._roi.to_polygon()
-            self._polygon.set_xy(zip(x + [x[0]],
+            self._patch.set_xy(zip(x + [x[0]],
                                      y + [y[0]]))
-            self._polygon.set_visible(True)
+            self._patch.set_visible(True)
 
         # Update appearance
-        self._polygon.set(**self.plot_opts)
+        self._patch.set(**self.plot_opts)
 
         # Refresh
         self._ax.figure.canvas.draw()
@@ -584,6 +582,6 @@ class MplPolygonalROI(AbstractMplRoi):
 
     def finalize_selection(self, event):
         self._mid_selection = False
-        self._polygon.set_visible(False)
+        self._patch.set_visible(False)
         self._ax.figure.canvas.draw()
 
