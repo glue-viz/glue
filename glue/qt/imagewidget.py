@@ -35,6 +35,8 @@ class ImageWidget(QMainWindow, glue.HubListener):
         self._init_widgets()
         self.set_data(0)
         self.set_orientation(0)
+        self.statusBar().setSizeGripEnabled(False)
+        self.setFocusPolicy(Qt.StrongFocus)
 
     def _create_actions(self):
         self.cmap_heat_action = QAction("Hot", self)
@@ -86,9 +88,9 @@ class ImageWidget(QMainWindow, glue.HubListener):
 
     def _mouse_modes(self):
         axes = self.ui.mplWidget.canvas.ax
-        rect = RectangleMode(axes, callback=self._apply_roi)
-        circ = CircleMode(axes, callback=self._apply_roi)
-        poly = PolyMode(axes, callback=self._apply_roi)
+        rect = RectangleMode(axes, release_callback=self._apply_roi)
+        circ = CircleMode(axes, release_callback=self._apply_roi)
+        poly = PolyMode(axes, release_callback=self._apply_roi)
         return [rect, circ, poly]
 
     def _init_widgets(self):

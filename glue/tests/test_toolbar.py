@@ -12,8 +12,8 @@ from glue.qt import cv_qt_resources
 
 class TestMode(MouseMode):
 
-    def __init__(self, axes, callback=None):
-        super(TestMode, self).__init__(axes, callback)
+    def __init__(self, axes, release_callback=None):
+        super(TestMode, self).__init__(axes, release_callback=release_callback)
         self.icon = QIcon(':icons/square.png')
         self.mode_id = 'TEST'
         self.action_text = 'test text'
@@ -35,7 +35,7 @@ class TestToolbar(unittest.TestCase):
         self.canvas = p.axes.figure.canvas
         self.axes = p.axes
         self.tb = GlueToolbar(self.canvas, self.win)
-        self.mode = TestMode(self.axes, callback=self.callback)
+        self.mode = TestMode(self.axes, release_callback=self.callback)
         self.tb.add_mode(self.mode)
         self.win.addToolBar(self.tb)
         self._called_back = False

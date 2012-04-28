@@ -25,6 +25,8 @@ class ScatterWidget(QtGui.QMainWindow, glue.HubListener) :
         self._connect()
         self.unique_fields = set()
         self.make_toolbar()
+        self.statusBar().setSizeGripEnabled(False)
+        self.setFocusPolicy(Qt.StrongFocus)
 
     def _connect(self):
         ui = self.ui
@@ -40,9 +42,10 @@ class ScatterWidget(QtGui.QMainWindow, glue.HubListener) :
             lambda x: cl.set_yflip(x==Qt.Checked))
         ui.xAxisComboBox.currentIndexChanged.connect(self.update_xatt)
         ui.yAxisComboBox.currentIndexChanged.connect(self.update_yatt)
-        ui.layerTree.layer_check_changed.connect(cl.set_visible)
+        ui.layerTree._layer_check_changed.connect(cl.set_visible)
         ui.layerTree.layerAddButton.pressed.disconnect()
         ui.layerTree.layerAddButton.released.connect(self._add_data)
+        ui.layerTree.linkButton.hide()
 
     def _add_data(self):
         choices = dict([(d.label, d) for d in self._data])
@@ -65,9 +68,9 @@ class ScatterWidget(QtGui.QMainWindow, glue.HubListener) :
 
     def _mouse_modes(self):
         axes = self.ui.mplWidget.canvas.ax
-        rect = RectangleMode(axes, callback=self._apply_roi)
-        circ = CircleMode(axes, callback=self._apply_roi)
-        poly = PolyMode(axes, callback=self._apply_roi)
+        rect = RectangleMode(axes, release_callback=self._apply_roi)
+        circ = CircleMode(axes, release_callback=self._apply_roi)
+        poly = PolyMode(axes, release_callback=self._apply_roi)
         return [rect, circ, poly]
 
     def _apply_roi(self, mode):
