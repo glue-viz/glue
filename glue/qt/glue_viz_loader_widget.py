@@ -36,7 +36,7 @@ class GlueVizLoaderWidget(QWidget):
         ok = QPushButton("OK")
         layout.addWidget(ok)
         self.setLayout(layout)
-
+        self.setFocusPolicy(Qt.StrongFocus)
         ok.pressed.connect(lambda: self.load_viz(dl.currentIndex()))
 
     def load_viz(self, index):

@@ -27,6 +27,8 @@ class GlueApplication(QMainWindow):
         factory = GlueVizLoaderWidget.wrapper_factory
         layout.addWidget(factory(self), 0,0,1,1)
         layout.addWidget(factory(self), 0,1,1,1)
+        layout.addWidget(factory(self), 1,0,1,1)
+        layout.addWidget(factory(self), 1,1,1,1)
         self._ui.tabWidget.addTab(widget, "new Tab")
         self._ui.tabWidget.setCurrentWidget(widget)
 
