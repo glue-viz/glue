@@ -173,8 +173,8 @@ class Data(object):
     def remove_subset(self, subset):
         if self.hub is not None:
             msg = glue.message.SubsetDeleteMessage(subset)
-            self.hub.boradcast(msg)
-        self.subsets.pop(subset)
+            self.hub.broadcast(msg)
+        self.subsets.remove(subset)
 
     def register_to_hub(self, hub):
         if not isinstance(hub, glue.Hub):
