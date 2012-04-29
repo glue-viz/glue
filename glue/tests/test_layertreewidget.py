@@ -10,7 +10,7 @@ from mock import MagicMock, patch
 
 import glue
 from glue.qt.layertreewidget import LayerTreeWidget
-from glue.subset import OrState, AndState, XorState
+from glue.subset import OrState, AndState, XorState, InvertState
 
 from glue.qt.qtutil import DebugClipboard
 
@@ -192,6 +192,14 @@ class TestLayerTree(unittest.TestCase):
         self.assertTrue(len(diff) == 1)
         self.assertTrue(isinstance(diff[0].subset_state, AndState))
 
+    def test_invert(self):
+        layer = self.add_layer_via_method()
+        sub = layer.edit_subset
+        item = self.widget[sub]
+        self.widget.layerTree.setCurrentItem(item)
+        self.widget._invert_action.trigger()
+        self.assertTrue(isinstance(sub.subset_state, InvertState))
+
     def test_xor_combine(self):
         layer = self.setup_two_subset_selection()
         old_subsets = set(layer.subsets)
@@ -214,6 +222,7 @@ class TestLayerTree(unittest.TestCase):
         self.assertTrue(self.widget._copy_action.isEnabled())
         self.assertTrue(self.widget._duplicate_action.isEnabled())
         self.assertFalse(self.widget._paste_action.isEnabled())
+        self.assertTrue(self.widget._invert_action.isEnabled())
 
     def test_actions_enabled_single_data_selection(self):
         layer = self.add_layer_via_method()
@@ -227,6 +236,7 @@ class TestLayerTree(unittest.TestCase):
         self.assertFalse(self.widget._copy_action.isEnabled())
         self.assertFalse(self.widget._duplicate_action.isEnabled())
         self.assertFalse(self.widget._paste_action.isEnabled())
+        self.assertFalse(self.widget._invert_action.isEnabled())
 
     def test_actions_enabled_multi_subset_selection(self):
         layer = self.setup_two_subset_selection()
@@ -237,6 +247,7 @@ class TestLayerTree(unittest.TestCase):
         self.assertFalse(self.widget._copy_action.isEnabled())
         self.assertFalse(self.widget._duplicate_action.isEnabled())
         self.assertFalse(self.widget._paste_action.isEnabled())
+        self.assertTrue(self.widget._invert_action.isEnabled())
 
     def test_remove_all_layers(self):
         for d in self.collect:

@@ -8,7 +8,7 @@ from ui_layertree import Ui_LayerTree
 
 import glue
 import glue.message as msg
-from glue.subset import OrState, AndState, XorState
+from glue.subset import OrState, AndState, XorState, InvertState
 from glue.qt.data_connector import DataConnector
 from glue.qt import qtutil
 from glue.qt.qtutil import mpl_to_qt4_color
@@ -93,11 +93,31 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         tree.addAction(act)
         self._xor_action = act
 
+        act = QAction("Invert", tree)
+        act.setIcon(QIcon(':icons/glue_not.png'))
+        act.setEnabled(False)
+        act.setToolTip("Invert current subset")
+        act.triggered.connect(self._invert_subset)
+        act.setShortcutContext(Qt.WidgetShortcut)
+        group.addAction(act)
+        tree.addAction(act)
+        self._invert_action = act
+
+    def _invert_subset(self):
+        item = self.layerTree.currentItem()
+        layer = self[item]
+        state = layer.subset_state
+        layer.subset_state = InvertState(state)
+
     def _update_combination_actions_enabled(self):
         state = self._check_can_combine()
         self._or_action.setEnabled(state)
         self._and_action.setEnabled(state)
         self._xor_action.setEnabled(state)
+
+        layer = self.current_layer()
+        can_invert = isinstance(layer, glue.Subset)
+        self._invert_action.setEnabled(can_invert)
 
     def _check_can_combine(self, layers=None):
         if layers is None:
