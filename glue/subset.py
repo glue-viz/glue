@@ -27,10 +27,11 @@ class Subset(object):
         """ Create a new subclass object.
 
         """
-        self.data = data
         self._broadcasting = False
+        self.data = data
         self.style = VisualAttributes(parent=self)
-        if color: self.style.color = color
+        if color:
+            self.style.color = color
         self.style.alpha = alpha
         self.style.label = label
         self._subset_state = None
@@ -150,13 +151,11 @@ class Subset(object):
                 supported
 
         """
-
         mask = np.short(self.to_mask())
         if format == 'fits':
             pyfits.writeto(file_name, mask, clobber=True)
         else:
             raise AttributeError("format not supported: %s" % format)
-
 
     def __del__(self):
         self.unregister()
@@ -305,82 +304,3 @@ class TreeSubset(Subset):
 
         # this is inefficient for small subsets.
         return self.to_mask().nonzero()[0]
-
-    def __or__(self, other):
-        self._check_compatibility(other)
-        if isinstance(other, TreeSubset):
-            nl = list(set(self.node_list) | set(other.node_list))
-            return TreeSubset(self.data, node_list=nl)
-        else:
-            return Subset.__or__(self, other)
-
-    def __and__(self, other):
-        self._check_compatibility(other)
-        if isinstance(other, TreeSubset):
-            nl = list(set(self.node_list) & set(other.node_list))
-            return TreeSubset(self.data, node_list=nl)
-        else:
-            return Subset.__and__(self, other)
-
-    def __xor__(self, other):
-        self._check_compatibility(other)
-        if isinstance(other, TreeSubset):
-            nl = list(set(self.node_list) ^ set(other.node_list))
-            return TreeSubset(self.data, node_list=nl)
-        else:
-            return Subset.__xor__(self, other)
-
-
-class ElementSubset(Subset):
-    """
-    This is a simple subset object that explicitly defines
-    which elements of the data set are included in the subset
-
-    Attributes:
-    -----------
-
-    mask: A boolean numpy array, the same shape as the data.
-          The true/false value determines whether each element
-          belongs to the subset.
-    """
-
-    def __init__(self, data, mask=None, **kwargs):
-        """
-        Create a new subset object.
-
-        Parameters:
-        -----------
-        data: class:`glue.data.Data` instance.
-              The data to attach this subset to
-
-        mask: Numpy array
-              The mask attribute for this subset
-        """
-        if not mask:
-            self.mask = np.zeros(data.shape, dtype=bool)
-        else:
-            self.mask = mask
-        Subset.__init__(self, data, **kwargs)
-
-    def to_mask(self, data=None):
-
-        if data is not None and data is not self.data:
-            raise IncompatibleDataException("Element subsets cannot "
-                                            "cross data sets")
-
-        return self.mask
-
-    def to_index_list(self, data=None):
-
-        if data is not None and data is not self.data:
-            raise IncompatibleDataException("Element subsets cannot "
-                                            "cross data sets")
-        return self.mask.nonzero()[0]
-
-    def __setattr__(self, attribute, value):
-        if hasattr(self, 'mask') and attribute == 'mask':
-            if value.shape != self.data.shape:
-                raise Exception("Mask has wrong shape")
-        Subset.__setattr__(self, attribute, value)
-
-
