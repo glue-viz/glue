@@ -39,6 +39,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         self._layer_dict = {}
 
         self._new_action = None
+        self._clear_action = None
         self._duplicate_action = None
         self._copy_action = None
         self._paste_action = None
@@ -46,6 +47,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         self._or_action = None
         self._xor_action = None
         self._and_action = None
+        self._invert_action = None
 
         self.setupUi(self)
         self.setup_drag_drop()
@@ -183,6 +185,14 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         tree.addAction(act)
         self._new_action = act
 
+        act = QAction("Clear subset", tree)
+        act.setEnabled(False)
+        act.setToolTip("Clear current selection")
+        act.setShortcutContext(Qt.WidgetShortcut)
+        act.triggered.connect(self._clear_subset)
+        tree.addAction(act)
+        self._clear_action = act
+
         act = QAction("Duplicate subset", tree)
         act.setEnabled(False)
         act.setToolTip("Duplicate the current subset")
@@ -208,6 +218,12 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         self._combination_actions()
 
         tree.setContextMenuPolicy(Qt.ActionsContextMenu)
+
+    def _clear_subset(self):
+        layer = self.current_layer()
+        if not isinstance(layer, glue.Subset):
+            return
+        layer.subset_state = glue.subset.SubsetState()
 
     def _copy_subset(self):
         layer = self.current_layer()
@@ -241,18 +257,21 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
             self._new_action.setEnabled(True)
             self._duplicate_action.setEnabled(False)
             self._delete_action.setEnabled(True)
+            self._clear_action.setEnabled(False)
         elif single and isinstance(layer, glue.Subset):
             self._copy_action.setEnabled(True)
             self._paste_action.setEnabled(has_clipboard)
             self._new_action.setEnabled(True)
             self._duplicate_action.setEnabled(True)
             self._delete_action.setEnabled(True)
+            self._clear_action.setEnabled(True)
         else:
             self._copy_action.setEnabled(False)
             self._paste_action.setEnabled(False)
             self._new_action.setEnabled(False)
             self._duplicate_action.setEnabled(False)
             self._delete_action.setEnabled(False)
+            self._clear_action.setEnabled(False)
 
     def setup_drag_drop(self):
         self.layerTree.setDragEnabled(True)

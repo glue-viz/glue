@@ -2,9 +2,7 @@ import unittest
 
 def main():
     tests = unittest.TestLoader().discover('.')
-    result = unittest.TestResult()
-    tests.run(result)
-    print result
+    result = unittest.TextTestRunner().run(tests)
 
 if __name__ == "__main__":
     main()

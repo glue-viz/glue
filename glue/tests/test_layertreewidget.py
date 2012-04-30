@@ -223,6 +223,7 @@ class TestLayerTree(unittest.TestCase):
         self.assertTrue(self.widget._duplicate_action.isEnabled())
         self.assertFalse(self.widget._paste_action.isEnabled())
         self.assertTrue(self.widget._invert_action.isEnabled())
+        self.assertTrue(self.widget._clear_action.isEnabled())
 
     def test_actions_enabled_single_data_selection(self):
         layer = self.add_layer_via_method()
@@ -237,6 +238,7 @@ class TestLayerTree(unittest.TestCase):
         self.assertFalse(self.widget._duplicate_action.isEnabled())
         self.assertFalse(self.widget._paste_action.isEnabled())
         self.assertFalse(self.widget._invert_action.isEnabled())
+        self.assertFalse(self.widget._clear_action.isEnabled())
 
     def test_actions_enabled_multi_subset_selection(self):
         layer = self.setup_two_subset_selection()
@@ -248,6 +250,7 @@ class TestLayerTree(unittest.TestCase):
         self.assertFalse(self.widget._duplicate_action.isEnabled())
         self.assertFalse(self.widget._paste_action.isEnabled())
         self.assertTrue(self.widget._invert_action.isEnabled())
+        self.assertFalse(self.widget._clear_action.isEnabled())
 
     def test_remove_all_layers(self):
         for d in self.collect:
@@ -331,7 +334,7 @@ class TestLayerTree(unittest.TestCase):
             self.assertTrue(self.layer_present(self.data[0]))
 
     def test_load_data_doesnt_double_add(self):
-        "bugfix"
+        """bugfix"""
         with patch('glue.qt.layertreewidget.qtutil') as util:
             util.data_wizard.return_value = self.data[0]
             self.assertEquals(self.widget.layerTree.topLevelItemCount(), 0)
@@ -342,6 +345,15 @@ class TestLayerTree(unittest.TestCase):
         self.assertFalse(self.data[0] in self.widget)
         self.widget.sync_layer(self.data[0])
 
+    def test_clear_subset(self):
+        layer = self.add_layer_via_method()
+        sub = layer.edit_subset
+        item = self.widget[sub]
+        self.widget.layerTree.setCurrentItem(item)
+        dummy_state = MagicMock()
+        sub.subset_state = dummy_state
+        self.widget._clear_subset()
+        self.assertFalse(sub.subset_state == dummy_state)
 
 if __name__ == "__main__":
     unittest.main()
