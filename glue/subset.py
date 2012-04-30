@@ -27,7 +27,7 @@ class Subset(object):
         """ Create a new subclass object.
 
         """
-        self._broadcasting = False
+        self._broadcasting = False # must be first def
         self.data = data
         self.style = VisualAttributes(parent=self)
         if color:
@@ -118,22 +118,16 @@ class Subset(object):
         """
         if not hasattr(self, 'data') or not hasattr(self.data, 'hub'):
             return
-        if not hasattr(self, '_broadcasting'):
-            return
 
         if self._broadcasting and self.data.hub:
             msg = glue.message.SubsetUpdateMessage(self,
-                                                       attribute=attribute)
+                                                   attribute=attribute)
             self.data.hub.broadcast(msg)
 
     def unregister(self):
-        """Broadcast a SubsetDeleteMessage to the hub, and stop braodcasting"""
-        if not hasattr(self, 'data') or not hasattr(self.data, 'hub'):
-            return
-        if not hasattr(self, '_broadcasting'):
-            return
-
-        dobroad = self._broadcasting and self.data.hub
+        """Broadcast a SubsetDeleteMessage to the hub, and stop broadcasting"""
+        dobroad = self._broadcasting and self.data is not None and \
+                  self.data.hub is not None
         self.do_broadcast(False)
         if dobroad:
             msg = glue.message.SubsetDeleteMessage(self)
@@ -159,11 +153,10 @@ class Subset(object):
 
     def __del__(self):
         self.unregister()
-        super(Subset, self).__del__()
 
     def __setattr__(self, attribute, value):
         object.__setattr__(self, attribute, value)
-        if attribute != '_braodcasting':
+        if attribute != '_broadcasting':
             self.broadcast(attribute)
 
     def __getitem__(self, attribute):
@@ -246,61 +239,14 @@ class InvertState(CompositeSubsetState):
     def to_mask(self):
         return ~self.state1.to_mask()
 
-class TreeSubset(Subset):
-    """ Subsets defined using a data's Tree attribute.
+class ElementSubsetState(SubsetState):
 
-    The tree attribute in a data set defines a hierarchical
-    partitioning of the data. This subset class represents subsets
-    that consist of portions of this tree (i.e., a subset of the nodes
-    in the tree)
+    def __init__(self, indices = None):
+        super(ElementSubsetState, self).__init__()
+        self._indices = indices
 
-    Attributes:
-    -----------
-    node_list: A list of integers, specifying which nodes in the tree
-               belong to the subset.
-    """
-    def __init__(self, data, node_list=None, **kwargs):
-        """ Create a new subset instance
-
-        Parameters:
-        -----------
-        data: A data instance
-              The data must have a tree attribute with a populated index_map
-
-        node_list: List
-                  A list of node ids, defining which parts of the data's tree
-                  belong to this subset.
-        """
-        if not hasattr(data, 'tree'):
-            raise AttributeError("Input data must contain a tree object")
-
-        if data.tree.index_map is None:
-            raise AttributeError("Input data's tree must have an index map")
-
-        Subset.__init__(self, data, **kwargs)
-        if not node_list:
-            self.node_list = []
-        else:
-            self.node_list = node_list
-
-    def to_mask(self, data=None):
-
-        if data is not None and data is not self.data:
-            raise IncompatibleDataException("TreeSubsets cannot cross "
-                                            "data sets")
-
-        t = self.data.tree
-        im = t.index_map
-        mask = np.zeros(self.data.shape, dtype=bool)
-        for n in self.node_list:
-            mask |= im == n
-        return mask
-
-    def to_index_list(self, data=None):
-
-        if data is not None and data is not self.data:
-            raise IncompatibleDataException("TreeSubsets cannot cross"
-                                            " data sets")
-
-        # this is inefficient for small subsets.
-        return self.to_mask().nonzero()[0]
+    def to_mask(self):
+        result = np.zeros(self.parent.data.shape, dtype = bool)
+        if self._indices is not None:
+            result[self._indices] = True
+        return result
