@@ -150,7 +150,7 @@ class TestCommunication(unittest.TestCase):
         self.hub.broadcast(self.m1)
         self.assertIs(self.c1.last_message, self.m1)
 
-        self.hub.remove(self.c1)
+        self.hub.unsubscribe_all(self.c1)
         self.hub.broadcast(self.m2)
         self.assertIs(self.c1.last_message, self.m1)
 

@@ -6,3 +6,9 @@ class IncompatibleDataException(Exception):
 
 class UndefinedROI(Exception):
     pass
+
+class InvalidSubscriber(Exception):
+    pass
+
+class InvalidMessage(Exception):
+    pass

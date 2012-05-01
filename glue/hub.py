@@ -1,12 +1,12 @@
 from collections import defaultdict
 
 import glue
-
+from glue.exceptions import InvalidSubscriber, InvalidMessage
 
 class Hub(object):
     """
     The hub manages the communication between visualization clients,
-    subsets, and other objects.
+    data, and other objects.
 
     :class:`glue.hub.HubListner` objects subscribe to specific message
     classes. When a message is passed to the hub, the hub relays this
@@ -17,24 +17,26 @@ class Hub(object):
     """
 
     def __init__(self, *args):
-        """
-        Create an empty hub.
+        """Create an empty hub.
 
         Inputs:
         -------
-        Any dataset, subset, client, or DataCollection. If these are provided,
-        they will automatically be registered with the new hub.
+
+        Any dataset, subset, HubListner, or DataCollection.  If these
+        are provided, they will automatically be registered with the
+        new hub.
         """
 
         # Dictionary of subscriptions
         self._subscriptions = defaultdict(dict)
 
         listeners = filter(lambda x: isinstance(x, HubListener), args)
-        data = filter(lambda x: isinstance(x, glue.data.Data), args)
-        subsets = filter(lambda x: isinstance(x, glue.subset.Subset), args)
-        dcs = filter(lambda x: isinstance(x, glue.data_collection.DataCollection), args)
+        data = filter(lambda x: isinstance(x, glue.Data), args)
+        subsets = filter(lambda x: isinstance(x, glue.Subset), args)
+        dcs = filter(lambda x: isinstance(x, glue.DataCollection), args)
         if len(dcs) + len(subsets) + len(data) + len(listeners) != len(args):
-            raise TypeError("Inputs must be HubListener, data, subset, or data collection objects")
+            raise TypeError("Inputs must be HubListener, data, subset, or "
+                            "data collection objects")
 
         for l in listeners:
             l.register_to_hub(self)
@@ -84,40 +86,75 @@ class Hub(object):
 
         Raises
         ------
-        TypeError: If the input class isn't a glue.Message class,
-                   or if the input subscriber isn't a HubListener object.
+        InvalidMessage: If the input class isn't a glue.Message class,
+        InvalidSubscriber:
+                     If the input subscriber isn't a HubListener object.
         """
         if not isinstance(subscriber, HubListener):
-            raise TypeError("Subscriber must be a HubListener: %s" %
+            raise InvalidSubscriber("Subscriber must be a HubListener: %s" %
                             type(subscriber))
         if not isinstance(message_class, type) or \
                 not issubclass(message_class, glue.Message):
-            raise TypeError("message class must be a subclass of "
+            raise InvalidMessage("message class must be a subclass of "
                             "glue.Message: %s" % type(message_class))
         if not handler:
             handler = subscriber.notify
 
         self._subscriptions[subscriber][message_class] = (filter, handler)
 
+    def is_subscribed(self, subscriber, message):
+        """
+        Returns
+        -------
+        True if the subscriber/message pair have been subscribed to the hub
+        """
+        return subscriber in self._subscriptions and \
+            message in self._subscriptions[subscriber]
+
+    def get_handler(self, subscriber, message):
+        try:
+            return self._subscriptions[subscriber][message][1]
+        except KeyError:
+            return None
+
     def unsubscribe(self, subscriber, message):
+        """
+        Remove a (subscriber,message) pair from subscription list.
+        The handler originally attached to the subscription will
+        no longer be called when broeacasting messages of type message
+        """
         if subscriber not in self._subscriptions:
             return
         if message in self._subscriptions[subscriber]:
             self._subscriptions[subscriber].pop(message)
 
-    def remove(self, subscriber):
+    def unsubscribe_all(self, subscriber):
         """
         Unsubscribe the object from any subscriptions.
 
         Parameters
         ----------
-        subscriber: HubListener instance
+        subscriber:
             The object to remove
-
         """
         if subscriber in self._subscriptions:
-            # remove from collection
             self._subscriptions.pop(subscriber)
+
+    def _find_handlers(self, message):
+        """Following the broadcast rules described above, yield all
+        (subscriber, handler) pairs that should receive the message
+        """
+        for key in self._subscriptions:
+            subscriber = self._subscriptions[key]
+            candidates = [msg for msg in subscriber if
+                          issubclass(type(message), msg)]
+            if len(candidates) == 0:
+                continue
+            candidate = max(candidates) # most-subclassed message class
+            filter, handler = subscriber[candidate]
+            if filter(message):
+                yield subscriber, handler
+
 
     def broadcast(self, message):
         """
@@ -127,26 +164,15 @@ class Hub(object):
         See subscribe for details of when a message
         is passed to the subscriber
         """
-
-        # loop over each (subscriber, subscription_list) pair
-        for c, sub in self._subscriptions.iteritems():
-            # find all messages in c's subscription list
-            # that are superclasses of message
-            # consider only the most-subclassed of these
-            candidates = [m for m in sub if
-                          issubclass(type(message), m)]
-            if len(candidates) == 0:
-                continue
-            candidate = max(candidates)
-
-            # only pass to handler if filter allows it
-            filter, handler = sub[candidate]
-            if filter(message):
-                try:
-                    handler(message)
-                except:
-                    pass
-
+        for subscriber, handler in self._find_handlers(message):
+            try:
+                handler(message)
+            except Exception as e:
+                if isinstance(message, glue.message.ErrorMessage):
+                    #prevent infinite recursion
+                    break
+                msg = glue.message.ErrorMessage(subscriber, tag="%s" % e)
+                self.broadcast(msg)
 
 class HubListener(object):
     """
@@ -154,6 +180,9 @@ class HubListener(object):
     This interface defines a single method, notify, that receives
     messages
     """
+
+    def register_to_hub(self, hub):
+        raise NotImplementedError
 
     def notify(self, message):
         raise NotImplementedError("Message has no handler: %s" % message)

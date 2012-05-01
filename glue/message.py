@@ -50,6 +50,9 @@ class Message(object):
     def __str__(self):
         return 'Message: "%s"\n\t Sent from: %s' % (self.tag, self.sender)
 
+class ErrorMessage(Message):
+    """ Used to send general purpose error messages """
+    pass
 
 class SubsetMessage(Message):
     """
