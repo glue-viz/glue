@@ -56,8 +56,8 @@ class Client(glue.HubListener):
         hub: The hub to subscribe to
 
         """
-        has_data = lambda x:x.sender.data in self._data
-        has_data_collection = lambda x:x.sender is self._data
+        has_data = lambda x: x.sender.data in self._data
+        has_data_collection = lambda x: x.sender is self._data
 
         hub.subscribe(self,
                       msg.SubsetCreateMessage,
@@ -96,6 +96,7 @@ class Client(glue.HubListener):
     def _update_subset(self, message):
         """ Default handler for SubsetUpdateMessage """
         raise NotImplementedError
+
 
 class BasicClient(Client):
 

@@ -1,5 +1,6 @@
 import glue
 
+
 class DataCollection(object):
     """ DataCollections manage sets of data for Clients.
 
@@ -22,7 +23,6 @@ class DataCollection(object):
             self._data = data
             self._active = data[0]
 
-
         self._links = []
 
     def add_link(self, link):
@@ -31,7 +31,8 @@ class DataCollection(object):
             link.register_to_hub(self.hub)
 
     def remove_link(self, link):
-        if link not in self._links: return
+        if link not in self._links:
+            return
         self._links.remove(link)
         self.hub.remove(link)
 
@@ -43,10 +44,12 @@ class DataCollection(object):
                 s.register()
             msg = glue.message.DataCollectionAddMessage(self, data)
             self.hub.broadcast(msg)
-        if len(self._data) == 1: self._active = data
+        if len(self._data) == 1:
+            self._active = data
 
     def remove(self, data):
-        if data not in self._data: return
+        if data not in self._data:
+            return
         self._data.remove(data)
         if self.hub:
             msg = glue.message.DataCollectionDeleteMessage(self, data)

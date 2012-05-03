@@ -5,6 +5,7 @@ import glue
 from glue import VizClient
 from glue.exceptions import IncompatibleAttribute
 
+
 class InvNormalize(Normalize):
     """ Simple wrapper to matplotlib Normalize object, that
     handles the case where vmax <= vmin """
@@ -16,6 +17,7 @@ class InvNormalize(Normalize):
         else:
             result = Normalize.__call__(self, value)
         return result
+
 
 class LayerManager(object):
     def __init__(self, layer, axes):
@@ -36,6 +38,7 @@ class LayerManager(object):
     def __del__(self):
         self.delete_artist()
 
+
 class DataLayerManager(LayerManager):
     def __init__(self, layer, axes):
         super(DataLayerManager, self).__init__(layer, axes)
@@ -54,7 +57,7 @@ class DataLayerManager(LayerManager):
             return
         self.artist.set_visible(state)
 
-    def set_norm(self, data, vmin = None, vmax = None):
+    def set_norm(self, data, vmin=None, vmax=None):
         self.norm.autoscale(data)
         if vmin is not None:
             self.norm.vmin = vmin
@@ -66,6 +69,7 @@ class DataLayerManager(LayerManager):
             return
         self.artist.remove()
         self.artist = None
+
 
 class SubsetLayerManager(LayerManager):
     def __init__(self, layer, axes, area_style='filled'):
@@ -92,11 +96,12 @@ class SubsetLayerManager(LayerManager):
             self.artist = self._ax.contourf(mask.astype(float),
                                             levels=[0.5, 1.0],
                                             alpha=0.3,
-                                            colors = self.layer.style.color)
+                                            colors=self.layer.style.color)
         else:
             self.artist = self._ax.contour(mask.astype(float),
                                            levels=[0.5],
                                            colors=self.layer.style.color)
+
 
 class ImageClient(VizClient):
 
@@ -109,13 +114,12 @@ class ImageClient(VizClient):
         VizClient.__init__(self, data)
 
         self.layers = {}
-        self.draw_colorbar = False
-        self.colorbar = None
 
         self.display_data = None
         self.display_attribute = None
-        self.slice_ori = 2
+        self._slice_ori = 2
         self._slice_ind = 0
+        self._image = None
 
         if axes is not None:
             self._ax = axes
@@ -132,7 +136,8 @@ class ImageClient(VizClient):
 
     @property
     def is_3D(self):
-        if not self.display_data: return False
+        if not self.display_data:
+            return False
         return len(self.display_data.shape) == 3
 
     @property
@@ -151,7 +156,7 @@ class ImageClient(VizClient):
             raise IndexError("Cannot set slice for 2D image")
 
     def can_handle_data(self, data):
-        return data.ndim in [2,3]
+        return data.ndim in [2, 3]
 
     def _ensure_data_present(self, data):
         if data not in self.layers:
@@ -173,20 +178,21 @@ class ImageClient(VizClient):
         self._redraw()
 
     def slice_bounds(self):
-        if not self.is_3D: return (0, 0)
-        if self.slice_ori == 2:
-            return (0, self.display_data.shape[2]-1)
-        if self.slice_ori == 1:
-            return (0, self.display_data.shape[1]-1)
-        if self.slice_ori == 0:
-            return (0, self.display_data.shape[0]-1)
+        if not self.is_3D:
+            return (0, 0)
+        if self._slice_ori == 2:
+            return (0, self.display_data.shape[2] - 1)
+        if self._slice_ori == 1:
+            return (0, self.display_data.shape[1] - 1)
+        if self._slice_ori == 0:
+            return (0, self.display_data.shape[0] - 1)
 
     def set_slice_ori(self, ori):
         if not self.is_3D:
             raise IndexError("Cannot set orientation of 2D image")
-        if ori not in [0,1,2]:
+        if ori not in [0, 1, 2]:
             raise TypeError("Orientation must be 0, 1, or 2")
-        self.slice_ori = ori
+        self._slice_ori = ori
         self.slice_ind = min(self.slice_ind, self.slice_bounds()[1])
         self.slice_ind = max(self.slice_ind, self.slice_bounds()[0])
         self._update_data_plot(relim=True)
@@ -210,13 +216,6 @@ class ImageClient(VizClient):
         Re-render the screen
         """
         self._ax.figure.canvas.draw()
-
-    def set_colorbar_visible(self, state):
-        self.draw_colorbar = state
-        self.refresh()
-
-    def toggle_colorbar(self):
-        self.set_colorbar_visible(not self.draw_colorbar)
 
     def set_norm(self, vmin=None, vmax=None):
         if not self.display_data:
@@ -249,9 +248,9 @@ class ImageClient(VizClient):
 
         if not self.is_3D:
             return result
-        if self.slice_ori == 2:
-            result = result[:,:,self.slice_ind]
-        elif self.slice_ori == 1:
+        if self._slice_ori == 2:
+            result = result[:, :, self.slice_ind]
+        elif self._slice_ori == 1:
             result = result[:, self.slice_ind, :]
         else:
             result = result[self.slice_ind, :, :]
@@ -315,7 +314,7 @@ class ImageClient(VizClient):
             return
 
         subset_state = glue.subset.RoiSubsetState()
-        x,y = roi.to_polygon()
+        x, y = roi.to_polygon()
 
         if not self.is_3D:
             xroi, yroi = self.display_data.coords.pixel2world(x, y)
@@ -325,12 +324,12 @@ class ImageClient(VizClient):
             abc = [slice_val, slice_val, slice_val]
             abc[hi] = x
             abc[vi] = y
-            abc = abc[::-1] # from numpy (zyx) convention to xyz
+            abc = abc[::-1]  # from numpy (zyx) convention to xyz
             xw, yw, zw = self.display_data.coords.pixel2world(*abc)
             world = [zw, yw, xw]
             xroi, yroi = world[hi], world[vi]
 
-        x,y = self._get_axis_components()
+        x, y = self._get_axis_components()
         subset_state.xatt = x
         subset_state.yatt = y
         subset_state.roi = glue.roi.PolygonalROI(xroi, yroi)
@@ -339,14 +338,14 @@ class ImageClient(VizClient):
     def _horizontal_axis_index(self):
         """Which index (in numpy convention - zyx) does the horizontal
         axis coorespond to?"""
-        if not self.is_3D or self.slice_ori == 2:
+        if not self.is_3D or self._slice_ori == 2:
             return 1
         return 2
 
     def _vertical_axis_index(self):
         """Which index (in numpy convention - zyx) does the vertical
         axis coorespond to?"""
-        if self.is_3D and self.slice_ori == 0:
+        if self.is_3D and self._slice_ori == 0:
             return 1
         return 0
 

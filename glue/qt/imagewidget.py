@@ -1,5 +1,5 @@
-from PyQt4.QtCore import Qt, SIGNAL, QVariant
-from PyQt4.QtGui import *
+from PyQt4.QtGui import QMainWindow, QWidget, QAction, QToolBar
+from PyQt4.QtCore import Qt, QVariant
 
 import numpy as np
 
@@ -11,9 +11,8 @@ from glue.image_client import ImageClient
 from glue.qt.mouse_mode import RectangleMode, CircleMode, PolyMode
 from glue.qt.glue_toolbar import GlueToolbar
 
-from qtutil import mpl_to_qt4_color, qt4_to_mpl_color
 from ui_imagewidget import Ui_ImageWidget
-from linker_dialog import LinkerDialog
+
 
 class ImageWidget(QMainWindow, glue.HubListener):
     def __init__(self, data, parent=None):
@@ -61,10 +60,6 @@ class ImageWidget(QMainWindow, glue.HubListener):
         self.cmap_blue_action.triggered.connect(
             lambda: self.client.set_cmap(cm.Blues))
 
-        self.toggle_colorbar_action = QAction("Colorbar", self)
-        self.toggle_colorbar_action.triggered.connect(
-            self.client.toggle_colorbar)
-
     def create_colormap_toolbar(self, parent=None):
         self.cmap_toolbar = QToolBar("Colormaps", parent)
         self.cmap_toolbar.addAction(self.cmap_heat_action)
@@ -104,7 +99,7 @@ class ImageWidget(QMainWindow, glue.HubListener):
     def add_data(self, data):
         if not self.client.can_handle_data(data):
             return
-        self.ui.displayDataCombo.addItem(data.label, userData = QVariant(data))
+        self.ui.displayDataCombo.addItem(data.label, userData=QVariant(data))
 
     def set_data(self, index):
         if self.ui.displayDataCombo.count() == 0:
@@ -138,7 +133,7 @@ class ImageWidget(QMainWindow, glue.HubListener):
         combo.clear()
         fields = data.component_ids()
         for f in fields:
-            combo.addItem(f.label, userData = f)
+            combo.addItem(f.label, userData=f)
         combo.currentIndexChanged.connect(self.set_attribute)
 
     def set_slider(self, index):
@@ -159,7 +154,6 @@ class ImageWidget(QMainWindow, glue.HubListener):
 
     def _connect(self):
         ui = self.ui
-        client = self.client
 
         ui.displayDataCombo.currentIndexChanged.connect(self.set_data)
         ui.attributeComboBox.currentIndexChanged.connect(self.set_attribute)
@@ -169,19 +163,18 @@ class ImageWidget(QMainWindow, glue.HubListener):
         ui.imageSlider.sliderMoved.connect(self.set_slider)
         ui.mplWidget.rightDrag.connect(self.set_norm)
 
-
     def register_to_hub(self, hub):
         self.client.register_to_hub(hub)
-        dc_filt = lambda x:x.sender is self.client._data
+        dc_filt = lambda x: x.sender is self.client._data
 
         hub.subscribe(self,
                       msg.DataCollectionAddMessage,
-                      handler=lambda x:self.add_data(x.data),
-                      filter = dc_filt)
+                      handler=lambda x: self.add_data(x.data),
+                      filter=dc_filt)
         hub.subscribe(self,
                       msg.DataCollectionDeleteMessage,
-                      handler=lambda x:self.remove_data(x.data),
-                      filter = dc_filt)
+                      handler=lambda x: self.remove_data(x.data),
+                      filter=dc_filt)
 
     def remove_data(self, data):
         combo = self.ui.displayDataCombo

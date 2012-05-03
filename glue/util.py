@@ -1,5 +1,3 @@
-import glue
-
 def relim(lo, hi, log=False):
     x, y = lo, hi
     if log:
@@ -7,7 +5,7 @@ def relim(lo, hi, log=False):
             x = 1e-5
         if hi < 0:
             y = 1e5
-    return (x,y)
+    return (x, y)
 
 
 def glue_components_1to1(data1, component_1,
@@ -16,5 +14,3 @@ def glue_components_1to1(data1, component_1,
                                 lambda: data1[component_1])
     data2.add_virtual_component(component_1,
                                 lambda: data2[component_2])
-
-

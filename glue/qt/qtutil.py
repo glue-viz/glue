@@ -4,6 +4,7 @@ from PyQt4.QtGui import QColor, QInputDialog, QColorDialog
 
 import glue
 
+
 def mpl_to_qt4_color(color):
     """ Convert a matplotlib color stirng into a PyQT4 QColor object
 
@@ -18,8 +19,9 @@ def mpl_to_qt4_color(color):
 
     """
     cc = ColorConverter()
-    r,g,b = cc.to_rgb(color)
-    return QColor(r*255, g*255, b*255)
+    r, g, b = cc.to_rgb(color)
+    return QColor(r * 255, g * 255, b * 255)
+
 
 def qt4_to_mpl_color(color):
     """
@@ -34,26 +36,28 @@ def qt4_to_mpl_color(color):
     A hex string describing that color
     """
 
-    hex = color.name()
-    return str(hex)
+    hexid = color.name()
+    return str(hexid)
 
 
 def data_wizard():
     fd = QtGui.QFileDialog()
-    if not fd.exec_(): return None
-    file = str(fd.selectedFiles()[0])
-    extension = file.split('.')[-1].lower()
-    label = ' '.join(file.split('.')[:-1])
+    if not fd.exec_():
+        return None
+    file_name = str(fd.selectedFiles()[0])
+    extension = file_name.split('.')[-1].lower()
+    label = ' '.join(file_name.split('.')[:-1])
     label = label.split('/')[-1]
     label = label.split('\\')[-1]
 
     if extension in ['fits', 'fit', 'fts']:
         result = glue.GriddedData(label=label)
-        result.read_data(file)
+        result.read_data(file_name)
     else:
         result = glue.data.TabularData(label=label)
-        result.read_data(file)
+        result.read_data(file_name)
     return result
+
 
 class DebugClipboard(QtGui.QWidget):
     """ A simple class to that displays
@@ -87,7 +91,7 @@ class DebugClipboard(QtGui.QWidget):
         for f in md.formats():
             print f
             print type(md.data(f))
-            for i,d in enumerate(md.data(f)):
+            for i, d in enumerate(md.data(f)):
                 print i, ("%s" % d)
         self.text_edit.setPlainText("%s" % event.mimeData().text())
 
@@ -95,9 +99,10 @@ class DebugClipboard(QtGui.QWidget):
 def edit_layer_color(layer):
     dialog = QColorDialog()
     initial = mpl_to_qt4_color(layer.style.color)
-    color = dialog.getColor(initial = initial)
+    color = dialog.getColor(initial=initial)
     if color.isValid():
         layer.style.color = qt4_to_mpl_color(color)
+
 
 def edit_layer_symbol(layer):
     """ Interactively edit a layer's symbol """
@@ -108,13 +113,15 @@ def edit_layer_symbol(layer):
     if isok:
         layer.style.marker = symb
 
+
 def edit_layer_point_size(layer):
     dialog = QInputDialog()
     size, isok = dialog.getInt(None, 'Point Size', 'Point Size',
-                               value = layer.style.markersize,
-                               min = 1, max = 1000, step = 1)
+                               value=layer.style.markersize,
+                               min=1, max=1000, step=1)
     if isok:
         layer.style.markersize = size
+
 
 def edit_layer_label(layer):
     """ Interactively edit a layer's label """
@@ -123,6 +130,7 @@ def edit_layer_label(layer):
     if isok:
         layer.style.label = str(label)
 
+
 if __name__ == "__main__":
     import sys
     app = QtGui.QApplication(sys.argv)
@@ -130,4 +138,3 @@ if __name__ == "__main__":
     dc = DebugClipboard()
     dc.show()
     sys.exit(app.exec_())
-

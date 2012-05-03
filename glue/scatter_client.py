@@ -6,6 +6,7 @@ from glue.client import Client
 from glue.util import relim
 from glue.exceptions import IncompatibleAttribute
 
+
 class ScatterLayerManager(object):
     def __init__(self, layer, axes):
         self._layer = layer
@@ -92,9 +93,9 @@ class ScatterClient(Client):
 
         self.managers = {}
 
-        self.xatt = None
-        self.yatt = None
-        self._layer_updated = False # debugging
+        self._xatt = None
+        self._yatt = None
+        self._layer_updated = False  # debugging
 
         if figure is None:
             if axes is not None:
@@ -245,9 +246,9 @@ class ScatterClient(Client):
 
         #update coordinates of data and subsets
         if coord == 'x':
-            self.xatt = attribute
+            self._xatt = attribute
         elif coord == 'y':
-            self.yatt = attribute
+            self._yatt = attribute
 
         #update plots
         map(self._update_layer, (l for l in self.managers))
@@ -268,8 +269,8 @@ class ScatterClient(Client):
             if not self.managers[layer].is_enabled():
                 continue
             subset_state = glue.subset.RoiSubsetState()
-            subset_state.xatt = self.xatt
-            subset_state.yatt = self.yatt
+            subset_state.xatt = self._xatt
+            subset_state.yatt = self._yatt
             x, y = roi.to_polygon()
             subset_state.roi = glue.roi.PolygonalROI(x, y)
             subset = layer.edit_subset
@@ -382,6 +383,7 @@ class ScatterClient(Client):
         manager = self.managers.pop(layer)
         del manager
         self._redraw()
+        assert not self.is_layer_present(layer)
 
     def _update_data(self, message):
         data = message.sender
@@ -391,8 +393,8 @@ class ScatterClient(Client):
         self.ax.figure.canvas.draw()
 
     def _update_axis_labels(self):
-        self.ax.set_xlabel(self.xatt)
-        self.ax.set_ylabel(self.yatt)
+        self.ax.set_xlabel(self._xatt)
+        self.ax.set_ylabel(self._yatt)
 
     def _add_subset(self, message):
         subset = message.sender
@@ -410,15 +412,15 @@ class ScatterClient(Client):
 
     def _update_layer(self, layer):
         """ Update both the style and data for the requested layer"""
-        if self.xatt is None or self.yatt is None:
+        if self._xatt is None or self._yatt is None:
             return
 
         if layer not in self.managers:
             return
 
         try:
-            x = layer[self.xatt]
-            y = layer[self.yatt]
+            x = layer[self._xatt]
+            y = layer[self._yatt]
         except IncompatibleAttribute:
             self.managers[layer].set_enabled(False)
             return

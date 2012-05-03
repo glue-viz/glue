@@ -1,7 +1,3 @@
-import string
-
-import glue
-
 # Define acceptable line styles
 valid_linestyles = ['solid', 'dashed', 'dash-dot', 'dotted', 'none']
 
@@ -9,6 +5,7 @@ valid_linestyles = ['solid', 'dashed', 'dash-dot', 'dotted', 'none']
 default_colors = ['#E41A1C', '#377EB8', '#4DAF4A', '#984EA3', '#FF7F00',
                   '#FFFF33', '#A65628', '#F781BF']
 color_pos = 0
+
 
 class VisualAttributes(object):
     '''
@@ -44,7 +41,6 @@ class VisualAttributes(object):
 
         self.parent = parent
 
-
     def set(self, other):
         self.color = other.color
         self.alpha = other.alpha
@@ -58,7 +54,7 @@ class VisualAttributes(object):
         # Check that line style is valid
         if attribute == 'linestyle' and value not in valid_linestyles:
             raise Exception("Line style should be one of %s" %
-                            string.join(valid_linestyles, '/'))
+                            '/'.join(valid_linestyles))
 
         # Check that line width is valid
         if attribute == 'linewidth':

@@ -37,12 +37,14 @@ class Message(object):
         self._level = len(getmro(type(self)))  # number of super-classes.
 
     def __lt__(self, other):
-        """
-        Compares 2 message objects. message 1 < message 2 if it is
+        """Compares 2 message objects. message 1 < message 2 if it is
         further up the hierarchy (i.e. closer to the Message superclass).
 
         Note:
-        This comparison breaks down slightly if messages are multiply inherited.
+
+        This comparison breaks down slightly if messages are multiply
+        inherited.
+
         """
 
         return self._level < other._level
@@ -50,9 +52,11 @@ class Message(object):
     def __str__(self):
         return 'Message: "%s"\n\t Sent from: %s' % (self.tag, self.sender)
 
+
 class ErrorMessage(Message):
     """ Used to send general purpose error messages """
     pass
+
 
 class SubsetMessage(Message):
     """
@@ -74,6 +78,7 @@ class SubsetCreateMessage(SubsetMessage):
     """
     pass
 
+
 class SubsetUpdateMessage(SubsetMessage):
     """
     A message that a subset issues when its state changes
@@ -94,6 +99,7 @@ class SubsetDeleteMessage(SubsetMessage):
     """
     pass
 
+
 class DataMessage(Message):
     """
     The base class for messages that data objects issue
@@ -105,10 +111,12 @@ class DataMessage(Message):
         Message.__init__(self, sender, tag=tag)
         self.data = self.sender
 
+
 class DataUpdateMessage(DataMessage):
     def __init__(self, sender, attribute, tag=None):
         super(DataUpdateMessage, self).__init__(sender, tag=tag)
-        self.attribute=attribute
+        self.attribute = attribute
+
 
 class DataCollectionMessage(Message):
     def __init__(self, sender, tag=None):
@@ -117,16 +125,20 @@ class DataCollectionMessage(Message):
                             % type(sender))
         Message.__init__(self, sender, tag=tag)
 
+
 class DataCollectionActiveChange(DataCollectionMessage):
     pass
 
+
 class DataCollectionActiveDataChange(DataCollectionMessage):
     pass
+
 
 class DataCollectionAddMessage(DataCollectionMessage):
     def __init__(self, sender, data, tag=None):
         DataCollectionMessage.__init__(self, sender, tag=tag)
         self.data = data
+
 
 class DataCollectionDeleteMessage(DataCollectionMessage):
     def __init__(self, sender, data, tag=None):

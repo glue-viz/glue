@@ -1,8 +1,7 @@
 from PyQt4.QtGui import QIcon
-from PyQt4.QtCore import Qt
 
-import glue_qt_resources
 from glue import roi
+
 
 class MouseMode(object):
     def __init__(self, axes,
@@ -32,6 +31,7 @@ class MouseMode(object):
         if self._release_callback is not None:
             self._release_callback(self)
 
+
 class RectangleMode(MouseMode):
     def __init__(self, axes, **kwargs):
         super(RectangleMode, self).__init__(axes, **kwargs)
@@ -56,6 +56,7 @@ class RectangleMode(MouseMode):
     def release(self, event):
         self._roi_tool.finalize_selection(event)
         super(RectangleMode, self).release(event)
+
 
 class CircleMode(MouseMode):
     def __init__(self, axes, **kwargs):

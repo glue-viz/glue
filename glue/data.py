@@ -1,5 +1,3 @@
-import string
-
 import numpy as np
 import atpy
 import pyfits
@@ -12,6 +10,7 @@ from glue.coordinates import Coordinates
 from glue.visual import VisualAttributes
 from glue.exceptions import IncompatibleAttribute
 
+
 class ComponentID(object):
     def __init__(self, label):
         self._label = label
@@ -23,6 +22,7 @@ class ComponentID(object):
     def __str__(self):
         return self._label
 
+
 class Component(object):
 
     def __init__(self, data, units=None):
@@ -32,6 +32,7 @@ class Component(object):
 
         # The actual data
         self.data = data
+
 
 class Data(object):
 
@@ -44,7 +45,7 @@ class Data(object):
         self._components = {}
         self._pixel_component_ids = []
         self._world_component_ids = []
-        self.getters = {}
+        self._getters = {}
 
         # Tree description of the data
         self.tree = None
@@ -82,7 +83,6 @@ class Data(object):
         """ Convenience access to data set's label """
         return self.style.label
 
-
     def _check_can_add(self, component):
         if len(self._components) == 0:
             return True
@@ -96,7 +96,7 @@ class Data(object):
         component_id = ComponentID(label)
         self._components[component_id] = component
         getter = lambda: self._components[component_id].data
-        self.getters[component_id] = getter
+        self._getters[component_id] = getter
         first_component = len(self._components) == 1
         if first_component:
             self._shape = component.data.shape
@@ -110,7 +110,7 @@ class Data(object):
         grids = np.mgrid[slices]
         for i in range(len(shape)):
             comp = Component(grids[i])
-            cid = self.add_component(comp, "Pixel Axis %i" %i)
+            cid = self.add_component(comp, "Pixel Axis %i" % i)
             self._pixel_component_ids.append(cid)
         if self.coords:
             world = self.coords.pixel2world(*grids[::-1])[::-1]
@@ -133,7 +133,7 @@ class Data(object):
         return self._world_component_ids[axis]
 
     def add_virtual_component(self, component_id, getter):
-        self.getters[component_id] = getter
+        self._getters[component_id] = getter
         self._components[component_id] = None
 
     def component_ids(self):
@@ -171,7 +171,8 @@ class Data(object):
         self.tree = glue.Tree(filename)
 
     def broadcast(self, attribute=None):
-        if not self.hub: return
+        if not self.hub:
+            return
         msg = glue.message.DataUpdateMessage(self, attribute=attribute)
         self.hub.broadcast(msg)
 
@@ -189,7 +190,7 @@ class Data(object):
     def __str__(self):
         s = ""
         s += "Number of dimensions: %i\n" % self.ndim
-        s += "Shape: %s\n" % string.join([str(x) for x in self.shape], ' x ')
+        s += "Shape: %s\n" % ' x '.join([str(x) for x in self.shape])
         s += "Components:\n"
         for component in self._components:
             s += " * %s\n" % component
@@ -210,11 +211,12 @@ class Data(object):
         key : string
           The component to fetch data from
         """
-        if key in self.getters:
-            return self.getters[key]()
+        if key in self._getters:
+            return self._getters[key]()
         else:
             raise IncompatibleAttribute("%s to in data set %s" %
                                         (key.label, self.label))
+
 
 class TabularData(Data):
     '''

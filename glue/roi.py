@@ -6,6 +6,7 @@ np.seterr(all='ignore')
 from matplotlib.patches import Polygon, Rectangle, Ellipse
 from glue.exceptions import UndefinedROI
 
+
 def aspect_ratio(ax):
     """ Returns the pixel height / width of a box that spans 1
     data unit in x and y
@@ -18,17 +19,19 @@ def aspect_ratio(ax):
 
 
 def data_to_norm(ax, x, y):
-    xy = np.column_stack( (np.asarray(x).flat, np.asarray(y).flat))
+    xy = np.column_stack((np.asarray(x).flat, np.asarray(y).flat))
     pixel = ax.transData.transform(xy)
     norm = ax.transAxes.inverted().transform(pixel)
     return norm
 
+
 def data_to_pixel(ax, x, y):
-    xy = np.column_stack( (np.asarray(x).flat, np.asarray(y).flat))
+    xy = np.column_stack((np.asarray(x).flat, np.asarray(y).flat))
     return ax.transData.transform(xy)
 
+
 def pixel_to_data(ax, x, y):
-    xy = np.column_stack( (np.asarray(x).flat, np.asarray(y).flat))
+    xy = np.column_stack((np.asarray(x).flat, np.asarray(y).flat))
     return ax.transData.inverted().transform(xy)
 
 
@@ -48,6 +51,7 @@ class Roi(object):
         as a polygon."""
         raise NotImplementedError
 
+
 class RectangularROI(Roi):
     """
     A class to define a 2D rectangular region of interest.
@@ -55,7 +59,7 @@ class RectangularROI(Roi):
 
     def __init__(self):
         """ Create a new ROI """
-
+        super(RectangularROI, self).__init__()
         self.xmin = None
         self.xmax = None
         self.ymin = None
@@ -64,6 +68,7 @@ class RectangularROI(Roi):
     def __str__(self):
         return "x=[%0.3f, %0.3f], y=[%0.3f, %0.3f]" % (self.xmin, self.xmax,
                                                        self.ymin, self.ymax)
+
     def corner(self):
         return (self.xmin, self.ymin)
 
@@ -119,6 +124,7 @@ class RectangularROI(Roi):
         return [self.xmin, self.xmax, self.xmax, self.xmin, self.xmin], \
             [self.ymin, self.ymin, self.ymax, self.ymax, self.ymin]
 
+
 class CircularROI(Roi):
     """
     A class to define a 2D circular region of interest.
@@ -126,6 +132,7 @@ class CircularROI(Roi):
 
     def __init__(self):
         """ Create a new ROI """
+        super(CircularROI, self).__init__()
         self.xc = None
         self.yc = None
         self.radius = None
@@ -153,7 +160,6 @@ class CircularROI(Roi):
         if not isinstance(y, np.ndarray):
             y = np.asarray(y)
         return (x - self.xc) ** 2 + (y - self.yc) ** 2 < self.radius ** 2
-
 
     def set_center(self, x, y):
         """
@@ -187,10 +193,11 @@ class CircularROI(Roi):
             self.yc is not None and self.radius is not None
 
     def to_polygon(self):
-        theta = np.linspace(0, 2 * np.pi, num = 20)
+        theta = np.linspace(0, 2 * np.pi, num=20)
         x = self.xc + self.radius * np.cos(theta)
         y = self.yc + self.radius * np.sin(theta)
         return x, y
+
 
 class PolygonalROI(Roi):
     """
@@ -201,6 +208,7 @@ class PolygonalROI(Roi):
         """
         Create a new ROI
         """
+        super(PolygonalROI, self).__init__()
         self.vx = vx
         self.vy = vy
         if self.vx is None:
@@ -210,8 +218,8 @@ class PolygonalROI(Roi):
 
     def __str__(self):
         result = 'Polygonal ROI ('
-        result += ','.join(['(%s, %s)' % (x,y)
-                            for x,y in zip(self.vx, self.vy)])
+        result += ','.join(['(%s, %s)' % (x, y)
+                            for x, y in zip(self.vx, self.vy)])
         result += ')'
         return result
 
@@ -237,7 +245,7 @@ class PolygonalROI(Roi):
         if not isinstance(y, np.ndarray):
             y = np.asarray(y)
 
-        xypts = np.column_stack((x.flat,y.flat))
+        xypts = np.column_stack((x.flat, y.flat))
         xyvts = np.column_stack((self.vx, self.vy))
         result = points_inside_poly(xypts, xyvts)
         result.shape = x.shape
@@ -301,6 +309,7 @@ class PolygonalROI(Roi):
     def to_polygon(self):
         return self.vx, self.vy
 
+
 class AbstractMplRoi(object):
     """ Base class for objects which use
     Matplotlib user events to edit/display ROIs
@@ -319,17 +328,15 @@ class AbstractMplRoi(object):
     def start_selection(self, event):
         raise NotImplementedError()
 
-    def _update_seleplction(self, event):
+    def update_selection(self, event):
         raise NotImplementedError()
 
     def finalize_selection(self, event):
         raise NotImplementedError()
 
-    def _reset(self):
-        raise NotImplementedError()
-
     def _sync_patch(self):
         raise NotImplementedError()
+
 
 class MplRectangularROI(AbstractMplRoi):
     """
@@ -483,10 +490,10 @@ class MplCircularROI(AbstractMplRoi):
             return
 
         xy = data_to_pixel(self._ax, [event.xdata], [event.ydata])
-        self._roi.set_center(xy[0,0], xy[0,1])
+        self._roi.set_center(xy[0, 0], xy[0, 1])
         self._roi.set_radius(0.)
-        self._xi = xy[0,0]
-        self._yi = xy[0,1]
+        self._xi = xy[0, 0]
+        self._yi = xy[0, 1]
 
         self._mid_selection = True
         self._sync_patch()
@@ -496,20 +503,20 @@ class MplCircularROI(AbstractMplRoi):
             return
 
         xy = data_to_pixel(self._ax, [event.xdata], [event.ydata])
-        dx = xy[0,0] - self._xi
-        dy = xy[0,1] - self._yi
+        dx = xy[0, 0] - self._xi
+        dy = xy[0, 1] - self._yi
         self._roi.set_radius(np.sqrt(dx * dx + dy * dy))
         self._sync_patch()
 
     def roi(self):
-        theta = np.linspace(0, 2 * np.pi, num = 200)
+        theta = np.linspace(0, 2 * np.pi, num=200)
         xy_center = self._roi.get_center()
         rad = self._roi.get_radius()
         x = xy_center[0] + rad * np.cos(theta)
         y = xy_center[1] + rad * np.sin(theta)
         xy_data = pixel_to_data(self._ax, x, y)
-        vx = xy_data[:,0].flatten().tolist()
-        vy = xy_data[:,1].flatten().tolist()
+        vx = xy_data[:, 0].flatten().tolist()
+        vy = xy_data[:, 1].flatten().tolist()
         result = PolygonalROI(vx, vy)
         return result
 
@@ -517,6 +524,7 @@ class MplCircularROI(AbstractMplRoi):
         self._mid_selection = False
         self._patch.set_visible(False)
         self._ax.figure.canvas.draw()
+
 
 class MplPolygonalROI(AbstractMplRoi):
     """
@@ -554,7 +562,7 @@ class MplPolygonalROI(AbstractMplRoi):
         if not self._roi.defined():
             self._patch.set_visible(False)
         else:
-            x,y = self._roi.to_polygon()
+            x, y = self._roi.to_polygon()
             self._patch.set_xy(zip(x + [x[0]],
                                      y + [y[0]]))
             self._patch.set_visible(True)
@@ -584,4 +592,3 @@ class MplPolygonalROI(AbstractMplRoi):
         self._mid_selection = False
         self._patch.set_visible(False)
         self._ax.figure.canvas.draw()
-

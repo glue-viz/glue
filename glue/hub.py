@@ -3,6 +3,7 @@ from collections import defaultdict
 import glue
 from glue.exceptions import InvalidSubscriber, InvalidMessage
 
+
 class Hub(object):
     """
     The hub manages the communication between visualization clients,
@@ -150,11 +151,10 @@ class Hub(object):
                           issubclass(type(message), msg)]
             if len(candidates) == 0:
                 continue
-            candidate = max(candidates) # most-subclassed message class
+            candidate = max(candidates)  # most-subclassed message class
             filter, handler = subscriber[candidate]
             if filter(message):
                 yield subscriber, handler
-
 
     def broadcast(self, message):
         """
@@ -173,6 +173,7 @@ class Hub(object):
                     break
                 msg = glue.message.ErrorMessage(subscriber, tag="%s" % e)
                 self.broadcast(msg)
+
 
 class HubListener(object):
     """

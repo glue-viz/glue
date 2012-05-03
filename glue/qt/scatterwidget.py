@@ -1,16 +1,15 @@
-from PyQt4.QtCore import Qt
 from PyQt4 import QtGui
+from PyQt4.QtCore import Qt
 
 import glue
-import glue.message as msg
 from glue.scatter_client import ScatterClient
 from glue.qt.glue_toolbar import GlueToolbar
 from glue.qt.mouse_mode import RectangleMode, CircleMode, PolyMode
 
 from ui_scatterwidget import Ui_ScatterWidget
-from linker_dialog import LinkerDialog
 
-class ScatterWidget(QtGui.QMainWindow, glue.HubListener) :
+
+class ScatterWidget(QtGui.QMainWindow, glue.HubListener):
     def __init__(self, data, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
         glue.HubListener.__init__(self)
@@ -33,13 +32,13 @@ class ScatterWidget(QtGui.QMainWindow, glue.HubListener) :
         cl = self.client
 
         ui.xLogCheckBox.stateChanged.connect(
-            lambda x: cl.set_xlog(x==Qt.Checked))
+            lambda x: cl.set_xlog(x == Qt.Checked))
         ui.yLogCheckBox.stateChanged.connect(
-            lambda x: cl.set_ylog(x==Qt.Checked))
+            lambda x: cl.set_ylog(x == Qt.Checked))
         ui.xFlipCheckBox.stateChanged.connect(
-            lambda x: cl.set_xflip(x==Qt.Checked))
+            lambda x: cl.set_xflip(x == Qt.Checked))
         ui.yFlipCheckBox.stateChanged.connect(
-            lambda x: cl.set_yflip(x==Qt.Checked))
+            lambda x: cl.set_yflip(x == Qt.Checked))
         ui.xAxisComboBox.currentIndexChanged.connect(self.update_xatt)
         ui.yAxisComboBox.currentIndexChanged.connect(self.update_yatt)
         ui.layerTree._layer_check_changed.connect(cl.set_visible)
@@ -85,8 +84,8 @@ class ScatterWidget(QtGui.QMainWindow, glue.HubListener) :
 
         for lid in layer_ids:
             if lid not in self.unique_fields:
-                xcombo.addItem(lid.label, userData = lid)
-                ycombo.addItem(lid.label, userData = lid)
+                xcombo.addItem(lid.label, userData=lid)
+                ycombo.addItem(lid.label, userData=lid)
             self.unique_fields.add(lid)
 
     def add_layer(self, layer):

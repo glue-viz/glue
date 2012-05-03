@@ -3,6 +3,7 @@ import numpy as np
 
 import pyfits.core
 
+
 class Coordinates(object):
     '''
     Base class for coordinate transformation
@@ -20,6 +21,7 @@ class Coordinates(object):
     def axis_label(self, axis):
         return "World %i" % axis
 
+
 class WCSCoordinates(Coordinates):
     '''
     Class for coordinate transformation based on the WCS FITS
@@ -35,6 +37,7 @@ class WCSCoordinates(Coordinates):
     '''
 
     def __init__(self, header):
+        super(WCSCoordinates, self).__init__()
         self._header = header
         self._wcs = pywcs.WCS(header)
 
@@ -111,14 +114,17 @@ class WCSCoordinates(Coordinates):
 
     def axis_label(self, axis):
         header = self._header
-        num = header['NAXIS'] - axis # number orientation reversed
+        num = header['NAXIS'] - axis  # number orientation reversed
         key = 'CTYPE%i' % num
-        if key in header: return 'World %i: %s' % (axis, header[key])
+        if key in header:
+            return 'World %i: %s' % (axis, header[key])
         return Coordinates.axis_label(self, axis)
+
 
 class WCSCubeCoordinates(WCSCoordinates):
 
     def __init__(self, header):
+        super(WCSCubeCoordinates, self).__init__()
         if not isinstance(header, pyfits.core.Header):
             raise TypeError("Header must by a pyfits header instance")
 
@@ -128,7 +134,8 @@ class WCSCubeCoordinates(WCSCoordinates):
         self._header = header
 
         try:
-            self._cdelt3 = header['CDELT3'] if 'CDELT3' in header else header['CD3_3']
+            self._cdelt3 = header['CDELT3'] if 'CDELT3' in header \
+                           else header['CD3_3']
             self._crpix3 = header['CRPIX3']
             self._crval3 = header['CRVAL3']
         except KeyError:
@@ -139,7 +146,8 @@ class WCSCubeCoordinates(WCSCoordinates):
         keys = ['CD1_3', 'CD2_3', 'CD3_2', 'CD3_1']
         for k in keys:
             if k in header and header[k] != 0:
-                raise AttributeError("Cannot handle non-zero keyword: %s = %s" %
+                raise AttributeError("Cannot handle non-zero keyword: "
+                                     "%s = %s" %
                                      (k, header[k]))
         #self._fix_header_for_2d()
         self._wcs = pywcs.WCS(header)
@@ -164,5 +172,3 @@ class WCSCubeCoordinates(WCSCoordinates):
         xout, yout = WCSCoordinates.world2pixel(self, xworld, yworld)
         zout = (zworld - self._crval3) / self._cdelt3 + self._crpix3
         return xout, yout, zout
-
-

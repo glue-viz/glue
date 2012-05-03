@@ -2,8 +2,8 @@ import numpy as np
 import pyfits
 
 import glue
-from glue.exceptions import IncompatibleDataException
 from glue.visual import VisualAttributes
+
 
 class Subset(object):
     """Base class to handle subsets of data.
@@ -27,7 +27,7 @@ class Subset(object):
         """ Create a new subclass object.
 
         """
-        self._broadcasting = False # must be first def
+        self._broadcasting = False  # must be first def
         self.data = data
         self.style = VisualAttributes(parent=self)
         if color:
@@ -45,7 +45,6 @@ class Subset(object):
     def subset_state(self, state):
         state.parent = self
         self._subset_state = state
-
 
     @property
     def label(self):
@@ -172,6 +171,7 @@ class Subset(object):
         state.parent = self
         self.subset_state = state
 
+
 class SubsetState(object):
     def __init__(self):
         self.parent = None
@@ -197,6 +197,7 @@ class SubsetState(object):
     def __xor__(self, other_state):
         return XorState(self, other_state)
 
+
 class RoiSubsetState(SubsetState):
     def __init__(self):
         super(RoiSubsetState, self).__init__()
@@ -217,36 +218,42 @@ class RoiSubsetState(SubsetState):
         result.roi = self.roi
         return result
 
+
 class CompositeSubsetState(SubsetState):
     def __init__(self, state1, state2=None):
         super(CompositeSubsetState, self).__init__()
         self.state1 = state1
         self.state2 = state2
 
+
 class OrState(CompositeSubsetState):
     def to_mask(self):
         return self.state1.to_mask() | self.state2.to_mask()
+
 
 class AndState(CompositeSubsetState):
     def to_mask(self):
         return self.state1.to_mask() & self.state2.to_mask()
 
+
 class XorState(CompositeSubsetState):
     def to_mask(self):
         return self.state1.to_mask() ^ self.state2.to_mask()
+
 
 class InvertState(CompositeSubsetState):
     def to_mask(self):
         return ~self.state1.to_mask()
 
+
 class ElementSubsetState(SubsetState):
 
-    def __init__(self, indices = None):
+    def __init__(self, indices=None):
         super(ElementSubsetState, self).__init__()
         self._indices = indices
 
     def to_mask(self):
-        result = np.zeros(self.parent.data.shape, dtype = bool)
+        result = np.zeros(self.parent.data.shape, dtype=bool)
         if self._indices is not None:
             result[self._indices] = True
         return result
