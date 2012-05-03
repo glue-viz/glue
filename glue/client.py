@@ -57,7 +57,7 @@ class Client(glue.HubListener):
 
         """
         has_data = lambda x:x.sender.data in self._data
-        has_data_collection = lambda x:x.data in self._data
+        has_data_collection = lambda x:x.sender is self._data
 
         hub.subscribe(self,
                       msg.SubsetCreateMessage,
