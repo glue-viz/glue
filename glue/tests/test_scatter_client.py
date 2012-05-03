@@ -163,7 +163,7 @@ class TestScatterClient(unittest.TestCase):
     def test_invalid_plot(self):
         layer = self.add_data_and_attributes()
         self.assertTrue(self.layer_drawn(layer))
-        c = glue.data.ComponentID(None, 'bad id')
+        c = glue.data.ComponentID('bad id')
         self.client.set_xdata(c)
         self.assertFalse(self.layer_drawn(layer))
 

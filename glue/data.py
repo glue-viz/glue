@@ -13,8 +13,7 @@ from glue.visual import VisualAttributes
 from glue.exceptions import IncompatibleAttribute
 
 class ComponentID(object):
-    def __init__(self, data, label):
-        self._data = data
+    def __init__(self, label):
         self._label = label
 
     @property
@@ -33,24 +32,6 @@ class Component(object):
 
         # The actual data
         self.data = data
-
-        def __getitem__(self, key):
-            """ Extract the data values for each element in a subset
-
-            Parameters:
-            -----------
-            key: Subset instance
-                 The subset to use when extracting elements from the
-                 component
-
-            """
-            try:
-                return self.data[key.to_mask()]
-            except AttributeError:
-                raise AttributeError("Components can only be indexed "
-                                     "by subset objects that implement "
-                                     "the to_mask() method")
-
 
 class Data(object):
 
@@ -88,6 +69,8 @@ class Data(object):
 
     @property
     def ndim(self):
+        if self.shape is None:
+            return 0
         return len(self.shape)
 
     @property
@@ -110,12 +93,12 @@ class Data(object):
             raise TypeError("Compoment is incompatible with "
                             "other components in this data")
 
-        component_id = ComponentID(self, label)
+        component_id = ComponentID(label)
         self._components[component_id] = component
         getter = lambda: self._components[component_id].data
         self.getters[component_id] = getter
-
-        if len(self._components) == 1:
+        first_component = len(self._components) == 1
+        if first_component:
             self._shape = component.data.shape
             self._create_pixel_and_world_components()
 
@@ -192,7 +175,6 @@ class Data(object):
         msg = glue.message.DataUpdateMessage(self, attribute=attribute)
         self.hub.broadcast(msg)
 
-
     def create_subset(self, **kwargs):
         result = glue.Subset(self, **kwargs)
         result.register()
@@ -233,29 +215,6 @@ class Data(object):
         else:
             raise IncompatibleAttribute("%s to in data set %s" %
                                         (key.label, self.label))
-
-        if key == 'XPIX':
-            result = np.arange(np.product(self.shape))
-            result.shape = self.shape
-            result %= self.shape[-1]
-            return result
-        elif key == 'YPIX':
-            result = np.arange(np.product(self.shape))
-            result.shape = self.shape
-            result /= self.shape[-1]
-            result %= self.shape[-2]
-            return result
-        elif key == 'ZPIX':
-            result = np.arange(np.product(self.shape))
-            result.shape = self.parent.shape
-            result /= self.shape[-1] * self.shape[-2]
-            return result
-        else:
-            if key not in self._components:
-                raise IncompatibleAttribute(
-                    "Input must be the name of "
-                    " a valid component: %s" % str(key))
-            return self._components[key].data
 
 class TabularData(Data):
     '''

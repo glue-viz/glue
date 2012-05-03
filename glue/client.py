@@ -13,7 +13,7 @@ class Client(glue.HubListener):
 
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data):
         """
         Create a new client object.
 
@@ -28,15 +28,8 @@ class Client(glue.HubListener):
         """
         super(Client, self).__init__()
         self._data = data
-        if isinstance(data, glue.Data):
-            self._data = glue.DataCollection(data)
-        elif isinstance(data, list):
-            self._data = glue.DataCollection(data)
-        elif isinstance(data, glue.DataCollection):
-            self._data = data
-        else:
-            raise TypeError("Input data must be a Data object, "
-                            "list of Data, or DatCollection: %s"
+        if not isinstance(data, glue.DataCollection):
+            raise TypeError("Input data must be a DataCollection: %s"
                             % type(data))
 
     @property
@@ -63,68 +56,120 @@ class Client(glue.HubListener):
         hub: The hub to subscribe to
 
         """
-        dfilter = lambda x:x.sender.data in self._data
-        dcfilter = lambda x:x.sender is self._data
+        has_data = lambda x:x.sender.data in self._data
+        has_data_collection = lambda x:x.data in self._data
 
         hub.subscribe(self,
                       msg.SubsetCreateMessage,
                       handler=self._add_subset,
-                      filter=dfilter)
+                      filter=has_data)
         hub.subscribe(self,
                       msg.SubsetUpdateMessage,
                       handler=self._update_subset,
-                      filter=dfilter)
+                      filter=has_data)
         hub.subscribe(self,
                       msg.SubsetDeleteMessage,
                       handler=self._remove_subset,
-                      filter=dfilter)
+                      filter=has_data)
         hub.subscribe(self,
                       msg.DataUpdateMessage,
                       handler=self._update_data,
-                      filter=dfilter)
+                      filter=has_data)
         hub.subscribe(self,
                       msg.DataCollectionDeleteMessage,
                       handler=self._remove_data,
-                      filter=dcfilter)
+                      filter=has_data_collection)
 
     def _add_subset(self, message):
-        raise NotImplementedError("_add_subset not implemented")
+        raise NotImplementedError
 
     def _remove_data(self, message):
-        raise NotImplementedError("_remove_data not implemented")
+        raise NotImplementedError
 
     def _remove_subset(self, message):
-        raise NotImplementedError("_remove_data not implemented")
+        raise NotImplementedError
 
     def _update_data(self, message):
         """ Default handler for DataMessage """
-        raise NotImplementedError("_update_data not implemented")
+        raise NotImplementedError
 
     def _update_subset(self, message):
         """ Default handler for SubsetUpdateMessage """
-        raise NotImplementedError("_update_subset not implemented")
+        raise NotImplementedError
 
-    def select(self):
-        """
-        General purpose function for selecting a subset
-        """
+class BasicClient(Client):
 
-        # Initialize a new empty subset
-        subset = self.data.new_subset()
+    def _add_subset(self, message):
+        subset = message.subset
+        self.add_layer(subset)
 
-        # Here would be some code for (e.g. GUI) selection, which would
-        # define some parameters for the selection, e.g a polygon. The client
-        # then calls the following each time the GUI selection changes, and
-        # until the user validates the selection:
-        subset.modify()
+    def _update_subset(self, message):
+        subset = message.subset
+        self.update_layer(subset)
 
-        # Once the section is done, just leave the function
+    def _remove_subset(self, message):
+        subset = message.subset
+        self.remove_layer(subset)
 
-    def __setattr__(self, name, value):
+    def _remove_data(self, message):
+        self.remove_layer(message.data)
 
-        # Check if data has already been set
-        if name == "data" and hasattr(self, "data"):
-            raise AttributeError("Cannot modify client's data"
-                                 " assignment after creation")
+    def _update_data(self, message):
+        self.update_layer(message.data)
 
-        object.__setattr__(self, name, value)
+    def add_layer(self, layer):
+        if self.layer_present(layer):
+            return
+        if layer.data not in self.data:
+            raise TypeError("Data not in collection")
+
+        if isinstance(layer, glue.Data):
+            self._do_add_data(layer)
+            for subset in layer.subsets:
+                self.add_layer(subset)
+        else:
+            if not self.layer_present(layer.data):
+                self.add_layer(layer.data)
+            else:
+                self._do_add_subset(layer)
+
+        self.update_layer(layer)
+
+    def update_layer(self, layer):
+        if not self.layer_present(layer):
+            return
+        if isinstance(layer, glue.Subset):
+            self._do_update_subset(layer)
+        else:
+            self._do_update_data(layer)
+
+    def remove_layer(self, layer):
+        if not self.layer_present(layer):
+            return
+        if isinstance(layer, glue.Data):
+            self._do_remove_data(layer)
+            for subset in layer.subsets:
+                self._do_remove_subset(subset)
+        else:
+            self._do_remove_subset(layer)
+
+    def _do_add_data(self, data):
+        raise NotImplementedError
+
+    def _do_add_subset(self, subset):
+        raise NotImplementedError
+
+    def _do_update_subset(self, subset):
+        raise NotImplementedError
+
+    def _do_update_data(self, data):
+        raise NotImplementedError
+
+    def _do_remove_subset(self, subset):
+        raise NotImplementedError
+
+    def _do_remove_data(self, data):
+        raise NotImplementedError
+
+    def layer_present(self, layer):
+        raise NotImplementedError

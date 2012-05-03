@@ -47,7 +47,7 @@ class TestHub(unittest.TestCase):
         self.assertFalse(self.hub.is_subscribed(subscriber, msg))
         self.assertFalse(self.hub.is_subscribed(subscriber, msg2))
 
-    def test_unsubscribe_spec_setific_to_message(self):
+    def test_unsubscribe_specific_to_message(self):
         msg, handler, subscriber = self.get_subscription()
         msg2 = glue.message.SubsetMessage
         self.hub.subscribe(subscriber, msg, handler)
@@ -183,6 +183,13 @@ class TestHub(unittest.TestCase):
 
     def test_invalid_init(self):
         self.assertRaises(TypeError, glue.Hub, None)
+
+class TestHubListener(unittest.TestCase):
+    """This is a dumb test, I know. Fixated on code coverage"""
+    def test_unimplemented(self):
+        hl = glue.HubListener()
+        self.assertRaises(NotImplementedError, hl.register_to_hub, None)
+        self.assertRaises(NotImplementedError, hl.notify, None)
 
 if __name__ == "__main__":
     unittest.main()
