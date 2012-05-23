@@ -120,6 +120,13 @@ class Data(object):
                 cid = self.add_component(comp, label)
                 self._world_component_ids.append(cid)
 
+    @property
+    def primary_components(self):
+        """ The components added directly to data (as opposed to
+        components derived from primary components)"""
+        return [c for c in self.component_ids() if
+                self._components[c] is not None]
+
     def find_component_id(self, label):
         for cid in self.component_ids():
             if cid.label.upper() == label.upper():
