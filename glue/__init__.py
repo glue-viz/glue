@@ -9,4 +9,5 @@ from scatter_client import ScatterClient
 from data_dendro_cpp import data_dendro_cpp
 import example_data
 from data_collection import DataCollection
+from link_manager import LinkManager
 import qt

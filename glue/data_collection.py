@@ -3,49 +3,29 @@ import glue
 
 class DataCollection(object):
     """ DataCollections manage sets of data for Clients.
-
-    In addition to storing data, DataCollections have an "active"
-    object (either a data or subset object) that clients can use as
-    the "editable" components of a user interaction.  DataCollections
-    will broadcast messages when the active object is reassigned.
     """
 
     def __init__(self, data=None):
-        self._active = None
         self.hub = None
+        self._link_manager = glue.LinkManager()
 
         self._data = []
         if isinstance(data, glue.data.Data):
+            self.append(data)
             self._data = [data]
-            self._active = data
-
         elif isinstance(data, list):
-            self._data = data
-            self._active = data[0]
-
-        self._links = []
-
-    def add_link(self, link):
-        self._links.append(link)
-        if self.hub:
-            link.register_to_hub(self.hub)
-
-    def remove_link(self, link):
-        if link not in self._links:
-            return
-        self._links.remove(link)
-        self.hub.remove(link)
+            for d in data:
+                self.append(d)
 
     def append(self, data):
         self._data.append(data)
+        self._sync_layer_manager(data)
         if self.hub:
             data.hub = self.hub
             for s in data.subsets:
                 s.register()
             msg = glue.message.DataCollectionAddMessage(self, data)
             self.hub.broadcast(msg)
-        if len(self._data) == 1:
-            self._active = data
 
     def remove(self, data):
         if data not in self._data:
@@ -54,8 +34,9 @@ class DataCollection(object):
         if self.hub:
             msg = glue.message.DataCollectionDeleteMessage(self, data)
             self.hub.broadcast(msg)
-        if data == self.active:
-            self._active = None
+
+    def _sync_layer_manager(self, data):
+        pass
 
     def get(self, index):
         if index < len(self._data):
@@ -64,37 +45,6 @@ class DataCollection(object):
 
     def all_data(self):
         return self._data
-
-    @property
-    def active_data(self):
-        return self._active.data if self._active else None
-
-    @property
-    def active(self):
-        return self._active
-
-    @active.setter
-    def active(self, new):
-        if isinstance(new, glue.Subset):
-            if new not in [s for d in self._data for s in d.subsets]:
-                raise TypeError("Object not in data collection: %s" % new)
-        if isinstance(new, glue.Data):
-            if new not in self._data:
-                raise TypeError("Object not in data collection: %s" % new)
-
-        changed = self.active != new
-
-        old_data = self.active.data if self._active else None
-        data = new.data
-        self._active = new
-
-        if changed and self.hub is not None:
-            msg = glue.message.DataCollectionActiveChange(self)
-            self.hub.broadcast(msg)
-
-        if data != old_data and self.hub is not None:
-            msg = glue.message.DataCollectionActiveDataChange(self)
-            self.hub.broadcast(msg)
 
     def register_to_hub(self, hub):
         if not isinstance(hub, glue.Hub):

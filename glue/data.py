@@ -221,7 +221,7 @@ class Data(object):
         if key in self._getters:
             return self._getters[key]()
         else:
-            raise IncompatibleAttribute("%s to in data set %s" %
+            raise IncompatibleAttribute("%s not in data set %s" %
                                         (key.label, self.label))
 
 
