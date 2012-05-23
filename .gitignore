@@ -1,1 +1,7 @@
 build
+.pylintrc
+*.ropeproject
+*.pyc
+glue/tests/htmlcov
+glue/qt/ui_*py
+*.__junk*
