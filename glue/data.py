@@ -260,11 +260,6 @@ class Data(object):
         msg = glue.message.DataUpdateMessage(self, attribute=attribute)
         self.hub.broadcast(msg)
 
-    def create_subset(self, **kwargs):
-        result = glue.Subset(self, **kwargs)
-        result.register()
-        return result
-
     def create_subset_from_clone(self, subset, **kwargs):
         result = glue.Subset(self, **kwargs)
         result.register()

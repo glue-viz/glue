@@ -70,14 +70,14 @@ class TestImageClient(unittest.TestCase):
     def test_add_subset_via_method(self):
         client = ImageClient(self.collect)
         self.collect.append(self.im)
-        s = self.im.create_subset()
+        s = self.im.new_subset()
         client.add_layer(s)
         self.assertTrue(s in client.layers)
 
     def test_remove_data(self):
         client = ImageClient(self.collect)
         self.collect.append(self.im)
-        s = self.im.create_subset()
+        s = self.im.new_subset()
         client.add_layer(self.im)
         self.assertTrue(self.im in client.layers)
         self.assertTrue(s in client.layers)
