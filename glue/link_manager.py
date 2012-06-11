@@ -81,6 +81,7 @@ def find_dependents(data, link):
     visited = set()
     while True:
         for derived in data.derived_components:
+            derived = data.get_component(derived)
             if derived in visited:
                 continue
             to_, from_ = derived.link.get_to_id(), derived.link.get_from_ids()
@@ -109,7 +110,8 @@ class LinkManager(object):
         self._links.add(link)
 
     def remove_link(self, link):
-        raise NotImplemented
+        if link in self._links:
+            self._links.remove(link)
 
     def update_data_components(self, data):
         """Update all the DerivedComponents in a data object, based on
@@ -136,7 +138,8 @@ class LinkManager(object):
         """ Find and remove any DerivedComponent in the data
         which requires a ComponentLink not tracked by this LinkManager
         """
-        data_links = set(dc.link for dc in data.derived_components)
+        data_links = set(data.get_component(dc).link
+                         for dc in data.derived_components)
         missing_links = data_links - self._links
         to_remove = []
         for m in missing_links:

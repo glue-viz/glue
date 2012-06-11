@@ -180,13 +180,13 @@ class Data(object):
 
     @property
     def components(self):
-        """ Returns a list of all components (primary and derived)
-        available to a data set."""
-        return self._components.values()
+        """ Returns a list of ComponentIDs for all components
+        (primary and derived) in the data"""
+        return self._components.keys()
 
     @property
     def primary_components(self):
-        """Returns a list of components with stored data (as opposed
+        """Returns a list of ComponentIDs with stored data (as opposed
         to DerivedComponents, which are computed from 0 or more
         primary components.
         """
@@ -195,7 +195,8 @@ class Data(object):
 
     @property
     def derived_components(self):
-        """Returns a list of DerivedComponents in the data."""
+        """Returns a list of ComponentIDs for the DerivedComponents
+        in the data."""
         return [c for c in self.component_ids() if
                 isinstance(self._components[c], DerivedComponent)]
 
