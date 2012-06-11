@@ -11,10 +11,10 @@ class TestScatterClient(unittest.TestCase):
 
     def setUp(self):
         self.data = glue.example_data.test_data()
-        self.ids = [self.data[0].find_component_id('a'),
-                    self.data[0].find_component_id('b'),
-                    self.data[1].find_component_id('c'),
-                    self.data[1].find_component_id('d')]
+        self.ids = [self.data[0].find_component_id('a')[0],
+                    self.data[0].find_component_id('b')[0],
+                    self.data[1].find_component_id('c')[0],
+                    self.data[1].find_component_id('d')[0]]
         self.hub = glue.Hub()
         self.collect = glue.DataCollection()
         self.client = ScatterClient(self.collect)
@@ -236,8 +236,8 @@ class TestScatterClient(unittest.TestCase):
         self.client.set_ylog(True)
         self.assertTrue(self.client.is_xlog())
         self.assertTrue(self.client.is_ylog())
-        self.client.set_xdata(data.find_component_id('b'))
-        self.client.set_ydata(data.find_component_id('b'))
+        self.client.set_xdata(data.find_component_id('b')[0])
+        self.client.set_ydata(data.find_component_id('b')[0])
         self.assertTrue(self.client.is_xlog())
         self.assertTrue(self.client.is_ylog())
 
@@ -245,9 +245,9 @@ class TestScatterClient(unittest.TestCase):
         data = self.add_data_and_attributes()
         self.client.set_xflip(True)
         self.assertTrue(self.client.is_xflip())
-        self.client.set_xdata(data.find_component_id('b'))
+        self.client.set_xdata(data.find_component_id('b')[0])
         self.assertTrue(self.client.is_xflip())
-        self.client.set_xdata(data.find_component_id('a'))
+        self.client.set_xdata(data.find_component_id('a')[0])
         self.assertTrue(self.client.is_xflip())
 
     def test_visibility_sticky(self):

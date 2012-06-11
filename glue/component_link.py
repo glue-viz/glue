@@ -5,11 +5,18 @@ class ComponentLink(object):
         -------
         comp_from: A collection of component IDs
         comp_to: The target component ID
-        using: A function, such that using(*data_from) = data_to
+        using: The translation function which maps data from comp_from
+               to comp_to::
+
+               using(data[comp_from[0]],...,data[comp_from[-1]]) = desired data
+
         """
         self._from = comp_from
         self._to = comp_to
         self._using = using
+
+        if type(comp_from) is not list:
+            raise TypeError("comp_from must be a list: %s" % type(comp_from))
 
         if using is None:
             if len(comp_from) != 1:
@@ -43,3 +50,10 @@ class ComponentLink(object):
 
     def get_using(self):
         return self._using
+
+    def __str__(self):
+        result = "ComponentLink %s --> %s" % (self._from, self._to)
+        return result
+
+    def __repr__(self):
+        return str(self)

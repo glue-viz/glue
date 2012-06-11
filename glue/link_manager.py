@@ -1,37 +1,43 @@
 from collections import defaultdict
 
 from glue.component_link import ComponentLink
-
+from glue.data import DerivedComponent
 
 def accessible_links(cids, links):
-    """ Yield each link in a collection of links
-    whose from_components are all contained in a set of cids
+    """ Calculate all ComponentLink objects in a list
+    that can be calculated from a collection of componentIds
+
+    Parameters
+    ----------
+    cids : Collection of ComponentID objects
+    links : Iterable of ComponentLink objects
+
+    Returns
+    -------
+    A list of all links that can be evaluated
+    given the input ComponentIDs
     """
-    for link in links:
-        from_ = set(link.get_from_ids())
-        if from_ <= cids:
-            yield link
+    cids = set(cids)
+    return [l for l in links if
+            set(l.get_from_ids()) <= cids]
 
 
-def virtual_components(data, links):
-    """ Finds and returns component_links for
-    all components derivable from the primary components
-    of a given data set.
+def discover_links(data, links):
+    """ Discover all links to components that can be derived
+    based on the current components known to a dataset, and a set
+    of ComponentLinks.
 
-
-    Input:
     ------
-    Data : Data object
-    links : Set of ComponentLinks
+    Data : Data object to discover new components for
+    links : Set of ComponentLinks to use
 
     Output:
     -------
-    A dict keyed by component_ids. The value
-    of each entry is a ComponentLink that can be
-    used by data to calculate the to_component from the link
+    A dict of componentID -> componentLink
+    The ComponentLink that data can use to generate the componentID.
     """
 
-    # try to add shortest paths first -- should
+    # TODO: try to add shortest paths first -- should
     # prevent lots of repeated checking
 
     cids = set(data.primary_components)
@@ -56,25 +62,99 @@ def virtual_components(data, links):
             break
     return cid_links
 
+def find_dependents(data, link):
+    """ Determine which `DerivedComponents` in a data set
+    depend (either directly or implicitly) on a given
+    `ComponentLink`.
+
+    Parameters
+    ----------
+    data : The data object to consider
+    link_to_remove: The `ComponentLink` object to consider
+
+    Returns
+    -------
+    A `set` of `DerivedComponent` IDs that cannot be
+    calculated without the input `Link`
+    """
+    dependents = set()
+    visited = set()
+    while True:
+        for derived in data.derived_components:
+            if derived in visited:
+                continue
+            to_, from_ = derived.link.get_to_id(), derived.link.get_from_ids()
+            if derived.link is link:
+                dependents.add(to_)
+                visited.add(derived)
+                break
+            if any(f in dependents for f in from_):
+                dependents.add(to_)
+                visited.add(derived)
+                break
+        else:
+            break # nothing more to remove
+    return dependents
+
 
 class LinkManager(object):
-    """A helper class to generate ComponentLinks, and compute which
-    components are accesible from which data sets
+    """A helper class to generate and store ComponentLinks,
+    and compute which components are accesible from which data sets
     """
     def __init__(self):
         self._links = set()
         self._components = set()
 
-    def make_link(self, from_ids, to_id, using=None):
-        for f in from_ids:
-            self._components.add(f)
-        self._components.add(to_id)
-        result = ComponentLink(from_ids, to_id, using)
-        self._links.add(result)
-        return result
+    def add_link(self, link):
+        self._links.add(link)
 
-    def virtual_components(self, data):
-        return virtual_components(data, self._links)
+    def remove_link(self, link):
+        raise NotImplemented
+
+    def update_data_components(self, data):
+        """Update all the DerivedComponents in a data object, based on
+        all the Components deriveable based on the links in self.
+
+        This overrides any ComponentLinks stored in the
+        DerivedComponents of the data itself -- any components which
+        depend on a link not tracked by the LinkManager will be
+        deleted.
+
+        Parameters
+        -----------
+        data : Data object
+
+        Behavior
+        --------
+        DerivedComponents will be replaced / added into
+        the data object
+        """
+        self._remove_underiveable_components(data)
+        self._add_deriveable_components(data)
+
+    def _remove_underiveable_components(self, data):
+        """ Find and remove any DerivedComponent in the data
+        which requires a ComponentLink not tracked by this LinkManager
+        """
+        data_links = set(dc.link for dc in data.derived_components)
+        missing_links = data_links - self._links
+        to_remove = []
+        for m in missing_links:
+            to_remove.extend(find_dependents(data, m))
+
+        for r in to_remove:
+            data.remove_component(r)
+
+    def _add_deriveable_components(self, data):
+        """Find and add any DerivedComponents that a data object can
+        calculate given the ComponentLInks tracked by this
+        LinkManager
+
+        """
+        links = discover_links(data, self._links)
+        for cid, link in links.iteritems():
+            d = DerivedComponent(data, link)
+            data.add_component(d, cid)
 
     @property
     def links(self):

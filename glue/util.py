@@ -1,3 +1,7 @@
+import glue
+from glue.data import DerivedComponent
+from glue.component_link import ComponentLink
+
 def relim(lo, hi, log=False):
     x, y = lo, hi
     if log:
@@ -10,7 +14,14 @@ def relim(lo, hi, log=False):
 
 def glue_components_1to1(data1, component_1,
                          data2, component_2):
-    data1.add_virtual_component(component_2,
-                                lambda: data1[component_1])
-    data2.add_virtual_component(component_1,
-                                lambda: data2[component_2])
+
+    def getter(x):
+        return x
+
+    link1 = ComponentLink([component_1], component_2,  getter)
+    link2 = ComponentLink([component_2], component_1,  getter)
+
+    dc1 = DerivedComponent(data1, link1)
+    dc2 = DerivedComponent(data2, link2)
+    data1.add_component(dc1, component_2)
+    data2.add_component(dc2, component_1)

@@ -20,8 +20,10 @@ class ComponentID(object):
         return self._label
 
     def __str__(self):
-        return self._label
+        return str(self._label)
 
+    def __repr__(self):
+        return str(self._label)
 
 class Component(object):
 
@@ -31,7 +33,33 @@ class Component(object):
         self.units = units
 
         # The actual data
-        self.data = data
+        self._data = data
+
+    @property
+    def data(self):
+        return self._data
+
+    @property
+    def shape(self):
+        return self._data.shape
+
+    @property
+    def ndim(self):
+        return len(self._data.shape)
+
+
+class DerivedComponent(Component):
+    def __init__(self, data, link, units=None):
+        super(DerivedComponent, self).__init__(data, units=units)
+        self._link = link
+
+    @property
+    def data(self):
+        return self._link.compute(self._data)
+
+    @property
+    def link(self):
+        return self._link
 
 
 class Data(object):
@@ -45,7 +73,6 @@ class Data(object):
         self._components = {}
         self._pixel_component_ids = []
         self._world_component_ids = []
-        self._getters = {}
 
         # Tree description of the data
         self.tree = None
@@ -84,22 +111,53 @@ class Data(object):
         return self.style.label
 
     def _check_can_add(self, component):
-        if len(self._components) == 0:
-            return True
-        return component.data.shape == self.shape
+        if isinstance(component, DerivedComponent):
+            return component._data is self
+        else:
+            if len(self._components) == 0:
+                return True
+            return component.shape == self.shape
+
+    def remove_component(self, component_id):
+        """ Remove a component from a data set
+
+        Parameters
+        ----------
+        component_id : ComponentID of component to remove
+        """
+        if component_id in self._components:
+            self._components.pop(component_id)
 
     def add_component(self, component, label):
+        """ Add a new component to this data set.
+
+        Parameters
+        ----------
+        component : Component object to add
+        label : str or ComponentID
+              The label. If this is a string,
+              a new ComponentID with this label will be
+              created. And associated with the Component
+        """
         if not(self._check_can_add(component)):
             raise TypeError("Compoment is incompatible with "
                             "other components in this data")
 
-        component_id = ComponentID(label)
+        if isinstance(label, ComponentID):
+            component_id = label
+        elif type(label) == str:
+            component_id = ComponentID(label)
+        else:
+            raise TypeError("label must be a ComponentID or string")
+
         self._components[component_id] = component
-        getter = lambda: self._components[component_id].data
-        self._getters[component_id] = getter
+
         first_component = len(self._components) == 1
         if first_component:
-            self._shape = component.data.shape
+            if isinstance(component, DerivedComponent):
+                raise TypeError("Cannot add a derived component as "
+                                "first component")
+            self._shape = component.shape
             self._create_pixel_and_world_components()
 
         return component_id
@@ -121,27 +179,46 @@ class Data(object):
                 self._world_component_ids.append(cid)
 
     @property
+    def components(self):
+        """ Returns a list of all components (primary and derived)
+        available to a data set."""
+        return self._components.values()
+
+    @property
     def primary_components(self):
-        """ The components added directly to data (as opposed to
-        components derived from primary components)"""
+        """Returns a list of components with stored data (as opposed
+        to DerivedComponents, which are computed from 0 or more
+        primary components.
+        """
         return [c for c in self.component_ids() if
-                self._components[c] is not None]
+                not isinstance(self._components[c], DerivedComponent)]
+
+    @property
+    def derived_components(self):
+        """Returns a list of DerivedComponents in the data."""
+        return [c for c in self.component_ids() if
+                isinstance(self._components[c], DerivedComponent)]
 
     def find_component_id(self, label):
-        for cid in self.component_ids():
-            if cid.label.upper() == label.upper():
-                return cid
-        return None
+        """ Search for component_ids associated by label name.
+
+        Inputs
+        ------
+        label : string to search for
+
+        Outputs:
+        --------
+        A list of all component_ids with matching labels
+        """
+        result = [cid for cid in self.component_ids() if
+                  cid.label.upper() == label.upper()]
+        return result
 
     def get_pixel_component_id(self, axis):
         return self._pixel_component_ids[axis]
 
     def get_world_component_id(self, axis):
         return self._world_component_ids[axis]
-
-    def add_virtual_component(self, component_id, getter):
-        self._getters[component_id] = getter
-        self._components[component_id] = None
 
     def component_ids(self):
         return self._components.keys()
@@ -211,18 +288,35 @@ class Data(object):
         object.__setattr__(self, name, value)
 
     def __getitem__(self, key):
-        """ Shortcut syntax to access the raw data in a component
+        """ Shortcut syntax to access the numerical data in a component.
+        Equivalent to:
+
+        component = data.get_component(component_id)
+        component.data
 
         Parameters:
         -----------
-        key : string
+        key : ComponentID
           The component to fetch data from
         """
-        if key in self._getters:
-            return self._getters[key]()
-        else:
+        try:
+            return self._components[key].data
+        except KeyError:
             raise IncompatibleAttribute("%s not in data set %s" %
                                         (key.label, self.label))
+
+    def get_component(self, component_id):
+        """Fetch the component corresponding to component_id.
+
+        Inputs
+        ------
+        component_id : the component_id to retrieve
+        """
+        try:
+            return self._components[component_id]
+        except KeyError:
+            raise IncompatibleAttribute("%s not in data set" %
+                                        component_id.label)
 
 
 class TabularData(Data):
@@ -249,6 +343,7 @@ class TabularData(Data):
 
 
 class GriddedData(Data):
+
     '''
     A class to represent uniformly gridded data (images, data cubes, etc.)
     '''
