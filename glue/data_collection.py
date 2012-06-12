@@ -2,32 +2,64 @@ import glue
 
 
 class DataCollection(object):
-    """ DataCollections manage sets of data for Clients.
+    """DataCollections manage sets of data. They have the following
+    responsibilities:
+
+       * Providing a way to retrieve and store data
+       * Broadcasting messages when data are added or removed
+       * Keeping each managed data set's list of DerivedComponents up-to-date
     """
 
     def __init__(self, data=None):
+        """ Create a new DataCollection
+
+        Parameters
+        ----------
+        data : glue.Data object, or list of such objects (optional)
+               These objects will be auto-appended to the collection
+        """
         self.hub = None
         self._link_manager = glue.LinkManager()
 
         self._data = []
         if isinstance(data, glue.data.Data):
             self.append(data)
-            self._data = [data]
         elif isinstance(data, list):
             for d in data:
                 self.append(d)
 
     def append(self, data):
+        """ Add a new dataset to this collection.
+
+        Appending emits a DataCollectionAddMessage.
+        It also updates the list of DerivedComponents that each
+        data set can work with.
+
+        Parameters
+        ----------
+        data : `glue.Data` object to add
+        """
+        if data in self:
+            return
         self._data.append(data)
-        self._sync_layer_manager(data)
         if self.hub:
             data.hub = self.hub
             for s in data.subsets:
                 s.register()
             msg = glue.message.DataCollectionAddMessage(self, data)
             self.hub.broadcast(msg)
+        self._sync_link_manager()
 
     def remove(self, data):
+        """ Remove a data set from the collection
+
+        Emits a DataCollectionDeleteMessage
+
+        Parameters
+        ----------
+        data : the glue.Data object to remove
+
+        """
         if data not in self._data:
             return
         self._data.remove(data)
@@ -35,18 +67,20 @@ class DataCollection(object):
             msg = glue.message.DataCollectionDeleteMessage(self, data)
             self.hub.broadcast(msg)
 
-    def _sync_layer_manager(self, data):
-        pass
+    def _sync_link_manager(self):
+        # update the LinkManager, so all the DerivedComponents
+        # for each data set are up-to-date
 
-    def get(self, index):
-        if index < len(self._data):
-            return self._data[index]
-        raise IndexError("index is greater than number of data sets")
+        # add any links in the data
+        for d in self._data:
+            for derived in d.derived_components:
+                self._link_manager.add_link(derived.link)
 
-    def all_data(self):
-        return self._data
+        for d in self._data:
+            self._link_manager.update_data_components(d)
 
     def register_to_hub(self, hub):
+        """ Register managed data objects to a hub"""
         if not isinstance(hub, glue.Hub):
             raise TypeError("Input is not a Hub object: %s" % type(hub))
         self.hub = hub
