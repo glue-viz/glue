@@ -1,7 +1,9 @@
 import unittest
+import tempfile
 
 import numpy as np
 from mock import MagicMock
+import pyfits
 
 import glue
 from glue.subset import Subset, SubsetState, ElementSubsetState
@@ -202,7 +204,43 @@ class TestElementSubsetState(unittest.TestCase):
         state = ElementSubsetState(indices = ind)
         np.testing.assert_array_equal(ind, state._indices)
 
+class TestSubsetIo(unittest.TestCase):
 
+    def setUp(self):
+        self.data = MagicMock()
+        self.data.shape = (4,4)
+        self.subset = Subset(self.data)
+        inds = np.array([1,2,3])
+        self.subset.subset_state = ElementSubsetState(indices = inds)
+
+    def test_write(self):
+        with tempfile.NamedTemporaryFile() as tmp:
+            self.subset.write_mask(tmp.name)
+            data = pyfits.open(tmp.name)[0].data
+            expected = np.array([ [0, 1, 1, 1],
+                                  [0, 0, 0, 0],
+                                  [0, 0, 0, 0],
+                                  [0, 0, 0, 0]], dtype=np.int16)
+            np.testing.assert_array_equal(data, expected)
+
+    def test_read(self):
+        with tempfile.NamedTemporaryFile() as tmp:
+            self.subset.write_mask(tmp.name)
+            sub2 = Subset(self.data)
+            sub2.read_mask(tmp.name)
+            mask1 = self.subset.to_mask()
+            mask2 = sub2.to_mask()
+            np.testing.assert_array_equal(mask1, mask2)
+
+    def test_read_error(self):
+        self.assertRaises(IOError,
+                          self.subset.read_mask,
+                          'file_does_not_exist')
+
+    def test_write_unsupported_format(self):
+        self.assertRaises(AttributeError,
+                          self.subset.write_mask,
+                          'file_will_fail', format='.hd5')
 
 if __name__ == "__main__":
     unittest.main()

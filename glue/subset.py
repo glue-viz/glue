@@ -34,8 +34,8 @@ class Subset(object):
             self.style.color = color
         self.style.alpha = alpha
         self.style.label = label
-        self._subset_state = None
-        self.subset_state = SubsetState()
+        self._subset_state = SubsetState()
+
 
     @property
     def subset_state(self):
@@ -150,6 +150,15 @@ class Subset(object):
         else:
             raise AttributeError("format not supported: %s" % format)
 
+    def read_mask(self, file_name):
+        try:
+            mask = pyfits.open(file_name)[0].data
+        except IOError:
+            raise IOError("Could not read %s (not a fits file?)" % file_name)
+        ind = np.where(mask.flat)[0]
+        state = ElementSubsetState(indices=ind)
+        self.subset_state = state
+
     def __del__(self):
         self.unregister()
 
@@ -255,5 +264,5 @@ class ElementSubsetState(SubsetState):
     def to_mask(self):
         result = np.zeros(self.parent.data.shape, dtype=bool)
         if self._indices is not None:
-            result[self._indices] = True
+            result.flat[self._indices] = True
         return result
