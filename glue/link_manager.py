@@ -104,7 +104,6 @@ class LinkManager(object):
     """
     def __init__(self):
         self._links = set()
-        self._components = set()
 
     def add_link(self, link):
         self._links.add(link)
@@ -162,3 +161,6 @@ class LinkManager(object):
     @property
     def links(self):
         return list(self._links)
+
+    def __contains__(self, item):
+        return item in self._links

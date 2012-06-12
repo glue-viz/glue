@@ -74,7 +74,7 @@ class DataCollection(object):
         # add any links in the data
         for d in self._data:
             for derived in d.derived_components:
-                self._link_manager.add_link(derived.link)
+                self._link_manager.add_link(d.get_component(derived).link)
 
         for d in self._data:
             self._link_manager.update_data_components(d)

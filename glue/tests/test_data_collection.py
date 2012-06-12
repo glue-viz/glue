@@ -1,5 +1,6 @@
 import unittest
 
+import numpy as np
 from mock import MagicMock
 
 import glue
@@ -91,6 +92,24 @@ class TestDataCollection(unittest.TestCase):
         self.assertEquals(len(self.dc), 1)
         self.dc.remove(self.data)
         self.assertEquals(len(self.dc), 0)
+
+    def test_derived_links_autoadd(self):
+        """When appending a data set, its DerivedComponents
+        should be ingested into the LinkManager"""
+        d = glue.Data()
+        id1 = glue.data.ComponentID("id1")
+        id2 = glue.data.ComponentID("id2")
+        link = glue.ComponentLink([id1], id2)
+        dc = glue.data.DerivedComponent(d, link)
+        d.add_component(glue.data.Component(np.array([1,2,3])), id1)
+        d.add_component(dc, id2)
+
+        dc = glue.DataCollection()
+        dc.append(d)
+
+        self.assertIn(link, dc._link_manager)
+
+
 
 
 if __name__ == "__main__":
