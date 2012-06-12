@@ -150,6 +150,7 @@ class Data(object):
         else:
             raise TypeError("label must be a ComponentID or string")
 
+        is_present = component_id in self._components
         self._components[component_id] = component
 
         first_component = len(self._components) == 1
@@ -159,6 +160,10 @@ class Data(object):
                                 "first component")
             self._shape = component.shape
             self._create_pixel_and_world_components()
+
+        if self.hub and (not is_present):
+            msg = glue.message.DataAddComponentMessage(self, component_id)
+            self.hub.broadcast(msg)
 
         return component_id
 

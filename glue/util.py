@@ -15,11 +15,8 @@ def relim(lo, hi, log=False):
 def glue_components_1to1(data1, component_1,
                          data2, component_2):
 
-    def getter(x):
-        return x
-
-    link1 = ComponentLink([component_1], component_2,  getter)
-    link2 = ComponentLink([component_2], component_1,  getter)
+    link1 = ComponentLink([component_1], component_2)
+    link2 = ComponentLink([component_2], component_1)
 
     dc1 = DerivedComponent(data1, link1)
     dc2 = DerivedComponent(data2, link2)

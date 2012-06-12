@@ -1,7 +1,7 @@
 import glue
 
 
-class DataCollection(object):
+class DataCollection(glue.HubListener):
     """DataCollections manage sets of data. They have the following
     responsibilities:
 
@@ -90,6 +90,10 @@ class DataCollection(object):
             d.register_to_hub(hub)
             for s in d.subsets:
                 s.register()
+
+        hub.subscribe(self, glue.message.DataAddComponentMessage,
+                      lambda msg: self._sync_link_manager(),
+                      filter=lambda x:x.sender in self._data)
 
     def __contains__(self, obj):
         return obj in self._data

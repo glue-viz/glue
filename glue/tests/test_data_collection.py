@@ -109,8 +109,21 @@ class TestDataCollection(unittest.TestCase):
 
         self.assertIn(link, dc._link_manager)
 
+    def test_catch_data_add_component_message(self):
+        d = glue.Data()
+        id1 = glue.data.ComponentID("id1")
+        id2 = glue.data.ComponentID("id2")
+        link = glue.ComponentLink([id1], id2)
+        dc = glue.data.DerivedComponent(d, link)
 
+        self.dc.register_to_hub(self.hub)
+        self.dc.append(d)
+        d.add_component(glue.data.Component(np.array([1,2,3])), id1)
+        d.add_component(dc, id2)
 
+        msg = self.log.messages[-1]
+        self.assertIsInstance(msg, glue.message.DataAddComponentMessage)
+        self.assertIn(link, self.dc._link_manager)
 
 if __name__ == "__main__":
     unittest.main()
