@@ -3,12 +3,18 @@ from time import sleep
 
 import numpy as np
 import matplotlib.pyplot as plt
+from mock import MagicMock
 
 import glue
 from glue.scatter_client import ScatterClient
 
-class TestScatterClient(unittest.TestCase):
+# share matplotlib instance, and disable rendering, for speed
+FIGURE = plt.figure()
+AXES = FIGURE.add_subplot(111)
+FIGURE.canvas.draw = lambda: 0
+plt.close('all')
 
+class TestScatterClient(unittest.TestCase):
     def setUp(self):
         self.data = glue.example_data.test_data()
         self.ids = [self.data[0].find_component_id('a')[0],
@@ -17,11 +23,8 @@ class TestScatterClient(unittest.TestCase):
                     self.data[1].find_component_id('d')[0]]
         self.hub = glue.Hub()
         self.collect = glue.DataCollection()
-        self.client = ScatterClient(self.collect)
+        self.client = ScatterClient(self.collect, axes=AXES)
         self.connect()
-
-    def tearDown(self):
-        plt.close('all')
 
     def add_data(self, data=None):
         if data == None:
@@ -108,13 +111,13 @@ class TestScatterClient(unittest.TestCase):
         self.assertFalse(self.client.is_yflip())
 
     def test_double_add(self):
-        self.assertEquals(len(self.client.ax.collections), 0)
+        n0 = len(self.client.ax.collections)
         layer = self.add_data()
         #data and edit_subset present
-        self.assertEquals(len(self.client.ax.collections), 2)
+        self.assertEquals(len(self.client.ax.collections), 2 + n0)
         layer = self.add_data()
         #data and edit_subset still present
-        self.assertEquals(len(self.client.ax.collections), 2)
+        self.assertEquals(len(self.client.ax.collections), 2 + n0)
 
 
     def test_data_updates_propagate(self):
@@ -166,6 +169,21 @@ class TestScatterClient(unittest.TestCase):
         c = glue.data.ComponentID('bad id')
         self.client.set_xdata(c)
         self.assertFalse(self.layer_drawn(layer))
+
+    def test_redraw_called_on_invalid_plot(self):
+        """ Plot should be updated when given invalid data,
+        to sync layers' disabled/invisible states"""
+        ctr = MagicMock()
+        layer = self.add_data_and_attributes()
+        self.assertTrue(self.layer_drawn(layer))
+        c = glue.data.ComponentID('bad id')
+        self.client._redraw = ctr
+        ct0 = ctr.call_count
+        self.client.set_xdata(c)
+        ct1 = ctr.call_count
+        ncall = ct1 - ct0
+        expected = len(self.client.managers)
+        self.assertEquals(ncall, expected)
 
     def test_two_incompatible_data(self):
         d0 = self.add_data(self.data[0])

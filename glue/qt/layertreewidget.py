@@ -263,7 +263,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
             self._paste_action.setEnabled(has_clipboard)
             self._new_action.setEnabled(True)
             self._duplicate_action.setEnabled(True)
-            self._delete_action.setEnabled(True)
+            self._delete_action.setEnabled(layer is not layer.data.edit_subset)
             self._clear_action.setEnabled(True)
         else:
             self._copy_action.setEnabled(False)
@@ -343,6 +343,9 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
             return
 
         layer = self[widget_item]
+        if layer is layer.data.edit_subset:
+            # do not delete the edit subset
+            return
         self.remove_layer(layer)
 
         if isinstance(layer, glue.Data):

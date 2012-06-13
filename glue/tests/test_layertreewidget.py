@@ -85,6 +85,11 @@ class TestLayerTree(unittest.TestCase):
         self.assertFalse(self.layer_present(layer))
         self.assertFalse(layer in self.widget.data_collection)
 
+    def test_remove_layer_ignored_if_edit_subset(self):
+        layer = self.add_layer_via_method()
+        self.remove_layer_via_button(layer.edit_subset)
+        self.assertTrue(self.layer_present(layer.edit_subset))
+
     def test_empty_removal_does_nothing(self):
         """ Make sure widgets are only removed when selected """
         layer = self.add_layer_via_method()

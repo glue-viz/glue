@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
+import numpy as np
 
 import glue
 from glue import VizClient
@@ -302,7 +303,11 @@ class ImageClient(VizClient):
         if s.data is not data:
             return
 
-        mask = s.to_mask()
+        try:
+            mask = s.to_mask()
+        except IncompatibleAttribute:
+            mask = np.zeros(s.data.shape, dtype=bool)
+
         assert mask.shape == s.data.shape
         self.layers[s].mask = mask
         self._update_subset_plot(s)

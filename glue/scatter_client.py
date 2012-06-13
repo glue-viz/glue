@@ -423,6 +423,7 @@ class ScatterClient(Client):
             y = layer[self._yatt]
         except IncompatibleAttribute:
             self.managers[layer].set_enabled(False)
+            self._redraw()
             return
 
         self._layer_updated = True
