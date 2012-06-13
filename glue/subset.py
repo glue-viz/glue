@@ -34,8 +34,8 @@ class Subset(object):
             self.style.color = color
         self.style.alpha = alpha
         self.style.label = label
-        self._subset_state = SubsetState()
-
+        self._subset_state = None
+        self.subset_state = SubsetState() # calls proper setter method
 
     @property
     def subset_state(self):

@@ -31,11 +31,12 @@ class Hub(object):
         # Dictionary of subscriptions
         self._subscriptions = defaultdict(dict)
 
-        listeners = filter(lambda x: isinstance(x, HubListener), args)
-        data = filter(lambda x: isinstance(x, glue.Data), args)
-        subsets = filter(lambda x: isinstance(x, glue.Subset), args)
-        dcs = filter(lambda x: isinstance(x, glue.DataCollection), args)
-        if len(dcs) + len(subsets) + len(data) + len(listeners) != len(args):
+        listeners = set(filter(lambda x: isinstance(x, HubListener), args))
+        data = set(filter(lambda x: isinstance(x, glue.Data), args))
+        subsets = set(filter(lambda x: isinstance(x, glue.Subset), args))
+        dcs = set(filter(lambda x: isinstance(x, glue.DataCollection), args))
+        listeners -= (data | subsets | dcs)
+        if set(listeners | data | subsets | dcs) != set(args):
             raise TypeError("Inputs must be HubListener, data, subset, or "
                             "data collection objects")
 
@@ -169,10 +170,12 @@ class Hub(object):
                 handler(message)
             except Exception as e:
                 if isinstance(message, glue.message.ErrorMessage):
-                    #prevent infinite recursion
-                    break
-                msg = glue.message.ErrorMessage(subscriber, tag="%s" % e)
-                self.broadcast(msg)
+                    # errors on errors! Prevent recursion
+                    raise e
+                else:
+                    tag = str(e)
+                    msg = glue.message.ErrorMessage(subscriber, tag=tag)
+                    self.broadcast(msg)
 
 
 class HubListener(object):

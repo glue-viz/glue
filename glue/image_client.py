@@ -314,21 +314,7 @@ class ImageClient(VizClient):
             return
 
         subset_state = glue.subset.RoiSubsetState()
-        x, y = roi.to_polygon()
-
-        if not self.is_3D:
-            xroi, yroi = self.display_data.coords.pixel2world(x, y)
-        else:
-            hi, vi = self._horizontal_axis_index(), self._vertical_axis_index()
-            slice_val = [self.slice_ind] * len(x)
-            abc = [slice_val, slice_val, slice_val]
-            abc[hi] = x
-            abc[vi] = y
-            abc = abc[::-1]  # from numpy (zyx) convention to xyz
-            xw, yw, zw = self.display_data.coords.pixel2world(*abc)
-            world = [zw, yw, xw]
-            xroi, yroi = world[hi], world[vi]
-
+        xroi, yroi = roi.to_polygon()
         x, y = self._get_axis_components()
         subset_state.xatt = x
         subset_state.yatt = y
@@ -352,7 +338,7 @@ class ImageClient(VizClient):
     def _get_axis_components(self):
         data = self.display_data
         ids = [self._horizontal_axis_index(), self._vertical_axis_index()]
-        return map(data.get_world_component_id, ids)
+        return map(data.get_pixel_component_id, ids)
 
     def _remove_subset(self, message):
         self.delete_layer(message.sender)
