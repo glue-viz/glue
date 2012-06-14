@@ -9,7 +9,7 @@ from glue.coordinates import WCSCubeCoordinates
 from glue.coordinates import Coordinates
 from glue.visual import VisualAttributes
 from glue.exceptions import IncompatibleAttribute
-
+from glue.component_link import ComponentLink
 
 class ComponentID(object):
     def __init__(self, label):
@@ -86,6 +86,8 @@ class Data(object):
         self.style = VisualAttributes(parent=self)
 
         self.metadata = {}
+
+        self._coordinate_links = None
 
         self.style.label = label
 
@@ -218,6 +220,42 @@ class Data(object):
         """
         result = [cid for cid in self.component_ids() if
                   cid.label.upper() == label.upper()]
+        return result
+
+    @property
+    def coordinate_links(self):
+        """Return a list of the ComponentLinks that connect pixel and
+        world. If no coordinate transformation object is present,
+        return an empty list.
+        """
+        if self._coordinate_links:
+            return self._coordinate_links
+
+        if not self.coords:
+            return []
+
+        def make_toworld_func(i):
+            def result(*args):
+                return self.coords.pixel2world(*args[::-1])[::-1][i]
+            return result
+
+        def make_topixel_func(i):
+            def result(*args):
+                return self.coords.world2pixel(*args[::-1])[::-1][i]
+            return result
+
+        result = []
+        for i in range(self.ndim):
+            link = ComponentLink(self._pixel_component_ids,
+                                 self._world_component_ids[i],
+                                 make_toworld_func(i))
+            result.append(link)
+            link = ComponentLink(self._world_component_ids,
+                                 self._pixel_component_ids[i],
+                                 make_topixel_func(i))
+            result.append(link)
+
+        self._coordinate_links = result
         return result
 
     def get_pixel_component_id(self, axis):
@@ -385,7 +423,3 @@ class GriddedData(Data):
                 self.add_component(comp, component_name)
         else:
             raise Exception("Unkonwn format: %s" % format)
-
-
-class AMRData(Data):
-    pass

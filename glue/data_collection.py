@@ -75,6 +75,9 @@ class DataCollection(glue.HubListener):
         for d in self._data:
             for derived in d.derived_components:
                 self._link_manager.add_link(d.get_component(derived).link)
+            for link in d.coordinate_links:
+                self._link_manager.add_link(link)
+
 
         for d in self._data:
             self._link_manager.update_data_components(d)

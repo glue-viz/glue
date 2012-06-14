@@ -110,6 +110,9 @@ class TestDataCollection(unittest.TestCase):
         self.assertIn(link, dc._link_manager)
 
     def test_catch_data_add_component_message(self):
+        """DerviedAttributes added to a dataset in a collection
+        should generate messages that the collection catches.
+        """
         d = glue.Data()
         id1 = glue.data.ComponentID("id1")
         id2 = glue.data.ComponentID("id2")
@@ -119,11 +122,22 @@ class TestDataCollection(unittest.TestCase):
         self.dc.register_to_hub(self.hub)
         self.dc.append(d)
         d.add_component(glue.data.Component(np.array([1,2,3])), id1)
+        self.assertNotIn(link, self.dc._link_manager)
         d.add_component(dc, id2)
 
         msg = self.log.messages[-1]
         self.assertIsInstance(msg, glue.message.DataAddComponentMessage)
         self.assertIn(link, self.dc._link_manager)
+
+    def test_coordinate_links_auto_added(self):
+        d = glue.Data()
+        id1 = glue.data.ComponentID("id1")
+        id2 = glue.data.ComponentID("id2")
+        link = glue.ComponentLink([id1], id2)
+        self.data.coordinate_links = [link]
+        self.dc.append(self.data)
+        self.assertIn(link, self.dc._link_manager.links)
+
 
 if __name__ == "__main__":
     unittest.main()

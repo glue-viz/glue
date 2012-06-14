@@ -1,10 +1,17 @@
 import unittest
 
+import numpy as np
 from mock import MagicMock
 
 import glue
 from glue.data import ComponentID, Component, Data
 
+class TestCoordinates(glue.coordinates.Coordinates):
+    def pixel2world(self, *args):
+        return [(i+2.) * a for i,a in enumerate(args)]
+
+    def world2pixel(self, *args):
+        return [a/(i+2.) for i,a in enumerate(args)]
 
 class TestData(unittest.TestCase):
     def setUp(self):
@@ -14,6 +21,7 @@ class TestData(unittest.TestCase):
         comp.shape = (2,3)
         comp.units = None
         self.comp = comp
+        self.data.coords = TestCoordinates()
         self.comp_id = self.data.add_component(comp, 'Test Component')
 
     def test_shape_empty(self):
@@ -162,6 +170,29 @@ class TestData(unittest.TestCase):
     def test_get_item(self):
         self.assertIs(self.data[self.comp_id], self.comp.data)
 
+    def test_coordinate_links(self):
+        links = self.data.coordinate_links
+        w0 = self.data[self.data.get_world_component_id(0)]
+        w1 = self.data[self.data.get_world_component_id(1)]
+        p0 = self.data[self.data.get_pixel_component_id(0)]
+        p1 = self.data[self.data.get_pixel_component_id(1)]
+
+        w0prime = links[0].compute(self.data)
+        p0prime = links[1].compute(self.data)
+        w1prime = links[2].compute(self.data)
+        p1prime = links[3].compute(self.data)
+
+        np.testing.assert_array_equal(w0, w0prime)
+        np.testing.assert_array_equal(w1, w1prime)
+        np.testing.assert_array_equal(p0, p0prime)
+        np.testing.assert_array_equal(p1, p1prime)
+
+    def test_coordinate_links_idempotent(self):
+        """Should only calculate links once, and
+        return the same objects every time"""
+        links = self.data.coordinate_links
+        links2 = self.data.coordinate_links
+        self.assertEquals(links, links2)
 
 if __name__ == "__main__":
     unittest.main()
