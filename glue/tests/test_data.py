@@ -100,6 +100,15 @@ class TestData(unittest.TestCase):
         self.assertIn(self.comp_id, pricomps)
         self.assertNotIn(compid, pricomps)
 
+    def test_add_component_link(self):
+        compid = glue.data.ComponentID('virtual')
+        link = MagicMock(spec_set = glue.component_link.ComponentLink)
+        cid = glue.data.ComponentID("new id")
+        link.get_to_id.return_value = cid
+
+        self.data.add_component_link(link)
+        self.assertIn(cid, self.data.derived_components)
+
     def test_derived_components(self):
         compid = glue.data.ComponentID('virtual')
         link = MagicMock(spec_set = glue.component_link.ComponentLink)
