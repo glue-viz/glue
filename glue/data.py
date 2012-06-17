@@ -169,6 +169,23 @@ class Data(object):
 
         return component_id
 
+    def add_component_link(self, link):
+        """ Shortcut method for generating a new DerivedComponent
+        from a ComponentLink object, and adding it to a data set.
+
+        Parameters
+        ----------
+        link : ComponentLink object
+
+        Returns
+        -------
+        The DerivedComponent that was added
+        """
+        dc = DerivedComponent(self, link)
+        to_ = link.get_to_id()
+        self.add_component(dc, to_)
+        return dc
+
     def _create_pixel_and_world_components(self):
         shape = self.shape
         slices = [slice(0, s, 1) for s in shape]
