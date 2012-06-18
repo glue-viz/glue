@@ -26,6 +26,11 @@ class Subset(object):
     def __init__(self, data, color=None, alpha=1.0, label=None):
         """ Create a new subclass object.
 
+        Note: the preferred way for creating subsets is through
+        the data objects new_subset method. If instantiating
+        new subsets manually, you will need to explicitly need
+        to call the data objects add_subset method to inform
+        the data set of the new subset
         """
         self._broadcasting = False  # must be first def
         self.data = data

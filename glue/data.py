@@ -285,11 +285,23 @@ class Data(object):
         return self._components.keys()
 
     def new_subset(self):
+        """ Create a new subset, and attach to self.
+
+        This is the preferred way for creating subsets, as it
+        takes care of setting up the links between data and subset
+
+        Returns
+        -------
+        The new subset object
+        """
         subset = glue.Subset(self)
         self.add_subset(subset)
         return subset
 
     def add_subset(self, subset):
+        """ Assign a pre-existing subset to this data object.
+        The preferred way of dealing with subsets is through the new_subset
+        method, which both creates and adds the subset """
         if subset in self.subsets:
             return  # prevents infinite recursion
         self.subsets.append(subset)
