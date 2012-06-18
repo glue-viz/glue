@@ -59,22 +59,18 @@
        <property name="currentIndex">
         <number>1</number>
        </property>
+       <property name="usesScrollButtons">
+        <bool>false</bool>
+       </property>
+       <property name="documentMode">
+        <bool>false</bool>
+       </property>
        <property name="tabsClosable">
         <bool>false</bool>
        </property>
        <property name="movable">
         <bool>true</bool>
        </property>
-       <widget class="QWidget" name="tab">
-        <attribute name="title">
-         <string>Tab 1</string>
-        </attribute>
-       </widget>
-       <widget class="QWidget" name="tab_2">
-        <attribute name="title">
-         <string>Tab 2</string>
-        </attribute>
-       </widget>
       </widget>
      </widget>
     </item>
@@ -89,53 +85,6 @@
      <height>22</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile">
-    <property name="title">
-     <string>File</string>
-    </property>
-    <addaction name="actionSave_session"/>
-    <addaction name="actionNew_Session"/>
-    <addaction name="actionQuit"/>
-    <addaction name="actionNew_Tab"/>
-   </widget>
-   <widget class="QMenu" name="menuData">
-    <property name="title">
-     <string>Data</string>
-    </property>
-    <addaction name="actionLoad_data"/>
-   </widget>
-   <widget class="QMenu" name="menuSubsets">
-    <property name="title">
-     <string>Subsets</string>
-    </property>
-    <addaction name="actionNew_Subset"/>
-    <addaction name="actionTransfer_Subset"/>
-    <addaction name="actionSave_Subset"/>
-   </widget>
-   <widget class="QMenu" name="menuHelp">
-    <property name="title">
-     <string>Help</string>
-    </property>
-   </widget>
-   <widget class="QMenu" name="menuView">
-    <property name="title">
-     <string>View</string>
-    </property>
-    <widget class="QMenu" name="menuPanel_Grid">
-     <property name="title">
-      <string>Panel Grid</string>
-     </property>
-     <addaction name="action1x1"/>
-     <addaction name="action2x2"/>
-     <addaction name="action2x2_2"/>
-    </widget>
-    <addaction name="menuPanel_Grid"/>
-   </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuData"/>
-   <addaction name="menuSubsets"/>
-   <addaction name="menuHelp"/>
-   <addaction name="menuView"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionSave_session">

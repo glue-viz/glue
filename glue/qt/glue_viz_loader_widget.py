@@ -3,6 +3,7 @@ from PyQt4.QtGui import *
 
 from scatterwidget import ScatterWidget
 from imagewidget import ImageWidget
+from histogramwidget import HistogramWidget
 
 class GlueVizLoaderWidget(QWidget):
 
@@ -20,8 +21,8 @@ class GlueVizLoaderWidget(QWidget):
     def __init__(self, app, parent):
         super(GlueVizLoaderWidget, self).__init__(parent)
 
-        self.options = [ScatterWidget, ImageWidget]
-        self.names = ['Scatter Plot', 'Image Viewer']
+        self.options = [ScatterWidget, ImageWidget, HistogramWidget]
+        self.names = ['Scatter Plot', 'Image Viewer', 'Histogram']
         self.data = app._data
         self.hub = app._hub
         self.app = app
