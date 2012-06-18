@@ -45,3 +45,6 @@ def _load_config_file():
             return config
         except IOError:
             pass
+        except Exception as e:
+            raise Exception("Error loading config file %s:\n%s" %
+                            (config_file, e))
