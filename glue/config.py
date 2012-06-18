@@ -35,7 +35,7 @@ def _load_config_file():
     search_order = [os.path.join(os.getcwd(), 'config.py')]
     if 'GLUERC' in os.environ:
         search_order.append(os.environ['GLUERC'])
-    search_order.append(os.path.expanduser('~/glue/config.py'))
+    search_order.append(os.path.expanduser('~/.glue/config.py'))
 
     config = None
     for config_file in search_order:
