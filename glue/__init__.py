@@ -12,3 +12,7 @@ from data_collection import DataCollection
 from link_manager import LinkManager
 from component_link import ComponentLink
 import qt
+
+# Set up configuration variables
+from .config import load_configuration
+env = load_configuration()
