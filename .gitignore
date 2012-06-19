@@ -4,4 +4,6 @@ build
 *.pyc
 glue/tests/htmlcov
 glue/qt/ui_*py
+glue/qt/glue_qt_resources.py
 *.__junk*
+*.coverage
