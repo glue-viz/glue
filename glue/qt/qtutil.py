@@ -8,13 +8,13 @@ import glue
 def mpl_to_qt4_color(color):
     """ Convert a matplotlib color stirng into a PyQT4 QColor object
 
-    INPUTS:
-    -------
+    Parameters
+    ----------
     color: String
        A color specification that matplotlib understands
 
-    RETURNS:
-    --------
+    Returns
+    -------
     A QColor object representing color
 
     """
@@ -27,20 +27,25 @@ def qt4_to_mpl_color(color):
     """
     Conver a QColor object into a string that matplotlib understands
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     color: QColor instance
 
-    OUTPUTS:
-    --------
+    Returns
+    -------
     A hex string describing that color
     """
-
     hexid = color.name()
     return str(hexid)
 
 
 def data_wizard():
+    """ QT Dialog to load a file into a new data object
+
+    Returns
+    -------
+    A new data object, or None if the process is cancelled
+    """
     fd = QtGui.QFileDialog()
     if not fd.exec_():
         return None
@@ -97,6 +102,7 @@ class DebugClipboard(QtGui.QWidget):
 
 
 def edit_layer_color(layer):
+    """ Interactively edit a layer's color """
     dialog = QColorDialog()
     initial = mpl_to_qt4_color(layer.style.color)
     color = dialog.getColor(initial=initial)
@@ -115,6 +121,7 @@ def edit_layer_symbol(layer):
 
 
 def edit_layer_point_size(layer):
+    """ Interactively edit a layer's point size """
     dialog = QInputDialog()
     size, isok = dialog.getInt(None, 'Point Size', 'Point Size',
                                value=layer.style.markersize,
@@ -130,11 +137,38 @@ def edit_layer_label(layer):
     if isok:
         layer.style.label = str(label)
 
+def pick_class(classes, title="Pick an item"):
+    """Prompt the user to pick from a list of classes using QT
 
-if __name__ == "__main__":
-    import sys
-    app = QtGui.QApplication(sys.argv)
-    #print data_wizard()
-    dc = DebugClipboard()
-    dc.show()
-    sys.exit(app.exec_())
+    Parameters
+    ----------
+    classes : list of class objects
+    title : string of the prompt
+
+    Outputs
+    -------
+    The class that was selected, or None
+    """
+
+    choices = [c.__name__ for c in classes]
+
+    dialog = QInputDialog()
+    choice, isok = dialog.getItem(None, title, title, choices)
+    if isok:
+        return dict(zip(choices, classes))[str(choice)]
+
+def get_text(title='Enter a label'):
+    """Prompt the user to enter text using QT
+
+    Parameters
+    ----------
+    title : Name of the prompt
+
+    Returns
+    -------
+    The text the user typed, or None
+    """
+    dialog = QInputDialog()
+    result, isok = dialog.getText(None, title, title)
+    if isok:
+        return str(result)
