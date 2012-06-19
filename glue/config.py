@@ -1,7 +1,15 @@
 import os
 import imp
 
-CONFIG_KEYS = ['extra_clients']
+def default_config():
+    import glue.qt
+
+    result = {
+        'qt_clients' : [glue.qt.ScatterWidget,
+                        glue.qt.ImageWidget],
+    }
+
+    return result
 
 def load_configuration():
     '''
@@ -16,12 +24,12 @@ def load_configuration():
     config = _load_config_file()
 
     # Populate a configuration dictionary
-    config_dict = {}
-    for key in CONFIG_KEYS:
+    config_dict = default_config()
+    for key in config_dict.keys():
         try:
             config_dict[key] = getattr(config, key)
         except AttributeError:
-            config_dict[key] = None
+            pass
 
     return config_dict
 
