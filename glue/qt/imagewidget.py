@@ -36,6 +36,7 @@ class ImageWidget(QMainWindow, glue.HubListener):
         self.set_orientation(0)
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
+        self.resize(self.central_widget.size())
 
     def _create_actions(self):
         self.cmap_heat_action = QAction("Hot", self)

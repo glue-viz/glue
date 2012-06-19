@@ -17,6 +17,7 @@ class ScatterWidget(QtGui.QMainWindow, glue.HubListener):
         self.setCentralWidget(self.central_widget)
         self.ui = Ui_ScatterWidget()
         self.ui.setupUi(self.central_widget)
+        self._tweak_geometry()
         self.client = ScatterClient(data,
                                     self.ui.mplWidget.canvas.fig,
                                     self.ui.mplWidget.canvas.ax)
@@ -26,6 +27,11 @@ class ScatterWidget(QtGui.QMainWindow, glue.HubListener):
         self.make_toolbar()
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
+
+    def _tweak_geometry(self):
+        self.central_widget.resize(400,400)
+        self.ui.splitter.setSizes([320, 150])
+        self.resize(self.central_widget.size())
 
     def _connect(self):
         ui = self.ui
