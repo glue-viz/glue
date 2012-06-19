@@ -3,7 +3,9 @@ valid_linestyles = ['solid', 'dashed', 'dash-dot', 'dotted', 'none']
 
 #assign colors so as to avoid repeats
 default_colors = ['#E41A1C', '#377EB8', '#4DAF4A', '#984EA3', '#FF7F00',
-                  '#FFFF33', '#A65628', '#F781BF']
+                  '#A65628', '#F781BF']
+washout_colors = ['#F6B4B4', '#BDD5E8', '#C4E5C3', '#DDC5E1', '#FFD5AB',
+                  '#E2C7B8', '#FCD5EA']
 color_pos = 0
 
 
@@ -12,7 +14,7 @@ class VisualAttributes(object):
     This class is used to define visual attributes for any kind of objects
     '''
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, washout=False):
 
         # Color can be specified using Matplotlib notation. Specifically, it
         # can be:
@@ -22,9 +24,9 @@ class VisualAttributes(object):
         #  * A tuple of three floats in the rng [0:1] for (R, G, B)
         #  * An HTML hexadecimal string (e.g. '#eeefff')
         global color_pos
-        global default_colors
 
-        self.color = default_colors[color_pos % len(default_colors)]
+        col = washout_colors if washout else default_colors
+        self.color = col[color_pos % len(default_colors)]
         color_pos += 1
         self.alpha = 1.
 

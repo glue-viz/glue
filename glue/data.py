@@ -83,7 +83,7 @@ class Data(object):
         # Hub that the data is attached to
         self.hub = None
 
-        self.style = VisualAttributes(parent=self)
+        self.style = VisualAttributes(parent=self, washout=True)
 
         self.metadata = {}
 
