@@ -1,76 +1,172 @@
-from PyQt4.QtCore import Qt, SIGNAL
-from PyQt4.QtGui import *
+# pylint: disable=W0223
+
+from PyQt4.QtGui import (QKeySequence, QMainWindow, QGridLayout, QMdiArea,
+                         QMenu, QMdiSubWindow)
 
 from ui_glue_application import Ui_GlueApplication
-from glue_viz_loader_widget import GlueVizLoaderWidget
 import glue
 from glue.message import ErrorMessage
+from glue.qt.actions import act
+from glue.qt.qtutil import pick_class, get_text
+
 
 class GlueApplication(QMainWindow, glue.HubListener):
+    """ The main Glue window """
 
     def __init__(self):
-        QMainWindow.__init__(self)
+        super(GlueApplication, self).__init__()
+        self._actions = {}
         self._ui = Ui_GlueApplication()
         self._ui.setupUi(self)
         self._ui.layerWidget.set_checkable(False)
         self._data = glue.DataCollection()
         self._hub = glue.Hub(self._data)
-        self.new_tab()
-        self.connect()
+        self._new_tab()
+
+        self._create_actions()
+        self._connect()
         self._create_menu()
 
-    def register_to_hub(self):
-        self._hub.subscribe(self,
-                            ErrorMessage,
-                            handler=self._report_error)
     @property
-    def tab(self):
+    def tab_bar(self):
         return self._ui.tabWidget
 
-    def new_tab(self):
+    @property
+    def current_tab(self):
+        return self._ui.tabWidget.currentWidget()
+
+    def _new_tab(self):
         """Spawn a new tab page"""
         layout = QGridLayout()
         layout.setSpacing(1)
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(0, 0, 0, 0)
         widget = QMdiArea()
         widget.setLayout(layout)
-        tab = self.tab
+        tab = self.tab_bar
         tab.addTab(widget, str(tab.count()+1))
         tab.setCurrentWidget(widget)
 
-    def add_to_current_tab(self, new_widget):
-        tab =self.tab
-        page = tab.currentWidget()
-        print "adding to widget"
-        page.addSubWindow(new_widget)
+    def _add_to_current_tab(self, new_widget):
+        page = self.current_tab
+        sub = QMdiSubWindow()
 
-    def connect(self):
-        self.register_to_hub()
+        sub.setWidget(new_widget)
+        sub.resize(new_widget.size())
+        page.addSubWindow(sub)
+
+    def _rename_current_tab(self):
+        """ Prompt the user to rename the current tab """
+        label = get_text("New Tab Label")
+        if not label:
+            return
+        index = self.tab_bar.currentIndex()
+        self.tab_bar.setTabText(index, label)
+
+    def cascade_current_tab(self):
+        """Arrange windows in current tab via cascade"""
+        self.current_tab.cascadeSubWindows()
+
+    def tile_current_tab(self):
+        """Arrange windows in current tab via tiling"""
+        self.current_tab.tileSubWindows()
+
+    def _connect(self):
+        self._hub.subscribe(self,
+                            ErrorMessage,
+                            handler=self._report_error)
         self._ui.layerWidget.data_collection = self._data
         self._ui.layerWidget.register_to_hub(self._hub)
         self._data.register_to_hub(self._hub)
-        self._ui.actionNew_Tab.triggered.connect(self.new_tab)
-        self._ui.actionNew_Tab.setShortcut("Ctrl+T")
-        self._ui.actionNew_Tab.setShortcutContext(Qt.ApplicationShortcut)
 
     def _create_menu(self):
         mbar = self._ui.menubar
         menu = QMenu(mbar)
         menu.setTitle("File")
-        menu.addAction(self._ui.actionNew_Tab)
-        act = QAction("new scatter", self)
-        act.triggered.connect(self._add_scatter)
-        menu.addAction(act)
+        menu.addAction(self._actions['session_save'])
+        menu.addAction(self._actions['session_restore'])
+
+        menu.addAction(self._actions['tab_new'])
+        menu.addAction(self._actions['window_new'])
         mbar.addMenu(menu)
+
+        menu = QMenu(mbar)
+        menu.setTitle("Tab")
+        menu.addAction(self._actions['tab_new'])
+        menu.addAction(self._actions['window_new'])
+        menu.addSeparator()
+        menu.addAction(self._actions['cascade'])
+        menu.addAction(self._actions['tile'])
+        menu.addAction(self._actions['tab_rename'])
+        mbar.addMenu(menu)
+
+        menu = QMenu(mbar)
+        menu.setTitle("Layers")
+        menu.addActions(self._ui.layerWidget.actions())
+        mbar.addMenu(menu)
+
+
+    def _create_actions(self):
+        """ Create and connect actions, store in _actions dict """
+        self._actions = {}
+
+        a = act("New Window", self,
+                tip="Open a new visualization window in the current tab",
+                shortcut = QKeySequence.New)
+        a.triggered.connect(self._new_viz_window)
+        self._actions['window_new'] = a
+
+
+        a = act('New Tab', self,
+                 shortcut=QKeySequence.AddTab,
+                 tip='Add a new tab')
+        a.triggered.connect(self._new_tab)
+        self._actions['tab_new'] = a
+
+        a = act('Rename Tab', self,
+                shortcut="Ctrl+R",
+                tip='Set a new label for the current tab')
+        a.triggered.connect(self._rename_current_tab)
+        self._actions['tab_rename'] = a
+
+        a = act('Cascade', self,
+                tip='Cascade the windows in the current tab')
+        a.triggered.connect(self.cascade_current_tab)
+        self._actions['cascade'] = a
+
+        a = act('Tile', self,
+                tip='Tile the windows in the current tab')
+        a.triggered.connect(self.tile_current_tab)
+        self._actions['tile'] = a
+
+        a = act('Save Session', self,
+                tip='Save the current session')
+        a.setEnabled(False)
+        a.triggered.connect(self._save_session)
+        self._actions['session_save'] = a
+
+
+        a = act('Open Session', self,
+                tip='Restore a saved session')
+        a.setEnabled(False)
+        a.triggered.connect(self._restore_session)
+        self._actions['session_restore'] = a
+
+    def _new_viz_window(self):
+        """ Create a new visualization window in the current tab
+        """
+
+        client = pick_class(glue.env['qt_clients'])
+        if client:
+            c = client(self._data)
+            c.register_to_hub(self._hub)
+            self._add_to_current_tab(c)
+            c.show()
 
     def _report_error(self, message):
         self.statusBar().showMessage(str(message))
 
-    def _add_scatter(self):
-        s = glue.qt.ScatterWidget(self._data)
-        s.register_to_hub(self._hub)
-        self.add_to_current_tab(s)
+    def _save_session(self):
+        raise NotImplemented
 
-if __name__ == "__main__":
-    main()
-
+    def _restore_session(self):
+        raise NotImplemented

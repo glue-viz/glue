@@ -9,7 +9,7 @@ def print_widget(widget):
 
 def main():
     app = QApplication(sys.argv)
-    app.focusChanged.connect(lambda x,y: print_widget(y))
+    #app.focusChanged.connect(lambda x,y: print_widget(y))
     win = GlueApplication()
     win.show()
     sys.exit(app.exec_())

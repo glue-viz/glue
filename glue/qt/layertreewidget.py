@@ -1,7 +1,7 @@
 """ Class for a layer tree widget """
 
 from PyQt4.QtGui import QWidget, QTreeWidgetItem, QPixmap, QIcon
-from PyQt4.QtGui import QAction, QKeySequence, QActionGroup
+from PyQt4.QtGui import QAction, QKeySequence, QActionGroup, QFileDialog
 
 from PyQt4.QtCore import Qt, pyqtSignal, QObject
 from ui_layertree import Ui_LayerTree
@@ -48,6 +48,8 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         self._xor_action = None
         self._and_action = None
         self._invert_action = None
+        self._load_action = None
+        self._save_action = None
 
         self.setupUi(self)
         self.setup_drag_drop()
@@ -155,8 +157,29 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         new.subset_state = StateClass(layers[0].subset_state,
                                       layers[1].subset_state)
 
+    def actions(self):
+        return self.layerTree.actions()
+
     def _create_actions(self):
         tree = self.layerTree
+
+        act = QAction("Save subset", tree)
+        act.setEnabled(False)
+        act.setToolTip("Save the mask for this subset to a file")
+        act.setShortcut(QKeySequence.Save)
+        act.setShortcutContext(Qt.WidgetShortcut)
+        act.triggered.connect(self._save_subset)
+        tree.addAction(act)
+        self._save_action = act
+
+        act = QAction("Load subset", tree)
+        act.setEnabled(False)
+        act.setToolTip("Load a subset from a file")
+        act.setShortcut(QKeySequence.Open)
+        act.setShortcutContext(Qt.WidgetShortcut)
+        act.triggered.connect(self._load_subset)
+        tree.addAction(act)
+        self._load_action = act
 
         act = QAction("Copy subset", tree)
         act.setEnabled(False)
@@ -179,7 +202,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         act = QAction("New subset", tree)
         act.setEnabled(False)
         act.setToolTip("Create a new subset for the selected data")
-        act.setShortcut('Ctrl+N')
+        act.setShortcut('Ctrl+B')
         act.setShortcutContext(Qt.WidgetShortcut)
         act.triggered.connect(self._new_subset)
         tree.addAction(act)
@@ -188,6 +211,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         act = QAction("Clear subset", tree)
         act.setEnabled(False)
         act.setToolTip("Clear current selection")
+        act.setShortcut('Ctrl+0')
         act.setShortcutContext(Qt.WidgetShortcut)
         act.triggered.connect(self._clear_subset)
         tree.addAction(act)
@@ -258,6 +282,8 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
             self._duplicate_action.setEnabled(False)
             self._delete_action.setEnabled(True)
             self._clear_action.setEnabled(False)
+            self._save_action.setEnabled(False)
+            self._load_action.setEnabled(False)
         elif single and isinstance(layer, glue.Subset):
             self._copy_action.setEnabled(True)
             self._paste_action.setEnabled(has_clipboard)
@@ -265,6 +291,8 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
             self._duplicate_action.setEnabled(True)
             self._delete_action.setEnabled(layer is not layer.data.edit_subset)
             self._clear_action.setEnabled(True)
+            self._save_action.setEnabled(True)
+            self._load_action.setEnabled(True)
         else:
             self._copy_action.setEnabled(False)
             self._paste_action.setEnabled(False)
@@ -272,6 +300,8 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
             self._duplicate_action.setEnabled(False)
             self._delete_action.setEnabled(False)
             self._clear_action.setEnabled(False)
+            self._save_action.setEnabled(False)
+            self._load_action.setEnabled(False)
 
     def setup_drag_drop(self):
         self.layerTree.setDragEnabled(True)
@@ -551,6 +581,33 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         ncol = self.layerTree.columnCount()
         for i in range(ncol):
             self.layerTree.resizeColumnToContents(i)
+
+    def _save_subset(self):
+        layer = self.current_layer()
+        if not isinstance(layer, glue.Subset):
+            return
+        dialog = QFileDialog()
+        file_name = str(dialog.getSaveFileName(
+            caption="Select an output name"))
+        if not file_name:
+            return
+
+        layer.write_mask(file_name)
+
+    def _load_subset(self):
+        layer = self.current_layer()
+        if not isinstance(layer, glue.Subset):
+            return
+        dialog = QFileDialog()
+        file_name = str(dialog.getOpenFileName(caption="Select a subset"))
+
+        if not file_name:
+            return
+
+        try:
+            layer.read_mask(file_name)
+        except Exception as e:
+            print "Exception raised -- could not load\n%s" % e
 
     def is_layer_present(self, layer):
         return layer in self and not self[layer].isHidden()
