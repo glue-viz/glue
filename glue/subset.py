@@ -35,6 +35,7 @@ class Subset(object):
         self._broadcasting = False  # must be first def
         self.data = data
         self.style = VisualAttributes(parent=self)
+        self.style.markersize *= 2.5
         if color:
             self.style.color = color
         self.style.alpha = alpha
