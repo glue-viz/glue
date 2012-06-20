@@ -19,6 +19,8 @@ The basic usage pattern is thus:
 from PyQt4.QtGui import QIcon
 
 import numpy as np
+from scipy import ndimage
+from matplotlib import _cntr
 
 from glue import roi
 
@@ -54,16 +56,29 @@ class MouseMode(object):
         self._move_callback = move_callback
         self._release_callback = release_callback
         self.shortcut = None
+        self._event_x = 0
+        self._event_y = 0
+        self._event_xdata = 0
+        self._event_ydata = 0
+
+    def _log_position(self, event):
+        if event is None:
+            return
+        self._event_x, self._event_y = event.x, event.y
+        self._event_xdata, self._event_ydata = event.xdata, event.ydata
 
     def press(self, event):
+        self._log_position(event)
         if self._press_callback is not None:
             self._press_callback(self)
 
     def move(self, event):
+        self._log_position(event)
         if self._move_callback is not None:
             self._move_callback(self)
 
     def release(self, event):
+        self._log_position(event)
         if self._release_callback is not None:
             self._release_callback(self)
 
@@ -200,3 +215,43 @@ class ContrastMode(MouseMode):
         self.contrast = np.tan(theta)
 
         super(ContrastMode, self).move(event)
+
+class ContourMode(MouseMode):
+    """ Creates ROIs by using the mouse to 'pick' contours out of the data """
+    def __init__(self, *args, **kwargs):
+        super(ContourMode, self).__init__(*args, **kwargs)
+
+        self.icon = QIcon(":icons/glue_contour.png")
+        self.mode_id = 'Contour'
+        self.action_text = 'Contour'
+        self.tool_tip = 'Define a region of intrest via contours'
+        self.shortcut = 'N'
+
+    def roi(self, data):
+        """ Caculate an ROI as the contour which passes through the mouse
+
+        Parameters
+        ----------
+        data : ndarray. The data set to use
+
+        Returns
+        -------
+        A `PolygonalROI` object, or None if one could not be calculated
+
+        This method calculates the (single) contour that passes
+        through the mouse location, and uses this path to define
+        a new ROI
+        """
+        x,y = self._event_xdata, self._event_ydata
+        inten = data[y, x]
+        labeled, nr_objects = ndimage.label(data >= inten)
+        z = data * (labeled == labeled[y, x])
+        y, x = np.mgrid[0:data.shape[0], 0:data.shape[1]]
+        cnt = _cntr.Cntr(x, y, z)
+        xy = cnt.trace(inten)
+        if not xy:
+            return None
+        xy = xy[0]
+        p = roi.PolygonalROI(vx = xy[:,0], vy = xy[:, 1])
+        return p
+

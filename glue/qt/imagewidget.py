@@ -1,14 +1,13 @@
 from PyQt4.QtGui import QMainWindow, QWidget, QAction, QToolBar
 from PyQt4.QtCore import Qt, QVariant
 
-import numpy as np
-
 import matplotlib.cm as cm
 
 import glue
 import glue.message as msg
 from glue.image_client import ImageClient
-from glue.qt.mouse_mode import RectangleMode, CircleMode, PolyMode, ContrastMode
+from glue.qt.mouse_mode import (RectangleMode, CircleMode, PolyMode,
+                                ContrastMode, ContourMode)
 from glue.qt.glue_toolbar import GlueToolbar
 
 from ui_imagewidget import Ui_ImageWidget
@@ -88,7 +87,8 @@ class ImageWidget(QMainWindow, glue.HubListener):
         circ = CircleMode(axes, release_callback=self._apply_roi)
         poly = PolyMode(axes, release_callback=self._apply_roi)
         contrast = ContrastMode(axes, move_callback=self._set_norm)
-        return [rect, circ, poly, contrast]
+        contour = ContourMode(axes, release_callback=self._contour_roi)
+        return [rect, circ, poly, contrast, contour]
 
     def _init_widgets(self):
         self.ui.imageSlider.hide()
@@ -184,11 +184,20 @@ class ImageWidget(QMainWindow, glue.HubListener):
 
     def _set_norm(self, mode):
         """ Use the `ContrastMouseMode` to adjust the transfer function """
-        im = self.client._image
+        im = self.client.image
         if im is None:
             return
         vlo, vhi = mode.get_scaling(im)
         return self.client.set_norm(vlo, vhi)
+
+    def _contour_roi(self, mode):
+        """ Callback for ContourMode. Set edit_subset as new ROI """
+        im = self.client.image
+        if im is None:
+            return
+        roi = mode.roi(im)
+        if roi:
+            self.client._apply_roi(roi)
 
     def __str__(self):
         return "Image Widget"

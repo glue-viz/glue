@@ -147,6 +147,10 @@ class ImageClient(VizClient):
             return self._slice_ind
         return None
 
+    @property
+    def image(self):
+        return self._image
+
     @slice_ind.setter
     def slice_ind(self, value):
         if self.is_3D:
@@ -313,7 +317,7 @@ class ImageClient(VizClient):
         self._update_subset_plot(s)
 
     def _apply_roi(self, roi):
-        # this will only work for 2D images right now
+        # XXX this will only work for 2D images right now
         data = self.display_data
         if data is None:
             return
