@@ -33,18 +33,6 @@ class MplCanvas(FigureCanvas):
         # notify the system of updated policy
         FigureCanvas.updateGeometry(self)
 
-    def mouseMoveEvent(self, ev):
-        super(MplCanvas, self).mouseMoveEvent(ev)
-        x,y = ev.x(), ev.y()
-        g = self.frameSize()
-        x = 1.0 * x / g.width()
-        y = 1.0 * y / g.height()
-        if ev.buttons() & Qt.RightButton:
-            self.rightDrag.emit(x, y)
-        if ev.buttons() & Qt.LeftButton:
-            self.leftDrag.emit(x, y)
-
-
 
 class MplWidget(QtGui.QWidget):
     """Widget defined in Qt Designer"""

@@ -8,7 +8,7 @@ import matplotlib.cm as cm
 import glue
 import glue.message as msg
 from glue.image_client import ImageClient
-from glue.qt.mouse_mode import RectangleMode, CircleMode, PolyMode
+from glue.qt.mouse_mode import RectangleMode, CircleMode, PolyMode, ContrastMode
 from glue.qt.glue_toolbar import GlueToolbar
 
 from ui_imagewidget import Ui_ImageWidget
@@ -87,7 +87,10 @@ class ImageWidget(QMainWindow, glue.HubListener):
         rect = RectangleMode(axes, release_callback=self._apply_roi)
         circ = CircleMode(axes, release_callback=self._apply_roi)
         poly = PolyMode(axes, release_callback=self._apply_roi)
-        return [rect, circ, poly]
+        def norm(mode):
+            return self.set_norm(mode.bias, mode.contrast)
+        contrast = ContrastMode(axes, move_callback=norm)
+        return [rect, circ, poly, contrast]
 
     def _init_widgets(self):
         self.ui.imageSlider.hide()
@@ -159,10 +162,7 @@ class ImageWidget(QMainWindow, glue.HubListener):
         ui.displayDataCombo.currentIndexChanged.connect(self.set_data)
         ui.attributeComboBox.currentIndexChanged.connect(self.set_attribute)
         ui.sliceComboBox.currentIndexChanged.connect(self.set_orientation)
-
-        #connect MPL draw widget mouse events (RMB) to color map manipulation
         ui.imageSlider.sliderMoved.connect(self.set_slider)
-        ui.mplWidget.rightDrag.connect(self.set_norm)
 
     def register_to_hub(self, hub):
         self.client.register_to_hub(hub)
@@ -184,16 +184,15 @@ class ImageWidget(QMainWindow, glue.HubListener):
                 combo.removeItem(item)
                 break
 
-    def set_norm(self, x, y):
+    def set_norm(self, bias, contrast):
         if self.client._image is None:
             return
         lo = np.min(self.client._image)
         hi = np.max(self.client._image)
-        theta = np.pi - max(min(y, 1), 0) * np.pi
         ra = hi - lo
-        bias = lo + ra / 2 * x
-        vmin = bias - ra * np.tan(theta)
-        vmax = bias + ra * np.tan(theta)
+        bias = lo + ra * bias
+        vmin = bias - ra * contrast
+        vmax = bias + ra * contrast
         self.client.set_norm(vmin, vmax)
 
     def __str__(self):
