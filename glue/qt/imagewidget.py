@@ -87,9 +87,7 @@ class ImageWidget(QMainWindow, glue.HubListener):
         rect = RectangleMode(axes, release_callback=self._apply_roi)
         circ = CircleMode(axes, release_callback=self._apply_roi)
         poly = PolyMode(axes, release_callback=self._apply_roi)
-        def norm(mode):
-            return self.set_norm(mode.bias, mode.contrast)
-        contrast = ContrastMode(axes, move_callback=norm)
+        contrast = ContrastMode(axes, move_callback=self._set_norm)
         return [rect, circ, poly, contrast]
 
     def _init_widgets(self):
@@ -146,7 +144,7 @@ class ImageWidget(QMainWindow, glue.HubListener):
 
     def set_orientation(self, ori):
         # ignore for 2D data (sometimes gets triggered when widgets
-        # switch state
+        # switch state)
         if not self.client.is_3D:
             return
         self.client.set_slice_ori(ori)
@@ -184,16 +182,13 @@ class ImageWidget(QMainWindow, glue.HubListener):
                 combo.removeItem(item)
                 break
 
-    def set_norm(self, bias, contrast):
-        if self.client._image is None:
+    def _set_norm(self, mode):
+        """ Use the `ContrastMouseMode` to adjust the transfer function """
+        im = self.client._image
+        if im is None:
             return
-        lo = np.min(self.client._image)
-        hi = np.max(self.client._image)
-        ra = hi - lo
-        bias = lo + ra * bias
-        vmin = bias - ra * contrast
-        vmax = bias + ra * contrast
-        self.client.set_norm(vmin, vmax)
+        vlo, vhi = mode.get_scaling(im)
+        return self.client.set_norm(vlo, vhi)
 
     def __str__(self):
         return "Image Widget"

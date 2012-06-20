@@ -152,20 +152,12 @@ class ContrastMode(MouseMode):
     """Uses right mouse button drags to set bias and contrast, ala DS9
 
     The horizontal position of the mouse sets the bias, the vertical
-    position sets the contrast. These are both scaled to the total
-    intensity range of the image, such that the darkest and brightest
-    intensity values should correspond to ::
-
-      * scaled_bias = min_intensity + intensity_range * bias
-      * darkest_intensity = scaled_bias - intensity_range * contrast
-      * lightest_intensity = scaled_bias + intensity_range * contrast
-
-    This method defines bias and contrast as attributes -- it does not
-    actually set the colorscale of an image
+    position sets the contrast. The get_scaling method converts
+    this information into scaling information for a particular data set
     """
     def __init__(self, *args, **kwargs):
         super(ContrastMode, self).__init__(*args, **kwargs)
-        self.icon = QIcon(':icons/glue_contrast.png') # TODO: add icon
+        self.icon = QIcon(':icons/glue_contrast.png')
         self.mode_id = 'Contrast'
         self.action_text = 'Contrast'
         self.tool_tip = 'Adjust the bias/contrast'
@@ -174,7 +166,28 @@ class ContrastMode(MouseMode):
         self.bias = 0.5
         self.contrast = 0.5
 
+    def get_scaling(self, data):
+        """ Return the intensity values to set as the darkest and
+        lightest color, given the bias and contrast.
+
+        Parameters
+        ----------
+        data : ndarray. Raw intensities to scale
+
+        Returns
+        -------
+        tuple of lo,hi : the intensity values to set as darkest/brightest
+        """
+        lo = np.nanmin(data)
+        hi = np.nanmax(data)
+        ra = hi - lo
+        bias = lo + ra * self.bias
+        vmin = bias - ra * self.contrast
+        vmax = bias + ra * self.contrast
+        return vmin, vmax
+
     def move(self, event):
+        """ MoveEvent. Update bias and contrast on Right Mouse button drag """
         if event.button != 3: # RMB drag only
             return
         x, y = event.x, event.y
