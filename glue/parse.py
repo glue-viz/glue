@@ -77,7 +77,6 @@ def _dereference(cmd, references):
     TypeError, if a tag in the command maps to something other than
     a ComponentID or Subset object
     """
-
     def sub_func(match):
         tag = match.group('tag')
         if isinstance(references[tag], ComponentID):
@@ -144,7 +143,7 @@ class ParsedComponentLink(ComponentLink):
         parsed : A ParsedCommand object
         """
         parsed.ensure_only_component_references()
-        super(ParsedComponentLink, self).__init__(parsed.reference_list, to_)
+        super(ParsedComponentLink, self).__init__(parsed.reference_list, to_, 0)
         self._parsed = parsed
 
     def compute(self, data):
