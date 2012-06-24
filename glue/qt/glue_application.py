@@ -8,7 +8,7 @@ import glue
 from glue.message import ErrorMessage
 from glue.qt.actions import act
 from glue.qt.qtutil import pick_class, get_text
-
+from custom_component_widget import CustomComponentWidget
 
 class GlueApplication(QMainWindow, glue.HubListener):
     """ The main Glue window """
@@ -102,7 +102,15 @@ class GlueApplication(QMainWindow, glue.HubListener):
         menu = QMenu(mbar)
         menu.setTitle("Layers")
         menu.addActions(self._ui.layerWidget.actions())
+        a = act("Define new component", self,
+                tip="Define a new component using python expressions")
+        a.triggered.connect(self._create_component)
+        menu.addAction(a)
+
         mbar.addMenu(menu)
+
+    def _create_component(self):
+        CustomComponentWidget.create_component(self._data)
 
 
     def _create_actions(self):

@@ -4,7 +4,7 @@ from glue.data import ComponentID
 from glue.subset import Subset, SubsetState
 from glue.component_link import ComponentLink
 
-TAG_RE = re.compile('\{\s*(?P<tag>[a-zA-Z_]\w*)\s*\}')
+TAG_RE = re.compile('\{\s*(?P<tag>\S+)\s*\}')
 
 def _ensure_only_component_references(cmd, references):
     """ Search through tag references in a command, ensure that

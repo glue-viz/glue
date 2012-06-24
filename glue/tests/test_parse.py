@@ -14,8 +14,8 @@ class TestParse(unittest.TestCase):
     def test_re_matches_valid_names(self):
         reg = parse.TAG_RE
         valid = ['{a}', '{ a }', '{A}', '{a }', '{ a}',
-                 '{a_}', '{abc_1}','{_abc_1}']
-        invalid = ['', '{}', '{1}', '{1_}', '{1_ab}', '{a b}']
+                 '{a_}', '{abc_1}','{_abc_1}', '{1}', '{1_}']
+        invalid = ['', '{}', '{a b}']
         for v in valid:
             self.assertIsNot(reg.match(v), None)
         for i in invalid:
