@@ -3,7 +3,7 @@ import pyfits
 
 import glue
 from glue.visual import VisualAttributes
-
+from glue.decorators import memoize
 
 class Subset(object):
     """Base class to handle subsets of data.
@@ -220,6 +220,7 @@ class RoiSubsetState(SubsetState):
         self.yatt = None
         self.roi = None
 
+    @memoize
     def to_mask(self):
         x = self.parent.data[self.xatt]
         y = self.parent.data[self.yatt]
@@ -242,31 +243,35 @@ class CompositeSubsetState(SubsetState):
 
 
 class OrState(CompositeSubsetState):
+    @memoize
     def to_mask(self):
         return self.state1.to_mask() | self.state2.to_mask()
 
 
 class AndState(CompositeSubsetState):
+    @memoize
     def to_mask(self):
         return self.state1.to_mask() & self.state2.to_mask()
 
 
 class XorState(CompositeSubsetState):
+    @memoize
     def to_mask(self):
         return self.state1.to_mask() ^ self.state2.to_mask()
 
 
 class InvertState(CompositeSubsetState):
+    @memoize
     def to_mask(self):
         return ~self.state1.to_mask()
 
 
 class ElementSubsetState(SubsetState):
-
     def __init__(self, indices=None):
         super(ElementSubsetState, self).__init__()
         self._indices = indices
 
+    @memoize
     def to_mask(self):
         result = np.zeros(self.parent.data.shape, dtype=bool)
         if self._indices is not None:
