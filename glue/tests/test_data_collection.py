@@ -30,6 +30,10 @@ class TestDataCollection(unittest.TestCase):
         dc = glue.DataCollection([d])
         self.assertIn(d, dc)
 
+    def test_data(self):
+        self.dc.append(self.data)
+        self.assertEquals(self.dc.data, [self.data])
+
     def test_append(self):
         self.dc.append(self.data)
         self.assertIn(self.data, self.dc)

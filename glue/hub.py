@@ -152,7 +152,7 @@ class Hub(object):
         """Broadcasts a message to all subscribed objects.
 
         :param message: The message to broadcast
-        :type message: :class:`~glue.Message`
+        :type message: :class:`~glue.message.Message`
         """
         for subscriber, handler in self._find_handlers(message):
             try:

@@ -11,12 +11,9 @@ class DataCollection(glue.HubListener):
     """
 
     def __init__(self, data=None):
-        """ Create a new DataCollection
-
-        Parameters
-        ----------
-        data : glue.Data object, or list of such objects (optional)
-               These objects will be auto-appended to the collection
+        """
+        :param data: glue.Data object, or list of such objects (optional)
+                      These objects will be auto-appended to the collection
         """
         self.hub = None
         self._link_manager = glue.LinkManager()
@@ -28,6 +25,11 @@ class DataCollection(glue.HubListener):
             for d in data:
                 self.append(d)
 
+    @property
+    def data(self):
+        """ The data objects in the collection (Read Only) """
+        return self._data
+
     def append(self, data):
         """ Add a new dataset to this collection.
 
@@ -35,9 +37,7 @@ class DataCollection(glue.HubListener):
         It also updates the list of DerivedComponents that each
         data set can work with.
 
-        Parameters
-        ----------
-        data : `glue.Data` object to add
+        :param data: :class:`~glue.Data` object to add
         """
         if data in self:
             return
@@ -55,10 +55,8 @@ class DataCollection(glue.HubListener):
 
         Emits a DataCollectionDeleteMessage
 
-        Parameters
-        ----------
-        data : the glue.Data object to remove
-
+        :param data: the object to remove
+        :type data: :class:`~glue.Data`
         """
         if data not in self._data:
             return
@@ -96,7 +94,10 @@ class DataCollection(glue.HubListener):
             self._link_manager.update_data_components(d)
 
     def register_to_hub(self, hub):
-        """ Register managed data objects to a hub"""
+        """ Register managed data objects to a hub
+        :param hub: The hub to register with
+        :type hub: :class:`~glue.hub.Hub`
+        """
         if not isinstance(hub, glue.Hub):
             raise TypeError("Input is not a Hub object: %s" % type(hub))
         self.hub = hub

@@ -86,7 +86,7 @@ class DerivedComponent(Component):
         :param link: The link that carries out the function
         :type link: :class:`~glue.component_link.ComponentLink`
 
-        :units: Optional unit description
+        :param units: Optional unit description
         """
         super(DerivedComponent, self).__init__(data, units=units)
         self._link = link
@@ -145,8 +145,6 @@ class Data(object):
 
         self.style = VisualAttributes(parent=self, washout=True)
 
-        self.metadata = {}
-
         self._coordinate_links = None
 
         self.style.label = label
@@ -201,8 +199,8 @@ class Data(object):
               a new ComponentID with this label will be
               created and associated with the Component
 
-        :type component: :class:`~glue.component.Component`
-        :type label: :class:`str` or :class:`~glue.data.componentID`
+        :type component: :class:`~glue.data.Component`
+        :type label: :class:`str` or :class:`~glue.data.ComponentID`
 
         *Raises*
 
@@ -281,15 +279,14 @@ class Data(object):
     @property
     def primary_components(self):
         """Returns a list of ComponentIDs with stored data (as opposed
-        to DerivedComponents, which are computed from 0 or more
-        primary components.
+        to a :class:`~glue.data.DerivedComponent` )
         """
         return [c for c in self.component_ids() if
                 not isinstance(self._components[c], DerivedComponent)]
 
     @property
     def derived_components(self):
-        """A list of ComponentIDs for the :class:`~glue.data.DerivedComponents`
+        """A list of ComponentIDs for each :class:`~glue.data.DerivedComponent`
         in the data. (Read only)
         """
         return [c for c in self.component_ids() if

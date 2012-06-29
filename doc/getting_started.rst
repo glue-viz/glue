@@ -1,3 +1,5 @@
+.. _getting_started:
+
 Getting started
 ***************
 
@@ -19,13 +21,14 @@ session with the Glue GUI.You can also follow along with this video:
 .. raw:: html
 
     <center>
-    <iframe src="http://player.vimeo.com/video/44764865" width="500" height="281" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe> </center>
+    <iframe src="http://player.vimeo.com/video/44941396" width="500" height="281" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
+    </center>
 
 
 Start the application
 ---------------------
 
-The ``glueqt`` command starts the glue GUI. From your command prompt::
+The :command:`glueqt` command starts the glue GUI. From your command prompt::
 
     glueqt
 
@@ -48,7 +51,7 @@ There are three main components to the Glue application, shown in the figure bel
 Open a Data Set
 ---------------
 
-Let's get some data into glue. The data we will be using in this tutorial are located in here. From the menu, select ``File -> open data``. In the dialog, select and open the ``Extinction.fits`` file
+Let's get some data into glue. The data we will be using in this tutorial are located in here. From the menu, select :menuselection:`File --> open data`. In the dialog, select and open the ``Extinction.fits`` file
 
 .. tip:: You can also open a data set by clicking the + button at the bottom of the layer manager
 
@@ -145,23 +148,22 @@ These two data sets share a logical connection -- the ``ra`` and
 sky. This information is also in the image. Let's teach Glue about
 that connection.
 
-In the layer manager, click the "Link" button. Selection the
-extinction data set for the Data Set 1 dropbox, and the catalog for
-Data Set 2. Then, highlight the RA attribute in each
-list.
+In the layer manager, click the "Link" button. Select the ``identity`` function in the middle, and drag the RA attributes from each data set into the input/output box. Select ``two-way-link``.
 
 .. figure:: link_dialog.png
    :align: center
 
    Linking the coordinate information of an image and catalog data set
 
-Finally, click the "Glue" button to tell the application that these
+Finally, click the "add" button to tell the application that these
 two quantities in fact describe the same information. Repeat this for
 the declination as well. Finally, click OK to accept these changes.
 
 Nothing visible changes, but Glue now knows of a strategy for
 propagating subsets from one data set to another -- let's see how that
 works
+
+.. note:: see :ref:`component_link` for more information on how this window works.
 
 Propagating Subsets
 -------------------
