@@ -274,14 +274,14 @@ class Data(object):
             return []
 
         def make_toworld_func(i):
-            def result(*args):
+            def pix2world(*args):
                 return self.coords.pixel2world(*args[::-1])[::-1][i]
-            return result
+            return pix2world
 
         def make_topixel_func(i):
-            def result(*args):
+            def world2pix(*args):
                 return self.coords.world2pixel(*args[::-1])[::-1][i]
-            return result
+            return world2pix
 
         result = []
         for i in range(self.ndim):
