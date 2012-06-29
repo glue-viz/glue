@@ -12,8 +12,6 @@ import glue
 from glue.qt.layertreewidget import LayerTreeWidget
 from glue.subset import OrState, AndState, XorState, InvertState
 
-from glue.qt.qtutil import DebugClipboard
-
 class TestLayerTree(unittest.TestCase):
     """ Unit tests for the layertreewidget class """
     def setUp(self):
@@ -51,12 +49,6 @@ class TestLayerTree(unittest.TestCase):
         layer = self.data[0]
         self.collect.append(layer)
         return layer
-
-    def drag_layer_to_clipboard(self, layer, clipboard):
-        tree = self.widget.layerTree
-        QTest.mousePress(tree, Qt.LeftButton)
-        QTest.mouseMove(clipboard)
-        QTest.mouseRelease(clipboard, Qt.LeftButton)
 
     def layer_present(self, layer):
         """ Test that a layer exists in the widget """

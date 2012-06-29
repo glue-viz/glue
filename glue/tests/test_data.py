@@ -40,7 +40,7 @@ class TestData(unittest.TestCase):
 
     def test_label(self):
         d = Data()
-        self.assertEquals(d.label, None)
+        self.assertEquals(d.label, '')
         self.assertEquals(self.data.label, "Test Data")
 
     def test_add_component_with_id(self):
