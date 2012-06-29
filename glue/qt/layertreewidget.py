@@ -9,7 +9,7 @@ from ui_layertree import Ui_LayerTree
 import glue
 import glue.message as msg
 from glue.subset import OrState, AndState, XorState, InvertState
-from glue.qt.data_connector import DataConnector
+from glue.qt.link_editor import LinkEditor
 from glue.qt import qtutil
 from glue.qt.qtutil import mpl_to_qt4_color
 
@@ -345,8 +345,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         self.layerAddButton.pressed.connect(self._load_data)
         self.layerRemoveButton.pressed.connect(self._delete_action.trigger)
         self.linkButton.pressed.connect(
-            lambda: DataConnector.set_connections(self._data_collection)
-        )
+            lambda: LinkEditor.update_links(self._data_collection))
         tree = self.layerTree
         rbut = self.layerRemoveButton
         can_remove = lambda: rbut.setEnabled(tree.currentItem() is not None and
