@@ -10,13 +10,24 @@ from glue.coordinates import Coordinates
 from glue.visual import VisualAttributes
 from glue.exceptions import IncompatibleAttribute
 from glue.component_link import ComponentLink
+from glue.util import file_format
 
 class ComponentID(object):
+    """ References a Component object within a data object
+
+    Components are retrieved from data objects via ComponentIDs::
+
+       component = data.get_component(component_id)
+    """
+
     def __init__(self, label):
+        """:param label: Name for the ID
+           :type label: str"""
         self._label = label
 
     @property
     def label(self):
+        """ Return the label """
         return self._label
 
     def __str__(self):
@@ -26,8 +37,22 @@ class ComponentID(object):
         return str(self._label)
 
 class Component(object):
+    """ Stores the actual, numerical information for a particular quantity
+
+    Data objects hold one or more components, accessed via
+    ComponentIDs. All Components in a data set must have the same
+    shape and number of dimensions
+    """
+
 
     def __init__(self, data, units=None):
+        """
+        :param data: The data to store
+        :type data: numpy array
+
+        :param units: Optional unit label
+        :type units: str
+        """
 
         # The physical units of the data
         self.units = units
@@ -37,28 +62,43 @@ class Component(object):
 
     @property
     def data(self):
+        """ Returns the data """
         return self._data
 
     @property
     def shape(self):
+        """ Return the shape of the data """
         return self._data.shape
 
     @property
     def ndim(self):
+        """ Return the number of dimensions """
         return len(self._data.shape)
 
 
 class DerivedComponent(Component):
+    """ A component which derives its data from a function """
     def __init__(self, data, link, units=None):
+        """
+        :param data: The data object to use for calculation
+        :type data: :class:`~glue.data.Data`
+
+        :param link: The link that carries out the function
+        :type link: :class:`~glue.component_link.ComponentLink`
+
+        :units: Optional unit description
+        """
         super(DerivedComponent, self).__init__(data, units=units)
         self._link = link
 
     @property
     def data(self):
+        """ Return the numerical data as a numpy array """
         return self._link.compute(self._data)
 
     @property
     def link(self):
+        """ Return the component link """
         return self._link
 
 
@@ -87,7 +127,7 @@ class Data(object):
         :type label: str"""
         # Coordinate conversion object
         self.coords = Coordinates()
-        self._shape = None
+        self._shape = ()
 
         # Components
         self._components = {}
@@ -119,8 +159,6 @@ class Data(object):
 
     @property
     def ndim(self):
-        if self.shape is None:
-            return 0
         return len(self.shape)
 
     @property
@@ -161,10 +199,19 @@ class Data(object):
         :param label:
               The label. If this is a string,
               a new ComponentID with this label will be
-              created. And associated with the Component
+              created and associated with the Component
 
         :type component: :class:`~glue.component.Component`
         :type label: :class:`str` or :class:`~glue.data.componentID`
+
+        *Raises*
+
+           TypeError, if label is invalid, or if the component has
+           an incompatible shape
+
+        *Returns*
+
+           The ComponentID associated with the newly-added component
         """
         if not(self._check_can_add(component)):
             raise TypeError("Compoment is incompatible with "
@@ -435,7 +482,6 @@ class TabularData(Data):
 
 
 class GriddedData(Data):
-
     '''
     A class to represent uniformly gridded data (images, data cubes, etc.)
     '''
@@ -449,30 +495,25 @@ class GriddedData(Data):
 
         # Try and automatically find the format if not specified
         if format == 'auto':
-            if filename.lower().endswith('.gz'):
-                format = filename.lower().rsplit('.', 2)[1]
-            else:
-                format = filename.lower().rsplit('.', 1)[1]
+            format = file_format(format)
 
         # Read in the data
         if format in ['fits', 'fit']:
             arrays = extract_data_fits(filename, **kwargs)
-
-            # parse header, create coordinate object
             header = pyfits.open(filename)[0].header
-            if 'NAXIS' in header and header['NAXIS'] == 2:
-                self.coords = WCSCoordinates(header)
-            elif 'NAXIS' in header and header['NAXIS'] == 3:
-                self.coords = WCSCubeCoordinates(header)
-
-            for component_name in arrays:
-                comp = Component(arrays[component_name])
-                self.add_component(comp, component_name)
-
+            self._parse_coordinates(header)
         elif format in ['hdf', 'hdf5', 'h5']:
             arrays = extract_data_hdf5(filename, **kwargs)
-            for component_name in arrays:
-                comp = Component(arrays[component_name])
-                self.add_component(comp, component_name)
         else:
             raise Exception("Unkonwn format: %s" % format)
+
+        for component_name in arrays:
+            comp = Component(arrays[component_name])
+            self.add_component(comp, component_name)
+
+
+    def _parse_coordinates(self, header):
+        if 'NAXIS' in header and header['NAXIS'] == 2:
+            self.coords = WCSCoordinates(header)
+        elif 'NAXIS' in header and header['NAXIS'] == 3:
+            self.coords = WCSCubeCoordinates(header)

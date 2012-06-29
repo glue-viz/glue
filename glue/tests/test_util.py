@@ -8,19 +8,24 @@ from glue.util import *
 class TestRelim(unittest.TestCase):
     pass
 
-class TestGlue(unittest.TestCase):
-    def test_1to1(self):
-        d1 = glue.Data(label='d1')
-        d2 = glue.Data(label='d2')
-        c1 = glue.Component(np.zeros(3))
-        c2 = glue.Component(np.zeros(3))
-        id1 = d1.add_component(c1, 'label1')
-        id2 = d2.add_component(c2, 'label2')
+class TestFileFormat(unittest.TestCase):
 
-        glue_components_1to1(d1, id1, d2, id2)
+    def test_gz(self):
+        fmt = file_format('test.tar.gz')
+        self.assertEquals(fmt, 'tar')
 
-        self.assertIn(id2, d1.derived_components)
-        self.assertIn(id1, d2.derived_components)
+    def test_normal(self):
+        fmt = file_format('test.data')
+        self.assertEquals(fmt, 'data')
+
+    def test_underscores(self):
+        fmt = file_format('test_file.fits_file')
+        self.assertEquals(fmt, 'fits_file')
+
+    def test_multidot(self):
+        fmt = file_format('test.a.b.c')
+        self.assertEquals(fmt, 'c')
+
 
 if __name__ == "__main__":
     unittest.main()

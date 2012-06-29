@@ -26,7 +26,7 @@ class TestData(unittest.TestCase):
 
     def test_shape_empty(self):
         d = Data()
-        self.assertEquals(d.shape, None)
+        self.assertEquals(d.shape, ())
 
     def test_ndim_empty(self):
         d = Data()
@@ -43,6 +43,11 @@ class TestData(unittest.TestCase):
         self.assertEquals(d.label, '')
         self.assertEquals(self.data.label, "Test Data")
 
+    def test_set_label(self):
+        d = Data()
+        d.label = 'test_set_label'
+        self.assertEquals(d.label, 'test_set_label')
+
     def test_add_component_with_id(self):
         cid = glue.data.ComponentID("test")
         comp = MagicMock()
@@ -56,6 +61,16 @@ class TestData(unittest.TestCase):
         comp.data.shape = (3,2)
         self.assertRaises(TypeError, self.data.add_component,
                           comp, "junk label")
+
+    def test_get_getitem_incompatible_attribute(self):
+        cid = ComponentID('bad')
+        self.assertRaises(glue.exceptions.IncompatibleAttribute,
+                          self.data.__getitem__, cid)
+
+    def test_get_component_incompatible_attribute(self):
+        cid = ComponentID('bad')
+        self.assertRaises(glue.exceptions.IncompatibleAttribute,
+                          self.data.get_component, cid)
 
     def test_component_ids(self):
         cid = self.data.component_ids()
@@ -108,6 +123,15 @@ class TestData(unittest.TestCase):
         self.assertIn(self.comp_id, pricomps)
         self.assertNotIn(compid, pricomps)
 
+    def test_add_component_invalid_label(self):
+        self.assertRaises(TypeError,
+                          self.data.add_component, self.comp, label=5)
+
+    def test_add_component_invalid_component(self):
+        comp = glue.Component(np.array([1]))
+        self.assertRaises(TypeError,
+                          self.data.add_component, comp, label='bad')
+
     def test_add_component_link(self):
         compid = glue.data.ComponentID('virtual')
         link = MagicMock(spec_set = glue.component_link.ComponentLink)
@@ -128,6 +152,12 @@ class TestData(unittest.TestCase):
         self.assertNotIn(self.comp_id, pricomps)
         self.assertIn(compid, pricomps)
 
+    def test_str_empty(self):
+        d = glue.Data()
+        str(d)
+
+    def test_str_(self):
+        str(self.data)
 
     def test_add_derived_component(self):
         compid = glue.data.ComponentID('virtual')
@@ -155,6 +185,11 @@ class TestData(unittest.TestCase):
         self.data.add_subset(s)
         self.assertIn(s, self.data.subsets)
         self.assertEquals(hub.broadcast.call_count, 1)
+
+    def test_remove_component(self):
+        self.data.remove_component(self.comp_id)
+        self.assertNotIn(self.comp_id, self.data.components)
+
 
     def test_remove_subset(self):
         s = MagicMock(spec_set = glue.Subset)
@@ -195,6 +230,11 @@ class TestData(unittest.TestCase):
         np.testing.assert_array_equal(w1, w1prime)
         np.testing.assert_array_equal(p0, p0prime)
         np.testing.assert_array_equal(p1, p1prime)
+
+    def test_coordinate_links_empty_data(self):
+        d = glue.Data()
+        d.coords = None
+        self.assertEquals(d.coordinate_links, [])
 
     def test_coordinate_links_idempotent(self):
         """Should only calculate links once, and
