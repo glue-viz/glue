@@ -1,12 +1,17 @@
 import os
 import imp
 
+def identity(x):
+    return x
+
 def default_config():
     import glue.qt
 
     result = {
         'qt_clients' : [glue.qt.ScatterWidget,
                         glue.qt.ImageWidget],
+
+        'link_functions' : [identity]
     }
 
     return result
