@@ -30,6 +30,12 @@ class TestComponentLink(unittest.TestCase):
                           [from_, from_],
                           to_)
 
+    def test_invalid_init_scalar_from(self):
+        data, from_, to_ = self.toy_data()
+        self.assertRaises(TypeError,
+                          ComponentLink,
+                          from_, to_)
+
     def test_compute_direct(self):
         data, from_, to_ = self.toy_data()
         from_id = data.add_component(from_, 'from_label')
@@ -61,6 +67,24 @@ class TestComponentLink(unittest.TestCase):
         self.assertIs(link.get_from_ids()[0], from_id)
         self.assertIs(link.get_to_id(), to_id)
         self.assertIs(link.get_using(), using)
+
+    def test_str(self):
+        """ str method returns without error """
+        data, from_, to_ = self.toy_data()
+        from_id = data.add_component(from_, 'from_label')
+        to_id = ComponentID('to_label')
+        link = ComponentLink([from_id], to_id)
+        str(link)
+        link = ComponentLink([from_id], to_id, using=lambda x:3*x)
+        str(link)
+
+    def test_repr(self):
+        """ repr method returns without error """
+        data, from_, to_ = self.toy_data()
+        from_id = data.add_component(from_, 'from_label')
+        to_id = ComponentID('to_label')
+        link = ComponentLink([from_id], to_id)
+        repr(link)
 
 
 
