@@ -162,5 +162,8 @@ class LinkManager(object):
     def links(self):
         return list(self._links)
 
+    def clear(self):
+        self._links.clear()
+
     def __contains__(self, item):
         return item in self._links

@@ -68,8 +68,9 @@ class DataCollection(glue.HubListener):
             self.hub.broadcast(msg)
 
     def _sync_link_manager(self):
-        # update the LinkManager, so all the DerivedComponents
-        # for each data set are up-to-date
+        """ update the LinkManager, so all the DerivedComponents
+        for each data set are up-to-date
+        """
 
         # add any links in the data
         for d in self._data:
@@ -78,6 +79,18 @@ class DataCollection(glue.HubListener):
             for link in d.coordinate_links:
                 self._link_manager.add_link(link)
 
+        for d in self._data:
+            self._link_manager.update_data_components(d)
+
+    @property
+    def links(self):
+        return self._link_manager.links
+
+    @links.setter
+    def links(self, links):
+        self._link_manager.clear()
+        for link in links:
+            self._link_manager.add_link(link)
 
         for d in self._data:
             self._link_manager.update_data_components(d)
