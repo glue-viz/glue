@@ -1,6 +1,7 @@
 from matplotlib.colors import ColorConverter
 from PyQt4 import QtGui
-from PyQt4.QtGui import QColor, QInputDialog, QColorDialog
+from PyQt4.QtCore import QMimeData, QStringList
+from PyQt4.QtGui import QColor, QInputDialog, QColorDialog, QListWidget
 
 import glue
 
@@ -62,43 +63,6 @@ def data_wizard():
         result = glue.data.TabularData(label=label)
         result.read_data(file_name)
     return result
-
-
-class DebugClipboard(QtGui.QWidget):
-    """ A simple class to that displays
-    any drop event with text data """
-    def __init__(self, parent=None):
-        super(DebugClipboard, self).__init__(parent)
-        self.text_edit = QtGui.QTextEdit(self)
-        layout = QtGui.QHBoxLayout()
-        layout.addWidget(self.text_edit)
-        self.setLayout(layout)
-        self.text_edit.setAcceptDrops(False)
-        self.setAcceptDrops(True)
-
-    def get_text(self):
-        return str(self.text_edit.toPlainText())
-
-    def dragEnterEvent(self, event):
-        event.accept()
-        return
-        if event.mimeData().hasText():
-            event.accept()
-        else:
-            event.ignore()
-
-    def dropEvent(self, event):
-        md = event.mimeData()
-        print md.hasColor(), md.hasHtml(), md.hasImage()
-        print md.hasText(), md.hasUrls()
-        print md.text()
-        print md.urls()
-        for f in md.formats():
-            print f
-            print type(md.data(f))
-            for i, d in enumerate(md.data(f)):
-                print i, ("%s" % d)
-        self.text_edit.setPlainText("%s" % event.mimeData().text())
 
 
 def edit_layer_color(layer):
@@ -172,3 +136,56 @@ def get_text(title='Enter a label'):
     result, isok = dialog.getText(None, title, title)
     if isok:
         return str(result)
+
+
+class PyMimeData(QMimeData):
+    """Stores references to live python objects.
+
+    Normal QMimeData instances store all data as QByteArrays. This
+    makes it hard to pass around live python objects in drag/drop
+    events, since one would have to convert between object references
+    and byte sequences.
+
+    The object to store is passed to the constructor, and stored in
+    the application/py_instance mime_type.
+    """
+    MIME_TYPE = 'application/py_instance'
+
+    def __init__(self, instance):
+        """
+        :param instance: The python object to store
+        """
+        super(PyMimeData, self).__init__()
+        self._instance = instance
+        self.setData(self.MIME_TYPE, '1')
+
+    def data(self, mime_type):
+        """ Retrieve the data stored at the specified mime_type
+
+        If mime_type is application/py_instance, a python object
+        is returned. Otherwise, a QByteArray is returned """
+        if str(mime_type) == self.MIME_TYPE:
+            return self._instance
+
+        return super(PyMimeData, self).data(mime_type)
+
+
+class GlueListWidget(QListWidget):
+    def __init__(self, parent=None):
+        super(GlueListWidget, self).__init__(parent)
+        self._data = {}
+
+    def mimeTypes(self):
+        types = QStringList()
+        types.append(PyMimeData.MIME_TYPE)
+        return types
+
+    def mimeData(self, selected_items):
+        assert len(selected_items) == 1
+        item = selected_items[0]
+        data = self._data[item]
+        return PyMimeData(data)
+
+    @property
+    def data(self):
+        return self._data
