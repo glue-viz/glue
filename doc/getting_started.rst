@@ -19,12 +19,7 @@ session with the Glue GUI.You can also follow along with this video:
 .. raw:: html
 
     <center>
-    <iframe src="http://player.vimeo.com/video/40460447" width="500" height="313" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
-    </center>
-
-.. todo::
-
-    Fix this link to point to actual tutorial
+    <iframe src="http://player.vimeo.com/video/44764865" width="500" height="281" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe> </center>
 
 
 Start the application
@@ -79,8 +74,10 @@ The Image Widget allows us to specify a data set and attribute. Each
 data set may have several attributes -- in this case, we have the
 primary pixel information, Pixel coordinate information (i.e. the x or
 y location of each pixel in pixel space), and world coordinate
-information (in this case, the galactic latitude and longitude of each
+information (in this case, the RA and Dec of each
 pixel). Select the ``Primary`` component.
+
+.. tip:: Glue automaticaly parses FITS headers, to derive information about the pixel and world coordinate system of images.
 
 Adjusting Contrast
 ------------------
@@ -131,7 +128,7 @@ None of this is very interesting yet -- defining a single subset on a
 single dataset isn't all that enlightening, and other image viewers
 like DS9 provide much better functionality.
 
-Let's load another data set. This time, load ``yso_catalog.vot`` --
+Let's load another data set. This time, load ``ysos.tbl`` --
 a VO catalog of young stellar objects towards the Perseus molecular cloud.
 This creates a new data entry and editable subset in the layer manager. Let's also create a second visualization environment: this time, a scatter plot.
 
@@ -143,30 +140,35 @@ scatter widget shares many of the same mouse modes.
 Linking Data
 ------------
 
-These two data sets share a logical connection -- the GLAT and GLON
-columns of the catalog specify the location of objects in
-latitude/longitude space. This information is also in the image. Let's
-teach Glue about that connection.
+These two data sets share a logical connection -- the ``ra`` and
+``dec`` columns of the catalog specify the location of objects on the
+sky. This information is also in the image. Let's teach Glue about
+that connection.
 
-In the layer manager, click the "Link" button. Selection the extinction data set for the Data Set 1 dropbox, and the catalog for Data Set 2. Then, highlight the galactice longitude attribute in each list.
+In the layer manager, click the "Link" button. Selection the
+extinction data set for the Data Set 1 dropbox, and the catalog for
+Data Set 2. Then, highlight the RA attribute in each
+list.
 
 .. figure:: link_dialog.png
    :align: center
 
-   Linking the galactic longitude information of an image and catalog data set
+   Linking the coordinate information of an image and catalog data set
 
 Finally, click the "Glue" button to tell the application that these
 two quantities in fact describe the same information. Repeat this for
-the latitude as well. Finally, click OK to accept these changes.
+the declination as well. Finally, click OK to accept these changes.
 
-Nothing visible changes, but Glue now knows of a strategy for propagating subsets from one data set to another -- let's see how that works
+Nothing visible changes, but Glue now knows of a strategy for
+propagating subsets from one data set to another -- let's see how that
+works
 
 Propagating Subsets
 -------------------
 
 Define a subset in the image widget using one of the mouse modes. This
-updates the image's edit_subset definition. Now, right click on that
-subset in the layer manager, and click "Copy Subset". Now, highlight
+updates the image's edit_subset definition. Next, right click on that
+subset in the layer manager, and click "Copy Subset". Finally, highlight
 the edit subset in the catalog, right click, and select "paste
 subset". You should see some points in the scatter plot change color.
 
@@ -176,8 +178,8 @@ subset". You should see some points in the scatter plot change color.
    Copying a subset definition to apply to another data set.
 
 What just happened? The selection in the image widget defined a region
-in latitude-longitude space. Since Glue knows that these quantities
-are linked to attributes in the catalog, it also knows how to filter
+in RA/Dec space. Since Glue knows that these quantities
+are linked to attributes in the catalog, it knows how to filter
 items in the catalog based on this region of interest. Copy/pasting
 the subset copies over the region of interest to the catalog and
 filters the catalog appropriately.
@@ -188,30 +190,29 @@ filters the catalog appropriately.
 Actually, something even niftier is going on. Behind the scenes, the
 image client defines subsets in *pixel* coordinate space -- this is
 not directly applicable to the catalog. However, it *is* possible to
-translate latitude and longitude into the pixel space of the image
-(Glue sets up this link automatically when you load the image). Glue
+translate RA and Dec into the pixel space of the image. Glue
 is able to indirectly deduce the pixel coordinates (in the image
 space) of each entry in the catalog, and use this information to copy
 the subset definition.
 
 This is a powerful feature of Glue, and greatly simplifies specifying
 links between data sets. For example, if we loaded a third data set
-(call it other_image) and connected it's latitude-longitude attributes
+(call it other_image) and connected it's RA/Dec attributes
 with the catalog, Glue would automatically know how to make all the
-following translations and more:
+following translations (and more):
 
- * latitude/longitude in other_image to pixel x/y in the original image
+ * RA/Dec in other_image to pixel x/y in the original image
  * pixel x/y in other_image to pixel x/y in the original image
  * pixel x/y in other_image to latitude/longitude in all 3 data sets
 
 .. note::
 
     We can't always copy/paste subsets across data. For example, plot
-    two attributes besides latitude/longitude in the scatter widget,
-    and define a subset. The underlying region of interest is now
-    defined according to the plotted attributes, which cannot
-    translate to the image. If you try to copy/paste this subset onto
-    the image, it will fail and simply clear the image's subset
+    two attributes besides ra and dec in the scatter widget, and
+    define a subset. The underlying region of interest is now defined
+    according to the plotted attributes, which do not translate to
+    image coordinates. If you try to copy/paste this subset onto the
+    image, it will fail and simply clear the image's subset
     definition.
 
 Saving Subsets

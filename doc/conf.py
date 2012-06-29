@@ -242,3 +242,4 @@ texinfo_documents = [
 #texinfo_show_urls = 'footnote'
 
 todo_include_todos = True
+autoclass_content = 'both'

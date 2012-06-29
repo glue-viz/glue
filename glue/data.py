@@ -63,8 +63,28 @@ class DerivedComponent(Component):
 
 
 class Data(object):
+    """Stores data and manages subsets.
 
-    def __init__(self, label=None):
+    The data object stores data as a collection of
+    :class:`~glue.data.Component` objects.  Each component stored in a
+    dataset must have the same shape.
+
+    Catalog data sets are stored such that each column is a distinct
+    1-dimensional ``Component``.
+
+    There two ways to extract the actual numerical data stored in a
+    :class:`~glue.Data` object::
+
+       data.get_component(component_id)
+       data[component_id]
+
+    These statements are equivalent. The second is provided since the
+    first is rather verbose
+    """
+
+    def __init__(self, label=""):
+        """:param label: label for data
+        :type label: str"""
         # Coordinate conversion object
         self.coords = Coordinates()
         self._shape = None
@@ -112,6 +132,11 @@ class Data(object):
         """ Convenience access to data set's label """
         return self.style.label
 
+    @label.setter
+    def label(self, value):
+        """ Set the label to value """
+        self.style.label = value
+
     def _check_can_add(self, component):
         if isinstance(component, DerivedComponent):
             return component._data is self
@@ -123,9 +148,8 @@ class Data(object):
     def remove_component(self, component_id):
         """ Remove a component from a data set
 
-        Parameters
-        ----------
-        component_id : ComponentID of component to remove
+        :param component_id: the component to remove
+        :type component_id: :class:`~glue.data.ComponentID`
         """
         if component_id in self._components:
             self._components.pop(component_id)
@@ -133,13 +157,14 @@ class Data(object):
     def add_component(self, component, label):
         """ Add a new component to this data set.
 
-        Parameters
-        ----------
-        component : Component object to add
-        label : str or ComponentID
+        :param component: object to add
+        :param label:
               The label. If this is a string,
               a new ComponentID with this label will be
               created. And associated with the Component
+
+        :type component: :class:`~glue.component.Component`
+        :type label: :class:`str` or :class:`~glue.data.componentID`
         """
         if not(self._check_can_add(component)):
             raise TypeError("Compoment is incompatible with "
@@ -173,13 +198,11 @@ class Data(object):
         """ Shortcut method for generating a new DerivedComponent
         from a ComponentLink object, and adding it to a data set.
 
-        Parameters
-        ----------
-        link : ComponentLink object
+        :param link: ComponentLink object
 
-        Returns
-        -------
-        The DerivedComponent that was added
+        Returns:
+
+            The DerivedComponent that was added
         """
         dc = DerivedComponent(self, link)
         to_ = link.get_to_id()
@@ -219,21 +242,20 @@ class Data(object):
 
     @property
     def derived_components(self):
-        """Returns a list of ComponentIDs for the DerivedComponents
-        in the data."""
+        """A list of ComponentIDs for the :class:`~glue.data.DerivedComponents`
+        in the data. (Read only)
+        """
         return [c for c in self.component_ids() if
                 isinstance(self._components[c], DerivedComponent)]
 
     def find_component_id(self, label):
-        """ Search for component_ids associated by label name.
+        """ Retrieve component_ids associated by label name.
 
-        Inputs
-        ------
-        label : string to search for
+        :param label: string to search for
 
-        Outputs:
-        --------
-        A list of all component_ids with matching labels
+        Returns:
+
+            A list of all component_ids with matching labels
         """
         result = [cid for cid in self.component_ids() if
                   cid.label.upper() == label.upper()]
@@ -290,9 +312,9 @@ class Data(object):
         This is the preferred way for creating subsets, as it
         takes care of setting up the links between data and subset
 
-        Returns
-        -------
-        The new subset object
+        Returns:
+
+           The new subset object
         """
         subset = glue.Subset(self)
         self.add_subset(subset)
@@ -317,6 +339,11 @@ class Data(object):
         self.subsets.remove(subset)
 
     def register_to_hub(self, hub):
+        """ Connect to a hub.
+
+        This method usually doesn't have to be called directly, as
+        DataCollections manage the registration of data objects
+        """
         if not isinstance(hub, glue.Hub):
             raise TypeError("input is not a Hub object: %s" % type(hub))
         self.hub = hub
@@ -359,13 +386,12 @@ class Data(object):
         """ Shortcut syntax to access the numerical data in a component.
         Equivalent to:
 
-        component = data.get_component(component_id)
-        component.data
+        ``component = data.get_component(component_id).data``
 
-        Parameters:
-        -----------
-        key : ComponentID
+        :param key:
           The component to fetch data from
+
+        :type key: :class:`~glue.data.ComponentID`
         """
         try:
             return self._components[key].data
@@ -376,9 +402,7 @@ class Data(object):
     def get_component(self, component_id):
         """Fetch the component corresponding to component_id.
 
-        Inputs
-        ------
-        component_id : the component_id to retrieve
+        :param component_id: the component_id to retrieve
         """
         try:
             return self._components[component_id]

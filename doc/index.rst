@@ -27,8 +27,6 @@ Specifically, Glue tries to accomplish the following:
    :maxdepth: 2
 
    getting_started.rst
-   gui_documentation.rst
-   developer_guide.rst
    api.rst
 
 
