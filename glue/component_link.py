@@ -52,7 +52,11 @@ class ComponentLink(object):
         return self._using
 
     def __str__(self):
-        result = "ComponentLink %s --> %s" % (self._from, self._to)
+        args = ", ".join([t.label for t in self._from])
+        if self._using is not None:
+            result = "%s <- %s(%s)" % (self._to, self._using.__name__, args)
+        else:
+            result = "%s <- %s" % (self._to, self._from)
         return result
 
     def __repr__(self):
