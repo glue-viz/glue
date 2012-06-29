@@ -7,6 +7,8 @@ from mock import MagicMock
 
 import glue
 
+AXES = plt.plot([1,2,3])[0].axes
+
 class TestRectangle(unittest.TestCase):
 
     def setUp(self):
@@ -29,6 +31,11 @@ class TestRectangle(unittest.TestCase):
         self.assertFalse(self.roi.defined())
         self.assertRaises(glue.exceptions.UndefinedROI,
                           self.roi.contains, 5, 5)
+
+    def test_empty_to_polygon(self):
+        x, y = self.roi.to_polygon()
+        self.assertEquals(x, [])
+        self.assertEquals(y, [])
 
     def test_to_polygon(self):
         self.roi.update_limits(0, 0, 10, 10)
@@ -66,6 +73,15 @@ class TestRectangle(unittest.TestCase):
         self.assertTrue(self.roi.contains(x,y).all())
         self.assertFalse(self.roi.contains(x+10,y).any())
         self.assertEquals(self.roi.contains(x,y).shape, x.shape)
+
+    def test_str_undefined(self):
+        """ str method should not crash """
+        self.assertEquals(type(str(self.roi)), str)
+
+    def test_str_defined(self):
+        """ str method should not crash """
+        self.roi.update_limits(1, 2, 3, 4)
+        self.assertEquals(type(str(self.roi)), str)
 
 
 class TestCircle(unittest.TestCase):
@@ -112,6 +128,11 @@ class TestCircle(unittest.TestCase):
         self.assertTrue(poly.contains(0,0))
         self.assertFalse(poly.contains(10,0))
 
+    def test_poly_undefined(self):
+        x, y = self.roi.to_polygon()
+        self.assertEquals(x, [])
+        self.assertEquals(y, [])
+
     def test_reset(self):
         self.assertFalse(self.roi.defined())
         self.roi.set_center(0,0)
@@ -148,6 +169,9 @@ class TestPolygon(unittest.TestCase):
         self.assertRaises(glue.exceptions.UndefinedROI,
                           self.roi.contains, 1, 2)
 
+    def test_remove_empty(self):
+        self.roi.remove_point(1, 0)
+
     def test_replace(self):
         self.define_as_square()
         self.assertTrue(self.roi.contains(.9, .02))
@@ -171,6 +195,9 @@ class TestPolygon(unittest.TestCase):
         x,y = self.roi.to_polygon()
         self.assertEquals(x, [0,0,1,1])
         self.assertEquals(y, [0,1,1,0])
+
+    def test_to_poly_undefined(self):
+        self.assertEquals(self.roi.to_polygon(), ([], []))
 
     def test_rect(self):
         self.roi.reset()
@@ -212,6 +239,10 @@ class TestPolygon(unittest.TestCase):
         self.assertTrue(self.roi.contains(x, y).all())
         self.assertFalse(self.roi.contains(x+5, y).any())
 
+    def test_str(self):
+        """ __str__ returns a string """
+        self.assertEquals(type(str(self.roi)), str)
+
 
 class DummyEvent(object):
     def __init__(self, x, y, inaxes=True):
@@ -242,6 +273,11 @@ class TestMpl(unittest.TestCase):
 
     def test_proper_roi(self):
         raise NotImplemented
+
+    def test_start_ignored_if_not_inaxes(self):
+        ev = DummyEvent(0, 0, inaxes=False)
+        self.roi.start_selection(ev)
+        self.assertFalse(self.roi._roi.defined())
 
     def test_canvas_syncs_properly(self):
         self.assertEquals(self.axes.figure.canvas.draw.call_count, 1)
@@ -306,6 +342,9 @@ class TestRectangleMpl(TestMpl):
         self.assertAlmostEqual(corner, (min(x0, x1), min(y0, y1)), 4)
         self.assertAlmostEqual(width, abs(x0-x1))
         self.assertAlmostEqual(height, abs(y0-y1))
+
+    def test_str(self):
+        self.assertEquals(type(str(self.roi)), str)
 
     def test_proper_roi(self):
         self.assertTrue(isinstance(self.roi._roi, glue.roi.RectangularROI))
@@ -378,6 +417,12 @@ class TestCircleMpl(TestMpl):
     def test_proper_roi(self):
         self.assertTrue(isinstance(self.roi._roi, glue.roi.CircularROI))
 
+    def test_to_polygon_undefined(self):
+        """to_polygon() result should be undefined before defining polygon"""
+        roi = self.roi.roi()
+        self.assertFalse(roi.defined())
+
+
     def test_roi_defined_correctly(self):
         ev0 = DummyEvent(0, 0)
         ev1 = DummyEvent(5, 0)
@@ -394,70 +439,6 @@ class TestCircleMpl(TestMpl):
         self.assertFalse(roi.contains(x + 1.05 * r, y))
         self.assertFalse(roi.contains(x + .8 * r, y + .8 * r))
 
-@unittest.skip("Slow tests that use MPL.")
-class TestCircleMplWithAxes(unittest.TestCase):
-    def setUp(self):
-        self.axes = MagicMock()
-        p = plt.plot([1,2,3])
-        self.axes = p[0].axes
-        self.roi = glue.roi.MplCircularROI(self.axes)
-
-    def tearDown(self):
-        plt.close('all')
-
-    def send_events(self):
-        """ Simulates mouse clicks at (x,y) = 100,100 pixels,
-        drag to 100,150, and release."""
-        xp1, yp1 = [100], [100]
-        xp2, yp2 = [100], [150]
-        xyd1 = glue.roi.pixel_to_data(self.axes, xp1, yp1)
-        xyd2 = glue.roi.pixel_to_data(self.axes, xp2, yp2)
-        ev0 = DummyEvent(xyd1[0,0], xyd1[0,1])
-        ev1 = DummyEvent(xyd2[0,0], xyd2[0,1])
-        self.roi.start_selection(ev0)
-        self.roi.update_selection(ev1)
-        self.roi.finalize_selection(ev1)
-
-    def assert_roi_correct(self):
-        """ Tests that the ROI correctly describes a circle in
-        pixel coordinates, defined via the events in send_events()"""
-        xp1, yp1 = [100], [149]
-        xp2, yp2 = [100], [151]
-        xyd1 = glue.roi.pixel_to_data(self.axes, xp1, yp1)
-        xyd2 = glue.roi.pixel_to_data(self.axes, xp2, yp2)
-        roi = self.roi.roi()
-        self.assertTrue(roi.contains(xyd1[0,0], xyd1[0,1]))
-        self.assertFalse(roi.contains(xyd2[0,0], xyd2[0,1]))
-
-    def test_define_xlog(self):
-        self.axes.set_xscale('log')
-        self.axes.set_xlim([1, 10])
-        self.axes.set_ylim([0, 3])
-        self.send_events()
-        self.assert_roi_correct()
-
-    def test_define_ylog(self):
-        self.axes.set_yscale('log')
-        self.axes.set_xlim([1, 10])
-        self.axes.set_ylim([1, 3])
-        self.send_events()
-        self.assert_roi_correct()
-
-    def test_define_loglog(self):
-        self.axes.set_xscale('log')
-        self.axes.set_yscale('log')
-        self.axes.set_xlim([1, 10])
-        self.axes.set_ylim([1, 3])
-        self.send_events()
-        self.assert_roi_correct()
-
-    def test_define_linear(self):
-        self.axes.set_xscale('linear')
-        self.axes.set_yscale('linear')
-        self.axes.set_xlim([1, 10])
-        self.axes.set_ylim([1, 3])
-        self.send_events()
-        self.assert_roi_correct()
 
 class TestPolyMpl(TestMpl):
     def _roi_factory(self):
@@ -489,10 +470,10 @@ class TestPolyMpl(TestMpl):
         self.send_events()
         self.assert_roi_correct()
 
+
 class TestUtil(unittest.TestCase):
     def setUp(self):
-         p = plt.plot([1,2,3])
-         self.axes = p[0].axes
+        self.axes = AXES
 
     def test_aspect_ratio(self):
         self.axes.figure.set_figheight(5)

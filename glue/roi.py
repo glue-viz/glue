@@ -35,7 +35,7 @@ def pixel_to_data(ax, x, y):
     return ax.transData.inverted().transform(xy)
 
 
-class Roi(object):
+class Roi(object):  # pragma: no cover
     def contains(self, x, y):
         """Return true/false for each x/y pair. Raises UndefinedROI
         exception if not defined
@@ -54,11 +54,10 @@ class Roi(object):
 
 class RectangularROI(Roi):
     """
-    A class to define a 2D rectangular region of interest.
+    A 2D rectangular region of interest.
     """
 
     def __init__(self):
-        """ Create a new ROI """
         super(RectangularROI, self).__init__()
         self.xmin = None
         self.xmax = None
@@ -66,8 +65,11 @@ class RectangularROI(Roi):
         self.ymax = None
 
     def __str__(self):
-        return "x=[%0.3f, %0.3f], y=[%0.3f, %0.3f]" % (self.xmin, self.xmax,
-                                                       self.ymin, self.ymax)
+        if self.defined():
+            return "x=[%0.3f, %0.3f], y=[%0.3f, %0.3f]" % (self.xmin, self.xmax,
+                                                           self.ymin, self.ymax)
+        else:
+            return "Undefined Rectangular ROI"
 
     def corner(self):
         return (self.xmin, self.ymin)
@@ -83,15 +85,13 @@ class RectangularROI(Roi):
         Test whether a set of (x,y) points falls within
         the region of interest
 
-        Parameters:
-        -----------
-        x: A scalar or numpy array of x points
-        y: A scalar or numpy array of y points
+        :param x: A scalar or numpy array of x points
+        :param y: A scalar or numpy array of y points
 
-        Returns:
-        --------
-        A list of True/False values, for whether each (x,y)
-        point falls within the ROI
+        *Returns*
+
+            A list of True/False values, for whether each (x,y)
+            point falls within the ROI
         """
         if not self.defined():
             raise UndefinedROI
@@ -121,17 +121,19 @@ class RectangularROI(Roi):
         return self.xmin is not None
 
     def to_polygon(self):
-        return [self.xmin, self.xmax, self.xmax, self.xmin, self.xmin], \
-            [self.ymin, self.ymin, self.ymax, self.ymax, self.ymin]
+        if self.defined():
+            return [self.xmin, self.xmax, self.xmax, self.xmin, self.xmin], \
+                [self.ymin, self.ymin, self.ymax, self.ymax, self.ymin]
+        else:
+            return [], []
 
 
 class CircularROI(Roi):
     """
-    A class to define a 2D circular region of interest.
+    A 2D circular region of interest.
     """
 
     def __init__(self):
-        """ Create a new ROI """
         super(CircularROI, self).__init__()
         self.xc = None
         self.yc = None
@@ -142,15 +144,14 @@ class CircularROI(Roi):
         Test whether a set of (x,y) points falls within
         the region of interest
 
-        Parameters:
-        -----------
-        x: A list of x points
-        y: A list of y points
+        :param x: A list of x points
+        :param y: A list of y points
 
-        Returns:
-        --------
-        A list of True/False values, for whether each (x,y)
-        point falls within the ROI
+        *Returns*
+
+           A list of True/False values, for whether each (x,y)
+           point falls within the ROI
+
         """
         if not self.defined():
             raise UndefinedROI
@@ -189,10 +190,14 @@ class CircularROI(Roi):
         self.radius = 0.
 
     def defined(self):
+        """ Returns True if the ROI is defined """
         return self.xc is not None and \
             self.yc is not None and self.radius is not None
 
     def to_polygon(self):
+        """ Returns x, y, where each is a list of points """
+        if not self.defined():
+            return [], []
         theta = np.linspace(0, 2 * np.pi, num=20)
         x = self.xc + self.radius * np.cos(theta)
         y = self.yc + self.radius * np.sin(theta)
@@ -206,7 +211,10 @@ class PolygonalROI(Roi):
 
     def __init__(self, vx=None, vy=None):
         """
-        Create a new ROI
+        :param vx: initial x vertices
+        :type vx: list
+        :param vy: initial y vertices
+        :type vy: list
         """
         super(PolygonalROI, self).__init__()
         self.vx = vx
@@ -228,15 +236,14 @@ class PolygonalROI(Roi):
         Test whether a set of (x,y) points falls within
         the region of interest
 
-        Parameters:
-        -----------
-        x: A list of x points
-        y: A list of y points
+        :param x: A list of x points
+        :param y: A list of y points
 
-        Returns:
-        --------
-        A list of True/False values, for whether each (x,y)
-        point falls within the ROI
+        *Returns*
+
+           A list of True/False values, for whether each (x,y)
+           point falls within the ROI
+
         """
         if not self.defined():
             raise UndefinedROI
@@ -255,10 +262,8 @@ class PolygonalROI(Roi):
         """
         Add another vertex to the ROI
 
-        Parameters:
-        -----------
-        x: The x coordinate
-        y: The y coordinate
+        :param x: The x coordinate
+        :param y: The y coordinate
         """
         self.vx.append(x)
         self.vy.append(y)
@@ -276,16 +281,14 @@ class PolygonalROI(Roi):
             self.vy[-1] = y
 
     def remove_point(self, x, y, thresh=None):
-        """
-        Remove the vertex closest to a reference (xy) point
+        """Remove the vertex closest to a reference (xy) point
 
-        Parameters
-        ----------
-        x: The x coordinate of the reference point
-        y: The y coordinate of the reference point
-        thresh: An optional threshhold. If present, the vertex closest
-                to (x,y) will only be removed if the distance is less
-                than thresh
+        :param x: The x coordinate of the reference point
+        :param y: The y coordinate of the reference point
+
+        :param thresh: An optional threshhold. If present, the vertex
+                closest to (x,y) will only be removed if the distance
+                is less than thresh
 
         """
         if len(self.vx) == 0:
@@ -310,11 +313,14 @@ class PolygonalROI(Roi):
         return self.vx, self.vy
 
 
-class AbstractMplRoi(object):
+class AbstractMplRoi(object):  # pragma: no cover
     """ Base class for objects which use
     Matplotlib user events to edit/display ROIs
     """
     def __init__(self, ax):
+        """
+        :param ax: The Matplotlib Axes object to draw to
+        """
 
         self._ax = ax
         self._roi = self._roi_factory()
@@ -342,21 +348,19 @@ class MplRectangularROI(AbstractMplRoi):
     """
     A subclass of RectangularROI that also renders the ROI to a plot
 
-    Attributes:
-    -----------
-    plot_opts: Dictionary instance
-               A dictionary of plot keywords that are passed to
-               the patch representing the ROI. These control
-               the visual properties of the ROI
+    *Attributes*:
+
+        plot_opts:
+
+                   Dictionary instance
+                   A dictionary of plot keywords that are passed to
+                   the patch representing the ROI. These control
+                   the visual properties of the ROI
     """
 
     def __init__(self, ax):
         """
-        Create a new ROI
-
-        Parameters
-        ----------
-        ax: A matplotlib Axes object to attach the graphical ROI to
+        :param ax: A matplotlib Axes object to attach the graphical ROI to
         """
 
         AbstractMplRoi.__init__(self, ax)
@@ -433,9 +437,8 @@ class MplCircularROI(AbstractMplRoi):
     (due, e.g., to logarithmic scalings on the axes), the
     ultimate ROI that is created is a polygonal ROI
 
-    Attributes:
-    -----------
-    plot_opts: Dictionary instance
+    :param plot_opts:
+
                A dictionary of plot keywords that are passed to
                the patch representing the ROI. These control
                the visual properties of the ROI
@@ -443,11 +446,7 @@ class MplCircularROI(AbstractMplRoi):
 
     def __init__(self, ax):
         """
-        Create a new ROI
-
-        Parameters
-        ----------
-        ax: A matplotlib Axes object to attach the graphical ROI to
+        :param ax: A matplotlib Axes object to attach the graphical ROI to
         """
 
         AbstractMplRoi.__init__(self, ax)
@@ -509,6 +508,9 @@ class MplCircularROI(AbstractMplRoi):
         self._sync_patch()
 
     def roi(self):
+        if not self._roi.defined():
+            return PolygonalROI()
+
         theta = np.linspace(0, 2 * np.pi, num=200)
         xy_center = self._roi.get_center()
         rad = self._roi.get_radius()
@@ -531,18 +533,16 @@ class MplPolygonalROI(AbstractMplRoi):
     Defines and displays polygonal ROIs on matplotlib plots
 
     Attributes:
-    -----------
-    plot_opts: Dictionary instance
-               A dictionary of plot keywords that are passed to
-               the patch representing the ROI. These control
-               the visual properties of the ROI
+
+        plot_opts: Dictionary instance
+                   A dictionary of plot keywords that are passed to
+                   the patch representing the ROI. These control
+                   the visual properties of the ROI
     """
 
     def __init__(self, ax):
         """
-        Parameters
-        ----------
-        ax: A matplotlib Axes object to attach the graphical ROI to
+        :param ax: A matplotlib Axes object to attach the graphical ROI to
         """
         AbstractMplRoi.__init__(self, ax)
         self._mid_selection = False
