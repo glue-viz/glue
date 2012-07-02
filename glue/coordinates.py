@@ -130,7 +130,7 @@ class WCSCoordinates(Coordinates):
 class WCSCubeCoordinates(WCSCoordinates):
 
     def __init__(self, header):
-        super(WCSCubeCoordinates, self).__init__()
+        super(WCSCubeCoordinates, self).__init__(header)
         if not isinstance(header, pyfits.core.Header):
             raise TypeError("Header must by a pyfits header instance")
 
@@ -178,3 +178,25 @@ class WCSCubeCoordinates(WCSCoordinates):
         xout, yout = WCSCoordinates.world2pixel(self, xworld, yworld)
         zout = (zworld - self._crval3) / self._cdelt3 + self._crpix3
         return xout, yout, zout
+
+
+def coordinates_from_header(header):
+    """ Convert a FITS header into a glue Coordinates object
+
+    :param header: Header to convert
+    :type header: :class:`pyfits.Header`
+
+    :rtype: :class:`~glue.coordinates.Coordinates`
+    """
+    f = None
+    if 'NAXIS' in header and header['NAXIS'] == 2:
+        f = WCSCoordinates
+    elif 'NAXIS' in header and header['NAXIS'] == 3:
+        f = WCSCubeCoordinates
+    if f:
+        try:
+            return f(header)
+        except AttributeError as e:
+            print e
+            pass
+    return Coordinates()

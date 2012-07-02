@@ -1,12 +1,29 @@
 import unittest
 
-from pyfits import Header
+from pyfits import Header, Card
+from mock import patch
 import numpy as np
 
 import glue
-
+from glue.coordinates import coordinates_from_header
 
 class TestWcsCoordinates(unittest.TestCase):
+
+    def header_from_string(self, string):
+        cards = []
+        for s in string.splitlines():
+            try:
+                l, r = s.split('=')
+                key = l.strip()
+                value = r.split('/')[0].strip()
+                try:
+                    value = int(value)
+                except ValueError:
+                    pass
+            except ValueError:
+                continue
+            cards.append(Card(key, value))
+        return Header(cards)
 
     def default_header(self):
         hdr = Header()
@@ -137,6 +154,87 @@ class TestWcsCoordinates(unittest.TestCase):
         self.assertEquals(coord.axis_label(1), 'World 1: GLON-TAN')
 
 
+
+class TestCoordinatesFromHeader(unittest.TestCase):
+
+    def test_2d(self):
+        hdr = {"NAXIS" : 2}
+        with patch('glue.coordinates.WCSCoordinates') as wcs:
+            coord = coordinates_from_header(hdr)
+            wcs.assert_called_once_with(hdr)
+
+    def test_3d(self):
+        hdr = {"NAXIS" : 3}
+        with patch('glue.coordinates.WCSCubeCoordinates') as wcs:
+            coord = coordinates_from_header(hdr)
+            wcs.assert_called_once_with(hdr)
+
+    def test_nod(self):
+        hdr = {}
+        with patch('glue.coordinates.Coordinates') as wcs:
+            coord = coordinates_from_header(hdr)
+            wcs.assert_called_once_with()
+
+    def test_attribute_error(self):
+        hdr = {"NAXIS" : 2}
+        with patch('glue.coordinates.WCSCoordinates') as wcs:
+            wcs.side_effect = AttributeError
+            coord = coordinates_from_header(hdr)
+            wcs.assert_called_once_with(hdr)
+            self.assertIs(type(coord), glue.coordinates.Coordinates)
+
+
+HDR_2D_VALID = """SIMPLE  =                    T / Written by IDL:  Wed Jul 27 10:01:47 2011
+BITPIX  =                  -32 / number of bits per data pixel
+NAXIS   =                    2 / number of data axes
+NAXIS1  =                  501 / length of data axis 1
+NAXIS2  =                  376 / length of data axis 2
+EXTEND  =                    T / FITS dataset may contain extensions
+RADESYS = 'FK5     '           / Frame of reference
+CRVAL1  =                   0. / World coordinate 1 at reference point
+CRVAL2  =                   5. / World coordinate 2 at reference point
+CRPIX1  =              250.000 / Pixel coordinate 1 at reference point
+CRPIX2  =              187.500 / Pixel coordinate 2 at reference point
+CTYPE1  = 'GLON-TAN'           / Projection type
+CTYPE2  = 'GLAT-TAN'           / Projection type
+CUNIT1  = 'deg     '           / Unit used for axis 1
+CUNIT2  = 'deg     '           / Unit used for axis 2
+CD1_1   =         -0.016666667 / Pixel trasformation matrix
+CD1_2   =                   0.
+CD2_1   =                   0.
+CD2_2   =          0.016666667
+"""
+
+HDR_3D_VALID_NOWCS = """SIMPLE  = T / Written by IDL:  Fri Mar 18 11:58:30 2011
+BITPIX  =                  -32 / Number of bits per data pixel
+NAXIS   =                    3 / Number of data axes
+NAXIS1  =                  128 /
+NAXIS2  =                  128 /
+NAXIS3  =                  128 /
+"""
+
+HDR_3D_VALID_WCS = """SIMPLE  =                    T / Written by IDL:  Thu Jul  7 15:37:21 2011
+BITPIX  =                  -32 / Number of bits per data pixel
+NAXIS   =                    3 / Number of data axes
+NAXIS1  =                   82 /
+NAXIS2  =                   82 /
+NAXIS3  =                  248 /
+DATE    = '2011-07-07'         / Creation UTC (CCCC-MM-DD) date of FITS header
+COMMENT FITS (Flexible Image Transport System) format is defined in 'Astronomy
+COMMENT and Astrophysics', volume 376, page 359; bibcode 2001A&A...376..359H
+CTYPE1  = 'RA---CAR'           /
+CTYPE2  = 'DEC--CAR'           /
+CTYPE3  = 'VELO-LSR'           /
+CRVAL1  =              55.3500 /
+CRPIX1  =              41.5000 /
+CDELT1  =    -0.00638888900000 /
+CRVAL2  =              31.8944 /
+CRPIX2  =              41.5000 /
+CDELT2  =     0.00638888900000 /
+CRVAL3  =       -9960.07902777 /
+CRPIX3  =             -102.000 /
+CDELT3  =        66.4236100000 /
+"""
 
 if __name__ == "__main__":
     unittest.main()

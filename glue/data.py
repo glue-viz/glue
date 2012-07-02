@@ -4,8 +4,7 @@ import pyfits
 
 import glue
 from glue.io import extract_data_fits, extract_data_hdf5
-from glue.coordinates import WCSCoordinates
-from glue.coordinates import WCSCubeCoordinates
+from glue.coordinates import coordinates_from_header
 from glue.coordinates import Coordinates
 from glue.visual import VisualAttributes
 from glue.exceptions import IncompatibleAttribute
@@ -498,7 +497,7 @@ class GriddedData(Data):
         if format in ['fits', 'fit']:
             arrays = extract_data_fits(filename, **kwargs)
             header = pyfits.open(filename)[0].header
-            self._parse_coordinates(header)
+            self.coordinates = coordinates_from_header(header)
         elif format in ['hdf', 'hdf5', 'h5']:
             arrays = extract_data_hdf5(filename, **kwargs)
         else:
@@ -508,9 +507,3 @@ class GriddedData(Data):
             comp = Component(arrays[component_name])
             self.add_component(comp, component_name)
 
-
-    def _parse_coordinates(self, header):
-        if 'NAXIS' in header and header['NAXIS'] == 2:
-            self.coords = WCSCoordinates(header)
-        elif 'NAXIS' in header and header['NAXIS'] == 3:
-            self.coords = WCSCubeCoordinates(header)
