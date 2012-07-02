@@ -6,6 +6,8 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QIcon
 from PyQt4.QtCore import Qt
 
+import glue_qt_resources # pylint: disable=W0611
+
 class GlueToolbar(NavigationToolbar2QT):
     def __init__(self, canvas, frame, name=None):
         """ Create a new toolbar object
