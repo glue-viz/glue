@@ -90,6 +90,18 @@ class TestData(unittest.TestCase):
         self.assertIs(hub, self.data.hub)
         self.assertRaises(TypeError, self.data.register_to_hub, not_hub)
 
+    def test_component_order(self):
+        """Components should be returned in alphabetical order"""
+        data = Data()
+        comp = Component(np.array([1,2,3]))
+        labels = 'asldfkjaAREGWoibasiwnsldkgajsldkgslkg'
+        for label in labels:
+            data.add_component(comp, label)
+        ids = data.components
+        labels = [cid.label.lower() for cid in ids]
+        self.assertEqual(labels, sorted(labels))
+
+
     def test_broadcast(self):
         hub = MagicMock(spec_set = glue.Hub)
 

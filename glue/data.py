@@ -274,7 +274,7 @@ class Data(object):
     def components(self):
         """ Returns a list of ComponentIDs for all components
         (primary and derived) in the data"""
-        return self._components.keys()
+        return sorted(self._components.keys(), key = lambda x: str(x).lower())
 
     @property
     def primary_components(self):
