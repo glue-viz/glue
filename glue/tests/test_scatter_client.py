@@ -279,7 +279,14 @@ class TestScatterClient(unittest.TestCase):
         self.client._apply_roi(roi)
         self.assertFalse(self.client.is_visible(data.edit_subset))
 
-
+    def test_2d_data(self):
+        comp = glue.Component(np.array([[1,2],[3,4]]))
+        data = glue.Data()
+        cid = data.add_component(comp, '2d')
+        self.collect.append(data)
+        self.client.add_layer(data)
+        self.client.set_xdata(cid)
+        self.client.set_ydata(cid)
 
 
 

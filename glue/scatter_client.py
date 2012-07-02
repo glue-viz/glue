@@ -56,8 +56,8 @@ class ScatterLayerManager(object):
 
     def set_data(self, x, y):
         xy = np.zeros((x.size, 2))
-        xy[:, 0] = x
-        xy[:, 1] = y
+        xy[:, 0] = x.flat
+        xy[:, 1] = y.flat
         self._artist.set_offsets(xy)
 
     def set_zorder(self, order):
