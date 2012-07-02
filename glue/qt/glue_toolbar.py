@@ -6,7 +6,6 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QIcon
 from PyQt4.QtCore import Qt
 
-import glue_qt_resources
 class GlueToolbar(NavigationToolbar2QT):
     def __init__(self, canvas, frame, name=None):
         """ Create a new toolbar object
@@ -24,7 +23,6 @@ class GlueToolbar(NavigationToolbar2QT):
         """
         self.buttons = {}
         self.basedir = None
-        self._custom_idMove = None
         NavigationToolbar2QT.__init__(self, canvas, frame)
         if name is not None:
             self.setWindowTitle(name)
@@ -92,16 +90,29 @@ class GlueToolbar(NavigationToolbar2QT):
         #self.adj_window = None
 
     def zoom(self, *args):
+        self._deactivate_custom_modes()
         super(GlueToolbar, self).zoom(self, *args)
-        self.update_boxes()
+        self._update_buttons_checked()
 
     def pan(self, *args):
+        self._deactivate_custom_modes()
         super(GlueToolbar, self).pan(self, *args)
-        self.update_boxes()
+        self._update_buttons_checked()
+
+    def _deactivate_custom_modes(self):
+        if self._idPress is not None:
+            self._idPress = self.canvas.mpl_disconnect(self._idPress)
+        if self._idRelease is not None:
+            self._idRelease = self.canvas.mpl_disconnect(self._idRelease)
+        if self._idDrag is not None:
+            self._idDrag = self.canvas.mpl_disconnect(
+                self._idDrag)
+        self.mode = ''
 
     def add_mode(self, mode):
         parent = self.parent()
-        receiver = lambda: self._custom_mode(mode)
+        def receiver():
+            self._custom_mode(mode)
 
         action = QtGui.QAction(mode.icon, mode.action_text, parent)
         action.triggered.connect(receiver)
@@ -122,21 +133,12 @@ class GlueToolbar(NavigationToolbar2QT):
         else:
             self._active = mode.mode_id
 
-        if self._idPress is not None:
-            self._idPress = self.canvas.mpl_disconnect(self._idPress)
-            self.mode = ''
-        if self._idRelease is not None:
-            self._idRelease = self.canvas.mpl_disconnect(self._idRelease)
-            self.mode = ''
-        if self._custom_idMove is not None:
-            self._custom_idMove = self.canvas.mpl_disconnect(
-                self._custom_idMove)
-            self.mode = ''
+        self._deactivate_custom_modes()
 
         if self._active:
             self._idPress = self.canvas.mpl_connect(
                 'button_press_event', mode.press)
-            self._custom_idMove = self.canvas.mpl_connect(
+            self._idDrag = self.canvas.mpl_connect(
                 'motion_notify_event', mode.move)
             self._idRelease = self.canvas.mpl_connect(
                 'button_release_event', mode.release)
@@ -149,9 +151,9 @@ class GlueToolbar(NavigationToolbar2QT):
             a.set_navigate_mode(None)
 
         self.set_message(self.mode)
-        self.update_boxes()
+        self._update_buttons_checked()
 
-    def update_boxes(self):
+    def _update_buttons_checked(self):
         for mode in self.buttons:
             self.buttons[mode].setChecked(self._active == mode)
 

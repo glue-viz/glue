@@ -492,7 +492,7 @@ class GriddedData(Data):
 
         # Try and automatically find the format if not specified
         if format == 'auto':
-            format = file_format(format)
+            format = file_format(filename)
 
         # Read in the data
         if format in ['fits', 'fit']:
