@@ -1,8 +1,8 @@
 """MouseModes define various mouse gestures.
 
-The GlueToolbar maintains a list of MouseModes from the visualization
-it is assigned to, and sees to it that only one MouseMode is active at
-a time.
+The :class:'~glue.qt.glue_toolbar.GlueToolbar` maintains a list of
+MouseModes from the visualization it is assigned to, and sees to it
+that only one MouseMode is active at a time.
 
 Each MouseMode appears as an Icon in the GlueToolbar. Classes can
 assign methods to the press_callback, move_callback, and
@@ -19,10 +19,8 @@ The basic usage pattern is thus:
 from PyQt4.QtGui import QIcon
 
 import numpy as np
-from scipy import ndimage
-from matplotlib import _cntr
 
-from glue import roi
+from glue import roi, util
 
 
 class MouseMode(object):
@@ -39,7 +37,7 @@ class MouseMode(object):
     * _move_callback : Same as above, for move events
     * _release_callback : Same as above, for release events
 
-    The _callback hooks are called with the MouseMode as it's only
+    The _callback hooks are called with the MouseMode as its only
     argument
     """
     def __init__(self, axes,
@@ -56,10 +54,10 @@ class MouseMode(object):
         self._move_callback = move_callback
         self._release_callback = release_callback
         self.shortcut = None
-        self._event_x = 0
-        self._event_y = 0
-        self._event_xdata = 0
-        self._event_ydata = 0
+        self._event_x = None
+        self._event_y = None
+        self._event_xdata = None
+        self._event_ydata = None
 
     def _log_position(self, event):
         if event is None:
@@ -68,22 +66,73 @@ class MouseMode(object):
         self._event_xdata, self._event_ydata = event.xdata, event.ydata
 
     def press(self, event):
+        """ Handles mouse presses
+
+        Logs mouse position and calls press_callback method
+
+        :param event: Mouse event
+        :type event: Matplotlib event
+        """
         self._log_position(event)
         if self._press_callback is not None:
             self._press_callback(self)
 
     def move(self, event):
+        """ Handles mouse move events
+
+        Logs mouse position and calls move_callback method
+
+        :param event: Mouse event
+        :type event: Matplotlib event
+        """
         self._log_position(event)
         if self._move_callback is not None:
             self._move_callback(self)
 
     def release(self, event):
+        """ Handles mouse release events.
+
+        Logs mouse position and calls release_callback method
+
+        :param event: Mouse event
+        :type event: Matplotlib event
+        """
         self._log_position(event)
         if self._release_callback is not None:
             self._release_callback(self)
 
 
-class RectangleMode(MouseMode):
+class RoiMode(MouseMode):
+    """ Defines ROIs, accessible via the roi() method.
+
+    This is an abstract base class. Subclasses assign an RoiTool
+    to the _roi_tool attribute
+    """
+    def __init__(self, axes, **kwargs):
+        super(RoiMode, self).__init__(axes, **kwargs)
+        self._roi_tool = None
+
+    def roi(self):
+        """ The ROI defined by this mouse mode
+
+        :rtype: :class:`~glue.roi.Roi`
+        """
+        return self._roi_tool.roi()
+
+    def press(self, event):
+        self._roi_tool.start_selection(event)
+        super(RoiMode, self).press(event)
+
+    def move(self, event):
+        self._roi_tool.update_selection(event)
+        super(RoiMode, self).move(event)
+
+    def release(self, event):
+        self._roi_tool.finalize_selection(event)
+        super(RoiMode, self).release(event)
+
+
+class RectangleMode(RoiMode):
     """ Defines a Rectangular ROI, accessible via the roi() method"""
     def __init__(self, axes, **kwargs):
         super(RectangleMode, self).__init__(axes, **kwargs)
@@ -94,23 +143,9 @@ class RectangleMode(MouseMode):
         self._roi_tool = roi.MplRectangularROI(self._axes)
         self.shortcut = 'R'
 
-    def roi(self):
-        return self._roi_tool.roi()
-
-    def press(self, event):
-        self._roi_tool.start_selection(event)
-        super(RectangleMode, self).press(event)
-
-    def move(self, event):
-        self._roi_tool.update_selection(event)
-        super(RectangleMode, self).move(event)
-
-    def release(self, event):
-        self._roi_tool.finalize_selection(event)
-        super(RectangleMode, self).release(event)
 
 
-class CircleMode(MouseMode):
+class CircleMode(RoiMode):
     """ Defines a Circular ROI, accessible via the roi() method"""
     def __init__(self, axes, **kwargs):
         super(CircleMode, self).__init__(axes, **kwargs)
@@ -121,23 +156,8 @@ class CircleMode(MouseMode):
         self._roi_tool = roi.MplCircularROI(self._axes)
         self.shortcut = 'C'
 
-    def roi(self):
-        return self._roi_tool.roi()
 
-    def press(self, event):
-        self._roi_tool.start_selection(event)
-        super(CircleMode, self).press(event)
-
-    def move(self, event):
-        self._roi_tool.update_selection(event)
-        super(CircleMode, self).move(event)
-
-    def release(self, event):
-        self._roi_tool.finalize_selection(event)
-        super(CircleMode, self).release(event)
-
-
-class PolyMode(MouseMode):
+class PolyMode(RoiMode):
     """ Defines a Polygonal ROI, accessible via the roi() method"""
     def __init__(self, axes, **kwargs):
         super(PolyMode, self).__init__(axes, **kwargs)
@@ -148,20 +168,6 @@ class PolyMode(MouseMode):
         self._roi_tool = roi.MplPolygonalROI(self._axes)
         self.shortcut = 'L'
 
-    def roi(self):
-        return self._roi_tool.roi()
-
-    def press(self, event):
-        self._roi_tool.start_selection(event)
-        super(PolyMode, self).press(event)
-
-    def move(self, event):
-        self._roi_tool.update_selection(event)
-        super(PolyMode, self).move(event)
-
-    def release(self, event):
-        self._roi_tool.finalize_selection(event)
-        super(PolyMode, self).release(event)
 
 class ContrastMode(MouseMode):
     """Uses right mouse button drags to set bias and contrast, ala DS9
@@ -185,13 +191,12 @@ class ContrastMode(MouseMode):
         """ Return the intensity values to set as the darkest and
         lightest color, given the bias and contrast.
 
-        Parameters
-        ----------
-        data : ndarray. Raw intensities to scale
+        :param data: Raw intensities to scale
+        :type data: ndarray
 
         Returns
-        -------
-        tuple of lo,hi : the intensity values to set as darkest/brightest
+           * tuple of lo,hi : the intensity values to set as darkest/brightest
+        :rtype: tuple
         """
         lo = np.nanmin(data)
         hi = np.nanmax(data)
@@ -216,6 +221,7 @@ class ContrastMode(MouseMode):
 
         super(ContrastMode, self).move(event)
 
+
 class ContourMode(MouseMode):
     """ Creates ROIs by using the mouse to 'pick' contours out of the data """
     def __init__(self, *args, **kwargs):
@@ -228,30 +234,41 @@ class ContourMode(MouseMode):
         self.shortcut = 'N'
 
     def roi(self, data):
-        """ Caculate an ROI as the contour which passes through the mouse
+        """Caculate an ROI as the contour which passes through the mouse
 
-        Parameters
-        ----------
-        data : ndarray. The data set to use
+        :param data: The data set to use
+        :type data: ndarray
 
         Returns
-        -------
-        A `PolygonalROI` object, or None if one could not be calculated
+
+           * A :class:`~glue.roi.PolygonalROI` object, or None if one
+             could not be calculated
 
         This method calculates the (single) contour that passes
         through the mouse location, and uses this path to define
         a new ROI
         """
-        x,y = self._event_xdata, self._event_ydata
-        inten = data[y, x]
-        labeled, nr_objects = ndimage.label(data >= inten)
-        z = data * (labeled == labeled[y, x])
-        y, x = np.mgrid[0:data.shape[0], 0:data.shape[1]]
-        cnt = _cntr.Cntr(x, y, z)
-        xy = cnt.trace(inten)
-        if not xy:
-            return None
-        xy = xy[0]
-        p = roi.PolygonalROI(vx = xy[:,0], vy = xy[:, 1])
-        return p
+        x, y = self._event_xdata, self._event_ydata
+        return contour_to_roi(x, y, data)
 
+
+def contour_to_roi(x, y, data):
+    """ Return a PolygonalROI for the contour that passes through (x,y) in data
+
+    :param x: x coordinate
+    :param y: y coordinate
+    :param data: data
+    :type data: numpy array
+
+    Returns:
+       * A :class:`~glue.roi.PolygonalROI` instance
+    """
+    if x is None or y is None:
+        return None
+
+    xy = util.point_contour(x, y, data)
+    if xy is None:
+        return None
+
+    p = roi.PolygonalROI(vx = xy[:, 0], vy = xy[:, 1])
+    return p
