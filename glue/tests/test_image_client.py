@@ -1,7 +1,7 @@
 import unittest
 
 import matplotlib.pyplot as plt
-from mock import MagicMock
+from mock import MagicMock, patch
 import numpy as np
 
 import glue
@@ -215,6 +215,13 @@ class TestImageClient(unittest.TestCase):
         client.layers[sub].mask = np.ones(self.im.shape, dtype=bool)
         client._update_subset_single(sub)
         self.assertFalse(client.layers[sub].mask.any())
+
+    def test_subsets_shown_on_init(self):
+        client = self.create_client_with_image()
+        subset = self.im.edit_subset
+        manager = client.layers[subset]
+        self.assertIsNot(manager.artist, None)
+        self.assertTrue(manager.is_visible())
 
 if __name__ == "__main__":
     unittest.main(failfast=True)

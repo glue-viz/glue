@@ -84,6 +84,11 @@ class SubsetLayerManager(LayerManager):
         for item in self.artist.collections:
             item.set_visible(state)
 
+    def is_visible(self):
+        if self.artist is None:
+            return False
+        return all([c.get_visible() for c in self.artist.collections])
+
     def delete_artist(self):
         if self.artist is None:
             return
@@ -92,6 +97,7 @@ class SubsetLayerManager(LayerManager):
         self.artist = None
 
     def update_artist(self, mask):
+        self.mask = mask
         self.delete_artist()
         if self.area_style == 'filled':
             self.artist = self._ax.contourf(mask.astype(float),
@@ -201,8 +207,6 @@ class ImageClient(VizClient):
         self.slice_ind = min(self.slice_ind, self.slice_bounds()[1])
         self.slice_ind = max(self.slice_ind, self.slice_bounds()[0])
         self._update_data_plot(relim=True)
-        for sub in self.display_data.subsets:
-            self._update_subset_plot(sub)
 
         self._redraw()
 
@@ -241,7 +245,11 @@ class ImageClient(VizClient):
         if s not in self.layers:
             return
 
-        mask = self.layers[s].mask
+        try:
+            mask = s.to_mask()
+        except IncompatibleAttribute:
+            mask = np.zeros(s.data.shape, dtype=bool)
+
         mask = self._extract_slice_from_data(data=mask)
         self.layers[s].update_artist(mask)
 
@@ -277,6 +285,9 @@ class ImageClient(VizClient):
         if relim:
             self.relim()
 
+        for s in self.display_data.subsets:
+            self._update_subset_single(s)
+
     def _update_visibilities(self):
         for layer in self.layers:
             self.layers[layer].set_visible(layer.data is self.display_data)
@@ -302,22 +313,12 @@ class ImageClient(VizClient):
         """
         if self.display_data is None:
             return
-
         data = self.display_data
         if s.data is not data:
             return
-
-        try:
-            mask = s.to_mask()
-        except IncompatibleAttribute:
-            mask = np.zeros(s.data.shape, dtype=bool)
-
-        assert mask.shape == s.data.shape
-        self.layers[s].mask = mask
         self._update_subset_plot(s)
 
     def _apply_roi(self, roi):
-        # XXX this will only work for 2D images right now
         data = self.display_data
         if data is None:
             return
