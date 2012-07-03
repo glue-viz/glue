@@ -1,5 +1,6 @@
 import unittest
 
+import numpy as np
 from PyQt4.QtGui import QApplication, QMainWindow
 from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt
@@ -42,6 +43,39 @@ class TestScatterWidget(unittest.TestCase):
         self.widget.add_layer(layer)
         return layer
 
+    def plot_data(self, layer):
+        """ Return the data bounds for a given layer (data or subset)
+        Output format: [xmin, xmax], [ymin, ymax]
+        """
+        client = self.widget.client
+        data = client.managers[layer].get_data()
+        xmin = data[:, 0].min()
+        xmax = data[:, 0].max()
+        ymin = data[:, 1].min()
+        ymax = data[:, 1].max()
+        return [xmin, xmax], [ymin, ymax]
+
+
+    def plot_limits(self):
+        """ Return the plot limits
+        Output format [xmin, xmax], [ymin, ymax]
+        """
+        ax = self.widget.client.ax
+        xlim = ax.get_xlim()
+        ylim = ax.get_ylim()
+        return xlim, ylim
+        return
+
+    def assert_layer_inside_limits(self, layer):
+        """Assert that points of a layer are within plot limits """
+        xydata = self.plot_data(layer)
+        xylimits = self.plot_limits()
+
+        self.assertGreaterEqual(xydata[0][0], xylimits[0][0])
+        self.assertGreaterEqual(xydata[1][0], xylimits[1][0])
+        self.assertLessEqual(xydata[0][1], xylimits[0][1])
+        self.assertLessEqual(xydata[1][1], xylimits[1][1])
+
     def set_layer_checkbox(self, layer, state):
         item = self.widget.ui.layerTree[layer]
         item.setCheckState(0, state)
@@ -53,6 +87,10 @@ class TestScatterWidget(unittest.TestCase):
 
     def is_layer_visible(self, layer):
         return self.widget.client.is_visible(layer)
+
+    def test_rescaled_on_init(self):
+        layer = self.add_layer_via_method()
+        self.assert_layer_inside_limits(layer)
 
     def test_hub_data_add_is_ignored(self):
         layer = self.add_layer_via_hub()
@@ -67,8 +105,8 @@ class TestScatterWidget(unittest.TestCase):
         layer = self.add_layer_via_method()
         xatt = str(self.widget.ui.xAxisComboBox.currentText())
         yatt = str(self.widget.ui.yAxisComboBox.currentText())
-        self.assertIsNotNone(xatt, 'A_Vb')
-        self.assertIsNotNone(yatt, 'A_Vb')
+        self.assertIsNotNone(xatt)
+        self.assertIsNotNone(yatt)
 
     def test_flip_x(self):
         layer = self.add_layer_via_method()
