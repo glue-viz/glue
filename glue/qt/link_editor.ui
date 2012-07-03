@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Link Editor</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_3">
    <property name="margin">
