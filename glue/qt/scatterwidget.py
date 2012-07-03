@@ -113,7 +113,6 @@ class ScatterWidget(QtGui.QMainWindow, glue.HubListener):
             self.update_yatt(None)
 
     def _empty(self):
-        print len(self.ui.layerTree)
         return len(self.ui.layerTree) == 0
 
     def register_to_hub(self, hub):
