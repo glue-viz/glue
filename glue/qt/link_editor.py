@@ -8,7 +8,7 @@ class LinkEditor(QDialog):
     def __init__(self, collection, functions = None, parent=None):
         super(LinkEditor, self).__init__(parent)
         self._collection = collection
-        self._functions = functions or glue.env['link_functions']
+        self._functions = functions or glue.env.link_functions
 
         self._ui = Ui_LinkEditor()
         self._init_widgets()

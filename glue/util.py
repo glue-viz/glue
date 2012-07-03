@@ -2,6 +2,9 @@ from scipy import ndimage
 from matplotlib import _cntr
 import numpy as np
 
+def identity(x):
+    return x
+
 def relim(lo, hi, log=False):
     x, y = lo, hi
     if log:

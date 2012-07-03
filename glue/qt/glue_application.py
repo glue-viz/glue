@@ -163,7 +163,7 @@ class GlueApplication(QMainWindow, glue.HubListener):
         """ Create a new visualization window in the current tab
         """
 
-        client = pick_class(glue.env['qt_clients'])
+        client = pick_class(glue.env.qt_clients)
         if client:
             c = client(self._data)
             c.register_to_hub(self._hub)
