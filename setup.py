@@ -2,8 +2,12 @@
 
 from __future__ import print_function
 from distutils.core import setup, Command
+from glob import glob
+import os
 
 cmdclass = {}
+
+scripts = glob(os.path.join('scripts', '*'))
 
 class BuildQt(Command):
 
@@ -39,7 +43,9 @@ class BuildQt(Command):
         try:
             subprocess.call([self.pyrcc4, option, 'glue/qt/glue.qrc', '-o', 'glue/qt/glue_qt_resources.py'])
         except OSError:
-            print("pyrcc4 command failed - make sure that pyrcc4 is in your $PATH, or specify a custom command with --pyrcc4=command")
+            print("pyrcc4 command failed - make sure that pyrcc4 "
+                  "is in your $PATH, or specify a custom command with "
+                  "--pyrcc4=command")
 
 
 cmdclass['build_qt'] = BuildQt
@@ -55,5 +61,6 @@ setup(name='Glue',
       version='0.1.0',
       packages=['glue', 'glue.qt'],
       cmdclass=cmdclass,
-      package_data={'glue': ['examples/*']}
+      package_data={'glue': ['examples/*']},
+      scripts=scripts
   )
