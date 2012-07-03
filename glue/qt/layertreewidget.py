@@ -619,3 +619,6 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
 
     def __contains__(self, obj):
         return obj in self._layer_dict
+
+    def __len__(self):
+        return len(self._layer_dict)
