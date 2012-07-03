@@ -98,12 +98,23 @@ class ScatterWidget(QtGui.QMainWindow, glue.HubListener):
         if layer in self.ui.layerTree:
             return
 
+        first_layer = self._empty()
+
         self.ui.layerTree.add_layer(layer)
         self.client.add_layer(layer)
         self.update_combos(layer)
 
+
         for sub in layer.data.subsets:
             self.ui.layerTree.add_layer(sub)
+
+        if first_layer:  # forces both x and y axes to be rescaled
+            self.update_xatt(None)
+            self.update_yatt(None)
+
+    def _empty(self):
+        print len(self.ui.layerTree)
+        return len(self.ui.layerTree) == 0
 
     def register_to_hub(self, hub):
         self.client.register_to_hub(hub)
