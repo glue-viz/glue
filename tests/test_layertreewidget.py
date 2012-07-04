@@ -9,6 +9,7 @@ from PyQt4.QtGui import QItemSelectionModel
 from mock import MagicMock, patch
 
 import glue
+from glue.core.hub import Hub
 from glue.qt.widgets.layer_tree_widget import LayerTreeWidget
 from glue.core.subset import OrState, AndState, XorState, InvertState
 
@@ -21,7 +22,7 @@ class TestLayerTree(unittest.TestCase):
 
         self.app = QApplication(sys.argv)
         self.data = example_data.test_data()
-        self.hub = glue.core.hub.Hub()
+        self.hub = Hub()
         self.collect = glue.core.data_collection.DataCollection(list(self.data))
         self.widget = LayerTreeWidget()
         self.win = QMainWindow()
@@ -287,7 +288,7 @@ class TestLayerTree(unittest.TestCase):
         self.assertFalse(self.layer_present(layer))
 
     def test_edit_layer_label(self):
-        with patch('glue.qt.widgets.layer_tree_widget.qtutil') as util:
+        with patch('glue.qt.qtutil') as util:
             layer = self.add_layer_via_method()
             item = self.widget[layer]
             self.widget.layerTree.setCurrentItem(item, 0)
@@ -296,7 +297,7 @@ class TestLayerTree(unittest.TestCase):
             util.edit_layer_label.assert_called_once_with(layer)
 
     def test_edit_layer_color(self):
-        with patch('glue.qt.widgets.layer_tree_widget.qtutil') as util:
+        with patch('glue.qt.qtutil') as util:
             layer = self.add_layer_via_method()
             item = self.widget[layer]
             self.widget.layerTree.setCurrentItem(item, 1)
@@ -304,7 +305,7 @@ class TestLayerTree(unittest.TestCase):
             util.edit_layer_color.assert_called_once_with(layer)
 
     def test_edit_layer_symbol(self):
-        with patch('glue.qt.widgets.layer_tree_widget.qtutil') as util:
+        with patch('glue.qt.qtutil') as util:
             layer = self.add_layer_via_method()
             item = self.widget[layer]
             self.widget.layerTree.setCurrentItem(item, 2)
@@ -312,7 +313,7 @@ class TestLayerTree(unittest.TestCase):
             util.edit_layer_symbol.assert_called_once_with(layer)
 
     def test_edit_layer_point_size(self):
-        with patch('glue.qt.widgets.layer_tree_widget.qtutil') as util:
+        with patch('glue.qt.qtutil') as util:
             layer = self.add_layer_via_method()
             item = self.widget[layer]
             self.widget.layerTree.setCurrentItem(item, 3)
@@ -327,14 +328,14 @@ class TestLayerTree(unittest.TestCase):
         self.assertEquals(layer.style.label, "Data 0")
 
     def test_load_data(self):
-        with patch('glue.qt.widgets.layer_tree_widget.qtutil') as util:
+        with patch('glue.qt.qtutil') as util:
             util.data_wizard.return_value = self.data[0]
             self.widget._load_data()
             self.assertTrue(self.layer_present(self.data[0]))
 
     def test_load_data_doesnt_double_add(self):
         """bugfix"""
-        with patch('glue.qt.widgets.layer_tree_widget.qtutil') as util:
+        with patch('glue.qt.qtutil') as util:
             util.data_wizard.return_value = self.data[0]
             self.assertEquals(self.widget.layerTree.topLevelItemCount(), 0)
             self.widget._load_data()
