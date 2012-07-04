@@ -15,7 +15,7 @@ from .message import DataUpdateMessage, \
                      SubsetCreateMessage, \
                      SubsetDeleteMessage
 
-from ..util import file_format
+from .util import file_format
 
 __all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
            'TabularData', 'GriddedData']
