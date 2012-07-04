@@ -4,7 +4,7 @@ from PyQt4.QtGui import QWidget, QTableWidgetItem
 
 from ... import core
 
-from ..ui.message_widget import Ui_MessageWidget
+from ..ui.messagewidget import Ui_MessageWidget
 
 
 class MessageWidget(QWidget, core.hub.HubListener):

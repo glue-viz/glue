@@ -1,7 +1,7 @@
 # Need to use absolute imports here because
 from glue.qt.widgets.scatter_widget import ScatterWidget
 from glue.qt.widgets.image_widget import ImageWidget
-from glue.util import identity
+from glue.core.util import identity
 
 """ Visualization Clients """
 qt_clients = [ScatterWidget,
