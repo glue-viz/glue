@@ -5,7 +5,7 @@ from mock import patch
 import numpy as np
 
 import glue
-from glue.coordinates import coordinates_from_header
+from glue.core.coordinates import coordinates_from_header
 
 class TestWcsCoordinates(unittest.TestCase):
 
@@ -42,7 +42,7 @@ class TestWcsCoordinates(unittest.TestCase):
 
     def test_pixel2world_scalar(self):
         hdr = self.default_header()
-        coord = glue.coordinates.WCSCoordinates(hdr)
+        coord = glue.core.coordinates.WCSCoordinates(hdr)
 
         x, y = 250., 187.5
         result = coord.pixel2world(x, y)
@@ -52,7 +52,7 @@ class TestWcsCoordinates(unittest.TestCase):
 
     def test_pixel2world_different_input_types(self):
         hdr = self.default_header()
-        coord = glue.coordinates.WCSCoordinates(hdr)
+        coord = glue.core.coordinates.WCSCoordinates(hdr)
 
         x, y = 250, 187.5
         result = coord.pixel2world(x, y)
@@ -62,7 +62,7 @@ class TestWcsCoordinates(unittest.TestCase):
 
     def test_pixel2world_list(self):
         hdr = self.default_header()
-        coord = glue.coordinates.WCSCoordinates(hdr)
+        coord = glue.core.coordinates.WCSCoordinates(hdr)
 
         x, y = [250, 250], [187.5, 187.5]
         result = coord.pixel2world(x, y)
@@ -73,7 +73,7 @@ class TestWcsCoordinates(unittest.TestCase):
 
     def test_pixel2world_numpy(self):
         hdr = self.default_header()
-        coord = glue.coordinates.WCSCoordinates(hdr)
+        coord = glue.core.coordinates.WCSCoordinates(hdr)
 
         x, y = np.array([250, 250]), np.array([187.5, 187.5])
         result = coord.pixel2world(x, y)
@@ -84,7 +84,7 @@ class TestWcsCoordinates(unittest.TestCase):
 
     def test_world2pixel_numpy(self):
         hdr = self.default_header()
-        coord = glue.coordinates.WCSCoordinates(hdr)
+        coord = glue.core.coordinates.WCSCoordinates(hdr)
 
         expected = np.array([250, 250]), np.array([187.5, 187.5])
         x, y = np.array([0, 0]), np.array([5, 5])
@@ -95,7 +95,7 @@ class TestWcsCoordinates(unittest.TestCase):
 
     def test_world2pixel_list(self):
         hdr = self.default_header()
-        coord = glue.coordinates.WCSCoordinates(hdr)
+        coord = glue.core.coordinates.WCSCoordinates(hdr)
 
         expected = [250, 250], [187.5, 187.5]
         x, y = [0, 0], [5, 5]
@@ -106,7 +106,7 @@ class TestWcsCoordinates(unittest.TestCase):
 
     def test_world2pixel_scalar(self):
         hdr = self.default_header()
-        coord = glue.coordinates.WCSCoordinates(hdr)
+        coord = glue.core.coordinates.WCSCoordinates(hdr)
 
         expected = 250., 187.5
         x, y = 0, 5
@@ -117,7 +117,7 @@ class TestWcsCoordinates(unittest.TestCase):
 
     def test_world2pixel_different_input_types(self):
         hdr = self.default_header()
-        coord = glue.coordinates.WCSCoordinates(hdr)
+        coord = glue.core.coordinates.WCSCoordinates(hdr)
 
         expected = 250., 187.5
         x, y = 0, 5.
@@ -127,28 +127,28 @@ class TestWcsCoordinates(unittest.TestCase):
         self.assertAlmostEqual(result[1], expected[1])
 
     def test_pixel2world_mismatched_input(self):
-        coord = glue.coordinates.WCSCoordinates(None)
+        coord = glue.core.coordinates.WCSCoordinates(None)
         x, y = 0, [5]
         self.assertRaises(TypeError, coord.pixel2world, x, y)
 
     def test_world2pixel_mismatched_input(self):
-        coord = glue.coordinates.WCSCoordinates(None)
+        coord = glue.core.coordinates.WCSCoordinates(None)
         x, y = 0, [5]
         self.assertRaises(TypeError, coord.world2pixel, x, y)
 
     def test_pixel2world_invalid_input(self):
-        coord = glue.coordinates.WCSCoordinates(None)
+        coord = glue.core.coordinates.WCSCoordinates(None)
         x, y = {}, {}
         self.assertRaises(TypeError, coord.pixel2world, x, y)
 
     def test_world2pixel_invalid_input(self):
-        coord = glue.coordinates.WCSCoordinates(None)
+        coord = glue.core.coordinates.WCSCoordinates(None)
         x, y = {}, {}
         self.assertRaises(TypeError, coord.world2pixel, x, y)
 
     def test_axis_label(self):
         hdr = self.default_header()
-        coord = glue.coordinates.WCSCoordinates(hdr)
+        coord = glue.core.coordinates.WCSCoordinates(hdr)
 
         self.assertEquals(coord.axis_label(0), 'World 0: GLAT-TAN')
         self.assertEquals(coord.axis_label(1), 'World 1: GLON-TAN')
@@ -159,29 +159,29 @@ class TestCoordinatesFromHeader(unittest.TestCase):
 
     def test_2d(self):
         hdr = {"NAXIS" : 2}
-        with patch('glue.coordinates.WCSCoordinates') as wcs:
+        with patch('glue.core.coordinates.WCSCoordinates') as wcs:
             coord = coordinates_from_header(hdr)
             wcs.assert_called_once_with(hdr)
 
     def test_3d(self):
         hdr = {"NAXIS" : 3}
-        with patch('glue.coordinates.WCSCubeCoordinates') as wcs:
+        with patch('glue.core.coordinates.WCSCubeCoordinates') as wcs:
             coord = coordinates_from_header(hdr)
             wcs.assert_called_once_with(hdr)
 
     def test_nod(self):
         hdr = {}
-        with patch('glue.coordinates.Coordinates') as wcs:
+        with patch('glue.core.coordinates.Coordinates') as wcs:
             coord = coordinates_from_header(hdr)
             wcs.assert_called_once_with()
 
     def test_attribute_error(self):
         hdr = {"NAXIS" : 2}
-        with patch('glue.coordinates.WCSCoordinates') as wcs:
+        with patch('glue.core.coordinates.WCSCoordinates') as wcs:
             wcs.side_effect = AttributeError
             coord = coordinates_from_header(hdr)
             wcs.assert_called_once_with(hdr)
-            self.assertIs(type(coord), glue.coordinates.Coordinates)
+            self.assertIs(type(coord), glue.core.coordinates.Coordinates)
 
 
 HDR_2D_VALID = """SIMPLE  =                    T / Written by IDL:  Wed Jul 27 10:01:47 2011

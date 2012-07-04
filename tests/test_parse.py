@@ -3,9 +3,9 @@ import unittest
 from mock import MagicMock
 
 import glue
-import glue.parse as parse
-from glue.data import ComponentID, Component
-from glue.subset import Subset, SubsetState
+import glue.core.parse as parse
+from glue.core.data import ComponentID, Component
+from glue.core.subset import Subset, SubsetState
 
 import numpy as np
 
@@ -100,8 +100,8 @@ class TestParsedCommand(unittest.TestCase):
 class TestParsedComponentLink(unittest.TestCase):
 
     def test(self):
-        data = glue.Data()
-        comp = glue.Component(np.array([1,2,3]))
+        data = glue.core.data.Data()
+        comp = glue.core.data.Component(np.array([1,2,3]))
         c1 = ComponentID('c1')
         c2 = ComponentID('c2')
         data.add_component(comp, c1)
@@ -121,7 +121,7 @@ class TestParsedComponentLink(unittest.TestCase):
 
 class TestParsedSubsetState(unittest.TestCase):
     def setUp(self):
-        data = glue.Data()
+        data = glue.core.data.Data()
         c1 = Component(np.array([2, 4, 6, 8]))
         g = ComponentID('g')
         data.add_component(c1, g)

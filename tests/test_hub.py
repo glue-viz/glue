@@ -3,18 +3,18 @@ import unittest
 from mock import MagicMock
 
 import glue
-from glue.exceptions import InvalidSubscriber, InvalidMessage
-from glue.message import ErrorMessage
+from glue.core.exceptions import InvalidSubscriber, InvalidMessage
+from glue.core.message import ErrorMessage
 
 class TestHub(unittest.TestCase):
 
     def setUp(self):
-        self.hub = glue.Hub()
+        self.hub = glue.core.hub.Hub()
 
     def get_subscription(self):
-        msg = glue.message.Message
+        msg = glue.core.message.Message
         handler = MagicMock()
-        subscriber  = MagicMock(spec_set=glue.hub.HubListener)
+        subscriber  = MagicMock(spec_set=glue.core.hub.HubListener)
         return msg, handler, subscriber
 
     def test_subscribe(self):
@@ -40,7 +40,7 @@ class TestHub(unittest.TestCase):
 
     def test_unsubscribe_all(self):
         msg, handler, subscriber = self.get_subscription()
-        msg2 = glue.message.SubsetMessage
+        msg2 = glue.core.message.SubsetMessage
         self.hub.subscribe(subscriber, msg, handler)
         self.hub.subscribe(subscriber, msg2, handler)
         self.hub.unsubscribe_all(subscriber)
@@ -49,7 +49,7 @@ class TestHub(unittest.TestCase):
 
     def test_unsubscribe_specific_to_message(self):
         msg, handler, subscriber = self.get_subscription()
-        msg2 = glue.message.SubsetMessage
+        msg2 = glue.core.message.SubsetMessage
         self.hub.subscribe(subscriber, msg, handler)
         self.hub.subscribe(subscriber, msg2, handler)
         self.hub.unsubscribe(subscriber, msg)
@@ -73,7 +73,7 @@ class TestHub(unittest.TestCase):
 
     def test_unsubscribe_spec_setific_to_message(self):
         msg, handler, subscriber = self.get_subscription()
-        msg2 = glue.message.SubsetMessage
+        msg2 = glue.core.message.SubsetMessage
         self.hub.subscribe(subscriber, msg2, handler)
         msg_instance = msg("Test")
         self.hub.broadcast(msg_instance)
@@ -81,19 +81,19 @@ class TestHub(unittest.TestCase):
 
     def test_subscription_catches_message_subclasses(self):
         msg, handler, subscriber = self.get_subscription()
-        msg2 = glue.message.SubsetMessage
+        msg2 = glue.core.message.SubsetMessage
         self.hub.subscribe(subscriber, msg, handler)
-        msg_instance = msg2(MagicMock(spec_set=glue.Subset))
+        msg_instance = msg2(MagicMock(spec_set=glue.core.subset.Subset))
         self.hub.broadcast(msg_instance)
         handler.assert_called_once_with(msg_instance)
 
     def test_handler_ignored_if_subset_handler_present(self):
         msg, handler, subscriber = self.get_subscription()
         handler2 = MagicMock()
-        msg2 = glue.message.SubsetMessage
+        msg2 = glue.core.message.SubsetMessage
         self.hub.subscribe(subscriber, msg, handler)
         self.hub.subscribe(subscriber, msg2, handler2)
-        msg_instance = msg2(MagicMock(spec_set=glue.Subset))
+        msg_instance = msg2(MagicMock(spec_set=glue.core.subset.Subset))
         self.hub.broadcast(msg_instance)
         handler2.assert_called_once_with(msg_instance)
         self.assertEquals(handler.call_count, 0)
@@ -173,11 +173,11 @@ class TestHub(unittest.TestCase):
         self.assertRaises(ExpectedException, self.hub.broadcast, msg_instance)
 
     def test_autosubscribe(self):
-        l = MagicMock(spec_set=glue.hub.HubListener)
-        d = MagicMock(spec_set=glue.Data)
-        s = MagicMock(spec_set=glue.Subset)
-        dc = MagicMock(spec_set=glue.DataCollection)
-        hub = glue.Hub(l, d, s, dc)
+        l = MagicMock(spec_set=glue.core.hub.HubListener)
+        d = MagicMock(spec_set=glue.core.data.Data)
+        s = MagicMock(spec_set=glue.core.subset.Subset)
+        dc = MagicMock(spec_set=glue.core.data_collection.DataCollection)
+        hub = glue.core.hub.Hub(l, d, s, dc)
 
         l.register_to_hub.assert_called_once_with(hub)
         d.register_to_hub.assert_called_once_with(hub)
@@ -185,12 +185,12 @@ class TestHub(unittest.TestCase):
         s.register.assert_called_once_with()
 
     def test_invalid_init(self):
-        self.assertRaises(TypeError, glue.Hub, None)
+        self.assertRaises(TypeError, glue.core.hub.Hub, None)
 
 class TestHubListener(unittest.TestCase):
     """This is a dumb test, I know. Fixated on code coverage"""
     def test_unimplemented(self):
-        hl = glue.HubListener()
+        hl = glue.core.hub.HubListener()
         self.assertRaises(NotImplementedError, hl.register_to_hub, None)
         self.assertRaises(NotImplementedError, hl.notify, None)
 

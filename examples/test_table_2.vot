@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VOTABLE version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://www.ivoa.net/xml/VOTable/v1.1"
+  xsi:schemaLocation="http://www.ivoa.net/xml/VOTable/v1.1 http://www.ivoa.net/xml/VOTable/v1.1">
+ <DESCRIPTION>
+   VizieR Astronomical Server vizier.u-strasbg.fr 	2011-11-01T18:00:55 [V1.80]
+   Explanations and Statistics of UCDs:			See LINK below
+   In case of problem, please report to:	question@simbad.u-strasbg.fr
+ </DESCRIPTION>
+<!-- VOTable description at http://www.ivoa.net/Documents/latest/VOT.html -->
+
+<DEFINITIONS>
+  <COOSYS ID="J2000" system="eq_FK5" equinox="J2000"/>
+</DEFINITIONS>
+
+<INFO ID="Ref" name="-ref" value="VIZ4eb032a46442"/>
+<INFO ID="MaxTuples" name="-out.max" value="200"/>
+
+<!--
+Execution Reports
+ -->
+
+<RESOURCE ID="yCat_16380293" name="J/ApJ/638/293">
+  <DESCRIPTION>1.1mm sources in the Perseus Molecular Cloud (Enoch+, 2006)</DESCRIPTION>
+  <TABLE ID="J_ApJ_638_293_data" name="J/ApJ/638/293/data">
+    <DESCRIPTION>Source ID, position, peak flux density, photometry, masses, colmun density, sizes and morphology {\em(tables 1 and 2 of paper)}</DESCRIPTION>
+    <!-- Definitions of GROUPs and FIELDs -->
+    <FIELD name="_RAJ2000" ucd="pos.eq.ra;meta.main" ref="J2000" datatype="double" width="8" precision="4" unit="deg"><!-- ucd="POS_EQ_RA_MAIN" -->
+      <DESCRIPTION>Right ascension (FK5) Equinox=J2000. (computed by VizieR, not part of the original data)</DESCRIPTION>
+    </FIELD>
+    <FIELD name="_DEJ2000" ucd="pos.eq.dec;meta.main" ref="J2000" datatype="double" width="8" precision="4" unit="deg"><!-- ucd="POS_EQ_DEC_MAIN" -->
+      <DESCRIPTION>Declination (FK5) Equinox=J2000. (computed by VizieR, not part of the original data)</DESCRIPTION>
+    </FIELD>
+    <FIELD name="_EYG2006_" ucd="meta.id;meta.main" datatype="short" width="3"><!-- ucd="ID_MAIN" -->
+      <DESCRIPTION>Source identification</DESCRIPTION>
+    </FIELD>
+    <FIELD name="RAJ2000" ucd="pos.eq.ra;meta.main" ref="J2000" datatype="char" arraysize="10" unit="&quot;h:m:s&quot;"><!-- ucd="POS_EQ_RA_MAIN" -->
+      <DESCRIPTION>Hour of Right Ascension (J2000)</DESCRIPTION>
+    </FIELD>
+    <FIELD name="DEJ2000" ucd="pos.eq.dec;meta.main" ref="J2000" datatype="char" arraysize="11" unit="&quot;d:m:s&quot;"><!-- ucd="POS_EQ_DEC_MAIN" -->
+      <DESCRIPTION>Degree of Declination (J2000)</DESCRIPTION>
+    </FIELD>
+    <FIELD name="Fp" ucd="phot.flux.density;em.mm.200-400GHz" datatype="short" width="4" unit="mJy"><!-- ucd="PHOT_FLUX_RADIO_250G" -->
+      <DESCRIPTION>1.1mm peak flux density in units of mJy/beam</DESCRIPTION>
+    </FIELD>
+    <FIELD name="S/N" ucd="stat.snr" datatype="float" width="5" precision="1"><!-- ucd="INST_S/N" -->
+      <DESCRIPTION>Signal-to-Noise</DESCRIPTION>
+    </FIELD>
+    <FIELD name="MIPS" ucd="meta.code" datatype="char" arraysize="11*"><!-- ucd="CODE_MISC" -->
+      <DESCRIPTION>MIPS 24{mu}m source? (3)</DESCRIPTION>
+    </FIELD>
+    <FIELD name="Ftot" ucd="phot.flux.density;em.mm.200-400GHz" datatype="float" width="6" precision="3" unit="Jy"><!-- ucd="PHOT_FLUX_RADIO_250G" -->
+      <DESCRIPTION>Total integrated flux density (1)</DESCRIPTION>
+    </FIELD>
+    <FIELD name="MinAxis" ucd="phys.angSize;meta.modelled" datatype="short" width="3" unit="arcsec"><!-- ucd="EXTENSION_FWHM_MIN" -->
+      <DESCRIPTION>Minor axis FWHM of Gaussian fit</DESCRIPTION>
+    </FIELD>
+    <FIELD name="MajAxis" ucd="phys.angSize;meta.modelled" datatype="short" width="3" unit="arcsec"><!-- ucd="EXTENSION_FWHM_MAJ" -->
+      <DESCRIPTION>Major axis FWHM of Gaussian fit</DESCRIPTION>
+    </FIELD>
+    <FIELD name="Morph" ucd="src.morph" datatype="char" arraysize="28*"><!-- ucd="MORPH_TYPE" -->
+      <DESCRIPTION>Morphology description (8)</DESCRIPTION>
+    </FIELD>
+<DATA><TABLEDATA>
+<TR><TD>051.2825</TD><TD>+30.4060</TD><TD>1</TD><TD>03 25 07.8</TD><TD>+30 24 21.6</TD><TD>109</TD><TD>6.1</TD><TD>N</TD><TD>0.114</TD><TD>38</TD><TD>57</TD><TD>multiple,round,weak</TD></TR>
+<TR><TD>051.2896</TD><TD>+30.3976</TD><TD>2</TD><TD>03 25 09.5</TD><TD>+30 23 51.3</TD><TD>121</TD><TD>8.7</TD><TD>N</TD><TD>0.148</TD><TD>33</TD><TD>54</TD><TD>multiple,round,weak</TD></TR>
+<TR><TD>051.2925</TD><TD>+30.7454</TD><TD>3</TD><TD>03 25 10.2</TD><TD>+30 44 43.4</TD><TD>125</TD><TD>6.6</TD><TD>N</TD><TD>0.380</TD><TD>65</TD><TD>134</TD><TD>extended,round,weak</TD></TR>
+<TR><TD>051.3208</TD><TD>+30.3148</TD><TD>4</TD><TD>03 25 17.0</TD><TD>+30 18 53.2</TD><TD>149</TD><TD>7.2</TD><TD>N</TD><TD>1.240</TD><TD>99</TD><TD>122</TD><TD>extended,round</TD></TR>
+<TR><TD>051.3425</TD><TD>+30.7526</TD><TD>5</TD><TD>03 25 22.2</TD><TD>+30 45 09.3</TD><TD>727</TD><TD>42.0</TD><TD>Y</TD><TD>2.050</TD><TD>45</TD><TD>79</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>051.3604</TD><TD>+30.3639</TD><TD>6</TD><TD>03 25 26.5</TD><TD>+30 21 50.0</TD><TD>143</TD><TD>5.9</TD><TD>N</TD><TD>1.180</TD><TD>93</TD><TD>132</TD><TD>extended,round,weak</TD></TR>
+<TR><TD>051.3975</TD><TD>+30.2184</TD><TD>7</TD><TD>03 25 35.4</TD><TD>+30 13 06.2</TD><TD>126</TD><TD>6.0</TD><TD>N</TD><TD>0.960</TD><TD>88</TD><TD>122</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>051.3996</TD><TD>+30.7548</TD><TD>8</TD><TD>03 25 35.9</TD><TD>+30 45 17.2</TD><TD>2241</TD><TD>128.0</TD><TD>Y</TD><TD>4.700</TD><TD>45</TD><TD>54</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>051.4050</TD><TD>+30.1654</TD><TD>9</TD><TD>03 25 37.2</TD><TD>+30 09 55.4</TD><TD>113</TD><TD>5.7</TD><TD>N</TD><TD>0.700</TD><TD>76</TD><TD>144</TD><TD>extended,round,weak</TD></TR>
+<TR><TD>051.4100</TD><TD>+30.7328</TD><TD>10</TD><TD>03 25 38.4</TD><TD>+30 43 58.0</TD><TD>980</TD><TD>45.2</TD><TD>Y</TD><TD>2.040</TD><TD>53</TD><TD>55</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>051.4417</TD><TD>+30.7362</TD><TD>11</TD><TD>03 25 46.0</TD><TD>+30 44 10.3</TD><TD>240</TD><TD>8.4</TD><TD>Y</TD><TD>0.900</TD><TD>78</TD><TD>81</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>051.4479</TD><TD>+30.2072</TD><TD>12</TD><TD>03 25 47.5</TD><TD>+30 12 25.9</TD><TD>118</TD><TD>5.1</TD><TD>N</TD><TD>0.970</TD><TD>77</TD><TD>135</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>051.4533</TD><TD>+30.7067</TD><TD>13</TD><TD>03 25 48.8</TD><TD>+30 42 24.1</TD><TD>407</TD><TD>19.0</TD><TD>N</TD><TD>0.470</TD><TD>44</TD><TD>59</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>051.4608</TD><TD>+30.7004</TD><TD>14</TD><TD>03 25 50.6</TD><TD>+30 42 01.4</TD><TD>342</TD><TD>17.9</TD><TD>N</TD><TD>0.410</TD><TD>44</TD><TD>60</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>051.4796</TD><TD>+30.6905</TD><TD>15</TD><TD>03 25 55.1</TD><TD>+30 41 25.8</TD><TD>188</TD><TD>6.4</TD><TD>N</TD><TD>0.250</TD><TD>54</TD><TD>60</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>051.4842</TD><TD>+30.6781</TD><TD>16</TD><TD>03 25 56.2</TD><TD>+30 40 41.1</TD><TD>154</TD><TD>6.3</TD><TD>N</TD><TD>0.210</TD><TD>53</TD><TD>58</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>051.4933</TD><TD>+30.6204</TD><TD>17</TD><TD>03 25 58.4</TD><TD>+30 37 13.4</TD><TD>122</TD><TD>6.7</TD><TD>N</TD><TD>0.360</TD><TD>67</TD><TD>81</TD><TD>extended,round,weak</TD></TR>
+<TR><TD>051.6537</TD><TD>+30.2564</TD><TD>18</TD><TD>03 26 36.9</TD><TD>+30 15 23.0</TD><TD>225</TD><TD>14.9</TD><TD>Y</TD><TD>0.400</TD><TD>39</TD><TD>45</TD><TD>extended,round</TD></TR>
+<TR><TD>051.7583</TD><TD>+30.2522</TD><TD>19</TD><TD>03 27 02.0</TD><TD>+30 15 07.9</TD><TD>115</TD><TD>7.3</TD><TD>N</TD><TD>0.590</TD><TD>86</TD><TD>93</TD><TD>extended,round,weak</TD></TR>
+<TR><TD>051.8700</TD><TD>+30.2506</TD><TD>20</TD><TD>03 27 28.8</TD><TD>+30 15 02.1</TD><TD>114</TD><TD>5.9</TD><TD>N</TD><TD>0.690</TD><TD>75</TD><TD>102</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>051.9062</TD><TD>+30.2315</TD><TD>21</TD><TD>03 27 37.5</TD><TD>+30 13 53.4</TD><TD>164</TD><TD>9.0</TD><TD>Y</TD><TD>0.270</TD><TD>44</TD><TD>61</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>051.9137</TD><TD>+30.2147</TD><TD>22</TD><TD>03 27 39.3</TD><TD>+30 12 52.9</TD><TD>317</TD><TD>16.3</TD><TD>Y</TD><TD>0.410</TD><TD>44</TD><TD>54</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>051.9237</TD><TD>+30.2067</TD><TD>23</TD><TD>03 27 41.7</TD><TD>+30 12 24.1</TD><TD>283</TD><TD>12.8</TD><TD>Y</TD><TD>0.400</TD><TD>52</TD><TD>60</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>051.9496</TD><TD>+30.2006</TD><TD>24</TD><TD>03 27 47.9</TD><TD>+30 12 02.1</TD><TD>220</TD><TD>11.2</TD><TD>Y</TD><TD>0.660</TD><TD>53</TD><TD>79</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.1337</TD><TD>+31.1858</TD><TD>25</TD><TD>03 28 32.1</TD><TD>+31 11 08.8</TD><TD>106</TD><TD>6.7</TD><TD>N/A</TD><TD>0.230</TD><TD>51</TD><TD>132</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>052.1350</TD><TD>+31.0786</TD><TD>26</TD><TD>03 28 32.4</TD><TD>+31 04 42.9</TD><TD>117</TD><TD>7.6</TD><TD>N/A</TD><TD>0.530</TD><TD>60</TD><TD>91</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>052.1387</TD><TD>+30.3264</TD><TD>27</TD><TD>03 28 33.3</TD><TD>+30 19 35.0</TD><TD>155</TD><TD>6.4</TD><TD>Y</TD><TD>1.030</TD><TD>87</TD><TD>136</TD><TD>extended,round</TD></TR>
+<TR><TD>052.1417</TD><TD>+31.1170</TD><TD>28</TD><TD>03 28 34.0</TD><TD>+31 07 01.2</TD><TD>137</TD><TD>9.7</TD><TD>N/A</TD><TD>0.190</TD><TD>36</TD><TD>46</TD><TD>multiple,round</TD></TR>
+<TR><TD>052.1508</TD><TD>+31.2240</TD><TD>29</TD><TD>03 28 36.2</TD><TD>+31 13 26.4</TD><TD>267</TD><TD>17.1</TD><TD>N/A (IRAS)</TD><TD>0.420</TD><TD>33</TD><TD>47</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.1625</TD><TD>+31.0998</TD><TD>30</TD><TD>03 28 39.0</TD><TD>+31 05 59.2</TD><TD>189</TD><TD>11.3</TD><TD>N/A</TD><TD>0.290</TD><TD>51</TD><TD>56</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.1662</TD><TD>+31.2991</TD><TD>31</TD><TD>03 28 39.9</TD><TD>+31 17 56.7</TD><TD>385</TD><TD>20.1</TD><TD>N/A (IRAS)</TD><TD>1.920</TD><TD>59</TD><TD>90</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.1737</TD><TD>+30.5203</TD><TD>32</TD><TD>03 28 41.7</TD><TD>+30 31 13.0</TD><TD>144</TD><TD>6.4</TD><TD>Y</TD><TD>0.760</TD><TD>94</TD><TD>107</TD><TD>extended,round</TD></TR>
+<TR><TD>052.1775</TD><TD>+31.1034</TD><TD>33</TD><TD>03 28 42.6</TD><TD>+31 06 12.2</TD><TD>173</TD><TD>9.6</TD><TD>N/A</TD><TD>0.270</TD><TD>55</TD><TD>58</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>052.1913</TD><TD>+31.2555</TD><TD>34</TD><TD>03 28 45.9</TD><TD>+31 15 19.8</TD><TD>150</TD><TD>6.2</TD><TD>N/A</TD><TD>0.230</TD><TD>40</TD><TD>57</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>052.2017</TD><TD>+31.2672</TD><TD>35</TD><TD>03 28 48.4</TD><TD>+31 16 01.9</TD><TD>130</TD><TD>5.9</TD><TD>N/A</TD><TD>0.200</TD><TD>38</TD><TD>56</TD><TD>multiple,round,weak</TD></TR>
+<TR><TD>052.2029</TD><TD>+30.7235</TD><TD>36</TD><TD>03 28 48.7</TD><TD>+30 43 24.6</TD><TD>127</TD><TD>6.3</TD><TD>Y</TD><TD>0.610</TD><TD>65</TD><TD>121</TD><TD>extended,round</TD></TR>
+<TR><TD>052.2171</TD><TD>+31.3022</TD><TD>37</TD><TD>03 28 52.1</TD><TD>+31 18 07.9</TD><TD>160</TD><TD>7.4</TD><TD>N/A</TD><TD>0.380</TD><TD>36</TD><TD>75</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>052.2304</TD><TD>+31.2423</TD><TD>38</TD><TD>03 28 55.3</TD><TD>+31 14 32.2</TD><TD>1220</TD><TD>59.4</TD><TD>N/A (IRAS)</TD><TD>3.330</TD><TD>47</TD><TD>63</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.2304</TD><TD>+31.3216</TD><TD>39</TD><TD>03 28 55.3</TD><TD>+31 19 17.7</TD><TD>210</TD><TD>9.7</TD><TD>N/A</TD><TD>0.590</TD><TD>42</TD><TD>76</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>052.2500</TD><TD>+31.3605</TD><TD>40</TD><TD>03 29 00.0</TD><TD>+31 21 37.8</TD><TD>685</TD><TD>34.2</TD><TD>N/A</TD><TD>1.400</TD><TD>54</TD><TD>63</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>052.2525</TD><TD>+31.1997</TD><TD>41</TD><TD>03 29 00.6</TD><TD>+31 11 58.9</TD><TD>190</TD><TD>10.7</TD><TD>N/A</TD><TD>0.370</TD><TD>44</TD><TD>63</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.2554</TD><TD>+31.3425</TD><TD>42</TD><TD>03 29 01.3</TD><TD>+31 20 33.0</TD><TD>1079</TD><TD>58.8</TD><TD>N/A (IRAS)</TD><TD>2.540</TD><TD>49</TD><TD>56</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>052.2608</TD><TD>+31.2658</TD><TD>43</TD><TD>03 29 02.6</TD><TD>+31 15 56.8</TD><TD>2160</TD><TD>103.0</TD><TD>N/A</TD><TD>4.460</TD><TD>47</TD><TD>62</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.2687</TD><TD>+31.3117</TD><TD>44</TD><TD>03 29 04.5</TD><TD>+31 18 42.1</TD><TD>270</TD><TD>13.7</TD><TD>N/A</TD><TD>0.720</TD><TD>45</TD><TD>78</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.2821</TD><TD>+31.2880</TD><TD>45</TD><TD>03 29 07.7</TD><TD>+31 17 16.8</TD><TD>460</TD><TD>21.8</TD><TD>N/A</TD><TD>1.350</TD><TD>55</TD><TD>71</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.2846</TD><TD>+31.2531</TD><TD>46</TD><TD>03 29 08.3</TD><TD>+31 15 11.1</TD><TD>740</TD><TD>28.6</TD><TD>N/A</TD><TD>2.620</TD><TD>68</TD><TD>77</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.2871</TD><TD>+31.3621</TD><TD>47</TD><TD>03 29 08.9</TD><TD>+31 21 43.5</TD><TD>612</TD><TD>30.9</TD><TD>N/A (IRAS)</TD><TD>2.810</TD><TD>72</TD><TD>85</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.2954</TD><TD>+31.2240</TD><TD>48</TD><TD>03 29 10.9</TD><TD>+31 13 26.4</TD><TD>5180</TD><TD>264.0</TD><TD>N/A (IRAS)</TD><TD>10.590</TD><TD>39</TD><TD>56</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>052.2971</TD><TD>+31.3069</TD><TD>49</TD><TD>03 29 11.3</TD><TD>+31 18 24.8</TD><TD>840</TD><TD>40.6</TD><TD>N/A (IRAS)</TD><TD>1.980</TD><TD>52</TD><TD>58</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.3104</TD><TD>+31.3417</TD><TD>50</TD><TD>03 29 14.5</TD><TD>+31 20 30.1</TD><TD>310</TD><TD>14.2</TD><TD>N/A</TD><TD>1.310</TD><TD>68</TD><TD>84</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.3208</TD><TD>+31.2072</TD><TD>51</TD><TD>03 29 17.0</TD><TD>+31 12 25.9</TD><TD>423</TD><TD>16.4</TD><TD>N/A</TD><TD>0.620</TD><TD>41</TD><TD>58</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>052.3212</TD><TD>+31.4608</TD><TD>52</TD><TD>03 29 17.1</TD><TD>+31 27 38.8</TD><TD>269</TD><TD>13.7</TD><TD>N/A</TD><TD>0.790</TD><TD>44</TD><TD>103</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.3258</TD><TD>+31.4214</TD><TD>53</TD><TD>03 29 18.2</TD><TD>+31 25 17.0</TD><TD>336</TD><TD>16.7</TD><TD>N/A (IRAS)</TD><TD>1.370</TD><TD>61</TD><TD>94</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.3296</TD><TD>+31.3907</TD><TD>54</TD><TD>03 29 19.1</TD><TD>+31 23 26.5</TD><TD>330</TD><TD>16.7</TD><TD>N/A</TD><TD>1.240</TD><TD>47</TD><TD>81</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.3308</TD><TD>+31.1935</TD><TD>55</TD><TD>03 29 19.4</TD><TD>+31 11 36.6</TD><TD>184</TD><TD>9.8</TD><TD>N/A</TD><TD>0.370</TD><TD>46</TD><TD>59</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.3433</TD><TD>+31.6068</TD><TD>56</TD><TD>03 29 22.4</TD><TD>+31 36 24.4</TD><TD>102</TD><TD>6.8</TD><TD>N/A</TD><TD>0.590</TD><TD>78</TD><TD>104</TD><TD>extended,round,weak</TD></TR>
+<TR><TD>052.3454</TD><TD>+31.5546</TD><TD>57</TD><TD>03 29 22.9</TD><TD>+31 33 16.5</TD><TD>224</TD><TD>16.2</TD><TD>N/A (IRAS)</TD><TD>0.510</TD><TD>42</TD><TD>56</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>052.3571</TD><TD>+31.4712</TD><TD>58</TD><TD>03 29 25.7</TD><TD>+31 28 16.3</TD><TD>273</TD><TD>14.0</TD><TD>N/A</TD><TD>0.330</TD><TD>39</TD><TD>45</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.4646</TD><TD>+31.6536</TD><TD>59</TD><TD>03 29 51.5</TD><TD>+31 39 12.9</TD><TD>249</TD><TD>19.3</TD><TD>N/A (IRAS)</TD><TD>0.520</TD><TD>46</TD><TD>56</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.5621</TD><TD>+30.3936</TD><TD>60</TD><TD>03 30 14.9</TD><TD>+30 23 36.9</TD><TD>125</TD><TD>8.3</TD><TD>Y</TD><TD>0.370</TD><TD>44</TD><TD>76</TD><TD>extended,round,weak</TD></TR>
+<TR><TD>052.6000</TD><TD>+30.4607</TD><TD>61</TD><TD>03 30 24.0</TD><TD>+30 27 38.5</TD><TD>106</TD><TD>5.1</TD><TD>N</TD><TD>0.370</TD><TD>58</TD><TD>104</TD><TD>multiple,round,weak</TD></TR>
+<TR><TD>052.6333</TD><TD>+30.4385</TD><TD>62</TD><TD>03 30 32.0</TD><TD>+30 26 18.6</TD><TD>199</TD><TD>11.1</TD><TD>Y</TD><TD>0.800</TD><TD>65</TD><TD>80</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>052.6896</TD><TD>+30.8762</TD><TD>63</TD><TD>03 30 45.5</TD><TD>+30 52 34.3</TD><TD>141</TD><TD>10.2</TD><TD>N/A (IRAS)</TD><TD>0.670</TD><TD>82</TD><TD>89</TD><TD>extended,elongated</TD></TR>
+<TR><TD>052.7100</TD><TD>+30.8215</TD><TD>64</TD><TD>03 30 50.4</TD><TD>+30 49 17.4</TD><TD>86</TD><TD>6.4</TD><TD>N/A</TD><TD>0.200</TD><TD>37</TD><TD>82</TD><TD>extended,round,weak</TD></TR>
+<TR><TD>052.8333</TD><TD>+30.7584</TD><TD>65</TD><TD>03 31 20.0</TD><TD>+30 45 30.2</TD><TD>522</TD><TD>31.7</TD><TD>N/A (IRAS)</TD><TD>0.760</TD><TD>41</TD><TD>48</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>053.0721</TD><TD>+30.8289</TD><TD>66</TD><TD>03 32 17.3</TD><TD>+30 49 44.0</TD><TD>1068</TD><TD>73.5</TD><TD>Y</TD><TD>2.310</TD><TD>41</TD><TD>44</TD><TD>extended,round</TD></TR>
+<TR><TD>053.1121</TD><TD>+30.9864</TD><TD>67</TD><TD>03 32 26.9</TD><TD>+30 59 11.0</TD><TD>165</TD><TD>8.8</TD><TD>N</TD><TD>0.860</TD><TD>47</TD><TD>125</TD><TD>extended,round</TD></TR>
+<TR><TD>053.1171</TD><TD>+31.0382</TD><TD>68</TD><TD>03 32 28.1</TD><TD>+31 02 17.5</TD><TD>110</TD><TD>6.6</TD><TD>Y</TD><TD>0.360</TD><TD>43</TD><TD>95</TD><TD>extended,round,weak</TD></TR>
+<TR><TD>053.1637</TD><TD>+30.9580</TD><TD>69</TD><TD>03 32 39.3</TD><TD>+30 57 28.8</TD><TD>155</TD><TD>5.7</TD><TD>N</TD><TD>1.280</TD><TD>109</TD><TD>128</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>053.1833</TD><TD>+31.0000</TD><TD>70</TD><TD>03 32 44.0</TD><TD>+31 00 00.0</TD><TD>238</TD><TD>11.1</TD><TD>N</TD><TD>1.960</TD><TD>94</TD><TD>112</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>053.2133</TD><TD>+31.0299</TD><TD>71</TD><TD>03 32 51.2</TD><TD>+31 01 47.6</TD><TD>180</TD><TD>7.3</TD><TD>N</TD><TD>1.150</TD><TD>79</TD><TD>102</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>053.2375</TD><TD>+31.0558</TD><TD>72</TD><TD>03 32 57.0</TD><TD>+31 03 20.8</TD><TD>240</TD><TD>9.4</TD><TD>N</TD><TD>0.930</TD><TD>59</TD><TD>84</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>053.2500</TD><TD>+31.3455</TD><TD>73</TD><TD>03 33 00.0</TD><TD>+31 20 43.8</TD><TD>178</TD><TD>8.8</TD><TD>N</TD><TD>1.110</TD><TD>87</TD><TD>114</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>053.2579</TD><TD>+31.0755</TD><TD>74</TD><TD>03 33 01.9</TD><TD>+31 04 31.8</TD><TD>260</TD><TD>9.3</TD><TD>N</TD><TD>0.380</TD><TD>51</TD><TD>60</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>053.2683</TD><TD>+31.0830</TD><TD>75</TD><TD>03 33 04.4</TD><TD>+31 04 58.8</TD><TD>260</TD><TD>9.7</TD><TD>N</TD><TD>0.380</TD><TD>51</TD><TD>61</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>053.2975</TD><TD>+31.3586</TD><TD>76</TD><TD>03 33 11.4</TD><TD>+31 21 30.9</TD><TD>116</TD><TD>6.5</TD><TD>N</TD><TD>0.430</TD><TD>64</TD><TD>89</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>053.2975</TD><TD>+31.2900</TD><TD>77</TD><TD>03 33 11.4</TD><TD>+31 17 24.0</TD><TD>110</TD><TD>5.0</TD><TD>N</TD><TD>0.380</TD><TD>72</TD><TD>97</TD><TD>multiple,round,weak</TD></TR>
+<TR><TD>053.3050</TD><TD>+31.3306</TD><TD>78</TD><TD>03 33 13.2</TD><TD>+31 19 50.1</TD><TD>262</TD><TD>16.3</TD><TD>Y</TD><TD>0.930</TD><TD>65</TD><TD>77</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>053.3125</TD><TD>+31.1172</TD><TD>79</TD><TD>03 33 15.0</TD><TD>+31 07 01.9</TD><TD>605</TD><TD>30.0</TD><TD>Y</TD><TD>1.840</TD><TD>59</TD><TD>64</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>053.3242</TD><TD>+31.1583</TD><TD>80</TD><TD>03 33 17.8</TD><TD>+31 09 29.8</TD><TD>1080</TD><TD>53.2</TD><TD>Y</TD><TD>3.080</TD><TD>57</TD><TD>76</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>053.3354</TD><TD>+31.1270</TD><TD>81</TD><TD>03 33 20.5</TD><TD>+31 07 37.2</TD><TD>1220</TD><TD>59.9</TD><TD>Y</TD><TD>2.610</TD><TD>53</TD><TD>59</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>053.3546</TD><TD>+31.0930</TD><TD>82</TD><TD>03 33 25.1</TD><TD>+31 05 34.8</TD><TD>147</TD><TD>7.1</TD><TD>N</TD><TD>0.360</TD><TD>54</TD><TD>62</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>053.3558</TD><TD>+31.3354</TD><TD>83</TD><TD>03 33 25.4</TD><TD>+31 20 07.4</TD><TD>165</TD><TD>7.2</TD><TD>N</TD><TD>0.470</TD><TD>60</TD><TD>74</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>053.3617</TD><TD>+31.1138</TD><TD>84</TD><TD>03 33 26.8</TD><TD>+31 06 49.6</TD><TD>190</TD><TD>7.0</TD><TD>Y</TD><TD>0.470</TD><TD>61</TD><TD>68</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>053.3837</TD><TD>+31.3344</TD><TD>85</TD><TD>03 33 32.1</TD><TD>+31 20 03.8</TD><TD>155</TD><TD>6.9</TD><TD>N</TD><TD>0.400</TD><TD>54</TD><TD>77</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>053.4629</TD><TD>+31.2102</TD><TD>86</TD><TD>03 33 51.1</TD><TD>+31 12 36.7</TD><TD>131</TD><TD>5.2</TD><TD>Y</TD><TD>0.640</TD><TD>80</TD><TD>132</TD><TD>extended,round,weak</TD></TR>
+<TR><TD>053.8400</TD><TD>+31.1154</TD><TD>87</TD><TD>03 35 21.6</TD><TD>+31 06 55.4</TD><TD>99</TD><TD>5.9</TD><TD>N</TD><TD>0.450</TD><TD>68</TD><TD>101</TD><TD>extended,round,weak</TD></TR>
+<TR><TD>055.0604</TD><TD>+32.0249</TD><TD>88</TD><TD>03 40 14.5</TD><TD>+32 01 29.6</TD><TD>162</TD><TD>6.7</TD><TD>N</TD><TD>1.430</TD><TD>94</TD><TD>152</TD><TD>extended,elongated</TD></TR>
+<TR><TD>055.2054</TD><TD>+31.8096</TD><TD>89</TD><TD>03 40 49.3</TD><TD>+31 48 34.5</TD><TD>151</TD><TD>8.1</TD><TD>Y</TD><TD>0.990</TD><TD>81</TD><TD>126</TD><TD>extended,round</TD></TR>
+<TR><TD>055.2875</TD><TD>+31.7425</TD><TD>90</TD><TD>03 41 09.0</TD><TD>+31 44 33.0</TD><TD>139</TD><TD>8.0</TD><TD>Y</TD><TD>0.126</TD><TD>22</TD><TD>33</TD><TD>extended,round</TD></TR>
+<TR><TD>055.3321</TD><TD>+31.7912</TD><TD>91</TD><TD>03 41 19.7</TD><TD>+31 47 28.3</TD><TD>106</TD><TD>6.5</TD><TD>N</TD><TD>0.370</TD><TD>58</TD><TD>105</TD><TD>extended,round,weak</TD></TR>
+<TR><TD>055.4167</TD><TD>+31.9680</TD><TD>92</TD><TD>03 41 40.0</TD><TD>+31 58 04.8</TD><TD>94</TD><TD>6.4</TD><TD>N</TD><TD>0.240</TD><TD>54</TD><TD>67</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>055.4379</TD><TD>+31.8027</TD><TD>93</TD><TD>03 41 45.1</TD><TD>+31 48 09.7</TD><TD>118</TD><TD>6.3</TD><TD>N</TD><TD>0.890</TD><TD>92</TD><TD>111</TD><TD>extended,round,weak</TD></TR>
+<TR><TD>055.4408</TD><TD>+31.9560</TD><TD>94</TD><TD>03 41 45.8</TD><TD>+31 57 21.6</TD><TD>132</TD><TD>7.3</TD><TD>N</TD><TD>0.320</TD><TD>57</TD><TD>67</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>055.5858</TD><TD>+31.7470</TD><TD>95</TD><TD>03 42 20.6</TD><TD>+31 44 49.2</TD><TD>108</TD><TD>6.2</TD><TD>Y</TD><TD>0.770</TD><TD>93</TD><TD>116</TD><TD>extended,round,weak</TD></TR>
+<TR><TD>055.6962</TD><TD>+31.9780</TD><TD>96</TD><TD>03 42 47.1</TD><TD>+31 58 40.8</TD><TD>148</TD><TD>7.1</TD><TD>N</TD><TD>0.460</TD><TD>59</TD><TD>70</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>055.7179</TD><TD>+31.9701</TD><TD>97</TD><TD>03 42 52.3</TD><TD>+31 58 12.3</TD><TD>149</TD><TD>6.0</TD><TD>Y</TD><TD>0.350</TD><TD>60</TD><TD>66</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>055.7388</TD><TD>+31.9637</TD><TD>98</TD><TD>03 42 57.3</TD><TD>+31 57 49.3</TD><TD>134</TD><TD>6.0</TD><TD>Y</TD><TD>0.320</TD><TD>59</TD><TD>64</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>055.9096</TD><TD>+32.0524</TD><TD>99</TD><TD>03 43 38.3</TD><TD>+32 03 08.6</TD><TD>164</TD><TD>12.0</TD><TD>N/A</TD><TD>0.430</TD><TD>53</TD><TD>61</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>055.9333</TD><TD>+32.0528</TD><TD>100</TD><TD>03 43 44.0</TD><TD>+32 03 10.0</TD><TD>250</TD><TD>15.3</TD><TD>N/A</TD><TD>0.810</TD><TD>59</TD><TD>67</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>055.9400</TD><TD>+32.0292</TD><TD>101</TD><TD>03 43 45.6</TD><TD>+32 01 45.1</TD><TD>139</TD><TD>7.5</TD><TD>N/A</TD><TD>0.350</TD><TD>48</TD><TD>66</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>055.9604</TD><TD>+32.0548</TD><TD>102</TD><TD>03 43 50.5</TD><TD>+32 03 17.2</TD><TD>432</TD><TD>23.5</TD><TD>N/A</TD><TD>1.410</TD><TD>62</TD><TD>76</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>055.9829</TD><TD>+32.0129</TD><TD>103</TD><TD>03 43 55.9</TD><TD>+32 00 46.4</TD><TD>994</TD><TD>56.5</TD><TD>N/A  (IRAS)</TD><TD>2.420</TD><TD>46</TD><TD>57</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>055.9887</TD><TD>+32.0511</TD><TD>104</TD><TD>03 43 57.3</TD><TD>+32 03 03.9</TD><TD>777</TD><TD>44.2</TD><TD>N/A</TD><TD>1.420</TD><TD>46</TD><TD>55</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>055.9908</TD><TD>+32.0684</TD><TD>105</TD><TD>03 43 57.8</TD><TD>+32 04 06.2</TD><TD>283</TD><TD>12.5</TD><TD>N/A</TD><TD>0.610</TD><TD>51</TD><TD>64</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>056.0067</TD><TD>+32.0339</TD><TD>106</TD><TD>03 44 01.6</TD><TD>+32 02 02.0</TD><TD>426</TD><TD>18.1</TD><TD>N/A</TD><TD>0.500</TD><TD>52</TD><TD>55</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>056.0087</TD><TD>+32.0427</TD><TD>107</TD><TD>03 44 02.1</TD><TD>+32 02 33.7</TD><TD>388</TD><TD>16.5</TD><TD>N/A</TD><TD>0.480</TD><TD>53</TD><TD>60</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>056.0096</TD><TD>+32.0826</TD><TD>108</TD><TD>03 44 02.3</TD><TD>+32 04 57.3</TD><TD>139</TD><TD>6.1</TD><TD>N/A</TD><TD>0.320</TD><TD>53</TD><TD>72</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>056.0208</TD><TD>+32.0077</TD><TD>109</TD><TD>03 44 05.0</TD><TD>+32 00 27.7</TD><TD>127</TD><TD>6.3</TD><TD>N/A</TD><TD>0.390</TD><TD>50</TD><TD>80</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>056.0217</TD><TD>+32.0349</TD><TD>110</TD><TD>03 44 05.2</TD><TD>+32 02 05.6</TD><TD>257</TD><TD>11.8</TD><TD>N/A</TD><TD>0.440</TD><TD>53</TD><TD>59</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>056.0604</TD><TD>+31.9667</TD><TD>111</TD><TD>03 44 14.5</TD><TD>+31 58 00.1</TD><TD>170</TD><TD>8.9</TD><TD>N/A</TD><TD>0.830</TD><TD>71</TD><TD>101</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>056.0617</TD><TD>+32.1535</TD><TD>112</TD><TD>03 44 14.8</TD><TD>+32 09 12.6</TD><TD>127</TD><TD>8.2</TD><TD>N/A</TD><TD>0.450</TD><TD>60</TD><TD>65</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>056.0942</TD><TD>+31.9898</TD><TD>113</TD><TD>03 44 22.6</TD><TD>+31 59 23.2</TD><TD>122</TD><TD>6.2</TD><TD>N/A</TD><TD>0.740</TD><TD>75</TD><TD>112</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>056.0946</TD><TD>+32.1670</TD><TD>114</TD><TD>03 44 22.7</TD><TD>+32 10 01.2</TD><TD>140</TD><TD>8.0</TD><TD>N/A</TD><TD>0.550</TD><TD>59</TD><TD>88</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>056.1517</TD><TD>+31.9776</TD><TD>115</TD><TD>03 44 36.4</TD><TD>+31 58 39.3</TD><TD>167</TD><TD>10.4</TD><TD>N/A</TD><TD>0.540</TD><TD>45</TD><TD>96</TD><TD>extended,elongated</TD></TR>
+<TR><TD>056.1829</TD><TD>+32.0235</TD><TD>116</TD><TD>03 44 43.9</TD><TD>+32 01 24.6</TD><TD>289</TD><TD>18.8</TD><TD>N/A (IRAS)</TD><TD>0.510</TD><TD>35</TD><TD>47</TD><TD>multiple,extended,round</TD></TR>
+<TR><TD>056.2033</TD><TD>+32.0082</TD><TD>117</TD><TD>03 44 48.8</TD><TD>+32 00 29.5</TD><TD>150</TD><TD>8.7</TD><TD>N/A</TD><TD>0.400</TD><TD>44</TD><TD>70</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>056.2333</TD><TD>+32.0087</TD><TD>118</TD><TD>03 44 56.0</TD><TD>+32 00 31.3</TD><TD>109</TD><TD>5.7</TD><TD>N/A</TD><TD>0.340</TD><TD>47</TD><TD>88</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>056.3162</TD><TD>+32.0801</TD><TD>119</TD><TD>03 45 15.9</TD><TD>+32 04 48.3</TD><TD>181</TD><TD>9.3</TD><TD>N/A</TD><TD>1.290</TD><TD>92</TD><TD>123</TD><TD>extended,elongated</TD></TR>
+<TR><TD>056.4504</TD><TD>+32.4042</TD><TD>120</TD><TD>03 45 48.1</TD><TD>+32 24 15.1</TD><TD>83</TD><TD>8.8</TD><TD>Y</TD><TD>0.080</TD><TD>24</TD><TD>25</TD><TD>multiple,extended,round,weak</TD></TR>
+<TR><TD>056.8896</TD><TD>+32.8486</TD><TD>121</TD><TD>03 47 33.5</TD><TD>+32 50 54.9</TD><TD>136</TD><TD>6.3</TD><TD>N</TD><TD>0.650</TD><TD>85</TD><TD>94</TD><TD>multiple,extended,elongated</TD></TR>
+<TR><TD>056.9200</TD><TD>+32.8659</TD><TD>122</TD><TD>03 47 40.8</TD><TD>+32 51 57.2</TD><TD>262</TD><TD>14.3</TD><TD>Y</TD><TD>1.340</TD><TD>63</TD><TD>91</TD><TD>multiple,extended,elongated</TD></TR>
+</TABLEDATA></DATA>
+</TABLE>
+
+
+<!--  INFO Diagnostics (++++ are Warnings, **** are Errors)
+++++No center provided++++
+ -->
+</RESOURCE>
+</VOTABLE>

@@ -3,12 +3,12 @@ import unittest
 import numpy as np
 
 import glue
-from glue.component_link import ComponentLink
-from glue.link_manager import LinkManager, accessible_links, discover_links
-from glue.link_manager import find_dependents
-from glue.data import ComponentID, DerivedComponent
+from glue.core.component_link import ComponentLink
+from glue.core.link_manager import LinkManager, accessible_links, discover_links
+from glue.core.link_manager import find_dependents
+from glue.core.data import ComponentID, DerivedComponent
 
-comp = glue.Component(data = np.array([1,2,3]))
+comp = glue.core.data.Component(data = np.array([1,2,3]))
 
 def example_components(self, add_derived=True):
     """ Link Topology
@@ -17,7 +17,7 @@ def example_components(self, add_derived=True):
     data --|             --c5,c6   (c7,c8 disconnected)
            --- c2---c4--/
     """
-    self.data = glue.Data()
+    self.data = glue.core.data.Data()
     c1 = ComponentID('c1')
     c2 = ComponentID('c2')
     c3 = ComponentID('c3')

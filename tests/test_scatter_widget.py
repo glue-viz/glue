@@ -6,17 +6,18 @@ from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt
 
 import glue
-from glue.qt import ScatterWidget
+from glue.qt.widgets.scatter_widget import ScatterWidget
 
+import example_data
 
 class TestScatterWidget(unittest.TestCase):
 
     def setUp(self):
         import sys
         self.app = QApplication(sys.argv)
-        self.hub = glue.Hub()
-        self.data = glue.example_data.test_data()
-        self.collect = glue.DataCollection()
+        self.hub = glue.core.hub.Hub()
+        self.data = example_data.test_data()
+        self.collect = glue.core.data_collection.DataCollection()
         self.widget = ScatterWidget(self.collect)
         self.win = QMainWindow()
         self.win.setCentralWidget(self.widget)

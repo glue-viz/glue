@@ -12,10 +12,10 @@ AXES = plt.plot([1,2,3])[0].axes
 class TestRectangle(unittest.TestCase):
 
     def setUp(self):
-        self.roi = glue.roi.RectangularROI()
+        self.roi = glue.core.roi.RectangularROI()
 
     def test_empty_roi_contains_raises(self):
-        self.assertRaises(glue.exceptions.UndefinedROI,
+        self.assertRaises(glue.core.exceptions.UndefinedROI,
                           self.roi.contains, 1, 2)
 
     def test_scalar_contains(self):
@@ -29,7 +29,7 @@ class TestRectangle(unittest.TestCase):
         self.assertTrue(self.roi.defined())
         self.roi.reset()
         self.assertFalse(self.roi.defined())
-        self.assertRaises(glue.exceptions.UndefinedROI,
+        self.assertRaises(glue.core.exceptions.UndefinedROI,
                           self.roi.contains, 5, 5)
 
     def test_empty_to_polygon(self):
@@ -40,7 +40,7 @@ class TestRectangle(unittest.TestCase):
     def test_to_polygon(self):
         self.roi.update_limits(0, 0, 10, 10)
         x,y = self.roi.to_polygon()
-        poly = glue.roi.PolygonalROI(vx = x, vy = y)
+        poly = glue.core.roi.PolygonalROI(vx = x, vy = y)
         self.assertTrue(poly.contains(5, 5))
 
     def test_ndarray(self):
@@ -86,13 +86,13 @@ class TestRectangle(unittest.TestCase):
 
 class TestCircle(unittest.TestCase):
     def setUp(self):
-        self.roi = glue.roi.CircularROI()
+        self.roi = glue.core.roi.CircularROI()
 
     def test_undefined_on_creation(self):
         self.assertFalse(self.roi.defined())
 
     def test_contains_on_undefined_contains_raises(self):
-        self.assertRaises(glue.exceptions.UndefinedROI,
+        self.assertRaises(glue.core.exceptions.UndefinedROI,
                           self.roi.contains, 1, 1)
 
     def test_set_center(self):
@@ -124,7 +124,7 @@ class TestCircle(unittest.TestCase):
         self.roi.set_center(0,0)
         self.roi.set_radius(1)
         x,y = self.roi.to_polygon()
-        poly = glue.roi.PolygonalROI(vx=x, vy=y)
+        poly = glue.core.roi.PolygonalROI(vx=x, vy=y)
         self.assertTrue(poly.contains(0,0))
         self.assertFalse(poly.contains(10,0))
 
@@ -154,7 +154,7 @@ class TestCircle(unittest.TestCase):
 
 class TestPolygon(unittest.TestCase):
     def setUp(self):
-        self.roi = glue.roi.PolygonalROI()
+        self.roi = glue.core.roi.PolygonalROI()
 
     def define_as_square(self):
         self.roi.reset()
@@ -166,7 +166,7 @@ class TestPolygon(unittest.TestCase):
         self.assertTrue(self.roi.defined())
 
     def test_contains_on_empty_raises(self):
-        self.assertRaises(glue.exceptions.UndefinedROI,
+        self.assertRaises(glue.core.exceptions.UndefinedROI,
                           self.roi.contains, 1, 2)
 
     def test_remove_empty(self):
@@ -219,7 +219,7 @@ class TestPolygon(unittest.TestCase):
 
     def test_empty(self):
         self.assertFalse(self.roi.defined())
-        self.assertRaises(glue.exceptions.UndefinedROI,
+        self.assertRaises(glue.core.exceptions.UndefinedROI,
                           self.roi.contains, 0, 0)
 
     def test_contains_scalar(self):
@@ -323,7 +323,7 @@ class TestMpl(unittest.TestCase):
 class TestRectangleMpl(TestMpl):
 
     def _roi_factory(self):
-        return glue.roi.MplRectangularROI(self.axes)
+        return glue.core.roi.MplRectangularROI(self.axes)
 
     def assert_roi_correct(self, x0, x1, y0, y1):
         corner = self.roi.roi().corner()
@@ -347,7 +347,7 @@ class TestRectangleMpl(TestMpl):
         self.assertEquals(type(str(self.roi)), str)
 
     def test_proper_roi(self):
-        self.assertTrue(isinstance(self.roi._roi, glue.roi.RectangularROI))
+        self.assertTrue(isinstance(self.roi._roi, glue.core.roi.RectangularROI))
 
     def test_roi_on_start_selection(self):
         event = DummyEvent(5, 5)
@@ -399,23 +399,23 @@ class TestRectangleMpl(TestMpl):
 
 class TestCircleMpl(TestMpl):
     def _roi_factory(self):
-        return glue.roi.MplCircularROI(self.axes)
+        return glue.core.roi.MplCircularROI(self.axes)
 
     def setUp(self):
         super(TestCircleMpl, self).setUp()
-        self.pixel_to_data = glue.roi.pixel_to_data
-        self.data_to_pixel = glue.roi.data_to_pixel
+        self.pixel_to_data = glue.core.roi.pixel_to_data
+        self.data_to_pixel = glue.core.roi.data_to_pixel
 
-        glue.roi.pixel_to_data = lambda x,y,z: np.column_stack((y,z))
-        glue.roi.data_to_pixel = lambda x,y,z: np.column_stack((y,z))
+        glue.core.roi.pixel_to_data = lambda x,y,z: np.column_stack((y,z))
+        glue.core.roi.data_to_pixel = lambda x,y,z: np.column_stack((y,z))
 
     def tearDown(self):
         # restore methods
-        glue.roi.pixel_to_data = self.pixel_to_data
-        glue.roi.data_to_pixel = self.data_to_pixel
+        glue.core.roi.pixel_to_data = self.pixel_to_data
+        glue.core.roi.data_to_pixel = self.data_to_pixel
 
     def test_proper_roi(self):
-        self.assertTrue(isinstance(self.roi._roi, glue.roi.CircularROI))
+        self.assertTrue(isinstance(self.roi._roi, glue.core.roi.CircularROI))
 
     def test_to_polygon_undefined(self):
         """to_polygon() result should be undefined before defining polygon"""
@@ -442,10 +442,10 @@ class TestCircleMpl(TestMpl):
 
 class TestPolyMpl(TestMpl):
     def _roi_factory(self):
-        return glue.roi.MplPolygonalROI(self.axes)
+        return glue.core.roi.MplPolygonalROI(self.axes)
 
     def test_proper_roi(self):
-        return isinstance(self.roi._roi, glue.roi.PolygonalROI)
+        return isinstance(self.roi._roi, glue.core.roi.PolygonalROI)
 
     def tearDown(self):
         plt.close('all')
@@ -481,22 +481,22 @@ class TestUtil(unittest.TestCase):
         self.axes.set_ylim([0,10])
         self.axes.set_xlim([0,10])
 
-        ax0 = glue.roi.aspect_ratio(self.axes)
+        ax0 = glue.core.roi.aspect_ratio(self.axes)
         self.axes.set_ylim(0, 20)
-        self.assertAlmostEquals(glue.roi.aspect_ratio(self.axes), ax0 / 2, 4)
+        self.assertAlmostEquals(glue.core.roi.aspect_ratio(self.axes), ax0 / 2, 4)
         self.axes.set_ylim(0, 5)
-        self.assertAlmostEquals(glue.roi.aspect_ratio(self.axes), ax0 * 2, 4)
+        self.assertAlmostEquals(glue.core.roi.aspect_ratio(self.axes), ax0 * 2, 4)
         self.axes.set_xlim(0, 5)
-        self.assertAlmostEquals(glue.roi.aspect_ratio(self.axes), ax0, 4)
+        self.assertAlmostEquals(glue.core.roi.aspect_ratio(self.axes), ax0, 4)
         self.axes.set_xlim(0, 10)
-        self.assertAlmostEquals(glue.roi.aspect_ratio(self.axes), ax0 * 2, 4)
+        self.assertAlmostEquals(glue.core.roi.aspect_ratio(self.axes), ax0 * 2, 4)
 
     def test_data_to_norm_with_scalars(self):
         # assume data that gets submitted to axes is valid.
         # testing to see if we can get there
         self.axes.set_xlim(0,10)
         self.axes.set_ylim(0,10)
-        func = glue.roi.data_to_norm
+        func = glue.core.roi.data_to_norm
         self.assertAlmostEquals(func(self.axes, 0, 0)[0,0], 0, 3)
         self.assertAlmostEquals(func(self.axes, 0, 0)[0,1], 0, 3)
         self.assertAlmostEquals(func(self.axes, 0, 10)[0,0], 0, 3)
@@ -534,8 +534,8 @@ class TestUtil(unittest.TestCase):
     def test_data_to_pixel(self):
         xp = 100
         yp = 100
-        data = glue.roi.pixel_to_data(self.axes, xp, yp)
-        pixel = glue.roi.data_to_pixel(self.axes, data[:,0], data[:,1])
+        data = glue.core.roi.pixel_to_data(self.axes, xp, yp)
+        pixel = glue.core.roi.data_to_pixel(self.axes, data[:,0], data[:,1])
         self.assertAlmostEquals(pixel[0,0], xp, 3)
         self.assertAlmostEquals(pixel[0,1], yp, 3)
 

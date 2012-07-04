@@ -5,17 +5,19 @@ from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt
 
 import glue
-from glue.qt.imagewidget import ImageWidget
+from glue.qt.widgets.image_widget import ImageWidget
+
+import example_data
 
 class TestImageWidget(unittest.TestCase):
 
     def setUp(self):
         import sys
         self.app = QApplication(sys.argv)
-        self.hub = glue.Hub()
-        self.im = glue.example_data.test_image()
-        self.cube = glue.example_data.test_cube()
-        self.collect = glue.DataCollection()
+        self.hub = glue.core.hub.Hub()
+        self.im = example_data.test_image()
+        self.cube = example_data.test_cube()
+        self.collect = glue.core.data_collection.DataCollection()
         self.widget = ImageWidget(self.collect)
         self.collect.append(self.im)
         self.collect.append(self.cube)

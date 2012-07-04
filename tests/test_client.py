@@ -3,7 +3,7 @@ import unittest
 from mock import MagicMock
 
 import glue
-from glue import Client
+from glue.core.client import Client
 
 class MockClient(Client):
     def __init__(self, *args, **kwargs):
@@ -23,7 +23,7 @@ class MockClient(Client):
         return layer in self.present
 
 
-class BasicClientStub(glue.client.BasicClient):
+class BasicClientStub(glue.core.client.BasicClient):
     def __init__(self, *args, **kwargs):
         super(BasicClientStub, self).__init__(*args, **kwargs)
         self.added = set()
@@ -68,10 +68,10 @@ class BasicClientStub(glue.client.BasicClient):
 class TestClient(unittest.TestCase):
 
     def _data(self):
-        return MagicMock(spec_set = glue.DataCollection)
+        return MagicMock(spec_set = glue.core.data_collection.DataCollection)
 
     def _hub(self):
-        return MagicMock(spec_set = glue.Hub)
+        return MagicMock(spec_set = glue.core.hub.Hub)
 
     def _client(self, data):
         return MockClient(data)
@@ -94,8 +94,8 @@ class TestClient(unittest.TestCase):
 class TestBasicClient(unittest.TestCase):
 
     def _create_objects(self):
-        collection = glue.DataCollection()
-        data = glue.Data()
+        collection = glue.core.data_collection.DataCollection()
+        data = glue.core.data.Data()
         subset = data.new_subset()
         collection.append(data)
         client = BasicClientStub(collection)
@@ -152,13 +152,13 @@ class TestBasicClient(unittest.TestCase):
 
     def test_add_subset_raises_if_not_in_collection(self):
         client, collection, data, subset = self._add_data()
-        d = glue.Data()
-        s = glue.Subset(d)
+        d = glue.core.data.Data()
+        s = glue.core.subset.Subset(d)
         self.assertRaises(TypeError, client.add_layer, s)
 
     def test_add_data_raises_if_not_in_collection(self):
         client, collection, data, subset = self._add_data()
-        d = glue.Data()
+        d = glue.core.data.Data()
         s = d.new_subset()
         self.assertRaises(TypeError, client.add_layer, d)
 
@@ -174,13 +174,13 @@ class TestBasicClient(unittest.TestCase):
 
     def test_update_subset_ignored_if_not_present(self):
         client, collection, data, subset = self._add_subset()
-        d = glue.Data()
+        d = glue.core.data.Data()
         s = d.new_subset()
         client.update_layer(s)
 
     def test_update_data_ignored_if_not_present(self):
         client, collection, data, subset = self._add_subset()
-        d = glue.Data()
+        d = glue.core.data.Data()
         s = d.new_subset()
         client.update_layer(d)
 

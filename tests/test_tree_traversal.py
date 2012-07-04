@@ -1,6 +1,6 @@
 import unittest
-from glue.tree import NewickTree
-from glue.tree_traversal import PreOrderTraversal, PostOrderTraversal
+from glue.core.tree import NewickTree
+from glue.core.tree_traversal import PreOrderTraversal, PostOrderTraversal
 
 def pre_string(tree):
     result = []

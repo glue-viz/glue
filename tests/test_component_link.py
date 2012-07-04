@@ -2,8 +2,8 @@ import unittest
 
 import numpy as np
 
-from glue.data import ComponentID, Data, Component
-from glue.component_link import ComponentLink
+from glue.core.data import ComponentID, Data, Component
+from glue.core.component_link import ComponentLink
 
 class TestComponentLink(unittest.TestCase):
 

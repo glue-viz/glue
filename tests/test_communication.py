@@ -1,6 +1,11 @@
 import unittest
-from glue import *
-from glue.message import *
+
+from glue.core.hub import Hub
+from glue.core.client import Client
+from glue.core.data import Data
+from glue.core.subset import Subset
+from glue.core.data_collection import DataCollection
+from glue.core.message import SubsetCreateMessage, SubsetDeleteMessage, SubsetUpdateMessage, Message, DataUpdateMessage
 
 """
 Client communication protocol

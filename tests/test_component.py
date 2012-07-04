@@ -2,7 +2,7 @@ import unittest
 
 from mock import MagicMock
 
-from glue.data import Component, ComponentID, DerivedComponent
+from glue.core.data import Component, ComponentID, DerivedComponent
 
 
 class TestComponent(unittest.TestCase):

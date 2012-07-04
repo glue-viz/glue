@@ -5,8 +5,10 @@ from mock import MagicMock, patch
 import numpy as np
 
 import glue
-from glue.image_client import ImageClient
-from glue.exceptions import IncompatibleAttribute
+from glue.clients.image_client import ImageClient
+from glue.core.exceptions import IncompatibleAttribute
+
+import example_data
 
 # share matplotlib instance, and disable rendering, for speed
 FIGURE = plt.figure()
@@ -14,7 +16,7 @@ AXES = FIGURE.add_subplot(111)
 FIGURE.canvas.draw = lambda: 0
 plt.close('all')
 
-class DummyCoords(glue.coordinates.Coordinates):
+class DummyCoords(glue.core.coordinates.Coordinates):
     def pixel2world(self, *args):
         result = []
         for i,a in enumerate(args):
@@ -23,9 +25,9 @@ class DummyCoords(glue.coordinates.Coordinates):
 
 class TestImageClient(unittest.TestCase):
     def setUp(self):
-        self.im = glue.example_data.test_image()
-        self.cube = glue.example_data.test_cube()
-        self.collect = glue.DataCollection()
+        self.im = example_data.test_image()
+        self.cube = example_data.test_cube()
+        self.collect = glue.core.data_collection.DataCollection()
 
     def create_client_with_image(self):
         client = ImageClient(self.collect, axes=AXES)
@@ -154,7 +156,7 @@ class TestImageClient(unittest.TestCase):
         client = self.create_client_with_image()
         self.collect.append(self.cube)
         client.add_layer(self.cube)
-        roi = glue.roi.PolygonalROI(vx = [10, 20, 20, 10],
+        roi = glue.core.roi.PolygonalROI(vx = [10, 20, 20, 10],
                                     vy = [10, 10, 20, 20])
         client._apply_roi(roi)
         roi2 = self.im.edit_subset.subset_state.roi
@@ -167,12 +169,12 @@ class TestImageClient(unittest.TestCase):
 
         # subset only applied to active data
         roi3 = self.cube.edit_subset.subset_state
-        self.assertFalse(isinstance(roi3, glue.subset.RoiSubsetState))
+        self.assertFalse(isinstance(roi3, glue.core.subset.RoiSubsetState))
 
     def test_apply_roi_3d(self):
         client = self.create_client_with_cube()
         self.cube.coords = DummyCoords()
-        roi = glue.roi.PolygonalROI( vx = [10, 20, 20, 10],
+        roi = glue.core.roi.PolygonalROI( vx = [10, 20, 20, 10],
                                      vy =[10, 10, 20, 20])
 
         client.set_slice_ori(0)

@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from glue.tree import Tree, NewickTree, DendroMerge
+from glue.core.tree import Tree, NewickTree, DendroMerge
 
 
 class TestTree(unittest.TestCase):

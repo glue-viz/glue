@@ -6,12 +6,12 @@ from mock import MagicMock
 import pyfits
 
 import glue
-from glue.subset import Subset, SubsetState, ElementSubsetState
-from glue.subset import CompositeSubsetState
-from glue.subset import OrState
-from glue.subset import AndState
-from glue.subset import XorState
-from glue.subset import InvertState
+from glue.core.subset import Subset, SubsetState, ElementSubsetState
+from glue.core.subset import CompositeSubsetState
+from glue.core.subset import OrState
+from glue.core.subset import AndState
+from glue.core.subset import XorState
+from glue.core.subset import InvertState
 
 class TestSubset(unittest.TestCase):
     def setUp(self):

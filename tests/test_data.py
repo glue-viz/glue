@@ -4,9 +4,9 @@ import numpy as np
 from mock import MagicMock
 
 import glue
-from glue.data import ComponentID, Component, Data
+from glue.core.data import ComponentID, Component, Data
 
-class TestCoordinates(glue.coordinates.Coordinates):
+class TestCoordinates(glue.core.coordinates.Coordinates):
     def pixel2world(self, *args):
         return [(i+2.) * a for i,a in enumerate(args)]
 
@@ -49,7 +49,7 @@ class TestData(unittest.TestCase):
         self.assertEquals(d.label, 'test_set_label')
 
     def test_add_component_with_id(self):
-        cid = glue.data.ComponentID("test")
+        cid = glue.core.data.ComponentID("test")
         comp = MagicMock()
         comp.shape = (2,3)
         comp.units = None
@@ -64,12 +64,12 @@ class TestData(unittest.TestCase):
 
     def test_get_getitem_incompatible_attribute(self):
         cid = ComponentID('bad')
-        self.assertRaises(glue.exceptions.IncompatibleAttribute,
+        self.assertRaises(glue.core.exceptions.IncompatibleAttribute,
                           self.data.__getitem__, cid)
 
     def test_get_component_incompatible_attribute(self):
         cid = ComponentID('bad')
-        self.assertRaises(glue.exceptions.IncompatibleAttribute,
+        self.assertRaises(glue.core.exceptions.IncompatibleAttribute,
                           self.data.get_component, cid)
 
     def test_component_ids(self):
@@ -84,7 +84,7 @@ class TestData(unittest.TestCase):
         self.assertEquals(len(self.data.subsets), 1)
 
     def test_register(self):
-        hub = MagicMock(spec_set = glue.Hub)
+        hub = MagicMock(spec_set = glue.core.hub.Hub)
         not_hub = MagicMock()
         self.data.register_to_hub(hub)
         self.assertIs(hub, self.data.hub)
@@ -103,7 +103,7 @@ class TestData(unittest.TestCase):
 
 
     def test_broadcast(self):
-        hub = MagicMock(spec_set = glue.Hub)
+        hub = MagicMock(spec_set = glue.core.hub.Hub)
 
         # make sure broadcasting with no hub is ok
         self.data.broadcast()
@@ -119,15 +119,15 @@ class TestData(unittest.TestCase):
         self.assertIs(sub1.subset_state, sub2.subset_state)
 
     def test_double_hub_add(self):
-        hub = MagicMock(spec_set = glue.Hub)
-        hub2 = MagicMock(spec_set = glue.Hub)
+        hub = MagicMock(spec_set = glue.core.hub.Hub)
+        hub2 = MagicMock(spec_set = glue.core.hub.Hub)
         self.data.register_to_hub(hub)
         self.assertRaises(AttributeError, self.data.__setattr__, 'hub', hub2)
 
     def test_primary_components(self):
-        compid = glue.data.ComponentID('virtual')
-        link = MagicMock(spec_set = glue.component_link.ComponentLink)
-        comp = glue.data.DerivedComponent(self.data, link)
+        compid = glue.core.data.ComponentID('virtual')
+        link = MagicMock(spec_set = glue.core.component_link.ComponentLink)
+        comp = glue.core.data.DerivedComponent(self.data, link)
 
         self.data.add_component(comp, compid)
 
@@ -140,23 +140,23 @@ class TestData(unittest.TestCase):
                           self.data.add_component, self.comp, label=5)
 
     def test_add_component_invalid_component(self):
-        comp = glue.Component(np.array([1]))
+        comp = glue.core.data.Component(np.array([1]))
         self.assertRaises(TypeError,
                           self.data.add_component, comp, label='bad')
 
     def test_add_component_link(self):
-        compid = glue.data.ComponentID('virtual')
-        link = MagicMock(spec_set = glue.component_link.ComponentLink)
-        cid = glue.data.ComponentID("new id")
+        compid = glue.core.data.ComponentID('virtual')
+        link = MagicMock(spec_set = glue.core.component_link.ComponentLink)
+        cid = glue.core.data.ComponentID("new id")
         link.get_to_id.return_value = cid
 
         self.data.add_component_link(link)
         self.assertIn(cid, self.data.derived_components)
 
     def test_derived_components(self):
-        compid = glue.data.ComponentID('virtual')
-        link = MagicMock(spec_set = glue.component_link.ComponentLink)
-        comp = glue.data.DerivedComponent(self.data, link)
+        compid = glue.core.data.ComponentID('virtual')
+        link = MagicMock(spec_set = glue.core.component_link.ComponentLink)
+        comp = glue.core.data.DerivedComponent(self.data, link)
 
         self.data.add_component(comp, compid)
 
@@ -165,16 +165,16 @@ class TestData(unittest.TestCase):
         self.assertIn(compid, pricomps)
 
     def test_str_empty(self):
-        d = glue.Data()
+        d = glue.core.data.Data()
         str(d)
 
     def test_str_(self):
         str(self.data)
 
     def test_add_derived_component(self):
-        compid = glue.data.ComponentID('virtual')
-        link = MagicMock(spec_set = glue.component_link.ComponentLink)
-        comp = glue.data.DerivedComponent(self.data, link)
+        compid = glue.core.data.ComponentID('virtual')
+        link = MagicMock(spec_set = glue.core.component_link.ComponentLink)
+        comp = glue.core.data.DerivedComponent(self.data, link)
         self.data.add_component(comp, compid)
 
         result = self.data[compid]
@@ -185,13 +185,13 @@ class TestData(unittest.TestCase):
         self.assertItemsEqual(cid, [self.comp_id])
 
     def test_add_subset(self):
-        s = MagicMock(spec_set = glue.Subset)
+        s = MagicMock(spec_set = glue.core.subset.Subset)
         self.data.add_subset(s)
         self.assertIn(s, self.data.subsets)
 
     def test_add_subset_with_hub(self):
-        s = MagicMock(spec_set = glue.Subset)
-        hub = MagicMock(spec_set = glue.Hub)
+        s = MagicMock(spec_set = glue.core.subset.Subset)
+        hub = MagicMock(spec_set = glue.core.hub.Hub)
         self.data.register_to_hub(hub)
 
         self.data.add_subset(s)
@@ -204,14 +204,14 @@ class TestData(unittest.TestCase):
 
 
     def test_remove_subset(self):
-        s = MagicMock(spec_set = glue.Subset)
+        s = MagicMock(spec_set = glue.core.subset.Subset)
         self.data.add_subset(s)
         self.data.remove_subset(s)
         self.assertNotIn(s, self.data.subsets)
 
     def test_remove_subset_with_hub(self):
-        s = MagicMock(spec_set = glue.Subset)
-        hub = MagicMock(spec_set = glue.Hub)
+        s = MagicMock(spec_set = glue.core.subset.Subset)
+        hub = MagicMock(spec_set = glue.core.hub.Hub)
 
         self.data.register_to_hub(hub)
         self.data.add_subset(s)
@@ -244,7 +244,7 @@ class TestData(unittest.TestCase):
         np.testing.assert_array_equal(p1, p1prime)
 
     def test_coordinate_links_empty_data(self):
-        d = glue.Data()
+        d = glue.core.data.Data()
         d.coords = None
         self.assertEquals(d.coordinate_links, [])
 

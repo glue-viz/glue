@@ -5,29 +5,29 @@ from mock import MagicMock
 
 import glue
 
-class HubLog(glue.hub.HubListener):
+class HubLog(glue.core.hub.HubListener):
     def __init__(self):
         self.messages = []
 
     def register_to_hub(self, hub):
-        hub.subscribe(self, glue.Message)
+        hub.subscribe(self, glue.core.message.Message)
 
     def notify(self, message):
         self.messages.append(message)
 
 class TestDataCollection(unittest.TestCase):
     def setUp(self):
-        self.dc = glue.DataCollection()
+        self.dc = glue.core.data_collection.DataCollection()
         self.data = MagicMock()
-        self.hub = glue.Hub()
+        self.hub = glue.core.hub.Hub()
         self.log = HubLog()
         self.log.register_to_hub(self.hub)
 
     def test_init(self):
-        d = glue.Data()
-        dc = glue.DataCollection(d)
+        d = glue.core.data.Data()
+        dc = glue.core.data_collection.DataCollection(d)
         self.assertIn(d, dc)
-        dc = glue.DataCollection([d])
+        dc = glue.core.data_collection.DataCollection([d])
         self.assertIn(d, dc)
 
     def test_data(self):
@@ -59,7 +59,7 @@ class TestDataCollection(unittest.TestCase):
         self.dc.append(self.data)
         msg = self.log.messages[-1]
         self.assertEquals(msg.sender, self.dc)
-        self.assertIsInstance(msg, glue.message.DataCollectionAddMessage)
+        self.assertIsInstance(msg, glue.core.message.DataCollectionAddMessage)
         self.assertIs(msg.data, self.data)
 
     def test_remove_broadcast(self):
@@ -68,7 +68,7 @@ class TestDataCollection(unittest.TestCase):
         self.dc.remove(self.data)
         msg = self.log.messages[-1]
         self.assertEquals(msg.sender, self.dc)
-        self.assertIsInstance(msg, glue.message.DataCollectionDeleteMessage)
+        self.assertIsInstance(msg, glue.core.message.DataCollectionDeleteMessage)
         self.assertIs(msg.data, self.data)
 
     def test_register_adds_hub(self):
@@ -100,15 +100,15 @@ class TestDataCollection(unittest.TestCase):
     def test_derived_links_autoadd(self):
         """When appending a data set, its DerivedComponents
         should be ingested into the LinkManager"""
-        d = glue.Data()
-        id1 = glue.data.ComponentID("id1")
-        id2 = glue.data.ComponentID("id2")
-        link = glue.ComponentLink([id1], id2)
-        dc = glue.data.DerivedComponent(d, link)
-        d.add_component(glue.data.Component(np.array([1,2,3])), id1)
+        d = glue.core.data.Data()
+        id1 = glue.core.data.ComponentID("id1")
+        id2 = glue.core.data.ComponentID("id2")
+        link = glue.core.component_link.ComponentLink([id1], id2)
+        dc = glue.core.data.DerivedComponent(d, link)
+        d.add_component(glue.core.data.Component(np.array([1,2,3])), id1)
         d.add_component(dc, id2)
 
-        dc = glue.DataCollection()
+        dc = glue.core.data_collection.DataCollection()
         dc.append(d)
 
         self.assertIn(link, dc._link_manager)
@@ -117,27 +117,27 @@ class TestDataCollection(unittest.TestCase):
         """DerviedAttributes added to a dataset in a collection
         should generate messages that the collection catches.
         """
-        d = glue.Data()
-        id1 = glue.data.ComponentID("id1")
-        id2 = glue.data.ComponentID("id2")
-        link = glue.ComponentLink([id1], id2)
-        dc = glue.data.DerivedComponent(d, link)
+        d = glue.core.data.Data()
+        id1 = glue.core.data.ComponentID("id1")
+        id2 = glue.core.data.ComponentID("id2")
+        link = glue.core.component_link.ComponentLink([id1], id2)
+        dc = glue.core.data.DerivedComponent(d, link)
 
         self.dc.register_to_hub(self.hub)
         self.dc.append(d)
-        d.add_component(glue.data.Component(np.array([1,2,3])), id1)
+        d.add_component(glue.core.data.Component(np.array([1,2,3])), id1)
         self.assertNotIn(link, self.dc._link_manager)
         d.add_component(dc, id2)
 
         msg = self.log.messages[-1]
-        self.assertIsInstance(msg, glue.message.DataAddComponentMessage)
+        self.assertIsInstance(msg, glue.core.message.DataAddComponentMessage)
         self.assertIn(link, self.dc._link_manager)
 
     def test_coordinate_links_auto_added(self):
-        d = glue.Data()
-        id1 = glue.data.ComponentID("id1")
-        id2 = glue.data.ComponentID("id2")
-        link = glue.ComponentLink([id1], id2)
+        d = glue.core.data.Data()
+        id1 = glue.core.data.ComponentID("id1")
+        id2 = glue.core.data.ComponentID("id2")
+        link = glue.core.component_link.ComponentLink([id1], id2)
         self.data.coordinate_links = [link]
         self.dc.append(self.data)
         self.assertIn(link, self.dc._link_manager.links)

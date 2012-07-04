@@ -6,7 +6,9 @@ import matplotlib.pyplot as plt
 from mock import MagicMock
 
 import glue
-from glue.scatter_client import ScatterClient
+from glue.clients.scatter_client import ScatterClient
+
+import example_data
 
 # share matplotlib instance, and disable rendering, for speed
 FIGURE = plt.figure()
@@ -16,13 +18,13 @@ plt.close('all')
 
 class TestScatterClient(unittest.TestCase):
     def setUp(self):
-        self.data = glue.example_data.test_data()
+        self.data = example_data.test_data()
         self.ids = [self.data[0].find_component_id('a')[0],
                     self.data[0].find_component_id('b')[0],
                     self.data[1].find_component_id('c')[0],
                     self.data[1].find_component_id('d')[0]]
-        self.hub = glue.Hub()
-        self.collect = glue.DataCollection()
+        self.hub = glue.core.hub.Hub()
+        self.collect = glue.core.data_collection.DataCollection()
         self.client = ScatterClient(self.collect, axes=AXES)
         self.connect()
 
@@ -67,7 +69,7 @@ class TestScatterClient(unittest.TestCase):
             self.assertFalse(self.client.is_layer_present(d))
 
     def test_add_external_data_raises_exception(self):
-        data = glue.Data()
+        data = glue.core.data.Data()
         self.assertRaises(TypeError, self.client.add_data, data)
 
     def test_valid_add(self):
@@ -166,7 +168,7 @@ class TestScatterClient(unittest.TestCase):
     def test_invalid_plot(self):
         layer = self.add_data_and_attributes()
         self.assertTrue(self.layer_drawn(layer))
-        c = glue.data.ComponentID('bad id')
+        c = glue.core.data.ComponentID('bad id')
         self.client.set_xdata(c)
         self.assertFalse(self.layer_drawn(layer))
 
@@ -176,7 +178,7 @@ class TestScatterClient(unittest.TestCase):
         ctr = MagicMock()
         layer = self.add_data_and_attributes()
         self.assertTrue(self.layer_drawn(layer))
-        c = glue.data.ComponentID('bad id')
+        c = glue.core.data.ComponentID('bad id')
         self.client._redraw = ctr
         ct0 = ctr.call_count
         self.client.set_xdata(c)
@@ -234,7 +236,7 @@ class TestScatterClient(unittest.TestCase):
 
     def test_apply_roi(self):
         data = self.add_data_and_attributes()
-        roi = glue.roi.RectangularROI()
+        roi = glue.core.roi.RectangularROI()
         roi.update_limits(.5, .5, 1.5, 1.5)
         x = np.array([1])
         y = np.array([1])
@@ -270,7 +272,7 @@ class TestScatterClient(unittest.TestCase):
 
     def test_visibility_sticky(self):
         data = self.add_data_and_attributes()
-        roi = glue.roi.RectangularROI()
+        roi = glue.core.roi.RectangularROI()
         roi.update_limits(.5, .5, 1.5, 1.5)
         self.assertTrue(self.client.is_visible(data.edit_subset))
         self.client._apply_roi(roi)
@@ -280,8 +282,8 @@ class TestScatterClient(unittest.TestCase):
         self.assertFalse(self.client.is_visible(data.edit_subset))
 
     def test_2d_data(self):
-        comp = glue.Component(np.array([[1,2],[3,4]]))
-        data = glue.Data()
+        comp = glue.core.data.Component(np.array([[1,2],[3,4]]))
+        data = glue.core.data.Data()
         cid = data.add_component(comp, '2d')
         self.collect.append(data)
         self.client.add_layer(data)
