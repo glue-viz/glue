@@ -2,7 +2,7 @@
 
 # Python Qt4 bindings for GUI objects
 from PyQt4 import QtGui
-from PyQt4.QtCore import Qt, pyqtSignal, QObject
+from PyQt4.QtCore import pyqtSignal
 
 # import the Qt4Agg FigureCanvas object, that binds Figure to
 # Qt4Agg backend. It also inherits from QWidget
@@ -10,6 +10,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 
 # Matplotlib Figure object
 from matplotlib.figure import Figure
+
 
 class MplCanvas(FigureCanvas):
     """Class to represent the FigureCanvas widget"""
@@ -41,14 +42,14 @@ class MplWidget(QtGui.QWidget):
     rightDrag = pyqtSignal(float, float)
     leftDrag = pyqtSignal(float, float)
 
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         # initialization of Qt MainWindow widget
         QtGui.QWidget.__init__(self, parent)
         # set the canvas to the Matplotlib widget
         self.canvas = MplCanvas()
         # create a vertical box layout
         self.vbl = QtGui.QVBoxLayout()
-        self.vbl.setContentsMargins(0,0,0,0)
+        self.vbl.setContentsMargins(0, 0, 0, 0)
         self.vbl.setSpacing(0)
         # add mpl widget to the vertical box
         self.vbl.addWidget(self.canvas)

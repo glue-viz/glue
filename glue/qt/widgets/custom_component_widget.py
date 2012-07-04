@@ -1,9 +1,8 @@
 from PyQt4.QtGui import QDialog
 
-import glue
-from glue.data import ComponentID
-from glue.parse import ParsedCommand, ParsedComponentLink
-from ui_custom_component_widget import Ui_CustomComponentWidget
+from ... import core
+
+from ..ui.custom_component_widget import Ui_CustomComponentWidget
 
 
 def disambiguate(label, labels):
@@ -85,10 +84,10 @@ class CustomComponentWidget(QDialog):
         A new component link
         """
         expression = str(self.ui.expression.text())
-        pc = ParsedCommand(expression, self._labels)
+        pc = core.parse.ParsedCommand(expression, self._labels)
         label = str(self.ui.new_label.text()) or 'new component'
-        new_id = ComponentID(label)
-        link = ParsedComponentLink(new_id, pc)
+        new_id = core.data.ComponentID(label)
+        link = core.parse.ParsedComponentLink(new_id, pc)
         return link
 
     def _add_link_to_targets(self, link):

@@ -1,11 +1,13 @@
-from ui_messagewidget import Ui_MessageWidget
 from time import ctime
 
-from PyQt4.QtGui import *
+from PyQt4.QtGui import QWidget, QTableWidgetItem
 
-import glue
+from ... import core
 
-class MessageWidget(QWidget, glue.HubListener):
+from ..ui.message_widget import Ui_MessageWidget
+
+
+class MessageWidget(QWidget, core.hub.HubListener):
     """ This simple class displays all messages broadcast
     by a hub. It is mainly intended for debugging """
     def __init__(self):
@@ -18,7 +20,7 @@ class MessageWidget(QWidget, glue.HubListener):
 
     def register_to_hub(self, hub):
         # catch all messages
-        hub.subscribe(self, glue.message.Message,
+        hub.subscribe(self, core.message.Message,
                       handler = self.process_message,
                       filter = lambda x:True)
 

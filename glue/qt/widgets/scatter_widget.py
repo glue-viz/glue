@@ -1,18 +1,19 @@
 from PyQt4 import QtGui
 from PyQt4.QtCore import Qt
 
-import glue
-from glue.scatter_client import ScatterClient
-from glue.qt.glue_toolbar import GlueToolbar
-from glue.qt.mouse_mode import RectangleMode, CircleMode, PolyMode
+from ... import core
 
-from ui_scatterwidget import Ui_ScatterWidget
+from ...clients.scatter_client import ScatterClient
+from ..glue_toolbar import GlueToolbar
+from ..mouse_mode import RectangleMode, CircleMode, PolyMode
+
+from ..ui.scatterwidget import Ui_ScatterWidget
 
 
-class ScatterWidget(QtGui.QMainWindow, glue.HubListener):
+class ScatterWidget(QtGui.QMainWindow, core.hub.HubListener):
     def __init__(self, data, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
-        glue.HubListener.__init__(self)
+        core.hub.HubListener.__init__(self)
         self.central_widget = QtGui.QWidget()
         self.setCentralWidget(self.central_widget)
         self.ui = Ui_ScatterWidget()
@@ -122,13 +123,13 @@ class ScatterWidget(QtGui.QMainWindow, glue.HubListener):
     def update_xatt(self, index):
         combo = self.ui.xAxisComboBox
         component_id = combo.itemData(combo.currentIndex()).toPyObject()
-        assert isinstance(component_id, glue.data.ComponentID)
+        assert isinstance(component_id, core.data.ComponentID)
         self.client.set_xdata(component_id)
 
     def update_yatt(self, index):
         combo = self.ui.yAxisComboBox
         component_id = combo.itemData(combo.currentIndex()).toPyObject()
-        assert isinstance(component_id, glue.data.ComponentID)
+        assert isinstance(component_id, core.data.ComponentID)
         self.client.set_ydata(component_id)
 
     def __str__(self):

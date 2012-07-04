@@ -3,20 +3,23 @@ from PyQt4.QtCore import Qt, QVariant
 
 import matplotlib.cm as cm
 
-import glue
-import glue.message as msg
-from glue.image_client import ImageClient
-from glue.qt.mouse_mode import (RectangleMode, CircleMode, PolyMode,
-                                ContrastMode, ContourMode)
-from glue.qt.glue_toolbar import GlueToolbar
+from ... import core
 
-from ui_imagewidget import Ui_ImageWidget
+from ...clients.image_client import ImageClient
+
+from ..mouse_mode import RectangleMode, CircleMode, PolyMode, \
+                         ContrastMode, ContourMode
+from ..glue_toolbar import GlueToolbar
+
+from ..ui.imagewidget import Ui_ImageWidget
 
 
-class ImageWidget(QMainWindow, glue.HubListener):
+class ImageWidget(QMainWindow, core.hub.HubListener):
+
     def __init__(self, data, parent=None):
+
         QMainWindow.__init__(self, parent)
-        glue.HubListener.__init__(self)
+        core.hub.HubListener.__init__(self)
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -167,11 +170,11 @@ class ImageWidget(QMainWindow, glue.HubListener):
         dc_filt = lambda x: x.sender is self.client._data
 
         hub.subscribe(self,
-                      msg.DataCollectionAddMessage,
+                      core.message.DataCollectionAddMessage,
                       handler=lambda x: self.add_data(x.data),
                       filter=dc_filt)
         hub.subscribe(self,
-                      msg.DataCollectionDeleteMessage,
+                      core.message.DataCollectionDeleteMessage,
                       handler=lambda x: self.remove_data(x.data),
                       filter=dc_filt)
 

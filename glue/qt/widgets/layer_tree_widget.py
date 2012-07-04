@@ -4,21 +4,20 @@ from PyQt4.QtGui import QWidget, QTreeWidgetItem, QPixmap, QIcon
 from PyQt4.QtGui import QAction, QKeySequence, QActionGroup, QFileDialog
 
 from PyQt4.QtCore import Qt, pyqtSignal, QObject
-from ui_layertree import Ui_LayerTree
 
-import glue
-import glue.message as msg
-from glue.subset import OrState, AndState, XorState, InvertState
-from glue.qt.link_editor import LinkEditor
-from glue.qt import qtutil
-from glue.qt.qtutil import mpl_to_qt4_color
+from ..ui.layertree import Ui_LayerTree
+
+from ... import core
+
+from ..link_editor import LinkEditor
+from .. import qtutil
 
 
 class LayerCommunicator(QObject):
     layer_check_changed = pyqtSignal(object, bool)
 
 
-class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
+class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
     """The layertree widget provides a way to visualize the various
     data and subset layers in a Glue session.
 
@@ -30,7 +29,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
     def __init__(self, parent=None):
         Ui_LayerTree.__init__(self)
         QWidget.__init__(self, parent)
-        glue.HubListener.__init__(self)
+        core.hub.HubListener.__init__(self)
 
         self._signals = LayerCommunicator()
         self._is_checkable = True
@@ -55,7 +54,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         self.setup_drag_drop()
         self._create_actions()
         self._connect()
-        self._data_collection = glue.DataCollection()
+        self._data_collection = core.data_collection.DataCollection()
 
     def is_checkable(self):
         return self._is_checkable
@@ -111,7 +110,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         item = self.layerTree.currentItem()
         layer = self[item]
         state = layer.subset_state
-        layer.subset_state = InvertState(state)
+        layer.subset_state = core.subset.InvertState(state)
 
     def _update_combination_actions_enabled(self):
         state = self._check_can_combine()
@@ -120,7 +119,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         self._xor_action.setEnabled(state)
 
         layer = self.current_layer()
-        can_invert = isinstance(layer, glue.Subset)
+        can_invert = isinstance(layer, core.subset.Subset)
         self._invert_action.setEnabled(can_invert)
 
     def _check_can_combine(self, layers=None):
@@ -130,22 +129,22 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
 
         if len(layers) != 2:
             return False
-        if not isinstance(layers[0], glue.Subset):
+        if not isinstance(layers[0], core.subset.Subset):
             return False
-        if not isinstance(layers[1], glue.Subset):
+        if not isinstance(layers[1], core.subset.Subset):
             return False
         if layers[0].data is not layers[1].data:
             return False
         return True
 
     def _and_combine(self):
-        self._binary_combine(AndState)
+        self._binary_combine(core.subset.AndState)
 
     def _xor_combine(self):
-        self._binary_combine(XorState)
+        self._binary_combine(core.subset.XorState)
 
     def _or_combine(self):
-        self._binary_combine(OrState)
+        self._binary_combine(core.subset.OrState)
 
     def _binary_combine(self, StateClass):
         items = self.layerTree.selectedItems()
@@ -245,18 +244,18 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
 
     def _clear_subset(self):
         layer = self.current_layer()
-        if not isinstance(layer, glue.Subset):
+        if not isinstance(layer, core.subset.Subset):
             return
-        layer.subset_state = glue.subset.SubsetState()
+        layer.subset_state = core.subset.SubsetState()
 
     def _copy_subset(self):
         layer = self.current_layer()
-        assert isinstance(layer, glue.Subset)
+        assert isinstance(layer, core.subset.Subset)
         self._clipboard = layer
 
     def _paste_subset(self):
         layer = self.current_layer()
-        assert isinstance(layer, glue.Subset)
+        assert isinstance(layer, core.subset.Subset)
         assert self._clipboard is not None
         layer.paste(self._clipboard)
 
@@ -275,7 +274,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         has_clipboard = self._clipboard is not None
         single = len(self.layerTree.selectedItems()) == 1
 
-        if single and isinstance(layer, glue.Data):
+        if single and isinstance(layer, core.data.Data):
             self._copy_action.setEnabled(False)
             self._paste_action.setEnabled(False)
             self._new_action.setEnabled(True)
@@ -284,7 +283,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
             self._clear_action.setEnabled(False)
             self._save_action.setEnabled(False)
             self._load_action.setEnabled(False)
-        elif single and isinstance(layer, glue.Subset):
+        elif single and isinstance(layer, core.subset.Subset):
             self._copy_action.setEnabled(True)
             self._paste_action.setEnabled(has_clipboard)
             self._new_action.setEnabled(True)
@@ -322,7 +321,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
 
         Inputs
         ------
-        collection : DataCollection instance to manage
+        collection : core.data.DataCollection instance to manage
         """
         self.remove_all_layers()
 
@@ -377,10 +376,10 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
             return
         self.remove_layer(layer)
 
-        if isinstance(layer, glue.Data):
+        if isinstance(layer, core.data.Data):
             self._data_collection.remove(layer)
         else:
-            assert isinstance(layer, glue.Subset)
+            assert isinstance(layer, core.subset.Subset)
             layer.unregister()
 
     def edit_current_layer(self):
@@ -417,27 +416,27 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         dc_filt = lambda x: x.sender is self._data_collection
 
         hub.subscribe(self,
-                      msg.SubsetCreateMessage,
+                      core.message.SubsetCreateMessage,
                       handler=lambda x: self.add_layer(x.sender),
                       filter=data_filt)
         hub.subscribe(self,
-                      msg.SubsetUpdateMessage,
+                      core.message.SubsetUpdateMessage,
                       handler=lambda x: self.sync_layer(x.sender),
                       filter=data_filt)
         hub.subscribe(self,
-                      msg.SubsetDeleteMessage,
+                      core.message.SubsetDeleteMessage,
                       handler=lambda x: self.remove_layer(x.sender),
                       filter=data_filt)
         hub.subscribe(self,
-                      msg.DataCollectionAddMessage,
+                      core.message.DataCollectionAddMessage,
                       handler=lambda x: self.add_layer(x.data),
                       filter=dc_filt)
         hub.subscribe(self,
-                      msg.DataCollectionDeleteMessage,
+                      core.message.DataCollectionDeleteMessage,
                       handler=lambda x: self.remove_layer(x.data),
                       filter=dc_filt)
         hub.subscribe(self,
-                      msg.DataUpdateMessage,
+                      core.message.DataUpdateMessage,
                       handler=lambda x: self.sync_layer(x.sender),
                       filter=data_filt)
 
@@ -461,7 +460,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         """ If layer is a subset, make sure that the
         parent data object is already in the layer tree.
         Add if necessary """
-        if isinstance(layer, glue.Data):
+        if isinstance(layer, core.data.Data):
             return
         if layer.data in self:
             return
@@ -484,7 +483,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         if layer in self:
             return
 
-        if isinstance(layer, glue.Subset):
+        if isinstance(layer, core.subset.Subset):
             data = layer.data
             assert data in self._data_collection
             parent = self[data]
@@ -494,7 +493,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
                 datanum = tree.indexOfTopLevelItem(parent)
                 label = "Subset %i.%i" % (datanum, ct)
                 layer.style.label = label
-        elif isinstance(layer, glue.Data):
+        elif isinstance(layer, core.data.Data):
             assert layer in self._data_collection
             parent = tree
             label = layer.style.label
@@ -515,7 +514,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
 
         tree.expandItem(branch)
 
-        if isinstance(layer, glue.Data):
+        if isinstance(layer, core.data.Data):
             for subset in layer.subsets:
                 self.add_layer(subset)
 
@@ -527,7 +526,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
 
         Inputs:
         -------
-        layer : Subset or Data object to remove
+        layer : core.subset.Subset or core.data.Data object to remove
         """
         if layer not in self:
             return
@@ -568,7 +567,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
         style = layer.style
         widget_item = self[layer]
         pixm = QPixmap(20, 20)
-        pixm.fill(mpl_to_qt4_color(style.color))
+        pixm.fill(qtutil.mpl_to_qt4_color(style.color))
         widget_item.setIcon(1, QIcon(pixm))
         marker = style.marker
         size = style.markersize
@@ -583,7 +582,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
 
     def _save_subset(self):
         layer = self.current_layer()
-        if not isinstance(layer, glue.Subset):
+        if not isinstance(layer, core.subset.Subset):
             return
         dialog = QFileDialog()
         file_name = str(dialog.getSaveFileName(
@@ -595,7 +594,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, glue.HubListener):
 
     def _load_subset(self):
         layer = self.current_layer()
-        if not isinstance(layer, glue.Subset):
+        if not isinstance(layer, core.subset.Subset):
             return
         dialog = QFileDialog()
         file_name = str(dialog.getOpenFileName(caption="Select a subset"))
