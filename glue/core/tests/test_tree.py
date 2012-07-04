@@ -1,9 +1,11 @@
-import unittest
+import pytest
+
 import numpy as np
-from glue.core.tree import Tree, NewickTree, DendroMerge
+
+from ..tree import Tree, NewickTree, DendroMerge
 
 
-class TestTree(unittest.TestCase):
+class TestTree(object):
 
     def test_tree_creation(self):
 
@@ -22,15 +24,15 @@ class TestTree(unittest.TestCase):
         c2.add_child(c21)
         c21.add_child(c211)
 
-        self.assertEqual(root.id, 0)
-        self.assertEqual(root.value, 100)
+        assert root.id == 0
+        assert root.value == 100
 
-        self.assertIs(c1.parent, root)
-        self.assertIs(c2.parent, root)
-        self.assertIs(c11.parent, c1)
-        self.assertIs(c12.parent, c1)
-        self.assertIs(c21.parent, c2)
-        self.assertIs(c211.parent, c21)
+        assert c1.parent is root
+        assert c2.parent is root
+        assert c11.parent is c1
+        assert c12.parent is c1
+        assert c21.parent is c2
+        assert c211.parent is c21
 
         assert c1 in root.children
         assert c2 in root.children
@@ -72,10 +74,10 @@ class TestTree(unittest.TestCase):
         assert 3 in [x.id for x in tree4.children]
         assert 4 in [x.id for x in tree4.children]
 
-        self.assertEqual(n1, tree1.to_newick())
-        self.assertEqual(n2, tree2.to_newick())
-        self.assertEqual(n3, tree3.to_newick())
-        self.assertEqual(n4, tree4.to_newick())
+        assert n1 == tree1.to_newick()
+        assert n2 == tree2.to_newick()
+        assert n3 == tree3.to_newick()
+        assert n4 == tree4.to_newick()
 
         # with labels
         n1 = "(0:0,1:10)2:20;"
@@ -88,9 +90,9 @@ class TestTree(unittest.TestCase):
 
         assert tree1.value == '20'
 
-        self.assertEqual(n1, tree1.to_newick())
-        self.assertEqual(n2, tree2.to_newick())
-        self.assertEqual(n3, tree3.to_newick())
+        assert n1 == tree1.to_newick()
+        assert n2 == tree2.to_newick()
+        assert n3 == tree3.to_newick()
 
     def test_dendro_merge(self):
         m1 = np.array([[0, 1], [2, 3], [4, 5]])
@@ -105,14 +107,14 @@ class TestTree(unittest.TestCase):
         m4 = np.array([[-1, 1], [4, 2], [5, 3]])
         m5 = np.array([[0, 1], [1, 2], [5, 3]])
 
-        self.assertEqual(t1.to_newick(), n1)
-        self.assertEqual(t2.to_newick(), n2)
+        assert t1.to_newick() == n1
+        assert t2.to_newick() == n2
         assert t1.id == 6
         assert t2.id == 6
 
-        self.assertRaises(TypeError, DendroMerge, m3)
-        self.assertRaises(TypeError, DendroMerge, m4)
-        self.assertRaises(TypeError, DendroMerge, m5)
-
-if __name__ == "__main__":
-    unittest.main()
+        with pytest.raises(TypeError):
+            DendroMerge(m3)
+        with pytest.raises(TypeError):
+            DendroMerge(m4)
+        with pytest.raises(TypeError):
+            DendroMerge(m5)

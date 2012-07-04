@@ -1,28 +1,27 @@
-import unittest
-
 from mock import MagicMock
 
-from glue.core.data import Component, ComponentID, DerivedComponent
+from ..data import Component, ComponentID, DerivedComponent
 
 
-class TestComponent(unittest.TestCase):
+class TestComponent(object):
 
-    def setUp(self):
+    def setup_method(self, method):
         self.data = MagicMock()
         self.data.shape = [1,2]
         self.component = Component(self.data)
 
     def test_data(self):
-        self.assertIs(self.component.data, self.data)
+        assert self.component.data is self.data
 
     def test_shape(self):
-        self.assertIs(self.component.shape, self.data.shape)
+        assert self.component.shape is self.data.shape
 
     def test_ndim(self):
-        self.assertIs(self.component.ndim, len(self.data.shape))
+        assert self.component.ndim is len(self.data.shape)
 
-class TestComponentID(unittest.TestCase):
-    def setUp(self):
+class TestComponentID(object):
+
+    def setup_method(self, method):
         self.cid = ComponentID('test')
 
     def test_label(self):
@@ -36,8 +35,9 @@ class TestComponentID(unittest.TestCase):
         """ str should return """
         repr(self.cid)
 
-class TestDerivedComponent(unittest.TestCase):
-    def setUp(self):
+class TestDerivedComponent(object):
+
+    def setup_method(self, method):
         data = MagicMock()
         link = MagicMock()
         self.cid = DerivedComponent(data, link)
@@ -51,6 +51,3 @@ class TestDerivedComponent(unittest.TestCase):
 
     def test_link(self):
         assert self.cid.link == self.link
-
-if __name__ == "__main__":
-    unittest.main()

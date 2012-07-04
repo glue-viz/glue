@@ -1,15 +1,13 @@
-import unittest
-
+import pytest
+import numpy as np
 from mock import MagicMock
 
-import glue
-import glue.core.parse as parse
-from glue.core.data import ComponentID, Component
-from glue.core.subset import Subset, SubsetState
+from ..data import ComponentID, Component, Data
+from ..subset import Subset
+from .. import parse
 
-import numpy as np
 
-class TestParse(unittest.TestCase):
+class TestParse(object):
 
     def test_re_matches_valid_names(self):
         reg = parse.TAG_RE
@@ -17,16 +15,16 @@ class TestParse(unittest.TestCase):
                  '{a_}', '{abc_1}','{_abc_1}', '{1}', '{1_}']
         invalid = ['', '{}', '{a b}']
         for v in valid:
-            self.assertIsNot(reg.match(v), None)
+            assert reg.match(v) is not None
         for i in invalid:
-            self.assertIs(reg.match(i), None)
+            assert reg.match(i) is None
 
     def test_group(self):
         reg = parse.TAG_RE
-        self.assertEquals(reg.match('{a}').group('tag'), 'a')
-        self.assertEquals(reg.match('{ a }').group('tag'), 'a')
-        self.assertEquals(reg.match('{ A }').group('tag'), 'A')
-        self.assertEquals(reg.match('{ Abc_ }').group('tag'), 'Abc_')
+        assert reg.match('{a}').group('tag') == 'a'
+        assert reg.match('{ a }').group('tag') == 'a'
+        assert reg.match('{ A }').group('tag') == 'A'
+        assert reg.match('{ Abc_ }').group('tag') == 'Abc_'
 
     def test_reference_list(self):
         cmd = '{a} - {b} + {c}'
@@ -36,7 +34,8 @@ class TestParse(unittest.TestCase):
         assert  expected == result
 
     def test_reference_list_invalid_cmd(self):
-        self.assertRaises(KeyError, parse._reference_list, '{a}', {})
+        with pytest.raises(KeyError):
+            parse._reference_list('{a}', {})
 
     def test_dereference(self):
         c1 = ComponentID('c1')
@@ -55,17 +54,20 @@ class TestParse(unittest.TestCase):
         parse._validate('{a} + {b}', ref)
         parse._validate('{a}', ref)
         parse._validate('3 + 4', ref)
-        self.assertRaises(TypeError, parse._validate, '{c}', ref)
+        with pytest.raises(TypeError):
+            parse._validate('{c}', ref)
 
 
     def test_ensure_only_component_references(self):
         ref = {'a': 1, 'b': ComponentID('b')}
         F = parse._ensure_only_component_references
         F('{b} + 5', ref)
-        self.assertRaises(TypeError, F, '{b} + {a}', ref)
-        self.assertRaises(TypeError, F, '{b} + {d}', ref)
+        with pytest.raises(TypeError):
+            F('{b} + {a}', ref)
+        with pytest.raises(TypeError):
+            F('{b} + {d}', ref)
 
-class TestParsedCommand(unittest.TestCase):
+class TestParsedCommand(object):
 
     def test_evaluate_component(self):
         data = MagicMock()
@@ -74,7 +76,7 @@ class TestParsedCommand(unittest.TestCase):
         cmd = '{comp1} * 5'
         refs = {'comp1' : c1}
         pc = parse.ParsedCommand(cmd, refs)
-        self.assertEquals(pc.evaluate(data), 25)
+        assert pc.evaluate(data) == 25
         data.__getitem__.assert_called_once_with(c1)
 
     def test_evaluate_subset(self):
@@ -85,7 +87,7 @@ class TestParsedCommand(unittest.TestCase):
         cmd = '{s1} and {s2}'
         refs = {'s1' : sub, 's2' : sub2}
         pc = parse.ParsedCommand(cmd, refs)
-        self.assertEquals(pc.evaluate(None), 3 and 4)
+        assert pc.evaluate(None) == (3 and 4)
 
     def test_evaluate_function(self):
         data = MagicMock()
@@ -94,14 +96,14 @@ class TestParsedCommand(unittest.TestCase):
         cmd = 'max({comp1}, 100)'
         refs = {'comp1' : c1}
         pc = parse.ParsedCommand(cmd, refs)
-        self.assertEquals(pc.evaluate(data), 100)
+        assert pc.evaluate(data) == 100
         data.__getitem__.assert_called_once_with(c1)
 
-class TestParsedComponentLink(unittest.TestCase):
+class TestParsedComponentLink(object):
 
     def test(self):
-        data = glue.core.data.Data()
-        comp = glue.core.data.Component(np.array([1,2,3]))
+        data = Data()
+        comp = Component(np.array([1,2,3]))
         c1 = ComponentID('c1')
         c2 = ComponentID('c2')
         data.add_component(comp, c1)
@@ -119,9 +121,9 @@ class TestParsedComponentLink(unittest.TestCase):
 
 
 
-class TestParsedSubsetState(unittest.TestCase):
-    def setUp(self):
-        data = glue.core.data.Data()
+class TestParsedSubsetState(object):
+    def setup_method(self, method):
+        data = Data()
         c1 = Component(np.array([2, 4, 6, 8]))
         g = ComponentID('g')
         data.add_component(c1, g)
@@ -153,7 +155,6 @@ class TestParsedSubsetState(unittest.TestCase):
 
         np.testing.assert_array_equal(result, expected)
 
-
     def test_two_subset_and_component(self):
         cmd = '{s1} & {s2} & ({g} < 6)'
         s = self.data.new_subset()
@@ -165,8 +166,3 @@ class TestParsedSubsetState(unittest.TestCase):
         expected = np.array([0, 1, 0, 0], dtype=bool)
 
         np.testing.assert_array_equal(result, expected)
-
-
-
-if __name__ == "__main__":
-    unittest.main()

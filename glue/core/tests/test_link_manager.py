@@ -1,14 +1,13 @@
-import unittest
-
 import numpy as np
 
-import glue
-from glue.core.component_link import ComponentLink
-from glue.core.link_manager import LinkManager, accessible_links, discover_links
-from glue.core.link_manager import find_dependents
-from glue.core.data import ComponentID, DerivedComponent
+from ..data import Data, Component
+from ..component_link import ComponentLink
+from ..link_manager import LinkManager, accessible_links, discover_links, \
+                           find_dependents
+from ..data import ComponentID, DerivedComponent
 
-comp = glue.core.data.Component(data = np.array([1,2,3]))
+comp = Component(data=np.array([1, 2, 3]))
+
 
 def example_components(self, add_derived=True):
     """ Link Topology
@@ -17,7 +16,7 @@ def example_components(self, add_derived=True):
     data --|             --c5,c6   (c7,c8 disconnected)
            --- c2---c4--/
     """
-    self.data = glue.core.data.Data()
+    self.data = Data()
     c1 = ComponentID('c1')
     c2 = ComponentID('c2')
     c3 = ComponentID('c3')
@@ -27,7 +26,7 @@ def example_components(self, add_derived=True):
     c7 = ComponentID('c7')
     c8 = ComponentID('c8')
 
-    dummy_using = lambda x,y: (x,y)
+    dummy_using = lambda x, y: (x, y)
     self.cs = [c1, c2, c3, c4, c5, c6, c7, c8]
     self.links = [ComponentLink([c1], c3),
                   ComponentLink([c2], c4),
@@ -48,28 +47,30 @@ def example_components(self, add_derived=True):
     self.derived = [c5, c6]
     self.inaccessible = [c7, c8]
 
-class TestAccessibleLinks(unittest.TestCase):
-    def setUp(self):
+
+class TestAccessibleLinks(object):
+
+    def setup_method(self, method):
         self.cs = [ComponentID("%i" % i) for i in xrange(10)]
 
     def test_returned_if_available(self):
         cids = self.cs[0:5]
         links = [ComponentLink([self.cs[0]], self.cs[1])]
-        self.assertIn(links[0], accessible_links(cids, links))
+        assert links[0] in accessible_links(cids, links)
 
     def test_returned_if_reachable(self):
         cids = self.cs[0:5]
         links = [ComponentLink([self.cs[0]], self.cs[6])]
-        self.assertIn(links[0], accessible_links(cids, links))
+        assert links[0] in accessible_links(cids, links)
 
     def test_not_returned_if_not_reachable(self):
         cids = self.cs[0:5]
         links = [ComponentLink([self.cs[6]], self.cs[7])]
-        self.assertNotIn(links[0], accessible_links(cids, links))
+        assert not links[0] in accessible_links(cids, links)
 
 
-class TestDiscoverLinks(unittest.TestCase):
-    def setUp(self):
+class TestDiscoverLinks(object):
+    def setup_method(self, method):
         example_components(self)
 
     def test_correct_discover(self):
@@ -93,7 +94,7 @@ class TestDiscoverLinks(unittest.TestCase):
         point to the keys """
         links = discover_links(self.data, self.links)
         for cid in links:
-            self.assertEquals(cid, links[cid].get_to_id())
+            assert cid == links[cid].get_to_id()
 
     def test_shortest_path(self):
         """ Shortcircuit c5 to c1, yielding 2 ways to get to c5.
@@ -101,11 +102,11 @@ class TestDiscoverLinks(unittest.TestCase):
         self.links.append(ComponentLink([self.cs[0]], self.cs[4]))
         links = discover_links(self.data, self.links)
 
-        self.assertIs(links[self.cs[4]], self.links[-1])
+        assert links[self.cs[4]] is self.links[-1]
 
 
-class TestFindDependents(unittest.TestCase):
-    def setUp(self):
+class TestFindDependents(object):
+    def setup_method(self, method):
         example_components(self)
 
     def test_propagated(self):
@@ -121,14 +122,14 @@ class TestFindDependents(unittest.TestCase):
         assert expected == result
 
 
-class TestLinkManager(unittest.TestCase):
+class TestLinkManager(object):
 
     def test_add_links(self):
         id1 = ComponentID('id1')
         id2 = ComponentID('id2')
         id3 = ComponentID('id3')
         lm = LinkManager()
-        using = lambda x,y: 0
+        using = lambda x, y: 0
         link = ComponentLink([id1, id2], id3, using)
         lm.add_link(link)
         links = lm.links
@@ -139,7 +140,7 @@ class TestLinkManager(unittest.TestCase):
         id2 = ComponentID('id2')
         id3 = ComponentID('id3')
         lm = LinkManager()
-        using = lambda x,y: 0
+        using = lambda x, y: 0
         link = ComponentLink([id1, id2], id3, using)
         lm.add_link(link)
         lm.remove_link(link)
@@ -149,7 +150,7 @@ class TestLinkManager(unittest.TestCase):
     def test_setup(self):
         example_components(self, add_derived=False)
         expected = set()
-        self.assertEquals(set(self.data.derived_components), expected)
+        assert set(self.data.derived_components) == expected
 
     def test_update_data_components_adds_correctly(self):
         example_components(self, add_derived=False)
@@ -171,15 +172,10 @@ class TestLinkManager(unittest.TestCase):
         dc = DerivedComponent(self.data, self.links[-1])
         self.data.add_component(dc, dc.link.get_to_id())
         removed = set([dc.link.get_to_id()])
-        self.assertIn(dc.link.get_to_id(), self.data.derived_components)
+        assert dc.link.get_to_id() in self.data.derived_components
 
         # this link should be removed upon update_components
         lm.update_data_components(self.data)
         derived = set(self.data.derived_components)
         expected = set(self.direct + self.derived) - removed
         assert derived == expected
-
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -1,11 +1,11 @@
-import unittest
+import pytest
 
 import numpy as np
 
-from glue.core.data import ComponentID, Data, Component
-from glue.core.component_link import ComponentLink
+from ..data import ComponentID, Data, Component
+from ..component_link import ComponentLink
 
-class TestComponentLink(unittest.TestCase):
+class TestComponentLink(object):
 
     def toy_data(self):
         data = Data()
@@ -25,16 +25,13 @@ class TestComponentLink(unittest.TestCase):
     def test_invalid_init_multi_from_no_using(self):
         data, from_, to_ = self.toy_data()
         using = lambda x: x
-        self.assertRaises(TypeError,
-                          ComponentLink,
-                          [from_, from_],
-                          to_)
+        with pytest.raises(TypeError):
+            ComponentLink([from_, from_], to_)
 
     def test_invalid_init_scalar_from(self):
         data, from_, to_ = self.toy_data()
-        self.assertRaises(TypeError,
-                          ComponentLink,
-                          from_, to_)
+        with pytest.raises(TypeError):
+            ComponentLink(from_, to_)
 
     def test_compute_direct(self):
         data, from_, to_ = self.toy_data()
@@ -64,9 +61,9 @@ class TestComponentLink(unittest.TestCase):
         using = lambda x: 3 * x
         link = ComponentLink([from_id], to_id, using)
 
-        self.assertIs(link.get_from_ids()[0], from_id)
-        self.assertIs(link.get_to_id(), to_id)
-        self.assertIs(link.get_using(), using)
+        assert link.get_from_ids()[0] is from_id
+        assert link.get_to_id() is to_id
+        assert link.get_using() is using
 
     def test_str(self):
         """ str method returns without error """
@@ -85,8 +82,3 @@ class TestComponentLink(unittest.TestCase):
         to_id = ComponentID('to_label')
         link = ComponentLink([from_id], to_id)
         repr(link)
-
-
-
-if __name__ == "__main__":
-    unittest.main()

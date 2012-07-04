@@ -1,16 +1,12 @@
-import unittest
-
 import numpy as np
 
-import glue
-from glue.util import *
+from ..util import file_format, point_contour
 
-
-class TestRelim(unittest.TestCase):
+class TestRelim(object):
     pass
 
 
-class TestFileFormat(unittest.TestCase):
+class TestFileFormat(object):
 
     def test_gz(self):
         fmt = file_format('test.tar.gz')
@@ -33,7 +29,7 @@ class TestFileFormat(unittest.TestCase):
         assert fmt == ''
 
 
-class TestPointContour(unittest.TestCase):
+class TestPointContour(object):
     def test(self):
         data = np.array([ [0, 0, 0, 0],
                           [0, 2, 3, 0],
@@ -46,6 +42,3 @@ class TestPointContour(unittest.TestCase):
         np.testing.assert_array_almost_equal(xy[:, 0], x)
         np.testing.assert_array_almost_equal(xy[:, 1], y)
 
-
-if __name__ == "__main__":
-    unittest.main()
