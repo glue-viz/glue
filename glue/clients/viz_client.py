@@ -1,5 +1,7 @@
-from glue import Client
 import matplotlib.pyplot as plt
+
+from ..core.client import Client
+
 
 class VizClient(Client):
     """
@@ -69,7 +71,6 @@ class VizClient(Client):
         self._update_subset_plot(s)
         self._redraw()
 
-
     def refresh(self):
         """
         Update and redraw all plot information.
@@ -134,6 +135,7 @@ class VizClient(Client):
         """
         raise NotImplementedError()
 
+
 def init_mpl(figure, axes):
     if axes is not None and figure is not None and \
             axes.figure is not figure:
@@ -148,4 +150,3 @@ def init_mpl(figure, axes):
         _ax = _figure.add_subplot(1, 1, 1)
 
     return _figure, _ax
-

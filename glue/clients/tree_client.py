@@ -1,6 +1,6 @@
-import glue
-import glue.message as msg
-from glue.viz_client import VizClient
+from ..core.tree_layout import TreeLayout
+
+from .viz_client import VizClient
 
 
 class TreeClient(VizClient):
@@ -30,5 +30,4 @@ class TreeClient(VizClient):
 
         self.layout = layout
         if not self.layout:
-            self.layout = glue.TreeLayout(data.tree)
-
+            self.layout = TreeLayout(data.tree)

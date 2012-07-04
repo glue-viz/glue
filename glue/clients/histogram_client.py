@@ -1,4 +1,5 @@
-from glue.viz_client import VizClient
+from .viz_client import VizClient
+
 
 class HistogramClient(VizClient):
     """

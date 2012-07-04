@@ -1,10 +1,13 @@
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
-import numpy as np
 
-import glue
-from glue import VizClient
-from glue.exceptions import IncompatibleAttribute
+from ..core.exceptions import IncompatibleAttribute
+from ..core.data import Data
+from ..core.subset import Subset, RoiSubsetState
+from ..core.roi import PolygonalROI
+
+from .viz_client import VizClient
 
 
 class InvNormalize(Normalize):
@@ -323,12 +326,12 @@ class ImageClient(VizClient):
         if data is None:
             return
 
-        subset_state = glue.subset.RoiSubsetState()
+        subset_state = RoiSubsetState()
         xroi, yroi = roi.to_polygon()
         x, y = self._get_axis_components()
         subset_state.xatt = x
         subset_state.yatt = y
-        subset_state.roi = glue.roi.PolygonalROI(xroi, yroi)
+        subset_state.roi = PolygonalROI(xroi, yroi)
         data.edit_subset.subset_state = subset_state
 
     def _horizontal_axis_index(self):
@@ -361,7 +364,7 @@ class ImageClient(VizClient):
         if layer is self.display_data:
             self.display_data = None
 
-        if isinstance(layer, glue.Data):
+        if isinstance(layer, Data):
             for subset in layer.subsets:
                 self.delete_layer(subset)
 
@@ -385,11 +388,11 @@ class ImageClient(VizClient):
         if not self.can_handle_data(layer.data):
             return
 
-        if isinstance(layer, glue.Data):
+        if isinstance(layer, Data):
             self.layers[layer] = DataLayerManager(layer, self._ax)
             for s in layer.subsets:
                 self.add_layer(s)
-        elif isinstance(layer, glue.Subset):
+        elif isinstance(layer, Subset):
             self.layers[layer] = SubsetLayerManager(layer, self._ax)
             self._update_subset_single(layer)
         else:

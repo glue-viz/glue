@@ -1,6 +1,7 @@
-from glue.tree_client import TreeClient
-
 import matplotlib.pyplot as plt
+
+from .tree_client import TreeClient
+
 
 class MplTreeClient(TreeClient):
     """ A tree client based on matplotlib """

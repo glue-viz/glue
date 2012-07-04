@@ -1,6 +1,5 @@
-from glue.histogram_client import HistogramClient
-from glue.viz_client import init_mpl
-import matplotlib.pyplot as plt
+from .histogram_client import HistogramClient
+from .viz_client import init_mpl
 
 
 class MplHistogramClient(HistogramClient):
@@ -10,9 +9,9 @@ class MplHistogramClient(HistogramClient):
         HistogramClient.__init__(self, data, options=options)
         self._figure, self._ax = init_mpl(figure, axes)
 
-        self.render_all = False #  draw the histgram of the whole data set?
-        self.all_color = 'black' #  color for the background histogram
-        self.options['histtype'] = 'barstacked' #  histogram style for subset plots
+        self.render_all = False  # draw the histgram of the whole data set?
+        self.all_color = 'black'  # color for the background histogram
+        self.options['histtype'] = 'barstacked'  # histogram style for subset plots
 
     def _redraw(self):
         """
@@ -32,7 +31,7 @@ class MplHistogramClient(HistogramClient):
         # draw histogram for the whole data set
         if self.render_all and self.data in self._plots:
             base = self._ax.hist(self._plots[self.data].ravel(),
-                                 color = self.all_color,
+                                 color=self.all_color,
                                  **self.options)
             bins = base[1]
 
@@ -91,11 +90,11 @@ class MplHistogramClient(HistogramClient):
         if s not in self.data.subsets:
             raise KeyError("Input is not one of data's subsets: %s" % s)
 
-        mask = s.to_mask(data = self.data)
+        mask = s.to_mask(data=self.data)
         if mask.sum() == 0:
             self._plots[s] = []
             return
 
         x = self.data[self._component].data
-        x = x[s.to_mask(data = self.data)]
+        x = x[s.to_mask(data=self.data)]
         self._plots[s] = x

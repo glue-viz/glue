@@ -1,13 +1,16 @@
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 
-import glue
-from glue.client import Client
-from glue.util import relim
-from glue.exceptions import IncompatibleAttribute
+from ..core.client import Client
+from ..core.exceptions import IncompatibleAttribute
+from ..core.data import Data
+from ..core.subset import RoiSubsetState
+from ..core.roi import PolygonalROI
+from ..util import relim
 
 
 class ScatterLayerManager(object):
+
     def __init__(self, layer, axes):
         self._layer = layer
         self._axes = axes
@@ -143,7 +146,7 @@ class ScatterClient(Client):
         self._ensure_subsets_added(layer)
 
     def _ensure_subsets_added(self, layer):
-        if not isinstance(layer, glue.Data):
+        if not isinstance(layer, Data):
             return
         for subset in layer.subsets:
             self.add_layer(subset)
@@ -268,11 +271,11 @@ class ScatterClient(Client):
                 continue
             if not self.managers[layer].is_enabled():
                 continue
-            subset_state = glue.subset.RoiSubsetState()
+            subset_state = RoiSubsetState()
             subset_state.xatt = self._xatt
             subset_state.yatt = self._yatt
             x, y = roi.to_polygon()
-            subset_state.roi = glue.roi.PolygonalROI(x, y)
+            subset_state.roi = PolygonalROI(x, y)
             subset = layer.edit_subset
             subset.subset_state = subset_state
 
