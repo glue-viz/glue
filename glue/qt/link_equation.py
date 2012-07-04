@@ -5,10 +5,8 @@ from PyQt4.QtGui import QSpacerItem, QSizePolicy
 
 from PyQt4.QtCore import Qt
 
-from ui_link_equation import Ui_LinkEquation
-from glue.data import ComponentID
-from glue.component_link import ComponentLink
-
+from .ui.link_equation import Ui_LinkEquation
+from .. import core
 
 def function_label(function):
     """ Format a function signature as a string """
@@ -40,7 +38,7 @@ class ArgumentWidget(QWidget):
 
     def dropEvent(self, event):
         obj = event.mimeData().data('application/py_instance')
-        if not isinstance(obj, ComponentID):
+        if not isinstance(obj, core.data.ComponentID):
             return
         self.component_id = obj
         self.editor.setText(str(obj))
@@ -140,9 +138,9 @@ class LinkEquation(QWidget):
             return []
         using = self._function
 
-        link = ComponentLink(inp, out, using)
+        link = core.component_link.ComponentLink(inp, out, using)
         if self.two_way:
-            link2 = ComponentLink([out], inp[0], using)
+            link2 = core.component_link.ComponentLink([out], inp[0], using)
             return [link, link2]
 
         return [link]

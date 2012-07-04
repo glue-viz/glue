@@ -1,14 +1,17 @@
 from PyQt4.QtGui import QDialog, QListWidgetItem
 
-from ui_link_editor import Ui_LinkEditor
-import glue
+from .. import core
+
+from .ui.link_editor import Ui_LinkEditor
+
 
 class LinkEditor(QDialog):
 
     def __init__(self, collection, functions = None, parent=None):
         super(LinkEditor, self).__init__(parent)
         self._collection = collection
-        self._functions = functions or glue.env.link_functions
+        from .. import env
+        self._functions = functions or env.link_functions
 
         self._ui = Ui_LinkEditor()
         self._init_widgets()
@@ -67,15 +70,15 @@ def main(): # pragma: no cover
 
     app = QApplication([''])
 
-    d = glue.Data(label = 'd1')
-    d2 = glue.Data(label = 'd2')
-    c1 = glue.Component(np.array([1, 2, 3]))
-    c2 = glue.Component(np.array([1, 2, 3]))
-    c3 = glue.Component(np.array([1, 2, 3]))
+    d = core.data.Data(label = 'd1')
+    d2 = core.data.Data(label = 'd2')
+    c1 = core.data.Component(np.array([1, 2, 3]))
+    c2 = core.data.Component(np.array([1, 2, 3]))
+    c3 = core.data.Component(np.array([1, 2, 3]))
     d.add_component(c1, 'a')
     d.add_component(c2, 'b')
     d2.add_component(c3, 'c')
-    dc = glue.DataCollection()
+    dc = core.data_collection.DataCollection()
     dc.append(d)
     dc.append(d2)
 

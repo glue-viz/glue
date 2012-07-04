@@ -6,9 +6,11 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QIcon
 from PyQt4.QtCore import Qt
 
-import glue_qt_resources # pylint: disable=W0611
+from . import glue_qt_resources  # pylint: disable=W0611
+
 
 class GlueToolbar(NavigationToolbar2QT):
+
     def __init__(self, canvas, frame, name=None):
         """ Create a new toolbar object
 
@@ -33,7 +35,7 @@ class GlueToolbar(NavigationToolbar2QT):
         self.setFocusPolicy(Qt.StrongFocus)
 
     def _init_toolbar(self):
-        self.basedir = os.path.join(matplotlib.rcParams[ 'datapath' ],'images')
+        self.basedir = os.path.join(matplotlib.rcParams['datapath'], 'images')
         parent = self.parent()
 
         a = QtGui.QAction(QIcon(':icons/glue_home.png'),
@@ -112,7 +114,9 @@ class GlueToolbar(NavigationToolbar2QT):
         self.mode = ''
 
     def add_mode(self, mode):
+
         parent = self.parent()
+
         def receiver():
             self._custom_mode(mode)
 
@@ -168,4 +172,3 @@ class GlueToolbar(NavigationToolbar2QT):
         if sb is None:
             return
         sb.showMessage(s.replace(', ', '\n'))
-

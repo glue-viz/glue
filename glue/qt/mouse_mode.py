@@ -20,7 +20,8 @@ from PyQt4.QtGui import QIcon
 
 import numpy as np
 
-from glue import roi, util
+from .. import util
+from ..core import roi
 
 
 class MouseMode(object):

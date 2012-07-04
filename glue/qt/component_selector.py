@@ -1,6 +1,6 @@
 from PyQt4.QtGui import QWidget, QListWidgetItem
 
-from ui_component_selector import Ui_ComponentSelector
+from .ui.component_selector import Ui_ComponentSelector
 
 
 class ComponentSelector(QWidget):
