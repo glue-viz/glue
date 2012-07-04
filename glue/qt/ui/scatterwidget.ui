@@ -180,13 +180,13 @@
   <customwidget>
    <class>LayerTreeWidget</class>
    <extends>QWidget</extends>
-   <header>layertreewidget</header>
+   <header>..widgets.layer_tree_widget</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>MplWidget</class>
    <extends>QWidget</extends>
-   <header>mplwidget</header>
+   <header>..widgets.mpl_widget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

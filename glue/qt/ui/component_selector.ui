@@ -33,7 +33,7 @@
   <customwidget>
    <class>GlueListWidget</class>
    <extends>QListWidget</extends>
-   <header>qtutil</header>
+   <header>..qtutil</header>
   </customwidget>
  </customwidgets>
  <resources/>

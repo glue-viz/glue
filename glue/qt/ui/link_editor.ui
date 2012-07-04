@@ -129,19 +129,19 @@
   <customwidget>
    <class>ComponentSelector</class>
    <extends>QWidget</extends>
-   <header>component_selector</header>
+   <header>..component_selector</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>LinkEquation</class>
    <extends>QWidget</extends>
-   <header>link_equation</header>
+   <header>..link_equation</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>GlueListWidget</class>
    <extends>QListWidget</extends>
-   <header>qtutil</header>
+   <header>..qtutil</header>
   </customwidget>
  </customwidgets>
  <resources/>
