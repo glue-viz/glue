@@ -1,20 +1,20 @@
-import unittest
 import tempfile
 
+import pytest
 import numpy as np
 from mock import MagicMock
 import pyfits
 
-import glue
-from glue.core.subset import Subset, SubsetState, ElementSubsetState
-from glue.core.subset import CompositeSubsetState
-from glue.core.subset import OrState
-from glue.core.subset import AndState
-from glue.core.subset import XorState
-from glue.core.subset import InvertState
+from ..subset import Subset, SubsetState, ElementSubsetState
+from ..subset import OrState
+from ..subset import AndState
+from ..subset import XorState
+from ..subset import InvertState
 
-class TestSubset(unittest.TestCase):
-    def setUp(self):
+
+class TestSubset(object):
+
+    def setup_method(self, method):
         self.data = MagicMock()
 
     def test_subset_mask_wraps_state(self):
@@ -33,17 +33,17 @@ class TestSubset(unittest.TestCase):
 
     def test_set_label(self):
         s = Subset(self.data, label = 'hi')
-        self.assertEquals(s.label, 'hi')
+        assert s.label == 'hi'
 
     def test_set_color(self):
         s = Subset(self.data, color = 'blue')
-        self.assertEquals(s.style.color, 'blue')
+        assert s.style.color == 'blue'
 
     def test_subset_state_reparented_on_assignment(self):
         s = Subset(self.data)
         state = SubsetState()
         s.subset_state = state
-        self.assertTrue(state.parent is s)
+        assert state.parent is s
 
     def test_paste_returns_copy_of_state(self):
         s = Subset(self.data)
@@ -55,12 +55,12 @@ class TestSubset(unittest.TestCase):
         s2 = Subset(self.data)
 
         s2.paste(s)
-        self.assertTrue(s2.subset_state is state1_copy)
+        assert s2.subset_state is state1_copy
 
     def test_register_enables_braodcasting(self):
         s = Subset(self.data)
         s.register()
-        self.assertTrue(s._broadcasting)
+        assert s._broadcasting
 
     def test_register_adds_subset_to_data(self):
         s = Subset(self.data)
@@ -72,31 +72,30 @@ class TestSubset(unittest.TestCase):
         s = Subset(self.data)
         s.register()
         s.unregister()
-        self.assertFalse(s._broadcasting)
-
+        assert not s._broadcasting
 
     def test_unregister_disables_broadcasting(self):
         s = Subset(self.data)
         s.register()
         s.unregister()
-        self.assertFalse(s._broadcasting)
+        assert not s._broadcasting
 
     def test_unregister_sends_message_if_hub_present(self):
         s = Subset(self.data)
         s.register()
         s.unregister()
-        self.assertEquals(s.data.hub.broadcast.call_count, 1)
+        assert s.data.hub.broadcast.call_count == 1
 
     def test_broadcast_ignore(self):
         s = Subset(self.data)
         s.broadcast()
-        self.assertEquals(s.data.hub.broadcast.call_count, 0)
+        assert s.data.hub.broadcast.call_count == 0
 
     def test_broadcast_processed(self):
         s = Subset(self.data)
         s.do_broadcast(True)
         s.broadcast()
-        self.assertEquals(s.data.hub.broadcast.call_count, 1)
+        assert s.data.hub.broadcast.call_count == 1
 
     def test_del(self):
         s = Subset(self.data)
@@ -107,38 +106,40 @@ class TestSubset(unittest.TestCase):
         s.to_index_list = MagicMock()
         s.to_index_list.return_value = []
         get = s['test']
-        self.assertEquals(list(get), [])
+        assert list(get) == []
 
 
-class TestSubsetStateCombinations(unittest.TestCase):
-    def setUp(self):
+class TestSubsetStateCombinations(object):
+    def setup_method(self, method):
         self.data = None
 
     def test_or(self):
         s1 = Subset(self.data)
         s2 = Subset(self.data)
         s3 = s1.subset_state | s2.subset_state
-        self.assertTrue(isinstance(s3, OrState))
+        assert isinstance(s3, OrState)
 
     def test_and(self):
         s1 = Subset(self.data)
         s2 = Subset(self.data)
         s3 = s1.subset_state & s2.subset_state
-        self.assertTrue(isinstance(s3, AndState))
+        assert isinstance(s3, AndState)
 
     def test_invert(self):
         s1 = Subset(self.data)
         s3 = ~s1.subset_state
-        self.assertTrue(isinstance(s3, InvertState))
+        assert isinstance(s3, InvertState)
 
     def test_xor(self):
         s1 = Subset(self.data)
         s2 = Subset(self.data)
         s3 = s1.subset_state ^ s2.subset_state
-        self.assertTrue(isinstance(s3, XorState))
+        assert isinstance(s3, XorState)
 
-class TestCompositeSubsetStates(unittest.TestCase):
-    def setUp(self):
+
+class TestCompositeSubsetStates(object):
+
+    def setup_method(self, method):
         self.sub1 = MagicMock(spec=SubsetState)
         self.sub1.to_mask.return_value = np.array([1, 1, 0, 0], dtype='bool')
         self.sub2 = MagicMock(spec=SubsetState)
@@ -174,9 +175,9 @@ class TestCompositeSubsetStates(unittest.TestCase):
         answer = s4.to_mask()
         expected = np.array([False, True, False, False])
 
-class TestElementSubsetState(unittest.TestCase):
+class TestElementSubsetState(object):
 
-    def setUp(self):
+    def setup_method(self, method):
         self.state = ElementSubsetState()
         self.state.parent = MagicMock()
         self.state.parent.data.shape = (2,1)
@@ -204,9 +205,10 @@ class TestElementSubsetState(unittest.TestCase):
         state = ElementSubsetState(indices = ind)
         np.testing.assert_array_equal(ind, state._indices)
 
-class TestSubsetIo(unittest.TestCase):
 
-    def setUp(self):
+class TestSubsetIo(object):
+
+    def setup_method(self, method):
         self.data = MagicMock()
         self.data.shape = (4,4)
         self.subset = Subset(self.data)
@@ -233,14 +235,9 @@ class TestSubsetIo(unittest.TestCase):
             np.testing.assert_array_equal(mask1, mask2)
 
     def test_read_error(self):
-        self.assertRaises(IOError,
-                          self.subset.read_mask,
-                          'file_does_not_exist')
+        with pytest.raises(IOError):
+            self.subset.read_mask('file_does_not_exist')
 
     def test_write_unsupported_format(self):
-        self.assertRaises(AttributeError,
-                          self.subset.write_mask,
-                          'file_will_fail', format='.hd5')
-
-if __name__ == "__main__":
-    unittest.main()
+        with pytest.raises(AttributeError):
+            self.subset.write_mask('file_will_fail', format='.hd5')
