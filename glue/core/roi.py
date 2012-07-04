@@ -1,10 +1,14 @@
 import numpy as np
 from matplotlib.nxutils import points_inside_poly
+from matplotlib.patches import Polygon, Rectangle, Ellipse
 
 np.seterr(all='ignore')
 
-from matplotlib.patches import Polygon, Rectangle, Ellipse
-from glue.exceptions import UndefinedROI
+from .exceptions import UndefinedROI
+
+__all__ = ['Roi', 'RectangularROI', 'CircularROI', 'PolygonalROI',
+           'AbstractMplRoi', 'MplRectangularROI', 'MplCircularROI',
+           'MplPolygonalROI']
 
 
 def aspect_ratio(ax):

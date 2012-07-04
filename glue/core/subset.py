@@ -1,9 +1,13 @@
 import numpy as np
 import pyfits
 
-import glue
-from glue.visual import VisualAttributes
-from glue.decorators import memoize
+from .visual import VisualAttributes
+from .decorators import memoize
+from .message import SubsetDeleteMessage, SubsetUpdateMessage
+
+__all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
+           'OrState', 'AndState', 'XorState', 'InvertState', 'ElementSubsetState']
+
 
 class Subset(object):
     """Base class to handle subsets of data.
@@ -41,7 +45,7 @@ class Subset(object):
         self.style.alpha = alpha
         self.style.label = label
         self._subset_state = None
-        self.subset_state = SubsetState() # calls proper setter method
+        self.subset_state = SubsetState()  # calls proper setter method
 
     @property
     def subset_state(self):
@@ -125,8 +129,7 @@ class Subset(object):
             return
 
         if self._broadcasting and self.data.hub:
-            msg = glue.message.SubsetUpdateMessage(self,
-                                                   attribute=attribute)
+            msg = SubsetUpdateMessage(self, attribute=attribute)
             self.data.hub.broadcast(msg)
 
     def unregister(self):
@@ -135,7 +138,7 @@ class Subset(object):
                   self.data.hub is not None
         self.do_broadcast(False)
         if dobroad:
-            msg = glue.message.SubsetDeleteMessage(self)
+            msg = SubsetDeleteMessage(self)
             self.data.hub.broadcast(msg)
 
     def write_mask(self, file_name, format="fits"):

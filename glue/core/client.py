@@ -1,8 +1,19 @@
-import glue
-import glue.message as msg
+from .hub import HubListener
+from .data import Data
+from .subset import Subset
+from .data_collection import DataCollection
+from .message import DataUpdateMessage, \
+                     SubsetUpdateMessage, \
+                     SubsetCreateMessage, \
+                     SubsetDeleteMessage, \
+                     DataCollectionDeleteMessage
+
+from . import hub
+
+__all__ = ['Client', 'BasicClient']
 
 
-class Client(glue.HubListener):
+class Client(HubListener):
     """
     Base class for interaction / visualization modules
 
@@ -28,7 +39,7 @@ class Client(glue.HubListener):
         """
         super(Client, self).__init__()
         self._data = data
-        if not isinstance(data, glue.DataCollection):
+        if not isinstance(data, DataCollection):
             raise TypeError("Input data must be a DataCollection: %s"
                             % type(data))
 
@@ -60,23 +71,23 @@ class Client(glue.HubListener):
         has_data_collection = lambda x: x.sender is self._data
 
         hub.subscribe(self,
-                      msg.SubsetCreateMessage,
+                      SubsetCreateMessage,
                       handler=self._add_subset,
                       filter=has_data)
         hub.subscribe(self,
-                      msg.SubsetUpdateMessage,
+                      SubsetUpdateMessage,
                       handler=self._update_subset,
                       filter=has_data)
         hub.subscribe(self,
-                      msg.SubsetDeleteMessage,
+                      SubsetDeleteMessage,
                       handler=self._remove_subset,
                       filter=has_data)
         hub.subscribe(self,
-                      msg.DataUpdateMessage,
+                      DataUpdateMessage,
                       handler=self._update_data,
                       filter=has_data)
         hub.subscribe(self,
-                      msg.DataCollectionDeleteMessage,
+                      DataCollectionDeleteMessage,
                       handler=self._remove_data,
                       filter=has_data_collection)
 
@@ -124,7 +135,7 @@ class BasicClient(Client):
         if layer.data not in self.data:
             raise TypeError("Data not in collection")
 
-        if isinstance(layer, glue.Data):
+        if isinstance(layer, Data):
             self._do_add_data(layer)
             for subset in layer.subsets:
                 self.add_layer(subset)
@@ -139,7 +150,7 @@ class BasicClient(Client):
     def update_layer(self, layer):
         if not self.layer_present(layer):
             return
-        if isinstance(layer, glue.Subset):
+        if isinstance(layer, Subset):
             self._do_update_subset(layer)
         else:
             self._do_update_data(layer)
@@ -147,7 +158,7 @@ class BasicClient(Client):
     def remove_layer(self, layer):
         if not self.layer_present(layer):
             return
-        if isinstance(layer, glue.Data):
+        if isinstance(layer, Data):
             self._do_remove_data(layer)
             for subset in layer.subsets:
                 self._do_remove_subset(subset)

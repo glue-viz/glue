@@ -1,7 +1,5 @@
-from collections import defaultdict
+from .data import DerivedComponent
 
-from glue.component_link import ComponentLink
-from glue.data import DerivedComponent
 
 def accessible_links(cids, links):
     """ Calculate all ComponentLink objects in a list

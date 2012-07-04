@@ -1,5 +1,7 @@
 import numpy as np
 
+__all__ = ['Tree', 'NewickTree', 'DendroMerge']
+
 
 class Tree(object):
     """

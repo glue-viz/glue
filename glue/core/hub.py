@@ -1,7 +1,9 @@
 from collections import defaultdict
 
-import glue
-from glue.exceptions import InvalidSubscriber, InvalidMessage
+from .message import ErrorMessage, Message
+from .exceptions import InvalidSubscriber, InvalidMessage
+
+__all__ = ['Hub', 'HubListener']
 
 
 class Hub(object):
@@ -32,10 +34,14 @@ class Hub(object):
         # Dictionary of subscriptions
         self._subscriptions = defaultdict(dict)
 
+        from .data import Data
+        from .subset import Subset
+        from .data_collection import DataCollection
+
         listeners = set(filter(lambda x: isinstance(x, HubListener), args))
-        data = set(filter(lambda x: isinstance(x, glue.Data), args))
-        subsets = set(filter(lambda x: isinstance(x, glue.Subset), args))
-        dcs = set(filter(lambda x: isinstance(x, glue.DataCollection), args))
+        data = set(filter(lambda x: isinstance(x, Data), args))
+        subsets = set(filter(lambda x: isinstance(x, Subset), args))
+        dcs = set(filter(lambda x: isinstance(x, DataCollection), args))
         listeners -= (data | subsets | dcs)
         if set(listeners | data | subsets | dcs) != set(args):
             raise TypeError("Inputs must be HubListener, data, subset, or "
@@ -52,7 +58,7 @@ class Hub(object):
 
     def subscribe(self, subscriber, message_class,
                   handler=None,
-                  filter=lambda x:True):
+                  filter=lambda x: True):
         """Subscribe an object to a type of message class.
 
         :param subscriber: The subscribing object
@@ -87,7 +93,7 @@ class Hub(object):
             raise InvalidSubscriber("Subscriber must be a HubListener: %s" %
                             type(subscriber))
         if not isinstance(message_class, type) or \
-                not issubclass(message_class, glue.Message):
+                not issubclass(message_class, Message):
             raise InvalidMessage("message class must be a subclass of "
                             "glue.Message: %s" % type(message_class))
         if not handler:
@@ -158,12 +164,12 @@ class Hub(object):
             try:
                 handler(message)
             except Exception as e:
-                if isinstance(message, glue.message.ErrorMessage):
+                if isinstance(message, ErrorMessage):
                     # errors on errors! Prevent recursion
                     raise e
                 else:
                     tag = str(e)
-                    msg = glue.message.ErrorMessage(subscriber, tag=tag)
+                    msg = ErrorMessage(subscriber, tag=tag)
                     self.broadcast(msg)
 
 

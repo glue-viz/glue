@@ -1,10 +1,11 @@
 import re
 
-from glue.data import ComponentID
-from glue.subset import Subset, SubsetState
-from glue.component_link import ComponentLink
+from .data import ComponentID
+from .subset import Subset, SubsetState
+from .component_link import ComponentLink
 
 TAG_RE = re.compile('\{\s*(?P<tag>\S+)\s*\}')
+
 
 def _ensure_only_component_references(cmd, references):
     """ Search through tag references in a command, ensure that
@@ -129,7 +130,8 @@ class ParsedCommand(object):
         # pylint: disable=W0613, W0612
         references = self._references
         cmd = _dereference(self._cmd, self._references)
-        return eval(cmd) # careful!
+        return eval(cmd)  # careful!
+
 
 class ParsedComponentLink(ComponentLink):
     """ Class to create a new ComponentLink from a ParsedCommand object. """
@@ -148,6 +150,7 @@ class ParsedComponentLink(ComponentLink):
 
     def compute(self, data):
         return self._parsed.evaluate(data)
+
 
 class ParsedSubsetState(SubsetState):
     """ A SubsetState defined by a ParsedCommand object """

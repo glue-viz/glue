@@ -2,14 +2,24 @@ import numpy as np
 import atpy
 import pyfits
 
-import glue
-from glue.io import extract_data_fits, extract_data_hdf5
-from glue.coordinates import coordinates_from_header
-from glue.coordinates import Coordinates
-from glue.visual import VisualAttributes
-from glue.exceptions import IncompatibleAttribute
-from glue.component_link import ComponentLink
-from glue.util import file_format
+from .io import extract_data_fits, extract_data_hdf5
+from .coordinates import Coordinates, coordinates_from_header
+from .visual import VisualAttributes
+from .exceptions import IncompatibleAttribute
+from .component_link import ComponentLink
+from .subset import Subset
+from .hub import Hub
+from .tree import Tree
+from .message import DataUpdateMessage, \
+                     DataAddComponentMessage, \
+                     SubsetCreateMessage, \
+                     SubsetDeleteMessage
+
+from ..util import file_format
+
+__all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
+           'TabularData', 'GriddedData']
+
 
 class ComponentID(object):
     """ References a Component object within a data object
@@ -35,6 +45,7 @@ class ComponentID(object):
     def __repr__(self):
         return str(self._label)
 
+
 class Component(object):
     """ Stores the actual, numerical information for a particular quantity
 
@@ -42,7 +53,6 @@ class Component(object):
     ComponentIDs. All Components in a data set must have the same
     shape and number of dimensions
     """
-
 
     def __init__(self, data, units=None):
         """
@@ -151,7 +161,7 @@ class Data(object):
         self.data = self
 
         # The default-editable subset
-        self.edit_subset = glue.Subset(self, label='Editable Subset')
+        self.edit_subset = Subset(self, label='Editable Subset')
         self.add_subset(self.edit_subset)
 
     @property
@@ -233,7 +243,7 @@ class Data(object):
             self._create_pixel_and_world_components()
 
         if self.hub and (not is_present):
-            msg = glue.message.DataAddComponentMessage(self, component_id)
+            msg = DataAddComponentMessage(self, component_id)
             self.hub.broadcast(msg)
 
         return component_id
@@ -273,7 +283,7 @@ class Data(object):
     def components(self):
         """ Returns a list of ComponentIDs for all components
         (primary and derived) in the data"""
-        return sorted(self._components.keys(), key = lambda x: str(x).lower())
+        return sorted(self._components.keys(), key=lambda x: str(x).lower())
 
     @property
     def primary_components(self):
@@ -359,7 +369,7 @@ class Data(object):
 
            The new subset object
         """
-        subset = glue.Subset(self)
+        subset = Subset(self)
         self.add_subset(subset)
         return subset
 
@@ -371,13 +381,13 @@ class Data(object):
             return  # prevents infinite recursion
         self.subsets.append(subset)
         if self.hub is not None:
-            msg = glue.message.SubsetCreateMessage(subset)
+            msg = SubsetCreateMessage(subset)
             self.hub.broadcast(msg)
         subset.do_broadcast(True)
 
     def remove_subset(self, subset):
         if self.hub is not None:
-            msg = glue.message.SubsetDeleteMessage(subset)
+            msg = SubsetDeleteMessage(subset)
             self.hub.broadcast(msg)
         self.subsets.remove(subset)
 
@@ -387,7 +397,7 @@ class Data(object):
         This method usually doesn't have to be called directly, as
         DataCollections manage the registration of data objects
         """
-        if not isinstance(hub, glue.Hub):
+        if not isinstance(hub, Hub):
             raise TypeError("input is not a Hub object: %s" % type(hub))
         self.hub = hub
 
@@ -395,16 +405,16 @@ class Data(object):
         '''
         Read a tree describing the data from a file
         '''
-        self.tree = glue.Tree(filename)
+        self.tree = Tree(filename)
 
     def broadcast(self, attribute=None):
         if not self.hub:
             return
-        msg = glue.message.DataUpdateMessage(self, attribute=attribute)
+        msg = DataUpdateMessage(self, attribute=attribute)
         self.hub.broadcast(msg)
 
     def create_subset_from_clone(self, subset, **kwargs):
-        result = glue.Subset(self, **kwargs)
+        result = Subset(self, **kwargs)
         result.register()
         result.subset_state = subset.subset_state
         return result
@@ -506,4 +516,3 @@ class GriddedData(Data):
         for component_name in arrays:
             comp = Component(arrays[component_name])
             self.add_component(comp, component_name)
-

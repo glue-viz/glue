@@ -3,6 +3,8 @@ import numpy as np
 
 import pyfits.core
 
+__all__ = ['Coordinates', 'WCSCoordinates', 'WCSCube']
+
 
 class Coordinates(object):
     '''

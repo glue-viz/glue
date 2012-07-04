@@ -1,9 +1,8 @@
-import glue
-
+from .tree import Tree
 
 class TreeTraversal(object):
     def __init__(self, tree):
-        if not isinstance(tree, glue.Tree):
+        if not isinstance(tree, Tree):
             raise TypeError("Input is not a tree object: %s" %
                             type(tree))
         self.tree = tree

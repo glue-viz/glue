@@ -1,7 +1,14 @@
-import glue
+from .hub import Hub, HubListener
+from .data import Data
+from .link_manager import LinkManager
+from .message import DataCollectionAddMessage, \
+                     DataCollectionDeleteMessage, \
+                     DataAddComponentMessage
+
+__all__ = ['DataCollection']
 
 
-class DataCollection(glue.HubListener):
+class DataCollection(HubListener):
     """DataCollections manage sets of data. They have the following
     responsibilities:
 
@@ -16,10 +23,10 @@ class DataCollection(glue.HubListener):
                       These objects will be auto-appended to the collection
         """
         self.hub = None
-        self._link_manager = glue.LinkManager()
+        self._link_manager = LinkManager()
 
         self._data = []
-        if isinstance(data, glue.data.Data):
+        if isinstance(data, Data):
             self.append(data)
         elif isinstance(data, list):
             for d in data:
@@ -46,7 +53,7 @@ class DataCollection(glue.HubListener):
             data.hub = self.hub
             for s in data.subsets:
                 s.register()
-            msg = glue.message.DataCollectionAddMessage(self, data)
+            msg = DataCollectionAddMessage(self, data)
             self.hub.broadcast(msg)
         self._sync_link_manager()
 
@@ -62,7 +69,7 @@ class DataCollection(glue.HubListener):
             return
         self._data.remove(data)
         if self.hub:
-            msg = glue.message.DataCollectionDeleteMessage(self, data)
+            msg = DataCollectionDeleteMessage(self, data)
             self.hub.broadcast(msg)
 
     def _sync_link_manager(self):
@@ -98,7 +105,7 @@ class DataCollection(glue.HubListener):
         :param hub: The hub to register with
         :type hub: :class:`~glue.hub.Hub`
         """
-        if not isinstance(hub, glue.Hub):
+        if not isinstance(hub, Hub):
             raise TypeError("Input is not a Hub object: %s" % type(hub))
         self.hub = hub
 
@@ -108,9 +115,9 @@ class DataCollection(glue.HubListener):
             for s in d.subsets:
                 s.register()
 
-        hub.subscribe(self, glue.message.DataAddComponentMessage,
+        hub.subscribe(self, DataAddComponentMessage,
                       lambda msg: self._sync_link_manager(),
-                      filter=lambda x:x.sender in self._data)
+                      filter=lambda x: x.sender in self._data)
 
     def __contains__(self, obj):
         return obj in self._data

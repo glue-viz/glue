@@ -1,12 +1,14 @@
 # Define acceptable line styles
-valid_linestyles = ['solid', 'dashed', 'dash-dot', 'dotted', 'none']
+VALID_LINESTYLES = ['solid', 'dashed', 'dash-dot', 'dotted', 'none']
 
-#assign colors so as to avoid repeats
-default_colors = ['#E41A1C', '#377EB8', '#4DAF4A', '#984EA3', '#FF7F00',
+# Assign colors so as to avoid repeats
+DEFAULT_COLORS = ['#E41A1C', '#377EB8', '#4DAF4A', '#984EA3', '#FF7F00',
                   '#A65628', '#F781BF']
-washout_colors = ['#F6B4B4', '#BDD5E8', '#C4E5C3', '#DDC5E1', '#FFD5AB',
+WASHOUT_COLORS = ['#F6B4B4', '#BDD5E8', '#C4E5C3', '#DDC5E1', '#FFD5AB',
                   '#E2C7B8', '#FCD5EA']
 color_pos = 0
+
+__all__ = ['VisualAttributes']
 
 
 class VisualAttributes(object):
@@ -25,8 +27,8 @@ class VisualAttributes(object):
         #  * An HTML hexadecimal string (e.g. '#eeefff')
         global color_pos
 
-        col = washout_colors if washout else default_colors
-        self.color = col[color_pos % len(default_colors)]
+        col = WASHOUT_COLORS if washout else DEFAULT_COLORS
+        self.color = col[color_pos % len(DEFAULT_COLORS)]
         color_pos += 1
         self.alpha = 1.
 
@@ -54,9 +56,9 @@ class VisualAttributes(object):
     def __setattr__(self, attribute, value):
 
         # Check that line style is valid
-        if attribute == 'linestyle' and value not in valid_linestyles:
+        if attribute == 'linestyle' and value not in VALID_LINESTYLES:
             raise Exception("Line style should be one of %s" %
-                            '/'.join(valid_linestyles))
+                            '/'.join(VALID_LINESTYLES))
 
         # Check that line width is valid
         if attribute == 'linewidth':

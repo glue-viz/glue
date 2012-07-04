@@ -3,7 +3,13 @@
 
 """
 from inspect import getmro
-import glue
+
+__all__ = ['Message', 'ErrorMessage', 'SubsetMessage', 'SubsetCreateMessage',
+           'SubsetUpdateMessage', 'SubsetDeleteMessage', 'DataMessage',
+           'DataAddComponentMessage', 'DataUpdateMessage',
+           'DataCollectionMessage', 'DataCollectionActiveChange',
+           'DataCollectionActiveDataChange', 'DataCollectionAddMessage',
+           'DataCollectionDeleteMessage']
 
 
 class Message(object):
@@ -65,7 +71,8 @@ class SubsetMessage(Message):
     """
 
     def __init__(self, sender, tag=None):
-        if (not isinstance(sender, glue.Subset)):
+        from .subset import Subset
+        if (not isinstance(sender, Subset)):
             raise TypeError("Sender must be a subset: %s"
                             % type(sender))
         Message.__init__(self, sender, tag=tag)
@@ -105,16 +112,19 @@ class DataMessage(Message):
     The base class for messages that data objects issue
     """
     def __init__(self, sender, tag=None):
-        if (not isinstance(sender, glue.Data)):
+        from .data import Data
+        if (not isinstance(sender, Data)):
             raise TypeError("Sender must be a data instance: %s"
                             % type(sender))
         Message.__init__(self, sender, tag=tag)
         self.data = self.sender
 
+
 class DataAddComponentMessage(DataMessage):
     def __init__(self, sender, component_id, tag=None):
         super(DataAddComponentMessage, self).__init__(sender, tag=tag)
         self.component_id = component_id
+
 
 class DataUpdateMessage(DataMessage):
     def __init__(self, sender, attribute, tag=None):
@@ -124,7 +134,8 @@ class DataUpdateMessage(DataMessage):
 
 class DataCollectionMessage(Message):
     def __init__(self, sender, tag=None):
-        if (not isinstance(sender, glue.DataCollection)):
+        from .data_collection import DataCollection
+        if (not isinstance(sender, DataCollection)):
             raise TypeError("Sender must be a DataCollection instance: %s"
                             % type(sender))
         Message.__init__(self, sender, tag=tag)

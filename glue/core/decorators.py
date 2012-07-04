@@ -1,5 +1,8 @@
 from functools import wraps
 
+__all__ = ['memoize']
+
+
 def memoize(func):
     memo = {}
 
@@ -11,7 +14,7 @@ def memoize(func):
             result = func(*args)
             memo[args] = result
             return result
-        except TypeError: # unhashable input
+        except TypeError:  # unhashable input
             return func(*args)
 
     return wrapper

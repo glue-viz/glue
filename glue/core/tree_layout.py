@@ -1,6 +1,6 @@
 import numpy as np
 
-import glue
+from .tree import Tree
 
 
 class TreeLayout(object):
@@ -60,7 +60,7 @@ class TreeLayout(object):
 
         """
 
-        if not isinstance(tree, glue.Tree):
+        if not isinstance(tree, Tree):
             raise TypeError("Input not a tree object: %s" % type(tree))
 
         self.tree = tree

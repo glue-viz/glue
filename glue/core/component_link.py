@@ -1,3 +1,6 @@
+__all__ = ['ComponentLink']
+
+
 class ComponentLink(object):
     """ ComponentLinks represent transformation logic between ComponentIDs
 
