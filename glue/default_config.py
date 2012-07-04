@@ -1,14 +1,16 @@
 # Need to use absolute imports here because
-import glue
+from glue.qt.widgets.scatter_widget import ScatterWidget
+from glue.qt.widgets.image_widget import ImageWidget
+from glue.util import identity
 
 """ Visualization Clients """
-qt_clients = [glue.qt.widgets.scatter_widget.ScatterWidget,
-              glue.qt.widgets.image_widget.ImageWidget]
+qt_clients = [ScatterWidget,
+              ImageWidget]
 
 """Functions to use in the link editor to define mapping between
 ComponentIDs
 """
-link_functions = [glue.util.identity]
+link_functions = [identity]
 
 
 """ Feel free to define or import any extra functions. These will be

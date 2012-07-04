@@ -1,3 +1,0 @@
-from scatterwidget import ScatterWidget
-from layertreewidget import LayerTreeWidget
-from imagewidget import ImageWidget
