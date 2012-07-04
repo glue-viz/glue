@@ -33,7 +33,7 @@ class TestParse(unittest.TestCase):
         refs = {'a' : 1, 'b' : 2, 'c': 3, 'd': 4}
         expected = set([1,2,3])
         result = set(parse._reference_list(cmd, refs))
-        self.assertEquals( expected, result)
+        assert  expected == result
 
     def test_reference_list_invalid_cmd(self):
         self.assertRaises(KeyError, parse._reference_list, '{a}', {})
@@ -48,7 +48,7 @@ class TestParse(unittest.TestCase):
         expected = ('(data[references["c1"]] > 10) and '
                     'references["s1"].to_mask()')
         result = parse._dereference(cmd, refs)
-        self.assertEquals(expected, result)
+        assert expected == result
 
     def test_validate(self):
         ref = {'a':1, 'b':2}

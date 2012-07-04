@@ -26,7 +26,7 @@ class TestComponentID(unittest.TestCase):
         self.cid = ComponentID('test')
 
     def test_label(self):
-        self.assertEquals(self.cid.label, 'test')
+        assert self.cid.label == 'test'
 
     def test_str(self):
         """ str should return """
@@ -50,7 +50,7 @@ class TestDerivedComponent(unittest.TestCase):
         self.link.compute.assert_called_once_with(self.data)
 
     def test_link(self):
-        self.assertEquals(self.cid.link, self.link)
+        assert self.cid.link == self.link
 
 if __name__ == "__main__":
     unittest.main()

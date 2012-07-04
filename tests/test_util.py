@@ -14,23 +14,23 @@ class TestFileFormat(unittest.TestCase):
 
     def test_gz(self):
         fmt = file_format('test.tar.gz')
-        self.assertEquals(fmt, 'tar')
+        assert fmt == 'tar'
 
     def test_normal(self):
         fmt = file_format('test.data')
-        self.assertEquals(fmt, 'data')
+        assert fmt == 'data'
 
     def test_underscores(self):
         fmt = file_format('test_file.fits_file')
-        self.assertEquals(fmt, 'fits_file')
+        assert fmt == 'fits_file'
 
     def test_multidot(self):
         fmt = file_format('test.a.b.c')
-        self.assertEquals(fmt, 'c')
+        assert fmt == 'c'
 
     def test_nodot(self):
         fmt = file_format('test')
-        self.assertEquals(fmt, '')
+        assert fmt == ''
 
 
 class TestPointContour(unittest.TestCase):

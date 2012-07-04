@@ -26,17 +26,17 @@ class TestDataCollection(unittest.TestCase):
     def test_init(self):
         d = glue.core.data.Data()
         dc = glue.core.data_collection.DataCollection(d)
-        self.assertIn(d, dc)
+        assert d in dc
         dc = glue.core.data_collection.DataCollection([d])
-        self.assertIn(d, dc)
+        assert d in dc
 
     def test_data(self):
         self.dc.append(self.data)
-        self.assertEquals(self.dc.data, [self.data])
+        assert self.dc.data == [self.data]
 
     def test_append(self):
         self.dc.append(self.data)
-        self.assertIn(self.data, self.dc)
+        assert self.data in self.dc
 
     def test_ignore_multi_add(self):
         self.dc.append(self.data)
@@ -46,19 +46,19 @@ class TestDataCollection(unittest.TestCase):
     def test_remove(self):
         self.dc.append(self.data)
         self.dc.remove(self.data)
-        self.assertNotIn(self.data, self.dc)
+        assert not self.data in self.dc
 
     def test_ignore_multi_remove(self):
         self.dc.append(self.data)
         self.dc.remove(self.data)
         self.dc.remove(self.data)
-        self.assertNotIn(self.data, self.dc)
+        assert not self.data in self.dc
 
     def test_append_broadcast(self):
         self.dc.register_to_hub(self.hub)
         self.dc.append(self.data)
         msg = self.log.messages[-1]
-        self.assertEquals(msg.sender, self.dc)
+        assert msg.sender == self.dc
         self.assertIsInstance(msg, glue.core.message.DataCollectionAddMessage)
         self.assertIs(msg.data, self.data)
 
@@ -67,7 +67,7 @@ class TestDataCollection(unittest.TestCase):
         self.dc.append(self.data)
         self.dc.remove(self.data)
         msg = self.log.messages[-1]
-        self.assertEquals(msg.sender, self.dc)
+        assert msg.sender == self.dc
         self.assertIsInstance(msg, glue.core.message.DataCollectionDeleteMessage)
         self.assertIs(msg.data, self.data)
 
@@ -111,7 +111,7 @@ class TestDataCollection(unittest.TestCase):
         dc = glue.core.data_collection.DataCollection()
         dc.append(d)
 
-        self.assertIn(link, dc._link_manager)
+        assert link in dc._link_manager
 
     def test_catch_data_add_component_message(self):
         """DerviedAttributes added to a dataset in a collection
@@ -126,12 +126,12 @@ class TestDataCollection(unittest.TestCase):
         self.dc.register_to_hub(self.hub)
         self.dc.append(d)
         d.add_component(glue.core.data.Component(np.array([1,2,3])), id1)
-        self.assertNotIn(link, self.dc._link_manager)
+        assert not link in self.dc._link_manager
         d.add_component(dc, id2)
 
         msg = self.log.messages[-1]
         self.assertIsInstance(msg, glue.core.message.DataAddComponentMessage)
-        self.assertIn(link, self.dc._link_manager)
+        assert link in self.dc._link_manager
 
     def test_coordinate_links_auto_added(self):
         d = glue.core.data.Data()
@@ -140,7 +140,7 @@ class TestDataCollection(unittest.TestCase):
         link = glue.core.component_link.ComponentLink([id1], id2)
         self.data.coordinate_links = [link]
         self.dc.append(self.data)
-        self.assertIn(link, self.dc._link_manager.links)
+        assert link in self.dc._link_manager.links
 
 
 if __name__ == "__main__":

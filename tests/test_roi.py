@@ -20,28 +20,28 @@ class TestRectangle(unittest.TestCase):
 
     def test_scalar_contains(self):
         self.roi.update_limits(0, 0, 10, 10)
-        self.assertTrue(self.roi.contains(5, 5))
-        self.assertFalse(self.roi.contains(11, 11))
+        assert self.roi.contains(5, 5)
+        assert not self.roi.contains(11, 11)
 
     def test_reset(self):
-        self.assertFalse(self.roi.defined())
+        assert not self.roi.defined()
         self.roi.update_limits(0, 0, 10, 10)
-        self.assertTrue(self.roi.defined())
+        assert self.roi.defined()
         self.roi.reset()
-        self.assertFalse(self.roi.defined())
+        assert not self.roi.defined()
         self.assertRaises(glue.core.exceptions.UndefinedROI,
                           self.roi.contains, 5, 5)
 
     def test_empty_to_polygon(self):
         x, y = self.roi.to_polygon()
-        self.assertEquals(x, [])
-        self.assertEquals(y, [])
+        assert x == []
+        assert y == []
 
     def test_to_polygon(self):
         self.roi.update_limits(0, 0, 10, 10)
         x,y = self.roi.to_polygon()
         poly = glue.core.roi.PolygonalROI(vx = x, vy = y)
-        self.assertTrue(poly.contains(5, 5))
+        assert poly.contains(5, 5)
 
     def test_ndarray(self):
         self.roi.update_limits(0, 0, 10, 10)
@@ -49,10 +49,10 @@ class TestRectangle(unittest.TestCase):
         x = np.array([5, 6, 2, 11])
         y = np.array([5, 11, 2, 11])
         result = self.roi.contains(x, y)
-        self.assertTrue(result[0])
-        self.assertFalse(result[1])
-        self.assertTrue(result[2])
-        self.assertFalse(result[3])
+        assert result[0]
+        assert not result[1]
+        assert result[2]
+        assert not result[3]
 
     def test_corner(self):
         self.roi.update_limits(6, 7, 10, 10)
@@ -70,8 +70,8 @@ class TestRectangle(unittest.TestCase):
         self.roi.update_limits(0,0,10,10)
         x = np.array([1, 2, 3, 4]).reshape(2,2)
         y = np.array([1, 2, 3, 4]).reshape(2,2)
-        self.assertTrue(self.roi.contains(x,y).all())
-        self.assertFalse(self.roi.contains(x+10,y).any())
+        assert self.roi.contains(x,y).all()
+        assert not self.roi.contains(x+10,y).any()
         self.assertEquals(self.roi.contains(x,y).shape, x.shape)
 
     def test_str_undefined(self):
@@ -89,7 +89,7 @@ class TestCircle(unittest.TestCase):
         self.roi = glue.core.roi.CircularROI()
 
     def test_undefined_on_creation(self):
-        self.assertFalse(self.roi.defined())
+        assert not self.roi.defined()
 
     def test_contains_on_undefined_contains_raises(self):
         self.assertRaises(glue.core.exceptions.UndefinedROI,
@@ -98,57 +98,57 @@ class TestCircle(unittest.TestCase):
     def test_set_center(self):
         self.roi.set_center(0, 0)
         self.roi.set_radius(1)
-        self.assertTrue(self.roi.contains(0,0))
-        self.assertFalse(self.roi.contains(2,2))
+        assert self.roi.contains(0,0)
+        assert not self.roi.contains(2,2)
         self.roi.set_center(2,2)
-        self.assertFalse(self.roi.contains(0,0))
-        self.assertTrue(self.roi.contains(2,2))
+        assert not self.roi.contains(0,0)
+        assert self.roi.contains(2,2)
 
     def test_set_radius(self):
         self.roi.set_center(0,0)
         self.roi.set_radius(1)
-        self.assertFalse(self.roi.contains(1.5,0))
+        assert not self.roi.contains(1.5,0)
         self.roi.set_radius(5)
-        self.assertTrue(self.roi.contains(1.5, 0))
+        assert self.roi.contains(1.5, 0)
 
     def test_contains_many(self):
         x = [0,0,0,0,0]
         y = [0,0,0,0,0]
         self.roi.set_center(0,0)
         self.roi.set_radius(1)
-        self.assertTrue(all(self.roi.contains(x, y)))
-        self.assertTrue(all(self.roi.contains(np.asarray(x), np.asarray(y))))
-        self.assertFalse(any(self.roi.contains(np.asarray(x)+10, y)))
+        assert all(self.roi.contains(x, y))
+        assert all(self.roi.contains(np.asarray(x), np.asarray(y)))
+        assert not any(self.roi.contains(np.asarray(x)+10, y))
 
     def test_poly(self):
         self.roi.set_center(0,0)
         self.roi.set_radius(1)
         x,y = self.roi.to_polygon()
         poly = glue.core.roi.PolygonalROI(vx=x, vy=y)
-        self.assertTrue(poly.contains(0,0))
-        self.assertFalse(poly.contains(10,0))
+        assert poly.contains(0,0)
+        assert not poly.contains(10,0)
 
     def test_poly_undefined(self):
         x, y = self.roi.to_polygon()
-        self.assertEquals(x, [])
-        self.assertEquals(y, [])
+        assert x == []
+        assert y == []
 
     def test_reset(self):
-        self.assertFalse(self.roi.defined())
+        assert not self.roi.defined()
         self.roi.set_center(0,0)
-        self.assertFalse(self.roi.defined())
+        assert not self.roi.defined()
         self.roi.set_radius(2)
-        self.assertTrue(self.roi.defined())
+        assert self.roi.defined()
         self.roi.reset()
-        self.assertFalse(self.roi.defined())
+        assert not self.roi.defined()
 
     def test_multidim(self):
         self.roi.set_center(0,0)
         self.roi.set_radius(1)
         x = np.array([.1, .2, .3, .4]).reshape(2,2)
         y = np.array([-.1, -.2, -.3, -.4]).reshape(2,2)
-        self.assertTrue(self.roi.contains(x,y).all())
-        self.assertFalse(self.roi.contains(x+1, y).any())
+        assert self.roi.contains(x,y).all()
+        assert not self.roi.contains(x+1, y).any()
         self.assertEquals(self.roi.contains(x,y).shape, (2,2))
 
 
@@ -158,12 +158,12 @@ class TestPolygon(unittest.TestCase):
 
     def define_as_square(self):
         self.roi.reset()
-        self.assertFalse(self.roi.defined())
+        assert not self.roi.defined()
         self.roi.add_point(0,0)
         self.roi.add_point(0, 1)
         self.roi.add_point(1, 1)
         self.roi.add_point(1, 0)
-        self.assertTrue(self.roi.defined())
+        assert self.roi.defined()
 
     def test_contains_on_empty_raises(self):
         self.assertRaises(glue.core.exceptions.UndefinedROI,
@@ -174,21 +174,21 @@ class TestPolygon(unittest.TestCase):
 
     def test_replace(self):
         self.define_as_square()
-        self.assertTrue(self.roi.contains(.9, .02))
+        assert self.roi.contains(.9, .02)
         self.roi.replace_last_point(0,0)
-        self.assertFalse(self.roi.contains(.9, .01))
+        assert not self.roi.contains(.9, .01)
 
     def test_remove_successful(self):
         self.define_as_square()
-        self.assertTrue(self.roi.contains(.9, .02))
+        assert self.roi.contains(.9, .02)
         self.roi.remove_point(1, 0)
-        self.assertFalse(self.roi.contains(.9, .01))
+        assert not self.roi.contains(.9, .01)
 
     def test_remove_unsuccessful(self):
         self.define_as_square()
-        self.assertTrue(self.roi.contains(.9, .02))
+        assert self.roi.contains(.9, .02)
         self.roi.remove_point(1.5, 0, thresh = .49)
-        self.assertTrue(self.roi.contains(.9, .01))
+        assert self.roi.contains(.9, .01)
 
     def test_to_poly(self):
         self.define_as_square()
@@ -208,36 +208,36 @@ class TestPolygon(unittest.TestCase):
         self.roi.add_point(4.95164474584, 0.136922625654)
         x = np.array([4.4, 3.18, 4.49, 4.49])
         y = np.array([.2, .2, .2, .2])
-        self.assertFalse(self.roi.contains(4.4000001, 0.2))
-        self.assertFalse(self.roi.contains(3.1800001, 0.2))
-        self.assertFalse(self.roi.contains(4.4899998, 0.2))
-        self.assertFalse(self.roi.contains(x, y).any())
+        assert not self.roi.contains(4.4000001, 0.2)
+        assert not self.roi.contains(3.1800001, 0.2)
+        assert not self.roi.contains(4.4899998, 0.2)
+        assert not self.roi.contains(x, y).any()
         x.shape = (2,2)
         y.shape = (2,2)
-        self.assertFalse(self.roi.contains(x,y).any())
+        assert not self.roi.contains(x,y).any()
         self.assertEquals(self.roi.contains(x,y).shape, (2,2))
 
     def test_empty(self):
-        self.assertFalse(self.roi.defined())
+        assert not self.roi.defined()
         self.assertRaises(glue.core.exceptions.UndefinedROI,
                           self.roi.contains, 0, 0)
 
     def test_contains_scalar(self):
         self.define_as_square()
-        self.assertTrue(self.roi.contains(.5, .5))
-        self.assertFalse(self.roi.contains(1.5, 1.5))
+        assert self.roi.contains(.5, .5)
+        assert not self.roi.contains(1.5, 1.5)
 
     def test_contains_list(self):
         self.define_as_square()
-        self.assertTrue(self.roi.contains([.5, .4], [.5, .4]).all())
-        self.assertFalse(self.roi.contains([1.5, 1.5], [0,0]).any())
+        assert self.roi.contains([.5, .4], [.5, .4]).all()
+        assert not self.roi.contains([1.5, 1.5], [0,0]).any()
 
     def test_contains_numpy(self):
         self.define_as_square()
         x = np.array([.4, .5, .4])
         y = np.array([.4, .5, .4])
-        self.assertTrue(self.roi.contains(x, y).all())
-        self.assertFalse(self.roi.contains(x+5, y).any())
+        assert self.roi.contains(x, y).all()
+        assert not self.roi.contains(x+5, y).any()
 
     def test_str(self):
         """ __str__ returns a string """
@@ -269,7 +269,7 @@ class TestMpl(unittest.TestCase):
         raise NotImplemented
 
     def test_undefined_on_creation(self):
-        self.assertFalse(self.roi._roi.defined())
+        assert not self.roi._roi.defined()
 
     def test_proper_roi(self):
         raise NotImplemented
@@ -277,47 +277,47 @@ class TestMpl(unittest.TestCase):
     def test_start_ignored_if_not_inaxes(self):
         ev = DummyEvent(0, 0, inaxes=False)
         self.roi.start_selection(ev)
-        self.assertFalse(self.roi._roi.defined())
+        assert not self.roi._roi.defined()
 
     def test_canvas_syncs_properly(self):
-        self.assertEquals(self.axes.figure.canvas.draw.call_count, 1)
+        assert self.axes.figure.canvas.draw.call_count == 1
         event = DummyEvent(5,5)
         self.roi.start_selection(event)
-        self.assertEquals(self.axes.figure.canvas.draw.call_count, 2)
+        assert self.axes.figure.canvas.draw.call_count == 2
         self.roi.update_selection(event)
-        self.assertEquals(self.axes.figure.canvas.draw.call_count, 3)
+        assert self.axes.figure.canvas.draw.call_count == 3
         self.roi.update_selection(event)
-        self.assertEquals(self.axes.figure.canvas.draw.call_count, 4)
+        assert self.axes.figure.canvas.draw.call_count == 4
         self.roi.finalize_selection(event)
-        self.assertEquals(self.axes.figure.canvas.draw.call_count, 5)
+        assert self.axes.figure.canvas.draw.call_count == 5
 
     def test_patch_shown_on_start(self):
-        self.assertFalse(self.roi._patch.get_visible())
+        assert not self.roi._patch.get_visible()
         event = DummyEvent(5, 5)
         self.roi.start_selection(event)
-        self.assertTrue(self.roi._patch.get_visible())
+        assert self.roi._patch.get_visible()
 
     def test_patch_hidden_on_finalise(self):
         event = DummyEvent(5, 5)
         self.roi.start_selection(event)
         self.roi.finalize_selection(event)
-        self.assertFalse(self.roi._patch.get_visible())
+        assert not self.roi._patch.get_visible()
 
     def test_update_before_start_ignored(self):
         self.roi.update_selection(None)
-        self.assertFalse(self.roi._roi.defined())
+        assert not self.roi._roi.defined()
 
     def test_finalize_before_start_ignored(self):
         self.roi.finalize_selection(None)
-        self.assertFalse(self.roi._roi.defined())
+        assert not self.roi._roi.defined()
 
     def test_roi_defined_after_start(self):
         event = DummyEvent(5, 5)
         self.roi.start_selection(event)
-        self.assertTrue(self.roi._roi.defined())
+        assert self.roi._roi.defined()
 
     def test_roi_undefined_before_start(self):
-        self.assertFalse(self.roi._roi.defined())
+        assert not self.roi._roi.defined()
 
 
 class TestRectangleMpl(TestMpl):
@@ -329,7 +329,7 @@ class TestRectangleMpl(TestMpl):
         corner = self.roi.roi().corner()
         height = self.roi.roi().height()
         width = self.roi.roi().width()
-        self.assertTrue(self.roi.roi().defined())
+        assert self.roi.roi().defined()
         self.assertAlmostEqual(corner[0], min(x0, x1), 4)
         self.assertAlmostEqual(corner[1], min(y0, y1), 4)
         self.assertAlmostEqual(abs(y1 - y0), height, 4)
@@ -347,7 +347,7 @@ class TestRectangleMpl(TestMpl):
         self.assertEquals(type(str(self.roi)), str)
 
     def test_proper_roi(self):
-        self.assertTrue(isinstance(self.roi._roi, glue.core.roi.RectangularROI))
+        assert isinstance(self.roi._roi, glue.core.roi.RectangularROI)
 
     def test_roi_on_start_selection(self):
         event = DummyEvent(5, 5)
@@ -415,12 +415,12 @@ class TestCircleMpl(TestMpl):
         glue.core.roi.data_to_pixel = self.data_to_pixel
 
     def test_proper_roi(self):
-        self.assertTrue(isinstance(self.roi._roi, glue.core.roi.CircularROI))
+        assert isinstance(self.roi._roi, glue.core.roi.CircularROI)
 
     def test_to_polygon_undefined(self):
         """to_polygon() result should be undefined before defining polygon"""
         roi = self.roi.roi()
-        self.assertFalse(roi.defined())
+        assert not roi.defined()
 
 
     def test_roi_defined_correctly(self):
@@ -433,11 +433,11 @@ class TestCircleMpl(TestMpl):
 
     def assert_roi_correct(self, x, y, r):
         roi = self.roi.roi()
-        self.assertTrue(roi.defined())
-        self.assertTrue(roi.contains(x, y))
-        self.assertTrue(roi.contains(x + .95 * r, y))
-        self.assertFalse(roi.contains(x + 1.05 * r, y))
-        self.assertFalse(roi.contains(x + .8 * r, y + .8 * r))
+        assert roi.defined()
+        assert roi.contains(x, y)
+        assert roi.contains(x + .95 * r, y)
+        assert not roi.contains(x + 1.05 * r, y)
+        assert not roi.contains(x + .8 * r, y + .8 * r)
 
 
 class TestPolyMpl(TestMpl):
@@ -463,8 +463,8 @@ class TestPolyMpl(TestMpl):
 
     def assert_roi_correct(self):
         roi = self.roi.roi()
-        self.assertTrue(roi.contains(.5, .5))
-        self.assertFalse(roi.contains(1.5, .5))
+        assert roi.contains(.5, .5)
+        assert not roi.contains(1.5, .5)
 
     def test_define(self):
         self.send_events()

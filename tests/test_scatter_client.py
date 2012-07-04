@@ -66,7 +66,7 @@ class TestScatterClient(unittest.TestCase):
 
     def test_empty_on_creation(self):
         for d in self.data:
-            self.assertFalse(self.client.is_layer_present(d))
+            assert not self.client.is_layer_present(d)
 
     def test_add_external_data_raises_exception(self):
         data = glue.core.data.Data()
@@ -74,7 +74,7 @@ class TestScatterClient(unittest.TestCase):
 
     def test_valid_add(self):
         layer = self.add_data()
-        self.assertTrue(self.client.is_layer_present(self.data[0]))
+        assert self.client.is_layer_present(self.data[0])
 
     def test_axis_labels_sync_with_setters(self):
         layer = self.add_data()
@@ -101,16 +101,16 @@ class TestScatterClient(unittest.TestCase):
         layer = self.add_data()
 
         self.client.set_xflip(True)
-        self.assertTrue(self.client.is_xflip())
+        assert self.client.is_xflip()
 
         self.client.set_xflip(False)
-        self.assertFalse(self.client.is_xflip())
+        assert not self.client.is_xflip()
 
         self.client.set_yflip(True)
-        self.assertTrue(self.client.is_yflip())
+        assert self.client.is_yflip()
 
         self.client.set_yflip(False)
-        self.assertFalse(self.client.is_yflip())
+        assert not self.client.is_yflip()
 
     def test_double_add(self):
         n0 = len(self.client.ax.collections)
@@ -124,60 +124,60 @@ class TestScatterClient(unittest.TestCase):
 
     def test_data_updates_propagate(self):
         layer = self.add_data_and_attributes()
-        self.assertTrue(self.layer_drawn(layer))
+        assert self.layer_drawn(layer)
         self.client._layer_updated = False
         layer.style.color = 'k'
-        self.assertTrue(self.client._layer_updated)
+        assert self.client._layer_updated
 
     def test_data_removal(self):
         layer = self.add_data()
         subset = layer.new_subset()
         self.collect.remove(layer)
-        self.assertFalse(self.client.is_layer_present(layer))
-        self.assertFalse(self.client.is_layer_present(subset))
+        assert not self.client.is_layer_present(layer)
+        assert not self.client.is_layer_present(subset)
 
     def test_add_subset_while_connected(self):
         layer = self.add_data()
         subset = layer.new_subset()
-        self.assertTrue(self.client.is_layer_present(subset))
+        assert self.client.is_layer_present(subset)
 
     def test_subset_removal(self):
         layer = self.add_data()
         subset = layer.new_subset()
-        self.assertTrue(self.client.is_layer_present(layer))
+        assert self.client.is_layer_present(layer)
         subset.unregister()
-        self.assertFalse(self.client.is_layer_present(subset))
+        assert not self.client.is_layer_present(subset)
 
     def test_add_subset_to_untracked_data(self):
         subset = self.data[0].new_subset()
-        self.assertFalse(self.client.is_layer_present(subset))
+        assert not self.client.is_layer_present(subset)
 
     def test_valid_plot_data(self):
         layer = self.add_data_and_attributes()
         x = layer[self.ids[0]]
         y = layer[self.ids[1]]
-        self.assertTrue(self.layer_data_correct(layer, x, y))
+        assert self.layer_data_correct(layer, x, y)
 
     def test_attribute_update_plot_data(self):
         layer = self.add_data_and_attributes()
         x = layer[self.ids[0]]
         y = layer[self.ids[0]]
         self.client.set_ydata(self.ids[0])
-        self.assertTrue(self.layer_data_correct(layer, x, y))
+        assert self.layer_data_correct(layer, x, y)
 
     def test_invalid_plot(self):
         layer = self.add_data_and_attributes()
-        self.assertTrue(self.layer_drawn(layer))
+        assert self.layer_drawn(layer)
         c = glue.core.data.ComponentID('bad id')
         self.client.set_xdata(c)
-        self.assertFalse(self.layer_drawn(layer))
+        assert not self.layer_drawn(layer)
 
     def test_redraw_called_on_invalid_plot(self):
         """ Plot should be updated when given invalid data,
         to sync layers' disabled/invisible states"""
         ctr = MagicMock()
         layer = self.add_data_and_attributes()
-        self.assertTrue(self.layer_drawn(layer))
+        assert self.layer_drawn(layer)
         c = glue.core.data.ComponentID('bad id')
         self.client._redraw = ctr
         ct0 = ctr.call_count
@@ -185,7 +185,7 @@ class TestScatterClient(unittest.TestCase):
         ct1 = ctr.call_count
         ncall = ct1 - ct0
         expected = len(self.client.managers)
-        self.assertEquals(ncall, expected)
+        assert ncall == expected
 
     def test_two_incompatible_data(self):
         d0 = self.add_data(self.data[0])
@@ -194,17 +194,17 @@ class TestScatterClient(unittest.TestCase):
         self.client.set_ydata(self.ids[1])
         x = d0[self.ids[0]]
         y = d0[self.ids[1]]
-        self.assertTrue(self.layer_drawn(d0))
-        self.assertTrue(self.layer_data_correct(d0, x, y))
-        self.assertFalse(self.layer_drawn(d1))
+        assert self.layer_drawn(d0)
+        assert self.layer_data_correct(d0, x, y)
+        assert not self.layer_drawn(d1)
 
         self.client.set_xdata(self.ids[2])
         self.client.set_ydata(self.ids[3])
         x = d1[self.ids[2]]
         y = d1[self.ids[3]]
-        self.assertTrue(self.layer_drawn(d1))
-        self.assertTrue(self.layer_data_correct(d1, x, y))
-        self.assertFalse(self.layer_drawn(d0))
+        assert self.layer_drawn(d1)
+        assert self.layer_data_correct(d1, x, y)
+        assert not self.layer_drawn(d0)
 
     def test_subsets_connect_with_data(self):
         data = self.data[0]
@@ -212,27 +212,27 @@ class TestScatterClient(unittest.TestCase):
         s2 = data.new_subset()
         self.collect.append(data)
         self.client.add_data(data)
-        self.assertTrue(self.client.is_layer_present(s1))
-        self.assertTrue(self.client.is_layer_present(s2))
-        self.assertTrue(self.client.is_layer_present(data))
+        assert self.client.is_layer_present(s1)
+        assert self.client.is_layer_present(s2)
+        assert self.client.is_layer_present(data)
 
         # should also work with add_layer
         self.collect.remove(data)
         assert data not in self.collect
-        self.assertFalse(self.client.is_layer_present(s1))
+        assert not self.client.is_layer_present(s1)
         self.collect.append(data)
         self.client.add_layer(data)
-        self.assertTrue(self.client.is_layer_present(s1))
+        assert self.client.is_layer_present(s1)
 
 
     def test_edit_subset_connect_with_data(self):
         data = self.add_data()
-        self.assertTrue(self.client.is_layer_present(data.edit_subset))
+        assert self.client.is_layer_present(data.edit_subset)
 
     def test_edit_subset_removed_with_data(self):
         data = self.add_data()
         self.collect.remove(data)
-        self.assertFalse(self.client.is_layer_present(data.edit_subset))
+        assert not self.client.is_layer_present(data.edit_subset)
 
     def test_apply_roi(self):
         data = self.add_data_and_attributes()
@@ -241,45 +241,45 @@ class TestScatterClient(unittest.TestCase):
         x = np.array([1])
         y = np.array([1])
         self.client._apply_roi(roi)
-        self.assertTrue(self.layer_data_correct(data.edit_subset, x, y))
+        assert self.layer_data_correct(data.edit_subset, x, y)
 
     def test_subsets_drawn_over_data(self):
         data = self.add_data_and_attributes()
         subset = data.new_subset()
-        self.assertTrue(self.is_first_in_front(subset, data))
+        assert self.is_first_in_front(subset, data)
 
     def test_log_sticky(self):
         data = self.add_data_and_attributes()
-        self.assertFalse(self.client.is_xlog())
-        self.assertFalse(self.client.is_ylog())
+        assert not self.client.is_xlog()
+        assert not self.client.is_ylog()
         self.client.set_xlog(True)
         self.client.set_ylog(True)
-        self.assertTrue(self.client.is_xlog())
-        self.assertTrue(self.client.is_ylog())
+        assert self.client.is_xlog()
+        assert self.client.is_ylog()
         self.client.set_xdata(data.find_component_id('b')[0])
         self.client.set_ydata(data.find_component_id('b')[0])
-        self.assertTrue(self.client.is_xlog())
-        self.assertTrue(self.client.is_ylog())
+        assert self.client.is_xlog()
+        assert self.client.is_ylog()
 
     def test_flip_sticky(self):
         data = self.add_data_and_attributes()
         self.client.set_xflip(True)
-        self.assertTrue(self.client.is_xflip())
+        assert self.client.is_xflip()
         self.client.set_xdata(data.find_component_id('b')[0])
-        self.assertTrue(self.client.is_xflip())
+        assert self.client.is_xflip()
         self.client.set_xdata(data.find_component_id('a')[0])
-        self.assertTrue(self.client.is_xflip())
+        assert self.client.is_xflip()
 
     def test_visibility_sticky(self):
         data = self.add_data_and_attributes()
         roi = glue.core.roi.RectangularROI()
         roi.update_limits(.5, .5, 1.5, 1.5)
-        self.assertTrue(self.client.is_visible(data.edit_subset))
+        assert self.client.is_visible(data.edit_subset)
         self.client._apply_roi(roi)
         self.client.set_visible(data.edit_subset, False)
-        self.assertFalse(self.client.is_visible(data.edit_subset))
+        assert not self.client.is_visible(data.edit_subset)
         self.client._apply_roi(roi)
-        self.assertFalse(self.client.is_visible(data.edit_subset))
+        assert not self.client.is_visible(data.edit_subset)
 
     def test_2d_data(self):
         comp = glue.core.data.Component(np.array([[1,2],[3,4]]))

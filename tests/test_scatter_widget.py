@@ -95,12 +95,12 @@ class TestScatterWidget(unittest.TestCase):
 
     def test_hub_data_add_is_ignored(self):
         layer = self.add_layer_via_hub()
-        self.assertFalse(self.widget.ui.layerTree.is_layer_present(layer))
-        self.assertFalse(self.widget.client.is_layer_present(layer))
+        assert not self.widget.ui.layerTree.is_layer_present(layer)
+        assert not self.widget.client.is_layer_present(layer)
 
     def test_valid_add_data_via_method(self):
         layer = self.add_layer_via_method()
-        self.assertTrue(self.is_layer_present(layer))
+        assert self.is_layer_present(layer)
 
     def test_add_first_data_updates_combos(self):
         layer = self.add_layer_via_method()
@@ -112,29 +112,29 @@ class TestScatterWidget(unittest.TestCase):
     def test_flip_x(self):
         layer = self.add_layer_via_method()
         QTest.mouseClick(self.widget.ui.xFlipCheckBox, Qt.LeftButton)
-        self.assertTrue(self.widget.client.is_xflip())
+        assert self.widget.client.is_xflip()
         QTest.mouseClick(self.widget.ui.xFlipCheckBox, Qt.LeftButton)
-        self.assertFalse(self.widget.client.is_xflip())
+        assert not self.widget.client.is_xflip()
 
     def test_flip_y(self):
         layer = self.add_layer_via_method()
         QTest.mouseClick(self.widget.ui.yFlipCheckBox, Qt.LeftButton)
-        self.assertTrue(self.widget.client.is_yflip())
+        assert self.widget.client.is_yflip()
         QTest.mouseClick(self.widget.ui.yFlipCheckBox, Qt.LeftButton)
-        self.assertFalse(self.widget.client.is_yflip())
+        assert not self.widget.client.is_yflip()
 
     def test_log_x(self):
         layer = self.add_layer_via_method()
         QTest.mouseClick(self.widget.ui.xLogCheckBox, Qt.LeftButton)
-        self.assertTrue(self.widget.client.is_xlog())
+        assert self.widget.client.is_xlog()
         QTest.mouseClick(self.widget.ui.xLogCheckBox, Qt.LeftButton)
-        self.assertFalse(self.widget.client.is_xlog())
+        assert not self.widget.client.is_xlog()
 
     def test_log_y(self):
         QTest.mouseClick(self.widget.ui.yLogCheckBox, Qt.LeftButton)
-        self.assertTrue(self.widget.client.is_ylog())
+        assert self.widget.client.is_ylog()
         QTest.mouseClick(self.widget.ui.yLogCheckBox, Qt.LeftButton)
-        self.assertFalse(self.widget.client.is_ylog())
+        assert not self.widget.client.is_ylog()
 
     def test_double_add_ignored(self):
         layer = self.add_layer_via_method()
@@ -147,15 +147,15 @@ class TestScatterWidget(unittest.TestCase):
         nobj = self.widget.ui.xAxisComboBox.count()
         subset = layer.new_subset()
         subset.register()
-        self.assertTrue(subset in self.widget.ui.layerTree)
+        assert subset in self.widget.ui.layerTree
         self.assertEquals(self.widget.ui.xAxisComboBox.count(), nobj)
 
     def test_checkboxes_toggle_visbility(self):
         layer = self.add_layer_via_method()
         self.set_layer_checkbox(layer, Qt.Unchecked)
-        self.assertFalse(self.is_layer_visible(layer))
+        assert not self.is_layer_visible(layer)
         self.set_layer_checkbox(layer, Qt.Checked)
-        self.assertTrue(self.is_layer_visible(layer))
+        assert self.is_layer_visible(layer)
 
 
 if __name__ == "__main__":

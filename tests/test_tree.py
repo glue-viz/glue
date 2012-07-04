@@ -32,12 +32,12 @@ class TestTree(unittest.TestCase):
         self.assertIs(c21.parent, c2)
         self.assertIs(c211.parent, c21)
 
-        self.assertIn(c1, root.children)
-        self.assertIn(c2, root.children)
-        self.assertIn(c11, c1.children)
-        self.assertIn(c12, c1.children)
-        self.assertIn(c21, c2.children)
-        self.assertIn(c211, c21.children)
+        assert c1 in root.children
+        assert c2 in root.children
+        assert c11 in c1.children
+        assert c12 in c1.children
+        assert c21 in c2.children
+        assert c211 in c21.children
 
     def test_newick_tree(self):
 
@@ -54,23 +54,23 @@ class TestTree(unittest.TestCase):
         tree3 = NewickTree(n3)
         tree4 = NewickTree(n4)
 
-        self.assertEquals(tree0.id, 0)
-        self.assertEquals(tree1.id, 2)
-        self.assertFalse(tree1.value)
-        self.assertIn(0, [x.id for x in tree1.children])
-        self.assertIn(1, [x.id for x in tree1.children])
+        assert tree0.id == 0
+        assert tree1.id == 2
+        assert not tree1.value
+        assert 0 in [x.id for x in tree1.children]
+        assert 1 in [x.id for x in tree1.children]
 
-        self.assertEquals(tree2.id, 6)
-        self.assertFalse(tree1.value)
-        self.assertIn(4, [x.id for x in tree2.children])
-        self.assertIn(5, [x.id for x in tree2.children])
-        self.assertNotIn(0, [x.id for x in tree2.children])
-        self.assertNotIn(1, [x.id for x in tree2.children])
+        assert tree2.id == 6
+        assert not tree1.value
+        assert 4 in [x.id for x in tree2.children]
+        assert 5 in [x.id for x in tree2.children]
+        assert not 0 in [x.id for x in tree2.children]
+        assert not 1 in [x.id for x in tree2.children]
 
-        self.assertIn(1, [x.id for x in tree4.children])
-        self.assertIn(2, [x.id for x in tree4.children])
-        self.assertIn(3, [x.id for x in tree4.children])
-        self.assertIn(4, [x.id for x in tree4.children])
+        assert 1 in [x.id for x in tree4.children]
+        assert 2 in [x.id for x in tree4.children]
+        assert 3 in [x.id for x in tree4.children]
+        assert 4 in [x.id for x in tree4.children]
 
         self.assertEqual(n1, tree1.to_newick())
         self.assertEqual(n2, tree2.to_newick())
@@ -86,7 +86,7 @@ class TestTree(unittest.TestCase):
         tree2 = NewickTree(n2)
         tree3 = NewickTree(n3)
 
-        self.assertEquals(tree1.value, '20')
+        assert tree1.value == '20'
 
         self.assertEqual(n1, tree1.to_newick())
         self.assertEqual(n2, tree2.to_newick())
@@ -107,8 +107,8 @@ class TestTree(unittest.TestCase):
 
         self.assertEqual(t1.to_newick(), n1)
         self.assertEqual(t2.to_newick(), n2)
-        self.assertEquals(t1.id, 6)
-        self.assertEquals(t2.id, 6)
+        assert t1.id == 6
+        assert t2.id == 6
 
         self.assertRaises(TypeError, DendroMerge, m3)
         self.assertRaises(TypeError, DendroMerge, m4)

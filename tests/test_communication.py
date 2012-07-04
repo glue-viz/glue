@@ -65,9 +65,9 @@ class TestCommunication(unittest.TestCase):
         h = Hub()
         d = Data()
         c = C(DataCollection([d]))
-        self.assertNotIn(c, h._subscriptions)
+        assert not c in h._subscriptions
         c.register_to_hub(h)
-        self.assertIn(c, h._subscriptions)
+        assert c in h._subscriptions
 
     def test_basic_broadcast(self):
         #broadcast a subsetCreateMessage.
@@ -78,7 +78,7 @@ class TestCommunication(unittest.TestCase):
         self.hub.broadcast(self.m1)
 
         self.assertIs(self.c1.last_message, self.m1)
-        self.assertEquals(self.c1.call, self.c1._add_subset)
+        assert self.c1.call == self.c1._add_subset
         self.assertIsNone(self.c2.last_message)
 
     def test_proper_handlers(self):
@@ -88,16 +88,16 @@ class TestCommunication(unittest.TestCase):
         self.assertIsNone(self.c1.call)
 
         self.hub.broadcast(self.m1)
-        self.assertEquals(self.c1.call, self.c1._add_subset)
+        assert self.c1.call == self.c1._add_subset
 
         self.hub.broadcast(self.m2)
-        self.assertEquals(self.c1.call, self.c1._remove_subset)
+        assert self.c1.call == self.c1._remove_subset
 
         self.hub.broadcast(self.m3)
-        self.assertEquals(self.c1.call, self.c1._update_subset)
+        assert self.c1.call == self.c1._update_subset
 
         self.hub.broadcast(self.m4)
-        self.assertEquals(self.c1.call, self.c1._update_data)
+        assert self.c1.call == self.c1._update_data
 
     def test_ignore_message(self):
         #send a message that should be ignored
@@ -170,11 +170,11 @@ class TestCommunication(unittest.TestCase):
         self.s1.register()
         self.assertIsNotNone(self.c1.last_message)
         self.assertIs(self.c1.last_message.sender, self.s1)
-        self.assertEquals(self.c1.call, self.c1._add_subset)
+        assert self.c1.call == self.c1._add_subset
 
         self.s1.echo_after_registration = "1"
-        self.assertEquals(self.c1.call, self.c1._update_subset)
-        self.assertEquals(self.c1.last_message.attribute, 'echo_after_registration')
+        assert self.c1.call == self.c1._update_subset
+        assert self.c1.last_message.attribute == 'echo_after_registration'
 
 if __name__ == "__main__":
     unittest.main()

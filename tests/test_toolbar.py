@@ -46,11 +46,11 @@ class TestToolbar(unittest.TestCase):
     def assert_valid_mode_state(self, target_mode):
         for mode in self.tb.buttons:
             if mode == target_mode:
-                self.assertTrue(self.tb.buttons[mode].isChecked())
+                assert self.tb.buttons[mode].isChecked()
             else:
-                self.assertFalse(self.tb.buttons[mode].isChecked())
+                assert not self.tb.buttons[mode].isChecked()
 
-        self.assertEquals(self.tb._active, target_mode)
+        assert self.tb._active == target_mode
 
     @unittest.skip("Test running into issues with widget locks?")
     def test_mode_exclusive(self):
@@ -61,7 +61,7 @@ class TestToolbar(unittest.TestCase):
     def test_callback(self):
         self.tb.buttons['TEST'].trigger()
         self.mode.release(None)
-        self.assertTrue(self._called_back)
+        assert self._called_back
 
 if __name__ == "__main__":
     unittest.main()

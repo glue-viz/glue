@@ -77,16 +77,16 @@ class TestDiscoverLinks(unittest.TestCase):
         links = discover_links(self.data, self.links)
 
         for i in self.inaccessible:
-            self.assertNotIn(i, links)
+            assert not i in links
 
         for d in self.direct:
-            self.assertIn(d, links)
+            assert d in links
 
         for d in self.derived:
-            self.assertIn(d, links)
+            assert d in links
 
         for p in self.primary:
-            self.assertNotIn(p, links)
+            assert not p in links
 
     def test_links_point_to_proper_ids(self):
         """ Dictionary values are ComponentLinks which
@@ -112,13 +112,13 @@ class TestFindDependents(unittest.TestCase):
         to_remove = self.links[0]
         result = find_dependents(self.data, to_remove)
         expected = set([self.cs[2], self.cs[4], self.cs[5]])
-        self.assertEquals(expected, result)
+        assert expected == result
 
     def test_basic(self):
         to_remove = self.links[4]
         result = find_dependents(self.data, to_remove)
         expected = set([self.cs[4]])
-        self.assertEquals(expected, result)
+        assert expected == result
 
 
 class TestLinkManager(unittest.TestCase):
@@ -132,7 +132,7 @@ class TestLinkManager(unittest.TestCase):
         link = ComponentLink([id1, id2], id3, using)
         lm.add_link(link)
         links = lm.links
-        self.assertEquals(links, [link])
+        assert links == [link]
 
     def test_remove_link(self):
         id1 = ComponentID('id1')
@@ -144,7 +144,7 @@ class TestLinkManager(unittest.TestCase):
         lm.add_link(link)
         lm.remove_link(link)
         links = lm.links
-        self.assertEquals(links, [])
+        assert links == []
 
     def test_setup(self):
         example_components(self, add_derived=False)
@@ -159,7 +159,7 @@ class TestLinkManager(unittest.TestCase):
         lm.update_data_components(self.data)
         derived = set(self.data.derived_components)
         expected = set(self.direct + self.derived)
-        self.assertEquals(derived, expected)
+        assert derived == expected
 
     def test_update_data_components_removes_correctly(self):
         #add all but last link to manager
@@ -177,7 +177,7 @@ class TestLinkManager(unittest.TestCase):
         lm.update_data_components(self.data)
         derived = set(self.data.derived_components)
         expected = set(self.direct + self.derived) - removed
-        self.assertEquals(derived, expected)
+        assert derived == expected
 
 
 

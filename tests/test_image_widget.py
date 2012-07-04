@@ -38,4 +38,4 @@ class TestImageWidget(unittest.TestCase):
 
     def test_set_data_via_method(self):
         self.widget.add_data(self.im)
-        self.assertTrue(self.widget.client.display_data == self.im)
+        assert self.widget.client.display_data == self.im

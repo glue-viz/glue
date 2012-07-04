@@ -42,8 +42,8 @@ class TestMouseMode(unittest.TestCase):
         e = Event(1, 2)
         self.mode.press(e)
         self.press.assert_called_once_with(self.mode)
-        self.assertEquals(self.move.call_count, 0)
-        self.assertEquals(self.release.call_count, 0)
+        assert self.move.call_count == 0
+        assert self.release.call_count == 0
 
     #def test_log_null_event(self):
     #    """ Should exit quietly if event is None """
@@ -53,33 +53,33 @@ class TestMouseMode(unittest.TestCase):
         e = Event(1, 2)
         self.mode.move(e)
         self.move.assert_called_once_with(self.mode)
-        self.assertEquals(self.press.call_count, 0)
-        self.assertEquals(self.release.call_count, 0)
+        assert self.press.call_count == 0
+        assert self.release.call_count == 0
 
     def test_release_callback(self):
         e = Event(1, 2)
         self.mode.release(e)
         self.release.assert_called_once_with(self.mode)
-        self.assertEquals(self.press.call_count, 0)
-        self.assertEquals(self.move.call_count, 0)
+        assert self.press.call_count == 0
+        assert self.move.call_count == 0
 
     def test_press_log(self):
         e = Event(1,2)
         self.mode.press(e)
-        self.assertEquals(self.mode._event_x, 1)
-        self.assertEquals(self.mode._event_y, 2)
+        assert self.mode._event_x == 1
+        assert self.mode._event_y == 2
 
     def test_move_log(self):
         e = Event(1,2)
         self.mode.move(e)
-        self.assertEquals(self.mode._event_x, 1)
-        self.assertEquals(self.mode._event_y, 2)
+        assert self.mode._event_x == 1
+        assert self.mode._event_y == 2
 
     def test_release_log(self):
         e = Event(1,2)
         self.mode.release(e)
-        self.assertEquals(self.mode._event_x, 1)
-        self.assertEquals(self.mode._event_y, 2)
+        assert self.mode._event_x == 1
+        assert self.mode._event_y == 2
 
 
 class TestRoiMode(TestMouseMode):
@@ -131,7 +131,7 @@ class TestContrastMode(TestMouseMode):
         e = Event(1, 2, button=1)
         self.mode.move(e)
         count = self.mode._axes.figure.canvas.get_width_height.call_count
-        self.assertEquals(count, 0)
+        assert count == 0
 
     def test_get_scaling(self):
         data = [1, 2, 3]

@@ -49,7 +49,7 @@ class TestImageClient(unittest.TestCase):
         self.collect.append(self.im)
         client = ImageClient(self.collect, axes=AXES)
         self.assertIsNone(client.display_data)
-        self.assertFalse(self.im in client.layers)
+        assert not self.im in client.layers
 
     def test_invalid_add(self):
         client = ImageClient(self.collect, axes=AXES)
@@ -73,43 +73,43 @@ class TestImageClient(unittest.TestCase):
         client = self.create_client_with_cube()
         self.assertIsNotNone(client.slice_ind)
         client.slice_ind = 5
-        self.assertEquals(client.slice_ind, 5)
+        assert client.slice_ind == 5
 
     def test_add_subset_via_method(self):
         client = ImageClient(self.collect, axes=AXES)
         self.collect.append(self.im)
         s = self.im.new_subset()
         client.add_layer(s)
-        self.assertTrue(s in client.layers)
+        assert s in client.layers
 
     def test_remove_data(self):
         client = ImageClient(self.collect, axes=AXES)
         self.collect.append(self.im)
         s = self.im.new_subset()
         client.add_layer(self.im)
-        self.assertTrue(self.im in client.layers)
-        self.assertTrue(s in client.layers)
+        assert self.im in client.layers
+        assert s in client.layers
         client.delete_layer(self.im)
         self.assertIsNone(client.display_data)
-        self.assertFalse(self.im in client.layers)
-        self.assertFalse(s in client.layers)
+        assert not self.im in client.layers
+        assert not s in client.layers
 
     def test_set_norm(self):
         client = self.create_client_with_image()
-        self.assertTrue(client.display_data is not None)
+        assert client.display_data is not None
         client.set_norm(vmin = 10, vmax = 100)
-        self.assertEquals(client.layers[self.im].norm.vmin, 10)
-        self.assertEquals(client.layers[self.im].norm.vmax, 100)
+        assert client.layers[self.im].norm.vmin == 10
+        assert client.layers[self.im].norm.vmax == 100
 
     def test_delete_data(self):
         client = self.create_client_with_image()
         client.delete_layer(self.im)
-        self.assertFalse(self.im in client.layers)
+        assert not self.im in client.layers
 
     def test_set_attribute(self):
         client = self.create_client_with_image()
         atts = self.im.component_ids()
-        self.assertTrue(len(atts) > 1)
+        assert len(atts) > 1
         for att in atts:
             client.set_attribute(att)
             self.assertIs(client.display_attribute, att)
@@ -117,7 +117,7 @@ class TestImageClient(unittest.TestCase):
     def test_set_data_and_attribute(self):
         client = self.create_client_with_image()
         atts = self.im.component_ids()
-        self.assertTrue(len(atts) > 1)
+        assert len(atts) > 1
         for att in atts:
             client.set_data(self.im, attribute=att)
             self.assertIs(client.display_attribute, att)
@@ -169,7 +169,7 @@ class TestImageClient(unittest.TestCase):
 
         # subset only applied to active data
         roi3 = self.cube.edit_subset.subset_state
-        self.assertFalse(isinstance(roi3, glue.core.subset.RoiSubsetState))
+        assert not isinstance(roi3, glue.core.subset.RoiSubsetState)
 
     def test_apply_roi_3d(self):
         client = self.create_client_with_cube()
@@ -216,14 +216,14 @@ class TestImageClient(unittest.TestCase):
 
         client.layers[sub].mask = np.ones(self.im.shape, dtype=bool)
         client._update_subset_single(sub)
-        self.assertFalse(client.layers[sub].mask.any())
+        assert not client.layers[sub].mask.any()
 
     def test_subsets_shown_on_init(self):
         client = self.create_client_with_image()
         subset = self.im.edit_subset
         manager = client.layers[subset]
         self.assertIsNot(manager.artist, None)
-        self.assertTrue(manager.is_visible())
+        assert manager.is_visible()
 
 if __name__ == "__main__":
     unittest.main(failfast=True)
