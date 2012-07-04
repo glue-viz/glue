@@ -27,10 +27,10 @@ class BuildQt(Command):
         import glob
         from PyQt4.uic import compileUi
 
-        for infile in glob.glob(os.path.join('glue', 'qt', '*.ui')):
+        for infile in glob.glob(os.path.join('glue', 'qt', 'ui', '*.ui')):
             print("Compiling " + infile)
             directory, filename = os.path.split(infile)
-            outfile = os.path.join(directory, 'ui_' + filename.replace('.ui', '.py'))
+            outfile = os.path.join(directory, filename.replace('.ui', '.py'))
             compileUi(infile, open(outfile, 'wb'))
 
         import sys
