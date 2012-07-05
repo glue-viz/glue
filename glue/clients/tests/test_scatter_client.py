@@ -1,14 +1,13 @@
-import unittest
-from time import sleep
+import pytest
 
 import numpy as np
 import matplotlib.pyplot as plt
 from mock import MagicMock
 
-import glue
-from glue.clients.scatter_client import ScatterClient
+from ...tests import example_data
+from ... import core
 
-import example_data
+from ..scatter_client import ScatterClient
 
 # share matplotlib instance, and disable rendering, for speed
 FIGURE = plt.figure()
@@ -16,15 +15,16 @@ AXES = FIGURE.add_subplot(111)
 FIGURE.canvas.draw = lambda: 0
 plt.close('all')
 
-class TestScatterClient(unittest.TestCase):
-    def setUp(self):
+class TestScatterClient(object):
+    
+    def setup_method(self, method):
         self.data = example_data.test_data()
         self.ids = [self.data[0].find_component_id('a')[0],
                     self.data[0].find_component_id('b')[0],
                     self.data[1].find_component_id('c')[0],
                     self.data[1].find_component_id('d')[0]]
-        self.hub = glue.core.hub.Hub()
-        self.collect = glue.core.data_collection.DataCollection()
+        self.hub = core.hub.Hub()
+        self.collect = core.data_collection.DataCollection()
         self.client = ScatterClient(self.collect, axes=AXES)
         self.connect()
 
@@ -69,8 +69,9 @@ class TestScatterClient(unittest.TestCase):
             assert not self.client.is_layer_present(d)
 
     def test_add_external_data_raises_exception(self):
-        data = glue.core.data.Data()
-        self.assertRaises(TypeError, self.client.add_data, data)
+        data = core.data.Data()
+        with pytest.raises(TypeError):
+            self.client.add_data(data)
 
     def test_valid_add(self):
         layer = self.add_data()
@@ -79,23 +80,23 @@ class TestScatterClient(unittest.TestCase):
     def test_axis_labels_sync_with_setters(self):
         layer = self.add_data()
         self.client.set_xdata(self.ids[1])
-        self.assertEquals(self.client.ax.get_xlabel(), self.ids[1].label)
+        assert self.client.ax.get_xlabel() == self.ids[1].label
         self.client.set_ydata(self.ids[0])
-        self.assertEquals(self.client.ax.get_ylabel(), self.ids[0].label)
+        assert self.client.ax.get_ylabel() == self.ids[0].label
 
     def test_logs(self):
         layer = self.add_data()
         self.client.set_xlog(True)
-        self.assertEquals(self.client.ax.get_xscale(), 'log')
+        assert self.client.ax.get_xscale() == 'log'
 
         self.client.set_xlog(False)
-        self.assertEquals(self.client.ax.get_xscale(), 'linear')
+        assert self.client.ax.get_xscale() == 'linear'
 
         self.client.set_ylog(True)
-        self.assertEquals(self.client.ax.get_yscale(), 'log')
+        assert self.client.ax.get_yscale() == 'log'
 
         self.client.set_ylog(False)
-        self.assertEquals(self.client.ax.get_yscale(), 'linear')
+        assert self.client.ax.get_yscale() == 'linear'
 
     def test_flips(self):
         layer = self.add_data()
@@ -116,11 +117,10 @@ class TestScatterClient(unittest.TestCase):
         n0 = len(self.client.ax.collections)
         layer = self.add_data()
         #data and edit_subset present
-        self.assertEquals(len(self.client.ax.collections), 2 + n0)
+        assert len(self.client.ax.collections) == 2 + n0
         layer = self.add_data()
         #data and edit_subset still present
-        self.assertEquals(len(self.client.ax.collections), 2 + n0)
-
+        assert len(self.client.ax.collections) == 2 + n0
 
     def test_data_updates_propagate(self):
         layer = self.add_data_and_attributes()
@@ -168,7 +168,7 @@ class TestScatterClient(unittest.TestCase):
     def test_invalid_plot(self):
         layer = self.add_data_and_attributes()
         assert self.layer_drawn(layer)
-        c = glue.core.data.ComponentID('bad id')
+        c = core.data.ComponentID('bad id')
         self.client.set_xdata(c)
         assert not self.layer_drawn(layer)
 
@@ -178,7 +178,7 @@ class TestScatterClient(unittest.TestCase):
         ctr = MagicMock()
         layer = self.add_data_and_attributes()
         assert self.layer_drawn(layer)
-        c = glue.core.data.ComponentID('bad id')
+        c = core.data.ComponentID('bad id')
         self.client._redraw = ctr
         ct0 = ctr.call_count
         self.client.set_xdata(c)
@@ -236,7 +236,7 @@ class TestScatterClient(unittest.TestCase):
 
     def test_apply_roi(self):
         data = self.add_data_and_attributes()
-        roi = glue.core.roi.RectangularROI()
+        roi = core.roi.RectangularROI()
         roi.update_limits(.5, .5, 1.5, 1.5)
         x = np.array([1])
         y = np.array([1])
@@ -272,7 +272,7 @@ class TestScatterClient(unittest.TestCase):
 
     def test_visibility_sticky(self):
         data = self.add_data_and_attributes()
-        roi = glue.core.roi.RectangularROI()
+        roi = core.roi.RectangularROI()
         roi.update_limits(.5, .5, 1.5, 1.5)
         assert self.client.is_visible(data.edit_subset)
         self.client._apply_roi(roi)
@@ -282,15 +282,10 @@ class TestScatterClient(unittest.TestCase):
         assert not self.client.is_visible(data.edit_subset)
 
     def test_2d_data(self):
-        comp = glue.core.data.Component(np.array([[1,2],[3,4]]))
-        data = glue.core.data.Data()
+        comp = core.data.Component(np.array([[1,2],[3,4]]))
+        data = core.data.Data()
         cid = data.add_component(comp, '2d')
         self.collect.append(data)
         self.client.add_layer(data)
         self.client.set_xdata(cid)
         self.client.set_ydata(cid)
-
-
-
-if __name__ == "__main__":
-    unittest.main()

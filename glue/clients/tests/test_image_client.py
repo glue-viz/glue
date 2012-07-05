@@ -1,14 +1,13 @@
-import unittest
+import pytest
 
 import matplotlib.pyplot as plt
-from mock import MagicMock, patch
+from mock import MagicMock
 import numpy as np
 
-import glue
-from glue.clients.image_client import ImageClient
-from glue.core.exceptions import IncompatibleAttribute
+from ...tests import example_data
+from ... import core
 
-import example_data
+from ..image_client import ImageClient
 
 # share matplotlib instance, and disable rendering, for speed
 FIGURE = plt.figure()
@@ -16,18 +15,19 @@ AXES = FIGURE.add_subplot(111)
 FIGURE.canvas.draw = lambda: 0
 plt.close('all')
 
-class DummyCoords(glue.core.coordinates.Coordinates):
+class DummyCoords(core.coordinates.Coordinates):
     def pixel2world(self, *args):
         result = []
         for i,a in enumerate(args):
             result.append([aa * (i+1) for aa in a])
         return result
 
-class TestImageClient(unittest.TestCase):
-    def setUp(self):
+class TestImageClient(object):
+
+    def setup_method(self, method):
         self.im = example_data.test_image()
         self.cube = example_data.test_cube()
-        self.collect = glue.core.data_collection.DataCollection()
+        self.collect = core.data_collection.DataCollection()
 
     def create_client_with_image(self):
         client = ImageClient(self.collect, axes=AXES)
@@ -43,17 +43,18 @@ class TestImageClient(unittest.TestCase):
 
     def test_empty_creation(self):
         client = ImageClient(self.collect, axes=AXES)
-        self.assertIsNone(client.display_data)
+        assert client.display_data is None
 
     def test_nonempty_creation(self):
         self.collect.append(self.im)
         client = ImageClient(self.collect, axes=AXES)
-        self.assertIsNone(client.display_data)
+        assert client.display_data is None
         assert not self.im in client.layers
 
     def test_invalid_add(self):
         client = ImageClient(self.collect, axes=AXES)
-        self.assertRaises(TypeError, client.add_layer, self.cube)
+        with pytest.raises(TypeError):
+            client.add_layer(self.cube)
 
     def test_set_data(self):
         client = self.create_client_with_image()
@@ -61,17 +62,19 @@ class TestImageClient(unittest.TestCase):
 
     def test_slice_disabled_for_2d(self):
         client = self.create_client_with_image()
-        self.assertIsNone(client.slice_ind)
-        self.assertRaises(IndexError, client.slice_ind, 10)
+        assert client.slice_ind is None
+        with pytest.raises(IndexError):
+            client.slice_ind(10)
 
     def test_slice_disabled_for_no_data(self):
         client = ImageClient(self.collect, axes=AXES)
-        self.assertIsNone(client.slice_ind)
-        self.assertRaises(IndexError, client.slice_ind, 10)
+        assert client.slice_ind is None
+        with pytest.raises(IndexError):
+            client.slice_ind(10)
 
     def test_slice_enabled_for_3D(self):
         client = self.create_client_with_cube()
-        self.assertIsNotNone(client.slice_ind)
+        assert client.slice_ind is not None
         client.slice_ind = 5
         assert client.slice_ind == 5
 
@@ -90,7 +93,7 @@ class TestImageClient(unittest.TestCase):
         assert self.im in client.layers
         assert s in client.layers
         client.delete_layer(self.im)
-        self.assertIsNone(client.display_data)
+        assert client.display_data is None
         assert not self.im in client.layers
         assert not s in client.layers
 
@@ -125,91 +128,94 @@ class TestImageClient(unittest.TestCase):
 
     def test_set_slice(self):
         client = self.create_client_with_image()
-        self.assertRaises(IndexError, client.slice_ind, 10)
+        with pytest.raises(IndexError):
+            client.slice_ind(10)
 
     def test_slice_bounds_2d(self):
         client = self.create_client_with_image()
-        self.assertEquals(client.slice_bounds(), (0,0))
+        assert client.slice_bounds() == (0,0)
 
     def test_slice_bounds_3d(self):
         client = self.create_client_with_cube()
         shape = self.cube.shape
-        self.assertEquals(client.slice_bounds(), (0, shape[2]-1))
+        assert client.slice_bounds() == (0, shape[2]-1)
         client.set_slice_ori(0)
-        self.assertEquals(client.slice_bounds(), (0, shape[0]-1))
+        assert client.slice_bounds() == (0, shape[0]-1)
         client.set_slice_ori(1)
-        self.assertEquals(client.slice_bounds(), (0, shape[1]-1))
+        assert client.slice_bounds() == (0, shape[1]-1)
         client.set_slice_ori(2)
-        self.assertEquals(client.slice_bounds(), (0, shape[2]-1))
+        assert client.slice_bounds() == (0, shape[2]-1)
 
     def test_slice_ori_on_2d_raises(self):
         client = self.create_client_with_image()
-        self.assertRaises(IndexError, client.set_slice_ori, 0)
+        with pytest.raises(IndexError):
+            client.set_slice_ori(0)
 
     def test_slice_ori_out_of_bounds(self):
         client = self.create_client_with_image()
         self.collect.append(self.cube)
         client.set_data(self.cube)
-        self.assertRaises(TypeError, client.set_slice_ori, 100)
+        with pytest.raises(TypeError):
+            client.set_slice_ori(100)
 
     def test_apply_roi_2d(self):
         client = self.create_client_with_image()
         self.collect.append(self.cube)
         client.add_layer(self.cube)
-        roi = glue.core.roi.PolygonalROI(vx = [10, 20, 20, 10],
+        roi = core.roi.PolygonalROI(vx = [10, 20, 20, 10],
                                     vy = [10, 10, 20, 20])
         client._apply_roi(roi)
         roi2 = self.im.edit_subset.subset_state.roi
         state = self.im.edit_subset.subset_state
 
-        self.assertEquals(roi2.to_polygon()[0], roi.to_polygon()[0])
-        self.assertEquals(roi2.to_polygon()[1], roi.to_polygon()[1])
-        self.assertIs(state.xatt, self.im.get_pixel_component_id(1))
-        self.assertIs(state.yatt, self.im.get_pixel_component_id(0))
+        assert roi2.to_polygon()[0] == roi.to_polygon()[0]
+        assert roi2.to_polygon()[1] == roi.to_polygon()[1]
+        assert state.xatt is self.im.get_pixel_component_id(1)
+        assert state.yatt is self.im.get_pixel_component_id(0)
 
         # subset only applied to active data
         roi3 = self.cube.edit_subset.subset_state
-        assert not isinstance(roi3, glue.core.subset.RoiSubsetState)
+        assert not isinstance(roi3, core.subset.RoiSubsetState)
 
     def test_apply_roi_3d(self):
         client = self.create_client_with_cube()
         self.cube.coords = DummyCoords()
-        roi = glue.core.roi.PolygonalROI( vx = [10, 20, 20, 10],
+        roi = core.roi.PolygonalROI( vx = [10, 20, 20, 10],
                                      vy =[10, 10, 20, 20])
 
         client.set_slice_ori(0)
         client._apply_roi(roi)
         state = self.cube.edit_subset.subset_state
         roi2 = state.roi
-        self.assertIs(state.xatt, self.cube.get_pixel_component_id(2))
-        self.assertIs(state.yatt, self.cube.get_pixel_component_id(1))
-        self.assertEquals(roi2.to_polygon()[0], roi.to_polygon()[0])
-        self.assertEquals(roi2.to_polygon()[1], roi.to_polygon()[1])
+        assert state.xatt is self.cube.get_pixel_component_id(2)
+        assert state.yatt is self.cube.get_pixel_component_id(1)
+        assert roi2.to_polygon()[0] == roi.to_polygon()[0]
+        assert roi2.to_polygon()[1] == roi.to_polygon()[1]
 
         client.set_slice_ori(1)
         client._apply_roi(roi)
         state = self.cube.edit_subset.subset_state
         roi2 = state.roi
-        self.assertIs(state.xatt, self.cube.get_pixel_component_id(2))
-        self.assertIs(state.yatt, self.cube.get_pixel_component_id(0))
-        self.assertEquals(roi2.to_polygon()[0], roi.to_polygon()[0])
-        self.assertEquals(roi2.to_polygon()[1], roi.to_polygon()[1])
+        assert state.xatt is self.cube.get_pixel_component_id(2)
+        assert state.yatt is self.cube.get_pixel_component_id(0)
+        assert roi2.to_polygon()[0] == roi.to_polygon()[0]
+        assert roi2.to_polygon()[1] == roi.to_polygon()[1]
 
         client.set_slice_ori(2)
         client._apply_roi(roi)
         state = self.cube.edit_subset.subset_state
         roi2 = state.roi
-        self.assertIs(state.xatt, self.cube.get_pixel_component_id(1))
-        self.assertIs(state.yatt, self.cube.get_pixel_component_id(0))
-        self.assertEquals(roi2.to_polygon()[0], roi.to_polygon()[0])
-        self.assertEquals(roi2.to_polygon()[1], roi.to_polygon()[1])
+        assert state.xatt is self.cube.get_pixel_component_id(1)
+        assert state.yatt is self.cube.get_pixel_component_id(0)
+        assert roi2.to_polygon()[0] == roi.to_polygon()[0]
+        assert roi2.to_polygon()[1] == roi.to_polygon()[1]
 
     def test_update_subset_zeros_mask_on_error(self):
         client = self.create_client_with_image()
         sub = self.im.edit_subset
 
         bad_state = MagicMock()
-        err = IncompatibleAttribute("Can't make mask")
+        err = core.exceptions.IncompatibleAttribute("Can't make mask")
         bad_state.to_mask.side_effect = err
         bad_state.to_index_list.side_effect = err
         sub.subset_state = bad_state
@@ -222,8 +228,5 @@ class TestImageClient(unittest.TestCase):
         client = self.create_client_with_image()
         subset = self.im.edit_subset
         manager = client.layers[subset]
-        self.assertIsNot(manager.artist is None
+        assert manager.artist is not None
         assert manager.is_visible()
-
-if __name__ == "__main__":
-    unittest.main(failfast=True)
