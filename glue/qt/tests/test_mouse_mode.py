@@ -1,10 +1,10 @@
-import unittest
-
 from mock import MagicMock, patch
 import PyQt4
 import numpy as np
+from numpy.testing import assert_almost_equal
 
-from glue.qt.mouse_mode import *
+from ..mouse_mode import MouseMode, RectangleMode, CircleMode, PolyMode, \
+                         ContrastMode, ContourMode, contour_to_roi
 
 class Event(object):
     def __init__(self, x, y, button=3):
@@ -19,13 +19,13 @@ def axes():
     result.figure.canvas.get_width_height.return_value = (640, 480)
     return result
 
-class TestMouseMode(unittest.TestCase):
+class TestMouseMode(object):
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         cls.app = PyQt4.QtGui.QApplication([''])
 
-    def setUp(self):
+    def setup_method(self, method):
         self.mode = self.mode_factory()(axes())
         self.axes = self.mode._axes
         self.attach_callbacks()
@@ -84,8 +84,8 @@ class TestMouseMode(unittest.TestCase):
 
 class TestRoiMode(TestMouseMode):
 
-    def setUp(self):
-        TestMouseMode.setUp(self)
+    def setup_method(self, method):
+        TestMouseMode.setup_method(self, method)
         self.mode._roi_tool = MagicMock()
 
     def mode_factory(self):
@@ -138,10 +138,11 @@ class TestContrastMode(TestMouseMode):
         self.mode.bias = 0.
         self.mode.contrast = 2.
         lo, hi = self.mode.get_scaling(data)
-        self.assertAlmostEquals(lo, -3)
-        self.assertAlmostEquals(hi, 5)
+        assert_almost_equal(lo, -3)
+        assert_almost_equal(hi, 5)
 
 class TestContourMode(TestMouseMode):
+    
     def mode_factory(self):
         return ContourMode
 
@@ -158,7 +159,8 @@ class TestContourMode(TestMouseMode):
             self.mode.roi(data)
             cntr.assert_called_once_with(1, 2, data)
 
-class TestContourToRoi(unittest.TestCase):
+class TestContourToRoi(object):
+    
     def test_roi(self):
         with patch('glue.util.point_contour') as point_contour:
             point_contour.return_value = np.array([[1,2], [2,3]])
@@ -174,5 +176,3 @@ class TestContourToRoi(unittest.TestCase):
 
 del TestRoiMode # prevents test discovery from running abstract test
 
-if __name__ == "__main__":
-    unittest.main()

@@ -1,14 +1,11 @@
-import unittest
-from time import sleep
 import sys
 
+import pytest
 import matplotlib.pyplot as plt
 from PyQt4.QtGui import QApplication, QMainWindow, QIcon
 
-import glue
-from glue.qt.glue_toolbar import GlueToolbar
-from glue.qt.mouse_mode import MouseMode
-from glue.qt import cv_qt_resources
+from ..glue_toolbar import GlueToolbar
+from ..mouse_mode import MouseMode
 
 class TestMode(MouseMode):
 
@@ -26,9 +23,9 @@ class TestMode(MouseMode):
     def move(self, event):
         self.last_mode = 'MOVE'
 
-class TestToolbar(unittest.TestCase):
+class TestToolbar(object):
 
-    def setUp(self):
+    def setup_method(self, method):
         self.app = QApplication(sys.argv)
         self.win = QMainWindow()
         p = plt.plot([1,2,3])[0]
@@ -52,7 +49,7 @@ class TestToolbar(unittest.TestCase):
 
         assert self.tb._active == target_mode
 
-    @unittest.skip("Test running into issues with widget locks?")
+    @pytest.mark.skip("Test running into issues with widget locks?")
     def test_mode_exclusive(self):
         for mode in self.tb.buttons:
             self.tb.buttons[mode].trigger()
@@ -62,6 +59,3 @@ class TestToolbar(unittest.TestCase):
         self.tb.buttons['TEST'].trigger()
         self.mode.release(None)
         assert self._called_back
-
-if __name__ == "__main__":
-    unittest.main()
