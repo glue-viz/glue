@@ -242,3 +242,36 @@ class TestSubsetIo(object):
     def test_write_unsupported_format(self):
         with pytest.raises(AttributeError):
             self.subset.write_mask('file_will_fail', format='.hd5')
+
+
+class TestSubsetState(object):
+
+    def setup_method(self, method):
+        self.state = SubsetState()
+        self.state.parent = MagicMock()
+
+    def mask_check(self, mask, answer):
+        self.state.to_mask = MagicMock()
+        self.state.to_mask.return_value = mask
+        np.testing.assert_array_equal(self.state.to_index_list(), answer)
+
+    def test_to_index_list_1d(self):
+        mask = np.array( [False, True])
+        answer = np.array([1])
+        self.mask_check(mask, answer)
+
+    def test_to_index_list_2d(self):
+        mask = np.array([[False, True], [False, True]])
+        answer = np.array([1, 3])
+        self.mask_check(mask, answer)
+
+    def test_empty_to_index_1d(self):
+        mask = np.array([ False, False])
+        answer = np.array([])
+        self.mask_check(mask, answer)
+
+    def test_empty_to_index_2d(self):
+        mask = np.array([ [False, False], [False, False]])
+        answer = np.array([])
+        self.mask_check(mask, answer)
+

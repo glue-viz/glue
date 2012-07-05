@@ -19,11 +19,11 @@ class Subset(object):
     state changes back to the hub. Subclasses implement the actual
     description and manipulation of data subsets
 
-    Attributes:
-    -----------
-    data : data instance
+    :param data:
         The dataset that this subset describes
-    style : VisualAttributes instance
+    :type data: :class:`~glue.core.data.Data`
+
+    :param style: VisualAttributes instance
         Describes visual attributes of the subset
     """
 
@@ -72,20 +72,23 @@ class Subset(object):
     def to_index_list(self):
         """
         Convert the current subset to a list of indices. These index
-        the elements in the data object that belong to the subset.
+        the elements in the flattened data object that belong to the subset.
 
-        By default, this uses the output from to_mask.
+        If x is the numpy array corresponding to some component,
+        the two following statements are equivalent::
+
+           x.flat[subset.to_index_list()]
+           x[subset.to_mask()]
 
         Returns:
-        --------
 
-        A numpy array, giving the indices of elements in the data that
-        belong to this subset.
+           A numpy array, giving the indices of elements in the data that
+           belong to this subset.
 
         Raises:
-        -------
-        IncompatibleDataException: if an index list cannot be created
-        for the requested data set.
+
+           IncompatibleDataException: if an index list cannot be created
+           for the requested data set.
 
         """
         return self.subset_state.to_index_list()
@@ -95,10 +98,10 @@ class Subset(object):
         Convert the current subset to a mask.
 
         Returns:
-        --------
 
-        A boolean numpy array, the same shape as the data, that
-        defines whether each element belongs to the subset.
+           A boolean numpy array, the same shape as the data, that
+           defines whether each element belongs to the subset.
+
         """
         return self.subset_state.to_mask()
 
@@ -119,11 +122,11 @@ class Subset(object):
         """
         Explicitly broadcast a SubsetUpdateMessage to the hub
 
-        Parameters:
-        -----------
-        attribute: string
+        :param attribute:
                    The name of the attribute (if any) that should be
                    broadcast as updated.
+        :type attribute: ``str``
+
         """
         if not hasattr(self, 'data') or not hasattr(self.data, 'hub'):
             return
@@ -144,13 +147,10 @@ class Subset(object):
     def write_mask(self, file_name, format="fits"):
         """ Write a subset mask out to file
 
-        Inputs:
-        -------
-        file_name: String
-                   name of file to write to
-        format: String
-                Name of format to write to. Currently, only "fits" is
-                supported
+        :param file_name: name of file to write to
+        format:
+           Name of format to write to. Currently, only "fits" is
+           supported
 
         """
         mask = np.short(self.to_mask())
@@ -177,11 +177,9 @@ class Subset(object):
             self.broadcast(attribute)
 
     def __getitem__(self, attribute):
-        il = self.to_index_list()
-        if len(il) == 0:
-            return np.array([])
+        ma = self.to_mask()
         data = self.data[attribute]
-        return data[il]
+        return data[ma]
 
     def paste(self, other_subset):
         """paste subset state from other_subset onto self """
@@ -195,7 +193,7 @@ class SubsetState(object):
         self.parent = None
 
     def to_index_list(self):
-        return np.where(self.to_mask())[0]
+        return np.where(self.to_mask().flat)[0]
 
     def to_mask(self):
         return np.zeros(self.parent.data.shape, dtype=bool)
