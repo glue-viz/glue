@@ -55,7 +55,12 @@ try:  # Python 3.x
 except ImportError:  # Python 2.x
     from distutils.command.build_py import build_py
 
-cmdclass['build_py'] = build_py
+class build(build_py):
+    def run(self):
+        self.run_command("build_qt")
+        build_py.run(self)
+
+cmdclass['build_py'] = build
 
 setup(name='Glue',
       version='0.1.0',
