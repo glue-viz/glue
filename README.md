@@ -1,6 +1,15 @@
-Installation
-============
+===============
+Welcome to Glue
+===============
 
-To install cloudviz, simply type:
+Glue is a python project to link visualizations of scientific datasets
+across many files.
+
+To install glue, simply type:
 
     python setup.py install
+
+
+For documentation, visit
+
+    http://glue-viz.readthedocs.org/en/latest/index.html
