@@ -6,7 +6,7 @@ from ..core.exceptions import IncompatibleAttribute
 from ..core.data import Data
 from ..core.subset import RoiSubsetState
 from ..core.roi import PolygonalROI
-from ..util import relim
+from ..core.util import relim
 
 
 class ScatterLayerManager(object):
