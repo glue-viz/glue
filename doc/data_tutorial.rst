@@ -1,7 +1,7 @@
 Working with Data Objects
 ==========================
 
-.. currentmodule:: glue.data
+.. currentmodule:: glue.core.data
 
 If you would like to extend or customize Glue's functionality, you will
 likely need to deal with managing the :class:`Data` object. This document walks through handling data in Glue.
@@ -25,7 +25,7 @@ The basic hierarchy of data objects in Glue looks like this:
     with the same shape. Components are referenced in the Data via
     :class:`ComponentID` objects.
 
-* :class:`~glue.DataCollection`
+* :class:`~glue.core.data_collection.DataCollection`
     The DataCollection stores one or more Data sets. If you want to
     examine multiple files in a Glue session, you load each file into
     a different Data object and store them in a DataCollection
@@ -57,7 +57,7 @@ like this::
 Registering with a Hub
 ----------------------
 
-Simply register the :class:`~glue.DataCollection` to the hub -- all the child objects will be auto-subscribed::
+Simply register the :class:`~glue.core.data_collection.DataCollection` to the hub -- all the child objects will be auto-subscribed::
 
    collection.register_to_hub(hub)
 

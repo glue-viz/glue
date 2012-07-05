@@ -3,7 +3,7 @@
 Understanding Component Links
 =============================
 
-.. currentmodule: glue
+.. currentmodule: glue.core
 
 Many interactions which manipulate subests in Glue define regions of interest. For example, consider defining a circular ROI in a scatter plot of objects' RA and Dec coordinates:
 
