@@ -5,12 +5,13 @@ import numpy as np
 from ..data import ComponentID, Data, Component
 from ..component_link import ComponentLink
 
+
 class TestComponentLink(object):
 
     def toy_data(self):
         data = Data()
-        from_comp = Component( np.array([1,2,3]))
-        to_comp = Component( np.array([4,5,6]))
+        from_comp = Component(np.array([1, 2, 3]))
+        to_comp = Component(np.array([4, 5, 6]))
         return data, from_comp, to_comp
 
     def test_valid_init(self):
@@ -72,7 +73,7 @@ class TestComponentLink(object):
         to_id = ComponentID('to_label')
         link = ComponentLink([from_id], to_id)
         str(link)
-        link = ComponentLink([from_id], to_id, using=lambda x:3*x)
+        link = ComponentLink([from_id], to_id, using=lambda x: 3 * x)
         str(link)
 
     def test_repr(self):

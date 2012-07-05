@@ -43,8 +43,8 @@ class TestRectangle(object):
 
     def test_to_polygon(self):
         self.roi.update_limits(0, 0, 10, 10)
-        x,y = self.roi.to_polygon()
-        poly = PolygonalROI(vx = x, vy = y)
+        x, y = self.roi.to_polygon()
+        poly = PolygonalROI(vx=x, vy=y)
         assert poly.contains(5, 5)
 
     def test_ndarray(self):
@@ -60,7 +60,7 @@ class TestRectangle(object):
 
     def test_corner(self):
         self.roi.update_limits(6, 7, 10, 10)
-        assert self.roi.corner() == (6,7)
+        assert self.roi.corner() == (6, 7)
 
     def test_width(self):
         self.roi.update_limits(2, 2, 10, 12)
@@ -71,12 +71,12 @@ class TestRectangle(object):
         assert self.roi.height() == 10
 
     def test_multidim_ndarray(self):
-        self.roi.update_limits(0,0,10,10)
-        x = np.array([1, 2, 3, 4]).reshape(2,2)
-        y = np.array([1, 2, 3, 4]).reshape(2,2)
-        assert self.roi.contains(x,y).all()
-        assert not self.roi.contains(x+10,y).any()
-        assert self.roi.contains(x,y).shape == x.shape
+        self.roi.update_limits(0, 0, 10, 10)
+        x = np.array([1, 2, 3, 4]).reshape(2, 2)
+        y = np.array([1, 2, 3, 4]).reshape(2, 2)
+        assert self.roi.contains(x, y).all()
+        assert not self.roi.contains(x + 10, y).any()
+        assert self.roi.contains(x, y).shape == x.shape
 
     def test_str_undefined(self):
         """ str method should not crash """
@@ -102,35 +102,35 @@ class TestCircle(object):
     def test_set_center(self):
         self.roi.set_center(0, 0)
         self.roi.set_radius(1)
-        assert self.roi.contains(0,0)
-        assert not self.roi.contains(2,2)
-        self.roi.set_center(2,2)
-        assert not self.roi.contains(0,0)
-        assert self.roi.contains(2,2)
+        assert self.roi.contains(0, 0)
+        assert not self.roi.contains(2, 2)
+        self.roi.set_center(2, 2)
+        assert not self.roi.contains(0, 0)
+        assert self.roi.contains(2, 2)
 
     def test_set_radius(self):
-        self.roi.set_center(0,0)
+        self.roi.set_center(0, 0)
         self.roi.set_radius(1)
-        assert not self.roi.contains(1.5,0)
+        assert not self.roi.contains(1.5, 0)
         self.roi.set_radius(5)
         assert self.roi.contains(1.5, 0)
 
     def test_contains_many(self):
-        x = [0,0,0,0,0]
-        y = [0,0,0,0,0]
-        self.roi.set_center(0,0)
+        x = [0, 0, 0, 0, 0]
+        y = [0, 0, 0, 0, 0]
+        self.roi.set_center(0, 0)
         self.roi.set_radius(1)
         assert all(self.roi.contains(x, y))
         assert all(self.roi.contains(np.asarray(x), np.asarray(y)))
-        assert not any(self.roi.contains(np.asarray(x)+10, y))
+        assert not any(self.roi.contains(np.asarray(x) + 10, y))
 
     def test_poly(self):
-        self.roi.set_center(0,0)
+        self.roi.set_center(0, 0)
         self.roi.set_radius(1)
-        x,y = self.roi.to_polygon()
+        x, y = self.roi.to_polygon()
         poly = PolygonalROI(vx=x, vy=y)
-        assert poly.contains(0,0)
-        assert not poly.contains(10,0)
+        assert poly.contains(0, 0)
+        assert not poly.contains(10, 0)
 
     def test_poly_undefined(self):
         x, y = self.roi.to_polygon()
@@ -139,7 +139,7 @@ class TestCircle(object):
 
     def test_reset(self):
         assert not self.roi.defined()
-        self.roi.set_center(0,0)
+        self.roi.set_center(0, 0)
         assert not self.roi.defined()
         self.roi.set_radius(2)
         assert self.roi.defined()
@@ -147,13 +147,13 @@ class TestCircle(object):
         assert not self.roi.defined()
 
     def test_multidim(self):
-        self.roi.set_center(0,0)
+        self.roi.set_center(0, 0)
         self.roi.set_radius(1)
-        x = np.array([.1, .2, .3, .4]).reshape(2,2)
-        y = np.array([-.1, -.2, -.3, -.4]).reshape(2,2)
-        assert self.roi.contains(x,y).all()
-        assert not self.roi.contains(x+1, y).any()
-        assert self.roi.contains(x,y).shape == (2,2)
+        x = np.array([.1, .2, .3, .4]).reshape(2, 2)
+        y = np.array([-.1, -.2, -.3, -.4]).reshape(2, 2)
+        assert self.roi.contains(x, y).all()
+        assert not self.roi.contains(x + 1, y).any()
+        assert self.roi.contains(x, y).shape == (2, 2)
 
 
 class TestPolygon(object):
@@ -163,7 +163,7 @@ class TestPolygon(object):
     def define_as_square(self):
         self.roi.reset()
         assert not self.roi.defined()
-        self.roi.add_point(0,0)
+        self.roi.add_point(0, 0)
         self.roi.add_point(0, 1)
         self.roi.add_point(1, 1)
         self.roi.add_point(1, 0)
@@ -179,7 +179,7 @@ class TestPolygon(object):
     def test_replace(self):
         self.define_as_square()
         assert self.roi.contains(.9, .02)
-        self.roi.replace_last_point(0,0)
+        self.roi.replace_last_point(0, 0)
         assert not self.roi.contains(.9, .01)
 
     def test_remove_successful(self):
@@ -191,14 +191,14 @@ class TestPolygon(object):
     def test_remove_unsuccessful(self):
         self.define_as_square()
         assert self.roi.contains(.9, .02)
-        self.roi.remove_point(1.5, 0, thresh = .49)
+        self.roi.remove_point(1.5, 0, thresh=.49)
         assert self.roi.contains(.9, .01)
 
     def test_to_poly(self):
         self.define_as_square()
-        x,y = self.roi.to_polygon()
-        assert x == [0,0,1,1]
-        assert y == [0,1,1,0]
+        x, y = self.roi.to_polygon()
+        assert x == [0, 0, 1, 1]
+        assert y == [0, 1, 1, 0]
 
     def test_to_poly_undefined(self):
         assert self.roi.to_polygon() == ([], [])
@@ -216,10 +216,10 @@ class TestPolygon(object):
         assert not self.roi.contains(3.1800001, 0.2)
         assert not self.roi.contains(4.4899998, 0.2)
         assert not self.roi.contains(x, y).any()
-        x.shape = (2,2)
-        y.shape = (2,2)
-        assert not self.roi.contains(x,y).any()
-        assert self.roi.contains(x,y).shape == (2,2)
+        x.shape = (2, 2)
+        y.shape = (2, 2)
+        assert not self.roi.contains(x, y).any()
+        assert self.roi.contains(x, y).shape == (2, 2)
 
     def test_empty(self):
         assert not self.roi.defined()
@@ -234,14 +234,14 @@ class TestPolygon(object):
     def test_contains_list(self):
         self.define_as_square()
         assert self.roi.contains([.5, .4], [.5, .4]).all()
-        assert not self.roi.contains([1.5, 1.5], [0,0]).any()
+        assert not self.roi.contains([1.5, 1.5], [0, 0]).any()
 
     def test_contains_numpy(self):
         self.define_as_square()
         x = np.array([.4, .5, .4])
         y = np.array([.4, .5, .4])
         assert self.roi.contains(x, y).all()
-        assert not self.roi.contains(x+5, y).any()
+        assert not self.roi.contains(x + 5, y).any()
 
     def test_str(self):
         """ __str__ returns a string """
@@ -253,6 +253,7 @@ class DummyEvent(object):
         self.inaxes = inaxes
         self.xdata = x
         self.ydata = y
+
 
 class MockAxes(object):
     def __init__(self):
@@ -285,7 +286,7 @@ class TestMpl(object):
 
     def test_canvas_syncs_properly(self):
         assert self.axes.figure.canvas.draw.call_count == 1
-        event = DummyEvent(5,5)
+        event = DummyEvent(5, 5)
         self.roi.start_selection(event)
         assert self.axes.figure.canvas.draw.call_count == 2
         self.roi.update_selection(event)
@@ -344,8 +345,8 @@ class TestRectangleMpl(TestMpl):
         width = self.roi._patch.get_width()
         height = self.roi._patch.get_height()
         assert_almost_equal(corner, (min(x0, x1), min(y0, y1)), 4)
-        assert_almost_equal(width, abs(x0-x1))
-        assert_almost_equal(height, abs(y0-y1))
+        assert_almost_equal(width, abs(x0 - x1))
+        assert_almost_equal(height, abs(y0 - y1))
 
     def test_str(self):
         assert type(str(self.roi)) == str
@@ -356,21 +357,20 @@ class TestRectangleMpl(TestMpl):
     def test_roi_on_start_selection(self):
         event = DummyEvent(5, 5)
         self.roi.start_selection(event)
-        self.assert_roi_correct(5,5,5,5)
+        self.assert_roi_correct(5, 5, 5, 5)
 
     def test_patch_on_start_selection(self):
         event = DummyEvent(5, 5)
         self.roi.start_selection(event)
-        self.assert_patch_correct(5,5,5,5)
-
+        self.assert_patch_correct(5, 5, 5, 5)
 
     def test_update_selection(self):
         event = DummyEvent(5, 6)
         self.roi.start_selection(event)
         event = DummyEvent(10, 11)
         self.roi.update_selection(event)
-        self.assert_roi_correct(5,10,6,11)
-        self.assert_patch_correct(5,10,6,11)
+        self.assert_roi_correct(5, 10, 6, 11)
+        self.assert_patch_correct(5, 10, 6, 11)
 
     def test_finalize_selection(self):
         event = DummyEvent(5, 6)
@@ -378,8 +378,8 @@ class TestRectangleMpl(TestMpl):
         event = DummyEvent(10, 11)
         self.roi.update_selection(event)
         self.roi.finalize_selection(event)
-        self.assert_roi_correct(5,10,6,11)
-        self.assert_patch_correct(5,10,6,11)
+        self.assert_roi_correct(5, 10, 6, 11)
+        self.assert_patch_correct(5, 10, 6, 11)
 
     def test_define_roi_to_right(self):
         ev0 = DummyEvent(0.5, 0.5)
@@ -401,8 +401,9 @@ class TestRectangleMpl(TestMpl):
         self.assert_roi_correct(.5, 1, .5, 1)
         self.assert_patch_correct(.5, 1, .5, 1)
 
+
 class TestCircleMpl(TestMpl):
-    
+
     def _roi_factory(self):
         return MplCircularROI(self.axes)
 
@@ -411,14 +412,14 @@ class TestCircleMpl(TestMpl):
         self.pixel_to_data = r.pixel_to_data
         self.data_to_pixel = r.data_to_pixel
 
-        r.pixel_to_data = lambda x,y,z: np.column_stack((y,z))
-        r.data_to_pixel = lambda x,y,z: np.column_stack((y,z))
+        r.pixel_to_data = lambda x, y, z: np.column_stack((y, z))
+        r.data_to_pixel = lambda x, y, z: np.column_stack((y, z))
 
     def teardown_method(self, method):
         # restore methods
         r.pixel_to_data = self.pixel_to_data
         r.data_to_pixel = self.data_to_pixel
-        
+
     def test_proper_roi(self):
         assert isinstance(self.roi._roi, CircularROI)
 
@@ -482,8 +483,8 @@ class TestUtil(object):
     def test_aspect_ratio(self):
         self.axes.figure.set_figheight(5)
         self.axes.figure.set_figwidth(5)
-        self.axes.set_ylim([0,10])
-        self.axes.set_xlim([0,10])
+        self.axes.set_ylim([0, 10])
+        self.axes.set_xlim([0, 10])
 
         ax0 = r.aspect_ratio(self.axes)
         self.axes.set_ylim(0, 20)
@@ -498,49 +499,49 @@ class TestUtil(object):
     def test_data_to_norm_with_scalars(self):
         # assume data that gets submitted to axes is valid.
         # testing to see if we can get there
-        self.axes.set_xlim(0,10)
-        self.axes.set_ylim(0,10)
+        self.axes.set_xlim(0, 10)
+        self.axes.set_ylim(0, 10)
         func = r.data_to_norm
-        assert_almost_equal(func(self.axes, 0, 0)[0,0], 0, 3)
-        assert_almost_equal(func(self.axes, 0, 0)[0,1], 0, 3)
-        assert_almost_equal(func(self.axes, 0, 10)[0,0], 0, 3)
-        assert_almost_equal(func(self.axes, 0, 10)[0,1], 1, 3)
-        assert_almost_equal(func(self.axes, 10, 10)[0,0], 1, 3)
-        assert_almost_equal(func(self.axes, 10, 10)[0,1], 1, 3)
-        assert_almost_equal(func(self.axes, 10, 0)[0,0], 1, 3)
-        assert_almost_equal(func(self.axes, 10, 0)[0,1], 0, 3)
+        assert_almost_equal(func(self.axes, 0, 0)[0, 0], 0, 3)
+        assert_almost_equal(func(self.axes, 0, 0)[0, 1], 0, 3)
+        assert_almost_equal(func(self.axes, 0, 10)[0, 0], 0, 3)
+        assert_almost_equal(func(self.axes, 0, 10)[0, 1], 1, 3)
+        assert_almost_equal(func(self.axes, 10, 10)[0, 0], 1, 3)
+        assert_almost_equal(func(self.axes, 10, 10)[0, 1], 1, 3)
+        assert_almost_equal(func(self.axes, 10, 0)[0, 0], 1, 3)
+        assert_almost_equal(func(self.axes, 10, 0)[0, 1], 0, 3)
 
         x = np.array([0, 0, 10, 10])
         y = np.array([0, 10, 0, 10])
         xans = [0, 0, 1, 1]
         yans = [0, 1, 0, 1]
         norm = func(self.axes, x, y)
-        assert_almost_equal(norm[0,0], xans[0], 3)
-        assert_almost_equal(norm[1,0], xans[1], 3)
-        assert_almost_equal(norm[2,0], xans[2], 3)
-        assert_almost_equal(norm[3,0], xans[3], 3)
-        assert_almost_equal(norm[0,1], yans[0], 3)
-        assert_almost_equal(norm[1,1], yans[1], 3)
-        assert_almost_equal(norm[2,1], yans[2], 3)
-        assert_almost_equal(norm[3,1], yans[3], 3)
+        assert_almost_equal(norm[0, 0], xans[0], 3)
+        assert_almost_equal(norm[1, 0], xans[1], 3)
+        assert_almost_equal(norm[2, 0], xans[2], 3)
+        assert_almost_equal(norm[3, 0], xans[3], 3)
+        assert_almost_equal(norm[0, 1], yans[0], 3)
+        assert_almost_equal(norm[1, 1], yans[1], 3)
+        assert_almost_equal(norm[2, 1], yans[2], 3)
+        assert_almost_equal(norm[3, 1], yans[3], 3)
 
         x = [0, 0, 10, 10]
         y = [0, 10, 0, 10]
-        assert_almost_equal(norm[0,0], xans[0], 3)
-        assert_almost_equal(norm[1,0], xans[1], 3)
-        assert_almost_equal(norm[2,0], xans[2], 3)
-        assert_almost_equal(norm[3,0], xans[3], 3)
-        assert_almost_equal(norm[0,1], yans[0], 3)
-        assert_almost_equal(norm[1,1], yans[1], 3)
-        assert_almost_equal(norm[2,1], yans[2], 3)
-        assert_almost_equal(norm[3,1], yans[3], 3)
+        assert_almost_equal(norm[0, 0], xans[0], 3)
+        assert_almost_equal(norm[1, 0], xans[1], 3)
+        assert_almost_equal(norm[2, 0], xans[2], 3)
+        assert_almost_equal(norm[3, 0], xans[3], 3)
+        assert_almost_equal(norm[0, 1], yans[0], 3)
+        assert_almost_equal(norm[1, 1], yans[1], 3)
+        assert_almost_equal(norm[2, 1], yans[2], 3)
+        assert_almost_equal(norm[3, 1], yans[3], 3)
 
     def test_data_to_pixel(self):
         xp = 100
         yp = 100
         data = r.pixel_to_data(self.axes, xp, yp)
-        pixel = r.data_to_pixel(self.axes, data[:,0], data[:,1])
-        assert_almost_equal(pixel[0,0], xp, 3)
-        assert_almost_equal(pixel[0,1], yp, 3)
+        pixel = r.data_to_pixel(self.axes, data[:, 0], data[:, 1])
+        assert_almost_equal(pixel[0, 0], xp, 3)
+        assert_almost_equal(pixel[0, 1], yp, 3)
 
-del TestMpl # prevents unittest discovery from running abstract base class
+del TestMpl  # prevents unittest discovery from running abstract base class

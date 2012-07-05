@@ -7,7 +7,7 @@ class TestComponent(object):
 
     def setup_method(self, method):
         self.data = MagicMock()
-        self.data.shape = [1,2]
+        self.data.shape = [1, 2]
         self.component = Component(self.data)
 
     def test_data(self):
@@ -18,6 +18,7 @@ class TestComponent(object):
 
     def test_ndim(self):
         assert self.component.ndim is len(self.data.shape)
+
 
 class TestComponentID(object):
 
@@ -34,6 +35,7 @@ class TestComponentID(object):
     def test_repr(self):
         """ str should return """
         repr(self.cid)
+
 
 class TestDerivedComponent(object):
 

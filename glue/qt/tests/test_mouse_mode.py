@@ -14,10 +14,12 @@ class Event(object):
         self.ydata = y
         self.button = button
 
+
 def axes():
     result = MagicMock()
     result.figure.canvas.get_width_height.return_value = (640, 480)
     return result
+
 
 class TestMouseMode(object):
 
@@ -64,19 +66,19 @@ class TestMouseMode(object):
         assert self.move.call_count == 0
 
     def test_press_log(self):
-        e = Event(1,2)
+        e = Event(1, 2)
         self.mode.press(e)
         assert self.mode._event_x == 1
         assert self.mode._event_y == 2
 
     def test_move_log(self):
-        e = Event(1,2)
+        e = Event(1, 2)
         self.mode.move(e)
         assert self.mode._event_x == 1
         assert self.mode._event_y == 2
 
     def test_release_log(self):
-        e = Event(1,2)
+        e = Event(1, 2)
         self.mode.release(e)
         assert self.mode._event_x == 1
         assert self.mode._event_y == 2
@@ -110,13 +112,16 @@ class TestRoiMode(TestMouseMode):
         r = self.mode.roi()
         self.mode._roi_tool.roi.assert_called_once_with()
 
+
 class TestRectangleMode(TestRoiMode):
     def mode_factory(self):
         return RectangleMode
 
+
 class TestCircleMode(TestRoiMode):
     def mode_factory(self):
         return CircleMode
+
 
 class TestPolyMode(TestRoiMode):
     def mode_factory(self):
@@ -141,8 +146,9 @@ class TestContrastMode(TestMouseMode):
         assert_almost_equal(lo, -3)
         assert_almost_equal(hi, 5)
 
+
 class TestContourMode(TestMouseMode):
-    
+
     def mode_factory(self):
         return ContourMode
 
@@ -159,11 +165,12 @@ class TestContourMode(TestMouseMode):
             self.mode.roi(data)
             cntr.assert_called_once_with(1, 2, data)
 
+
 class TestContourToRoi(object):
-    
+
     def test_roi(self):
         with patch('glue.util.point_contour') as point_contour:
-            point_contour.return_value = np.array([[1,2], [2,3]])
+            point_contour.return_value = np.array([[1, 2], [2, 3]])
             p = contour_to_roi(1, 2, None)
             np.testing.assert_array_almost_equal(p.vx, [1, 2])
             np.testing.assert_array_almost_equal(p.vy, [2, 3])
@@ -174,5 +181,4 @@ class TestContourToRoi(object):
             p = contour_to_roi(1, 2, None)
             assert p is None
 
-del TestRoiMode # prevents test discovery from running abstract test
-
+del TestRoiMode  # prevents test discovery from running abstract test

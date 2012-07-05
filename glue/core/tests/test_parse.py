@@ -12,7 +12,7 @@ class TestParse(object):
     def test_re_matches_valid_names(self):
         reg = parse.TAG_RE
         valid = ['{a}', '{ a }', '{A}', '{a }', '{ a}',
-                 '{a_}', '{abc_1}','{_abc_1}', '{1}', '{1_}']
+                 '{a_}', '{abc_1}', '{_abc_1}', '{1}', '{1_}']
         invalid = ['', '{}', '{a b}']
         for v in valid:
             assert reg.match(v) is not None
@@ -28,8 +28,8 @@ class TestParse(object):
 
     def test_reference_list(self):
         cmd = '{a} - {b} + {c}'
-        refs = {'a' : 1, 'b' : 2, 'c': 3, 'd': 4}
-        expected = set([1,2,3])
+        refs = {'a': 1, 'b': 2, 'c': 3, 'd': 4}
+        expected = set([1, 2, 3])
         result = set(parse._reference_list(cmd, refs))
         assert  expected == result
 
@@ -50,13 +50,12 @@ class TestParse(object):
         assert expected == result
 
     def test_validate(self):
-        ref = {'a':1, 'b':2}
+        ref = {'a': 1, 'b': 2}
         parse._validate('{a} + {b}', ref)
         parse._validate('{a}', ref)
         parse._validate('3 + 4', ref)
         with pytest.raises(TypeError):
             parse._validate('{c}', ref)
-
 
     def test_ensure_only_component_references(self):
         ref = {'a': 1, 'b': ComponentID('b')}
@@ -67,6 +66,7 @@ class TestParse(object):
         with pytest.raises(TypeError):
             F('{b} + {d}', ref)
 
+
 class TestParsedCommand(object):
 
     def test_evaluate_component(self):
@@ -74,7 +74,7 @@ class TestParsedCommand(object):
         c1 = ComponentID('c1')
         data.__getitem__.return_value = 5
         cmd = '{comp1} * 5'
-        refs = {'comp1' : c1}
+        refs = {'comp1': c1}
         pc = parse.ParsedCommand(cmd, refs)
         assert pc.evaluate(data) == 25
         data.__getitem__.assert_called_once_with(c1)
@@ -85,7 +85,7 @@ class TestParsedCommand(object):
         sub.to_mask.return_value = 3
         sub2.to_mask.return_value = 4
         cmd = '{s1} and {s2}'
-        refs = {'s1' : sub, 's2' : sub2}
+        refs = {'s1': sub, 's2': sub2}
         pc = parse.ParsedCommand(cmd, refs)
         assert pc.evaluate(None) == (3 and 4)
 
@@ -94,22 +94,23 @@ class TestParsedCommand(object):
         c1 = ComponentID('c1')
         data.__getitem__.return_value = 5
         cmd = 'max({comp1}, 100)'
-        refs = {'comp1' : c1}
+        refs = {'comp1': c1}
         pc = parse.ParsedCommand(cmd, refs)
         assert pc.evaluate(data) == 100
         data.__getitem__.assert_called_once_with(c1)
+
 
 class TestParsedComponentLink(object):
 
     def test(self):
         data = Data()
-        comp = Component(np.array([1,2,3]))
+        comp = Component(np.array([1, 2, 3]))
         c1 = ComponentID('c1')
         c2 = ComponentID('c2')
         data.add_component(comp, c1)
 
         cmd = '{comp1} * 100'
-        refs = {'comp1' : c1}
+        refs = {'comp1': c1}
         pc = parse.ParsedCommand(cmd, refs)
 
         cl = parse.ParsedComponentLink(c2, pc)
@@ -118,7 +119,6 @@ class TestParsedComponentLink(object):
         result = data[c2]
         expected = np.array([100, 200, 300])
         np.testing.assert_array_equal(result, expected)
-
 
 
 class TestParsedSubsetState(object):
@@ -132,14 +132,14 @@ class TestParsedSubsetState(object):
         s2 = data.new_subset()
 
         state1 = MagicMock()
-        state1.to_mask.return_value = np.array([1,1,1,0], dtype=bool)
+        state1.to_mask.return_value = np.array([1, 1, 1, 0], dtype=bool)
         state2 = MagicMock()
-        state2.to_mask.return_value = np.array([0,1,1,1], dtype=bool)
+        state2.to_mask.return_value = np.array([0, 1, 1, 1], dtype=bool)
 
         s1.subset_state = state1
         s2.subset_state = state2
 
-        self.refs = {'s1' : s1, 's2' : s2, 'g' : g}
+        self.refs = {'s1': s1, 's2': s2, 'g': g}
         self.data = data
 
     def test_two_subset(self):

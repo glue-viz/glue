@@ -7,6 +7,7 @@ from ..image_widget import ImageWidget
 from ....tests import example_data
 from .... import core
 
+
 class TestImageWidget(object):
 
     def setup_method(self, method):
@@ -26,7 +27,6 @@ class TestImageWidget(object):
 
         self.widget.register_to_hub(self.hub)
         self.collect.register_to_hub(self.hub)
-
 
     def tearDown(self):
         self.widget.close()

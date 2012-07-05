@@ -15,12 +15,14 @@ AXES = FIGURE.add_subplot(111)
 FIGURE.canvas.draw = lambda: 0
 plt.close('all')
 
+
 class DummyCoords(core.coordinates.Coordinates):
     def pixel2world(self, *args):
         result = []
-        for i,a in enumerate(args):
-            result.append([aa * (i+1) for aa in a])
+        for i, a in enumerate(args):
+            result.append([aa * (i + 1) for aa in a])
         return result
+
 
 class TestImageClient(object):
 
@@ -100,7 +102,7 @@ class TestImageClient(object):
     def test_set_norm(self):
         client = self.create_client_with_image()
         assert client.display_data is not None
-        client.set_norm(vmin = 10, vmax = 100)
+        client.set_norm(vmin=10, vmax=100)
         assert client.layers[self.im].norm.vmin == 10
         assert client.layers[self.im].norm.vmax == 100
 
@@ -133,18 +135,18 @@ class TestImageClient(object):
 
     def test_slice_bounds_2d(self):
         client = self.create_client_with_image()
-        assert client.slice_bounds() == (0,0)
+        assert client.slice_bounds() == (0, 0)
 
     def test_slice_bounds_3d(self):
         client = self.create_client_with_cube()
         shape = self.cube.shape
-        assert client.slice_bounds() == (0, shape[2]-1)
+        assert client.slice_bounds() == (0, shape[2] - 1)
         client.set_slice_ori(0)
-        assert client.slice_bounds() == (0, shape[0]-1)
+        assert client.slice_bounds() == (0, shape[0] - 1)
         client.set_slice_ori(1)
-        assert client.slice_bounds() == (0, shape[1]-1)
+        assert client.slice_bounds() == (0, shape[1] - 1)
         client.set_slice_ori(2)
-        assert client.slice_bounds() == (0, shape[2]-1)
+        assert client.slice_bounds() == (0, shape[2] - 1)
 
     def test_slice_ori_on_2d_raises(self):
         client = self.create_client_with_image()
@@ -162,8 +164,8 @@ class TestImageClient(object):
         client = self.create_client_with_image()
         self.collect.append(self.cube)
         client.add_layer(self.cube)
-        roi = core.roi.PolygonalROI(vx = [10, 20, 20, 10],
-                                    vy = [10, 10, 20, 20])
+        roi = core.roi.PolygonalROI(vx=[10, 20, 20, 10],
+                                    vy=[10, 10, 20, 20])
         client._apply_roi(roi)
         roi2 = self.im.edit_subset.subset_state.roi
         state = self.im.edit_subset.subset_state
@@ -180,8 +182,8 @@ class TestImageClient(object):
     def test_apply_roi_3d(self):
         client = self.create_client_with_cube()
         self.cube.coords = DummyCoords()
-        roi = core.roi.PolygonalROI( vx = [10, 20, 20, 10],
-                                     vy =[10, 10, 20, 20])
+        roi = core.roi.PolygonalROI(vx=[10, 20, 20, 10],
+                                    vy=[10, 10, 20, 20])
 
         client.set_slice_ori(0)
         client._apply_roi(roi)

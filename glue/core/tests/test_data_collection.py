@@ -7,6 +7,7 @@ from ..data_collection import DataCollection
 from ..message import Message, DataCollectionAddMessage, DataCollectionDeleteMessage, DataAddComponentMessage
 from ..component_link import ComponentLink
 
+
 class HubLog(HubListener):
     def __init__(self):
         self.messages = []
@@ -17,8 +18,9 @@ class HubLog(HubListener):
     def notify(self, message):
         self.messages.append(message)
 
+
 class TestDataCollection(object):
-    
+
     def setup_method(self, method):
         self.dc = DataCollection()
         self.data = MagicMock()
@@ -108,7 +110,7 @@ class TestDataCollection(object):
         id2 = ComponentID("id2")
         link = ComponentLink([id1], id2)
         dc = DerivedComponent(d, link)
-        d.add_component(Component(np.array([1,2,3])), id1)
+        d.add_component(Component(np.array([1, 2, 3])), id1)
         d.add_component(dc, id2)
 
         dc = DataCollection()
@@ -128,7 +130,7 @@ class TestDataCollection(object):
 
         self.dc.register_to_hub(self.hub)
         self.dc.append(d)
-        d.add_component(Component(np.array([1,2,3])), id1)
+        d.add_component(Component(np.array([1, 2, 3])), id1)
         assert not link in self.dc._link_manager
         d.add_component(dc, id2)
 
@@ -144,4 +146,3 @@ class TestDataCollection(object):
         self.data.coordinate_links = [link]
         self.dc.append(self.data)
         assert link in self.dc._link_manager.links
-

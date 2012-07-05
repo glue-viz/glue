@@ -10,7 +10,7 @@ class TestDataRetrieval(object):
         data1 = Data()
         comp1 = Component(np.arange(5))
         id1 = data1.add_component(comp1, 'comp_1')
-        comp2 = Component(np.arange(5)*2)
+        comp2 = Component(np.arange(5) * 2)
         id2 = data1.add_component(comp2, 'comp_2')
 
         data2 = Data()

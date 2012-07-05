@@ -7,8 +7,9 @@ from ..data_collection import DataCollection
 from ..hub import Hub
 from ..subset import Subset
 
+
 class MockClient(Client):
-    
+
     def __init__(self, *args, **kwargs):
         super(MockClient, self).__init__(*args, **kwargs)
         self.present = set()
@@ -27,7 +28,7 @@ class MockClient(Client):
 
 
 class BasicClientStub(BasicClient):
-    
+
     def __init__(self, *args, **kwargs):
         super(BasicClientStub, self).__init__(*args, **kwargs)
         self.added = set()
@@ -71,10 +72,10 @@ class BasicClientStub(BasicClient):
 class TestClient(object):
 
     def _data(self):
-        return MagicMock(spec_set = DataCollection)
+        return MagicMock(spec_set=DataCollection)
 
     def _hub(self):
-        return MagicMock(spec_set = Hub)
+        return MagicMock(spec_set=Hub)
 
     def _client(self, data):
         return MockClient(data)
@@ -94,6 +95,7 @@ class TestClient(object):
         client = self._client(data)
         client.register_to_hub(hub)
         assert hub.subscribe.called
+
 
 class TestBasicClient(object):
 

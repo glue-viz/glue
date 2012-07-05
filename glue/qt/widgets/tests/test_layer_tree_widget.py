@@ -10,9 +10,10 @@ from ..layer_tree_widget import LayerTreeWidget
 from ....tests import example_data
 from .... import core
 
+
 class TestLayerTree(object):
     """ Unit tests for the layer_tree_widget class """
-    
+
     def setup_method(self, method):
         import sys
 
@@ -204,7 +205,6 @@ class TestLayerTree(object):
         diff = list(old_subsets ^ new_subsets)
         assert len(diff) == 1
         assert isinstance(diff[0].subset_state, core.subset.XorState)
-
 
     def test_actions_enabled_single_subset_selection(self):
         layer = self.add_layer_via_method()

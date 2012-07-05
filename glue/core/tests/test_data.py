@@ -13,10 +13,10 @@ from ..component_link import ComponentLink
 class TestCoordinates(Coordinates):
 
     def pixel2world(self, *args):
-        return [(i+2.) * a for i,a in enumerate(args)]
+        return [(i + 2.) * a for i, a in enumerate(args)]
 
     def world2pixel(self, *args):
-        return [a/(i+2.) for i,a in enumerate(args)]
+        return [a / (i + 2.) for i, a in enumerate(args)]
 
 
 class TestData(object):
@@ -24,8 +24,8 @@ class TestData(object):
     def setup_method(self, method):
         self.data = Data(label="Test Data")
         comp = MagicMock()
-        comp.data.shape = (2,3)
-        comp.shape = (2,3)
+        comp.data.shape = (2, 3)
+        comp.shape = (2, 3)
         comp.units = None
         self.comp = comp
         self.data.coords = TestCoordinates()
@@ -40,7 +40,7 @@ class TestData(object):
         assert d.ndim == 0
 
     def test_shape(self):
-        assert self.data.shape == (2,3)
+        assert self.data.shape == (2, 3)
 
     def test_ndim(self):
         assert self.data.ndim == 2
@@ -58,14 +58,14 @@ class TestData(object):
     def test_add_component_with_id(self):
         cid = ComponentID("test")
         comp = MagicMock()
-        comp.shape = (2,3)
+        comp.shape = (2, 3)
         comp.units = None
         cid2 = self.data.add_component(comp, cid)
         assert cid2 is cid
 
     def test_add_component_incompatible_shape(self):
         comp = MagicMock()
-        comp.data.shape = (3,2)
+        comp.data.shape = (3, 2)
         with pytest.raises(TypeError):
             self.data.add_component(comp("junk label"))
 
@@ -91,7 +91,7 @@ class TestData(object):
         assert len(self.data.subsets) == 1
 
     def test_register(self):
-        hub = MagicMock(spec_set = Hub)
+        hub = MagicMock(spec_set=Hub)
         not_hub = MagicMock()
         self.data.register_to_hub(hub)
         assert hub is self.data.hub
@@ -101,7 +101,7 @@ class TestData(object):
     def test_component_order(self):
         """Components should be returned in alphabetical order"""
         data = Data()
-        comp = Component(np.array([1,2,3]))
+        comp = Component(np.array([1, 2, 3]))
         labels = 'asldfkjaAREGWoibasiwnsldkgajsldkgslkg'
         for label in labels:
             data.add_component(comp, label)
@@ -109,9 +109,8 @@ class TestData(object):
         labels = [cid.label.lower() for cid in ids]
         assert labels == sorted(labels)
 
-
     def test_broadcast(self):
-        hub = MagicMock(spec_set = Hub)
+        hub = MagicMock(spec_set=Hub)
 
         # make sure broadcasting with no hub is ok
         self.data.broadcast()
@@ -127,15 +126,15 @@ class TestData(object):
         assert sub1.subset_state is sub2.subset_state
 
     def test_double_hub_add(self):
-        hub = MagicMock(spec_set = Hub)
-        hub2 = MagicMock(spec_set = Hub)
+        hub = MagicMock(spec_set=Hub)
+        hub2 = MagicMock(spec_set=Hub)
         self.data.register_to_hub(hub)
         with pytest.raises(AttributeError):
             self.data.__setattr__('hub', hub2)
 
     def test_primary_components(self):
         compid = ComponentID('virtual')
-        link = MagicMock(spec_set = ComponentLink)
+        link = MagicMock(spec_set=ComponentLink)
         comp = DerivedComponent(self.data, link)
 
         self.data.add_component(comp, compid)
@@ -155,7 +154,7 @@ class TestData(object):
 
     def test_add_component_link(self):
         compid = ComponentID('virtual')
-        link = MagicMock(spec_set = ComponentLink)
+        link = MagicMock(spec_set=ComponentLink)
         cid = ComponentID("new id")
         link.get_to_id.return_value = cid
 
@@ -164,7 +163,7 @@ class TestData(object):
 
     def test_derived_components(self):
         compid = ComponentID('virtual')
-        link = MagicMock(spec_set = ComponentLink)
+        link = MagicMock(spec_set=ComponentLink)
         comp = DerivedComponent(self.data, link)
 
         self.data.add_component(comp, compid)
@@ -182,7 +181,7 @@ class TestData(object):
 
     def test_add_derived_component(self):
         compid = ComponentID('virtual')
-        link = MagicMock(spec_set = ComponentLink)
+        link = MagicMock(spec_set=ComponentLink)
         comp = DerivedComponent(self.data, link)
         self.data.add_component(comp, compid)
 
@@ -194,13 +193,13 @@ class TestData(object):
         assert cid == [self.comp_id]
 
     def test_add_subset(self):
-        s = MagicMock(spec_set = Subset)
+        s = MagicMock(spec_set=Subset)
         self.data.add_subset(s)
         assert s in self.data.subsets
 
     def test_add_subset_with_hub(self):
-        s = MagicMock(spec_set = Subset)
-        hub = MagicMock(spec_set = Hub)
+        s = MagicMock(spec_set=Subset)
+        hub = MagicMock(spec_set=Hub)
         self.data.register_to_hub(hub)
 
         self.data.add_subset(s)
@@ -212,14 +211,14 @@ class TestData(object):
         assert not self.comp_id in self.data.components
 
     def test_remove_subset(self):
-        s = MagicMock(spec_set = Subset)
+        s = MagicMock(spec_set=Subset)
         self.data.add_subset(s)
         self.data.remove_subset(s)
         assert not s in self.data.subsets
 
     def test_remove_subset_with_hub(self):
-        s = MagicMock(spec_set = Subset)
-        hub = MagicMock(spec_set = Hub)
+        s = MagicMock(spec_set=Subset)
+        hub = MagicMock(spec_set=Hub)
 
         self.data.register_to_hub(hub)
         self.data.add_subset(s)

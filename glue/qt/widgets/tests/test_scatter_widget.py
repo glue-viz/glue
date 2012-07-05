@@ -9,6 +9,7 @@ from ..scatter_widget import ScatterWidget
 from ....tests import example_data
 from .... import core
 
+
 class TestScatterWidget(object):
 
     def setup_method(self, method):
@@ -53,7 +54,6 @@ class TestScatterWidget(object):
         ymin = data[:, 1].min()
         ymax = data[:, 1].max()
         return [xmin, xmax], [ymin, ymax]
-
 
     def plot_limits(self):
         """ Return the plot limits

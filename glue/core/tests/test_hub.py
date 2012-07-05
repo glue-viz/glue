@@ -17,7 +17,7 @@ class TestHub(object):
     def get_subscription(self):
         msg = Message
         handler = MagicMock()
-        subscriber  = MagicMock(spec_set=HubListener)
+        subscriber = MagicMock(spec_set=HubListener)
         return msg, handler, subscriber
 
     def test_subscribe(self):
@@ -189,6 +189,7 @@ class TestHub(object):
     def test_invalid_init(self):
         with pytest.raises(TypeError):
             Hub(None)
+
 
 class TestHubListener(object):
     """This is a dumb test, I know. Fixated on code coverage"""

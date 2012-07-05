@@ -20,8 +20,9 @@ All create, update, delete events should emit signals
 Processed (or ignored!) by clients
 """
 
+
 class C(Client):
-    
+
     def __init__(self, data):
         Client.__init__(self, data)
         self.last_message = None
@@ -42,6 +43,7 @@ class C(Client):
     def _update_data(self, message):
         self.last_message = message
         self.call = self._update_data
+
 
 class TestCommunication(object):
 
@@ -176,4 +178,3 @@ class TestCommunication(object):
         self.s1.echo_after_registration = "1"
         assert self.c1.call == self.c1._update_subset
         assert self.c1.last_message.attribute == 'echo_after_registration'
-

@@ -15,8 +15,9 @@ AXES = FIGURE.add_subplot(111)
 FIGURE.canvas.draw = lambda: 0
 plt.close('all')
 
+
 class TestScatterClient(object):
-    
+
     def setup_method(self, method):
         self.data = example_data.test_data()
         self.ids = [self.data[0].find_component_id('a')[0],
@@ -58,9 +59,9 @@ class TestScatterClient(object):
     def layer_data_correct(self, layer, x, y):
         artist = self.client.managers[layer]._artist
         xy = artist.get_offsets()
-        if max(abs(xy[:,0] - x)) > .01:
+        if max(abs(xy[:, 0] - x)) > .01:
             return False
-        if max(abs(xy[:,1] - y)) > .01:
+        if max(abs(xy[:, 1] - y)) > .01:
             return False
         return True
 
@@ -224,7 +225,6 @@ class TestScatterClient(object):
         self.client.add_layer(data)
         assert self.client.is_layer_present(s1)
 
-
     def test_edit_subset_connect_with_data(self):
         data = self.add_data()
         assert self.client.is_layer_present(data.edit_subset)
@@ -282,7 +282,7 @@ class TestScatterClient(object):
         assert not self.client.is_visible(data.edit_subset)
 
     def test_2d_data(self):
-        comp = core.data.Component(np.array([[1,2],[3,4]]))
+        comp = core.data.Component(np.array([[1, 2], [3, 4]]))
         data = core.data.Data()
         cid = data.add_component(comp, '2d')
         self.collect.append(data)

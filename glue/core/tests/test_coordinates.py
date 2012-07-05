@@ -68,8 +68,8 @@ class TestWcsCoordinates(object):
         x, y = [250, 250], [187.5, 187.5]
         result = coord.pixel2world(x, y)
         expected = [0, 0], [5, 5]
-        for i in range(0,1):
-            for r,e in zip(result[i], expected[i]):
+        for i in range(0, 1):
+            for r, e in zip(result[i], expected[i]):
                 assert_almost_equal(r, e)
 
     def test_pixel2world_numpy(self):
@@ -101,8 +101,8 @@ class TestWcsCoordinates(object):
         expected = [250, 250], [187.5, 187.5]
         x, y = [0, 0], [5, 5]
         result = coord.world2pixel(x, y)
-        for i in range(0,1):
-            for r,e in zip(result[i], expected[i]):
+        for i in range(0, 1):
+            for r, e in zip(result[i], expected[i]):
                 assert_almost_equal(r, e)
 
     def test_world2pixel_scalar(self):
@@ -162,13 +162,13 @@ class TestWcsCoordinates(object):
 class TestCoordinatesFromHeader(object):
 
     def test_2d(self):
-        hdr = {"NAXIS" : 2}
+        hdr = {"NAXIS": 2}
         with patch('glue.core.coordinates.WCSCoordinates') as wcs:
             coord = coordinates_from_header(hdr)
             wcs.assert_called_once_with(hdr)
 
     def test_3d(self):
-        hdr = {"NAXIS" : 3}
+        hdr = {"NAXIS": 3}
         with patch('glue.core.coordinates.WCSCubeCoordinates') as wcs:
             coord = coordinates_from_header(hdr)
             wcs.assert_called_once_with(hdr)
@@ -180,7 +180,7 @@ class TestCoordinatesFromHeader(object):
             wcs.assert_called_once_with()
 
     def test_attribute_error(self):
-        hdr = {"NAXIS" : 2}
+        hdr = {"NAXIS": 2}
         with patch('glue.core.coordinates.WCSCoordinates') as wcs:
             wcs.side_effect = AttributeError
             coord = coordinates_from_header(hdr)
