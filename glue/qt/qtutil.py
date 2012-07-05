@@ -3,7 +3,7 @@ from PyQt4 import QtGui
 from PyQt4.QtCore import QMimeData, QStringList
 from PyQt4.QtGui import QColor, QInputDialog, QColorDialog, QListWidget
 
-import glue
+from .. import core
 
 
 def mpl_to_qt4_color(color):
@@ -57,10 +57,10 @@ def data_wizard():
     label = label.split('\\')[-1]
 
     if extension in ['fits', 'fit', 'fts']:
-        result = glue.GriddedData(label=label)
+        result = core.data.GriddedData(label=label)
         result.read_data(file_name)
     else:
-        result = glue.data.TabularData(label=label)
+        result = core.data.TabularData(label=label)
         result.read_data(file_name)
     return result
 

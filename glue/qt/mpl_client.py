@@ -7,8 +7,9 @@ from numpy import arange, sin, pi
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from simple_mpl_client import Ui_MainWindow
 import numpy as np
+
+from ..clients.simple_mpl_client import Ui_MainWindow
 
 
 class ScatterCanvas(FigureCanvas):

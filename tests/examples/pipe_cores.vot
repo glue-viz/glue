@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VOTABLE version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://www.ivoa.net/xml/VOTable/v1.1"
+  xsi:schemaLocation="http://www.ivoa.net/xml/VOTable/v1.1 http://www.ivoa.net/xml/VOTable/v1.1">
+ <DESCRIPTION>
+   VizieR Astronomical Server vizier.cfa.harvard.edu	2012-02-03T15:56:25 [V1.80]
+   Explanations and Statistics of UCDs:			See LINK below
+   In case of problem, please report to:	question@simbad.u-strasbg.fr
+ </DESCRIPTION>
+<!-- VOTable description at http://www.ivoa.net/Documents/latest/VOT.html -->
+
+<INFO ID="Ref" name="-ref" value="VIZ4f2c03777048"/>
+<INFO ID="MaxTuples" name="-out.max" value="unlimited"/>
+
+<!--
+Execution Reports
+ -->
+
+<RESOURCE ID="yCat_34629017" name="J/A+A/462/L17">
+  <DESCRIPTION>Dense cores in interstellar molecular clouds (Alves+, 2007)</DESCRIPTION>
+  <COOSYS ID="G" system="galactic"/>
+  <TABLE ID="J_A_A_462_L17_table1" name="J/A+A/462/L17/table1">
+    <DESCRIPTION>Core positions</DESCRIPTION>
+    <!-- Definitions of GROUPs and FIELDs -->
+    <FIELD name="Seq" ucd="meta.id;meta.main" datatype="short" width="3"><!-- ucd="ID_NUMBER" -->
+      <DESCRIPTION>Core number</DESCRIPTION>
+    </FIELD>
+    <FIELD name="GLON" ucd="pos.galactic.lon" ref="G" datatype="float" width="6" precision="2" unit="deg"><!-- ucd="POS_GAL_LON" -->
+      <DESCRIPTION>Galactic Longitude</DESCRIPTION>
+    </FIELD>
+    <FIELD name="GLAT" ucd="pos.galactic.lat" ref="G" datatype="float" width="6" precision="2" unit="deg"><!-- ucd="POS_GAL_LAT" -->
+      <DESCRIPTION>Galactic Latitude</DESCRIPTION>
+    </FIELD>
+    <FIELD name="AVpeak" ucd="phys.absorption" datatype="float" width="4" precision="1" unit="mag"><!-- ucd="PHOT_EXTINCTION_ISM" -->
+      <DESCRIPTION>Peak extinction of Av for the map resolution (60")</DESCRIPTION>
+    </FIELD>
+    <FIELD name="Size" ucd="phys.angSize" datatype="float" width="4" precision="1" unit="pc"><!-- ucd="EXTENSION_DIAM" -->
+      <DESCRIPTION>Size (mean core diameter)</DESCRIPTION>
+    </FIELD>
+    <FIELD name="Mass" ucd="phys.mass" datatype="float" width="4" precision="1" unit="solMass"><!-- ucd="PHYS_MASS_MISC" -->
+      <DESCRIPTION>Mass of the core</DESCRIPTION>
+    </FIELD>
+    <FIELD name="AVbckg" ucd="phys.absorption" datatype="float" width="4" precision="1" unit="mag"><!-- ucd="PHOT_EXTINCTION_ISM" -->
+      <DESCRIPTION>Core background of Av</DESCRIPTION>
+    </FIELD>
+<DATA><TABLEDATA>
+<TR><TD>1</TD><TD>356.14</TD><TD>+03.14</TD><TD>6.0</TD><TD>0.1</TD><TD>1.1</TD><TD>3.9</TD></TR>
+<TR><TD>2</TD><TD>356.24</TD><TD>+06.69</TD><TD>3.1</TD><TD>0.1</TD><TD>0.6</TD><TD>1.0</TD></TR>
+<TR><TD>3</TD><TD>356.26</TD><TD>+03.13</TD><TD>6.0</TD><TD>0.1</TD><TD>1.4</TD><TD>4.0</TD></TR>
+<TR><TD>4</TD><TD>356.30</TD><TD>+03.25</TD><TD>5.6</TD><TD>0.1</TD><TD>1.0</TD><TD>3.6</TD></TR>
+<TR><TD>5</TD><TD>356.31</TD><TD>+03.06</TD><TD>6.1</TD><TD>0.1</TD><TD>0.7</TD><TD>4.1</TD></TR>
+<TR><TD>6</TD><TD>356.97</TD><TD>+07.28</TD><TD>13.6</TD><TD>0.2</TD><TD>4.5</TD><TD>2.6</TD></TR>
+<TR><TD>7</TD><TD>357.01</TD><TD>+07.01</TD><TD>12.1</TD><TD>0.3</TD><TD>7.8</TD><TD>3.2</TD></TR>
+<TR><TD>8</TD><TD>357.03</TD><TD>+06.85</TD><TD>12.2</TD><TD>0.2</TD><TD>4.6</TD><TD>2.3</TD></TR>
+<TR><TD>9</TD><TD>357.09</TD><TD>+04.56</TD><TD>5.0</TD><TD>0.1</TD><TD>1.3</TD><TD>3.0</TD></TR>
+<TR><TD>10</TD><TD>357.05</TD><TD>+04.29</TD><TD>5.7</TD><TD>0.1</TD><TD>1.2</TD><TD>3.3</TD></TR>
+<TR><TD>11</TD><TD>357.05</TD><TD>+07.25</TD><TD>11.5</TD><TD>0.3</TD><TD>5.9</TD><TD>3.4</TD></TR>
+<TR><TD>12</TD><TD>357.10</TD><TD>+07.13</TD><TD>24.3</TD><TD>0.5</TD><TD>28.2</TD><TD>4.1</TD></TR>
+<TR><TD>13</TD><TD>357.17</TD><TD>+07.35</TD><TD>5.3</TD><TD>0.1</TD><TD>1.0</TD><TD>2.5</TD></TR>
+<TR><TD>14</TD><TD>357.29</TD><TD>+06.96</TD><TD>18.5</TD><TD>0.3</TD><TD>12.9</TD><TD>2.9</TD></TR>
+<TR><TD>15</TD><TD>357.31</TD><TD>+06.88</TD><TD>10.4</TD><TD>0.2</TD><TD>4.4</TD><TD>3.0</TD></TR>
+<TR><TD>16</TD><TD>357.32</TD><TD>+06.78</TD><TD>6.9</TD><TD>0.3</TD><TD>6.0</TD><TD>2.9</TD></TR>
+<TR><TD>17</TD><TD>357.39</TD><TD>+06.61</TD><TD>5.3</TD><TD>0.1</TD><TD>1.2</TD><TD>2.2</TD></TR>
+<TR><TD>18</TD><TD>357.42</TD><TD>+06.88</TD><TD>5.1</TD><TD>0.1</TD><TD>0.8</TD><TD>2.9</TD></TR>
+<TR><TD>19</TD><TD>357.44</TD><TD>+06.52</TD><TD>4.4</TD><TD>0.1</TD><TD>0.7</TD><TD>2.3</TD></TR>
+<TR><TD>20</TD><TD>357.46</TD><TD>+06.35</TD><TD>9.6</TD><TD>0.2</TD><TD>3.7</TD><TD>2.5</TD></TR>
+<TR><TD>21</TD><TD>357.60</TD><TD>+06.52</TD><TD>6.6</TD><TD>0.3</TD><TD>5.6</TD><TD>3.2</TD></TR>
+<TR><TD>22</TD><TD>357.60</TD><TD>+06.29</TD><TD>7.7</TD><TD>0.2</TD><TD>1.8</TD><TD>3.0</TD></TR>
+<TR><TD>23</TD><TD>357.62</TD><TD>+06.22</TD><TD>8.4</TD><TD>0.2</TD><TD>3.2</TD><TD>2.8</TD></TR>
+<TR><TD>24</TD><TD>357.92</TD><TD>+02.58</TD><TD>7.6</TD><TD>0.1</TD><TD>1.9</TD><TD>4.5</TD></TR>
+<TR><TD>25</TD><TD>357.95</TD><TD>+06.36</TD><TD>6.6</TD><TD>0.2</TD><TD>2.1</TD><TD>2.8</TD></TR>
+<TR><TD>26</TD><TD>358.03</TD><TD>+06.25</TD><TD>4.8</TD><TD>0.1</TD><TD>0.8</TD><TD>2.8</TD></TR>
+<TR><TD>27</TD><TD>358.16</TD><TD>+06.30</TD><TD>6.6</TD><TD>0.3</TD><TD>5.1</TD><TD>2.0</TD></TR>
+<TR><TD>28</TD><TD>358.23</TD><TD>+02.57</TD><TD>7.9</TD><TD>0.1</TD><TD>0.9</TD><TD>5.0</TD></TR>
+<TR><TD>29</TD><TD>358.38</TD><TD>+06.01</TD><TD>4.4</TD><TD>0.1</TD><TD>1.0</TD><TD>2.7</TD></TR>
+<TR><TD>30</TD><TD>358.48</TD><TD>+05.49</TD><TD>5.3</TD><TD>0.1</TD><TD>1.1</TD><TD>3.3</TD></TR>
+<TR><TD>31</TD><TD>358.52</TD><TD>+06.18</TD><TD>6.6</TD><TD>0.2</TD><TD>3.4</TD><TD>2.5</TD></TR>
+<TR><TD>32</TD><TD>358.54</TD><TD>+05.46</TD><TD>5.6</TD><TD>0.1</TD><TD>1.1</TD><TD>3.3</TD></TR>
+<TR><TD>33</TD><TD>358.57</TD><TD>+05.90</TD><TD>10.7</TD><TD>0.3</TD><TD>6.6</TD><TD>2.6</TD></TR>
+<TR><TD>34</TD><TD>358.59</TD><TD>+05.75</TD><TD>8.4</TD><TD>0.3</TD><TD>4.9</TD><TD>3.1</TD></TR>
+<TR><TD>35</TD><TD>358.64</TD><TD>+05.23</TD><TD>5.2</TD><TD>0.1</TD><TD>1.3</TD><TD>3.2</TD></TR>
+<TR><TD>36</TD><TD>358.66</TD><TD>+06.03</TD><TD>6.6</TD><TD>0.2</TD><TD>2.7</TD><TD>2.4</TD></TR>
+<TR><TD>37</TD><TD>358.72</TD><TD>+06.04</TD><TD>8.8</TD><TD>0.2</TD><TD>2.6</TD><TD>2.2</TD></TR>
+<TR><TD>38</TD><TD>358.74</TD><TD>+02.41</TD><TD>9.6</TD><TD>0.2</TD><TD>3.6</TD><TD>6.1</TD></TR>
+<TR><TD>39</TD><TD>358.78</TD><TD>+06.00</TD><TD>6.4</TD><TD>0.2</TD><TD>1.7</TD><TD>2.2</TD></TR>
+<TR><TD>40</TD><TD>358.79</TD><TD>+05.64</TD><TD>23.7</TD><TD>0.4</TD><TD>14.6</TD><TD>4.0</TD></TR>
+<TR><TD>41</TD><TD>358.80</TD><TD>+05.31</TD><TD>9.8</TD><TD>0.2</TD><TD>2.1</TD><TD>3.8</TD></TR>
+<TR><TD>42</TD><TD>358.81</TD><TD>+05.26</TD><TD>21.6</TD><TD>0.2</TD><TD>4.2</TD><TD>3.7</TD></TR>
+<TR><TD>43</TD><TD>358.92</TD><TD>+05.52</TD><TD>6.5</TD><TD>0.2</TD><TD>2.3</TD><TD>3.9</TD></TR>
+<TR><TD>44</TD><TD>359.00</TD><TD>+05.28</TD><TD>5.4</TD><TD>0.1</TD><TD>1.3</TD><TD>3.3</TD></TR>
+<TR><TD>45</TD><TD>359.06</TD><TD>+02.33</TD><TD>7.5</TD><TD>0.2</TD><TD>2.4</TD><TD>5.3</TD></TR>
+<TR><TD>46</TD><TD>359.48</TD><TD>+05.24</TD><TD>5.0</TD><TD>0.1</TD><TD>0.7</TD><TD>3.1</TD></TR>
+<TR><TD>47</TD><TD>359.50</TD><TD>+04.44</TD><TD>10.3</TD><TD>0.2</TD><TD>3.4</TD><TD>4.6</TD></TR>
+<TR><TD>48</TD><TD>359.51</TD><TD>+04.85</TD><TD>11.1</TD><TD>0.3</TD><TD>8.7</TD><TD>4.1</TD></TR>
+<TR><TD>49</TD><TD>359.58</TD><TD>+04.56</TD><TD>6.8</TD><TD>0.2</TD><TD>2.5</TD><TD>4.3</TD></TR>
+<TR><TD>50</TD><TD>359.59</TD><TD>+04.77</TD><TD>5.8</TD><TD>0.1</TD><TD>1.2</TD><TD>3.9</TD></TR>
+<TR><TD>51</TD><TD>359.69</TD><TD>+04.58</TD><TD>8.6</TD><TD>0.2</TD><TD>3.2</TD><TD>4.6</TD></TR>
+<TR><TD>52</TD><TD>359.81</TD><TD>+04.41</TD><TD>6.7</TD><TD>0.1</TD><TD>0.8</TD><TD>4.8</TD></TR>
+<TR><TD>53</TD><TD>359.93</TD><TD>+02.25</TD><TD>8.8</TD><TD>0.3</TD><TD>7.1</TD><TD>5.6</TD></TR>
+<TR><TD>54</TD><TD>359.98</TD><TD>+03.97</TD><TD>8.4</TD><TD>0.2</TD><TD>3.7</TD><TD>5.0</TD></TR>
+<TR><TD>55</TD><TD>000.01</TD><TD>+04.06</TD><TD>7.3</TD><TD>0.1</TD><TD>1.1</TD><TD>5.1</TD></TR>
+<TR><TD>56</TD><TD>000.07</TD><TD>+04.62</TD><TD>11.5</TD><TD>0.3</TD><TD>9.6</TD><TD>4.1</TD></TR>
+<TR><TD>57</TD><TD>000.08</TD><TD>+03.86</TD><TD>7.7</TD><TD>0.1</TD><TD>1.0</TD><TD>5.4</TD></TR>
+<TR><TD>58</TD><TD>000.18</TD><TD>+04.28</TD><TD>6.8</TD><TD>0.2</TD><TD>2.6</TD><TD>4.7</TD></TR>
+<TR><TD>59</TD><TD>000.19</TD><TD>+03.99</TD><TD>7.6</TD><TD>0.1</TD><TD>1.4</TD><TD>5.4</TD></TR>
+<TR><TD>60</TD><TD>000.22</TD><TD>+03.63</TD><TD>7.4</TD><TD>0.1</TD><TD>1.6</TD><TD>5.5</TD></TR>
+<TR><TD>61</TD><TD>000.22</TD><TD>+04.60</TD><TD>8.9</TD><TD>0.2</TD><TD>5.9</TD><TD>4.8</TD></TR>
+<TR><TD>62</TD><TD>000.23</TD><TD>+04.55</TD><TD>9.7</TD><TD>0.2</TD><TD>5.7</TD><TD>4.8</TD></TR>
+<TR><TD>63</TD><TD>000.31</TD><TD>+03.87</TD><TD>8.9</TD><TD>0.1</TD><TD>1.3</TD><TD>6.2</TD></TR>
+<TR><TD>64</TD><TD>000.37</TD><TD>+03.93</TD><TD>10.9</TD><TD>0.1</TD><TD>1.1</TD><TD>6.1</TD></TR>
+<TR><TD>65</TD><TD>000.37</TD><TD>+03.97</TD><TD>11.6</TD><TD>0.1</TD><TD>2.0</TD><TD>6.1</TD></TR>
+<TR><TD>66</TD><TD>000.38</TD><TD>+04.00</TD><TD>10.9</TD><TD>0.2</TD><TD>2.7</TD><TD>6.1</TD></TR>
+<TR><TD>67</TD><TD>000.53</TD><TD>+04.78</TD><TD>8.2</TD><TD>0.3</TD><TD>7.3</TD><TD>4.2</TD></TR>
+<TR><TD>68</TD><TD>000.60</TD><TD>+04.46</TD><TD>6.8</TD><TD>0.1</TD><TD>1.2</TD><TD>4.8</TD></TR>
+<TR><TD>69</TD><TD>000.63</TD><TD>+04.64</TD><TD>9.3</TD><TD>0.2</TD><TD>5.0</TD><TD>5.0</TD></TR>
+<TR><TD>70</TD><TD>000.66</TD><TD>+04.62</TD><TD>11.3</TD><TD>0.2</TD><TD>2.4</TD><TD>4.9</TD></TR>
+<TR><TD>71</TD><TD>000.69</TD><TD>+07.98</TD><TD>4.5</TD><TD>0.1</TD><TD>0.5</TD><TD>0.9</TD></TR>
+<TR><TD>72</TD><TD>000.69</TD><TD>+07.91</TD><TD>5.4</TD><TD>0.1</TD><TD>1.0</TD><TD>1.5</TD></TR>
+<TR><TD>73</TD><TD>000.69</TD><TD>+04.42</TD><TD>7.6</TD><TD>0.2</TD><TD>2.4</TD><TD>5.2</TD></TR>
+<TR><TD>74</TD><TD>000.73</TD><TD>+03.87</TD><TD>12.4</TD><TD>0.3</TD><TD>7.7</TD><TD>5.5</TD></TR>
+<TR><TD>75</TD><TD>000.84</TD><TD>+03.81</TD><TD>8.1</TD><TD>0.1</TD><TD>0.9</TD><TD>5.7</TD></TR>
+<TR><TD>76</TD><TD>000.93</TD><TD>+07.16</TD><TD>4.1</TD><TD>0.1</TD><TD>0.9</TD><TD>1.8</TD></TR>
+<TR><TD>77</TD><TD>000.96</TD><TD>+07.38</TD><TD>3.7</TD><TD>0.1</TD><TD>0.6</TD><TD>1.4</TD></TR>
+<TR><TD>78</TD><TD>000.99</TD><TD>+07.24</TD><TD>3.7</TD><TD>0.1</TD><TD>0.6</TD><TD>1.8</TD></TR>
+<TR><TD>79</TD><TD>000.99</TD><TD>+03.89</TD><TD>10.3</TD><TD>0.2</TD><TD>4.6</TD><TD>6.1</TD></TR>
+<TR><TD>80</TD><TD>001.04</TD><TD>+03.82</TD><TD>10.6</TD><TD>0.3</TD><TD>10.5</TD><TD>6.4</TD></TR>
+<TR><TD>81</TD><TD>001.08</TD><TD>+05.17</TD><TD>5.1</TD><TD>0.1</TD><TD>0.9</TD><TD>2.7</TD></TR>
+<TR><TD>82</TD><TD>001.15</TD><TD>+03.62</TD><TD>7.6</TD><TD>0.1</TD><TD>1.6</TD><TD>5.4</TD></TR>
+<TR><TD>83</TD><TD>001.17</TD><TD>+02.43</TD><TD>9.6</TD><TD>0.2</TD><TD>2.3</TD><TD>5.2</TD></TR>
+<TR><TD>84</TD><TD>001.20</TD><TD>+03.57</TD><TD>8.1</TD><TD>0.1</TD><TD>1.7</TD><TD>5.5</TD></TR>
+<TR><TD>85</TD><TD>001.23</TD><TD>+04.13</TD><TD>8.3</TD><TD>0.2</TD><TD>2.7</TD><TD>6.0</TD></TR>
+<TR><TD>86</TD><TD>001.28</TD><TD>+04.00</TD><TD>11.2</TD><TD>0.2</TD><TD>3.3</TD><TD>7.0</TD></TR>
+<TR><TD>87</TD><TD>001.31</TD><TD>+03.76</TD><TD>22.2</TD><TD>0.3</TD><TD>19.8</TD><TD>7.2</TD></TR>
+<TR><TD>88</TD><TD>001.34</TD><TD>+03.93</TD><TD>12.1</TD><TD>0.2</TD><TD>7.7</TD><TD>7.7</TD></TR>
+<TR><TD>89</TD><TD>001.33</TD><TD>+04.02</TD><TD>13.7</TD><TD>0.2</TD><TD>4.0</TD><TD>7.4</TD></TR>
+<TR><TD>90</TD><TD>001.38</TD><TD>+06.29</TD><TD>3.7</TD><TD>0.1</TD><TD>0.7</TD><TD>1.5</TD></TR>
+<TR><TD>91</TD><TD>001.40</TD><TD>+04.39</TD><TD>11.4</TD><TD>0.1</TD><TD>2.3</TD><TD>5.1</TD></TR>
+<TR><TD>92</TD><TD>001.41</TD><TD>+03.90</TD><TD>15.1</TD><TD>0.2</TD><TD>4.7</TD><TD>8.2</TD></TR>
+<TR><TD>93</TD><TD>001.41</TD><TD>+03.71</TD><TD>16.9</TD><TD>0.2</TD><TD>8.0</TD><TD>6.7</TD></TR>
+<TR><TD>94</TD><TD>001.43</TD><TD>+03.78</TD><TD>12.1</TD><TD>0.2</TD><TD>3.6</TD><TD>7.5</TD></TR>
+<TR><TD>95</TD><TD>001.45</TD><TD>+06.95</TD><TD>5.4</TD><TD>0.1</TD><TD>0.8</TD><TD>1.1</TD></TR>
+<TR><TD>96</TD><TD>001.46</TD><TD>+06.80</TD><TD>6.5</TD><TD>0.2</TD><TD>1.4</TD><TD>1.3</TD></TR>
+<TR><TD>97</TD><TD>001.47</TD><TD>+04.10</TD><TD>14.6</TD><TD>0.4</TD><TD>18.0</TD><TD>7.7</TD></TR>
+<TR><TD>98</TD><TD>001.48</TD><TD>+03.79</TD><TD>13.7</TD><TD>0.2</TD><TD>4.2</TD><TD>7.4</TD></TR>
+<TR><TD>99</TD><TD>001.51</TD><TD>+06.41</TD><TD>7.3</TD><TD>0.2</TD><TD>2.8</TD><TD>1.7</TD></TR>
+<TR><TD>100</TD><TD>001.51</TD><TD>+04.33</TD><TD>7.8</TD><TD>0.2</TD><TD>2.2</TD><TD>5.6</TD></TR>
+<TR><TD>101</TD><TD>001.52</TD><TD>+07.08</TD><TD>12.8</TD><TD>0.2</TD><TD>1.8</TD><TD>0.8</TD></TR>
+<TR><TD>102</TD><TD>001.52</TD><TD>+03.92</TD><TD>19.2</TD><TD>0.4</TD><TD>20.2</TD><TD>7.8</TD></TR>
+<TR><TD>103</TD><TD>001.55</TD><TD>+03.38</TD><TD>6.9</TD><TD>0.1</TD><TD>0.9</TD><TD>4.9</TD></TR>
+<TR><TD>104</TD><TD>001.55</TD><TD>+07.67</TD><TD>3.0</TD><TD>0.1</TD><TD>0.6</TD><TD>0.7</TD></TR>
+<TR><TD>105</TD><TD>001.58</TD><TD>+06.43</TD><TD>7.3</TD><TD>0.2</TD><TD>2.3</TD><TD>2.0</TD></TR>
+<TR><TD>106</TD><TD>001.58</TD><TD>+06.49</TD><TD>7.6</TD><TD>0.1</TD><TD>1.1</TD><TD>1.8</TD></TR>
+<TR><TD>107</TD><TD>001.63</TD><TD>+06.29</TD><TD>5.1</TD><TD>0.1</TD><TD>0.9</TD><TD>2.5</TD></TR>
+<TR><TD>108</TD><TD>001.67</TD><TD>+04.76</TD><TD>7.4</TD><TD>0.2</TD><TD>2.3</TD><TD>4.5</TD></TR>
+<TR><TD>109</TD><TD>001.71</TD><TD>+03.65</TD><TD>18.3</TD><TD>0.2</TD><TD>7.8</TD><TD>6.1</TD></TR>
+<TR><TD>110</TD><TD>001.76</TD><TD>+05.60</TD><TD>5.1</TD><TD>0.1</TD><TD>0.8</TD><TD>2.8</TD></TR>
+<TR><TD>111</TD><TD>001.76</TD><TD>+03.96</TD><TD>8.3</TD><TD>0.1</TD><TD>1.0</TD><TD>6.6</TD></TR>
+<TR><TD>112</TD><TD>001.77</TD><TD>+06.93</TD><TD>8.8</TD><TD>0.2</TD><TD>1.7</TD><TD>1.3</TD></TR>
+<TR><TD>113</TD><TD>001.77</TD><TD>+06.98</TD><TD>9.2</TD><TD>0.2</TD><TD>2.6</TD><TD>1.2</TD></TR>
+<TR><TD>114</TD><TD>001.80</TD><TD>+07.15</TD><TD>4.2</TD><TD>0.2</TD><TD>1.4</TD><TD>0.8</TD></TR>
+<TR><TD>115</TD><TD>001.80</TD><TD>+03.88</TD><TD>9.3</TD><TD>0.2</TD><TD>3.1</TD><TD>6.3</TD></TR>
+<TR><TD>116</TD><TD>001.82</TD><TD>+06.90</TD><TD>5.4</TD><TD>0.2</TD><TD>1.6</TD><TD>1.4</TD></TR>
+<TR><TD>117</TD><TD>001.86</TD><TD>+07.03</TD><TD>4.9</TD><TD>0.1</TD><TD>0.8</TD><TD>1.3</TD></TR>
+<TR><TD>118</TD><TD>001.85</TD><TD>+03.76</TD><TD>10.2</TD><TD>0.1</TD><TD>2.0</TD><TD>6.2</TD></TR>
+<TR><TD>119</TD><TD>001.88</TD><TD>+05.16</TD><TD>7.0</TD><TD>0.2</TD><TD>2.0</TD><TD>3.5</TD></TR>
+<TR><TD>120</TD><TD>001.91</TD><TD>+06.06</TD><TD>6.7</TD><TD>0.1</TD><TD>1.2</TD><TD>4.0</TD></TR>
+<TR><TD>121</TD><TD>001.89</TD><TD>+05.96</TD><TD>6.3</TD><TD>0.3</TD><TD>5.7</TD><TD>3.9</TD></TR>
+<TR><TD>122</TD><TD>001.93</TD><TD>+03.65</TD><TD>10.1</TD><TD>0.2</TD><TD>4.0</TD><TD>6.1</TD></TR>
+<TR><TD>123</TD><TD>001.93</TD><TD>+03.63</TD><TD>10.3</TD><TD>0.2</TD><TD>4.3</TD><TD>6.1</TD></TR>
+<TR><TD>124</TD><TD>001.98</TD><TD>+02.96</TD><TD>7.5</TD><TD>0.1</TD><TD>1.3</TD><TD>5.7</TD></TR>
+<TR><TD>125</TD><TD>002.00</TD><TD>+05.75</TD><TD>5.5</TD><TD>0.1</TD><TD>0.8</TD><TD>3.9</TD></TR>
+<TR><TD>126</TD><TD>002.00</TD><TD>+06.78</TD><TD>5.0</TD><TD>0.2</TD><TD>2.3</TD><TD>1.4</TD></TR>
+<TR><TD>127</TD><TD>002.00</TD><TD>+03.63</TD><TD>11.7</TD><TD>0.2</TD><TD>3.8</TD><TD>5.6</TD></TR>
+<TR><TD>128</TD><TD>002.01</TD><TD>+03.96</TD><TD>7.7</TD><TD>0.1</TD><TD>0.9</TD><TD>5.1</TD></TR>
+<TR><TD>129</TD><TD>002.04</TD><TD>+03.49</TD><TD>7.7</TD><TD>0.1</TD><TD>1.4</TD><TD>5.6</TD></TR>
+<TR><TD>130</TD><TD>002.13</TD><TD>+03.55</TD><TD>10.0</TD><TD>0.1</TD><TD>2.1</TD><TD>5.2</TD></TR>
+<TR><TD>131</TD><TD>002.22</TD><TD>+03.35</TD><TD>10.8</TD><TD>0.3</TD><TD>7.8</TD><TD>5.7</TD></TR>
+<TR><TD>132</TD><TD>002.22</TD><TD>+03.41</TD><TD>11.2</TD><TD>0.3</TD><TD>11.1</TD><TD>5.7</TD></TR>
+<TR><TD>133</TD><TD>002.24</TD><TD>+05.88</TD><TD>7.4</TD><TD>0.2</TD><TD>4.3</TD><TD>3.6</TD></TR>
+<TR><TD>134</TD><TD>002.54</TD><TD>+07.05</TD><TD>4.7</TD><TD>0.3</TD><TD>3.8</TD><TD>2.0</TD></TR>
+<TR><TD>135</TD><TD>002.46</TD><TD>+03.26</TD><TD>7.9</TD><TD>0.1</TD><TD>1.4</TD><TD>4.8</TD></TR>
+<TR><TD>136</TD><TD>002.51</TD><TD>+04.44</TD><TD>8.9</TD><TD>0.2</TD><TD>5.2</TD><TD>4.9</TD></TR>
+<TR><TD>137</TD><TD>002.53</TD><TD>+03.17</TD><TD>7.1</TD><TD>0.1</TD><TD>0.9</TD><TD>4.6</TD></TR>
+<TR><TD>138</TD><TD>002.55</TD><TD>+04.29</TD><TD>6.3</TD><TD>0.1</TD><TD>0.9</TD><TD>4.6</TD></TR>
+<TR><TD>139</TD><TD>002.62</TD><TD>+04.40</TD><TD>8.9</TD><TD>0.2</TD><TD>4.7</TD><TD>4.8</TD></TR>
+<TR><TD>140</TD><TD>002.63</TD><TD>+03.18</TD><TD>7.6</TD><TD>0.2</TD><TD>3.0</TD><TD>4.6</TD></TR>
+<TR><TD>141</TD><TD>002.77</TD><TD>+04.49</TD><TD>6.7</TD><TD>0.2</TD><TD>1.9</TD><TD>3.7</TD></TR>
+<TR><TD>142</TD><TD>002.79</TD><TD>+07.07</TD><TD>4.8</TD><TD>0.1</TD><TD>0.8</TD><TD>2.4</TD></TR>
+<TR><TD>143</TD><TD>002.84</TD><TD>+04.09</TD><TD>5.9</TD><TD>0.1</TD><TD>1.0</TD><TD>3.8</TD></TR>
+<TR><TD>144</TD><TD>002.85</TD><TD>+07.23</TD><TD>5.6</TD><TD>0.1</TD><TD>0.6</TD><TD>2.7</TD></TR>
+<TR><TD>145</TD><TD>002.89</TD><TD>+04.08</TD><TD>6.8</TD><TD>0.1</TD><TD>1.4</TD><TD>3.8</TD></TR>
+<TR><TD>146</TD><TD>002.92</TD><TD>+07.43</TD><TD>5.8</TD><TD>0.2</TD><TD>1.4</TD><TD>2.7</TD></TR>
+<TR><TD>147</TD><TD>002.99</TD><TD>+07.37</TD><TD>5.1</TD><TD>0.1</TD><TD>0.9</TD><TD>3.0</TD></TR>
+<TR><TD>148</TD><TD>003.04</TD><TD>+07.39</TD><TD>5.3</TD><TD>0.1</TD><TD>0.9</TD><TD>2.7</TD></TR>
+<TR><TD>149</TD><TD>003.12</TD><TD>+07.30</TD><TD>6.3</TD><TD>0.1</TD><TD>0.8</TD><TD>3.0</TD></TR>
+<TR><TD>150</TD><TD>003.21</TD><TD>+07.30</TD><TD>5.1</TD><TD>0.2</TD><TD>1.6</TD><TD>2.5</TD></TR>
+<TR><TD>151</TD><TD>003.29</TD><TD>+03.76</TD><TD>7.0</TD><TD>0.2</TD><TD>2.4</TD><TD>2.7</TD></TR>
+<TR><TD>152</TD><TD>003.31</TD><TD>+07.81</TD><TD>3.5</TD><TD>0.1</TD><TD>0.6</TD><TD>1.0</TD></TR>
+<TR><TD>153</TD><TD>003.43</TD><TD>+07.58</TD><TD>4.1</TD><TD>0.2</TD><TD>1.3</TD><TD>1.6</TD></TR>
+<TR><TD>154</TD><TD>003.53</TD><TD>+04.56</TD><TD>6.9</TD><TD>0.1</TD><TD>1.3</TD><TD>3.0</TD></TR>
+<TR><TD>155</TD><TD>003.67</TD><TD>+04.38</TD><TD>8.4</TD><TD>0.3</TD><TD>5.1</TD><TD>3.7</TD></TR>
+<TR><TD>156</TD><TD>003.69</TD><TD>+04.45</TD><TD>6.4</TD><TD>0.1</TD><TD>0.8</TD><TD>4.0</TD></TR>
+<TR><TD>157</TD><TD>003.71</TD><TD>+04.37</TD><TD>9.2</TD><TD>0.1</TD><TD>1.6</TD><TD>3.6</TD></TR>
+<TR><TD>158</TD><TD>003.81</TD><TD>+04.42</TD><TD>9.7</TD><TD>0.2</TD><TD>3.5</TD><TD>3.3</TD></TR>
+<TR><TD>159</TD><TD>003.87</TD><TD>+04.65</TD><TD>5.2</TD><TD>0.2</TD><TD>1.9</TD><TD>2.8</TD></TR>
+</TABLEDATA></DATA>
+</TABLE>
+
+
+<!--  INFO Diagnostics (++++ are Warnings, **** are Errors)
+++++No center provided++++
+ -->
+</RESOURCE>
+</VOTABLE>

@@ -15,8 +15,8 @@ from PyQt4.QtGui import QColor
 from PyQt4.QtGui import QIcon
 from matplotlib.colors import ColorConverter
 
-import glue
-import glue.message as msg
+from .. import core
+
 
 def mpl_to_qt4_color(color):
     """ Convert a matplotlib color stirng into a PyQT4 QColor object
@@ -35,6 +35,7 @@ def mpl_to_qt4_color(color):
     r,g,b = cc.to_rgb(color)
     return QColor(r*255, g*255, b*255)
 
+
 def qt4_to_mpl_color(color):
     """
     Conver a QColor object into a string that matplotlib understands
@@ -52,11 +53,11 @@ def qt4_to_mpl_color(color):
     return str(hex)
 
 
-class QtSubsetBrowserClient(QMainWindow, glue.Client):
+class QtSubsetBrowserClient(QMainWindow, core.client.Client):
     """ QT class to edit subset colors """
 
     def __init__(self, data, parent=None):
-        glue.Client.__init__(self, data)
+        core.client.Client.__init__(self, data)
         QMainWindow.__init__(self, parent)
         self.setWindowTitle("Subset Selection")
         self.subset_widgets = {}
@@ -64,7 +65,7 @@ class QtSubsetBrowserClient(QMainWindow, glue.Client):
         self.create_main_frame()
 
     def register_to_hub(self, hub):
-        glue.Client.register_to_hub(self, hub)
+        core.client.Client.register_to_hub(self, hub)
 
         hub.subscribe(self,
                       msg.ActiveSubsetUpdateMessage,
@@ -150,7 +151,7 @@ class QtSubsetBrowserClient(QMainWindow, glue.Client):
         self.layout = QVBoxLayout()
 
         for s in self.data.subsets:
-            self._add_subset(glue.message.SubsetAddMessage(s))
+            self._add_subset(core.message.SubsetAddMessage(s))
 
         self.main_frame.setLayout(self.layout)
         self.setCentralWidget(self.main_frame)
