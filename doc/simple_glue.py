@@ -1,10 +1,13 @@
-import glue
+from glue.core.message import DataMessage, SubsetMessage
+from glue.core.hub import Hub, HubListener
+from glue.core.data import Data
+from glue.core.data_collection import DataCollection
 
-class MyClient(glue.hub.HubListener):
+class MyClient(HubListener):
     def register_to_hub(self, hub):
         """ Sign up to receive DataMessages from the hub """
         hub.subscribe(self,                     # subscribing object
-                      glue.message.DataMessage, # message type to subscribe to
+                      DataMessage, # message type to subscribe to
                       handler = self.receive_message) # method to call
 
 
@@ -14,11 +17,11 @@ class MyClient(glue.hub.HubListener):
 
 
 # create objects
-hub = glue.Hub()
+hub = Hub()
 client = MyClient()
-data = glue.Data()
+data = Data()
 subset = data.new_subset()
-data_collection = glue.DataCollection()
+data_collection = DataCollection()
 
 # connect them to each other
 data_collection.append(data)
@@ -27,7 +30,7 @@ client.register_to_hub(hub)
 
 # manually send a DataMessage. Relayed to MyClient
 print 'Manually sending DataMessage'
-message = glue.message.DataMessage(data)
+message = DataMessage(data)
 hub.broadcast(message)
 
 #modify the data object. Automatically generates a DataMessage
@@ -36,5 +39,5 @@ data.label = "New label"
 
 #send a SubsetMessage to the Hub.
 print 'Manually sending SubsetMessage'
-message = glue.message.SubsetMessage(subset)
+message = SubsetMessage(subset)
 hub.broadcast(message) # nothing is printed
