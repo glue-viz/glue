@@ -1,11 +1,11 @@
-import unittest
+import pytest
 
-from glue.core.hub import Hub
-from glue.core.client import Client
-from glue.core.data import Data
-from glue.core.subset import Subset
-from glue.core.data_collection import DataCollection
-from glue.core.message import SubsetCreateMessage, SubsetDeleteMessage, SubsetUpdateMessage, Message, DataUpdateMessage
+from ..hub import Hub
+from ..client import Client
+from ..data import Data
+from ..subset import Subset
+from ..data_collection import DataCollection
+from ..message import SubsetCreateMessage, SubsetDeleteMessage, SubsetUpdateMessage, Message, DataUpdateMessage
 
 """
 Client communication protocol
@@ -21,6 +21,7 @@ Processed (or ignored!) by clients
 """
 
 class C(Client):
+    
     def __init__(self, data):
         Client.__init__(self, data)
         self.last_message = None
@@ -42,9 +43,9 @@ class C(Client):
         self.last_message = message
         self.call = self._update_data
 
-class TestCommunication(unittest.TestCase):
+class TestCommunication(object):
 
-    def setUp(self):
+    def setup_method(self, method):
         self.hub = Hub()
         self.d1 = Data()
         self.d2 = Data()
@@ -79,13 +80,13 @@ class TestCommunication(unittest.TestCase):
 
         assert self.c1.last_message is self.m1
         assert self.c1.call == self.c1._add_subset
-        self.assertIsNone(self.c2.last_message)
+        assert self.c2.last_message is None
 
     def test_proper_handlers(self):
         #broadcast the 4 basic methods. make sure the proper handlers
         #catch them
         self.c1.register_to_hub(self.hub)
-        self.assertIsNone(self.c1.call)
+        assert self.c1.call is None
 
         self.hub.broadcast(self.m1)
         assert self.c1.call == self.c1._add_subset
@@ -105,15 +106,15 @@ class TestCommunication(unittest.TestCase):
             pass
         self.c1.register_to_hub(self.hub)
         self.hub.broadcast(IgnoredMessage(None))
-        self.assertIsNone(self.c1.last_message)
-        self.assertIsNone(self.c1.call)
+        assert self.c1.last_message is None
+        assert self.c1.call is None
 
-    @unittest.skip("Relaxed requirement. Hub now ignores exceptions")
+    @pytest.mark.skip("Relaxed requirement. Hub now ignores exceptions")
     def test_uncaught_message(self):
         #broadcast a message without a message handler
         self.hub.subscribe(self.c1, Message)
-        self.assertRaises(NotImplementedError,
-                          self.hub.broadcast, Message(None))
+        with pytest.raises(NotImplementedError):
+            self.hub.broadcast(Message(None))
 
     def test_multi_client(self):
         #register 2 clients with same data to hub
@@ -134,7 +135,7 @@ class TestCommunication(unittest.TestCase):
         msg = DataUpdateMessage(self.d2, 'test_attribute')
         self.hub.broadcast(msg)
 
-        self.assertIsNone(self.c1.last_message)
+        assert self.c1.last_message is None
         assert self.c2.last_message is msg
 
     def test_unsubscribe(self):
@@ -166,9 +167,9 @@ class TestCommunication(unittest.TestCase):
         self.d1.register_to_hub(self.hub)
         self.s1.no_echo_before_registration = 1
 
-        self.assertIsNone(self.c1.last_message)
+        assert self.c1.last_message is None
         self.s1.register()
-        self.assertIsNotNone(self.c1.last_message)
+        assert self.c1.last_message is not None
         assert self.c1.last_message.sender is self.s1
         assert self.c1.call == self.c1._add_subset
 
@@ -176,5 +177,3 @@ class TestCommunication(unittest.TestCase):
         assert self.c1.call == self.c1._update_subset
         assert self.c1.last_message.attribute == 'echo_after_registration'
 
-if __name__ == "__main__":
-    unittest.main()
