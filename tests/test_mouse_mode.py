@@ -148,7 +148,7 @@ class TestContourMode(TestMouseMode):
     def test_roi_before_event(self):
         data = MagicMock()
         roi = self.mode.roi(data)
-        self.assertIs(roi, None)
+        assert roi is None
 
     def test_roi(self):
         with patch('glue.qt.mouse_mode.contour_to_roi') as cntr:
@@ -170,7 +170,7 @@ class TestContourToRoi(unittest.TestCase):
         with patch('glue.util.point_contour') as point_contour:
             point_contour.return_value = None
             p = contour_to_roi(1, 2, None)
-            self.assertIs(p, None)
+            assert p is None
 
 del TestRoiMode # prevents test discovery from running abstract test
 

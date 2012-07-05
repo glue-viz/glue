@@ -57,7 +57,7 @@ class TestImageClient(unittest.TestCase):
 
     def test_set_data(self):
         client = self.create_client_with_image()
-        self.assertIs(client.display_data, self.im)
+        assert client.display_data is self.im
 
     def test_slice_disabled_for_2d(self):
         client = self.create_client_with_image()
@@ -112,7 +112,7 @@ class TestImageClient(unittest.TestCase):
         assert len(atts) > 1
         for att in atts:
             client.set_attribute(att)
-            self.assertIs(client.display_attribute, att)
+            assert client.display_attribute is att
 
     def test_set_data_and_attribute(self):
         client = self.create_client_with_image()
@@ -120,8 +120,8 @@ class TestImageClient(unittest.TestCase):
         assert len(atts) > 1
         for att in atts:
             client.set_data(self.im, attribute=att)
-            self.assertIs(client.display_attribute, att)
-            self.assertIs(client.display_data, self.im)
+            assert client.display_attribute is att
+            assert client.display_data is self.im
 
     def test_set_slice(self):
         client = self.create_client_with_image()
@@ -222,7 +222,7 @@ class TestImageClient(unittest.TestCase):
         client = self.create_client_with_image()
         subset = self.im.edit_subset
         manager = client.layers[subset]
-        self.assertIsNot(manager.artist, None)
+        self.assertIsNot(manager.artist is None
         assert manager.is_visible()
 
 if __name__ == "__main__":

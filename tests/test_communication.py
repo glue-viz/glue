@@ -77,7 +77,7 @@ class TestCommunication(unittest.TestCase):
         self.c1.register_to_hub(self.hub)
         self.hub.broadcast(self.m1)
 
-        self.assertIs(self.c1.last_message, self.m1)
+        assert self.c1.last_message is self.m1
         assert self.c1.call == self.c1._add_subset
         self.assertIsNone(self.c2.last_message)
 
@@ -122,8 +122,8 @@ class TestCommunication(unittest.TestCase):
         self.c1.register_to_hub(self.hub)
         self.c3.register_to_hub(self.hub)
         self.hub.broadcast(self.m1)
-        self.assertIs(self.c1.last_message, self.m1)
-        self.assertIs(self.c3.last_message, self.m1)
+        assert self.c1.last_message is self.m1
+        assert self.c3.last_message is self.m1
 
     def test_standard_filter(self):
         #register 2 clients with 2 different data sets
@@ -135,7 +135,7 @@ class TestCommunication(unittest.TestCase):
         self.hub.broadcast(msg)
 
         self.assertIsNone(self.c1.last_message)
-        self.assertIs(self.c2.last_message, msg)
+        assert self.c2.last_message is msg
 
     def test_unsubscribe(self):
         # subscribe and unsubscribe an object.
@@ -143,21 +143,21 @@ class TestCommunication(unittest.TestCase):
 
         self.c1.register_to_hub(self.hub)
         self.hub.broadcast(self.m1)
-        self.assertIs(self.c1.last_message, self.m1)
+        assert self.c1.last_message is self.m1
 
         self.hub.unsubscribe(self.c1, type(self.m2))
         self.hub.broadcast(self.m2)
-        self.assertIs(self.c1.last_message, self.m1)
+        assert self.c1.last_message is self.m1
 
     def test_remove_client(self):
 
         self.c1.register_to_hub(self.hub)
         self.hub.broadcast(self.m1)
-        self.assertIs(self.c1.last_message, self.m1)
+        assert self.c1.last_message is self.m1
 
         self.hub.unsubscribe_all(self.c1)
         self.hub.broadcast(self.m2)
-        self.assertIs(self.c1.last_message, self.m1)
+        assert self.c1.last_message is self.m1
 
     def test_subset_relay(self):
         #make sure subset modification
@@ -169,7 +169,7 @@ class TestCommunication(unittest.TestCase):
         self.assertIsNone(self.c1.last_message)
         self.s1.register()
         self.assertIsNotNone(self.c1.last_message)
-        self.assertIs(self.c1.last_message.sender, self.s1)
+        assert self.c1.last_message.sender is self.s1
         assert self.c1.call == self.c1._add_subset
 
         self.s1.echo_after_registration = "1"

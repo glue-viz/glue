@@ -59,8 +59,8 @@ class TestDataCollection(unittest.TestCase):
         self.dc.append(self.data)
         msg = self.log.messages[-1]
         assert msg.sender == self.dc
-        self.assertIsInstance(msg, glue.core.message.DataCollectionAddMessage)
-        self.assertIs(msg.data, self.data)
+        self.assertIsInstance(msg is glue.core.message.DataCollectionAddMessage
+        assert msg.data is self.data
 
     def test_remove_broadcast(self):
         self.dc.register_to_hub(self.hub)
@@ -68,12 +68,12 @@ class TestDataCollection(unittest.TestCase):
         self.dc.remove(self.data)
         msg = self.log.messages[-1]
         assert msg.sender == self.dc
-        self.assertIsInstance(msg, glue.core.message.DataCollectionDeleteMessage)
-        self.assertIs(msg.data, self.data)
+        self.assertIsInstance(msg is glue.core.message.DataCollectionDeleteMessage
+        assert msg.data is self.data
 
     def test_register_adds_hub(self):
         self.dc.register_to_hub(self.hub)
-        self.assertIs(self.dc.hub, self.hub)
+        assert self.dc.hub is self.hub
 
     def test_register_assigns_hub_of_data(self):
         self.dc.append(self.data)
@@ -82,7 +82,7 @@ class TestDataCollection(unittest.TestCase):
 
     def test_get_item(self):
         self.dc.append(self.data)
-        self.assertIs(self.dc[0], self.data)
+        assert self.dc[0] is self.data
 
     def test_iter(self):
         self.dc.append(self.data)
@@ -130,7 +130,7 @@ class TestDataCollection(unittest.TestCase):
         d.add_component(dc, id2)
 
         msg = self.log.messages[-1]
-        self.assertIsInstance(msg, glue.core.message.DataAddComponentMessage)
+        self.assertIsInstance(msg is glue.core.message.DataAddComponentMessage
         assert link in self.dc._link_manager
 
     def test_coordinate_links_auto_added(self):
