@@ -1,14 +1,14 @@
 Glue API
 ========
 
-.. automodule:: glue.data
+.. automodule:: glue.core.data
    :members:
 
-.. autoclass:: glue.hub.Hub
+.. autoclass:: glue.core.hub.Hub
    :members:
 
-.. autoclass:: glue.component_link.ComponentLink
+.. autoclass:: glue.core.component_link.ComponentLink
    :members:
 
-.. automodule:: glue.roi
+.. automodule:: glue.core.roi
    :members:

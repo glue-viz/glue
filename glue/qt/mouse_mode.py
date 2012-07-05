@@ -1,6 +1,6 @@
 """MouseModes define various mouse gestures.
 
-The :class:'~glue.qt.glue_toolbar.GlueToolbar` maintains a list of
+The :class:`~glue.qt.glue_toolbar.GlueToolbar` maintains a list of
 MouseModes from the visualization it is assigned to, and sees to it
 that only one MouseMode is active at a time.
 
@@ -116,7 +116,7 @@ class RoiMode(MouseMode):
     def roi(self):
         """ The ROI defined by this mouse mode
 
-        :rtype: :class:`~glue.roi.Roi`
+        :rtype: :class:`~glue.core.roi.Roi`
         """
         return self._roi_tool.roi()
 
@@ -242,7 +242,7 @@ class ContourMode(MouseMode):
 
         Returns
 
-           * A :class:`~glue.roi.PolygonalROI` object, or None if one
+           * A :class:`~glue.core.roi.PolygonalROI` object, or None if one
              could not be calculated
 
         This method calculates the (single) contour that passes
@@ -262,7 +262,7 @@ def contour_to_roi(x, y, data):
     :type data: numpy array
 
     Returns:
-       * A :class:`~glue.roi.PolygonalROI` instance
+       * A :class:`~glue.core.roi.PolygonalROI` instance
     """
     if x is None or y is None:
         return None

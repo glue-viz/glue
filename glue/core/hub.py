@@ -62,7 +62,7 @@ class Hub(object):
         """Subscribe an object to a type of message class.
 
         :param subscriber: The subscribing object
-        :type subscriber: :class:`~glue.hub.HubListener`
+        :type subscriber: :class:`~glue.core.hub.HubListener`
 
         :param message_class: The class of messages to subscribe to
         :type message_class: message class type (not Instance)
@@ -83,7 +83,7 @@ class Hub(object):
 
         Raises:
             InvalidMessage: If the input class isn't a
-            :class:`~glue.Message` class
+            :class:`~glue.core.Message` class
 
             InvalidSubscriber: If the input subscriber isn't a
             HubListener object.
@@ -158,7 +158,7 @@ class Hub(object):
         """Broadcasts a message to all subscribed objects.
 
         :param message: The message to broadcast
-        :type message: :class:`~glue.message.Message`
+        :type message: :class:`~glue.core.message.Message`
         """
         for subscriber, handler in self._find_handlers(message):
             try:

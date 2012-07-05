@@ -28,10 +28,10 @@ class ComponentLink(object):
     def __init__(self, comp_from, comp_to, using=None):
         """
         :param comp_from: The input ComponentIDs
-        :type comp_from: list of :class:`~glue.data.ComponentID`
+        :type comp_from: list of :class:`~glue.core.data.ComponentID`
 
         :param comp_to: The target component ID
-        :type comp_from: :class:`~glue.data.ComponentID`
+        :type comp_from: :class:`~glue.core.data.ComponentID`
 
         :pram using: The translation function which maps data from
                      comp_from to comp_to

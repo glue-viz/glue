@@ -36,7 +36,8 @@ class ComponentSelector(QWidget):
         """ Set up the widgets.
 
         :param data_collection: Object to browse
-        :type data_colleciton: :class:`~glue.DataCollection`
+        :type data_colleciton:
+           :class:`~glue.core.data_collection.DataCollection`
         """
         self._data = data_collection
         self._set_data()
@@ -66,7 +67,7 @@ class ComponentSelector(QWidget):
     @property
     def component(self):
         """Returns the currently-selected ComponentID
-        :rtype: :class:`~glue.data.ComponentID`
+        :rtype: :class:`~glue.core.data.ComponentID`
         """
         item = self._ui.component_selector.currentItem()
         if item:

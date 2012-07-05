@@ -188,7 +188,7 @@ def coordinates_from_header(header):
     :param header: Header to convert
     :type header: :class:`pyfits.Header`
 
-    :rtype: :class:`~glue.coordinates.Coordinates`
+    :rtype: :class:`~glue.core.coordinates.Coordinates`
     """
     f = None
     if 'NAXIS' in header and header['NAXIS'] == 2:

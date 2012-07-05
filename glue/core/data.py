@@ -90,10 +90,10 @@ class DerivedComponent(Component):
     def __init__(self, data, link, units=None):
         """
         :param data: The data object to use for calculation
-        :type data: :class:`~glue.data.Data`
+        :type data: :class:`~glue.core.data.Data`
 
         :param link: The link that carries out the function
-        :type link: :class:`~glue.component_link.ComponentLink`
+        :type link: :class:`~glue.core.component_link.ComponentLink`
 
         :param units: Optional unit description
         """
@@ -115,14 +115,14 @@ class Data(object):
     """Stores data and manages subsets.
 
     The data object stores data as a collection of
-    :class:`~glue.data.Component` objects.  Each component stored in a
+    :class:`~glue.core.data.Component` objects.  Each component stored in a
     dataset must have the same shape.
 
     Catalog data sets are stored such that each column is a distinct
     1-dimensional ``Component``.
 
     There two ways to extract the actual numerical data stored in a
-    :class:`~glue.Data` object::
+    :class:`~glue.core.data.Data` object::
 
        data.get_component(component_id)
        data[component_id]
@@ -194,7 +194,7 @@ class Data(object):
         """ Remove a component from a data set
 
         :param component_id: the component to remove
-        :type component_id: :class:`~glue.data.ComponentID`
+        :type component_id: :class:`~glue.core.data.ComponentID`
         """
         if component_id in self._components:
             self._components.pop(component_id)
@@ -208,8 +208,8 @@ class Data(object):
               a new ComponentID with this label will be
               created and associated with the Component
 
-        :type component: :class:`~glue.data.Component`
-        :type label: :class:`str` or :class:`~glue.data.ComponentID`
+        :type component: :class:`~glue.core.data.Component`
+        :type label: :class:`str` or :class:`~glue.core.data.ComponentID`
 
         *Raises*
 
@@ -288,14 +288,14 @@ class Data(object):
     @property
     def primary_components(self):
         """Returns a list of ComponentIDs with stored data (as opposed
-        to a :class:`~glue.data.DerivedComponent` )
+        to a :class:`~glue.core.data.DerivedComponent` )
         """
         return [c for c in self.component_ids() if
                 not isinstance(self._components[c], DerivedComponent)]
 
     @property
     def derived_components(self):
-        """A list of ComponentIDs for each :class:`~glue.data.DerivedComponent`
+        """A list of ComponentIDs for each :class:`~glue.core.data.DerivedComponent`
         in the data. (Read only)
         """
         return [c for c in self.component_ids() if
@@ -444,7 +444,7 @@ class Data(object):
         :param key:
           The component to fetch data from
 
-        :type key: :class:`~glue.data.ComponentID`
+        :type key: :class:`~glue.core.data.ComponentID`
         """
         try:
             return self._components[key].data

@@ -44,7 +44,7 @@ class DataCollection(HubListener):
         It also updates the list of DerivedComponents that each
         data set can work with.
 
-        :param data: :class:`~glue.Data` object to add
+        :param data: :class:`~glue.core.data.Data` object to add
         """
         if data in self:
             return
@@ -63,7 +63,7 @@ class DataCollection(HubListener):
         Emits a DataCollectionDeleteMessage
 
         :param data: the object to remove
-        :type data: :class:`~glue.Data`
+        :type data: :class:`~glue.core.data.Data`
         """
         if data not in self._data:
             return
@@ -103,7 +103,7 @@ class DataCollection(HubListener):
     def register_to_hub(self, hub):
         """ Register managed data objects to a hub
         :param hub: The hub to register with
-        :type hub: :class:`~glue.hub.Hub`
+        :type hub: :class:`~glue.core.hub.Hub`
         """
         if not isinstance(hub, Hub):
             raise TypeError("Input is not a Hub object: %s" % type(hub))
