@@ -32,9 +32,6 @@ The :command:`glueqt` command starts the glue GUI. From your command prompt::
 
     glueqt
 
-.. todo::
-   Create a glueqt executable
-
 There are three main components to the Glue application, shown in the figure below:
 
  1) The visualization area will host individual plots
@@ -139,6 +136,8 @@ The scatter plot has it's own layer manager -- click the "+" button on
 the scatter widget to load the catalog dataset into the widget, and
 select which quantities to plot along the x/y axis. Note that the
 scatter widget shares many of the same mouse modes.
+
+.. _tutorial_link:
 
 Linking Data
 ------------

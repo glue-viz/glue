@@ -44,11 +44,11 @@ Creating objects
 If you need to create your own data objects, the code looks something
 like this::
 
-   import glue
+   import glue.core as gc
    import numpy as np
-   data = glue.Data(label="first dataset")
-   x = glue.Component( np.array([1, 2, 3]))
-   y = glue.Component( np.array([4, 5, 6]))
+   data = gc.data.Data(label="first dataset")
+   x = gc.component.Component( np.array([1, 2, 3]))
+   y = gc.component.Component( np.array([4, 5, 6]))
    x_id = data.add_component(x, label = 'X')
    y_id = data.add_component(y, label = 'Y')
    collection = glue.DataCollection()
@@ -95,7 +95,7 @@ Working with Files
 
 There are a few classes to help you create :class:`Data` objects from files::
 
-   catalog_data = glue.TabularData()
+   catalog_data = gc.data.TabularData()
    catalog_data.read_data(catalog_filename, *args, **kwargs)
 
 This creates a data object from a catalog, using `ATpy <http://atpy.github.com/>`_ for table parsing. Extra arguments to ``_read_data`` are passed to ATpy's ``read`` method
@@ -103,7 +103,6 @@ This creates a data object from a catalog, using `ATpy <http://atpy.github.com/>
 
 For loading FITS and HDF5 images or cubes::
 
-   image_data = glue.GriddedData()
+   image_data = gc.data.GriddedData()
    image_data.read_data(file_name, format=['hdf5' | 'fits'])
-
 

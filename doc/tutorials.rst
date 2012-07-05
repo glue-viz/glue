@@ -7,3 +7,4 @@ Tutorials and Recipes
    architecture.rst
    data_tutorial.rst
    link_tutorial.rst
+   configuration.rst
