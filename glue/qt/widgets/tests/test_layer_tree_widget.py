@@ -1,6 +1,3 @@
-import unittest
-from threading import Thread
-
 from PyQt4.QtGui import QApplication, QMainWindow
 from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt
@@ -8,22 +5,21 @@ from PyQt4.QtGui import QItemSelectionModel
 
 from mock import MagicMock, patch
 
-import glue
-from glue.core.hub import Hub
-from glue.qt.widgets.layer_tree_widget import LayerTreeWidget
-from glue.core.subset import OrState, AndState, XorState, InvertState
+from ..layer_tree_widget import LayerTreeWidget
 
-import example_data
+from ....tests import example_data
+from .... import core
 
-class TestLayerTree(unittest.TestCase):
+class TestLayerTree(object):
     """ Unit tests for the layer_tree_widget class """
-    def setUp(self):
+    
+    def setup_method(self, method):
         import sys
 
         self.app = QApplication(sys.argv)
         self.data = example_data.test_data()
-        self.hub = Hub()
-        self.collect = glue.core.data_collection.DataCollection(list(self.data))
+        self.hub = core.hub.Hub()
+        self.collect = core.data_collection.DataCollection(list(self.data))
         self.widget = LayerTreeWidget()
         self.win = QMainWindow()
         self.win.setCentralWidget(self.widget)
@@ -62,10 +58,10 @@ class TestLayerTree(unittest.TestCase):
         layer = self.add_layer_via_method()
         item = self.widget[layer]
         self.widget.layerTree.setCurrentItem(item)
-        self.assertIs(self.widget.current_layer(), layer)
+        assert self.widget.current_layer() is layer
 
     def test_current_layer_null_on_creation(self):
-        self.assertIs(None, self.widget.current_layer())
+        assert self.widget.current_layer() is None
 
     def test_add_layer_method(self):
         """ Test that a layer exists once added """
@@ -116,7 +112,7 @@ class TestLayerTree(unittest.TestCase):
     def test_data_added_with_subset_add(self):
         """ Test that subset layers are added properly """
         layer = self.data[0]
-        sub = glue.core.subset.Subset(layer)
+        sub = core.subset.Subset(layer)
         self.widget.add_layer(sub)
         assert self.layer_present(sub)
         assert self.layer_present(layer)
@@ -138,14 +134,14 @@ class TestLayerTree(unittest.TestCase):
         item = self.widget[layer]
         self.widget.layerTree.setCurrentItem(item)
         self.widget._new_action.trigger()
-        self.assertEquals(len(layer.subsets), 2)
+        assert len(layer.subsets) == 2
 
     def test_duplicate_subset_action(self):
         layer = self.add_layer_via_method()
         item = self.widget[layer.subsets[0]]
         self.widget.layerTree.setCurrentItem(item)
         self.widget._duplicate_action.trigger()
-        self.assertEquals(len(layer.subsets), 2)
+        assert len(layer.subsets) == 2
 
     def test_copy_paste_subset_action(self):
         layer = self.add_layer_via_method()
@@ -171,7 +167,7 @@ class TestLayerTree(unittest.TestCase):
                                              QItemSelectionModel.Toggle)
         self.widget.layerTree.setCurrentItem(item2, 0,
                                              QItemSelectionModel.Toggle)
-        self.assertEquals(len(self.widget.layerTree.selectedItems()), 2)
+        assert len(self.widget.layerTree.selectedItems()) == 2
         return layer
 
     def test_or_combine(self):
@@ -181,7 +177,7 @@ class TestLayerTree(unittest.TestCase):
         new_subsets = set(layer.subsets)
         diff = list(old_subsets ^ new_subsets)
         assert len(diff) == 1
-        assert isinstance(diff[0].subset_state, OrState)
+        assert isinstance(diff[0].subset_state, core.subset.OrState)
 
     def test_and_combine(self):
         layer = self.setup_two_subset_selection()
@@ -190,7 +186,7 @@ class TestLayerTree(unittest.TestCase):
         new_subsets = set(layer.subsets)
         diff = list(old_subsets ^ new_subsets)
         assert len(diff) == 1
-        assert isinstance(diff[0].subset_state, AndState)
+        assert isinstance(diff[0].subset_state, core.subset.AndState)
 
     def test_invert(self):
         layer = self.add_layer_via_method()
@@ -198,7 +194,7 @@ class TestLayerTree(unittest.TestCase):
         item = self.widget[sub]
         self.widget.layerTree.setCurrentItem(item)
         self.widget._invert_action.trigger()
-        assert isinstance(sub.subset_state, InvertState)
+        assert isinstance(sub.subset_state, core.subset.InvertState)
 
     def test_xor_combine(self):
         layer = self.setup_two_subset_selection()
@@ -207,7 +203,7 @@ class TestLayerTree(unittest.TestCase):
         new_subsets = set(layer.subsets)
         diff = list(old_subsets ^ new_subsets)
         assert len(diff) == 1
-        assert isinstance(diff[0].subset_state, XorState)
+        assert isinstance(diff[0].subset_state, core.subset.XorState)
 
 
     def test_actions_enabled_single_subset_selection(self):
@@ -282,7 +278,7 @@ class TestLayerTree(unittest.TestCase):
 
     def test_set_data_collection(self):
         layer = self.add_layer_via_method()
-        dc = glue.core.data_collection.DataCollection()
+        dc = core.data_collection.DataCollection()
         self.widget.data_collection = dc
         assert self.widget.data_collection is dc
         assert not self.layer_present(layer)
@@ -337,9 +333,9 @@ class TestLayerTree(unittest.TestCase):
         """bugfix"""
         with patch('glue.qt.qtutil') as util:
             util.data_wizard.return_value = self.data[0]
-            self.assertEquals(self.widget.layerTree.topLevelItemCount(), 0)
+            assert self.widget.layerTree.topLevelItemCount() == 0
             self.widget._load_data()
-            self.assertEquals(self.widget.layerTree.topLevelItemCount(), 1)
+            assert self.widget.layerTree.topLevelItemCount() == 1
 
     def test_sync_external_layer_ignored(self):
         assert not self.data[0] in self.widget
@@ -354,6 +350,3 @@ class TestLayerTree(unittest.TestCase):
         sub.subset_state = dummy_state
         self.widget._clear_subset()
         assert not sub.subset_state == dummy_state
-
-if __name__ == "__main__":
-    unittest.main()

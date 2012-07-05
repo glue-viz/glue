@@ -1,23 +1,21 @@
-import unittest
+import sys
 
-from PyQt4.QtGui import QApplication, QMainWindow
-from PyQt4.QtTest import QTest
-from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QApplication
 
-import glue
-from glue.qt.widgets.image_widget import ImageWidget
+from ..image_widget import ImageWidget
 
-import example_data
+from ....tests import example_data
+from .... import core
 
-class TestImageWidget(unittest.TestCase):
+class TestImageWidget(object):
 
-    def setUp(self):
-        import sys
+    def setup_method(self, method):
+
         self.app = QApplication(sys.argv)
-        self.hub = glue.core.hub.Hub()
+        self.hub = core.hub.Hub()
         self.im = example_data.test_image()
         self.cube = example_data.test_cube()
-        self.collect = glue.core.data_collection.DataCollection()
+        self.collect = core.data_collection.DataCollection()
         self.widget = ImageWidget(self.collect)
         self.collect.append(self.im)
         self.collect.append(self.cube)

@@ -1,23 +1,21 @@
-import unittest
+import sys
 
-import numpy as np
 from PyQt4.QtGui import QApplication, QMainWindow
 from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt
 
-import glue
-from glue.qt.widgets.scatter_widget import ScatterWidget
+from ..scatter_widget import ScatterWidget
 
-import example_data
+from ....tests import example_data
+from .... import core
 
-class TestScatterWidget(unittest.TestCase):
+class TestScatterWidget(object):
 
-    def setUp(self):
-        import sys
+    def setup_method(self, method):
         self.app = QApplication(sys.argv)
-        self.hub = glue.core.hub.Hub()
+        self.hub = core.hub.Hub()
         self.data = example_data.test_data()
-        self.collect = glue.core.data_collection.DataCollection()
+        self.collect = core.data_collection.DataCollection()
         self.widget = ScatterWidget(self.collect)
         self.win = QMainWindow()
         self.win.setCentralWidget(self.widget)
@@ -72,10 +70,10 @@ class TestScatterWidget(unittest.TestCase):
         xydata = self.plot_data(layer)
         xylimits = self.plot_limits()
 
-        self.assertGreaterEqual(xydata[0][0], xylimits[0][0])
-        self.assertGreaterEqual(xydata[1][0], xylimits[1][0])
-        self.assertLessEqual(xydata[0][1], xylimits[0][1])
-        self.assertLessEqual(xydata[1][1], xylimits[1][1])
+        assert xydata[0][0] >= xylimits[0][0]
+        assert xydata[1][0] >= xylimits[1][0]
+        assert xydata[0][1] <= xylimits[0][1]
+        assert xydata[1][1] <= xylimits[1][1]
 
     def set_layer_checkbox(self, layer, state):
         item = self.widget.ui.layerTree[layer]
@@ -106,8 +104,8 @@ class TestScatterWidget(unittest.TestCase):
         layer = self.add_layer_via_method()
         xatt = str(self.widget.ui.xAxisComboBox.currentText())
         yatt = str(self.widget.ui.yAxisComboBox.currentText())
-        self.assertIsNotNone(xatt)
-        self.assertIsNotNone(yatt)
+        assert xatt is not None
+        assert yatt is not None
 
     def test_flip_x(self):
         layer = self.add_layer_via_method()
@@ -140,7 +138,7 @@ class TestScatterWidget(unittest.TestCase):
         layer = self.add_layer_via_method()
         nobj = self.widget.ui.xAxisComboBox.count()
         layer = self.add_layer_via_method()
-        self.assertEquals(self.widget.ui.xAxisComboBox.count(), nobj)
+        assert self.widget.ui.xAxisComboBox.count() == nobj
 
     def test_subsets_dont_duplicate_fields(self):
         layer = self.add_layer_via_method()
@@ -148,7 +146,7 @@ class TestScatterWidget(unittest.TestCase):
         subset = layer.new_subset()
         subset.register()
         assert subset in self.widget.ui.layerTree
-        self.assertEquals(self.widget.ui.xAxisComboBox.count(), nobj)
+        assert self.widget.ui.xAxisComboBox.count() == nobj
 
     def test_checkboxes_toggle_visbility(self):
         layer = self.add_layer_via_method()
@@ -156,7 +154,3 @@ class TestScatterWidget(unittest.TestCase):
         assert not self.is_layer_visible(layer)
         self.set_layer_checkbox(layer, Qt.Checked)
         assert self.is_layer_visible(layer)
-
-
-if __name__ == "__main__":
-    unittest.main()
