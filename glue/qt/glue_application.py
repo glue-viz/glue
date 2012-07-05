@@ -8,7 +8,7 @@ from .. import core
 from .ui.glue_application import Ui_GlueApplication
 
 from .actions import act
-from .qtutil import pick_class, get_text
+from .qtutil import pick_class, get_text, data_wizard
 
 from .widgets.custom_component_widget import CustomComponentWidget
 
@@ -85,6 +85,8 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         mbar = self._ui.menubar
         menu = QMenu(mbar)
         menu.setTitle("File")
+
+        menu.addAction(self._actions['data_new'])
         menu.addAction(self._actions['session_save'])
         menu.addAction(self._actions['session_restore'])
 
@@ -115,10 +117,19 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
     def _create_component(self):
         CustomComponentWidget.create_component(self._data)
 
+    def _load_data(self):
+        data = data_wizard()
+        if data:
+            self._data.append(data)
 
     def _create_actions(self):
         """ Create and connect actions, store in _actions dict """
         self._actions = {}
+
+        a = act("Open Data", self,
+                tip="Open a new data set")
+        a.triggered.connect(self._load_data)
+        self._actions['data_new'] = a
 
         a = act("New Window", self,
                 tip="Open a new visualization window in the current tab",

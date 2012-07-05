@@ -53,7 +53,6 @@ Let's get some data into glue. The data we will be using in this tutorial are lo
 .. tip:: You can also open a data set by clicking the + button at the bottom of the layer manager
 
 .. todo:: Add a link to example data.
-.. todo:: Add file->open data to application menu
 
 Loading a data set adds two items to the layer manager -- the dataset
 itself and an "editable subset." We will see in a moment what the
