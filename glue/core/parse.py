@@ -6,6 +6,7 @@ from .component_link import ComponentLink
 
 TAG_RE = re.compile('\{\s*(?P<tag>\S+)\s*\}')
 
+__all__ = ['ParsedCommand', 'ParsedSubsetState']
 
 def _ensure_only_component_references(cmd, references):
     """ Search through tag references in a command, ensure that
@@ -127,10 +128,11 @@ class ParsedCommand(object):
         return _reference_list(self._cmd, self._references)
 
     def evaluate(self, data):
+        from .. import env
         # pylint: disable=W0613, W0612
         references = self._references
         cmd = _dereference(self._cmd, self._references)
-        return eval(cmd)  # careful!
+        return eval(cmd, vars(env), locals())  # careful!
 
 
 class ParsedComponentLink(ComponentLink):

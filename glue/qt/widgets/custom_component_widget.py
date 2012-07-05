@@ -1,6 +1,7 @@
 from PyQt4.QtGui import QDialog
 
 from ... import core
+from ...core import parse
 
 from ..ui.custom_component_widget import Ui_CustomComponentWidget
 
@@ -84,10 +85,10 @@ class CustomComponentWidget(QDialog):
         A new component link
         """
         expression = str(self.ui.expression.text())
-        pc = core.parse.ParsedCommand(expression, self._labels)
+        pc = parse.ParsedCommand(expression, self._labels)
         label = str(self.ui.new_label.text()) or 'new component'
         new_id = core.data.ComponentID(label)
-        link = core.parse.ParsedComponentLink(new_id, pc)
+        link = parse.ParsedComponentLink(new_id, pc)
         return link
 
     def _add_link_to_targets(self, link):
@@ -118,12 +119,15 @@ class CustomComponentWidget(QDialog):
             if link:
                 widget._add_link_to_targets(link)
 
+
 def main():
     import sys
+    from glue.tests import example_data
+    from glue.core.data_collection import DataCollection
     from PyQt4.QtGui import QApplication
 
     app = QApplication(sys.argv) # pylint: disable=W0612
-    data = glue.example_data.pipe()[:2]
+    data = example_data.pipe()[:2]
     dc = glue.DataCollection(list(data))
 
     CustomComponentWidget.create_component(dc)
