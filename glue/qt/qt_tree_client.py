@@ -4,10 +4,11 @@ from PyQt4.QtGui import QWidget
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 #from matplotlib.backends.backend_qt4 import NavigationToolbar2QT as NavigationToolbar
-from custom_toolbar import CustomToolbar as NavigationToolbar
 from matplotlib.figure import Figure
 
-from glue.mpl_tree_client import MplTreeClient
+from .custom_toolbar import CustomToolbar as NavigationToolbar
+from ..clients.mpl_tree_client import MplTreeClient
+
 
 class QtTreeClient(QMainWindow, MplTreeClient):
 

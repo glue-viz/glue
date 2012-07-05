@@ -1,5 +1,6 @@
-import glue
-from glue.io import extract_data_fits
+from .core.data import Component, GriddedData
+from .core.tree import DendroMerge
+from .core.io import extract_data_fits
 
 
 def data_dendro_cpp(file):
@@ -23,9 +24,9 @@ def data_dendro_cpp(file):
     im = data['INDEX_MAP']
     val = data['PRIMARY']
 
-    c = glue.data.Component(val)
+    c = Component(val)
 
-    result = glue.data.GriddedData()
+    result = GriddedData()
     result.read_data(file, use_hdu=['PRIMARY', 'INDEX_MAP'])
-    result.tree = glue.tree.DendroMerge(merge_list, index_map=im)
+    result.tree = DendroMerge(merge_list, index_map=im)
     return result

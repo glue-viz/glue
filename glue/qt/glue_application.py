@@ -3,14 +3,17 @@
 from PyQt4.QtGui import (QKeySequence, QMainWindow, QGridLayout, QMdiArea,
                          QMenu, QMdiSubWindow)
 
-from ui_glue_application import Ui_GlueApplication
-import glue
-from glue.message import ErrorMessage
-from glue.qt.actions import act
-from glue.qt.qtutil import pick_class, get_text
-from custom_component_widget import CustomComponentWidget
+from .. import core
 
-class GlueApplication(QMainWindow, glue.HubListener):
+from .ui.glue_application import Ui_GlueApplication
+
+from .actions import act
+from .qtutil import pick_class, get_text
+
+from .widgets.custom_component_widget import CustomComponentWidget
+
+
+class GlueApplication(QMainWindow, core.hub.HubListener):
     """ The main Glue window """
 
     def __init__(self):
@@ -19,8 +22,8 @@ class GlueApplication(QMainWindow, glue.HubListener):
         self._ui = Ui_GlueApplication()
         self._ui.setupUi(self)
         self._ui.layerWidget.set_checkable(False)
-        self._data = glue.DataCollection()
-        self._hub = glue.Hub(self._data)
+        self._data = core.data_collection.DataCollection()
+        self._hub = core.hub.Hub(self._data)
         self._new_tab()
 
         self._create_actions()
@@ -72,7 +75,7 @@ class GlueApplication(QMainWindow, glue.HubListener):
 
     def _connect(self):
         self._hub.subscribe(self,
-                            ErrorMessage,
+                            core.message.ErrorMessage,
                             handler=self._report_error)
         self._ui.layerWidget.data_collection = self._data
         self._ui.layerWidget.register_to_hub(self._hub)
@@ -163,7 +166,8 @@ class GlueApplication(QMainWindow, glue.HubListener):
         """ Create a new visualization window in the current tab
         """
 
-        client = pick_class(glue.env.qt_clients)
+        from .. import env
+        client = pick_class(env.qt_clients)
         if client:
             c = client(self._data)
             c.register_to_hub(self._hub)
