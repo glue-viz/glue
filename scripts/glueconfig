@@ -18,7 +18,7 @@ def main():
     dest = os.path.expanduser('~/.glue/')
     if not os.path.exists(dest):
         print "Creating directory %s" % dest
-        os.makedir(dest)
+        os.makedirs(dest)
 
     infile = os.path.join(glue.__path__[0], 'default_config.py')
     outfile = os.path.join(dest, 'config.py')
