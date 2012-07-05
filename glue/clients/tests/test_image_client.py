@@ -66,13 +66,13 @@ class TestImageClient(object):
         client = self.create_client_with_image()
         assert client.slice_ind is None
         with pytest.raises(IndexError):
-            client.slice_ind(10)
+            client.slice_ind = 10
 
     def test_slice_disabled_for_no_data(self):
         client = ImageClient(self.collect, axes=AXES)
         assert client.slice_ind is None
         with pytest.raises(IndexError):
-            client.slice_ind(10)
+            client.slice_ind = 10
 
     def test_slice_enabled_for_3D(self):
         client = self.create_client_with_cube()
@@ -131,7 +131,7 @@ class TestImageClient(object):
     def test_set_slice(self):
         client = self.create_client_with_image()
         with pytest.raises(IndexError):
-            client.slice_ind(10)
+            client.slice_ind = 10
 
     def test_slice_bounds_2d(self):
         client = self.create_client_with_image()

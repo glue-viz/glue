@@ -284,37 +284,40 @@ class TestLayerTree(object):
         assert not self.layer_present(layer)
 
     def test_edit_layer_label(self):
-        with patch('glue.qt.qtutil') as util:
+        pth = 'glue.qt.widgets.layer_tree_widget.qtutil.edit_layer_label'
+        with patch(pth) as edit_layer_label:
             layer = self.add_layer_via_method()
             item = self.widget[layer]
             self.widget.layerTree.setCurrentItem(item, 0)
-            util.edit_layer_label = MagicMock()
             self.widget.edit_current_layer()
-            util.edit_layer_label.assert_called_once_with(layer)
+            edit_layer_label.assert_called_once_with(layer)
 
     def test_edit_layer_color(self):
-        with patch('glue.qt.qtutil') as util:
+        pth = 'glue.qt.widgets.layer_tree_widget.qtutil.edit_layer_color'
+        with patch(pth) as edit_layer_color:
             layer = self.add_layer_via_method()
             item = self.widget[layer]
             self.widget.layerTree.setCurrentItem(item, 1)
             self.widget.edit_current_layer()
-            util.edit_layer_color.assert_called_once_with(layer)
+            edit_layer_color.assert_called_once_with(layer)
 
     def test_edit_layer_symbol(self):
-        with patch('glue.qt.qtutil') as util:
+        pth = 'glue.qt.widgets.layer_tree_widget.qtutil.edit_layer_symbol'
+        with patch(pth) as edit_layer_symbol:
             layer = self.add_layer_via_method()
             item = self.widget[layer]
             self.widget.layerTree.setCurrentItem(item, 2)
             self.widget.edit_current_layer()
-            util.edit_layer_symbol.assert_called_once_with(layer)
+            edit_layer_symbol.assert_called_once_with(layer)
 
     def test_edit_layer_point_size(self):
-        with patch('glue.qt.qtutil') as util:
+        pth = 'glue.qt.widgets.layer_tree_widget.qtutil.edit_layer_point_size'
+        with patch(pth) as edit_layer_point_size:
             layer = self.add_layer_via_method()
             item = self.widget[layer]
             self.widget.layerTree.setCurrentItem(item, 3)
             self.widget.edit_current_layer()
-            util.edit_layer_point_size.assert_called_once_with(layer)
+            edit_layer_point_size.assert_called_once_with(layer)
 
     def test_add_data_creates_default_label(self):
         layer = self.data[0]
@@ -324,15 +327,17 @@ class TestLayerTree(object):
         assert layer.style.label == "Data 0"
 
     def test_load_data(self):
-        with patch('glue.qt.qtutil') as util:
-            util.data_wizard.return_value = self.data[0]
+        pth = 'glue.qt.widgets.layer_tree_widget.qtutil.data_wizard'
+        with patch(pth) as wizard:
+            wizard.return_value = self.data[0]
             self.widget._load_data()
             assert self.layer_present(self.data[0])
 
     def test_load_data_doesnt_double_add(self):
         """bugfix"""
-        with patch('glue.qt.qtutil') as util:
-            util.data_wizard.return_value = self.data[0]
+        pth = 'glue.qt.widgets.layer_tree_widget.qtutil.data_wizard'
+        with patch(pth) as wizard:
+            wizard.return_value = self.data[0]
             assert self.widget.layerTree.topLevelItemCount() == 0
             self.widget._load_data()
             assert self.widget.layerTree.topLevelItemCount() == 1
