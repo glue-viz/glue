@@ -319,9 +319,8 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
     def data_collection(self, collection):
         """ Define which data collection this widget manages
 
-        Inputs
-        ------
-        collection : core.data.DataCollection instance to manage
+        :param collection: DataCollection instance to manage
+        :type collection: :class:`~glue.core.data_collection.DataCollection`
         """
         self.remove_all_layers()
 
@@ -371,6 +370,14 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
             return
 
         layer = self[widget_item]
+        self.remove_and_delete_layer(layer)
+
+    def remove_and_delete_layer(self, layer):
+        """ Remove a layer from the layer tree, and
+        disconnect it from the data collection
+
+        This will generate one of the Delete messages
+        """
         if layer is layer.data.edit_subset:
             # do not delete the edit subset
             return
@@ -414,6 +421,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         """
         data_filt = lambda x: x.sender.data in self._data_collection
         dc_filt = lambda x: x.sender is self._data_collection
+        data_in_dc = lambda x: x.data in self._data_collection
 
         hub.subscribe(self,
                       core.message.SubsetCreateMessage,
@@ -434,7 +442,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         hub.subscribe(self,
                       core.message.DataCollectionDeleteMessage,
                       handler=lambda x: self.remove_layer(x.data),
-                      filter=dc_filt)
+                      filter = data_in_dc)
         hub.subscribe(self,
                       core.message.DataUpdateMessage,
                       handler=lambda x: self.sync_layer(x.sender),
@@ -472,9 +480,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         If it is not already, the layer will be added
         to the layer tree's affiliated data collection object
 
-        Parameters
-        ----------
-        layer : new data or subset object.
+        :param layer: new data or subset object.
         """
         tree = self.layerTree
         self._ensure_in_collection(layer)
@@ -524,9 +530,10 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         """ Remove a data or subset from the layer tree.
         Does not remove from data collection.
 
-        Inputs:
-        -------
-        layer : core.subset.Subset or core.data.Data object to remove
+        :param layer: subset or data object to remove
+        :type layer:
+           :class:`~glue.core.subset.Subset` or
+           :class:`~glue.core.data.Data`
         """
         if layer not in self:
             return
@@ -557,9 +564,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         """ Sync columns of display tree, to
         reflect the current style settings of the given layer
 
-        Inputs:
-        -------
-        layer : data or subset object
+        :param layer: data or subset object
         """
         if layer not in self:
             return

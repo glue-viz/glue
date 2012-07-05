@@ -355,3 +355,18 @@ class TestLayerTree(object):
         sub.subset_state = dummy_state
         self.widget._clear_subset()
         assert not sub.subset_state == dummy_state
+
+    def test_remove_message_global(self):
+        """RemoveData messages should be processed, regardless of origin"""
+        w = LayerTreeWidget()
+        data = core.data.Data()
+        hub = core.hub.Hub(w)
+        dc = core.data_collection.DataCollection()
+
+        w.add_layer(data)
+
+        msg = core.message.DataCollectionDeleteMessage(dc, data)
+        hub.broadcast(msg)
+
+        assert data not in w
+
