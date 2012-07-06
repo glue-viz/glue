@@ -55,8 +55,9 @@ class TestImageClient(object):
 
     def test_invalid_add(self):
         client = ImageClient(self.collect, axes=AXES)
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exc:
             client.add_layer(self.cube)
+        assert exc.value.args[0] == "Data not managed by client's data collection"
 
     def test_set_data(self):
         client = self.create_client_with_image()
@@ -65,14 +66,16 @@ class TestImageClient(object):
     def test_slice_disabled_for_2d(self):
         client = self.create_client_with_image()
         assert client.slice_ind is None
-        with pytest.raises(IndexError):
+        with pytest.raises(IndexError) as exc:
             client.slice_ind = 10
+        assert exc.value.args[0] == "Cannot set slice for 2D image"
 
     def test_slice_disabled_for_no_data(self):
         client = ImageClient(self.collect, axes=AXES)
         assert client.slice_ind is None
-        with pytest.raises(IndexError):
+        with pytest.raises(IndexError) as exc:
             client.slice_ind = 10
+        assert exc.value.args[0] == "Cannot set slice for 2D image"
 
     def test_slice_enabled_for_3D(self):
         client = self.create_client_with_cube()
@@ -130,8 +133,9 @@ class TestImageClient(object):
 
     def test_set_slice(self):
         client = self.create_client_with_image()
-        with pytest.raises(IndexError):
+        with pytest.raises(IndexError) as exc:
             client.slice_ind = 10
+        assert exc.value.args[0] == "Cannot set slice for 2D image"
 
     def test_slice_bounds_2d(self):
         client = self.create_client_with_image()
@@ -150,15 +154,17 @@ class TestImageClient(object):
 
     def test_slice_ori_on_2d_raises(self):
         client = self.create_client_with_image()
-        with pytest.raises(IndexError):
+        with pytest.raises(IndexError) as exc:
             client.set_slice_ori(0)
+        assert exc.value.args[0] == "Cannot set orientation of 2D image"
 
     def test_slice_ori_out_of_bounds(self):
         client = self.create_client_with_image()
         self.collect.append(self.cube)
         client.set_data(self.cube)
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exc:
             client.set_slice_ori(100)
+        assert exc.value.args[0] == "Orientation must be 0, 1, or 2"
 
     def test_apply_roi_2d(self):
         client = self.create_client_with_image()

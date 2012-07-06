@@ -25,7 +25,7 @@ def _ensure_only_component_references(cmd, references):
         tag = match.group('tag')
         if tag not in references or not \
            isinstance(references[tag], ComponentID):
-            raise TypeError("Reference to %s, which is not a ComponentID")
+            raise TypeError("Reference to %s, which is not a ComponentID" % tag)
 
 
 def _reference_list(cmd, references):

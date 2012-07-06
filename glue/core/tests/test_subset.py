@@ -236,12 +236,14 @@ class TestSubsetIo(object):
             np.testing.assert_array_equal(mask1, mask2)
 
     def test_read_error(self):
-        with pytest.raises(IOError):
+        with pytest.raises(IOError) as exc:
             self.subset.read_mask('file_does_not_exist')
+        assert exc.value.args[0] == "Could not read file_does_not_exist (not a fits file?)"
 
     def test_write_unsupported_format(self):
-        with pytest.raises(AttributeError):
+        with pytest.raises(AttributeError) as exc:
             self.subset.write_mask('file_will_fail', format='.hd5')
+        assert exc.value.args[0] == "format not supported: .hd5"
 
 
 class TestSubsetState(object):

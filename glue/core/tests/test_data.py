@@ -66,18 +66,21 @@ class TestData(object):
     def test_add_component_incompatible_shape(self):
         comp = MagicMock()
         comp.data.shape = (3, 2)
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exc:
             self.data.add_component(comp("junk label"))
+        assert exc.value.args[0] == "add_component() takes exactly 3 arguments (2 given)"
 
     def test_get_getitem_incompatible_attribute(self):
         cid = ComponentID('bad')
-        with pytest.raises(IncompatibleAttribute):
+        with pytest.raises(IncompatibleAttribute) as exc:
             self.data.__getitem__(cid)
+        assert exc.value.args[0] == "bad not in data set Test Data"
 
     def test_get_component_incompatible_attribute(self):
         cid = ComponentID('bad')
-        with pytest.raises(IncompatibleAttribute):
+        with pytest.raises(IncompatibleAttribute) as exc:
             self.data.get_component(cid)
+        assert exc.value.args[0] == "bad not in data set"
 
     def test_component_ids(self):
         cid = self.data.component_ids()
@@ -95,8 +98,9 @@ class TestData(object):
         not_hub = MagicMock()
         self.data.register_to_hub(hub)
         assert hub is self.data.hub
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exc:
             self.data.register_to_hub(not_hub)
+        assert exc.value.args[0].startswith("input is not a Hub object")
 
     def test_component_order(self):
         """Components should be returned in alphabetical order"""
@@ -129,8 +133,9 @@ class TestData(object):
         hub = MagicMock(spec_set=Hub)
         hub2 = MagicMock(spec_set=Hub)
         self.data.register_to_hub(hub)
-        with pytest.raises(AttributeError):
+        with pytest.raises(AttributeError) as exc:
             self.data.__setattr__('hub', hub2)
+        assert exc.value.args[0] == "Data has already been assigned to a different hub"
 
     def test_primary_components(self):
         compid = ComponentID('virtual')
@@ -144,13 +149,15 @@ class TestData(object):
         assert not compid in pricomps
 
     def test_add_component_invalid_label(self):
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exc:
             self.data.add_component(self.comp, label=5)
+        assert exc.value.args[0] == "label must be a ComponentID or string"
 
     def test_add_component_invalid_component(self):
         comp = Component(np.array([1]))
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exc:
             self.data.add_component(comp, label='bad')
+        assert exc.value.args[0] == "Compoment is incompatible with other components in this data"
 
     def test_add_component_link(self):
         compid = ComponentID('virtual')

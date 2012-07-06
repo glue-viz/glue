@@ -71,8 +71,9 @@ class TestScatterClient(object):
 
     def test_add_external_data_raises_exception(self):
         data = core.data.Data()
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exc:
             self.client.add_data(data)
+        assert exc.value.args[0] == "Layer not in data collection"
 
     def test_valid_add(self):
         layer = self.add_data()

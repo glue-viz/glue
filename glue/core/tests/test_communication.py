@@ -115,8 +115,9 @@ class TestCommunication(object):
     def test_uncaught_message(self):
         #broadcast a message without a message handler
         self.hub.subscribe(self.c1, Message)
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(NotImplementedError) as exc:
             self.hub.broadcast(Message(None))
+        assert exc.value.args[0].startswith("Message has no handler:")
 
     def test_multi_client(self):
         #register 2 clients with same data to hub
