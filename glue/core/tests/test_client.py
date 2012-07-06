@@ -86,8 +86,9 @@ class TestClient(object):
         assert c.data is data
 
     def test_invalid_init(self):
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exc:
             Client(None)
+        assert exc.value.args[0].startswith("Input data must be a DataCollection:")
 
     def test_register(self):
         hub = self._hub()
@@ -160,15 +161,17 @@ class TestBasicClient(object):
         client, collection, data, subset = self._add_data()
         d = Data()
         s = Subset(d)
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exc:
             client.add_layer(s)
+        assert exc.value.args[0] == "Data not in collection"
 
     def test_add_data_raises_if_not_in_collection(self):
         client, collection, data, subset = self._add_data()
         d = Data()
         d.new_subset()
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exc:
             client.add_layer(d)
+        assert exc.value.args[0] == "Data not in collection"
 
     def test_double_add_ignored(self):
         client, collection, data, subset = self._add_subset()

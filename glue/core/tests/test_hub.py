@@ -125,13 +125,16 @@ class TestHub(object):
         self.hub.unsubscribe(handler, subscriber)
 
     def test_invalid_subscribe(self):
+
         msg, handler, subscriber = self.get_subscription()
 
-        with pytest.raises(InvalidSubscriber):
+        with pytest.raises(InvalidSubscriber) as exc:
             self.hub.subscribe(None, msg, handler)
+        assert exc.value.args[0].startswith("Subscriber must be a HubListener")
 
-        with pytest.raises(InvalidMessage):
+        with pytest.raises(InvalidMessage) as exc:
             self.hub.subscribe(subscriber, None, handler)
+        assert exc.value.args[0].startswith("message class must be a subclass of glue.Message")
 
     def test_default_handler(self):
         msg, handler, subscriber = self.get_subscription()
@@ -171,8 +174,9 @@ class TestHub(object):
         self.hub.subscribe(subscriber, ErrorMessage, error_handler)
 
         msg_instance = msg("test")
-        with pytest.raises(ExpectedException):
+        with pytest.raises(ExpectedException) as exc:
             self.hub.broadcast(msg_instance)
+        assert exc.value.args[0] == "Don't recurse forever!"
 
     def test_autosubscribe(self):
         l = MagicMock(spec_set=HubListener)
@@ -187,15 +191,16 @@ class TestHub(object):
         s.register.assert_called_once_with()
 
     def test_invalid_init(self):
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exc:
             Hub(None)
+        assert exc.value.args[0] == "Inputs must be HubListener, data, subset, or data collection objects"
 
 
 class TestHubListener(object):
     """This is a dumb test, I know. Fixated on code coverage"""
     def test_unimplemented(self):
         hl = HubListener()
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(NotImplementedError) as exc:
             hl.register_to_hub(None)
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(NotImplementedError) as exc:
             hl.notify(None)

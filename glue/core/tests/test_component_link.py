@@ -26,13 +26,15 @@ class TestComponentLink(object):
     def test_invalid_init_multi_from_no_using(self):
         data, from_, to_ = self.toy_data()
         using = lambda x: x
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exc:
             ComponentLink([from_, from_], to_)
+        assert exc.value.args[0] == "comp_from must have only 1 element, or a 'using' function must be provided"
 
     def test_invalid_init_scalar_from(self):
         data, from_, to_ = self.toy_data()
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exc:
             ComponentLink(from_, to_)
+        assert exc.value.args[0].startswith("comp_from must be a list")
 
     def test_compute_direct(self):
         data, from_, to_ = self.toy_data()

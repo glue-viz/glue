@@ -54,9 +54,12 @@ class TestTreeTraversal(object):
         assert post_string(self.t4) == '12345'
 
     def test_input_check(self):
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exc:
             PreOrderTraversal(5)
-        with pytest.raises(TypeError):
+        assert exc.value.args[0].startswith("Input is not a tree object")
+        with pytest.raises(TypeError) as exc:
             PreOrderTraversal(None)
-        with pytest.raises(TypeError):
+        assert exc.value.args[0].startswith("Input is not a tree object")
+        with pytest.raises(TypeError) as exc:
             PostOrderTraversal(5)
+        assert exc.value.args[0].startswith("Input is not a tree object")
