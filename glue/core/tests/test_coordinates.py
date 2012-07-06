@@ -130,26 +130,30 @@ class TestWcsCoordinates(object):
     def test_pixel2world_mismatched_input(self):
         coord = WCSCoordinates(None)
         x, y = 0, [5]
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exc:
             coord.pixel2world(x, y)
+        assert exc.value.args[0].startswith("xpix and ypix types do not match")
 
     def test_world2pixel_mismatched_input(self):
         coord = WCSCoordinates(None)
         x, y = 0, [5]
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exc:
             coord.world2pixel(x, y)
+        assert exc.value.args[0].startswith("xworld and yworld types do not match")
 
     def test_pixel2world_invalid_input(self):
         coord = WCSCoordinates(None)
         x, y = {}, {}
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exc:
             coord.pixel2world(x, y)
+        assert exc.value.args[0].startswith("Unexpected type for pixel coordinates")
 
     def test_world2pixel_invalid_input(self):
         coord = WCSCoordinates(None)
         x, y = {}, {}
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exc:
             coord.world2pixel(x, y)
+        assert exc.value.args[0].startswith("Unexpected type for world coordinates")
 
     def test_axis_label(self):
         hdr = self.default_header()
