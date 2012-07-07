@@ -1,6 +1,7 @@
-from .viz_client import VizClient
-import .message as msg
-from .exceptions import IncompatibleDataException
+from ..core.client import Client
+from ..core import message as msg
+from ..core.data import Data
+from ..core.exceptions import IncompatibleDataException
 
 class HistogramLayerManager(object):
     def __init__(self, axes, layer):
@@ -32,7 +33,7 @@ class HistogramLayerManager(object):
         self.clear_patches()
 
 
-class HistogramClient(glue.Client):
+class HistogramClient(Client):
     """
     A client class to display histograms
     """
@@ -84,7 +85,7 @@ class HistogramClient(glue.Client):
         mgr = self._managers.pop(layer)
         del mgr
 
-        if isinstance(layer, glue.Data):
+        if isinstance(layer, Data):
             for subset in layer.subsets:
                 self.remove_layer(subset)
 

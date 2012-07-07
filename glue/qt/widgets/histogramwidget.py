@@ -1,12 +1,12 @@
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import Qt, QVariant
 
-import glue
-import glue.message as msg
-from glue.histogram_client import HistogramClient
-from ui_histogramwidget import Ui_HistogramWidget
+from ...core.hub import HubListener
+from ...core import message as msg
+from ...clients.histogram_client import HistogramClient
+from ..ui.histogramwidget import Ui_HistogramWidget
 
-class HistogramWidget(QtGui.QMainWindow, glue.HubListener):
+class HistogramWidget(QtGui.QMainWindow, HubListener):
 
     def __init__(self, data, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
