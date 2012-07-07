@@ -9,6 +9,22 @@ cmdclass = {}
 
 scripts = glob(os.path.join('scripts', '*'))
 
+class PyTest(Command):
+    user_options = []
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        import sys, subprocess
+        path = os.path.join('scripts', 'runtests.py')
+        errno = subprocess.call([sys.executable, path, 'glue'])
+        raise SystemExit(errno)
+
+cmdclass['test'] = PyTest
+
 class BuildQt(Command):
 
     user_options = [
