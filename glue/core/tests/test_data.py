@@ -8,6 +8,8 @@ from ..subset import Subset
 from ..hub import Hub
 from ..exceptions import IncompatibleAttribute
 from ..component_link import ComponentLink
+from ..coordinates import WCSCoordinates
+from ...tests import example_data
 
 
 class TestCoordinates(Coordinates):
@@ -268,3 +270,11 @@ class TestData(object):
         links = self.data.coordinate_links
         links2 = self.data.coordinate_links
         assert links == links2
+
+class TestGriddedData(object):
+    def setup_method(self, method):
+        self.data = example_data.simple_image()
+
+    def test_parse_coords(self):
+        """Valid fits header should parse into WCSCoordinates"""
+        assert isinstance(self.data.coords, WCSCoordinates)

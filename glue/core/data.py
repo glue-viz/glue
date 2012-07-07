@@ -507,7 +507,7 @@ class GriddedData(Data):
         if format in ['fits', 'fit']:
             arrays = extract_data_fits(filename, **kwargs)
             header = pyfits.open(filename)[0].header
-            self.coordinates = coordinates_from_header(header)
+            self.coords = coordinates_from_header(header)
         elif format in ['hdf', 'hdf5', 'h5']:
             arrays = extract_data_hdf5(filename, **kwargs)
         else:

@@ -121,12 +121,13 @@ class WCSCoordinates(Coordinates):
                             type(xworld))
 
     def axis_label(self, axis):
+        letters = ['y', 'x']
         header = self._header
         num = header['NAXIS'] - axis  # number orientation reversed
         key = 'CTYPE%i' % num
         if key in header:
-            return 'World %i: %s' % (axis, header[key])
-        return Coordinates.axis_label(self, axis)
+            return 'World %s: %s' % (letters[axis], header[key])
+        return 'World %s' % (letters[axis])
 
 
 class WCSCubeCoordinates(WCSCoordinates):
