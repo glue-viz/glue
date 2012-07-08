@@ -6,7 +6,8 @@ from .decorators import memoize
 from .message import SubsetDeleteMessage, SubsetUpdateMessage
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
-           'OrState', 'AndState', 'XorState', 'InvertState', 'ElementSubsetState']
+           'OrState', 'AndState', 'XorState', 'InvertState',
+           'ElementSubsetState', 'RangeSubsetState']
 
 
 class Subset(object):
@@ -199,7 +200,10 @@ class SubsetState(object):
         return np.zeros(self.parent.data.shape, dtype=bool)
 
     def copy(self):
-        return SubsetState()
+
+        indices = self.to_index_list()
+        result = ElementSubsetState(indices)
+        return result
 
     def __or__(self, other_state):
         return OrState(self, other_state)
@@ -236,12 +240,28 @@ class RoiSubsetState(SubsetState):
         return result
 
 
+class RangeSubsetState(SubsetState):
+    def __init__(self, lo, hi, att=None):
+        self.lo = lo
+        self.hi = hi
+        self.att = att
+
+    def to_mask(self):
+        x = self.parent.data[self.att]
+        result = (x >= self.lo) & (x <= self.hi)
+        return result
+
+    def copy(self):
+        return RangeSubsetState(self.lo, self.hi, self.att)
+
 class CompositeSubsetState(SubsetState):
     def __init__(self, state1, state2=None):
         super(CompositeSubsetState, self).__init__()
         self.state1 = state1
         self.state2 = state2
 
+    def copy(self):
+        return type(self)(self.state1, self.state2)
 
 class OrState(CompositeSubsetState):
     @memoize

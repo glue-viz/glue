@@ -277,3 +277,25 @@ class TestSubsetState(object):
         answer = np.array([])
         self.mask_check(mask, answer)
 
+
+class TestCompositeSubsetStateCopy(object):
+    def assert_composite_copy(self, cls):
+        s1 = cls(SubsetState(), SubsetState())
+        s2 = s1.copy()
+
+        assert type(s1) == type(s2)
+        assert s1 is not s2
+        assert s1.state1 is s2.state1
+        assert s2.state2 is s2.state2
+
+    def test_invert(self):
+        self.assert_composite_copy(InvertState)
+
+    def test_and(self):
+        self.assert_composite_copy(AndState)
+
+    def test_or(self):
+        self.assert_composite_copy(OrState)
+
+    def test_xor(self):
+        self.assert_composite_copy(XorState)

@@ -373,10 +373,11 @@ class MplRectangularROI(AbstractMplRoi):
         self._xi = None
         self._yi = None
 
-        self.plot_opts = {'edgecolor': 'red', 'facecolor': 'none',
+        self.plot_opts = {'edgecolor': 'red', 'facecolor': 'red',
                           'alpha': 0.3}
 
         self._patch = Rectangle((0., 0.), 1., 1.)
+        self._patch.set_zorder(100)
         self._ax.add_patch(self._patch)
 
         self._sync_patch()

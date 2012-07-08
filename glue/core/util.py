@@ -12,7 +12,9 @@ def relim(lo, hi, log=False):
             x = 1e-5
         if hi < 0:
             y = 1e5
-    return (x, y)
+        return x * .98, y * 1.02
+    delta = y - x
+    return (x - .02 * delta, y + .02 * delta)
 
 def file_format(filename):
     if filename.find('.') == -1:

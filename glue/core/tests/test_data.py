@@ -2,13 +2,13 @@ import pytest
 import numpy as np
 from mock import MagicMock
 
-from ..data import ComponentID, Component, Data, DerivedComponent
+from ..data import ComponentID, Component, Data, DerivedComponent, pixel_label
 from ..coordinates import Coordinates
 from ..subset import Subset
 from ..hub import Hub
 from ..exceptions import IncompatibleAttribute
 from ..component_link import ComponentLink
-from ..coordinates import WCSCoordinates
+from ..coordinates import WCSCoordinates, WCSCubeCoordinates
 from ...tests import example_data
 
 
@@ -271,10 +271,26 @@ class TestData(object):
         links2 = self.data.coordinate_links
         assert links == links2
 
-class TestGriddedData(object):
-    def setup_method(self, method):
-        self.data = example_data.simple_image()
+#XXX need to get data methods to work
+#class TestGriddedData(object):
+#    def test_parse_coords_2d(self):
+#        """Valid fits header should parse into WCSCoordinates"""
+#        data = example_data.simple_image()
+#        assert isinstance(self.data.coords, WCSCoordinates)
+#
+#    def test_parse_coords_3d(self):
+#        """Valid fits header should parse into WCSCoordinates"""
+#        data = example_data.simple_cube()
+#        assert isinstance(self.data.coords, WCSCubeCoordinates)
 
-    def test_parse_coords(self):
-        """Valid fits header should parse into WCSCoordinates"""
-        assert isinstance(self.data.coords, WCSCoordinates)
+
+class TestPixelLabel(object):
+
+    def test(self):
+        assert pixel_label(0, 2) == "y"
+        assert pixel_label(1, 2) == "x"
+        assert pixel_label(0, 3) == "z"
+        assert pixel_label(1, 3) == "y"
+        assert pixel_label(2, 3) == "x"
+        assert pixel_label(1, 0) == "Axis 1"
+        assert pixel_label(1, 4) == "Axis 1"

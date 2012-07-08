@@ -150,6 +150,9 @@ class WCSCubeCoordinates(WCSCoordinates):
         except KeyError:
             raise AttributeError("Input header must have CRPIX3, CRVAL3, and "
                              "CDELT3 or CD3_3 keywords")
+        self._ctype3 = ""
+        if 'CTYPE3' in header:
+            self._ctype3 = header['CTYPE3']
 
         # make sure there is no non-standard rotation
         keys = ['CD1_3', 'CD2_3', 'CD3_2', 'CD3_1']
@@ -158,19 +161,15 @@ class WCSCubeCoordinates(WCSCoordinates):
                 raise AttributeError("Cannot handle non-zero keyword: "
                                      "%s = %s" %
                                      (k, header[k]))
-        #self._fix_header_for_2d()
+        self._fix_header_for_2d()
         self._wcs = pywcs.WCS(header)
 
     def _fix_header_for_2d(self):
         #workaround for pywcs -- need to remove 3D header keywords
         self._header['NAXIS'] = 2
-        del self._header['NAXIS3']
-        if 'CDELT3' in self._header:
-            del self._header['CDELT3']
-        if 'CD3_3' in self._header:
-            del self._header['CD3_3']
-        del self._header['CRPIX3']
-        del self._header['CRVAL3']
+        for tag in ['NAXIS3', 'CDELT3', 'CD3_3', 'CRPIX3', 'CRVAL3', 'CTYPE3']:
+            if tag in self._header:
+                del self._header[tag]
 
     def pixel2world(self, xpix, ypix, zpix):
         xout, yout = WCSCoordinates.pixel2world(self, xpix, ypix)
@@ -181,6 +180,18 @@ class WCSCubeCoordinates(WCSCoordinates):
         xout, yout = WCSCoordinates.world2pixel(self, xworld, yworld)
         zout = (zworld - self._crval3) / self._cdelt3 + self._crpix3
         return xout, yout, zout
+
+    def axis_label(self, axis):
+        letters = ['z', 'y', 'x']
+        keys = ["", "", ""]
+        if self._ctype3:
+            keys[0] = ": %s" % self._ctype3
+        if 'CTYPE2' in self._header:
+            keys[1] = ": %s" % self._header['CTYPE2']
+        if 'CTYPE1' in self._header:
+            keys[2] = ": %s" % self._header['CTYPE1']
+        return "World %s %s" % (letters[axis], keys[axis])
+
 
 
 def coordinates_from_header(header):

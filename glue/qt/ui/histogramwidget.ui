@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>529</width>
-    <height>507</height>
+    <width>555</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="focusPolicy">
@@ -125,9 +125,24 @@
             <number>5</number>
            </property>
            <item>
-            <widget class="QDoubleSpinBox" name="widthSpinBox">
+            <widget class="QDoubleSpinBox" name="binSpinBox">
              <property name="toolTip">
               <string>Define the histogram bin width</string>
+             </property>
+             <property name="decimals">
+              <number>0</number>
+             </property>
+             <property name="minimum">
+              <double>1.000000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>100000.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>3.000000000000000</double>
+             </property>
+             <property name="value">
+              <double>10.000000000000000</double>
              </property>
             </widget>
            </item>
@@ -140,11 +155,28 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>Bin Width</string>
+              <string>Number of bins</string>
              </property>
             </widget>
            </item>
           </layout>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="normalized_box">
+           <property name="text">
+            <string>Normalized</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="autoscale_box">
+           <property name="text">
+            <string>Autoscale y axis</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item>
           <spacer name="verticalSpacer">

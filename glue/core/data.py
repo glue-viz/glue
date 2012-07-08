@@ -269,7 +269,8 @@ class Data(object):
         grids = np.mgrid[slices]
         for i in range(len(shape)):
             comp = Component(grids[i])
-            cid = self.add_component(comp, "Pixel Axis %i" % i)
+            label = pixel_label(i, len(shape))
+            cid = self.add_component(comp, "Pixel %s" % label)
             self._pixel_component_ids.append(cid)
         if self.coords:
             world = self.coords.pixel2world(*grids[::-1])[::-1]
@@ -516,3 +517,10 @@ class GriddedData(Data):
         for component_name in arrays:
             comp = Component(arrays[component_name])
             self.add_component(comp, component_name)
+
+def pixel_label(i, ndim):
+    if ndim == 2:
+        return ['y', 'x'][i]
+    if ndim == 3:
+        return ['z', 'y', 'x'][i]
+    return "Axis %s" % i
