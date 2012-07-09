@@ -4,7 +4,7 @@ from mock import MagicMock
 from PyQt4.QtGui import QApplication
 from PyQt4.QtTest import QTest
 
-from ..histogramwidget import HistogramWidget
+from ..histogram_widget import HistogramWidget
 from ....clients.histogram_client import HistogramClient
 from .... import core
 from ....tests import example_data
