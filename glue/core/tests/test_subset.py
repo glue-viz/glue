@@ -3,7 +3,6 @@ import tempfile
 import pytest
 import numpy as np
 from mock import MagicMock
-import pyfits
 
 from ..subset import Subset, SubsetState, ElementSubsetState
 from ..subset import OrState
@@ -217,9 +216,10 @@ class TestSubsetIo(object):
         self.subset.subset_state = ElementSubsetState(indices=inds)
 
     def test_write(self):
+        from astropy.io import fits
         with tempfile.NamedTemporaryFile() as tmp:
             self.subset.write_mask(tmp.name)
-            data = pyfits.open(tmp.name)[0].data
+            data = fits.open(tmp.name)[0].data
             expected = np.array([[0, 1, 1, 1],
                                  [0, 0, 0, 0],
                                  [0, 0, 0, 0],
