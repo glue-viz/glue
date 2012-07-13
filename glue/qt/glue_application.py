@@ -10,8 +10,6 @@ from .ui.glue_application import Ui_GlueApplication
 from .actions import act
 from .qtutil import pick_class, get_text, data_wizard
 
-from .widgets.custom_component_widget import CustomComponentWidget
-
 
 class GlueApplication(QMainWindow, core.hub.HubListener):
     """ The main Glue window """
@@ -87,17 +85,16 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         menu.setTitle("File")
 
         menu.addAction(self._actions['data_new'])
-        menu.addAction(self._actions['session_save'])
+        #menu.addAction(self._actions['data_save'])  # XXX add this
         menu.addAction(self._actions['session_restore'])
+        menu.addAction(self._actions['session_save'])
 
-        menu.addAction(self._actions['tab_new'])
-        menu.addAction(self._actions['window_new'])
         mbar.addMenu(menu)
 
         menu = QMenu(mbar)
-        menu.setTitle("Tab")
+        menu.setTitle("Canvas")
         menu.addAction(self._actions['tab_new'])
-        menu.addAction(self._actions['window_new'])
+        menu.addAction(self._actions['viewer_new'])
         menu.addSeparator()
         menu.addAction(self._actions['cascade'])
         menu.addAction(self._actions['tile'])
@@ -105,17 +102,10 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         mbar.addMenu(menu)
 
         menu = QMenu(mbar)
-        menu.setTitle("Layers")
+        menu.setTitle("Data Manager")
         menu.addActions(self._ui.layerWidget.actions())
-        a = act("Define new component", self,
-                tip="Define a new component using python expressions")
-        a.triggered.connect(self._create_component)
-        menu.addAction(a)
 
         mbar.addMenu(menu)
-
-    def _create_component(self):
-        CustomComponentWidget.create_component(self._data)
 
     def _load_data(self):
         data = data_wizard()
@@ -126,21 +116,23 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         """ Create and connect actions, store in _actions dict """
         self._actions = {}
 
-        a = act("Open Data", self,
-                tip="Open a new data set")
+        a = act("Open Data Set", self,
+                tip="Open a new data set",
+                shortcut=QKeySequence.Open)
         a.triggered.connect(self._load_data)
         self._actions['data_new'] = a
 
-        a = act("New Window", self,
+        a = act("New Data Viewer", self,
                 tip="Open a new visualization window in the current tab",
-                shortcut = QKeySequence.New)
+                shortcut=QKeySequence.New
+                )
         a.triggered.connect(self._new_viz_window)
-        self._actions['window_new'] = a
+        self._actions['viewer_new'] = a
 
 
         a = act('New Tab', self,
-                 shortcut=QKeySequence.AddTab,
-                 tip='Add a new tab')
+                shortcut=QKeySequence.AddTab,
+                tip='Add a new tab')
         a.triggered.connect(self._new_tab)
         self._actions['tab_new'] = a
 

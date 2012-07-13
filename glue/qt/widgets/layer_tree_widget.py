@@ -11,7 +11,8 @@ from ... import core
 
 from ..link_editor import LinkEditor
 from .. import qtutil
-
+from .custom_component_widget import CustomComponentWidget
+from ..actions import act as _act
 
 class LayerCommunicator(QObject):
     layer_check_changed = pyqtSignal(object, bool)
@@ -105,6 +106,19 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         group.addAction(act)
         tree.addAction(act)
         self._invert_action = act
+        separator = QAction("sep", tree)
+        separator.setSeparator(True)
+        tree.addAction(separator)
+
+        a = _act("Define new component", self,
+                tip="Define a new component using python expressions")
+        tree.addAction(a)
+        a.triggered.connect(self._create_component)
+        self._new_component = a
+
+
+    def _create_component(self):
+        CustomComponentWidget.create_component(self._data)
 
     def _invert_subset(self):
         item = self.layerTree.currentItem()
@@ -165,7 +179,6 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         act = QAction("Save subset", tree)
         act.setEnabled(False)
         act.setToolTip("Save the mask for this subset to a file")
-        act.setShortcut(QKeySequence.Save)
         act.setShortcutContext(Qt.WidgetShortcut)
         act.triggered.connect(self._save_subset)
         tree.addAction(act)
@@ -174,7 +187,6 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         act = QAction("Load subset", tree)
         act.setEnabled(False)
         act.setToolTip("Load a subset from a file")
-        act.setShortcut(QKeySequence.Open)
         act.setShortcutContext(Qt.WidgetShortcut)
         act.triggered.connect(self._load_subset)
         tree.addAction(act)
@@ -201,7 +213,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         act = QAction("New subset", tree)
         act.setEnabled(False)
         act.setToolTip("Create a new subset for the selected data")
-        act.setShortcut('Ctrl+B')
+        act.setShortcut('Ctrl+Shift+N')
         act.setShortcutContext(Qt.WidgetShortcut)
         act.triggered.connect(self._new_subset)
         tree.addAction(act)
@@ -210,7 +222,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         act = QAction("Clear subset", tree)
         act.setEnabled(False)
         act.setToolTip("Clear current selection")
-        act.setShortcut('Ctrl+0')
+        act.setShortcut('Ctrl+K')
         act.setShortcutContext(Qt.WidgetShortcut)
         act.triggered.connect(self._clear_subset)
         tree.addAction(act)
@@ -225,7 +237,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         tree.addAction(act)
         self._duplicate_action = act
 
-        act = QAction("Delete layer", tree)
+        act = QAction("Delete Selection", tree)
         act.setEnabled(False)
         act.setToolTip("Remove the highlighted layer")
         act.setShortcut(QKeySequence.Delete)
