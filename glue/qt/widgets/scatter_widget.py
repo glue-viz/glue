@@ -8,12 +8,11 @@ from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import RectangleMode, CircleMode, PolyMode
 
 from ..ui.scatterwidget import Ui_ScatterWidget
+from .data_viewer import DataViewer
 
-
-class ScatterWidget(QtGui.QMainWindow, core.hub.HubListener):
+class ScatterWidget(DataViewer):
     def __init__(self, data, parent=None):
-        QtGui.QMainWindow.__init__(self, parent)
-        core.hub.HubListener.__init__(self)
+        super(ScatterWidget, self).__init__(data, parent)
         self.central_widget = QtGui.QWidget()
         self.setCentralWidget(self.central_widget)
         self.ui = Ui_ScatterWidget()
@@ -22,7 +21,6 @@ class ScatterWidget(QtGui.QMainWindow, core.hub.HubListener):
         self.client = ScatterClient(data,
                                     self.ui.mplWidget.canvas.fig,
                                     self.ui.mplWidget.canvas.ax)
-        self._data = data
         self._connect()
         self.unique_fields = set()
         self.make_toolbar()
@@ -117,8 +115,13 @@ class ScatterWidget(QtGui.QMainWindow, core.hub.HubListener):
         return len(self.ui.layerTree) == 0
 
     def register_to_hub(self, hub):
+        super(ScatterWidget, self).register_to_hub(hub)
         self.client.register_to_hub(hub)
         self.ui.layerTree.register_to_hub(hub)
+
+    def unregister(self, hub):
+        hub.unsubscribe_all(self.ui.layerTree)
+        hub.unsubscribe_all(self.client)
 
     def update_xatt(self, index):
         combo = self.ui.xAxisComboBox

@@ -1,8 +1,9 @@
-from PyQt4.QtGui import QMainWindow, QWidget, QAction, QToolBar
+from PyQt4.QtGui import QWidget, QAction, QToolBar
 from PyQt4.QtCore import Qt, QVariant
 
 import matplotlib.cm as cm
 
+from .data_viewer import DataViewer
 from ... import core
 
 from ...clients.image_client import ImageClient
@@ -14,12 +15,10 @@ from ..glue_toolbar import GlueToolbar
 from ..ui.imagewidget import Ui_ImageWidget
 
 
-class ImageWidget(QMainWindow, core.hub.HubListener):
+class ImageWidget(DataViewer):
 
     def __init__(self, data, parent=None):
-
-        QMainWindow.__init__(self, parent)
-        core.hub.HubListener.__init__(self)
+        super(ImageWidget, self).__init__(data, parent)
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -166,6 +165,7 @@ class ImageWidget(QMainWindow, core.hub.HubListener):
         ui.imageSlider.sliderMoved.connect(self.set_slider)
 
     def register_to_hub(self, hub):
+        super(ImageWidget, self).register_to_hub(hub)
         self.client.register_to_hub(hub)
         dc_filt = lambda x: x.sender is self.client._data
 
@@ -177,6 +177,10 @@ class ImageWidget(QMainWindow, core.hub.HubListener):
                       core.message.DataCollectionDeleteMessage,
                       handler=lambda x: self.remove_data(x.data),
                       filter=dc_filt)
+
+    def unregister(self, hub):
+        for obj in [self, self.client]:
+            hub.unsubscribe_all(obj)
 
     def remove_data(self, data):
         combo = self.ui.displayDataCombo

@@ -7,11 +7,12 @@ from ...clients.histogram_client import HistogramClient
 from ..ui.histogramwidget import Ui_HistogramWidget
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import RectangleMode
+from .data_viewer import DataViewer
 
-class HistogramWidget(QtGui.QMainWindow, HubListener):
+class HistogramWidget(DataViewer):
 
     def __init__(self, data, parent=None):
-        QtGui.QMainWindow.__init__(self, parent)
+        super(HistogramWidget, self).__init__(self, parent)
 
         self.central_widget = QtGui.QWidget()
         self.setCentralWidget(self.central_widget)
@@ -118,10 +119,13 @@ class HistogramWidget(QtGui.QMainWindow, HubListener):
         return False
 
     def register_to_hub(self, hub):
+        super(HistogramWidget, self).register_to_hub(hub)
         self.client.register_to_hub(hub)
         self.ui.layerTree.register_to_hub(hub)
-
         hub.subscribe(self,
                       msg.DataCollectionAddMessage,
                       handler=lambda x:self.add_data(x.data))
 
+    def unregister(self, hub):
+        for obj in [self.client, self.ui.layerTree, self]:
+            hub.unsubscribe_all(obj)
