@@ -2,6 +2,29 @@ import os
 import sys
 import imp
 
+class ConfigObject(object):
+    def identity(self, x):
+        return x
+
+    def __init__(self):
+        from .qt.widgets.scatter_widget import ScatterWidget
+        from .qt.widgets.image_widget import ImageWidget
+        from .qt.widgets.histogram_widget import HistogramWidget
+
+        self.qt_clients = [ScatterWidget, ImageWidget, HistogramWidget]
+        self.link_functions = [self.identity]
+
+    def merge_module(self, module):
+        """Import public attributes from module into instance attributes
+
+        :param module: the module to add
+        """
+        for name, obj in vars(module).items():
+            if name.startswith('_'):
+                continue
+            self.__setattr__(name, obj)
+
+
 def load_configuration(search_path = None):
     ''' Find and import a config.py file
 
@@ -14,19 +37,21 @@ def load_configuration(search_path = None):
        Exception, if no module was found
     '''
     search_order = search_path or _default_search_order()
+    result = ConfigObject()
 
     for config_file in search_order:
         try:
             config = imp.load_source('config', config_file)
-            return config
+            result.merge_module(config)
+            #return config
         except IOError:
             pass
         except Exception as e:
+            print e, config_file
             raise Exception("Error loading config file %s:\n%s" %
                             (config_file, e))
 
-    raise Exception("Could not find a valid glue config file")
-
+    return result
 
 def _default_search_order():
     """
@@ -43,4 +68,4 @@ def _default_search_order():
         search_order.append(os.environ['GLUERC'])
     search_order.append(os.path.expanduser('~/.glue/config.py'))
     search_order.append(os.path.join(current_module, 'default_config.py'))
-    return search_order
+    return search_order[::-1]
