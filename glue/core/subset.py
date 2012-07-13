@@ -1,7 +1,7 @@
 import numpy as np
 import pyfits
 
-from .visual import VisualAttributes
+from .visual import VisualAttributes, RED
 from .decorators import memoize
 from .message import SubsetDeleteMessage, SubsetUpdateMessage
 
@@ -28,7 +28,7 @@ class Subset(object):
         Describes visual attributes of the subset
     """
 
-    def __init__(self, data, color=None, alpha=1.0, label=None):
+    def __init__(self, data, color=RED, alpha=1.0, label=None):
         """ Create a new subclass object.
 
         Note: the preferred way for creating subsets is through
@@ -39,10 +39,10 @@ class Subset(object):
         """
         self._broadcasting = False  # must be first def
         self.data = data
+        self.color = color
         self.style = VisualAttributes(parent=self)
         self.style.markersize *= 2.5
-        if color:
-            self.style.color = color
+        self.style.color = color
         self.style.alpha = alpha
         self.style.label = label
         self._subset_state = None

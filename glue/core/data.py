@@ -5,6 +5,7 @@ import pyfits
 from .io import extract_data_fits, extract_data_hdf5
 from .coordinates import Coordinates, coordinates_from_header
 from .visual import VisualAttributes
+from .visual import BLUE, GREEN, RED, ORANGE, PURPLE
 from .exceptions import IncompatibleAttribute
 from .component_link import ComponentLink
 from .subset import Subset
@@ -20,6 +21,7 @@ from .util import file_format
 __all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
            'TabularData', 'GriddedData']
 
+COLORS = [BLUE, GREEN, RED, ORANGE, PURPLE]
 
 class ComponentID(object):
     """ References a Component object within a data object
@@ -152,7 +154,7 @@ class Data(object):
         # Hub that the data is attached to
         self.hub = None
 
-        self.style = VisualAttributes(parent=self, washout=True)
+        self.style = VisualAttributes(parent=self)
 
         self._coordinate_links = None
 
@@ -161,8 +163,7 @@ class Data(object):
         self.data = self
 
         # The default-editable subset
-        self.edit_subset = Subset(self, label='Editable Subset')
-        self.add_subset(self.edit_subset)
+        self.edit_subset = self.new_subset(label="Editable Subset")
 
     @property
     def ndim(self):
@@ -360,7 +361,7 @@ class Data(object):
     def component_ids(self):
         return self._components.keys()
 
-    def new_subset(self):
+    def new_subset(self, color=None, **kwargs):
         """ Create a new subset, and attach to self.
 
         This is the preferred way for creating subsets, as it
@@ -370,7 +371,9 @@ class Data(object):
 
            The new subset object
         """
-        subset = Subset(self)
+        nsub = len(self.subsets)
+        color = color or COLORS[nsub % len(COLORS)]
+        subset = Subset(self, color=color, **kwargs)
         self.add_subset(subset)
         return subset
 

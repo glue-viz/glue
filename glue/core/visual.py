@@ -1,12 +1,18 @@
 # Define acceptable line styles
 VALID_LINESTYLES = ['solid', 'dashed', 'dash-dot', 'dotted', 'none']
 
-# Assign colors so as to avoid repeats
-DEFAULT_COLORS = ['#E41A1C', '#377EB8', '#4DAF4A', '#984EA3', '#FF7F00',
-                  '#A65628', '#F781BF']
-WASHOUT_COLORS = ['#F6B4B4', '#BDD5E8', '#C4E5C3', '#DDC5E1', '#FFD5AB',
-                  '#E2C7B8', '#FCD5EA']
-color_pos = 0
+GREY = '#B2B2B2'
+GRAY = GREY
+BLUE = "#1F7884"
+GREEN = "#33A02C"
+RED = "#E31A1C"
+ORANGE = "#FF7F00"
+PURPLE = "#6A3D9A"
+LIGHT_BLUE = "#A6CEE3"
+LIGHT_GREEN = "#B2DF8A"
+LIGHT_RED = "#FB9A99"
+LIGHT_ORANGE = "#FDBF6F"
+LIGHT_PURPLE = "#CAB2D6"
 
 __all__ = ['VisualAttributes']
 
@@ -16,7 +22,7 @@ class VisualAttributes(object):
     This class is used to define visual attributes for any kind of objects
     '''
 
-    def __init__(self, parent=None, washout=False):
+    def __init__(self, parent=None, washout=False, color=GREY):
 
         # Color can be specified using Matplotlib notation. Specifically, it
         # can be:
@@ -25,11 +31,7 @@ class VisualAttributes(object):
         #    gray ('0.0' = black,'1.0' = white)
         #  * A tuple of three floats in the rng [0:1] for (R, G, B)
         #  * An HTML hexadecimal string (e.g. '#eeefff')
-        global color_pos
-
-        col = WASHOUT_COLORS if washout else DEFAULT_COLORS
-        self.color = col[color_pos % len(DEFAULT_COLORS)]
-        color_pos += 1
+        self.color = color
         self.alpha = 1.
 
         # Line width in points (float or int)
