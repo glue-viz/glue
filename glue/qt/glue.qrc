@@ -17,5 +17,6 @@
 	<file>icons/glue_tree.png</file>
 	<file>icons/glue_xor.png</file>
 	<file>icons/glue_zoom_to_rect.png</file>
+	<file>icons/glue_rainbow.png</file>
 </qresource>
 </RCC>

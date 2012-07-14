@@ -1,6 +1,6 @@
 from functools import partial
 
-from PyQt4.QtGui import QWidget, QAction, QToolBar
+from PyQt4.QtGui import QWidget, QAction, QToolBar, QToolButton, QPushButton, QIcon
 from PyQt4.QtCore import Qt
 
 import matplotlib.cm as cm
@@ -15,6 +15,7 @@ from ..mouse_mode import RectangleMode, CircleMode, PolyMode, \
 from ..glue_toolbar import GlueToolbar
 
 from ..ui.imagewidget import Ui_ImageWidget
+from .. import glue_qt_resources  # pylint: disable=W0611
 
 
 class ImageWidget(DataViewer):
@@ -60,18 +61,18 @@ class ImageWidget(DataViewer):
         self._cmaps.append(act('Purple-Orange', cm.PuOr))
         self._cmaps.append(act('Purple-Green', cm.PRGn))
 
-    def create_colormap_toolbar(self, parent=None):
-        self.cmap_toolbar = QToolBar("Colormaps", parent)
-        for action in self._cmaps:
-            self.cmap_toolbar.addAction(action)
-        return self.cmap_toolbar
-
     def make_toolbar(self):
         result = GlueToolbar(self.ui.mplWidget.canvas, self, name='Image')
         for mode in self._mouse_modes():
             result.add_mode(mode)
+
+        tb = QToolButton()
+        tb.setWhatsThis("Set color scale")
+        icon = QIcon(":icons/glue_rainbow.png")
+        tb.setIcon(icon)
+        tb.addActions(self._cmaps)
+        result.addWidget(tb)
         self.addToolBar(result)
-        self.addToolBar(self.create_colormap_toolbar())
         return result
 
     def _apply_roi(self, mode):
@@ -85,7 +86,7 @@ class ImageWidget(DataViewer):
         poly = PolyMode(axes, release_callback=self._apply_roi)
         contrast = ContrastMode(axes, move_callback=self._set_norm)
         contour = ContourMode(axes, release_callback=self._contour_roi)
-        return [rect, circ, poly, contrast, contour]
+        return [rect, circ, poly, contour, contrast]
 
     def _init_widgets(self):
         self.ui.imageSlider.hide()
