@@ -2,6 +2,7 @@
 
 from PyQt4.QtGui import (QKeySequence, QMainWindow, QGridLayout, QMdiArea,
                          QMenu, QMdiSubWindow)
+from PyQt4.QtCore import Qt
 
 from .. import core
 
@@ -17,6 +18,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
     def __init__(self):
         super(GlueApplication, self).__init__()
         self._actions = {}
+        self._terminal = None
         self._ui = Ui_GlueApplication()
         self._ui.setupUi(self)
         self._ui.layerWidget.set_checkable(False)
@@ -27,6 +29,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._create_actions()
         self._connect()
         self._create_menu()
+        self._create_terminal()
 
     @property
     def tab_bar(self):
@@ -78,6 +81,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._ui.layerWidget.data_collection = self._data
         self._ui.layerWidget.register_to_hub(self._hub)
         self._data.register_to_hub(self._hub)
+        self._ui.terminal_button.clicked.connect(self._toggle_terminal)
 
     def _create_menu(self):
         mbar = self._ui.menubar
@@ -185,3 +189,30 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
 
     def _restore_session(self):
         raise NotImplemented
+
+    def _create_terminal(self):
+        assert self._terminal is None, "should only call _create_terminal once"
+        from widgets.terminal import glue_terminal
+        widget = glue_terminal(data_collection=self._data)
+        layout = self._ui.centralwidget.layout()
+        layout.addWidget(widget)
+        self._terminal = widget
+        self._hide_terminal()
+
+    def _toggle_terminal(self):
+        if self._terminal.isVisible():
+            self._hide_terminal()
+            assert not self._terminal.isVisible()
+        else:
+            self._show_terminal()
+            assert self._terminal.isVisible()
+
+    def _hide_terminal(self):
+        self._terminal.hide()
+        button = self._ui.terminal_button
+        button.setArrowType(Qt.DownArrow)
+
+    def _show_terminal(self):
+        self._terminal.show()
+        button = self._ui.terminal_button
+        button.setArrowType(Qt.UpArrow)

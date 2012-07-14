@@ -57,7 +57,7 @@
         <enum>QTabWidget::Rounded</enum>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>-1</number>
        </property>
        <property name="usesScrollButtons">
         <bool>false</bool>
@@ -72,6 +72,19 @@
         <bool>true</bool>
        </property>
       </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QToolButton" name="terminal_button">
+      <property name="text">
+       <string>...</string>
+      </property>
+      <property name="autoRaise">
+       <bool>false</bool>
+      </property>
+      <property name="arrowType">
+       <enum>Qt::DownArrow</enum>
+      </property>
      </widget>
     </item>
    </layout>
