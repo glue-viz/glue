@@ -1,5 +1,5 @@
 from PyQt4 import QtCore, QtGui
-from PyQt4.QtCore import Qt, QVariant
+from PyQt4.QtCore import Qt
 
 from ...core.hub import HubListener
 from ...core import message as msg
@@ -75,7 +75,7 @@ class HistogramWidget(DataViewer):
 
         combo.clear()
         for comp in comps:
-            combo.addItem(comp.label, userData = QVariant(comp))
+            combo.addItem(comp.label, userData = comp)
 
         combo.currentIndexChanged.connect(self._set_attribute_from_combo)
         combo.setCurrentIndex(0)
@@ -84,7 +84,7 @@ class HistogramWidget(DataViewer):
     def _set_attribute_from_combo(self):
         combo = self.ui.attributeCombo
         index =  combo.currentIndex()
-        attribute = combo.itemData(index).toPyObject()
+        attribute = combo.itemData(index)
         self.client.set_component(attribute)
 
     def _set_data_from_combo(self):
@@ -93,7 +93,7 @@ class HistogramWidget(DataViewer):
 
     def _current_data(self):
         combo = self.ui.dataCombo
-        layer = combo.itemData(combo.currentIndex()).toPyObject()
+        layer = combo.itemData(combo.currentIndex())
         return layer
 
     def add_data(self, data):
@@ -113,7 +113,7 @@ class HistogramWidget(DataViewer):
 
     def data_present(self, data):
         for i in range(self.ui.dataCombo.count()):
-            obj = self.ui.dataCombo.itemData(i).toPyObject()
+            obj = self.ui.dataCombo.itemData(i)
             if data is obj:
                 return True
         return False

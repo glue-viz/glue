@@ -55,31 +55,31 @@ class TestHistogramWidget(object):
         comps = self.data.components
         assert combo.count() == len(comps)
         for i in range(combo.count()):
-            assert combo.itemData(i).toPyObject() in comps
+            assert combo.itemData(i) in comps
 
     def test_attribute_set_with_combo(self):
         self.set_dummy_attributes()
         self.widget.ui.attributeCombo.setCurrentIndex(1)
-        obj = self.widget.ui.attributeCombo.itemData(1).toPyObject()
+        obj = self.widget.ui.attributeCombo.itemData(1)
         self.widget.client.set_component.assert_called_with(obj)
 
-        obj = self.widget.ui.attributeCombo.itemData(0).toPyObject()
+        obj = self.widget.ui.attributeCombo.itemData(0)
         self.widget.ui.attributeCombo.setCurrentIndex(0)
         self.widget.client.set_component.assert_called_with(obj)
 
     def test_data_set_with_combo(self):
         self.set_dummy_data()
         self.widget.ui.dataCombo.setCurrentIndex(1)
-        obj = self.widget.ui.dataCombo.itemData(1).toPyObject()
+        obj = self.widget.ui.dataCombo.itemData(1)
         self.widget.client.set_data.assert_called_with(obj)
 
         self.widget.ui.dataCombo.setCurrentIndex(0)
-        obj = self.widget.ui.dataCombo.itemData(0).toPyObject()
+        obj = self.widget.ui.dataCombo.itemData(0)
         self.widget.client.set_data.assert_called_with(obj)
 
     def test_add_data_populates_combo(self):
         self.widget.add_data(self.data)
-        assert self.widget.ui.dataCombo.itemData(0).toPyObject() is \
+        assert self.widget.ui.dataCombo.itemData(0) is \
             self.data
 
     def test_data_message_received(self):
@@ -102,7 +102,7 @@ class TestHistogramWidget(object):
         comps = d2.components
         assert self.widget.ui.attributeCombo.count() == len(comps)
         for i in range(self.widget.ui.attributeCombo.count()):
-            data = self.widget.ui.attributeCombo.itemData(i).toPyObject()
+            data = self.widget.ui.attributeCombo.itemData(i)
             assert data in comps
 
     def test_double_add_ignored(self):

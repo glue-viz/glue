@@ -97,10 +97,9 @@ class ScatterApplication(QtGui.QMainWindow, Ui_MainWindow):
         l.addWidget(self.scatter)
 
         # Add columns to x and y axis
-        variant = QtCore.QVariant()
         for column in self.scatter.column_names:
-            self.combo_xaxis.addItem(QtCore.QString(column), variant)
-            self.combo_yaxis.addItem(QtCore.QString(column), variant)
+            self.combo_xaxis.addItem(column, None)
+            self.combo_yaxis.addItem(column, None)
 
         self.connect(self.combo_xaxis, QtCore.SIGNAL('activated(int)'), self.scatter.update_x)
         self.connect(self.combo_yaxis, QtCore.SIGNAL('activated(int)'), self.scatter.update_y)

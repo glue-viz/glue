@@ -125,13 +125,13 @@ class ScatterWidget(DataViewer):
 
     def update_xatt(self, index):
         combo = self.ui.xAxisComboBox
-        component_id = combo.itemData(combo.currentIndex()).toPyObject()
+        component_id = combo.itemData(combo.currentIndex())
         assert isinstance(component_id, core.data.ComponentID)
         self.client.set_xdata(component_id)
 
     def update_yatt(self, index):
         combo = self.ui.yAxisComboBox
-        component_id = combo.itemData(combo.currentIndex()).toPyObject()
+        component_id = combo.itemData(combo.currentIndex())
         assert isinstance(component_id, core.data.ComponentID)
         self.client.set_ydata(component_id)
 

@@ -71,7 +71,7 @@ class ComponentSelector(QWidget):
         """
         item = self._ui.component_selector.currentItem()
         if item:
-            return item.data(0).toPyObject()
+            return item.data(0)
 
 
 def main(): # pragma: no cover

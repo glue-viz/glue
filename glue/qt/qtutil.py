@@ -1,6 +1,6 @@
 from matplotlib.colors import ColorConverter
 from PyQt4 import QtGui
-from PyQt4.QtCore import QMimeData, QStringList
+from PyQt4.QtCore import QMimeData
 from PyQt4.QtGui import QColor, QInputDialog, QColorDialog, QListWidget
 
 from .. import core
@@ -176,8 +176,7 @@ class GlueListWidget(QListWidget):
         self._data = {}
 
     def mimeTypes(self):
-        types = QStringList()
-        types.append(PyMimeData.MIME_TYPE)
+        types = [PyMimeData.MIME_TYPE]
         return types
 
     def mimeData(self, selected_items):

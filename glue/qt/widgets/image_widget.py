@@ -1,7 +1,7 @@
 from functools import partial
 
 from PyQt4.QtGui import QWidget, QAction, QToolBar
-from PyQt4.QtCore import Qt, QVariant
+from PyQt4.QtCore import Qt
 
 import matplotlib.cm as cm
 
@@ -98,13 +98,13 @@ class ImageWidget(DataViewer):
     def add_data(self, data):
         if not self.client.can_handle_data(data):
             return
-        self.ui.displayDataCombo.addItem(data.label, userData=QVariant(data))
+        self.ui.displayDataCombo.addItem(data.label, userData=data)
 
     def set_data(self, index):
         if self.ui.displayDataCombo.count() == 0:
             return
 
-        data = self.ui.displayDataCombo.itemData(index).toPyObject()
+        data = self.ui.displayDataCombo.itemData(index)
         self.client.set_data(data)
         self.ui.displayDataCombo.setCurrentIndex(index)
         self.set_attribute_combo(data)
@@ -122,7 +122,7 @@ class ImageWidget(DataViewer):
 
     def set_attribute(self, index):
         combo = self.ui.attributeComboBox
-        component_id = combo.itemData(index).toPyObject()
+        component_id = combo.itemData(index)
         self.client.set_attribute(component_id)
         self.ui.attributeComboBox.setCurrentIndex(index)
 
@@ -180,7 +180,7 @@ class ImageWidget(DataViewer):
     def remove_data(self, data):
         combo = self.ui.displayDataCombo
         for item in range(combo.count()):
-            if combo.itemData(item).toPyObject() is data:
+            if combo.itemData(item) is data:
                 combo.removeItem(item)
                 break
 
