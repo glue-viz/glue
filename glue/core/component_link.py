@@ -1,5 +1,7 @@
 __all__ = ['ComponentLink']
 
+def identity(x):
+    return x
 
 class ComponentLink(object):
     """ ComponentLinks represent transformation logic between ComponentIDs
@@ -47,7 +49,7 @@ class ComponentLink(object):
         """
         self._from = comp_from
         self._to = comp_to
-        self._using = using
+        self._using = using or identity
 
         if type(comp_from) is not list:
             raise TypeError("comp_from must be a list: %s" % type(comp_from))
