@@ -1,3 +1,5 @@
+from functools import partial
+
 from PyQt4.QtGui import QWidget, QAction, QToolBar
 from PyQt4.QtCore import Qt, QVariant
 
@@ -40,36 +42,28 @@ class ImageWidget(DataViewer):
         self.resize(self.central_widget.size())
 
     def _create_actions(self):
-        self.cmap_heat_action = QAction("Hot", self)
-        self.cmap_heat_action.activated.connect(
-            lambda: self.client.set_cmap(cm.hot))
-        self.cmap_heat_action.triggered.connect(
-            lambda: self.client.set_cmap(cm.hot))
+        def act(name, cmap):
+            a = QAction(name, self)
+            a.activated.connect(partial(self.client.set_cmap, cmap))
+            return a
 
-        self.cmap_paired_action = QAction("Paired", self)
-        self.cmap_paired_action.triggered.connect(
-            lambda: self.client.set_cmap(cm.Paired))
-
-        self.cmap_gray_action = QAction("Gray", self)
-        self.cmap_gray_action.triggered.connect(
-            lambda: self.client.set_cmap(cm.gray))
-
-        self.cmap_spectral_action = QAction("Spectral", self)
-        self.cmap_spectral_action.triggered.connect(
-            lambda: self.client.set_cmap(cm.spectral))
-
-        self.cmap_blue_action = QAction("Blues", self)
-        self.cmap_blue_action.triggered.connect(
-            lambda: self.client.set_cmap(cm.Blues))
+        self._cmaps = []
+        self._cmaps.append(act('Gray', cm.gray))
+        self._cmaps.append(act('Purple-Blue', cm.PuBu))
+        self._cmaps.append(act('Yellow-Green-Blue', cm.YlGnBu))
+        self._cmaps.append(act('Yellow-Orange-Red', cm.YlOrRd))
+        self._cmaps.append(act('Red-Purple', cm.RdPu))
+        self._cmaps.append(act('Blue-Green', cm.BuGn))
+        self._cmaps.append(act('Hot', cm.hot))
+        self._cmaps.append(act('Red-Blue', cm.RdBu))
+        self._cmaps.append(act('Red-Yellow-Blue', cm.RdYlBu))
+        self._cmaps.append(act('Purple-Orange', cm.PuOr))
+        self._cmaps.append(act('Purple-Green', cm.PRGn))
 
     def create_colormap_toolbar(self, parent=None):
         self.cmap_toolbar = QToolBar("Colormaps", parent)
-        self.cmap_toolbar.addAction(self.cmap_heat_action)
-        self.cmap_toolbar.addAction(self.cmap_paired_action)
-        self.cmap_toolbar.addAction(self.cmap_gray_action)
-        self.cmap_toolbar.addAction(self.cmap_spectral_action)
-        self.cmap_toolbar.addAction(self.cmap_blue_action)
-        self.cmap_toolbar.addAction(self.toggle_colorbar_action)
+        for action in self._cmaps:
+            self.cmap_toolbar.addAction(action)
         return self.cmap_toolbar
 
     def make_toolbar(self):
@@ -77,6 +71,7 @@ class ImageWidget(DataViewer):
         for mode in self._mouse_modes():
             result.add_mode(mode)
         self.addToolBar(result)
+        self.addToolBar(self.create_colormap_toolbar())
         return result
 
     def _apply_roi(self, mode):
