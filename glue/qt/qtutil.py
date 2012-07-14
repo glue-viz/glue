@@ -185,6 +185,12 @@ class GlueListWidget(QListWidget):
         data = self._data[item]
         return PyMimeData(data)
 
+    def get_data(self, item):
+        return self._data[item]
+
+    def set_data(self, item, data):
+        self._data[item] = data
+
     @property
     def data(self):
         return self._data

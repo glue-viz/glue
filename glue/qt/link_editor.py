@@ -16,18 +16,66 @@ class LinkEditor(QDialog):
         self._ui = Ui_LinkEditor()
         self._init_widgets()
         self._connect()
+        if len(collection) > 1:
+            self._ui.right_components.set_data_row(1)
+        self._size = None
 
     def _init_widgets(self):
         self._ui.setupUi(self)
         self._ui.signature_editor.setup(self._functions)
-        self._ui.component_selector.setup(self._collection)
+        self._ui.left_components.setup(self._collection)
+        self._ui.right_components.setup(self._collection)
+        self._ui.signature_editor.hide()
         for link in self._collection.links:
             self._add_link(link)
 
     def _connect(self):
-        self._ui.signature_editor.add_button.clicked.connect(
-            self._add_new_link)
+        self._ui.add_link.clicked.connect(self._add_new_link)
         self._ui.remove_link.clicked.connect(self._remove_link)
+        self._ui.toggle_editor.clicked.connect(self._toggle_advanced)
+
+    @property
+    def advanced(self):
+        return self._ui.signature_editor.isVisible()
+
+    @advanced.setter
+    def advanced(self, state):
+        """Set whether the widget is in advanced state"""
+        size = self.size()
+        self._ui.signature_editor.setVisible(state)
+        self.resize(size)
+
+    def _toggle_advanced(self):
+        """Show or hide the signature editor widget"""
+        self.advanced = not self.advanced
+
+    def _selected_components(self):
+        result = []
+        id1 = self._ui.left_components.component
+        id2 = self._ui.right_components.component
+        if id1:
+            result.append(id1)
+        if id2:
+            result.append(id2)
+        return result
+
+    def _simple_links(self):
+        """Return identity links which connect the highlighted items
+        in each component selector.
+
+        Returns:
+          A list of :class:`~glue.core.ComponentLink` objects
+          If items are not selected in the component selectors,
+          an empty list is returned
+        """
+        comps = self._selected_components()
+        if len(comps) != 2:
+            return []
+        assert isinstance(comps[0], core.data.ComponentID), comps[0]
+        assert isinstance(comps[1], core.data.ComponentID), comps[1]
+        link1 = core.component_link.ComponentLink([comps[0]], comps[1])
+        link2 = core.component_link.ComponentLink([comps[1]], comps[0])
+        return [link1, link2]
 
     def _add_link(self, link):
         current = self._ui.current_links
@@ -36,7 +84,11 @@ class LinkEditor(QDialog):
         current.data[item] = link
 
     def _add_new_link(self):
-        links = self._ui.signature_editor.links()
+        if not self.advanced:
+            links = self._simple_links()
+        else:
+            links = self._ui.signature_editor.links()
+
         for link in links:
             self._add_link(link)
 
@@ -61,39 +113,3 @@ class LinkEditor(QDialog):
         if isok:
             links = widget.links()
             collection.links = links
-
-
-def main(): # pragma: no cover
-    from PyQt4.QtGui import QApplication
-
-    import numpy as np
-
-    app = QApplication([''])
-
-    d = core.data.Data(label = 'd1')
-    d2 = core.data.Data(label = 'd2')
-    c1 = core.data.Component(np.array([1, 2, 3]))
-    c2 = core.data.Component(np.array([1, 2, 3]))
-    c3 = core.data.Component(np.array([1, 2, 3]))
-    d.add_component(c1, 'a')
-    d.add_component(c2, 'b')
-    d2.add_component(c3, 'c')
-    dc = core.data_collection.DataCollection()
-    dc.append(d)
-    dc.append(d2)
-
-    def f(a, b, c):
-        pass
-
-    def g(h, i):
-        pass
-
-    def h(j, k=None):
-        pass
-
-    w = LinkEditor(dc, [f, g, h])
-    w.show()
-    app.exec_()
-
-if __name__ == "__main__":
-    main()

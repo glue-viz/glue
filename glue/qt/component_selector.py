@@ -32,6 +32,12 @@ class ComponentSelector(QWidget):
         ds = self._ui.data_selector
         ds.currentIndexChanged.connect(self._set_components)
 
+    def set_current_row(self, row):
+        self._ui.component_selector.setCurrentRow(row)
+
+    def set_data_row(self, row):
+        self._ui.data_selector.setCurrentIndex(row)
+
     def setup(self, data_collection):
         """ Set up the widgets.
 
@@ -49,14 +55,14 @@ class ComponentSelector(QWidget):
         if index < 0:
             return
         data = self._data[index]
-        components = data.components
+        cids = data.components
 
         c_list = self._ui.component_selector
         c_list.clear()
-        for c in components:
+        for c in cids:
             item = QListWidgetItem(c.label)
             c_list.addItem(item)
-            c_list.data[item] = c
+            c_list.set_data(item, c)
 
     def _set_data(self):
         """ Populate the data list with data sets in the collection """
@@ -70,9 +76,7 @@ class ComponentSelector(QWidget):
         :rtype: :class:`~glue.core.data.ComponentID`
         """
         item = self._ui.component_selector.currentItem()
-        if item:
-            return item.data(0)
-
+        return self._ui.component_selector.get_data(item)
 
 def main(): # pragma: no cover
     import glue

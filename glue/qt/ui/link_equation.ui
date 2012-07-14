@@ -15,7 +15,7 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_4">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
+    <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,5,5,0">
      <item>
       <widget class="QLabel" name="label">
        <property name="font">
@@ -27,6 +27,9 @@
        </property>
        <property name="text">
         <string>Translation Function to Use</string>
+       </property>
+       <property name="scaledContents">
+        <bool>false</bool>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -93,7 +96,7 @@
        <item>
         <widget class="QWidget" name="input_canvas" native="true">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -101,7 +104,7 @@
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>200</height>
+           <height>0</height>
           </size>
          </property>
         </widget>
@@ -130,7 +133,7 @@
        <item>
         <widget class="QWidget" name="output_canvas" native="true">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -138,7 +141,7 @@
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>200</height>
+           <height>0</height>
           </size>
          </property>
         </widget>
@@ -179,22 +182,6 @@
     </layout>
    </item>
   </layout>
-  <zorder>label</zorder>
-  <zorder>function_signature</zorder>
-  <zorder>label_2</zorder>
-  <zorder>label_3</zorder>
-  <zorder>input_canvas</zorder>
-  <zorder>output_canvas</zorder>
-  <zorder>two_way</zorder>
-  <zorder>addButton</zorder>
-  <zorder>horizontalSpacer</zorder>
-  <zorder>input_canvas</zorder>
-  <zorder>label_2</zorder>
-  <zorder>label_2</zorder>
-  <zorder>input_canvas</zorder>
-  <zorder>label_2</zorder>
-  <zorder>label_2</zorder>
-  <zorder>addButton</zorder>
  </widget>
  <resources/>
  <connections/>
