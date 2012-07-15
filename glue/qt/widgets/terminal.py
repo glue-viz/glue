@@ -110,8 +110,12 @@ class IPythonConsoleQtWidget(RichIPythonWidget):
         self._init_kernel_manager()
 
 def glue_terminal(**kwargs):
+    from zmq import ZMQError
     kernelapp = IPythonLocalKernelApp.instance()
-    kernelapp.start()
+    try:
+        kernelapp.start()
+    except ZMQError:
+        pass # already started, no worries
     namespace = kernelapp.get_user_namespace()
     widget = IPythonConsoleQtWidget()
     widget.gui_completion = True
