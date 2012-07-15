@@ -47,6 +47,9 @@ class TestData(object):
     def test_ndim(self):
         assert self.data.ndim == 2
 
+    def test_size(self):
+        assert self.data.size == 6
+
     def test_label(self):
         d = Data()
         assert d.label == ''

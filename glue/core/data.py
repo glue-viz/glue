@@ -183,6 +183,10 @@ class Data(object):
         """ Set the label to value """
         self.style.label = value
 
+    @property
+    def size(self):
+        return np.product(self.shape)
+
     def _check_can_add(self, component):
         if isinstance(component, DerivedComponent):
             return component._data is self
