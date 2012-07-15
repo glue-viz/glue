@@ -10,6 +10,9 @@ from ..mouse_mode import RectangleMode, CircleMode, PolyMode
 from ..ui.scatterwidget import Ui_ScatterWidget
 from .data_viewer import DataViewer
 
+
+WARN_SLOW = 10000 # max number of points which render quickly
+
 class ScatterWidget(DataViewer):
     def __init__(self, data, parent=None):
         super(ScatterWidget, self).__init__(data, parent)
@@ -94,6 +97,10 @@ class ScatterWidget(DataViewer):
             self.unique_fields.add(lid)
 
     def add_layer(self, layer):
+        if layer.data is layer and layer.data.size > WARN_SLOW and \
+           not self._confirm_large_data(layer.data):
+            return
+
         if layer in self.ui.layerTree:
             return
 
@@ -102,7 +109,6 @@ class ScatterWidget(DataViewer):
         self.ui.layerTree.add_layer(layer)
         self.client.add_layer(layer)
         self.update_combos(layer)
-
 
         for sub in layer.data.subsets:
             self.ui.layerTree.add_layer(sub)
@@ -134,6 +140,18 @@ class ScatterWidget(DataViewer):
         component_id = combo.itemData(combo.currentIndex())
         assert isinstance(component_id, core.data.ComponentID)
         self.client.set_ydata(component_id)
+
+    def _confirm_large_data(self, data):
+        warn_msg = ("WARNING: Data set has %i points, and may render slowly."
+                    " Continue?" % data.size)
+        title = "Add large data set?"
+        ok = QtGui.QMessageBox.Ok
+        cancel = QtGui.QMessageBox.Cancel
+        buttons = ok|cancel
+        result = QtGui.QMessageBox.question(self, title, warn_msg,
+                                            buttons=buttons,
+                                            defaultButton = cancel)
+        return result == ok
 
     def __str__(self):
         return "Scatter Widget"
