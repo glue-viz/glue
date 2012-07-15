@@ -19,7 +19,7 @@ from .. import glue_qt_resources  # pylint: disable=W0611
 
 
 class ImageWidget(DataViewer):
-
+    LABEL = "Image Viewer"
     def __init__(self, data, parent=None):
         super(ImageWidget, self).__init__(data, parent)
 

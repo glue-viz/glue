@@ -174,7 +174,8 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         """
 
         from .. import env
-        client = pick_class(env.qt_clients)
+        client = pick_class(env.qt_clients, title='Data Viewer',
+                            label="Choose a new data viewer")
         if client:
             c = client(self._data)
             c.register_to_hub(self._hub)

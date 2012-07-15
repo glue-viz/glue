@@ -14,6 +14,7 @@ from .data_viewer import DataViewer
 WARN_SLOW = 10000 # max number of points which render quickly
 
 class ScatterWidget(DataViewer):
+    LABEL = "Scatter Plot"
     def __init__(self, data, parent=None):
         super(ScatterWidget, self).__init__(data, parent)
         self.central_widget = QtGui.QWidget()

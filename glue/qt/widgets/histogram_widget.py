@@ -10,7 +10,7 @@ from ..mouse_mode import RectangleMode
 from .data_viewer import DataViewer
 
 class HistogramWidget(DataViewer):
-
+    LABEL = "Histogram"
     def __init__(self, data, parent=None):
         super(HistogramWidget, self).__init__(self, parent)
 

@@ -101,7 +101,7 @@ def edit_layer_label(layer):
     if isok:
         layer.style.label = str(label)
 
-def pick_class(classes, title="Pick an item"):
+def pick_class(classes, title="Item picker", label = "Pick an item"):
     """Prompt the user to pick from a list of classes using QT
 
     Parameters
@@ -113,11 +113,16 @@ def pick_class(classes, title="Pick an item"):
     -------
     The class that was selected, or None
     """
+    def _label(c):
+        try:
+            return c.LABEL
+        except AttributeError:
+            return c.__name__
 
-    choices = [c.__name__ for c in classes]
+    choices = [_label(c) for c in classes]
 
-    dialog = QInputDialog()
-    choice, isok = dialog.getItem(None, title, title, choices)
+    dialog = QInputDialog
+    choice, isok = dialog.getItem(None, title, label, choices)
     if isok:
         return dict(zip(choices, classes))[str(choice)]
 
