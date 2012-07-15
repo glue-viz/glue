@@ -1,7 +1,7 @@
 from matplotlib.colors import ColorConverter
 from PyQt4 import QtGui
 from PyQt4.QtCore import QMimeData
-from PyQt4.QtGui import QColor, QInputDialog, QColorDialog, QListWidget
+from PyQt4.QtGui import QColor, QInputDialog, QColorDialog, QListWidget, QTreeWidget
 
 from .. import core
 
@@ -175,10 +175,15 @@ class PyMimeData(QMimeData):
         return super(PyMimeData, self).data(mime_type)
 
 
-class GlueListWidget(QListWidget):
+class GlueItemView(object):
+    """ A partial implementation of QAbstractItemView, with drag events.
+
+    Items can be registered with data via set_data. If the corresponding
+    graphical items are dragged, the data will be wrapped in a PyMimeData"""
     def __init__(self, parent=None):
-        super(GlueListWidget, self).__init__(parent)
-        self._data = {}
+        super(GlueItemView, self).__init__(parent)
+        self._mime_data = {}
+        self.setDragEnabled(True)
 
     def mimeTypes(self):
         types = [PyMimeData.MIME_TYPE]
@@ -187,15 +192,25 @@ class GlueListWidget(QListWidget):
     def mimeData(self, selected_items):
         assert len(selected_items) == 1
         item = selected_items[0]
-        data = self._data[item]
+        try:
+            data = self._mime_data[item]
+        except KeyError:
+            data = None
         return PyMimeData(data)
 
     def get_data(self, item):
-        return self._data[item]
+        return self._mime_data[item]
 
     def set_data(self, item, data):
-        self._data[item] = data
+        self._mime_data[item] = data
 
     @property
     def data(self):
         return self._data
+
+class GlueListWidget(GlueItemView, QListWidget):
+    pass
+
+class GlueTreeWidget(GlueItemView, QTreeWidget):
+    pass
+

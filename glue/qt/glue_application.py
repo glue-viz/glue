@@ -1,6 +1,6 @@
 # pylint: disable=W0223
 
-from PyQt4.QtGui import (QKeySequence, QMainWindow, QGridLayout, QMdiArea,
+from PyQt4.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                          QMenu, QMdiSubWindow)
 from PyQt4.QtCore import Qt
 
@@ -10,7 +10,7 @@ from .ui.glue_application import Ui_GlueApplication
 
 from .actions import act
 from .qtutil import pick_class, get_text, data_wizard
-
+from .widgets.glue_mdi_area import GlueMdiArea
 
 class GlueApplication(QMainWindow, core.hub.HubListener):
     """ The main Glue window """
@@ -24,12 +24,12 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._ui.layerWidget.set_checkable(False)
         self._data = core.data_collection.DataCollection()
         self._hub = core.hub.Hub(self._data)
-        self._new_tab()
 
         self._create_actions()
         self._connect()
         self._create_menu()
         self._create_terminal()
+        self._new_tab()
 
     @property
     def tab_bar(self):
@@ -44,7 +44,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         layout = QGridLayout()
         layout.setSpacing(1)
         layout.setContentsMargins(0, 0, 0, 0)
-        widget = QMdiArea()
+        widget = GlueMdiArea(self)
         widget.setLayout(layout)
         tab = self.tab_bar
         tab.addTab(widget, str(tab.count()+1))
@@ -130,7 +130,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
                 tip="Open a new visualization window in the current tab",
                 shortcut=QKeySequence.New
                 )
-        a.triggered.connect(self._new_viz_window)
+        a.triggered.connect(self.new_data_viewer)
         self._actions['viewer_new'] = a
 
 
@@ -169,7 +169,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         a.triggered.connect(self._restore_session)
         self._actions['session_restore'] = a
 
-    def _new_viz_window(self):
+    def new_data_viewer(self, data=None):
         """ Create a new visualization window in the current tab
         """
 
@@ -180,6 +180,8 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
             c = client(self._data)
             c.register_to_hub(self._hub)
             self._add_to_current_tab(c)
+            if data:
+                c.add_data(data)
             c.show()
 
     def _report_error(self, message):

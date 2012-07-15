@@ -97,6 +97,9 @@ class ScatterWidget(DataViewer):
                 ycombo.addItem(lid.label, userData=lid)
             self.unique_fields.add(lid)
 
+    def add_data(self, data):
+        self.add_layer(data)
+
     def add_layer(self, layer):
         if layer.data is layer and layer.data.size > WARN_SLOW and \
            not self._confirm_large_data(layer.data):

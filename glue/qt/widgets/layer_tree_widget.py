@@ -56,6 +56,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         self._create_actions()
         self._connect()
         self._data_collection = core.data_collection.DataCollection()
+        self.layerTree.setDragEnabled(True)
 
     def is_checkable(self):
         return self._is_checkable
@@ -631,6 +632,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         return self._layer_dict[key]
 
     def __setitem__(self, key, value):
+        self.layerTree.set_data(key, value)
         self._layer_dict[key] = value
 
     def __contains__(self, obj):
@@ -638,3 +640,4 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
 
     def __len__(self):
         return len(self._layer_dict)
+
