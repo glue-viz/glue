@@ -1,6 +1,5 @@
 import numpy as np
 import atpy
-import pyfits
 
 from .io import extract_data_fits, extract_data_hdf5
 from .coordinates import Coordinates, coordinates_from_header
@@ -509,8 +508,9 @@ class GriddedData(Data):
 
         # Read in the data
         if format in ['fits', 'fit']:
+            from astropy.io import fits
             arrays = extract_data_fits(filename, **kwargs)
-            header = pyfits.open(filename)[0].header
+            header = fits.open(filename)[0].header
             self.coords = coordinates_from_header(header)
         elif format in ['hdf', 'hdf5', 'h5']:
             arrays = extract_data_hdf5(filename, **kwargs)

@@ -1,5 +1,3 @@
-from scipy import ndimage
-from matplotlib import _cntr
 import numpy as np
 
 def identity(x):
@@ -38,6 +36,8 @@ def point_contour(x, y, data):
        * A (nrow, 2column) numpy array. The two columns give the x and
          y locations of the contour vertices
     """
+    from scipy import ndimage
+    from matplotlib import _cntr
     inten = data[y, x]
     labeled, nr_objects = ndimage.label(data >= inten)
     z = data * (labeled == labeled[y, x])

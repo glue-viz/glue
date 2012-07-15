@@ -1,5 +1,4 @@
 import numpy as np
-import pyfits
 
 from .visual import VisualAttributes, RED
 from .decorators import memoize
@@ -156,13 +155,15 @@ class Subset(object):
         """
         mask = np.short(self.to_mask())
         if format == 'fits':
-            pyfits.writeto(file_name, mask, clobber=True)
+            from astropy.io import fits
+            fits.writeto(file_name, mask, clobber=True)
         else:
             raise AttributeError("format not supported: %s" % format)
 
     def read_mask(self, file_name):
         try:
-            mask = pyfits.open(file_name)[0].data
+            from astropy.io import fits
+            mask = fits.open(file_name)[0].data
         except IOError:
             raise IOError("Could not read %s (not a fits file?)" % file_name)
         ind = np.where(mask.flat)[0]

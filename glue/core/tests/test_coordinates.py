@@ -1,6 +1,5 @@
 import pytest
 
-from pyfits import Header, Card
 from mock import patch
 import numpy as np
 from numpy.testing import assert_almost_equal
@@ -11,6 +10,7 @@ from ..coordinates import coordinates_from_header, WCSCoordinates, Coordinates
 class TestWcsCoordinates(object):
 
     def header_from_string(self, string):
+        from astropy.io import fits
         cards = []
         for s in string.splitlines():
             try:
@@ -23,11 +23,12 @@ class TestWcsCoordinates(object):
                     pass
             except ValueError:
                 continue
-            cards.append(Card(key, value))
-        return Header(cards)
+            cards.append(fits.Card(key, value))
+        return fits.Header(cards)
 
     def default_header(self):
-        hdr = Header()
+        from astropy.io import fits
+        hdr = fits.Header()
         hdr.update('NAXIS', 2)
         hdr.update('CRVAL1', 0)
         hdr.update('CRVAL2', 5)
