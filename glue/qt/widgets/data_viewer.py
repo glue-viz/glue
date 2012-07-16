@@ -28,12 +28,6 @@ class DataViewer(QMainWindow, HubListener):
         """ Abstract method to unsubscribe from messages """
         raise NotImplementedError
 
-    def closeEvent(self, event):
-        """ Call unregister on window close """
-        if self._hub is not None:
-            self.unregister(self._hub)
-        super(DataViewer, self).closeEvent(event)
-
     def add_data(self, data):
         """ Abstract method to add data objects to the viewer
         :param data: Data object to add
@@ -54,3 +48,15 @@ class DataViewer(QMainWindow, HubListener):
         if not isinstance(obj, Data):
             return
         self.add_data(obj)
+
+    def mousePressEvent(self, event):
+        """ Consume mouse press events, and prevent them from propagating
+            down to the MDI area """
+        event.accept()
+
+    def closeEvent(self, event):
+        """ Call unregister on window close """
+        if self._hub is not None:
+            self.unregister(self._hub)
+        super(DataViewer, self).closeEvent(event)
+

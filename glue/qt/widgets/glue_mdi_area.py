@@ -32,3 +32,9 @@ class GlueMdiArea(QtGui.QMdiArea):
         if not isinstance(obj, core.data.Data):
             return
         self._application.new_data_viewer(obj)
+
+    def mousePressEvent(self, event):
+        """Right mouse press in the MDI area opens a new data viewer"""
+        if event.button() != Qt.RightButton:
+            return
+        self._application.new_data_viewer()
