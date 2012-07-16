@@ -222,22 +222,13 @@ class TestData(object):
         self.data.remove_component(self.comp_id)
         assert not self.comp_id in self.data.components
 
-    def test_remove_subset(self):
-        s = MagicMock(spec_set=Subset)
-        self.data.add_subset(s)
-        self.data.remove_subset(s)
-        assert not s in self.data.subsets
-
-    def test_remove_subset_with_hub(self):
-        s = MagicMock(spec_set=Subset)
-        hub = MagicMock(spec_set=Hub)
-
+    def test_subset_unregister_removes_from_data(self):
+        """subset.unregister() also removes from data set"""
+        hub = Hub()
         self.data.register_to_hub(hub)
-        self.data.add_subset(s)
-        self.data.remove_subset(s)
-
-        assert not s in self.data.subsets
-        assert hub.broadcast.call_count == 2
+        s = self.data.new_subset()
+        s.unregister()
+        assert s not in self.data.subsets
 
     def test_get_component(self):
         assert self.data.get_component(self.comp_id) is self.comp

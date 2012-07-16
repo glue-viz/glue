@@ -5,12 +5,13 @@ import numpy as np
 from mock import MagicMock
 import pyfits
 
+from ..data import Data
 from ..subset import Subset, SubsetState, ElementSubsetState
 from ..subset import OrState
 from ..subset import AndState
 from ..subset import XorState
 from ..subset import InvertState
-
+from ..message import SubsetDeleteMessage
 
 class TestSubset(object):
 
@@ -67,31 +68,61 @@ class TestSubset(object):
         s.register()
         s.data.add_subset.assert_called_once_with(s)
 
-    def test_unregister_without_hub(self):
+    def test_delete_without_hub(self):
         self.data.hub = None
         s = Subset(self.data)
         s.register()
-        s.unregister()
+        s.delete()
         assert not s._broadcasting
 
-    def test_unregister_disables_broadcasting(self):
+    def test_delete_disables_broadcasting(self):
+        """Subset no longer broadcasts after delete"""
         s = Subset(self.data)
         s.register()
-        s.unregister()
+        s.delete()
         assert not s._broadcasting
 
-    def test_unregister_sends_message_if_hub_present(self):
+    def test_delete_sends_message_if_hub_present(self):
+        """delete() broadcasts a SubsetDelteMessage"""
         s = Subset(self.data)
         s.register()
-        s.unregister()
+        s.delete()
         assert s.data.hub.broadcast.call_count == 1
+        args, kwargs = s.data.hub.broadcast.call_args
+        msg = args[0]
+        assert isinstance(msg, SubsetDeleteMessage)
+
+    def test_delete_removes_from_data(self):
+        """delete method removes reference from data.subsets"""
+        data = Data()
+        s = data.new_subset()
+        assert s in data.subsets
+        s.delete()
+        assert s not in data.subsets
+
+    def test_delete_removes_from_data(self):
+        """delete method doesnt crash if subset has no data"""
+        s = Subset(None)
+        assert s.data is None
+        s.delete()
+
+    def test_double_delete_ignored(self):
+        """calling delete twice doesnt crash"""
+        data = Data()
+        s = data.new_subset()
+        assert s in data.subsets
+        s.delete()
+        s.delete()
+        assert s not in data.subsets
 
     def test_broadcast_ignore(self):
+        """subset doesn't broadcast until do_broadcast(True)"""
         s = Subset(self.data)
         s.broadcast()
         assert s.data.hub.broadcast.call_count == 0
 
     def test_broadcast_processed(self):
+        """subset broadcasts after do_broadcast(True)"""
         s = Subset(self.data)
         s.do_broadcast(True)
         s.broadcast()

@@ -382,9 +382,11 @@ class Data(object):
         return subset
 
     def add_subset(self, subset):
-        """ Assign a pre-existing subset to this data object.
-        The preferred way of dealing with subsets is through the new_subset
-        method, which both creates and adds the subset """
+        """Assign a pre-existing subset to this data object.
+
+        NOTE: The preferred way of dealing with subsets is through the
+        new_subset method, which both creates and adds the subset
+        """
         if subset in self.subsets:
             return  # prevents infinite recursion
         self.subsets.append(subset)
@@ -392,12 +394,6 @@ class Data(object):
             msg = SubsetCreateMessage(subset)
             self.hub.broadcast(msg)
         subset.do_broadcast(True)
-
-    def remove_subset(self, subset):
-        if self.hub is not None:
-            msg = SubsetDeleteMessage(subset)
-            self.hub.broadcast(msg)
-        self.subsets.remove(subset)
 
     def register_to_hub(self, hub):
         """ Connect to a hub.

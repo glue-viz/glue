@@ -138,12 +138,22 @@ class Subset(object):
 
     def unregister(self):
         """Broadcast a SubsetDeleteMessage to the hub, and stop broadcasting"""
+        #note: rename references to delete, and remove this method
+        self.delete()
+
+    def delete(self):
+        """Broadcast a SubsetDeleteMessage to the hub, and stop broadcasting"""
+        # note: duplicates unregister functionality. renaming
+
         dobroad = self._broadcasting and self.data is not None and \
                   self.data.hub is not None
         self.do_broadcast(False)
         if dobroad:
             msg = SubsetDeleteMessage(self)
             self.data.hub.broadcast(msg)
+
+        if self.data is not None and self in self.data.subsets:
+            self.data.subsets.remove(self)
 
     def write_mask(self, file_name, format="fits"):
         """ Write a subset mask out to file
