@@ -194,9 +194,15 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         raise NotImplemented
 
     def _create_terminal(self):
-        assert self._terminal is None, "should only call _create_terminal once"
-        from widgets.terminal import glue_terminal
-        widget = glue_terminal(data_collection=self._data)
+        assert self._terminal is None, \
+            "should only call _create_terminal once"
+
+        try:
+            from widgets.terminal import glue_terminal
+            widget = glue_terminal(data_collection=self._data)
+        except Exception:  # XXX what specific exceptions could we catch?
+            self._ui.terminal_button.hide()
+            return
         layout = self._ui.centralwidget.layout()
         layout.addWidget(widget)
         self._terminal = widget
