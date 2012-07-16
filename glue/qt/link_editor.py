@@ -33,6 +33,8 @@ class LinkEditor(QDialog):
         self._ui.add_link.clicked.connect(self._add_new_link)
         self._ui.remove_link.clicked.connect(self._remove_link)
         self._ui.toggle_editor.clicked.connect(self._toggle_advanced)
+        self._ui.signature_editor._ui.addButton.clicked.connect(
+            self._add_new_link)
 
     @property
     def advanced(self):

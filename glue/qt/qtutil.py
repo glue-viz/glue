@@ -206,7 +206,7 @@ class GlueItemView(object):
 
     @property
     def data(self):
-        return self._data
+        return self._mime_data
 
 class GlueListWidget(GlueItemView, QListWidget):
     pass

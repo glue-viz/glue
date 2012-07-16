@@ -95,7 +95,7 @@ class ComponentLink(object):
 
     def __str__(self):
         args = ", ".join([t.label for t in self._from])
-        if self._using is not None:
+        if self._using is not identity:
             result = "%s <- %s(%s)" % (self._to, self._using.__name__, args)
         else:
             result = "%s <- %s" % (self._to, self._from)
