@@ -6,17 +6,20 @@ from ..glue_application import GlueApplication
 def tab_count(app):
     return app.tab_bar.count()
 
+def setup_module(module):
+    module.app = QApplication([''])
+
+def teardown_module(module):
+    del module.app
 
 class TestGlueApplication(object):
 
     def setup_method(self, method):
-        self.qapp = QApplication([''])
         self.app = GlueApplication()
 
-    def tearDown(self):
+    def teardown_method(self, method):
         self.app.close()
         del self.app
-        del self.qapp
 
     def test_new_tabs(self):
         t0 = tab_count(self.app)
