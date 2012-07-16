@@ -30,16 +30,20 @@ class TestLayerTree(object):
         del self.win
         del self.app
 
-    def add_layer_via_method(self):
-        """ Add first layer by invoking method"""
-        self.widget.add_layer(self.data[0])
-        return self.data[0]
+    def add_layer_via_method(self, layer=None):
+        """ Add a layer (default = first data set) by invoking method"""
+        layer = layer or self.data[0]
+        self.widget.add_layer(layer)
+        return layer
 
     def remove_layer_via_button(self, layer):
         """ Remove a layer via the widget remove button """
         widget_item = self.widget[layer]
         self.widget.layerTree.setCurrentItem(widget_item)
         QTest.mousePress(self.widget.layerRemoveButton, Qt.LeftButton)
+
+    def remove_layer_via_method(self, layer):
+        self.widget.remove_and_delete_layer(layer)
 
     def add_layer_via_hub(self):
         """ Add a layer through a hub message """
@@ -76,6 +80,14 @@ class TestLayerTree(object):
         self.remove_layer_via_button(layer)
         assert not self.layer_present(layer)
         assert not layer in self.widget.data_collection
+
+    def test_remove_subset_layer(self):
+        """ Test that widget remove button works properly on subsets"""
+        layer = self.add_layer_via_method()
+        subset = layer.new_subset()
+        self.add_layer_via_method(subset)
+        self.remove_layer_via_button(subset)
+        assert not self.layer_present(subset)
 
     def test_remove_layer_ignored_if_edit_subset(self):
         layer = self.add_layer_via_method()

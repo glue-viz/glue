@@ -136,14 +136,11 @@ class Subset(object):
             msg = SubsetUpdateMessage(self, attribute=attribute)
             self.data.hub.broadcast(msg)
 
-    def unregister(self):
-        """Broadcast a SubsetDeleteMessage to the hub, and stop broadcasting"""
-        #note: rename references to delete, and remove this method
-        self.delete()
-
     def delete(self):
-        """Broadcast a SubsetDeleteMessage to the hub, and stop broadcasting"""
-        # note: duplicates unregister functionality. renaming
+        """Broadcast a SubsetDeleteMessage to the hub, and stop broadcasting
+
+        Also removes subset reference from parent data's subsets list
+        """
 
         dobroad = self._broadcasting and self.data is not None and \
                   self.data.hub is not None
@@ -180,7 +177,7 @@ class Subset(object):
         self.subset_state = state
 
     def __del__(self):
-        self.unregister()
+        self.delete()
 
     def __setattr__(self, attribute, value):
         object.__setattr__(self, attribute, value)

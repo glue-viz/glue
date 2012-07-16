@@ -400,7 +400,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
             self._data_collection.remove(layer)
         else:
             assert isinstance(layer, core.subset.Subset)
-            layer.unregister()
+            layer.delete()
 
     def edit_current_layer(self):
         """ Allow user to interactively set layer properties of

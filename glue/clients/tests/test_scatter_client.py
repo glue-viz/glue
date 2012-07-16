@@ -147,7 +147,7 @@ class TestScatterClient(object):
         layer = self.add_data()
         subset = layer.new_subset()
         assert self.client.is_layer_present(layer)
-        subset.unregister()
+        subset.delete()
         assert not self.client.is_layer_present(subset)
 
     def test_add_subset_to_untracked_data(self):

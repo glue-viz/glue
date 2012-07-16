@@ -222,14 +222,6 @@ class TestData(object):
         self.data.remove_component(self.comp_id)
         assert not self.comp_id in self.data.components
 
-    def test_subset_unregister_removes_from_data(self):
-        """subset.unregister() also removes from data set"""
-        hub = Hub()
-        self.data.register_to_hub(hub)
-        s = self.data.new_subset()
-        s.unregister()
-        assert s not in self.data.subsets
-
     def test_get_component(self):
         assert self.data.get_component(self.comp_id) is self.comp
 
