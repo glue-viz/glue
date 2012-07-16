@@ -116,6 +116,9 @@ def glue_terminal(**kwargs):
         kernelapp.start()
     except ZMQError:
         pass # already started, no worries
+    except RuntimeError:
+        pass # already started, no worries
+
     namespace = kernelapp.get_user_namespace()
     widget = IPythonConsoleQtWidget()
     widget.gui_completion = True
