@@ -8,3 +8,4 @@ glue/qt/ui/*py
 glue/qt/glue_qt_resources.py
 *.__junk*
 *.coverage
+*htmlcov*

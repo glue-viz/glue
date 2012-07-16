@@ -1,7 +1,9 @@
 import numpy as np
 from mock import MagicMock
+import pytest
 
 from ..data import Data, Component, ComponentID, DerivedComponent
+from ..subset import SubsetState
 from ..hub import Hub, HubListener
 from ..data_collection import DataCollection
 from ..message import Message, DataCollectionAddMessage, DataCollectionDeleteMessage, DataAddComponentMessage
@@ -28,22 +30,32 @@ class TestDataCollection(object):
         self.log = HubLog()
         self.log.register_to_hub(self.hub)
 
-    def test_init(self):
+    def test_init_scalar(self):
+        """Single data object passed to init adds to collection"""
         d = Data()
         dc = DataCollection(d)
         assert d in dc
-        dc = DataCollection([d])
-        assert d in dc
+
+    def test_init_list(self):
+        """List of data objects passed to init auto-added to collection"""
+        d1 = Data()
+        d2 = Data()
+        dc = DataCollection([d1, d2])
+        assert d1 in dc
+        assert d2 in dc
 
     def test_data(self):
+        """ data attribute is a list of all appended data"""
         self.dc.append(self.data)
         assert self.dc.data == [self.data]
 
     def test_append(self):
+        """ append method adds to collection """
         self.dc.append(self.data)
         assert self.data in self.dc
 
     def test_ignore_multi_add(self):
+        """ data only added once, even after multiple calls to append """
         self.dc.append(self.data)
         self.dc.append(self.data)
         assert len(self.dc) == 1
@@ -60,6 +72,7 @@ class TestDataCollection(object):
         assert not self.data in self.dc
 
     def test_append_broadcast(self):
+        """ Call to append generates a DataCollectionAddMessage """
         self.dc.register_to_hub(self.hub)
         self.dc.append(self.data)
         msg = self.log.messages[-1]
@@ -68,6 +81,7 @@ class TestDataCollection(object):
         assert msg.data is self.data
 
     def test_remove_broadcast(self):
+        """ call to remove generates a DataCollectionDeleteMessage """
         self.dc.register_to_hub(self.hub)
         self.dc.append(self.data)
         self.dc.remove(self.data)
@@ -79,6 +93,12 @@ class TestDataCollection(object):
     def test_register_adds_hub(self):
         self.dc.register_to_hub(self.hub)
         assert self.dc.hub is self.hub
+
+    def test_invalid_register(self):
+        """Type error is raised if hub is not a Hub object"""
+        with pytest.raises(TypeError) as exc:
+            self.dc.register_to_hub(3)
+        assert exc.value.args[0] == "Input is not a Hub object: <type 'int'>"
 
     def test_register_assigns_hub_of_data(self):
         self.dc.append(self.data)
@@ -145,4 +165,29 @@ class TestDataCollection(object):
         link = ComponentLink([id1], id2)
         self.data.coordinate_links = [link]
         self.dc.append(self.data)
-        assert link in self.dc._link_manager.links
+        assert link in self.dc.links
+
+    def test_add_links(self):
+        """ links attribute behaves like an editable list """
+        d = Data()
+        comp = MagicMock(spec_set=Component)
+        id1 = ComponentID("id1")
+        id2 = ComponentID("id2")
+        link = ComponentLink([id1], id2)
+        self.dc.links = [link]
+        assert link in self.dc.links
+
+    def test_add_links_updates_components(self):
+        """setting links attribute automatically adds components to data"""
+        d = Data()
+        comp = MagicMock(spec_set=Component)
+        id1 = ComponentID("id1")
+        d.add_component(comp, id1)
+        id2 = ComponentID("id2")
+        self.dc.append(d)
+        link = ComponentLink([id1], id2)
+
+        self.dc.links = [link]
+
+        assert id2 in d.components
+
