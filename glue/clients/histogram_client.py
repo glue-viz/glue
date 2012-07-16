@@ -33,8 +33,11 @@ class HistogramLayerManager(object):
 
         self._patchlist = None
 
-    def __del__(self):
+    def delete(self):
         self.clear_patches()
+
+    def has_patches(self):
+        return self._patchlist is not None
 
 
 class HistogramClient(Client):
@@ -90,11 +93,13 @@ class HistogramClient(Client):
             return
 
         mgr = self._managers.pop(layer)
-        del mgr
+        mgr.delete()
 
         if isinstance(layer, Data):
             for subset in layer.subsets:
                 self.remove_layer(subset)
+
+        self.sync_all()
 
     def set_normalized(self, state):
         self.set_option('normed', state)

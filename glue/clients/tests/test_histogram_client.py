@@ -57,6 +57,13 @@ class TestHistogramClient(object):
         self.client.remove_layer(self.data)
         assert not (self.client.layer_present(self.data))
 
+    def test_clear_patches_called_on_manager_pop(self):
+        self.client.add_layer(self.data)
+        mgr = self.client._managers[self.data]
+        mgr.set_patches([MagicMock()])
+        self.client.remove_layer(self.data)
+        assert not mgr.has_patches()
+
     def test_data_removal_removes_subsets(self):
         self.client.add_layer(self.data)
         self.client.remove_layer(self.data)
