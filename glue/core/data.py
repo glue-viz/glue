@@ -5,7 +5,7 @@ import pyfits
 from .io import extract_data_fits, extract_data_hdf5
 from .coordinates import Coordinates, coordinates_from_header
 from .visual import VisualAttributes
-from .visual import BLUE, GREEN, RED, ORANGE, PURPLE
+from .visual import RED, GREEN, BLUE, YELLOW, BROWN, ORANGE, PURPLE, PINK
 from .exceptions import IncompatibleAttribute
 from .component_link import ComponentLink
 from .subset import Subset
@@ -21,7 +21,7 @@ from .util import file_format
 __all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
            'TabularData', 'GriddedData']
 
-COLORS = [BLUE, GREEN, RED, ORANGE, PURPLE]
+COLORS = [RED, GREEN, BLUE, YELLOW, BROWN, ORANGE, PURPLE, PINK]
 
 class ComponentID(object):
     """ References a Component object within a data object
