@@ -27,8 +27,12 @@ class ArgumentWidget(QWidget):
         self.layout.addWidget(label)
         self.editor = QLineEdit()
         self.editor.setReadOnly(True)
+        self.editor.setPlaceholderText("Drag a component from above")
         self.layout.addWidget(self.editor)
         self.setAcceptDrops(True)
+
+    def clear(self):
+        self.editor.clear()
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasFormat('application/py_instance'):
@@ -162,8 +166,14 @@ class LinkEquation(QWidget):
         signal.connect(self._setup_editor)
         signal.connect(self._update_add_enabled)
         signal.connect(self._update_twoway_enabled)
+        self._ui.addButton.pressed.connect(self._clear_inputs)
         self._output_widget.editor.textChanged.connect(
             self._update_add_enabled)
+
+    def _clear_inputs(self):
+        for w in self._argument_widgets:
+            w.clear()
+        self._output_widget.clear()
 
     def _setup_editor(self):
         """ Prepare the widget for the active function.
