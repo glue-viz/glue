@@ -25,7 +25,9 @@ class TestEditSubsetMode(object):
         self.state2 = state2
 
     def check_mode(self, mode, expected):
-        mode().combine(self.data.edit_subset, self.state2)
+        edit_mode = EditSubsetMode()
+        edit_mode.mode = mode
+        edit_mode.combine(self.data.edit_subset, self.state2)
         np.testing.assert_array_equal(self.data.edit_subset.to_mask(),
                                       expected)
 

@@ -6,6 +6,7 @@ from ..core.data import Data
 from ..core.subset import RangeSubsetState
 from ..core.exceptions import IncompatibleDataException, IncompatibleAttribute
 from ..core.util import relim
+from ..core.edit_subset_mode import EditSubsetMode
 
 class HistogramLayerManager(object):
     def __init__(self, axes, layer):
@@ -260,7 +261,8 @@ class HistogramClient(Client):
             state = RangeSubsetState(lo, hi)
             state.att = self.component
             subset = layer.edit_subset
-            subset.subset_state = state
+            mode = EditSubsetMode()
+            mode.combine(subset, state)
 
     def register_to_hub(self, hub):
         dfilter = lambda x:x.sender.data in self._managers

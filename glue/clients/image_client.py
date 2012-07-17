@@ -6,9 +6,9 @@ from ..core.exceptions import IncompatibleAttribute
 from ..core.data import Data
 from ..core.subset import Subset, RoiSubsetState
 from ..core.roi import PolygonalROI
+from ..core.edit_subset_mode import EditSubsetMode
 
 from .viz_client import VizClient
-
 
 class InvNormalize(Normalize):
     """ Simple wrapper to matplotlib Normalize object, that
@@ -332,7 +332,8 @@ class ImageClient(VizClient):
         subset_state.xatt = x
         subset_state.yatt = y
         subset_state.roi = PolygonalROI(xroi, yroi)
-        data.edit_subset.subset_state = subset_state
+        mode = EditSubsetMode()
+        mode.combine(data.edit_subset, subset_state)
 
     def _horizontal_axis_index(self):
         """Which index (in numpy convention - zyx) does the horizontal

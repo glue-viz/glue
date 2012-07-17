@@ -11,7 +11,7 @@ from .decorators import singleton
 class EditSubsetMode(object):
     """ Implements how new SubsetStates modify the edit_subset state """
     def __init__(self):
-        self.mode = ReplaceMode()
+        self.mode = ReplaceMode
 
     def combine(self, edit_subset, new_state):
         """ Dispatches to the combine method of mode attribute.
@@ -23,45 +23,42 @@ class EditSubsetMode(object):
         :param edit_subset: The current edit_subset
         :param new_state: The new SubsetState
         """
-        self.mode.combine(edit_subset, new_state)
+        self.mode(edit_subset, new_state)
 
 
-class ReplaceMode(object):
-    def combine(self, edit_subset, new_state):
+def ReplaceMode(edit_subset, new_state):
         """ Replaces edit_subset.subset_state with new_state """
         edit_subset.subset_state = new_state
 
 
-class AndMode(object):
-    def combine(self, edit_subset, new_state):
+def AndMode(edit_subset, new_state):
         """ Edit_subset.subset state is and-combined with new_state """
+        new_state.parent = edit_subset
         state = new_state & edit_subset.subset_state
         edit_subset.subset_state = state
 
-
-class OrMode(object):
-    def combine(self, edit_subset, new_state):
+def OrMode(edit_subset, new_state):
         """ Edit_subset.subset state is or-combined with new_state """
+        new_state.parent = edit_subset
         state = new_state | edit_subset.subset_state
         edit_subset.subset_state = state
 
 
-class XorMode(object):
-    def combine(self, edit_subset, new_state):
+def XorMode(edit_subset, new_state):
         """ Edit_subset.subset state is xor-combined with new_state """
+        new_state.parent = edit_subset
         state = new_state ^ edit_subset.subset_state
         edit_subset.subset_state = state
 
 
-class AndNotMode(object):
-    def combine(self, edit_subset, new_state):
+def AndNotMode(edit_subset, new_state):
         """ Edit_subset.subset state is and-not-combined with new_state """
+        new_state.parent = edit_subset
         state = edit_subset.subset_state & (~new_state)
         edit_subset.subset_state = state
 
 
-class SpawnMode(object):
-    def combine(self, edit_subset, new_state):
+def SpawnMode(edit_subset, new_state):
         """new_state is set to edit_subset.subset_state, and current
         state is added as new subset
         """

@@ -7,7 +7,7 @@ from ..core.data import Data
 from ..core.subset import RoiSubsetState
 from ..core.roi import PolygonalROI
 from ..core.util import relim
-
+from ..core.edit_subset_mode import EditSubsetMode, OrMode
 
 class ScatterLayerManager(object):
 
@@ -276,8 +276,9 @@ class ScatterClient(Client):
             subset_state.yatt = self._yatt
             x, y = roi.to_polygon()
             subset_state.roi = PolygonalROI(x, y)
-            subset = layer.edit_subset
-            subset.subset_state = subset_state
+
+            mode = EditSubsetMode()
+            mode.combine(layer.edit_subset, subset_state)
 
     def set_xdata(self, attribute, snap=True):
         """
