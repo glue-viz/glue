@@ -13,10 +13,12 @@
 	<file>icons/glue_move.png</file>
 	<file>icons/glue_not.png</file>
 	<file>icons/glue_or.png</file>
+	<file>icons/glue_rainbow.png</file>
+	<file>icons/glue_replace.png</file>
+	<file>icons/glue_spawn.png</file>
 	<file>icons/glue_square.png</file>
 	<file>icons/glue_tree.png</file>
 	<file>icons/glue_xor.png</file>
 	<file>icons/glue_zoom_to_rect.png</file>
-	<file>icons/glue_rainbow.png</file>
 </qresource>
 </RCC>
