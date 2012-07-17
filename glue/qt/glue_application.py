@@ -1,7 +1,7 @@
 # pylint: disable=W0223
 
 from PyQt4.QtGui import (QKeySequence, QMainWindow, QGridLayout,
-                         QMenu, QMdiSubWindow)
+                         QMenu, QMdiSubWindow, QAction)
 from PyQt4.QtCore import Qt
 
 from .. import core
@@ -11,6 +11,7 @@ from .ui.glue_application import Ui_GlueApplication
 from .actions import act
 from .qtutil import pick_class, get_text, data_wizard
 from .widgets.glue_mdi_area import GlueMdiArea
+from .widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
 
 class GlueApplication(QMainWindow, core.hub.HubListener):
     """ The main Glue window """
@@ -111,6 +112,18 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
 
         mbar.addMenu(menu)
 
+        menu = QMenu(mbar)
+        menu.setTitle("Toolbars")
+        tbar = EditSubsetModeToolBar()
+        self.addToolBar(tbar)
+        tbar.hide()
+        act = QAction("Selection Modes", menu)
+        act.setCheckable(True)
+        act.toggled.connect(tbar.setVisible)
+        tbar.visibilityChanged.connect(act.setChecked)
+        menu.addAction(act)
+        mbar.addMenu(menu)
+
     def _load_data(self):
         data = data_wizard()
         if data:
@@ -194,9 +207,15 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         raise NotImplemented
 
     def _create_terminal(self):
-        assert self._terminal is None, "should only call _create_terminal once"
-        from widgets.terminal import glue_terminal
-        widget = glue_terminal(data_collection=self._data)
+        assert self._terminal is None, \
+            "should only call _create_terminal once"
+
+        try:
+            from widgets.terminal import glue_terminal
+            widget = glue_terminal(data_collection=self._data)
+        except Exception:  # XXX what specific exceptions could we catch?
+            self._ui.terminal_button.hide()
+            return
         layout = self._ui.centralwidget.layout()
         layout.addWidget(widget)
         self._terminal = widget
