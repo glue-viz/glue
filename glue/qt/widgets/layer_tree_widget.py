@@ -1,7 +1,7 @@
 """ Class for a layer tree widget """
 
 from PyQt4.QtGui import QWidget, QTreeWidgetItem, QPixmap, QIcon
-from PyQt4.QtGui import QAction, QKeySequence, QActionGroup, QFileDialog
+from PyQt4.QtGui import QAction, QKeySequence, QFileDialog
 
 from PyQt4.QtCore import Qt, pyqtSignal, QObject
 
@@ -14,6 +14,248 @@ from .. import qtutil
 from .custom_component_widget import CustomComponentWidget
 from ..actions import act as _act
 
+@core.decorators.singleton
+class Clipboard(object):
+    def __init__(self):
+        self.contents = None
+
+
+class LayerAction(QAction):
+    _title = None
+    _icon = None
+    _tooltip = None
+    _enabled_on_init = False
+    _shortcut = None
+    _shortcut_context = Qt.WidgetShortcut
+
+    def __init__(self, layer_tree_widget):
+        parent = layer_tree_widget.layerTree
+        super(LayerAction, self).__init__(self._title, parent)
+        self._layer_tree = layer_tree_widget
+        if self._icon:
+            self.setIcon(QIcon(self._icon))
+        if self._tooltip:
+            self.setToolTip(self._tooltip)
+        self.setEnabled(self._enabled_on_init)
+        if self._shortcut_context is not None:
+            self.setShortcutContext(self._shortcut_context)
+        if self._shortcut:
+            self.setShortcut(self._shortcut)
+        parent.addAction(self)
+        self._connect()
+
+    def _connect(self):
+        self.parentWidget().itemSelectionChanged.connect(
+            self.update_enabled)
+        self.triggered.connect(self._do_action)
+
+    def selected_layers(self):
+        return self._layer_tree.selected_layers()
+
+    def update_enabled(self):
+        self.setEnabled(self._can_trigger())
+
+    def single_selection(self):
+        return len(self.selected_layers()) == 1
+
+    def single_selection_subset(self):
+        layers = self.selected_layers()
+        if len(layers) != 1:
+            return False
+        return isinstance(layers[0], core.Subset)
+
+    def _can_trigger(self):
+        raise NotImplementedError
+
+    def _do_action(self):
+        raise NotImplementedError
+
+class NewAction(LayerAction):
+    _title = "New Subset"
+    _tool_tip = "Create a new subset for the selected data"
+    _shortcut = 'Ctrl+Shift+N'
+
+    def _can_trigger(self):
+        return self.single_selection()
+
+    def _do_action(self):
+        assert self._can_trigger()
+        data = self.selected_layers()[0].data
+        data.new_subset()
+
+class ClearAction(LayerAction):
+    _title = "Clear subset"
+    _tool_tip = "Clear current subset"
+    _shortcut = 'Ctrl+K'
+
+    def _can_trigger(self):
+        return self.single_selection_subset()
+
+    def _do_action(self):
+        assert self._can_trigger()
+        subset = self.selected_layers()[0]
+        subset.subset_state = core.subset.SubsetState()
+
+class DuplicateAction(LayerAction):
+    _title = "Duplicate subset"
+    _tool_tip = "Duplicate the current subset"
+    _shortcut = 'Ctrl+D'
+
+    def _can_trigger(self):
+        return self.single_selection_subset()
+
+    def _do_action(self):
+        assert self._can_trigger()
+        subset = self.selected_layers()[0]
+        new = subset.data.new_subset()
+        new.paste(subset)
+
+
+class DeleteAction(LayerAction):
+    _title = "Delete Selection"
+    _tool_tip = "Remove the selection"
+    _shortcut = QKeySequence.Delete
+
+    def _can_trigger(self):
+        selection = self.selected_layers()
+        if len(selection) != 1:
+            return False
+        if selection[0] is selection[0].data.edit_subset:
+            return False
+        return True
+
+    def _do_action(self):
+        #XXX refactor into pure function
+        self._layer_tree.remove_and_delete_selected()
+
+class LoadAction(LayerAction):
+    _title = "Load subset"
+    _tool_tip = "Load a subset from a file"
+
+    def _can_trigger(self):
+        return self.single_selection_subset()
+
+    def _do_action(self):
+        assert self._can_trigger()
+        subset = self.selected_layers()[0]
+        load_subset(subset)
+
+
+class SaveAction(LayerAction):
+    _title = "Save subset"
+    _tool_tip = "Save the mask for this subset to a file"
+
+    def _can_trigger(self):
+        return self.single_selection_subset()
+
+    def _do_action(self):
+        assert self._can_trigger()
+        subset = self.selected_layers()[0]
+        save_subset(subset)
+
+
+class CopyAction(LayerAction):
+    _title = "Copy subset"
+    _tool_tip = "Copy the definition for the selected subset"
+    _shortcut = QKeySequence.Copy
+
+    def _can_trigger(self):
+        return self.single_selection_subset()
+
+    def _do_action(self):
+        assert self._can_trigger()
+        subset = self.selected_layers()[0]
+        Clipboard().contents = subset
+
+class PasteAction(LayerAction):
+    _title = "Paste subset"
+    _tool_tip = "Overwite selected subset with contents from clipboard"
+    _shortcut = QKeySequence.Paste
+
+    def _can_trigger(self):
+        if not self.single_selection_subset():
+            return False
+        cnt = Clipboard().contents
+        if not isinstance(cnt, core.subset.Subset):
+            return False
+        return True
+
+    def _do_action(self):
+        assert self._can_trigger()
+        layer = self.selected_layers()[0]
+        layer.paste(Clipboard().contents)
+
+
+
+class Inverter(LayerAction):
+    _title = "Invert"
+    _icon = ":icons/glue_not.png"
+    _tooltip = "Invert selected subset"
+
+    def _can_trigger(self):
+        """ Can trigger iff one subset is selected """
+        layers = self.selected_layers()
+        if len(layers) != 1:
+            return False
+        if not isinstance(layers[0], core.Subset):
+            return False
+        return True
+
+    def _do_action(self):
+        """Replace selected subset with its inverse"""
+        assert self._can_trigger()
+        subset, = self.selected_layers()
+        subset.subset_state = core.subset.InvertState(subset.subset_state)
+
+
+class BinaryCombiner(LayerAction):
+    _state_class = None
+
+    def _can_trigger(self):
+        """ Action can be triggered iff 2 subsets from same data selected """
+        layers = self.selected_layers()
+        if len(layers) != 2:
+            return False
+        if layers[0].data is not layers[1].data:
+            return False
+
+        if not isinstance(layers[0], core.Subset) or \
+           not isinstance(layers[1], core.Subset):
+            return False
+
+        return True
+
+    def _do_action(self):
+        """ Take binary combination of two selected subsets
+
+        combination uses _state_class, which is overridden by subclasses
+        """
+        assert self._can_trigger()
+
+        layers = self.selected_layers()
+        data = layers[0].data
+        subset = data.new_subset()
+        subset.subset_state = self._state_class(layers[0].subset_state,
+                                        layers[1].subset_state)
+
+class OrCombiner(BinaryCombiner):
+    _title = "Union Combine"
+    _icon = ':icons/glue_or.png'
+    _tooltip = 'Define new subset as union of selection'
+    _state_class = core.subset.OrState
+
+class AndCombiner(BinaryCombiner):
+    _title = "Intersection Combine"
+    _icon = ':icons/glue_and.png'
+    _tooltip = 'Define new subset as intersection of selection'
+    _state_class = core.subset.AndState
+
+class XorCombiner(BinaryCombiner):
+    _title = "XOR Combine"
+    _icon = ':icons/glue_xor.png'
+    _tooltip = 'Define new subset as non-intersection of selection'
+    _state_class = core.subset.XorState
+
 class LayerCommunicator(QObject):
     layer_check_changed = pyqtSignal(object, bool)
 
@@ -25,7 +267,6 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
     This widget relies on sending/receiving messages to/from the hub
     to maintin synchronization with the data collection it manages. If
     it isn't attached to a hub, interactions may not propagate properly.
-
     """
     def __init__(self, parent=None):
         Ui_LayerTree.__init__(self)
@@ -34,79 +275,67 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
 
         self._signals = LayerCommunicator()
         self._is_checkable = True
-        self._clipboard = None
         self._layer_check_changed = self._signals.layer_check_changed
         self._layer_dict = {}
 
-        self._new_action = None
-        self._clear_action = None
-        self._duplicate_action = None
-        self._copy_action = None
-        self._paste_action = None
-        self._delete_action = None
-        self._or_action = None
-        self._xor_action = None
-        self._and_action = None
-        self._invert_action = None
-        self._load_action = None
-        self._save_action = None
+        self._actions = {}
 
         self.setupUi(self)
-        self.setup_drag_drop()
         self._create_actions()
         self._connect()
         self._data_collection = core.data_collection.DataCollection()
         self.layerTree.setDragEnabled(True)
 
     def is_checkable(self):
+        """ Return whether checkboxes appear next o layers"""
         return self._is_checkable
 
     def set_checkable(self, state):
+        """ Setw hether checkboxes appear next o layers"""
         self._is_checkable = state
 
-    def _combination_actions(self):
+    def selected_layers(self):
+        """ Return a list of selected layers (subsets and data objects) """
+        items = self.layerTree.selectedItems()
+        result = [self[item] for item in items]
+        return result
+
+    def current_layer(self):
+        """ Return the selected layer if a single item is selected, else None """
+        layers = self.selected_layers()
+        if len(layers) == 1:
+            return layers[0]
+
+    def _create_component(self):
+        CustomComponentWidget.create_component(self.data_collection)
+
+    def actions(self):
+        """ Return the list of actions attached to this widget """
+        return self.layerTree.actions()
+
+    def _create_actions(self):
         tree = self.layerTree
-        group = QActionGroup(tree)
 
-        act = QAction("Union Combine", tree)
-        act.setIcon(QIcon(':icons/glue_or.png'))
-        act.setEnabled(False)
-        act.setToolTip("Define new subset as union of selection")
-        act.setShortcutContext(Qt.WidgetShortcut)
-        act.triggered.connect(self._or_combine)
-        group.addAction(act)
-        tree.addAction(act)
-        self._or_action = act
+        self._actions['load'] = LoadAction(self)
+        self._actions['save'] = SaveAction(self)
+        self._actions['copy'] = CopyAction(self)
+        self._actions['paste'] = PasteAction(self)
+        self._actions['new'] = NewAction(self)
+        self._actions['clear'] = ClearAction(self)
+        self._actions['duplicate'] = DuplicateAction(self)
+        self._actions['delete'] = DeleteAction(self)
 
-        act = QAction("Intersection Combine", tree)
-        act.setIcon(QIcon(':icons/glue_and.png'))
-        act.setEnabled(False)
-        act.setToolTip("Define new subset as intersection of selection")
-        act.triggered.connect(self._and_combine)
-        act.setShortcutContext(Qt.WidgetShortcut)
-        group.addAction(act)
-        tree.addAction(act)
-        self._and_action = act
+        # combination actions
+        separator = QAction("Subset Combination", tree)
+        separator.setSeparator(True)
+        tree.addAction(separator)
 
-        act = QAction("XOR Combine", tree)
-        act.setIcon(QIcon(':icons/glue_xor.png'))
-        act.setEnabled(False)
-        act.setToolTip("Define new subset as non-intersection of selection")
-        act.triggered.connect(self._xor_combine)
-        act.setShortcutContext(Qt.WidgetShortcut)
-        group.addAction(act)
-        tree.addAction(act)
-        self._xor_action = act
+        self._actions['or'] = OrCombiner(self)
+        self._actions['and'] = AndCombiner(self)
+        self._actions['xor'] = XorCombiner(self)
+        self._actions['invert'] = Inverter(self)
 
-        act = QAction("Invert", tree)
-        act.setIcon(QIcon(':icons/glue_not.png'))
-        act.setEnabled(False)
-        act.setToolTip("Invert current subset")
-        act.triggered.connect(self._invert_subset)
-        act.setShortcutContext(Qt.WidgetShortcut)
-        group.addAction(act)
-        tree.addAction(act)
-        self._invert_action = act
+        # new component definer
         separator = QAction("sep", tree)
         separator.setSeparator(True)
         tree.addAction(separator)
@@ -115,214 +344,10 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
                 tip="Define a new component using python expressions")
         tree.addAction(a)
         a.triggered.connect(self._create_component)
-        self._new_component = a
+        self._actions['new_component'] = a
 
-
-    def _create_component(self):
-        CustomComponentWidget.create_component(self._data)
-
-    def _invert_subset(self):
-        item = self.layerTree.currentItem()
-        layer = self[item]
-        state = layer.subset_state
-        layer.subset_state = core.subset.InvertState(state)
-
-    def _update_combination_actions_enabled(self):
-        state = self._check_can_combine()
-        self._or_action.setEnabled(state)
-        self._and_action.setEnabled(state)
-        self._xor_action.setEnabled(state)
-
-        layer = self.current_layer()
-        can_invert = isinstance(layer, core.subset.Subset)
-        self._invert_action.setEnabled(can_invert)
-
-    def _check_can_combine(self, layers=None):
-        if layers is None:
-            items = self.layerTree.selectedItems()
-            layers = [self[i] for i in items]
-
-        if len(layers) != 2:
-            return False
-        if not isinstance(layers[0], core.subset.Subset):
-            return False
-        if not isinstance(layers[1], core.subset.Subset):
-            return False
-        if layers[0].data is not layers[1].data:
-            return False
-        return True
-
-    def _and_combine(self):
-        self._binary_combine(core.subset.AndState)
-
-    def _xor_combine(self):
-        self._binary_combine(core.subset.XorState)
-
-    def _or_combine(self):
-        self._binary_combine(core.subset.OrState)
-
-    def _binary_combine(self, StateClass):
-        items = self.layerTree.selectedItems()
-        layers = [self[i] for i in items]
-        if not self._check_can_combine(layers):
-            return
-        data = layers[0].data
-        new = data.new_subset()
-        new.subset_state = StateClass(layers[0].subset_state,
-                                      layers[1].subset_state)
-
-    def actions(self):
-        return self.layerTree.actions()
-
-    def _create_actions(self):
-        tree = self.layerTree
-
-        act = QAction("Save subset", tree)
-        act.setEnabled(False)
-        act.setToolTip("Save the mask for this subset to a file")
-        act.setShortcutContext(Qt.WidgetShortcut)
-        act.triggered.connect(self._save_subset)
-        tree.addAction(act)
-        self._save_action = act
-
-        act = QAction("Load subset", tree)
-        act.setEnabled(False)
-        act.setToolTip("Load a subset from a file")
-        act.setShortcutContext(Qt.WidgetShortcut)
-        act.triggered.connect(self._load_subset)
-        tree.addAction(act)
-        self._load_action = act
-
-        act = QAction("Copy subset", tree)
-        act.setEnabled(False)
-        act.setToolTip("Copy the definition for the selected subset")
-        act.setShortcut(QKeySequence.Copy)
-        act.setShortcutContext(Qt.WidgetShortcut)
-        act.triggered.connect(self._copy_subset)
-        tree.addAction(act)
-        self._copy_action = act
-
-        act = QAction("Paste subset", tree)
-        act.setEnabled(False)
-        act.setToolTip("Overwite selected subset with contents from clipboard")
-        act.setShortcut(QKeySequence.Paste)
-        act.setShortcutContext(Qt.WidgetShortcut)
-        act.triggered.connect(self._paste_subset)
-        tree.addAction(act)
-        self._paste_action = act
-
-        act = QAction("New subset", tree)
-        act.setEnabled(False)
-        act.setToolTip("Create a new subset for the selected data")
-        act.setShortcut('Ctrl+Shift+N')
-        act.setShortcutContext(Qt.WidgetShortcut)
-        act.triggered.connect(self._new_subset)
-        tree.addAction(act)
-        self._new_action = act
-
-        act = QAction("Clear subset", tree)
-        act.setEnabled(False)
-        act.setToolTip("Clear current selection")
-        act.setShortcut('Ctrl+K')
-        act.setShortcutContext(Qt.WidgetShortcut)
-        act.triggered.connect(self._clear_subset)
-        tree.addAction(act)
-        self._clear_action = act
-
-        act = QAction("Duplicate subset", tree)
-        act.setEnabled(False)
-        act.setToolTip("Duplicate the current subset")
-        act.setShortcut('Ctrl+D')
-        act.setShortcutContext(Qt.WidgetShortcut)
-        act.triggered.connect(self._duplicate_subset)
-        tree.addAction(act)
-        self._duplicate_action = act
-
-        act = QAction("Delete Selection", tree)
-        act.setEnabled(False)
-        act.setToolTip("Remove the highlighted layer")
-        act.setShortcut(QKeySequence.Delete)
-        act.setShortcutContext(Qt.WidgetShortcut)
-        act.triggered.connect(self.remove_and_delete_selected)
-        self._delete_action = act
-        tree.addAction(act)
-
-        separator = QAction("Subset Combination", tree)
-        separator.setSeparator(True)
-        tree.addAction(separator)
-
-        self._combination_actions()
-
+        # right click pulls up menu
         tree.setContextMenuPolicy(Qt.ActionsContextMenu)
-
-    def _clear_subset(self):
-        layer = self.current_layer()
-        if not isinstance(layer, core.subset.Subset):
-            return
-        layer.subset_state = core.subset.SubsetState()
-
-    def _copy_subset(self):
-        layer = self.current_layer()
-        assert isinstance(layer, core.subset.Subset)
-        self._clipboard = layer
-
-    def _paste_subset(self):
-        layer = self.current_layer()
-        assert isinstance(layer, core.subset.Subset)
-        assert self._clipboard is not None
-        layer.paste(self._clipboard)
-
-    def _new_subset(self):
-        data = self.current_layer().data
-        data.new_subset()
-
-    def _duplicate_subset(self):
-        layer = self.current_layer()
-        subset = layer.data.new_subset()
-        subset.paste(layer)
-
-    def _update_actions_enabled(self):
-        self._update_combination_actions_enabled()
-        layer = self.current_layer()
-        has_clipboard = self._clipboard is not None
-        single = len(self.layerTree.selectedItems()) == 1
-
-        if single and isinstance(layer, core.data.Data):
-            self._copy_action.setEnabled(False)
-            self._paste_action.setEnabled(False)
-            self._new_action.setEnabled(True)
-            self._duplicate_action.setEnabled(False)
-            self._delete_action.setEnabled(True)
-            self._clear_action.setEnabled(False)
-            self._save_action.setEnabled(False)
-            self._load_action.setEnabled(False)
-        elif single and isinstance(layer, core.subset.Subset):
-            self._copy_action.setEnabled(True)
-            self._paste_action.setEnabled(has_clipboard)
-            self._new_action.setEnabled(True)
-            self._duplicate_action.setEnabled(True)
-            self._delete_action.setEnabled(layer is not layer.data.edit_subset)
-            self._clear_action.setEnabled(True)
-            self._save_action.setEnabled(True)
-            self._load_action.setEnabled(True)
-        else:
-            self._copy_action.setEnabled(False)
-            self._paste_action.setEnabled(False)
-            self._new_action.setEnabled(False)
-            self._duplicate_action.setEnabled(False)
-            self._delete_action.setEnabled(False)
-            self._clear_action.setEnabled(False)
-            self._save_action.setEnabled(False)
-            self._load_action.setEnabled(False)
-
-    def setup_drag_drop(self):
-        self.layerTree.setDragEnabled(True)
-
-    def current_layer(self):
-        item = self.layerTree.currentItem()
-        if item is None:
-            return None
-        return self[item]
 
     @property
     def data_collection(self):
@@ -354,20 +379,18 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         """ Connect widget signals to methods """
         self.layerTree.itemDoubleClicked.connect(self.edit_current_layer)
         self.layerAddButton.pressed.connect(self._load_data)
-        self.layerRemoveButton.pressed.connect(self._delete_action.trigger)
+        self.layerRemoveButton.pressed.connect(self._actions['delete'].trigger)
         self.linkButton.pressed.connect(
             lambda: LinkEditor.update_links(self._data_collection))
         tree = self.layerTree
         rbut = self.layerRemoveButton
-        can_remove = lambda: rbut.setEnabled(tree.currentItem() is not None and
-                                             tree.currentItem().isSelected())
-        self.layerTree.itemSelectionChanged.connect(can_remove)
+        def update_enabled():
+            return rbut.setEnabled(self._actions['delete'].isEnabled())
+        self.layerTree.itemSelectionChanged.connect(update_enabled)
         self.layerTree.itemChanged.connect(self._on_item_change)
-        self.layerTree.itemSelectionChanged.connect(
-            self._update_actions_enabled)
 
     def _on_item_change(self, item, column):
-        # emit check_state_changed signal when checkbox clicked
+        """emit check_state_changed signal when checkbox clicked"""
         if item is None or item not in self or column != 0:
             return
         is_checked = item.checkState(0) == Qt.Checked
@@ -405,7 +428,6 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
     def edit_current_layer(self):
         """ Allow user to interactively set layer properties of
         the currently highlighted layer """
-
         column = self.layerTree.currentColumn()
         item = self.layerTree.currentItem()
         if item is None:
@@ -464,7 +486,6 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
     def _load_data(self):
         """ Interactively loads data from a data set. Adds
         as new layer """
-
         layer = qtutil.data_wizard()
         if layer:
             self.add_layer(layer)
@@ -598,33 +619,6 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         for i in range(ncol):
             self.layerTree.resizeColumnToContents(i)
 
-    def _save_subset(self):
-        layer = self.current_layer()
-        if not isinstance(layer, core.subset.Subset):
-            return
-        dialog = QFileDialog()
-        file_name = str(dialog.getSaveFileName(
-            caption="Select an output name"))
-        if not file_name:
-            return
-
-        layer.write_mask(file_name)
-
-    def _load_subset(self):
-        layer = self.current_layer()
-        if not isinstance(layer, core.subset.Subset):
-            return
-        dialog = QFileDialog()
-        file_name = str(dialog.getOpenFileName(caption="Select a subset"))
-
-        if not file_name:
-            return
-
-        try:
-            layer.read_mask(file_name)
-        except Exception as e:
-            print "Exception raised -- could not load\n%s" % e
-
     def is_layer_present(self, layer):
         return layer in self and not self[layer].isHidden()
 
@@ -640,4 +634,28 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
 
     def __len__(self):
         return len(self._layer_dict)
+
+
+def load_subset(subset):
+    assert isinstance(subset, core.subset.Subset)
+    dialog = QFileDialog()
+    file_name = str(dialog.getOpenFileName(caption="Select a subset"))
+
+    if not file_name:
+        return
+
+    try:
+        layer.read_mask(file_name)
+    except Exception as e:
+        print "Exception raised -- could not load\n%s" % e
+
+def save_subset(subset):
+    assert isinstance(subset, core.subset.Subset)
+    dialog = QFileDialog()
+    file_name = str(dialog.getSaveFileName(
+        caption="Select an output name"))
+    if not file_name:
+        return
+
+    subset.write_mask(file_name)
 

@@ -5,7 +5,7 @@ from PyQt4.QtGui import QItemSelectionModel
 
 from mock import MagicMock, patch
 
-from ..layer_tree_widget import LayerTreeWidget
+from ..layer_tree_widget import LayerTreeWidget, Clipboard
 
 from ....tests import example_data
 from .... import core
@@ -24,6 +24,8 @@ class TestLayerTree(object):
         self.widget = LayerTreeWidget()
         self.win = QMainWindow()
         self.win.setCentralWidget(self.widget)
+        for key, value in self.widget._actions.items():
+            self.__setattr__("%s_action" % key, value)
 
     def tearDown(self):
         self.win.close()
@@ -143,31 +145,32 @@ class TestLayerTree(object):
         sc.catch.assert_called_once_with(layer, False)
 
     def test_new_subset_action(self):
+        """ new action creates a new subset """
         layer = self.add_layer_via_method()
         item = self.widget[layer]
         self.widget.layerTree.setCurrentItem(item)
-        self.widget._new_action.trigger()
+        self.new_action.trigger()
         assert len(layer.subsets) == 2
 
     def test_duplicate_subset_action(self):
+        """ duplicate action creates duplicate subset """
         layer = self.add_layer_via_method()
         item = self.widget[layer.subsets[0]]
         self.widget.layerTree.setCurrentItem(item)
-        self.widget._duplicate_action.trigger()
+        self.duplicate_action.trigger()
         assert len(layer.subsets) == 2
 
     def test_copy_paste_subset_action(self):
         layer = self.add_layer_via_method()
         item = self.widget[layer.subsets[0]]
         self.widget.layerTree.setCurrentItem(item)
-        self.widget._copy_action.trigger()
-        assert self.widget._clipboard is not None
+        self.copy_action.trigger()
         sub = layer.new_subset()
         self.widget.add_layer(sub)
         item = self.widget[sub]
         self.widget.layerTree.setCurrentItem(item)
         state0 = sub.subset_state
-        self.widget._paste_action.trigger()
+        self.paste_action.trigger()
         assert sub.subset_state is not state0
 
     def setup_two_subset_selection(self):
@@ -183,82 +186,75 @@ class TestLayerTree(object):
         assert len(self.widget.layerTree.selectedItems()) == 2
         return layer
 
-    def test_or_combine(self):
+    def _test_combine(self, action, state):
         layer = self.setup_two_subset_selection()
         old_subsets = set(layer.subsets)
-        self.widget._or_action.trigger()
+        action.trigger()
         new_subsets = set(layer.subsets)
         diff = list(old_subsets ^ new_subsets)
         assert len(diff) == 1
-        assert isinstance(diff[0].subset_state, core.subset.OrState)
+        assert isinstance(diff[0].subset_state, state)
+
+    def test_or_combine(self):
+        self._test_combine(self.or_action, core.subset.OrState)
 
     def test_and_combine(self):
-        layer = self.setup_two_subset_selection()
-        old_subsets = set(layer.subsets)
-        self.widget._and_action.trigger()
-        new_subsets = set(layer.subsets)
-        diff = list(old_subsets ^ new_subsets)
-        assert len(diff) == 1
-        assert isinstance(diff[0].subset_state, core.subset.AndState)
+        self._test_combine(self.and_action, core.subset.AndState)
+
+    def test_xor_combine(self):
+        self._test_combine(self.xor_action, core.subset.XorState)
 
     def test_invert(self):
         layer = self.add_layer_via_method()
         sub = layer.edit_subset
         item = self.widget[sub]
         self.widget.layerTree.setCurrentItem(item)
-        self.widget._invert_action.trigger()
+        self.invert_action.trigger()
         assert isinstance(sub.subset_state, core.subset.InvertState)
 
-    def test_xor_combine(self):
-        layer = self.setup_two_subset_selection()
-        old_subsets = set(layer.subsets)
-        self.widget._xor_action.trigger()
-        new_subsets = set(layer.subsets)
-        diff = list(old_subsets ^ new_subsets)
-        assert len(diff) == 1
-        assert isinstance(diff[0].subset_state, core.subset.XorState)
 
     def test_actions_enabled_single_subset_selection(self):
+        Clipboard().contents = None
         layer = self.add_layer_via_method()
         item = self.widget[layer.edit_subset]
         self.widget.layerTree.setCurrentItem(item)
 
-        assert not self.widget._or_action.isEnabled()
-        assert not self.widget._and_action.isEnabled()
-        assert not self.widget._xor_action.isEnabled()
-        assert self.widget._new_action.isEnabled()
-        assert self.widget._copy_action.isEnabled()
-        assert self.widget._duplicate_action.isEnabled()
-        assert not self.widget._paste_action.isEnabled()
-        assert self.widget._invert_action.isEnabled()
-        assert self.widget._clear_action.isEnabled()
+        assert not self.or_action.isEnabled()
+        assert not self.and_action.isEnabled()
+        assert not self.xor_action.isEnabled()
+        assert self.new_action.isEnabled()
+        assert self.copy_action.isEnabled()
+        assert self.duplicate_action.isEnabled()
+        assert not self.paste_action.isEnabled()
+        assert self.invert_action.isEnabled()
+        assert self.clear_action.isEnabled()
 
     def test_actions_enabled_single_data_selection(self):
         layer = self.add_layer_via_method()
         item = self.widget[layer]
         self.widget.layerTree.setCurrentItem(item)
 
-        assert not self.widget._or_action.isEnabled()
-        assert not self.widget._and_action.isEnabled()
-        assert not self.widget._xor_action.isEnabled()
-        assert self.widget._new_action.isEnabled()
-        assert not self.widget._copy_action.isEnabled()
-        assert not self.widget._duplicate_action.isEnabled()
-        assert not self.widget._paste_action.isEnabled()
-        assert not self.widget._invert_action.isEnabled()
-        assert not self.widget._clear_action.isEnabled()
+        assert not self.or_action.isEnabled()
+        assert not self.and_action.isEnabled()
+        assert not self.xor_action.isEnabled()
+        assert self.new_action.isEnabled()
+        assert not self.copy_action.isEnabled()
+        assert not self.duplicate_action.isEnabled()
+        assert not self.paste_action.isEnabled()
+        assert not self.invert_action.isEnabled()
+        assert not self.clear_action.isEnabled()
 
     def test_actions_enabled_multi_subset_selection(self):
         layer = self.setup_two_subset_selection()
-        assert self.widget._or_action.isEnabled()
-        assert self.widget._and_action.isEnabled()
-        assert self.widget._xor_action.isEnabled()
-        assert not self.widget._new_action.isEnabled()
-        assert not self.widget._copy_action.isEnabled()
-        assert not self.widget._duplicate_action.isEnabled()
-        assert not self.widget._paste_action.isEnabled()
-        assert self.widget._invert_action.isEnabled()
-        assert not self.widget._clear_action.isEnabled()
+        assert self.or_action.isEnabled()
+        assert self.and_action.isEnabled()
+        assert self.xor_action.isEnabled()
+        assert not self.new_action.isEnabled()
+        assert not self.copy_action.isEnabled()
+        assert not self.duplicate_action.isEnabled()
+        assert not self.paste_action.isEnabled()
+        assert not self.invert_action.isEnabled()
+        assert not self.clear_action.isEnabled()
 
     def test_remove_all_layers(self):
         for d in self.collect:
@@ -365,7 +361,7 @@ class TestLayerTree(object):
         self.widget.layerTree.setCurrentItem(item)
         dummy_state = MagicMock()
         sub.subset_state = dummy_state
-        self.widget._clear_subset()
+        self.clear_action.trigger()
         assert not sub.subset_state == dummy_state
 
     def test_remove_message_global(self):

@@ -6,16 +6,20 @@
 	<file>icons/glue_circle.png</file>
 	<file>icons/glue_contour.png</file>
 	<file>icons/glue_contrast.png</file>
+	<file>icons/glue_delete.png</file>
 	<file>icons/glue_filesave.png</file>
 	<file>icons/glue_forward.png</file>
 	<file>icons/glue_home.png</file>
 	<file>icons/glue_lasso.png</file>
+	<file>icons/glue_link.png</file>
 	<file>icons/glue_move.png</file>
 	<file>icons/glue_not.png</file>
+	<file>icons/glue_open.png</file>
 	<file>icons/glue_or.png</file>
 	<file>icons/glue_rainbow.png</file>
 	<file>icons/glue_replace.png</file>
 	<file>icons/glue_spawn.png</file>
+	<file>icons/glue_subset.png</file>
 	<file>icons/glue_square.png</file>
 	<file>icons/glue_tree.png</file>
 	<file>icons/glue_xor.png</file>

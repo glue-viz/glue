@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>204</width>
-    <height>150</height>
+    <width>266</width>
+    <height>351</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -66,7 +66,7 @@
        </column>
        <column>
         <property name="text">
-         <string>Symbol</string>
+         <string>Link</string>
         </property>
        </column>
        <column>
@@ -82,22 +82,14 @@
         <number>3</number>
        </property>
        <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
         <widget class="QPushButton" name="layerAddButton">
+         <property name="font">
+          <font>
+           <pointsize>11</pointsize>
+          </font>
+         </property>
          <property name="toolTip">
-          <string>Add a new subset or data set</string>
+          <string>Load a new data set</string>
          </property>
          <property name="statusTip">
           <string/>
@@ -106,30 +98,108 @@
           <string/>
          </property>
          <property name="text">
-          <string>+</string>
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../glue.qrc">
+           <normaloff>:/icons/glue_open.png</normaloff>:/icons/glue_open.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>18</width>
+           <height>18</height>
+          </size>
+         </property>
+         <property name="default">
+          <bool>false</bool>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="newSubsetButton">
+         <property name="font">
+          <font>
+           <pointsize>11</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>Create a new empty subset</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../glue.qrc">
+           <normaloff>:/icons/glue_subset.png</normaloff>:/icons/glue_subset.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>16</width>
+           <height>16</height>
+          </size>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="layerRemoveButton">
          <property name="enabled">
-          <bool>true</bool>
+          <bool>false</bool>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>11</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>Remove a subset or data set from all visualizations</string>
          </property>
          <property name="text">
-          <string>-</string>
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../glue.qrc">
+           <normaloff>:/icons/glue_delete.png</normaloff>:/icons/glue_delete.png</iconset>
          </property>
         </widget>
        </item>
        <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Expanding</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
         <widget class="QPushButton" name="linkButton">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>11</pointsize>
+          </font>
+         </property>
          <property name="toolTip">
-          <string>Link subsets</string>
+          <string>Link data</string>
          </property>
          <property name="text">
-          <string>Link</string>
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../glue.qrc">
+           <normaloff>:/icons/glue_link.png</normaloff>:/icons/glue_link.png</iconset>
          </property>
         </widget>
        </item>
@@ -146,6 +216,8 @@
    <header>..qtutil</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../glue.qrc"/>
+ </resources>
  <connections/>
 </ui>
