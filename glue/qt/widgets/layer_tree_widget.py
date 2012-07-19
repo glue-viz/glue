@@ -1,7 +1,10 @@
-""" Class for a layer tree widget """
+"""
+Class which embellishes the DataCollectionView with buttons and actions for
+editing the data collection
+"""
 
 from PyQt4.QtGui import QWidget, QTreeWidgetItem, QPixmap, QIcon
-from PyQt4.QtGui import QAction, QKeySequence, QFileDialog
+from PyQt4.QtGui import QAction, QKeySequence, QFileDialog, QTreeWidgetItemIterator
 
 from PyQt4.QtCore import Qt, pyqtSignal, QObject
 
@@ -96,6 +99,7 @@ class ClearAction(LayerAction):
         subset = self.selected_layers()[0]
         subset.subset_state = core.subset.SubsetState()
 
+
 class DuplicateAction(LayerAction):
     _title = "Duplicate subset"
     _tool_tip = "Duplicate the current subset"
@@ -118,15 +122,21 @@ class DeleteAction(LayerAction):
 
     def _can_trigger(self):
         selection = self.selected_layers()
-        if len(selection) != 1:
+        if len(selection) == 0:
             return False
-        if selection[0] is selection[0].data.edit_subset:
-            return False
+        for s in selection:
+            if s is s.data.edit_subset:
+                return False
         return True
 
     def _do_action(self):
-        #XXX refactor into pure function
-        self._layer_tree.remove_and_delete_selected()
+        assert self._can_trigger()
+        selection = self.selected_layers()
+        for s in selection:
+            if isinstance(s, core.Subset):
+                s.delete()
+            else:
+                self._layer_tree.data_collection.remove(s)
 
 class LoadAction(LayerAction):
     _title = "Load subset"
@@ -260,7 +270,7 @@ class LayerCommunicator(QObject):
     layer_check_changed = pyqtSignal(object, bool)
 
 
-class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
+class LayerTreeWidget(QWidget, Ui_LayerTree):
     """The layertree widget provides a way to visualize the various
     data and subset layers in a Glue session.
 
@@ -283,16 +293,30 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         self.setupUi(self)
         self._create_actions()
         self._connect()
-        self._data_collection = core.data_collection.DataCollection()
+        self._data_collection = None
+        self._hub = None
         self.layerTree.setDragEnabled(True)
+
+    @property
+    def data_collection(self):
+        return self._data_collection
+
+    def setup(self, collection, hub):
+        self._data_collection = collection
+        self._hub = hub
+        self.layerTree.setup(collection, hub)
+
+    def unregister(self, hub):
+        """Unsubscribe from hub"""
+        self.layerTree.unregister(hub)
 
     def is_checkable(self):
         """ Return whether checkboxes appear next o layers"""
-        return self._is_checkable
+        return self.layerTree.checkable
 
     def set_checkable(self, state):
         """ Setw hether checkboxes appear next o layers"""
-        self._is_checkable = state
+        self.layerTree.checkable = state
 
     def selected_layers(self):
         """ Return a list of selected layers (subsets and data objects) """
@@ -306,12 +330,26 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         if len(layers) == 1:
             return layers[0]
 
-    def _create_component(self):
-        CustomComponentWidget.create_component(self.data_collection)
-
     def actions(self):
         """ Return the list of actions attached to this widget """
         return self.layerTree.actions()
+
+    def _connect(self):
+        """ Connect widget signals to methods """
+        self.layerTree.itemDoubleClicked.connect(self.edit_current_layer)
+        self.layerAddButton.pressed.connect(self._load_data)
+        self.layerRemoveButton.pressed.connect(self._actions['delete'].trigger)
+        self.linkButton.pressed.connect(
+            lambda: LinkEditor.update_links(self._data_collection))
+        tree = self.layerTree
+        rbut = self.layerRemoveButton
+        def update_enabled():
+            return rbut.setEnabled(self._actions['delete'].isEnabled())
+        self.layerTree.itemSelectionChanged.connect(update_enabled)
+        self.layerTree.itemChanged.connect(self._on_item_change)
+
+    def _create_component(self):
+        CustomComponentWidget.create_component(self.data_collection)
 
     def _create_actions(self):
         tree = self.layerTree
@@ -349,46 +387,6 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         # right click pulls up menu
         tree.setContextMenuPolicy(Qt.ActionsContextMenu)
 
-    @property
-    def data_collection(self):
-        return self._data_collection
-
-    @data_collection.setter
-    def data_collection(self, collection):
-        """ Define which data collection this widget manages
-
-        :param collection: DataCollection instance to manage
-        :type collection: :class:`~glue.core.data_collection.DataCollection`
-        """
-        self.remove_all_layers()
-
-        self._data_collection = collection
-        for data in self._data_collection:
-            self.add_layer(data)
-            for subset in data.subsets:
-                self.add_layer(subset)
-
-    def remove_all_layers(self):
-        """ Remove all layers from widget """
-        layers = [d for d in self._data_collection]
-
-        for data in layers:
-            self.remove_layer(data)
-
-    def _connect(self):
-        """ Connect widget signals to methods """
-        self.layerTree.itemDoubleClicked.connect(self.edit_current_layer)
-        self.layerAddButton.pressed.connect(self._load_data)
-        self.layerRemoveButton.pressed.connect(self._actions['delete'].trigger)
-        self.linkButton.pressed.connect(
-            lambda: LinkEditor.update_links(self._data_collection))
-        tree = self.layerTree
-        rbut = self.layerRemoveButton
-        def update_enabled():
-            return rbut.setEnabled(self._actions['delete'].isEnabled())
-        self.layerTree.itemSelectionChanged.connect(update_enabled)
-        self.layerTree.itemChanged.connect(self._on_item_change)
-
     def _on_item_change(self, item, column):
         """emit check_state_changed signal when checkbox clicked"""
         if item is None or item not in self or column != 0:
@@ -396,34 +394,6 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         is_checked = item.checkState(0) == Qt.Checked
         layer = self[item]
         self._layer_check_changed.emit(layer, is_checked)
-
-    def remove_and_delete_selected(self):
-        """ Remove the currently selected layer from layer
-        tree. Disconnects layer from session, removing it on all other
-        clients. """
-        widget_item = self.layerTree.currentItem()
-        if not widget_item or not widget_item.isSelected():
-            return
-
-        layer = self[widget_item]
-        self.remove_and_delete_layer(layer)
-
-    def remove_and_delete_layer(self, layer):
-        """ Remove a layer from the layer tree, and
-        disconnect it from the data collection
-
-        This will generate one of the Delete messages
-        """
-        if layer is layer.data.edit_subset:
-            # do not delete the edit subset
-            return
-        self.remove_layer(layer)
-
-        if isinstance(layer, core.data.Data):
-            self._data_collection.remove(layer)
-        else:
-            assert isinstance(layer, core.subset.Subset)
-            layer.delete()
 
     def edit_current_layer(self):
         """ Allow user to interactively set layer properties of
@@ -448,192 +418,27 @@ class LayerTreeWidget(QWidget, Ui_LayerTree, core.hub.HubListener):
         expand = item.isExpanded()
         item.setExpanded(not expand)
 
-    def register_to_hub(self, hub):
-        """ Connect to hub, to automatically maintain
-        synchronization with the underlying datacollection object
-
-        hub: Hub instance to register to
-        """
-        data_filt = lambda x: x.sender.data in self._data_collection
-        dc_filt = lambda x: x.sender is self._data_collection
-        data_in_dc = lambda x: x.data in self._data_collection
-
-        hub.subscribe(self,
-                      core.message.SubsetCreateMessage,
-                      handler=lambda x: self.add_layer(x.sender),
-                      filter=data_filt)
-        hub.subscribe(self,
-                      core.message.SubsetUpdateMessage,
-                      handler=lambda x: self.sync_layer(x.sender),
-                      filter=data_filt)
-        hub.subscribe(self,
-                      core.message.SubsetDeleteMessage,
-                      handler=lambda x: self.remove_layer(x.sender),
-                      filter=data_filt)
-        hub.subscribe(self,
-                      core.message.DataCollectionAddMessage,
-                      handler=lambda x: self.add_layer(x.data),
-                      filter=dc_filt)
-        hub.subscribe(self,
-                      core.message.DataCollectionDeleteMessage,
-                      handler=lambda x: self.remove_layer(x.data),
-                      filter = data_in_dc)
-        hub.subscribe(self,
-                      core.message.DataUpdateMessage,
-                      handler=lambda x: self.sync_layer(x.sender),
-                      filter=data_filt)
-
     def _load_data(self):
         """ Interactively loads data from a data set. Adds
         as new layer """
         layer = qtutil.data_wizard()
         if layer:
-            self.add_layer(layer)
-
-    def _ensure_in_collection(self, layer):
-        """Makes sure a layer's data is in the data collection.
-        Adds if needed"""
-
-        data = layer.data
-        if data not in self._data_collection:
-            self._data_collection.append(data)
-
-    def _ensure_parent_present(self, layer):
-        """ If layer is a subset, make sure that the
-        parent data object is already in the layer tree.
-        Add if necessary """
-        if isinstance(layer, core.data.Data):
-            return
-        if layer.data in self:
-            return
-        self.add_layer(layer.data)
-
-    def add_layer(self, layer):
-        """ Add a new object to the layer tree.
-
-        If it is not already, the layer will be added
-        to the layer tree's affiliated data collection object
-
-        :param layer: new data or subset object.
-        """
-        tree = self.layerTree
-        self._ensure_in_collection(layer)
-        self._ensure_parent_present(layer)
-
-        if layer in self:
-            return
-
-        if isinstance(layer, core.subset.Subset):
-            data = layer.data
-            assert data in self._data_collection
-            parent = self[data]
-            label = layer.style.label
-            if label is None:
-                ct = parent.childCount()
-                datanum = tree.indexOfTopLevelItem(parent)
-                label = "Subset %i.%i" % (datanum, ct)
-                layer.style.label = label
-        elif isinstance(layer, core.data.Data):
-            assert layer in self._data_collection
-            parent = tree
-            label = layer.style.label
-            if label is None:
-                num = tree.topLevelItemCount()
-                label = "Data %i" % num
-                layer.style.label = label
-        else:
-            raise TypeError("Input not a data or subset: %s" % type(layer))
-
-        branch = QTreeWidgetItem(parent, [label, '', '', ''])
-        if self.is_checkable():
-            branch.setCheckState(0, Qt.Checked)
-
-        assert layer not in self
-        self[layer] = branch
-        self[branch] = layer
-
-        tree.expandItem(branch)
-
-        if isinstance(layer, core.data.Data):
-            for subset in layer.subsets:
-                self.add_layer(subset)
-
-        self.sync_layer(layer)
-
-    def remove_layer(self, layer):
-        """ Remove a data or subset from the layer tree.
-        Does not remove from data collection.
-
-        :param layer: subset or data object to remove
-        :type layer:
-           :class:`~glue.core.subset.Subset` or
-           :class:`~glue.core.data.Data`
-        """
-        if layer not in self:
-            return
-
-        widget_item = self[layer]
-        parent = widget_item.parent()
-        if parent:
-            parent.removeChild(widget_item)
-        else:
-            index = self.layerTree.indexOfTopLevelItem(widget_item)
-            if index >= 0:
-                self.layerTree.takeTopLevelItem(index)
-        #if layer in self._data_collection:
-        #    self._data_collection.remove(layer)
-
-        self.pop(layer)
-        self.pop(widget_item)
-
-    def pop(self, key):
-        """ Remove a layer or widget item from the
-        layer/widget-item mapping dictionary """
-        try:
-            self._layer_dict.pop(key)
-        except KeyError:
-            pass
-
-    def sync_layer(self, layer):
-        """ Sync columns of display tree, to
-        reflect the current style settings of the given layer
-
-        :param layer: data or subset object
-        """
-        if layer not in self:
-            return
-
-        style = layer.style
-        widget_item = self[layer]
-        pixm = QPixmap(20, 20)
-        pixm.fill(qtutil.mpl_to_qt4_color(style.color))
-        widget_item.setIcon(1, QIcon(pixm))
-        marker = style.marker
-        size = style.markersize
-        label = style.label
-
-        widget_item.setText(0, label)
-        widget_item.setText(2, marker)
-        widget_item.setText(3, "%i" % size)
-        ncol = self.layerTree.columnCount()
-        for i in range(ncol):
-            self.layerTree.resizeColumnToContents(i)
+            self.data_collection.append(layer)
 
     def is_layer_present(self, layer):
         return layer in self and not self[layer].isHidden()
 
     def __getitem__(self, key):
-        return self._layer_dict[key]
+        return self.layerTree[key]
 
     def __setitem__(self, key, value):
-        self.layerTree.set_data(key, value)
-        self._layer_dict[key] = value
+        self.layerTree[key] = value
 
     def __contains__(self, obj):
-        return obj in self._layer_dict
+        return obj in self.layerTree
 
     def __len__(self):
-        return len(self._layer_dict)
+        return len(self.layerTree)
 
 
 def load_subset(subset):
@@ -658,4 +463,3 @@ def save_subset(subset):
         return
 
     subset.write_mask(file_name)
-

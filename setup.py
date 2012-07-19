@@ -51,6 +51,8 @@ class BuildQt(Command):
 
         import sys
         import subprocess
+        from shutil import copyfile
+
         print("Compiling glue/qt/glue.qrc")
         if sys.version_info[0] == 2:
             option = '-py2'
@@ -62,6 +64,10 @@ class BuildQt(Command):
             print("pyrcc4 command failed - make sure that pyrcc4 "
                   "is in your $PATH, or specify a custom command with "
                   "--pyrcc4=command")
+
+        #XXX Hack: pyuic seems to expect glue/qt/ui/glue_rc.py when
+        #loading icons. Copy it there
+        copyfile('glue/qt/glue_qt_resources.py', 'glue/qt/ui/glue_rc.py')
 
 
 cmdclass['build_qt'] = BuildQt

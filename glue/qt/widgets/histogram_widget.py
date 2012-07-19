@@ -18,14 +18,14 @@ class HistogramWidget(DataViewer):
         self.setCentralWidget(self.central_widget)
         self.ui = Ui_HistogramWidget()
         self.ui.setupUi(self.central_widget)
+        self.ui.layerTree.set_checkable(True)
         self.make_toolbar()
         self.client = HistogramClient(data,
                                       self.ui.mplWidget.canvas.ax)
-        self.ui.layerTree.data_collection = data
         self._connect()
         for d in data:
             self.add_data(d)
-
+        self._data = data
         self._tweak_geometry()
 
     def _tweak_geometry(self):
@@ -65,15 +65,19 @@ class HistogramWidget(DataViewer):
         self.client._apply_roi(roi)
 
     def _update_attributes(self, data=None):
-        data = data or self._current_data()
-        comps = data.components
         combo = self.ui.attributeCombo
+        combo.clear()
+
+        data = data or self._current_data()
+        if data is None:
+            return
+        comps = data.components
+
         try:
             combo.currentIndexChanged.disconnect()
         except TypeError:
             pass
 
-        combo.clear()
         for comp in comps:
             combo.addItem(comp.label, userData = comp)
 
@@ -88,8 +92,10 @@ class HistogramWidget(DataViewer):
         self.client.set_component(attribute)
 
     def _set_data_from_combo(self):
+        current = self._current_data()
         self._update_attributes()
-        self.client.set_data(self._current_data())
+        if current is not None:
+            self.client.set_data(current)
 
     def _current_data(self):
         combo = self.ui.dataCombo
@@ -97,6 +103,9 @@ class HistogramWidget(DataViewer):
         return layer
 
     def add_data(self, data):
+        """ Add data item to combo box.
+        If first addition, also update attributes """
+
         if self.data_present(data):
             return
 
@@ -106,7 +115,13 @@ class HistogramWidget(DataViewer):
         combo = self.ui.dataCombo
         combo.addItem(data.label, userData = data)
 
-        self.ui.layerTree.add_layer(data)
+    def _remove_data(self, data):
+        """ Remove data item from the combo box """
+        for i in range(self.ui.dataCombo.count()):
+            obj = self.ui.dataCombo.itemData(i)
+            if obj is data:
+                self.ui.dataCombo.removeItem(i)
+                return
 
     def _first_data(self):
         return self.ui.dataCombo.count() == 0
@@ -121,11 +136,17 @@ class HistogramWidget(DataViewer):
     def register_to_hub(self, hub):
         super(HistogramWidget, self).register_to_hub(hub)
         self.client.register_to_hub(hub)
-        self.ui.layerTree.register_to_hub(hub)
+        self.ui.layerTree.setup(self._data, hub)
+
         hub.subscribe(self,
                       msg.DataCollectionAddMessage,
                       handler=lambda x:self.add_data(x.data))
 
+        hub.subscribe(self,
+                      msg.DataCollectionDeleteMessage,
+                      handler=lambda x:self._remove_data(x.data))
+
     def unregister(self, hub):
-        for obj in [self.client, self.ui.layerTree, self]:
-            hub.unsubscribe_all(obj)
+        self.ui.layerTree.unregister(hub)
+        self.client.unregister(hub)
+        hub.unsubscribe_all(self)

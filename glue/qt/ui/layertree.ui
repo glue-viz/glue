@@ -26,7 +26,7 @@
       <number>2</number>
      </property>
      <item>
-      <widget class="GlueTreeWidget" name="layerTree">
+      <widget class="DataCollectionView" name="layerTree">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -211,9 +211,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>GlueTreeWidget</class>
+   <class>DataCollectionView</class>
    <extends>QTreeWidget</extends>
-   <header>..qtutil</header>
+   <header>..widgets.data_collection_view</header>
   </customwidget>
  </customwidgets>
  <resources>

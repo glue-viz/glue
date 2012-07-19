@@ -1,13 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+from ..core.message import DataCollectionAddMessage
 from ..core.client import Client
 from ..core.exceptions import IncompatibleAttribute
 from ..core.data import Data
 from ..core.subset import RoiSubsetState
 from ..core.roi import PolygonalROI
 from ..core.util import relim
-from ..core.edit_subset_mode import EditSubsetMode, OrMode
+from ..core.edit_subset_mode import EditSubsetMode
 
 class ScatterLayerManager(object):
 
@@ -113,6 +114,14 @@ class ScatterClient(Client):
                                 "belong to each other")
             ax = axes
         self.ax = ax
+
+    def register_to_hub(self, hub):
+        super(ScatterClient, self).register_to_hub(hub)
+        data_in_dc = lambda x:x.data in self._data
+        hub.subscribe(self,
+                      DataCollectionAddMessage,
+                      handler=lambda x:self.add_layer(x.data),
+                      filter=data_in_dc)
 
     def is_layer_present(self, layer):
         """ True if layer is plotted """

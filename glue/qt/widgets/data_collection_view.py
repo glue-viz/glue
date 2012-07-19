@@ -1,4 +1,4 @@
-from PyQt4.QtGui import (QTreeWidget, QTreeWidgetItem,
+from PyQt4.QtGui import (QTreeWidgetItem,
                          QPixmap, QTreeWidgetItemIterator, QIcon
                          )
 from PyQt4.QtCore import Qt
@@ -7,7 +7,7 @@ from .. import qtutil
 from ... import core
 
 
-class DataCollectionView(QTreeWidget, core.hub.HubListener):
+class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
     """ Passive view into a data collection.
 
     Uses hub messages to remain synced
@@ -20,7 +20,7 @@ class DataCollectionView(QTreeWidget, core.hub.HubListener):
     """
     # pylint: disable=R0904
     def __init__(self, parent=None):
-        QTreeWidget.__init__(self, parent)
+        qtutil.GlueTreeWidget.__init__(self, parent)
         core.hub.HubListener.__init__(self)
         self._data_collection = None
         self._hub = None
@@ -40,7 +40,8 @@ class DataCollectionView(QTreeWidget, core.hub.HubListener):
         self.register_to_hub(hub)
 
         for data in data_collection:
-            self._add_data(data)
+            self._add_data(data, check_sync=False)
+        self._assert_view_synced()
 
     @property
     def data_collection(self):
@@ -89,6 +90,7 @@ class DataCollectionView(QTreeWidget, core.hub.HubListener):
         return self._layer_dict[key]
 
     def __setitem__(self, key, value):
+        self.set_data(key, value) # for drag and drop
         self._layer_dict[key] = value
 
     def __contains__(self, key):
@@ -96,6 +98,9 @@ class DataCollectionView(QTreeWidget, core.hub.HubListener):
 
     def _pop(self, key):
         self._layer_dict.pop(key)
+
+    def __len__(self):
+        return len(self._layer_dict)
 
     def _add_data(self, data, check_sync=True):
         """ Add a new data object to the view
@@ -117,6 +122,7 @@ class DataCollectionView(QTreeWidget, core.hub.HubListener):
 
         self[data] = branch
         self[branch] = data
+        self.set_data(branch, data)
 
         for subset in data.subsets:
             self._add_subset(subset, check_sync=False)
@@ -140,13 +146,14 @@ class DataCollectionView(QTreeWidget, core.hub.HubListener):
             return
 
         label = subset.style.label
-
-        branch = QTreeWidgetItem(self, [label, '', '', ''])
+        parent = self[subset.data]
+        branch = QTreeWidgetItem(parent, [label, '', '', ''])
         if self.checkable:
             branch.setCheckState(0, Qt.Checked)
 
         self[subset] = branch
         self[branch] = subset
+        self.set_data(subset, subset)
 
         self._sync_layer(subset)
         if check_sync:
@@ -224,3 +231,6 @@ class DataCollectionView(QTreeWidget, core.hub.HubListener):
             iterator += 1
 
         assert layers_in_widget == layers_in_collection
+
+    def unregister(self, hub):
+        hub.unsubscribe_all(self)

@@ -365,7 +365,7 @@ class Data(object):
     def component_ids(self):
         return self._components.keys()
 
-    def new_subset(self, color=None, **kwargs):
+    def new_subset(self, color=None, label=None, **kwargs):
         """ Create a new subset, and attach to self.
 
         This is the preferred way for creating subsets, as it
@@ -377,7 +377,8 @@ class Data(object):
         """
         nsub = len(self.subsets)
         color = color or COLORS[nsub % len(COLORS)]
-        subset = Subset(self, color=color, **kwargs)
+        label = label or "%s.%i" % (self.label, nsub+1)
+        subset = Subset(self, color=color, label=label, **kwargs)
         self.add_subset(subset)
         return subset
 

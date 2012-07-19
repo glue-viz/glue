@@ -79,8 +79,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._hub.subscribe(self,
                             core.message.ErrorMessage,
                             handler=self._report_error)
-        self._ui.layerWidget.data_collection = self._data
-        self._ui.layerWidget.register_to_hub(self._hub)
+        self._ui.layerWidget.setup(self._data, self._hub)
         self._data.register_to_hub(self._hub)
         self._ui.terminal_button.clicked.connect(self._toggle_terminal)
 

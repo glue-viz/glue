@@ -240,6 +240,11 @@ class HistogramClient(Client):
     def _update_subset(self, message):
         self.sync_all()
 
+    def _add_data(self, message):
+        self.add_layer(message.data)
+        assert self.layer_present(message.data)
+        assert self.is_layer_visible(message.data)
+
     def _add_subset(self, message):
         self.add_layer(message.sender)
         assert self.layer_present(message.sender)
@@ -287,3 +292,7 @@ class HistogramClient(Client):
         hub.subscribe(self,
                       msg.DataCollectionDeleteMessage,
                       handler=self._remove_data)
+        hub.subscribe(self,
+                      msg.DataCollectionAddMessage,
+                      handler=self._add_data,
+                      filter=dcfilter)

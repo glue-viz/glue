@@ -110,3 +110,18 @@ class TestHistogramWidget(object):
         ct = self.widget.ui.dataCombo.count()
         self.widget.add_data(self.data)
         assert ct == self.widget.ui.dataCombo.count()
+
+
+    def test_remove_data(self):
+        """ should remove entry fom combo box """
+        hub = self.set_up_hub()
+        self.widget.add_data(self.data)
+        self.collect.remove(self.data)
+        assert not self.widget.data_present(self.data)
+
+    def test_remove_all_data(self):
+        hub = self.set_up_hub()
+        self.collect.append(core.Data())
+        for data in list(self.collect):
+            self.collect.remove(data)
+            assert not self.widget.data_present(self.data)

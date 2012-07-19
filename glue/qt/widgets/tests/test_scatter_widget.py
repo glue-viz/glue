@@ -39,8 +39,7 @@ class TestScatterWidget(object):
 
     def add_layer_via_method(self):
         layer = self.data[0]
-        self.collect.append(layer)
-        self.widget.add_layer(layer)
+        self.widget.add_data(layer)
         return layer
 
     def plot_data(self, layer):

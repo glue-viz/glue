@@ -22,7 +22,11 @@ class ScatterWidget(DataViewer):
         self.ui = Ui_ScatterWidget()
         self.ui.setupUi(self.central_widget)
         self._tweak_geometry()
-        self.client = ScatterClient(data,
+        #set up a clean data collection for scatter client
+        #lets us screen incoming data objects for size
+        self._clean_collection = core.DataCollection()
+        self._collection = data
+        self.client = ScatterClient(self._clean_collection,
                                     self.ui.mplWidget.canvas.fig,
                                     self.ui.mplWidget.canvas.ax)
         self._connect()
@@ -30,9 +34,10 @@ class ScatterWidget(DataViewer):
         self.make_toolbar()
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
+        self.ui.layerTree.set_checkable(True)
 
     def _tweak_geometry(self):
-        self.central_widget.resize(400,400)
+        self.central_widget.resize(400, 400)
         self.ui.splitter.setSizes([320, 150])
         self.resize(self.central_widget.size())
 
@@ -52,11 +57,11 @@ class ScatterWidget(DataViewer):
         ui.yAxisComboBox.currentIndexChanged.connect(self.update_yatt)
         ui.layerTree._layer_check_changed.connect(cl.set_visible)
         ui.layerTree.layerAddButton.pressed.disconnect()
-        ui.layerTree.layerAddButton.released.connect(self._add_data)
+        ui.layerTree.layerAddButton.released.connect(self._choose_add_data)
         ui.layerTree.linkButton.hide()
 
-    def _add_data(self):
-        choices = dict([(d.label, d) for d in self._data])
+    def _choose_add_data(self):
+        choices = dict([(d.label, d) for d in self._collection])
         dialog = QtGui.QInputDialog()
         choice, isok = dialog.getItem(self, "Data Chooser | Scatter Plot",
                                       "Choose a data set to add",
@@ -64,7 +69,7 @@ class ScatterWidget(DataViewer):
         if not isok:
             return
         data = choices[str(choice)]
-        self.add_layer(data)
+        self.add_data(data)
 
     def make_toolbar(self):
         result = GlueToolbar(self.ui.mplWidget.canvas, self,
@@ -98,40 +103,31 @@ class ScatterWidget(DataViewer):
             self.unique_fields.add(lid)
 
     def add_data(self, data):
-        self.add_layer(data)
-
-    def add_layer(self, layer):
-        if layer.data is layer and layer.data.size > WARN_SLOW and \
-           not self._confirm_large_data(layer.data):
+        if data in self._clean_collection:
             return
 
-        if layer in self.ui.layerTree:
+        if data.size > WARN_SLOW and \
+           not self._confirm_large_data(data):
             return
 
-        first_layer = self._empty()
-
-        self.ui.layerTree.add_layer(layer)
-        self.client.add_layer(layer)
-        self.update_combos(layer)
-
-        for sub in layer.data.subsets:
-            self.ui.layerTree.add_layer(sub)
+        first_layer = len(self._clean_collection) == 0
+        self._clean_collection.append(data)
+        self.update_combos(data)
 
         if first_layer:  # forces both x and y axes to be rescaled
             self.update_xatt(None)
             self.update_yatt(None)
 
-    def _empty(self):
-        return len(self.ui.layerTree) == 0
-
     def register_to_hub(self, hub):
         super(ScatterWidget, self).register_to_hub(hub)
+        self.ui.layerTree.setup(self._clean_collection, hub)
+        self._clean_collection.register_to_hub(hub)
         self.client.register_to_hub(hub)
-        self.ui.layerTree.register_to_hub(hub)
 
     def unregister(self, hub):
-        hub.unsubscribe_all(self.ui.layerTree)
+        self.ui.layerTree.unregister(hub)
         hub.unsubscribe_all(self.client)
+        hub.unsubscribe_all(self._clean_collection)
 
     def update_xatt(self, index):
         combo = self.ui.xAxisComboBox

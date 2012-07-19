@@ -1,5 +1,6 @@
 from PyQt4.QtGui import QApplication
 
+from ....core import Hub
 from ....core.data_collection import DataCollection
 from ..data_viewer import DataViewer
 from ..histogram_widget import HistogramWidget
@@ -20,7 +21,7 @@ def teardown_module(module):
 @pytest.mark.parametrize(('widget'), ALL_WIDGETS)
 def test_unregister_on_close(widget):
     unreg = MagicMock()
-    hub = MagicMock()
+    hub = Hub()
     collect = DataCollection()
     w = widget(collect)
     w.unregister = unreg
