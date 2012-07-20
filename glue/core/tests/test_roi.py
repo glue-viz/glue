@@ -7,7 +7,7 @@ from mock import MagicMock
 
 from ..roi import RectangularROI, UndefinedROI, CircularROI, PolygonalROI, \
                   MplCircularROI, MplRectangularROI, MplPolygonalROI
-                 
+
 from .. import roi as r
 
 AXES = plt.plot([1,2,3])[0].axes
@@ -280,13 +280,13 @@ class TestMpl(object):
         raise NotImplemented
 
     def test_start_ignored_if_not_inaxes(self):
-        ev = DummyEvent(0, 0, inaxes=False)
+        ev = DummyEvent(0, 0, inaxes=None)
         self.roi.start_selection(ev)
         assert not self.roi._roi.defined()
 
     def test_canvas_syncs_properly(self):
         assert self.axes.figure.canvas.draw.call_count == 1
-        event = DummyEvent(5, 5)
+        event = DummyEvent(5, 5, inaxes=self.axes)
         self.roi.start_selection(event)
         assert self.axes.figure.canvas.draw.call_count == 2
         self.roi.update_selection(event)
@@ -298,12 +298,12 @@ class TestMpl(object):
 
     def test_patch_shown_on_start(self):
         assert not self.roi._patch.get_visible()
-        event = DummyEvent(5, 5)
+        event = DummyEvent(5, 5, inaxes=self.axes)
         self.roi.start_selection(event)
         assert self.roi._patch.get_visible()
 
     def test_patch_hidden_on_finalise(self):
-        event = DummyEvent(5, 5)
+        event = DummyEvent(5, 5, inaxes=self.axes)
         self.roi.start_selection(event)
         self.roi.finalize_selection(event)
         assert not self.roi._patch.get_visible()
@@ -317,7 +317,7 @@ class TestMpl(object):
         assert not self.roi._roi.defined()
 
     def test_roi_defined_after_start(self):
-        event = DummyEvent(5, 5)
+        event = DummyEvent(5, 5, inaxes=self.axes)
         self.roi.start_selection(event)
         assert self.roi._roi.defined()
 
@@ -355,35 +355,35 @@ class TestRectangleMpl(TestMpl):
         assert isinstance(self.roi._roi, RectangularROI)
 
     def test_roi_on_start_selection(self):
-        event = DummyEvent(5, 5)
+        event = DummyEvent(5, 5, inaxes=self.axes)
         self.roi.start_selection(event)
         self.assert_roi_correct(5, 5, 5, 5)
 
     def test_patch_on_start_selection(self):
-        event = DummyEvent(5, 5)
+        event = DummyEvent(5, 5, inaxes=self.axes)
         self.roi.start_selection(event)
         self.assert_patch_correct(5, 5, 5, 5)
 
     def test_update_selection(self):
-        event = DummyEvent(5, 6)
+        event = DummyEvent(5, 6, inaxes=self.axes)
         self.roi.start_selection(event)
-        event = DummyEvent(10, 11)
+        event = DummyEvent(10, 11, inaxes=self.axes)
         self.roi.update_selection(event)
         self.assert_roi_correct(5, 10, 6, 11)
         self.assert_patch_correct(5, 10, 6, 11)
 
     def test_finalize_selection(self):
-        event = DummyEvent(5, 6)
+        event = DummyEvent(5, 6, inaxes=self.axes)
         self.roi.start_selection(event)
-        event = DummyEvent(10, 11)
+        event = DummyEvent(10, 11, inaxes=self.axes)
         self.roi.update_selection(event)
         self.roi.finalize_selection(event)
         self.assert_roi_correct(5, 10, 6, 11)
         self.assert_patch_correct(5, 10, 6, 11)
 
     def test_define_roi_to_right(self):
-        ev0 = DummyEvent(0.5, 0.5)
-        ev1 = DummyEvent(1, 1)
+        ev0 = DummyEvent(0.5, 0.5, inaxes=self.axes)
+        ev1 = DummyEvent(1, 1, inaxes=self.axes)
         self.roi.start_selection(ev0)
         self.roi.update_selection(ev1)
         self.roi.finalize_selection(ev1)
@@ -392,8 +392,8 @@ class TestRectangleMpl(TestMpl):
         self.assert_patch_correct(.5, 1, .5, 1)
 
     def test_define_roi_to_left(self):
-        ev0 = DummyEvent(1, 1)
-        ev1 = DummyEvent(0.5, 0.5)
+        ev0 = DummyEvent(1, 1, inaxes=self.axes)
+        ev1 = DummyEvent(0.5, 0.5, inaxes=self.axes)
         self.roi.start_selection(ev0)
         self.roi.update_selection(ev1)
         self.roi.finalize_selection(ev1)
@@ -429,8 +429,8 @@ class TestCircleMpl(TestMpl):
         assert not roi.defined()
 
     def test_roi_defined_correctly(self):
-        ev0 = DummyEvent(0, 0)
-        ev1 = DummyEvent(5, 0)
+        ev0 = DummyEvent(0, 0, inaxes=self.axes)
+        ev1 = DummyEvent(5, 0, inaxes=self.axes)
         self.roi.start_selection(ev0)
         self.roi.update_selection(ev1)
         self.roi.finalize_selection(ev1)
@@ -456,10 +456,10 @@ class TestPolyMpl(TestMpl):
         plt.close('all')
 
     def send_events(self):
-        ev0 = DummyEvent(0, 0)
-        ev1 = DummyEvent(0, 1)
-        ev2 = DummyEvent(1, 1)
-        ev3 = DummyEvent(1, 0)
+        ev0 = DummyEvent(0, 0, inaxes=self.axes)
+        ev1 = DummyEvent(0, 1, inaxes=self.axes)
+        ev2 = DummyEvent(1, 1, inaxes=self.axes)
+        ev3 = DummyEvent(1, 0, inaxes=self.axes)
         self.roi.start_selection(ev0)
         self.roi.update_selection(ev1)
         self.roi.update_selection(ev2)

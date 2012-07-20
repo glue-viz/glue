@@ -386,7 +386,7 @@ class MplRectangularROI(AbstractMplRoi):
         return RectangularROI()
 
     def start_selection(self, event):
-        if not (event.inaxes):
+        if event.inaxes != self._ax:
             return
 
         self._roi.reset()
@@ -399,7 +399,7 @@ class MplRectangularROI(AbstractMplRoi):
         self._sync_patch()
 
     def update_selection(self, event):
-        if not self._mid_selection:
+        if not self._mid_selection or event.inaxes != self._ax:
             return
 
         self._roi.update_limits(min(event.xdata, self._xi),
@@ -490,7 +490,7 @@ class MplCircularROI(AbstractMplRoi):
         self._ax.figure.canvas.draw()
 
     def start_selection(self, event):
-        if not (event.inaxes):
+        if event.inaxes != self._ax:
             return
 
         xy = data_to_pixel(self._ax, [event.xdata], [event.ydata])
@@ -503,7 +503,7 @@ class MplCircularROI(AbstractMplRoi):
         self._sync_patch()
 
     def update_selection(self, event):
-        if not self._mid_selection:
+        if not self._mid_selection or event.inaxes != self._ax:
             return
 
         xy = data_to_pixel(self._ax, [event.xdata], [event.ydata])
@@ -579,7 +579,7 @@ class MplPolygonalROI(AbstractMplRoi):
         self._ax.figure.canvas.draw()
 
     def start_selection(self, event):
-        if not (event.inaxes):
+        if event.inaxes != self._ax:
             return
 
         self._roi.reset()
@@ -588,7 +588,7 @@ class MplPolygonalROI(AbstractMplRoi):
         self._sync_patch()
 
     def update_selection(self, event):
-        if not self._mid_selection or not event.inaxes:
+        if not self._mid_selection or event.inaxes != self._ax:
             return
         self._roi.add_point(event.xdata, event.ydata)
         self._sync_patch()
