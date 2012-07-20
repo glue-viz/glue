@@ -1,5 +1,48 @@
 from .hub import HubListener
 from .message import SubsetUpdateMessage
+from .message import LiveLinkAddMessage
+from .message import LiveLinkDeleteMessage
+
+class LiveLinkManager(object):
+    """ A collection to create, store, and remove LiveLinks
+
+    Broadcasts LiveLinkAddMessage and LiveLinkDeleteMessage
+    """
+
+    def __init__(self, hub=None):
+        self.hub = hub
+        self._links = []
+
+    @property
+    def links(self):
+        return self._links
+
+    def add_link_between(self, *subsets):
+        """ Create a LiveLInk for the input :clsss:`~glue.core.Subset` objects,
+        and add to manager
+        """
+        if self.hub is None:
+            raise TypeError("Hub attribute is null -- cannot create links")
+
+        result = LiveLink(subsets)
+        result.register_to_hub(self.hub)
+        self._links.append(result)
+        msg = LiveLinkAddMessage(self, result)
+        self.hub.broadcast(msg)
+        return result
+
+    def remove_links_from(self, subset):
+        """ Find remove, and unregister all LiveLinks involving subset """
+        if self.hub is None:
+            raise TypeError("hub attribute is None. Cannot delete links")
+
+        for link in list(self._links):
+            if subset in link.subsets:
+                self._links.remove(link)
+                link.unregister(self.hub)
+                msg = LiveLinkDeleteMessage(self, link)
+                self.hub.broadcast(msg)
+
 
 class LiveLink(HubListener):
     """ An object to keep subsets in sync """
@@ -13,6 +56,10 @@ class LiveLink(HubListener):
         super(LiveLink, self).__init__()
         self._subsets = subsets
         self._listen = True
+
+    @property
+    def subsets(self):
+        return self._subsets
 
     def register_to_hub(self, hub):
         """
@@ -39,7 +86,7 @@ class LiveLink(HubListener):
         for subset in self._subsets:
             if subset is reference:
                 continue
-            subset.subset_state = state
+            subset.subset_state = state.copy()
             subset.style = style
 
 

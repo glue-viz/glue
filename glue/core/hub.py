@@ -183,5 +183,9 @@ class HubListener(object):
     def register_to_hub(self, hub):
         raise NotImplementedError
 
+    def unregister(self, hub):
+        """ Default unregistration action. Calls hub.unsubscribe_all on self"""
+        hub.unsubscribe_all(self)
+
     def notify(self, message):
         raise NotImplementedError("Message has no handler: %s" % message)
