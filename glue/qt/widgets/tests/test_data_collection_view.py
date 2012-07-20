@@ -8,6 +8,7 @@ def setup_module(module):
     module.app = QApplication([''])
 
 def teardown_module(module):
+    module.app.exit()
     del module.app
 
 class Printer(core.hub.HubListener):

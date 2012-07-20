@@ -2,7 +2,6 @@
 Class which embellishes the DataCollectionView with buttons and actions for
 editing the data collection
 """
-
 from PyQt4.QtGui import QWidget, QTreeWidgetItem, QPixmap, QIcon
 from PyQt4.QtGui import QAction, QKeySequence, QFileDialog, QTreeWidgetItemIterator
 

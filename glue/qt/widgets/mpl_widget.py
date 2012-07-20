@@ -58,13 +58,3 @@ class MplWidget(QtGui.QWidget):
 
         self.canvas.rightDrag.connect(self.rightDrag)
         self.canvas.leftDrag.connect(self.leftDrag)
-
-if __name__ == "__main__":
-    import sys
-
-    app = QtGui.QApplication(sys.argv)
-    win = QtGui.QMainWindow()
-    m = MplWidget()
-    win.setCentralWidget(m)
-    win.show()
-    sys.exit(app.exec_())

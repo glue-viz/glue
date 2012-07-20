@@ -1,5 +1,3 @@
-import sys
-
 from PyQt4.QtGui import QApplication, QMainWindow
 from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt
@@ -9,11 +7,16 @@ from ..scatter_widget import ScatterWidget
 from ....tests import example_data
 from .... import core
 
+def setup_module(module):
+    module.app = QApplication([''])
+
+def teardown_module(module):
+    module.app.exit()
+    del module.app
 
 class TestScatterWidget(object):
 
     def setup_method(self, method):
-        self.app = QApplication(sys.argv)
         self.hub = core.hub.Hub()
         self.data = example_data.test_data()
         self.collect = core.data_collection.DataCollection()
@@ -23,10 +26,9 @@ class TestScatterWidget(object):
         self.connect_to_hub()
         self.win.show()
 
-    def tearDown(self):
+    def teardown_method(self, method):
         self.win.close()
         del self.win
-        del self.app
 
     def connect_to_hub(self):
         self.widget.register_to_hub(self.hub)

@@ -97,9 +97,21 @@ class ImageWidget(DataViewer):
             self.add_data(d)
 
     def add_data(self, data):
+        """Overriden from DataViewer. Add data to widget"""
+        self.add_data_to_combo(data)
+        #client should already be in sync
+
+    def add_data_to_combo(self, data):
+        """ Add a data object to the combo box, if not already present
+        """
         if not self.client.can_handle_data(data):
             return
-        self.ui.displayDataCombo.addItem(data.label, userData=data)
+        combo = self.ui.displayDataCombo
+        label = data.label
+        pos = combo.findText(label)
+        if pos == -1:
+            combo.addItem(label, userData=data)
+        assert combo.findText(label) >= 0
 
     def set_data(self, index):
         if self.ui.displayDataCombo.count() == 0:
@@ -128,6 +140,7 @@ class ImageWidget(DataViewer):
         self.ui.attributeComboBox.setCurrentIndex(index)
 
     def set_attribute_combo(self, data):
+        """ Update attribute combo box to reflect components in data"""
         combo = self.ui.attributeComboBox
         combo.currentIndexChanged.disconnect(self.set_attribute)
         combo.clear()
@@ -167,23 +180,23 @@ class ImageWidget(DataViewer):
 
         hub.subscribe(self,
                       core.message.DataCollectionAddMessage,
-                      handler=lambda x: self.add_data(x.data),
+                      handler=lambda x: self.add_data_to_combo(x.data),
                       filter=dc_filt)
         hub.subscribe(self,
                       core.message.DataCollectionDeleteMessage,
-                      handler=lambda x: self.remove_data(x.data),
+                      handler=lambda x: self.remove_data_from_combo(x.data),
                       filter=dc_filt)
 
     def unregister(self, hub):
         for obj in [self, self.client]:
             hub.unsubscribe_all(obj)
 
-    def remove_data(self, data):
+    def remove_data_from_combo(self, data):
+        """ Remvoe a data object from the combo box, if present """
         combo = self.ui.displayDataCombo
-        for item in range(combo.count()):
-            if combo.itemData(item) is data:
-                combo.removeItem(item)
-                break
+        pos = combo.findText(data.label)
+        if pos >= 0:
+            combo.removeItem(pos)
 
     def _set_norm(self, mode):
         """ Use the `ContrastMouseMode` to adjust the transfer function """

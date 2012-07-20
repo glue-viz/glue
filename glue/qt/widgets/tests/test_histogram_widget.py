@@ -9,6 +9,13 @@ from ....clients.histogram_client import HistogramClient
 from .... import core
 from ....tests import example_data
 
+def setup_module(module):
+    module.app = QApplication([''])
+
+def teardown_module(module):
+    module.app.exit()
+    del module.app
+
 class TestHistogramWidget(object):
     def setup_method(self, method):
         self.data = self.mock_data()
@@ -23,12 +30,6 @@ class TestHistogramWidget(object):
 
     def teardown_method(self, method):
         del self.widget
-
-    def setup_class(self):
-        self.app = QApplication(sys.argv)
-
-    def teardown_class(self):
-        del self.app
 
     def set_dummy_attributes(self):
         combo = self.widget.ui.attributeCombo

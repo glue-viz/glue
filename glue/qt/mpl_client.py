@@ -109,13 +109,3 @@ class ScatterApplication(QtGui.QMainWindow, Ui_MainWindow):
 
     def close_event(self, ce):
         self.file_quit()
-
-qApp = QtGui.QApplication(sys.argv)
-
-import atpy
-t = atpy.Table('aj285677t3_votable.xml')
-
-aw = ScatterApplication(t)
-aw.show()
-
-sys.exit(qApp.exec_())

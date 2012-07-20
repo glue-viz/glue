@@ -6,6 +6,13 @@ from numpy.testing import assert_almost_equal
 from ..mouse_mode import MouseMode, RectangleMode, CircleMode, PolyMode, \
                          ContrastMode, ContourMode, contour_to_roi
 
+def setup_module(module):
+    module.app = PyQt4.QtGui.QApplication([''])
+
+def teardown_module(module):
+    module.app.exit()
+    del module.app
+
 class Event(object):
     def __init__(self, x, y, button=3):
         self.x = x
@@ -22,10 +29,6 @@ def axes():
 
 
 class TestMouseMode(object):
-
-    @classmethod
-    def setup_class(cls):
-        cls.app = PyQt4.QtGui.QApplication([''])
 
     def setup_method(self, method):
         self.mode = self.mode_factory()(axes())
