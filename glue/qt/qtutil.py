@@ -99,7 +99,7 @@ def edit_layer_label(layer):
     dialog = QInputDialog()
     label, isok = dialog.getText(None, 'New Label:', 'New Label:')
     if isok:
-        layer.style.label = str(label)
+        layer.label = str(label)
 
 def pick_class(classes, title="Item picker", label = "Pick an item"):
     """Prompt the user to pick from a list of classes using QT

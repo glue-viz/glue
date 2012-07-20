@@ -40,11 +40,11 @@ class Subset(object):
         self._broadcasting = False  # must be first def
         self.data = data
         self.color = color
+        self._label = label
         self.style = VisualAttributes(parent=self)
         self.style.markersize *= 2.5
         self.style.color = color
         self.style.alpha = alpha
-        self.style.label = label
         self._subset_state = None
         self.subset_state = SubsetState()  # calls proper setter method
 
@@ -60,7 +60,11 @@ class Subset(object):
     @property
     def label(self):
         """ Convenience access to subset's label """
-        return self.style.label
+        return self._label
+
+    @label.setter
+    def label(self, value):
+        self._label = value
 
     def register(self):
         """ Register a subset to its data, and start broadcasting

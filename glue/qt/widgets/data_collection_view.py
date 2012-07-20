@@ -145,7 +145,7 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
             self._add_data(subset.data) # will add subset too
             return
 
-        label = subset.style.label
+        label = subset.label
         parent = self[subset.data]
         branch = QTreeWidgetItem(parent, [label, '', '', ''])
         if self.checkable:
@@ -173,16 +173,29 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         pixm = QPixmap(20, 20)
         pixm.fill(qtutil.mpl_to_qt4_color(style.color))
         widget_item.setIcon(1, QIcon(pixm))
-        marker = style.marker
         size = style.markersize
-        label = style.label
+        label = layer.label
 
         widget_item.setText(0, label)
-        widget_item.setText(2, marker)
         widget_item.setText(3, "%i" % size)
         ncol = self.columnCount()
         for i in range(ncol):
             self.resizeColumnToContents(i)
+
+    def _sync_live_link_view(self, link):
+        return
+        mgr = self._data_collection.live_link_manager
+        links = mgr.links
+        colors = [core.visual.LIGHT_BLUE,
+                  core.visual.LIGHT_PURPLE,
+                  core.visual.LIGHT_ORANGE]
+        colors = [colors[i % len(colors)] for i in range(len(links))]
+        pos = defaultdict(list)
+        for i in range(len(links)):
+            for s in links[i].subsets:
+                pos[s].append(i)
+        for item in self.items():
+            item.setText(2, ",".join(map(str, pos[s])))
 
     def _remove_layer(self, layer, check_sync=True):
         """ Remove a data or subset from the layer tree.

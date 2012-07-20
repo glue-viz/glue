@@ -46,7 +46,6 @@ class VisualAttributes(object):
 
         self.marker = 'o'
         self.markersize = 40
-        self.label = None
 
         self.parent = parent
 
@@ -74,7 +73,7 @@ class VisualAttributes(object):
 
         # Check that the attribute exists (don't allow new attributes)
         allowed = set(['color', 'linewidth', 'linestyle',
-                       'alpha', 'parent', 'marker', 'markersize', 'label'])
+                       'alpha', 'parent', 'marker', 'markersize'])
         if attribute not in allowed:
             raise Exception("Attribute %s does not exist" % attribute)
 

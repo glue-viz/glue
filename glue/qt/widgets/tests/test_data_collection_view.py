@@ -77,7 +77,7 @@ class TestDataCollectionView(object):
     def test_update_subset_label(self):
         self.collect.append(self.data)
         subset = self.data.edit_subset
-        subset.style.label = "testing"
+        subset.label = "testing"
         item = self.get_item(subset)
         assert item.text(0) == "testing"
 

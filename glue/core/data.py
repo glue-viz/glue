@@ -158,9 +158,8 @@ class Data(object):
 
         self._coordinate_links = None
 
-        self.style.label = label
-
         self.data = self
+        self._label = label
 
         # The default-editable subset
         self.edit_subset = self.new_subset(label="Editable Subset")
@@ -176,12 +175,13 @@ class Data(object):
     @property
     def label(self):
         """ Convenience access to data set's label """
-        return self.style.label
+        return self._label
 
     @label.setter
     def label(self, value):
         """ Set the label to value """
-        self.style.label = value
+        self._label = value
+        self.broadcast(attribute='label')
 
     @property
     def size(self):
