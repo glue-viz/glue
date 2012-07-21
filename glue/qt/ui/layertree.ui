@@ -119,7 +119,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="newSubsetButton">
+        <widget class="GlueActionButton" name="newSubsetButton">
          <property name="font">
           <font>
            <pointsize>11</pointsize>

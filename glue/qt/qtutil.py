@@ -216,7 +216,8 @@ class GlueTreeWidget(GlueItemView, QTreeWidget):
     pass
 
 class GlueActionButton(QPushButton):
-    def set_action(self, action):
+    def set_action(self, action, text=True):
+        self._text = text
         self._action = action
         self.clicked.connect(action.trigger)
         action.changed.connect(self._sync_to_action)
@@ -224,7 +225,8 @@ class GlueActionButton(QPushButton):
 
     def _sync_to_action(self):
         self.setIcon(self._action.icon())
-        self.setText(self._action.text())
+        if self._text:
+            self.setText(self._action.text())
         self.setToolTip(self._action.toolTip())
         self.setWhatsThis(self._action.whatsThis())
         self.setEnabled(self._action.isEnabled())

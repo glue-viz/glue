@@ -75,6 +75,7 @@ class LayerAction(QAction):
 class NewAction(LayerAction):
     _title = "New Subset"
     _tooltip = "Create a new subset for the selected data"
+    _icon = ":icons/glue_subset.png"
     _shortcut = 'Ctrl+Shift+N'
 
     def _can_trigger(self):
@@ -425,6 +426,8 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
         self.layerAddButton.pressed.connect(self._load_data)
         self.layerRemoveButton.pressed.connect(self._actions['delete'].trigger)
         self.linkButton.set_action(self._actions['link'])
+        self.newSubsetButton.set_action(self._actions['new'], text=False)
+
         rbut = self.layerRemoveButton
         def update_enabled():
             return rbut.setEnabled(self._actions['delete'].isEnabled())
