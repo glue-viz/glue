@@ -1,7 +1,9 @@
 __all__ = ['ComponentLink']
 
+
 def identity(x):
     return x
+
 
 class ComponentLink(object):
     """ ComponentLinks represent transformation logic between ComponentIDs
@@ -103,3 +105,26 @@ class ComponentLink(object):
 
     def __repr__(self):
         return str(self)
+
+
+class BinaryComponentLink(ComponentLink):
+    ##XXX add support for ComponentLinks
+    def __init__(self, left, right, op):
+        from .data import ComponentID
+        from_ = []
+        if isinstance(left, ComponentID):
+            from_.append(left)
+        if isinstance(right, ComponentID):
+            from_.append(right)
+        if len(from_) == 0:
+            raise TypeError("Cannot create BinaryComponentLink from inputs: "
+                            "%s, %s" % (left, right))
+        if len(from_) == 2:
+            using = op
+        elif isinstance(left, ComponentID):
+            using = lambda x: op(x, right)
+        else:
+            assert isinstance(right, ComponentID)
+            using = lambda x: op(left, x)
+
+        super(BinaryComponentLink, self).__init__(from_, None, using)

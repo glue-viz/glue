@@ -150,8 +150,11 @@ class TestData(object):
         self.data.add_component(comp, compid)
 
         pricomps = self.data.primary_components
+        print self.comp_id, compid, pricomps
+        print self.comp_id in pricomps
+        print compid not in pricomps
         assert self.comp_id in pricomps
-        assert not compid in pricomps
+        assert compid not in pricomps
 
     def test_add_component_invalid_label(self):
         with pytest.raises(TypeError) as exc:
@@ -181,7 +184,7 @@ class TestData(object):
         self.data.add_component(comp, compid)
 
         pricomps = self.data.derived_components
-        assert not self.comp_id in pricomps
+        assert self.comp_id not in pricomps
         assert compid in pricomps
 
     def test_str_empty(self):

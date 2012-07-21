@@ -1,4 +1,3 @@
-from collections import defaultdict
 from PyQt4.QtGui import (QTreeWidgetItem,
                          QPixmap, QTreeWidgetItemIterator, QIcon
                          )
@@ -111,7 +110,9 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         """ Add a new data object to the view
 
         :param data: new data object.
-        :param check_sync: If true, will assert the view is synced at end of method
+
+        :param check_sync: If true, will assert the view is synced at
+        end of method
         """
 
         self._assert_in_collection(data)
@@ -140,7 +141,8 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         """ Add a new subset to the view.
 
         :param subset: new subset object.
-        :param check_sync: If true, will assert the view is synced at end of method
+        :param check_sync: If true, will assert the view is synced
+        at end of method
         """
         self._assert_in_collection(subset)
         if subset in self:

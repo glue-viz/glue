@@ -1,3 +1,4 @@
+import operator
 import numpy as np
 import pyfits
 
@@ -253,6 +254,7 @@ class RoiSubsetState(SubsetState):
 
 class RangeSubsetState(SubsetState):
     def __init__(self, lo, hi, att=None):
+        super(RangeSubsetState, self).__init__()
         self.lo = lo
         self.hi = hi
         self.att = att
@@ -309,3 +311,51 @@ class ElementSubsetState(SubsetState):
         if self._indices is not None:
             result.flat[self._indices] = True
         return result
+
+class InequalitySubsetState(SubsetState):
+    def __init__(self, left, right, op):
+        super(InequalitySubsetState, self).__init__()
+        from .data import ComponentID
+        valid_ops = [operator.gt, operator.ge, operator.eq,
+                     operator.lt, operator.le]
+        if op not in valid_ops:
+            raise TypeError("Invalid boolean operator: %s" % op)
+        if not isinstance(left, ComponentID) and not \
+            operator.isNumberType(left):
+            raise TypeError("Input must be ComponenID or NumberType: %s"
+                            % type(left))
+        if not isinstance(right, ComponentID) and not \
+            operator.isNumberType(right):
+            raise TypeError("Input must be ComponenID or NumberType: %s"
+                            % type(right))
+        self._left = left
+        self._right = right
+        self._operator = op
+
+    @property
+    def left(self):
+        return self._left
+
+    @property
+    def right(self):
+        return self._right
+
+    @property
+    def operator(self):
+        return self._operator
+
+    @memoize
+    def to_mask(self):
+        from .data import ComponentID
+        left = self._left
+        if isinstance(self._left, ComponentID):
+            left = self.parent.data[self._left]
+
+        right = self._right
+        if isinstance(self._right, ComponentID):
+            right = self.parent.data[self._right]
+
+        return self._operator(left, right)
+
+    def copy(self):
+        return InequalitySubsetState(self._left, self._right, self._operator)

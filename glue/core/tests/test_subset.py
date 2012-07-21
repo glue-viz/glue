@@ -330,3 +330,5 @@ class TestCompositeSubsetStateCopy(object):
 
     def test_xor(self):
         self.assert_composite_copy(XorState)
+
+

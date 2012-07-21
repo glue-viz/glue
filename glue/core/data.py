@@ -1,3 +1,5 @@
+import operator
+
 import numpy as np
 import atpy
 import pyfits
@@ -7,8 +9,8 @@ from .coordinates import Coordinates, coordinates_from_header
 from .visual import VisualAttributes
 from .visual import RED, GREEN, BLUE, YELLOW, BROWN, ORANGE, PURPLE, PINK
 from .exceptions import IncompatibleAttribute
-from .component_link import ComponentLink
-from .subset import Subset
+from .component_link import ComponentLink, BinaryComponentLink
+from .subset import Subset, InequalitySubsetState
 from .hub import Hub
 from .tree import Tree
 from .message import DataUpdateMessage, \
@@ -47,6 +49,44 @@ class ComponentID(object):
     def __repr__(self):
         return str(self._label)
 
+    def __gt__(self, other):
+        return InequalitySubsetState(self, other, operator.gt)
+
+    def __ge__(self, other):
+        return InequalitySubsetState(self, other, operator.ge)
+
+    def __lt__(self, other):
+        return InequalitySubsetState(self, other, operator.lt)
+
+    def __le__(self, other):
+        return InequalitySubsetState(self, other, operator.le)
+
+    def __add__(self, other):
+        return BinaryComponentLink(self, other, operator.add)
+
+    def __radd__(self, other):
+        return BinaryComponentLink(other, self, operator.add)
+
+    def __sub__(self, other):
+        return BinaryComponentLink(self, other, operator.sub)
+
+    def __rsub__(self, other):
+        return BinaryComponentLink(other, self, operator.sub)
+
+    def __mul__(self, other):
+        return BinaryComponentLink(self, other, operator.mul)
+
+    def __rmul__(self, other):
+        return BinaryComponentLink(other, self, operator.mul)
+
+    def __div__(self, other):
+        return BinaryComponentLink(self, other, operator.div)
+
+    def __rdiv__(self, other):
+        return BinaryComponentLink(other, self, operator.div)
+
+    def __pow__(self, other):
+        return BinaryComponentLink(self, other, operator.pow)
 
 class Component(object):
     """ Stores the actual, numerical information for a particular quantity
@@ -253,7 +293,7 @@ class Data(object):
 
         return component_id
 
-    def add_component_link(self, link):
+    def add_component_link(self, link, cid=None):
         """ Shortcut method for generating a new DerivedComponent
         from a ComponentLink object, and adding it to a data set.
 
@@ -263,6 +303,15 @@ class Data(object):
 
             The DerivedComponent that was added
         """
+        if cid is not None:
+            if type(cid) is str:
+                cid = ComponentID(cid)
+            link = ComponentLink(link.get_from_ids(), cid, link.get_using())
+
+        if link.get_to_id() is None:
+            raise TypeError("Cannot add component_link: "
+                            "has no 'to' ComponentID")
+
         dc = DerivedComponent(self, link)
         to_ = link.get_to_id()
         self.add_component(dc, to_)
