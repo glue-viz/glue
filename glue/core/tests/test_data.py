@@ -10,7 +10,7 @@ from ..exceptions import IncompatibleAttribute
 from ..component_link import ComponentLink
 from ..coordinates import WCSCoordinates, WCSCubeCoordinates
 from ...tests import example_data
-
+from ..registry import Registry
 
 class TestCoordinates(Coordinates):
 
@@ -25,6 +25,7 @@ class TestData(object):
 
     def setup_method(self, method):
         self.data = Data(label="Test Data")
+        Registry().clear()
         comp = MagicMock()
         comp.data.shape = (2, 3)
         comp.shape = (2, 3)

@@ -13,6 +13,7 @@ from .component_link import ComponentLink, BinaryComponentLink
 from .subset import Subset, InequalitySubsetState
 from .hub import Hub
 from .tree import Tree
+from .registry import Registry
 from .message import DataUpdateMessage, \
                      DataAddComponentMessage, \
                      SubsetCreateMessage, \
@@ -199,7 +200,8 @@ class Data(object):
         self._coordinate_links = None
 
         self.data = self
-        self._label = label
+        self._label = None
+        self.label = label # trigger disambiguation
 
         # The default-editable subset
         self.edit_subset = self.new_subset(label="Editable Subset")
@@ -219,7 +221,12 @@ class Data(object):
 
     @label.setter
     def label(self, value):
-        """ Set the label to value """
+        """ Set the label to value
+
+        Each data label in a glue session must be unique. The input
+        will be auto-disambiguated if necessary
+        """
+        value = Registry().register(self, value, group=Data)
         self._label = value
         self.broadcast(attribute='label')
 

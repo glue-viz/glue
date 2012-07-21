@@ -111,3 +111,4 @@ def test_pow_scalar():
     cid = ComponentID('test')
     result = cid ** 3
     check_link(result, cid, 3)
+

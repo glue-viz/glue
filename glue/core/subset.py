@@ -5,6 +5,7 @@ import pyfits
 from .visual import VisualAttributes, RED
 from .decorators import memoize
 from .message import SubsetDeleteMessage, SubsetUpdateMessage
+from .registry import Registry
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState',
@@ -41,7 +42,8 @@ class Subset(object):
         self._broadcasting = False  # must be first def
         self.data = data
         self.color = color
-        self._label = label
+        self._label = None
+        self.label = label # trigger disambiguation
         self.style = VisualAttributes(parent=self)
         self.style.markersize *= 2.5
         self.style.color = color
@@ -65,6 +67,12 @@ class Subset(object):
 
     @label.setter
     def label(self, value):
+        """Set the subset's label
+
+        Subset labels within a data object must be unique. The input
+        will be auto-disambiguated if necessary
+        """
+        value = Registry().register(self, value, group=self.data)
         self._label = value
 
     def register(self):
@@ -156,6 +164,8 @@ class Subset(object):
 
         if self.data is not None and self in self.data.subsets:
             self.data.subsets.remove(self)
+
+        Registry().unregister(self, group=self.data)
 
     def write_mask(self, file_name, format="fits"):
         """ Write a subset mask out to file

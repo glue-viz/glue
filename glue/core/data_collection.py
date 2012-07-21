@@ -2,6 +2,7 @@ from .hub import Hub, HubListener
 from .data import Data
 from .link_manager import LinkManager
 from .live_link import LiveLink, LiveLinkManager
+from .registry import Registry
 from .message import DataCollectionAddMessage, \
                      DataCollectionDeleteMessage, \
                      DataAddComponentMessage
@@ -71,6 +72,7 @@ class DataCollection(HubListener):
         if data not in self._data:
             return
         self._data.remove(data)
+        Registry().unregister(data, Data)
         if self.hub:
             msg = DataCollectionDeleteMessage(self, data)
             self.hub.broadcast(msg)
