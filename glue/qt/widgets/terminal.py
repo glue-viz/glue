@@ -67,7 +67,6 @@ def glue_terminal(**kwargs):
 
     :rtype: QWidget
     """
-
     kernel_app = default_kernel_app()
     manager = default_manager(kernel_app)
 

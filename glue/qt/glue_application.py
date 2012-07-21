@@ -1,7 +1,7 @@
 # pylint: disable=W0223
 
 from PyQt4.QtGui import (QKeySequence, QMainWindow, QGridLayout,
-                         QMenu, QMdiSubWindow, QAction)
+                         QMenu, QMdiSubWindow, QAction, QMessageBox)
 from PyQt4.QtCore import Qt
 
 from .. import core
@@ -200,10 +200,10 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self.statusBar().showMessage(str(message))
 
     def _save_session(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def _restore_session(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def _create_terminal(self):
         assert self._terminal is None, \
@@ -212,13 +212,23 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         try:
             from widgets.terminal import glue_terminal
             widget = glue_terminal(data_collection=self._data)
-        except Exception:  # XXX what specific exceptions could we catch?
-            self._ui.terminal_button.hide()
+        except Exception as e:
+            self._setup_terminal_error_dialog(e)
             return
         layout = self._ui.centralwidget.layout()
         layout.addWidget(widget)
         self._terminal = widget
         self._hide_terminal()
+
+    def _setup_terminal_error_dialog(self, exception):
+        """ Reassign the terminal toggle button to show dialog on error"""
+        self._ui.terminal_button.clicked.disconnect()
+        title = "Terminal unavailable"
+        msg = ("Glue encountered an error trying to start the Terminal"
+               "\nException:\n%s\n\nTerminal is unavailable" % exception)
+        def show_msg():
+            QMessageBox.critical(self, title, msg)
+        self._ui.terminal_button.clicked.connect(show_msg)
 
     def _toggle_terminal(self):
         if self._terminal.isVisible():
