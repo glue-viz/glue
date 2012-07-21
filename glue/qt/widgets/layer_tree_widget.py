@@ -2,8 +2,8 @@
 Class which embellishes the DataCollectionView with buttons and actions for
 editing the data collection
 """
-from PyQt4.QtGui import QWidget, QTreeWidgetItem, QPixmap, QIcon
-from PyQt4.QtGui import QAction, QKeySequence, QFileDialog, QTreeWidgetItemIterator
+from PyQt4.QtGui import QWidget, QIcon
+from PyQt4.QtGui import QAction, QKeySequence, QFileDialog
 
 from PyQt4.QtCore import Qt, pyqtSignal, QObject
 
@@ -74,7 +74,7 @@ class LayerAction(QAction):
 
 class NewAction(LayerAction):
     _title = "New Subset"
-    _tool_tip = "Create a new subset for the selected data"
+    _tooltip = "Create a new subset for the selected data"
     _shortcut = 'Ctrl+Shift+N'
 
     def _can_trigger(self):
@@ -87,7 +87,7 @@ class NewAction(LayerAction):
 
 class ClearAction(LayerAction):
     _title = "Clear subset"
-    _tool_tip = "Clear current subset"
+    _tooltip = "Clear current subset"
     _shortcut = 'Ctrl+K'
 
     def _can_trigger(self):
@@ -101,7 +101,7 @@ class ClearAction(LayerAction):
 
 class DuplicateAction(LayerAction):
     _title = "Duplicate subset"
-    _tool_tip = "Duplicate the current subset"
+    _tooltip = "Duplicate the current subset"
     _shortcut = 'Ctrl+D'
 
     def _can_trigger(self):
@@ -116,7 +116,7 @@ class DuplicateAction(LayerAction):
 
 class DeleteAction(LayerAction):
     _title = "Delete Selection"
-    _tool_tip = "Remove the selection"
+    _tooltip = "Remove the selection"
     _shortcut = QKeySequence.Delete
 
     def _can_trigger(self):
@@ -137,9 +137,94 @@ class DeleteAction(LayerAction):
             else:
                 self._layer_tree.data_collection.remove(s)
 
+
+class LinkAction(LayerAction):
+    _title="Link Data"
+    _tooltip = "Define links between data sets"
+    _data_link_message = "Define links between data sets"
+    _link_message = "Live link selection"
+    _unlink_message = "Break live links with this object"
+    _icon = ":icons/glue_link.png"
+
+    def __init__(self, *args, **kwargs):
+        super(LinkAction, self).__init__(*args, **kwargs)
+        self._link_icon = QIcon(self._icon)
+        self._unlink_icon = QIcon(":icons/glue_unlink.png")
+
+    def _connect(self):
+        super(LinkAction, self)._connect()
+        self.parentWidget().itemSelectionChanged.connect(
+            self._update_self)
+
+    def _is_subset_selection(self):
+        """Are only subsets selected"""
+        layers = self.selected_layers()
+        for l in layers:
+            if not isinstance(l, core.Subset):
+                return False
+        return True
+
+    def _is_data_selection(self):
+        layers = self.selected_layers()
+        for l in layers:
+            if not isinstance(l, core.Data):
+                return False
+        return True
+
+    def selection_count(self):
+        return len(self.selected_layers())
+
+    @property
+    def link_manager(self):
+        return self._layer_tree.data_collection.live_link_manager
+
+    @property
+    def data_collection(self):
+        return self._layer_tree.data_collection
+
+    def _should_unlink(self):
+        layers = self.selected_layers()
+        return self._is_subset_selection() and self.selection_count() > 0 and \
+          self.link_manager.has_link(layers[0])
+
+    def _should_link_subset(self):
+        return self._is_subset_selection() and self.selection_count() > 1
+
+    def _should_link_data(self):
+        return len(self.data_collection) > 0 and self._is_data_selection()
+
+    def _update_self(self):
+        if self._should_unlink():
+            self.setToolTip(self._unlink_message)
+            self.setText("Break LiveLinks")
+            self.setIcon(self._unlink_icon)
+        elif self._should_link_subset():
+            self.setToolTip(self._link_message)
+            self.setText("LiveLink")
+            self.setIcon(self._link_icon)
+        elif self._should_link_data():
+            self.setToolTip(self._data_link_message)
+            self.setText("Link data")
+            self.setIcon(self._link_icon)
+
+    def _can_trigger(self):
+        return self._should_unlink() or self._should_link_subset() or \
+          self._should_link_data()
+
+    def _do_action(self):
+        layers = self.selected_layers()
+        if self._should_unlink():
+            self.link_manager.remove_links_from(layers[0])
+        elif self._should_link_subset():
+            self.link_manager.add_link_between(*layers)
+        elif self._should_link_data():
+            LinkEditor.update_links(self.data_collection)
+        self._update_self()
+        self.setEnabled(self._can_trigger())
+
 class LoadAction(LayerAction):
     _title = "Load subset"
-    _tool_tip = "Load a subset from a file"
+    _tooltip = "Load a subset from a file"
 
     def _can_trigger(self):
         return self.single_selection_subset()
@@ -152,7 +237,7 @@ class LoadAction(LayerAction):
 
 class SaveAction(LayerAction):
     _title = "Save subset"
-    _tool_tip = "Save the mask for this subset to a file"
+    _tooltip = "Save the mask for this subset to a file"
 
     def _can_trigger(self):
         return self.single_selection_subset()
@@ -165,7 +250,7 @@ class SaveAction(LayerAction):
 
 class CopyAction(LayerAction):
     _title = "Copy subset"
-    _tool_tip = "Copy the definition for the selected subset"
+    _tooltip = "Copy the definition for the selected subset"
     _shortcut = QKeySequence.Copy
 
     def _can_trigger(self):
@@ -178,7 +263,7 @@ class CopyAction(LayerAction):
 
 class PasteAction(LayerAction):
     _title = "Paste subset"
-    _tool_tip = "Overwite selected subset with contents from clipboard"
+    _tooltip = "Overwite selected subset with contents from clipboard"
     _shortcut = QKeySequence.Paste
 
     def _can_trigger(self):
@@ -335,12 +420,11 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
 
     def _connect(self):
         """ Connect widget signals to methods """
+        self._actions['link'] = LinkAction(self)
         self.layerTree.itemDoubleClicked.connect(self.edit_current_layer)
         self.layerAddButton.pressed.connect(self._load_data)
         self.layerRemoveButton.pressed.connect(self._actions['delete'].trigger)
-        self.linkButton.pressed.connect(
-            lambda: LinkEditor.update_links(self._data_collection))
-        tree = self.layerTree
+        self.linkButton.set_action(self._actions['link'])
         rbut = self.layerRemoveButton
         def update_enabled():
             return rbut.setEnabled(self._actions['delete'].isEnabled())
@@ -449,7 +533,7 @@ def load_subset(subset):
         return
 
     try:
-        layer.read_mask(file_name)
+        subset.read_mask(file_name)
     except Exception as e:
         print "Exception raised -- could not load\n%s" % e
 

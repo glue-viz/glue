@@ -137,8 +137,8 @@
          </property>
          <property name="iconSize">
           <size>
-           <width>16</width>
-           <height>16</height>
+           <width>19</width>
+           <height>19</height>
           </size>
          </property>
         </widget>
@@ -154,7 +154,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Remove a subset or data set from all visualizations</string>
+          <string>Remove selection</string>
          </property>
          <property name="text">
           <string/>
@@ -182,7 +182,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="linkButton">
+        <widget class="GlueActionButton" name="linkButton">
          <property name="enabled">
           <bool>true</bool>
          </property>
@@ -214,6 +214,11 @@
    <class>DataCollectionView</class>
    <extends>QTreeWidget</extends>
    <header>..widgets.data_collection_view</header>
+  </customwidget>
+  <customwidget>
+   <class>GlueActionButton</class>
+   <extends>QPushButton</extends>
+   <header>..qtutil</header>
   </customwidget>
  </customwidgets>
  <resources>

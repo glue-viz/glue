@@ -36,6 +36,14 @@ class TestLayerTree(object):
         self.win.close()
         del self.win
 
+    def select_layers(self, *layers):
+        items = [self.widget[l] for l in layers]
+        for item in self.widget.layerTree.items():
+            layer = self.widget[item]
+            item.setSelected(layer in layers)
+
+        assert set(items) == set(self.widget.layerTree.selectedItems())
+
     def remove_layer(self, layer):
         """ Remove a layer via the widget remove button """
         widget_item = self.widget[layer]
@@ -100,7 +108,32 @@ class TestLayerTree(object):
         QTest.mousePress(self.widget.layerRemoveButton, Qt.LeftButton)
         assert self.layer_present(layer)
 
-    @pytest.skip("Triggering seg faults for some reason")
+    def test_link_subset(self):
+        layer = self.add_layer()
+        sub1 = layer.new_subset()
+        sub2 = layer.new_subset()
+        self.select_layers(sub1, sub2)
+        self.link_action.trigger()
+        assert len(self.collect.live_link_manager.links) == 1
+
+    def test_link_data(self):
+        pth = 'glue.qt.link_editor.LinkEditor'
+        with patch(pth) as linkEditor:
+            layer = self.add_layer()
+            self.select_layers(layer)
+            self.link_action.trigger()
+            assert linkEditor.called_once()
+
+    def test_unlink_subsets(self):
+        layer = self.add_layer()
+        sub1 = layer.new_subset()
+        sub2 = layer.new_subset()
+        self.select_layers(sub1, sub2)
+        self.link_action.trigger()
+        self.select_layers(sub1)
+        self.link_action.trigger()
+        assert len(self.collect.live_link_manager.links) == 0
+
     def test_check_signal(self):
         layer = self.add_layer()
         sc = MagicMock()

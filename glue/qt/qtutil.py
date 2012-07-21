@@ -1,7 +1,8 @@
 from matplotlib.colors import ColorConverter
 from PyQt4 import QtGui
 from PyQt4.QtCore import QMimeData
-from PyQt4.QtGui import QColor, QInputDialog, QColorDialog, QListWidget, QTreeWidget
+from PyQt4.QtGui import (QColor, QInputDialog, QColorDialog,
+                         QListWidget, QTreeWidget, QPushButton)
 
 from .. import core
 
@@ -214,3 +215,16 @@ class GlueListWidget(GlueItemView, QListWidget):
 class GlueTreeWidget(GlueItemView, QTreeWidget):
     pass
 
+class GlueActionButton(QPushButton):
+    def set_action(self, action):
+        self._action = action
+        self.clicked.connect(action.trigger)
+        action.changed.connect(self._sync_to_action)
+        self._sync_to_action()
+
+    def _sync_to_action(self):
+        self.setIcon(self._action.icon())
+        self.setText(self._action.text())
+        self.setToolTip(self._action.toolTip())
+        self.setWhatsThis(self._action.whatsThis())
+        self.setEnabled(self._action.isEnabled())

@@ -43,6 +43,12 @@ class LiveLinkManager(object):
                 msg = LiveLinkDeleteMessage(self, link)
                 self.hub.broadcast(msg)
 
+    def has_link(self, subset):
+        for link in self._links:
+            if subset in link.subsets:
+                return True
+        return False
+
 
 class LiveLink(HubListener):
     """ An object to keep subsets in sync """
@@ -56,6 +62,7 @@ class LiveLink(HubListener):
         super(LiveLink, self).__init__()
         self._subsets = subsets
         self._listen = True
+        self.sync(self._subsets[0])
 
     @property
     def subsets(self):

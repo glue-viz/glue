@@ -89,6 +89,10 @@ class TestLiveLinkManager(object):
         assert self.sub2 in links[0].subsets
         assert self.hub.broadcast.call_count == 1
 
+    def test_linked_on_init(self):
+        self.mgr.add_link_between(self.sub1, self.sub2)
+        assert self.sub1.style is self.sub2.style
+
     def test_remove_link(self):
         self.mgr.add_link_between(self.sub1, self.sub2)
         link = self.mgr.links[0]

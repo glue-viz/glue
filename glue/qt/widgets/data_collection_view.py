@@ -1,3 +1,4 @@
+from collections import defaultdict
 from PyQt4.QtGui import (QTreeWidgetItem,
                          QPixmap, QTreeWidgetItemIterator, QIcon
                          )
@@ -56,8 +57,8 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
 
         data_filt = lambda x: x.sender.data in self.data_collection
         dc_filt = lambda x: x.sender is self.data_collection
-
         self.data_collection.register_to_hub(hub)
+
         hub.subscribe(self,
                       core.message.SubsetCreateMessage,
                       handler=lambda x: self._add_subset(x.sender),
@@ -82,6 +83,10 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
                       core.message.DataCollectionDeleteMessage,
                       handler=lambda x: self._remove_layer(x.data),
                       filter = dc_filt)
+        hub.subscribe(self,
+                      core.message.LiveLinkMessage,
+                      handler=lambda x:self._sync_live_link_view(x.link)
+                      )
 
     def _assert_in_collection(self, layer):
         assert layer.data in self.data_collection
@@ -170,9 +175,8 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
 
         style = layer.style
         widget_item = self[layer]
-        pixm = QPixmap(20, 20)
-        pixm.fill(qtutil.mpl_to_qt4_color(style.color))
-        widget_item.setIcon(1, QIcon(pixm))
+        icon = _color_icon(style.color)
+        widget_item.setIcon(1, icon)
         size = style.markersize
         label = layer.label
 
@@ -183,19 +187,21 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
             self.resizeColumnToContents(i)
 
     def _sync_live_link_view(self, link):
-        return
         mgr = self._data_collection.live_link_manager
         links = mgr.links
-        colors = [core.visual.LIGHT_BLUE,
-                  core.visual.LIGHT_PURPLE,
-                  core.visual.LIGHT_ORANGE]
+        colors = [core.visual.LIGHT_PURPLE,
+                  core.visual.LIGHT_ORANGE,
+                  core.visual.LIGHT_RED]
         colors = [colors[i % len(colors)] for i in range(len(links))]
-        pos = defaultdict(list)
+        clr = {}
         for i in range(len(links)):
             for s in links[i].subsets:
-                pos[s].append(i)
+                clr[s] = colors[i]
         for item in self.items():
-            item.setText(2, ",".join(map(str, pos[s])))
+            layer = self[item]
+            color = '#FFFFFF' if layer not in clr else clr[layer]
+            icon = _color_icon(color, size=10)
+            item.setIcon(2, icon)
 
     def _remove_layer(self, layer, check_sync=True):
         """ Remove a data or subset from the layer tree.
@@ -228,7 +234,6 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
             self._assert_view_synced()
 
     def _assert_view_synced(self):
-        iterator = QTreeWidgetItemIterator(self)
         layers_in_widget = set()
         layers_in_collection = set()
         for d in self.data_collection:
@@ -236,14 +241,27 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
             for s in d.subsets:
                 layers_in_collection.add(s)
 
-        while iterator.value() is not None:
-            item = iterator.value()
+        for item in self.items():
             assert item in self, 'orphan TreeWidgetItem: %s' % item
             layer = self[item]
             layers_in_widget.add(layer)
-            iterator += 1
 
         assert layers_in_widget == layers_in_collection
 
+    def items(self):
+        """ Yields an iterator over QTreeWidgetItems"""
+        iterator = QTreeWidgetItemIterator(self)
+        while iterator.value() is not None:
+            yield iterator.value()
+            iterator += 1
+
     def unregister(self, hub):
-        hub.unsubscribe_all(self)
+        super(DataCollectionView, self).unregister(hub)
+        self.data_collection.unregister(hub)
+
+def _color_icon(color, size=20):
+    pixm = QPixmap(size,size)
+    pixm.fill(qtutil.mpl_to_qt4_color(color))
+    icon = QIcon(pixm)
+    return icon
+
