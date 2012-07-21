@@ -275,7 +275,7 @@ class ScatterClient(Client):
     def _apply_roi(self, roi):
         # every active data layer is set
         # using specified ROI
-        for layer in self.managers:
+        for layer in self.managers.keys():
             if layer.data is not layer:
                 continue
             if not self.managers[layer].is_enabled():
