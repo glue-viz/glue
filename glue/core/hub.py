@@ -172,6 +172,25 @@ class Hub(object):
                     msg = ErrorMessage(subscriber, tag=tag)
                     self.broadcast(msg)
 
+    def __getstate__(self):
+        """ Return a picklable representation of the hub
+
+        Note: Only objects in glue.core are currently supported
+        as pickleable. Thus, any subscriptions from objects outside
+        glue.core will note be saved or restored
+        """
+        result = self.__dict__.copy()
+        result['_subscriptions'] = self._subscriptions.copy()
+        for s in self._subscriptions:
+            try:
+                module = s.__module__
+            except AttributeError:
+                module = ''
+            if not module.startswith('glue.core'):
+                print 'Pickle warning: Hub removing subscription to %s' % s
+                result['_subscriptions'].pop(s)
+        return result
+
 
 class HubListener(object):
     """

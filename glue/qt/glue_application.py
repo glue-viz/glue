@@ -1,7 +1,8 @@
 # pylint: disable=W0223
 
 from PyQt4.QtGui import (QKeySequence, QMainWindow, QGridLayout,
-                         QMenu, QMdiSubWindow, QAction, QMessageBox)
+                         QMenu, QMdiSubWindow, QAction, QMessageBox,
+                         QFileDialog)
 from PyQt4.QtCore import Qt
 
 from .. import core
@@ -16,15 +17,16 @@ from .widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
 class GlueApplication(QMainWindow, core.hub.HubListener):
     """ The main Glue window """
 
-    def __init__(self):
+    def __init__(self, data_collection=None, hub=None):
         super(GlueApplication, self).__init__()
+        self.setAttribute(Qt.WA_DeleteOnClose)
         self._actions = {}
         self._terminal = None
         self._ui = Ui_GlueApplication()
         self._ui.setupUi(self)
         self._ui.layerWidget.set_checkable(False)
-        self._data = core.data_collection.DataCollection()
-        self._hub = core.hub.Hub(self._data)
+        self._data = data_collection or core.data_collection.DataCollection()
+        self._hub = hub or core.hub.Hub(self._data)
 
         self._create_actions()
         self._connect()
@@ -170,14 +172,12 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
 
         a = act('Save Session', self,
                 tip='Save the current session')
-        a.setEnabled(False)
         a.triggered.connect(self._save_session)
         self._actions['session_save'] = a
 
 
         a = act('Open Session', self,
                 tip='Restore a saved session')
-        a.setEnabled(False)
         a.triggered.connect(self._restore_session)
         self._actions['session_restore'] = a
 
@@ -200,10 +200,55 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self.statusBar().showMessage(str(message))
 
     def _save_session(self):
-        raise NotImplementedError
+        """ Save the data collection and hub to file.
+
+        Can be restored via restore_session
+
+        Note: Saving of client is not currently supported. Thus,
+        restoring this session will lose all current viz windows
+        """
+        from ..core.glue_pickle import dumps, PicklingError
+        state = (self._data, self._hub)
+
+        try:
+            data = dumps(state)
+        except PicklingError as p:
+            QMessageBox.critical(self, "Error",
+                                 "Cannot save data object: %s" % p)
+            return
+
+        outfile = QFileDialog.getSaveFileName(self)
+        if not outfile:
+            return
+        try:
+            with open(outfile, 'w') as out:
+                out.write(data)
+        except IOError as e:
+            QMessageBox.critical(self, "Error",
+                                 "Could not write file:\n%s" % e)
 
     def _restore_session(self):
-        raise NotImplementedError
+        """ Load a previously-saved state, and restart the session """
+        from pickle import Unpickler, UnpicklingError
+
+        file_name = QFileDialog.getOpenFileName(self)
+        if not file_name:
+            return
+        try:
+            state = Unpickler(open(file_name)).load()
+        except UnpicklingError as e:
+            QMessageBox.critical(self, "Error",
+                                 "Could not restore file: %s" % e)
+            return
+        data, hub = state
+        pos = self.pos()
+        size = self.size()
+        ga = GlueApplication(data_collection=data, hub=hub)
+        ga.move(pos)
+        ga.resize(size)
+
+        ga.show()
+        self.close()
 
     def _create_terminal(self):
         assert self._terminal is None, \

@@ -10,22 +10,6 @@ from ..coordinates import coordinates_from_header, WCSCoordinates, Coordinates
 
 class TestWcsCoordinates(object):
 
-    def header_from_string(self, string):
-        cards = []
-        for s in string.splitlines():
-            try:
-                l, r = s.split('=')
-                key = l.strip()
-                value = r.split('/')[0].strip()
-                try:
-                    value = int(value)
-                except ValueError:
-                    pass
-            except ValueError:
-                continue
-            cards.append(Card(key, value))
-        return Header(cards)
-
     def default_header(self):
         hdr = Header()
         hdr.update('NAXIS', 2)
@@ -243,3 +227,20 @@ CRVAL3  =       -9960.07902777 /
 CRPIX3  =             -102.000 /
 CDELT3  =        66.4236100000 /
 """
+
+def header_from_string(string):
+    cards = []
+    for s in string.splitlines():
+        try:
+            l, r = s.split('=')
+            key = l.strip()
+            value = r.split('/')[0].strip()
+            try:
+                value = int(value)
+            except ValueError:
+                pass
+        except ValueError:
+            continue
+        cards.append(Card(key, value))
+    return Header(cards)
+
