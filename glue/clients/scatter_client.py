@@ -82,16 +82,14 @@ class ScatterClient(Client):
         """
         Create a new ScatterClient object
 
-        Inputs:
-        =======
-        data : `glue.data.DataCollection` instance
+        :param data: :class:`~glue.core.DataCollection` to use
 
-        figure : matplotlib Figure instance (optional)
-           Which figure instance to draw to. One will be created if
+        :param figure:
+           Which matplotlib figure instance to draw to. One will be created if
            not provided
 
-        axes : matplotlib Axes instance (optional)
-           Which axes instance to use. Will be created if necessary
+        :param axes:
+           Which matplotlib axes instance to use. Will be created if necessary
         """
         Client.__init__(self, data=data)
 
@@ -140,10 +138,8 @@ class ScatterClient(Client):
         or a subset. Updates both the client data structure and the
         plot.
 
-        Inputs:
-        =======
-        layer : `glue.data.Data` or `glue.subset.Subset` object
-            The layer to add
+        :param layer: the layer to add
+        :type layer: :class:`~glue.core.Data` or :class:`~glue.core.Subset`
         """
         if layer.data not in self.data:
             raise TypeError("Layer not in data collection")
@@ -223,12 +219,11 @@ class ScatterClient(Client):
     def set_visible(self, layer, state):
         """ Toggle a layer's visibility
 
-        Inputs:
-        =======
-        layer : `glue.data.Data` or `glue.subset.Subset` instance
-              Which layer to modify
-        state : boolean
-              True to show. False to hide
+        :param layer: which layer to modify
+        :type layer: class:`~glue.core.Data` or :class:`~glue.coret.Subset`
+
+        :param state: True to show. false to hide
+        :type state: boolean
         """
         if layer not in self.managers:
             return
@@ -243,14 +238,14 @@ class ScatterClient(Client):
     def set_xydata(self, coord, attribute, snap=True):
         """ Redefine which components get assigned to the x/y axes
 
-        Inputs:
-        =======
-        coord : 'x' or 'y'
+        :param coord: 'x' or 'y'
            Which axis to reassign
-        attribute : string
+        :param attribute:
            Which attribute of the data to use.
-        snap : bool
+        :type attribute: str
+        :param snap:
            If True, will rescale x/y axes to fit the data
+        :type snap: bool
         """
 
         if coord not in ('x', 'y'):
@@ -293,12 +288,12 @@ class ScatterClient(Client):
         """
         Redefine which component gets plotted on the x axis
 
-        Parameters
-        ----------
-        attribute : string
+        :param attribute:
                  The name of the new data component to plot
-        snap : bool
+        :type attribute: str
+        :param snap:
              If true, re-scale x axis to show all values
+        :type snap: bool
         """
         self.set_xydata('x', attribute, snap=snap)
 
@@ -306,23 +301,22 @@ class ScatterClient(Client):
         """
         Redefine which component gets plotted on the y axis
 
-        Parameters
-        ----------
-        attribute: string
-                  The name of the new data component to plot
+        :param attribute:
+           The name of the new data component to plot
+        :type attribute: string
 
-        snap : bool
+        :param snap:
                If True, re-scale y axis to show all values
+        :type snap: bool
         """
         self.set_xydata('y', attribute, snap=snap)
 
     def set_xlog(self, state):
         """ Set the x axis scaling
 
-        Inputs:
-        =======
-        state : string ('log' or 'linear')
+        :param state:
             The new scaling for the x axis
+        :type state: string ('log' or 'linear')
         """
         mode = 'log' if state else 'linear'
         self.ax.set_xscale(mode)
@@ -331,10 +325,8 @@ class ScatterClient(Client):
     def set_ylog(self, state):
         """ Set the y axis scaling
 
-        Inputs:
-        =======
-        state : string ('log' or 'linear')
-            The new scaling for the y axis
+        :param state: The new scaling for the y axis
+        :type state: string ('log' or 'linear')
         """
         mode = 'log' if state else 'linear'
         self.ax.set_yscale(mode)
@@ -357,10 +349,8 @@ class ScatterClient(Client):
     def set_xflip(self, state):
         """ Set whether the x axis increases or decreases to the right.
 
-        Inputs:
-        =======
-        state : bool
-            True to flip x axis
+        :param state: True to flip x axis
+
         """
         rng = self.ax.get_xlim()
         if state:
