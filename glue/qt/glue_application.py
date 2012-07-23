@@ -236,7 +236,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
             return
         try:
             state = Unpickler(open(file_name)).load()
-        except UnpicklingError as e:
+        except (IOError, UnpicklingError) as e:
             QMessageBox.critical(self, "Error",
                                  "Could not restore file: %s" % e)
             return
