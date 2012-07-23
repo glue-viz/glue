@@ -7,6 +7,12 @@ from PyQt4.QtGui import QApplication, QMainWindow, QIcon
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import MouseMode
 
+def setup_module(module):
+    module.app = QApplication([''])
+
+def teardown_module(module):
+    module.app.exit()
+    del module.app
 
 class TestMode(MouseMode):
 
@@ -28,7 +34,6 @@ class TestMode(MouseMode):
 class TestToolbar(object):
 
     def setup_method(self, method):
-        self.app = QApplication(sys.argv)
         self.win = QMainWindow()
         p = plt.plot([1, 2, 3])[0]
         self.canvas = p.axes.figure.canvas

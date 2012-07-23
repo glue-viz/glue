@@ -297,7 +297,7 @@ class TestLayerTree(object):
     def test_load_data(self):
         pth = 'glue.qt.widgets.layer_tree_widget.qtutil.data_wizard'
         with patch(pth) as wizard:
-            wizard.return_value = self.data[0]
+            wizard.return_value = [self.data[0]]
             self.widget._load_data()
             assert self.layer_present(self.data[0])
 
@@ -305,7 +305,7 @@ class TestLayerTree(object):
         """bugfix"""
         pth = 'glue.qt.widgets.layer_tree_widget.qtutil.data_wizard'
         with patch(pth) as wizard:
-            wizard.return_value = core.Data()
+            wizard.return_value = [core.Data()]
             ct0 = self.widget.layerTree.topLevelItemCount()
             self.widget._load_data()
             assert self.widget.layerTree.topLevelItemCount() == ct0+1

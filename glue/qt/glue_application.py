@@ -118,16 +118,16 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         tbar = EditSubsetModeToolBar()
         self.addToolBar(tbar)
         tbar.hide()
-        act = QAction("Selection Modes", menu)
+        act = QAction("Selection Mode Toolbar", menu)
         act.setCheckable(True)
         act.toggled.connect(tbar.setVisible)
         tbar.visibilityChanged.connect(act.setChecked)
         menu.addAction(act)
+        menu.addActions(tbar.actions())
         mbar.addMenu(menu)
 
     def _load_data(self):
-        data = data_wizard()
-        if data:
+        for data in data_wizard():
             self._data.append(data)
 
     def _create_actions(self):

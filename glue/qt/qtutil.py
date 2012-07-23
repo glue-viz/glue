@@ -2,7 +2,7 @@ from matplotlib.colors import ColorConverter
 from PyQt4 import QtGui
 from PyQt4.QtCore import QMimeData
 from PyQt4.QtGui import (QColor, QInputDialog, QColorDialog,
-                         QListWidget, QTreeWidget, QPushButton)
+                         QListWidget, QTreeWidget, QPushButton, QMessageBox)
 
 from .. import core
 
@@ -10,15 +10,14 @@ from .. import core
 def mpl_to_qt4_color(color):
     """ Convert a matplotlib color stirng into a PyQT4 QColor object
 
-    Parameters
-    ----------
-    color: String
+    :param color:
        A color specification that matplotlib understands
+    :type color: str
 
-    Returns
-    -------
+    * Returns *
     A QColor object representing color
 
+    :rtype: QColor
     """
     cc = ColorConverter()
     r, g, b = cc.to_rgb(color)
@@ -29,13 +28,10 @@ def qt4_to_mpl_color(color):
     """
     Conver a QColor object into a string that matplotlib understands
 
-    Parameters
-    ----------
-    color: QColor instance
+    :param color: QColor instance
 
-    Returns
-    -------
-    A hex string describing that color
+    *Returns*
+        A hex string describing that color
     """
     hexid = color.name()
     return str(hexid)
@@ -44,27 +40,49 @@ def qt4_to_mpl_color(color):
 def data_wizard():
     """ QT Dialog to load a file into a new data object
 
-    Returns
-    -------
-    A new data object, or None if the process is cancelled
+    Returns:
+       A list of new data objects
     """
-    fd = QtGui.QFileDialog()
-    if not fd.exec_():
-        return None
-    file_name = str(fd.selectedFiles()[0])
-    extension = file_name.split('.')[-1].lower()
-    label = ' '.join(file_name.split('.')[:-1])
-    label = label.split('/')[-1]
-    label = label.split('\\')[-1]
+    def get_name():
+        return str(QtGui.QFileDialog.getOpenFileName())
 
-    if extension in ['fits', 'fit', 'fts']:
-        result = core.data.GriddedData(label=label)
-        result.read_data(file_name)
-    else:
-        result = core.data.TabularData(label=label)
-        result.read_data(file_name)
-    return result
+    def get_factory():
+        #TODO pull options from glue.env
+        facs = [(core.data.GriddedData, 'Gridded data (image, cube, etc.)'),
+                (core.data.TabularData, 'Tabular data')]
+        classes, labels = zip(*facs)
+        return pick_item(classes, labels, label="What kind of data is this?")
 
+    def get_result(name, factory):
+        label = ' '.join(name.split('/')[-1].split('.')[:-1])
+        result = factory(label=label)
+        print name, factory
+        result.read_data(name)
+        print 'good'
+        return result
+
+    def report_error(error):
+        retry = QMessageBox.Retry
+        cancel = QMessageBox.Cancel
+        buttons = retry | cancel
+        msg = "Could not load data:\n%s" % error
+        ok = QMessageBox.critical(None, "Error loading data", msg,
+                                  buttons=buttons, defaultButton=cancel)
+        return ok == retry
+
+    while True:
+        name = get_name()
+        if name is None:
+            return []
+        factory = get_factory()
+        if factory is None:
+            return []
+        try:
+            return [get_result(name, factory)]
+        except Exception as e:
+            decision = report_error(e)
+            if not decision:
+                return []
 
 def edit_layer_color(layer):
     """ Interactively edit a layer's color """
@@ -102,17 +120,28 @@ def edit_layer_label(layer):
     if isok:
         layer.label = str(label)
 
-def pick_class(classes, title="Item picker", label = "Pick an item"):
+def pick_item(items, labels, title="Pick an item", label="Pick an item"):
+    """ Prompt the user to choose an item
+
+    :param items: List of items to choose
+    :param labels: List of strings to label items
+    :param title: Optional widget title
+    :param label: Optional prompt
+
+    Returns the selected item, or None
+    """
+    choice, isok = QInputDialog.getItem(None, title, label, labels)
+    if isok:
+        return dict(zip(labels, items))[str(choice)]
+
+def pick_class(classes, **kwargs):
     """Prompt the user to pick from a list of classes using QT
 
-    Parameters
-    ----------
-    classes : list of class objects
-    title : string of the prompt
+    :param classes: list of class objects
+    :param title: string of the prompt
 
-    Outputs
-    -------
-    The class that was selected, or None
+    Returns:
+       The class that was selected, or None
     """
     def _label(c):
         try:
@@ -121,22 +150,15 @@ def pick_class(classes, title="Item picker", label = "Pick an item"):
             return c.__name__
 
     choices = [_label(c) for c in classes]
-
-    dialog = QInputDialog
-    choice, isok = dialog.getItem(None, title, label, choices)
-    if isok:
-        return dict(zip(choices, classes))[str(choice)]
+    return pick_item(classes, choices, **kwargs)
 
 def get_text(title='Enter a label'):
     """Prompt the user to enter text using QT
 
-    Parameters
-    ----------
-    title : Name of the prompt
+    :param title: Name of the prompt
 
-    Returns
-    -------
-    The text the user typed, or None
+    *Returns*
+       The text the user typed, or None
     """
     dialog = QInputDialog()
     result, isok = dialog.getText(None, title, title)

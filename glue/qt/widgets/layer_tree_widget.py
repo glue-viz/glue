@@ -507,8 +507,8 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
     def _load_data(self):
         """ Interactively loads data from a data set. Adds
         as new layer """
-        layer = qtutil.data_wizard()
-        if layer:
+        layers = qtutil.data_wizard()
+        for layer in layers:
             self.data_collection.append(layer)
 
     def is_layer_present(self, layer):
