@@ -3,7 +3,7 @@ import numpy as np
 import pyfits
 
 from .visual import VisualAttributes, RED
-from .decorators import memoize
+from .decorators import memoize_attr_check
 from .message import SubsetDeleteMessage, SubsetUpdateMessage
 from .registry import Registry
 
@@ -247,7 +247,7 @@ class RoiSubsetState(SubsetState):
         self.yatt = None
         self.roi = None
 
-    @memoize
+    @memoize_attr_check('parent')
     def to_mask(self):
         x = self.parent.data[self.xatt]
         y = self.parent.data[self.yatt]
@@ -287,25 +287,25 @@ class CompositeSubsetState(SubsetState):
         return type(self)(self.state1, self.state2)
 
 class OrState(CompositeSubsetState):
-    @memoize
+    @memoize_attr_check('parent')
     def to_mask(self):
         return self.state1.to_mask() | self.state2.to_mask()
 
 
 class AndState(CompositeSubsetState):
-    @memoize
+    @memoize_attr_check('parent')
     def to_mask(self):
         return self.state1.to_mask() & self.state2.to_mask()
 
 
 class XorState(CompositeSubsetState):
-    @memoize
+    @memoize_attr_check('parent')
     def to_mask(self):
         return self.state1.to_mask() ^ self.state2.to_mask()
 
 
 class InvertState(CompositeSubsetState):
-    @memoize
+    @memoize_attr_check('parent')
     def to_mask(self):
         return ~self.state1.to_mask()
 
@@ -315,7 +315,7 @@ class ElementSubsetState(SubsetState):
         super(ElementSubsetState, self).__init__()
         self._indices = indices
 
-    @memoize
+    @memoize_attr_check('parent')
     def to_mask(self):
         result = np.zeros(self.parent.data.shape, dtype=bool)
         if self._indices is not None:
@@ -354,7 +354,7 @@ class InequalitySubsetState(SubsetState):
     def operator(self):
         return self._operator
 
-    @memoize
+    @memoize_attr_check('parent')
     def to_mask(self):
         from .data import ComponentID
         left = self._left

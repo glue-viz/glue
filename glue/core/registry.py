@@ -3,6 +3,8 @@ from collections import defaultdict
 from itertools import count
 
 def disambiguate(label, taken):
+    if label not in taken:
+        return label
     suffix = "_%2.2i"
     label = str(label)
     for i in count(1):

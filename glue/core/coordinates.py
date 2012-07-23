@@ -43,6 +43,12 @@ class WCSCoordinates(Coordinates):
         self._header = header
         self._wcs = pywcs.WCS(header)
 
+    def __setstate__(self, state):
+        self.__dict__ = state
+        # wcs object doesn't seem to unpickle properly. reconstruct it
+        self._wcs = pywcs.WCS(self._header)
+
+
     def pixel2world(self, xpix, ypix):
         '''
         Convert pixel to world coordinates, preserving input type/shape
