@@ -41,6 +41,7 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
 
         for data in data_collection:
             self._add_data(data, check_sync=False)
+        self._sync_live_link_view()
         self._assert_view_synced()
 
     @property
@@ -188,7 +189,10 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         for i in range(ncol):
             self.resizeColumnToContents(i)
 
-    def _sync_live_link_view(self, link):
+    def _sync_live_link_view(self, link=None):
+        """ Draw visual indicators for live links in the 'links' column """
+        if self._data_collection is None:
+            return
         mgr = self._data_collection.live_link_manager
         links = mgr.links
         colors = [core.visual.LIGHT_PURPLE,
@@ -202,7 +206,8 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         for item in self.items():
             layer = self[item]
             color = '#FFFFFF' if layer not in clr else clr[layer]
-            icon = _color_icon(color, size=10)
+            alpha = 1.0 if layer in clr else 0.0
+            icon = _color_icon(color, size=10, alpha=alpha)
             item.setIcon(2, icon)
 
     def _remove_layer(self, layer, check_sync=True):
@@ -261,9 +266,10 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         super(DataCollectionView, self).unregister(hub)
         self.data_collection.unregister(hub)
 
-def _color_icon(color, size=20):
+def _color_icon(color, size=20, alpha=1.0):
     pixm = QPixmap(size,size)
-    pixm.fill(qtutil.mpl_to_qt4_color(color))
+    color = qtutil.mpl_to_qt4_color(color, alpha=alpha)
+    pixm.fill(color)
     icon = QIcon(pixm)
     return icon
 

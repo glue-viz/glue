@@ -7,12 +7,16 @@ from PyQt4.QtGui import (QColor, QInputDialog, QColorDialog,
 from .. import core
 
 
-def mpl_to_qt4_color(color):
+def mpl_to_qt4_color(color, alpha=1.0):
     """ Convert a matplotlib color stirng into a PyQT4 QColor object
 
     :param color:
        A color specification that matplotlib understands
     :type color: str
+
+    :param alpha:
+       Optional opacity. Float in range [0,1]
+    :type alpha: float
 
     * Returns *
     A QColor object representing color
@@ -21,8 +25,8 @@ def mpl_to_qt4_color(color):
     """
     cc = ColorConverter()
     r, g, b = cc.to_rgb(color)
-    return QColor(r * 255, g * 255, b * 255)
-
+    alpha = max(0, min(255, int(256 * alpha)))
+    return QColor(r * 255, g * 255, b * 255, alpha)
 
 def qt4_to_mpl_color(color):
     """
@@ -48,8 +52,8 @@ def data_wizard():
 
     def get_factory():
         #TODO pull options from glue.env
-        facs = [(core.data.GriddedData, 'Gridded data (image, cube, etc.)'),
-                (core.data.TabularData, 'Tabular data')]
+        facs = [(core.data.GriddedData, 'Image'),
+                (core.data.TabularData, 'Catalog')]
         classes, labels = zip(*facs)
         return pick_item(classes, labels, label="What kind of data is this?")
 
@@ -72,7 +76,7 @@ def data_wizard():
 
     while True:
         name = get_name()
-        if name is None:
+        if not name:
             return []
         factory = get_factory()
         if factory is None:
