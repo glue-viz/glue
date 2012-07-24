@@ -23,6 +23,7 @@ class InvNormalize(Normalize):
         return result
 
 
+
 class LayerManager(object):
     def __init__(self, layer, axes):
         self.layer = layer
@@ -62,7 +63,8 @@ class DataLayerManager(LayerManager):
         self.artist.set_visible(state)
 
     def set_norm(self, data, vmin=None, vmax=None):
-        self.norm.autoscale(data)
+        if vmin is None or vmax is None:
+            self.norm.autoscale(data)
         if vmin is not None:
             self.norm.vmin = vmin
         if vmax is not None:
@@ -102,6 +104,10 @@ class SubsetLayerManager(LayerManager):
     def update_artist(self, mask):
         self.mask = mask
         self.delete_artist()
+        #shortcut for empty subsets
+        if not mask.any():
+           return
+
         if self.area_style == 'filled':
             self.artist = self._ax.contourf(mask.astype(float),
                                             levels=[0.5, 1.0],

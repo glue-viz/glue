@@ -23,7 +23,6 @@ import numpy as np
 from ..core import util
 from ..core import roi
 
-
 class MouseMode(object):
     """ The base class for all MouseModes.
 
@@ -188,6 +187,9 @@ class ContrastMode(MouseMode):
         self.bias = 0.5
         self.contrast = 0.5
 
+        self._last = None
+        self._result = None
+
     def get_scaling(self, data):
         """ Return the intensity values to set as the darkest and
         lightest color, given the bias and contrast.
@@ -199,13 +201,23 @@ class ContrastMode(MouseMode):
            * tuple of lo,hi : the intensity values to set as darkest/brightest
         :rtype: tuple
         """
-        lo = np.nanmin(data)
-        hi = np.nanmax(data)
+        lo, hi = self._get_data_bounds(data)
         ra = hi - lo
         bias = lo + ra * self.bias
         vmin = bias - ra * self.contrast
         vmax = bias + ra * self.contrast
         return vmin, vmax
+
+    def _get_data_bounds(self, data):
+        #cache last result. cant use @memoize, since ndarrays dont hash
+        if data is not self._last:
+            self._last = data
+            lo = np.nanmin(data)
+            hi = np.nanmax(data)
+            self._result = lo, hi
+        return self._result
+
+
 
     def move(self, event):
         """ MoveEvent. Update bias and contrast on Right Mouse button drag """
@@ -273,3 +285,4 @@ def contour_to_roi(x, y, data):
 
     p = roi.PolygonalROI(vx = xy[:, 0], vy = xy[:, 1])
     return p
+

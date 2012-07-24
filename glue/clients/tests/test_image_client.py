@@ -23,6 +23,9 @@ class DummyCoords(core.coordinates.Coordinates):
             result.append([aa * (i + 1) for aa in a])
         return result
 
+class TrueState(core.subset.SubsetState):
+    def to_mask(self):
+        return np.ones(self.parent.data.shape, dtype=bool)
 
 class TestImageClient(object):
 
@@ -235,6 +238,4 @@ class TestImageClient(object):
     def test_subsets_shown_on_init(self):
         client = self.create_client_with_image()
         subset = self.im.edit_subset
-        manager = client.layers[subset]
-        assert manager.artist is not None
-        assert manager.is_visible()
+        assert subset in client.layers
