@@ -3,6 +3,7 @@ from PyQt4.QtCore import Qt
 
 from ... import core
 
+
 class GlueMdiArea(QtGui.QMdiArea):
     """Glue's MdiArea implementation.
 
@@ -18,6 +19,7 @@ class GlueMdiArea(QtGui.QMdiArea):
         super(GlueMdiArea, self).__init__(parent)
         self._application = application
         self.setAcceptDrops(True)
+        self.setAttribute(Qt.WA_DeleteOnClose)
 
     def dragEnterEvent(self, event):
         """ Accept the event if it has an application/py_instance format """
@@ -38,3 +40,7 @@ class GlueMdiArea(QtGui.QMdiArea):
         if event.button() != Qt.RightButton:
             return
         self._application.new_data_viewer()
+
+    def close(self):
+        self.closeAllSubWindows()
+        super(GlueMdiArea, self).close()

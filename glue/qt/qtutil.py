@@ -1,8 +1,10 @@
 from matplotlib.colors import ColorConverter
 from PyQt4 import QtGui
+from PyQt4.QtCore import Qt
 from PyQt4.QtCore import QMimeData
 from PyQt4.QtGui import (QColor, QInputDialog, QColorDialog,
-                         QListWidget, QTreeWidget, QPushButton, QMessageBox)
+                         QListWidget, QTreeWidget, QPushButton, QMessageBox,
+                         QTabBar)
 
 from .. import core
 
@@ -27,6 +29,7 @@ def mpl_to_qt4_color(color, alpha=1.0):
     r, g, b = cc.to_rgb(color)
     alpha = max(0, min(255, int(256 * alpha)))
     return QColor(r * 255, g * 255, b * 255, alpha)
+
 
 def qt4_to_mpl_color(color):
     """
@@ -88,6 +91,7 @@ def data_wizard():
             if not decision:
                 return []
 
+
 def edit_layer_color(layer):
     """ Interactively edit a layer's color """
     dialog = QColorDialog()
@@ -124,6 +128,7 @@ def edit_layer_label(layer):
     if isok:
         layer.label = str(label)
 
+
 def pick_item(items, labels, title="Pick an item", label="Pick an item"):
     """ Prompt the user to choose an item
 
@@ -137,6 +142,7 @@ def pick_item(items, labels, title="Pick an item", label="Pick an item"):
     choice, isok = QInputDialog.getItem(None, title, label, labels)
     if isok:
         return dict(zip(labels, items))[str(choice)]
+
 
 def pick_class(classes, **kwargs):
     """Prompt the user to pick from a list of classes using QT
@@ -155,6 +161,7 @@ def pick_class(classes, **kwargs):
 
     choices = [_label(c) for c in classes]
     return pick_item(classes, choices, **kwargs)
+
 
 def get_text(title='Enter a label'):
     """Prompt the user to enter text using QT
@@ -235,11 +242,14 @@ class GlueItemView(object):
     def data(self):
         return self._mime_data
 
+
 class GlueListWidget(GlueItemView, QListWidget):
     pass
 
+
 class GlueTreeWidget(GlueItemView, QTreeWidget):
     pass
+
 
 class GlueActionButton(QPushButton):
     def set_action(self, action, text=True):
@@ -256,3 +266,26 @@ class GlueActionButton(QPushButton):
         self.setToolTip(self._action.toolTip())
         self.setWhatsThis(self._action.whatsThis())
         self.setEnabled(self._action.isEnabled())
+
+
+class GlueTabBar(QTabBar):
+
+    def __init__(self, *args, **kwargs):
+        super(GlueTabBar, self).__init__(*args, **kwargs)
+
+    def rename_tab(self, index=None):
+        """ Prompt user to rename a tab
+        :param index: integer. Index of tab to edit. Defaults to current index
+        """
+        index = index or self.currentIndex()
+        label = get_text("New Tab Label")
+        if not label:
+            return
+        self.setTabText(index, label)
+
+    def mouseDoubleClickEvent(self, event):
+        if event.button() != Qt.LeftButton:
+            return
+        index = self.tabAt(event.pos())
+        if index >= 0:
+            self.rename_tab(index)

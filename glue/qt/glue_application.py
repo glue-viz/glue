@@ -10,9 +10,10 @@ from .. import core
 from .ui.glue_application import Ui_GlueApplication
 
 from .actions import act
-from .qtutil import pick_class, get_text, data_wizard
+from .qtutil import pick_class, data_wizard, GlueTabBar
 from .widgets.glue_mdi_area import GlueMdiArea
 from .widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
+
 
 class GlueApplication(QMainWindow, core.hub.HubListener):
     """ The main Glue window """
@@ -24,6 +25,9 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._terminal = None
         self._ui = Ui_GlueApplication()
         self._ui.setupUi(self)
+        self._ui.tabWidget.setTabBar(GlueTabBar())
+        self.tab_widget.setMovable(True)
+        self.tab_widget.setTabsClosable(True)
         self._ui.layerWidget.set_checkable(False)
         self._data = data_collection or core.data_collection.DataCollection()
         self._hub = hub or core.hub.Hub(self._data)
@@ -35,8 +39,12 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._new_tab()
 
     @property
-    def tab_bar(self):
+    def tab_widget(self):
         return self._ui.tabWidget
+
+    @property
+    def tab_bar(self):
+        return self._ui.tabWidget.tabBar()
 
     @property
     def current_tab(self):
@@ -49,9 +57,18 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         layout.setContentsMargins(0, 0, 0, 0)
         widget = GlueMdiArea(self)
         widget.setLayout(layout)
-        tab = self.tab_bar
-        tab.addTab(widget, str(tab.count()+1))
+        tab = self.tab_widget
+        tab.addTab(widget, str(tab.count() + 1))
         tab.setCurrentWidget(widget)
+
+    def _close_tab(self, index):
+        """ Close a tab window and all associated data viewers """
+        #do not delete the last tab
+        if self.tab_widget.count() == 1:
+            return
+        w = self.tab_widget.widget(index)
+        w.close()
+        self.tab_widget.removeTab(index)
 
     def _add_to_current_tab(self, new_widget):
         page = self.current_tab
@@ -60,14 +77,6 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         sub.setWidget(new_widget)
         sub.resize(new_widget.size())
         page.addSubWindow(sub)
-
-    def _rename_current_tab(self):
-        """ Prompt the user to rename the current tab """
-        label = get_text("New Tab Label")
-        if not label:
-            return
-        index = self.tab_bar.currentIndex()
-        self.tab_bar.setTabText(index, label)
 
     def cascade_current_tab(self):
         """Arrange windows in current tab via cascade"""
@@ -84,6 +93,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._ui.layerWidget.setup(self._data, self._hub)
         self._data.register_to_hub(self._hub)
         self._ui.terminal_button.clicked.connect(self._toggle_terminal)
+        self.tab_widget.tabCloseRequested.connect(self._close_tab)
 
     def _create_menu(self):
         mbar = self._ui.menubar
@@ -118,11 +128,11 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         tbar = EditSubsetModeToolBar()
         self.addToolBar(tbar)
         tbar.hide()
-        act = QAction("Selection Mode Toolbar", menu)
-        act.setCheckable(True)
-        act.toggled.connect(tbar.setVisible)
-        tbar.visibilityChanged.connect(act.setChecked)
-        menu.addAction(act)
+        a = QAction("Selection Mode Toolbar", menu)
+        a.setCheckable(True)
+        a.toggled.connect(tbar.setVisible)
+        tbar.visibilityChanged.connect(a.setChecked)
+        menu.addAction(a)
         menu.addActions(tbar.actions())
         mbar.addMenu(menu)
 
@@ -147,7 +157,6 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         a.triggered.connect(self.new_data_viewer)
         self._actions['viewer_new'] = a
 
-
         a = act('New Tab', self,
                 shortcut=QKeySequence.AddTab,
                 tip='Add a new tab')
@@ -157,7 +166,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         a = act('Rename Tab', self,
                 shortcut="Ctrl+R",
                 tip='Set a new label for the current tab')
-        a.triggered.connect(self._rename_current_tab)
+        a.triggered.connect(self.tab_bar.rename_tab)
         self._actions['tab_rename'] = a
 
         a = act('Cascade', self,
@@ -174,7 +183,6 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
                 tip='Save the current session')
         a.triggered.connect(self._save_session)
         self._actions['session_save'] = a
-
 
         a = act('Open Session', self,
                 tip='Restore a saved session')
@@ -255,9 +263,9 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
             "should only call _create_terminal once"
 
         try:
-            from widgets.terminal import glue_terminal
+            from .widgets.terminal import glue_terminal
             widget = glue_terminal(data_collection=self._data)
-        except Exception as e:
+        except Exception as e:  # pylint: disable=W0703
             self._setup_terminal_error_dialog(e)
             return
         layout = self._ui.centralwidget.layout()
@@ -271,8 +279,10 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         title = "Terminal unavailable"
         msg = ("Glue encountered an error trying to start the Terminal"
                "\nException:\n%s\n\nTerminal is unavailable" % exception)
+
         def show_msg():
             QMessageBox.critical(self, title, msg)
+
         self._ui.terminal_button.clicked.connect(show_msg)
 
     def _toggle_terminal(self):
