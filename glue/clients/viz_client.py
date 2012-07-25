@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-
 from ..core.client import Client
 
 
@@ -105,7 +104,8 @@ class VizClient(Client):
         Sync the location and visual properties
         of each point in each subset
         """
-        junk = [self._update_subset_plot(s) for d in self.data for s in d.subsets]
+        junk = [self._update_subset_plot(s) for d in self.data
+                for s in d.subsets]
 
     def _update_subset_single(self, s):
         """
@@ -128,7 +128,8 @@ class VizClient(Client):
         """
 
     def init_layer(self, layer):
-        """Method to initialize a plot of a data or subset object for the first time.
+        """Initialize a plot of a data or subset object for the first time.
+
         Parameters
         ----------
         layer: Data or subset instance

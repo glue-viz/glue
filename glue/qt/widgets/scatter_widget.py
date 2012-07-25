@@ -11,10 +11,12 @@ from ..ui.scatterwidget import Ui_ScatterWidget
 from .data_viewer import DataViewer
 
 
-WARN_SLOW = 10000 # max number of points which render quickly
+WARN_SLOW = 10000  # max number of points which render quickly
+
 
 class ScatterWidget(DataViewer):
     LABEL = "Scatter Plot"
+
     def __init__(self, data, parent=None):
         super(ScatterWidget, self).__init__(data, parent)
         self.central_widget = QtGui.QWidget()
@@ -147,10 +149,10 @@ class ScatterWidget(DataViewer):
         title = "Add large data set?"
         ok = QtGui.QMessageBox.Ok
         cancel = QtGui.QMessageBox.Cancel
-        buttons = ok|cancel
+        buttons = ok | cancel
         result = QtGui.QMessageBox.question(self, title, warn_msg,
                                             buttons=buttons,
-                                            defaultButton = cancel)
+                                            defaultButton=cancel)
         return result == ok
 
     def __str__(self):

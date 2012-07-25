@@ -23,6 +23,7 @@ import numpy as np
 from ..core import util
 from ..core import roi
 
+
 class MouseMode(object):
     """ The base class for all MouseModes.
 
@@ -144,7 +145,6 @@ class RectangleMode(RoiMode):
         self.shortcut = 'R'
 
 
-
 class CircleMode(RoiMode):
     """ Defines a Circular ROI, accessible via the roi() method"""
     def __init__(self, axes, **kwargs):
@@ -217,11 +217,9 @@ class ContrastMode(MouseMode):
             self._result = lo, hi
         return self._result
 
-
-
     def move(self, event):
         """ MoveEvent. Update bias and contrast on Right Mouse button drag """
-        if event.button != 3: # RMB drag only
+        if event.button != 3:  # RMB drag only
             return
         x, y = event.x, event.y
         dx, dy = self._axes.figure.canvas.get_width_height()
@@ -283,6 +281,5 @@ def contour_to_roi(x, y, data):
     if xy is None:
         return None
 
-    p = roi.PolygonalROI(vx = xy[:, 0], vy = xy[:, 1])
+    p = roi.PolygonalROI(vx=xy[:, 0], vy=xy[:, 1])
     return p
-

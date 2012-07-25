@@ -1,5 +1,6 @@
 from .tree import Tree
 
+
 class TreeTraversal(object):
     def __init__(self, tree):
         if not isinstance(tree, Tree):

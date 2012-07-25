@@ -15,14 +15,14 @@ class MessageWidget(QWidget, core.hub.HubListener):
         self.ui = Ui_MessageWidget()
         self.ui.setupUi(self)
         self.ui.messageTable.setColumnCount(3)
-        labels =['Time', 'Message', 'Sender']
+        labels = ['Time', 'Message', 'Sender']
         self.ui.messageTable.setHorizontalHeaderLabels(labels)
 
     def register_to_hub(self, hub):
         # catch all messages
         hub.subscribe(self, core.message.Message,
-                      handler = self.process_message,
-                      filter = lambda x:True)
+                      handler=self.process_message,
+                      filter=lambda x: True)
 
     def process_message(self, message):
         row = self.ui.messageTable.rowCount() * 0
@@ -36,4 +36,3 @@ class MessageWidget(QWidget, core.hub.HubListener):
         self.ui.messageTable.setItem(row, 1, mtyp)
         self.ui.messageTable.setItem(row, 2, sender)
         self.ui.messageTable.resizeColumnsToContents()
-

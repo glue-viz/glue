@@ -78,13 +78,14 @@ class ComponentSelector(QWidget):
         item = self._ui.component_selector.currentItem()
         return self._ui.component_selector.get_data(item)
 
-def main(): # pragma: no cover
+
+def main():  # pragma: no cover
     import glue
     import numpy as np
     from PyQt4.QtGui import QApplication
 
     d = glue.Data(label="hi")
-    d2 = glue.Data(label = "there")
+    d2 = glue.Data(label="there")
 
     c1 = glue.Component(np.array([1, 2, 3]))
     c2 = glue.Component(np.array([1, 2, 3]))
@@ -103,5 +104,5 @@ def main(): # pragma: no cover
     w.show()
     app.exec_()
 
-if __name__ == "__main__": # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     main()

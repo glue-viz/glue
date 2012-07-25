@@ -160,13 +160,16 @@ class DataCollectionDeleteMessage(DataCollectionMessage):
         DataCollectionMessage.__init__(self, sender, tag=tag)
         self.data = data
 
+
 class LiveLinkMessage(Message):
     def __init__(self, sender, link, tag=None):
         super(LiveLinkMessage, self).__init__(sender, tag=tag)
         self.link = link
 
+
 class LiveLinkAddMessage(LiveLinkMessage):
     pass
+
 
 class LiveLinkDeleteMessage(LiveLinkMessage):
     pass

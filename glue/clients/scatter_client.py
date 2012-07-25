@@ -10,6 +10,7 @@ from ..core.roi import PolygonalROI
 from ..core.util import relim
 from ..core.edit_subset_mode import EditSubsetMode
 
+
 class ScatterLayerManager(object):
 
     def __init__(self, layer, axes):
@@ -115,10 +116,10 @@ class ScatterClient(Client):
 
     def register_to_hub(self, hub):
         super(ScatterClient, self).register_to_hub(hub)
-        data_in_dc = lambda x:x.data in self._data
+        data_in_dc = lambda x: x.data in self._data
         hub.subscribe(self,
                       DataCollectionAddMessage,
-                      handler=lambda x:self.add_layer(x.data),
+                      handler=lambda x: self.add_layer(x.data),
                       filter=data_in_dc)
 
     def is_layer_present(self, layer):

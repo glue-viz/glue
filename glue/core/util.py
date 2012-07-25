@@ -2,8 +2,10 @@ from scipy import ndimage
 from matplotlib import _cntr
 import numpy as np
 
+
 def identity(x):
     return x
+
 
 def relim(lo, hi, log=False):
     x, y = lo, hi
@@ -16,6 +18,7 @@ def relim(lo, hi, log=False):
     delta = y - x
     return (x - .02 * delta, y + .02 * delta)
 
+
 def file_format(filename):
     if filename.find('.') == -1:
         return ''
@@ -24,6 +27,7 @@ def file_format(filename):
     else:
         result = filename.lower().rsplit('.', 1)[1]
     return result
+
 
 def point_contour(x, y, data):
     """Calculate the contour that passes through (x,y) in data

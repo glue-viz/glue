@@ -16,6 +16,7 @@ from .. import qtutil
 from .custom_component_widget import CustomComponentWidget
 from ..actions import act as _act
 
+
 @core.decorators.singleton
 class Clipboard(object):
     def __init__(self):
@@ -72,6 +73,7 @@ class LayerAction(QAction):
     def _do_action(self):
         raise NotImplementedError
 
+
 class NewAction(LayerAction):
     _title = "New Subset"
     _tooltip = "Create a new subset for the selected data"
@@ -85,6 +87,7 @@ class NewAction(LayerAction):
         assert self._can_trigger()
         data = self.selected_layers()[0].data
         data.new_subset()
+
 
 class ClearAction(LayerAction):
     _title = "Clear subset"
@@ -140,7 +143,7 @@ class DeleteAction(LayerAction):
 
 
 class LinkAction(LayerAction):
-    _title="Link Data"
+    _title = "Link Data"
     _tooltip = "Define links between data sets"
     _data_link_message = "Define links between data sets"
     _link_message = "Live link selection"
@@ -223,6 +226,7 @@ class LinkAction(LayerAction):
         self._update_self()
         self.setEnabled(self._can_trigger())
 
+
 class LoadAction(LayerAction):
     _title = "Load subset"
     _tooltip = "Load a subset from a file"
@@ -262,6 +266,7 @@ class CopyAction(LayerAction):
         subset = self.selected_layers()[0]
         Clipboard().contents = subset
 
+
 class PasteAction(LayerAction):
     _title = "Paste subset"
     _tooltip = "Overwite selected subset with contents from clipboard"
@@ -279,7 +284,6 @@ class PasteAction(LayerAction):
         assert self._can_trigger()
         layer = self.selected_layers()[0]
         layer.paste(Clipboard().contents)
-
 
 
 class Inverter(LayerAction):
@@ -333,11 +337,13 @@ class BinaryCombiner(LayerAction):
         subset.subset_state = self._state_class(layers[0].subset_state,
                                         layers[1].subset_state)
 
+
 class OrCombiner(BinaryCombiner):
     _title = "Union Combine"
     _icon = ':icons/glue_or.png'
     _tooltip = 'Define new subset as union of selection'
     _state_class = core.subset.OrState
+
 
 class AndCombiner(BinaryCombiner):
     _title = "Intersection Combine"
@@ -345,11 +351,13 @@ class AndCombiner(BinaryCombiner):
     _tooltip = 'Define new subset as intersection of selection'
     _state_class = core.subset.AndState
 
+
 class XorCombiner(BinaryCombiner):
     _title = "XOR Combine"
     _icon = ':icons/glue_xor.png'
     _tooltip = 'Define new subset as non-intersection of selection'
     _state_class = core.subset.XorState
+
 
 class LayerCommunicator(QObject):
     layer_check_changed = pyqtSignal(object, bool)
@@ -410,7 +418,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
         return result
 
     def current_layer(self):
-        """ Return the selected layer if a single item is selected, else None """
+        """Return the layer if a single item is selected, else None """
         layers = self.selected_layers()
         if len(layers) == 1:
             return layers[0]
@@ -429,6 +437,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
         self.newSubsetButton.set_action(self._actions['new'], text=False)
 
         rbut = self.layerRemoveButton
+
         def update_enabled():
             return rbut.setEnabled(self._actions['delete'].isEnabled())
         self.layerTree.itemSelectionChanged.connect(update_enabled)
@@ -539,6 +548,7 @@ def load_subset(subset):
         subset.read_mask(file_name)
     except Exception as e:
         print "Exception raised -- could not load\n%s" % e
+
 
 def save_subset(subset):
     assert isinstance(subset, core.subset.Subset)

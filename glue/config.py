@@ -2,6 +2,7 @@ import os
 import sys
 import imp
 
+
 class ConfigObject(object):
     def identity(self, x):
         return x
@@ -25,7 +26,7 @@ class ConfigObject(object):
             self.__setattr__(name, obj)
 
 
-def load_configuration(search_path = None):
+def load_configuration(search_path=None):
     ''' Find and import a config.py file
 
     Returns:
@@ -52,6 +53,7 @@ def load_configuration(search_path = None):
                             (config_file, e))
 
     return result
+
 
 def _default_search_order():
     """

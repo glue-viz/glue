@@ -60,6 +60,7 @@ def discover_links(data, links):
             break
     return cid_links
 
+
 def find_dependents(data, link):
     """ Determine which `DerivedComponents` in a data set
     depend (either directly or implicitly) on a given
@@ -92,7 +93,7 @@ def find_dependents(data, link):
                 visited.add(derived)
                 break
         else:
-            break # nothing more to remove
+            break  # nothing more to remove
     return dependents
 
 

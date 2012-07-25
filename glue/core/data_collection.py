@@ -1,7 +1,7 @@
 from .hub import Hub, HubListener
 from .data import Data
 from .link_manager import LinkManager
-from .live_link import LiveLink, LiveLinkManager
+from .live_link import LiveLinkManager
 from .registry import Registry
 from .message import DataCollectionAddMessage, \
                      DataCollectionDeleteMessage, \
@@ -24,6 +24,7 @@ class DataCollection(HubListener):
         :param data: glue.Data object, or list of such objects (optional)
                       These objects will be auto-appended to the collection
         """
+        super(DataCollection, self).__init__()
         self.hub = None
         self._link_manager = LinkManager()
         self.live_link_manager = LiveLinkManager()
@@ -34,7 +35,6 @@ class DataCollection(HubListener):
         elif isinstance(data, list):
             for d in data:
                 self.append(d)
-
 
     @property
     def data(self):

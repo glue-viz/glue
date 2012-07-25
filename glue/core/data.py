@@ -16,8 +16,7 @@ from .tree import Tree
 from .registry import Registry
 from .message import DataUpdateMessage, \
                      DataAddComponentMessage, \
-                     SubsetCreateMessage, \
-                     SubsetDeleteMessage
+                     SubsetCreateMessage
 
 from .util import file_format
 
@@ -25,6 +24,7 @@ __all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
            'TabularData', 'GriddedData']
 
 COLORS = [RED, GREEN, BLUE, YELLOW, BROWN, ORANGE, PURPLE, PINK]
+
 
 class ComponentID(object):
     """ References a Component object within a data object
@@ -88,6 +88,7 @@ class ComponentID(object):
 
     def __pow__(self, other):
         return BinaryComponentLink(self, other, operator.pow)
+
 
 class Component(object):
     """ Stores the actual, numerical information for a particular quantity
@@ -201,7 +202,7 @@ class Data(object):
 
         self.data = self
         self._label = None
-        self.label = label # trigger disambiguation
+        self.label = label  # trigger disambiguation
 
         # The default-editable subset
         self.edit_subset = self.new_subset(label="Editable Subset")
@@ -357,8 +358,10 @@ class Data(object):
 
     @property
     def derived_components(self):
-        """A list of ComponentIDs for each :class:`~glue.core.data.DerivedComponent`
-        in the data. (Read only)
+        """A list of ComponentIDs for each
+        :class:`~glue.core.data.DerivedComponent` in the data.
+
+        (Read only)
         """
         return [c for c in self.component_ids() if
                 isinstance(self._components[c], DerivedComponent)]
@@ -433,7 +436,7 @@ class Data(object):
         """
         nsub = len(self.subsets)
         color = color or COLORS[nsub % len(COLORS)]
-        label = label or "%s.%i" % (self.label, nsub+1)
+        label = label or "%s.%i" % (self.label, nsub + 1)
         subset = Subset(self, color=color, label=label, **kwargs)
         self.add_subset(subset)
         return subset
@@ -577,6 +580,7 @@ class GriddedData(Data):
         for component_name in arrays:
             comp = Component(arrays[component_name])
             self.add_component(comp, component_name)
+
 
 def pixel_label(i, ndim):
     if ndim == 2:

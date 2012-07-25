@@ -9,8 +9,10 @@ from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import RectangleMode
 from .data_viewer import DataViewer
 
+
 class HistogramWidget(DataViewer):
     LABEL = "Histogram"
+
     def __init__(self, data, parent=None):
         super(HistogramWidget, self).__init__(self, parent)
 
@@ -79,7 +81,7 @@ class HistogramWidget(DataViewer):
             pass
 
         for comp in comps:
-            combo.addItem(comp.label, userData = comp)
+            combo.addItem(comp.label, userData=comp)
 
         combo.currentIndexChanged.connect(self._set_attribute_from_combo)
         combo.setCurrentIndex(0)
@@ -87,7 +89,7 @@ class HistogramWidget(DataViewer):
 
     def _set_attribute_from_combo(self):
         combo = self.ui.attributeCombo
-        index =  combo.currentIndex()
+        index = combo.currentIndex()
         attribute = combo.itemData(index)
         self.client.set_component(attribute)
 
@@ -113,7 +115,7 @@ class HistogramWidget(DataViewer):
             self._update_attributes(data)
 
         combo = self.ui.dataCombo
-        combo.addItem(data.label, userData = data)
+        combo.addItem(data.label, userData=data)
 
     def _remove_data(self, data):
         """ Remove data item from the combo box """
@@ -140,11 +142,11 @@ class HistogramWidget(DataViewer):
 
         hub.subscribe(self,
                       msg.DataCollectionAddMessage,
-                      handler=lambda x:self.add_data(x.data))
+                      handler=lambda x: self.add_data(x.data))
 
         hub.subscribe(self,
                       msg.DataCollectionDeleteMessage,
-                      handler=lambda x:self._remove_data(x.data))
+                      handler=lambda x: self._remove_data(x.data))
 
     def unregister(self, hub):
         self.ui.layerTree.unregister(hub)

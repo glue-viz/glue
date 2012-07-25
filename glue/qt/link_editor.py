@@ -7,7 +7,7 @@ from .ui.link_editor import Ui_LinkEditor
 
 class LinkEditor(QDialog):
 
-    def __init__(self, collection, functions = None, parent=None):
+    def __init__(self, collection, functions=None, parent=None):
         super(LinkEditor, self).__init__(parent)
         self._collection = collection
         from .. import env
@@ -106,7 +106,7 @@ class LinkEditor(QDialog):
             return
         current.data.pop(item)
         deleted = current.takeItem(row)
-        assert deleted == item # sanity check
+        assert deleted == item  # sanity check
 
     @classmethod
     def update_links(cls, collection):

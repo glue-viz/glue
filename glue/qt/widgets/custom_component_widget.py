@@ -102,7 +102,7 @@ class CustomComponentWidget(QDialog):
         expression = self.ui.expression
         pos = expression.cursorPosition()
         text = str(expression.displayText())
-        expression.setText(text[:pos] + addition + text[pos:] )
+        expression.setText(text[:pos] + addition + text[pos:])
 
     @staticmethod
     def create_component(collection):
@@ -126,7 +126,7 @@ def main():
     from glue.core.data_collection import DataCollection
     from PyQt4.QtGui import QApplication
 
-    app = QApplication(sys.argv) # pylint: disable=W0612
+    app = QApplication(sys.argv)  # pylint: disable=W0612
     data = example_data.pipe()[:2]
     dc = glue.DataCollection(list(data))
 

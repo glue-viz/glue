@@ -27,7 +27,8 @@ def make_colormap(color):
 
 def warn_not_implemented(kwargs):
     for kwarg in kwargs:
-        print "WARNING: keyword argument %s not implemented in raster scatter" % kwarg
+        print ("WARNING: keyword argument %s "
+               "not implemented in raster scatter" % kwarg)
 
 
 class Scatter(object):

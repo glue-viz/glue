@@ -8,6 +8,7 @@ TAG_RE = re.compile('\{\s*(?P<tag>\S+)\s*\}')
 
 __all__ = ['ParsedCommand', 'ParsedSubsetState']
 
+
 def _ensure_only_component_references(cmd, references):
     """ Search through tag references in a command, ensure that
     they all reference ComponentIDs
@@ -25,7 +26,8 @@ def _ensure_only_component_references(cmd, references):
         tag = match.group('tag')
         if tag not in references or not \
            isinstance(references[tag], ComponentID):
-            raise TypeError("Reference to %s, which is not a ComponentID" % tag)
+            raise TypeError(
+                "Reference to %s, which is not a ComponentID" % tag)
 
 
 def _reference_list(cmd, references):
@@ -147,7 +149,8 @@ class ParsedComponentLink(ComponentLink):
         parsed : A ParsedCommand object
         """
         parsed.ensure_only_component_references()
-        super(ParsedComponentLink, self).__init__(parsed.reference_list, to_, 0)
+        super(ParsedComponentLink, self).__init__(
+            parsed.reference_list, to_, 0)
         self._parsed = parsed
 
     def compute(self, data):

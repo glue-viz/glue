@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 
-import sys, os, random
+import sys
+import os
+import random
+
 from PyQt4 import QtGui, QtCore
 
 from numpy import arange, sin, pi
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as \
+     FigureCanvas
 from matplotlib.figure import Figure
 
 import numpy as np
@@ -32,7 +36,8 @@ class ScatterCanvas(FigureCanvas):
         # Set default columns to show
         self.column_names = []
         for column in self.table.columns:
-            if self.table.columns[column].dtype in [float, np.float32, np.float64]:
+            if self.table.columns[column].dtype in \
+              [float, np.float32, np.float64]:
                 self.column_names.append(column)
         self.col_x = self.column_names[0]
         self.col_y = self.column_names[1]
@@ -60,12 +65,16 @@ class ScatterCanvas(FigureCanvas):
     def update_scatter(self):
 
         if hasattr(self, '_scatter'):
-            self._scatter.set_offsets(zip(self.table[self.col_x], self.table[self.col_y]))
+            self._scatter.set_offsets(zip(self.table[self.col_x],
+                                          self.table[self.col_y]))
         else:
-            self._scatter = self.ax.scatter(self.table[self.col_x], self.table[self.col_y])
+            self._scatter = self.ax.scatter(self.table[self.col_x],
+                                            self.table[self.col_y])
 
-        self.ax.set_xlim(self.table[self.col_x].min(), self.table[self.col_x].max())
-        self.ax.set_ylim(self.table[self.col_y].min(), self.table[self.col_y].max())
+        self.ax.set_xlim(self.table[self.col_x].min(),
+                         self.table[self.col_x].max())
+        self.ax.set_ylim(self.table[self.col_y].min(),
+                         self.table[self.col_y].max())
 
         self.draw()
 
@@ -93,7 +102,8 @@ class ScatterApplication(QtGui.QMainWindow, Ui_MainWindow):
 
         # Add scatter client to MPL widget holder
         l = QtGui.QVBoxLayout(self.mpl_view)
-        self.scatter = ScatterCanvas(table, parent=self.mpl_view, width=5, height=4, dpi=100)
+        self.scatter = ScatterCanvas(table, parent=self.mpl_view,
+                                     width=5, height=4, dpi=100)
         l.addWidget(self.scatter)
 
         # Add columns to x and y axis
@@ -101,8 +111,10 @@ class ScatterApplication(QtGui.QMainWindow, Ui_MainWindow):
             self.combo_xaxis.addItem(column, None)
             self.combo_yaxis.addItem(column, None)
 
-        self.connect(self.combo_xaxis, QtCore.SIGNAL('activated(int)'), self.scatter.update_x)
-        self.connect(self.combo_yaxis, QtCore.SIGNAL('activated(int)'), self.scatter.update_y)
+        self.connect(self.combo_xaxis, QtCore.SIGNAL('activated(int)'),
+                     self.scatter.update_x)
+        self.connect(self.combo_yaxis, QtCore.SIGNAL('activated(int)'),
+                     self.scatter.update_y)
 
     def file_quit(self):
         self.close()

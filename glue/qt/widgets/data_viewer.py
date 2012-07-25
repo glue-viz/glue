@@ -4,6 +4,7 @@ from PyQt4.QtGui import QMainWindow
 from ...core.hub import HubListener
 from ...core.data import Data
 
+
 class DataViewer(QMainWindow, HubListener):
     """Base class for all Qt DataViewer widgets.
 
@@ -59,4 +60,3 @@ class DataViewer(QMainWindow, HubListener):
         if self._hub is not None:
             self.unregister(self._hub)
         super(DataViewer, self).closeEvent(event)
-

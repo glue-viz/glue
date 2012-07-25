@@ -70,8 +70,10 @@ class RectangularROI(Roi):
 
     def __str__(self):
         if self.defined():
-            return "x=[%0.3f, %0.3f], y=[%0.3f, %0.3f]" % (self.xmin, self.xmax,
-                                                           self.ymin, self.ymax)
+            return "x=[%0.3f, %0.3f], y=[%0.3f, %0.3f]" % (self.xmin,
+                                                           self.xmax,
+                                                           self.ymin,
+                                                           self.ymax)
         else:
             return "Undefined Rectangular ROI"
 

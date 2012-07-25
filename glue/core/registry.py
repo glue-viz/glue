@@ -2,7 +2,16 @@ from .decorators import singleton
 from collections import defaultdict
 from itertools import count
 
+
 def disambiguate(label, taken):
+    """If necessary, add a suffix to label to avoid name conflicts
+
+    :param label: desired label
+    :param taken: set of taken names
+
+    Returns label if it is not in the taken set. Otherwise, returns
+    label_NN where NN is the lowest integer such that label_NN not in taken.
+    """
     if label not in taken:
         return label
     suffix = "_%2.2i"
@@ -11,6 +20,7 @@ def disambiguate(label, taken):
         candidate = label + (suffix % i)
         if candidate not in taken:
             return candidate
+
 
 @singleton
 class Registry(object):

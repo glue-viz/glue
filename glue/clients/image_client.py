@@ -10,6 +10,7 @@ from ..core.edit_subset_mode import EditSubsetMode
 
 from .viz_client import VizClient
 
+
 class InvNormalize(Normalize):
     """ Simple wrapper to matplotlib Normalize object, that
     handles the case where vmax <= vmin """
@@ -21,7 +22,6 @@ class InvNormalize(Normalize):
         else:
             result = Normalize.__call__(self, value)
         return result
-
 
 
 class LayerManager(object):
@@ -106,7 +106,7 @@ class SubsetLayerManager(LayerManager):
         self.delete_artist()
         #shortcut for empty subsets
         if not mask.any():
-           return
+            return
 
         if self.area_style == 'filled':
             self.artist = self._ax.contourf(mask.astype(float),

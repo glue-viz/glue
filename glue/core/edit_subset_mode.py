@@ -1,8 +1,9 @@
 """These classes define the behavior of how new subset states affect
     the edit_subset of a Data object.
 
-   The EditSubsetMode is universal in Glue -- all datasets and clients share
-   the same mode. This is enforced by making the base EditSubsetMode object a singleton.
+   The EditSubsetMode is universal in Glue -- all datasets and clients
+   share the same mode. This is enforced by making the base
+   EditSubsetMode object a singleton.
 """
 from .decorators import singleton
 
@@ -36,6 +37,7 @@ def AndMode(edit_subset, new_state):
         new_state.parent = edit_subset
         state = new_state & edit_subset.subset_state
         edit_subset.subset_state = state
+
 
 def OrMode(edit_subset, new_state):
         """ Edit_subset.subset state is or-combined with new_state """

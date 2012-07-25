@@ -8,6 +8,7 @@ from PyQt4.QtCore import Qt
 from .ui.link_equation import Ui_LinkEquation
 from .. import core
 
+
 def function_label(function):
     """ Format a function signature as a string """
     name = function.__name__
@@ -216,7 +217,7 @@ class LinkEquation(QWidget):
             self._ui.function.addItem(f)
 
 
-def main(): # pragma: no cover
+def main():  # pragma: no cover
     import glue
     import numpy as np
     from component_selector import ComponentSelector
@@ -224,8 +225,8 @@ def main(): # pragma: no cover
 
     app = QApplication([''])
 
-    d = glue.Data(label = 'd1')
-    d2 = glue.Data(label = 'd2')
+    d = glue.Data(label='d1')
+    d2 = glue.Data(label='d2')
     c1 = glue.Component(np.array([1, 2, 3]))
     c2 = glue.Component(np.array([1, 2, 3]))
     c3 = glue.Component(np.array([1, 2, 3]))
@@ -248,7 +249,7 @@ def main(): # pragma: no cover
     w = LinkEquation()
     w.setup([f, g, h])
 
-    cs = ComponentSelector(dc, label = "Data 1")
+    cs = ComponentSelector(dc, label="Data 1")
     w.show()
     cs.show()
     app.exec_()

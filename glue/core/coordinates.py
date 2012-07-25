@@ -48,7 +48,6 @@ class WCSCoordinates(Coordinates):
         # wcs object doesn't seem to unpickle properly. reconstruct it
         self._wcs = pywcs.WCS(self._header)
 
-
     def pixel2world(self, xpix, ypix):
         '''
         Convert pixel to world coordinates, preserving input type/shape
@@ -197,7 +196,6 @@ class WCSCubeCoordinates(WCSCoordinates):
         if 'CTYPE1' in self._header:
             keys[2] = ": %s" % self._header['CTYPE1']
         return "World %s %s" % (letters[axis], keys[axis])
-
 
 
 def coordinates_from_header(header):

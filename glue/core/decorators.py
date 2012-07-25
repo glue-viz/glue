@@ -20,6 +20,7 @@ def memoize(func):
 
     return wrapper
 
+
 def memoize_attr_check(attr):
     """ Memoize a method call, cached both on arguments and given attribute
     of first argument (which is presumably self)

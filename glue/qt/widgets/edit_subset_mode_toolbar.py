@@ -5,9 +5,11 @@ from ...core.edit_subset_mode import (EditSubsetMode, OrMode, AndNotMode,
                                     AndMode, XorMode, SpawnMode, ReplaceMode)
 from ..actions import act
 
+
 def set_mode(mode):
     edit_mode = EditSubsetMode()
     edit_mode.mode = mode
+
 
 class EditSubsetModeToolBar(QtGui.QToolBar):
 

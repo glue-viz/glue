@@ -82,10 +82,10 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         hub.subscribe(self,
                       core.message.DataCollectionDeleteMessage,
                       handler=lambda x: self._remove_layer(x.data),
-                      filter = dc_filt)
+                      filter=dc_filt)
         hub.subscribe(self,
                       core.message.LiveLinkMessage,
-                      handler=lambda x:self._sync_live_link_view(x.link)
+                      handler=lambda x: self._sync_live_link_view(x.link)
                       )
 
     def _assert_in_collection(self, layer):
@@ -95,7 +95,7 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         return self._layer_dict[key]
 
     def __setitem__(self, key, value):
-        self.set_data(key, value) # for drag and drop
+        self.set_data(key, value)  # for drag and drop
         self._layer_dict[key] = value
 
     def __contains__(self, key):
@@ -150,7 +150,7 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
             return
 
         if subset.data not in self:
-            self._add_data(subset.data) # will add subset too
+            self._add_data(subset.data)  # will add subset too
             return
 
         label = subset.label
@@ -266,10 +266,10 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         super(DataCollectionView, self).unregister(hub)
         self.data_collection.unregister(hub)
 
+
 def _color_icon(color, size=20, alpha=1.0):
-    pixm = QPixmap(size,size)
+    pixm = QPixmap(size, size)
     color = qtutil.mpl_to_qt4_color(color, alpha=alpha)
     pixm.fill(color)
     icon = QIcon(pixm)
     return icon
-

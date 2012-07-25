@@ -1,5 +1,6 @@
 from PyQt4.QtGui import QAction, QIcon
 
+
 def act(name, parent, tip='', icon=None, shortcut=None):
     """ Factory for making a new action """
     a = QAction(name, parent)
@@ -65,5 +66,3 @@ layer_delete = act("Delete layer",
 
 
 """
-
-

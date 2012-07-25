@@ -1,9 +1,9 @@
-from PyQt4.QtGui import QMainWindow 
+from PyQt4.QtGui import QMainWindow
 from PyQt4.QtGui import QVBoxLayout
 from PyQt4.QtGui import QWidget
 
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-#from matplotlib.backends.backend_qt4 import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as \
+     FigureCanvas
 from matplotlib.figure import Figure
 
 from .custom_toolbar import CustomToolbar as NavigationToolbar
@@ -16,7 +16,7 @@ class QtTreeClient(QMainWindow, MplTreeClient):
 
         QMainWindow.__init__(self, parent)
         self.setWindowTitle('Tree Client')
-        
+
         self.create_main_frame()
         MplTreeClient.__init__(self, data, axes=self.axes, **kwargs)
         self._do_select = False
@@ -29,23 +29,23 @@ class QtTreeClient(QMainWindow, MplTreeClient):
 
     def on_button_release(self, event):
         self._do_select = False
-        
+
     def on_motion(self, event):
         if self.mpl_toolbar.mode != '':
             return
-        if not self._do_select: 
+        if not self._do_select:
             return
 
         if not event.inaxes:
             return
-        
+
         subset = self.data.get_active_subset()
         if not subset:
             return
-        
+
         x = event.xdata
         y = event.ydata
-        branch = self.layout.pick(x,y)
+        branch = self.layout.pick(x, y)
         if not branch:
             subset.node_list = []
         else:
@@ -55,7 +55,7 @@ class QtTreeClient(QMainWindow, MplTreeClient):
     def create_main_frame(self):
         self.main_frame = QWidget()
         self.dpi = 100
-        self.fig = Figure((5.0, 4.0), dpi = self.dpi)
+        self.fig = Figure((5.0, 4.0), dpi=self.dpi)
         self.canvas = FigureCanvas(self.fig)
         self.canvas.setParent(self.main_frame)
 
@@ -69,7 +69,6 @@ class QtTreeClient(QMainWindow, MplTreeClient):
 
         vbox = QVBoxLayout()
         vbox.addWidget(self.canvas)
-        
+
         self.main_frame.setLayout(vbox)
         self.setCentralWidget(self.main_frame)
-

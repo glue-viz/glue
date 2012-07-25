@@ -8,6 +8,7 @@ from ..core.exceptions import IncompatibleDataException, IncompatibleAttribute
 from ..core.util import relim
 from ..core.edit_subset_mode import EditSubsetMode
 
+
 class HistogramLayerManager(object):
     def __init__(self, axes, layer):
         self._axes = axes
@@ -143,7 +144,7 @@ class HistogramClient(Client):
             managers.append(self._managers[subset])
 
         if len(x) >= 1:
-            result = self._axes.hist(x, color = colors, **self._options)
+            result = self._axes.hist(x, color=colors, **self._options)
             self._store_ylimits(result[0])
 
             if len(x) == 1:
@@ -153,7 +154,7 @@ class HistogramClient(Client):
         else:
             patchlists = []
 
-        for m,p in zip(managers, patchlists):
+        for m, p in zip(managers, patchlists):
             m.set_patches(p)
 
         if self._autoscale:
@@ -270,9 +271,9 @@ class HistogramClient(Client):
             mode.combine(subset, state)
 
     def register_to_hub(self, hub):
-        dfilter = lambda x:x.sender.data in self._managers
-        dcfilter = lambda x:x.data in self._managers
-        subfilter = lambda x:x.subset in self._managers
+        dfilter = lambda x: x.sender.data in self._managers
+        dcfilter = lambda x: x.data in self._managers
+        subfilter = lambda x: x.subset in self._managers
 
         hub.subscribe(self,
                       msg.SubsetCreateMessage,

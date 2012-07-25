@@ -20,6 +20,7 @@ from IPython.frontend.qt.kernelmanager import QtKernelManager
 from IPython.frontend.qt.console.rich_ipython_widget import RichIPythonWidget
 from IPython.utils.traitlets import TraitError
 
+
 def default_kernel_app():
     """ Return a configured IPKernelApp """
 

@@ -15,4 +15,3 @@ link_functions = [identity]
 
 """ Feel free to define or import any extra functions. These will be
 visible to the custom component definer """
-

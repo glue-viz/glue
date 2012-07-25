@@ -43,7 +43,7 @@ class Subset(object):
         self.data = data
         self.color = color
         self._label = None
-        self.label = label # trigger disambiguation
+        self.label = label  # trigger disambiguation
         self.style = VisualAttributes(parent=self)
         self.style.markersize *= 2.5
         self.style.color = color
@@ -277,6 +277,7 @@ class RangeSubsetState(SubsetState):
     def copy(self):
         return RangeSubsetState(self.lo, self.hi, self.att)
 
+
 class CompositeSubsetState(SubsetState):
     def __init__(self, state1, state2=None):
         super(CompositeSubsetState, self).__init__()
@@ -285,6 +286,7 @@ class CompositeSubsetState(SubsetState):
 
     def copy(self):
         return type(self)(self.state1, self.state2)
+
 
 class OrState(CompositeSubsetState):
     @memoize_attr_check('parent')
@@ -321,6 +323,7 @@ class ElementSubsetState(SubsetState):
         if self._indices is not None:
             result.flat[self._indices] = True
         return result
+
 
 class InequalitySubsetState(SubsetState):
     def __init__(self, left, right, op):

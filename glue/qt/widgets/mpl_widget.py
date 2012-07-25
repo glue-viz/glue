@@ -6,7 +6,8 @@ from PyQt4.QtCore import pyqtSignal
 
 # import the Qt4Agg FigureCanvas object, that binds Figure to
 # Qt4Agg backend. It also inherits from QWidget
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as \
+     FigureCanvas
 
 # Matplotlib Figure object
 from matplotlib.figure import Figure

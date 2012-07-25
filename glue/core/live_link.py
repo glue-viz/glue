@@ -3,6 +3,7 @@ from .message import SubsetUpdateMessage
 from .message import LiveLinkAddMessage
 from .message import LiveLinkDeleteMessage
 
+
 class LiveLinkManager(object):
     """ A collection to create, store, and remove LiveLinks
 
@@ -95,7 +96,6 @@ class LiveLink(HubListener):
                 continue
             subset.subset_state = state.copy()
             subset.style = style
-
 
     def notify(self, message):
         """Sync subset states when a SubsetUpdateMessage is called
