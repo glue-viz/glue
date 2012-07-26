@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 
+from .modest_image import imshow
 from ..core.exceptions import IncompatibleAttribute
 from ..core.data import Data
 from ..core.subset import Subset, RoiSubsetState
@@ -52,10 +53,8 @@ class DataLayerManager(LayerManager):
 
     def update_artist(self, image):
         self.delete_artist()
-        self.artist = self._ax.imshow(image, cmap=self.cmap,
-                                      norm=self.norm,
-                                      interpolation='nearest',
-                                      origin='lower')
+        self.artist = imshow(self._ax, image, cmap=self.cmap, norm=self.norm,
+                             interpolation='nearest', origin='lower')
 
     def set_visible(self, state):
         if self.artist is None:

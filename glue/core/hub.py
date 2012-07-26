@@ -126,7 +126,7 @@ class Hub(object):
         """
         Remove a (subscriber,message) pair from subscription list.
         The handler originally attached to the subscription will
-        no longer be called when broeacasting messages of type message
+        no longer be called when broadcasting messages of type message
         """
         if subscriber not in self._subscriptions:
             return

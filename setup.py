@@ -9,8 +9,10 @@ cmdclass = {}
 
 scripts = glob(os.path.join('scripts', '*'))
 
+
 class PyTest(Command):
     user_options = []
+
     def initialize_options(self):
         pass
 
@@ -18,12 +20,14 @@ class PyTest(Command):
         pass
 
     def run(self):
-        import sys, subprocess
+        import sys
+        import subprocess
         path = os.path.join('scripts', 'runtests.py')
         errno = subprocess.call([sys.executable, path, 'glue'])
         raise SystemExit(errno)
 
 cmdclass['test'] = PyTest
+
 
 class BuildQt(Command):
 
@@ -39,11 +43,9 @@ class BuildQt(Command):
 
     def run(self):
 
-        import os
-        import glob
         from PyQt4.uic import compileUi
 
-        for infile in glob.glob(os.path.join('glue', 'qt', 'ui', '*.ui')):
+        for infile in glob(os.path.join('glue', 'qt', 'ui', '*.ui')):
             print("Compiling " + infile)
             directory, filename = os.path.split(infile)
             outfile = os.path.join(directory, filename.replace('.ui', '.py'))
@@ -59,7 +61,8 @@ class BuildQt(Command):
         else:
             option = '-py3'
         try:
-            subprocess.call([self.pyrcc4, option, 'glue/qt/glue.qrc', '-o', 'glue/qt/glue_qt_resources.py'])
+            subprocess.call([self.pyrcc4, option, 'glue/qt/glue.qrc', '-o',
+                             'glue/qt/glue_qt_resources.py'])
         except OSError:
             print("pyrcc4 command failed - make sure that pyrcc4 "
                   "is in your $PATH, or specify a custom command with "
@@ -76,6 +79,7 @@ try:  # Python 3.x
     from distutils.command.build_py import build_py_2to3 as build_py
 except ImportError:  # Python 2.x
     from distutils.command.build_py import build_py
+
 
 class build(build_py):
     def run(self):
