@@ -155,7 +155,8 @@ class TestContrastMode(TestMouseMode):
         data = np.array([1., 2., 3.])
         self.mode.set_clip_percentile(10, 90)
         result = self.mode.get_bounds(data)
-        np.testing.assert_array_equal(result, np.percentile(data, [10, 90]))
+        np.testing.assert_array_almost_equal(result,
+                                             np.percentile(data, [10, 90]))
 
     def test_set_clip_precentile_update(self):
         """ results updated if clip percentile updates """
@@ -164,7 +165,8 @@ class TestContrastMode(TestMouseMode):
         result = self.mode.get_bounds(data)
         self.mode.set_clip_percentile(20, 80)
         result = self.mode.get_bounds(data)
-        np.testing.assert_array_equal(result, np.percentile(data, [20, 80]))
+        np.testing.assert_array_almost_equal(result,
+                                             np.percentile(data, [20, 80]))
 
     def test_set_clip_precentile_update_data(self):
         """ results updated if data updates """
@@ -173,7 +175,8 @@ class TestContrastMode(TestMouseMode):
         result = self.mode.get_bounds(data)
         data = data + 3
         result = self.mode.get_bounds(data)
-        np.testing.assert_array_equal(result, np.percentile(data, [10, 90]))
+        np.testing.assert_array_almost_equal(result,
+                                             np.percentile(data, [10, 90]))
 
 
 class TestContourMode(TestMouseMode):

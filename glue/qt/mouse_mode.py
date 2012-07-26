@@ -16,9 +16,10 @@ The basic usage pattern is thus:
    methods in a MouseMode, for additional behavior
 
 """
-from PyQt4.QtGui import QIcon
+from PyQt4.QtGui import QIcon, QAction
 
 import numpy as np
+from scipy import stats
 
 from ..core import util
 from ..core import roi
@@ -101,6 +102,10 @@ class MouseMode(object):
         self._log_position(event)
         if self._release_callback is not None:
             self._release_callback(self)
+
+    def menu_actions(self):
+        """ List of QActions to be attached to this mode as a context menu """
+        return []
 
 
 class RoiMode(MouseMode):
@@ -215,7 +220,11 @@ class ContrastMode(MouseMode):
         #XXX warning -- results are bad if data values change in-place
         if data is not self._last:
             self._last = data
-            lo, hi = np.percentile(data, [self._percent_lo, self._percent_hi])
+            limits = (-np.inf, np.inf)
+            lo = stats.scoreatpercentile(data, self._percent_lo,
+                                         limit=limits)
+            hi = stats.scoreatpercentile(data, self._percent_hi,
+                                         limit=limits)
             self._result = lo, hi
         return self._result
 
@@ -241,6 +250,26 @@ class ContrastMode(MouseMode):
         self.contrast = np.tan(theta)
 
         super(ContrastMode, self).move(event)
+
+    def menu_actions(self):
+        result = []
+
+        a = QAction("minmax", None)
+        a.triggered.connect(lambda: self.set_clip_percentile(0, 100))
+        result.append(a)
+
+        a = QAction("99%", None)
+        a.triggered.connect(lambda: self.set_clip_percentile(1, 99))
+        result.append(a)
+
+        a = QAction("95%", None)
+        a.triggered.connect(lambda: self.set_clip_percentile(5, 95))
+        result.append(a)
+
+        a = QAction("90%", None)
+        a.triggered.connect(lambda: self.set_clip_percentile(10, 90))
+        result.append(a)
+        return result
 
 
 class ContourMode(MouseMode):

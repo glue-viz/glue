@@ -3,7 +3,7 @@ import os
 import matplotlib
 from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
 from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import QIcon
+from PyQt4.QtGui import QIcon, QMenu
 from PyQt4.QtCore import Qt
 
 from . import glue_qt_resources  # pylint: disable=W0611
@@ -123,7 +123,6 @@ class GlueToolbar(NavigationToolbar2QT):
         action = QtGui.QAction(mode.icon, mode.action_text, parent)
         action.triggered.connect(receiver)
         parent.addAction(action)
-        self.addAction(action)
 
         if mode.shortcut is not None:
             action.setShortcut(mode.shortcut)
@@ -132,6 +131,16 @@ class GlueToolbar(NavigationToolbar2QT):
         action.setToolTip(mode.tool_tip)
         action.setCheckable(True)
         self.buttons[mode.mode_id] = action
+
+        menu_actions = mode.menu_actions()
+        if len(menu_actions) > 0:
+            menu = QMenu(self)
+            for ma in mode.menu_actions():
+                ma.setParent(self)
+                menu.addAction(ma)
+            action.setMenu(menu)
+
+        self.addAction(action)
 
     def _custom_mode(self, mode):
         if self._active == mode.mode_id:
