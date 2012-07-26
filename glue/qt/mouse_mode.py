@@ -189,6 +189,8 @@ class ContrastMode(MouseMode):
 
         self._last = None
         self._result = None
+        self._percent_lo = 0.
+        self._percent_hi = 100.
 
     def get_scaling(self, data):
         """ Return the intensity values to set as the darkest and
@@ -201,21 +203,29 @@ class ContrastMode(MouseMode):
            * tuple of lo,hi : the intensity values to set as darkest/brightest
         :rtype: tuple
         """
-        lo, hi = self._get_data_bounds(data)
+        lo, hi = self.get_bounds(data)
         ra = hi - lo
         bias = lo + ra * self.bias
         vmin = bias - ra * self.contrast
         vmax = bias + ra * self.contrast
         return vmin, vmax
 
-    def _get_data_bounds(self, data):
+    def get_bounds(self, data):
         #cache last result. cant use @memoize, since ndarrays dont hash
+        #XXX warning -- results are bad if data values change in-place
         if data is not self._last:
             self._last = data
-            lo = np.nanmin(data)
-            hi = np.nanmax(data)
+            lo, hi = np.percentile(data, [self._percent_lo, self._percent_hi])
             self._result = lo, hi
         return self._result
+
+    def set_clip_percentile(self, lo, hi):
+        """Percentiles at which to clip the data at black/white"""
+        if lo == self._percent_lo and hi == self._percent_hi:
+            return
+        self._percent_lo = lo
+        self._percent_hi = hi
+        self._last = None  # clear cache
 
     def move(self, event):
         """ MoveEvent. Update bias and contrast on Right Mouse button drag """
