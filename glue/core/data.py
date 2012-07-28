@@ -450,9 +450,16 @@ class Data(object):
         if subset in self.subsets:
             return  # prevents infinite recursion
         self.subsets.append(subset)
+
+        if subset.data is not self:
+            subset.do_broadcast(False)
+            subset.data = self
+            subset.label = subset.label # hacky. disambiguates name if needed
+
         if self.hub is not None:
             msg = SubsetCreateMessage(subset)
             self.hub.broadcast(msg)
+
         subset.do_broadcast(True)
 
     def register_to_hub(self, hub):

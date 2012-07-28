@@ -12,6 +12,7 @@ from ..coordinates import WCSCoordinates, WCSCubeCoordinates
 from ...tests import example_data
 from ..registry import Registry
 
+
 class TestCoordinates(Coordinates):
 
     def pixel2world(self, *args):
@@ -74,7 +75,8 @@ class TestData(object):
         comp.data.shape = (3, 2)
         with pytest.raises(TypeError) as exc:
             self.data.add_component(comp("junk label"))
-        assert exc.value.args[0] == "add_component() takes exactly 3 arguments (2 given)"
+        assert exc.value.args[0] == ("add_component() takes exactly 3 "
+                                     "arguments (2 given)")
 
     def test_get_getitem_incompatible_attribute(self):
         cid = ComponentID('bad')
@@ -141,7 +143,8 @@ class TestData(object):
         self.data.register_to_hub(hub)
         with pytest.raises(AttributeError) as exc:
             self.data.__setattr__('hub', hub2)
-        assert exc.value.args[0] == "Data has already been assigned to a different hub"
+        assert exc.value.args[0] == ("Data has already been assigned "
+                                     "to a different hub")
 
     def test_primary_components(self):
         compid = ComponentID('virtual')
@@ -166,7 +169,8 @@ class TestData(object):
         comp = Component(np.array([1]))
         with pytest.raises(TypeError) as exc:
             self.data.add_component(comp, label='bad')
-        assert exc.value.args[0] == "Compoment is incompatible with other components in this data"
+        assert exc.value.args[0] == ("Compoment is incompatible with "
+                                     "other components in this data")
 
     def test_add_component_link(self):
         compid = ComponentID('virtual')
@@ -209,12 +213,29 @@ class TestData(object):
         assert cid == [self.comp_id]
 
     def test_add_subset(self):
-        s = MagicMock(spec_set=Subset)
+        s = Subset(None)
         self.data.add_subset(s)
         assert s in self.data.subsets
 
+    def test_add_subset_reparents_subset(self):
+        """add_subset method updates subset.data reference"""
+        s = Subset(None)
+        self.data.add_subset(s)
+        assert s.data is self.data
+
+    def test_add_subset_disambiguates_label(self):
+        """adding subset should disambiguate label if needed"""
+        s1 = Subset(None)
+        self.data.add_subset(s1)
+        s1.label = "test_subset_label"
+        s2 = Subset(None)
+        s2.label = "test_subset_label"
+        assert s2.label == "test_subset_label"
+        self.data.add_subset(s2)
+        assert s2.label != "test_subset_label"
+
     def test_add_subset_with_hub(self):
-        s = MagicMock(spec_set=Subset)
+        s = Subset(None)
         hub = MagicMock(spec_set=Hub)
         self.data.register_to_hub(hub)
 
