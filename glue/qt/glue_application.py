@@ -2,7 +2,7 @@
 
 from PyQt4.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                          QMenu, QMdiSubWindow, QAction, QMessageBox,
-                         QFileDialog)
+                         QFileDialog, QLabel, QPixmap)
 from PyQt4.QtCore import Qt
 
 from .. import core
@@ -37,6 +37,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._create_menu()
         self._create_terminal()
         self._new_tab()
+        self._welcome_window()
 
     @property
     def tab_widget(self):
@@ -70,13 +71,17 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         w.close()
         self.tab_widget.removeTab(index)
 
-    def _add_to_current_tab(self, new_widget):
+    def _add_to_current_tab(self, new_widget, label=None):
         page = self.current_tab
         sub = QMdiSubWindow()
 
         sub.setWidget(new_widget)
         sub.resize(new_widget.size())
+        if label:
+            sub.setWindowTitle(label)
         page.addSubWindow(sub)
+        page.setActiveSubWindow(sub)
+        return sub
 
     def cascade_current_tab(self):
         """Arrange windows in current tab via cascade"""
@@ -302,3 +307,14 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._terminal.show()
         button = self._ui.terminal_button
         button.setArrowType(Qt.UpArrow)
+
+    def _welcome_window(self):
+        widget = QLabel(self)
+        pm = QPixmap(':icons/glue_welcome.png')
+        pm = pm.scaledToHeight(400, mode=Qt.SmoothTransformation)
+        widget.setPixmap(pm)
+        widget.show()
+        sub = self._add_to_current_tab(widget, label='Getting Started')
+        def do_close(win):
+            sub.close()
+        self.current_tab.subWindowActivated.connect(do_close)
