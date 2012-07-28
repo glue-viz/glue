@@ -212,7 +212,7 @@ class ScatterClient(Client):
         if rng[0] == np.infty:
             return
 
-        if self.ax.xaxis_inverted():
+        if self.ax.yaxis_inverted():
             rng = [rng[1], rng[0]]
 
         self.ax.set_ylim(rng)
@@ -267,6 +267,8 @@ class ScatterClient(Client):
             self._snap_ylim()
 
         self._update_axis_labels()
+        self._redraw()
+
 
     def _apply_roi(self, roi):
         # every active data layer is set

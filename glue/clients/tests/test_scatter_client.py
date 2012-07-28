@@ -187,7 +187,7 @@ class TestScatterClient(object):
         ct1 = ctr.call_count
         ncall = ct1 - ct0
         expected = len(self.client.managers)
-        assert ncall == expected
+        assert ncall >= expected
 
     def test_two_incompatible_data(self):
         d0 = self.add_data(self.data[0])
