@@ -4,7 +4,7 @@ from mock import MagicMock
 
 from ..data import ComponentID, Component, Data, DerivedComponent, pixel_label
 from ..coordinates import Coordinates
-from ..subset import Subset
+from ..subset import Subset, SubsetState
 from ..hub import Hub
 from ..exceptions import IncompatibleAttribute
 from ..component_link import ComponentLink
@@ -216,6 +216,15 @@ class TestData(object):
         s = Subset(None)
         self.data.add_subset(s)
         assert s in self.data.subsets
+
+    def test_add_subset_with_subset_state(self):
+        """Passing a subset state auto-wraps into a subset object"""
+        state = SubsetState()
+        self.data.add_subset(state)
+        added = self.data.subsets[-1]
+        assert added.subset_state is state
+        assert added.subset_state.parent is added
+        assert added.data is self.data
 
     def test_add_subset_reparents_subset(self):
         """add_subset method updates subset.data reference"""

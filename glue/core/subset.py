@@ -210,10 +210,44 @@ class Subset(object):
         state.parent = self
         self.subset_state = state
 
+    def __str__(self):
+        dlabel = "(no data)"
+        if self.data is not None:
+            dlabel = "(data: %s)" % self.data.label
+        slabel = "Subset: (no label)"
+        if self.label:
+            slabel = "Subset: %s" % self.label
+        return "%s %s" % (slabel, dlabel)
+
+    def __or__(self, other):
+        return _combine([self, other], operator.or_)
+
+    def __and__(self, other):
+        return _combine([self, other], operator.and_)
+
+    def __invert__(self):
+        return _combine([self], operator.invert)
+
+    def __xor__(self, other):
+        return _combine([self, other], operator.xor)
+
 
 class SubsetState(object):
     def __init__(self):
-        self.parent = None
+        self._parent = None
+
+
+    @property
+    def parent(self):
+        return self._parent
+
+    @parent.setter
+    def parent(self, value):
+        self._parent = value
+
+    @property
+    def subset_state(self):  # convenience method, mimic interface of Subset
+        return self
 
     def to_index_list(self):
         return np.where(self.to_mask().flat)[0]
@@ -284,6 +318,18 @@ class CompositeSubsetState(SubsetState):
         self.state1 = state1
         self.state2 = state2
 
+    @property
+    def parent(self):
+        return self._parent
+
+    @parent.setter
+    def parent(self, parent):
+        if self.state1 is not None:
+            self.state1.parent = parent
+        if self.state2 is not None:
+            self.state2.parent = parent
+        self._parent = parent
+
     def copy(self):
         return type(self)(self.state1, self.state2)
 
@@ -329,7 +375,7 @@ class InequalitySubsetState(SubsetState):
     def __init__(self, left, right, op):
         super(InequalitySubsetState, self).__init__()
         from .data import ComponentID
-        valid_ops = [operator.gt, operator.ge, operator.eq,
+        valid_ops = [operator.gt, operator.ge,
                      operator.lt, operator.le]
         if op not in valid_ops:
             raise TypeError("Invalid boolean operator: %s" % op)
@@ -372,3 +418,10 @@ class InequalitySubsetState(SubsetState):
 
     def copy(self):
         return InequalitySubsetState(self._left, self._right, self._operator)
+
+
+def _combine(subsets, operator):
+    state = operator(*[s.subset_state for s in subsets])
+    result = Subset(None)
+    result.subset_state = state
+    return result

@@ -10,7 +10,7 @@ from .visual import VisualAttributes
 from .visual import RED, GREEN, BLUE, YELLOW, BROWN, ORANGE, PURPLE, PINK
 from .exceptions import IncompatibleAttribute
 from .component_link import ComponentLink, BinaryComponentLink
-from .subset import Subset, InequalitySubsetState
+from .subset import Subset, InequalitySubsetState, SubsetState
 from .hub import Hub
 from .tree import Tree
 from .registry import Registry
@@ -444,11 +444,25 @@ class Data(object):
     def add_subset(self, subset):
         """Assign a pre-existing subset to this data object.
 
-        NOTE: The preferred way of dealing with subsets is through the
-        new_subset method, which both creates and adds the subset
+        :param subset: A :class:`~glue.core.Subset` or
+        :class:`glue.core.subset.SubsetState` object
+
+        if input is a SubsetState, it will be wrapped in a new Subset
+        automatically
+
+        NOTE:
+
+        The preferred way for creating empty subsets is through the
+        data.new_subset method
         """
         if subset in self.subsets:
             return  # prevents infinite recursion
+        if isinstance(subset, SubsetState):
+            # auto-wrap state in subset
+            state = subset
+            subset = Subset(None)
+            subset.subset_state = state
+
         self.subsets.append(subset)
 
         if subset.data is not self:

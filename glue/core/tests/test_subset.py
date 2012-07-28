@@ -1,22 +1,26 @@
 import tempfile
+import operator as op
 
 import pytest
 import numpy as np
 from mock import MagicMock
 import pyfits
 
-from ..data import Data
+from ..data import Data, ComponentID
 from ..subset import Subset, SubsetState, ElementSubsetState
 from ..subset import OrState
 from ..subset import AndState
 from ..subset import XorState
 from ..subset import InvertState
 from ..message import SubsetDeleteMessage
+from ..registry import Registry
 
 class TestSubset(object):
 
     def setup_method(self, method):
         self.data = MagicMock()
+        self.data.label = "data"
+        Registry().clear()
 
     def test_subset_mask_wraps_state(self):
         s = Subset(self.data)
@@ -35,6 +39,16 @@ class TestSubset(object):
     def test_set_label(self):
         s = Subset(self.data, label='hi')
         assert s.label == 'hi'
+
+    def test_str(self):
+        s = Subset(self.data, label="hi")
+        assert str(s) == "Subset: hi (data: data)"
+        s = Subset(None, label = "hi")
+        assert str(s) == "Subset: hi (no data)"
+        s = Subset(None)
+        assert str(s) == "Subset: (no label) (no data)"
+        s = Subset(self.data)
+        assert str(s) == "Subset: (no label) (data: data)"
 
     def test_set_color(self):
         s = Subset(self.data, color='blue')
@@ -100,7 +114,7 @@ class TestSubset(object):
         s.delete()
         assert s not in data.subsets
 
-    def test_delete_removes_from_data(self):
+    def test_delete_with_no_data(self):
         """delete method doesnt crash if subset has no data"""
         s = Subset(None)
         assert s.data is None
@@ -138,6 +152,39 @@ class TestSubset(object):
         s.to_index_list.return_value = []
         get = s['test']
         assert list(get) == []
+
+target_states = ((op.and_, AndState),
+                 (op.or_, OrState),
+                 (op.xor, XorState))
+
+@pytest.mark.parametrize(("x"), target_states)
+def test_binary_subset_combination(x):
+    operator, target = x
+    s1 = Subset(None)
+    s2 = Subset(None)
+    newsub = operator(s1, s2)
+    assert isinstance(newsub, Subset)
+    assert isinstance(newsub.subset_state, target)
+    assert newsub.subset_state.state1 is s1.subset_state
+    assert newsub.subset_state.state2 is s2.subset_state
+
+def test_subset_combinations_reparent():
+    """ parent property of nested subset states assigned correctly """
+    s = (Subset(None) & Subset(None)) | Subset(None)
+    assert s.subset_state.parent is s
+    assert s.subset_state.state1.parent is s
+    assert s.subset_state.state1.state1.parent is s
+    assert s.subset_state.state1.state2.parent is s
+    assert s.subset_state.state2.parent is s
+
+def test_inequality_subsets_reparent():
+    """ hierarchical subsets using InequalityStates reparent properly """
+    s = Subset(None) & ( (ComponentID("") > 5) | (ComponentID("") < 2))
+    assert s.subset_state.parent is s
+    assert s.subset_state.state1.parent is s
+    assert s.subset_state.state2.parent is s
+    assert s.subset_state.state2.state1.parent is s
+    assert s.subset_state.state2.state2.parent is s
 
 
 class TestSubsetStateCombinations(object):
