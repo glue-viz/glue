@@ -1,7 +1,5 @@
 from glue.core.message import DataMessage, SubsetMessage
-from glue.core.hub import Hub, HubListener
-from glue.core.data import Data
-from glue.core.data_collection import DataCollection
+from glue.core import Hub, HubListener, Data, DataCollection
 
 class MyClient(HubListener):
     def register_to_hub(self, hub):

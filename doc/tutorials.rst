@@ -6,5 +6,7 @@ Tutorials and Recipes
 
    architecture.rst
    data_tutorial.rst
+   custom_subsets.rst
    link_tutorial.rst
    configuration.rst
+

@@ -34,12 +34,12 @@ this process. However, for illustration purposes here is a simple
 example of manually setting up a Glue environment:
 
 .. literalinclude:: simple_glue.py
-   :emphasize-lines: 38, 43
+   :emphasize-lines: 36, 41
    :linenos:
 
 Notice two things about this example:
- * In line 38, editing the data object automatically sends a
+ * In line 36, editing the data object automatically sends a
    DataMessage to the hub. Most message generation is handled
    automatically
- * MyClient does not recieve the message broadcast In line 43. Clients
+ * MyClient does not recieve the message broadcast In line 41. Clients
    only receive messages they are subscribed to.
