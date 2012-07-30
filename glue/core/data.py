@@ -424,11 +424,15 @@ class Data(object):
     def component_ids(self):
         return self._components.keys()
 
-    def new_subset(self, color=None, label=None, **kwargs):
+    def new_subset(self, subset=None, color=None, label=None, **kwargs):
         """ Create a new subset, and attach to self.
 
         This is the preferred way for creating subsets, as it
-        takes care of setting up the links between data and subset
+        takes care setting the label, color, and link between
+        data and subset
+
+        :param subset: optional, reference subset or subset state.
+        If provided, the new subset will copy the logic of this subset.
 
         Returns:
 
@@ -437,9 +441,12 @@ class Data(object):
         nsub = len(self.subsets)
         color = color or COLORS[nsub % len(COLORS)]
         label = label or "%s.%i" % (self.label, nsub + 1)
-        subset = Subset(self, color=color, label=label, **kwargs)
-        self.add_subset(subset)
-        return subset
+        new_subset = Subset(self, color=color, label=label, **kwargs)
+        if subset is not None:
+            new_subset.subset_state = subset.subset_state.copy()
+
+        self.add_subset(new_subset)
+        return new_subset
 
     def add_subset(self, subset):
         """Assign a pre-existing subset to this data object.
