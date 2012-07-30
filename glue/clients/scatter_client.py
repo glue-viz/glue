@@ -22,13 +22,15 @@ class ScatterLayerManager(object):
         self._init_artist()
 
     def _init_artist(self):
-        artist = self._axes.scatter([1], [1])
-        artist.set_offsets(np.zeros((0, 2)))
+        artist, = self._axes.plot([1], [1])
+        artist.set_data(np.array([np.nan]), np.array([np.nan]))
         self._artist = artist
 
     def _remove_artist(self):
-        if self._artist in self._axes.collections:
+        try:
             self._artist.remove()
+        except ValueError:  # already removed
+            pass
 
     def set_enabled(self, state):
         self._enabled = state
@@ -45,25 +47,20 @@ class ScatterLayerManager(object):
         return self._visible
 
     def get_data(self):
-        return self._artist.get_offsets()
+        return np.vstack(self._artist.get_data()).T
 
     def sync_style(self):
         style = self._layer.style
         artist = self._artist
-        artist.set_edgecolor('none')
-        artist.set_facecolor(style.color)
-        try:
-            artist.get_sizes().data[0] = style.markersize
-        except TypeError:
-            artist.get_sizes()[0] = style.markersize
-
+        artist.set_markeredgecolor('none')
+        artist.set_markerfacecolor(style.color)
+        artist.set_marker(style.marker)
+        artist.set_markersize(style.markersize)
+        artist.set_linestyle('None')
         artist.set_alpha(style.alpha)
 
     def set_data(self, x, y):
-        xy = np.zeros((x.size, 2))
-        xy[:, 0] = x.flat
-        xy[:, 1] = y.flat
-        self._artist.set_offsets(xy)
+        self._artist.set_data(x.flat, y.flat)
 
     def set_zorder(self, order):
         self._artist.set_zorder(order)

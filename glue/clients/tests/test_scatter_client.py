@@ -57,8 +57,7 @@ class TestScatterClient(object):
             self.client.managers[layer].is_enabled()
 
     def layer_data_correct(self, layer, x, y):
-        artist = self.client.managers[layer]._artist
-        xy = artist.get_offsets()
+        xy = self.client.managers[layer].get_data()
         if max(abs(xy[:, 0] - x)) > .01:
             return False
         if max(abs(xy[:, 1] - y)) > .01:
@@ -116,13 +115,13 @@ class TestScatterClient(object):
         assert not self.client.is_yflip()
 
     def test_double_add(self):
-        n0 = len(self.client.ax.collections)
+        n0 = len(self.client.ax.lines)
         layer = self.add_data()
         #data and edit_subset present
-        assert len(self.client.ax.collections) == 2 + n0
+        assert len(self.client.ax.lines) == 2 + n0
         layer = self.add_data()
         #data and edit_subset still present
-        assert len(self.client.ax.collections) == 2 + n0
+        assert len(self.client.ax.lines) == 2 + n0
 
     def test_data_updates_propagate(self):
         layer = self.add_data_and_attributes()
