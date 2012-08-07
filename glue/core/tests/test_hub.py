@@ -144,40 +144,6 @@ class TestHub(object):
         self.hub.broadcast(msg_instance)
         subscriber.notify.assert_called_once_with(msg_instance)
 
-    def test_exception_on_broadcast(self):
-        msg, handler, subscriber = self.get_subscription()
-        error_handler = MagicMock()
-        self.hub.subscribe(subscriber, msg, handler)
-        self.hub.subscribe(subscriber, ErrorMessage, error_handler)
-
-        test_exception = Exception("Test")
-        handler.side_effect = test_exception
-
-        msg_instance = msg("Test")
-        self.hub.broadcast(msg_instance)
-
-        error_handler.assert_called_once()
-        err_msg = error_handler.call_args[0][0]
-        assert err_msg.tag == "%s" % test_exception
-
-    def test_excpetions_dont_recurse_on_broadcast(self):
-        class ExpectedException(Exception):
-            pass
-
-        """ Hub broadcasts exceptions as messages. Make sure this terminates."""
-        msg, handler, subscriber = self.get_subscription()
-        error_handler = MagicMock()
-        handler.side_effect = Exception("First Exception")
-        error_handler.side_effect = ExpectedException("Don't recurse forever!")
-
-        self.hub.subscribe(subscriber, msg, handler)
-        self.hub.subscribe(subscriber, ErrorMessage, error_handler)
-
-        msg_instance = msg("test")
-        with pytest.raises(ExpectedException) as exc:
-            self.hub.broadcast(msg_instance)
-        assert exc.value.args[0] == "Don't recurse forever!"
-
     def test_autosubscribe(self):
         l = MagicMock(spec_set=HubListener)
         d = MagicMock(spec_set=Data)

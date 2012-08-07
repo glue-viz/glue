@@ -391,6 +391,11 @@ class Data(object):
         if not self.coords:
             return []
 
+        if self.ndim != len(self._pixel_component_ids) or \
+          self.ndim != len(self._world_component_ids):
+          # haven't populated pixel, world coordinates yet
+          return []
+
         def make_toworld_func(i):
             def pix2world(*args):
                 return self.coords.pixel2world(*args[::-1])[::-1][i]

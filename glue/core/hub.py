@@ -161,16 +161,7 @@ class Hub(object):
         :type message: :class:`~glue.core.message.Message`
         """
         for subscriber, handler in self._find_handlers(message):
-            try:
-                handler(message)
-            except Exception as e:
-                if isinstance(message, ErrorMessage):
-                    # errors on errors! Prevent recursion
-                    raise e
-                else:
-                    tag = str(e)
-                    msg = ErrorMessage(subscriber, tag=tag)
-                    self.broadcast(msg)
+            handler(message)
 
     def __getstate__(self):
         """ Return a picklable representation of the hub
