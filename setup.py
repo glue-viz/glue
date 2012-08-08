@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 from __future__ import print_function
 from distutils.core import setup, Command
 from glob import glob
@@ -49,7 +48,8 @@ class BuildQt(Command):
             print("Compiling " + infile)
             directory, filename = os.path.split(infile)
             outfile = os.path.join(directory, filename.replace('.ui', '.py'))
-            compileUi(infile, open(outfile, 'wb'))
+            with open(outfile, 'wb') as out:
+                compileUi(infile, out)
 
         import sys
         import subprocess
