@@ -543,11 +543,24 @@ class Data(object):
 
         :type key: :class:`~glue.core.data.ComponentID`
         """
+        dofancy = isinstance(key, tuple)
+        if dofancy:
+            key, view = key[0], key[1:]
+        if isinstance(key, basestring):
+            try:
+                key = self.find_component_id(key)[0]
+            except IndexError:
+                raise IncompatibleAttribute("%s not in data set %s" % (key, self.label))
         try:
-            return self._components[key].data
+            result = self._components[key].data
         except KeyError:
             raise IncompatibleAttribute("%s not in data set %s" %
-                                        (key.label, self.label))
+                                        (key, self.label))
+
+        if dofancy:
+            result = result[view]
+
+        return result
 
     def get_component(self, component_id):
         """Fetch the component corresponding to component_id.

@@ -291,18 +291,19 @@ class TestData(object):
         links2 = self.data.coordinate_links
         assert links == links2
 
-#XXX need to get data methods to work
-#class TestGriddedData(object):
-#    def test_parse_coords_2d(self):
-#        """Valid fits header should parse into WCSCoordinates"""
-#        data = example_data.simple_image()
-#        assert isinstance(self.data.coords, WCSCoordinates)
-#
-#    def test_parse_coords_3d(self):
-#        """Valid fits header should parse into WCSCoordinates"""
-#        data = example_data.simple_cube()
-#        assert isinstance(self.data.coords, WCSCubeCoordinates)
+    def test_fancy_view(self):
+        result = self.data[self.comp_id, :, 3]
+        args = (slice(None, None, None), 3)
+        self.comp.data.__getitem__.assert_called_once_with(args)
 
+    def test_get_by_string(self):
+        result = self.data['Test Component']
+        assert result is self.comp.data
+
+    def test_get_by_missing_string(self):
+        with pytest.raises(IncompatibleAttribute) as exc:
+            result = self.data['xyz']
+        assert exc.value.args[0].startswith('xyz not in data')
 
 class TestPixelLabel(object):
 
