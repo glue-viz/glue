@@ -52,3 +52,29 @@ def point_contour(x, y, data):
         return None
     xy = xy[0]
     return xy
+
+
+def split_component_view(arg):
+    """Split the input to data or subset.__getitem__ into its pieces.
+
+    :param arg:
+    The input passed to data or subset.__getitem__. Assumed to be either a
+    scalar or tuple
+
+    :rtype: tuple
+
+    The first item is the Component selection (a ComponentID or
+    string)
+
+    The second item is a view (tuple of slices, slice scalar, or view
+    object)
+    """
+    if isinstance(arg, tuple):
+        if len(arg) == 1:
+            raise TypeError("Expected a scalar or >length-1 tuple, "
+                            "got length-1 tuple")
+        if len(arg) == 2:
+            return arg[0], arg[1]
+        return arg[0], arg[1:]
+    else:
+        return arg, None

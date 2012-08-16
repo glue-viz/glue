@@ -6,7 +6,7 @@ import numpy as np
 from mock import MagicMock
 import pyfits
 
-from ..data import Data, ComponentID
+from ..data import Data, ComponentID, Component
 from ..subset import Subset, SubsetState, ElementSubsetState
 from ..subset import OrState
 from ..subset import AndState
@@ -27,7 +27,7 @@ class TestSubset(object):
         state = MagicMock(spec=SubsetState)
         s.subset_state = state
         s.to_mask()
-        state.to_mask.assert_called_once_with()
+        state.to_mask.assert_called_once_with(None)
 
     def test_subset_index_wraps_state(self):
         s = Subset(self.data)
@@ -378,4 +378,114 @@ class TestCompositeSubsetStateCopy(object):
     def test_xor(self):
         self.assert_composite_copy(XorState)
 
+
+class DummySubsetState(SubsetState):
+    def to_mask(self, view=None):
+        result = np.ones(self.parent.data.shape, dtype=bool)
+        if view is not None:
+            result = result[view]
+        return result
+
+class TestSubsetViews(object):
+
+    def setup_method(self, method):
+        d = Data()
+        c = Component(np.array([1,2,3,4]))
+        self.cid = d.add_component(c, 'test')
+        self.s = d.edit_subset
+        self.c = c
+        self.s.subset_state = DummySubsetState()
+
+    def test_cid_get(self):
+        np.testing.assert_array_equal(self.s[self.cid],
+                                      self.c.data)
+
+    def test_label_get(self):
+        np.testing.assert_array_equal(self.s['test'],
+                                      self.c.data)
+
+    def test_cid_slice(self):
+        np.testing.assert_array_equal(self.s[self.cid, ::2],
+                                       self.c.data[::2])
+
+    def test_label_slice(self):
+        np.testing.assert_array_equal(self.s['test', ::-1],
+                                      self.c.data[::-1])
+
+
+""" Test Fancy Indexing into the various subset states """
+def roifac(comp, cid):
+    from ..roi import RectangularROI
+    from ..subset import RoiSubsetState
+
+    result = RoiSubsetState()
+    result.xatt = cid
+    result.yatt = cid
+    roi = RectangularROI()
+    roi.update_limits(0.5, 0.5, 1.5, 1.5)
+    result.roi = roi
+    return result
+
+def rangefac(comp, cid):
+    from ..subset import RangeSubsetState
+    return RangeSubsetState(.5, 2.5, att=cid)
+
+def compfac(comp, cid, oper):
+    s1 = roifac(comp, cid)
+    s2 = rangefac(comp, cid)
+    return oper(s1, s2)
+
+def orfac(comp, cid):
+    return compfac(comp, cid, op.or_)
+
+def andfac(comp, cid):
+    return compfac(comp, cid, op.and_)
+
+def xorfac(comp, cid):
+    return compfac(comp, cid, op.xor)
+
+def invertfac(comp, cid):
+    return ~rangefac(comp, cid)
+
+def elementfac(comp, cid):
+    from ..subset import ElementSubsetState
+    return ElementSubsetState(np.array([0,1]))
+
+def inequalityfac(comp, cid):
+    return cid > 2.5
+
+def basefac(comp, cid):
+    return SubsetState()
+
+
+views = (np.s_[:],
+         np.s_[::-1, 0],
+         np.s_[0,:],
+         np.s_[:,0],
+         np.array([[True, False], [False, True]]),
+         np.where(np.array([[True, False], [False, True]])),
+         np.zeros((2,2), dtype=bool),
+         )
+facs = [roifac, rangefac, orfac, andfac, xorfac, invertfac,
+        elementfac, inequalityfac, basefac]
+
+@pytest.mark.parametrize( ('statefac', 'view'), [(f,v) for f in facs
+                                                 for v in views])
+def test_mask_of_view_is_view_of_mask(statefac, view):
+    print statefac, view
+    d = Data()
+    c = Component(np.array([[1,2],[3,4]]))
+    cid = d.add_component(c, 'test')
+    s = d.edit_subset
+    s.subset_state = statefac(c, cid)
+
+    v1 = s.to_mask(view)
+    v2 = s.to_mask()[view]
+    np.testing.assert_array_equal(v1, v2)
+
+    v1 = s[cid, view]
+    m0 = np.zeros_like(c.data, dtype=bool)
+    m0[view] = True
+    v2 = c.data[s.to_mask() & m0]
+    np.testing.assert_array_equal(v1, v2)
 

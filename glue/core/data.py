@@ -14,6 +14,7 @@ from .subset import Subset, InequalitySubsetState, SubsetState
 from .hub import Hub
 from .tree import Tree
 from .registry import Registry
+from .util import split_component_view
 from .message import DataUpdateMessage, \
                      DataAddComponentMessage, \
                      SubsetCreateMessage
@@ -543,21 +544,20 @@ class Data(object):
 
         :type key: :class:`~glue.core.data.ComponentID`
         """
-        dofancy = isinstance(key, tuple)
-        if dofancy:
-            key, view = key[0], key[1:]
+        key, view = split_component_view(key)
         if isinstance(key, basestring):
             try:
                 key = self.find_component_id(key)[0]
             except IndexError:
-                raise IncompatibleAttribute("%s not in data set %s" % (key, self.label))
+                raise IncompatibleAttribute("%s not in data set %s" %
+                                            (key, self.label))
         try:
             result = self._components[key].data
         except KeyError:
             raise IncompatibleAttribute("%s not in data set %s" %
                                         (key, self.label))
 
-        if dofancy:
+        if view is not None:
             result = result[view]
 
         return result

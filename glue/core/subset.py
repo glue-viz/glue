@@ -6,6 +6,7 @@ from .visual import VisualAttributes, RED
 from .decorators import memoize_attr_check
 from .message import SubsetDeleteMessage, SubsetUpdateMessage
 from .registry import Registry
+from .util import split_component_view
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState',
@@ -86,9 +87,9 @@ class Subset(object):
     def to_index_list(self):
         """
         Convert the current subset to a list of indices. These index
-        the elements in the flattened data object that belong to the subset.
+        the elements in the (flattened) data object that belong to the subset.
 
-        If x is the numpy array corresponding to some component,
+        If x is the numpy array corresponding to some component.data,
         the two following statements are equivalent::
 
            x.flat[subset.to_index_list()]
@@ -107,9 +108,13 @@ class Subset(object):
         """
         return self.subset_state.to_index_list()
 
-    def to_mask(self):
+    def to_mask(self, view=None):
         """
         Convert the current subset to a mask.
+
+        :param view: An optional view into the dataset (e.g. a slice)
+        If present, the mask will pertain to the view and not the
+        entire dataset.
 
         Returns:
 
@@ -117,7 +122,7 @@ class Subset(object):
            defines whether each element belongs to the subset.
 
         """
-        return self.subset_state.to_mask()
+        return self.subset_state.to_mask(view)
 
     def do_broadcast(self, value):
         """
@@ -199,10 +204,14 @@ class Subset(object):
         if attribute != '_broadcasting':
             self.broadcast(attribute)
 
-    def __getitem__(self, attribute):
-        ma = self.to_mask()
-        data = self.data[attribute]
-        return data[ma]
+    def __getitem__(self, view):
+        """ Retrieve the elements from a data view within the subset
+
+        :param view: View of the data. See data.__getitem__ for detils
+        """
+        c, v = split_component_view(view)
+        ma = self.to_mask(v)
+        return self.data[view][ma]
 
     def paste(self, other_subset):
         """paste subset state from other_subset onto self """
@@ -252,8 +261,18 @@ class SubsetState(object):
     def to_index_list(self):
         return np.where(self.to_mask().flat)[0]
 
-    def to_mask(self):
-        return np.zeros(self.parent.data.shape, dtype=bool)
+    def to_mask(self, view=None):
+        try:
+            c = self.parent.data.components[0]
+            d = self.parent.data
+            return np.zeros(d[c, view].shape, dtype=bool)
+        except IndexError:
+            # no components yet. Do it the slow way
+            result = np.zeros(self.parent.data.shape, dtype=bool)
+            if view is not None:
+                result = result[view]
+            return result
+
 
     def copy(self):
 
@@ -282,9 +301,9 @@ class RoiSubsetState(SubsetState):
         self.roi = None
 
     @memoize_attr_check('parent')
-    def to_mask(self):
-        x = self.parent.data[self.xatt]
-        y = self.parent.data[self.yatt]
+    def to_mask(self, view=None):
+        x = self.parent.data[self.xatt, view]
+        y = self.parent.data[self.yatt, view]
         result = self.roi.contains(x, y)
         return result
 
@@ -303,8 +322,8 @@ class RangeSubsetState(SubsetState):
         self.hi = hi
         self.att = att
 
-    def to_mask(self):
-        x = self.parent.data[self.att]
+    def to_mask(self, view=None):
+        x = self.parent.data[self.att, view]
         result = (x >= self.lo) & (x <= self.hi)
         return result
 
@@ -336,26 +355,26 @@ class CompositeSubsetState(SubsetState):
 
 class OrState(CompositeSubsetState):
     @memoize_attr_check('parent')
-    def to_mask(self):
-        return self.state1.to_mask() | self.state2.to_mask()
+    def to_mask(self, view=None):
+        return self.state1.to_mask(view) | self.state2.to_mask(view)
 
 
 class AndState(CompositeSubsetState):
     @memoize_attr_check('parent')
-    def to_mask(self):
-        return self.state1.to_mask() & self.state2.to_mask()
+    def to_mask(self, view=None):
+        return self.state1.to_mask(view) & self.state2.to_mask(view)
 
 
 class XorState(CompositeSubsetState):
     @memoize_attr_check('parent')
-    def to_mask(self):
-        return self.state1.to_mask() ^ self.state2.to_mask()
+    def to_mask(self, view=None):
+        return self.state1.to_mask(view) ^ self.state2.to_mask(view)
 
 
 class InvertState(CompositeSubsetState):
     @memoize_attr_check('parent')
-    def to_mask(self):
-        return ~self.state1.to_mask()
+    def to_mask(self, view=None):
+        return ~self.state1.to_mask(view)
 
 
 class ElementSubsetState(SubsetState):
@@ -364,10 +383,13 @@ class ElementSubsetState(SubsetState):
         self._indices = indices
 
     @memoize_attr_check('parent')
-    def to_mask(self):
+    def to_mask(self, view=None):
+        #XXX this is inefficient for views
         result = np.zeros(self.parent.data.shape, dtype=bool)
         if self._indices is not None:
             result.flat[self._indices] = True
+        if view is not None:
+            result = result[view]
         return result
 
 
@@ -404,15 +426,15 @@ class InequalitySubsetState(SubsetState):
         return self._operator
 
     @memoize_attr_check('parent')
-    def to_mask(self):
+    def to_mask(self, view=None):
         from .data import ComponentID
         left = self._left
         if isinstance(self._left, ComponentID):
-            left = self.parent.data[self._left]
+            left = self.parent.data[self._left, view]
 
         right = self._right
         if isinstance(self._right, ComponentID):
-            right = self.parent.data[self._right]
+            right = self.parent.data[self._right, view]
 
         return self._operator(left, right)
 

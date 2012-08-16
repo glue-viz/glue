@@ -24,8 +24,11 @@ class DummyCoords(core.coordinates.Coordinates):
         return result
 
 class TrueState(core.subset.SubsetState):
-    def to_mask(self):
-        return np.ones(self.parent.data.shape, dtype=bool)
+    def to_mask(self, view=None):
+        data = np.ones(self.parent.data.shape, dtype=bool)
+        if view is not None:
+            data = data[view]
+        return data
 
 class TestImageClient(object):
 
