@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 
-from .modest_image import imshow
+from .modest_image import imshow, extract_matched_slices
 from ..core.exceptions import IncompatibleAttribute
 from ..core.data import Data
 from ..core.subset import Subset, RoiSubsetState
@@ -38,12 +38,11 @@ class LayerManager(object):
     def delete_artist(self):
         raise NotImplementedError
 
-    def update_artist(self, image):
+    def update_artist(self, view):
         raise NotImplementedError
 
-    def __del__(self):
+    def delete(self):
         self.delete_artist()
-
 
 class DataLayerManager(LayerManager):
     def __init__(self, layer, axes):
@@ -51,8 +50,9 @@ class DataLayerManager(LayerManager):
         self.cmap = plt.cm.gray
         self.norm = InvNormalize()
 
-    def update_artist(self, image):
+    def update_artist(self, view):
         self.delete_artist()
+        image = self.layer[view]
         self.artist = imshow(self._ax, image, cmap=self.cmap, norm=self.norm,
                              interpolation='nearest', origin='lower')
 
@@ -77,10 +77,20 @@ class DataLayerManager(LayerManager):
 
 
 class SubsetLayerManager(LayerManager):
-    def __init__(self, layer, axes, area_style='filled'):
+    def __init__(self, layer, axes, update_callback, area_style='filled'):
         super(SubsetLayerManager, self).__init__(layer, axes)
-        self.mask = None
         self.area_style = area_style
+        self._view_window = _view_window(axes)
+        self._callback = update_callback
+        self._cid = axes.figure.canvas.mpl_connect('button_release_event',
+                                                   self._check_update)
+
+    def _check_update(self, event):
+        vw = _view_window(self._ax)
+        print vw, self._view_window
+        if vw != self._view_window:
+            self._callback()
+        self._view_window = vw
 
     def set_visible(self, state):
         if self.artist is None:
@@ -100,22 +110,36 @@ class SubsetLayerManager(LayerManager):
             item.remove()
         self.artist = None
 
-    def update_artist(self, mask):
-        self.mask = mask
+    def delete(self):
+        super(SubsetLayerManager, self).delete()
+        self._ax.figure.canvas.mpl_disconnect(self._cid)
+
+    def update_artist(self, view):
+        subset = self.layer
         self.delete_artist()
+
+        try:
+            mask = subset.to_mask(view[1:])
+        except IncompatibleAttribute:
+            return
+
         #shortcut for empty subsets
         if not mask.any():
             return
+
+        extent = _get_extent(view)
 
         if self.area_style == 'filled':
             self.artist = self._ax.contourf(mask.astype(float),
                                             levels=[0.5, 1.0],
                                             alpha=0.3,
-                                            colors=self.layer.style.color)
+                                            colors=self.layer.style.color,
+                                            extent=extent)
         else:
             self.artist = self._ax.contour(mask.astype(float),
                                            levels=[0.5],
-                                           colors=self.layer.style.color)
+                                           colors=self.layer.style.color,
+                                           extent=extent)
 
 
 class ImageClient(VizClient):
@@ -258,8 +282,8 @@ class ImageClient(VizClient):
         except IncompatibleAttribute:
             mask = np.zeros(s.data.shape, dtype=bool)
 
-        mask = self._extract_slice_from_data(data=mask)
-        self.layers[s].update_artist(mask)
+        view = self._build_view(matched=True)
+        self.layers[s].update_artist(view)
 
     def _extract_slice_from_data(self, data=None):
         if data is None:
@@ -278,6 +302,25 @@ class ImageClient(VizClient):
 
         return result
 
+    def _build_view(self, matched=False):
+        att = self.display_attribute
+        shp = self.display_data.shape
+        shp_2d = _2d_shape(shp, self._slice_ori)
+        x, y = np.s_[:], np.s_[:]
+        if matched:
+            v = extract_matched_slices(self._ax, shp_2d)
+            x = slice(v[0], v[1], v[2])
+            y = slice(v[3], v[4], v[5])
+
+        if not self.is_3D:
+            return (att, y, x)
+        if self._slice_ori == 0:
+            return (att, self.slice_ind, y, x)
+        if self._slice_ori == 1:
+            return (att, y, self.slice_ind, x)
+        assert self._slice_ori == 2
+        return (att, y, x, self.slice_ind)
+
     def _update_data_plot(self, relim=False):
         """
         Sync the location of the scatter points to
@@ -287,8 +330,9 @@ class ImageClient(VizClient):
         if not self.display_data:
             return
 
-        self._image = self._extract_slice_from_data()
-        self.layers[self.display_data].update_artist(self._image)
+        view = self._build_view()
+        self.layers[self.display_data].update_artist(view)
+        self._image = self.display_data[view]
 
         if relim:
             self.relim()
@@ -367,6 +411,7 @@ class ImageClient(VizClient):
             return
         manager = self.layers.pop(layer)
         del manager
+
         if layer is self.display_data:
             self.display_data = None
 
@@ -399,7 +444,28 @@ class ImageClient(VizClient):
             for s in layer.subsets:
                 self.add_layer(s)
         elif isinstance(layer, Subset):
-            self.layers[layer] = SubsetLayerManager(layer, self._ax)
+            cback = lambda : self._update_subset_single(layer)
+            self.layers[layer] = SubsetLayerManager(layer, self._ax, cback)
             self._update_subset_single(layer)
         else:
             raise TypeError("Unrecognized layer type: %s" % type(layer))
+
+def _get_extent(view):
+    sy, sx = [s for s in view if isinstance(s, slice)]
+    return (sx.start, sx.stop, sy.start, sy.stop)
+
+def _2d_shape(shape, slice_ori):
+    if len(shape) == 2:
+        return shape
+    if slice_ori == 0:
+        return shape[1:]
+    if slice_ori == 1:
+        return shape[0], shape[2]
+    assert slice_ori == 2
+    return shape[0:2]
+
+def _view_window(ax):
+    ext = ax.transAxes.transform([1, 1]) - ax.transAxes.transform([0, 0])
+    xlim, ylim = ax.get_xlim(), ax.get_ylim()
+    dx, dy = xlim[1] - xlim[0], ylim[1] - ylim[0]
+    return dx, dy, xlim[0], ylim[0], ext[0], ext[1]

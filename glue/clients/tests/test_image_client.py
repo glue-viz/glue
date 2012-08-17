@@ -227,7 +227,7 @@ class TestImageClient(object):
         assert roi2.to_polygon()[0] == roi.to_polygon()[0]
         assert roi2.to_polygon()[1] == roi.to_polygon()[1]
 
-    def test_update_subset_zeros_mask_on_error(self):
+    def test_update_subset_deletes_artist_on_error(self):
         client = self.create_client_with_image()
         sub = self.im.edit_subset
 
@@ -237,9 +237,10 @@ class TestImageClient(object):
         bad_state.to_index_list.side_effect = err
         sub.subset_state = bad_state
 
-        client.layers[sub].mask = np.ones(self.im.shape, dtype=bool)
+        m = MagicMock()
+        client.layers[sub].delete_artist = m
         client._update_subset_single(sub)
-        assert not client.layers[sub].mask.any()
+        assert m.call_count == 1
 
     def test_subsets_shown_on_init(self):
         client = self.create_client_with_image()

@@ -3,7 +3,8 @@ rcParams = matplotlib.rcParams
 
 import matplotlib.image as mi
 import matplotlib.colors as mcolors
-
+import matplotlib.cbook as cbook
+import numpy as np
 
 class ModestImage(mi.AxesImage):
     """
@@ -32,9 +33,27 @@ class ModestImage(mi.AxesImage):
         super(ModestImage, self).__init__(*args, **kwargs)
 
     def set_data(self, A):
-        super(ModestImage, self).set_data(A)
+        """
+        Set the image array
+
+        ACCEPTS: numpy/PIL Image A
+        """
         self._full_res = A
-        self._sx, self._sy = None, None  # force redraw
+        self._A = A
+
+        if self._A.dtype != np.uint8 and not np.can_cast(self._A.dtype,
+                                                         np.float):
+            raise TypeError("Image data can not convert to float")
+
+        if (self._A.ndim not in (2, 3) or
+            (self._A.ndim == 3 and self._A.shape[-1] not in (3, 4))):
+            raise TypeError("Invalid dimensions for image data")
+
+        self._imcache =None
+        self._rgbacache = None
+        self._oldxslice = None
+        self._oldyslice = None
+        self._sx, self._sy = None, None
 
     def get_array(self):
         """Override to return the full-resolution array"""
@@ -45,26 +64,17 @@ class ModestImage(mi.AxesImage):
         resolution is matched to the eventual rendering."""
 
         ax = self.axes
-        ext = ax.transAxes.transform([1, 1]) - ax.transAxes.transform([0, 0])
-        xlim, ylim = ax.get_xlim(), ax.get_ylim()
-        dx, dy = xlim[1] - xlim[0], ylim[1] - ylim[0]
-
-        y0 = max(0, ylim[0] - dy)
-        y1 = min(self._full_res.shape[0], ylim[1] + dy)
-        x0 = max(0, xlim[0] - dx)
-        x1 = min(self._full_res.shape[1], xlim[1] + dx)
-        y0, y1, x0, x1 = map(int, [y0, y1, x0, x1])
-
-        sy = int(max(1, min((y1 - y0) / 5., dy / ext[1] / 1.2)))
-        sx = int(max(1, min((x1 - x0) / 5., dx / ext[0] / 1.2)))
+        shp = self._full_res.shape
+        x0, x1, sx, y0, y1, sy = extract_matched_slices(ax, shp)
 
         # have we already calculated what we need?
-        if sx == self._sx and sy == self._sy and \
+        if sx >= self._sx and sy >= self._sy and \
             x0 >= self._bounds[0] and x1 <= self._bounds[1] and \
             y0 >= self._bounds[2] and y1 <= self._bounds[3]:
             return
 
         self._A = self._full_res[y0:y1:sy, x0:x1:sx]
+        self._A = cbook.safe_masked_invalid(self._A)
         x1 = x0 + self._A.shape[1] * sx
         y1 = y0 + self._A.shape[0] * sy
 
@@ -155,6 +165,36 @@ def imshow(axes, X, cmap=None, norm=None, aspect=None,
     im._remove_method = lambda h: axes.images.remove(h)
 
     return im
+
+
+def extract_matched_slices(ax, shape):
+    """Determine the slice parameters to use, matched to the screen.
+
+    :param ax: Axes object to query. It's extent and pixel size
+               determine the slice parameters
+
+    :param shape: Tuple of the full image shape to slice into. Upper
+               boundaries for slices will be cropped to fit within
+               this shape.
+
+    :rtype: tulpe of x0, x1, sx, y0, y1, sy
+
+    Indexing the full resolution array as array[y0:y1:sy, x0:x1:sx] returns
+    a view well-matched to the axes' resolution and extent
+    """
+    ext = ax.transAxes.transform([1, 1]) - ax.transAxes.transform([0, 0])
+    xlim, ylim = ax.get_xlim(), ax.get_ylim()
+    dx, dy = xlim[1] - xlim[0], ylim[1] - ylim[0]
+
+    y0 = int(max(0, ylim[0] - 5))
+    y1 = int(min(shape[0], ylim[1] + 5))
+    x0 = int(max(0, xlim[0] - 5))
+    x1 = int(min(shape[1], xlim[1] + 5))
+
+    sy = int(max(1, min((y1 - y0) / 5., np.ceil(dy / ext[1]))))
+    sx = int(max(1, min((x1 - x0) / 5., np.ceil(dx / ext[0]))))
+
+    return x0, x1, sx, y0, y1, sy
 
 if __name__ == "__main__":
     main()
