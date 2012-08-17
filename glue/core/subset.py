@@ -162,13 +162,15 @@ class Subset(object):
 
         dobroad = self._broadcasting and self.data is not None and \
                   self.data.hub is not None
+
         self.do_broadcast(False)
-        if dobroad:
-            msg = SubsetDeleteMessage(self)
-            self.data.hub.broadcast(msg)
 
         if self.data is not None and self in self.data.subsets:
             self.data.subsets.remove(self)
+
+        if dobroad:
+            msg = SubsetDeleteMessage(self)
+            self.data.hub.broadcast(msg)
 
         Registry().unregister(self, group=self.data)
 
