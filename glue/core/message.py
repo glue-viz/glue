@@ -56,7 +56,9 @@ class Message(object):
         return self._level < other._level
 
     def __str__(self):
-        return 'Message: "%s"\n\t Sent from: %s' % (self.tag, self.sender)
+        return '%s: %s\n\t Sent from: %s' % (type(self).__name__,
+                                               self.tag or '',
+                                               self.sender)
 
 
 class ErrorMessage(Message):
