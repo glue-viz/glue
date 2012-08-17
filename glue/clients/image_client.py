@@ -410,7 +410,7 @@ class ImageClient(VizClient):
         if layer not in self.layers:
             return
         manager = self.layers.pop(layer)
-        del manager
+        manager.delete()
 
         if layer is self.display_data:
             self.display_data = None
