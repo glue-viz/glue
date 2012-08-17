@@ -266,7 +266,6 @@ class ScatterClient(Client):
         self._update_axis_labels()
         self._redraw()
 
-
     def _apply_roi(self, roi):
         # every active data layer is set
         # using specified ROI

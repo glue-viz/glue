@@ -117,7 +117,9 @@ class TestTree(object):
         assert exc.value.args[0] == "Invalid mergelist: contains duplicates"
         with pytest.raises(TypeError) as exc:
             DendroMerge(m4)
-        assert exc.value.args[0] == "Invalid mergelist: does not run from 0-nleaf"
+        assert exc.value.args[0] == ("Invalid mergelist: does not "
+                                     "run from 0-nleaf")
+
         with pytest.raises(TypeError) as exc:
             DendroMerge(m5)
         assert exc.value.args[0] == "Invalid mergelist: contains duplicates"

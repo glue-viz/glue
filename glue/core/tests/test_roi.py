@@ -10,7 +10,7 @@ from ..roi import RectangularROI, UndefinedROI, CircularROI, PolygonalROI, \
 
 from .. import roi as r
 
-AXES = plt.plot([1,2,3])[0].axes
+AXES = plt.plot([1, 2, 3])[0].axes
 
 
 class TestRectangle(object):

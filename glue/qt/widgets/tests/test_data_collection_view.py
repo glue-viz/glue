@@ -4,12 +4,15 @@ from ....tests import example_data
 
 from PyQt4.QtGui import QApplication
 
+
 def setup_module(module):
     module.app = QApplication([''])
+
 
 def teardown_module(module):
     module.app.exit()
     del module.app
+
 
 class Printer(core.hub.HubListener):
     def register_to_hub(self, hub):
@@ -17,6 +20,7 @@ class Printer(core.hub.HubListener):
 
     def print_msg(self, message):
         print message
+
 
 class TestDataCollectionView(object):
 

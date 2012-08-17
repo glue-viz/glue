@@ -1,5 +1,7 @@
 import glue
 from glue.qt.layertreewidget import LayerTreeWidget
+
+
 def main():
     """ Display a layer tree """
     from PyQt4.QtGui import QApplication, QMainWindow
@@ -17,4 +19,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

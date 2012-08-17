@@ -134,7 +134,8 @@ class TestHub(object):
 
         with pytest.raises(InvalidMessage) as exc:
             self.hub.subscribe(subscriber, None, handler)
-        assert exc.value.args[0].startswith("message class must be a subclass of glue.Message")
+        assert exc.value.args[0].startswith("message class must be "
+                                            "a subclass of glue.Message")
 
     def test_default_handler(self):
         msg, handler, subscriber = self.get_subscription()
@@ -159,7 +160,8 @@ class TestHub(object):
     def test_invalid_init(self):
         with pytest.raises(TypeError) as exc:
             Hub(None)
-        assert exc.value.args[0] == "Inputs must be HubListener, data, subset, or data collection objects"
+        assert exc.value.args[0] == ("Inputs must be HubListener, data, "
+                                     "subset, or data collection objects")
 
 
 class TestHubListener(object):

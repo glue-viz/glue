@@ -5,18 +5,21 @@ from ..component_selector import ComponentSelector
 from ... import core
 from ...core.data import ComponentID
 
+
 def setup_module(module):
     module.app = QtGui.QApplication([''])
 
+
 def data_collection():
     d = core.data.Data(label='test data')
-    c1 = core.data.Component(array([1,2,3]))
-    c2 = core.data.Component(array([1,2,3]))
+    c1 = core.data.Component(array([1, 2, 3]))
+    c2 = core.data.Component(array([1, 2, 3]))
     dc = core.data_collection.DataCollection()
     dc.append(d)
     d.add_component(c1, 'test1')
     d.add_component(c2, 'test2')
     return dc
+
 
 class TestComponentSelector(object):
 

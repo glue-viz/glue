@@ -7,12 +7,15 @@ from PyQt4.QtGui import QApplication, QMainWindow, QIcon
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import MouseMode
 
+
 def setup_module(module):
     module.app = QApplication([''])
+
 
 def teardown_module(module):
     module.app.exit()
     del module.app
+
 
 class TestMode(MouseMode):
 

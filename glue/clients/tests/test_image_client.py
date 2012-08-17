@@ -23,12 +23,14 @@ class DummyCoords(core.coordinates.Coordinates):
             result.append([aa * (i + 1) for aa in a])
         return result
 
+
 class TrueState(core.subset.SubsetState):
     def to_mask(self, view=None):
         data = np.ones(self.parent.data.shape, dtype=bool)
         if view is not None:
             data = data[view]
         return data
+
 
 class TestImageClient(object):
 
@@ -63,7 +65,8 @@ class TestImageClient(object):
         client = ImageClient(self.collect, axes=AXES)
         with pytest.raises(TypeError) as exc:
             client.add_layer(self.cube)
-        assert exc.value.args[0] == "Data not managed by client's data collection"
+        assert exc.value.args[0] == ("Data not managed by client's "
+                                     "data collection")
 
     def test_set_data(self):
         client = self.create_client_with_image()

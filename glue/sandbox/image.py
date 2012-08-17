@@ -8,7 +8,6 @@ from glue.qt.messagewidget import MessageWidget
 from glue.qt.imagewidget import ImageWidget
 
 
-
 def main():
 
     app = QApplication(sys.argv)

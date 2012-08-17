@@ -15,6 +15,7 @@ from ..subset import InvertState
 from ..message import SubsetDeleteMessage
 from ..registry import Registry
 
+
 class TestSubset(object):
 
     def setup_method(self, method):
@@ -43,7 +44,7 @@ class TestSubset(object):
     def test_str(self):
         s = Subset(self.data, label="hi")
         assert str(s) == "Subset: hi (data: data)"
-        s = Subset(None, label = "hi")
+        s = Subset(None, label="hi")
         assert str(s) == "Subset: hi (no data)"
         s = Subset(None)
         assert str(s) == "Subset: (no label) (no data)"
@@ -157,6 +158,7 @@ target_states = ((op.and_, AndState),
                  (op.or_, OrState),
                  (op.xor, XorState))
 
+
 @pytest.mark.parametrize(("x"), target_states)
 def test_binary_subset_combination(x):
     operator, target = x
@@ -168,6 +170,7 @@ def test_binary_subset_combination(x):
     assert newsub.subset_state.state1 is s1.subset_state
     assert newsub.subset_state.state2 is s2.subset_state
 
+
 def test_subset_combinations_reparent():
     """ parent property of nested subset states assigned correctly """
     s = (Subset(None) & Subset(None)) | Subset(None)
@@ -177,9 +180,10 @@ def test_subset_combinations_reparent():
     assert s.subset_state.state1.state2.parent is s
     assert s.subset_state.state2.parent is s
 
+
 def test_inequality_subsets_reparent():
     """ hierarchical subsets using InequalityStates reparent properly """
-    s = Subset(None) & ( (ComponentID("") > 5) | (ComponentID("") < 2))
+    s = Subset(None) & ((ComponentID("") > 5) | (ComponentID("") < 2))
     assert s.subset_state.parent is s
     assert s.subset_state.state1.parent is s
     assert s.subset_state.state2.parent is s
@@ -316,7 +320,8 @@ class TestSubsetIo(object):
     def test_read_error(self):
         with pytest.raises(IOError) as exc:
             self.subset.read_mask('file_does_not_exist')
-        assert exc.value.args[0] == "Could not read file_does_not_exist (not a fits file?)"
+        assert exc.value.args[0] == ("Could not read file_does_not_exist "
+                                     "(not a fits file?)")
 
     def test_write_unsupported_format(self):
         with pytest.raises(AttributeError) as exc:
@@ -336,7 +341,7 @@ class TestSubsetState(object):
         np.testing.assert_array_equal(self.state.to_index_list(), answer)
 
     def test_to_index_list_1d(self):
-        mask = np.array( [False, True])
+        mask = np.array([False, True])
         answer = np.array([1])
         self.mask_check(mask, answer)
 
@@ -346,12 +351,12 @@ class TestSubsetState(object):
         self.mask_check(mask, answer)
 
     def test_empty_to_index_1d(self):
-        mask = np.array([ False, False])
+        mask = np.array([False, False])
         answer = np.array([])
         self.mask_check(mask, answer)
 
     def test_empty_to_index_2d(self):
-        mask = np.array([ [False, False], [False, False]])
+        mask = np.array([[False, False], [False, False]])
         answer = np.array([])
         self.mask_check(mask, answer)
 
@@ -386,11 +391,12 @@ class DummySubsetState(SubsetState):
             result = result[view]
         return result
 
+
 class TestSubsetViews(object):
 
     def setup_method(self, method):
         d = Data()
-        c = Component(np.array([1,2,3,4]))
+        c = Component(np.array([1, 2, 3, 4]))
         self.cid = d.add_component(c, 'test')
         self.s = d.edit_subset
         self.c = c
@@ -414,6 +420,8 @@ class TestSubsetViews(object):
 
 
 """ Test Fancy Indexing into the various subset states """
+
+
 def roifac(comp, cid):
     from ..roi import RectangularROI
     from ..subset import RoiSubsetState
@@ -426,33 +434,42 @@ def roifac(comp, cid):
     result.roi = roi
     return result
 
+
 def rangefac(comp, cid):
     from ..subset import RangeSubsetState
     return RangeSubsetState(.5, 2.5, att=cid)
+
 
 def compfac(comp, cid, oper):
     s1 = roifac(comp, cid)
     s2 = rangefac(comp, cid)
     return oper(s1, s2)
 
+
 def orfac(comp, cid):
     return compfac(comp, cid, op.or_)
+
 
 def andfac(comp, cid):
     return compfac(comp, cid, op.and_)
 
+
 def xorfac(comp, cid):
     return compfac(comp, cid, op.xor)
+
 
 def invertfac(comp, cid):
     return ~rangefac(comp, cid)
 
+
 def elementfac(comp, cid):
     from ..subset import ElementSubsetState
-    return ElementSubsetState(np.array([0,1]))
+    return ElementSubsetState(np.array([0, 1]))
+
 
 def inequalityfac(comp, cid):
     return cid > 2.5
+
 
 def basefac(comp, cid):
     return SubsetState()
@@ -460,21 +477,22 @@ def basefac(comp, cid):
 
 views = (np.s_[:],
          np.s_[::-1, 0],
-         np.s_[0,:],
-         np.s_[:,0],
+         np.s_[0, :],
+         np.s_[:, 0],
          np.array([[True, False], [False, True]]),
          np.where(np.array([[True, False], [False, True]])),
-         np.zeros((2,2), dtype=bool),
+         np.zeros((2, 2), dtype=bool),
          )
 facs = [roifac, rangefac, orfac, andfac, xorfac, invertfac,
         elementfac, inequalityfac, basefac]
 
-@pytest.mark.parametrize( ('statefac', 'view'), [(f,v) for f in facs
+
+@pytest.mark.parametrize(('statefac', 'view'), [(f, v) for f in facs
                                                  for v in views])
 def test_mask_of_view_is_view_of_mask(statefac, view):
     print statefac, view
     d = Data()
-    c = Component(np.array([[1,2],[3,4]]))
+    c = Component(np.array([[1, 2], [3, 4]]))
     cid = d.add_component(c, 'test')
     s = d.edit_subset
     s.subset_state = statefac(c, cid)
@@ -488,4 +506,3 @@ def test_mask_of_view_is_view_of_mask(statefac, view):
     m0[view] = True
     v2 = c.data[s.to_mask() & m0]
     np.testing.assert_array_equal(v1, v2)
-

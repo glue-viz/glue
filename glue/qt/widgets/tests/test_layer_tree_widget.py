@@ -11,12 +11,15 @@ from ..layer_tree_widget import LayerTreeWidget, Clipboard
 from ....tests import example_data
 from .... import core
 
+
 def setup_module(module):
     module.app = QApplication([''])
+
 
 def teardown_module(module):
     module.app.exit()
     del module.app
+
 
 class TestLayerTree(object):
     """ Unit tests for the layer_tree_widget class """
@@ -208,7 +211,6 @@ class TestLayerTree(object):
         self.invert_action.trigger()
         assert isinstance(sub.subset_state, core.subset.InvertState)
 
-
     def test_actions_enabled_single_subset_selection(self):
         Clipboard().contents = None
         layer = self.add_layer()
@@ -308,7 +310,7 @@ class TestLayerTree(object):
             wizard.return_value = [core.Data()]
             ct0 = self.widget.layerTree.topLevelItemCount()
             self.widget._load_data()
-            assert self.widget.layerTree.topLevelItemCount() == ct0+1
+            assert self.widget.layerTree.topLevelItemCount() == ct0 + 1
 
     def test_clear_subset(self):
         layer = self.add_layer()
@@ -319,4 +321,3 @@ class TestLayerTree(object):
         sub.subset_state = dummy_state
         self.clear_action.trigger()
         assert not sub.subset_state == dummy_state
-

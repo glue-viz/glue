@@ -305,6 +305,7 @@ class TestData(object):
             result = self.data['xyz']
         assert exc.value.args[0].startswith('xyz not in data')
 
+
 class TestPixelLabel(object):
 
     def test(self):

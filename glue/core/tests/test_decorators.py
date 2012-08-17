@@ -2,14 +2,17 @@ import pytest
 
 from ..decorators import singleton, memoize, memoize_attr_check
 
+
 @singleton
 class Foo(object):
     """test docstring"""
     pass
 
+
 @singleton
 class Bar(object):
     pass
+
 
 def test_singleton():
     f = Foo()
@@ -34,7 +37,8 @@ def test_memoize():
 
     assert foo(b) == 5
     b.bar = 7
-    assert foo(b) == 5 #should return memoized func
+    assert foo(b) == 5  # should return memoized func
+
 
 def test_memoize_attribute():
 
@@ -71,4 +75,3 @@ def test_decorators_maintain_docstrings():
             pass
 
     assert Bar.test.__doc__ == "123"
-

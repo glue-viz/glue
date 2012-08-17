@@ -9,12 +9,15 @@ from ....clients.histogram_client import HistogramClient
 from .... import core
 from ....tests import example_data
 
+
 def setup_module(module):
     module.app = QApplication([''])
+
 
 def teardown_module(module):
     module.app.exit()
     del module.app
+
 
 class TestHistogramWidget(object):
     def setup_method(self, method):
@@ -33,15 +36,15 @@ class TestHistogramWidget(object):
 
     def set_dummy_attributes(self):
         combo = self.widget.ui.attributeCombo
-        combo.addItem("Dummy1", userData = "Dum1")
-        combo.addItem("Dummy2", userData = "Dum2")
+        combo.addItem("Dummy1", userData="Dum1")
+        combo.addItem("Dummy2", userData="Dum2")
 
     def set_dummy_data(self):
         combo = self.widget.ui.dataCombo
         d1 = MagicMock()
         d2 = MagicMock()
-        combo.addItem("DataDummy1", userData = d1)
-        combo.addItem("DataDummy2", userData = d2)
+        combo.addItem("DataDummy1", userData=d1)
+        combo.addItem("DataDummy2", userData=d2)
 
     def set_up_hub(self):
         hub = core.hub.Hub()
@@ -111,7 +114,6 @@ class TestHistogramWidget(object):
         ct = self.widget.ui.dataCombo.count()
         self.widget.add_data(self.data)
         assert ct == self.widget.ui.dataCombo.count()
-
 
     def test_remove_data(self):
         """ should remove entry fom combo box """

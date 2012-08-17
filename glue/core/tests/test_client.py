@@ -88,7 +88,8 @@ class TestClient(object):
     def test_invalid_init(self):
         with pytest.raises(TypeError) as exc:
             Client(None)
-        assert exc.value.args[0].startswith("Input data must be a DataCollection:")
+        assert exc.value.args[0].startswith("Input data must be a "
+                                            "DataCollection:")
 
     def test_register(self):
         hub = self._hub()

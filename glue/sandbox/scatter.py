@@ -7,6 +7,7 @@ from glue.qt.messagewidget import MessageWidget
 from glue.qt.scatterwidget import ScatterWidget
 from glue.qt.mouse_mode import RectangleMode
 
+
 def main():
 
     app = QApplication(sys.argv)

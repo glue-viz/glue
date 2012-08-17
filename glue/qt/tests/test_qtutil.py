@@ -1,12 +1,15 @@
 from .. import qtutil
 from PyQt4 import QtGui
 
+
 def setup_module(module):
     module.app = QtGui.QApplication([''])
+
 
 def teardown_module(module):
     module.app.exit()
     del module.app
+
 
 def test_glue_action_button():
     a = QtGui.QAction(None)
@@ -25,4 +28,3 @@ def test_glue_action_button():
     #stays in sync
     a.setText('test2')
     assert b.text() == 'test2'
-

@@ -9,8 +9,10 @@ from ...core.data_collection import DataCollection
 from ...core.exceptions import IncompatibleDataException
 from ...core.hub import Hub
 
+
 class TestException(Exception):
     pass
+
 
 class TestHistogramClient(object):
 
@@ -135,6 +137,7 @@ class TestHistogramClient(object):
         self.client.set_data(self.data)
         self.client.set_component(self.data.find_component_id('uniform')[0])
 
+
 class TestCommunication(object):
     def setup_method(self, method):
         self.data = example_data.test_histogram_data()
@@ -187,7 +190,7 @@ class TestCommunication(object):
         sub = self.data.new_subset()
         self.client.remove_layer(sub)
         ct0 = self.draw_count()
-        sub.style.color='blue'
+        sub.style.color = 'blue'
         assert self.draw_count() == ct0
 
     def test_update_subset_processed_if_present(self):
@@ -195,5 +198,5 @@ class TestCommunication(object):
         self.client.add_layer(self.data)
         sub = self.data.new_subset()
         ct0 = self.draw_count()
-        sub.style.color='blue'
+        sub.style.color = 'blue'
         assert self.draw_count() > ct0

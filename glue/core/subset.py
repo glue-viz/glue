@@ -245,7 +245,6 @@ class SubsetState(object):
     def __init__(self):
         self._parent = None
 
-
     @property
     def parent(self):
         return self._parent
@@ -272,7 +271,6 @@ class SubsetState(object):
             if view is not None:
                 result = result[view]
             return result
-
 
     def copy(self):
 

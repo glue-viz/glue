@@ -315,6 +315,8 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         widget.setPixmap(pm)
         widget.show()
         sub = self._add_to_current_tab(widget, label='Getting Started')
+
         def do_close(win):
             sub.close()
+
         self.current_tab.subWindowActivated.connect(do_close)

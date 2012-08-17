@@ -7,11 +7,13 @@ from ..data_collection import DataCollection
 from ..hub import Hub
 from ..subset import Subset, SubsetState
 
+
 class CopySubsetState(SubsetState):
     # a bit of a hack -- easier to use is than == when checking sync
     # live linker calls copy
     def copy(self):
         return self
+
 
 def get_subset():
     result = Subset(None)
@@ -37,12 +39,14 @@ class TestLiveLinkIntegrated(object):
         self.s1.style.color = "blue123"
         assert self.s2.style.color == "blue123"
 
+
 def assert_synced(subsets):
     state = subsets[0].subset_state
     style = subsets[0].style
     for s in subsets:
         assert s.subset_state is state
         assert s.style is style
+
 
 class TestLiveLInk(object):
     """ Sync method properly syncs both state and style """
@@ -111,4 +115,3 @@ class TestLiveLinkManager(object):
     def test_remove_not_found(self):
         """ Remove links shouldn't crash if it can't find a subset """
         self.mgr.remove_links_from(self.sub1)
-

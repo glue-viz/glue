@@ -394,8 +394,8 @@ class Data(object):
 
         if self.ndim != len(self._pixel_component_ids) or \
           self.ndim != len(self._world_component_ids):
-          # haven't populated pixel, world coordinates yet
-          return []
+            # haven't populated pixel, world coordinates yet
+            return []
 
         def make_toworld_func(i):
             def pix2world(*args):
@@ -481,7 +481,7 @@ class Data(object):
         if subset.data is not self:
             subset.do_broadcast(False)
             subset.data = self
-            subset.label = subset.label # hacky. disambiguates name if needed
+            subset.label = subset.label  # hacky. disambiguates name if needed
 
         if self.hub is not None:
             msg = SubsetCreateMessage(subset)

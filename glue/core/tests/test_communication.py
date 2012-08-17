@@ -5,7 +5,8 @@ from ..client import Client
 from ..data import Data
 from ..subset import Subset
 from ..data_collection import DataCollection
-from ..message import SubsetCreateMessage, SubsetDeleteMessage, SubsetUpdateMessage, Message, DataUpdateMessage
+from ..message import (SubsetCreateMessage, SubsetDeleteMessage,
+                       SubsetUpdateMessage, Message, DataUpdateMessage)
 
 """
 Client communication protocol

@@ -28,7 +28,8 @@ class TestComponentLink(object):
         using = lambda x: x
         with pytest.raises(TypeError) as exc:
             ComponentLink([from_, from_], to_)
-        assert exc.value.args[0] == "comp_from must have only 1 element, or a 'using' function must be provided"
+        assert exc.value.args[0] == ("comp_from must have only 1 element, "
+                                     "or a 'using' function must be provided")
 
     def test_invalid_init_scalar_from(self):
         data, from_, to_ = self.toy_data()

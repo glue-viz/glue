@@ -8,11 +8,14 @@ from ..glue_application import GlueApplication
 def tab_count(app):
     return app.tab_bar.count()
 
+
 def setup_module(module):
     module.app = QApplication([''])
 
+
 def teardown_module(module):
     del module.app
+
 
 class TestGlueApplication(object):
 
@@ -53,4 +56,3 @@ class TestGlueApplication(object):
             with patch('glue.qt.glue_application.QMessageBox') as mb:
                 self.app._save_session()
                 assert mb.critical.call_count == 1
-

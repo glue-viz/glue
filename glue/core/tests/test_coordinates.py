@@ -123,21 +123,24 @@ class TestWcsCoordinates(object):
         x, y = 0, [5]
         with pytest.raises(TypeError) as exc:
             coord.world2pixel(x, y)
-        assert exc.value.args[0].startswith("xworld and yworld types do not match")
+        assert exc.value.args[0].startswith("xworld and yworld types do not "
+                                            "match")
 
     def test_pixel2world_invalid_input(self):
         coord = WCSCoordinates(None)
         x, y = {}, {}
         with pytest.raises(TypeError) as exc:
             coord.pixel2world(x, y)
-        assert exc.value.args[0].startswith("Unexpected type for pixel coordinates")
+        assert exc.value.args[0].startswith("Unexpected type for "
+                                            "pixel coordinates")
 
     def test_world2pixel_invalid_input(self):
         coord = WCSCoordinates(None)
         x, y = {}, {}
         with pytest.raises(TypeError) as exc:
             coord.world2pixel(x, y)
-        assert exc.value.args[0].startswith("Unexpected type for world coordinates")
+        assert exc.value.args[0].startswith("Unexpected type for "
+                                            "world coordinates")
 
     def test_axis_label(self):
         hdr = self.default_header()
@@ -176,7 +179,8 @@ class TestCoordinatesFromHeader(object):
             assert type(coord) is Coordinates
 
 
-HDR_2D_VALID = """SIMPLE  =                    T / Written by IDL:  Wed Jul 27 10:01:47 2011
+HDR_2D_VALID = \
+"""SIMPLE  =                    T / Written by IDL:  Wed Jul 27 10:01:47 2011
 BITPIX  =                  -32 / number of bits per data pixel
 NAXIS   =                    2 / number of data axes
 NAXIS1  =                  501 / length of data axis 1
@@ -205,7 +209,8 @@ NAXIS2  =                  128 /
 NAXIS3  =                  128 /
 """
 
-HDR_3D_VALID_WCS = """SIMPLE  =                    T / Written by IDL:  Thu Jul  7 15:37:21 2011
+HDR_3D_VALID_WCS = \
+"""SIMPLE  =                    T / Written by IDL:  Thu Jul  7 15:37:21 2011
 BITPIX  =                  -32 / Number of bits per data pixel
 NAXIS   =                    3 / Number of data axes
 NAXIS1  =                   82 /
@@ -228,6 +233,7 @@ CRPIX3  =             -102.000 /
 CDELT3  =        66.4236100000 /
 """
 
+
 def header_from_string(string):
     cards = []
     for s in string.splitlines():
@@ -243,4 +249,3 @@ def header_from_string(string):
             continue
         cards.append(Card(key, value))
     return Header(cards)
-

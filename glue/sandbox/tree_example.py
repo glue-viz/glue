@@ -54,7 +54,7 @@ data.tree.index()
 id1 = data.tree._index[12].get_subtree_indices()
 id2 = data.tree._index[40].get_subtree_indices()
 
-s = cv.subset.TreeSubset(data, node_list = id1)
+s = cv.subset.TreeSubset(data, node_list=id1)
 s2 = cv.subset.TreeSubset(data)
 s2.node_list = id2
 
@@ -62,12 +62,11 @@ s.register()
 s2.register()
 
 
-
 # attach some event handlers
-def pick_branch(x,y, client=c):
-    branch = client.layout.pick(x,y)
+def pick_branch(x, y, client=c):
+    branch = client.layout.pick(x, y)
     if not branch:
-        s2.node_list=[]
+        s2.node_list = []
     else:
         id = branch.get_subtree_indices()
         s2.node_list = id

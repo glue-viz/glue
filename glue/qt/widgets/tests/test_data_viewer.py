@@ -12,11 +12,14 @@ from mock import MagicMock, patch
 
 ALL_WIDGETS = [HistogramWidget, ScatterWidget, ImageWidget]
 
+
 def setup_module(module):
     module.app = QApplication([''])
 
+
 def teardown_module(module):
     del module.app
+
 
 @pytest.mark.parametrize(('widget'), ALL_WIDGETS)
 def test_unregister_on_close(widget):

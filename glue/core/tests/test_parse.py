@@ -36,7 +36,8 @@ class TestParse(object):
     def test_reference_list_invalid_cmd(self):
         with pytest.raises(KeyError) as exc:
             parse._reference_list('{a}', {})
-        assert exc.value.args[0] == "Tags from command not in reference mapping"
+        assert exc.value.args[0] == ("Tags from command not in "
+                                     "reference mapping")
 
     def test_dereference(self):
         c1 = ComponentID('c1')
@@ -57,7 +58,8 @@ class TestParse(object):
         parse._validate('3 + 4', ref)
         with pytest.raises(TypeError) as exc:
             parse._validate('{c}', ref)
-        assert exc.value.args[0] == "Tag c not in reference mapping: ['a', 'b']"
+        assert exc.value.args[0] == ("Tag c not in reference mapping: "
+                                     "['a', 'b']")
 
     def test_ensure_only_component_references(self):
         ref = {'a': 1, 'b': ComponentID('b')}
@@ -65,10 +67,12 @@ class TestParse(object):
         F('{b} + 5', ref)
         with pytest.raises(TypeError) as exc:
             F('{b} + {a}', ref)
-        assert exc.value.args[0] == "Reference to a, which is not a ComponentID"
+        assert exc.value.args[0] == ("Reference to a, which is not a "
+                                     "ComponentID")
         with pytest.raises(TypeError) as exc:
             F('{b} + {d}', ref)
-        assert exc.value.args[0] == "Reference to d, which is not a ComponentID"
+        assert exc.value.args[0] == ("Reference to d, which is not a "
+                                     "ComponentID")
 
 
 class TestParsedCommand(object):

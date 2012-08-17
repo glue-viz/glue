@@ -6,7 +6,8 @@ from ..data import Data, Component, ComponentID, DerivedComponent
 from ..subset import SubsetState
 from ..hub import Hub, HubListener
 from ..data_collection import DataCollection
-from ..message import Message, DataCollectionAddMessage, DataCollectionDeleteMessage, DataAddComponentMessage
+from ..message import (Message, DataCollectionAddMessage,
+                       DataCollectionDeleteMessage, DataAddComponentMessage)
 from ..component_link import ComponentLink
 
 
@@ -190,4 +191,3 @@ class TestDataCollection(object):
         self.dc.links = [link]
 
         assert id2 in d.components
-

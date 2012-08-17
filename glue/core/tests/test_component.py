@@ -6,6 +6,7 @@ import pytest
 from ..data import Component, ComponentID, DerivedComponent
 from ... import core
 
+
 class TestComponent(object):
 
     def setup_method(self, method):
@@ -64,6 +65,7 @@ def check_binary(result, left, right, op):
     assert result.right is right
     assert result.operator is op
 
+
 def check_link(result, left, right):
     assert isinstance(result, core.component_link.ComponentLink)
     if isinstance(left, ComponentID):
@@ -75,11 +77,13 @@ def check_link(result, left, right):
 COMPARE_OPS = (operator.gt, operator.ge, operator.lt, operator.le)
 NUMBER_OPS = (operator.add, operator.mul, operator.div, operator.sub)
 
+
 @pytest.mark.parametrize(('op'), COMPARE_OPS)
 def test_inequality_scalar(op):
     cid = ComponentID('test')
     result = op(cid, 3)
     check_binary(result, cid, 3, op)
+
 
 @pytest.mark.parametrize(('op'), COMPARE_OPS)
 def test_inequality_id(op):
@@ -88,17 +92,20 @@ def test_inequality_id(op):
     result = op(cid, cid2)
     check_binary(result, cid, cid2, op)
 
+
 @pytest.mark.parametrize(('op'), NUMBER_OPS)
 def test_arithmetic_scalar(op):
     cid = ComponentID('test')
     result = op(cid, 3)
     check_link(result, cid, 3)
 
+
 @pytest.mark.parametrize(('op'), NUMBER_OPS)
 def test_arithmetic_scalar_right(op):
     cid = ComponentID('test')
     result = op(3, cid)
     check_link(result, 3, cid)
+
 
 @pytest.mark.parametrize(('op'), NUMBER_OPS)
 def test_arithmetic_cid(op):
@@ -107,8 +114,8 @@ def test_arithmetic_cid(op):
     result = op(cid, cid2)
     check_link(result, cid, cid2)
 
+
 def test_pow_scalar():
     cid = ComponentID('test')
     result = cid ** 3
     check_link(result, cid, 3)
-

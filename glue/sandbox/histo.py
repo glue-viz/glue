@@ -7,6 +7,7 @@ from glue.core.data_collection import DataCollection
 from glue.core.hub import Hub
 from glue.qt.widgets.histogramwidget import HistogramWidget
 
+
 def main():
 
     app = QApplication(sys.argv)

@@ -8,10 +8,10 @@ from ..data import Component, Data
 class TestEditSubsetMode(object):
     def setup_method(self, method):
         data = Data()
-        comp = Component(np.array([1,2,3]))
+        comp = Component(np.array([1, 2, 3]))
 
-        ind1 = np.array([0,1])
-        ind2 = np.array([1,2])
+        ind1 = np.array([0, 1])
+        ind2 = np.array([1, 2])
 
         cid = data.add_component(comp, 'test')
         state1 = ElementSubsetState(ind1)
