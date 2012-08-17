@@ -67,6 +67,13 @@ class TestDataCollectionView(object):
         self.collect.remove(self.data)
         assert not self.has_item(self.data)
 
+    def test_subset_delete_updates_view(self):
+        self.collect.append(self.data)
+        s = self.data.new_subset()
+        assert self.has_item(s)
+        s.delete()
+        assert not self.has_item(s)
+
     def test_data_delete_removes_subsets(self):
         self.collect.append(self.data)
         self.collect.remove(self.data)
