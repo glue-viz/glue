@@ -78,3 +78,25 @@ def split_component_view(arg):
         return arg[0], arg[1:]
     else:
         return arg, None
+
+
+def join_component_view(component, view):
+    """Pack a componentID and optional view into single tuple
+
+    Returns an object compatible with data.__getitem__ and related
+    methods.  Handles edge cases of when view is None, a scalar, a
+    tuple, etc.
+
+    :param component: ComponentID
+    :param view: view into data, or None
+
+    """
+    if view is None:
+        return component
+    result = [component]
+    try:
+        result.extend(view)
+    except TypeError:  # view is a scalar
+        result = [component, view]
+
+    return tuple(result)

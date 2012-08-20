@@ -294,7 +294,7 @@ class TestData(object):
     def test_fancy_view(self):
         result = self.data[self.comp_id, :, 3]
         args = (slice(None, None, None), 3)
-        self.comp.data.__getitem__.assert_called_once_with(args)
+        self.comp.__getitem__.assert_called_once_with(args)
 
     def test_get_by_string(self):
         result = self.data['Test Component']

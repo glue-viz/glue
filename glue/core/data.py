@@ -22,7 +22,7 @@ from .message import DataUpdateMessage, \
 from .util import file_format
 
 __all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
-           'TabularData', 'GriddedData']
+           'TabularData', 'GriddedData', 'CoordinateComponent']
 
 COLORS = [RED, GREEN, BLUE, YELLOW, BROWN, ORANGE, PURPLE, PINK]
 
@@ -129,6 +129,10 @@ class Component(object):
         """ Return the number of dimensions """
         return len(self._data.shape)
 
+    def __getitem__(self, key):
+        print key
+        return self._data[key]
+
 
 class DerivedComponent(Component):
     """ A component which derives its data from a function """
@@ -155,6 +159,44 @@ class DerivedComponent(Component):
         """ Return the component link """
         return self._link
 
+    def __getitem__(self, key):
+        return self._link.compute(self._data, key)
+
+
+class CoordinateComponent(Component):
+    def __init__(self, data, axis, world=False):
+        super(CoordinateComponent, self).__init__(None, None)
+        self.world = world
+        self._data = data
+        self.axis = axis
+
+    @property
+    def data(self):
+        return self._calculate()
+
+    def _calculate(self, view=None):
+        slices = [slice(0, s, 1) for s in self.shape]
+        grids = np.mgrid[slices]
+        if view is not None:
+            # XXX Not efficient
+            grids = [g[view] for g in grids]
+
+        if self.world:
+            world = self._data.coords.pixel2world(*grids[::-1])[::-1]
+            return world[self.axis]
+        else:
+            return grids[self.axis]
+
+    @property
+    def shape(self):
+        return self._data.shape
+
+    @property
+    def ndim(self):
+        return len(self._data.shape)
+
+    def __getitem__(self, key):
+        return self._calculate(key)
 
 class Data(object):
     """Stores data and manages subsets.
@@ -552,13 +594,15 @@ class Data(object):
                 raise IncompatibleAttribute("%s not in data set %s" %
                                             (key, self.label))
         try:
-            result = self._components[key].data
+            comp = self._components[key]
         except KeyError:
             raise IncompatibleAttribute("%s not in data set %s" %
                                         (key, self.label))
 
         if view is not None:
-            result = result[view]
+            result = comp[view]
+        else:
+            result = comp.data
 
         return result
 

@@ -1,3 +1,5 @@
+from .util import join_component_view
+
 __all__ = ['ComponentLink']
 
 
@@ -61,12 +63,14 @@ class ComponentLink(object):
                 raise TypeError("comp_from must have only 1 element, "
                                 "or a 'using' function must be provided")
 
-    def compute(self, data):
+    def compute(self, data, view=None):
         """For a given data set, compute the component comp_to given
         the data associated with each comp_from and the ``using``
         function
 
         :param data: The data set to use
+        :param view: Optional view (e.g. slice) through the data to use
+
 
         *Returns*:
 
@@ -78,9 +82,9 @@ class ComponentLink(object):
             ComponentIDs needed for the transformation
         """
         if self._using is None:
-            return data[self._from[0]]
+            return data[join_component_view(self._from[0], view)]
 
-        args = [data[f] for f in self._from]
+        args = [data[join_component_view(f, view)] for f in self._from]
         return self._using(*args)
 
     def get_from_ids(self):
