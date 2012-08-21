@@ -2,21 +2,24 @@ from functools import wraps
 
 __all__ = ['memoize', 'singleton', 'memoize_attr_check']
 
+def _make_key(args, kwargs):
+    return args, frozenset(kwargs.items())
 
 def memoize(func):
     """Save results of function calls to avoid repeated calculation"""
     memo = {}
 
     @wraps(func)
-    def wrapper(*args):
+    def wrapper(*args, **kwargs):
+        key = _make_key(args, kwargs)
         try:
-            return memo[args]
+            return memo[key]
         except KeyError:
-            result = func(*args)
-            memo[args] = result
+            result = func(*args, **kwargs)
+            memo[key] = result
             return result
         except TypeError:  # unhashable input
-            return func(*args)
+            return func(*args, **kwargs)
 
     return wrapper
 
@@ -32,13 +35,13 @@ def memoize_attr_check(attr):
         #must return a decorator function
 
         @wraps(func)
-        def result(*args):
+        def result(*args, **kwargs):
             first_arg = getattr(args[0], attr)
-            return memo(first_arg, *args)
+            return memo(first_arg, *args, **kwargs)
 
         @memoize
-        def memo(*args):
-            return func(*args[1:])
+        def memo(*args, **kwargs):
+            return func(*args[1:], **kwargs)
 
         return result
 

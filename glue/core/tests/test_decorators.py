@@ -75,3 +75,34 @@ def test_decorators_maintain_docstrings():
             pass
 
     assert Bar.test.__doc__ == "123"
+
+def test_memoize_kwargs():
+
+    @memoize
+    def test(x, y=0):
+        return x + y
+
+    assert test(3) == 3
+    assert test(3, 2) == 5
+    assert test(3, y=3) == 6
+
+
+def test_memoize_attribute_kwargs():
+
+    class Foo(object):
+        def __init__(self):
+            self.target = 1
+            self.trigger = 0
+
+        @memoize_attr_check('trigger')
+        def test(self, x=0):
+            return self.target + x
+
+    f = Foo()
+    assert f.test() == 1
+    assert f.test(x=5) == 6
+    f.target = 2
+    assert f.test() == 1
+    f.trigger = 1
+    assert f.test() == 2
+    assert f.test(x=6) == 8

@@ -1,3 +1,5 @@
+import logging
+
 from .util import join_component_view
 
 __all__ = ['ComponentLink']
@@ -85,7 +87,14 @@ class ComponentLink(object):
             return data[join_component_view(self._from[0], view)]
 
         args = [data[join_component_view(f, view)] for f in self._from]
-        return self._using(*args)
+        logging.debug("shape of first argument: %s", args[0].shape)
+        result = self._using(*args)
+        logging.debug("shape of result: %s", result.shape)
+        if result.shape != args[0].shape:
+            logging.warn("ComponentLink function %s changed shape. Fixing",
+                         self._using.__name__)
+            result.shape = args[0].shape
+        return result
 
     def get_from_ids(self):
         """ The list of input ComponentIDs """

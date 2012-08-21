@@ -203,10 +203,11 @@ class TestData(object):
         compid = ComponentID('virtual')
         link = MagicMock(spec_set=ComponentLink)
         comp = DerivedComponent(self.data, link)
+        comp.data.shape = self.data.shape
         self.data.add_component(comp, compid)
 
         result = self.data[compid]
-        link.compute.assert_called_once_with(self.data)
+        link.compute.assert_called_with(self.data)
 
     def test_find_component_id(self):
         cid = self.data.find_component_id('Test Component')
@@ -292,9 +293,10 @@ class TestData(object):
         assert links == links2
 
     def test_fancy_view(self):
-        result = self.data[self.comp_id, :, 3]
-        args = (slice(None, None, None), 3)
-        self.comp.__getitem__.assert_called_once_with(args)
+        self.comp.__getitem__().shape = (2,)
+        result = self.data[self.comp_id, :, 2]
+        args = (slice(None, None, None), 2)
+        self.comp.__getitem__.assert_called_with(args)
 
     def test_get_by_string(self):
         result = self.data['Test Component']

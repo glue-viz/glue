@@ -215,16 +215,23 @@ class ContrastMode(MouseMode):
         vmax = bias + ra * self.contrast
         return vmin, vmax
 
+    def _downsample(self, data):
+        shp = data.shape
+        slices = tuple(slice(None, None, max(1, s / 100)) for s in shp)
+        return data[slices]
+
     def get_bounds(self, data):
         #cache last result. cant use @memoize, since ndarrays dont hash
         #XXX warning -- results are bad if data values change in-place
         if data is not self._last:
             self._last = data
             limits = (-np.inf, np.inf)
-            lo = stats.scoreatpercentile(data, self._percent_lo,
+            d = self._downsample(data)
+            lo = stats.scoreatpercentile(d.flat, self._percent_lo,
                                          limit=limits)
-            hi = stats.scoreatpercentile(data, self._percent_hi,
+            hi = stats.scoreatpercentile(d.flat, self._percent_hi,
                                          limit=limits)
+            print lo, hi, self._percent_lo, self._percent_hi
             self._result = lo, hi
         return self._result
 

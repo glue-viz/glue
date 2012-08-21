@@ -1,4 +1,5 @@
 import operator
+import logging
 
 import numpy as np
 import atpy
@@ -14,7 +15,7 @@ from .subset import Subset, InequalitySubsetState, SubsetState
 from .hub import Hub
 from .tree import Tree
 from .registry import Registry
-from .util import split_component_view
+from .util import split_component_view, view_shape
 from .message import DataUpdateMessage, \
                      DataAddComponentMessage, \
                      SubsetCreateMessage
@@ -130,7 +131,7 @@ class Component(object):
         return len(self._data.shape)
 
     def __getitem__(self, key):
-        print key
+        logging.debug("Using %s to index data of shape %s" % (key, self.shape))
         return self._data[key]
 
 
@@ -176,9 +177,8 @@ class CoordinateComponent(Component):
 
     def _calculate(self, view=None):
         slices = [slice(0, s, 1) for s in self.shape]
-        grids = np.mgrid[slices]
+        grids = np.broadcast_arrays(*np.ogrid[slices])
         if view is not None:
-            # XXX Not efficient
             grids = [g[view] for g in grids]
 
         if self.world:
@@ -369,18 +369,14 @@ class Data(object):
         return dc
 
     def _create_pixel_and_world_components(self):
-        shape = self.shape
-        slices = [slice(0, s, 1) for s in shape]
-        grids = np.mgrid[slices]
-        for i in range(len(shape)):
-            comp = Component(grids[i])
-            label = pixel_label(i, len(shape))
+        for i in range(self.ndim):
+            comp = CoordinateComponent(self, i)
+            label = pixel_label(i, self.ndim)
             cid = self.add_component(comp, "Pixel %s" % label)
             self._pixel_component_ids.append(cid)
         if self.coords:
-            world = self.coords.pixel2world(*grids[::-1])[::-1]
-            for i in range(len(shape)):
-                comp = Component(world[i])
+            for i in range(self.ndim):
+                comp = CoordinateComponent(self, i, world=True)
                 label = self.coords.axis_label(i)
                 cid = self.add_component(comp, label)
                 self._world_component_ids.append(cid)
@@ -599,11 +595,14 @@ class Data(object):
             raise IncompatibleAttribute("%s not in data set %s" %
                                         (key, self.label))
 
+        shp = view_shape(self.shape, view)
         if view is not None:
             result = comp[view]
         else:
             result = comp.data
 
+        assert result.shape == shp, \
+          "Component view returned bad shape: %s %s" % (result.shape, shp)
         return result
 
     def get_component(self, component_id):

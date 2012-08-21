@@ -100,3 +100,19 @@ def join_component_view(component, view):
         result = [component, view]
 
     return tuple(result)
+
+
+def view_shape(shape, view):
+    """Return the shape of a view of an array
+
+    :param shape: Tuple describing shape of the array
+    :param view: View object -- a valid index into a numpy array, or None
+
+    Returns equivalent of np.zeros(shape)[view].shape
+    """
+    if view is None:
+        return shape
+    shp = tuple(slice(0, s, 1) for s in shape)
+    xy = np.broadcast_arrays(*np.ogrid[shp])
+    assert xy[0].shape == shape
+    return xy[0][view].shape

@@ -6,7 +6,7 @@ from .visual import VisualAttributes, RED
 from .decorators import memoize_attr_check
 from .message import SubsetDeleteMessage, SubsetUpdateMessage
 from .registry import Registry
-from .util import split_component_view
+from .util import split_component_view, view_shape
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState',
@@ -263,16 +263,8 @@ class SubsetState(object):
         return np.where(self.to_mask().flat)[0]
 
     def to_mask(self, view=None):
-        try:
-            c = self.parent.data.components[0]
-            d = self.parent.data
-            return np.zeros(d[c, view].shape, dtype=bool)
-        except IndexError:
-            # no components yet. Do it the slow way
-            result = np.zeros(self.parent.data.shape, dtype=bool)
-            if view is not None:
-                result = result[view]
-            return result
+        shp = view_shape(self.parent.data.shape, view)
+        return np.zeros(shp, dtype=bool)
 
     def copy(self):
 
@@ -305,6 +297,7 @@ class RoiSubsetState(SubsetState):
         x = self.parent.data[self.xatt, view]
         y = self.parent.data[self.yatt, view]
         result = self.roi.contains(x, y)
+        assert x.shape == result.shape
         return result
 
     def copy(self):

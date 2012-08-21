@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
@@ -61,9 +63,7 @@ class DataLayerManager(LayerManager):
             return
         self.artist.set_visible(state)
 
-    def set_norm(self, data, vmin=None, vmax=None):
-        if vmin is None or vmax is None:
-            self.norm.autoscale(data)
+    def set_norm(self, vmin, vmax):
         if vmin is not None:
             self.norm.vmin = vmin
         if vmax is not None:
@@ -87,7 +87,6 @@ class SubsetLayerManager(LayerManager):
 
     def _check_update(self, event):
         vw = _view_window(self._ax)
-        print vw, self._view_window
         if vw != self._view_window:
             self._callback()
         self._view_window = vw
@@ -117,17 +116,20 @@ class SubsetLayerManager(LayerManager):
     def update_artist(self, view):
         subset = self.layer
         self.delete_artist()
+        logging.debug("View into subset %s is %s", self.layer, view)
 
         try:
             mask = subset.to_mask(view[1:])
         except IncompatibleAttribute:
             return
+        logging.debug("View mask has shape %s", mask.shape)
 
         #shortcut for empty subsets
         if not mask.any():
             return
 
         extent = _get_extent(view)
+        print mask.shape
 
         if self.area_style == 'filled':
             self.artist = self._ax.contourf(mask.astype(float),
@@ -211,7 +213,7 @@ class ImageClient(VizClient):
         if attribute:
             self.layers[data].component_id = attribute
         elif self.layers[data].component_id is None:
-            self.layers[data].component_id = data.component_ids()[0]
+            self.layers[data].component_id = _default_component(data)
         attribute = self.layers[data].component_id
 
         self.display_data = data
@@ -258,11 +260,10 @@ class ImageClient(VizClient):
         """
         self._ax.figure.canvas.draw()
 
-    def set_norm(self, vmin=None, vmax=None):
+    def set_norm(self, vmin, vmax):
         if not self.display_data:
             return
-        data = self.display_data[self.display_attribute]
-        self.layers[self.display_data].set_norm(data, vmin, vmax)
+        self.layers[self.display_data].set_norm(vmin, vmax)
         self._update_data_plot()
         self._redraw()
 
@@ -276,11 +277,8 @@ class ImageClient(VizClient):
     def _update_subset_plot(self, s):
         if s not in self.layers:
             return
-
-        try:
-            mask = s.to_mask()
-        except IncompatibleAttribute:
-            mask = np.zeros(s.data.shape, dtype=bool)
+        if s.data is not self.display_data:
+            return
 
         view = self._build_view(matched=True)
         self.layers[s].update_artist(view)
@@ -452,9 +450,10 @@ class ImageClient(VizClient):
 
 def _get_extent(view):
     sy, sx = [s for s in view if isinstance(s, slice)]
-    return (sx.start, sx.stop, sy.start, sy.stop)
+    return (sx.start - .5, sx.stop - .5, sy.start - .5, sy.stop - .5)
 
 def _2d_shape(shape, slice_ori):
+    """Return the shape of the 2D slice through a 2 or 3D image"""
     if len(shape) == 2:
         return shape
     if slice_ori == 0:
@@ -465,7 +464,24 @@ def _2d_shape(shape, slice_ori):
     return shape[0:2]
 
 def _view_window(ax):
+    """ Return a tuple describing the view window of an axes object.
+
+    The contents should not be used directly, Rather, several
+    return values should be compared with == to determine if the
+    window has been panned/zoomed
+    """
     ext = ax.transAxes.transform([1, 1]) - ax.transAxes.transform([0, 0])
     xlim, ylim = ax.get_xlim(), ax.get_ylim()
     dx, dy = xlim[1] - xlim[0], ylim[1] - ylim[0]
     return dx, dy, xlim[0], ylim[0], ext[0], ext[1]
+
+def _default_component(data):
+    """Choose a default ComponentID to display for data
+
+    Returns PRIMARY if present
+    """
+    cid = data.find_component_id('PRIMARY')
+    if len(cid) != 0:
+        return cid[0]
+    return data.component_ids()[0]
+

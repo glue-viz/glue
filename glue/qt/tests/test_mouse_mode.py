@@ -145,7 +145,7 @@ class TestContrastMode(TestMouseMode):
         assert count == 0
 
     def test_get_scaling(self):
-        data = [1, 2, 3]
+        data = np.array([[1, 2, 3], [1,2,3]])
         self.mode.bias = 0.
         self.mode.contrast = 2.
         self.mode.set_clip_percentile(0, 100)
@@ -155,7 +155,7 @@ class TestContrastMode(TestMouseMode):
 
     def test_set_clip_precentile(self):
         """ Clip percentile should scale bounds by percentile, not min/max"""
-        data = np.array([1., 2., 3.])
+        data = np.array([[1., 2., 3.], [1., 2., 3.]])
         self.mode.set_clip_percentile(10, 90)
         result = self.mode.get_bounds(data)
         np.testing.assert_array_almost_equal(result,

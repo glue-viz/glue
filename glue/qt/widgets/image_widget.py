@@ -96,12 +96,25 @@ class ImageWidget(DataViewer):
         self.ui.sliderLabel.hide()
         self.ui.sliceComboBox.addItems(["xy", "xz", "yz"])
         for d in self.client.data:
-            self.add_data(d)
+            self._add_data(d)
+
+    def _add_data(self, data):
+        """Private method to ingest new data into widget"""
+        self.add_data_to_combo(data)
 
     def add_data(self, data):
-        """Overriden from DataViewer. Add data to widget"""
-        self.add_data_to_combo(data)
-        #client should already be in sync
+        """Overriden from DataViewer. Set current image to data"""
+        self.set_data(self._data_index(data))
+
+    def _data_index(self, data):
+        combo = self.ui.displayDataCombo
+
+        for i in range(combo.count()):
+            if combo.itemData(i) is data:
+                return i
+
+        return None
+
 
     def add_data_to_combo(self, data):
         """ Add a data object to the combo box, if not already present
@@ -147,8 +160,12 @@ class ImageWidget(DataViewer):
         combo.currentIndexChanged.disconnect(self.set_attribute)
         combo.clear()
         fields = data.component_ids()
-        for f in fields:
+        index = 0
+        for i, f in enumerate(fields):
             combo.addItem(f.label, userData=f)
+            if f == self.client.display_attribute:
+                index = i
+        combo.setCurrentIndex(index)
         combo.currentIndexChanged.connect(self.set_attribute)
 
     def set_slider(self, index):

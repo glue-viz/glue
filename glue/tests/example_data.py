@@ -47,7 +47,7 @@ def test_cube():
 
 def pipe():
 
-    # terrible. Must fix
+    #XXX terrible. Must fix
     ysos = pkgutil.get_data(__name__, 'examples/pipe_yso.txt')
     cores = pkgutil.get_data(__name__, 'examples/pipe_cores.vot')
     with open('.__junk1', 'w') as out:

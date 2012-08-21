@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..util import file_format, point_contour
+from ..util import file_format, point_contour, view_shape
 
 
 class TestRelim(object):
@@ -42,3 +42,11 @@ class TestPointContour(object):
 
         np.testing.assert_array_almost_equal(xy[:, 0], x)
         np.testing.assert_array_almost_equal(xy[:, 1], y)
+
+
+def test_view_shape():
+    assert view_shape((10, 10), np.s_[:]) == (10, 10)
+    assert view_shape((10, 10, 10), np.s_[:]) == (10, 10, 10)
+    assert view_shape((10, 10), np.s_[:, 1]) == (10,)
+    assert view_shape((10, 10), np.s_[2:3, 2:3]) == (1,1)
+    assert view_shape((10, 10), None) == (10, 10)

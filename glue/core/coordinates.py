@@ -1,3 +1,5 @@
+import logging
+
 import pywcs
 import numpy as np
 
@@ -62,7 +64,6 @@ class WCSCoordinates(Coordinates):
         xworld, yworld: scalars, lists or Numpy arrays
             The corresponding world coordinates
         '''
-
         if type(xpix) is not type(ypix):
             if np.isscalar(xpix) and np.isscalar(ypix):
                 pass
@@ -80,8 +81,10 @@ class WCSCoordinates(Coordinates):
                                                    np.array(ypix), 1)
             return xworld.tolist(), yworld.tolist()
         elif isinstance(xpix, np.ndarray):
-            xworld, yworld = self._wcs.wcs_pix2sky(xpix,
-                                                   ypix, 1)
+            logging.debug("xpix, ypix shapes: %s %s", xpix.shape, ypix.shape)
+
+            xworld, yworld = self._wcs.wcs_pix2sky(xpix, ypix, 1)
+
             xworld.shape = xpix.shape
             yworld.shape = ypix.shape
             return xworld, yworld
@@ -120,7 +123,10 @@ class WCSCoordinates(Coordinates):
                                               np.array(yworld), 1)
             return xpix.tolist(), ypix.tolist()
         elif isinstance(xworld, np.ndarray):
-            return self._wcs.wcs_sky2pix(xworld, yworld, 1)
+            xpix, ypix = self._wcs.wcs_sky2pix(xworld, yworld, 1)
+            xpix.shape = xworld.shape
+            ypix.shape = yworld.shape
+            return xpix, ypix
         else:
             raise TypeError("Unexpected type for world coordinates: %s" %
                             type(xworld))

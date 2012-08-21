@@ -20,8 +20,8 @@ class DummyCoords(core.coordinates.Coordinates):
     def pixel2world(self, *args):
         result = []
         for i, a in enumerate(args):
-            result.append([aa * (i + 1) for aa in a])
-        return result
+            result.append(aa * (i+1))
+        return tuple(result)
 
 
 class TrueState(core.subset.SubsetState):
@@ -124,6 +124,14 @@ class TestImageClient(object):
         assert not self.im in client.layers
 
     def test_set_attribute(self):
+        client = self.create_client_with_image()
+        atts = self.im.component_ids()
+        assert len(atts) > 1
+        for att in atts:
+            client.set_attribute(att)
+            assert client.display_attribute is att
+
+    def test_get_attribute(self):
         client = self.create_client_with_image()
         atts = self.im.component_ids()
         assert len(atts) > 1
