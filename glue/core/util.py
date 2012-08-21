@@ -116,3 +116,7 @@ def view_shape(shape, view):
     xy = np.broadcast_arrays(*np.ogrid[shp])
     assert xy[0].shape == shape
     return xy[0][view].shape
+
+def color2rgb(color):
+    from matplotlib.colors import ColorConverter
+    return ColorConverter().to_rgb(color)

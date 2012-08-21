@@ -1,3 +1,4 @@
+import logging
 from collections import defaultdict
 
 from .message import ErrorMessage, Message
@@ -160,6 +161,7 @@ class Hub(object):
         :param message: The message to broadcast
         :type message: :class:`~glue.core.message.Message`
         """
+        logging.debug("%s", message)
         for subscriber, handler in self._find_handlers(message):
             handler(message)
 

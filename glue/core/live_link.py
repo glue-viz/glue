@@ -84,18 +84,21 @@ class LiveLink(HubListener):
                       SubsetUpdateMessage,
                       filter=subset_in_link)
 
-    def sync(self, reference):
+    def sync(self, reference, attribute=None):
         """ Sync all tracked subsets to a reference
 
         :param reference: The subset to sync to
+        :param attribute: The subset attribute that was updated
         """
         state, style = reference.subset_state, reference.style
 
         for subset in self._subsets:
             if subset is reference:
                 continue
-            subset.subset_state = state.copy()
-            subset.style = style
+            if attribute != 'style':
+                subset.subset_state = state.copy()
+            if attribute != 'subset_state':
+                subset.style = style
 
     def notify(self, message):
         """Sync subset states when a SubsetUpdateMessage is called
@@ -113,5 +116,5 @@ class LiveLink(HubListener):
         assert message.sender in self._subsets, "Hub filter error"
 
         self._listen = False
-        self.sync(message.sender)
+        self.sync(message.sender, message.attribute)
         self._listen = True

@@ -101,6 +101,10 @@ class SubsetUpdateMessage(SubsetMessage):
         SubsetMessage.__init__(self, sender, tag=tag)
         self.attribute = attribute
 
+    def __str__(self):
+        result = super(SubsetUpdateMessage, self).__str__()
+        result += "\n\t Updated %s" % self.attribute
+        return result
 
 class SubsetDeleteMessage(SubsetMessage):
     """

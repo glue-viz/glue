@@ -203,7 +203,7 @@ class Subset(object):
 
     def __setattr__(self, attribute, value):
         object.__setattr__(self, attribute, value)
-        if attribute != '_broadcasting':
+        if not attribute.startswith('_'):
             self.broadcast(attribute)
 
     def __getitem__(self, view):

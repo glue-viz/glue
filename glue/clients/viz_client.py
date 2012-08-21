@@ -15,7 +15,6 @@ class VizClient(Client):
     * _update_axis_labels
     * _update_data_plot
     * _update_subset_single
-    * _update_subset_plot
     * _redraw
     * init_layer
 
@@ -67,7 +66,6 @@ class VizClient(Client):
         """
         s = message.subset
         self._update_subset_single(s)
-        self._update_subset_plot(s)
         self._redraw()
 
     def refresh(self):
@@ -104,7 +102,7 @@ class VizClient(Client):
         Sync the location and visual properties
         of each point in each subset
         """
-        junk = [self._update_subset_plot(s) for d in self.data
+        junk = [self._update_subset_single(s) for d in self.data
                 for s in d.subsets]
 
     def _update_subset_single(self, s):
@@ -118,14 +116,6 @@ class VizClient(Client):
 
         """
         raise NotImplementedError("VizClient Cannot Draw!")
-
-    def _update_subset_plot(self, s):
-        """ Update the plot of a subset
-
-        Parameters
-        ----------
-        s: The subset to update
-        """
 
     def init_layer(self, layer):
         """Initialize a plot of a data or subset object for the first time.

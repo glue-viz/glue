@@ -227,10 +227,11 @@ class ImageWidget(DataViewer):
 
     def _contour_roi(self, mode):
         """ Callback for ContourMode. Set edit_subset as new ROI """
-        im = self.client.image
-        if im is None:
+        im = self.client.display_data
+        att = self.client.display_attribute
+        if im is None or att is None:
             return
-        roi = mode.roi(im)
+        roi = mode.roi(im[att])
         if roi:
             self.client._apply_roi(roi)
 

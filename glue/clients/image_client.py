@@ -4,14 +4,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 
-from .modest_image import imshow, extract_matched_slices
+from .modest_image import extract_matched_slices
 from ..core.exceptions import IncompatibleAttribute
 from ..core.data import Data
 from ..core.subset import Subset, RoiSubsetState
 from ..core.roi import PolygonalROI
 from ..core.edit_subset_mode import EditSubsetMode
+from ..core.util import color2rgb
 
-from .viz_client import VizClient
+from .viz_client import VizClient, init_mpl
 
 
 class InvNormalize(Normalize):
@@ -46,6 +47,7 @@ class LayerManager(object):
     def delete(self):
         self.delete_artist()
 
+
 class DataLayerManager(LayerManager):
     def __init__(self, layer, axes):
         super(DataLayerManager, self).__init__(layer, axes)
@@ -55,8 +57,9 @@ class DataLayerManager(LayerManager):
     def update_artist(self, view):
         self.delete_artist()
         image = self.layer[view]
-        self.artist = imshow(self._ax, image, cmap=self.cmap, norm=self.norm,
-                             interpolation='nearest', origin='lower')
+        self.artist = self._ax.imshow(image, cmap=self.cmap, norm=self.norm,
+                                      interpolation='nearest', origin='lower',
+                                      extent=_get_extent(view), zorder=0)
 
     def set_visible(self, state):
         if self.artist is None:
@@ -77,25 +80,14 @@ class DataLayerManager(LayerManager):
 
 
 class SubsetLayerManager(LayerManager):
-    def __init__(self, layer, axes, update_callback, area_style='filled'):
+    def __init__(self, layer, axes):
         super(SubsetLayerManager, self).__init__(layer, axes)
-        self.area_style = area_style
         self._view_window = _view_window(axes)
-        self._callback = update_callback
-        self._cid = axes.figure.canvas.mpl_connect('button_release_event',
-                                                   self._check_update)
-
-    def _check_update(self, event):
-        vw = _view_window(self._ax)
-        if vw != self._view_window:
-            self._callback()
-        self._view_window = vw
 
     def set_visible(self, state):
         if self.artist is None:
             return
-        for item in self.artist.collections:
-            item.set_visible(state)
+        self.artist.set_visible(state)
 
     def is_visible(self):
         if self.artist is None:
@@ -105,13 +97,12 @@ class SubsetLayerManager(LayerManager):
     def delete_artist(self):
         if self.artist is None:
             return
-        for item in self.artist.collections:
-            item.remove()
+
+        self.artist.remove()
         self.artist = None
 
     def delete(self):
         super(SubsetLayerManager, self).delete()
-        self._ax.figure.canvas.mpl_disconnect(self._cid)
 
     def update_artist(self, view):
         subset = self.layer
@@ -129,28 +120,19 @@ class SubsetLayerManager(LayerManager):
             return
 
         extent = _get_extent(view)
-        print mask.shape
-
-        if self.area_style == 'filled':
-            self.artist = self._ax.contourf(mask.astype(float),
-                                            levels=[0.5, 1.0],
-                                            alpha=0.3,
-                                            colors=self.layer.style.color,
-                                            extent=extent)
-        else:
-            self.artist = self._ax.contour(mask.astype(float),
-                                           levels=[0.5],
-                                           colors=self.layer.style.color,
-                                           extent=extent)
+        r, g, b = color2rgb(self.layer.style.color)
+        mask = np.dstack((r * mask, g * mask, b * mask, mask * .5))
+        mask = (255 * mask).astype(np.uint8)
+        self.artist = self._ax.imshow(mask, extent=extent,
+                                      interpolation='nearest', origin='lower',
+                                      zorder=5)
 
 
 class ImageClient(VizClient):
 
-    def __init__(self, data, figure=None, axes=None, area_style='filled'):
+    def __init__(self, data, figure=None, axes=None):
 
-        if axes is not None and figure is not None and \
-                axes.figure is not figure:
-            raise Exception("Axes and figure are incompatible")
+        figure, axes = init_mpl(figure, axes)
 
         VizClient.__init__(self, data)
 
@@ -161,19 +143,21 @@ class ImageClient(VizClient):
         self._slice_ori = 2
         self._slice_ind = 0
         self._image = None
+        self._view_window = None
+        self._view = None
 
-        if axes is not None:
-            self._ax = axes
-            self._figure = axes.figure
-        else:
-            if figure is None:
-                self._figure = plt.figure()
-            self._ax = self._figure.add_subplot(1, 2, 1)
+        self._ax = axes
+        self._figure = figure
 
-        if area_style in ['contour', 'filled']:
-            self.area_style = area_style
-        else:
-            raise Exception("area_style should be one of contour/filled")
+        self._cid = self._ax.figure.canvas.mpl_connect('button_release_event',
+                                                       self._check_update)
+
+        def log_view(event):
+            self._view_window = _view_window(self._ax)
+
+        self._cid2 = self._ax.figure.canvas.mpl_connect('button_press_event',
+                                                        log_view)
+
 
     @property
     def is_3D(self):
@@ -196,6 +180,7 @@ class ImageClient(VizClient):
         if self.is_3D:
             self._slice_ind = value
             self._update_data_plot()
+            self._update_subset_plots()
             self._redraw()
         else:
             raise IndexError("Cannot set slice for 2D image")
@@ -206,6 +191,13 @@ class ImageClient(VizClient):
     def _ensure_data_present(self, data):
         if data not in self.layers:
             self.add_layer(data)
+
+    def _check_update(self, event):
+        vw = _view_window(self._ax)
+        if vw != self._view_window:
+            self._update_data_plot()
+            self._update_subset_plots()
+            self._redraw()
 
     def set_data(self, data, attribute=None):
         self._ensure_data_present(data)
@@ -220,6 +212,7 @@ class ImageClient(VizClient):
         self.display_attribute = attribute
         self._update_data_plot(relim=True)
         self._update_visibilities()
+        self._update_subset_plots()
         self._redraw()
 
     def slice_bounds(self):
@@ -241,6 +234,7 @@ class ImageClient(VizClient):
         self.slice_ind = min(self.slice_ind, self.slice_bounds()[1])
         self.slice_ind = max(self.slice_ind, self.slice_bounds()[0])
         self._update_data_plot(relim=True)
+        self._update_subset_plots()
 
         self._redraw()
 
@@ -273,15 +267,6 @@ class ImageClient(VizClient):
         self.layers[self.display_data].cmap = cmap
         self._update_data_plot()
         self._redraw()
-
-    def _update_subset_plot(self, s):
-        if s not in self.layers:
-            return
-        if s.data is not self.display_data:
-            return
-
-        view = self._build_view(matched=True)
-        self.layers[s].update_artist(view)
 
     def _extract_slice_from_data(self, data=None):
         if data is None:
@@ -321,30 +306,28 @@ class ImageClient(VizClient):
 
     def _update_data_plot(self, relim=False):
         """
-        Sync the location of the scatter points to
-        reflect what components are being plotted
+        Re-sync the main image and its subsets
         """
 
         if not self.display_data:
             return
 
-        view = self._build_view()
-        self.layers[self.display_data].update_artist(view)
-        self._image = self.display_data[view]
-
         if relim:
             self.relim()
 
-        for s in self.display_data.subsets:
-            self._update_subset_single(s)
+        view = self._build_view(matched=True)
+        self._view = view
+        self.layers[self.display_data].update_artist(view)
+        self._image = self.display_data[view]
 
     def _update_visibilities(self):
         for layer in self.layers:
             self.layers[layer].set_visible(layer.data is self.display_data)
 
     def relim(self):
-        self._ax.set_xlim(0, self._image.shape[1])
-        self._ax.set_ylim(0, self._image.shape[0])
+        shp = _2d_shape(self.display_data.shape, self._slice_ori)
+        self._ax.set_xlim(0, shp[1])
+        self._ax.set_ylim(0, shp[0])
 
     def _update_axis_labels(self):
         self._ax.set_xlabel('X')
@@ -364,9 +347,12 @@ class ImageClient(VizClient):
         if self.display_data is None:
             return
         data = self.display_data
+
         if s.data is not data:
             return
-        self._update_subset_plot(s)
+
+        view = self._build_view(matched=True)
+        self.layers[s].update_artist(view)
 
     def _apply_roi(self, roi):
         data = self.display_data
@@ -442,8 +428,7 @@ class ImageClient(VizClient):
             for s in layer.subsets:
                 self.add_layer(s)
         elif isinstance(layer, Subset):
-            cback = lambda : self._update_subset_single(layer)
-            self.layers[layer] = SubsetLayerManager(layer, self._ax, cback)
+            self.layers[layer] = SubsetLayerManager(layer, self._ax)
             self._update_subset_single(layer)
         else:
             raise TypeError("Unrecognized layer type: %s" % type(layer))
@@ -472,8 +457,9 @@ def _view_window(ax):
     """
     ext = ax.transAxes.transform([1, 1]) - ax.transAxes.transform([0, 0])
     xlim, ylim = ax.get_xlim(), ax.get_ylim()
-    dx, dy = xlim[1] - xlim[0], ylim[1] - ylim[0]
-    return dx, dy, xlim[0], ylim[0], ext[0], ext[1]
+    result = xlim[0], ylim[0], xlim[1], ylim[1], ext[0], ext[1]
+    logging.debug("view window: %s", result)
+    return result
 
 def _default_component(data):
     """Choose a default ComponentID to display for data
