@@ -481,7 +481,7 @@ def _default_component(data):
     Returns PRIMARY if present
     """
     cid = data.find_component_id('PRIMARY')
-    if len(cid) != 0:
-        return cid[0]
+    if cid is not None:
+        return cid
     return data.component_ids()[0]
 

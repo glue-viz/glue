@@ -20,10 +20,10 @@ class TestScatterClient(object):
 
     def setup_method(self, method):
         self.data = example_data.test_data()
-        self.ids = [self.data[0].find_component_id('a')[0],
-                    self.data[0].find_component_id('b')[0],
-                    self.data[1].find_component_id('c')[0],
-                    self.data[1].find_component_id('d')[0]]
+        self.ids = [self.data[0].find_component_id('a'),
+                    self.data[0].find_component_id('b'),
+                    self.data[1].find_component_id('c'),
+                    self.data[1].find_component_id('d')]
         self.hub = core.hub.Hub()
         self.collect = core.data_collection.DataCollection()
         self.client = ScatterClient(self.collect, axes=AXES)
@@ -256,8 +256,8 @@ class TestScatterClient(object):
         self.client.set_ylog(True)
         assert self.client.is_xlog()
         assert self.client.is_ylog()
-        self.client.set_xdata(data.find_component_id('b')[0])
-        self.client.set_ydata(data.find_component_id('b')[0])
+        self.client.set_xdata(data.find_component_id('b'))
+        self.client.set_ydata(data.find_component_id('b'))
         assert self.client.is_xlog()
         assert self.client.is_ylog()
 
@@ -265,9 +265,9 @@ class TestScatterClient(object):
         data = self.add_data_and_attributes()
         self.client.set_xflip(True)
         assert self.client.is_xflip()
-        self.client.set_xdata(data.find_component_id('b')[0])
+        self.client.set_xdata(data.find_component_id('b'))
         assert self.client.is_xflip()
-        self.client.set_xdata(data.find_component_id('a')[0])
+        self.client.set_xdata(data.find_component_id('a'))
         assert self.client.is_xflip()
 
     def test_visibility_sticky(self):

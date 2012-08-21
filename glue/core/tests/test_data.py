@@ -211,7 +211,8 @@ class TestData(object):
 
     def test_find_component_id(self):
         cid = self.data.find_component_id('Test Component')
-        assert cid == [self.comp_id]
+        assert cid == self.comp_id
+        assert self.data.find_component_id('does not exist') == None
 
     def test_add_subset(self):
         s = Subset(None)

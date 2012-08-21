@@ -412,11 +412,12 @@ class Data(object):
 
         Returns:
 
-            A list of all component_ids with matching labels
+            The associated ComponentID, or None of not found
         """
         result = [cid for cid in self.component_ids() if
-                  cid.label.upper() == label.upper()]
-        return result
+                  cid.label == label]
+        if len(result) > 0:
+            return result[0]
 
     @property
     def coordinate_links(self):
@@ -584,11 +585,11 @@ class Data(object):
         """
         key, view = split_component_view(key)
         if isinstance(key, basestring):
-            try:
-                key = self.find_component_id(key)[0]
-            except IndexError:
+            _k = key
+            key = self.find_component_id(key)
+            if key is None:
                 raise IncompatibleAttribute("%s not in data set %s" %
-                                            (key, self.label))
+                                            (_k, self.label))
         try:
             comp = self._components[key]
         except KeyError:

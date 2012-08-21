@@ -95,13 +95,13 @@ class TestHistogramClient(object):
 
     def test_set_component_updates_component(self):
         self.client.add_layer(self.data)
-        comp, = self.data.find_component_id('uniform')
+        comp = self.data.find_component_id('uniform')
         self.client.set_component(comp)
         assert self.client._component is comp
 
     def test_set_component_redraws(self):
         self.client.add_layer(self.data)
-        comp, = self.data.find_component_id('uniform')
+        comp = self.data.find_component_id('uniform')
         ct0 = self.draw_count()
         self.client.set_component(comp)
         assert self.draw_count() > ct0
@@ -124,18 +124,18 @@ class TestHistogramClient(object):
         self.client.add_layer(self.data)
         self.client.set_data(self.data)
         self.client.set_layer_visible(self.data, False)
-        self.client.set_component(self.data.find_component_id('uniform')[0])
+        self.client.set_component(self.data.find_component_id('uniform'))
 
     def test_draw_histogram_subset_hidden(self):
         self.client.add_layer(self.data)
         self.client.set_data(self.data)
         self.client.set_layer_visible(self.data.edit_subset, False)
-        self.client.set_component(self.data.find_component_id('uniform')[0])
+        self.client.set_component(self.data.find_component_id('uniform'))
 
     def test_draw_histogram_two_layers(self):
         self.client.add_layer(self.data)
         self.client.set_data(self.data)
-        self.client.set_component(self.data.find_component_id('uniform')[0])
+        self.client.set_component(self.data.find_component_id('uniform'))
 
 
 class TestCommunication(object):
