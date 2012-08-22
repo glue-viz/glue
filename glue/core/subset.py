@@ -325,10 +325,13 @@ class RangeSubsetState(SubsetState):
 
 
 class CompositeSubsetState(SubsetState):
+    op = None
+
     def __init__(self, state1, state2=None):
         super(CompositeSubsetState, self).__init__()
         self.state1 = state1
         self.state2 = state2
+        self.parent = None
 
     @property
     def parent(self):
@@ -345,23 +348,23 @@ class CompositeSubsetState(SubsetState):
     def copy(self):
         return type(self)(self.state1, self.state2)
 
-
-class OrState(CompositeSubsetState):
     @memoize_attr_check('parent')
     def to_mask(self, view=None):
-        return self.state1.to_mask(view) | self.state2.to_mask(view)
+        assert self.state1.parent is self._parent
+        assert self.state2.parent is self._parent
+        return self.op(self.state1.to_mask(view), self.state2.to_mask(view))
+
+
+class OrState(CompositeSubsetState):
+    op = operator.or_
 
 
 class AndState(CompositeSubsetState):
-    @memoize_attr_check('parent')
-    def to_mask(self, view=None):
-        return self.state1.to_mask(view) & self.state2.to_mask(view)
+    op = operator.and_
 
 
 class XorState(CompositeSubsetState):
-    @memoize_attr_check('parent')
-    def to_mask(self, view=None):
-        return self.state1.to_mask(view) ^ self.state2.to_mask(view)
+    op = operator.xor
 
 
 class InvertState(CompositeSubsetState):
