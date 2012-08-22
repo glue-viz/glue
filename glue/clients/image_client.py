@@ -147,8 +147,8 @@ class ScatterLayerManager(LayerManager):
         self.delete_artist()
 
         try:
-            x = self.layer[xatt, view]
-            y = self.layer[yatt, view]
+            x = self.layer[xatt]
+            y = self.layer[yatt]
         except IncompatibleAttribute:
             return
 
@@ -181,12 +181,6 @@ class ImageClient(VizClient):
 
         self._cid = self._ax.figure.canvas.mpl_connect('button_release_event',
                                                        self._check_update)
-
-        def log_view(event):
-            self._view_window = _view_window(self._ax)
-
-        self._cid2 = self._ax.figure.canvas.mpl_connect('button_press_event',
-                                                        log_view)
 
     @property
     def is_3D(self):
@@ -222,8 +216,10 @@ class ImageClient(VizClient):
             self.add_layer(data)
 
     def _check_update(self, event):
+        logging.debug("check update")
         vw = _view_window(self._ax)
         if vw != self._view_window:
+            logging.debug("updating")
             self._update_data_plot()
             self._update_subset_plots()
             self._redraw()
