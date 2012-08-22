@@ -14,6 +14,7 @@ def setup_module(module):
 
 
 def teardown_module(module):
+    module.app.exit()
     del module.app
 
 

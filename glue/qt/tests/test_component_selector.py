@@ -9,6 +9,9 @@ from ...core.data import ComponentID
 def setup_module(module):
     module.app = QtGui.QApplication([''])
 
+def teardown_module(module):
+    module.app.exit()
+    del module.app
 
 def data_collection():
     d = core.data.Data(label='test data')
