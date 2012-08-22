@@ -82,7 +82,6 @@ class DataLayerManager(LayerManager):
 class SubsetLayerManager(LayerManager):
     def __init__(self, layer, axes):
         super(SubsetLayerManager, self).__init__(layer, axes)
-        self._view_window = _view_window(axes)
 
     def set_visible(self, state):
         if self.artist is None:
@@ -92,7 +91,7 @@ class SubsetLayerManager(LayerManager):
     def is_visible(self):
         if self.artist is None:
             return False
-        return all([c.get_visible() for c in self.artist.collections])
+        return self.artist.get_visible()
 
     def delete_artist(self):
         if self.artist is None:
@@ -100,9 +99,6 @@ class SubsetLayerManager(LayerManager):
 
         self.artist.remove()
         self.artist = None
-
-    def delete(self):
-        super(SubsetLayerManager, self).delete()
 
     def update_artist(self, view):
         subset = self.layer
@@ -126,6 +122,40 @@ class SubsetLayerManager(LayerManager):
         self.artist = self._ax.imshow(mask, extent=extent,
                                       interpolation='nearest', origin='lower',
                                       zorder=5)
+
+
+class ScatterLayerManager(LayerManager):
+    def __init__(self, layer, axes):
+        super(ScatterLayerManager, self).__init__(layer, axes)
+
+    def set_visible(self, state):
+        if self.artist is None:
+            return
+        self.artist.set_visible(state)
+
+    def is_visible(self):
+        return self.artist is not None and self.artist.get_visible()
+
+    def delete_artist(self):
+        if self.artist is None:
+            return
+
+        self.artist.remove()
+        self.artist = None
+
+    def update_artist(self, view, xatt, yatt):
+        self.delete_artist()
+
+        try:
+            x = self.layer[xatt, view]
+            y = self.layer[yatt, view]
+        except IncompatibleAttribute:
+            return
+
+        self.artist, = self._ax.plot(x, y, 'o', c=self.layer.style.color,
+                                     ms=self.layer.style.markersize * .5,
+                                     mec='none',
+                                     zorder=10)
 
 
 class ImageClient(VizClient):
@@ -157,7 +187,6 @@ class ImageClient(VizClient):
 
         self._cid2 = self._ax.figure.canvas.mpl_connect('button_press_event',
                                                         log_view)
-
 
     @property
     def is_3D(self):
@@ -213,6 +242,7 @@ class ImageClient(VizClient):
         self._update_data_plot(relim=True)
         self._update_visibilities()
         self._update_subset_plots()
+        self._update_scatter_plots()
         self._redraw()
 
     def slice_bounds(self):
@@ -235,6 +265,7 @@ class ImageClient(VizClient):
         self.slice_ind = max(self.slice_ind, self.slice_bounds()[0])
         self._update_data_plot(relim=True)
         self._update_subset_plots()
+        self._update_scatter_plots()
 
         self._redraw()
 
@@ -333,7 +364,7 @@ class ImageClient(VizClient):
         self._ax.set_xlabel('X')
         self._ax.set_ylabel('Y')
 
-    def _update_subset_single(self, s):
+    def _update_subset_single(self, s, redraw=False):
         """
         Update the location and visual properties
         of each point in a single subset
@@ -344,15 +375,21 @@ class ImageClient(VizClient):
         The subset to refresh.
 
         """
-        if self.display_data is None:
-            return
-        data = self.display_data
+        logging.debug("update subset single: %s", s)
 
-        if s.data is not data:
+        if s not in self.layers:
+            return
+        if isinstance(self.layers[s], ScatterLayerManager):
+            self._update_scatter_layer(s, redraw)
+            return
+
+        if s.data is not self.display_data:
             return
 
         view = self._build_view(matched=True)
         self.layers[s].update_artist(view)
+        if redraw:
+            self._redraw()
 
     def _apply_roi(self, roi):
         data = self.display_data
@@ -421,6 +458,7 @@ class ImageClient(VizClient):
             raise TypeError("Data not managed by client's data collection")
 
         if not self.can_handle_data(layer.data):
+            logging.warning("Cannot visulize data: %s. Aborting", layer.data)
             return
 
         if isinstance(layer, Data):
@@ -433,9 +471,43 @@ class ImageClient(VizClient):
         else:
             raise TypeError("Unrecognized layer type: %s" % type(layer))
 
+    def add_scatter_layer(self, layer):
+        if layer in self.layers:
+            return
+
+        self.layers[layer] = ScatterLayerManager(layer, self._ax)
+        self._update_scatter_layer(layer, redraw=True)
+
+    def _update_scatter_layer(self, layer, redraw=False):
+        if not self._is_scatter_layer(layer):
+            return
+
+        xatt, yatt = self._get_plot_attributes()
+        self.layers[layer].update_artist(None, xatt, yatt)
+        if redraw:
+            self._redraw()
+
+    def _is_scatter_layer(self, layer):
+        return layer in self.layers and isinstance(self.layers[layer],
+                                                   ScatterLayerManager)
+
+    def _get_plot_attributes(self):
+        if self.display_data is None:
+            return
+        y, x = _slice_axis(self.display_data.shape, self._slice_ori)
+        ids = self.display_data.pixel_component_ids
+        return ids[x], ids[y]
+
+    def _update_scatter_plots(self):
+        for layer in self.layers:
+            if self._is_scatter_layer(layer):
+                self._update_scatter_layer(layer)
+
+
 def _get_extent(view):
     sy, sx = [s for s in view if isinstance(s, slice)]
-    return (sx.start - .5, sx.stop - .5, sy.start - .5, sy.stop - .5)
+    return (sx.start, sx.stop, sy.start, sy.stop)
+
 
 def _2d_shape(shape, slice_ori):
     """Return the shape of the 2D slice through a 2 or 3D image"""
@@ -447,6 +519,18 @@ def _2d_shape(shape, slice_ori):
         return shape[0], shape[2]
     assert slice_ori == 2
     return shape[0:2]
+
+
+def _slice_axis(shape, slice_ori):
+    if len(shape) == 2:
+        return 0, 1
+    if slice_ori == 0:
+        return 1, 2
+    if slice_ori == 1:
+        return 0, 2
+    assert slice_ori == 2
+    return 0, 1
+
 
 def _view_window(ax):
     """ Return a tuple describing the view window of an axes object.
@@ -461,6 +545,7 @@ def _view_window(ax):
     logging.debug("view window: %s", result)
     return result
 
+
 def _default_component(data):
     """Choose a default ComponentID to display for data
 
@@ -470,4 +555,3 @@ def _default_component(data):
     if cid is not None:
         return cid
     return data.component_ids()[0]
-

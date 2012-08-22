@@ -1,7 +1,7 @@
 from functools import partial
 
-from PyQt4.QtGui import (QWidget, QAction, QToolBar,
-                         QToolButton, QPushButton, QIcon)
+from PyQt4.QtGui import (QWidget, QAction,
+                         QToolButton, QIcon)
 from PyQt4.QtCore import Qt
 
 import matplotlib.cm as cm
@@ -45,6 +45,7 @@ class ImageWidget(DataViewer):
         self.resize(self.central_widget.size())
 
     def _create_actions(self):
+        #pylint: disable=E1101
         def act(name, cmap):
             a = QAction(name, self)
             a.activated.connect(partial(self.client.set_cmap, cmap))
@@ -114,7 +115,6 @@ class ImageWidget(DataViewer):
                 return i
 
         return None
-
 
     def add_data_to_combo(self, data):
         """ Add a data object to the combo box, if not already present
@@ -234,6 +234,15 @@ class ImageWidget(DataViewer):
         roi = mode.roi(im[att])
         if roi:
             self.client._apply_roi(roi)
+
+    def dropEvent(self, event):
+        """If drop is a subset not in the image viewer, add a scatter layer"""
+        super(ImageWidget, self).dropEvent(event)
+
+        obj = event.mimeData().data('application/py_instance')
+        if not isinstance(obj, core.Subset):
+            return
+        self.client.add_scatter_layer(obj)
 
     def __str__(self):
         return "Image Widget"

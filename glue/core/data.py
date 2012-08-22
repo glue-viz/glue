@@ -131,7 +131,7 @@ class Component(object):
         return len(self._data.shape)
 
     def __getitem__(self, key):
-        logging.debug("Using %s to index data of shape %s" % (key, self.shape))
+        logging.debug("Using %s to index data of shape %s", key, self.shape)
         return self._data[key]
 
 
@@ -197,6 +197,7 @@ class CoordinateComponent(Component):
 
     def __getitem__(self, key):
         return self._calculate(key)
+
 
 class Data(object):
     """Stores data and manages subsets.
@@ -404,6 +405,14 @@ class Data(object):
         """
         return [c for c in self.component_ids() if
                 isinstance(self._components[c], DerivedComponent)]
+
+    @property
+    def pixel_component_ids(self):
+        return self._pixel_component_ids
+
+    @property
+    def world_component_ids(self):
+        return self._world_component_ids
 
     def find_component_id(self, label):
         """ Retrieve component_ids associated by label name.

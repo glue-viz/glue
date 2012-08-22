@@ -65,8 +65,7 @@ class VizClient(Client):
 
         """
         s = message.subset
-        self._update_subset_single(s)
-        self._redraw()
+        self._update_subset_single(s, redraw=True)
 
     def refresh(self):
         """
@@ -97,15 +96,17 @@ class VizClient(Client):
         """
         raise NotImplementedError("VizClient cannot draw!")
 
-    def _update_subset_plots(self):
+    def _update_subset_plots(self, redraw=False):
         """
         Sync the location and visual properties
         of each point in each subset
         """
         junk = [self._update_subset_single(s) for d in self.data
                 for s in d.subsets]
+        if redraw:
+            self._redraw()
 
-    def _update_subset_single(self, s):
+    def _update_subset_single(self, s, redraw=False):
         """
         Update the properties of a subset
 
