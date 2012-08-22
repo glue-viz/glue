@@ -63,9 +63,7 @@ def data_wizard():
     def get_result(name, factory):
         label = ' '.join(name.split('/')[-1].split('.')[:-1])
         result = factory(label=label)
-        print name, factory
         result.read_data(name)
-        print 'good'
         return result
 
     def report_error(error):

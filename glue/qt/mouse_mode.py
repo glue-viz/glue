@@ -231,7 +231,6 @@ class ContrastMode(MouseMode):
                                          limit=limits)
             hi = stats.scoreatpercentile(d.flat, self._percent_hi,
                                          limit=limits)
-            print lo, hi, self._percent_lo, self._percent_hi
             self._result = lo, hi
         return self._result
 
