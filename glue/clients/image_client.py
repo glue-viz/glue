@@ -56,15 +56,23 @@ class DataLayerManager(LayerManager):
 
     def update_artist(self, view):
         self.delete_artist()
-        image = self.layer[view]
-        self.artist = self._ax.imshow(image, cmap=self.cmap, norm=self.norm,
-                                      interpolation='nearest', origin='lower',
-                                      extent=_get_extent(view), zorder=0)
+        views = _view_cascade(self.layer, view)
+        artists = []
+        for v in views:
+            image = self.layer[v]
+            extent = _get_extent(v)
+            artists.append(self._ax.imshow(image, cmap=self.cmap,
+                                           norm=self.norm,
+                                           interpolation='nearest',
+                                           origin='lower',
+                                           extent=extent, zorder=0))
+        self.artist = artists
 
     def set_visible(self, state):
         if self.artist is None:
             return
-        self.artist.set_visible(state)
+        for a in self.artist:
+            a.set_visible(state)
 
     def set_norm(self, vmin, vmax):
         if vmin is not None:
@@ -75,7 +83,8 @@ class DataLayerManager(LayerManager):
     def delete_artist(self):
         if self.artist is None:
             return
-        self.artist.remove()
+        for a in self.artist:
+            a.remove()
         self.artist = None
 
 
@@ -551,3 +560,30 @@ def _default_component(data):
     if cid is not None:
         return cid
     return data.component_ids()[0]
+
+
+def _view_cascade(data, view):
+    """ Return a set of views progressively zoomed out of input at roughly
+    constant pixel count
+
+    :param data: Data object to view
+    :param view: Original view into data
+
+    :rtype: tuple of views
+    """
+    shp = data.shape
+    v2 = list(view)
+    logging.debug("image shape: %s, view: %s", shp, view)
+
+    #choose stride length that roughly samples entire image
+    #at roughly the same pixel count
+    step = max(shp[i - 1] * v.step / max(v.stop - v.start, 1)
+                for i, v in enumerate(view) if isinstance(v, slice))
+    step = max(step, 1)
+
+    for i, v in enumerate(v2):
+        if not(isinstance(v, slice)):
+            continue
+        v2[i] = slice(0, shp[i - 1], step)
+
+    return tuple(v2), view
