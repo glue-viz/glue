@@ -167,8 +167,6 @@ def test_binary_subset_combination(x):
     newsub = operator(s1, s2)
     assert isinstance(newsub, Subset)
     assert isinstance(newsub.subset_state, target)
-    assert newsub.subset_state.state1 is s1.subset_state
-    assert newsub.subset_state.state2 is s2.subset_state
 
 
 def test_subset_combinations_reparent():
@@ -223,9 +221,11 @@ class TestCompositeSubsetStates(object):
 
     def setup_method(self, method):
         self.sub1 = MagicMock(spec=SubsetState)
-        self.sub1.to_mask.return_value = np.array([1, 1, 0, 0], dtype='bool')
+        self.sub1.copy().to_mask.return_value = \
+          np.array([1, 1, 0, 0], dtype='bool')
         self.sub2 = MagicMock(spec=SubsetState)
-        self.sub2.to_mask.return_value = np.array([1, 0, 1, 0], dtype='bool')
+        self.sub2.copy().to_mask.return_value = \
+          np.array([1, 0, 1, 0], dtype='bool')
 
     def test_or(self):
         s3 = OrState(self.sub1, self.sub2)
@@ -363,13 +363,16 @@ class TestSubsetState(object):
 
 class TestCompositeSubsetStateCopy(object):
     def assert_composite_copy(self, cls):
-        s1 = cls(SubsetState(), SubsetState())
+        """Copying composite state should create new
+        state with same type, with copies of sub states"""
+        state1 = MagicMock()
+        state2 = MagicMock()
+        s1 = cls(state1, state2)
         s2 = s1.copy()
 
         assert type(s1) == type(s2)
-        assert s1 is not s2
-        assert s1.state1 is s2.state1
-        assert s2.state2 is s2.state2
+        assert s1.state1.copy() is s2.state1
+        assert s1.state2.copy() is s2.state2
 
     def test_invert(self):
         self.assert_composite_copy(InvertState)

@@ -267,10 +267,7 @@ class SubsetState(object):
         return np.zeros(shp, dtype=bool)
 
     def copy(self):
-
-        indices = self.to_index_list()
-        result = ElementSubsetState(indices)
-        return result
+        return SubsetState()
 
     def __or__(self, other_state):
         return OrState(self, other_state)
@@ -329,8 +326,10 @@ class CompositeSubsetState(SubsetState):
 
     def __init__(self, state1, state2=None):
         super(CompositeSubsetState, self).__init__()
-        self.state1 = state1
-        self.state2 = state2
+        self.state1 = state1.copy()
+        if state2:
+            state2 = state2.copy()
+        self.state2  = state2
         self.parent = None
 
     @property
@@ -387,6 +386,9 @@ class ElementSubsetState(SubsetState):
         if view is not None:
             result = result[view]
         return result
+
+    def copy(self):
+        return ElementSubsetState(self._indices)
 
 
 class InequalitySubsetState(SubsetState):

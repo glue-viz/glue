@@ -98,7 +98,7 @@ class LiveLink(HubListener):
             if attribute != 'style':
                 subset.subset_state = state.copy()
             if attribute != 'subset_state':
-                subset.style = style
+                subset.style = style.copy()
 
     def notify(self, message):
         """Sync subset states when a SubsetUpdateMessage is called

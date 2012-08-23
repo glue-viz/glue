@@ -49,13 +49,21 @@ class VisualAttributes(object):
 
         self.parent = parent
 
+        self._atts = ['color', 'alpha', 'linewidth', 'linestyle', 'marker',
+                      'markersize']
+
     def set(self, other):
-        self.color = other.color
-        self.alpha = other.alpha
-        self.linewidth = other.linewidth
-        self.linestyle = other.linestyle
-        self.marker = other.marker
-        self.markersize = other.markersize
+        for att in self._atts:
+            setattr(self, att, getattr(other, att))
+
+    def copy(self):
+        result = VisualAttributes()
+        result.set(self)
+        return result
+
+    def __eq__(self, other):
+        return all(getattr(self, att) == getattr(other, att)
+                   for att in self._atts)
 
     def __setattr__(self, attribute, value):
 
@@ -73,7 +81,7 @@ class VisualAttributes(object):
 
         # Check that the attribute exists (don't allow new attributes)
         allowed = set(['color', 'linewidth', 'linestyle',
-                       'alpha', 'parent', 'marker', 'markersize'])
+                       'alpha', 'parent', 'marker', 'markersize', '_atts'])
         if attribute not in allowed:
             raise Exception("Attribute %s does not exist" % attribute)
 

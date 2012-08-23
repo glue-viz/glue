@@ -9,10 +9,15 @@ from ..subset import Subset, SubsetState
 
 
 class CopySubsetState(SubsetState):
-    # a bit of a hack -- easier to use is than == when checking sync
-    # live linker calls copy
+    def __init__(self, _id = None):
+        import random
+        self._id = _id or random.random()
+
     def copy(self):
-        return self
+        return CopySubsetState(self._id)
+
+    def __eq__(self, other):
+        return self._id == other._id
 
 
 def get_subset():
@@ -43,9 +48,12 @@ class TestLiveLinkIntegrated(object):
 def assert_synced(subsets):
     state = subsets[0].subset_state
     style = subsets[0].style
-    for s in subsets:
-        assert s.subset_state is state
-        assert s.style is style
+    for i in range(1, len(subsets)):
+        s = subsets[i]
+        assert s.subset_state == state
+        assert s.style == style
+        assert s.subset_state is not state
+        assert s.style is not style
 
 
 class TestLiveLInk(object):
@@ -95,7 +103,7 @@ class TestLiveLinkManager(object):
 
     def test_linked_on_init(self):
         self.mgr.add_link_between(self.sub1, self.sub2)
-        assert self.sub1.style is self.sub2.style
+        assert self.sub1.style == self.sub2.style
 
     def test_remove_link(self):
         self.mgr.add_link_between(self.sub1, self.sub2)
