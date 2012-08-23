@@ -3,6 +3,11 @@ from .component_link import ComponentLink
 def _partial_result(func, index):
     return lambda *args, **kwargs: func(*args, **kwargs)[index]
 
+def link_same(cid1, cid2):
+    """ Return 2 ComponentLinks to represent
+    that two componentIDs describe the same piece of information """
+    return (ComponentLink([cid1], cid2), ComponentLink([cid2], cid1))
+
 def link_twoway(cid1, cid2, forwards, backwards):
     """ Return 2 links that connect input ComponentIDs in both directions
 
