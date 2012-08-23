@@ -20,7 +20,7 @@ class DummyCoords(core.coordinates.Coordinates):
     def pixel2world(self, *args):
         result = []
         for i, a in enumerate(args):
-            result.append(aa * (i+1))
+            result.append(a * (i+1))
         return tuple(result)
 
 
