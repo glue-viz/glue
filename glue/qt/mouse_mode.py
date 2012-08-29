@@ -19,7 +19,6 @@ The basic usage pattern is thus:
 from PyQt4.QtGui import QIcon, QAction
 
 import numpy as np
-from scipy import stats
 
 from ..core import util
 from ..core import roi
@@ -223,6 +222,10 @@ class ContrastMode(MouseMode):
     def get_bounds(self, data):
         #cache last result. cant use @memoize, since ndarrays dont hash
         #XXX warning -- results are bad if data values change in-place
+        try:
+            from scipy import stats
+        except ImportError:
+            raise ImportError("Contrast MouseMode requres Scipy")
         if data is not self._last:
             self._last = data
             limits = (-np.inf, np.inf)

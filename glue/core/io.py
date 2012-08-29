@@ -10,7 +10,7 @@ def extract_data_fits(filename, use_hdu='all'):
     import pyfits
 
     # Read in all HDUs
-    hdulist = pyfits.open(filename)
+    hdulist = pyfits.open(filename, memmap=True)
 
     # If only a subset are requested, extract those
     if use_hdu != 'all':

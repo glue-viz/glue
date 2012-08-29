@@ -111,10 +111,11 @@ class GlueToolbar(NavigationToolbar2QT):
         if self._idDrag is not None:
             self._idDrag = self.canvas.mpl_disconnect(
                 self._idDrag)
+            self._idDrag = self.canvas.mpl_connect('motion_notify_event',
+                                                   self.mouse_move)
         self.mode = ''
 
     def add_mode(self, mode):
-
         parent = self.parent()
 
         def receiver():
