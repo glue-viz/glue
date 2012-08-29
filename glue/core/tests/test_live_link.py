@@ -34,15 +34,22 @@ class TestLiveLinkIntegrated(object):
         dc = DataCollection()
         dc.append(d1)
         dc.append(d2)
-        link = LiveLink([d1.edit_subset, d2.edit_subset])
-        self.hub = Hub(dc, d1, d2, link)
         self.s1 = d1.edit_subset
         self.s2 = d2.edit_subset
+        self.s1.label = 'First subset'
+        self.s2.label = 'Second subset'
+        link = LiveLink([self.s1, self.s2])
+        self.hub = Hub(dc, d1, d2, link)
 
-    def test_synced_on_change(self):
+    def test_synced_on_change_1(self):
         """ Subset editing should trigger syncing """
         self.s1.style.color = "blue123"
         assert self.s2.style.color == "blue123"
+
+    def test_synced_on_change_2(self):
+        """ Subset editing should trigger syncing """
+        self.s2.style.color = "blue124"
+        assert self.s1.style.color == "blue124"
 
 
 def assert_synced(subsets):
@@ -61,8 +68,10 @@ class TestLiveLInk(object):
 
     def run_test(self, subsets):
         self.link = LiveLink(subsets)
-        self.link.sync(subsets[0])
-        assert_synced(subsets)
+        for i, s in enumerate(subsets):
+            s.style.markersize = i
+            self.link.sync(s)
+            assert_synced(subsets)
 
     def test_single_subset(self):
         s1 = get_subset()

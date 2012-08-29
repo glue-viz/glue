@@ -45,10 +45,10 @@ class Subset(object):
         self.color = color
         self._label = None
         self.label = label  # trigger disambiguation
-        self.style = VisualAttributes(parent=self)
-        self.style.markersize *= 2.5
-        self.style.color = color
-        self.style.alpha = alpha
+        self._style = VisualAttributes(parent=self)
+        self._style.markersize *= 2.5
+        self._style.color = color
+        self._style.alpha = alpha
         self._subset_state = None
         self.subset_state = SubsetState()  # calls proper setter method
 
@@ -60,6 +60,15 @@ class Subset(object):
     def subset_state(self, state):
         state.parent = self
         self._subset_state = state
+
+    @property
+    def style(self):
+        return self._style
+
+    @style.setter
+    def style(self, value):
+        value.parent = self
+        self._style = value
 
     @property
     def label(self):
