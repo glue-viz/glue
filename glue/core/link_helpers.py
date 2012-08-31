@@ -1,12 +1,21 @@
 from .component_link import ComponentLink
 
+__LINK_FUNCTIONS__ = []
+
+def identity(x):
+    return x
+
+__LINK_FUNCTIONS__.append(identity)
+
 def _partial_result(func, index):
     return lambda *args, **kwargs: func(*args, **kwargs)[index]
+
 
 def link_same(cid1, cid2):
     """ Return 2 ComponentLinks to represent
     that two componentIDs describe the same piece of information """
     return (ComponentLink([cid1], cid2), ComponentLink([cid2], cid1))
+
 
 def link_twoway(cid1, cid2, forwards, backwards):
     """ Return 2 links that connect input ComponentIDs in both directions
@@ -58,22 +67,37 @@ def multilink(cids_left, cids_right, forwards=None, backwards=None):
 
     return tuple(result)
 
-def galactic2ecliptic(l, b, ra, dec):
-    """ Return the ComponentLinks that map galactic and ecliptic
-    coordinates
 
-    :param l: ComponentID for galactic longitude
-    :param b: ComponentID for galactic latitude
-    :param ra: ComponentID for J2000 Right Ascension
-    :param dec: ComponentID for J2000 Declination
+try:
+    from aplpy.wcs_util import fk52gal, gal2fk5
 
-    Returns 4 :class:`~glue.core.ComponentLink` objects which link
-    these ComponentIDs
-    """
-    try:
-        from aplpy.wcs_util import fk52gal, gal2fk5
-    except ImportError:
-        raise ImportError("galactic2ecliptic requires the aplpy package")
+    def galactic2ecliptic(l, b, ra, dec):
+        """ Return the ComponentLinks that map galactic and ecliptic
+        coordinates
 
-    return multilink([ra, dec], [l, b], fk52gal, gal2fk5)
+        :param l: ComponentID for galactic longitude
+        :param b: ComponentID for galactic latitude
+        :param ra: ComponentID for J2000 Right Ascension
+        :param dec: ComponentID for J2000 Declination
 
+        Returns 4 :class:`~glue.core.ComponentLink` objects which link
+        these ComponentIDs
+        """
+        return multilink([ra, dec], [l, b], fk52gal, gal2fk5)
+
+    def radec2glon(ra, dec):
+        return fk52gal(ra, dec)[0]
+
+    def radec2glat(ra, dec):
+        return fk52gal(ra, dec)[1]
+
+    def lb2ra(ra, dec):
+        return gal2fk5(ra, dec)[0]
+
+    def lb2dec(ra, dec):
+        return gal2fk5(ra, dec)[1]
+
+    __LINK_FUNCTIONS__.extend([radec2glon, radec2glat, lb2ra, lb2dec])
+
+except ImportError:
+    pass

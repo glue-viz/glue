@@ -72,6 +72,21 @@ def test_galactic2ecliptic():
     check_using(result[2], (x, y), gal2fk5(x, y)[0])
     check_using(result[3], (x, y), gal2fk5(x, y)[1])
 
+def test_galactic2ecliptic_individual():
+    from aplpy.wcs_util import fk52gal, gal2fk5
+
+    r = ComponentLink([L, B], R, lb2ra)
+    d = ComponentLink([L, B], R, lb2dec)
+    l = ComponentLink([R, D], L, radec2glon)
+    b = ComponentLink([R, D], B, radec2glat)
+
+    x = np.array([0])
+    y = np.array([0])
+    check_using(l, (x, y), fk52gal(x, y)[0])
+    check_using(b, (x, y), fk52gal(x, y)[1])
+    check_using(r, (x, y), gal2fk5(x, y)[0])
+    check_using(d, (x, y), gal2fk5(x, y)[1])
+
 def test_multilink_nofunc():
     with pytest.raises(TypeError) as exc:
         result = multilink([R, D], [L, B])

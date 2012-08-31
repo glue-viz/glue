@@ -4,16 +4,15 @@ import imp
 
 
 class ConfigObject(object):
-    def identity(self, x):
-        return x
 
     def __init__(self):
         from .qt.widgets.scatter_widget import ScatterWidget
         from .qt.widgets.image_widget import ImageWidget
         from .qt.widgets.histogram_widget import HistogramWidget
+        from .core import link_helpers
 
         self.qt_clients = [ScatterWidget, ImageWidget, HistogramWidget]
-        self.link_functions = [self.identity]
+        self.link_functions = list(link_helpers.__LINK_FUNCTIONS__)
 
     def merge_module(self, module):
         """Import public attributes from module into instance attributes
@@ -62,12 +61,11 @@ def _default_search_order():
        * current working directory
        * environ var GLUERC
        * HOME/.glue/config.py
-       * Glue's own default_config.py
+       * Glue's own default config
     """
     current_module = sys.modules['glue'].__path__[0]
     search_order = [os.path.join(os.getcwd(), 'config.py')]
     if 'GLUERC' in os.environ:
         search_order.append(os.environ['GLUERC'])
     search_order.append(os.path.expanduser('~/.glue/config.py'))
-    search_order.append(os.path.join(current_module, 'default_config.py'))
     return search_order[::-1]
