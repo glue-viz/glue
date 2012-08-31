@@ -227,27 +227,28 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         outfile = QFileDialog.getSaveFileName(self)
         if not outfile:
             return
-        with open(outfile, 'w') as out:
-            try:
+
+        try:
+            with open(outfile, 'w') as out:
                 cp = CloudPickler(out, protocol=2)
                 cp.dump(state)
-            except IOError as e:
-                QMessageBox.critical(self, "Error",
-                                     "Could not write file:\n%s" % e)
-            except PicklingError as p:
-                QMessageBox.critical(self, "Error",
-                                     "Cannot save data object: %s" % p)
+        except PicklingError as p:
+            QMessageBox.critical(self, "Error",
+                                 "Cannot save data object: %s" % p)
+        except IOError as e:
+            QMessageBox.critical(self, "Error",
+                                 "Could not write file:\n%s" % e)
 
     def _restore_session(self):
         """ Load a previously-saved state, and restart the session """
-        from pickle import Unpickler, UnpicklingError
+        from pickle import Unpickler
 
         file_name = QFileDialog.getOpenFileName(self)
         if not file_name:
             return
         try:
             state = Unpickler(open(file_name)).load()
-        except (IOError, UnpicklingError) as e:
+        except Exception as e:
             QMessageBox.critical(self, "Error",
                                  "Could not restore file: %s" % e)
             return

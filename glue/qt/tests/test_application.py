@@ -2,6 +2,7 @@ from mock import patch
 
 from PyQt4.QtGui import QApplication
 
+from .. import qapp
 from ..glue_application import GlueApplication
 
 
@@ -10,7 +11,7 @@ def tab_count(app):
 
 
 def setup_module(module):
-    module.app = QApplication([''])
+    module.app = qapp
 
 
 def teardown_module(module):
@@ -34,16 +35,18 @@ class TestGlueApplication(object):
 
     def test_save_session_pickle_error(self):
         from pickle import PicklingError
-        with patch('glue.core.glue_pickle.dumps') as dumps:
-            with patch('glue.qt.glue_application.QMessageBox') as mb:
-                dumps.side_effect = PicklingError
-                self.app._save_session()
-                assert mb.critical.call_count == 1
+        with patch('glue.core.glue_pickle.CloudPickler') as cp:
+            with patch('glue.qt.glue_application.QFileDialog') as fd:
+                fd.getSaveFileName.return_value = '/tmp/junk'
+                with patch('glue.qt.glue_application.QMessageBox') as mb:
+                    cp().dump.side_effect = PicklingError
+                    self.app._save_session()
+                    assert mb.critical.call_count == 1
 
     def test_save_session_no_file(self):
         """shouldnt try to save file if no file name provided"""
-        with patch('glue.core.glue_pickle.dumps') as dumps:
-            dumps.return_value = ''
+        with patch('glue.core.glue_pickle.CloudPickler') as cp:
+            cp.return_value = ''
             with patch('glue.qt.glue_application.QFileDialog') as fd:
                 fd.getSaveFileName.return_value = ''
                 # crashes if open called on null string
