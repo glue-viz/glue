@@ -221,25 +221,22 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         Note: Saving of client is not currently supported. Thus,
         restoring this session will lose all current viz windows
         """
-        from ..core.glue_pickle import dumps, PicklingError
+        from ..core.glue_pickle import PicklingError, CloudPickler
         state = (self._data, self._hub)
-
-        try:
-            data = dumps(state)
-        except PicklingError as p:
-            QMessageBox.critical(self, "Error",
-                                 "Cannot save data object: %s" % p)
-            return
 
         outfile = QFileDialog.getSaveFileName(self)
         if not outfile:
             return
-        try:
-            with open(outfile, 'w') as out:
-                out.write(data)
-        except IOError as e:
-            QMessageBox.critical(self, "Error",
-                                 "Could not write file:\n%s" % e)
+        with open(outfile, 'w') as out:
+            try:
+                cp = CloudPickler(out, protocol=2)
+                cp.dump(state)
+            except IOError as e:
+                QMessageBox.critical(self, "Error",
+                                     "Could not write file:\n%s" % e)
+            except PicklingError as p:
+                QMessageBox.critical(self, "Error",
+                                     "Cannot save data object: %s" % p)
 
     def _restore_session(self):
         """ Load a previously-saved state, and restart the session """
