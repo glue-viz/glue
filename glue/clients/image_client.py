@@ -188,6 +188,19 @@ class ImageClient(VizClient):
         self._ax = axes
         self._figure = figure
 
+        #format axes
+        fc = self._ax.format_coord
+
+        def format_coord(x, y):
+            if self.display_data is None:
+                return fc(x, y)
+            pix = self._pixel_coords(x, y)
+            world = self.display_data.coords.pixel2world(*pix)
+            world = world[::-1]   # reverse for numpy convention
+            ind = _slice_axis(self.display_data.shape, self._slice_ori)
+            return fc(world[ind[1]], world[ind[0]])  # reverse again for x,y
+        self._ax.format_coord = format_coord
+
         self._cid = self._ax.figure.canvas.mpl_connect('button_release_event',
                                                        self._check_update)
 
@@ -507,6 +520,23 @@ class ImageClient(VizClient):
         for layer in self.layers:
             if self._is_scatter_layer(layer):
                 self._update_scatter_layer(layer)
+
+    def _pixel_coords(self, x, y):
+        """From a slice coordinate (x,y), return the full (possibly
+        3D) location
+
+        *Returns*
+        Either (x,y) or (x,y,z)
+        """
+        if not self.is_3D:
+            return x, y
+        if self._slice_ori == 0:
+            return x, y, self.slice_ind
+        elif self._slice_ori == 1:
+            return x, self.slice_ind, y
+        else:
+            assert self._slice_ori == 2
+            return self.slice_ind, x, y
 
 
 def _get_extent(view):
