@@ -6,7 +6,7 @@ from PyQt4.QtGui import (QKeySequence, QMainWindow, QGridLayout,
 from PyQt4.QtCore import Qt
 
 from .. import core
-from ..qt import qapp
+from ..qt import get_qapp
 from .ui.glue_application import Ui_GlueApplication
 
 from .actions import act
@@ -20,7 +20,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
 
     def __init__(self, data_collection=None, hub=None):
         super(GlueApplication, self).__init__()
-        self.app = qapp
+        self.app = get_qapp()
         self.setAttribute(Qt.WA_DeleteOnClose)
         self._actions = {}
         self._terminal = None

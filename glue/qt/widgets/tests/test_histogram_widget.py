@@ -10,15 +10,6 @@ from .... import core
 from ....tests import example_data
 
 
-def setup_module(module):
-    module.app = QApplication([''])
-
-
-def teardown_module(module):
-    module.app.exit()
-    del module.app
-
-
 class TestHistogramWidget(object):
     def setup_method(self, method):
         self.data = self.mock_data()

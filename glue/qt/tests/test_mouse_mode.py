@@ -7,15 +7,6 @@ from ..mouse_mode import MouseMode, RectangleMode, CircleMode, PolyMode, \
                          ContrastMode, ContourMode, contour_to_roi
 
 
-def setup_module(module):
-    module.app = PyQt4.QtGui.QApplication([''])
-
-
-def teardown_module(module):
-    module.app.exit()
-    del module.app
-
-
 class Event(object):
     def __init__(self, x, y, button=3):
         self.x = x

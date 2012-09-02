@@ -8,15 +8,6 @@ from ....tests import example_data
 from .... import core
 
 
-def setup_module(module):
-    module.app = QApplication([''])
-
-
-def teardown_module(module):
-    module.app.exit()
-    del module.app
-
-
 class TestScatterWidget(object):
 
     def setup_method(self, method):

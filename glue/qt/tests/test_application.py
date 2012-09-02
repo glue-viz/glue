@@ -2,22 +2,12 @@ from mock import patch
 
 from PyQt4.QtGui import QApplication
 
-from .. import qapp
+from .. import get_qapp
 from ..glue_application import GlueApplication
 
 
 def tab_count(app):
     return app.tab_bar.count()
-
-
-def setup_module(module):
-    module.app = qapp
-
-
-def teardown_module(module):
-    module.app.exit()
-    del module.app
-
 
 class TestGlueApplication(object):
 
