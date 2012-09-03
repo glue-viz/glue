@@ -225,7 +225,7 @@ class ContrastMode(MouseMode):
         try:
             from scipy import stats
         except ImportError:
-            raise ImportError("Contrast MouseMode requres Scipy")
+            raise ImportError("Contrast MouseMode requires SciPy")
         if data is not self._last:
             self._last = data
             limits = (-np.inf, np.inf)
