@@ -1,7 +1,5 @@
-from scipy import ndimage
 from matplotlib import _cntr
 import numpy as np
-
 
 def identity(x):
     return x
@@ -42,6 +40,11 @@ def point_contour(x, y, data):
        * A (nrow, 2column) numpy array. The two columns give the x and
          y locations of the contour vertices
     """
+    try:
+        from scipy import ndimage
+    except ImportError:
+        raise ImportError("Image processing in Glue requires SciPy")
+
     inten = data[y, x]
     labeled, nr_objects = ndimage.label(data >= inten)
     z = data * (labeled == labeled[y, x])
@@ -119,4 +122,5 @@ def view_shape(shape, view):
 
 def color2rgb(color):
     from matplotlib.colors import ColorConverter
-    return ColorConverter().to_rgb(color)
+    result = ColorConverter().to_rgb(color)
+    return result
