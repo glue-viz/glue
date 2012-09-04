@@ -2,7 +2,6 @@ import operator
 import logging
 
 import numpy as np
-import atpy
 import pyfits
 
 from .io import extract_data_fits, extract_data_hdf5
@@ -638,6 +637,12 @@ class TabularData(Data):
         Read a table from a file or database. All arguments are passed to
         ATpy.Table(...).
         '''
+        try:
+            import atpy
+        except ImportError:
+            raise ImportError("TabularData requires ATPy")
+        atpy.registry.register_extensions('ascii',  ['csv', 'tsv', 'txt'],
+                                          override=True)
 
         # Read the table
         table = atpy.Table()

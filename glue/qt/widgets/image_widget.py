@@ -73,6 +73,7 @@ class ImageWidget(DataViewer):
         tb.setWhatsThis("Set color scale")
         icon = QIcon(":icons/glue_rainbow.png")
         tb.setIcon(icon)
+        tb.setPopupMode(QToolButton.InstantPopup)
         tb.addActions(self._cmaps)
         result.addWidget(tb)
         self.addToolBar(result)

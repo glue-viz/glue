@@ -13,7 +13,7 @@ def function_label(function):
     """ Format a function signature as a string """
     name = function.__name__
     args = getargspec(function)[0]
-    label = "output = %s(%s)" % (name, ', '.join(args))
+    label = "result = %s(%s)" % (name, ', '.join(args))
     return label
 
 
