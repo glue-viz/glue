@@ -86,16 +86,20 @@ try:
         return multilink([ra, dec], [l, b], fk52gal, gal2fk5)
 
     def radec2glon(ra, dec):
+        """Compute galactic longitude from right ascension and declination"""
         return fk52gal(ra, dec)[0]
 
     def radec2glat(ra, dec):
+        """Compute galactic latitude from right ascension and declination"""
         return fk52gal(ra, dec)[1]
 
-    def lb2ra(ra, dec):
-        return gal2fk5(ra, dec)[0]
+    def lb2ra(lat, lon):
+        """Compute right ascension from galactic longitude and latitude"""
+        return gal2fk5(lat, lon)[0]
 
-    def lb2dec(ra, dec):
-        return gal2fk5(ra, dec)[1]
+    def lb2dec(lat, lon):
+        """Compute declination from galactic longitude and latitude"""
+        return gal2fk5(lat, lon)[1]
 
     __LINK_FUNCTIONS__.extend([radec2glon, radec2glat, lb2ra, lb2dec])
 

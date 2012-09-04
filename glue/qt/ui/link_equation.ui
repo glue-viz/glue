@@ -37,7 +37,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="function"/>
+      <widget class="QComboBox" name="function">
+       <property name="toolTip">
+        <string>Select a translation function to use</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="function_signature">
@@ -47,7 +51,7 @@
         </font>
        </property>
        <property name="text">
-        <string>output = f(x, y)</string>
+        <string>result = f(x, y)</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -64,7 +68,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Drag items from panel on left</string>
+        <string>Drag Component Identifiers from above</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -107,6 +111,7 @@
            <height>0</height>
           </size>
          </property>
+         <zorder>label_4</zorder>
         </widget>
        </item>
       </layout>
@@ -123,7 +128,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Output</string>
+          <string>Result</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -172,6 +177,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="addButton">
+         <property name="toolTip">
+          <string>Create a new link defined by this translation description</string>
+         </property>
          <property name="text">
           <string>Add</string>
          </property>
