@@ -76,6 +76,7 @@ def test_decorators_maintain_docstrings():
 
     assert Bar.test.__doc__ == "123"
 
+
 def test_memoize_kwargs():
 
     @memoize

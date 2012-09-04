@@ -63,15 +63,16 @@ class TestDerivedComponent(object):
     def test_link(self):
         assert self.cid.link == self.link
 
+
 class TestCoordinateComponent(object):
 
     def setup_method(self, method):
         class TestCoords(object):
             def pixel2world(self, *args):
-                return [a * (i+1) for i, a in enumerate(args)]
+                return [a * (i + 1) for i, a in enumerate(args)]
 
         data = core.Data()
-        data.add_component(Component(np.zeros((3,3,3))), 'test')
+        data.add_component(Component(np.zeros((3, 3, 3))), 'test')
         data.coords = TestCoords()
         self.data = data
         self.px = CoordinateComponent(data, 2)

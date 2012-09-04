@@ -7,13 +7,16 @@ from ...core import ComponentID, ComponentLink
 R, D, L, B = (ComponentID('ra'), ComponentID('dec'),
               ComponentID('lon'), ComponentID('lat'))
 
+
 def forwards(x, y):
     print 'forwads inputs', x, y
     return x * 3, y * 5
 
+
 def backwards(x, y):
     print 'backwards inputs', x, y
     return x / 3, y / 5
+
 
 def check_link(link, from_, to, using=None):
     assert link.get_from_ids() == from_
@@ -21,13 +24,16 @@ def check_link(link, from_, to, using=None):
     if using:
         assert link.get_using() == using
 
+
 def check_using(link, inp, out):
     np.testing.assert_array_almost_equal(link.get_using()(*inp), out)
+
 
 def test_link_twoway():
     result = link_twoway(R, D, forwards, backwards)
     check_link(result[0], [R], D, forwards)
     check_link(result[1], [D], R, backwards)
+
 
 def test_multilink_forwards():
     result = multilink([R, D], [L, B], forwards)
@@ -37,6 +43,7 @@ def test_multilink_forwards():
     check_using(result[0], (3, 4), 9)
     check_using(result[1], (3, 4), 20)
 
+
 def test_multilink_backwards():
     result = multilink([R, D], [L, B], backwards=backwards)
     assert len(result) == 2
@@ -44,6 +51,7 @@ def test_multilink_backwards():
     check_link(result[1], [L, B], D)
     check_using(result[0], (9, 20), 3)
     check_using(result[1], (9, 20), 4)
+
 
 def test_multilink_forwards_backwards():
     result = multilink([R, D], [L, B], forwards, backwards)
@@ -56,6 +64,7 @@ def test_multilink_forwards_backwards():
     check_using(result[1], (3, 4), 20)
     check_using(result[2], (9, 20), 3)
     check_using(result[3], (9, 20), 4)
+
 
 def test_galactic2ecliptic():
     from aplpy.wcs_util import fk52gal, gal2fk5
@@ -72,6 +81,7 @@ def test_galactic2ecliptic():
     check_using(result[2], (x, y), gal2fk5(x, y)[0])
     check_using(result[3], (x, y), gal2fk5(x, y)[1])
 
+
 def test_galactic2ecliptic_individual():
     from aplpy.wcs_util import fk52gal, gal2fk5
 
@@ -86,6 +96,7 @@ def test_galactic2ecliptic_individual():
     check_using(b, (x, y), fk52gal(x, y)[1])
     check_using(r, (x, y), gal2fk5(x, y)[0])
     check_using(d, (x, y), gal2fk5(x, y)[1])
+
 
 def test_multilink_nofunc():
     with pytest.raises(TypeError) as exc:

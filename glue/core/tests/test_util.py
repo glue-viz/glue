@@ -48,5 +48,5 @@ def test_view_shape():
     assert view_shape((10, 10), np.s_[:]) == (10, 10)
     assert view_shape((10, 10, 10), np.s_[:]) == (10, 10, 10)
     assert view_shape((10, 10), np.s_[:, 1]) == (10,)
-    assert view_shape((10, 10), np.s_[2:3, 2:3]) == (1,1)
+    assert view_shape((10, 10), np.s_[2:3, 2:3]) == (1, 1)
     assert view_shape((10, 10), None) == (10, 10)

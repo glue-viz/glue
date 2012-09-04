@@ -9,7 +9,7 @@ from ..subset import Subset, SubsetState
 
 
 class CopySubsetState(SubsetState):
-    def __init__(self, _id = None):
+    def __init__(self, _id=None):
         import random
         self._id = _id or random.random()
 

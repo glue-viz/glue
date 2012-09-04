@@ -250,32 +250,33 @@ def header_from_string(string):
         cards.append(Card(key, value))
     return Header(cards)
 
+
 @pytest.mark.parametrize(('hdr'), (HDR_2D_VALID, HDR_3D_VALID_NOWCS))
 def test_coords_preserve_shape(hdr):
     coord = coordinates_from_header(header_from_string(hdr))
     x = np.zeros(12)
     y = np.zeros(12)
-    result =  coord.pixel2world(x, y)
+    result = coord.pixel2world(x, y)
     for r in result:
         assert r.shape == x.shape
-    result =  coord.world2pixel(x, y)
+    result = coord.world2pixel(x, y)
     for r in result:
         assert r.shape == x.shape
 
     x.shape = (4, 3)
     y.shape = (4, 3)
-    result =  coord.pixel2world(x, y)
+    result = coord.pixel2world(x, y)
     for r in result:
         assert r.shape == x.shape
-    result =  coord.world2pixel(x, y)
+    result = coord.world2pixel(x, y)
     for r in result:
         assert r.shape == x.shape
 
     x.shape = (2, 2, 3)
     y.shape = (2, 2, 3)
-    result =  coord.pixel2world(x, y)
+    result = coord.pixel2world(x, y)
     for r in result:
         assert r.shape == x.shape
-    result =  coord.world2pixel(x, y)
+    result = coord.world2pixel(x, y)
     for r in result:
         assert r.shape == x.shape
