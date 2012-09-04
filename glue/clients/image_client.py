@@ -608,7 +608,7 @@ def _view_cascade(data, view):
     #choose stride length that roughly samples entire image
     #at roughly the same pixel count
     step = max(shp[i - 1] * v.step / max(v.stop - v.start, 1)
-                for i, v in enumerate(view) if isinstance(v, slice))
+               for i, v in enumerate(view) if isinstance(v, slice))
     step = max(step, 1)
 
     for i, v in enumerate(v2):

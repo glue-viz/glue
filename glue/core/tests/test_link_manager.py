@@ -2,8 +2,8 @@ import numpy as np
 
 from ..data import Data, Component
 from ..component_link import ComponentLink
-from ..link_manager import LinkManager, accessible_links, discover_links, \
-                           find_dependents
+from ..link_manager import (LinkManager, accessible_links, discover_links,
+                            find_dependents)
 from ..data import ComponentID, DerivedComponent
 
 comp = Component(data=np.array([1, 2, 3]))

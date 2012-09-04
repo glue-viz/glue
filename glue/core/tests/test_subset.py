@@ -222,10 +222,10 @@ class TestCompositeSubsetStates(object):
     def setup_method(self, method):
         self.sub1 = MagicMock(spec=SubsetState)
         self.sub1.copy().to_mask.return_value = \
-          np.array([1, 1, 0, 0], dtype='bool')
+            np.array([1, 1, 0, 0], dtype='bool')
         self.sub2 = MagicMock(spec=SubsetState)
         self.sub2.copy().to_mask.return_value = \
-          np.array([1, 0, 1, 0], dtype='bool')
+            np.array([1, 0, 1, 0], dtype='bool')
 
     def test_or(self):
         s3 = OrState(self.sub1, self.sub2)
@@ -415,7 +415,7 @@ class TestSubsetViews(object):
 
     def test_cid_slice(self):
         np.testing.assert_array_equal(self.s[self.cid, ::2],
-                                       self.c.data[::2])
+                                      self.c.data[::2])
 
     def test_label_slice(self):
         np.testing.assert_array_equal(self.s['test', ::-1],
@@ -491,7 +491,7 @@ facs = [roifac, rangefac, orfac, andfac, xorfac, invertfac,
 
 
 @pytest.mark.parametrize(('statefac', 'view'), [(f, v) for f in facs
-                                                 for v in views])
+                                                for v in views])
 def test_mask_of_view_is_view_of_mask(statefac, view):
     print statefac, view
     d = Data()

@@ -2,11 +2,11 @@ from .hub import HubListener
 from .data import Data
 from .subset import Subset
 from .data_collection import DataCollection
-from .message import DataUpdateMessage, \
-                     SubsetUpdateMessage, \
-                     SubsetCreateMessage, \
-                     SubsetDeleteMessage, \
-                     DataCollectionDeleteMessage
+from .message import (DataUpdateMessage,
+                      SubsetUpdateMessage,
+                      SubsetCreateMessage,
+                      SubsetDeleteMessage,
+                      DataCollectionDeleteMessage)
 
 from . import hub
 

@@ -302,7 +302,7 @@ class PolygonalROI(Roi):
 
         # find distance between vertices and input
         dist = [(x - a) ** 2 + (y - b) ** 2 for a, b
-                 in zip(self.vx, self.vy)]
+                in zip(self.vx, self.vy)]
         inds = range(len(dist))
         near = min(inds, key=lambda x: dist[x])
 
@@ -465,7 +465,7 @@ class MplCircularROI(AbstractMplRoi):
         self._yi = None
 
         self._patch = Ellipse((0., 0.), transform=None,
-                               width=0., height=0.,)
+                              width=0., height=0.,)
         self._patch.set(**self.plot_opts)
         self._ax.add_patch(self._patch)
         self._sync_patch()
@@ -571,7 +571,7 @@ class MplPolygonalROI(AbstractMplRoi):
         else:
             x, y = self._roi.to_polygon()
             self._patch.set_xy(zip(x + [x[0]],
-                                     y + [y[0]]))
+                                   y + [y[0]]))
             self._patch.set_visible(True)
 
         # Update appearance

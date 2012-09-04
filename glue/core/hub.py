@@ -92,11 +92,11 @@ class Hub(object):
         """
         if not isinstance(subscriber, HubListener):
             raise InvalidSubscriber("Subscriber must be a HubListener: %s" %
-                            type(subscriber))
+                                    type(subscriber))
         if not isinstance(message_class, type) or \
                 not issubclass(message_class, Message):
             raise InvalidMessage("message class must be a subclass of "
-                            "glue.Message: %s" % type(message_class))
+                                 "glue.Message: %s" % type(message_class))
         if not handler:
             handler = subscriber.notify
 

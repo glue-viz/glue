@@ -116,11 +116,11 @@ class WCSCoordinates(Coordinates):
 
         if np.isscalar(xworld):
             xpix, ypix = self._wcs.wcs_sky2pix(np.array([xworld]),
-                                              np.array([yworld]), 1)
+                                               np.array([yworld]), 1)
             return xpix[0], ypix[0]
         elif type(xworld) == list:
             xpix, ypix = self._wcs.wcs_sky2pix(np.array(xworld),
-                                              np.array(yworld), 1)
+                                               np.array(yworld), 1)
             return xpix.tolist(), ypix.tolist()
         elif isinstance(xworld, np.ndarray):
             xpix, ypix = self._wcs.wcs_sky2pix(xworld, yworld, 1)
@@ -155,12 +155,12 @@ class WCSCubeCoordinates(WCSCoordinates):
 
         try:
             self._cdelt3 = header['CDELT3'] if 'CDELT3' in header \
-                           else header['CD3_3']
+                else header['CD3_3']
             self._crpix3 = header['CRPIX3']
             self._crval3 = header['CRVAL3']
         except KeyError:
             raise AttributeError("Input header must have CRPIX3, CRVAL3, and "
-                             "CDELT3 or CD3_3 keywords")
+                                 "CDELT3 or CD3_3 keywords")
         self._ctype3 = ""
         if 'CTYPE3' in header:
             self._ctype3 = header['CTYPE3']

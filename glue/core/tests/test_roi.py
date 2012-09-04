@@ -5,8 +5,8 @@ from numpy.testing import assert_almost_equal
 import matplotlib.pyplot as plt
 from mock import MagicMock
 
-from ..roi import RectangularROI, UndefinedROI, CircularROI, PolygonalROI, \
-                  MplCircularROI, MplRectangularROI, MplPolygonalROI
+from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI,
+                   MplCircularROI, MplRectangularROI, MplPolygonalROI)
 
 from .. import roi as r
 

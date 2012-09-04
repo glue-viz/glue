@@ -8,7 +8,7 @@ from PyQt4 import QtGui, QtCore
 
 from numpy import arange, sin, pi
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as \
-     FigureCanvas
+    FigureCanvas
 from matplotlib.figure import Figure
 
 import numpy as np
@@ -37,7 +37,7 @@ class ScatterCanvas(FigureCanvas):
         self.column_names = []
         for column in self.table.columns:
             if self.table.columns[column].dtype in \
-              [float, np.float32, np.float64]:
+                [float, np.float32, np.float64]:
                 self.column_names.append(column)
         self.col_x = self.column_names[0]
         self.col_y = self.column_names[1]

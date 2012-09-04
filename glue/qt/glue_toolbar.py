@@ -81,7 +81,7 @@ class GlueToolbar(NavigationToolbar2QT):
         self.buttons['PAN'] = a
 
         a = QtGui.QAction(QIcon(':icons/glue_zoom_to_rect.png'),
-                    'Zoom', parent)
+                          'Zoom', parent)
         a.triggered.connect(self.zoom)
         a.setToolTip('Zoom to rectangle')
         a.setShortcut('Z')

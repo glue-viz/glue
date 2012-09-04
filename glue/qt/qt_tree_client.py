@@ -3,7 +3,7 @@ from PyQt4.QtGui import QVBoxLayout
 from PyQt4.QtGui import QWidget
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as \
-     FigureCanvas
+    FigureCanvas
 from matplotlib.figure import Figure
 
 from .custom_toolbar import CustomToolbar as NavigationToolbar

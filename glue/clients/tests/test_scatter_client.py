@@ -30,7 +30,7 @@ class TestScatterClient(object):
         self.connect()
 
     def add_data(self, data=None):
-        if data == None:
+        if data is None:
             data = self.data[0]
         self.collect.append(data)
         self.client.add_data(data)

@@ -57,8 +57,8 @@ class Message(object):
 
     def __str__(self):
         return '%s: %s\n\t Sent from: %s' % (type(self).__name__,
-                                               self.tag or '',
-                                               self.sender)
+                                             self.tag or '',
+                                             self.sender)
 
 
 class ErrorMessage(Message):

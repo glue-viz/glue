@@ -16,9 +16,9 @@ from .hub import Hub
 from .tree import Tree
 from .registry import Registry
 from .util import split_component_view, view_shape
-from .message import DataUpdateMessage, \
-                     DataAddComponentMessage, \
-                     SubsetCreateMessage
+from .message import (DataUpdateMessage,
+                      DataAddComponentMessage,
+                      SubsetCreateMessage)
 
 from .util import file_format
 
@@ -441,9 +441,9 @@ class Data(object):
             return []
 
         if self.ndim != len(self._pixel_component_ids) or \
-          self.ndim != len(self._world_component_ids):
-            # haven't populated pixel, world coordinates yet
-            return []
+            self.ndim != len(self._world_component_ids):
+                # haven't populated pixel, world coordinates yet
+                return []
 
         def make_toworld_func(i):
             def pix2world(*args):
@@ -576,7 +576,7 @@ class Data(object):
 
     def __setattr__(self, name, value):
         if name == "hub" and hasattr(self, 'hub') \
-           and self.hub is not value and self.hub is not None:
+            and self.hub is not value and self.hub is not None:
             raise AttributeError("Data has already been assigned "
                                  "to a different hub")
         object.__setattr__(self, name, value)
@@ -612,7 +612,7 @@ class Data(object):
             result = comp.data
 
         assert result.shape == shp, \
-          "Component view returned bad shape: %s %s" % (result.shape, shp)
+            "Component view returned bad shape: %s %s" % (result.shape, shp)
         return result
 
     def get_component(self, component_id):

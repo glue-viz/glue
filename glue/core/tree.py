@@ -43,7 +43,7 @@ class Tree(object):
         ------
         TypeError: if any of the inputs are the wrong type
         """
-        if (id != None):
+        if (id is not None):
             try:
                 id = int(id)
             except ValueError:
@@ -98,9 +98,9 @@ class Tree(object):
         if (self.children):
             result = '(' + ','.join([c.to_newick()[0:-1]
                                      for c in self.children]) + ')'
-        if (self.id != None):
+        if (self.id is not None):
             result += ('%s' % self.id)
-        if (self.value != None):
+        if (self.value is not None):
             result += (':%s' % self.value)
         return result + ';'
 

@@ -170,7 +170,7 @@ class Subset(object):
         """
 
         dobroad = self._broadcasting and self.data is not None and \
-                  self.data.hub is not None
+          self.data.hub is not None
 
         self.do_broadcast(False)
 

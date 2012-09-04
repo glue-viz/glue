@@ -3,9 +3,9 @@ from .data import Data
 from .link_manager import LinkManager
 from .live_link import LiveLinkManager
 from .registry import Registry
-from .message import DataCollectionAddMessage, \
-                     DataCollectionDeleteMessage, \
-                     DataAddComponentMessage
+from .message import (DataCollectionAddMessage,
+                      DataCollectionDeleteMessage,
+                      DataAddComponentMessage)
 
 __all__ = ['DataCollection']
 

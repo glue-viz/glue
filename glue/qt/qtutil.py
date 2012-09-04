@@ -104,7 +104,7 @@ def edit_layer_symbol(layer):
     dialog = QInputDialog()
     symb, isok = dialog.getItem(None, 'Pick a Symbol',
                                 'Pick a Symbol',
-                                  ['.', 'o', 'v', '>', '<', '^'])
+                                ['.', 'o', 'v', '>', '<', '^'])
     if isok:
         layer.style.marker = symb
 

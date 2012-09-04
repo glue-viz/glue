@@ -47,7 +47,8 @@ class ModestImage(mi.AxesImage):
             raise TypeError("Image data can not convert to float")
 
         if (self._A.ndim not in (2, 3) or
-            (self._A.ndim == 3 and self._A.shape[-1] not in (3, 4))):
+            (self._A.ndim == 3 and self._A.shape[-1] not in (3, 4))
+            ):
             raise TypeError("Invalid dimensions for image data")
 
         self._imcache = None
@@ -71,8 +72,8 @@ class ModestImage(mi.AxesImage):
         # have we already calculated what we need?
         if sx >= self._sx and sy >= self._sy and \
             x0 >= self._bounds[0] and x1 <= self._bounds[1] and \
-            y0 >= self._bounds[2] and y1 <= self._bounds[3]:
-            return
+                y0 >= self._bounds[2] and y1 <= self._bounds[3]:
+                    return
 
         self._A = self._full_res[y0:y1:sy, x0:x1:sx]
         self._A = cbook.safe_masked_invalid(self._A)
@@ -139,8 +140,8 @@ def imshow(axes, X, cmap=None, norm=None, aspect=None,
         aspect = rcParams['image.aspect']
     axes.set_aspect(aspect)
     im = ModestImage(axes, cmap, norm, interpolation, origin, extent,
-                            filternorm=filternorm,
-                            filterrad=filterrad, resample=resample, **kwargs)
+                     filternorm=filternorm,
+                     filterrad=filterrad, resample=resample, **kwargs)
 
     im.set_data(X)
     im.set_alpha(alpha)

@@ -189,7 +189,7 @@ class LinkAction(LayerAction):
     def _should_unlink(self):
         layers = self.selected_layers()
         return self._is_subset_selection() and self.selection_count() > 0 and \
-          self.link_manager.has_link(layers[0])
+            self.link_manager.has_link(layers[0])
 
     def _should_link_subset(self):
         return self._is_subset_selection() and self.selection_count() > 1
@@ -213,7 +213,7 @@ class LinkAction(LayerAction):
 
     def _can_trigger(self):
         return self._should_unlink() or self._should_link_subset() or \
-          self._should_link_data()
+            self._should_link_data()
 
     def _do_action(self):
         layers = self.selected_layers()
@@ -319,7 +319,7 @@ class BinaryCombiner(LayerAction):
             return False
 
         if not isinstance(layers[0], core.Subset) or \
-           not isinstance(layers[1], core.Subset):
+            not isinstance(layers[1], core.Subset):
             return False
 
         return True
@@ -335,7 +335,7 @@ class BinaryCombiner(LayerAction):
         data = layers[0].data
         subset = data.new_subset()
         subset.subset_state = self._state_class(layers[0].subset_state,
-                                        layers[1].subset_state)
+                                                layers[1].subset_state)
 
 
 class OrCombiner(BinaryCombiner):
@@ -474,7 +474,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
         tree.addAction(separator)
 
         a = _act("Define new component", self,
-                tip="Define a new component using python expressions")
+                 tip="Define a new component using python expressions")
         tree.addAction(a)
         a.triggered.connect(self._create_component)
         self._actions['new_component'] = a

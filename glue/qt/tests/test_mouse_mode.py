@@ -3,8 +3,8 @@ import PyQt4
 import numpy as np
 from numpy.testing import assert_almost_equal
 
-from ..mouse_mode import MouseMode, RectangleMode, CircleMode, PolyMode, \
-                         ContrastMode, ContourMode, contour_to_roi
+from ..mouse_mode import (MouseMode, RectangleMode, CircleMode, PolyMode,
+                          ContrastMode, ContourMode, contour_to_roi)
 
 
 class Event(object):

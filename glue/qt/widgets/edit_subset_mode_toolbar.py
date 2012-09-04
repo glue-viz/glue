@@ -2,7 +2,7 @@ from PyQt4 import QtCore, QtGui
 from functools import partial
 
 from ...core.edit_subset_mode import (EditSubsetMode, OrMode, AndNotMode,
-                                    AndMode, XorMode, SpawnMode, ReplaceMode)
+                                      AndMode, XorMode, SpawnMode, ReplaceMode)
 from ..actions import act
 
 

@@ -11,8 +11,8 @@ from ... import core
 
 from ...clients.image_client import ImageClient
 
-from ..mouse_mode import RectangleMode, CircleMode, PolyMode, \
-                         ContrastMode, ContourMode
+from ..mouse_mode import (RectangleMode, CircleMode, PolyMode,
+                          ContrastMode, ContourMode)
 from ..glue_toolbar import GlueToolbar
 
 from ..ui.imagewidget import Ui_ImageWidget

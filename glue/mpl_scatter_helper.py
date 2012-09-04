@@ -14,7 +14,7 @@ def make_colormap(color):
     r, g, b = colors.colorConverter.to_rgb(color)
 
     cdict = {'red': [(0.0, 1.0, 1.0),
-                    (1.0, r, r)],
+                     (1.0, r, r)],
 
              'green': [(0.0, 1.0, 1.0),
                        (1.0, g, g)],
@@ -84,9 +84,9 @@ class Scatter(object):
             self._ax.set_autoscale_on(False)
 
         width = self._ax.get_position().width \
-                * self._ax.figure.get_figwidth()
+            * self._ax.figure.get_figwidth()
         height = self._ax.get_position().height \
-                 * self._ax.figure.get_figheight()
+            * self._ax.figure.get_figheight()
 
         nx = int(round(width * dpi))
         ny = int(round(height * dpi))

@@ -30,8 +30,8 @@ class TestHub(object):
         msg, handler, subscriber = self.get_subscription()
         self.hub.subscribe(subscriber, msg, handler)
         assert self.hub.get_handler(subscriber, msg) == handler
-        assert self.hub.get_handler(subscriber, None) == None
-        assert self.hub.get_handler(None, msg) == None
+        assert self.hub.get_handler(subscriber, None) is None
+        assert self.hub.get_handler(None, msg) is None
 
     def test_unsubscribe(self):
         msg, handler, subscriber = self.get_subscription()
@@ -39,7 +39,7 @@ class TestHub(object):
         self.hub.unsubscribe(subscriber, msg)
 
         assert not self.hub.is_subscribed(subscriber, msg)
-        assert self.hub.get_handler(subscriber, msg) == None
+        assert self.hub.get_handler(subscriber, msg) is None
 
     def test_unsubscribe_all(self):
         msg, handler, subscriber = self.get_subscription()
