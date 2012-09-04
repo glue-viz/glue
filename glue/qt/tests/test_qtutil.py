@@ -1,6 +1,7 @@
 from .. import qtutil
 from PyQt4 import QtGui
 
+
 def test_glue_action_button():
     a = QtGui.QAction(None)
     a.setToolTip("testtooltip")

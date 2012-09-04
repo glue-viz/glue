@@ -2,8 +2,10 @@ from functools import wraps
 
 __all__ = ['memoize', 'singleton', 'memoize_attr_check']
 
+
 def _make_key(args, kwargs):
     return args, frozenset(kwargs.items())
+
 
 def memoize(func):
     """Save results of function calls to avoid repeated calculation"""

@@ -6,6 +6,7 @@ import matplotlib.colors as mcolors
 import matplotlib.cbook as cbook
 import numpy as np
 
+
 class ModestImage(mi.AxesImage):
     """
     Computationally modest image class.
@@ -49,7 +50,7 @@ class ModestImage(mi.AxesImage):
             (self._A.ndim == 3 and self._A.shape[-1] not in (3, 4))):
             raise TypeError("Invalid dimensions for image data")
 
-        self._imcache =None
+        self._imcache = None
         self._rgbacache = None
         self._oldxslice = None
         self._oldyslice = None

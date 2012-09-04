@@ -9,6 +9,7 @@ from ..glue_application import GlueApplication
 def tab_count(app):
     return app.tab_bar.count()
 
+
 class TestGlueApplication(object):
 
     def setup_method(self, method):

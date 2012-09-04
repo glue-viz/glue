@@ -106,6 +106,7 @@ class SubsetUpdateMessage(SubsetMessage):
         result += "\n\t Updated %s" % self.attribute
         return result
 
+
 class SubsetDeleteMessage(SubsetMessage):
     """
     A message that a subset issues when it is deleted

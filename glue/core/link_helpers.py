@@ -2,10 +2,12 @@ from .component_link import ComponentLink
 
 __LINK_FUNCTIONS__ = []
 
+
 def identity(x):
     return x
 
 __LINK_FUNCTIONS__.append(identity)
+
 
 def _partial_result(func, index):
     return lambda *args, **kwargs: func(*args, **kwargs)[index]

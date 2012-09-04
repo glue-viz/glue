@@ -338,7 +338,7 @@ class CompositeSubsetState(SubsetState):
         self.state1 = state1.copy()
         if state2:
             state2 = state2.copy()
-        self.state2  = state2
+        self.state2 = state2
         self.parent = None
 
     @property

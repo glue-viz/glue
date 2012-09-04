@@ -7,6 +7,7 @@ from PyQt4.QtGui import QApplication, QMainWindow, QIcon
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import MouseMode
 
+
 class TestMode(MouseMode):
 
     def __init__(self, axes, release_callback=None):

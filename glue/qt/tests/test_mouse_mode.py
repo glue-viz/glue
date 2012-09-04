@@ -136,7 +136,7 @@ class TestContrastMode(TestMouseMode):
         assert count == 0
 
     def test_get_scaling(self):
-        data = np.array([[1, 2, 3], [1,2,3]])
+        data = np.array([[1, 2, 3], [1, 2, 3]])
         self.mode.bias = 0.
         self.mode.contrast = 2.
         self.mode.set_clip_percentile(0, 100)
