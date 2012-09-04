@@ -92,12 +92,14 @@ class HistogramWidget(DataViewer):
         index = combo.currentIndex()
         attribute = combo.itemData(index)
         self.client.set_component(attribute)
+        self._update_window_title()
 
     def _set_data_from_combo(self):
         current = self._current_data()
         self._update_attributes()
         if current is not None:
             self.client.set_data(current)
+        self._update_window_title()
 
     def _current_data(self):
         combo = self.ui.dataCombo
@@ -148,7 +150,29 @@ class HistogramWidget(DataViewer):
                       msg.DataCollectionDeleteMessage,
                       handler=lambda x: self._remove_data(x.data))
 
+        hub.subscribe(self,
+                      msg.DataUpdateMessage,
+                      handler=lambda x: self._sync_data_labels())
+
     def unregister(self, hub):
         self.ui.layerTree.unregister(hub)
         self.client.unregister(hub)
         hub.unsubscribe_all(self)
+
+    def _update_window_title(self):
+        d = self.client.get_data()
+        c = self.client.component
+        if d is not None and c is not None:
+            label = '%s - %s' % (d.label, c.label)
+        else:
+            label = ''
+        self.setWindowTitle(label)
+
+    def _update_data_combo_text(self):
+        combo = self.ui.dataCombo
+        for i in range(combo.count()):
+            combo.setItemText(i, combo.itemData(i).label)
+
+    def _sync_data_labels(self):
+        self._update_window_title()
+        self._update_data_combo_text()

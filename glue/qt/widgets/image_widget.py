@@ -148,6 +148,7 @@ class ImageWidget(DataViewer):
             self.ui.sliceComboBox.show()
             self.ui.orientationLabel.show()
         self.set_slider_range()
+        self._update_window_title()
 
     def set_attribute(self, index):
         combo = self.ui.attributeComboBox
@@ -206,6 +207,10 @@ class ImageWidget(DataViewer):
                       core.message.DataCollectionDeleteMessage,
                       handler=lambda x: self.remove_data_from_combo(x.data),
                       filter=dc_filt)
+        hub.subscribe(self,
+                      core.message.DataUpdateMessage,
+                      handler=lambda x: self._sync_data_labels()
+                      )
 
     def unregister(self, hub):
         for obj in [self, self.client]:
@@ -244,6 +249,22 @@ class ImageWidget(DataViewer):
         if not isinstance(obj, core.Subset):
             return
         self.client.add_scatter_layer(obj)
+
+    def _update_window_title(self):
+        if self.client.display_data is None:
+            title = ''
+        else:
+            title = self.client.display_data.label
+        self.setWindowTitle(title)
+
+    def _update_data_combo(self):
+        combo = self.ui.displayDataCombo
+        for i in range(combo.count()):
+            combo.setItemText(i, combo.itemData(i).label)
+
+    def _sync_data_labels(self):
+        self._update_window_title()
+        self._update_data_combo()
 
     def __str__(self):
         return "Image Widget"

@@ -119,3 +119,35 @@ class TestHistogramWidget(object):
         for data in list(self.collect):
             self.collect.remove(data)
             assert not self.widget.data_present(self.data)
+
+    def test_window_title_matches_data(self):
+        hub = self.set_up_hub()
+        data = self.collect[0]
+        self.widget.client.get_data.return_value = data
+        data.label = 'test'
+        self.widget.add_data(data)
+        assert self.widget.windowTitle().startswith(data.label)
+
+    def test_window_title_updated_with_data(self):
+        hub = self.set_up_hub()
+        data = core.Data()
+        self.collect.append(data)
+        self.widget.client.get_data.return_value = data
+        self.widget.add_data(data)
+        data.label = 'changed'
+        comp = self.widget.client.component
+        assert self.widget.windowTitle() == \
+            ("%s - %s" % (data.label, comp.label))
+
+    def test_data_combo_updated_with_data(self):
+        hub = self.set_up_hub()
+        data = core.Data()
+        self.collect.append(data)
+        self.widget.client.get_data.return_value = data
+        self.widget.add_data(data)
+        data.label = 'changed'
+        assert data.label in self._data_combo_items()
+
+    def _data_combo_items(self):
+        combo = self.widget.ui.dataCombo
+        return [combo.itemText(i) for i in range(combo.count())]

@@ -202,6 +202,9 @@ class HistogramClient(Client):
         self.sync_all()
         self._relim()
 
+    def get_data(self):
+        return self._active_data
+
     @property
     def component(self):
         return self._component

@@ -47,3 +47,24 @@ class TestImageWidget(object):
     def test_synced_on_remove(self):
         self.collect.remove(self.cube)
         self._test_widget_synced_with_collection()
+
+    def test_window_title_matches_data(self):
+        self.widget.add_data(self.collect[0])
+        assert self.widget.windowTitle() == self.collect[0].label
+
+    def test_window_title_updates_on_label_change(self):
+        self.connect_to_hub()
+        self.widget.add_data(self.collect[0])
+        self.collect[0].label = 'Changed'
+        assert self.widget.windowTitle() == self.collect[0].label
+
+    def test_data_combo_updates_on_change(self):
+        self.connect_to_hub()
+        self.widget.add_data(self.collect[0])
+        self.collect[0].label = 'changed'
+        data_labels = self._data_combo_labels()
+        assert self.collect[0].label in data_labels
+
+    def _data_combo_labels(self):
+        combo = self.widget.ui.displayDataCombo
+        return [combo.itemText(i) for i in range(combo.count())]
