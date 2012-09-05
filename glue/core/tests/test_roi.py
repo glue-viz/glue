@@ -1,4 +1,4 @@
-#pylint: disable=W0613,W0201,W0212,E1101,E1103
+#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import pytest
 
 import numpy as np
@@ -272,13 +272,13 @@ class TestMpl(object):
         self.roi = self._roi_factory()
 
     def _roi_factory(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def test_undefined_on_creation(self):
         assert not self.roi._roi.defined()
 
     def test_proper_roi(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def test_start_ignored_if_not_inaxes(self):
         ev = DummyEvent(0, 0, inaxes=None)

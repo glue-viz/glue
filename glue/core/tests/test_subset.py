@@ -1,4 +1,4 @@
-#pylint: disable=W0613,W0201,W0212,E1101,E1103
+#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import tempfile
 import operator as op
 
@@ -222,8 +222,10 @@ class TestCompositeSubsetStates(object):
     class DummyState(SubsetState):
         def __init__(self, mask):
             self._mask = mask
+
         def to_mask(self, view):
             return self._mask
+
         def copy(self):
             return TestCompositeSubsetStates.DummyState(self._mask)
 
@@ -261,6 +263,7 @@ class TestCompositeSubsetStates(object):
         answer = s4.to_mask()
         expected = np.array([False, True, False, False])
         np.testing.assert_array_equal(answer, expected)
+
 
 class TestElementSubsetState(object):
 

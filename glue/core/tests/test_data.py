@@ -1,4 +1,4 @@
-#pylint: disable=W0613,W0201,W0212,E1101,E1103
+#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103,R0903,R0904
 import pytest
 import numpy as np
 from mock import MagicMock
@@ -9,8 +9,6 @@ from ..subset import Subset, SubsetState
 from ..hub import Hub
 from ..exceptions import IncompatibleAttribute
 from ..component_link import ComponentLink
-from ..coordinates import WCSCoordinates, WCSCubeCoordinates
-from ...tests import example_data
 from ..registry import Registry
 
 
@@ -174,7 +172,6 @@ class TestData(object):
                                      "other components in this data")
 
     def test_add_component_link(self):
-        compid = ComponentID('virtual')
         link = MagicMock(spec_set=ComponentLink)
         cid = ComponentID("new id")
         link.get_to_id.return_value = cid

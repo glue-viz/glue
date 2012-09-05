@@ -1,4 +1,4 @@
-#pylint: disable=W0613,W0201,W0212,E1101,E1103
+#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103,W0612
 from mock import MagicMock
 
 import pytest
@@ -9,7 +9,7 @@ from ..hub import Hub
 from ..subset import Subset
 
 
-class MockClient(Client):
+class MockClient(Client): # pylint: disable=W0223
 
     def __init__(self, *args, **kwargs):
         super(MockClient, self).__init__(*args, **kwargs)

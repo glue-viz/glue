@@ -122,6 +122,7 @@ class CustomComponentWidget(QDialog):
 
 def main():
     import sys
+    import glue
     from glue.tests import example_data
     from glue.core.data_collection import DataCollection
     from PyQt4.QtGui import QApplication

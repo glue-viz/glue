@@ -1,4 +1,4 @@
-#pylint: disable=W0613,W0201,W0212,E1101,E1103
+#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import numpy as np
 from mock import MagicMock
 import pytest

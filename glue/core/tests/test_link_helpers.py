@@ -1,8 +1,9 @@
-#pylint: disable=W0613,W0201,W0212,E1101,E1103
+#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import pytest
 import numpy as np
 
-from ..link_helpers import *
+from ..link_helpers import (link_twoway, multilink, galactic2ecliptic,
+                            lb2ra, lb2dec, radec2glon, radec2glat)
 from ...core import ComponentID, ComponentLink
 
 R, D, L, B = (ComponentID('ra'), ComponentID('dec'),
@@ -101,5 +102,5 @@ def test_galactic2ecliptic_individual():
 
 def test_multilink_nofunc():
     with pytest.raises(TypeError) as exc:
-        result = multilink([R, D], [L, B])
+        multilink([R, D], [L, B])
     assert exc.value.args[0] == "Must supply either forwards or backwards"

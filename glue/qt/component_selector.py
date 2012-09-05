@@ -84,14 +84,14 @@ def main():  # pragma: no cover
     import numpy as np
     from PyQt4.QtGui import QApplication
 
-    d = glue.Data(label="hi")
-    d2 = glue.Data(label="there")
+    d = glue.core.Data(label="hi")
+    d2 = glue.core.Data(label="there")
 
-    c1 = glue.Component(np.array([1, 2, 3]))
-    c2 = glue.Component(np.array([1, 2, 3]))
-    c3 = glue.Component(np.array([1, 2, 3]))
+    c1 = glue.core.Component(np.array([1, 2, 3]))
+    c2 = glue.core.Component(np.array([1, 2, 3]))
+    c3 = glue.core.Component(np.array([1, 2, 3]))
 
-    dc = glue.DataCollection()
+    dc = glue.core.DataCollection()
     dc.append(d)
     dc.append(d2)
     d.add_component(c1, "a")

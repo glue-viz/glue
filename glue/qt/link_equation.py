@@ -225,15 +225,15 @@ def main():  # pragma: no cover
 
     app = QApplication([''])
 
-    d = glue.Data(label='d1')
-    d2 = glue.Data(label='d2')
-    c1 = glue.Component(np.array([1, 2, 3]))
-    c2 = glue.Component(np.array([1, 2, 3]))
-    c3 = glue.Component(np.array([1, 2, 3]))
+    d = glue.core.Data(label='d1')
+    d2 = glue.core.Data(label='d2')
+    c1 = glue.core.Component(np.array([1, 2, 3]))
+    c2 = glue.core.Component(np.array([1, 2, 3]))
+    c3 = glue.core.Component(np.array([1, 2, 3]))
     d.add_component(c1, 'a')
     d.add_component(c2, 'b')
     d2.add_component(c3, 'c')
-    dc = glue.DataCollection()
+    dc = glue.core.DataCollection()
     dc.append(d)
     dc.append(d2)
 

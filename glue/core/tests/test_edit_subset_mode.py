@@ -1,7 +1,8 @@
-#pylint: disable=W0613,W0201,W0212,E1101,E1103
+#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import numpy as np
 
-from ..edit_subset_mode import *
+from ..edit_subset_mode import (EditSubsetMode, ReplaceMode, OrMode, AndMode,
+                                XorMode, AndNotMode, SpawnMode)
 from ..subset import ElementSubsetState
 from ..data import Component, Data
 

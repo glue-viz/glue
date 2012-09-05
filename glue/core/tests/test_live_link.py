@@ -1,4 +1,4 @@
-#pylint: disable=W0613,W0201,W0212,E1101,E1103
+#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 from mock import MagicMock
 import pytest
 
@@ -124,11 +124,11 @@ class TestLiveLinkManager(object):
         assert self.hub.broadcast.call_count == 2
 
     def test_requires_hub(self):
-        with pytest.raises(TypeError) as exc:
+        with pytest.raises(TypeError):
             LiveLinkManager().add_link_between(self.sub1, self.sub2)
 
-        with pytest.raises(TypeError) as exc:
-            LiveLinkManager().remove_links_from(self.sub1, self.sub2)
+        with pytest.raises(TypeError):
+            LiveLinkManager().remove_links_from(self.sub1)
 
     def test_remove_not_found(self):
         """ Remove links shouldn't crash if it can't find a subset """

@@ -61,10 +61,10 @@ def pipe():
     data.read_data('.__junk1',
                    type='ascii',
                    delimiter='\t', data_start=2)
-    s = glue.Subset(data, label="YSO subset")
+    s = glue.core.Subset(data, label="YSO subset")
     data2.read_data('.__junk2', type='vo')
 
-    s2 = glue.Subset(data2, label="Core Subset")
+    s2 = glue.core.Subset(data2, label="Core Subset")
 
     return data, data2, s, s2
 

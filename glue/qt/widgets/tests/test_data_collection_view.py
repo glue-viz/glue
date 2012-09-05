@@ -1,3 +1,4 @@
+#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 from ..data_collection_view import DataCollectionView
 from .... import core
 from ....tests import example_data

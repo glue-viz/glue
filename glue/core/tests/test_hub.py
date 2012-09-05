@@ -1,9 +1,9 @@
-#pylint: disable=W0613,W0201,W0212,E1101,E1103
+#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import pytest
 from mock import MagicMock
 
 from ..exceptions import InvalidSubscriber, InvalidMessage
-from ..message import ErrorMessage, SubsetMessage, Message
+from ..message import SubsetMessage, Message
 from ..hub import Hub, HubListener
 from ..subset import Subset
 from ..data import Data
@@ -169,7 +169,7 @@ class TestHubListener(object):
     """This is a dumb test, I know. Fixated on code coverage"""
     def test_unimplemented(self):
         hl = HubListener()
-        with pytest.raises(NotImplementedError) as exc:
+        with pytest.raises(NotImplementedError):
             hl.register_to_hub(None)
-        with pytest.raises(NotImplementedError) as exc:
+        with pytest.raises(NotImplementedError):
             hl.notify(None)
