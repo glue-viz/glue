@@ -1,3 +1,4 @@
+#pylint: disable=W0613,W0201,W0212,E1101,E1103
 import numpy as np
 
 from ..util import file_format, point_contour, view_shape

@@ -1,3 +1,4 @@
+#pylint: disable=W0613,W0201,W0212,E1101,E1103
 import pytest
 
 from pyfits import Header, Card
