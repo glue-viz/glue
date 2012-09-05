@@ -1,3 +1,4 @@
+#pylint: disable=W0613,W0201,W0212,E1101,E1103
 import tempfile
 import operator as op
 
@@ -103,7 +104,7 @@ class TestSubset(object):
         s.register()
         s.delete()
         assert s.data.hub.broadcast.call_count == 1
-        args, kwargs = s.data.hub.broadcast.call_args
+        args = s.data.hub.broadcast.call_args[0]
         msg = args[0]
         assert isinstance(msg, SubsetDeleteMessage)
 
@@ -218,14 +219,17 @@ class TestSubsetStateCombinations(object):
 
 
 class TestCompositeSubsetStates(object):
+    class DummyState(SubsetState):
+        def __init__(self, mask):
+            self._mask = mask
+        def to_mask(self, view):
+            return self._mask
+        def copy(self):
+            return TestCompositeSubsetStates.DummyState(self._mask)
 
     def setup_method(self, method):
-        self.sub1 = MagicMock(spec=SubsetState)
-        self.sub1.copy().to_mask.return_value = \
-            np.array([1, 1, 0, 0], dtype='bool')
-        self.sub2 = MagicMock(spec=SubsetState)
-        self.sub2.copy().to_mask.return_value = \
-            np.array([1, 0, 1, 0], dtype='bool')
+        self.sub1 = self.DummyState(np.array([1, 1, 0, 0], dtype='bool'))
+        self.sub2 = self.DummyState(np.array([1, 0, 1, 0], dtype='bool'))
 
     def test_or(self):
         s3 = OrState(self.sub1, self.sub2)
@@ -256,7 +260,7 @@ class TestCompositeSubsetStates(object):
         s4 = XorState(s3, self.sub1)
         answer = s4.to_mask()
         expected = np.array([False, True, False, False])
-
+        np.testing.assert_array_equal(answer, expected)
 
 class TestElementSubsetState(object):
 
@@ -270,13 +274,13 @@ class TestElementSubsetState(object):
         np.testing.assert_array_equal(mask, np.array([[False], [False]]))
 
     def test_empty_index_list(self):
-        list = self.state.to_index_list()
-        np.testing.assert_array_equal(list, np.array([]))
+        ilist = self.state.to_index_list()
+        np.testing.assert_array_equal(ilist, np.array([]))
 
     def test_nonempty_index_list(self):
         self.state._indices = [0]
-        list = self.state.to_index_list()
-        np.testing.assert_array_equal(list, np.array([0]))
+        ilist = self.state.to_index_list()
+        np.testing.assert_array_equal(ilist, np.array([0]))
 
     def test_nonempty_mask(self):
         self.state._indices = [0]
@@ -422,7 +426,7 @@ class TestSubsetViews(object):
                                       self.c.data[::-1])
 
 
-""" Test Fancy Indexing into the various subset states """
+#Test Fancy Indexing into the various subset states
 
 
 def roifac(comp, cid):
@@ -466,7 +470,6 @@ def invertfac(comp, cid):
 
 
 def elementfac(comp, cid):
-    from ..subset import ElementSubsetState
     return ElementSubsetState(np.array([0, 1]))
 
 
