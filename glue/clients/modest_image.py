@@ -73,7 +73,7 @@ class ModestImage(mi.AxesImage):
         if sx >= self._sx and sy >= self._sy and \
             x0 >= self._bounds[0] and x1 <= self._bounds[1] and \
                 y0 >= self._bounds[2] and y1 <= self._bounds[3]:
-                    return
+            return
 
         self._A = self._full_res[y0:y1:sy, x0:x1:sx]
         self._A = cbook.safe_masked_invalid(self._A)
@@ -94,7 +94,6 @@ class ModestImage(mi.AxesImage):
 def main():
     from time import time
     import matplotlib.pyplot as plt
-    import numpy as np
     x, y = np.mgrid[0:2000, 0:2000]
     data = np.sin(x / 10.) * np.cos(y / 30.)
 

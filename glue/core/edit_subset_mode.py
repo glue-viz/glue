@@ -5,6 +5,7 @@
    share the same mode. This is enforced by making the base
    EditSubsetMode object a singleton.
 """
+#pylint: disable=I0011, R0903
 from .decorators import singleton
 
 
@@ -28,42 +29,42 @@ class EditSubsetMode(object):
 
 
 def ReplaceMode(edit_subset, new_state):
-        """ Replaces edit_subset.subset_state with new_state """
-        edit_subset.subset_state = new_state
+    """ Replaces edit_subset.subset_state with new_state """
+    edit_subset.subset_state = new_state
 
 
 def AndMode(edit_subset, new_state):
-        """ Edit_subset.subset state is and-combined with new_state """
-        new_state.parent = edit_subset
-        state = new_state & edit_subset.subset_state
-        edit_subset.subset_state = state
+    """ Edit_subset.subset state is and-combined with new_state """
+    new_state.parent = edit_subset
+    state = new_state & edit_subset.subset_state
+    edit_subset.subset_state = state
 
 
 def OrMode(edit_subset, new_state):
-        """ Edit_subset.subset state is or-combined with new_state """
-        new_state.parent = edit_subset
-        state = new_state | edit_subset.subset_state
-        edit_subset.subset_state = state
+    """ Edit_subset.subset state is or-combined with new_state """
+    new_state.parent = edit_subset
+    state = new_state | edit_subset.subset_state
+    edit_subset.subset_state = state
 
 
 def XorMode(edit_subset, new_state):
-        """ Edit_subset.subset state is xor-combined with new_state """
-        new_state.parent = edit_subset
-        state = new_state ^ edit_subset.subset_state
-        edit_subset.subset_state = state
+    """ Edit_subset.subset state is xor-combined with new_state """
+    new_state.parent = edit_subset
+    state = new_state ^ edit_subset.subset_state
+    edit_subset.subset_state = state
 
 
 def AndNotMode(edit_subset, new_state):
-        """ Edit_subset.subset state is and-not-combined with new_state """
-        new_state.parent = edit_subset
-        state = edit_subset.subset_state & (~new_state)
-        edit_subset.subset_state = state
+    """ Edit_subset.subset state is and-not-combined with new_state """
+    new_state.parent = edit_subset
+    state = edit_subset.subset_state & (~new_state)
+    edit_subset.subset_state = state
 
 
 def SpawnMode(edit_subset, new_state):
-        """new_state is set to edit_subset.subset_state, and current
-        state is added as new subset
-        """
-        sub = edit_subset.data.new_subset()
-        sub.subset_state = edit_subset.subset_state
-        edit_subset.subset_state = new_state
+    """new_state is set to edit_subset.subset_state, and current
+    state is added as new subset
+    """
+    sub = edit_subset.data.new_subset()
+    sub.subset_state = edit_subset.subset_state
+    edit_subset.subset_state = new_state
