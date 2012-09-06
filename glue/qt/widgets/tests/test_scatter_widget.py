@@ -31,11 +31,12 @@ class TestScatterWidget(object):
 
     def add_layer_via_hub(self):
         layer = self.data[0]
+        layer.label = 'Test Layer'
         self.collect.append(layer)
         return layer
 
-    def add_layer_via_method(self):
-        layer = self.data[0]
+    def add_layer_via_method(self, index=0):
+        layer = self.data[index]
         self.widget.add_data(layer)
         return layer
 
@@ -150,3 +151,20 @@ class TestScatterWidget(object):
         assert not self.is_layer_visible(layer)
         self.set_layer_checkbox(layer, Qt.Checked)
         assert self.is_layer_visible(layer)
+
+    def test_correct_title_single_data(self):
+        layer = self.add_layer_via_method()
+        assert len(layer.label) > 0
+        assert self.widget.windowTitle() == layer.label
+
+    def test_title_updates_with_label_change(self):
+        layer = self.add_layer_via_method()
+        assert layer.hub is self.hub
+        layer.label = "changed label"
+        assert self.widget.windowTitle() == layer.label
+
+    def test_title_updates_with_second_data(self):
+        l1 = self.add_layer_via_method(0)
+        l2 = self.add_layer_via_method(1)
+        expected = '%s | %s' % (l1.label, l2.label)
+        self.widget.windowTitle() == expected

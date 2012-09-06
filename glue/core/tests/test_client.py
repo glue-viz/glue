@@ -9,7 +9,7 @@ from ..hub import Hub
 from ..subset import Subset
 
 
-class MockClient(Client): # pylint: disable=W0223
+class MockClient(Client):  # pylint: disable=W0223
 
     def __init__(self, *args, **kwargs):
         super(MockClient, self).__init__(*args, **kwargs)

@@ -409,6 +409,11 @@ class ScatterClient(Client):
         for subset in data.subsets:
             self.add_layer(subset)
 
+    @property
+    def data(self):
+        """The data objects in the scatter plot"""
+        return list(self._data)
+
     def _update_subset(self, message):
         self._update_layer(message.sender)
 

@@ -120,16 +120,21 @@ class ScatterWidget(DataViewer):
             self.update_xatt(None)
             self.update_yatt(None)
 
+        self._update_window_title()
+
     def register_to_hub(self, hub):
         super(ScatterWidget, self).register_to_hub(hub)
         self.ui.layerTree.setup(self._clean_collection, hub)
         self._clean_collection.register_to_hub(hub)
         self.client.register_to_hub(hub)
+        hub.subscribe(self, core.message.DataUpdateMessage,
+                      lambda x: self._sync_labels())
 
     def unregister(self, hub):
         self.ui.layerTree.unregister(hub)
         hub.unsubscribe_all(self.client)
         hub.unsubscribe_all(self._clean_collection)
+        hub.unsubscribe_all(self)
 
     def update_xatt(self, index):
         combo = self.ui.xAxisComboBox
@@ -154,6 +159,14 @@ class ScatterWidget(DataViewer):
                                             buttons=buttons,
                                             defaultButton=cancel)
         return result == ok
+
+    def _update_window_title(self):
+        data = self.client.data
+        label = ', '.join([d.label for d in data])
+        self.setWindowTitle(label)
+
+    def _sync_labels(self):
+        self._update_window_title()
 
     def __str__(self):
         return "Scatter Widget"

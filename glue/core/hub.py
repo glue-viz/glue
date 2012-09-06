@@ -97,6 +97,9 @@ class Hub(object):
                 not issubclass(message_class, Message):
             raise InvalidMessage("message class must be a subclass of "
                                  "glue.Message: %s" % type(message_class))
+        logging.getLogger(__name__).info("Subscribing %s to %s",
+                                         subscriber, message_class.__name__)
+
         if not handler:
             handler = subscriber.notify
 
@@ -161,7 +164,7 @@ class Hub(object):
         :param message: The message to broadcast
         :type message: :class:`~glue.core.message.Message`
         """
-        logging.debug("%s", message)
+        logging.getLogger(__name__).info("Broadcasting %s", message)
         for subscriber, handler in self._find_handlers(message):
             handler(message)
 

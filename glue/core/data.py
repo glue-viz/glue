@@ -641,7 +641,7 @@ class TabularData(Data):
             import atpy
         except ImportError:
             raise ImportError("TabularData requires ATPy")
-        atpy.registry.register_extensions('ascii',  ['csv', 'tsv', 'txt'],
+        atpy.registry.register_extensions('ascii', ['csv', 'tsv', 'txt'],
                                           override=True)
 
         # Read the table
