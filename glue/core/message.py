@@ -29,7 +29,7 @@ class Message(object):
     sender : The object which sent the message
     tag : An optional string describing the message
     """
-    def __init__(self, sender, tag=None, _level=0):
+    def __init__(self, sender, tag=None):
         """Create a new message
 
         Parameters
@@ -40,20 +40,6 @@ class Message(object):
         """
         self.sender = sender
         self.tag = tag
-        self._level = len(getmro(type(self)))  # number of super-classes.
-
-    def __lt__(self, other):
-        """Compares 2 message objects. message 1 < message 2 if it is
-        further up the hierarchy (i.e. closer to the Message superclass).
-
-        Note:
-
-        This comparison breaks down slightly if messages are multiply
-        inherited.
-
-        """
-
-        return self._level < other._level
 
     def __str__(self):
         return '%s: %s\n\t Sent from: %s' % (type(self).__name__,
