@@ -313,6 +313,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         pm = pm.scaledToHeight(400, mode=Qt.SmoothTransformation)
         widget.setPixmap(pm)
         widget.show()
+        widget.resize(pm.size())
         sub = self._add_to_current_tab(widget, label='Getting Started')
 
         def do_close(win):
