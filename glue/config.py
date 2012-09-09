@@ -43,11 +43,9 @@ def load_configuration(search_path=None):
         try:
             config = imp.load_source('config', config_file)
             result.merge_module(config)
-            #return config
         except IOError:
             pass
         except Exception as e:
-            print e, config_file
             raise Exception("Error loading config file %s:\n%s" %
                             (config_file, e))
 
