@@ -8,6 +8,7 @@ from PyQt4.QtCore import Qt
 from .. import core
 from ..qt import get_qapp
 from .ui.glue_application import Ui_GlueApplication
+from .decorators import set_cursor
 
 from .actions import act
 from .qtutil import pick_class, data_wizard, GlueTabBar
@@ -187,12 +188,12 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
 
         a = act('Save Session', self,
                 tip='Save the current session')
-        a.triggered.connect(self._save_session)
+        a.triggered.connect(lambda x: self._save_session())
         self._actions['session_save'] = a
 
         a = act('Open Session', self,
                 tip='Restore a saved session')
-        a.triggered.connect(self._restore_session)
+        a.triggered.connect(lambda x: self._restore_session())
         self._actions['session_restore'] = a
 
     def new_data_viewer(self, data=None):
@@ -213,6 +214,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
     def _report_error(self, message):
         self.statusBar().showMessage(str(message))
 
+    @set_cursor(Qt.WaitCursor)
     def _save_session(self):
         """ Save the data collection and hub to file.
 
@@ -239,6 +241,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
             QMessageBox.critical(self, "Error",
                                  "Could not write file:\n%s" % e)
 
+    @set_cursor(Qt.WaitCursor)
     def _restore_session(self):
         """ Load a previously-saved state, and restart the session """
         from pickle import Unpickler
