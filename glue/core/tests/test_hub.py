@@ -97,7 +97,7 @@ class TestHub(object):
         msg2 = SubsetMessage
         self.hub.subscribe(subscriber, msg, handler)
         self.hub.subscribe(subscriber, msg2, handler2)
-        msg_instance = msg2(MagicMock(spec_set=Subset))
+        msg_instance = SubsetMessage(Subset(None))
         self.hub.broadcast(msg_instance)
         handler2.assert_called_once_with(msg_instance)
         assert handler.call_count == 0

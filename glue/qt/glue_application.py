@@ -2,7 +2,7 @@
 
 from PyQt4.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                          QMenu, QMdiSubWindow, QAction, QMessageBox,
-                         QFileDialog, QLabel, QPixmap)
+                         QFileDialog, QLabel, QPixmap, QDesktopWidget)
 from PyQt4.QtCore import Qt
 
 from .. import core
@@ -34,6 +34,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._data = data_collection or core.data_collection.DataCollection()
         self._hub = hub or core.hub.Hub(self._data)
 
+        self._tweak_geometry()
         self._create_actions()
         self._connect()
         self._create_menu()
@@ -52,6 +53,16 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
     @property
     def current_tab(self):
         return self._ui.tabWidget.currentWidget()
+
+
+    def _tweak_geometry(self):
+        """Resize if necessary to fit desktop"""
+        dw =  QDesktopWidget()
+        max_geom = dw.screenGeometry(dw.primaryScreen())
+        geom = self.size()
+        geom.setWidth(min(0.85 * max_geom.width(), geom.width()))
+        geom.setHeight(min(0.8 * max_geom.height(), geom.height()))
+        self.resize(geom)
 
     def _new_tab(self):
         """Spawn a new tab page"""
@@ -316,6 +327,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         pm = pm.scaledToHeight(400, mode=Qt.SmoothTransformation)
         widget.setPixmap(pm)
         widget.show()
+        widget.resize(pm.size())
         sub = self._add_to_current_tab(widget, label='Getting Started')
 
         def do_close(win):

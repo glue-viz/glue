@@ -1,4 +1,5 @@
 import logging
+from inspect import getmro
 from collections import defaultdict
 
 from .message import ErrorMessage, Message
@@ -147,15 +148,23 @@ class Hub(object):
     def _find_handlers(self, message):
         """Yields all (subscriber, handler) pairs that should receive a message
         """
-        for key in self._subscriptions:
-            subscriber = self._subscriptions[key]
-            candidates = [msg for msg in subscriber if
-                          issubclass(type(message), msg)]
-            if len(candidates) == 0:
+        # self._subscriptions:
+        # subscriber => { message type => (filter, handler)}
+
+        #loop over subscribed objects
+        for subscriber, subscriptions in self._subscriptions.items():
+            
+            #subscriptions to message or its superclasses
+            messages = [msg for msg in subscriptions.keys() if
+                        issubclass(type(message), msg)]
+            if len(messages) == 0:
                 continue
-            candidate = max(candidates)  # most-subclassed message class
-            filter, handler = subscriber[candidate]
-            if filter(message):
+
+            #narrow to the most-specific message
+            candidate = max(messages, key=_mro_count)
+
+            test, handler = subscriptions[candidate]
+            if test(message):
                 yield subscriber, handler
 
     def broadcast(self, message):
@@ -204,3 +213,6 @@ class HubListener(object):
 
     def notify(self, message):
         raise NotImplementedError("Message has no handler: %s" % message)
+
+def _mro_count(obj):
+    return len(getmro(obj))
