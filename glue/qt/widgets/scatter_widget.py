@@ -108,8 +108,7 @@ class ScatterWidget(DataViewer):
         if data in self._clean_collection:
             return
 
-        if data.size > WARN_SLOW and \
-            not self._confirm_large_data(data):
+        if data.size > WARN_SLOW and not self._confirm_large_data(data):
             return
 
         first_layer = len(self._clean_collection) == 0

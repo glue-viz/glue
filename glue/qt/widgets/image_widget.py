@@ -1,7 +1,7 @@
 from functools import partial
 
 from PyQt4.QtGui import (QWidget, QAction,
-                         QToolButton, QIcon)
+                         QToolButton, QIcon, QMessageBox)
 from PyQt4.QtCore import Qt
 
 import matplotlib.cm as cm
@@ -17,6 +17,9 @@ from ..glue_toolbar import GlueToolbar
 
 from ..ui.imagewidget import Ui_ImageWidget
 from .. import glue_qt_resources  # pylint: disable=W0611
+from ..decorators import set_cursor
+
+WARN_THRESH = 10000000  # warn when contouring large images
 
 
 class ImageWidget(DataViewer):
@@ -79,6 +82,7 @@ class ImageWidget(DataViewer):
         self.addToolBar(result)
         return result
 
+    @set_cursor(Qt.WaitCursor)
     def _apply_roi(self, mode):
         roi = mode.roi()
         self.client._apply_roi(roi)
@@ -231,12 +235,17 @@ class ImageWidget(DataViewer):
         vlo, vhi = mode.get_scaling(im)
         return self.client.set_norm(vlo, vhi)
 
+    @set_cursor(Qt.WaitCursor)
     def _contour_roi(self, mode):
         """ Callback for ContourMode. Set edit_subset as new ROI """
         im = self.client.display_data
         att = self.client.display_attribute
+
         if im is None or att is None:
             return
+        if im.size > WARN_THRESH and not self._confirm_large_image(im):
+            return
+
         roi = mode.roi(im[att])
         if roi:
             self.client._apply_roi(roi)
@@ -268,3 +277,20 @@ class ImageWidget(DataViewer):
 
     def __str__(self):
         return "Image Widget"
+
+    def _confirm_large_image(self, data):
+        """Ask user to confirm expensive contour operations
+
+        :rtype: bool. Whether the user wishes to continue
+        """
+
+        warn_msg = ("WARNING: Image has %i pixels, and may render slowly."
+                    " Continue?" % data.size)
+        title = "Contour large image?"
+        ok = QMessageBox.Ok
+        cancel = QMessageBox.Cancel
+        buttons = ok | cancel
+        result = QMessageBox.question(self, title, warn_msg,
+                                            buttons=buttons,
+                                            defaultButton=cancel)
+        return result == ok
