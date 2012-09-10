@@ -16,7 +16,7 @@ def parse(argv):
     """
     usage = "usage: %prog [options] [FILE]"
     parser = optparse.OptionParser(usage=usage)
-    
+
     parser.add_option('-x', '--execute', action='store_true', dest='script',
                       help="Execute FILE as a python script", default=False)
     parser.add_option('-g', action='store_true', dest='restore',
@@ -26,15 +26,15 @@ def parse(argv):
                       help='use CONFIG as configuration file')
     err_msg = verify(parser, argv)
     if err_msg:
-        sys.stderr.write('\n'+err_msg+'\n')
+        sys.stderr.write('\n%s\n' % err_msg)
         parser.print_help()
         sys.exit(1)
-    
+
     return parser.parse_args(argv)
 
 
 def verify(parser, argv):
-    """ Check for input errors 
+    """ Check for input errors
 
     :param parser: OptionParser instance
     :param argv: Argument list
@@ -78,7 +78,7 @@ def start_glue(gluefile=None, config=None):
         glue.env = glue.config.load_configuration(search_path=[config])
     ga = GlueApplication(data_collection=data, hub=hub)
     sys.exit(ga.exec_())
-    
+
 
 def execute_script(script):
     """ Run a python script and exit.
