@@ -149,7 +149,11 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         a = QAction("Selection Mode Toolbar", menu)
         a.setCheckable(True)
         a.toggled.connect(tbar.setVisible)
-        tbar.visibilityChanged.connect(a.setChecked)
+        try:
+            tbar.visibilityChanged.connect(a.setChecked)
+        except AttributeError:  # Qt < 4.7. Signal not supported
+            pass
+
         menu.addAction(a)
         menu.addActions(tbar.actions())
         mbar.addMenu(menu)
