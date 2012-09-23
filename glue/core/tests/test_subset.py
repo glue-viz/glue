@@ -5,7 +5,6 @@ import operator as op
 import pytest
 import numpy as np
 from mock import MagicMock
-import pyfits
 
 from ..data import Data, ComponentID, Component
 from ..subset import Subset, SubsetState, ElementSubsetState
@@ -308,7 +307,8 @@ class TestSubsetIo(object):
     def test_write(self):
         with tempfile.NamedTemporaryFile() as tmp:
             self.subset.write_mask(tmp.name)
-            data = pyfits.open(tmp.name)[0].data
+            from astropy.io import fits
+            data = fits.open(tmp.name)[0].data
             expected = np.array([[0, 1, 1, 1],
                                  [0, 0, 0, 0],
                                  [0, 0, 0, 0],
