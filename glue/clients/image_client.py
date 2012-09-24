@@ -52,7 +52,15 @@ class DataLayerManager(LayerManager):
     def __init__(self, layer, axes):
         super(DataLayerManager, self).__init__(layer, axes)
         self.cmap = plt.cm.gray
-        self.norm = InvNormalize()
+        self.norm = None
+
+    def _default_norm(self, layer):
+        vals = np.sort(layer.ravel())
+        vals = vals[np.isfinite(vals)]
+        result = InvNormalize()
+        result.vmin = vals[.05 * vals.size]
+        result.vmax = vals[.95 * vals.size]
+        return result
 
     def update_artist(self, view):
         self.delete_artist()
@@ -61,6 +69,7 @@ class DataLayerManager(LayerManager):
         for v in views:
             image = self.layer[v]
             extent = _get_extent(v)
+            self.norm = self.norm or self._default_norm(image)
             artists.append(self._ax.imshow(image, cmap=self.cmap,
                                            norm=self.norm,
                                            interpolation='nearest',

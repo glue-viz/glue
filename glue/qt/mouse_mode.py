@@ -193,8 +193,8 @@ class ContrastMode(MouseMode):
 
         self._last = None
         self._result = None
-        self._percent_lo = 0.
-        self._percent_hi = 100.
+        self._percent_lo = 1.
+        self._percent_hi = 99.
 
     def get_scaling(self, data):
         """ Return the intensity values to set as the darkest and
