@@ -1,5 +1,4 @@
 """ Factory methods to build Data objects from files """
-import pyfits
 import atpy
 
 from .data import Component, Data
@@ -25,8 +24,9 @@ def gridded_data(filename, format='auto', **kwargs):
 
     # Read in the data
     if format in ['fits', 'fit']:
+        from astropy.io import fits
         arrays = extract_data_fits(filename, **kwargs)
-        header = pyfits.open(filename)[0].header
+        header = fits.open(filename)[0].header
         result.coords = coordinates_from_header(header)
     elif format in ['hdf', 'hdf5', 'h5']:
         arrays = extract_data_hdf5(filename, **kwargs)
