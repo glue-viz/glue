@@ -54,23 +54,23 @@ def data_wizard():
         return str(QtGui.QFileDialog.getOpenFileName())
 
     def get_factory():
-        #TODO pull options from glue.env
-        facs = [(core.data.GriddedData, 'Image'),
-                (core.data.TabularData, 'Catalog')]
+        import glue
+        facs = glue.env.data_factories
         classes, labels = zip(*facs)
         return pick_item(classes, labels, label="What kind of data is this?")
 
     def get_result(name, factory):
         label = ' '.join(name.split('/')[-1].split('.')[:-1])
-        result = factory(label=label)
-        result.read_data(name)
+        result = factory(name)
+        result.label = label
         return result
 
     def report_error(error):
+        import traceback
         retry = QMessageBox.Retry
         cancel = QMessageBox.Cancel
         buttons = retry | cancel
-        msg = "Could not load data:\n%s" % error
+        msg = "Could not load data:\n%s\n%s" % (error, traceback.format_exc())
         ok = QMessageBox.critical(None, "Error loading data", msg,
                                   buttons=buttons, defaultButton=cancel)
         return ok == retry
