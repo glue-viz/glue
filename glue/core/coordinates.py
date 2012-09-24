@@ -1,9 +1,6 @@
 import logging
 
-import pywcs
 import numpy as np
-
-import pyfits.core
 
 __all__ = ['Coordinates', 'WCSCoordinates', 'WCSCube']
 
@@ -41,14 +38,16 @@ class WCSCoordinates(Coordinates):
     '''
 
     def __init__(self, header):
+        from pywcs import WCS
         super(WCSCoordinates, self).__init__()
         self._header = header
-        self._wcs = pywcs.WCS(header)
+        self._wcs = WCS(header)
 
     def __setstate__(self, state):
+        from pywcs import WCS
         self.__dict__ = state
         # wcs object doesn't seem to unpickle properly. reconstruct it
-        self._wcs = pywcs.WCS(self._header)
+        self._wcs = WCS(self._header)
 
     def pixel2world(self, xpix, ypix):
         '''
@@ -144,8 +143,11 @@ class WCSCoordinates(Coordinates):
 class WCSCubeCoordinates(WCSCoordinates):
 
     def __init__(self, header):
+        from pyfits.core import Header
+        import pywcs
+
         super(WCSCubeCoordinates, self).__init__(header)
-        if not isinstance(header, pyfits.core.Header):
+        if not isinstance(header, Header):
             raise TypeError("Header must by a pyfits header instance")
 
         if 'NAXIS' not in header or header['NAXIS'] != 3:

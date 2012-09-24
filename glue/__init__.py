@@ -9,3 +9,5 @@ else:
 
 from .config import load_configuration
 env = load_configuration()
+
+from .version import __version__

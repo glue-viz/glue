@@ -2,7 +2,6 @@ import operator
 import logging
 
 import numpy as np
-import pyfits
 
 from .io import extract_data_fits, extract_data_hdf5
 from .coordinates import Coordinates, coordinates_from_header
@@ -673,6 +672,7 @@ class GriddedData(Data):
 
         # Read in the data
         if format in ['fits', 'fit']:
+            import pyfits
             arrays = extract_data_fits(filename, **kwargs)
             header = pyfits.open(filename, memmap=True)[0].header
             self.coords = coordinates_from_header(header)

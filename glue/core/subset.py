@@ -1,6 +1,5 @@
 import operator
 import numpy as np
-import pyfits
 
 from .visual import VisualAttributes, RED
 from .decorators import memoize_attr_check
@@ -194,11 +193,19 @@ class Subset(object):
         """
         mask = np.short(self.to_mask())
         if format == 'fits':
+            try:
+                import pyfits
+            except ImportError:
+                raise ImportError("Cannot write mask -- requires PyFits")
             pyfits.writeto(file_name, mask, clobber=True)
         else:
             raise AttributeError("format not supported: %s" % format)
 
     def read_mask(self, file_name):
+        try:
+            import pyfits
+        except ImportError:
+            raise ImportError("Cannot write mask -- requires PyFits")
         try:
             mask = pyfits.open(file_name)[0].data
         except IOError:
