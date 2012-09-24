@@ -7,10 +7,10 @@ def extract_data_fits(filename, use_hdu='all'):
     Exception is raised.
     '''
 
-    import pyfits
+    from astropy.io import fits
 
     # Read in all HDUs
-    hdulist = pyfits.open(filename, memmap=True)
+    hdulist = fits.open(filename, memmap=True)
 
     # If only a subset are requested, extract those
     if use_hdu != 'all':
@@ -18,8 +18,8 @@ def extract_data_fits(filename, use_hdu='all'):
 
     # Now only keep HDUs that are not tables
     for hdu in hdulist:
-        if not isinstance(hdu, pyfits.PrimaryHDU) and \
-            not isinstance(hdu, pyfits.ImageHDU):
+        if not isinstance(hdu, fits.PrimaryHDU) and \
+            not isinstance(hdu, fits.ImageHDU):
             hdulist.remove(hdu)
 
     # Check that dimensions of all HDU are the same

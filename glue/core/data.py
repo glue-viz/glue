@@ -672,9 +672,9 @@ class GriddedData(Data):
 
         # Read in the data
         if format in ['fits', 'fit']:
-            import pyfits
+            from astropy.io import fits
             arrays = extract_data_fits(filename, **kwargs)
-            header = pyfits.open(filename, memmap=True)[0].header
+            header = fits.open(filename, memmap=True)[0].header
             self.coords = coordinates_from_header(header)
         elif format in ['hdf', 'hdf5', 'h5']:
             arrays = extract_data_hdf5(filename, **kwargs)

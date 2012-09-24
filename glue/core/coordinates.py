@@ -38,16 +38,16 @@ class WCSCoordinates(Coordinates):
     '''
 
     def __init__(self, header):
-        from pywcs import WCS
         super(WCSCoordinates, self).__init__()
+        from astropy import wcs
         self._header = header
-        self._wcs = WCS(header)
+        self._wcs = wcs.WCS(header)
 
     def __setstate__(self, state):
-        from pywcs import WCS
         self.__dict__ = state
         # wcs object doesn't seem to unpickle properly. reconstruct it
-        self._wcs = WCS(self._header)
+        from astropy import wcs
+        self._wcs = wcs.WCS(self._header)
 
     def pixel2world(self, xpix, ypix):
         '''
@@ -143,12 +143,11 @@ class WCSCoordinates(Coordinates):
 class WCSCubeCoordinates(WCSCoordinates):
 
     def __init__(self, header):
-        from pyfits.core import Header
-        import pywcs
-
         super(WCSCubeCoordinates, self).__init__(header)
-        if not isinstance(header, Header):
-            raise TypeError("Header must by a pyfits header instance")
+        from astropy.io import fits
+        if not isinstance(header, fits.Header):
+            raise TypeError("Header must by an astropy.io.fits.Header "
+                            "instance")
 
         if 'NAXIS' not in header or header['NAXIS'] != 3:
             raise AttributeError("Header must describe a 3D array")
@@ -175,10 +174,12 @@ class WCSCubeCoordinates(WCSCoordinates):
                                      "%s = %s" %
                                      (k, header[k]))
         self._fix_header_for_2d()
-        self._wcs = pywcs.WCS(header)
+
+        from astropy import wcs
+        self._wcs = wcs.WCS(header)
 
     def _fix_header_for_2d(self):
-        #workaround for pywcs -- need to remove 3D header keywords
+        #workaround for astropy.wcs -- need to remove 3D header keywords
         self._header['NAXIS'] = 2
         for tag in ['NAXIS3', 'CDELT3', 'CD3_3', 'CRPIX3', 'CRVAL3', 'CTYPE3']:
             if tag in self._header:
@@ -210,7 +211,7 @@ def coordinates_from_header(header):
     """ Convert a FITS header into a glue Coordinates object
 
     :param header: Header to convert
-    :type header: :class:`pyfits.Header`
+    :type header: :class:`astropy.io.fits.Header`
 
     :rtype: :class:`~glue.core.coordinates.Coordinates`
     """

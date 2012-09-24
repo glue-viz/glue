@@ -74,8 +74,12 @@ class TestData(object):
         comp.data.shape = (3, 2)
         with pytest.raises(TypeError) as exc:
             self.data.add_component(comp("junk label"))
-        assert exc.value.args[0] == ("add_component() takes exactly 3 "
-                                     "arguments (2 given)")
+        if isinstance(exc.value, basestring):  # python 2.6
+            assert exc.value == ("add_component() takes exactly 3 "
+                                 "arguments (2 given)")
+        else:
+            assert exc.value.args[0] == ("add_component() takes exactly 3 "
+                                         "arguments (2 given)")
 
     def test_get_getitem_incompatible_attribute(self):
         cid = ComponentID('bad')
