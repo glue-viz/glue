@@ -133,7 +133,7 @@ class WCSCoordinates(Coordinates):
     def axis_label(self, axis):
         letters = ['y', 'x']
         header = self._header
-        num = header['NAXIS'] - axis  # number orientation reversed
+        num = _get_ndim(header) - axis  # number orientation reversed
         key = 'CTYPE%i' % num
         if key in header:
             return 'World %s: %s' % (letters[axis], header[key])
@@ -149,7 +149,7 @@ class WCSCubeCoordinates(WCSCoordinates):
             raise TypeError("Header must by an astropy.io.fits.Header "
                             "instance")
 
-        if 'NAXIS' not in header or header['NAXIS'] != 3:
+        if _get_ndim(header) != 3:
             raise AttributeError("Header must describe a 3D array")
 
         self._header = header
@@ -216,9 +216,10 @@ def coordinates_from_header(header):
     :rtype: :class:`~glue.core.coordinates.Coordinates`
     """
     f = None
-    if 'NAXIS' in header and header['NAXIS'] == 2:
+    ndim = _get_ndim(header)
+    if ndim == 2:
         f = WCSCoordinates
-    elif 'NAXIS' in header and header['NAXIS'] == 3:
+    elif ndim == 3:
         f = WCSCubeCoordinates
     if f:
         try:
@@ -227,3 +228,22 @@ def coordinates_from_header(header):
             print e
             pass
     return Coordinates()
+
+
+def _get_ndim(header):
+    if 'NAXIS' in header:
+        return header['NAXIS']
+    if 'WCSAXES' in header:
+        return header['WCSAXES']
+    return None
+
+def coordinates_from_wcs(wcs):
+    """Convert a wcs object into a glue Coordinates object
+
+    :param wcs: The WCS object to use
+    :rtype: :class:`~glue.core.coordinates.Coordinates`
+    """
+    from astropy.io import fits
+    hdr_str = wcs.wcs.to_header()
+    hdr = fits.Header.fromstring(hdr_str)
+    return coordinates_from_header(hdr)
