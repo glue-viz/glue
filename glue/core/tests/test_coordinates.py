@@ -1,7 +1,6 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import pytest
 
-from pyfits import Header, Card
 from mock import patch
 import numpy as np
 from numpy.testing import assert_almost_equal
@@ -12,7 +11,8 @@ from ..coordinates import coordinates_from_header, WCSCoordinates, Coordinates
 class TestWcsCoordinates(object):
 
     def default_header(self):
-        hdr = Header()
+        from astropy.io import fits
+        hdr = fits.Header()
         hdr.update('NAXIS', 2)
         hdr.update('CRVAL1', 0)
         hdr.update('CRVAL2', 5)
@@ -235,6 +235,7 @@ CDELT3  =        66.4236100000 /
 
 
 def header_from_string(string):
+    from astropy.io import fits
     cards = []
     for s in string.splitlines():
         try:
@@ -247,8 +248,8 @@ def header_from_string(string):
                 pass
         except ValueError:
             continue
-        cards.append(Card(key, value))
-    return Header(cards)
+        cards.append(fits.Card(key, value))
+    return fits.Header(cards)
 
 
 @pytest.mark.parametrize(('hdr'), (HDR_2D_VALID, HDR_3D_VALID_NOWCS))
