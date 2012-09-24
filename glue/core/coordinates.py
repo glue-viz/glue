@@ -237,6 +237,7 @@ def _get_ndim(header):
         return header['WCSAXES']
     return None
 
+
 def coordinates_from_wcs(wcs):
     """Convert a wcs object into a glue Coordinates object
 

@@ -153,7 +153,7 @@ class Hub(object):
 
         #loop over subscribed objects
         for subscriber, subscriptions in self._subscriptions.items():
-            
+
             #subscriptions to message or its superclasses
             messages = [msg for msg in subscriptions.keys() if
                         issubclass(type(message), msg)]
@@ -213,6 +213,7 @@ class HubListener(object):
 
     def notify(self, message):
         raise NotImplementedError("Message has no handler: %s" % message)
+
 
 def _mro_count(obj):
     return len(getmro(obj))
