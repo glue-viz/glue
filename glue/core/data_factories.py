@@ -1,4 +1,32 @@
-""" Factory methods to build Data objects from files """
+""" Factory methods to build Data objects from files
+
+Each factory method conforms to the folowing structure, which
+helps the GUI Frontend easily load data:
+
+1) The first argument is a file name to open
+
+2) The return value is a Data object
+
+3) The function has a .label attribute that describes (in human
+language) what kinds of files it understands
+
+4) The function has a .file_filter attribute that lists the extensions
+it can open. The string is formatted like "*.fits *.fit *.hdf5"
+
+5) The function is added to the __factories__ list
+
+6) Optionally, the function is registered to open a given extension by
+default by calling set_default_factory
+
+Putting this together, the simplest data factory code looks like this:
+
+    def dummy_factory(file_name):
+        return glue.core.Data()
+    dummy_factory.label = "Foo file"
+    dummy_factory.file_filter = "*.foo *.FOO"
+    __factories__.append(dummy_factory)
+    set_default_factory("foo", dummy_factory)
+"""
 import numpy as np
 import atpy
 
