@@ -14,11 +14,7 @@ class ConfigObject(object):
 
         self.qt_clients = [ScatterWidget, ImageWidget, HistogramWidget]
         self.link_functions = list(link_helpers.__LINK_FUNCTIONS__)
-
-        self.data_factories = [(df.gridded_data, 'Image'),
-                               (df.tabular_data, 'Catalog'),
-                               (df.data_dendro_cpp, 'C++ Dendrogram')
-                               ]
+        self.data_factories = [(f, f.label) for f in df.__factories__]
 
     def merge_module(self, module):
         """Import public attributes from module into instance attributes

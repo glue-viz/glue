@@ -1,14 +1,39 @@
 """ Factory methods to build Data objects from files """
-import pyfits
+import numpy as np
 import atpy
 
 from .data import Component, Data
 from .tree import DendroMerge
 from .io import extract_data_fits, extract_data_hdf5
 from .util import file_format
-from .coordinates import coordinates_from_header
+from .coordinates import coordinates_from_header, coordinates_from_wcs
 
 __all__ = ['gridded_data', 'tabular_data', 'data_dendro_cpp']
+__factories__ = []
+_default_factory = {}
+
+
+def set_default_factory(extension, factory):
+    """Register an extension that should be handled by a factory by default
+
+    :param extension: File extension (do not include the '.')
+    :param factory: The factory function to dispatch to
+    """
+    _default_factory[extension] = factory
+
+
+def get_default_factory(extension):
+    """Return the default factory function to read a given file extension.
+
+    :param extension: The extension to lookup
+
+    :rtype: A factory function, or None if the extension has no default
+    """
+    try:
+        return _default_factory[extension]
+    except KeyError:
+        return None
+
 
 def gridded_data(filename, format='auto', **kwargs):
     """
@@ -25,8 +50,9 @@ def gridded_data(filename, format='auto', **kwargs):
 
     # Read in the data
     if format in ['fits', 'fit']:
+        from astropy.io import fits
         arrays = extract_data_fits(filename, **kwargs)
-        header = pyfits.open(filename)[0].header
+        header = fits.Header.fromfile(filename)
         result.coords = coordinates_from_header(header)
     elif format in ['hdf', 'hdf5', 'h5']:
         arrays = extract_data_hdf5(filename, **kwargs)
@@ -43,6 +69,46 @@ def gridded_data(filename, format='auto', **kwargs):
         result.add_component(comp, component_name)
 
     return result
+
+
+gridded_data.label = "Image"
+gridded_data.file_filter = "*.fits *.FITS *hdf5 *hd5"
+__factories__.append(gridded_data)
+set_default_factory('fits', gridded_data)
+set_default_factory('hd5', gridded_data)
+set_default_factory('hdf5', gridded_data)
+
+
+def tabular_data(*args, **kwargs):
+    """
+    Build a data set from a table. We restrict ourselves to tables
+    with 1D columns.
+
+    All arguments are passed to
+        ATpy.Table(...).
+    """
+    result = Data()
+
+    # Read the table
+    table = atpy.Table()
+    table.read(*args, **kwargs)
+
+    # Loop through columns and make component list
+    for column_name in table.columns:
+        c = Component(table[column_name],
+                      units=table.columns[column_name].unit)
+        result.add_component(c, column_name)
+
+    return result
+
+
+tabular_data.label = "Catalog"
+tabular_data.file_filter = "*.txt *.vot *.xml *csv *tsv *.fits"
+__factories__.append(tabular_data)
+set_default_factory('vot', tabular_data)
+set_default_factory('csv', tabular_data)
+set_default_factory('txt', tabular_data)
+set_default_factory('tsv', tabular_data)
 
 
 def data_dendro_cpp(file):
@@ -71,24 +137,65 @@ def data_dendro_cpp(file):
     return result
 
 
-def tabular_data(*args, **kwargs):
-    """
-    Build a data set from a table. We restrict ourselves to tables
-    with 1D columns.
+data_dendro_cpp.label = "C++ Dendrogram"
+data_dendro_cpp.file_filter = "*.fits"
+__factories__.append(data_dendro_cpp)
 
-    All arguments are passed to
-        ATpy.Table(...).
-    """
-    result = Data()
 
-    # Read the table
-    table = atpy.Table()
-    table.read(*args, **kwargs)
+try:
+    from PIL import Image
+    __all__.append('pil_data')
 
-    # Loop through columns and make component list
-    for column_name in table.columns:
-        c = Component(table[column_name],
-                      units=table.columns[column_name].unit)
-        result.add_component(c, column_name)
+    def pil_data(file_name):
+        """Use the Python Imaging Library to load an
+        image into a data object"""
+        result = Data()
 
-    return result
+        data = np.asarray(Image.open(file_name).convert('L'))
+        data = np.flipud(data)
+        shp = data.shape
+
+        comps = []
+        labels = []
+
+        #3 color image
+        if len(shp) == 3 and shp[2] in [3, 4]:
+            comps.append(data[:, :, 0])
+            labels.append('red')
+            comps.append(data[:, :, 1])
+            labels.append('green')
+            comps.append(data[:, :, 2])
+            labels.append('blue')
+            if shp[2] == 4:
+                comps.append(data[:, :, 3])
+                labels.append('alpha')
+        else:
+            comps = [data]
+            labels = ['PRIMARY']
+
+        #look for AVM coordinate metadata
+        try:
+            from pyavm import AVM, NoAVMPresent
+            avm = AVM(file_name)
+            wcs = avm.to_wcs()
+            result.coords = coordinates_from_wcs(wcs)
+        except NoAVMPresent:
+            pass
+
+        for c, l in zip(comps, labels):
+            result.add_component(c, l)
+
+        return result
+
+    #XXX Not until after user study
+    #pil_data.label = "Image"
+    #pil_data.file_filter = "*.jpg *.jpeg *.bmp *.png *.tiff"
+    #__factories__.append(pil_data)
+    #set_default_factory('jpeg', pil_data)
+    #set_default_factory('jpg', pil_data)
+    #set_default_factory('png', pil_data)
+    #set_default_factory('bmp', pil_data)
+    #set_default_factory('tiff', pil_data)
+
+except ImportError:
+        pass
