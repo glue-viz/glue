@@ -48,46 +48,96 @@ def data_wizard():
     """ QT Dialog to load a file into a new data object
 
     Returns:
-       A list of new data objects
+       A list of new data objects. Returns an empty list if
+       selection is canceled.
     """
-    def get_name():
-        return str(QtGui.QFileDialog.getOpenFileName())
-
-    def get_factory():
-        import glue
-        facs = glue.env.data_factories
-        classes, labels = zip(*facs)
-        return pick_item(classes, labels, label="What kind of data is this?")
-
-    def get_result(name, factory):
-        label = ' '.join(name.split('/')[-1].split('.')[:-1])
-        result = factory(name)
-        result.label = label
-        return result
-
-    def report_error(error):
+    def report_error(error, factory):
         import traceback
         retry = QMessageBox.Retry
         cancel = QMessageBox.Cancel
         buttons = retry | cancel
-        msg = "Could not load data:\n%s\n%s" % (error, traceback.format_exc())
+        msg = "\n".join(["Could not load data (wrong load method?)",
+                         "File load method: %s" % factory.label,
+                         "",
+                         "%s" % error,
+                         "%s" % traceback.format_exc()])
         ok = QMessageBox.critical(None, "Error loading data", msg,
                                   buttons=buttons, defaultButton=cancel)
         return ok == retry
 
     while True:
-        name = get_name()
-        if not name:
-            return []
-        factory = get_factory()
-        if factory is None:
-            return []
+        gdd = GlueDataDialog()
         try:
-            return [get_result(name, factory)]
+            result = gdd.load_data()
+            break
         except Exception as e:
-            decision = report_error(e)
+            decision = report_error(e, gdd.factory())
             if not decision:
                 return []
+    if result is not None:
+        return [result]
+    else:
+        return []
+
+
+def data_label(path):
+    """Convert a file path into a data label, by stripping out
+    slashes, file extensions, etc."""
+    import os
+    base, fname = os.path.split(path)
+    name, ext = os.path.splitext(fname)
+    return name
+
+
+class GlueDataDialog(object):
+
+    def __init__(self, parent=None):
+        self._fd = QtGui.QFileDialog(parent)
+        import glue
+        self.filters = [(f[0], self._filter(f[0]))
+                        for f in glue.env.data_factories]
+        self.setNameFilter()
+        self._fd.setFileMode(QtGui.QFileDialog.ExistingFile)
+
+    def factory(self):
+        fltr = self._fd.selectedFilter()
+        for k, v in self.filters:
+            if v == fltr:
+                return k
+
+    def setNameFilter(self):
+        fltr = ";;".join([flt for fac, flt in self.filters])
+        self._fd.setNameFilter(fltr)
+
+    def _filter(self, factory):
+        return "%s (%s)" % (factory.label, factory.file_filter)
+
+    def path(self):
+        return self._fd.selectedFiles()[0]
+
+    def _get_path_and_factory(self):
+        """Show dialog to get a file path and data factory
+
+        :rtype: tuple of (string, func) giving the path and data factory.
+                returns (None, None) if user cancel's dialog
+        """
+        result = self._fd.exec_()
+        if result == QtGui.QDialog.Rejected:
+            return None, None
+        path = self.path()
+        factory = self.factory()
+        return path, factory
+
+    def load_data(self):
+        """Highest level method to interactively load a data set.
+
+        :rtype: A constructed data object, or None
+        """
+        path, fac = self._get_path_and_factory()
+        if path is not None:
+            result = fac(path)
+            result.label = data_label(path)
+            return result
 
 
 def edit_layer_color(layer):

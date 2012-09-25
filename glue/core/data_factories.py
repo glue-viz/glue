@@ -35,6 +35,22 @@ def get_default_factory(extension):
         return None
 
 
+def auto_data(filename):
+    """Attempt to automatically construct a data object,
+    by looking at the file extension and dispatching to a default factory.
+    """
+    import os
+    base, ext = os.path.splitext(filename)
+    ext = ext.strip('.')
+    fac = get_default_factory(ext)
+    if fac is None:
+        raise KeyError("Don't know what to do with file extension: %s" % ext)
+    return fac(filename)
+
+auto_data.label = 'Auto'
+auto_data.file_filter = '*.*'
+__factories__.append(auto_data)
+
 def gridded_data(filename, format='auto', **kwargs):
     """
     Construct an n-dimensional data object from `filename`. If the
@@ -174,28 +190,28 @@ try:
             labels = ['PRIMARY']
 
         #look for AVM coordinate metadata
-        try:
-            from pyavm import AVM, NoAVMPresent
-            avm = AVM(file_name)
-            wcs = avm.to_wcs()
-            result.coords = coordinates_from_wcs(wcs)
-        except NoAVMPresent:
-            pass
+        #XXX not debugged
+        #try:
+        #    from pyavm import AVM, NoAVMPresent
+        #    avm = AVM(str(file_name))  # avoid unicode
+        #    wcs = avm.to_wcs()
+        #    result.coords = coordinates_from_wcs(wcs)
+        #except (NoAVMPresent, ImportError):
+        #    pass
 
         for c, l in zip(comps, labels):
             result.add_component(c, l)
 
         return result
 
-    #XXX Not until after user study
-    #pil_data.label = "Image"
-    #pil_data.file_filter = "*.jpg *.jpeg *.bmp *.png *.tiff"
-    #__factories__.append(pil_data)
-    #set_default_factory('jpeg', pil_data)
-    #set_default_factory('jpg', pil_data)
-    #set_default_factory('png', pil_data)
-    #set_default_factory('bmp', pil_data)
-    #set_default_factory('tiff', pil_data)
+    pil_data.label = "Image"
+    pil_data.file_filter = "*.jpg *.jpeg *.bmp *.png *.tiff"
+    __factories__.append(pil_data)
+    set_default_factory('jpeg', pil_data)
+    set_default_factory('jpg', pil_data)
+    set_default_factory('png', pil_data)
+    set_default_factory('bmp', pil_data)
+    set_default_factory('tiff', pil_data)
 
 except ImportError:
         pass
