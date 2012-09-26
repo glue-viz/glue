@@ -55,13 +55,8 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
 
 
     def _tweak_geometry(self):
-        """Resize if necessary to fit desktop"""
-        dw =  QDesktopWidget()
-        max_geom = dw.screenGeometry(dw.primaryScreen())
-        geom = self.size()
-        geom.setWidth(min(0.85 * max_geom.width(), geom.width()))
-        geom.setHeight(min(0.8 * max_geom.height(), geom.height()))
-        self.resize(geom)
+        """Maximize window"""
+        self.setWindowState(Qt.WindowMaximized)
 
     def _new_tab(self):
         """Spawn a new tab page"""
@@ -343,6 +338,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
 
     def exec_(self):
         self.show()
+        self.raise_()  # bring window to front
         return self.app.exec_()
 
     def keyPressEvent(self, event):
