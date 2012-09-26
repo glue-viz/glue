@@ -33,7 +33,9 @@ def mpl_to_qt4_color(color, alpha=1.0):
 
 def qt4_to_mpl_color(color):
     """
-    Conver a QColor object into a string that matplotlib understands
+    Convert a QColor object into a string that matplotlib understands
+
+    Note: This ignores opacity
 
     :param color: QColor instance
 
@@ -135,12 +137,13 @@ class GlueDataDialog(object):
 
 def edit_layer_color(layer):
     """ Interactively edit a layer's color """
-    dialog = QColorDialog()
-    initial = mpl_to_qt4_color(layer.style.color)
-    color = dialog.getColor(initial=initial)
+    dialog = QColorDialog
+    initial = mpl_to_qt4_color(layer.style.color, alpha=layer.style.alpha)
+    color = dialog.getColor(initial, None, "Change layer color",
+                            options=QColorDialog.ShowAlphaChannel)
     if color.isValid():
         layer.style.color = qt4_to_mpl_color(color)
-
+        layer.style.alpha = color.alpha() / 256.
 
 def edit_layer_symbol(layer):
     """ Interactively edit a layer's symbol """
