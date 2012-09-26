@@ -6,6 +6,7 @@ import optparse
 from glue.qt.glue_application import GlueApplication
 from glue import __version__
 
+
 def parse(argv):
     """ Parse argument list, check validity
 
@@ -14,7 +15,25 @@ def parse(argv):
     *Returns*
     A tuple of options, position arguments
     """
-    usage = "usage: %prog [options] [FILE]"
+    usage = """usage: %prog [options] [FILE FILE...]
+
+    # start a new session
+    %prog
+
+    # start a new session and load a file
+    %prog image.fits
+
+    #start a new session with multiple files
+    %prog image.fits catalog.csv
+
+    #restore a saved session
+    %prog saved_session.glu
+    or
+    %prog -g saved_session.glu
+
+    #run a script
+    %prog -x script.py
+    """
     parser = optparse.OptionParser(usage=usage,
                                    version="%s" % __version__)
 
@@ -25,6 +44,7 @@ def parse(argv):
     parser.add_option('-c', '--config', type='string', dest='config',
                       metavar='CONFIG',
                       help='use CONFIG as configuration file')
+
     err_msg = verify(parser, argv)
     if err_msg:
         sys.stderr.write('\n%s\n' % err_msg)
@@ -47,9 +67,7 @@ def verify(parser, argv):
     opts, args = parser.parse_args(argv)
     err_msg = None
 
-    if len(args) > 1:
-        err_msg = "Too many arguments"
-    elif opts.script and len(args) != 1:
+    if opts.script and len(args) != 1:
         err_msg = "Must provide a script\n"
     elif opts.restore and len(args) != 1:
         err_msg = "Must provide a .glu file\n"
@@ -150,14 +168,15 @@ def main():
         execute_script(args[0])
     else:
         has_file = len(args) == 1
+        has_files = len(args) > 1
         has_py = has_file and args[0].endswith('.py')
         has_glu = has_file and args[0].endswith('.glu')
         if has_py:
             execute_script(args[0])
         elif has_glu:
             start_glue(args[0], config=opt.config)
-        elif has_file:
-            start_glue(datafiles=[args[0]])
+        elif has_file or has_files:
+            start_glue(datafiles=args)
         else:
             start_glue()
 
