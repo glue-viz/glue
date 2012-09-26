@@ -80,15 +80,6 @@ def data_wizard():
         return []
 
 
-def data_label(path):
-    """Convert a file path into a data label, by stripping out
-    slashes, file extensions, etc."""
-    import os
-    base, fname = os.path.split(path)
-    name, ext = os.path.splitext(fname)
-    return name
-
-
 class GlueDataDialog(object):
 
     def __init__(self, parent=None):
@@ -133,6 +124,7 @@ class GlueDataDialog(object):
 
         :rtype: A constructed data object, or None
         """
+        from glue.core.data_factories import data_label
         path, fac = self._get_path_and_factory()
         if path is not None:
             result = fac(path)

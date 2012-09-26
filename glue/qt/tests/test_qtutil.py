@@ -23,15 +23,6 @@ def test_glue_action_button():
     assert b.text() == 'test2'
 
 
-def test_data_label():
-    data_label = qtutil.data_label
-    assert data_label('test.fits') == 'test'
-    assert data_label('/Leading/Path/test.fits') == 'test'
-    assert data_label('') == ''
-    assert data_label('/Leading/Path/no_extension') == 'no_extension'
-    assert data_label('no_extension') == 'no_extension'
-
-
 def dummy_factory(filename):
     from glue.core import Data
     result = Data()

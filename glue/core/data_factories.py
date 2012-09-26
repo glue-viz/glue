@@ -41,6 +41,21 @@ __factories__ = []
 _default_factory = {}
 
 
+def load_data(path, factory):
+    d = factory(path)
+    d.label = data_label(path)
+    return d
+
+
+def data_label(path):
+    """Convert a file path into a data label, by stripping out
+    slashes, file extensions, etc."""
+    import os
+    base, fname = os.path.split(path)
+    name, ext = os.path.splitext(fname)
+    return name
+
+
 def set_default_factory(extension, factory):
     """Register an extension that should be handled by a factory by default
 
