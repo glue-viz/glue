@@ -74,6 +74,24 @@ class LayerAction(QAction):
         raise NotImplementedError
 
 
+class PlotAction(LayerAction):
+    """Visualize the selection. Requires GlueApplication"""
+    _title = "Plot Data"
+    _tooltip = "Make a plot of this selection"
+
+    def __init__(self, tree, app):
+        super(PlotAction, self).__init__(tree)
+        self.app = app
+
+    def _can_trigger(self):
+        return self.single_selection()
+
+    def _do_action(self):
+        assert self._can_trigger()
+        data = self.selected_layers()[0].data
+        self.app.new_data_viewer(data)
+
+
 class NewAction(LayerAction):
     _title = "New Subset"
     _tooltip = "Create a new subset for the selected data"
@@ -269,7 +287,7 @@ class CopyAction(LayerAction):
 
 class PasteAction(LayerAction):
     _title = "Paste subset"
-    _tooltip = "Overwite selected subset with contents from clipboard"
+    _tooltip = "Overwrite selected subset with contents from clipboard"
     _shortcut = QKeySequence.Paste
 
     def _can_trigger(self):
@@ -284,6 +302,28 @@ class PasteAction(LayerAction):
         assert self._can_trigger()
         layer = self.selected_layers()[0]
         layer.paste(Clipboard().contents)
+
+
+class ChangeLabelAction(LayerAction):
+    _title = "Change label"
+    _tooltip = "Edit layer label"
+
+    def _can_trigger(self):
+        return self.single_selection()
+
+    def _do_action(self):
+        qtutil.edit_layer_label(self.selected_layers()[0])
+
+
+class ChangeColorAction(LayerAction):
+    _title = "Change color"
+    _tooltip = "Edit layer color"
+
+    def _can_trigger(self):
+        return self.single_selection()
+
+    def _do_action(self):
+        qtutil.edit_layer_color(self.selected_layers()[0])
 
 
 class Inverter(LayerAction):
@@ -448,6 +488,13 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
 
     def _create_actions(self):
         tree = self.layerTree
+
+        self._actions['label'] = ChangeLabelAction(self)
+        self._actions['color'] = ChangeColorAction(self)
+
+        sep = QAction("", tree)
+        sep.setSeparator(True)
+        tree.addAction(sep)
 
         self._actions['load'] = LoadAction(self)
         self._actions['save'] = SaveAction(self)

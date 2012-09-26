@@ -137,9 +137,8 @@ class GlueDataDialog(object):
 
 def edit_layer_color(layer):
     """ Interactively edit a layer's color """
-    dialog = QColorDialog
     initial = mpl_to_qt4_color(layer.style.color, alpha=layer.style.alpha)
-    color = dialog.getColor(initial, None, "Change layer color",
+    color = QColorDialog.getColor(initial, None, "Change layer color",
                             options=QColorDialog.ShowAlphaChannel)
     if color.isValid():
         layer.style.color = qt4_to_mpl_color(color)

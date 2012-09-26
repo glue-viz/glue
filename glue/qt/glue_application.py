@@ -14,6 +14,8 @@ from .actions import act
 from .qtutil import pick_class, data_wizard, GlueTabBar
 from .widgets.glue_mdi_area import GlueMdiArea
 from .widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
+from .widgets.layer_tree_widget import PlotAction
+
 
 class GlueApplication(QMainWindow, core.hub.HubListener):
     """ The main Glue window """
@@ -30,6 +32,11 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self.tab_widget.setMovable(True)
         self.tab_widget.setTabsClosable(True)
         self._ui.layerWidget.set_checkable(False)
+
+        lwidget = self._ui.layerWidget
+        act = PlotAction(lwidget, self)
+        lwidget.layerTree.addAction(act)
+
         self._data = data_collection or core.data_collection.DataCollection()
         self._hub = hub or core.hub.Hub(self._data)
 
@@ -52,7 +59,6 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
     @property
     def current_tab(self):
         return self._ui.tabWidget.currentWidget()
-
 
     def _tweak_geometry(self):
         """Maximize window"""
