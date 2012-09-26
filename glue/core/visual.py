@@ -35,7 +35,7 @@ class VisualAttributes(object):
         #  * A tuple of three floats in the rng [0:1] for (R, G, B)
         #  * An HTML hexadecimal string (e.g. '#eeefff')
         self.color = color
-        self.alpha = 1.
+        self.alpha = .5
 
         # Line width in points (float or int)
         self.linewidth = 1

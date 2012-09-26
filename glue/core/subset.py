@@ -30,7 +30,7 @@ class Subset(object):
         Describes visual attributes of the subset
     """
 
-    def __init__(self, data, color=RED, alpha=1.0, label=None):
+    def __init__(self, data, color=RED, alpha=0.5, label=None):
         """ Create a new subclass object.
 
         Note: the preferred way for creating subsets is through
