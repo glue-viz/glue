@@ -7,7 +7,7 @@ from PyQt4.QtGui import (QColor, QInputDialog, QColorDialog,
                          QTabBar)
 
 from .. import core
-
+from .decorators import set_cursor
 
 def mpl_to_qt4_color(color, alpha=1.0):
     """ Convert a matplotlib color stirng into a PyQT4 QColor object
@@ -119,6 +119,7 @@ class GlueDataDialog(object):
         factory = self.factory()
         return path, factory
 
+    @set_cursor(Qt.WaitCursor)
     def load_data(self):
         """Highest level method to interactively load a data set.
 

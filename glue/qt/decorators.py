@@ -13,7 +13,7 @@ def set_cursor(shape):
             app = get_qapp()
             app.setOverrideCursor(shape)
             try:
-                func(*args, **kwargs)
+                return func(*args, **kwargs)
             finally:
                 app.restoreOverrideCursor()
         return result

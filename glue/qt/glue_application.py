@@ -15,7 +15,6 @@ from .qtutil import pick_class, data_wizard, GlueTabBar
 from .widgets.glue_mdi_area import GlueMdiArea
 from .widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
 
-
 class GlueApplication(QMainWindow, core.hub.HubListener):
     """ The main Glue window """
 
