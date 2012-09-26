@@ -19,6 +19,7 @@ class EditSubsetModeToolBar(QtGui.QToolBar):
         self._modes = {}
         self._add_actions()
         self._modes[EditSubsetMode().mode].trigger()
+        self._backup_mode = None
 
     def _make_mode(self, name, tip, icon, mode):
         a = act(name, self, tip, icon)
@@ -27,6 +28,8 @@ class EditSubsetModeToolBar(QtGui.QToolBar):
         self._group.addAction(a)
         self.addAction(a)
         self._modes[mode] = a
+        label = name.split()[0].lower()
+        self._modes[label] = mode
 
     def _add_actions(self):
         self._make_mode("Replace Mode", "Replace selection",
@@ -41,3 +44,23 @@ class EditSubsetModeToolBar(QtGui.QToolBar):
                         'glue_xor.png', XorMode)
         self._make_mode("Spawn Mode", "Spawn new selection",
                         'glue_spawn.png', SpawnMode)
+
+    def set_mode(self, mode):
+        """Temporarily set the edit mode to mode
+        :param mode: Name of the mode (Or, Not, And, Xor, Spawn, Replace)
+        :type mode: str
+        """
+        try:
+            mode = self._modes[mode]  # label to mode class
+        except KeyError:
+            raise KeyError("Unrecognized mode: %s" % mode)
+
+        self._backup_mode = self._backup_mode or EditSubsetMode().mode
+        self._modes[mode].trigger()  # mode class to action
+
+    def unset_mode(self):
+        """Restore the mode to the state before set_mode was called"""
+        mode = self._backup_mode
+        self._backup_mode = None
+        if mode:
+            self._modes[mode].trigger()

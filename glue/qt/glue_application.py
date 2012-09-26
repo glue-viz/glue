@@ -144,6 +144,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         menu = QMenu(mbar)
         menu.setTitle("Toolbars")
         tbar = EditSubsetModeToolBar()
+        self._mode_toolbar = tbar
         self.addToolBar(tbar)
         tbar.hide()
         a = QAction("Selection Mode Toolbar", menu)
@@ -344,3 +345,13 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
     def exec_(self):
         self.show()
         return self.app.exec_()
+
+    def keyPressEvent(self, event):
+        """Hold down modifier keys to temporarily set edit mode"""
+        mod = event.modifiers()
+        if mod == Qt.ShiftModifier:
+            self._mode_toolbar.set_mode('or')
+
+    def keyReleaseEvent(self, event):
+        """Unset any temporary edit mode"""
+        self._mode_toolbar.unset_mode()
