@@ -4,7 +4,7 @@ import os
 import optparse
 
 from glue.qt.glue_application import GlueApplication
-
+from glue import __version__
 
 def parse(argv):
     """ Parse argument list, check validity
@@ -15,7 +15,8 @@ def parse(argv):
     A tuple of options, position arguments
     """
     usage = "usage: %prog [options] [FILE]"
-    parser = optparse.OptionParser(usage=usage)
+    parser = optparse.OptionParser(usage=usage,
+                                   version="%s" % __version__)
 
     parser.add_option('-x', '--execute', action='store_true', dest='script',
                       help="Execute FILE as a python script", default=False)
