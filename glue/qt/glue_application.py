@@ -261,7 +261,9 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         """ Load a previously-saved state, and restart the session """
         from pickle import Unpickler
 
-        file_name = QFileDialog.getOpenFileName(self)
+        fltr = "Glue sessions (*.glu)"
+        file_name = QFileDialog.getOpenFileName(self,
+                                                filter=fltr)
         if not file_name:
             return
         try:

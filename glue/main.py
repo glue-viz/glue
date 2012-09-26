@@ -144,7 +144,11 @@ def start_glue(gluefile=None, config=None, datafiles=None):
     if datafiles:
         data = load_data_files(datafiles)
 
-    hub = hub or glue.core.Hub(data)
+    if not hub:
+        if data:
+            hub = glue.core.Hub(data)
+        else:
+            hub = glue.core.Hub()
 
     ga = GlueApplication(data_collection=data, hub=hub)
     sys.exit(ga.exec_())
