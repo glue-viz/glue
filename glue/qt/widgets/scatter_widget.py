@@ -10,7 +10,6 @@ from ..mouse_mode import RectangleMode, CircleMode, PolyMode
 from ..ui.scatterwidget import Ui_ScatterWidget
 from .data_viewer import DataViewer
 
-
 WARN_SLOW = 250000  # max number of points which render quickly
 
 
@@ -186,3 +185,11 @@ class ScatterWidget(DataViewer):
 
     def __str__(self):
         return "Scatter Widget"
+
+    def dropEvent(self, event):
+        """Override DataViewer to accept subsets as well"""
+        obj = event.mimeData().data('application/py_instance')
+        if isinstance(obj, core.data.Data):
+            self.add_data(obj)
+        elif isinstance(obj, core.subset.Subset):
+            self.add_data(obj.data)

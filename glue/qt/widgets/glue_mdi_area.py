@@ -31,9 +31,10 @@ class GlueMdiArea(QtGui.QMdiArea):
     def dropEvent(self, event):
         """ Load a new data viewer if the event has a glue Data object """
         obj = event.mimeData().data('application/py_instance')
-        if not isinstance(obj, core.data.Data):
-            return
-        self._application.new_data_viewer(obj)
+        if isinstance(obj, core.data.Data):
+            self._application.new_data_viewer(obj)
+        elif isinstance(obj, core.subset.Subset):
+            self._application.new_data_viewer(obj.data)
 
     def mousePressEvent(self, event):
         """Right mouse press in the MDI area opens a new data viewer"""
