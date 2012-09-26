@@ -164,7 +164,8 @@ def edit_layer_point_size(layer):
 def edit_layer_label(layer):
     """ Interactively edit a layer's label """
     dialog = QInputDialog()
-    label, isok = dialog.getText(None, 'New Label:', 'New Label:')
+    label, isok = dialog.getText(None, 'New Label:', 'New Label:',
+                                 text=layer.label)
     if isok:
         layer.label = str(label)
 
