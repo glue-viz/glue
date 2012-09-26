@@ -61,6 +61,8 @@ class ScatterWidget(DataViewer):
         ui.layerTree.layerAddButton.pressed.disconnect()
         ui.layerTree.layerAddButton.released.connect(self._choose_add_data)
         ui.layerTree.linkButton.hide()
+        ui.swapAxes.pressed.connect(self.swap_axes)
+        ui.snapLimits.pressed.connect(cl.snap)
 
     def _choose_add_data(self):
         choices = dict([(d.label, d) for d in self._collection])
@@ -134,6 +136,21 @@ class ScatterWidget(DataViewer):
         hub.unsubscribe_all(self.client)
         hub.unsubscribe_all(self._clean_collection)
         hub.unsubscribe_all(self)
+
+    def swap_axes(self):
+        xid = self.ui.xAxisComboBox.currentIndex()
+        yid = self.ui.yAxisComboBox.currentIndex()
+        xlog = self.ui.xLogCheckBox.isChecked()
+        ylog = self.ui.yLogCheckBox.isChecked()
+        xflip = self.ui.xFlipCheckBox.isChecked()
+        yflip = self.ui.yFlipCheckBox.isChecked()
+
+        self.ui.xAxisComboBox.setCurrentIndex(yid)
+        self.ui.yAxisComboBox.setCurrentIndex(xid)
+        self.ui.xLogCheckBox.setChecked(ylog)
+        self.ui.yLogCheckBox.setChecked(xlog)
+        self.ui.xFlipCheckBox.setChecked(yflip)
+        self.ui.yFlipCheckBox.setChecked(xflip)
 
     def update_xatt(self, index):
         combo = self.ui.xAxisComboBox

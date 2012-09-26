@@ -1,3 +1,5 @@
+import logging
+
 from matplotlib import _cntr
 import numpy as np
 
@@ -7,6 +9,7 @@ def identity(x):
 
 
 def relim(lo, hi, log=False):
+    logging.getLogger(__name__).debug("Inputs to relim: %r %r", lo, hi)
     x, y = lo, hi
     if log:
         if lo < 0:

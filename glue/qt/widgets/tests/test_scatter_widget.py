@@ -45,11 +45,11 @@ class TestScatterWidget(object):
         Output format: [xmin, xmax], [ymin, ymax]
         """
         client = self.widget.client
-        data = client.managers[layer].get_data()
-        xmin = data[:, 0].min()
-        xmax = data[:, 0].max()
-        ymin = data[:, 1].min()
-        ymax = data[:, 1].max()
+        x, y = client.managers[layer].get_data()
+        xmin = x.min()
+        xmax = x.max()
+        ymin = y.min()
+        ymax = y.max()
         return [xmin, xmax], [ymin, ymax]
 
     def plot_limits(self):

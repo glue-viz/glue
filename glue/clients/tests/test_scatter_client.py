@@ -58,10 +58,10 @@ class TestScatterClient(object):
             self.client.managers[layer].is_enabled()
 
     def layer_data_correct(self, layer, x, y):
-        xy = self.client.managers[layer].get_data()
-        if max(abs(xy[:, 0] - x)) > .01:
+        xx, yy = self.client.managers[layer].get_data()
+        if max(abs(xx - x)) > .01:
             return False
-        if max(abs(xy[:, 1] - y)) > .01:
+        if max(abs(yy - y)) > .01:
             return False
         return True
 

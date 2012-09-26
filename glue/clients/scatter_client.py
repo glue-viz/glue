@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -20,6 +22,8 @@ class ScatterLayerManager(object):
         self._enabled = True
         self._artist = None
         self._init_artist()
+        self._x = np.array([])
+        self._y = np.array([])
 
     def _init_artist(self):
         artist, = self._axes.plot([1], [1])
@@ -47,7 +51,10 @@ class ScatterLayerManager(object):
         return self._visible
 
     def get_data(self):
-        return np.vstack(self._artist.get_data()).T
+        result = self._x, self._y
+        logging.getLogger(__name__).debug("get data result: %s",
+                                          result)
+        return result
 
     def sync_style(self):
         style = self._layer.style
@@ -60,7 +67,9 @@ class ScatterLayerManager(object):
         artist.set_alpha(style.alpha)
 
     def set_data(self, x, y):
-        self._artist.set_data(x.flat, y.flat)
+        self._x = x.ravel()
+        self._y = y.ravel()
+        self._artist.set_data(self._x, self._y)
 
     def set_zorder(self, order):
         self._artist.set_zorder(order)
@@ -166,27 +175,40 @@ class ScatterClient(Client):
                     continue
                 self.managers[sub].set_zorder(i * nlayers + j + 1)
 
+    def _visible_limits(self, axis):
+        """Return the min-max visible data boundaries for given axis"""
+        data = []
+        for mgr in self.managers.values():
+            if not mgr.is_visible():
+                continue
+            xy = mgr.get_data()
+            assert isinstance(xy, tuple)
+            data.append(xy[axis])
+
+        if len(data) == 0:
+            return
+        data = np.hstack(data)
+        if data.size == 0:
+            return
+
+        lo, hi = np.nanmin(data), np.nanmax(data)
+        if not np.isfinite(lo):
+            return
+
+        return lo, hi
+
     def _snap_xlim(self):
         """
         Reset the plotted x rng to show all the data
         """
-        rng = [np.infty, -np.infty]
         is_log = self.ax.get_xscale() == 'log'
-        for layer in self.managers:
-            manager = self.managers[layer]
-            if not manager.is_visible():
-                continue
-            xy = manager.get_data()
-            if xy.shape[0] == 0:
-                continue
-            rng0 = relim(min(xy[:, 0]), max(xy[:, 0]), is_log)
-            rng[0] = min(rng[0], rng0[0])
-            rng[1] = max(rng[1], rng0[1])
-        if rng[0] == np.infty:
+        rng = self._visible_limits(0)
+        if rng is None:
             return
+        rng = relim(rng[0], rng[1], is_log)
 
         if self.ax.xaxis_inverted():
-            rng = [rng[1], rng[0]]
+            rng = rng[::-1]
 
         self.ax.set_xlim(rng)
 
@@ -196,23 +218,22 @@ class ScatterClient(Client):
         """
         rng = [np.infty, -np.infty]
         is_log = self.ax.get_yscale() == 'log'
-        for layer in self.managers:
-            manager = self.managers[layer]
-            if not manager.is_visible():
-                continue
-            xy = manager.get_data()
-            if xy.shape[0] == 0:
-                continue
-            rng0 = relim(min(xy[:, 1]), max(xy[:, 1]), is_log)
-            rng[0] = min(rng[0], rng0[0])
-            rng[1] = max(rng[1], rng0[1])
-        if rng[0] == np.infty:
+
+        rng = self._visible_limits(1)
+        if rng is None:
             return
+        rng = relim(rng[0], rng[1], is_log)
 
         if self.ax.yaxis_inverted():
-            rng = [rng[1], rng[0]]
+            rng = rng[::-1]
 
         self.ax.set_ylim(rng)
+
+    def snap(self):
+        """Rescale axes to fit the data"""
+        self._snap_xlim()
+        self._snap_ylim()
+        self._redraw()
 
     def set_visible(self, layer, state):
         """ Toggle a layer's visibility
