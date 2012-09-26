@@ -58,24 +58,75 @@ def verify(parser, argv):
     return err_msg
 
 
-def start_glue(gluefile=None, config=None):
+def die_on_error(msg):
+    """Decorator that catches errors, displays a popup message, and quits"""
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                import traceback
+                from PyQt4.QtGui import QMessageBox
+                m = "%s\n%s" % (msg, e)
+                detail = str(traceback.format_exc())
+                qmb = QMessageBox(QMessageBox.Critical, "Error", m)
+                qmb.setDetailedText(detail)
+                qmb.exec_()
+                sys.exit(1)
+        return wrapper
+    return decorator
+
+
+@die_on_error("Error restoring Glue session")
+def restore_session(gluefile):
+    """Load a .glu file and return a DataCollection, Hub tuple"""
     from pickle import Unpickler
+    with open(gluefile) as f:
+        state = Unpickler(f).load()
+    return state
+
+
+@die_on_error("Error reading data file")
+def load_data_files(datafiles):
+    """Load data files and return a DataCollection"""
+    import glue
+    from glue.core.data_factories import auto_data, load_data
+
+    dc = glue.core.DataCollection()
+    for df in datafiles:
+        dc.append(load_data(df, auto_data))
+    return dc
+
+
+def start_glue(gluefile=None, config=None, datafiles=None):
+    """Run a glue session and exit
+
+    :param gluefile: An optional .glu file to restore
+    :type gluefile: str
+
+    :param config: An optional configuration file to use
+    :type config: str
+
+    :param datafiles: An optional list of data files to load
+    :type datafiles: list of str
+    """
+    import glue
+
+    datafiles = datafiles or []
+
+    data, hub = None, None
 
     if gluefile is not None:
-        with open(gluefile) as f:
-            try:
-                state = Unpickler(f).load()
-            except:
-                QMessageBox.critical(None, "Error",
-                                     "Error opening Glue file: %s" % e)
-                sys.exit(1)
-        data, hub = state
-    else:
-        data, hub = None, None
+        data, hub = restore_session(gluefile)
 
     if config is not None:
-        import glue
         glue.env = glue.config.load_configuration(search_path=[config])
+
+    if datafiles:
+        data = load_data_files(datafiles)
+
+    hub = hub or glue.core.Hub(data)
+
     ga = GlueApplication(data_collection=data, hub=hub)
     sys.exit(ga.exec_())
 
@@ -104,8 +155,11 @@ def main():
             execute_script(args[0])
         elif has_glu:
             start_glue(args[0], config=opt.config)
+        elif has_file:
+            start_glue(datafiles=[args[0]])
         else:
-            start_glue(config=opt.config)
+            start_glue()
+
 
 if __name__ == "__main__":
     main()
