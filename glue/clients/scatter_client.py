@@ -11,7 +11,7 @@ from ..core.subset import RoiSubsetState
 from ..core.roi import PolygonalROI
 from ..core.util import relim
 from ..core.edit_subset_mode import EditSubsetMode
-
+from .viz_client import init_mpl
 
 class ScatterLayerManager(object):
 
@@ -99,6 +99,7 @@ class ScatterClient(Client):
            Which matplotlib axes instance to use. Will be created if necessary
         """
         Client.__init__(self, data=data)
+        figure, axes = init_mpl(figure, axes)
 
         self.managers = {}
 
@@ -106,19 +107,7 @@ class ScatterClient(Client):
         self._yatt = None
         self._layer_updated = False  # debugging
 
-        if figure is None:
-            if axes is not None:
-                figure = axes.figure
-            else:
-                figure = plt.figure()
-        if axes is None:
-            ax = figure.add_subplot(111)
-        else:
-            if axes.figure is not figure:
-                raise TypeError("Axes and Figure inputs do not "
-                                "belong to each other")
-            ax = axes
-        self.ax = ax
+        self.ax = axes
 
     def register_to_hub(self, hub):
         super(ScatterClient, self).register_to_hub(hub)

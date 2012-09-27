@@ -141,4 +141,5 @@ def init_mpl(figure, axes):
             _figure = plt.figure()
         _ax = _figure.add_subplot(1, 1, 1)
 
+    _figure.set_tight_layout(True)
     return _figure, _ax

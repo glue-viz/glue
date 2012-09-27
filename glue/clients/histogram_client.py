@@ -58,6 +58,7 @@ class HistogramClient(Client):
         self._ymin = None
         self._ymax = None
         self._autoscale = True
+        self._axes.figure.set_tight_layout(True)
 
     def set_option(self, key, value):
         self._options[key] = value
