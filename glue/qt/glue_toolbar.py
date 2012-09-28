@@ -45,6 +45,7 @@ class GlueToolbar(NavigationToolbar2QT):
         a.setShortcut('H')
         a.setShortcutContext(Qt.WidgetShortcut)
         parent.addAction(a)
+        self.buttons['HOME'] = a
         self.addAction(a)
 
         a = QtGui.QAction(QIcon(':icons/glue_filesave.png'),
@@ -53,6 +54,7 @@ class GlueToolbar(NavigationToolbar2QT):
         a.setToolTip('Save the figure')
         a.setShortcut('Ctrl+Shift+S')
         parent.addAction(a)
+        self.buttons['SAVE'] = a
         self.addAction(a)
 
         a = QtGui.QAction(QIcon(':icons/glue_back.png'),
@@ -60,6 +62,7 @@ class GlueToolbar(NavigationToolbar2QT):
         a.triggered.connect(self.back)
         parent.addAction(a)
         self.addAction(a)
+        self.buttons['BACK'] = a
         a.setToolTip('Back to previous view')
 
         a = QtGui.QAction(QIcon(':icons/glue_forward.png'),
@@ -67,6 +70,7 @@ class GlueToolbar(NavigationToolbar2QT):
         a.triggered.connect(self.forward)
         a.setToolTip('Forward to next view')
         parent.addAction(a)
+        self.buttons['FORWARD'] = a
         self.addAction(a)
 
         a = QtGui.QAction(QIcon(':icons/glue_move.png'),

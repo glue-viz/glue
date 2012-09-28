@@ -211,7 +211,7 @@ class ImageClient(VizClient):
         self._ax.format_coord = format_coord
 
         self._cid = self._ax.figure.canvas.mpl_connect('button_release_event',
-                                                       self._check_update)
+                                                       self.check_update)
 
     @property
     def is_3D(self):
@@ -246,7 +246,7 @@ class ImageClient(VizClient):
         if data not in self.layers:
             self.add_layer(data)
 
-    def _check_update(self, event):
+    def check_update(self, event):
         logging.debug("check update")
         vw = _view_window(self._ax)
         if vw != self._view_window:
@@ -254,6 +254,7 @@ class ImageClient(VizClient):
             self._update_data_plot()
             self._update_subset_plots()
             self._redraw()
+            self._view_window = vw
 
     def set_data(self, data, attribute=None):
         self._ensure_data_present(data)

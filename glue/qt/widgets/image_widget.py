@@ -79,6 +79,14 @@ class ImageWidget(DataViewer):
         tb.setPopupMode(QToolButton.InstantPopup)
         tb.addActions(self._cmaps)
         result.addWidget(tb)
+
+        #connect viewport update buttons to client commands to
+        #allow resampling
+        cl = self.client
+        result.buttons['HOME'].triggered.connect(cl.check_update)
+        result.buttons['FORWARD'].triggered.connect(cl.check_update)
+        result.buttons['BACK'].triggered.connect(cl.check_update)
+
         self.addToolBar(result)
         return result
 
