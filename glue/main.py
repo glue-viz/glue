@@ -2,6 +2,7 @@
 import sys
 import os
 import optparse
+import logging
 
 from glue.qt.glue_application import GlueApplication
 from glue import __version__
@@ -165,6 +166,8 @@ def execute_script(script):
 
 
 def main():
+    logging.getLogger(__name__).info("Input arguments: %s", sys.argv)
+
     opt, args = parse(sys.argv[1:])
     if opt.restore:
         start_glue(args[0], config=opt.config)
