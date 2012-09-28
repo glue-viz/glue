@@ -22,7 +22,7 @@ class MplCanvas(FigureCanvas):
 
     def __init__(self):
         # setup Matplotlib Figure and Axis
-        self.fig = Figure(facecolor='#ededed')
+        self.fig = Figure(facecolor='#ffffff')
         self.ax = self.fig.add_subplot(111)
         self.fig.subplots_adjust(right=.98, top=.98)
 
