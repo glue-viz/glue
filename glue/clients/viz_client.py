@@ -141,5 +141,9 @@ def init_mpl(figure, axes):
             _figure = plt.figure()
         _ax = _figure.add_subplot(1, 1, 1)
 
-    _figure.set_tight_layout(True)
+    try:
+        _figure.set_tight_layout(True)
+    except AttributeError:  # matplotlib < 1.1
+        pass
+
     return _figure, _ax
