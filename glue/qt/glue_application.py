@@ -72,7 +72,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         widget = GlueMdiArea(self)
         widget.setLayout(layout)
         tab = self.tab_widget
-        tab.addTab(widget, str(tab.count() + 1))
+        tab.addTab(widget, str("Tab %i" % (tab.count() + 1)))
         tab.setCurrentWidget(widget)
 
     def _close_tab(self, index):
