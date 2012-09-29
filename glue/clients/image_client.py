@@ -214,6 +214,10 @@ class ImageClient(VizClient):
                                                        self.check_update)
 
     @property
+    def axes(self):
+        return self._ax
+
+    @property
     def is_3D(self):
         if not self.display_data:
             return False

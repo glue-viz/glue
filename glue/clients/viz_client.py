@@ -137,10 +137,8 @@ def init_mpl(figure, axes):
         _ax = axes
         _figure = axes.figure
     else:
-        if figure is None:
-            _figure = plt.figure()
+        _figure = figure or plt.figure()
         _ax = _figure.add_subplot(1, 1, 1)
-
     try:
         _figure.set_tight_layout(True)
     except AttributeError:  # matplotlib < 1.1

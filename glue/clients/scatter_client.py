@@ -109,6 +109,10 @@ class ScatterClient(Client):
 
         self.ax = axes
 
+    @property
+    def axes(self):
+        return self.ax
+
     def register_to_hub(self, hub):
         super(ScatterClient, self).register_to_hub(hub)
         data_in_dc = lambda x: x.data in self._data

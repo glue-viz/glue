@@ -19,10 +19,10 @@ class TestHistogramClient(object):
 
     def setup_method(self, method):
         self.data = example_data.test_histogram_data()
-        axes = MagicMock()
+        fig = MagicMock()
         self.collect = DataCollection(self.data)
-        self.client = HistogramClient(self.collect, axes)
-        self.axes = axes
+        self.client = HistogramClient(self.collect, fig)
+        self.axes = self.client.axes
 
     def draw_count(self):
         return self.axes.figure.canvas.draw.call_count
@@ -142,10 +142,10 @@ class TestHistogramClient(object):
 class TestCommunication(object):
     def setup_method(self, method):
         self.data = example_data.test_histogram_data()
-        axes = MagicMock()
+        figure = MagicMock()
         self.collect = DataCollection()
-        self.client = HistogramClient(self.collect, axes)
-        self.axes = axes
+        self.client = HistogramClient(self.collect, figure)
+        self.axes = self.client.axes
         self.hub = Hub()
         self.connect()
 

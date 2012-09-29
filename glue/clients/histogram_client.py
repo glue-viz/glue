@@ -47,11 +47,11 @@ class HistogramClient(Client):
     A client class to display histograms
     """
 
-    def __init__(self, data, axes):
+    def __init__(self, data, figure):
         super(HistogramClient, self).__init__(data)
 
         self._managers = {}
-        self._axes = axes
+        self._axes = figure.add_subplot(111)
         self._component = None
         self._active_data = None
         self._options = {}
@@ -62,6 +62,10 @@ class HistogramClient(Client):
             self._axes.figure.set_tight_layout(True)
         except AttributeError:  # matplotlib < 1.1
             pass
+
+    @property
+    def axes(self):
+        return self._axes
 
     def set_option(self, key, value):
         self._options[key] = value

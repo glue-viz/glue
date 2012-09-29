@@ -12,7 +12,6 @@ from ..image_client import ImageClient
 
 # share matplotlib instance, and disable rendering, for speed
 FIGURE = plt.figure()
-AXES = FIGURE.add_subplot(111)
 FIGURE.canvas.draw = lambda: 0
 plt.close('all')
 
@@ -41,29 +40,29 @@ class TestImageClient(object):
         self.collect = core.data_collection.DataCollection()
 
     def create_client_with_image(self):
-        client = ImageClient(self.collect, axes=AXES)
+        client = ImageClient(self.collect, figure=FIGURE)
         self.collect.append(self.im)
         client.set_data(self.im)
         return client
 
     def create_client_with_cube(self):
-        client = ImageClient(self.collect, axes=AXES)
+        client = ImageClient(self.collect, figure=FIGURE)
         self.collect.append(self.cube)
         client.set_data(self.cube)
         return client
 
     def test_empty_creation(self):
-        client = ImageClient(self.collect, axes=AXES)
+        client = ImageClient(self.collect, figure=FIGURE)
         assert client.display_data is None
 
     def test_nonempty_creation(self):
         self.collect.append(self.im)
-        client = ImageClient(self.collect, axes=AXES)
+        client = ImageClient(self.collect, figure=FIGURE)
         assert client.display_data is None
         assert not self.im in client.layers
 
     def test_invalid_add(self):
-        client = ImageClient(self.collect, axes=AXES)
+        client = ImageClient(self.collect, figure=FIGURE)
         with pytest.raises(TypeError) as exc:
             client.add_layer(self.cube)
         assert exc.value.args[0] == ("Data not managed by client's "
@@ -81,7 +80,7 @@ class TestImageClient(object):
         assert exc.value.args[0] == "Cannot set slice for 2D image"
 
     def test_slice_disabled_for_no_data(self):
-        client = ImageClient(self.collect, axes=AXES)
+        client = ImageClient(self.collect, figure=FIGURE)
         assert client.slice_ind is None
         with pytest.raises(IndexError) as exc:
             client.slice_ind = 10
@@ -94,14 +93,14 @@ class TestImageClient(object):
         assert client.slice_ind == 5
 
     def test_add_subset_via_method(self):
-        client = ImageClient(self.collect, axes=AXES)
+        client = ImageClient(self.collect, figure=FIGURE)
         self.collect.append(self.im)
         s = self.im.new_subset()
         client.add_layer(s)
         assert s in client.layers
 
     def test_remove_data(self):
-        client = ImageClient(self.collect, axes=AXES)
+        client = ImageClient(self.collect, figure=FIGURE)
         self.collect.append(self.im)
         s = self.im.new_subset()
         client.add_layer(self.im)

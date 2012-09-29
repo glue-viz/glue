@@ -34,8 +34,7 @@ class ImageWidget(DataViewer):
         self.ui.setupUi(self.central_widget)
 
         self.client = ImageClient(data,
-                                  self.ui.mplWidget.canvas.fig,
-                                  self.ui.mplWidget.canvas.ax)
+                                  self.ui.mplWidget.canvas.fig)
 
         self._create_actions()
         self.make_toolbar()
@@ -96,7 +95,7 @@ class ImageWidget(DataViewer):
         self.client._apply_roi(roi)
 
     def _mouse_modes(self):
-        axes = self.ui.mplWidget.canvas.ax
+        axes = self.client.axes
         rect = RectangleMode(axes, release_callback=self._apply_roi)
         circ = CircleMode(axes, release_callback=self._apply_roi)
         poly = PolyMode(axes, release_callback=self._apply_roi)

@@ -21,9 +21,9 @@ class HistogramWidget(DataViewer):
         self.ui = Ui_HistogramWidget()
         self.ui.setupUi(self.central_widget)
         self.ui.layerTree.set_checkable(True)
-        self.make_toolbar()
         self.client = HistogramClient(data,
-                                      self.ui.mplWidget.canvas.ax)
+                                      self.ui.mplWidget.canvas.fig)
+        self.make_toolbar()
         self._connect()
         for d in data:
             self.add_data(d)
@@ -58,7 +58,7 @@ class HistogramWidget(DataViewer):
         return result
 
     def _mouse_modes(self):
-        axes = self.ui.mplWidget.canvas.ax
+        axes = self.client.axes
         rect = RectangleMode(axes, release_callback=self._apply_roi)
         return [rect]
 

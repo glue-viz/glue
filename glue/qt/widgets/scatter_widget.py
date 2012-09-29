@@ -28,8 +28,7 @@ class ScatterWidget(DataViewer):
         self._clean_collection = core.DataCollection()
         self._collection = data
         self.client = ScatterClient(self._clean_collection,
-                                    self.ui.mplWidget.canvas.fig,
-                                    self.ui.mplWidget.canvas.ax)
+                                    self.ui.mplWidget.canvas.fig)
         self._connect()
         self.unique_fields = set()
         self.make_toolbar()
@@ -83,7 +82,7 @@ class ScatterWidget(DataViewer):
         return result
 
     def _mouse_modes(self):
-        axes = self.ui.mplWidget.canvas.ax
+        axes = self.client.axes
         rect = RectangleMode(axes, release_callback=self._apply_roi)
         circ = CircleMode(axes, release_callback=self._apply_roi)
         poly = PolyMode(axes, release_callback=self._apply_roi)

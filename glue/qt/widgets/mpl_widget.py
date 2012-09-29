@@ -23,8 +23,11 @@ class MplCanvas(FigureCanvas):
     def __init__(self):
         # setup Matplotlib Figure and Axis
         self.fig = Figure(facecolor='#ffffff')
-        self.ax = self.fig.add_subplot(111)
-        self.fig.subplots_adjust(right=.98, top=.98)
+
+        try:
+            self.fig.set_tight_layout(True)
+        except AttributeError:  # matplotlib < 1.1
+            pass
 
         # initialization of the canvas
         FigureCanvas.__init__(self, self.fig)

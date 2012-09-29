@@ -23,9 +23,6 @@ class TestHistogramWidget(object):
         data = example_data.test_histogram_data()
         return data
 
-    def teardown_method(self, method):
-        del self.widget
-
     def set_dummy_attributes(self):
         combo = self.widget.ui.attributeCombo
         combo.addItem("Dummy1", userData="Dum1")
