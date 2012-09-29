@@ -43,6 +43,10 @@ class WCSCoordinates(Coordinates):
         self._header = header
         self._wcs = wcs.WCS(header)
 
+    @property
+    def wcs(self):
+        return self._wcs
+
     def __setstate__(self, state):
         self.__dict__ = state
         # wcs object doesn't seem to unpickle properly. reconstruct it
