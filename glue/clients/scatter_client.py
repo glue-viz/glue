@@ -13,6 +13,7 @@ from ..core.util import relim
 from ..core.edit_subset_mode import EditSubsetMode
 from .viz_client import init_mpl
 
+
 class ScatterLayerManager(object):
 
     def __init__(self, layer, axes):

@@ -94,6 +94,7 @@ auto_data.label = 'Auto'
 auto_data.file_filter = '*.*'
 __factories__.append(auto_data)
 
+
 def gridded_data(filename, format='auto', **kwargs):
     """
     Construct an n-dimensional data object from `filename`. If the

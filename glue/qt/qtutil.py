@@ -9,6 +9,7 @@ from PyQt4.QtGui import (QColor, QInputDialog, QColorDialog,
 from .. import core
 from .decorators import set_cursor
 
+
 def mpl_to_qt4_color(color, alpha=1.0):
     """ Convert a matplotlib color stirng into a PyQT4 QColor object
 
@@ -139,10 +140,11 @@ def edit_layer_color(layer):
     """ Interactively edit a layer's color """
     initial = mpl_to_qt4_color(layer.style.color, alpha=layer.style.alpha)
     color = QColorDialog.getColor(initial, None, "Change layer color",
-                            options=QColorDialog.ShowAlphaChannel)
+                                  options=QColorDialog.ShowAlphaChannel)
     if color.isValid():
         layer.style.color = qt4_to_mpl_color(color)
         layer.style.alpha = color.alpha() / 256.
+
 
 def edit_layer_symbol(layer):
     """ Interactively edit a layer's symbol """

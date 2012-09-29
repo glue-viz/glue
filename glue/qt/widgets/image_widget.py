@@ -298,6 +298,6 @@ class ImageWidget(DataViewer):
         cancel = QMessageBox.Cancel
         buttons = ok | cancel
         result = QMessageBox.question(self, title, warn_msg,
-                                            buttons=buttons,
-                                            defaultButton=cancel)
+                                      buttons=buttons,
+                                      defaultButton=cancel)
         return result == ok
