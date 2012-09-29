@@ -20,6 +20,7 @@ class GlueMdiArea(QtGui.QMdiArea):
         self._application = application
         self.setAcceptDrops(True)
         self.setAttribute(Qt.WA_DeleteOnClose)
+        self.setBackground(QtGui.QBrush(QtGui.QColor(250, 250, 250)))
 
     def dragEnterEvent(self, event):
         """ Accept the event if it has an application/py_instance format """
