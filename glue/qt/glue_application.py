@@ -9,7 +9,7 @@ from PyQt4.QtCore import Qt
 from .. import core
 from ..qt import get_qapp
 from .ui.glue_application import Ui_GlueApplication
-from .decorators import set_cursor
+from .decorators import set_cursor, messagebox_on_error
 
 from .actions import act
 from .qtutil import pick_class, data_wizard, GlueTabBar
@@ -231,6 +231,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
     def _report_error(self, message):
         self.statusBar().showMessage(str(message))
 
+    @messagebox_on_error("Failed to save session")
     @set_cursor(Qt.WaitCursor)
     def _save_session(self):
         """ Save the data collection and hub to file.
@@ -247,17 +248,11 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         if not outfile:
             return
 
-        try:
-            with open(outfile, 'w') as out:
-                cp = CloudPickler(out, protocol=2)
-                cp.dump(state)
-        except PicklingError as p:
-            QMessageBox.critical(self, "Error",
-                                 "Cannot save data object: %s" % p)
-        except IOError as e:
-            QMessageBox.critical(self, "Error",
-                                 "Could not write file:\n%s" % e)
+        with open(outfile, 'w') as out:
+            cp = CloudPickler(out, protocol=2)
+            cp.dump(state)
 
+    @messagebox_on_error("Failed to restore session")
     @set_cursor(Qt.WaitCursor)
     def _restore_session(self):
         """ Load a previously-saved state, and restart the session """
@@ -268,12 +263,9 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
                                                 filter=fltr)
         if not file_name:
             return
-        try:
-            state = Unpickler(open(file_name)).load()
-        except Exception as e:
-            QMessageBox.critical(self, "Error",
-                                 "Could not restore file: %s" % e)
-            return
+
+        state = Unpickler(open(file_name)).load()
+
         data, hub = state
         pos = self.pos()
         size = self.size()

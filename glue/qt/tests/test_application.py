@@ -30,10 +30,10 @@ class TestGlueApplication(object):
         with patch('glue.core.glue_pickle.CloudPickler') as cp:
             with patch('glue.qt.glue_application.QFileDialog') as fd:
                 fd.getSaveFileName.return_value = '/tmp/junk'
-                with patch('glue.qt.glue_application.QMessageBox') as mb:
+                with patch('glue.qt.decorators.QMessageBox') as mb:
                     cp().dump.side_effect = PicklingError
                     self.app._save_session()
-                    assert mb.critical.call_count == 1
+                    assert mb.call_count == 1
 
     def test_save_session_no_file(self):
         """shouldnt try to save file if no file name provided"""
@@ -49,6 +49,6 @@ class TestGlueApplication(object):
         with patch('glue.qt.glue_application.QFileDialog') as fd:
             # can't write, raises IOError. Dangerous hack!
             fd.getSaveFileName.return_value = '/_junk'
-            with patch('glue.qt.glue_application.QMessageBox') as mb:
+            with patch('glue.qt.decorators.QMessageBox') as mb:
                 self.app._save_session()
-                assert mb.critical.call_count == 1
+                assert mb.call_count == 1
