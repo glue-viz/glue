@@ -56,7 +56,7 @@ class TestGlueDataDialog(object):
                        factory=dummy_factory)
         d = fd.load_data()
         assert d.label == 'ld_data_nrml'
-        assert d.made_with_dummy_factory == True
+        assert d.made_with_dummy_factory is True
 
     def test_filters(self):
         """Should build filter list from data_factories env var"""

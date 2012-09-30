@@ -179,8 +179,8 @@ class TestCoordinatesFromHeader(object):
             wcs.assert_called_once_with(hdr)
             assert type(coord) is Coordinates
 
-HDR_2D_VALID = \
-"""SIMPLE  =                    T / Written by IDL:  Wed Jul 27 10:01:47 2011
+HDR_2D_VALID = """
+SIMPLE  =                    T / Written by IDL:  Wed Jul 27 10:01:47 2011
 BITPIX  =                  -32 / number of bits per data pixel
 NAXIS   =                    2 / number of data axes
 NAXIS1  =                  501 / length of data axis 1
@@ -209,8 +209,8 @@ NAXIS2  =                  128 /
 NAXIS3  =                  128 /
 """
 
-HDR_3D_VALID_WCS = \
-"""SIMPLE  =                    T / Written by IDL:  Thu Jul  7 15:37:21 2011
+HDR_3D_VALID_WCS = """
+SIMPLE  =                    T / Written by IDL:  Thu Jul  7 15:37:21 2011
 BITPIX  =                  -32 / Number of bits per data pixel
 NAXIS   =                    3 / Number of data axes
 NAXIS1  =                   82 /
