@@ -49,6 +49,9 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._new_tab()
         self._welcome_window()
 
+    def has_terminal(self):
+        return self._terminal is not None
+
     @property
     def tab_widget(self):
         return self._ui.tabWidget
@@ -111,7 +114,6 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
                             handler=self._report_error)
         self._ui.layerWidget.setup(self._data, self._hub)
         self._data.register_to_hub(self._hub)
-        self._terminal_button.clicked.connect(self._toggle_terminal)
         self.tab_widget.tabCloseRequested.connect(self._close_tab)
 
     def _create_menu(self):
@@ -286,6 +288,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         try:
             from .widgets.terminal import glue_terminal
             widget = glue_terminal(data_collection=self._data)
+            self._terminal_button.clicked.connect(self._toggle_terminal)
         except Exception as e:  # pylint: disable=W0703
             self._setup_terminal_error_dialog(e)
             return
@@ -308,7 +311,6 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
 
     def _setup_terminal_error_dialog(self, exception):
         """ Reassign the terminal toggle button to show dialog on error"""
-        self._terminal_button.clicked.disconnect()
         title = "Terminal unavailable"
         msg = ("Glue encountered an error trying to start the Terminal"
                "\nException:\n%s\n\nTerminal is unavailable" % exception)

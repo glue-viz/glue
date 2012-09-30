@@ -1,5 +1,5 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
-from mock import patch
+from mock import patch, MagicMock
 
 from PyQt4.QtGui import QApplication
 
@@ -18,7 +18,6 @@ class TestGlueApplication(object):
 
     def teardown_method(self, method):
         self.app.close()
-        del self.app
 
     def test_new_tabs(self):
         t0 = tab_count(self.app)
@@ -52,3 +51,23 @@ class TestGlueApplication(object):
             with patch('glue.qt.decorators.QMessageBox') as mb:
                 self.app._save_session()
                 assert mb.call_count == 1
+
+    def test_terminal_present(self):
+        """For good setups, terminal is available"""
+        assert self.app.has_terminal()
+
+    def app_without_terminal(self):
+        with patch('glue.qt.widgets.terminal.glue_terminal') as terminal:
+            terminal.side_effect = Exception("disabled")
+            app = GlueApplication()
+            return app
+
+    def test_functional_without_terminal(self):
+        """Can still create app without terminal"""
+        app = self.app_without_terminal()
+
+    def test_messagebox_on_disabled_terminal(self):
+        app = self.app_without_terminal()
+        with patch('glue.qt.glue_application.QMessageBox') as qmb:
+            app._terminal_button.click()
+            assert qmb.critical.call_count == 1
