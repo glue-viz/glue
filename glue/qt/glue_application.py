@@ -280,6 +280,9 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         assert self._terminal is None, \
             "should only call _create_terminal once"
 
+        self._terminal_button = QToolButton(self)
+        self._terminal_button.setToolTip("Toggle command line")
+
         try:
             from .widgets.terminal import glue_terminal
             widget = glue_terminal(data_collection=self._data)
@@ -299,8 +302,6 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         #layout = self._ui.centralwidget.layout()
         #layout.addWidget(widget)
         self._terminal = widget
-        self._terminal_button = QToolButton(self)
-        self._terminal_button.setToolTip("Toggle command line")
 
         self._ui.layerWidget.button_row.addWidget(self._terminal_button)
         self._hide_terminal()
