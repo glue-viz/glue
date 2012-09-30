@@ -134,7 +134,10 @@ class EmbeddedQtKernelApp(IPKernelApp):
     def start(self):
         #handoff between IOLoop and QApplication event loops
         loop = ioloop.IOLoop.instance()
-        stopper = ioloop.PeriodicCallback(loop.stop, 0, loop)
+        # We used to have a value of 0ms as the second argument
+        # (callback_time) in the following call, but this caused the
+        # application to hang on certain setups, so use 1ms instead.
+        stopper = ioloop.PeriodicCallback(loop.stop, 1, loop)
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(loop.start)
         self.timer.start(0)
