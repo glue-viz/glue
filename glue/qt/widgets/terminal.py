@@ -117,6 +117,11 @@ class EmbeddedQtKernel(Kernel):
         with redirect_output(self.session, self.iopub_socket):
             super(EmbeddedQtKernel, self).do_one_iteration()
 
+    def execute_request(self, stream, ident, parent):
+        with redirect_output(self.session, self.iopub_socket):
+            super(EmbeddedQtKernel, self).execute_request(
+                stream, ident, parent)
+
 
 class EmbeddedQtKernelApp(IPKernelApp):
     def init_kernel(self):
