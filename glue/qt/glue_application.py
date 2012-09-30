@@ -2,7 +2,8 @@
 
 from PyQt4.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                          QMenu, QMdiSubWindow, QAction, QMessageBox,
-                         QFileDialog, QLabel, QPixmap, QDesktopWidget)
+                         QFileDialog, QLabel, QPixmap, QDesktopWidget,
+                         QToolButton, QSplitter)
 from PyQt4.QtCore import Qt
 
 from .. import core
@@ -42,9 +43,9 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
 
         self._tweak_geometry()
         self._create_actions()
-        self._connect()
         self._create_menu()
         self._create_terminal()
+        self._connect()
         self._new_tab()
         self._welcome_window()
 
@@ -110,7 +111,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
                             handler=self._report_error)
         self._ui.layerWidget.setup(self._data, self._hub)
         self._data.register_to_hub(self._hub)
-        self._ui.terminal_button.clicked.connect(self._toggle_terminal)
+        self._terminal_button.clicked.connect(self._toggle_terminal)
         self.tab_widget.tabCloseRequested.connect(self._close_tab)
 
     def _create_menu(self):
@@ -293,14 +294,28 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         except Exception as e:  # pylint: disable=W0703
             self._setup_terminal_error_dialog(e)
             return
-        layout = self._ui.centralwidget.layout()
-        layout.addWidget(widget)
+
+        splitter = QSplitter(self)
+        splitter.setOrientation(Qt.Vertical)
+        splitter.addWidget(self._ui.centralwidget)
+        splitter.addWidget(widget)
+        splitter.setStretchFactor(0, 5)
+        splitter.setStretchFactor(1, 1)
+
+        self.setCentralWidget(splitter)
+
+        #layout = self._ui.centralwidget.layout()
+        #layout.addWidget(widget)
         self._terminal = widget
+        self._terminal_button = QToolButton(self)
+        self._terminal_button.setToolTip("Toggle command line")
+
+        self._ui.layerWidget.button_row.addWidget(self._terminal_button)
         self._hide_terminal()
 
     def _setup_terminal_error_dialog(self, exception):
         """ Reassign the terminal toggle button to show dialog on error"""
-        self._ui.terminal_button.clicked.disconnect()
+        self._terminal_button.clicked.disconnect()
         title = "Terminal unavailable"
         msg = ("Glue encountered an error trying to start the Terminal"
                "\nException:\n%s\n\nTerminal is unavailable" % exception)
@@ -308,7 +323,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         def show_msg():
             QMessageBox.critical(self, title, msg)
 
-        self._ui.terminal_button.clicked.connect(show_msg)
+        self._terminal_button.clicked.connect(show_msg)
 
     def _toggle_terminal(self):
         if self._terminal.isVisible():
@@ -320,12 +335,12 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
 
     def _hide_terminal(self):
         self._terminal.hide()
-        button = self._ui.terminal_button
+        button = self._terminal_button
         button.setArrowType(Qt.DownArrow)
 
     def _show_terminal(self):
         self._terminal.show()
-        button = self._ui.terminal_button
+        button = self._terminal_button
         button.setArrowType(Qt.UpArrow)
 
     def _welcome_window(self):
