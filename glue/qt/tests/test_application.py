@@ -54,7 +54,10 @@ class TestGlueApplication(object):
 
     def test_terminal_present(self):
         """For good setups, terminal is available"""
-        assert self.app.has_terminal()
+        if not self.app.has_terminal():
+            import sys
+            sys.stderr.write(self.app._terminal_exception)
+            assert False
 
     def app_without_terminal(self):
         if not self.app.has_terminal():

@@ -291,6 +291,8 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
             widget = glue_terminal(data_collection=self._data)
             self._terminal_button.clicked.connect(self._toggle_terminal)
         except Exception as e:  # pylint: disable=W0703
+            import traceback
+            self._terminal_exception = traceback.format_exc()
             self._setup_terminal_error_dialog(e)
             return
 
