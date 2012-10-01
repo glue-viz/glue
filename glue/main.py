@@ -4,7 +4,6 @@ import os
 import optparse
 import logging
 
-from glue.qt.glue_application import GlueApplication
 from glue import __version__
 
 
@@ -36,7 +35,7 @@ def parse(argv):
     %prog -x script.py
     """
     parser = optparse.OptionParser(usage=usage,
-                                   version="%s" % __version__)
+                                   version=str(__version__))
 
     parser.add_option('-x', '--execute', action='store_true', dest='script',
                       help="Execute FILE as a python script", default=False)
@@ -130,7 +129,10 @@ def start_glue(gluefile=None, config=None, datafiles=None):
     :param datafiles: An optional list of data files to load
     :type datafiles: list of str
     """
+    splash = get_splash()
+
     import glue
+    from glue.qt.glue_application import GlueApplication
 
     datafiles = datafiles or []
 
@@ -152,6 +154,7 @@ def start_glue(gluefile=None, config=None, datafiles=None):
             hub = glue.core.Hub()
 
     ga = GlueApplication(data_collection=data, hub=hub)
+    splash.finish(ga)
     sys.exit(ga.exec_())
 
 
@@ -165,7 +168,26 @@ def execute_script(script):
     sys.exit(0)
 
 
+def get_splash():
+    """Instantiate a splash screen"""
+    from time import sleep
+    from PyQt4.QtGui import QSplashScreen, QPixmap
+    from PyQt4.QtCore import Qt, QTimer
+    import os
+
+    pth = os.path.join(os.path.dirname(__file__), 'logo.png')
+    pm = QPixmap(pth)
+    splash = QSplashScreen(pm, Qt.WindowStaysOnTopHint)
+    splash.show()
+    splash.raise_()
+
+    return splash
+
+
 def main():
+    from PyQt4.QtGui import QApplication
+    app = QApplication(sys.argv)
+
     logging.getLogger(__name__).info("Input arguments: %s", sys.argv)
 
     opt, args = parse(sys.argv[1:])

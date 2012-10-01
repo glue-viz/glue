@@ -95,6 +95,6 @@ setup(name='Glue',
                'glue.clients.tests', 'glue.qt.tests',
                'glue.qt.widgets.tests'],
       cmdclass=cmdclass,
-      package_data={'glue': ['examples/*']},
+      package_data={'glue': ['examples/*', 'logo.png']},
       scripts=scripts
   )
