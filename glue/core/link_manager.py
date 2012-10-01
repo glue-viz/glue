@@ -1,5 +1,5 @@
 from .data import DerivedComponent
-from .link_helpers import LinkList
+from .link_helpers import LinkCollection
 
 
 def accessible_links(cids, links):
@@ -106,7 +106,7 @@ class LinkManager(object):
         self._links = set()
 
     def add_link(self, link):
-        if isinstance(link, LinkList):
+        if isinstance(link, LinkCollection):
             for l in link:
                 self._links.add(l)
         else:

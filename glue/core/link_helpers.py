@@ -13,11 +13,11 @@ def _partial_result(func, index):
     return lambda *args, **kwargs: func(*args, **kwargs)[index]
 
 
-class LinkList(list):
+class LinkCollection(list):
     pass
 
 
-class LinkSame(LinkList):
+class LinkSame(LinkCollection):
     """
     Return 2 ComponentLinks to represent that two componentIDs
     describe the same piece of information
@@ -27,7 +27,7 @@ class LinkSame(LinkList):
         self.append(ComponentLink([cid2], cid1))
 
 
-class LinkTwoWay(LinkList):
+class LinkTwoWay(LinkCollection):
     def __init__(self, cid1, cid2, forwards, backwards):
         """ Return 2 links that connect input ComponentIDs in both directions
 
@@ -44,7 +44,7 @@ class LinkTwoWay(LinkList):
         self.append(ComponentLink([cid2], cid1, backwards))
 
 
-class MultiLink(LinkList):
+class MultiLink(LinkCollection):
     """
     Cmpute all the ComponentLinks to link groups of ComponentIDs
 
