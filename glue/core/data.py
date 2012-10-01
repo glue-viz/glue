@@ -229,6 +229,10 @@ class Data(object):
         self._pixel_component_ids = []
         self._world_component_ids = []
 
+        class ComponentIDDict(object):
+            __getitem__ = self.find_component_id
+        self.id = ComponentIDDict()
+
         # Tree description of the data
         self.tree = None
 

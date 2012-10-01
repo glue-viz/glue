@@ -94,7 +94,7 @@ class DataCollection(HubListener):
 
     @property
     def links(self):
-        return self._link_manager.links
+        return self._link_manager
 
     @links.setter
     def links(self, links):
