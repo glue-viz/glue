@@ -1,5 +1,5 @@
 from .data import DerivedComponent
-from .link_helpers import MultiLink
+from .link_helpers import LinkList
 
 
 def accessible_links(cids, links):
@@ -106,8 +106,8 @@ class LinkManager(object):
         self._links = set()
 
     def add_link(self, link):
-        if isinstance(link, MultiLink):
-            for l in link.links:
+        if isinstance(link, LinkList):
+            for l in link:
                 self._links.add(l)
         else:
             self._links.add(link)

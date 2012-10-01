@@ -2,7 +2,7 @@
 import pytest
 import numpy as np
 
-from ..link_helpers import (link_twoway, multilink, galactic2ecliptic,
+from ..link_helpers import (LinkTwoWay, MultiLink, Galactic2Equatorial,
                             lb2ra, lb2dec, radec2glon, radec2glat)
 from ...core import ComponentID, ComponentLink
 
@@ -31,14 +31,14 @@ def check_using(link, inp, out):
     np.testing.assert_array_almost_equal(link.get_using()(*inp), out)
 
 
-def test_link_twoway():
-    result = link_twoway(R, D, forwards, backwards)
+def test_LinkTwoWay():
+    result = LinkTwoWay(R, D, forwards, backwards)
     check_link(result[0], [R], D, forwards)
     check_link(result[1], [D], R, backwards)
 
 
 def test_multilink_forwards():
-    result = multilink([R, D], [L, B], forwards)
+    result = MultiLink([R, D], [L, B], forwards)
     assert len(result) == 2
     check_link(result[0], [R, D], L)
     check_link(result[1], [R, D], B)
@@ -47,7 +47,7 @@ def test_multilink_forwards():
 
 
 def test_multilink_backwards():
-    result = multilink([R, D], [L, B], backwards=backwards)
+    result = MultiLink([R, D], [L, B], backwards=backwards)
     assert len(result) == 2
     check_link(result[0], [L, B], R)
     check_link(result[1], [L, B], D)
@@ -56,7 +56,7 @@ def test_multilink_backwards():
 
 
 def test_multilink_forwards_backwards():
-    result = multilink([R, D], [L, B], forwards, backwards)
+    result = MultiLink([R, D], [L, B], forwards, backwards)
     assert len(result) == 4
     check_link(result[0], [R, D], L)
     check_link(result[1], [R, D], B)
@@ -68,9 +68,9 @@ def test_multilink_forwards_backwards():
     check_using(result[3], (9, 20), 4)
 
 
-def test_galactic2ecliptic():
+def test_Galactic2Equatorial():
     from aplpy.wcs_util import fk52gal, gal2fk5
-    result = galactic2ecliptic(L, B, R, D)
+    result = Galactic2Equatorial(L, B, R, D)
     assert len(result) == 4
     check_link(result[0], [R, D], L)
     check_link(result[1], [R, D], B)
@@ -102,5 +102,5 @@ def test_galactic2ecliptic_individual():
 
 def test_multilink_nofunc():
     with pytest.raises(TypeError) as exc:
-        multilink([R, D], [L, B])
+        MultiLink([R, D], [L, B])
     assert exc.value.args[0] == "Must supply either forwards or backwards"

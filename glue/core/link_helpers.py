@@ -13,29 +13,38 @@ def _partial_result(func, index):
     return lambda *args, **kwargs: func(*args, **kwargs)[index]
 
 
-def link_same(cid1, cid2):
-    """ Return 2 ComponentLinks to represent
-    that two componentIDs describe the same piece of information """
-    return (ComponentLink([cid1], cid2), ComponentLink([cid2], cid1))
+class LinkList(list):
+    pass
 
 
-def link_twoway(cid1, cid2, forwards, backwards):
-    """ Return 2 links that connect input ComponentIDs in both directions
-
-    :param cid1: First ComponentID to link
-    :param cid2: Second ComponentID to link
-    :param forwards: Function which maps cid1 to cid2 (e.g. cid2=f(cid1))
-    :param backwards: Function which maps cid2 to cid1 (e.g. cid1=f(cid2))
-
-    :rtype: Tuple of :class:`~glue.core.ComponentLink`
-
-    Returns two ComponentLinks, specifying the link in each direction
+class LinkSame(LinkList):
     """
-    return (ComponentLink([cid1], cid2, forwards),
-            ComponentLink([cid2], cid1, backwards))
+    Return 2 ComponentLinks to represent that two componentIDs
+    describe the same piece of information
+    """
+    def __init__(self, cid1, cid2):
+        self.append(ComponentLink([cid1], cid2))
+        self.append(ComponentLink([cid2], cid1))
 
 
-class MultiLink(object):
+class LinkTwoWay(LinkList):
+    def __init__(self, cid1, cid2, forwards, backwards):
+        """ Return 2 links that connect input ComponentIDs in both directions
+
+        :param cid1: First ComponentID to link
+        :param cid2: Second ComponentID to link
+        :param forwards: Function which maps cid1 to cid2 (e.g. cid2=f(cid1))
+        :param backwards: Function which maps cid2 to cid1 (e.g. cid1=f(cid2))
+
+        :rtype: Tuple of :class:`~glue.core.ComponentLink`
+
+        Returns two ComponentLinks, specifying the link in each direction
+        """
+        self.append(ComponentLink([cid1], cid2, forwards))
+        self.append(ComponentLink([cid2], cid1, backwards))
+
+
+class MultiLink(LinkList):
     """
     Cmpute all the ComponentLinks to link groups of ComponentIDs
 
@@ -60,18 +69,15 @@ class MultiLink(object):
         if forwards is None and backwards is None:
             raise TypeError("Must supply either forwards or backwards")
 
-        result = []
         if forwards is not None:
             for i, r in enumerate(cids_right):
                 func = _partial_result(forwards, i)
-                result.append(ComponentLink(cids_left, r, func))
+                self.append(ComponentLink(cids_left, r, func))
 
         if backwards is not None:
             for i, l in enumerate(cids_left):
                 func = _partial_result(backwards, i)
-                result.append(ComponentLink(cids_right, l, func))
-
-        self.links = result
+                self.append(ComponentLink(cids_right, l, func))
 
 try:
     from aplpy.wcs_util import fk52gal, gal2fk5
