@@ -22,7 +22,7 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
     def __init__(self, parent=None):
         qtutil.GlueTreeWidget.__init__(self, parent)
         core.hub.HubListener.__init__(self)
-        self.setStyleSheet('background-color:rgb(250, 250, 250)')
+        self.setStyleSheet('QTreeWidget{ background-color:rgb(250, 250, 250)}')
         self._data_collection = None
         self._hub = None
         self._layer_dict = {}

@@ -145,6 +145,7 @@ class CloudPickler(pickle.Pickler):
         write = self.write
 
         name = obj.__name__
+        logging.getLogger(__name__).debug("obj: %s, name: %s", obj, name)
         modname = pickle.whichmodule(obj, name)
         themodule = sys.modules[modname]
 
