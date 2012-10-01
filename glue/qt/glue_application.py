@@ -282,8 +282,9 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         assert self._terminal is None, \
             "should only call _create_terminal once"
 
-        self._terminal_button = QToolButton(self)
+        self._terminal_button = QToolButton(None)
         self._terminal_button.setToolTip("Toggle command line")
+        self._ui.layerWidget.button_row.addWidget(self._terminal_button)
 
         try:
             from .widgets.terminal import glue_terminal
@@ -301,12 +302,8 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         splitter.setStretchFactor(1, 1)
 
         self.setCentralWidget(splitter)
-
-        #layout = self._ui.centralwidget.layout()
-        #layout.addWidget(widget)
         self._terminal = widget
 
-        self._ui.layerWidget.button_row.addWidget(self._terminal_button)
         self._hide_terminal()
 
     def _setup_terminal_error_dialog(self, exception):

@@ -57,6 +57,9 @@ class TestGlueApplication(object):
         assert self.app.has_terminal()
 
     def app_without_terminal(self):
+        if not self.app.has_terminal():
+            return self.app
+
         with patch('glue.qt.widgets.terminal.glue_terminal') as terminal:
             terminal.side_effect = Exception("disabled")
             app = GlueApplication()
@@ -67,7 +70,15 @@ class TestGlueApplication(object):
         app = self.app_without_terminal()
 
     def test_messagebox_on_disabled_terminal(self):
+        """Clicking on the terminal toggle button raises messagebox on error"""
         app = self.app_without_terminal()
         with patch('glue.qt.glue_application.QMessageBox') as qmb:
             app._terminal_button.click()
             assert qmb.critical.call_count == 1
+
+    def is_terminal_importable(self):
+        try:
+            import glue.qt.widgets.glue_terminal
+            return True
+        except:
+            return False
