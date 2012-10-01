@@ -1,5 +1,12 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+from distutils.version import LooseVersion
+
+import pytest
 from mock import patch, MagicMock
+try:
+    from IPython import __version__ as ipy_version
+except:
+    ipy_version = '0.0'
 
 from PyQt4.QtGui import QApplication
 
@@ -52,6 +59,7 @@ class TestGlueApplication(object):
                 self.app._save_session()
                 assert mb.call_count == 1
 
+    @pytest.mark.xfail("LooseVersion(ipy_version) <= LooseVersion('0.11')")
     def test_terminal_present(self):
         """For good setups, terminal is available"""
         if not self.app.has_terminal():
