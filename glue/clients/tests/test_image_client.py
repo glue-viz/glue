@@ -186,9 +186,9 @@ class TestImageClient(object):
         assert exc.value.args[0] == "Orientation must be 0, 1, or 2"
 
     def test_apply_roi_2d(self):
+        """apply_roi is applied to all edit_subsets"""
         client = self.create_client_with_image()
-        self.collect.append(self.cube)
-        client.add_layer(self.cube)
+
         roi = core.roi.PolygonalROI(vx=[10, 20, 20, 10],
                                     vy=[10, 10, 20, 20])
         client._apply_roi(roi)
@@ -199,10 +199,6 @@ class TestImageClient(object):
         assert roi2.to_polygon()[1] == roi.to_polygon()[1]
         assert state.xatt is self.im.get_pixel_component_id(1)
         assert state.yatt is self.im.get_pixel_component_id(0)
-
-        # subset only applied to active data
-        roi3 = self.cube.edit_subset.subset_state
-        assert not isinstance(roi3, core.subset.RoiSubsetState)
 
     def test_apply_roi_3d(self):
         client = self.create_client_with_cube()

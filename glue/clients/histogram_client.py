@@ -272,13 +272,10 @@ class HistogramClient(Client):
         x, y = roi.to_polygon()
         lo = min(x)
         hi = max(x)
-        for layer in self._managers.keys():
-            if layer.data is not layer:
-                continue
-            state = RangeSubsetState(lo, hi)
-            state.att = self.component
-            mode = EditSubsetMode()
-            mode.combine(layer, state)
+        state = RangeSubsetState(lo, hi)
+        state.att = self.component
+        mode = EditSubsetMode()
+        mode.combine(self.data, state)
 
     def register_to_hub(self, hub):
         dfilter = lambda x: x.sender.data in self._managers

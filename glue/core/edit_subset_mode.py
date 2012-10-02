@@ -7,7 +7,8 @@
 """
 #pylint: disable=I0011, R0903
 from .decorators import singleton
-
+from .data import Data
+from .data_collection import DataCollection
 
 @singleton
 class EditSubsetMode(object):
@@ -15,7 +16,7 @@ class EditSubsetMode(object):
     def __init__(self):
         self.mode = ReplaceMode
 
-    def combine(self, data, new_state):
+    def _combine_data(self, data, new_state):
         """ Dispatches to the combine method of mode attribute.
 
         The behavior is dependent on the mode it dispatches to.
@@ -34,6 +35,26 @@ class EditSubsetMode(object):
             subs = [subs]
         for s in subs:
             self.mode(s, new_state)
+
+    def combine(self, d, new_state):
+        """ Apply a new subset state to editable subsets within a
+        :class:`~glue.core.data.Data` or
+        :class:`~glue.core.data_collection.DataCollection` instance
+
+        :param d: Data or Collection to act upon
+        :type d: Data or DataCollection
+
+        :param new_state: Subset state to combine with
+        :type new_state: :class:`~glue.core.subset.SubsetState`
+        """
+        if isinstance(d, Data):
+            self._combine_data(d, new_state)
+        elif isinstance(d, DataCollection):
+            for data in d:
+                self._combine_data(data, new_state)
+        else:
+            raise TypeError("input must be a Data or DataCollection: %s" %
+                            type(d))
 
 
 def ReplaceMode(edit_subset, new_state):

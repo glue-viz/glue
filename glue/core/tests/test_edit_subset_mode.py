@@ -5,7 +5,7 @@ from ..edit_subset_mode import (EditSubsetMode, ReplaceMode, OrMode, AndMode,
                                 XorMode, AndNotMode)
 from ..subset import ElementSubsetState
 from ..data import Component, Data
-
+from ..data_collection import DataCollection
 
 class TestEditSubsetMode(object):
     def setup_method(self, method):
@@ -82,6 +82,23 @@ class TestEditSubsetMode(object):
         self.data.edit_subset = list(self.data.subsets)
 
         mode.combine(self.data, self.state2)
+        expected = np.array([False, True, True])
+        for s in self.data.subsets:
+            np.testing.assert_array_equal(s.to_mask(), expected)
+
+    def test_combine_with_collection(self):
+        """A data collection input works on each data object"""
+        mode = EditSubsetMode()
+        mode.mode = ReplaceMode
+
+        for i in range(5):
+            self.data.new_subset()
+        self.data.edit_subset = list(self.data.subsets)
+
+        dc = DataCollection([self.data])
+
+
+        mode.combine(dc, self.state2)
         expected = np.array([False, True, True])
         for s in self.data.subsets:
             np.testing.assert_array_equal(s.to_mask(), expected)

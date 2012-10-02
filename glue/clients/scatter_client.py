@@ -284,19 +284,14 @@ class ScatterClient(Client):
     def _apply_roi(self, roi):
         # every active data layer is set
         # using specified ROI
-        for layer in self.managers.keys():
-            if layer.data is not layer:
-                continue
-            if not self.managers[layer].is_enabled():
-                continue
-            subset_state = RoiSubsetState()
-            subset_state.xatt = self._xatt
-            subset_state.yatt = self._yatt
-            x, y = roi.to_polygon()
-            subset_state.roi = PolygonalROI(x, y)
+        subset_state = RoiSubsetState()
+        subset_state.xatt = self._xatt
+        subset_state.yatt = self._yatt
+        x, y = roi.to_polygon()
+        subset_state.roi = PolygonalROI(x, y)
+        mode = EditSubsetMode()
+        mode.combine(self._data, subset_state)
 
-            mode = EditSubsetMode()
-            mode.combine(layer, subset_state)
 
     def set_xdata(self, attribute, snap=True):
         """
