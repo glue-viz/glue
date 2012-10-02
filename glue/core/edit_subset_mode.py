@@ -59,7 +59,7 @@ class EditSubsetMode(object):
 
 def ReplaceMode(edit_subset, new_state):
     """ Replaces edit_subset.subset_state with new_state """
-    edit_subset.subset_state = new_state
+    edit_subset.subset_state = new_state.copy()
 
 
 def AndMode(edit_subset, new_state):

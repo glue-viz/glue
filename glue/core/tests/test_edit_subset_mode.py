@@ -7,6 +7,7 @@ from ..subset import ElementSubsetState
 from ..data import Component, Data
 from ..data_collection import DataCollection
 
+
 class TestEditSubsetMode(object):
     def setup_method(self, method):
         data = Data()
@@ -97,8 +98,14 @@ class TestEditSubsetMode(object):
 
         dc = DataCollection([self.data])
 
-
         mode.combine(dc, self.state2)
         expected = np.array([False, True, True])
         for s in self.data.subsets:
             np.testing.assert_array_equal(s.to_mask(), expected)
+
+    def test_combines_make_copy(self):
+        mode = EditSubsetMode()
+        mode.mode = ReplaceMode
+        self.data.edit_subset = self.data.new_subset()
+        mode.combine(self.data, self.state2)
+        assert self.data.edit_subset.subset_state is not self.state2
