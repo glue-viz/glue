@@ -42,6 +42,7 @@ import new
 import dis
 import email
 from pickle import loads, PicklingError
+from .decorators import memoize
 
 #relevant opcodes
 STORE_GLOBAL = chr(dis.opname.index('STORE_GLOBAL'))
@@ -146,7 +147,7 @@ class CloudPickler(pickle.Pickler):
 
         name = obj.__name__
         logging.getLogger(__name__).info("obj: %s, name: %s", obj, name)
-        modname = pickle.whichmodule(obj, name)
+        modname = whichmodule(obj, name)
         themodule = sys.modules[modname]
 
         if modname == '__main__':
@@ -338,7 +339,7 @@ class CloudPickler(pickle.Pickler):
 
         modname = getattr(obj, "__module__", None)
         if modname is None:
-            modname = pickle.whichmodule(obj, name)
+            modname = whichmodule(obj, name)
 
         try:
             __import__(modname)
@@ -833,3 +834,29 @@ def xrange_params(xrangeobj):
     if xrange_len == 1:  # one element
         return start, 1, 1
     return (start, xrangeobj[1] - xrangeobj[0], xrange_len)
+
+@memoize
+def whichmodule(func, funcname):
+    """Figure out the module in which a function occurs.
+
+    Search sys.modules for the module.
+    Cache in classmap.
+    Return a module name.
+    If the function cannot be found, return "__main__".
+    """
+    # Python functions should always get an __module__ from their globals.
+    mod = getattr(func, "__module__", None)
+    if mod is not None:
+        return mod
+
+    for name, module in sys.modules.items():
+        if module is None:
+            continue # skip dummy package entries
+        try:
+            if name != '__main__' and getattr(module, funcname, None) is func:
+                break
+        except ImportError:
+            pass
+    else:
+        name = '__main__'
+    return name
