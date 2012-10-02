@@ -286,6 +286,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._terminal_button = QToolButton(None)
         self._terminal_button.setToolTip("Toggle command line")
         self._ui.layerWidget.button_row.addWidget(self._terminal_button)
+        self._terminal_button.setArrowType(Qt.DownArrow)
 
         try:
             from .widgets.terminal import glue_terminal
@@ -313,10 +314,13 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         """ Reassign the terminal toggle button to show dialog on error"""
         title = "Terminal unavailable"
         msg = ("Glue encountered an error trying to start the Terminal"
-               "\nException:\n%s\n\nTerminal is unavailable" % exception)
+               "\nReason:\n%s" % exception)
 
         def show_msg():
-            QMessageBox.critical(self, title, msg)
+            mb = QMessageBox(QMessageBox.Critical,
+                             title, msg)
+            mb.setDetailedText(self._terminal_exception)
+            mb.exec_()
 
         self._terminal_button.clicked.connect(show_msg)
 
