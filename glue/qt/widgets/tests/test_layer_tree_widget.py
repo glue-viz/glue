@@ -64,9 +64,6 @@ class TestLayerTree(object):
         self.widget.layerTree.setCurrentItem(item)
         assert self.widget.current_layer() is layer
 
-    def test_current_layer_null_on_creation(self):
-        assert self.widget.current_layer() is None
-
     def test_add(self):
         """ Test that a layer exists in widget once added """
         data = core.Data()
@@ -88,11 +85,6 @@ class TestLayerTree(object):
         assert self.layer_present(subset)
         self.remove_layer(subset)
         assert not self.layer_present(subset)
-
-    def test_remove_layer_ignored_if_edit_subset(self):
-        layer = self.add_layer()
-        self.remove_layer(layer.edit_subset)
-        assert self.layer_present(layer.edit_subset)
 
     def test_empty_removal_does_nothing(self):
         """ Make sure widgets are only removed when selected """
@@ -143,18 +135,21 @@ class TestLayerTree(object):
         item = self.widget[layer]
         self.widget.layerTree.setCurrentItem(item)
         self.new_action.trigger()
-        assert len(layer.subsets) == 2
+        assert len(layer.subsets) == 1
 
     def test_duplicate_subset_action(self):
         """ duplicate action creates duplicate subset """
         layer = self.add_layer()
+        layer.new_subset()
         item = self.widget[layer.subsets[0]]
         self.widget.layerTree.setCurrentItem(item)
+        ct = len(layer.subsets)
         self.duplicate_action.trigger()
-        assert len(layer.subsets) == 2
+        assert len(layer.subsets) == ct + 1
 
     def test_copy_paste_subset_action(self):
         layer = self.add_layer()
+        layer.new_subset()
         item = self.widget[layer.subsets[0]]
         self.widget.layerTree.setCurrentItem(item)
         self.copy_action.trigger()
@@ -167,8 +162,9 @@ class TestLayerTree(object):
 
     def setup_two_subset_selection(self):
         layer = self.add_layer()
+        s1 = layer.new_subset()
         s2 = layer.new_subset()
-        item1 = self.widget[layer.edit_subset]
+        item1 = self.widget[s1]
         item2 = self.widget[s2]
         self.widget.layerTree.setCurrentItem(item1, 0,
                                              QItemSelectionModel.Toggle)
@@ -197,7 +193,7 @@ class TestLayerTree(object):
 
     def test_invert(self):
         layer = self.add_layer()
-        sub = layer.edit_subset
+        sub = layer.new_subset()
         item = self.widget[sub]
         self.widget.layerTree.setCurrentItem(item)
         self.invert_action.trigger()
@@ -206,7 +202,7 @@ class TestLayerTree(object):
     def test_actions_enabled_single_subset_selection(self):
         Clipboard().contents = None
         layer = self.add_layer()
-        item = self.widget[layer.edit_subset]
+        item = self.widget[layer.new_subset()]
         self.widget.layerTree.setCurrentItem(item)
 
         assert not self.or_action.isEnabled()
@@ -306,10 +302,38 @@ class TestLayerTree(object):
 
     def test_clear_subset(self):
         layer = self.add_layer()
-        sub = layer.edit_subset
+        sub = layer.new_subset()
         item = self.widget[sub]
         self.widget.layerTree.setCurrentItem(item)
         dummy_state = MagicMock()
         sub.subset_state = dummy_state
         self.clear_action.trigger()
         assert not sub.subset_state == dummy_state
+
+    def test_single_selection_updates_editable(self):
+        self.widget.bind_selection_to_edit_subset()
+        layer = self.add_layer()
+        subset = layer.new_subset()
+        subset2 = layer.new_subset()
+        assert layer.edit_subset != [subset]
+        self.select_layers(subset)
+        assert layer.edit_subset == [subset]
+
+    def test_multi_selection_updates_editable(self):
+        """Selection disables edit_subset for all other data"""
+        self.widget.bind_selection_to_edit_subset()
+        layer = self.add_layer()
+        subset = layer.new_subset()
+        layer2 = self.add_layer()
+        subset2 = layer2.new_subset()
+        subset3 = layer2.new_subset()
+        self.select_layers(subset, subset2)
+        assert subset in layer.edit_subset
+        assert subset2 in layer2.edit_subset
+        assert subset3 not in layer2.edit_subset
+
+    def test_selection_updates_on_add(self):
+        layer = self.add_layer()
+        assert self.widget.selected_layers() == [layer]
+        sub = layer.new_subset()
+        assert self.widget.selected_layers() == [sub]

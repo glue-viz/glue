@@ -277,9 +277,8 @@ class HistogramClient(Client):
                 continue
             state = RangeSubsetState(lo, hi)
             state.att = self.component
-            subset = layer.edit_subset
             mode = EditSubsetMode()
-            mode.combine(subset, state)
+            mode.combine(layer, state)
 
     def register_to_hub(self, hub):
         dfilter = lambda x: x.sender.data in self._managers

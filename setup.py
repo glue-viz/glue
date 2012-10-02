@@ -31,7 +31,7 @@ cmdclass['test'] = PyTest
 class BuildQt(Command):
 
     user_options = [
-    ('pyrcc4=', 'p', "Custom pyrcc4 command")
+        ('pyrcc4=', 'p', "Custom pyrcc4 command")
     ]
 
     def initialize_options(self):
@@ -91,10 +91,10 @@ cmdclass['build_py'] = build
 setup(name='Glue',
       version='0.1.0',
       packages=['glue', 'glue.qt', 'glue.core', 'glue.qt.widgets',
-               'glue.qt.ui', 'glue.clients', 'glue.tests', 'glue.core.tests',
-               'glue.clients.tests', 'glue.qt.tests',
-               'glue.qt.widgets.tests'],
+                'glue.qt.ui', 'glue.clients', 'glue.tests', 'glue.core.tests',
+                'glue.clients.tests', 'glue.qt.tests',
+                'glue.qt.widgets.tests'],
       cmdclass=cmdclass,
       package_data={'glue': ['examples/*', 'logo.png']},
       scripts=scripts
-  )
+      )

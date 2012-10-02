@@ -408,7 +408,7 @@ class TestSubsetViews(object):
         d = Data()
         c = Component(np.array([1, 2, 3, 4]))
         self.cid = d.add_component(c, 'test')
-        self.s = d.edit_subset
+        self.s = d.new_subset()
         self.c = c
         self.s.subset_state = DummySubsetState()
 
@@ -501,6 +501,7 @@ facs = [roifac, rangefac, orfac, andfac, xorfac, invertfac,
 def test_mask_of_view_is_view_of_mask(statefac, view):
     print statefac, view
     d = Data()
+    d.edit_subset = d.new_subset()
     c = Component(np.array([[1, 2], [3, 4]]))
     cid = d.add_component(c, 'test')
     s = d.edit_subset

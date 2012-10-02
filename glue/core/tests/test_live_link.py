@@ -35,8 +35,8 @@ class TestLiveLinkIntegrated(object):
         dc = DataCollection()
         dc.append(d1)
         dc.append(d2)
-        self.s1 = d1.edit_subset
-        self.s2 = d2.edit_subset
+        self.s1 = d1.new_subset()
+        self.s2 = d2.new_subset()
         self.s1.label = 'First subset'
         self.s2.label = 'Second subset'
         link = LiveLink([self.s1, self.s2])

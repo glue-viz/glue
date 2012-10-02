@@ -435,7 +435,7 @@ class ImageClient(VizClient):
         subset_state.yatt = y
         subset_state.roi = PolygonalROI(xroi, yroi)
         mode = EditSubsetMode()
-        mode.combine(data.edit_subset, subset_state)
+        mode.combine(data, subset_state)
 
     def _horizontal_axis_index(self):
         """Which index (in numpy convention - zyx) does the horizontal

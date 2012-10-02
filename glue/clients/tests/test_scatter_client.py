@@ -33,12 +33,14 @@ class TestScatterClient(object):
     def add_data(self, data=None):
         if data is None:
             data = self.data[0]
+        data.edit_subset = data.new_subset()
         self.collect.append(data)
         self.client.add_data(data)
         return data
 
     def add_data_and_attributes(self):
         data = self.add_data()
+        data.edit_subset = data.new_subset()
         self.client.set_xdata(self.ids[0])
         self.client.set_ydata(self.ids[1])
         return data
@@ -118,11 +120,11 @@ class TestScatterClient(object):
     def test_double_add(self):
         n0 = len(self.client.ax.lines)
         layer = self.add_data()
-        #data and edit_subset present
-        assert len(self.client.ax.lines) == 2 + n0
+        #data present
+        assert len(self.client.ax.lines) == n0 + 1 + len(layer.subsets)
         layer = self.add_data()
-        #data and edit_subset still present
-        assert len(self.client.ax.lines) == 2 + n0
+        #data still present
+        assert len(self.client.ax.lines) == n0 + 1 + len(layer.subsets)
 
     def test_data_updates_propagate(self):
         layer = self.add_data_and_attributes()

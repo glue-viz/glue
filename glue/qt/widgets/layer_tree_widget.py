@@ -143,12 +143,7 @@ class DeleteAction(LayerAction):
 
     def _can_trigger(self):
         selection = self.selected_layers()
-        if len(selection) == 0:
-            return False
-        for s in selection:
-            if s is s.data.edit_subset:
-                return False
-        return True
+        return len(selection) > 0
 
     def _do_action(self):
         assert self._can_trigger()
@@ -414,7 +409,6 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
     def __init__(self, parent=None):
         Ui_LayerTree.__init__(self)
         QWidget.__init__(self, parent)
-        core.hub.HubListener.__init__(self)
 
         self._signals = LayerCommunicator()
         self._is_checkable = True
@@ -482,6 +476,16 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
             return rbut.setEnabled(self._actions['delete'].isEnabled())
         self.layerTree.itemSelectionChanged.connect(update_enabled)
         self.layerTree.itemChanged.connect(self._on_item_change)
+
+    def bind_selection_to_edit_subset(self):
+        self.layerTree.itemSelectionChanged.connect(
+            self._update_editable_subset)
+
+    def _update_editable_subset(self):
+        """Update edit subsets to match current selection"""
+        layers = self.selected_layers()
+        for data in self.data_collection:
+            data.edit_subset = [s for s in data.subsets if s in layers]
 
     def _create_component(self):
         CustomComponentWidget.create_component(self.data_collection)

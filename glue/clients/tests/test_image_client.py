@@ -37,6 +37,8 @@ class TestImageClient(object):
     def setup_method(self, method):
         self.im = example_data.test_image()
         self.cube = example_data.test_cube()
+        self.im.edit_subset = self.im.new_subset()
+        self.cube.edit_subset = self.cube.new_subset()
         self.collect = core.data_collection.DataCollection()
 
     def create_client_with_image(self):

@@ -37,6 +37,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         lwidget = self._ui.layerWidget
         act = PlotAction(lwidget, self)
         lwidget.layerTree.addAction(act)
+        lwidget.bind_selection_to_edit_subset()
 
         self._data = data_collection or core.data_collection.DataCollection()
         self._hub = hub or core.hub.Hub(self._data)

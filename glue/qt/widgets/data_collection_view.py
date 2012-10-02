@@ -2,6 +2,7 @@ from PyQt4.QtGui import (QTreeWidgetItem,
                          QPixmap, QTreeWidgetItemIterator, QIcon
                          )
 from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QItemSelectionModel
 
 from .. import qtutil
 from ... import core
@@ -135,6 +136,7 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         for subset in data.subsets:
             self._add_subset(subset, check_sync=False)
 
+        self.setCurrentItem(branch)
         self._sync_layer(data)
         if check_sync:
             self._assert_view_synced()
@@ -166,6 +168,7 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
 
         self._sync_layer(subset)
         if check_sync:
+            self.setCurrentItem(branch)
             self._assert_view_synced()
 
     def _sync_layer(self, layer):

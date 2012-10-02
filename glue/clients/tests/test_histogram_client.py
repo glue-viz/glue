@@ -52,8 +52,9 @@ class TestHistogramClient(object):
         assert self.client._managers[self.data] is mgr
 
     def test_add_data_auto_adds_subsets(self):
+        s = self.data.new_subset()
         self.client.add_layer(self.data)
-        assert self.client.layer_present(self.data.edit_subset)
+        assert self.client.layer_present(s)
 
     def test_data_removal(self):
         self.client.add_layer(self.data)
@@ -70,6 +71,7 @@ class TestHistogramClient(object):
     def test_data_removal_removes_subsets(self):
         self.client.add_layer(self.data)
         self.client.remove_layer(self.data)
+        s = self.data.new_subset()
         assert len(self.data.subsets) > 0
 
         for subset in self.data.subsets:
@@ -130,7 +132,8 @@ class TestHistogramClient(object):
     def test_draw_histogram_subset_hidden(self):
         self.client.add_layer(self.data)
         self.client.set_data(self.data)
-        self.client.set_layer_visible(self.data.edit_subset, False)
+        s = self.data.new_subset()
+        self.client.set_layer_visible(s, False)
         self.client.set_component(self.data.find_component_id('uniform'))
 
     def test_draw_histogram_two_layers(self):

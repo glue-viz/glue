@@ -1,5 +1,5 @@
+from PyQt4.QtGui import QMainWindow, QMessageBox
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QMainWindow
 
 from ...core.hub import HubListener
 from ...core.data import Data
@@ -57,6 +57,17 @@ class DataViewer(QMainWindow, HubListener):
 
     def closeEvent(self, event):
         """ Call unregister on window close """
+        # ask for confirmation
+        #buttons = QMessageBox.Ok | QMessageBox.Cancel
+        #dialog = QMessageBox.warning(self, "Confirm Close",
+        #                             "Do you want to close this window?",
+        #                             buttons=buttons,
+        #                             defaultButton=QMessageBox.Cancel)
+
+        #if dialog != QMessageBox.Ok:
+        #    event.ignore()
+        #    return
+
         if self._hub is not None:
             self.unregister(self._hub)
         super(DataViewer, self).closeEvent(event)

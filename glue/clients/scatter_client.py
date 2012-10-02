@@ -296,7 +296,7 @@ class ScatterClient(Client):
             subset_state.roi = PolygonalROI(x, y)
 
             mode = EditSubsetMode()
-            mode.combine(layer.edit_subset, subset_state)
+            mode.combine(layer, subset_state)
 
     def set_xdata(self, attribute, snap=True):
         """

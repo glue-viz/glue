@@ -15,7 +15,7 @@ class EditSubsetMode(object):
     def __init__(self):
         self.mode = ReplaceMode
 
-    def combine(self, edit_subset, new_state):
+    def combine(self, data, new_state):
         """ Dispatches to the combine method of mode attribute.
 
         The behavior is dependent on the mode it dispatches to.
@@ -25,7 +25,15 @@ class EditSubsetMode(object):
         :param edit_subset: The current edit_subset
         :param new_state: The new SubsetState
         """
-        self.mode(edit_subset, new_state)
+        if len(data.subsets) == 0:
+            data.edit_subset = data.new_subset()
+        if data.edit_subset is None:
+            return
+        subs = data.edit_subset
+        if not isinstance(subs, list):
+            subs = [subs]
+        for s in subs:
+            self.mode(s, new_state)
 
 
 def ReplaceMode(edit_subset, new_state):
@@ -59,12 +67,3 @@ def AndNotMode(edit_subset, new_state):
     new_state.parent = edit_subset
     state = edit_subset.subset_state & (~new_state)
     edit_subset.subset_state = state
-
-
-def SpawnMode(edit_subset, new_state):
-    """new_state is set to edit_subset.subset_state, and current
-    state is added as new subset
-    """
-    sub = edit_subset.data.new_subset()
-    sub.subset_state = edit_subset.subset_state
-    edit_subset.subset_state = new_state

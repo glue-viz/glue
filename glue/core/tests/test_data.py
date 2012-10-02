@@ -101,8 +101,8 @@ class TestData(object):
         sub = self.data.new_subset()
         assert sub in self.data.subsets
 
-    def test_data_created_with_edit_subset(self):
-        assert len(self.data.subsets) == 1
+    def test_data_not_created_with_subsets(self):
+        assert len(self.data.subsets) == 0
 
     def test_register(self):
         hub = MagicMock(spec_set=Hub)

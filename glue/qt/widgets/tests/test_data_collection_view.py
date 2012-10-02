@@ -52,7 +52,8 @@ class TestDataCollectionView(object):
         widget = DataCollectionView()
         widget.setup(self.collect, self.hub)
         assert self.data in widget
-        assert self.data.edit_subset in widget
+        for s in self.data.subsets:
+            assert s in widget
 
     def test_data_delete_updates_view(self):
         self.collect.append(self.data)
@@ -68,8 +69,9 @@ class TestDataCollectionView(object):
 
     def test_data_delete_removes_subsets(self):
         self.collect.append(self.data)
+        s = self.data.new_subset()
         self.collect.remove(self.data)
-        assert not self.has_item(self.data.edit_subset)
+        assert not self.has_item(s)
 
     def test_update_data_label(self):
         self.collect.append(self.data)
@@ -79,7 +81,7 @@ class TestDataCollectionView(object):
 
     def test_update_subset_label(self):
         self.collect.append(self.data)
-        subset = self.data.edit_subset
+        subset = self.data.new_subset()
         subset.label = "testing"
         item = self.get_item(subset)
         assert item.text(0) == "testing"

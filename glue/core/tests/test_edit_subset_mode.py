@@ -2,7 +2,7 @@
 import numpy as np
 
 from ..edit_subset_mode import (EditSubsetMode, ReplaceMode, OrMode, AndMode,
-                                XorMode, AndNotMode, SpawnMode)
+                                XorMode, AndNotMode)
 from ..subset import ElementSubsetState
 from ..data import Component, Data
 
@@ -19,6 +19,8 @@ class TestEditSubsetMode(object):
         state1 = ElementSubsetState(ind1)
         state2 = ElementSubsetState(ind2)
 
+        data.edit_subset = data.new_subset()
+
         data.edit_subset.subset_state = state1
         state2.parent = state1.parent
         self.data = data
@@ -29,7 +31,7 @@ class TestEditSubsetMode(object):
     def check_mode(self, mode, expected):
         edit_mode = EditSubsetMode()
         edit_mode.mode = mode
-        edit_mode.combine(self.data.edit_subset, self.state2)
+        edit_mode.combine(self.data, self.state2)
         np.testing.assert_array_equal(self.data.edit_subset.to_mask(),
                                       expected)
 
@@ -48,8 +50,38 @@ class TestEditSubsetMode(object):
     def test_and_not(self):
         self.check_mode(AndNotMode, [True, False, False])
 
-    def test_spawn(self):
-        """ spawn subset replaces edit subset, and sends current edit to new"""
-        n0 = len(self.data.subsets)
-        self.check_mode(SpawnMode, [False, True, True])
-        assert len(self.data.subsets) == n0 + 1
+    def test_combine_adds_subset_if_empty(self):
+        """If data has no subsets, one is created"""
+        mode = EditSubsetMode()
+        mode.mode = ReplaceMode
+        self.data.edit_subset = None
+        self.data.subsets = []
+        mode.combine(self.data, self.state2)
+        assert len(self.data.subsets) == 1
+        assert self.data.edit_subset is not None
+
+    def test_combine_ignores_nonselection(self):
+        """If data has subsets but no edit subset, ignore"""
+        mode = EditSubsetMode()
+        mode.mode = ReplaceMode
+        sub = self.data.new_subset()
+        self.data.subsets = [sub]
+        state = sub.subset_state
+        self.data.edit_subset = None
+
+        mode.combine(self.data, self.state2)
+        assert sub.subset_state is state
+
+    def test_combine_maps_over_multiselection(self):
+        """If data has many edit subsets, act on all of them"""
+        mode = EditSubsetMode()
+        mode.mode = ReplaceMode
+        for i in range(5):
+            self.data.new_subset()
+
+        self.data.edit_subset = list(self.data.subsets)
+
+        mode.combine(self.data, self.state2)
+        expected = np.array([False, True, True])
+        for s in self.data.subsets:
+            np.testing.assert_array_equal(s.to_mask(), expected)

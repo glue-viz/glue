@@ -246,8 +246,7 @@ class Data(object):
         self._label = None
         self.label = label  # trigger disambiguation
 
-        # The default-editable subset
-        self.edit_subset = self.new_subset(label="Editable Subset")
+        self.edit_subset = None
 
     @property
     def ndim(self):

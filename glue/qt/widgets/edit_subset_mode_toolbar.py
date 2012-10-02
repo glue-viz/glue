@@ -2,7 +2,7 @@ from PyQt4 import QtCore, QtGui
 from functools import partial
 
 from ...core.edit_subset_mode import (EditSubsetMode, OrMode, AndNotMode,
-                                      AndMode, XorMode, SpawnMode, ReplaceMode)
+                                      AndMode, XorMode, ReplaceMode)
 from ..actions import act
 
 
@@ -42,12 +42,10 @@ class EditSubsetModeToolBar(QtGui.QToolBar):
                         'glue_and.png', AndMode)
         self._make_mode("Xor Mode", "Set selection as exclusive intersection",
                         'glue_xor.png', XorMode)
-        self._make_mode("Spawn Mode", "Spawn new selection",
-                        'glue_spawn.png', SpawnMode)
 
     def set_mode(self, mode):
         """Temporarily set the edit mode to mode
-        :param mode: Name of the mode (Or, Not, And, Xor, Spawn, Replace)
+        :param mode: Name of the mode (Or, Not, And, Xor, Replace)
         :type mode: str
         """
         try:
