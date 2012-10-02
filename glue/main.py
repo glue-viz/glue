@@ -129,7 +129,7 @@ def start_glue(gluefile=None, config=None, datafiles=None):
     :param datafiles: An optional list of data files to load
     :type datafiles: list of str
     """
-    splash = get_splash()
+    #splash = get_splash()
 
     import glue
     from glue.qt.glue_application import GlueApplication
@@ -154,7 +154,7 @@ def start_glue(gluefile=None, config=None, datafiles=None):
             hub = glue.core.Hub()
 
     ga = GlueApplication(data_collection=data, hub=hub)
-    splash.finish(ga)
+    #splash.finish(ga)
     sys.exit(ga.exec_())
 
 
