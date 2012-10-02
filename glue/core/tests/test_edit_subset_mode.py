@@ -32,7 +32,7 @@ class TestEditSubsetMode(object):
     def check_mode(self, mode, expected):
         edit_mode = EditSubsetMode()
         edit_mode.mode = mode
-        edit_mode.combine(self.data, self.state2)
+        edit_mode.update(self.data, self.state2)
         np.testing.assert_array_equal(self.data.edit_subset.to_mask(),
                                       expected)
 
@@ -57,7 +57,7 @@ class TestEditSubsetMode(object):
         mode.mode = ReplaceMode
         self.data.edit_subset = None
         self.data.subsets = []
-        mode.combine(self.data, self.state2, focus_data=self.data)
+        mode.update(self.data, self.state2, focus_data=self.data)
         assert len(self.data.subsets) == 1
         assert self.data.edit_subset is not None
 
@@ -67,7 +67,7 @@ class TestEditSubsetMode(object):
         mode.mode = ReplaceMode
         self.data.edit_subset = None
         self.data.subsets = []
-        mode.combine(self.data, self.state2)
+        mode.update(self.data, self.state2)
         assert len(self.data.subsets) == 0
         assert self.data.edit_subset is None
 
@@ -79,7 +79,7 @@ class TestEditSubsetMode(object):
         self.data.edit_subset = self.data.new_subset()
         ct = len(self.data.subsets)
         assert ct > 0
-        mode.combine(self.data, self.state2, focus_data=self.data)
+        mode.update(self.data, self.state2, focus_data=self.data)
         assert len(self.data.subsets) == ct
 
     def test_combine_ignores_nonselection(self):
@@ -91,7 +91,7 @@ class TestEditSubsetMode(object):
         state = sub.subset_state
         self.data.edit_subset = None
 
-        mode.combine(self.data, self.state2)
+        mode.update(self.data, self.state2)
         assert sub.subset_state is state
 
     def test_combine_maps_over_multiselection(self):
@@ -103,7 +103,7 @@ class TestEditSubsetMode(object):
 
         self.data.edit_subset = list(self.data.subsets)
 
-        mode.combine(self.data, self.state2)
+        mode.update(self.data, self.state2)
         expected = np.array([False, True, True])
         for s in self.data.subsets:
             np.testing.assert_array_equal(s.to_mask(), expected)
@@ -119,7 +119,7 @@ class TestEditSubsetMode(object):
 
         dc = DataCollection([self.data])
 
-        mode.combine(dc, self.state2)
+        mode.update(dc, self.state2)
         expected = np.array([False, True, True])
         for s in self.data.subsets:
             np.testing.assert_array_equal(s.to_mask(), expected)
@@ -128,5 +128,5 @@ class TestEditSubsetMode(object):
         mode = EditSubsetMode()
         mode.mode = ReplaceMode
         self.data.edit_subset = self.data.new_subset()
-        mode.combine(self.data, self.state2)
+        mode.update(self.data, self.state2)
         assert self.data.edit_subset.subset_state is not self.state2

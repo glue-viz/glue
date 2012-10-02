@@ -275,7 +275,7 @@ class HistogramClient(Client):
         state = RangeSubsetState(lo, hi)
         state.att = self.component
         mode = EditSubsetMode()
-        mode.combine(self.data, state)
+        mode.update(self.data, state)
 
     def register_to_hub(self, hub):
         dfilter = lambda x: x.sender.data in self._managers

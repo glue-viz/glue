@@ -40,7 +40,7 @@ class EditSubsetMode(object):
         for s in subs:
             self.mode(s, new_state)
 
-    def combine(self, d, new_state, focus_data=None):
+    def update(self, d, new_state, focus_data=None):
         """ Apply a new subset state to editable subsets within a
         :class:`~glue.core.data.Data` or
         :class:`~glue.core.data_collection.DataCollection` instance

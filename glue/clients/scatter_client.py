@@ -296,7 +296,7 @@ class ScatterClient(Client):
         mode = EditSubsetMode()
         for d in self._master_data:
             focus = d if self.is_visible(d) else None
-            mode.combine(d, subset_state, focus_data=focus)
+            mode.update(d, subset_state, focus_data=focus)
 
     def set_xdata(self, attribute, snap=True):
         """
