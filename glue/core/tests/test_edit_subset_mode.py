@@ -1,9 +1,12 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+import itertools
+
 import numpy as np
+import pytest
 
 from ..edit_subset_mode import (EditSubsetMode, ReplaceMode, OrMode, AndMode,
                                 XorMode, AndNotMode)
-from ..subset import ElementSubsetState
+from ..subset import ElementSubsetState, SubsetState
 from ..data import Component, Data
 from ..data_collection import DataCollection
 
@@ -51,49 +54,6 @@ class TestEditSubsetMode(object):
     def test_and_not(self):
         self.check_mode(AndNotMode, [True, False, False])
 
-    def test_combine_adds_subset_if_focused_and_empty(self):
-        """If focus data has no subsets, one is created"""
-        mode = EditSubsetMode()
-        mode.mode = ReplaceMode
-        self.data.edit_subset = None
-        self.data.subsets = []
-        mode.update(self.data, self.state2, focus_data=self.data)
-        assert len(self.data.subsets) == 1
-        assert self.data.edit_subset is not None
-
-    def test_combine_ignores_if_not_focused_and_empty(self):
-        """If focus data has no subsets, one is created"""
-        mode = EditSubsetMode()
-        mode.mode = ReplaceMode
-        self.data.edit_subset = None
-        self.data.subsets = []
-        mode.update(self.data, self.state2)
-        assert len(self.data.subsets) == 0
-        assert self.data.edit_subset is None
-
-    def test_combine_doesnt_add_if_focused_and_not_empty(self):
-        """If data set is in focus but has subsets, do not add a new one"""
-        mode = EditSubsetMode()
-        mode.mode = ReplaceMode
-        self.data.subsets = []
-        self.data.edit_subset = self.data.new_subset()
-        ct = len(self.data.subsets)
-        assert ct > 0
-        mode.update(self.data, self.state2, focus_data=self.data)
-        assert len(self.data.subsets) == ct
-
-    def test_combine_ignores_nonselection(self):
-        """If data has subsets but no edit subset, ignore"""
-        mode = EditSubsetMode()
-        mode.mode = ReplaceMode
-        sub = self.data.new_subset()
-        self.data.subsets = [sub]
-        state = sub.subset_state
-        self.data.edit_subset = None
-
-        mode.update(self.data, self.state2)
-        assert sub.subset_state is state
-
     def test_combine_maps_over_multiselection(self):
         """If data has many edit subsets, act on all of them"""
         mode = EditSubsetMode()
@@ -130,3 +90,78 @@ class TestEditSubsetMode(object):
         self.data.edit_subset = self.data.new_subset()
         mode.update(self.data, self.state2)
         assert self.data.edit_subset.subset_state is not self.state2
+
+
+#Tests for multiselection logic
+combs = list(itertools.product([True, False], [True, False],
+                               [True, False], [True, False]))
+
+
+@pytest.mark.parametrize(("emp", "loc", "glob", "foc"), combs)
+def test_multiselect(emp, loc, glob, foc):
+    """Test logic of when subsets should be updated/added, given
+    the state of all editable subsets in a data collection.
+
+    We consider four variables. The first data set in the collection
+    is tested, and considired the 'local' data
+    :param emp: Is the local set empty (i.e. no subsets)?
+    :param loc: Are any of the local subsets editable?
+    :param glob: Are any non-local subsets editable?
+    :param foc: Does the local dataset have focus?
+    """
+    if emp and loc:  # can't be empty with selections
+        return
+    dc, state = setup_multi(emp, loc, glob, foc)
+    did_add, did_apply = apply(dc, state, foc)
+    assert did_add == should_add(emp, loc, glob, foc)
+    assert did_apply == should_apply(emp, loc, glob, foc)
+
+
+def setup_multi(empty, local_select, global_select, focus):
+    d1 = Data()
+    d2 = Data()
+    dc = DataCollection([d1, d2])
+
+    d2.new_subset()
+    if not empty:
+        d1.new_subset()
+    if (not empty) and local_select:
+        d1.edit_subset = d1.subsets[0]
+
+    if global_select:
+        d2.edit_subset = d2.subsets[0]
+
+    state = SubsetState()
+    return dc, state
+
+
+def should_add(emp, loc, glob, foc):
+    return foc and not (loc or glob)
+
+
+def should_apply(emp, loc, glob, foc):
+    return loc and not emp
+
+
+def apply(dc, state, focus=False):
+    """Update data collection, return did_add, did_apply for
+    first data object"""
+
+    ct = len(dc[0].subsets)
+
+    sub = dc[0].edit_subset
+    if isinstance(sub, list):
+        sub = None if len(sub) == 0 else sub[0]
+
+    old_state = None
+    if sub is not None:
+        old_state = sub.subset_state
+
+    mode = EditSubsetMode()
+    mode.mode = ReplaceMode
+    mode.update(dc, state, dc[0] if focus else None)
+
+    print len(dc[0].subsets)
+    did_add = len(dc[0].subsets) > ct
+    did_apply = sub is not None and sub.subset_state is not old_state
+    return did_add, did_apply

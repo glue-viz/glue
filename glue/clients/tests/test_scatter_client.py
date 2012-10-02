@@ -274,12 +274,14 @@ class TestScatterClient(object):
         d1 = self.add_data_and_attributes()
         d2 = self.add_data()
         d1.edit_subset = None
+        d2.edit_subset = d2.new_subset()
+        ct = len(d1.subsets)
         roi = core.roi.RectangularROI()
         roi.update_limits(.5, .5, 1.5, 1.5)
         x = np.array([1])
         y = np.array([1])
         self.client._apply_roi(roi)
-        assert d1.edit_subset is None
+        assert len(d1.subsets) == ct
 
     def test_subsets_drawn_over_data(self):
         data = self.add_data_and_attributes()

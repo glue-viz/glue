@@ -30,9 +30,10 @@ class EditSubsetMode(object):
                              a new one will be added and assigned
                              using new-state
         """
-        if len(data.subsets) == 0 and add_if_empty:
+        empty = data.edit_subset is None or data.edit_subset == []
+        if add_if_empty and empty:
             data.edit_subset = data.new_subset()
-        if data.edit_subset is None:
+        if empty and not add_if_empty:
             return
         subs = data.edit_subset
         if not isinstance(subs, list):
