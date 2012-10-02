@@ -1,6 +1,7 @@
 import numpy as np
 from matplotlib.nxutils import points_inside_poly
 from matplotlib.patches import Polygon, Rectangle, Ellipse
+from matplotlib.transforms import IdentityTransform
 
 np.seterr(all='ignore')
 
@@ -23,19 +24,19 @@ def aspect_ratio(ax):
 
 
 def data_to_norm(ax, x, y):
-    xy = np.column_stack((np.asarray(x).flat, np.asarray(y).flat))
+    xy = np.column_stack((np.asarray(x).ravel(), np.asarray(y).ravel()))
     pixel = ax.transData.transform(xy)
     norm = ax.transAxes.inverted().transform(pixel)
     return norm
 
 
 def data_to_pixel(ax, x, y):
-    xy = np.column_stack((np.asarray(x).flat, np.asarray(y).flat))
+    xy = np.column_stack((np.asarray(x).ravel(), np.asarray(y).ravel()))
     return ax.transData.transform(xy)
 
 
 def pixel_to_data(ax, x, y):
-    xy = np.column_stack((np.asarray(x).flat, np.asarray(y).flat))
+    xy = np.column_stack((np.asarray(x).ravel(), np.asarray(y).ravel()))
     return ax.transData.inverted().transform(xy)
 
 
@@ -458,13 +459,13 @@ class MplCircularROI(AbstractMplRoi):
 
         AbstractMplRoi.__init__(self, ax)
         self._mid_selection = False
-        self.plot_opts = {'edgecolor': 'red', 'facecolor': 'none',
+        self.plot_opts = {'edgecolor': 'red', 'facecolor': 'red',
                           'alpha': 0.3}
 
         self._xi = None
         self._yi = None
 
-        self._patch = Ellipse((0., 0.), transform=None,
+        self._patch = Ellipse((0., 0.), transform=IdentityTransform(),
                               width=0., height=0.,)
         self._patch.set(**self.plot_opts)
         self._ax.add_patch(self._patch)
@@ -511,7 +512,7 @@ class MplCircularROI(AbstractMplRoi):
         xy = data_to_pixel(self._ax, [event.xdata], [event.ydata])
         dx = xy[0, 0] - self._xi
         dy = xy[0, 1] - self._yi
-        self._roi.set_radius(np.sqrt(dx * dx + dy * dy))
+        self._roi.set_radius(np.hypot(dx, dy))
         self._sync_patch()
 
     def roi(self):
@@ -524,8 +525,8 @@ class MplCircularROI(AbstractMplRoi):
         x = xy_center[0] + rad * np.cos(theta)
         y = xy_center[1] + rad * np.sin(theta)
         xy_data = pixel_to_data(self._ax, x, y)
-        vx = xy_data[:, 0].flatten().tolist()
-        vy = xy_data[:, 1].flatten().tolist()
+        vx = xy_data[:, 0].ravel().tolist()
+        vy = xy_data[:, 1].ravel().tolist()
         result = PolygonalROI(vx, vy)
         return result
 
