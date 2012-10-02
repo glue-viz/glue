@@ -11,6 +11,8 @@ __all__ = ['Roi', 'RectangularROI', 'CircularROI', 'PolygonalROI',
            'AbstractMplRoi', 'MplRectangularROI', 'MplCircularROI',
            'MplPolygonalROI']
 
+PATCH_COLOR = '#aaaaaa'
+
 
 def aspect_ratio(ax):
     """ Returns the pixel height / width of a box that spans 1
@@ -376,7 +378,7 @@ class MplRectangularROI(AbstractMplRoi):
         self._xi = None
         self._yi = None
 
-        self.plot_opts = {'edgecolor': 'red', 'facecolor': 'red',
+        self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
 
         self._patch = Rectangle((0., 0.), 1., 1.)
@@ -459,7 +461,7 @@ class MplCircularROI(AbstractMplRoi):
 
         AbstractMplRoi.__init__(self, ax)
         self._mid_selection = False
-        self.plot_opts = {'edgecolor': 'red', 'facecolor': 'red',
+        self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
 
         self._xi = None
@@ -554,7 +556,7 @@ class MplPolygonalROI(AbstractMplRoi):
         """
         AbstractMplRoi.__init__(self, ax)
         self._mid_selection = False
-        self.plot_opts = {'edgecolor': 'red', 'facecolor': 'red',
+        self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
         self._patch = Polygon(np.array(zip([0, 1], [0, 1])))
         self._patch.set(**self.plot_opts)

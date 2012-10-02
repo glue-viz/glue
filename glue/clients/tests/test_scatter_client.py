@@ -246,6 +246,41 @@ class TestScatterClient(object):
         self.client._apply_roi(roi)
         assert self.layer_data_correct(data.edit_subset, x, y)
 
+    def test_apply_roi_adds_on_empty(self):
+        data = self.add_data_and_attributes()
+        data.subsets = []
+        data.edit_subset = None
+        roi = core.roi.RectangularROI()
+        roi.update_limits(.5, .5, 1.5, 1.5)
+        x = np.array([1])
+        y = np.array([1])
+        self.client._apply_roi(roi)
+        assert data.edit_subset is not None
+
+    def test_apply_roi_applies_to_all_editable_subsets(self):
+        d1 = self.add_data_and_attributes()
+        d2 = self.add_data()
+        state1 = d1.edit_subset.subset_state
+        state2 = d2.edit_subset.subset_state
+        roi = core.roi.RectangularROI()
+        roi.update_limits(.5, .5, 1.5, 1.5)
+        x = np.array([1])
+        y = np.array([1])
+        self.client._apply_roi(roi)
+        assert d1.edit_subset.subset_state is not state1
+        assert d1.edit_subset.subset_state is not state2
+
+    def test_apply_roi_doesnt_add_if_any_selection(self):
+        d1 = self.add_data_and_attributes()
+        d2 = self.add_data()
+        d1.edit_subset = None
+        roi = core.roi.RectangularROI()
+        roi.update_limits(.5, .5, 1.5, 1.5)
+        x = np.array([1])
+        y = np.array([1])
+        self.client._apply_roi(roi)
+        assert d1.edit_subset is None
+
     def test_subsets_drawn_over_data(self):
         data = self.add_data_and_attributes()
         subset = data.new_subset()

@@ -51,15 +51,36 @@ class TestEditSubsetMode(object):
     def test_and_not(self):
         self.check_mode(AndNotMode, [True, False, False])
 
-    def test_combine_adds_subset_if_empty(self):
-        """If data has no subsets, one is created"""
+    def test_combine_adds_subset_if_focused_and_empty(self):
+        """If focus data has no subsets, one is created"""
+        mode = EditSubsetMode()
+        mode.mode = ReplaceMode
+        self.data.edit_subset = None
+        self.data.subsets = []
+        mode.combine(self.data, self.state2, focus_data=self.data)
+        assert len(self.data.subsets) == 1
+        assert self.data.edit_subset is not None
+
+    def test_combine_ignores_if_not_focused_and_empty(self):
+        """If focus data has no subsets, one is created"""
         mode = EditSubsetMode()
         mode.mode = ReplaceMode
         self.data.edit_subset = None
         self.data.subsets = []
         mode.combine(self.data, self.state2)
-        assert len(self.data.subsets) == 1
-        assert self.data.edit_subset is not None
+        assert len(self.data.subsets) == 0
+        assert self.data.edit_subset is None
+
+    def test_combine_doesnt_add_if_focused_and_not_empty(self):
+        """If data set is in focus but has subsets, do not add a new one"""
+        mode = EditSubsetMode()
+        mode.mode = ReplaceMode
+        self.data.subsets = []
+        self.data.edit_subset = self.data.new_subset()
+        ct = len(self.data.subsets)
+        assert ct > 0
+        mode.combine(self.data, self.state2, focus_data=self.data)
+        assert len(self.data.subsets) == ct
 
     def test_combine_ignores_nonselection(self):
         """If data has subsets but no edit subset, ignore"""

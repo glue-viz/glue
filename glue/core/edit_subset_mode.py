@@ -17,17 +17,20 @@ class EditSubsetMode(object):
     def __init__(self):
         self.mode = ReplaceMode
 
-    def _combine_data(self, data, new_state):
+    def _combine_data(self, data, new_state, add_if_empty=False):
         """ Dispatches to the combine method of mode attribute.
 
         The behavior is dependent on the mode it dispatches to.
         By default, the method uses ReplaceMode, which overwrites
-        the edit_subset's subset_state with new_state
+        the edit_subsets' subset_state with new_state
 
         :param edit_subset: The current edit_subset
         :param new_state: The new SubsetState
+        :param add_if_empty: If True and a data set has no subsets,
+                             a new one will be added and assigned
+                             using new-state
         """
-        if len(data.subsets) == 0:
+        if len(data.subsets) == 0 and add_if_empty:
             data.edit_subset = data.new_subset()
         if data.edit_subset is None:
             return
@@ -37,7 +40,7 @@ class EditSubsetMode(object):
         for s in subs:
             self.mode(s, new_state)
 
-    def combine(self, d, new_state):
+    def combine(self, d, new_state, focus_data=None):
         """ Apply a new subset state to editable subsets within a
         :class:`~glue.core.data.Data` or
         :class:`~glue.core.data_collection.DataCollection` instance
@@ -47,12 +50,20 @@ class EditSubsetMode(object):
 
         :param new_state: Subset state to combine with
         :type new_state: :class:`~glue.core.subset.SubsetState`
+
+        :param focus_data: The main data set in focus by the client,
+        if relevant. If a data set is in focus and has no subsets,
+        a new one will be created using new_state.
         """
         if isinstance(d, Data):
-            self._combine_data(d, new_state)
+            self._combine_data(d, new_state, add_if_empty=d is focus_data)
         elif isinstance(d, DataCollection):
+            no_editable = all(data.edit_subset is None or
+                              data.edit_subset == []
+                              for data in d)
             for data in d:
-                self._combine_data(data, new_state)
+                doadd = data is focus_data and no_editable
+                self._combine_data(data, new_state, add_if_empty=doadd)
         else:
             raise TypeError("input must be a Data or DataCollection: %s" %
                             type(d))

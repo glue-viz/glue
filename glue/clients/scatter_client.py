@@ -86,7 +86,7 @@ class ScatterClient(Client):
     """
     A client class that uses matplotlib to visualize tables as scatter plots.
     """
-    def __init__(self, data=None, figure=None, axes=None):
+    def __init__(self, data=None, figure=None, axes=None, master_data=None):
         """
         Create a new ScatterClient object
 
@@ -98,10 +98,14 @@ class ScatterClient(Client):
 
         :param axes:
            Which matplotlib axes instance to use. Will be created if necessary
+
+        :param master_data:
+           An optional superset of the data, if this client is to show a
+           subset of the data. XXX Refactor this ugliness
         """
         Client.__init__(self, data=data)
         figure, axes = init_mpl(figure, axes)
-
+        self._master_data = master_data or data
         self.managers = {}
 
         self._xatt = None
@@ -282,7 +286,7 @@ class ScatterClient(Client):
         self._redraw()
 
     def _apply_roi(self, roi):
-        # every active data layer is set
+        # every editable subset is updated
         # using specified ROI
         subset_state = RoiSubsetState()
         subset_state.xatt = self._xatt
@@ -290,7 +294,9 @@ class ScatterClient(Client):
         x, y = roi.to_polygon()
         subset_state.roi = PolygonalROI(x, y)
         mode = EditSubsetMode()
-        mode.combine(self._data, subset_state)
+        for d in self._master_data:
+            focus = d if self.is_visible(d) else None
+            mode.combine(d, subset_state, focus_data=focus)
 
     def set_xdata(self, attribute, snap=True):
         """

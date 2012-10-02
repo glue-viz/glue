@@ -28,7 +28,8 @@ class ScatterWidget(DataViewer):
         self._clean_collection = core.DataCollection()
         self._collection = data
         self.client = ScatterClient(self._clean_collection,
-                                    self.ui.mplWidget.canvas.fig)
+                                    self.ui.mplWidget.canvas.fig,
+                                    master_data=data)
         self._connect()
         self.unique_fields = set()
         self.make_toolbar()
