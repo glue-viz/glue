@@ -292,7 +292,6 @@ class ScatterClient(Client):
         mode = EditSubsetMode()
         mode.combine(self._data, subset_state)
 
-
     def set_xdata(self, attribute, snap=True):
         """
         Redefine which component gets plotted on the x axis

@@ -2,6 +2,7 @@ from functools import wraps
 import traceback
 from PyQt4.QtGui import QMessageBox
 
+
 def set_cursor(shape):
     """Set the Qt cursor for the duration of a function call, and unset
 

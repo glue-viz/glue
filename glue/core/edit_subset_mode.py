@@ -10,6 +10,7 @@ from .decorators import singleton
 from .data import Data
 from .data_collection import DataCollection
 
+
 @singleton
 class EditSubsetMode(object):
     """ Implements how new SubsetStates modify the edit_subset state """
