@@ -19,7 +19,7 @@ def extract_data_fits(filename, use_hdu='all'):
     # Now only keep HDUs that are not tables
     for hdu in hdulist:
         if not isinstance(hdu, fits.PrimaryHDU) and \
-            not isinstance(hdu, fits.ImageHDU):
+                not isinstance(hdu, fits.ImageHDU):
             hdulist.remove(hdu)
 
     # Check that dimensions of all HDU are the same

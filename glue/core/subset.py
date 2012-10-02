@@ -415,11 +415,11 @@ class InequalitySubsetState(SubsetState):
         if op not in valid_ops:
             raise TypeError("Invalid boolean operator: %s" % op)
         if not isinstance(left, ComponentID) and not \
-            operator.isNumberType(left):
+                operator.isNumberType(left):
             raise TypeError("Input must be ComponenID or NumberType: %s"
                             % type(left))
         if not isinstance(right, ComponentID) and not \
-            operator.isNumberType(right):
+                operator.isNumberType(right):
             raise TypeError("Input must be ComponenID or NumberType: %s"
                             % type(right))
         self._left = left

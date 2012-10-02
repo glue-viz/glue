@@ -438,7 +438,7 @@ class Data(object):
             return []
 
         if self.ndim != len(self._pixel_component_ids) or \
-            self.ndim != len(self._world_component_ids):
+                self.ndim != len(self._world_component_ids):
                 # haven't populated pixel, world coordinates yet
                 return []
 
@@ -573,7 +573,7 @@ class Data(object):
 
     def __setattr__(self, name, value):
         if name == "hub" and hasattr(self, 'hub') \
-            and self.hub is not value and self.hub is not None:
+                and self.hub is not value and self.hub is not None:
             raise AttributeError("Data has already been assigned "
                                  "to a different hub")
         object.__setattr__(self, name, value)

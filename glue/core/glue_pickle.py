@@ -98,7 +98,7 @@ class CloudPickler(pickle.Pickler):
 
     #itertools objects do not pickle!
     for v in itertools.__dict__.values():
-        if type(v) is type:
+        if isinstance(v, type):
             dispatch[v] = save_unsupported
 
     def save_dict(self, obj):
@@ -174,10 +174,10 @@ class CloudPickler(pickle.Pickler):
         # we'll pickle the actual function object rather than simply saving a
         # reference (as is done in default pickler), via save_function_tuple.
         if islambda(obj) or obj.func_code.co_filename == '<stdin>' \
-          or themodule == None:
+                or themodule is None:
             #Force server to import modules that have been imported in main
             modList = None
-            if themodule == None and not self.savedForceImports:
+            if themodule is None and not self.savedForceImports:
                 mainmod = sys.modules['__main__']
                 if useForcedImports and hasattr(mainmod,
                                                 '___pyc_forcedImports__'):
@@ -232,7 +232,7 @@ class CloudPickler(pickle.Pickler):
             write(pickle.POP_MARK)
 
         code, globals, defaults, closure, dict = \
-          CloudPickler.extract_func_data(func)
+            CloudPickler.extract_func_data(func)
 
         save(_fill_function)  # skeleton function updater
         write(pickle.MARK)    # beginning of tuple that _fill_function expects
@@ -290,7 +290,7 @@ class CloudPickler(pickle.Pickler):
         func_global_refs = CloudPickler.extract_code_globals(code)
         if code.co_consts:   # see if nested function have any global refs
             for const in code.co_consts:
-                if type(const) is types.CodeType and const.co_names:
+                if isinstance(const, types.CodeType) and const.co_names:
                     func_global_refs = func_global_refs.union(
                         CloudPickler.extract_code_globals(const))
         # process all variables referenced by global environment
@@ -376,13 +376,14 @@ class CloudPickler(pickle.Pickler):
                     raise
 
         except (ImportError, KeyError, AttributeError):
-            if typ == types.TypeType or typ == types.ClassType:
+            if isinstance(obj, types.TypeType) or \
+                    isinstance(obj, types.ClassType):
                 sendRef = False
             else:  # we can't deal with this
                 raise
         else:
-            if klass is not obj and (typ == types.TypeType or
-                                     typ == types.ClassType):
+            if klass is not obj and (isinstance(type, types.TypeType) or
+                                     isinstance(type, types.ClassType)):
                 sendRef = False
         if not sendRef:
             #note: Third party types might crash this - add better checks!
@@ -390,7 +391,7 @@ class CloudPickler(pickle.Pickler):
             d.pop('__dict__', None)
             d.pop('__weakref__', None)
             self.save_reduce(type(obj), (obj.__name__, obj.__bases__,
-                                   d), obj=obj)
+                                         d), obj=obj)
             return
 
         if self.proto >= 2:
@@ -467,7 +468,7 @@ class CloudPickler(pickle.Pickler):
     def save_inst(self, obj):
         #Hack to detect PIL Image instances without importing Imaging
         if hasattr(obj, 'im') and hasattr(obj, 'palette') and \
-          'Image' in obj.__module__:
+                'Image' in obj.__module__:
             self.save_image(obj)
         else:
             self.save_inst_logic(obj)
@@ -596,18 +597,18 @@ class CloudPickler(pickle.Pickler):
                     'timeseries using unexpected reconstruction '
                     'function %s' % str(func))
             state = (1,
-                             obj.shape,
-                             obj.dtype,
-                             obj.flags.fnc,
-                             obj._data.tostring(),
-                             ts.getmaskarray(obj).tostring(),
-                             obj._fill_value,
-                             obj._dates.shape,
-                             obj._dates.__array__().tostring(),
-                             obj._dates.dtype,  # added -- preserve type
-                             obj.freq,
-                             obj._optinfo,
-                             )
+                     obj.shape,
+                     obj.dtype,
+                     obj.flags.fnc,
+                     obj._data.tostring(),
+                     ts.getmaskarray(obj).tostring(),
+                     obj._fill_value,
+                     obj._dates.shape,
+                     obj._dates.__array__().tostring(),
+                     obj._dates.dtype,  # added -- preserve type
+                     obj.freq,
+                     obj._optinfo,
+                     )
             return self.save_reduce(_genTimeSeries, (reduce_args, state))
 
         dispatch[ts.TimeSeries] = save_timeseries
@@ -618,7 +619,7 @@ class CloudPickler(pickle.Pickler):
     """Python Imaging Library"""
     def save_image(self, obj):
         if not obj.im and obj.fp and 'r' in obj.fp.mode and obj.fp.name \
-            and not obj.fp.closed and (not hasattr(obj, 'isatty') or \
+            and not obj.fp.closed and (not hasattr(obj, 'isatty') or
                                        not obj.isatty()):
             #if image not loaded yet -- lazy load
             self.save_reduce(_lazyloadImage, (obj.fp, ), obj=obj)
@@ -685,7 +686,7 @@ def _modules_to_main(modList):
 
     main = sys.modules['__main__']
     for modname in modList:
-        if type(modname) is str:
+        if isinstance(modname, str):
             try:
                 mod = __import__(modname)
             except Exception, i:  # catch all...
@@ -835,6 +836,7 @@ def xrange_params(xrangeobj):
         return start, 1, 1
     return (start, xrangeobj[1] - xrangeobj[0], xrange_len)
 
+
 @memoize
 def whichmodule(func, funcname):
     """Figure out the module in which a function occurs.
@@ -851,7 +853,7 @@ def whichmodule(func, funcname):
 
     for name, module in sys.modules.items():
         if module is None:
-            continue # skip dummy package entries
+            continue  # skip dummy package entries
         try:
             if name != '__main__' and getattr(module, funcname, None) is func:
                 break
