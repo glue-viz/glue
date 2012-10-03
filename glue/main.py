@@ -133,6 +133,7 @@ def start_glue(gluefile=None, config=None, datafiles=None):
 
     import glue
     from glue.qt.glue_application import GlueApplication
+    from PyQt4.QtGui import QApplication
 
     datafiles = datafiles or []
 
@@ -155,8 +156,9 @@ def start_glue(gluefile=None, config=None, datafiles=None):
 
     ga = GlueApplication(data_collection=data, hub=hub)
     ga.show()
+    splash.close()
     ga.raise_()
-    splash.finish(ga)
+    QApplication.instance().processEvents()
     sys.exit(ga.exec_())
 
 
