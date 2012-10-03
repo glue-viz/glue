@@ -18,7 +18,7 @@ class ConfigObject(object):
             from .qt.widgets.histogram_widget import HistogramWidget
             self.qt_clients = [ScatterWidget, ImageWidget, HistogramWidget]
         except ImportError:
-            logging.warning("could not import glue.qt in ConfigObject")
+            logging.getLogger(__name__).warning("could not import glue.qt in ConfigObject")
             self.qt_clients = []
 
     def merge_module(self, module):
