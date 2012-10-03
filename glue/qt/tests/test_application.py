@@ -85,7 +85,7 @@ class TestGlueApplication(object):
         app = self.app_without_terminal()
         with patch('glue.qt.glue_application.QMessageBox') as qmb:
             app._terminal_button.click()
-            assert qmb.critical.call_count == 1
+            assert qmb.call_count == 1
 
     def is_terminal_importable(self):
         try:
