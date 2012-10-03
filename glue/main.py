@@ -129,7 +129,7 @@ def start_glue(gluefile=None, config=None, datafiles=None):
     :param datafiles: An optional list of data files to load
     :type datafiles: list of str
     """
-    #splash = get_splash()
+    splash = get_splash()
 
     import glue
     from glue.qt.glue_application import GlueApplication
@@ -154,7 +154,9 @@ def start_glue(gluefile=None, config=None, datafiles=None):
             hub = glue.core.Hub()
 
     ga = GlueApplication(data_collection=data, hub=hub)
-    #splash.finish(ga)
+    ga.show()
+    ga.raise_()
+    splash.finish(ga)
     sys.exit(ga.exec_())
 
 
@@ -179,14 +181,13 @@ def get_splash():
     pm = QPixmap(pth)
     splash = QSplashScreen(pm, Qt.WindowStaysOnTopHint)
     splash.show()
-    splash.raise_()
 
     return splash
 
 
 def main():
     from PyQt4.QtGui import QApplication
-    app = QApplication(sys.argv)
+    app = QApplication.instance() or QAppliction(sys.argv)
 
     logging.getLogger(__name__).info("Input arguments: %s", sys.argv)
 
