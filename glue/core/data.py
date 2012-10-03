@@ -320,7 +320,7 @@ class Data(object):
 
         if isinstance(label, ComponentID):
             component_id = label
-        elif type(label) == str:
+        elif isinstance(label, basestring):
             component_id = ComponentID(label)
         else:
             raise TypeError("label must be a ComponentID or string")
