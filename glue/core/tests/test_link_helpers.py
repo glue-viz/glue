@@ -3,7 +3,8 @@ import pytest
 import numpy as np
 
 from ..link_helpers import (LinkTwoWay, MultiLink, Galactic2Equatorial,
-                            lb2ra, lb2dec, radec2glon, radec2glat)
+                            lb2ra, lb2dec, radec2glon, radec2glat,
+                            LinkSame)
 from ...core import ComponentID, ComponentLink
 
 R, D, L, B = (ComponentID('ra'), ComponentID('dec'),
@@ -104,3 +105,9 @@ def test_multilink_nofunc():
     with pytest.raises(TypeError) as exc:
         MultiLink([R, D], [L, B])
     assert exc.value.args[0] == "Must supply either forwards or backwards"
+
+
+def test_linksame_string():
+    """String inputs auto-converted to component IDs"""
+    #ComponentLink does type checking to ensure conversion happens
+    links = LinkSame('a', 'b')
