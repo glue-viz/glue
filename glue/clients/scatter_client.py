@@ -135,7 +135,7 @@ class ScatterClient(Client):
 
     def plottable_attributes(self, layer):
         data = layer.data
-        return [c for c in data.components if
+        return [c for c in data.visible_components if
                 np.can_cast(data[c].dtype, np.float)]
 
     def add_layer(self, layer):
