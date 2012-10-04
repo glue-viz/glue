@@ -89,7 +89,6 @@ Finally, you can install Glue with::
     cd glue
     python setup.py install
 
-
 Development
 -----------
 
