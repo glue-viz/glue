@@ -294,9 +294,9 @@ class ScatterClient(Client):
         x, y = roi.to_polygon()
         subset_state.roi = PolygonalROI(x, y)
         mode = EditSubsetMode()
-        for d in self._master_data:
-            focus = d if self.is_visible(d) else None
-            mode.update(d, subset_state, focus_data=focus)
+        visible = [d for d in self._master_data if self.is_visible(d)]
+        focus = visible[0] if len(visible) > 0 else None
+        mode.update(self._master_data, subset_state, focus_data=focus)
 
     def set_xdata(self, attribute, snap=True):
         """
