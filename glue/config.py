@@ -1,20 +1,25 @@
 import os
 import sys
 import imp
-
+import logging
 
 class ConfigObject(object):
 
     def __init__(self):
-        from .qt.widgets.scatter_widget import ScatterWidget
-        from .qt.widgets.image_widget import ImageWidget
-        from .qt.widgets.histogram_widget import HistogramWidget
         from .core import link_helpers
         from .core import data_factories as df
 
-        self.qt_clients = [ScatterWidget, ImageWidget, HistogramWidget]
         self.link_functions = list(link_helpers.__LINK_FUNCTIONS__)
         self.data_factories = [(f, f.label) for f in df.__factories__]
+
+        try:
+            from .qt.widgets.scatter_widget import ScatterWidget
+            from .qt.widgets.image_widget import ImageWidget
+            from .qt.widgets.histogram_widget import HistogramWidget
+            self.qt_clients = [ScatterWidget, ImageWidget, HistogramWidget]
+        except ImportError:
+            logging.getLogger(__name__).warning("could not import glue.qt in ConfigObject")
+            self.qt_clients = []
 
     def merge_module(self, module):
         """Import public attributes from module into instance attributes
