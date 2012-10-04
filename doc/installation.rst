@@ -52,7 +52,7 @@ Once these are installed, you can use ``pip`` to install the remaining ones::
     pip install vo
     pip install atpy
 
-Finally, you can install glue with::
+Finally, you can install Glue with::
 
     git clone git://github.com/glue-viz/glue.git
     cd glue
@@ -83,7 +83,7 @@ Once these are installed, you can use ``pip`` to install the remaining ones::
     pip install vo
     pip install atpy
 
-Finally, you can install glue with::
+Finally, you can install Glue with::
 
     git clone git://github.com/glue-viz/glue.git
     cd glue
