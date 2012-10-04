@@ -367,10 +367,12 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
 
         self.current_tab.subWindowActivated.connect(do_close)
 
-    def exec_(self):
+    def start(self):
         self.show()
         self.raise_()  # bring window to front
         return self.app.exec_()
+
+    exec_ = start
 
     def keyPressEvent(self, event):
         """Hold down modifier keys to temporarily set edit mode"""

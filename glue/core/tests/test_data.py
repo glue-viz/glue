@@ -311,6 +311,20 @@ class TestData(object):
         assert exc.value.args[0].startswith('xyz not in data')
 
 
+def test_component_id_item_access():
+
+    data = Data()
+
+    c1 = Component(np.array([1, 2, 3]))
+    data.add_component(c1, 'values')
+
+    c2 = Component(np.array([4., 5., 6.]))
+    data.add_component(c2, 'Flux')
+
+    assert data.id['values'] == data.find_component_id('values')
+    assert data.id['Flux'] == data.find_component_id('Flux')
+
+
 class TestPixelLabel(object):
 
     def test(self):
