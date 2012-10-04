@@ -175,7 +175,7 @@ def edit_layer_label(layer):
         layer.label = str(label)
 
 
-def pick_item(items, labels, title="Pick an item", label="Pick an item"):
+def pick_item(items, labels, title="Pick an item", label="Pick an item", default=0):
     """ Prompt the user to choose an item
 
     :param items: List of items to choose
@@ -185,7 +185,7 @@ def pick_item(items, labels, title="Pick an item", label="Pick an item"):
 
     Returns the selected item, or None
     """
-    choice, isok = QInputDialog.getItem(None, title, label, labels)
+    choice, isok = QInputDialog.getItem(None, title, label, labels, current=default)
     if isok:
         return dict(zip(labels, items))[str(choice)]
 

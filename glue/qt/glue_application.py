@@ -221,8 +221,19 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         """
 
         from .. import env
+
+        from .widgets import ScatterWidget, ImageWidget
+
+        if data.ndim == 1 and ScatterWidget in env.qt_clients:
+            default = env.qt_clients.index(ScatterWidget)
+        elif data.ndim in [2, 3] and ImageWidget in env.qt_clients:
+            default = env.qt_clients.index(ImageWidget)
+        else:
+            default = 0
+
         client = pick_class(env.qt_clients, title='Data Viewer',
-                            label="Choose a new data viewer")
+                            label="Choose a new data viewer",
+                            default=default)
         if client:
             c = client(self._data)
             c.register_to_hub(self._hub)
