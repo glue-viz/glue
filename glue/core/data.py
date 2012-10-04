@@ -236,9 +236,18 @@ class Data(object):
         self._pixel_component_ids = []
         self._world_component_ids = []
 
+        # access to ComponentIDs via .item[name]
         class ComponentIDDict(object):
-            __getitem__ = self.find_component_id
-        self.id = ComponentIDDict()
+            def __init__(self, data):
+                self.data = data
+
+            def __getitem__(self, key):
+                result = self.data.find_component_id(key)
+                if result is None:
+                    raise KeyError("ComponentID not found: %s" % key)
+                return result
+
+        self.id = ComponentIDDict(self)
 
         # Tree description of the data
         self.tree = None

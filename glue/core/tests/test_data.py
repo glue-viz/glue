@@ -324,6 +324,13 @@ def test_component_id_item_access():
     assert data.id['Flux'] == data.find_component_id('Flux')
 
 
+def test_component_id_item_access_missing():
+    """id attribute should raise KeyError if requesting a bad ComponentID"""
+    data = Data()
+    with pytest.raises(KeyError):
+        data.id['not found']
+
+
 class TestPixelLabel(object):
 
     def test(self):
