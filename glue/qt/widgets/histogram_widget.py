@@ -1,3 +1,5 @@
+import numpy as np
+
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import Qt
 
@@ -73,7 +75,9 @@ class HistogramWidget(DataViewer):
         data = data or self._current_data()
         if data is None:
             return
-        comps = data.components
+
+        comps = [c for c in data.visible_components if
+                 np.can_cast(data[c].dtype, np.float)]
 
         try:
             combo.currentIndexChanged.disconnect()

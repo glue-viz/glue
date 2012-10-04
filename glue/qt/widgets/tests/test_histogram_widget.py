@@ -45,7 +45,7 @@ class TestHistogramWidget(object):
 
         self.widget._update_attributes(self.data)
         combo = self.widget.ui.attributeCombo
-        comps = self.data.components
+        comps = self.data.visible_components
         assert combo.count() == len(comps)
         for i in range(combo.count()):
             assert combo.itemData(i) in comps
@@ -92,7 +92,7 @@ class TestHistogramWidget(object):
         self.collect.append(d2)
         self.widget.add_data(d2)
 
-        comps = d2.components
+        comps = d2.visible_components
         assert self.widget.ui.attributeCombo.count() == len(comps)
         for i in range(self.widget.ui.attributeCombo.count()):
             data = self.widget.ui.attributeCombo.itemData(i)
