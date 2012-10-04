@@ -28,7 +28,6 @@ Putting this together, the simplest data factory code looks like this:
     set_default_factory("foo", dummy_factory)
 """
 import numpy as np
-import atpy
 
 from .data import Component, Data
 from .tree import DendroMerge
@@ -150,6 +149,7 @@ def tabular_data(*args, **kwargs):
     result = Data()
 
     # Read the table
+    import atpy
     table = atpy.Table()
     table.read(*args, **kwargs)
 

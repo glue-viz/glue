@@ -7,6 +7,9 @@ else:
     setapi('QString', 2)
     setapi('QVariant', 2)
 
+import logging
+logging.basicConfig(level=logging.INFO)
+
 from .config import load_configuration
 env = load_configuration()
 

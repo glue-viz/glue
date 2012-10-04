@@ -1,6 +1,5 @@
 import logging
 
-from matplotlib import _cntr
 import numpy as np
 
 
@@ -53,6 +52,7 @@ def point_contour(x, y, data):
     labeled, nr_objects = ndimage.label(data >= inten)
     z = data * (labeled == labeled[y, x])
     y, x = np.mgrid[0:data.shape[0], 0:data.shape[1]]
+    from matplotlib import _cntr
     cnt = _cntr.Cntr(x, y, z)
     xy = cnt.trace(inten)
     if not xy:
