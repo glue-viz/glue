@@ -35,15 +35,21 @@ class ComponentID(object):
        component = data.get_component(component_id)
     """
 
-    def __init__(self, label):
+    def __init__(self, label, hidden=False):
         """:param label: Name for the ID
            :type label: str"""
         self._label = label
+        self._hidden = hidden
 
     @property
     def label(self):
         """ Return the label """
         return self._label
+
+    @property
+    def hidden(self):
+        """Whether to hide the component in lists"""
+        return self._hidden
 
     def __str__(self):
         return str(self._label)
@@ -294,7 +300,7 @@ class Data(object):
         if component_id in self._components:
             self._components.pop(component_id)
 
-    def add_component(self, component, label):
+    def add_component(self, component, label, hidden=False):
         """ Add a new component to this data set.
 
         :param component: object to add
@@ -322,7 +328,7 @@ class Data(object):
         if isinstance(label, ComponentID):
             component_id = label
         elif isinstance(label, basestring):
-            component_id = ComponentID(label)
+            component_id = ComponentID(label, hidden=hidden)
         else:
             raise TypeError("label must be a ComponentID or string")
 
@@ -371,13 +377,13 @@ class Data(object):
         for i in range(self.ndim):
             comp = CoordinateComponent(self, i)
             label = pixel_label(i, self.ndim)
-            cid = self.add_component(comp, "Pixel %s" % label)
+            cid = self.add_component(comp, "Pixel %s" % label, hidden=True)
             self._pixel_component_ids.append(cid)
         if self.coords:
             for i in range(self.ndim):
                 comp = CoordinateComponent(self, i, world=True)
                 label = self.coords.axis_label(i)
-                cid = self.add_component(comp, label)
+                cid = self.add_component(comp, label, hidden=True)
                 self._world_component_ids.append(cid)
 
     @property
@@ -441,7 +447,7 @@ class Data(object):
         if self.ndim != len(self._pixel_component_ids) or \
                 self.ndim != len(self._world_component_ids):
                 # haven't populated pixel, world coordinates yet
-                return []
+            return []
 
         def make_toworld_func(i):
             def pix2world(*args):
