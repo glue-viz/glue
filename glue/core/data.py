@@ -19,6 +19,7 @@ from .message import (DataUpdateMessage,
                       SubsetCreateMessage)
 
 from .util import file_format
+from .odict import OrderedDict
 
 __all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
            'TabularData', 'GriddedData', 'CoordinateComponent']
@@ -225,7 +226,7 @@ class Data(object):
         self._shape = ()
 
         # Components
-        self._components = {}
+        self._components = OrderedDict()
         self._pixel_component_ids = []
         self._world_component_ids = []
 
@@ -383,7 +384,7 @@ class Data(object):
     def components(self):
         """ Returns a list of ComponentIDs for all components
         (primary and derived) in the data"""
-        return sorted(self._components.keys(), key=lambda x: str(x).lower())
+        return self._components.keys()
 
     @property
     def primary_components(self):
