@@ -26,7 +26,7 @@ class LinkEditor(QDialog):
         self._ui.left_components.setup(self._collection)
         self._ui.right_components.setup(self._collection)
         self._ui.signature_editor.hide()
-        for link in self._collection.links:
+        for link in self._collection.links.links:
             self._add_link(link)
 
     def _connect(self):
