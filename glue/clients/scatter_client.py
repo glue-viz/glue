@@ -135,8 +135,8 @@ class ScatterClient(Client):
 
     def plottable_attributes(self, layer):
         data = layer.data
-        return [c for c in data.components if
-                np.can_cast(data[c].dtype, np.float) and not c.hidden]
+        return [c for c in data.visible_components if
+                np.can_cast(data[c].dtype, np.float)]
 
     def add_layer(self, layer):
         """ Adds a new visual layer to a client, to display either a dataset

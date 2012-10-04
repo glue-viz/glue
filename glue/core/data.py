@@ -393,6 +393,12 @@ class Data(object):
         return self._components.keys()
 
     @property
+    def visible_components(self):
+        """ Returns a list of ComponentIDs for all components
+        (primary and derived) in the data"""
+        return [c for c in self._components.keys() if not c.hidden]
+
+    @property
     def primary_components(self):
         """Returns a list of ComponentIDs with stored data (as opposed
         to a :class:`~glue.core.data.DerivedComponent` )

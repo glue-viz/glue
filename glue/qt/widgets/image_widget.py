@@ -172,7 +172,7 @@ class ImageWidget(DataViewer):
         combo = self.ui.attributeComboBox
         combo.currentIndexChanged.disconnect(self.set_attribute)
         combo.clear()
-        fields = data.component_ids()
+        fields = data.visible_components
         index = 0
         for i, f in enumerate(fields):
             combo.addItem(f.label, userData=f)
