@@ -4,14 +4,17 @@ Installing Glue
 Requirements
 ------------
 
-This section lists the dependencies required by Glue. If only using ``glue.core``, then the only dependencies are:
+This section lists the dependencies required by Glue. If only using
+``glue.core``, then the only dependencies are:
 
 * `Python <http://www.python.org>`_ 2.6 or 2.7
 * `Numpy <http://numpy.scipy.org>`_ 1.4.0 or later
 
 If using the graphical user interface (GUI), you will need:
 
-* `PyQt4 <http://www.riverbankcomputing.co.uk/software/pyqt/download>`_ 4.9.4 or later (which requires `SIP <http://www.riverbankcomputing.co.uk/software/sip/download>`_)
+* `PyQt4 <http://www.riverbankcomputing.co.uk/software/pyqt/download>`_
+   4.9.4 or later (which requires
+   `SIP <http://www.riverbankcomputing.co.uk/software/sip/download>`_)
 * `Scipy <http://www.scipy.org>`_
 * `Matplotlib <http://www.matplotlib.org>`_
 * `IPython <http://www.ipython.org>`_
@@ -58,7 +61,11 @@ Finally, you can install glue with::
 MacOS X
 -------
 
-There are different ways to set up the dependencies on Mac (including a fully manual installation) but we recommend the use of `MacPorts <http://www.macports.org>`_. For information about using MacPorts to manage your Python installation, see `here <http://astrofrog.github.com/macports-python/>`_.
+There are different ways to set up the dependencies on Mac (including a fully
+manual installation) but we recommend the use of `MacPorts
+<http://www.macports.org>`_. For information about using MacPorts to manage
+your Python installation, see `here
+<http://astrofrog.github.com/macports-python/>`_.
 
 The main dependencies can be installed with::
 
