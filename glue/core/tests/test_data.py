@@ -75,10 +75,10 @@ class TestData(object):
         with pytest.raises(TypeError) as exc:
             self.data.add_component(comp("junk label"))
         if isinstance(exc.value, basestring):  # python 2.6
-            assert exc.value == ("add_component() takes exactly 3 "
+            assert exc.value == ("add_component() takes at least 3 "
                                  "arguments (2 given)")
         else:
-            assert exc.value.args[0] == ("add_component() takes exactly 3 "
+            assert exc.value.args[0] == ("add_component() takes at least 3 "
                                          "arguments (2 given)")
 
     def test_get_getitem_incompatible_attribute(self):
@@ -114,15 +114,14 @@ class TestData(object):
         assert exc.value.args[0].startswith("input is not a Hub object")
 
     def test_component_order(self):
-        """Components should be returned in alphabetical order"""
+        """Components should be returned in the order they were specified"""
         data = Data()
         comp = Component(np.array([1, 2, 3]))
         labels = 'asldfkjaAREGWoibasiwnsldkgajsldkgslkg'
         for label in labels:
             data.add_component(comp, label)
-        ids = data.components
-        labels = [cid.label.lower() for cid in ids]
-        assert labels == sorted(labels)
+        ids = data.visible_components
+        assert [cid.label for cid in ids] == list(labels)
 
     def test_broadcast(self):
         hub = MagicMock(spec_set=Hub)
