@@ -2,6 +2,7 @@
 import pytest
 import numpy as np
 
+from .. import link_helpers as lh
 from ..link_helpers import (LinkTwoWay, MultiLink, Galactic2Equatorial,
                             lb2ra, lb2dec, radec2glon, radec2glat,
                             LinkSame)
@@ -111,3 +112,17 @@ def test_linksame_string():
     """String inputs auto-converted to component IDs"""
     #ComponentLink does type checking to ensure conversion happens
     links = LinkSame('a', 'b')
+
+
+def test_identity():
+    assert lh.identity('3') == '3'
+
+
+def test_toid():
+    assert lh._toid('test').label == 'test'
+
+    cid = ComponentID('test2')
+    assert lh._toid(cid) is cid
+
+    with pytest.raises(TypeError) as exc:
+        lh._toid(None)

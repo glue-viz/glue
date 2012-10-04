@@ -41,6 +41,13 @@ _default_factory = {}
 
 
 def load_data(path, factory):
+    """Use a factory to load a file and assign a label
+
+    :param path: Path to a file
+    :type path: str
+    :param factory: factory function to use
+    :type factory: function
+    """
     d = factory(path)
     d.label = data_label(path)
     return d
@@ -260,5 +267,5 @@ try:
     set_default_factory('bmp', pil_data)
     set_default_factory('tiff', pil_data)
 
-except ImportError:
+except ImportError:  # pragma: no cover
         pass

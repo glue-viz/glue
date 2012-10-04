@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import sys
-import os
 import optparse
 import logging
 
@@ -67,12 +66,14 @@ def verify(parser, argv):
     opts, args = parser.parse_args(argv)
     err_msg = None
 
-    if opts.script and len(args) != 1:
+    if opts.script and opts.restore:
+        err_msg = "Cannot specify -g with -x"
+    elif opts.script and opts.config:
+        err_msg = "Cannot specify -c with -x"
+    elif opts.script and len(args) != 1:
         err_msg = "Must provide a script\n"
     elif opts.restore and len(args) != 1:
         err_msg = "Must provide a .glu file\n"
-    elif opts.config is not None and not os.path.exists(opts.config):
-        err_msg = "Could not find configuration file: %s" % opts.config
 
     return err_msg
 
@@ -129,11 +130,12 @@ def start_glue(gluefile=None, config=None, datafiles=None):
     :param datafiles: An optional list of data files to load
     :type datafiles: list of str
     """
+    from PyQt4.QtGui import QApplication
+    app = QApplication.instance() or QApplication(sys.argv)
     #splash = get_splash()
 
     import glue
     from glue.qt.glue_application import GlueApplication
-    from PyQt4.QtGui import QApplication
 
     datafiles = datafiles or []
 
@@ -159,7 +161,7 @@ def start_glue(gluefile=None, config=None, datafiles=None):
     #splash.close()
     #ga.raise_()
     #QApplication.instance().processEvents()
-    sys.exit(ga.exec_())
+    return ga.start()
 
 
 def execute_script(script):
@@ -174,9 +176,8 @@ def execute_script(script):
 
 def get_splash():
     """Instantiate a splash screen"""
-    from time import sleep
     from PyQt4.QtGui import QSplashScreen, QPixmap
-    from PyQt4.QtCore import Qt, QTimer
+    from PyQt4.QtCore import Qt
     import os
 
     pth = os.path.join(os.path.dirname(__file__), 'logo.png')
@@ -187,15 +188,12 @@ def get_splash():
     return splash
 
 
-def main():
-    from PyQt4.QtGui import QApplication
-    app = QApplication.instance() or QAppliction(sys.argv)
-
+def main(argv=sys.argv):
     logging.getLogger(__name__).info("Input arguments: %s", sys.argv)
 
-    opt, args = parse(sys.argv[1:])
+    opt, args = parse(argv[1:])
     if opt.restore:
-        start_glue(args[0], config=opt.config)
+        start_glue(gluefile=args[0], config=opt.config)
     elif opt.script:
         execute_script(args[0])
     else:
@@ -206,12 +204,12 @@ def main():
         if has_py:
             execute_script(args[0])
         elif has_glu:
-            start_glue(args[0], config=opt.config)
+            start_glue(gluefile=args[0], config=opt.config)
         elif has_file or has_files:
-            start_glue(datafiles=args)
+            start_glue(datafiles=args, config=opt.config)
         else:
-            start_glue()
+            start_glue(config=opt.config)
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main(sys.argv))  # prama: no cover
