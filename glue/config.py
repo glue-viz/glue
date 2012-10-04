@@ -3,6 +3,7 @@ import sys
 import imp
 import logging
 
+
 class ConfigObject(object):
 
     def __init__(self):
@@ -18,7 +19,8 @@ class ConfigObject(object):
             from .qt.widgets.histogram_widget import HistogramWidget
             self.qt_clients = [ScatterWidget, ImageWidget, HistogramWidget]
         except ImportError:
-            logging.getLogger(__name__).warning("could not import glue.qt in ConfigObject")
+            logging.getLogger(__name__).warning(
+                "could not import glue.qt in ConfigObject")
             self.qt_clients = []
 
     def merge_module(self, module):
