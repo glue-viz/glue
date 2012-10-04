@@ -53,12 +53,19 @@ class ComponentLink(object):
 
            TypeError if input is invalid
         """
+        from .data import ComponentID
+
         self._from = comp_from
         self._to = comp_to
         self._using = using or identity
 
         if type(comp_from) is not list:
             raise TypeError("comp_from must be a list: %s" % type(comp_from))
+
+        if not all(isinstance(f, ComponentID) for f in self._from):
+            raise TypeError("from argument is not a list of ComponentIDs")
+        if not isinstance(self._to, ComponentID):
+            raise TypeError("to argument is not a ComponentID")
 
         if using is None:
             if len(comp_from) != 1:
@@ -140,4 +147,5 @@ class BinaryComponentLink(ComponentLink):
             assert isinstance(right, ComponentID)
             using = lambda x: op(left, x)
 
-        super(BinaryComponentLink, self).__init__(from_, None, using)
+        to = ComponentID('')
+        super(BinaryComponentLink, self).__init__(from_, to, using)

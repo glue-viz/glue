@@ -16,26 +16,23 @@ class TestComponentLink(object):
         return data, from_comp, to_comp
 
     def test_valid_init(self):
-        data, from_, to_ = self.toy_data()
-        link = ComponentLink([from_], to_)
+        link = ComponentLink([ComponentID('from')], ComponentID('to'))
 
     def test_valid_init_using(self):
         data, from_, to_ = self.toy_data()
         using = lambda x: x
-        link = ComponentLink([from_], to_, using)
+        link = ComponentLink([ComponentID('from')], ComponentID('to'), using)
 
     def test_invalid_init_multi_from_no_using(self):
-        data, from_, to_ = self.toy_data()
-        using = lambda x: x
         with pytest.raises(TypeError) as exc:
-            ComponentLink([from_, from_], to_)
+            ComponentLink([ComponentID('a'), ComponentID('b')],
+                          ComponentID('c'))
         assert exc.value.args[0] == ("comp_from must have only 1 element, "
                                      "or a 'using' function must be provided")
 
     def test_invalid_init_scalar_from(self):
-        data, from_, to_ = self.toy_data()
         with pytest.raises(TypeError) as exc:
-            ComponentLink(from_, to_)
+            ComponentLink(ComponentID('from'), ComponentID('to'))
         assert exc.value.args[0].startswith("comp_from must be a list")
 
     def test_compute_direct(self):
@@ -87,3 +84,20 @@ class TestComponentLink(object):
         to_id = ComponentID('to_label')
         link = ComponentLink([from_id], to_id)
         repr(link)
+
+    def test_type_check(self):
+        """Should raise an exception if non ComponentIDs are passed as input"""
+        cid = ComponentID('test')
+        with pytest.raises(TypeError) as exc:
+            ComponentLink([None], cid)
+        assert exc.value.args[0] == \
+            'from argument is not a list of ComponentIDs'
+
+        with pytest.raises(TypeError) as exc:
+            ComponentLink([cid], None)
+        assert exc.value.args[0] == 'to argument is not a ComponentID'
+
+        with pytest.raises(TypeError) as exc:
+            ComponentLink([cid, None], None, using=lambda x, y: None)
+        assert exc.value.args[0] == \
+            'from argument is not a list of ComponentIDs'
