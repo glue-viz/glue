@@ -1,4 +1,5 @@
 from .component_link import ComponentLink
+from .data import ComponentID
 
 __LINK_FUNCTIONS__ = []
 
@@ -13,6 +14,16 @@ def _partial_result(func, index):
     return lambda *args, **kwargs: func(*args, **kwargs)[index]
 
 
+def _toid(arg):
+    """Coerce the input to a ComponentID, if possible"""
+    if isinstance(arg, ComponentID):
+        return arg
+    elif isinstance(arg, basestring):
+        return ComponentID(arg)
+    else:
+        raise TypeError('Cannot be cast to a ComponentID: %s' % arg)
+
+
 class LinkCollection(list):
     pass
 
@@ -23,8 +34,8 @@ class LinkSame(LinkCollection):
     describe the same piece of information
     """
     def __init__(self, cid1, cid2):
-        self.append(ComponentLink([cid1], cid2))
-        self.append(ComponentLink([cid2], cid1))
+        self.append(ComponentLink([_toid(cid1)], _toid(cid2)))
+        self.append(ComponentLink([_toid(cid2)], _toid(cid1)))
 
 
 class LinkTwoWay(LinkCollection):
@@ -40,8 +51,8 @@ class LinkTwoWay(LinkCollection):
 
         Returns two ComponentLinks, specifying the link in each direction
         """
-        self.append(ComponentLink([cid1], cid2, forwards))
-        self.append(ComponentLink([cid2], cid1, backwards))
+        self.append(ComponentLink([_toid(cid1)], _toid(cid2), forwards))
+        self.append(ComponentLink([_toid(cid2)], _toid(cid1), backwards))
 
 
 class MultiLink(LinkCollection):
@@ -65,6 +76,8 @@ class MultiLink(LinkCollection):
     """
 
     def __init__(self, cids_left, cids_right, forwards=None, backwards=None):
+        cids_left = map(_toid, cids_left)
+        cids_right = map(_toid, cids_right)
 
         if forwards is None and backwards is None:
             raise TypeError("Must supply either forwards or backwards")

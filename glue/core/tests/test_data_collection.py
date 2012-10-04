@@ -176,7 +176,7 @@ class TestDataCollection(object):
         id1 = ComponentID("id1")
         id2 = ComponentID("id2")
         link = ComponentLink([id1], id2)
-        self.dc.links = [link]
+        self.dc.set_links([link])
         assert link in self.dc.links
 
     def test_add_links_updates_components(self):
@@ -189,6 +189,25 @@ class TestDataCollection(object):
         self.dc.append(d)
         link = ComponentLink([id1], id2)
 
-        self.dc.links = [link]
+        self.dc.set_links([link])
 
         assert id2 in d.components
+
+    def test_links_propagated(self):
+        """Web of links is grown and applied to data automatically"""
+        from ..link_helpers import LinkSame
+
+        d = Data()
+        dc = DataCollection([d])
+
+        cid1 = d.add_component(np.array([1, 2, 3]), 'a')
+        cid2 = ComponentID('b')
+        cid3 = ComponentID('c')
+
+        links = LinkSame(cid1, cid2)
+        dc.add_link(links)
+        assert cid2 in d.components
+
+        links = LinkSame(cid2, cid3)
+        dc.add_link(links)
+        assert cid3 in d.components
