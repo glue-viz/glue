@@ -94,10 +94,31 @@ class DataCollection(HubListener):
 
     @property
     def links(self):
-        return self._link_manager
+        return tuple(self._link_manager.links)
 
-    @links.setter
-    def links(self, links):
+    def add_link(self, links):
+        """Add one or more links to the data collection.
+        This will auto-update the components in each data set
+
+        :param links: The links to add
+        :type links: A scalar or list of
+                     :class:`~glue.core.component_link.ComponentLink`
+                     instances,
+                     or a :class:`~glue.core.link_helpers.LinkCollection`
+        """
+        self._link_manager.add_link(links)
+        for d in self._data:
+            self._link_manager.update_data_components(d)
+
+    def set_links(self, links):
+        """Override the links in the collection, and update data
+        objects as necessary
+
+        :param links: The new links
+        :type links: An iterable of
+                     :class:`~glue.core.component_link.ComponentLInk`
+                     instances
+        """
         self._link_manager.clear()
         for link in links:
             self._link_manager.add_link(link)
