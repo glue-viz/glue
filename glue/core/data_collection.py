@@ -1,7 +1,6 @@
 from .hub import Hub, HubListener
 from .data import Data
 from .link_manager import LinkManager
-from .live_link import LiveLinkManager
 from .registry import Registry
 from .message import (DataCollectionAddMessage,
                       DataCollectionDeleteMessage,
@@ -27,7 +26,6 @@ class DataCollection(HubListener):
         super(DataCollection, self).__init__()
         self.hub = None
         self._link_manager = LinkManager()
-        self.live_link_manager = LiveLinkManager()
 
         self._data = []
         if isinstance(data, Data):
@@ -134,7 +132,6 @@ class DataCollection(HubListener):
         if not isinstance(hub, Hub):
             raise TypeError("Input is not a Hub object: %s" % type(hub))
         self.hub = hub
-        self.live_link_manager.hub = hub
 
         #re-assign all data, subset hub instances to this hub
         for d in self._data:

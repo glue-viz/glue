@@ -159,8 +159,6 @@ class LinkAction(LayerAction):
     _title = "Link Data"
     _tooltip = "Define links between data sets"
     _data_link_message = "Define links between data sets"
-    _link_message = "Live link selection"
-    _unlink_message = "Break live links with this object"
     _icon = ":icons/glue_link.png"
 
     def __init__(self, *args, **kwargs):
@@ -168,76 +166,19 @@ class LinkAction(LayerAction):
         self._link_icon = QIcon(self._icon)
         self._unlink_icon = QIcon(":icons/glue_unlink.png")
 
-    def _connect(self):
-        super(LinkAction, self)._connect()
-        self.parentWidget().itemSelectionChanged.connect(
-            self._update_self)
-
-    def _is_subset_selection(self):
-        """Are only subsets selected"""
-        layers = self.selected_layers()
-        for l in layers:
-            if not isinstance(l, core.Subset):
-                return False
-        return True
-
-    def _is_data_selection(self):
-        layers = self.selected_layers()
-        for l in layers:
-            if not isinstance(l, core.Data):
-                return False
-        return True
-
     def selection_count(self):
         return len(self.selected_layers())
-
-    @property
-    def link_manager(self):
-        return self._layer_tree.data_collection.live_link_manager
 
     @property
     def data_collection(self):
         return self._layer_tree.data_collection
 
-    def _should_unlink(self):
-        layers = self.selected_layers()
-        return self._is_subset_selection() and self.selection_count() > 0 and \
-            self.link_manager.has_link(layers[0])
-
-    def _should_link_subset(self):
-        return self._is_subset_selection() and self.selection_count() > 1
-
-    def _should_link_data(self):
-        return len(self.data_collection) > 0 and self._is_data_selection()
-
-    def _update_self(self):
-        if self._should_unlink():
-            self.setToolTip(self._unlink_message)
-            self.setText("Break LiveLinks")
-            self.setIcon(self._unlink_icon)
-        elif self._should_link_subset():
-            self.setToolTip(self._link_message)
-            self.setText("LiveLink")
-            self.setIcon(self._link_icon)
-        elif self._should_link_data():
-            self.setToolTip(self._data_link_message)
-            self.setText("Link data")
-            self.setIcon(self._link_icon)
-
     def _can_trigger(self):
-        return self._should_unlink() or self._should_link_subset() or \
-            self._should_link_data()
+        return self.selection_count() > 0
 
     def _do_action(self):
         layers = self.selected_layers()
-        if self._should_unlink():
-            self.link_manager.remove_links_from(layers[0])
-        elif self._should_link_subset():
-            self.link_manager.add_link_between(*layers)
-        elif self._should_link_data():
-            LinkEditor.update_links(self.data_collection)
-        self._update_self()
-        self.setEnabled(self._can_trigger())
+        LinkEditor.update_links(self.data_collection)
 
 
 class LoadAction(LayerAction):

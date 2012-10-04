@@ -95,14 +95,6 @@ class TestLayerTree(object):
         QTest.mousePress(self.widget.layerRemoveButton, Qt.LeftButton)
         assert self.layer_present(layer)
 
-    def test_link_subset(self):
-        layer = self.add_layer()
-        sub1 = layer.new_subset()
-        sub2 = layer.new_subset()
-        self.select_layers(sub1, sub2)
-        self.link_action.trigger()
-        assert len(self.collect.live_link_manager.links) == 1
-
     def test_link_data(self):
         pth = 'glue.qt.link_editor.LinkEditor'
         with patch(pth) as linkEditor:
@@ -110,16 +102,6 @@ class TestLayerTree(object):
             self.select_layers(layer)
             self.link_action.trigger()
             assert linkEditor.called_once()
-
-    def test_unlink_subsets(self):
-        layer = self.add_layer()
-        sub1 = layer.new_subset()
-        sub2 = layer.new_subset()
-        self.select_layers(sub1, sub2)
-        self.link_action.trigger()
-        self.select_layers(sub1)
-        self.link_action.trigger()
-        assert len(self.collect.live_link_manager.links) == 0
 
     def test_check_signal(self):
         layer = self.add_layer()

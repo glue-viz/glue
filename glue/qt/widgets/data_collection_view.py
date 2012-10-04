@@ -43,7 +43,6 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
 
         for data in data_collection:
             self._add_data(data, check_sync=False)
-        self._sync_live_link_view()
         self._assert_view_synced()
 
     @property
@@ -85,10 +84,6 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
                       core.message.DataCollectionDeleteMessage,
                       handler=lambda x: self._remove_layer(x.data),
                       filter=dc_filt)
-        hub.subscribe(self,
-                      core.message.LiveLinkMessage,
-                      handler=lambda x: self._sync_live_link_view(x.link)
-                      )
 
     def _assert_in_collection(self, layer):
         assert layer.data in self.data_collection
@@ -192,27 +187,6 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         ncol = self.columnCount()
         for i in range(ncol):
             self.resizeColumnToContents(i)
-
-    def _sync_live_link_view(self, link=None):
-        """ Draw visual indicators for live links in the 'links' column """
-        if self._data_collection is None:
-            return
-        mgr = self._data_collection.live_link_manager
-        links = mgr.links
-        colors = [core.visual.LIGHT_PURPLE,
-                  core.visual.LIGHT_ORANGE,
-                  core.visual.LIGHT_RED]
-        colors = [colors[i % len(colors)] for i in range(len(links))]
-        clr = {}
-        for i in range(len(links)):
-            for s in links[i].subsets:
-                clr[s] = colors[i]
-        for item in self.items():
-            layer = self[item]
-            color = '#FFFFFF' if layer not in clr else clr[layer]
-            alpha = 1.0 if layer in clr else 0.0
-            icon = _color_icon(color, size=10, alpha=alpha)
-            item.setIcon(2, icon)
 
     def _remove_layer(self, layer, check_sync=True):
         """ Remove a data or subset from the layer tree.
