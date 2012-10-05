@@ -104,18 +104,22 @@ class Tree(object):
             result += (':%s' % self.value)
         return result + ';'
 
+    @property
     def index(self):
         """
-        Create a flattened index of all the nodes at and below this
-        branch, and store them in the _index attribute.
+        A flattened index of all the nodes at and below this
+        branch
 
-        The _index attribute is a dictionary holding each node in the
+        This property is a dictionary holding each node in the
         tree, keyed by the node ids. Index will only work if the node
         id's are unique.
 
         The user of the index is responsible for making sure that the
         tree hasn't changed since the index was created.
         """
+        if self._index is not None:
+            return self._index
+
         self._index = {}
         stack = [self]
         while stack:
@@ -126,6 +130,7 @@ class Tree(object):
             self._index[s.id] = s
             for c in s.children:
                 stack.append(c)
+        return self._index
 
     def get_subtree_indices(self):
         result = []

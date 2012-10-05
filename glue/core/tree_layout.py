@@ -49,6 +49,10 @@ class TreeLayout(object):
             self.height = height
             self.node = node
 
+        def __str__(self):
+            return ("Node %s: (x, y) = (%f, %f). (w x h) = (%f, %f)" %
+                    (self.node.id, self.x, self.y, self.width, self.height))
+
     def __init__(self, tree):
         """ Create a new TreeLayout object
 
@@ -56,7 +60,7 @@ class TreeLayout(object):
         -----------
         Tree: Tree instance
               The root node of the tree to layout. The tree must be
-              indexable (i.e. the call to tree.index() succeeds)
+              indexable (i.e. it must have the .index property)
 
         """
 
@@ -66,12 +70,11 @@ class TreeLayout(object):
         self.tree = tree
         self._dict = {}
 
-        if not tree._index:
-            try:
-                tree.index()
-            except KeyError:
-                raise TypeError("Cannot create tree layout -- "
-                                "input tree can't be indexed")
+        try:
+            tree.index
+        except KeyError:
+            raise TypeError("Cannot create tree layout -- "
+                            "input tree can't be indexed")
         self.layout()
 
     def __getitem__(self, key):
@@ -83,6 +86,8 @@ class TreeLayout(object):
         """
         self._tree_width(self.tree)
         self._tree_pos(self.tree)
+        for t in self.tree.index:
+            self[t].width = 1
 
     def _tree_width(self, tree):
         """
@@ -130,24 +135,23 @@ class TreeLayout(object):
         found. Otherwise, returns None
 
         """
-        sz = len(self.tree._index)
+        sz = len(self.tree.index)
         off = np.zeros(sz)
         candidate = np.zeros(sz, dtype=bool)
 
-        for i, t in enumerate(self.tree._index):
+        for i, t in enumerate(self.tree.index):
             off[i] = abs(x - self[t].x)
             parent = self[t].node.parent
             if parent:
-                candidate[i] = y < self[t].y and y > self[parent].y
+                candidate[i] = self[parent].y <= y < self[t].y
             else:
-                candidate[i] = y < self[t].y
+                candidate[i] = y <= self[t].y
         if not candidate.any():
             return None
 
-        bad = np.where(~candidate)
-        off[bad] = off.max()
+        off[~candidate] = off.max()
         best = np.argmin(off)
-        return self.tree._index[best]
+        return self.tree.index[best]
 
     def tree_to_xy(self, tree):
         """
@@ -169,18 +173,16 @@ class TreeLayout(object):
 
         """
         #code for when t is a list of trees
-        try:
+        if isinstance(tree, list):
+            x = []
+            y = []
             for t in tree:
-                x = []
-                y = []
                 xx, yy = self.tree_to_xy(t)
                 x.extend(xx)
                 y.extend(yy)
                 x.append(None)
                 y.append(None)
             return (x, y)
-        except TypeError:  # tree is a scalar
-            pass
 
         # code for when tree is a scalar
         x = [self[tree].x]
@@ -211,7 +213,7 @@ class TreeLayout(object):
 
         """
         # code for when branch is a list of branches
-        try:
+        if isinstance(branch, list):
             x = []
             y = []
             for b in branch:
@@ -221,8 +223,6 @@ class TreeLayout(object):
                 x.append(None)
                 y.append(None)
             return (x, y)
-        except TypeError:  # branch is a scalar
-            pass
 
         #code for when branch is a scalar
         node = self[branch].node
@@ -247,14 +247,14 @@ class DendrogramLayout(TreeLayout):
 
     def set_height(self):
 
-        nbranch = len(self.tree._index)
+        nbranch = len(self.tree.index)
         nleaf = (nbranch + 1) / 2
 
         hival = self.data.max()
-        for id in self.tree._index:
+        for id in self.tree.index:
             self[id].y = hival
 
-        for id in self.tree._index:
+        for id in self.tree.index:
             hit = np.where(self.tree.index_map == id)
             assert(len(hit) > 0)
 
