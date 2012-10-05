@@ -163,7 +163,7 @@ def tabular_data(*args, **kwargs):
 
 
 tabular_data.label = "Catalog"
-tabular_data.file_filter = "*.txt *.vot *.xml *csv *tsv *.fits"
+tabular_data.file_filter = "*.txt *.vot *.xml *.csv *.tsv *.fits"
 __factories__.append(tabular_data)
 set_default_factory('xml', tabular_data)
 set_default_factory('vot', tabular_data)
