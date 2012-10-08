@@ -112,21 +112,20 @@ def test_invalid(cmd):
                           (None, None, ['a.fits', 'b.fits']),
                           (None, 'test.py', ['a.fits'])])
 def test_start(glue, config, data):
-    with patch('glue.main.restore_session') as rs, \
-        patch('glue.config.load_configuration') as lc, \
-        patch('glue.main.load_data_files') as ldf, \
-        patch('glue.qt.glue_application.GlueApplication') as ga, \
-            patch('PyQt4.QtGui') as qt:
+    with patch('glue.main.restore_session') as rs:
+        with patch('glue.config.load_configuration') as lc:
+            with patch('glue.main.load_data_files') as ldf:
+                with patch('glue.qt.glue_application.GlueApplication') as ga:
+                    with patch('PyQt4.QtGui') as qt:
 
-        rs.return_value = DataCollection(), Hub()
-        ldf.return_value = Data()
+                        rs.return_value = DataCollection(), Hub()
+                        ldf.return_value = Data()
 
-        start_glue(glue, config, data)
-        if glue:
-            rs.assert_called_once_with(glue)
-        if config:
-            lc.assert_called_once_with(search_path=[config])
-        if data:
-            ldf.assert_called_once_with(data)
-
-        assert ga.call_count == 1
+                        start_glue(glue, config, data)
+                        if glue:
+                            rs.assert_called_once_with(glue)
+                        if config:
+                            lc.assert_called_once_with(search_path=[config])
+                        if data:
+                            ldf.assert_called_once_with(data)
+                        assert ga.call_count == 1
