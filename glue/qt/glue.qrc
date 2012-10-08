@@ -2,6 +2,7 @@
 <qresource>
 	<file>icons/glue_and.png</file>
 	<file>icons/glue_andnot.png</file>
+	<file>icons/app_icon.png</file>
 	<file>icons/glue_back.png</file>
 	<file>icons/glue_circle.png</file>
 	<file>icons/glue_contour.png</file>

@@ -130,8 +130,8 @@ def start_glue(gluefile=None, config=None, datafiles=None):
     :param datafiles: An optional list of data files to load
     :type datafiles: list of str
     """
-    from PyQt4.QtGui import QApplication
-    app = QApplication.instance() or QApplication(sys.argv)
+    #from PyQt4.QtGui import QApplication
+    #app = QApplication.instance() or QApplication(sys.argv)
     #splash = get_splash()
 
     import glue
