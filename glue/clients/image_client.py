@@ -13,7 +13,7 @@ from ..core.edit_subset_mode import EditSubsetMode
 from ..core.util import color2rgb
 
 from .viz_client import VizClient, init_mpl
-
+from .layer_manager import ScatterLayerManager
 
 class InvNormalize(Normalize):
     """ Simple wrapper to matplotlib Normalize object, that
@@ -140,40 +140,6 @@ class SubsetLayerManager(LayerManager):
         self.artist = self._ax.imshow(mask, extent=extent,
                                       interpolation='nearest', origin='lower',
                                       zorder=5)
-
-
-class ScatterLayerManager(LayerManager):
-    def __init__(self, layer, axes):
-        super(ScatterLayerManager, self).__init__(layer, axes)
-
-    def set_visible(self, state):
-        if self.artist is None:
-            return
-        self.artist.set_visible(state)
-
-    def is_visible(self):
-        return self.artist is not None and self.artist.get_visible()
-
-    def delete_artist(self):
-        if self.artist is None:
-            return
-
-        self.artist.remove()
-        self.artist = None
-
-    def update_artist(self, view, xatt, yatt):
-        self.delete_artist()
-
-        try:
-            x = self.layer[xatt]
-            y = self.layer[yatt]
-        except IncompatibleAttribute:
-            return
-
-        self.artist, = self._ax.plot(x, y, 'o', c=self.layer.style.color,
-                                     ms=self.layer.style.markersize * .5,
-                                     mec='none',
-                                     zorder=10)
 
 
 class ImageClient(VizClient):
@@ -514,7 +480,11 @@ class ImageClient(VizClient):
             return
 
         xatt, yatt = self._get_plot_attributes()
-        self.layers[layer].update_artist(None, xatt, yatt)
+        mgr = self.layers[layer]
+        mgr.xatt = xatt
+        mgr.yatt = yatt
+        mgr.zorder = 10
+        mgr.update()
         if redraw:
             self._redraw()
 

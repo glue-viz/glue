@@ -14,7 +14,7 @@ class TestScatterWidget(object):
     def setup_method(self, method):
         self.hub = core.hub.Hub()
         self.data = example_data.test_data()
-        self.collect = core.data_collection.DataCollection()
+        self.collect = core.data_collection.DataCollection(list(self.data))
         self.widget = ScatterWidget(self.collect)
         self.win = QMainWindow()
         self.win.setCentralWidget(self.widget)
@@ -23,7 +23,6 @@ class TestScatterWidget(object):
 
     def teardown_method(self, method):
         self.win.close()
-        del self.win
 
     def connect_to_hub(self):
         self.widget.register_to_hub(self.hub)
@@ -72,13 +71,7 @@ class TestScatterWidget(object):
         assert xydata[0][1] <= xylimits[0][1]
         assert xydata[1][1] <= xylimits[1][1]
 
-    def set_layer_checkbox(self, layer, state):
-        item = self.widget.ui.layerTree[layer]
-        item.setCheckState(0, state)
-
     def is_layer_present(self, layer):
-        if not self.widget.ui.layerTree.is_layer_present(layer):
-            return False
         return self.widget.client.is_layer_present(layer)
 
     def is_layer_visible(self, layer):
@@ -90,7 +83,6 @@ class TestScatterWidget(object):
 
     def test_hub_data_add_is_ignored(self):
         layer = self.add_layer_via_hub()
-        assert not self.widget.ui.layerTree.is_layer_present(layer)
         assert not self.widget.client.is_layer_present(layer)
 
     def test_valid_add_data_via_method(self):
@@ -142,18 +134,14 @@ class TestScatterWidget(object):
         nobj = self.widget.ui.xAxisComboBox.count()
         subset = layer.new_subset()
         subset.register()
-        assert subset in self.widget.ui.layerTree
         assert self.widget.ui.xAxisComboBox.count() == nobj
 
-    def test_checkboxes_toggle_visbility(self):
-        layer = self.add_layer_via_method()
-        self.set_layer_checkbox(layer, Qt.Unchecked)
-        assert not self.is_layer_visible(layer)
-        self.set_layer_checkbox(layer, Qt.Checked)
-        assert self.is_layer_visible(layer)
-
     def test_correct_title_single_data(self):
+        ct = self.widget.client.layer_count
+        assert ct == 0
         layer = self.add_layer_via_method()
+        ct = self.widget.client.layer_count
+        assert ct == 1
         assert len(layer.label) > 0
         assert self.widget.windowTitle() == layer.label
 

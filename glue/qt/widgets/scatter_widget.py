@@ -23,19 +23,14 @@ class ScatterWidget(DataViewer):
         self.ui = Ui_ScatterWidget()
         self.ui.setupUi(self.central_widget)
         self._tweak_geometry()
-        #set up a clean data collection for scatter client
-        #lets us screen incoming data objects for size
-        self._clean_collection = core.DataCollection()
         self._collection = data
-        self.client = ScatterClient(self._clean_collection,
-                                    self.ui.mplWidget.canvas.fig,
-                                    master_data=data)
+        self.client = ScatterClient(self._collection,
+                                    self.ui.mplWidget.canvas.fig)
         self._connect()
         self.unique_fields = set()
         self.make_toolbar()
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
-        self.ui.layerTree.set_checkable(True)
 
     def _tweak_geometry(self):
         self.central_widget.resize(400, 400)
@@ -56,10 +51,6 @@ class ScatterWidget(DataViewer):
             lambda x: cl.set_yflip(x == Qt.Checked))
         ui.xAxisComboBox.currentIndexChanged.connect(self.update_xatt)
         ui.yAxisComboBox.currentIndexChanged.connect(self.update_yatt)
-        ui.layerTree._layer_check_changed.connect(cl.set_visible)
-        ui.layerTree.layerAddButton.pressed.disconnect()
-        ui.layerTree.layerAddButton.released.connect(self._choose_add_data)
-        ui.layerTree.linkButton.hide()
         ui.swapAxes.pressed.connect(self.swap_axes)
         ui.snapLimits.pressed.connect(cl.snap)
 
@@ -111,14 +102,15 @@ class ScatterWidget(DataViewer):
         :rtype: bool
         Returns True if the addition was excepted, False otherwise
         """
-        if data in self._clean_collection:
+        if self.client.is_layer_present(data):
             return
 
         if data.size > WARN_SLOW and not self._confirm_large_data(data):
             return False
 
-        first_layer = len(self._clean_collection) == 0
-        self._clean_collection.append(data)
+        first_layer = self.client.layer_count == 0
+
+        self.client.add_data(data)
         self.update_combos(data)
 
         if first_layer:  # forces both x and y axes to be rescaled
@@ -136,16 +128,12 @@ class ScatterWidget(DataViewer):
 
     def register_to_hub(self, hub):
         super(ScatterWidget, self).register_to_hub(hub)
-        self.ui.layerTree.setup(self._clean_collection, hub)
-        self._clean_collection.register_to_hub(hub)
         self.client.register_to_hub(hub)
         hub.subscribe(self, core.message.DataUpdateMessage,
                       lambda x: self._sync_labels())
 
     def unregister(self, hub):
-        self.ui.layerTree.unregister(hub)
         hub.unsubscribe_all(self.client)
-        hub.unsubscribe_all(self._clean_collection)
         hub.unsubscribe_all(self)
 
     def swap_axes(self):
@@ -189,7 +177,8 @@ class ScatterWidget(DataViewer):
 
     def _update_window_title(self):
         data = self.client.data
-        label = ', '.join([d.label for d in data])
+        label = ', '.join([d.label for d in data if
+                           self.client.is_visible(d)])
         self.setWindowTitle(label)
 
     def _sync_labels(self):

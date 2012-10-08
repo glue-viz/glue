@@ -56,8 +56,8 @@ class TestScatterClient(object):
 
     def layer_drawn(self, layer):
         return self.client.is_layer_present(layer) and \
-            self.client.managers[layer].is_visible() and \
-            self.client.managers[layer].is_enabled()
+            self.client.managers[layer].visible and \
+            self.client.managers[layer].enabled
 
     def layer_data_correct(self, layer, x, y):
         xx, yy = self.client.managers[layer].get_data()
@@ -119,7 +119,7 @@ class TestScatterClient(object):
 
     def test_double_add(self):
         n0 = len(self.client.ax.lines)
-        layer = self.add_data()
+        layer = self.add_data_and_attributes()
         #data present
         assert len(self.client.ax.lines) == n0 + 1 + len(layer.subsets)
         layer = self.add_data()
@@ -151,6 +151,13 @@ class TestScatterClient(object):
         assert self.client.is_layer_present(layer)
         subset.delete()
         assert not self.client.is_layer_present(subset)
+
+    def test_subset_removal_removes_from_plot(self):
+        layer = self.add_data_and_attributes()
+        subset = layer.new_subset()
+        ct0 = len(self.client.ax.lines)
+        subset.delete()
+        assert len(self.client.ax.lines) == ct0 - 1
 
     def test_add_subset_to_untracked_data(self):
         subset = self.data[0].new_subset()
