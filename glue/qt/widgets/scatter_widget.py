@@ -106,11 +106,16 @@ class ScatterWidget(DataViewer):
             self.unique_fields.add(lid)
 
     def add_data(self, data):
+        """Add a new data set to the widget
+
+        :rtype: bool
+        Returns True if the addition was excepted, False otherwise
+        """
         if data in self._clean_collection:
             return
 
         if data.size > WARN_SLOW and not self._confirm_large_data(data):
-            return
+            return False
 
         first_layer = len(self._clean_collection) == 0
         self._clean_collection.append(data)
@@ -127,6 +132,7 @@ class ScatterWidget(DataViewer):
             self.ui.yAxisComboBox.setCurrentIndex(0)
 
         self._update_window_title()
+        return True
 
     def register_to_hub(self, hub):
         super(ScatterWidget, self).register_to_hub(hub)

@@ -237,9 +237,11 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         if client:
             c = client(self._data)
             c.register_to_hub(self._hub)
+            if data and not c.add_data(data):
+                c.close()
+                return
+
             self._add_to_current_tab(c)
-            if data:
-                c.add_data(data)
             c.show()
 
     def _report_error(self, message):

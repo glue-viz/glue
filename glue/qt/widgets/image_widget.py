@@ -118,6 +118,7 @@ class ImageWidget(DataViewer):
     def add_data(self, data):
         """Overriden from DataViewer. Set current image to data"""
         self.set_data(self._data_index(data))
+        return True
 
     def _data_index(self, data):
         combo = self.ui.displayDataCombo

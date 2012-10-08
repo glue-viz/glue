@@ -115,13 +115,14 @@ class HistogramWidget(DataViewer):
         If first addition, also update attributes """
 
         if self.data_present(data):
-            return
+            return True
 
         if self._first_data():
             self._update_attributes(data)
 
         combo = self.ui.dataCombo
         combo.addItem(data.label, userData=data)
+        return True
 
     def _remove_data(self, data):
         """ Remove data item from the combo box """
