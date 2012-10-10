@@ -8,7 +8,7 @@ else:
     setapi('QVariant', 2)
 
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 
 from .config import load_configuration
 env = load_configuration()
