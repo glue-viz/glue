@@ -12,13 +12,15 @@ from ..core.roi import PolygonalROI
 from ..core.util import relim
 from ..core.edit_subset_mode import EditSubsetMode
 from .viz_client import init_mpl
-from .layer_manager import ScatterLayerManager
+from .layer_artist import ScatterLayerArtist, LayerArtistContainer
+
 
 class ScatterClient(Client):
     """
     A client class that uses matplotlib to visualize tables as scatter plots.
     """
-    def __init__(self, data=None, figure=None, axes=None):
+    def __init__(self, data=None, figure=None, axes=None,
+                 artist_container=None):
         """
         Create a new ScatterClient object
 
@@ -33,7 +35,9 @@ class ScatterClient(Client):
         """
         Client.__init__(self, data=data)
         figure, axes = init_mpl(figure, axes)
-        self.managers = {}
+        self.artists = artist_container
+        if self.artists is None:
+            self.artists = LayerArtistContainer()
 
         self._xatt = None
         self._yatt = None
@@ -47,14 +51,20 @@ class ScatterClient(Client):
 
     def is_layer_present(self, layer):
         """ True if layer is plotted """
-        return layer in self.managers
+        return layer in self.artists
 
     def get_layer_order(self, layer):
-        return self.managers[layer].zorder
+        """If layer exists as a single artist, return its zorder.
+        Otherwise, return None"""
+        artists = self.artists[layer]
+        if len(artists) == 1:
+            return artists[0].zorder
+        else:
+            return None
 
     @property
     def layer_count(self):
-        return len(self.managers)
+        return len(self.artists)
 
     def plottable_attributes(self, layer):
         data = layer.data
@@ -71,9 +81,9 @@ class ScatterClient(Client):
         """
         if layer.data not in self.data:
             raise TypeError("Layer not in data collection")
-        if layer in self.managers:
+        if layer in self.artists:
             return
-        self.managers[layer] = ScatterLayerManager(layer, self.ax)
+        self.artists.append(ScatterLayerArtist(layer, self.ax))
         self._bring_subsets_to_front()
         self._update_layer(layer)
         self._ensure_subsets_added(layer)
@@ -86,23 +96,23 @@ class ScatterClient(Client):
 
     def _bring_subsets_to_front(self):
         """ Make sure subsets are in front of data """
-        nlayers = len(self.managers)
+        nlayers = len(self.artists)
         for i, data in enumerate(self.data):
-            if data not in self.managers:
+            if data not in self.artists:
                 continue
-            self.managers[data].zorder = i * nlayers
+            for a in self.artists[data]:
+                a.zorder = i * nlayers
             for j, sub in enumerate(data.subsets):
-                if sub not in self.managers:
-                    continue
-                self.managers[sub].zorder = i * nlayers + j + 1
+                for a in self.artists[sub]:
+                    a.zorder = i * nlayers + j + 1
 
     def _visible_limits(self, axis):
         """Return the min-max visible data boundaries for given axis"""
         data = []
-        for mgr in self.managers.values():
-            if not mgr.visible:
+        for art in self.artists:
+            if not art.visible:
                 continue
-            xy = mgr.get_data()
+            xy = art.get_data()
             assert isinstance(xy, tuple)
             data.append(xy[axis])
 
@@ -165,15 +175,16 @@ class ScatterClient(Client):
         :param state: True to show. false to hide
         :type state: boolean
         """
-        if layer not in self.managers:
+        if layer not in self.artists:
             return
-        self.managers[layer].visible = state
+        for a in self.artists[layer]:
+            a.visible = state
         self._redraw()
 
     def is_visible(self, layer):
-        if layer not in self.managers:
+        if layer not in self.artists:
             return False
-        return self.managers[layer].visible
+        return any(a.visible for a in self.artists[layer])
 
     def set_xydata(self, coord, attribute, snap=True):
         """ Redefine which components get assigned to the x/y axes
@@ -198,7 +209,7 @@ class ScatterClient(Client):
             self._yatt = attribute
 
         #update plots
-        map(self._update_layer, (l for l in self.managers))
+        map(self._update_layer, self.artists.layers)
 
         if coord == 'x' and snap:
             self._snap_xlim()
@@ -314,10 +325,9 @@ class ScatterClient(Client):
         self.delete_layer(message.subset)
 
     def delete_layer(self, layer):
-        if layer not in self.managers:
+        if layer not in self.artists:
             return
-        manager = self.managers.pop(layer)
-        manager.clear()
+        self.artists.pop(layer)
         self._redraw()
         assert not self.is_layer_present(layer)
 
@@ -356,12 +366,12 @@ class ScatterClient(Client):
         if self._xatt is None or self._yatt is None:
             return
 
-        if layer not in self.managers:
+        if layer not in self.artists:
             return
 
         self._layer_updated = True
-        mgr = self.managers[layer]
-        mgr.xatt = self._xatt
-        mgr.yatt = self._yatt
-        mgr.update()
-        self._redraw()
+        for art in self.artists[layer]:
+            art.xatt = self._xatt
+            art.yatt = self._yatt
+            art.update()
+            self._redraw()

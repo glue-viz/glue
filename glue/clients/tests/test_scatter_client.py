@@ -48,6 +48,7 @@ class TestScatterClient(object):
     def is_first_in_front(self, front, back):
         z1 = self.client.get_layer_order(front)
         z2 = self.client.get_layer_order(back)
+        print z1, z2
         return z1 > z2
 
     def connect(self):
@@ -56,11 +57,10 @@ class TestScatterClient(object):
 
     def layer_drawn(self, layer):
         return self.client.is_layer_present(layer) and \
-            self.client.managers[layer].visible and \
-            self.client.managers[layer].enabled
+            all(a.enabled and a.visible for a in self.client.artists[layer])
 
     def layer_data_correct(self, layer, x, y):
-        xx, yy = self.client.managers[layer].get_data()
+        xx, yy = self.client.artists[layer][0].get_data()
         if max(abs(xx - x)) > .01:
             return False
         if max(abs(yy - y)) > .01:
@@ -195,7 +195,7 @@ class TestScatterClient(object):
         self.client.set_xdata(c)
         ct1 = ctr.call_count
         ncall = ct1 - ct0
-        expected = len(self.client.managers)
+        expected = len(self.client.artists)
         assert ncall >= expected
 
     def test_two_incompatible_data(self):

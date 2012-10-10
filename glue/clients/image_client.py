@@ -13,7 +13,8 @@ from ..core.edit_subset_mode import EditSubsetMode
 from ..core.util import color2rgb
 
 from .viz_client import VizClient, init_mpl
-from .layer_manager import ScatterLayerManager
+from .layer_artist import ScatterLayerArtist
+
 
 class InvNormalize(Normalize):
     """ Simple wrapper to matplotlib Normalize object, that
@@ -377,7 +378,7 @@ class ImageClient(VizClient):
 
         if s not in self.layers:
             return
-        if isinstance(self.layers[s], ScatterLayerManager):
+        if isinstance(self.layers[s], ScatterLayerArtist):
             self._update_scatter_layer(s, redraw)
             return
 
@@ -472,7 +473,7 @@ class ImageClient(VizClient):
         if layer in self.layers:
             return
 
-        self.layers[layer] = ScatterLayerManager(layer, self._ax)
+        self.layers[layer] = ScatterLayerArtist(layer, self._ax)
         self._update_scatter_layer(layer, redraw=True)
 
     def _update_scatter_layer(self, layer, redraw=False):
@@ -490,7 +491,7 @@ class ImageClient(VizClient):
 
     def _is_scatter_layer(self, layer):
         return layer in self.layers and isinstance(self.layers[layer],
-                                                   ScatterLayerManager)
+                                                   ScatterLayerArtist)
 
     def _get_plot_attributes(self):
         if self.display_data is None:

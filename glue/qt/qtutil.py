@@ -4,9 +4,8 @@ from PyQt4.QtCore import Qt
 from PyQt4.QtCore import QMimeData
 from PyQt4.QtGui import (QColor, QInputDialog, QColorDialog,
                          QListWidget, QTreeWidget, QPushButton, QMessageBox,
-                         QTabBar)
+                         QTabBar, QBitmap, QIcon, QPixmap)
 
-from .. import core
 from .decorators import set_cursor
 
 
@@ -149,10 +148,15 @@ def edit_layer_color(layer):
 def edit_layer_symbol(layer):
     """ Interactively edit a layer's symbol """
     dialog = QInputDialog()
+    options = ['o', '^', '*', 's']
+    try:
+        initial = options.index(layer.style.marker)
+    except IndexError:
+        initial = 0
     symb, isok = dialog.getItem(None, 'Pick a Symbol',
                                 'Pick a Symbol',
-                                ['.', 'o', 'v', '>', '<', '^'])
-    if isok:
+                                options, current=initial)
+    if isok and symb != layer.style.marker:
         layer.style.marker = symb
 
 
@@ -162,7 +166,7 @@ def edit_layer_point_size(layer):
     size, isok = dialog.getInt(None, 'Point Size', 'Point Size',
                                value=layer.style.markersize,
                                min=1, max=1000, step=1)
-    if isok:
+    if isok and size != layer.style.markersize:
         layer.style.markersize = size
 
 
@@ -171,7 +175,7 @@ def edit_layer_label(layer):
     dialog = QInputDialog()
     label, isok = dialog.getText(None, 'New Label:', 'New Label:',
                                  text=layer.label)
-    if isok:
+    if isok and str(label) != layer.label:
         layer.label = str(label)
 
 
@@ -289,6 +293,62 @@ class GlueItemView(object):
     @property
     def data(self):
         return self._mime_data
+
+
+POINT_ICONS = {'o': ':icons/glue_circle_point.png',
+               's': ':icons/glue_box_point.png',
+               '^': ':icons/glue_triangle_up.png',
+               '*': ':icons/glue_star.png',
+               '+': ':icons/glue_cross.png'}
+
+
+def layer_icon(layer):
+    """Create a QIcon for a Data or Subset instance
+
+    :type layer: :class:`~glue.core.data.Data` or
+                 :class:`~glue.core.subset.Subset`
+
+    :rtype: QIcon
+    """
+    bm = QBitmap(POINT_ICONS.get(layer.style.marker,
+                                 ':icons/glue_circle_point.png'))
+    color = mpl_to_qt4_color(layer.style.color)
+    pm = tint_pixmap(bm, color)
+    return QIcon(pm)
+
+
+def layer_artist_icon(artist):
+    """Create a QIcon for a LayerArtist instance"""
+    from ..clients.layer_artist import ImageLayerArtist
+    if isinstance(artist, ImageLayerArtist):
+        bm = QBitmap(':icons/glue_image.png')
+    else:
+        bm = QBitmap(POINT_ICONS.get(artist.layer.style.marker,
+                                     ':icons/glue_circle_point.png'))
+    color = mpl_to_qt4_color(artist.layer.style.color)
+
+    pm = tint_pixmap(bm, color)
+    return QIcon(pm)
+
+
+def tint_pixmap(bm, color):
+    """Re-color a monochrome pixmap object using `color`
+
+    :param bm: QBitmap instance
+    :param color: QColor instance
+
+    :rtype: QPixmap. The new pixma;
+    """
+    if bm.depth() != 1:
+        raise TypeError("Input pixmap must have a depth of 1: %i" % bm.depth())
+
+    image = bm.toImage()
+    image.setColor(1, color.rgba())
+    image.setColor(0, QColor(0, 0, 0, 0).rgba())
+
+    result = QPixmap()
+    result.convertFromImage(image)
+    return result
 
 
 class GlueListWidget(GlueItemView, QListWidget):

@@ -9,6 +9,7 @@ from ..mouse_mode import RectangleMode, CircleMode, PolyMode
 
 from ..ui.scatterwidget import Ui_ScatterWidget
 from .data_viewer import DataViewer
+from ..layer_artist_model import QtLayerArtistContainer
 
 WARN_SLOW = 250000  # max number of points which render quickly
 
@@ -24,8 +25,13 @@ class ScatterWidget(DataViewer):
         self.ui.setupUi(self.central_widget)
         self._tweak_geometry()
         self._collection = data
+
+        container = QtLayerArtistContainer()
+        self.ui.artist_view.setModel(container.model)
         self.client = ScatterClient(self._collection,
-                                    self.ui.mplWidget.canvas.fig)
+                                    self.ui.mplWidget.canvas.fig,
+                                    artist_container=container)
+        assert self.client.artists is container
         self._connect()
         self.unique_fields = set()
         self.make_toolbar()
@@ -33,7 +39,7 @@ class ScatterWidget(DataViewer):
         self.setFocusPolicy(Qt.StrongFocus)
 
     def _tweak_geometry(self):
-        self.central_widget.resize(400, 400)
+        self.central_widget.resize(600, 400)
         self.ui.splitter.setSizes([320, 150])
         self.resize(self.central_widget.size())
 

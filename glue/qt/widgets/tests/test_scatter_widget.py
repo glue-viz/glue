@@ -44,7 +44,7 @@ class TestScatterWidget(object):
         Output format: [xmin, xmax], [ymin, ymax]
         """
         client = self.widget.client
-        x, y = client.managers[layer].get_data()
+        x, y = client.artists[layer][0].get_data()
         xmin = x.min()
         xmax = x.max()
         ymin = y.min()
