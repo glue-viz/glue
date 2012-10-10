@@ -40,7 +40,7 @@ class ScatterWidget(DataViewer):
 
     def _tweak_geometry(self):
         self.central_widget.resize(600, 400)
-        self.ui.splitter.setSizes([320, 150])
+        self.ui.splitter.setSizes([350, 50])
         self.resize(self.central_widget.size())
 
     def _connect(self):
@@ -106,7 +106,7 @@ class ScatterWidget(DataViewer):
         """Add a new data set to the widget
 
         :rtype: bool
-        Returns True if the addition was excepted, False otherwise
+        Returns True if the addition was expected, False otherwise
         """
         if self.client.is_layer_present(data):
             return
@@ -117,6 +117,39 @@ class ScatterWidget(DataViewer):
         first_layer = self.client.layer_count == 0
 
         self.client.add_data(data)
+        self.update_combos(data)
+
+        if first_layer:  # forces both x and y axes to be rescaled
+            self.update_xatt(None)
+            self.update_yatt(None)
+
+        self.ui.xAxisComboBox.setCurrentIndex(0)
+        if len(data.visible_components) > 1:
+            self.ui.yAxisComboBox.setCurrentIndex(1)
+        else:
+            self.ui.yAxisComboBox.setCurrentIndex(0)
+
+        self._update_window_title()
+        return True
+
+    def add_subset(self, subset):
+        """Add a subset to the widget
+
+        :rtype: bool:
+        Returns True if the addition was accepted, False otherwise
+        """
+        print 'adding subset'
+        if self.client.is_layer_present(subset):
+            print 'subset present'
+            return
+
+        data = subset.data
+        if data.size > WARN_SLOW and not self._confirm_large_data(data):
+            return False
+
+        first_layer = self.client.layer_count == 0
+
+        self.client.add_layer(subset)
         self.update_combos(data)
 
         if first_layer:  # forces both x and y axes to be rescaled
@@ -192,11 +225,3 @@ class ScatterWidget(DataViewer):
 
     def __str__(self):
         return "Scatter Widget"
-
-    def dropEvent(self, event):
-        """Override DataViewer to accept subsets as well"""
-        obj = event.mimeData().data('application/py_instance')
-        if isinstance(obj, core.data.Data):
-            self.add_data(obj)
-        elif isinstance(obj, core.subset.Subset):
-            self.add_data(obj.data)

@@ -3,6 +3,7 @@ from PyQt4.QtCore import Qt
 
 from ...core.hub import HubListener
 from ...core.data import Data
+from ...core.subset import Subset
 
 
 class DataViewer(QMainWindow, HubListener):
@@ -30,9 +31,22 @@ class DataViewer(QMainWindow, HubListener):
         raise NotImplementedError
 
     def add_data(self, data):
-        """ Abstract method to add data objects to the viewer
+        """ Add a data instance to the viewer
+
+        This must be overridden by a subclass
+
         :param data: Data object to add
         :type data: :class:`~glue.core.Data`
+        """
+        raise NotImplementedError
+
+    def add_subset(self, subset):
+        """ Add a subset to the viewer
+
+        This must be overridden by a subclass
+
+        :param subset: Subset instance to add
+        :type subset: :class:`~glue.core.subset.Subset`
         """
         raise NotImplementedError
 
@@ -46,9 +60,10 @@ class DataViewer(QMainWindow, HubListener):
     def dropEvent(self, event):
         """ Add data to the viewer if the event has a glue Data object """
         obj = event.mimeData().data('application/py_instance')
-        if not isinstance(obj, Data):
-            return
-        self.add_data(obj)
+        if isinstance(obj, Data):
+            self.add_data(obj)
+        elif isinstance(obj, Subset):
+            self.add_subset(obj)
 
     def mousePressEvent(self, event):
         """ Consume mouse press events, and prevent them from propagating

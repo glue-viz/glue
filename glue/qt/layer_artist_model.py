@@ -86,6 +86,7 @@ class LayerArtistModel(QAbstractListModel):
         self.beginRemoveRows(QModelIndex(), row, row)
         art = self.artists.pop(row)
         art.clear()
+        art.redraw()
         self.endRemoveRows()
         return True
 
