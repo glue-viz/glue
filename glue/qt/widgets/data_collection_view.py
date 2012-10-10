@@ -177,7 +177,7 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
 
         style = layer.style
         widget_item = self[layer]
-        icon = _color_icon(style.color)
+        icon = qtutil.layer_icon(layer)
         widget_item.setIcon(1, icon)
         size = style.markersize
         label = layer.label

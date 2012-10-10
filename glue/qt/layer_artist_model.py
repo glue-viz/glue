@@ -224,7 +224,7 @@ class LayerArtistView(QListView):
 
     def _set_palette(self):
         p = self.palette()
-        c = QColor(230, 230, 230)
+        c = QColor(240, 240, 240)
         p.setColor(QPalette.Highlight, c)
         p.setColor(QPalette.HighlightedText, QColor(Qt.black))
         self.setPalette(p)
