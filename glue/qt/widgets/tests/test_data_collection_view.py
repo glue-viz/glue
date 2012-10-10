@@ -85,9 +85,3 @@ class TestDataCollectionView(object):
         subset.label = "testing"
         item = self.get_item(subset)
         assert item.text(0) == "testing"
-
-    def test_update_data_size(self):
-        self.collect.append(self.data)
-        self.data.style.markersize = 123
-        item = self.get_item(self.data)
-        assert int(item.text(3)) == 123

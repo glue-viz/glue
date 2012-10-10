@@ -262,6 +262,28 @@ class ChangeColorAction(LayerAction):
         qtutil.edit_layer_color(self.selected_layers()[0])
 
 
+class ChangeSizeAction(LayerAction):
+    _title = "Change size"
+    _tooltip = "Edit symbol size"
+
+    def _can_trigger(self):
+        return self.single_selection()
+
+    def _do_action(self):
+        qtutil.edit_layer_point_size(self.selected_layers()[0])
+
+
+class ChangeMarkerAction(LayerAction):
+    _title = "Change symbol"
+    _tooltip = "Edit plot symbol"
+
+    def _can_trigger(self):
+        return self.single_selection()
+
+    def _do_action(self):
+        qtutil.edit_layer_symbol(self.selected_layers()[0])
+
+
 class Inverter(LayerAction):
     _title = "Invert"
     _icon = ":icons/glue_not.png"
@@ -434,8 +456,14 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
     def _create_actions(self):
         tree = self.layerTree
 
+        sep = QAction("Style", tree)
+        sep.setSeparator(True)
+        tree.addAction(sep)
+
         self._actions['label'] = ChangeLabelAction(self)
         self._actions['color'] = ChangeColorAction(self)
+        self._actions['size'] = ChangeSizeAction(self)
+        self._actions['marker'] = ChangeMarkerAction(self)
 
         sep = QAction("", tree)
         sep.setSeparator(True)
@@ -485,21 +513,12 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
     def edit_current_layer(self):
         """ Allow user to interactively set layer properties of
         the currently highlighted layer """
-        column = self.layerTree.currentColumn()
         item = self.layerTree.currentItem()
         if item is None:
             return
 
         layer = self[item]
-
-        if column == 0:
-            qtutil.edit_layer_label(layer)
-        if column == 1:
-            qtutil.edit_layer_color(layer)
-        elif column == 2:
-            qtutil.edit_layer_symbol(layer)
-        elif column == 3:
-            qtutil.edit_layer_point_size(layer)
+        qtutil.edit_layer_label(layer)
 
         # this triggers toggling of expansion state. re-toggle
         expand = item.isExpanded()

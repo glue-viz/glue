@@ -28,6 +28,7 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         self._hub = None
         self._layer_dict = {}
         self.checkable = False
+        self.setColumnCount(2)
 
     def setup(self, data_collection, hub):
         """ Sync to data collection and hub
@@ -179,11 +180,9 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         widget_item = self[layer]
         icon = qtutil.layer_icon(layer)
         widget_item.setIcon(1, icon)
-        size = style.markersize
         label = layer.label
 
         widget_item.setText(0, label)
-        widget_item.setText(3, "%i" % size)
         ncol = self.columnCount()
         for i in range(ncol):
             self.resizeColumnToContents(i)

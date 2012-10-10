@@ -73,17 +73,7 @@
        </column>
        <column>
         <property name="text">
-         <string>Color</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Link</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Size</string>
+         <string> </string>
         </property>
        </column>
       </widget>

@@ -236,7 +236,7 @@ class TestLayerTree(object):
             layer = self.add_layer()
             item = self.widget[layer]
             self.widget.layerTree.setCurrentItem(item, 0)
-            self.widget.edit_current_layer()
+            self.widget._actions['label'].trigger()
             edit_layer_label.assert_called_once_with(layer)
 
     def test_edit_layer_color(self):
@@ -244,8 +244,8 @@ class TestLayerTree(object):
         with patch(pth) as edit_layer_color:
             layer = self.add_layer()
             item = self.widget[layer]
-            self.widget.layerTree.setCurrentItem(item, 1)
-            self.widget.edit_current_layer()
+            self.widget.layerTree.setCurrentItem(item, 0)
+            self.widget._actions['color'].trigger()
             edit_layer_color.assert_called_once_with(layer)
 
     def test_edit_layer_symbol(self):
@@ -253,8 +253,8 @@ class TestLayerTree(object):
         with patch(pth) as edit_layer_symbol:
             layer = self.add_layer()
             item = self.widget[layer]
-            self.widget.layerTree.setCurrentItem(item, 2)
-            self.widget.edit_current_layer()
+            self.widget.layerTree.setCurrentItem(item, 0)
+            self.widget._actions['marker'].trigger()
             edit_layer_symbol.assert_called_once_with(layer)
 
     def test_edit_layer_point_size(self):
@@ -262,8 +262,8 @@ class TestLayerTree(object):
         with patch(pth) as edit_layer_point_size:
             layer = self.add_layer()
             item = self.widget[layer]
-            self.widget.layerTree.setCurrentItem(item, 3)
-            self.widget.edit_current_layer()
+            self.widget.layerTree.setCurrentItem(item, 0)
+            self.widget._actions['size'].trigger()
             edit_layer_point_size.assert_called_once_with(layer)
 
     def test_load_data(self):
