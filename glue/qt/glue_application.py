@@ -224,9 +224,9 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
 
         from .widgets import ScatterWidget, ImageWidget
 
-        if data.ndim == 1 and ScatterWidget in env.qt_clients:
+        if data and data.ndim == 1 and ScatterWidget in env.qt_clients:
             default = env.qt_clients.index(ScatterWidget)
-        elif data.ndim in [2, 3] and ImageWidget in env.qt_clients:
+        elif data and data.ndim in [2, 3] and ImageWidget in env.qt_clients:
             default = env.qt_clients.index(ImageWidget)
         else:
             default = 0
