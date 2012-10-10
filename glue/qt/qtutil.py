@@ -346,8 +346,7 @@ def tint_pixmap(bm, color):
     image.setColor(1, color.rgba())
     image.setColor(0, QColor(0, 0, 0, 0).rgba())
 
-    result = QPixmap()
-    result.convertFromImage(image)
+    result = QPixmap.fromImage(image)
     return result
 
 
