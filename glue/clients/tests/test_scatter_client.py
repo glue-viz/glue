@@ -402,3 +402,9 @@ class TestScatterClient(object):
 
         self.client.set_ylog(True)
         self.client._snap_ylim.assert_called_once_with()
+
+    def test_subset_added_only_if_data_layer_present(self):
+        self.collect.append(self.data[0])
+        assert self.data[0] not in self.client.artists
+        s = self.data[0].new_subset()
+        assert s not in self.client.artists

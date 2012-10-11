@@ -356,6 +356,9 @@ class ScatterClient(Client):
 
     def _add_subset(self, message):
         subset = message.sender
+        #only add subset if data layer present
+        if subset.data not in self.artists:
+            return
         subset.do_broadcast(False)
         self.add_layer(subset)
         subset.do_broadcast(True)

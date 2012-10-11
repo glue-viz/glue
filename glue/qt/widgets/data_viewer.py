@@ -22,6 +22,7 @@ class DataViewer(QMainWindow, HubListener):
         self._hub = None
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.setAcceptDrops(True)
+        self.setAnimated(False)
 
     def register_to_hub(self, hub):
         self._hub = hub
