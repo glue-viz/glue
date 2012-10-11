@@ -5,8 +5,8 @@ import numpy as np
 from .. import link_helpers as lh
 from ..link_helpers import (LinkTwoWay, MultiLink, Galactic2Equatorial,
                             lb2ra, lb2dec, radec2glon, radec2glat,
-                            LinkSame)
-from ...core import ComponentID, ComponentLink
+                            LinkSame, LinkAligned)
+from ...core import ComponentID, ComponentLink, Data, Component, DataCollection
 
 R, D, L, B = (ComponentID('ra'), ComponentID('dec'),
               ComponentID('lon'), ComponentID('lat'))
@@ -126,3 +126,26 @@ def test_toid():
 
     with pytest.raises(TypeError) as exc:
         lh._toid(None)
+
+
+@pytest.mark.parametrize(('ndata', 'ndim'),
+                         [(1, 1), (2, 0), (2, 1), (2, 2), (3, 2)])
+def test_link_aligned(ndata, ndim):
+    ds = []
+    shp = tuple([2] * ndim)
+    for i in range(ndata):
+        d = Data()
+        c = Component(np.random.random(shp))
+        d.add_component(c, 'test')
+        ds.append(d)
+
+    #assert that all componentIDs are interchangeable
+    links = LinkAligned(ds)
+    dc = DataCollection(ds)
+    dc.add_link(links)
+
+    for i in range(ndim):
+        id0 = ds[0].get_pixel_component_id(i)
+        for j in range(1, ndata):
+            id1 = ds[j].get_pixel_component_id(i)
+            np.testing.assert_array_equal(ds[j][id0], ds[j][id1])

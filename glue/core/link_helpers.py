@@ -1,3 +1,15 @@
+""" This module provides several classes and LinkCollection classes to
+assist in linking data.
+
+The functions in this class (and stored in the __LINK_FUNCTIONS__
+list) define common coordinate transformations. They are meant to be
+used for the `using` parameter in :class:`ComponentLink` instances.
+
+The LinkCollection class and its sublcasses are factories to create
+multiple ComponentLinks easily. They are meant to be passed to
+:func:`DataCollection.add_link()`
+"""
+
 from .component_link import ComponentLink
 from .data import ComponentID
 
@@ -57,7 +69,7 @@ class LinkTwoWay(LinkCollection):
 
 class MultiLink(LinkCollection):
     """
-    Cmpute all the ComponentLinks to link groups of ComponentIDs
+    Compute all the ComponentLinks to link groups of ComponentIDs
 
     Uses functions assumed to output tuples
 
@@ -91,6 +103,24 @@ class MultiLink(LinkCollection):
             for i, l in enumerate(cids_left):
                 func = _partial_result(backwards, i)
                 self.append(ComponentLink(cids_right, l, func))
+
+
+class LinkAligned(LinkCollection):
+    """Compute all the links to specify that the input data are pixel-aligned
+
+    :param data: An iterable of :class:`~glue.core.Data` instances
+    that are aligned at the pixel level. They must be the same shape.
+    """
+    def __init__(self, data):
+        shape = data[0].shape
+        ndim = data[0].ndim
+        for i, d in enumerate(data[1:]):
+            if d.shape != shape:
+                raise TypeError("Input data do not have the same shape")
+            for j in range(ndim):
+                self.extend(LinkSame(data[0].get_pixel_component_id(j),
+                                     data[i + 1].get_pixel_component_id(j)))
+
 
 try:
     from aplpy.wcs_util import fk52gal, gal2fk5
