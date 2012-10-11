@@ -15,7 +15,7 @@ def relim(lo, hi, log=False):
             x = 1e-5
         if hi < 0:
             y = 1e5
-        return x * .98, y * 1.02
+        return x * .95, y * 1.05
     delta = y - x
     return (x - .02 * delta, y + .02 * delta)
 
