@@ -469,6 +469,7 @@ class MplCircularROI(AbstractMplRoi):
 
         self._patch = Ellipse((0., 0.), transform=IdentityTransform(),
                               width=0., height=0.,)
+        self._patch.set_zorder(100)
         self._patch.set(**self.plot_opts)
         self._ax.add_patch(self._patch)
         self._sync_patch()
@@ -559,6 +560,7 @@ class MplPolygonalROI(AbstractMplRoi):
         self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
         self._patch = Polygon(np.array(zip([0, 1], [0, 1])))
+        self._patch.set_zorder(100)
         self._patch.set(**self.plot_opts)
 
         self._ax.add_patch(self._patch)

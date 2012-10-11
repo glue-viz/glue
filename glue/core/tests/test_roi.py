@@ -277,6 +277,9 @@ class TestMpl(object):
     def test_undefined_on_creation(self):
         assert not self.roi._roi.defined()
 
+    def test_large_zorder(self):
+        assert self.roi._patch.get_zorder() >= 100
+
     def test_proper_roi(self):
         raise NotImplementedError
 
