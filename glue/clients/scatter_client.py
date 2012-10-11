@@ -122,6 +122,7 @@ class ScatterClient(Client):
         if data.size == 0:
             return
 
+        data = data[np.isfinite(data)]
         lo, hi = np.nanmin(data), np.nanmax(data)
         if not np.isfinite(lo):
             return
@@ -138,7 +139,7 @@ class ScatterClient(Client):
             return
         rng = relim(rng[0], rng[1], is_log)
 
-        if self.ax.xaxis_inverted():
+        if self.is_xflip():
             rng = rng[::-1]
 
         self.ax.set_xlim(rng)
@@ -155,7 +156,7 @@ class ScatterClient(Client):
             return
         rng = relim(rng[0], rng[1], is_log)
 
-        if self.ax.yaxis_inverted():
+        if self.is_yflip():
             rng = rng[::-1]
 
         self.ax.set_ylim(rng)
@@ -267,7 +268,13 @@ class ScatterClient(Client):
         :type state: string ('log' or 'linear')
         """
         mode = 'log' if state else 'linear'
+        lim = self.ax.get_xlim()
         self.ax.set_xscale(mode)
+
+        #Rescale if switching to log with negative bounds
+        if state and min(lim) <= 0:
+            self._snap_xlim()
+
         self._redraw()
 
     def set_ylog(self, state):
@@ -277,7 +284,12 @@ class ScatterClient(Client):
         :type state: string ('log' or 'linear')
         """
         mode = 'log' if state else 'linear'
+        lim = self.ax.get_ylim()
         self.ax.set_yscale(mode)
+        #Rescale if switching to log with negative bounds
+        if state and min(lim) <= 0:
+            self._snap_ylim()
+
         self._redraw()
 
     def is_xflip(self):

@@ -105,7 +105,7 @@ class ScatterLayerArtist(LayerArtist):
 
     def get_data(self):
         try:
-            return self.layer[self.xatt], self.layer[self.yatt]
+            return self.layer[self.xatt].ravel(), self.layer[self.yatt].ravel()
         except IncompatibleAttribute:
             return np.array([]), np.array([])
 

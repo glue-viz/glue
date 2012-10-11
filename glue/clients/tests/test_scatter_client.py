@@ -30,6 +30,18 @@ class TestScatterClient(object):
         self.client = ScatterClient(self.collect, axes=AXES)
         self.connect()
 
+    def setup_2d_data(self):
+        d = core.Data()
+        x = core.Component(np.array([[1, 2], [3, 4]]))
+        y = core.Component(np.array([[2, 4], [6, 8]]))
+        xid = d.add_component(x, 'x')
+        yid = d.add_component(y, 'y')
+        self.collect.append(d)
+        self.client.add_layer(d)
+        self.client.set_xdata(xid)
+        self.client.set_ydata(yid)
+        return d
+
     def add_data(self, data=None):
         if data is None:
             data = self.data[0]
@@ -329,10 +341,64 @@ class TestScatterClient(object):
         assert not self.client.is_visible(data.edit_subset)
 
     def test_2d_data(self):
-        comp = core.data.Component(np.array([[1, 2], [3, 4]]))
-        data = core.data.Data()
-        cid = data.add_component(comp, '2d')
-        self.collect.append(data)
-        self.client.add_layer(data)
-        self.client.set_xdata(cid)
-        self.client.set_ydata(cid)
+        """Should be abple to plot 2d data"""
+        data = self.setup_2d_data()
+        assert self.layer_data_correct(data, [1, 2, 3, 4], [2, 4, 6, 8])
+
+    def test_2d_data_limits_with_subset(self):
+        """visible limits should work with subsets and 2d data"""
+        d = self.setup_2d_data()
+        state = d.id['x'] > 2
+        s = d.new_subset()
+        s.subset_state = state
+        assert self.client._visible_limits(0) == (1, 4)
+        assert self.client._visible_limits(1) == (2, 8)
+
+    def test_limits_nans(self):
+        d = core.Data()
+        x = core.Component(np.array([[1, 2], [np.nan, 4]]))
+        y = core.Component(np.array([[2, 4], [np.nan, 8]]))
+        xid = d.add_component(x, 'x')
+        yid = d.add_component(y, 'y')
+        self.collect.append(d)
+        self.client.add_layer(d)
+        self.client.set_xdata(xid)
+        self.client.set_ydata(yid)
+
+        assert self.client._visible_limits(0) == (1, 4)
+        assert self.client._visible_limits(1) == (2, 8)
+
+    def test_limits_inf(self):
+        d = core.Data()
+        x = core.Component(np.array([[1, 2], [np.infty, 4]]))
+        y = core.Component(np.array([[2, 4], [-np.infty, 8]]))
+        xid = d.add_component(x, 'x')
+        yid = d.add_component(y, 'y')
+        self.collect.append(d)
+        self.client.add_layer(d)
+        self.client.set_xdata(xid)
+        self.client.set_ydata(yid)
+
+        assert self.client._visible_limits(0) == (1, 4)
+        assert self.client._visible_limits(1) == (2, 8)
+
+    def test_xlog_relimits_if_negative(self):
+        self.add_data_and_attributes()
+        self.client.set_xflip(False)
+        self.client.set_xlog(False)
+
+        self.client.ax.set_xlim(-5, 5)
+        self.client._snap_xlim = MagicMock()
+
+        self.client.set_xlog(True)
+        self.client._snap_xlim.assert_called_once_with()
+
+    def test_ylog_relimits_if_negative(self):
+        self.add_data_and_attributes()
+        self.client.set_yflip(False)
+        self.client.set_ylog(False)
+        self.client.ax.set_ylim(-5, 5)
+        self.client._snap_ylim = MagicMock()
+
+        self.client.set_ylog(True)
+        self.client._snap_ylim.assert_called_once_with()

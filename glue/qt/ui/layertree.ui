@@ -73,7 +73,7 @@
        </column>
        <column>
         <property name="text">
-         <string> </string>
+         <string>Symbol</string>
         </property>
        </column>
       </widget>
