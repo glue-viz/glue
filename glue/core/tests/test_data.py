@@ -171,8 +171,8 @@ class TestData(object):
         comp = Component(np.array([1]))
         with pytest.raises(TypeError) as exc:
             self.data.add_component(comp, label='bad')
-        assert exc.value.args[0] == ("Compoment is incompatible with "
-                                     "other components in this data")
+        assert exc.value.args[0] == ("Component shape is incompatible with "
+                                     "other components in this data: bad")
 
     def test_add_component_link(self):
         link = MagicMock(spec_set=ComponentLink)
@@ -341,3 +341,23 @@ class TestPixelLabel(object):
         assert pixel_label(2, 3) == "x"
         assert pixel_label(1, 0) == "Axis 1"
         assert pixel_label(1, 4) == "Axis 1"
+
+
+@pytest.mark.parametrize(('kwargs'),
+                         [{'x': [1, 2, 3]},
+                          {'x': np.array([1, 2, 3])},
+                          {'x': [[1, 2, 3], [2, 3, 4]]},
+                          {'x': [1, 2], 'y': [2, 3]}])
+def test_init_with_inputs(kwargs):
+    """Passing array-like objects as keywords to Data
+    auto-populates Components with label names = keywords"""
+    d = Data(**kwargs)
+    for label, data in kwargs.items():
+        np.testing.assert_array_equal(d[d.id[label]], data)
+
+
+def test_init_with_invalid_kwargs():
+    with pytest.raises(TypeError) as exc:
+        d = Data(x=[1, 2], y=[1, 2, 3])
+    assert exc.value.args[0].startswith('Component shape is incompatible '
+                                        'with other')

@@ -224,7 +224,7 @@ class Data(object):
     first is rather verbose
     """
 
-    def __init__(self, label=""):
+    def __init__(self, label="", **kwargs):
         """:param label: label for data
         :type label: str"""
         # Coordinate conversion object
@@ -238,7 +238,7 @@ class Data(object):
 
         # access to ComponentIDs via .item[name]
         class ComponentIDDict(object):
-            def __init__(self, data):
+            def __init__(self, data, **kwargs):
                 self.data = data
 
             def __getitem__(self, key):
@@ -267,6 +267,10 @@ class Data(object):
         self.label = label  # trigger disambiguation
 
         self.edit_subset = None
+
+        for lbl, data in kwargs.items():
+            c = Component(np.asarray(data))
+            self.add_component(c, lbl)
 
     @property
     def ndim(self):
@@ -335,8 +339,8 @@ class Data(object):
            The ComponentID associated with the newly-added component
         """
         if not(self._check_can_add(component)):
-            raise TypeError("Compoment is incompatible with "
-                            "other components in this data")
+            raise TypeError("Component shape is incompatible with "
+                            "other components in this data: %s" % label)
 
         if isinstance(label, ComponentID):
             component_id = label
