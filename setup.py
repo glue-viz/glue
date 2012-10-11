@@ -12,48 +12,50 @@ from setupext import (print_line, print_raw, print_status,
                       check_for_mock, check_for_pil, check_for_atpy,
                       )
 
-#get version information
-for line in open('glue/version.py'):
-    if (line.startswith('__version__')):
-        exec(line.strip())
+def print_sysinfo():
+    """Print information about relevant dependencies"""
+    #get version information
+    for line in open('glue/version.py'):
+        if (line.startswith('__version__')):
+            exec(line.strip())
 
-#Print external package information
-print_line()
-print_raw("BUILDING GLUE")
-print_status('glue', __version__)
-print_status('python', sys.version)
-print_status('platform', sys.platform)
-if sys.platform == 'win32':
-    print_status('Windows version', sys.getwindowsversion())
+    #Print external package information
+    print_line()
+    print_raw("BUILDING GLUE")
+    print_status('glue', __version__)
+    print_status('python', sys.version)
+    print_status('platform', sys.platform)
+    if sys.platform == 'win32':
+        print_status('Windows version', sys.getwindowsversion())
 
-print_raw("")
-print_raw("REQUIRED DEPENDENCIES")
-if not check_for_numpy('1.4'):
-    sys.exit(1)
+    print_raw("")
+    print_raw("REQUIRED DEPENDENCIES")
+    if not check_for_numpy('1.4'):
+        sys.exit(1)
 
 
-print_raw("")
-print_raw("RECOMMENDED DEPENDENCIES")
-check_for_matplotlib()
-check_for_qt4()
-check_for_scipy()
+    print_raw("")
+    print_raw("RECOMMENDED DEPENDENCIES")
+    check_for_matplotlib()
+    check_for_qt4()
+    check_for_scipy()
 
-print_raw("")
-print_raw("OPTIONAL DEPENDENCIES : GENERAL")
-check_for_ipython()
-check_for_pil()
+    print_raw("")
+    print_raw("OPTIONAL DEPENDENCIES : GENERAL")
+    check_for_ipython()
+    check_for_pil()
 
-print_raw("")
-print_raw("OPTIONAL DEPENDENCIES : ASTRONOMY")
-check_for_astropy()
-check_for_atpy()
-check_for_aplpy()
+    print_raw("")
+    print_raw("OPTIONAL DEPENDENCIES : ASTRONOMY")
+    check_for_astropy()
+    check_for_atpy()
+    check_for_aplpy()
 
-print_raw("")
-print_raw("OPTIONAL DEPENDENCIES : TESTING")
-check_for_pytest()
-check_for_mock()
-print_line()
+    print_raw("")
+    print_raw("OPTIONAL DEPENDENCIES : TESTING")
+    check_for_pytest()
+    check_for_mock()
+    print_line()
 
 cmdclass = {}
 
@@ -132,6 +134,7 @@ except ImportError:  # Python 2.x
 
 class build(build_py):
     def run(self):
+        print_sysinfo()
         self.run_command("build_qt")
         build_py.run(self)
 
