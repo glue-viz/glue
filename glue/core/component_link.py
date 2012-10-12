@@ -1,6 +1,8 @@
 import logging
+import operator
 
 from .util import join_component_view
+from .subset import InequalitySubsetState
 
 __all__ = ['ComponentLink']
 
@@ -126,26 +128,109 @@ class ComponentLink(object):
     def __repr__(self):
         return str(self)
 
+    def __add__(self, other):
+        return BinaryComponentLink(self, other, operator.add)
+
+    def __radd__(self, other):
+        return BinaryComponentLink(other, self, operator.add)
+
+    def __sub__(self, other):
+        return BinaryComponentLink(self, other, operator.sub)
+
+    def __rsub__(self, other):
+        return BinaryComponentLink(other, self, operator.sub)
+
+    def __mul__(self, other):
+        return BinaryComponentLink(self, other, operator.mul)
+
+    def __rmul__(self, other):
+        return BinaryComponentLink(other, self, operator.mul)
+
+    def __div__(self, other):
+        return BinaryComponentLink(self, other, operator.div)
+
+    def __rdiv__(self, other):
+        return BinaryComponentLink(other, self, operator.div)
+
+    def __pow__(self, other):
+        return BinaryComponentLink(self, other, operator.pow)
+
+    def __rpow__(self, other):
+        return BinaryComponentLink(other, self, operator.pow)
+
+    def __lt__(self, other):
+        return InequalitySubsetState(self, other, operator.lt)
+
+    def __le__(self, other):
+        return InequalitySubsetState(self, other, operator.le)
+
+    def __gt__(self, other):
+        return InequalitySubsetState(self, other, operator.gt)
+
+    def __ge__(self, other):
+        return InequalitySubsetState(self, other, operator.ge)
+
 
 class BinaryComponentLink(ComponentLink):
-    ##XXX add support for ComponentLinks
+    """
+    A ComponentLink that combines two inputs with a binary function
+
+    :param left: The first input argument
+    :type left: ComponentID, ComponentLink, or number
+
+    :param right: The second input argument
+    :type right: ComponentID, ComponentLink, or number
+
+    :param op: A function with two inputs that works on numpy arrays
+
+    The CompoentLink represents the logic of applying `op` to the
+    data associated with the inputs `left` and `right`.
+    """
     def __init__(self, left, right, op):
         from .data import ComponentID
         from_ = []
-        if isinstance(left, ComponentID):
-            from_.append(left)
-        if isinstance(right, ComponentID):
-            from_.append(right)
-        if len(from_) == 0:
+
+        lid = isinstance(left, ComponentID)
+        llink = isinstance(left, ComponentLink)
+        lnumber = operator.isNumberType(left)
+        rid = isinstance(right, ComponentID)
+        rlink = isinstance(right, ComponentLink)
+        rnumber = operator.isNumberType(right)
+
+        if rnumber and lnumber:
             raise TypeError("Cannot create BinaryComponentLink from inputs: "
-                            "%s, %s" % (left, right))
-        if len(from_) == 2:
+                            "%s %s" % (left, right))
+
+        if lid:
+            from_.append(left)
+        elif llink:
+            from_.extend(left.get_from_ids())
+
+        if rid:
+            from_.append(right)
+        elif rlink:
+            from_.extend(right.get_from_ids())
+
+        if lid and rid:
             using = op
-        elif isinstance(left, ComponentID):
+        elif lid and rlink:
+            using = lambda *args: op(args[0], right.get_using()(*args[1:]))
+        elif lid and rnumber:
             using = lambda x: op(x, right)
-        else:
-            assert isinstance(right, ComponentID)
+        elif llink and rid:
+            using = lambda *args: op(left.get_using()(*args[:-1]), args[-1])
+        elif llink and rlink:
+            def compute(*args):
+                n_l = len(left.get_from_ids())
+                return op(left.get_using()(*args[:n_l]),
+                          right.get_using()(*args[n_l:]))
+            using = compute
+        elif llink and rnumber:
+            using = lambda *args: op(left.get_using()(*args), right)
+        elif lnumber and rid:
             using = lambda x: op(left, x)
+        elif lnumber and rlink:
+            using = lambda *args: op(left, right.get_using()(*args))
 
         to = ComponentID('')
         super(BinaryComponentLink, self).__init__(from_, to, using)

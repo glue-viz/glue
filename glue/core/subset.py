@@ -408,6 +408,8 @@ class ElementSubsetState(SubsetState):
 
 class InequalitySubsetState(SubsetState):
     def __init__(self, left, right, op):
+        from .component_link import ComponentLink
+
         super(InequalitySubsetState, self).__init__()
         from .data import ComponentID
         valid_ops = [operator.gt, operator.ge,
@@ -415,11 +417,13 @@ class InequalitySubsetState(SubsetState):
         if op not in valid_ops:
             raise TypeError("Invalid boolean operator: %s" % op)
         if not isinstance(left, ComponentID) and not \
-                operator.isNumberType(left):
+                operator.isNumberType(left) and not \
+                isinstance(left, ComponentLink):
             raise TypeError("Input must be ComponenID or NumberType: %s"
                             % type(left))
         if not isinstance(right, ComponentID) and not \
-                operator.isNumberType(right):
+                operator.isNumberType(right) and not \
+                isinstance(right, ComponentLink):
             raise TypeError("Input must be ComponenID or NumberType: %s"
                             % type(right))
         self._left = left
@@ -442,11 +446,11 @@ class InequalitySubsetState(SubsetState):
     def to_mask(self, view=None):
         from .data import ComponentID
         left = self._left
-        if isinstance(self._left, ComponentID):
+        if not operator.isNumberType(self._left):
             left = self.parent.data[self._left, view]
 
         right = self._right
-        if isinstance(self._right, ComponentID):
+        if not operator.isNumberType(self._right):
             right = self.parent.data[self._right, view]
 
         return self._operator(left, right)

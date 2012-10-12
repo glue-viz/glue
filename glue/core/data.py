@@ -96,6 +96,9 @@ class ComponentID(object):
     def __pow__(self, other):
         return BinaryComponentLink(self, other, operator.pow)
 
+    def __rpow__(self, other):
+        return BinaryComponentLink(other, self, operator.pow)
+
 
 class Component(object):
     """ Stores the actual, numerical information for a particular quantity
@@ -626,6 +629,10 @@ class Data(object):
             if key is None:
                 raise IncompatibleAttribute("%s not in data set %s" %
                                             (_k, self.label))
+
+        if isinstance(key, ComponentLink):
+            return key.compute(self, view)
+
         try:
             comp = self._components[key]
         except KeyError:

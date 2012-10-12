@@ -361,3 +361,15 @@ def test_init_with_invalid_kwargs():
         d = Data(x=[1, 2], y=[1, 2, 3])
     assert exc.value.args[0].startswith('Component shape is incompatible '
                                         'with other')
+
+
+def test_getitem_with_component_link():
+    d = Data(x=[1, 2, 3, 4])
+    y = d.id['x'] * 5
+    np.testing.assert_array_equal(d[y], [5, 10, 15, 20])
+
+
+def test_getitem_with_component_link_and_slice():
+    d = Data(x=[1, 2, 3, 4])
+    y = d.id['x'] * 5
+    np.testing.assert_array_equal(d[y, ::2], [5, 15])
