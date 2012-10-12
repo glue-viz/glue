@@ -94,10 +94,3 @@ class TestDataCollectionView(object):
         subset.label = "testing"
         item = self.get_item(subset)
         assert item.text(0) == "testing"
-
-    def test_new_subset_selects_only_new_subset(self):
-        self.collect.append(self.data)
-        subset = self.data.new_subset()
-        self.select_item(subset)
-        subset2 = self.data.new_subset()
-        assert self.selected_items() == [subset2]

@@ -1,8 +1,8 @@
 from PyQt4.QtGui import (QTreeWidgetItem,
-                         QPixmap, QTreeWidgetItemIterator, QIcon
+                         QPixmap, QTreeWidgetItemIterator, QIcon,
+                         QItemSelectionModel
                          )
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QItemSelectionModel
 
 from .. import qtutil
 from ... import core
@@ -155,6 +155,12 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         label = subset.label
         parent = self[subset.data]
         branch = QTreeWidgetItem(parent, [label, '', '', ''])
+
+        #possible that user generated with ctrl key held down,
+        #which adds subset to selection. Override this
+        self.setCurrentItem(branch, 0, QItemSelectionModel.Clear)
+        self.setCurrentItem(branch, 0, QItemSelectionModel.Select)
+
         if self.checkable:
             branch.setCheckState(0, Qt.Checked)
 
@@ -176,7 +182,6 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         if layer not in self:
             return
 
-        style = layer.style
         widget_item = self[layer]
         icon = qtutil.layer_icon(layer)
         widget_item.setIcon(1, icon)
