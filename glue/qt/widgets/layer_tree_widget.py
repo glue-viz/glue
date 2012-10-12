@@ -4,8 +4,8 @@ editing the data collection
 """
 import operator
 
-from PyQt4.QtGui import QWidget, QIcon
-from PyQt4.QtGui import QAction, QKeySequence, QFileDialog
+from PyQt4.QtGui import (QWidget, QIcon, QMenu,
+                         QAction, QKeySequence, QFileDialog)
 
 from PyQt4.QtCore import Qt, pyqtSignal, QObject
 
@@ -17,6 +17,7 @@ from ..link_editor import LinkEditor
 from .. import qtutil
 from .custom_component_widget import CustomComponentWidget
 from ..actions import act as _act
+from ...core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode
 
 
 @core.decorators.singleton
@@ -219,7 +220,7 @@ class CopyAction(LayerAction):
     def _do_action(self):
         assert self._can_trigger()
         subset = self.selected_layers()[0]
-        Clipboard().contents = subset
+        Clipboard().contents = subset.subset_state
 
 
 class PasteAction(LayerAction):
@@ -231,7 +232,7 @@ class PasteAction(LayerAction):
         if not self.single_selection_subset():
             return False
         cnt = Clipboard().contents
-        if not isinstance(cnt, core.subset.Subset):
+        if not isinstance(cnt, core.subset.SubsetState):
             return False
         return True
 
@@ -239,6 +240,50 @@ class PasteAction(LayerAction):
         assert self._can_trigger()
         layer = self.selected_layers()[0]
         layer.paste(Clipboard().contents)
+
+
+class PasteSpecialAction(PasteAction):
+    _title = "Paste Special..."
+    _tooltip = "Paste with boolean logic"
+    _shortcut = None
+
+    def __init__(self, *args, **kwargs):
+        super(PasteSpecialAction, self).__init__(*args, **kwargs)
+        self.setMenu(self.menu())
+
+    def menu(self):
+        m = QMenu()
+
+        a = QAction("Or", m)
+        a.setIcon(QIcon(':/icons/glue_or.png'))
+        a.triggered.connect(lambda: self._paste(OrMode))
+        m.addAction(a)
+
+        a = QAction("And", m)
+        a.setIcon(QIcon(':/icons/glue_and.png'))
+        a.triggered.connect(lambda: self._paste(AndMode))
+        m.addAction(a)
+
+        a = QAction("XOR", m)
+        a.setIcon(QIcon(':/icons/glue_xor.png'))
+        a.triggered.connect(lambda: self._paste(XorMode))
+        m.addAction(a)
+
+        a = QAction("Not", m)
+        a.setIcon(QIcon(':/icons/glue_andnot.png'))
+        a.triggered.connect(lambda: self._paste(AndNotMode))
+        m.addAction(a)
+        return m
+
+    def _paste(self, mode):
+        if not self._can_trigger():
+            return
+        assert self._can_trigger()
+        layer = self.selected_layers()[0]
+        mode(layer, Clipboard().contents)
+
+    def _do_action(self):
+        pass
 
 
 class ChangeLabelAction(LayerAction):
@@ -480,6 +525,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
         self._actions['save'] = SaveAction(self)
         self._actions['copy'] = CopyAction(self)
         self._actions['paste'] = PasteAction(self)
+        self._actions['paste_special'] = PasteSpecialAction(self)
         self._actions['new'] = NewAction(self)
         self._actions['clear'] = ClearAction(self)
         self._actions['duplicate'] = DuplicateAction(self)
