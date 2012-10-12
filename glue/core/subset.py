@@ -11,6 +11,11 @@ __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState',
            'ElementSubsetState', 'RangeSubsetState']
 
+OPSYM = {operator.ge: '>=', operator.gt: '>',
+         operator.le: '<=', operator.lt: '<',
+         operator.and_: '&', operator.or_: '|',
+         operator.xor: '^'}
+
 
 class Subset(object):
     """Base class to handle subsets of data.
@@ -368,6 +373,10 @@ class CompositeSubsetState(SubsetState):
         assert self.state2.parent is self._parent
         return self.op(self.state1.to_mask(view), self.state2.to_mask(view))
 
+    def __str__(self):
+        sym = OPSYM.get(self.op, self.op)
+        return "(%s %s %s)" % (self.state1, sym, self.state2)
+
 
 class OrState(CompositeSubsetState):
     op = operator.or_
@@ -385,6 +394,9 @@ class InvertState(CompositeSubsetState):
     @memoize_attr_check('parent')
     def to_mask(self, view=None):
         return ~self.state1.to_mask(view)
+
+    def __str__(self):
+        return "(~%s)" % self.state1
 
 
 class ElementSubsetState(SubsetState):
@@ -457,6 +469,13 @@ class InequalitySubsetState(SubsetState):
 
     def copy(self):
         return InequalitySubsetState(self._left, self._right, self._operator)
+
+    def __str__(self):
+        sym = OPSYM.get(self._operator, self._operator)
+        return "(%s %s %s)" % (self._left, sym, self._right)
+
+    def __repr__(self):
+        return '<%s: %s>' % (self.__class__.__name__, self)
 
 
 def _combine(subsets, operator):

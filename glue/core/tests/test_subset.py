@@ -516,3 +516,18 @@ def test_mask_of_view_is_view_of_mask(statefac, view):
     m0[view] = True
     v2 = c.data[s.to_mask() & m0]
     np.testing.assert_array_equal(v1, v2)
+
+
+def test_inequality_state_str():
+    d = Data(x=[1, 2, 3], y=[2, 3, 4])
+    x = d.id['x']
+    y = d.id['y']
+
+    assert str(x > 3) == '(x > 3)'
+    assert str(x < 2) == '(x < 2)'
+    assert str(x < y) == '(x < y)'
+    assert str((3 * x) < 5) == '((3 * x) < 5)'
+    assert str((x < y) & (x < 2)) == '((x < y) & (x < 2))'
+    assert str((x < y) | (x < 2)) == '((x < y) | (x < 2))'
+    assert str(~(x < y)) == '(~(x < y))'
+    assert repr(x < 5) == ('<InequalitySubsetState: (x < 5)>')

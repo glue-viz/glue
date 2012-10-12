@@ -10,6 +10,10 @@ __all__ = ['ComponentLink', 'BinaryComponentLink']
 def identity(x):
     return x
 
+OPSYM = {operator.add: '+', operator.sub: '-',
+         operator.div: '/', operator.mul: '*',
+         operator.pow: '**'}
+
 
 class ComponentLink(object):
     """ ComponentLinks represent transformation logic between ComponentIDs
@@ -219,3 +223,10 @@ class BinaryComponentLink(ComponentLink):
         if not operator.isNumberType(self._right):
             r = data[self._right, view]
         return self._op(l, r)
+
+    def __str__(self):
+        sym = OPSYM.get(self._op, self._op.__name__)
+        return '(%s %s %s)' % (self._left, sym, self._right)
+
+    def __repr__(self):
+        return "<BinaryComponentLink: %s>" % self

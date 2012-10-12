@@ -243,3 +243,21 @@ def test_link_fixes_shape():
     y = ComponentID('y')
     link = ComponentLink([d.id['x']], y, using=double)
     np.testing.assert_array_equal(d[link], [2, 4, 6, 8])
+
+
+def test_link_str():
+    """Links should have sensible names"""
+    d = Data(x=[1, 2, 3], y=[2, 3, 4])
+    x = d.id['x']
+    y = d.id['y']
+
+    assert str(x + y) == ('(x + y)')
+    assert str(x - y) == ('(x - y)')
+    assert str(x * y) == ('(x * y)')
+    assert str(x / y) == ('(x / y)')
+    assert str(x ** y) == ('(x ** y)')
+    assert str(x ** 3) == ('(x ** 3)')
+    assert str(3 + x * y) == ('(3 + (x * y))')
+    assert str(x + x + y) == ('((x + x) + y)')
+
+    assert repr(x + y) == '<BinaryComponentLink: (x + y)>'
