@@ -44,6 +44,7 @@ class TestLayerTree(object):
         widget_item = self.widget[layer]
         self.widget.layerTree.setCurrentItem(widget_item)
         QTest.mousePress(self.widget.layerRemoveButton, Qt.LeftButton)
+        QTest.mouseRelease(self.widget.layerRemoveButton, Qt.LeftButton)
 
     def add_layer(self, layer=None):
         """ Add a layer through a hub message """

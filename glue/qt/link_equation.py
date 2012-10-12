@@ -167,7 +167,7 @@ class LinkEquation(QWidget):
         signal.connect(self._setup_editor)
         signal.connect(self._update_add_enabled)
         signal.connect(self._update_twoway_enabled)
-        self._ui.addButton.pressed.connect(self._clear_inputs)
+        self._ui.addButton.clicked.connect(self._clear_inputs)
         self._output_widget.editor.textChanged.connect(
             self._update_add_enabled)
 

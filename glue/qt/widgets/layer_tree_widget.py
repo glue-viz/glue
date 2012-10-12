@@ -428,8 +428,8 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
         """ Connect widget signals to methods """
         self._actions['link'] = LinkAction(self)
         self.layerTree.itemDoubleClicked.connect(self.edit_current_layer)
-        self.layerAddButton.pressed.connect(self._load_data)
-        self.layerRemoveButton.pressed.connect(self._actions['delete'].trigger)
+        self.layerAddButton.clicked.connect(self._load_data)
+        self.layerRemoveButton.clicked.connect(self._actions['delete'].trigger)
         self.linkButton.set_action(self._actions['link'])
         self.newSubsetButton.set_action(self._actions['new'], text=False)
 

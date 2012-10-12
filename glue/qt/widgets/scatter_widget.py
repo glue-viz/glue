@@ -57,8 +57,8 @@ class ScatterWidget(DataViewer):
             lambda x: cl.set_yflip(x == Qt.Checked))
         ui.xAxisComboBox.currentIndexChanged.connect(self.update_xatt)
         ui.yAxisComboBox.currentIndexChanged.connect(self.update_yatt)
-        ui.swapAxes.pressed.connect(self.swap_axes)
-        ui.snapLimits.pressed.connect(cl.snap)
+        ui.swapAxes.clicked.connect(self.swap_axes)
+        ui.snapLimits.clicked.connect(cl.snap)
 
     def _choose_add_data(self):
         choices = dict([(d.label, d) for d in self._collection])
