@@ -278,6 +278,10 @@ class ContrastMode(MouseMode):
         a = QAction("90%", None)
         a.triggered.connect(lambda: self.set_clip_percentile(10, 90))
         result.append(a)
+
+        for r in result:
+            if self._move_callback is not None:
+                r.triggered.connect(lambda: self._move_callback(self))
         return result
 
 

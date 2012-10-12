@@ -141,7 +141,7 @@ class DuplicateAction(LayerAction):
 class DeleteAction(LayerAction):
     _title = "Delete Selection"
     _tooltip = "Remove the selection"
-    _shortcut = QKeySequence.Delete
+    _shortcut = QKeySequence.Cut
 
     def _can_trigger(self):
         selection = self.selected_layers()

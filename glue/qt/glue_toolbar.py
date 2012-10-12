@@ -122,11 +122,16 @@ class GlueToolbar(NavigationToolbar2QT):
     def add_mode(self, mode):
         parent = self.parent()
 
-        def receiver():
+        def toggle():
             self._custom_mode(mode)
 
+        def enable():
+            #turn on if not
+            if self._active != mode.mode_id:
+                self._custom_mode(mode)
+
         action = QtGui.QAction(mode.icon, mode.action_text, parent)
-        action.triggered.connect(receiver)
+        action.triggered.connect(toggle)
         parent.addAction(action)
 
         if mode.shortcut is not None:
@@ -144,6 +149,7 @@ class GlueToolbar(NavigationToolbar2QT):
                 ma.setParent(self)
                 menu.addAction(ma)
             action.setMenu(menu)
+            menu.triggered.connect(enable)
 
         self.addAction(action)
 
