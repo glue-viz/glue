@@ -4,7 +4,7 @@ import operator
 from .util import join_component_view
 from .subset import InequalitySubsetState
 
-__all__ = ['ComponentLink']
+__all__ = ['ComponentLink', 'BinaryComponentLink']
 
 
 def identity(x):
@@ -92,9 +92,6 @@ class ComponentLink(object):
             InvalidAttribute, if the data set doesn't have all the
             ComponentIDs needed for the transformation
         """
-        if self._using is None:
-            return data[join_component_view(self._from[0], view)]
-
         args = [data[join_component_view(f, view)] for f in self._from]
         logging.debug("shape of first argument: %s", args[0].shape)
         result = self._using(*args)
@@ -188,49 +185,37 @@ class BinaryComponentLink(ComponentLink):
     """
     def __init__(self, left, right, op):
         from .data import ComponentID
+
+        self._left = left
+        self._right = right
+        self._op = op
+
         from_ = []
-
-        lid = isinstance(left, ComponentID)
-        llink = isinstance(left, ComponentLink)
-        lnumber = operator.isNumberType(left)
-        rid = isinstance(right, ComponentID)
-        rlink = isinstance(right, ComponentLink)
-        rnumber = operator.isNumberType(right)
-
-        if rnumber and lnumber:
-            raise TypeError("Cannot create BinaryComponentLink from inputs: "
-                            "%s %s" % (left, right))
-
-        if lid:
+        if isinstance(left, ComponentID):
             from_.append(left)
-        elif llink:
+        elif isinstance(left, ComponentLink):
             from_.extend(left.get_from_ids())
+        elif not operator.isNumberType(left):
+            raise TypeError("Cannot create BinaryComponentLink using %s" %
+                            left)
 
-        if rid:
+        if isinstance(right, ComponentID):
             from_.append(right)
-        elif rlink:
+        elif isinstance(right, ComponentLink):
             from_.extend(right.get_from_ids())
+        elif not operator.isNumberType(right):
+            raise TypeError("Cannot create BinaryComponentLink using %s" %
+                            right)
 
-        if lid and rid:
-            using = op
-        elif lid and rlink:
-            using = lambda *args: op(args[0], right.get_using()(*args[1:]))
-        elif lid and rnumber:
-            using = lambda x: op(x, right)
-        elif llink and rid:
-            using = lambda *args: op(left.get_using()(*args[:-1]), args[-1])
-        elif llink and rlink:
-            def compute(*args):
-                n_l = len(left.get_from_ids())
-                return op(left.get_using()(*args[:n_l]),
-                          right.get_using()(*args[n_l:]))
-            using = compute
-        elif llink and rnumber:
-            using = lambda *args: op(left.get_using()(*args), right)
-        elif lnumber and rid:
-            using = lambda x: op(left, x)
-        elif lnumber and rlink:
-            using = lambda *args: op(left, right.get_using()(*args))
+        to = ComponentID("")
+        null = lambda *args: None
+        super(BinaryComponentLink, self).__init__(from_, to, null)
 
-        to = ComponentID('')
-        super(BinaryComponentLink, self).__init__(from_, to, using)
+    def compute(self, data, view=None):
+        l = self._left
+        r = self._right
+        if not operator.isNumberType(self._left):
+            l = data[self._left, view]
+        if not operator.isNumberType(self._right):
+            r = data[self._right, view]
+        return self._op(l, r)

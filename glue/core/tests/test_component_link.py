@@ -124,6 +124,16 @@ def test_inequality_overload(a, b):
         assert isinstance(x, InequalitySubsetState)
 
 
+def test_link_bad_input():
+    with pytest.raises(TypeError) as exc:
+        l = BinaryComponentLink(ComponentID('x'), None, None)
+    assert exc.value.args[0] == 'Cannot create BinaryComponentLink using None'
+
+    with pytest.raises(TypeError) as exc:
+        l = BinaryComponentLink(None, ComponentID('x'), None)
+    assert exc.value.args[0] == 'Cannot create BinaryComponentLink using None'
+
+
 def test_arithmetic_id_scalar():
     d = Data(x=[1, 2, 3, 4], y=[10, 20, 10, 20])
     np.testing.assert_array_equal(d[d.id['x'] + 3], [4, 5, 6, 7])
@@ -223,3 +233,13 @@ def test_inequality():
 
     s.subset_state = twentytwo >= xpy
     np.testing.assert_array_equal(s.to_mask(), 22 >= (x + y))
+
+
+def test_link_fixes_shape():
+    def double(x):
+        return (x * 2).reshape((2, 2))
+
+    d = Data(x=[1, 2, 3, 4])
+    y = ComponentID('y')
+    link = ComponentLink([d.id['x']], y, using=double)
+    np.testing.assert_array_equal(d[link], [2, 4, 6, 8])
