@@ -2,6 +2,8 @@
 Class which embellishes the DataCollectionView with buttons and actions for
 editing the data collection
 """
+import operator
+
 from PyQt4.QtGui import QWidget, QIcon
 from PyQt4.QtGui import QAction, QKeySequence, QFileDialog
 
@@ -177,7 +179,6 @@ class LinkAction(LayerAction):
         return self.selection_count() > 0
 
     def _do_action(self):
-        layers = self.selected_layers()
         LinkEditor.update_links(self.data_collection)
 
 
@@ -305,56 +306,62 @@ class Inverter(LayerAction):
         subset.subset_state = core.subset.InvertState(subset.subset_state)
 
 
-class BinaryCombiner(LayerAction):
-    _state_class = None
+class ReduceCombiner(LayerAction):
+    """Combine subsets via reduce and a binary method"""
+    _reduce_func = None
 
     def _can_trigger(self):
-        """ Action can be triggered iff 2 subsets from same data selected """
+        """ Action can be triggered iff >=2 subsets from same data selected """
         layers = self.selected_layers()
-        if len(layers) != 2:
+        if len(layers) < 2:
             return False
-        if layers[0].data is not layers[1].data:
+        if not all(l.data is layers[0].data for l in layers):
             return False
-
-        if not isinstance(layers[0], core.Subset) or \
-            not isinstance(layers[1], core.Subset):
+        if not all(isinstance(l, core.Subset) for l in layers):
             return False
 
         return True
 
     def _do_action(self):
-        """ Take binary combination of two selected subsets
-
-        combination uses _state_class, which is overridden by subclasses
+        """ Repeatedly apply state_class to reduce selections
         """
         assert self._can_trigger()
 
         layers = self.selected_layers()
         data = layers[0].data
         subset = data.new_subset()
-        subset.subset_state = self._state_class(layers[0].subset_state,
-                                                layers[1].subset_state)
+        subset.subset_state = reduce(self._reduce_func,
+                                     (l.subset_state for l in layers))
 
 
-class OrCombiner(BinaryCombiner):
-    _title = "Union Combine"
-    _icon = ':icons/glue_or.png'
-    _tooltip = 'Define new subset as union of selection'
-    _state_class = core.subset.OrState
-
-
-class AndCombiner(BinaryCombiner):
-    _title = "Intersection Combine"
-    _icon = ':icons/glue_and.png'
-    _tooltip = 'Define new subset as intersection of selection'
-    _state_class = core.subset.AndState
+class BinaryCombiner(ReduceCombiner):
+    """A reduce combiner that works on exactly 2 subsets"""
+    def _can_trigger(self):
+        """ Action can be triggered iff 2 subsets from same data selected """
+        if not super(BinaryCombiner, self)._can_trigger():
+            return False
+        return len(self.selected_layers()) == 2
 
 
 class XorCombiner(BinaryCombiner):
     _title = "XOR Combine"
     _icon = ':icons/glue_xor.png'
     _tooltip = 'Define new subset as non-intersection of selection'
-    _state_class = core.subset.XorState
+    _reduce_func = operator.xor
+
+
+class OrCombiner(ReduceCombiner):
+    _title = "Union Combine"
+    _icon = ':icons/glue_or.png'
+    _tooltip = 'Define new subset as union of selection'
+    _reduce_func = operator.or_
+
+
+class AndCombiner(ReduceCombiner):
+    _title = "Intersection Combine"
+    _icon = ':icons/glue_and.png'
+    _tooltip = 'Define new subset as intersection of selection'
+    _reduce_func = operator.and_
 
 
 class LayerCommunicator(QObject):

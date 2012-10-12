@@ -31,6 +31,15 @@ class TestDataCollectionView(object):
     def get_item(self, layer):
         return self.view[layer]
 
+    def select_item(self, layer):
+        item = self.view[layer]
+        self.view.setCurrentItem(item)
+
+    def selected_items(self):
+        items = self.view.selectedItems()
+        layers = [self.view[i] for i in items]
+        return layers
+
     def test_add_data_updates_view(self):
         self.collect.append(self.data)
         self.view._assert_view_synced()
@@ -85,3 +94,10 @@ class TestDataCollectionView(object):
         subset.label = "testing"
         item = self.get_item(subset)
         assert item.text(0) == "testing"
+
+    def test_new_subset_selects_only_new_subset(self):
+        self.collect.append(self.data)
+        subset = self.data.new_subset()
+        self.select_item(subset)
+        subset2 = self.data.new_subset()
+        assert self.selected_items() == [subset2]
