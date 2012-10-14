@@ -1,8 +1,6 @@
 import logging
 
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.colors import Normalize
 
 from .modest_image import extract_matched_slices
 from ..core.exceptions import IncompatibleAttribute
@@ -10,154 +8,36 @@ from ..core.data import Data
 from ..core.subset import Subset, RoiSubsetState
 from ..core.roi import PolygonalROI
 from ..core.edit_subset_mode import EditSubsetMode
-from ..core.util import color2rgb
 
 from .viz_client import VizClient, init_mpl
-from .layer_artist import ScatterLayerArtist
+from .layer_artist import (ScatterLayerArtist, LayerArtistContainer,
+                           ImageLayerArtist, SubsetImageLayerArtist)
 
 
-class InvNormalize(Normalize):
-    """ Simple wrapper to matplotlib Normalize object, that
-    handles the case where vmax <= vmin """
-    def __call__(self, value):
-        if self.vmax <= self.vmin:
-            self.vmax, self.vmin = self.vmin, self.vmax
-            result = 1 - Normalize.__call__(self, value)
-            self.vmax, self.vmin = self.vmin, self.vmax
-        else:
-            result = Normalize.__call__(self, value)
-        return result
-
-
-class LayerManager(object):
-    def __init__(self, layer, axes):
-        self.layer = layer
-        self.artist = None
-        self.component_id = None
-        self._ax = axes
-
-    def set_visible(self, state):
-        raise NotImplementedError
-
-    def delete_artist(self):
-        raise NotImplementedError
-
-    def update_artist(self, view):
-        raise NotImplementedError
-
-    def delete(self):
-        self.delete_artist()
-
-
-class DataLayerManager(LayerManager):
-    def __init__(self, layer, axes):
-        super(DataLayerManager, self).__init__(layer, axes)
-        self.cmap = plt.cm.gray
-        self.norm = None
-
-    def _default_norm(self, layer):
-        vals = np.sort(layer.ravel())
-        vals = vals[np.isfinite(vals)]
-        result = InvNormalize()
-        result.vmin = vals[.05 * vals.size]
-        result.vmax = vals[.95 * vals.size]
-        return result
-
-    def update_artist(self, view):
-        self.delete_artist()
-        views = _view_cascade(self.layer, view)
-        artists = []
-        for v in views:
-            image = self.layer[v]
-            extent = _get_extent(v)
-            self.norm = self.norm or self._default_norm(image)
-            artists.append(self._ax.imshow(image, cmap=self.cmap,
-                                           norm=self.norm,
-                                           interpolation='nearest',
-                                           origin='lower',
-                                           extent=extent, zorder=0))
-        self.artist = artists
-
-    def set_visible(self, state):
-        if self.artist is None:
+def requires_data(func):
+    def result(*args, **kwargs):
+        if args[0].display_data is None:
             return
-        for a in self.artist:
-            a.set_visible(state)
-
-    def set_norm(self, vmin, vmax):
-        if vmin is not None:
-            self.norm.vmin = vmin
-        if vmax is not None:
-            self.norm.vmax = vmax
-
-    def delete_artist(self):
-        if self.artist is None:
-            return
-        for a in self.artist:
-            a.remove()
-        self.artist = None
-
-
-class SubsetLayerManager(LayerManager):
-    def __init__(self, layer, axes):
-        super(SubsetLayerManager, self).__init__(layer, axes)
-
-    def set_visible(self, state):
-        if self.artist is None:
-            return
-        self.artist.set_visible(state)
-
-    def is_visible(self):
-        if self.artist is None:
-            return False
-        return self.artist.get_visible()
-
-    def delete_artist(self):
-        if self.artist is None:
-            return
-
-        self.artist.remove()
-        self.artist = None
-
-    def update_artist(self, view):
-        subset = self.layer
-        self.delete_artist()
-        logging.debug("View into subset %s is %s", self.layer, view)
-
-        try:
-            mask = subset.to_mask(view[1:])
-        except IncompatibleAttribute:
-            return
-        logging.debug("View mask has shape %s", mask.shape)
-
-        #shortcut for empty subsets
-        if not mask.any():
-            return
-
-        extent = _get_extent(view)
-        r, g, b = color2rgb(self.layer.style.color)
-        mask = np.dstack((r * mask, g * mask, b * mask, mask * .5))
-        mask = (255 * mask).astype(np.uint8)
-        self.artist = self._ax.imshow(mask, extent=extent,
-                                      interpolation='nearest', origin='lower',
-                                      zorder=5)
+        return func(*args, **kwargs)
+    return result
 
 
 class ImageClient(VizClient):
 
-    def __init__(self, data, figure=None, axes=None):
+    def __init__(self, data, figure=None, axes=None, artist_container=None):
 
         figure, axes = init_mpl(figure, axes)
 
         VizClient.__init__(self, data)
 
-        self.layers = {}
+        self.artists = artist_container
+        if self.artists is None:
+            self.artists = LayerArtistContainer()
 
         self.display_data = None
         self.display_attribute = None
         self._slice_ori = 2
         self._slice_ind = 0
-        self._image = None
         self._view_window = None
         self._view = None
 
@@ -174,7 +54,9 @@ class ImageClient(VizClient):
             world = self.display_data.coords.pixel2world(*pix)
             world = world[::-1]   # reverse for numpy convention
             ind = _slice_axis(self.display_data.shape, self._slice_ori)
-            return fc(world[ind[1]], world[ind[0]])  # reverse again for x,y
+            labels = _slice_labels(self.display_data.shape, self._slice_ori)
+            return '%s=%s          %s=%s' % (labels[1], world[ind[1]],
+                                             labels[0], world[ind[0]])
         self._ax.format_coord = format_coord
 
         self._cid = self._ax.figure.canvas.mpl_connect('button_release_event',
@@ -196,10 +78,6 @@ class ImageClient(VizClient):
             return self._slice_ind
         return None
 
-    @property
-    def image(self):
-        return self._image
-
     @slice_ind.setter
     def slice_ind(self, value):
         if self.is_3D:
@@ -214,7 +92,7 @@ class ImageClient(VizClient):
         return data.ndim in [2, 3]
 
     def _ensure_data_present(self, data):
-        if data not in self.layers:
+        if data not in self.artists:
             self.add_layer(data)
 
     def check_update(self, event):
@@ -230,18 +108,12 @@ class ImageClient(VizClient):
     def set_data(self, data, attribute=None):
         self._ensure_data_present(data)
 
-        if attribute:
-            self.layers[data].component_id = attribute
-        elif self.layers[data].component_id is None:
-            self.layers[data].component_id = _default_component(data)
-        attribute = self.layers[data].component_id
+        attribute = attribute or _default_component(data)
 
         self.display_data = data
         self.display_attribute = attribute
         self._update_data_plot(relim=True)
-        self._update_visibilities()
         self._update_subset_plots()
-        self._update_scatter_plots()
         self._redraw()
 
     def slice_bounds(self):
@@ -264,7 +136,6 @@ class ImageClient(VizClient):
         self.slice_ind = max(self.slice_ind, self.slice_bounds()[0])
         self._update_data_plot(relim=True)
         self._update_subset_plots()
-        self._update_scatter_plots()
 
         self._redraw()
 
@@ -274,7 +145,6 @@ class ImageClient(VizClient):
             raise IncompatibleAttribute(
                 "Attribute not in data's attributes: %s" % attribute)
         self.display_attribute = attribute
-        self.layers[self.display_data].component_id = attribute
         self._update_data_plot()
         self._redraw()
 
@@ -284,36 +154,18 @@ class ImageClient(VizClient):
         """
         self._ax.figure.canvas.draw()
 
+    @requires_data
     def set_norm(self, vmin, vmax):
-        if not self.display_data:
-            return
-        self.layers[self.display_data].set_norm(vmin, vmax)
+        for a in self.artists[self.display_data]:
+            a.set_norm(vmin, vmax)
         self._update_data_plot()
         self._redraw()
 
+    @requires_data
     def set_cmap(self, cmap):
-        if not self.display_data:
-            return
-        self.layers[self.display_data].cmap = cmap
-        self._update_data_plot()
-        self._redraw()
-
-    def _extract_slice_from_data(self, data=None):
-        if data is None:
-            result = self.display_data[self.display_attribute]
-        else:
-            result = data
-
-        if not self.is_3D:
-            return result
-        if self._slice_ori == 2:
-            result = result[:, :, self.slice_ind]
-        elif self._slice_ori == 1:
-            result = result[:, self.slice_ind, :]
-        else:
-            result = result[self.slice_ind, :, :]
-
-        return result
+        for a in self.artists[self.display_data]:
+            a.cmap = cmap
+            a.redraw()
 
     def _build_view(self, matched=False):
         att = self.display_attribute
@@ -334,25 +186,19 @@ class ImageClient(VizClient):
         assert self._slice_ori == 2
         return (att, y, x, self.slice_ind)
 
+    @requires_data
     def _update_data_plot(self, relim=False):
         """
         Re-sync the main image and its subsets
         """
-
-        if not self.display_data:
-            return
 
         if relim:
             self.relim()
 
         view = self._build_view(matched=True)
         self._view = view
-        self.layers[self.display_data].update_artist(view)
-        self._image = self.display_data[view]
-
-    def _update_visibilities(self):
-        for layer in self.layers:
-            self.layers[layer].set_visible(layer.data is self.display_data)
+        for a in self.artists[self.display_data]:
+            a.update(view)
 
     def relim(self):
         shp = _2d_shape(self.display_data.shape, self._slice_ori)
@@ -375,24 +221,23 @@ class ImageClient(VizClient):
 
         """
         logging.debug("update subset single: %s", s)
+        self._update_scatter_layer(s)
 
-        if s not in self.layers:
-            return
-        if isinstance(self.layers[s], ScatterLayerArtist):
-            self._update_scatter_layer(s, redraw)
+        if s not in self.artists:
             return
 
         if s.data is not self.display_data:
             return
 
         view = self._build_view(matched=True)
-        self.layers[s].update_artist(view)
+        for a in self.artists[s]:
+            a.update(view)
+
         if redraw:
             self._redraw()
 
+    @requires_data
     def _apply_roi(self, roi):
-        if self.display_data is None:
-            return
 
         subset_state = RoiSubsetState()
         xroi, yroi = roi.to_polygon()
@@ -426,10 +271,10 @@ class ImageClient(VizClient):
         self.delete_layer(message.sender)
 
     def delete_layer(self, layer):
-        if layer not in self.layers:
+        if layer not in self.artists:
             return
-        manager = self.layers.pop(layer)
-        manager.delete()
+        for a in self.artists.pop(layer):
+            a.clear()
 
         if layer is self.display_data:
             self.display_data = None
@@ -449,7 +294,7 @@ class ImageClient(VizClient):
         self.add_layer(layer)
 
     def add_layer(self, layer):
-        if layer in self.layers:
+        if layer in self.artists:
             return
 
         if layer.data not in self.data:
@@ -460,54 +305,47 @@ class ImageClient(VizClient):
             return
 
         if isinstance(layer, Data):
-            self.layers[layer] = DataLayerManager(layer, self._ax)
+            self.artists.append(ImageLayerArtist(layer, self._ax))
             for s in layer.subsets:
                 self.add_layer(s)
         elif isinstance(layer, Subset):
-            self.layers[layer] = SubsetLayerManager(layer, self._ax)
+            self.artists.append(SubsetImageLayerArtist(layer, self._ax))
             self._update_subset_single(layer)
         else:
             raise TypeError("Unrecognized layer type: %s" % type(layer))
 
     def add_scatter_layer(self, layer):
-        if layer in self.layers:
+        if layer in self.artists:
             return
 
-        self.layers[layer] = ScatterLayerArtist(layer, self._ax)
-        self._update_scatter_layer(layer, redraw=True)
+        self.artists.append(ScatterLayerArtist(layer, self._ax))
+        self._update_scatter_layer(layer)
 
-    def _update_scatter_layer(self, layer, redraw=False):
-        if not self._is_scatter_layer(layer):
-            return
-
+    @requires_data
+    def _update_scatter_layer(self, layer):
         xatt, yatt = self._get_plot_attributes()
-        mgr = self.layers[layer]
-        mgr.xatt = xatt
-        mgr.yatt = yatt
-        mgr.zorder = 10
-        mgr.update()
-        if redraw:
-            self._redraw()
+        for a in self.artists[layer]:
+            if not isinstance(a, ScatterLayerArtist):
+                continue
+            a.xatt = xatt
+            a.yatt = yatt
+            a.update()
+            a.redraw()
+        self._redraw()
 
-    def _is_scatter_layer(self, layer):
-        return layer in self.layers and isinstance(self.layers[layer],
-                                                   ScatterLayerArtist)
-
+    @requires_data
     def _get_plot_attributes(self):
-        if self.display_data is None:
-            return
         y, x = _slice_axis(self.display_data.shape, self._slice_ori)
         ids = self.display_data.pixel_component_ids
         return ids[x], ids[y]
 
-    def _update_scatter_plots(self):
-        for layer in self.layers:
-            if self._is_scatter_layer(layer):
-                self._update_scatter_layer(layer)
-
     def _pixel_coords(self, x, y):
         """From a slice coordinate (x,y), return the full (possibly
         3D) location
+
+        *Note*
+        The order of inputs and outputs from this function are reverse
+        the numpy convention (i.e. x axis specified first, not last)
 
         *Returns*
         Either (x,y) or (x,y,z)
@@ -523,11 +361,6 @@ class ImageClient(VizClient):
             return self.slice_ind, x, y
 
 
-def _get_extent(view):
-    sy, sx = [s for s in view if isinstance(s, slice)]
-    return (sx.start, sx.stop, sy.start, sy.stop)
-
-
 def _2d_shape(shape, slice_ori):
     """Return the shape of the 2D slice through a 2 or 3D image"""
     if len(shape) == 2:
@@ -541,6 +374,8 @@ def _2d_shape(shape, slice_ori):
 
 
 def _slice_axis(shape, slice_ori):
+    """Return a 2-tuple of the axis indices for the given
+    image and slice orientation"""
     if len(shape) == 2:
         return 0, 1
     if slice_ori == 0:
@@ -549,6 +384,17 @@ def _slice_axis(shape, slice_ori):
         return 0, 2
     assert slice_ori == 2
     return 0, 1
+
+
+def _slice_labels(shape, slice_ori):
+    if len(shape) == 2:
+        return 'y', 'x'
+    if slice_ori == 0:
+        return 'y', 'x'
+    if slice_ori == 1:
+        return 'z', 'x'
+    assert slice_ori == 2
+    return 'z', 'y'
 
 
 def _view_window(ax):
@@ -574,30 +420,3 @@ def _default_component(data):
     if cid is not None:
         return cid
     return data.component_ids()[0]
-
-
-def _view_cascade(data, view):
-    """ Return a set of views progressively zoomed out of input at roughly
-    constant pixel count
-
-    :param data: Data object to view
-    :param view: Original view into data
-
-    :rtype: tuple of views
-    """
-    shp = data.shape
-    v2 = list(view)
-    logging.debug("image shape: %s, view: %s", shp, view)
-
-    #choose stride length that roughly samples entire image
-    #at roughly the same pixel count
-    step = max(shp[i - 1] * v.step / max(v.stop - v.start, 1)
-               for i, v in enumerate(view) if isinstance(v, slice))
-    step = max(step, 1)
-
-    for i, v in enumerate(v2):
-        if not(isinstance(v, slice)):
-            continue
-        v2[i] = slice(0, shp[i - 1], step)
-
-    return tuple(v2), view

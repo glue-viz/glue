@@ -14,6 +14,7 @@ from ...clients.image_client import ImageClient
 from ..mouse_mode import (RectangleMode, CircleMode, PolyMode,
                           ContrastMode, ContourMode)
 from ..glue_toolbar import GlueToolbar
+from ..layer_artist_model import QtLayerArtistContainer
 
 from ..ui.imagewidget import Ui_ImageWidget
 from .. import glue_qt_resources  # pylint: disable=W0611
@@ -32,9 +33,11 @@ class ImageWidget(DataViewer):
         self.setCentralWidget(self.central_widget)
         self.ui = Ui_ImageWidget()
         self.ui.setupUi(self.central_widget)
-
+        container = QtLayerArtistContainer()
+        self.ui.artist_view.setModel(container.model)
         self.client = ImageClient(data,
-                                  self.ui.mplWidget.canvas.fig)
+                                  self.ui.mplWidget.canvas.fig,
+                                  artist_container=container)
 
         self._create_actions()
         self.make_toolbar()
@@ -119,6 +122,9 @@ class ImageWidget(DataViewer):
         """Overriden from DataViewer. Set current image to data"""
         self.set_data(self._data_index(data))
         return True
+
+    def add_subset(self, subset):
+        self.client.add_scatter_layer(subset)
 
     def _data_index(self, data):
         combo = self.ui.displayDataCombo
@@ -257,15 +263,6 @@ class ImageWidget(DataViewer):
         roi = mode.roi(im[att])
         if roi:
             self.client._apply_roi(roi)
-
-    def dropEvent(self, event):
-        """If drop is a subset not in the image viewer, add a scatter layer"""
-        super(ImageWidget, self).dropEvent(event)
-
-        obj = event.mimeData().data('application/py_instance')
-        if not isinstance(obj, core.Subset):
-            return
-        self.client.add_scatter_layer(obj)
 
     def _update_window_title(self):
         if self.client.display_data is None:

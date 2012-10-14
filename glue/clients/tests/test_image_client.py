@@ -7,6 +7,7 @@ import numpy as np
 
 from ...tests import example_data
 from ... import core
+from ...core.exceptions import IncompatibleAttribute
 
 from ..image_client import ImageClient
 
@@ -18,10 +19,7 @@ plt.close('all')
 
 class DummyCoords(core.coordinates.Coordinates):
     def pixel2world(self, *args):
-        result = []
-        for i, a in enumerate(args):
-            result.append(a * (i + 1))
-        return tuple(result)
+        return tuple(a * (i + 1) for i, a in enumerate(args))
 
 
 class TrueState(core.subset.SubsetState):
@@ -37,6 +35,7 @@ class TestImageClient(object):
     def setup_method(self, method):
         self.im = example_data.test_image()
         self.cube = example_data.test_cube()
+        self.scatter = core.Data(x=[1, 2, 3, 4], y=[4, 5, 6, 7])
         self.im.edit_subset = self.im.new_subset()
         self.cube.edit_subset = self.cube.new_subset()
         self.collect = core.data_collection.DataCollection()
@@ -45,6 +44,21 @@ class TestImageClient(object):
         client = ImageClient(self.collect, figure=FIGURE)
         self.collect.append(self.im)
         client.set_data(self.im)
+        return client
+
+    def create_client_with_image_and_scatter(self):
+        from glue.core.link_helpers import LinkSame
+
+        client = self.create_client_with_image()
+        self.collect.append(self.scatter)
+
+        ix = self.im.get_world_component_id(0)
+        iy = self.im.get_world_component_id(1)
+
+        self.collect.add_link(LinkSame(self.scatter.id['x'], ix))
+        self.collect.add_link(LinkSame(self.scatter.id['x'], iy))
+        client.add_scatter_layer(self.scatter)
+
         return client
 
     def create_client_with_cube(self):
@@ -61,7 +75,7 @@ class TestImageClient(object):
         self.collect.append(self.im)
         client = ImageClient(self.collect, figure=FIGURE)
         assert client.display_data is None
-        assert not self.im in client.layers
+        assert not self.im in client.artists
 
     def test_invalid_add(self):
         client = ImageClient(self.collect, figure=FIGURE)
@@ -99,31 +113,32 @@ class TestImageClient(object):
         self.collect.append(self.im)
         s = self.im.new_subset()
         client.add_layer(s)
-        assert s in client.layers
+        assert s in client.artists
 
     def test_remove_data(self):
         client = ImageClient(self.collect, figure=FIGURE)
         self.collect.append(self.im)
         s = self.im.new_subset()
         client.add_layer(self.im)
-        assert self.im in client.layers
-        assert s in client.layers
+        assert self.im in client.artists
+        assert s in client.artists
         client.delete_layer(self.im)
         assert client.display_data is None
-        assert not self.im in client.layers
-        assert not s in client.layers
+        assert not self.im in client.artists
+        assert not s in client.artists
 
     def test_set_norm(self):
         client = self.create_client_with_image()
         assert client.display_data is not None
         client.set_norm(vmin=10, vmax=100)
-        assert client.layers[self.im].norm.vmin == 10
-        assert client.layers[self.im].norm.vmax == 100
+        for a in client.artists[self.im]:
+            assert a.norm.vmin == 10
+            assert a.norm.vmax == 100
 
     def test_delete_data(self):
         client = self.create_client_with_image()
         client.delete_layer(self.im)
-        assert not self.im in client.layers
+        assert not self.im in client.artists
 
     def test_set_attribute(self):
         client = self.create_client_with_image()
@@ -244,11 +259,104 @@ class TestImageClient(object):
         sub.subset_state = bad_state
 
         m = MagicMock()
-        client.layers[sub].delete_artist = m
+        client.artists[sub][0].clear = m
         client._update_subset_single(sub)
         assert m.call_count == 1
 
     def test_subsets_shown_on_init(self):
         client = self.create_client_with_image()
         subset = self.im.edit_subset
-        assert subset in client.layers
+        assert subset in client.artists
+
+    def test_axis_labels(self):
+        client = self.create_client_with_image()
+        client.refresh()
+        ax = client.axes
+        assert ax.get_xlabel() == 'X'
+        assert ax.get_ylabel() == 'Y'
+
+    def test_add_scatter_layer(self):
+        client = self.create_client_with_image_and_scatter()
+        assert self.scatter in client.artists
+        for a in client.artists[self.scatter]:
+            assert a.visible
+
+    def test_check_update(self):
+        client = self.create_client_with_image()
+        mm = MagicMock()
+        client._redraw = mm
+        client.check_update(None)
+        ct = mm.call_count
+        client.check_update(None)
+        assert mm.call_count == ct
+
+        client.axes.set_xlim(100, 500)
+        client.check_update(None)
+        assert mm.call_count > ct
+
+    def test_set_cmap(self):
+        from matplotlib.cm import bone
+        client = self.create_client_with_image()
+        client.set_data(self.im)
+        client.set_cmap(bone)
+        for a in client.artists[self.im]:
+            assert a.cmap is bone
+
+    def test_bad_attribute(self):
+        """Shoudl raise IncompatibleAttribute on bad input"""
+        client = self.create_client_with_image()
+        client.set_data(self.im)
+        with pytest.raises(IncompatibleAttribute) as exc:
+            client.set_attribute('bad')
+        assert exc.value.args[0] == "Attribute not in data's attributes: bad"
+
+
+def test_format_coord_2d():
+    """Coordinate display is in world coordinates"""
+
+    d = core.Data(x=[[1, 2, 3], [2, 3, 4]])
+    d.coords = DummyCoords()
+
+    dc = core.DataCollection([d])
+    c = ImageClient(dc)
+    c.add_layer(d)
+    ax = c.axes
+
+    #no data set. Use default
+    xy = ax.format_coord(1, 2)
+    assert xy == 'x=1            y=2           '
+
+    #use coord object
+    c.set_data(d)
+    xy = ax.format_coord(1, 2)
+    assert xy == 'x=1          y=4'
+
+
+def test_format_coord_3d():
+    """Coordinate display is in world coordinates"""
+
+    d = core.Data(x=[[[1, 2, 3], [2, 3, 4]], [[2, 3, 4], [3, 4, 5]]])
+    d.coords = DummyCoords()
+
+    dc = core.DataCollection([d])
+    c = ImageClient(dc)
+    c.add_layer(d)
+    ax = c.axes
+
+    #no data set. Use default
+    xy = ax.format_coord(1, 2)
+    assert xy == 'x=1            y=2           '
+
+    #ori = 0
+    c.set_data(d)
+    c.set_slice_ori(0)  # constant z
+    xy = ax.format_coord(1, 2)
+    assert xy == 'x=1          y=4'
+
+    c.set_slice_ori(1)  # constant y
+    xy = ax.format_coord(1, 2)
+    assert xy == 'x=1          z=6'
+
+    c.set_slice_ori(2)  # constant x
+    xy = ax.format_coord(1, 2)
+    assert xy == 'y=2          z=6'

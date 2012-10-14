@@ -156,11 +156,6 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         parent = self[subset.data]
         branch = QTreeWidgetItem(parent, [label, '', '', ''])
 
-        #possible that user generated with ctrl key held down,
-        #which adds subset to selection. Override this
-        self.setCurrentItem(branch, 0, QItemSelectionModel.Clear)
-        self.setCurrentItem(branch, 0, QItemSelectionModel.Select)
-
         if self.checkable:
             branch.setCheckState(0, Qt.Checked)
 
@@ -172,6 +167,11 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         if check_sync:
             self.setCurrentItem(branch)
             self._assert_view_synced()
+
+        #possible that user generated with ctrl key held down,
+        #which adds subset to selection. Override this
+        self.setCurrentItem(branch, 0, QItemSelectionModel.Clear)
+        self.setCurrentItem(branch, 0, QItemSelectionModel.Select)
 
     def _sync_layer(self, layer):
         """ Sync columns of display tree, to

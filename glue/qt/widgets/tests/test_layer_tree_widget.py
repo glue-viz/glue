@@ -150,6 +150,8 @@ class TestLayerTree(object):
         item1 = self.widget[s1]
         item2 = self.widget[s2]
         self.widget.layerTree.setCurrentItem(item1, 0,
+                                             QItemSelectionModel.Clear)
+        self.widget.layerTree.setCurrentItem(item1, 0,
                                              QItemSelectionModel.Toggle)
         self.widget.layerTree.setCurrentItem(item2, 0,
                                              QItemSelectionModel.Toggle)
