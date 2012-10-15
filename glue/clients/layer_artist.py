@@ -42,7 +42,7 @@ class LayerArtist(object):
 
     @property
     def visible(self):
-        return self._visible and self.enabled
+        return self._visible
 
     @visible.setter
     def visible(self, value):
@@ -203,6 +203,7 @@ class LayerArtistContainer(object):
         """Add a LayerArtist to this collection"""
         self._check_duplicate(artist)
         self.artists.append(artist)
+        artist.zorder = max(a.zorder for a in self.artists) + 1
 
     def remove(self, artist):
         """Remove a LayerArtist from this collection"""

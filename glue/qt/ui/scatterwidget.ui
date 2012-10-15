@@ -190,18 +190,6 @@
       </widget>
      </widget>
      <widget class="LayerArtistView" name="artist_view">
-      <property name="dragDropMode">
-       <enum>QAbstractItemView::DragDrop</enum>
-      </property>
-      <property name="movement">
-       <enum>QListView::Snap</enum>
-      </property>
-      <property name="spacing">
-       <number>1</number>
-      </property>
-      <property name="selectionRectVisible">
-       <bool>true</bool>
-      </property>
      </widget>
     </widget>
    </item>

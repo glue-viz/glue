@@ -84,7 +84,6 @@ class ScatterClient(Client):
         if layer in self.artists:
             return
         self.artists.append(ScatterLayerArtist(layer, self.ax))
-        self._bring_subsets_to_front()
         self._update_layer(layer)
         self._ensure_subsets_added(layer)
 
@@ -96,6 +95,7 @@ class ScatterClient(Client):
 
     def _bring_subsets_to_front(self):
         """ Make sure subsets are in front of data """
+        #XXX is this needed?
         nlayers = len(self.artists)
         for i, data in enumerate(self.data):
             if data not in self.artists:

@@ -55,8 +55,7 @@ class LayerArtistModel(QAbstractListModel):
             return result
         if role == Qt.CheckStateRole:
             art = self.artists[index.row()]
-            isChecked = art.visible
-            result = Qt.Checked if isChecked else Qt.Unchecked
+            result = Qt.Checked if art.visible else Qt.Unchecked
             return result
 
     def flags(self, index):
@@ -134,7 +133,7 @@ class LayerArtistModel(QAbstractListModel):
     def _update_zorder(self):
         """Redistribute zorders to match location in the list"""
         zs = [m.zorder for m in self.artists]
-        zs = sorted(zs)
+        zs = reversed(sorted(zs))
         for z, m in zip(zs, self.artists):
             m.zorder = z
         if len(self.artists) > 0:
@@ -194,7 +193,7 @@ class LayerArtistView(QListView):
         super(LayerArtistView, self).__init__(parent)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
-        self.setDropIndicatorShown(True)
+        self.setDragDropMode(QAbstractItemView.InternalMove)
         self.setIconSize(QSize(15, 15))
         self.setSelectionMode(QAbstractItemView.SingleSelection)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -223,6 +222,7 @@ class LayerArtistView(QListView):
         return rows[0].row()
 
     def _set_palette(self):
+        return
         p = self.palette()
         c = QColor(240, 240, 240)
         p.setColor(QPalette.Highlight, c)
@@ -260,8 +260,9 @@ class QtLayerArtistContainer(LayerArtistContainer):
 
     def append(self, artist):
         self._check_duplicate(artist)
-        self.model.add_artist(len(self.artists), artist)
-        assert self.artists[-1] is artist
+        self.model.add_artist(0, artist)
+        artist.zorder = max(a.zorder for a in self.artists) + 1
+        assert self.artists[0] is artist
 
     def remove(self, artist):
         try:

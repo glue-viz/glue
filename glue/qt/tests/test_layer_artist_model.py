@@ -144,9 +144,9 @@ def test_move_updates_zorder():
     model = LayerArtistModel(mgrs)
 
     model.move_artist(m2, 0)
-    assert m2.zorder == 10
+    assert m2.zorder == 30
     assert m0.zorder == 20
-    assert m1.zorder == 30
+    assert m1.zorder == 10
 
 
 def test_check_syncs_to_visible():
