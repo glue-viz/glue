@@ -373,3 +373,10 @@ def test_getitem_with_component_link_and_slice():
     d = Data(x=[1, 2, 3, 4])
     y = d.id['x'] * 5
     np.testing.assert_array_equal(d[y, ::2], [5, 15])
+
+
+def test_add_link_with_binary_link():
+    d = Data(x=[1, 2, 3, 4], y=[4, 5, 6, 7])
+    z = d.id['x'] + d.id['y']
+    d.add_component_link(z, 'z')
+    np.testing.assert_array_equal(d[d.id['z']], [5, 7, 9, 11])

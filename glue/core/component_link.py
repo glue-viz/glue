@@ -96,13 +96,14 @@ class ComponentLink(object):
             InvalidAttribute, if the data set doesn't have all the
             ComponentIDs needed for the transformation
         """
+        logger = logging.getLogger(__name__)
         args = [data[join_component_view(f, view)] for f in self._from]
-        logging.debug("shape of first argument: %s", args[0].shape)
+        logger.debug("shape of first argument: %s", args[0].shape)
         result = self._using(*args)
-        logging.debug("shape of result: %s", result.shape)
+        logger.debug("shape of result: %s", result.shape)
         if result.shape != args[0].shape:
-            logging.warn("ComponentLink function %s changed shape. Fixing",
-                         self._using.__name__)
+            logger.warn("ComponentLink function %s changed shape. Fixing",
+                        self._using.__name__)
             result.shape = args[0].shape
         return result
 
@@ -113,6 +114,9 @@ class ComponentLink(object):
     def get_to_id(self):
         """ The target ComponentID """
         return self._to
+
+    def set_to_id(self, to):
+        self._to = to
 
     def get_using(self):
         """ The transformation function """

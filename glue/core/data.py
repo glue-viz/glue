@@ -380,9 +380,9 @@ class Data(object):
             The DerivedComponent that was added
         """
         if cid is not None:
-            if type(cid) is str:
+            if isinstance(cid, basestring):
                 cid = ComponentID(cid)
-            link = ComponentLink(link.get_from_ids(), cid, link.get_using())
+            link.set_to_id(cid)
 
         if link.get_to_id() is None:
             raise TypeError("Cannot add component_link: "
