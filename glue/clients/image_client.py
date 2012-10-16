@@ -40,6 +40,7 @@ class ImageClient(VizClient):
         self._slice_ind = 0
         self._view_window = None
         self._view = None
+        self._image = None
 
         self._ax = axes
         self._figure = figure
@@ -77,6 +78,10 @@ class ImageClient(VizClient):
         if self.is_3D:
             return self._slice_ind
         return None
+
+    @property
+    def image(self):
+        return self._image
 
     @slice_ind.setter
     def slice_ind(self, value):
@@ -196,7 +201,14 @@ class ImageClient(VizClient):
             self.relim()
 
         view = self._build_view(matched=True)
+        self._image = self.display_data[view]
+
         self._view = view
+        for a in list(self.artists):
+            if a.layer.data is not self.display_data:
+                self.artists.remove(a)
+            else:
+                a.update(view)
         for a in self.artists[self.display_data]:
             a.update(view)
 

@@ -69,3 +69,16 @@ class TestImageWidget(object):
     def _data_combo_labels(self):
         combo = self.widget.ui.displayDataCombo
         return [combo.itemText(i) for i in range(combo.count())]
+
+    def test_data_not_added_on_init(self):
+        w = ImageWidget(self.collect)
+        assert self.im not in w.client.artists
+
+    def test_selection_switched_on_add(self):
+        w = ImageWidget(self.collect)
+        assert self.im not in w.client.artists
+        w.add_data(self.im)
+        assert self.im in w.client.artists
+        w.add_data(self.cube)
+        assert self.im not in w.client.artists
+        assert self.cube in w.client.artists

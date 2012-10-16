@@ -115,15 +115,11 @@ class ImageWidget(DataViewer):
         self.ui.sliceComboBox.hide()
         self.ui.sliderLabel.hide()
         self.ui.sliceComboBox.addItems(["xy", "xz", "yz"])
-        for d in self.client.data:
-            self._add_data(d)
-
-    def _add_data(self, data):
-        """Private method to ingest new data into widget"""
-        self.add_data_to_combo(data)
 
     def add_data(self, data):
-        """Overriden from DataViewer. Set current image to data"""
+        """Private method to ingest new data into widget"""
+        self.client.add_layer(data)
+        self.add_data_to_combo(data)
         self.set_data(self._data_index(data))
         return True
 
