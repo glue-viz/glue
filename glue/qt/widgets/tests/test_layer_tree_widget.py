@@ -96,13 +96,12 @@ class TestLayerTree(object):
         QTest.mousePress(self.widget.layerRemoveButton, Qt.LeftButton)
         assert self.layer_present(layer)
 
-    def test_link_data(self):
-        pth = 'glue.qt.link_editor.LinkEditor'
-        with patch(pth) as linkEditor:
-            layer = self.add_layer()
-            self.select_layers(layer)
-            self.link_action.trigger()
-            assert linkEditor.called_once()
+    @patch('glue.qt.widgets.layer_tree_widget.LinkEditor')
+    def test_link_data(self, le):
+        layer = self.add_layer()
+        self.select_layers(layer)
+        self.link_action.trigger()
+        assert le.update_links.call_count == 1
 
     def test_check_signal(self):
         layer = self.add_layer()
