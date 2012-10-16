@@ -155,7 +155,7 @@ class SubsetImageLayerArtist(LayerArtist):
         self.artists = [self._axes.imshow(mask, extent=extent,
                                           interpolation='nearest',
                                           origin='lower',
-                                          zorder=5)]
+                                          zorder=5, visible=self.visible)]
 
 
 class ScatterLayerArtist(LayerArtist):

@@ -48,6 +48,10 @@ class ImageWidget(DataViewer):
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
         self.resize(self.central_widget.size())
+        self._tweak_geometry()
+
+    def _tweak_geometry(self):
+        self.ui.splitter.setSizes([350, 50])
 
     def _create_actions(self):
         #pylint: disable=E1101
