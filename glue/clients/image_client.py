@@ -44,6 +44,7 @@ class ImageClient(VizClient):
 
         self._ax = axes
         self._figure = figure
+        self._norm_cache = {}
 
         #format axes
         fc = self._ax.format_coord
@@ -149,7 +150,16 @@ class ImageClient(VizClient):
                 attribute not in self.display_data.component_ids():
             raise IncompatibleAttribute(
                 "Attribute not in data's attributes: %s" % attribute)
+        if self.display_attribute is not None:
+            self._norm_cache[self.display_attribute] = self.get_norm()
+
         self.display_attribute = attribute
+
+        if attribute in self._norm_cache:
+            self.set_norm(*self._norm_cache[attribute])
+        else:
+            self.clear_norm()
+
         self._update_data_plot()
         self._redraw()
 
@@ -165,6 +175,17 @@ class ImageClient(VizClient):
             a.set_norm(vmin, vmax)
         self._update_data_plot()
         self._redraw()
+
+    @requires_data
+    def clear_norm(self):
+        for a in self.artists[self.display_data]:
+            a.clear_norm()
+
+    @requires_data
+    def get_norm(self):
+        a = self.artists[self.display_data][0]
+        norm = a.norm
+        return norm.vmin, norm.vmax
 
     @requires_data
     def set_cmap(self, cmap):

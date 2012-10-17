@@ -216,7 +216,7 @@ class ContrastMode(MouseMode):
 
     def _downsample(self, data):
         shp = data.shape
-        slices = tuple(slice(None, None, max(1, s / 100)) for s in shp)
+        slices = tuple(slice(None, None, max(1, s / 30)) for s in shp)
         return data[slices]
 
     def get_bounds(self, data):

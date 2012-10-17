@@ -310,6 +310,23 @@ class TestImageClient(object):
             client.set_attribute('bad')
         assert exc.value.args[0] == "Attribute not in data's attributes: bad"
 
+    def test_sticky_norm(self):
+        """Norm scaling for each component should be remembered"""
+        client = self.create_client_with_image()
+        x = self.im[self.im.visible_components[0]]
+        y = x * 2
+        self.im.add_component(y, 'y')
+
+        client.set_attribute(self.im.visible_components[0])
+        client.set_norm(1, 2)
+        assert client.get_norm() == (1, 2)
+
+        client.set_attribute(self.im.visible_components[1])
+        client.set_norm(3, 4)
+
+        client.set_attribute(self.im.visible_components[0])
+        assert client.get_norm() == (1, 2)
+
 
 def test_format_coord_2d():
     """Coordinate display is in world coordinates"""

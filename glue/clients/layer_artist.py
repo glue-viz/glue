@@ -125,10 +125,15 @@ class ImageLayerArtist(LayerArtist):
         self.artists = artists
 
     def set_norm(self, vmin, vmax):
+        if self.norm is None:
+            self.norm = InvNormalize()
         if vmin is not None:
             self.norm.vmin = vmin
         if vmax is not None:
             self.norm.vmax = vmax
+
+    def clear_norm(self):
+        self.norm = None
 
 
 class SubsetImageLayerArtist(LayerArtist):
