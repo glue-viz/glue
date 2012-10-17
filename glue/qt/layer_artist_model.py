@@ -222,7 +222,6 @@ class LayerArtistView(QListView):
         return rows[0].row()
 
     def _set_palette(self):
-        return
         p = self.palette()
         c = QColor(240, 240, 240)
         p.setColor(QPalette.Highlight, c)
