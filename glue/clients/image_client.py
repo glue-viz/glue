@@ -36,7 +36,7 @@ class ImageClient(VizClient):
 
         self.display_data = None
         self.display_attribute = None
-        self._slice_ori = 2
+        self._slice_ori = 0
         self._slice_ind = 0
         self._view_window = None
         self._view = None

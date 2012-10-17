@@ -105,8 +105,9 @@ class ImageLayerArtist(LayerArtist):
         vals = np.sort(layer.ravel())
         vals = vals[np.isfinite(vals)]
         result = InvNormalize()
-        result.vmin = vals[.05 * vals.size]
-        result.vmax = vals[.95 * vals.size]
+        if vals.size > 0:
+            result.vmin = vals[.05 * vals.size]
+            result.vmax = vals[.95 * vals.size]
         return result
 
     def update(self, view):
