@@ -124,6 +124,10 @@ class Component(object):
         self._data = data
 
     @property
+    def hidden(self):
+        return False
+
+    @property
     def data(self):
         """ Returns the data """
         return self._data
@@ -157,6 +161,10 @@ class DerivedComponent(Component):
         """
         super(DerivedComponent, self).__init__(data, units=units)
         self._link = link
+
+    @property
+    def hidden(self):
+        return self._link.hidden
 
     @property
     def data(self):
@@ -416,7 +424,8 @@ class Data(object):
     def visible_components(self):
         """ Returns a list of ComponentIDs for all components
         (primary and derived) in the data"""
-        return [c for c in self._components.keys() if not c.hidden]
+        return [cid for cid, comp in self._components.items()
+                if not cid.hidden and not comp.hidden]
 
     @property
     def primary_components(self):
