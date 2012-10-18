@@ -4,6 +4,8 @@ from PyQt4 import QtGui
 from mock import MagicMock, patch
 from ..qtutil import GlueDataDialog
 
+from glue.config import data_factory
+
 
 def test_glue_action_button():
     a = QtGui.QAction(None)
@@ -24,13 +26,14 @@ def test_glue_action_button():
     assert b.text() == 'test2'
 
 
+@data_factory('testing_factory', '*.*')
 def dummy_factory(filename):
     from glue.core import Data
     result = Data()
     result.made_with_dummy_factory = True
     return result
-
-dummy_factory.label = "testing_factory"
+dummy_factory_member = [f for f in data_factory.members
+                        if f[0] is dummy_factory][0]
 
 
 class TestGlueDataDialog(object):
@@ -53,7 +56,7 @@ class TestGlueDataDialog(object):
         """normal load_data dispatches path to factory"""
         fd = GlueDataDialog()
         mock_file_exec(fd, cancel=False, path='ld_data_nrml',
-                       factory=dummy_factory)
+                       factory=dummy_factory_member)
         d = fd.load_data()
         assert d.label == 'ld_data_nrml'
         assert d.made_with_dummy_factory is True
@@ -61,11 +64,12 @@ class TestGlueDataDialog(object):
     def test_filters(self):
         """Should build filter list from data_factories env var"""
         fd = GlueDataDialog()
-        import glue
-        assert len(fd.filters) == len(glue.env.data_factories)
+        assert len(fd.filters) == len(data_factory.members)
 
 
-def mock_file_exec(fd, cancel=False, path='junk', factory=dummy_factory):
+def mock_file_exec(fd, cancel=False, path='junk',
+                   factory=dummy_factory_member):
+
     fd._fd.exec_ = MagicMock()
     fd._fd.exec_.return_value = 1 - cancel
     fd.factory = MagicMock()

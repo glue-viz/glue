@@ -9,21 +9,27 @@ The LinkCollection class and its sublcasses are factories to create
 multiple ComponentLinks easily. They are meant to be passed to
 :func:`DataCollection.add_link()`
 """
+from functools import wraps
 
 from .component_link import ComponentLink
 from .data import ComponentID
 
 __LINK_FUNCTIONS__ = []
+__LINK_HELPERS__ = []
 
 
 def identity(x):
     return x
+identity.output_args = ['y']
 
 __LINK_FUNCTIONS__.append(identity)
 
 
 def _partial_result(func, index):
-    return lambda *args, **kwargs: func(*args, **kwargs)[index]
+    @wraps(func)
+    def getter(*args, **kwargs):
+        return func(*args, **kwargs)[index]
+    return getter
 
 
 def _toid(arg):
@@ -138,26 +144,35 @@ try:
         Returns a :class:`~glue.core.LinkCollection` object which links
         these ComponentIDs
         """
+
+        #attributes used by the Gui
+        info_text = """Link Galactic and Equatorial coordinates"""
+        input_args = ['l', 'b', 'ra', 'dec']
+
         def __init__(self, l, b, ra, dec):
             MultiLink.__init__(self, [ra, dec], [l, b], fk52gal, gal2fk5)
 
     def radec2glon(ra, dec):
         """Compute galactic longitude from right ascension and declination"""
         return fk52gal(ra, dec)[0]
+    radec2glon.output_args = ['l']
 
     def radec2glat(ra, dec):
         """Compute galactic latitude from right ascension and declination"""
         return fk52gal(ra, dec)[1]
+    radec2glat.output_args = ['b']
 
     def lb2ra(lat, lon):
         """Compute right ascension from galactic longitude and latitude"""
         return gal2fk5(lat, lon)[0]
+    lb2ra.output_args = ['ra']
 
     def lb2dec(lat, lon):
         """Compute declination from galactic longitude and latitude"""
         return gal2fk5(lat, lon)[1]
+    lb2dec.output_args = ['dec']
 
     __LINK_FUNCTIONS__.extend([radec2glon, radec2glat, lb2ra, lb2dec])
-
+    __LINK_HELPERS__.append(Galactic2Equatorial)
 except ImportError:
     pass

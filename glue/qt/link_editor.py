@@ -10,8 +10,6 @@ class LinkEditor(QDialog):
     def __init__(self, collection, functions=None, parent=None):
         super(LinkEditor, self).__init__(parent)
         self._collection = collection
-        from .. import env
-        self._functions = functions or env.link_functions
 
         self._ui = Ui_LinkEditor()
         self._init_widgets()
@@ -22,7 +20,6 @@ class LinkEditor(QDialog):
 
     def _init_widgets(self):
         self._ui.setupUi(self)
-        self._ui.signature_editor.setup(self._functions)
         self._ui.left_components.setup(self._collection)
         self._ui.right_components.setup(self._collection)
         self._ui.signature_editor.hide()
