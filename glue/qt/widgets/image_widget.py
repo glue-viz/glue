@@ -125,6 +125,7 @@ class ImageWidget(DataViewer):
 
     def add_subset(self, subset):
         self.client.add_scatter_layer(subset)
+        assert subset in self.client.artists
 
     def _data_index(self, data):
         combo = self.ui.displayDataCombo

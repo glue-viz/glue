@@ -9,6 +9,7 @@ from matplotlib.colors import Normalize
 from matplotlib.cm import gray
 from ..core.exceptions import IncompatibleAttribute
 from ..core.util import color2rgb
+from ..core.subset import Subset
 from .util import view_cascade, get_extent
 
 
@@ -54,7 +55,7 @@ class LayerArtist(object):
     def enabled(self):
         return len(self.artists) > 0
 
-    def update(self):
+    def update(self, view=None):
         """Redraw this layer"""
         raise NotImplementedError()
 
@@ -169,17 +170,36 @@ class ScatterLayerArtist(LayerArtist):
         super(ScatterLayerArtist, self).__init__(layer, ax)
         self.xatt = None
         self.yatt = None
+        self.emphasis = None
 
-    def update(self):
+    def update(self, view=None):
         self.clear()
         assert len(self.artists) == 0
+        has_emph = False
+
         try:
             x = self.layer[self.xatt].ravel()
             y = self.layer[self.yatt].ravel()
         except IncompatibleAttribute:
             return
         self.artists = self._axes.plot(x, y)
+
+        if self.emphasis is not None:
+            try:
+                s = Subset(self.layer.data)
+                s.subset_state = self.emphasis & self.layer.subset_state
+                x = s[self.xatt].ravel()
+                y = s[self.yatt].ravel()
+                self.artists.extend(self._axes.plot(x, y))
+                has_emph = True
+            except IncompatibleAttribute:
+                pass
+
         self._sync_style()
+        if has_emph:
+            self.artists[-1].set_mec('green')
+            self.artists[-1].set_mew(2)
+            self.artists[-1].set_alpha(1)
 
     def get_data(self):
         try:

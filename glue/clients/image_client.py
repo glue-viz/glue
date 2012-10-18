@@ -15,6 +15,8 @@ from .layer_artist import (ScatterLayerArtist, LayerArtistContainer,
 
 
 def requires_data(func):
+    """Decorator that checks an ImageClient for a non-null display_data
+    attribute. Only executes decorated function if present"""
     def result(*args, **kwargs):
         if args[0].display_data is None:
             return
@@ -43,6 +45,8 @@ class ImageClient(VizClient):
         self._image = None
 
         self._ax = axes
+        self._ax.get_xaxis().set_ticks([])
+        self._ax.get_yaxis().set_ticks([])
         self._figure = figure
         self._norm_cache = {}
 
@@ -56,7 +60,7 @@ class ImageClient(VizClient):
             world = self.display_data.coords.pixel2world(*pix)
             world = world[::-1]   # reverse for numpy convention
             ind = _slice_axis(self.display_data.shape, self._slice_ori)
-            labels = _slice_labels(self.display_data.shape, self._slice_ori)
+            labels = _slice_labels(self.display_data, self._slice_ori)
             return '%s=%s          %s=%s' % (labels[1], world[ind[1]],
                                              labels[0], world[ind[0]])
         self._ax.format_coord = format_coord
@@ -118,6 +122,7 @@ class ImageClient(VizClient):
 
         self.display_data = data
         self.display_attribute = attribute
+        self._update_axis_labels()
         self._update_data_plot(relim=True)
         self._update_subset_plots()
         self._redraw()
@@ -140,10 +145,19 @@ class ImageClient(VizClient):
         self._slice_ori = ori
         self.slice_ind = min(self.slice_ind, self.slice_bounds()[1])
         self.slice_ind = max(self.slice_ind, self.slice_bounds()[0])
+        self._update_axis_labels()
+
         self._update_data_plot(relim=True)
         self._update_subset_plots()
 
         self._redraw()
+
+    @requires_data
+    def _update_axis_labels(self):
+        ori = self._slice_ori
+        labels = _slice_labels(self.display_data, ori)
+        self._ax.set_xlabel(labels[1])
+        self._ax.set_ylabel(labels[0])
 
     def set_attribute(self, attribute):
         if not self.display_data or \
@@ -226,7 +240,8 @@ class ImageClient(VizClient):
 
         self._view = view
         for a in list(self.artists):
-            if a.layer.data is not self.display_data:
+            if (not isinstance(a, ScatterLayerArtist)) and \
+                    a.layer.data is not self.display_data:
                 self.artists.remove(a)
             else:
                 a.update(view)
@@ -237,10 +252,6 @@ class ImageClient(VizClient):
         shp = _2d_shape(self.display_data.shape, self._slice_ori)
         self._ax.set_xlim(0, shp[1])
         self._ax.set_ylim(0, shp[0])
-
-    def _update_axis_labels(self):
-        self._ax.set_xlabel('X')
-        self._ax.set_ylabel('Y')
 
     def _update_subset_single(self, s, redraw=False):
         """
@@ -334,7 +345,7 @@ class ImageClient(VizClient):
             raise TypeError("Data not managed by client's data collection")
 
         if not self.can_handle_data(layer.data):
-            logging.warning("Cannot visulize data: %s. Aborting", layer.data)
+            logging.warning("Cannot visulize %s. Aborting", layer.label)
             return
 
         if isinstance(layer, Data):
@@ -348,7 +359,10 @@ class ImageClient(VizClient):
             raise TypeError("Unrecognized layer type: %s" % type(layer))
 
     def add_scatter_layer(self, layer):
+        logging.getLogger(
+            __name__).debug('Adding scatter layer for %s' % layer)
         if layer in self.artists:
+            logging.getLogger(__name__).debug('Layer already present')
             return
 
         self.artists.append(ScatterLayerArtist(layer, self._ax))
@@ -362,6 +376,14 @@ class ImageClient(VizClient):
                 continue
             a.xatt = xatt
             a.yatt = yatt
+            if self.is_3D:
+                zatt = self.display_data.get_pixel_component_id(
+                    self._slice_ori)
+                subset = (
+                    zatt > self._slice_ind) & (zatt <= self._slice_ind + 1)
+                a.emphasis = subset
+            else:
+                a.emphasis = None
             a.update()
             a.redraw()
         self._redraw()
@@ -419,15 +441,19 @@ def _slice_axis(shape, slice_ori):
     return 0, 1
 
 
-def _slice_labels(shape, slice_ori):
+def _slice_labels(data, slice_ori):
+    shape = data.shape
+    names = [data.get_world_component_id(i).label
+             for i in range(len(shape))]
+    names = [n.split(':')[-1].split('-')[0] for n in names]
     if len(shape) == 2:
-        return 'y', 'x'
+        return names[0], names[1]
     if slice_ori == 0:
-        return 'y', 'x'
+        return names[1], names[2]
     if slice_ori == 1:
-        return 'z', 'x'
+        return names[0], names[2]
     assert slice_ori == 2
-    return 'z', 'y'
+    return names[0], names[1]
 
 
 def _view_window(ax):
