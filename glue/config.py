@@ -187,7 +187,7 @@ def load_configuration(search_path=None):
        Exception, if no module was found
     '''
     search_order = search_path or _default_search_order()
-    result = {}
+    result = imp.new_module('config')
 
     for config_file in search_order:
         try:

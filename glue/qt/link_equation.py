@@ -44,7 +44,10 @@ class ArgumentWidget(QWidget):
         self.layout.addWidget(label)
         self.editor = QLineEdit()
         self.editor.setReadOnly(True)
-        self.editor.setPlaceholderText("Drag a component from above")
+        try:
+            self.editor.setPlaceholderText("Drag a component from above")
+        except AttributeError:  # feature added in Qt 4.7
+            pass
         self.layout.addWidget(self.editor)
         self.setAcceptDrops(True)
 
