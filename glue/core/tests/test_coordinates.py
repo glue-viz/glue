@@ -135,14 +135,12 @@ class TestWcsCoordinates(object):
         x, y = {}, {}
         with pytest.raises(TypeError) as exc:
             coord.pixel2world(x, y)
-        assert exc.value.args[0].startswith("array cannot be safely cast")
 
     def test_world2pixel_invalid_input(self):
         coord = WCSCoordinates(None)
         x, y = {}, {}
         with pytest.raises(TypeError) as exc:
             coord.world2pixel(x, y)
-        assert exc.value.args[0].startswith("array cannot be safely")
 
     def test_axis_label(self):
         hdr = self.default_header()
