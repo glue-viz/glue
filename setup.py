@@ -73,7 +73,7 @@ class PyTest(Command):
 
     def run(self):
         import subprocess
-        path = os.path.join('scripts', 'runtests.py')
+        path = os.path.join('scripts', 'gluetests')
         errno = subprocess.call([sys.executable, path, 'glue'])
         raise SystemExit(errno)
 
