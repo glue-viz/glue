@@ -272,8 +272,8 @@ class TestImageClient(object):
         client = self.create_client_with_image()
         client.refresh()
         ax = client.axes
-        assert ax.get_xlabel() == 'X'
-        assert ax.get_ylabel() == 'Y'
+        assert ax.get_xlabel() == 'World 1'
+        assert ax.get_ylabel() == 'World 0'
 
     def test_add_scatter_layer(self):
         client = self.create_client_with_image_and_scatter()
@@ -327,6 +327,13 @@ class TestImageClient(object):
         client.set_attribute(self.im.visible_components[0])
         assert client.get_norm() == (1, 2)
 
+    def test_scatter_persistent(self):
+        """Ensure that updates to data plot don't erase scatter artists"""
+        client = self.create_client_with_image_and_scatter()
+        assert self.scatter in client.artists
+        client._update_data_plot()
+        assert self.scatter in client.artists
+
 
 def test_format_coord_2d():
     """Coordinate display is in world coordinates"""
@@ -346,7 +353,7 @@ def test_format_coord_2d():
     #use coord object
     c.set_data(d)
     xy = ax.format_coord(1, 2)
-    assert xy == 'x=1          y=4'
+    assert xy == 'World 1=1          World 0=4'
 
 
 def test_format_coord_3d():
@@ -368,12 +375,12 @@ def test_format_coord_3d():
     c.set_data(d)
     c.set_slice_ori(0)  # constant z
     xy = ax.format_coord(1, 2)
-    assert xy == 'x=1          y=4'
+    assert xy == 'World 2=1          World 1=4'
 
     c.set_slice_ori(1)  # constant y
     xy = ax.format_coord(1, 2)
-    assert xy == 'x=1          z=6'
+    assert xy == 'World 2=1          World 0=6'
 
     c.set_slice_ori(2)  # constant x
     xy = ax.format_coord(1, 2)
-    assert xy == 'y=2          z=6'
+    assert xy == 'World 1=2          World 0=6'

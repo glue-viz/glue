@@ -7,14 +7,29 @@ from PyQt4.QtCore import Qt
 
 from .ui.link_equation import Ui_LinkEquation
 from .. import core
+from ..core.odict import OrderedDict
 
 
 def function_label(function):
-    """ Format a function signature as a string """
-    name = function.__name__
-    args = getargspec(function)[0]
-    label = "result = %s(%s)" % (name, ', '.join(args))
+    """ Provide a label for a function
+
+    :param function: A member from the glue.config.link_function registry
+    """
+    name = function.function.__name__
+    args = getargspec(function.function)[0]
+    args = ', '.join(args)
+    output = function.output_labels
+    output = ', '.join(output)
+    label = "Link from %s to %s" % (args, output)
     return label
+
+
+def helper_label(helper):
+    """ Provide a label for a link helper
+
+    :param helper: A member from the glue.config.link_helper registry
+    """
+    return helper.info
 
 
 class ArgumentWidget(QWidget):
@@ -24,15 +39,41 @@ class ArgumentWidget(QWidget):
         self.layout.setContentsMargins(1, 0, 1, 1)
         self.setLayout(self.layout)
         label = QLabel(argument)
-        self.component_id = None
+        self._label = label
+        self._component_id = None
         self.layout.addWidget(label)
         self.editor = QLineEdit()
         self.editor.setReadOnly(True)
-        self.editor.setPlaceholderText("Drag a component from above")
+        try:
+            self.editor.setPlaceholderText("Drag a component from above")
+        except AttributeError:  # feature added in Qt 4.7
+            pass
         self.layout.addWidget(self.editor)
         self.setAcceptDrops(True)
 
+    @property
+    def component_id(self):
+        return self._component_id
+
+    @component_id.setter
+    def component_id(self, cid):
+        self._component_id = cid
+        self.editor.setText(str(cid))
+
+    @property
+    def label(self):
+        return self._label.text()
+
+    @label.setter
+    def label(self, label):
+        self._label.setText(label)
+
+    @property
+    def editor_text(self):
+        return self.editor.text()
+
     def clear(self):
+        self.component_id = None
         self.editor.clear()
 
     def dragEnterEvent(self, event):
@@ -46,13 +87,12 @@ class ArgumentWidget(QWidget):
         if not isinstance(obj, core.data.ComponentID):
             return
         self.component_id = obj
-        self.editor.setText(str(obj))
 
 
 class LinkEquation(QWidget):
     """ Interactively define ComponentLinks from existing functions
 
-    This widget inspects the calling signatures of input functions,
+    This widget inspects the calling signatures of helper functions,
     and presents the user with an interface for assigning componentIDs
     to the input and output arguments. It also generates ComponentLinks
     from this information.
@@ -63,20 +103,36 @@ class LinkEquation(QWidget):
     Usage::
 
        widget = LinkEquation()
-       widget.setup([list_of_functions])
-
     """
 
     def __init__(self, parent=None):
         super(LinkEquation, self).__init__(parent)
-        self._functions = None
+        from ..config import link_function, link_helper
+        #map of function/helper name -> function/helper tuple
+        f = [f for f in link_function.members if len(f.output_labels) == 1]
+        self._functions = OrderedDict((l[0].__name__, l) for l in
+                                      f + link_helper.members)
         self._argument_widgets = []
         self.spacer = None
         self._output_widget = ArgumentWidget("")
         self._ui = Ui_LinkEquation()
 
         self._init_widgets()
+        self._populate_function_combo()
         self._connect()
+        self._setup_editor()
+
+    def set_result_visible(self, state):
+        self._ui.output_canvas.setVisible(state)
+        self._ui.output_label.setVisible(state)
+
+    def is_helper(self):
+        return self.function is not None and \
+            type(self.function).__name__ == 'LinkHelper'
+
+    def is_function(self):
+        return self.function is not None and \
+            type(self.function).__name__ == 'LinkFunction'
 
     def _init_widgets(self):
         self._ui.setupUi(self)
@@ -90,27 +146,9 @@ class LinkEquation(QWidget):
         spacer = QSpacerItem(5, 5, QSizePolicy.Minimum, QSizePolicy.Expanding)
         layout.addItem(spacer)
 
-    def setup(self, functions):
-        """ Set up widgets for assigning to a list of functions
-
-        :param functions: functions to interact with
-        :type functions: list of function objects
-        """
-        self._functions = dict(((f.__name__, f) for f in functions))
-        self._populate_function_combo()
-
     @property
     def add_button(self):
         return self._ui.addButton
-
-    @property
-    def two_way(self):
-        """ Returns true if the link is two-way
-
-        A link is two way if the input and output arguments can be
-        flipped. If the link is two-way, two links will be created
-        """
-        return self._ui.two_way.checkState() == Qt.Checked
 
     @property
     def signature(self):
@@ -123,12 +161,30 @@ class LinkEquation(QWidget):
         out = self._output_widget.component_id
         return inp, out
 
+    @signature.setter
+    def signature(self, inout):
+        inp, out = inout
+        for i, a in zip(inp, self._argument_widgets):
+            a.component_id = i
+        self._output_widget.component_id = out
+
     @property
-    def _function(self):
-        """ The currently-selected function """
+    def function(self):
+        """ The currently-selected function
+
+        :rtype: A function or helper tuple
+        """
         fname = str(self._ui.function.currentText())
         func = self._functions[fname]
         return func
+
+    @function.setter
+    def function(self, val):
+        name = val[0].__name__
+        pos = self._ui.function.findText(name)
+        if pos < 0:
+            raise KeyError("No function or helper found %s" % [val])
+        self._ui.function.setCurrentIndex(pos)
 
     def links(self):
         """ Create ComponentLinks from the state of the widget
@@ -139,34 +195,30 @@ class LinkEquation(QWidget):
         the empty list is returned
         """
         inp, out = self.signature
-        if not inp or not out:
-            return []
-        using = self._function
-
-        link = core.component_link.ComponentLink(inp, out, using)
-        if self.two_way:
-            link2 = core.component_link.ComponentLink([out], inp[0], using)
-            return [link, link2]
-
-        return [link]
+        if self.is_function():
+            using = self.function.function
+            if not all(inp) or not out:
+                return []
+            link = core.component_link.ComponentLink(inp, out, using)
+            return [link]
+        if self.is_helper():
+            helper = self.function.helper
+            if not all(inp):
+                return []
+            return helper(*inp)
 
     def _update_add_enabled(self):
         state = True
         for a in self._argument_widgets:
             state = state and a.component_id is not None
-        state = state and self._output_widget.component_id is not None
+        if self.is_function():
+            state = state and self._output_widget.component_id is not None
         self._ui.addButton.setEnabled(state)
-
-    def _update_twoway_enabled(self):
-        self._ui.two_way.setEnabled(len(self._argument_widgets) == 1)
-        if not self._ui.two_way.isEnabled():
-            self._ui.two_way.setCheckState(Qt.Unchecked)
 
     def _connect(self):
         signal = self._ui.function.currentIndexChanged
         signal.connect(self._setup_editor)
         signal.connect(self._update_add_enabled)
-        signal.connect(self._update_twoway_enabled)
         self._ui.addButton.clicked.connect(self._clear_inputs)
         self._output_widget.editor.textChanged.connect(
             self._update_add_enabled)
@@ -177,12 +229,35 @@ class LinkEquation(QWidget):
         self._output_widget.clear()
 
     def _setup_editor(self):
-        """ Prepare the widget for the active function.
-        """
-        func = self._function
+        if self.is_function():
+            self._setup_editor_function()
+        else:
+            self._setup_editor_helper()
+
+    def _setup_editor_function(self):
+        """ Prepare the widget for the active function."""
+        assert self.is_function()
+        self.set_result_visible(True)
+        func = self.function.function
         args = getargspec(func)[0]
-        label = function_label(func)
-        self._ui.function_signature.setText(label)
+        label = function_label(self.function)
+        self._ui.info.setText(label)
+        self._output_widget.label = self.function.output_labels[0]
+        self._clear_input_canvas()
+        for a in args:
+            self._add_argument_widget(a)
+
+        self.spacer = QSpacerItem(5, 5, QSizePolicy.Minimum,
+                                  QSizePolicy.Expanding)
+        self._ui.input_canvas.layout().addItem(self.spacer)
+
+    def _setup_editor_helper(self):
+        """Setup the editor for the selected link helper"""
+        assert self.is_helper()
+        self.set_result_visible(False)
+        label = helper_label(self.function)
+        args = self.function.input_labels
+        self._ui.info.setText(label)
 
         self._clear_input_canvas()
         for a in args:
@@ -215,44 +290,3 @@ class LinkEquation(QWidget):
         self._ui.function.clear()
         for f in self._functions:
             self._ui.function.addItem(f)
-
-
-def main():  # pragma: no cover
-    import glue
-    import numpy as np
-    from component_selector import ComponentSelector
-    from PyQt4.QtGui import QApplication
-
-    app = QApplication([''])
-
-    d = glue.core.Data(label='d1')
-    d2 = glue.core.Data(label='d2')
-    c1 = glue.core.Component(np.array([1, 2, 3]))
-    c2 = glue.core.Component(np.array([1, 2, 3]))
-    c3 = glue.core.Component(np.array([1, 2, 3]))
-    d.add_component(c1, 'a')
-    d.add_component(c2, 'b')
-    d2.add_component(c3, 'c')
-    dc = glue.core.DataCollection()
-    dc.append(d)
-    dc.append(d2)
-
-    def f(a, b, c):
-        pass
-
-    def g(h, i):
-        pass
-
-    def h(j, k=None):
-        pass
-
-    w = LinkEquation()
-    w.setup([f, g, h])
-
-    cs = ComponentSelector(dc, label="Data 1")
-    w.show()
-    cs.show()
-    app.exec_()
-
-if __name__ == "__main__":
-    main()

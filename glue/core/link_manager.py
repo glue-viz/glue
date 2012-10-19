@@ -106,7 +106,7 @@ class LinkManager(object):
         self._links = set()
 
     def add_link(self, link):
-        if isinstance(link, LinkCollection):
+        if isinstance(link, LinkCollection) or isinstance(link, list):
             for l in link:
                 self._links.add(l)
         else:

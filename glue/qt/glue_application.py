@@ -7,6 +7,7 @@ from PyQt4.QtGui import (QKeySequence, QMainWindow, QGridLayout,
 from PyQt4.QtCore import Qt
 
 from .. import core
+from .. import env
 from ..qt import get_qapp
 from .ui.glue_application import Ui_GlueApplication
 from .decorators import set_cursor, messagebox_on_error
@@ -220,18 +221,17 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         """ Create a new visualization window in the current tab
         """
 
-        from .. import env
-
+        from ..config import qt_client
         from .widgets import ScatterWidget, ImageWidget
 
-        if data and data.ndim == 1 and ScatterWidget in env.qt_clients:
-            default = env.qt_clients.index(ScatterWidget)
-        elif data and data.ndim in [2, 3] and ImageWidget in env.qt_clients:
-            default = env.qt_clients.index(ImageWidget)
+        if data and data.ndim == 1 and ScatterWidget in qt_client.members:
+            default = qt_client.members.index(ScatterWidget)
+        elif data and data.ndim in [2, 3] and ImageWidget in qt_client.members:
+            default = qt_client.members.index(ImageWidget)
         else:
             default = 0
 
-        client = pick_class(env.qt_clients, title='Data Viewer',
+        client = pick_class(list(qt_client.members), title='Data Viewer',
                             label="Choose a new data viewer",
                             default=default)
         if client:
@@ -303,7 +303,10 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
 
         try:
             from .widgets.terminal import glue_terminal
-            widget = glue_terminal(data_collection=self._data)
+            widget = glue_terminal(data_collection=self._data,
+                                   dc=self._data,
+                                   hub=self._hub,
+                                   **vars(env))
             self._terminal_button.clicked.connect(self._toggle_terminal)
         except Exception as e:  # pylint: disable=W0703
             import traceback

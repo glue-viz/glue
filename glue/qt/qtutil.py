@@ -86,9 +86,9 @@ class GlueDataDialog(object):
 
     def __init__(self, parent=None):
         self._fd = QtGui.QFileDialog(parent)
-        import glue
-        self.filters = [(f[0], self._filter(f[0]))
-                        for f in glue.env.data_factories]
+        from glue.config import data_factory
+        self.filters = [(f, self._filter(f))
+                        for f in data_factory.members]
         self.setNameFilter()
         self._fd.setFileMode(QtGui.QFileDialog.ExistingFile)
 
@@ -103,7 +103,7 @@ class GlueDataDialog(object):
         self._fd.setNameFilter(fltr)
 
     def _filter(self, factory):
-        return "%s (%s)" % (factory.label, factory.file_filter)
+        return "%s (%s)" % (factory.label, factory.filter)
 
     def path(self):
         return self._fd.selectedFiles()[0]
@@ -130,7 +130,7 @@ class GlueDataDialog(object):
         from glue.core.data_factories import data_label
         path, fac = self._get_path_and_factory()
         if path is not None:
-            result = fac(path)
+            result = fac.function(path)
             result.label = data_label(path)
             return result
 

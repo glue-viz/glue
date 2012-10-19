@@ -2,7 +2,7 @@ import logging
 
 import numpy as np
 
-__all__ = ['Coordinates', 'WCSCoordinates', 'WCSCube']
+__all__ = ['Coordinates', 'WCSCoordinates']
 
 
 class Coordinates(object):
@@ -27,7 +27,7 @@ class WCSCoordinates(Coordinates):
     '''
     Class for coordinate transformation based on the WCS FITS
     standard.  This class does not take into account
-    distortions. Restricted to 2D images
+    distortions.
 
     References
     ----------
@@ -53,88 +53,46 @@ class WCSCoordinates(Coordinates):
         from astropy import wcs
         self._wcs = wcs.WCS(self._header)
 
-    def pixel2world(self, xpix, ypix):
+    def pixel2world(self, *pixel):
         '''
         Convert pixel to world coordinates, preserving input type/shape
 
-        Parameters
-        ----------
-        xpix, ypix: scalars, lists, or Numpy arrays
-            The pixel coordinates to convert
+        :param args: xpix, ypix[, zpix]: scalars, lists, or Numpy arrays
+                     The pixel coordinates to convert
 
-        Returns
-        -------
-        xworld, yworld: scalars, lists or Numpy arrays
+        *Returns*
+
+        xworld, yworld, [zworld]: scalars, lists or Numpy arrays
             The corresponding world coordinates
         '''
-        if type(xpix) is not type(ypix):
-            if np.isscalar(xpix) and np.isscalar(ypix):
-                pass
-            else:
-                raise TypeError("xpix and ypix types do not match: %s/%s" %
-                                (type(xpix), type(ypix)))
+        arrs = [np.asarray(p) for p in pixel]
+        pix = np.vstack(a.ravel() for a in arrs).T
+        result = tuple(self._wcs.wcs_pix2world(pix, 1).T)
+        for r, a in zip(result, arrs):
+            r.shape = a.shape
+        return result
 
-        if np.isscalar(xpix):
-            xworld, yworld = self._wcs.wcs_pix2sky(
-                np.array([xpix]),
-                np.array([ypix]), 1)
-            return xworld[0], yworld[0]
-        elif type(xpix) == list:
-            xworld, yworld = self._wcs.wcs_pix2sky(np.array(xpix),
-                                                   np.array(ypix), 1)
-            return xworld.tolist(), yworld.tolist()
-        elif isinstance(xpix, np.ndarray):
-            logging.debug("xpix, ypix shapes: %s %s", xpix.shape, ypix.shape)
-
-            xworld, yworld = self._wcs.wcs_pix2sky(xpix, ypix, 1)
-
-            xworld.shape = xpix.shape
-            yworld.shape = ypix.shape
-            return xworld, yworld
-        else:
-            raise TypeError("Unexpected type for pixel coordinates: %s"
-                            % type(xpix))
-
-    def world2pixel(self, xworld, yworld):
+    def world2pixel(self, *world):
         '''
         Convert pixel to world coordinates, preserving input type/shape
 
-        Parameters
-        ----------
-        xworld, yworld: scalars, lists or Numpy arrays
+        :param world:
+            xworld, yworld[, zworld] : scalars, lists or Numpy arrays
             The world coordinates to convert
 
-        Returns
-        -------
+        *Returns*
+
         xpix, ypix: scalars, lists, or Numpy arrays
             The corresponding pixel coordinates
         '''
+        arrs = [np.asarray(w) for w in world]
+        pix = np.vstack(a.ravel() for a in arrs).T
+        result = tuple(self._wcs.wcs_world2pix(pix, 1).T)
+        for r, a in zip(result, arrs):
+            r.shape = a.shape
+        return result
 
-        if type(xworld) is not type(yworld):
-            if np.isscalar(xworld) and np.isscalar(yworld):
-                pass
-            else:
-                raise TypeError("xworld and yworld types do not match: %s/%s" %
-                                (type(xworld), type(yworld)))
-
-        if np.isscalar(xworld):
-            xpix, ypix = self._wcs.wcs_sky2pix(np.array([xworld]),
-                                               np.array([yworld]), 1)
-            return xpix[0], ypix[0]
-        elif type(xworld) == list:
-            xpix, ypix = self._wcs.wcs_sky2pix(np.array(xworld),
-                                               np.array(yworld), 1)
-            return xpix.tolist(), ypix.tolist()
-        elif isinstance(xworld, np.ndarray):
-            xpix, ypix = self._wcs.wcs_sky2pix(xworld, yworld, 1)
-            xpix.shape = xworld.shape
-            ypix.shape = yworld.shape
-            return xpix, ypix
-        else:
-            raise TypeError("Unexpected type for world coordinates: %s" %
-                            type(xworld))
-
-    def axis_label(self, axis):
+    def _2d_axis_label(self, axis):
         letters = ['y', 'x']
         header = self._header
         num = _get_ndim(header) - axis  # number orientation reversed
@@ -143,72 +101,25 @@ class WCSCoordinates(Coordinates):
             return 'World %s: %s' % (letters[axis], header[key])
         return 'World %s' % (letters[axis])
 
-
-class WCSCubeCoordinates(WCSCoordinates):
-
-    def __init__(self, header):
-        super(WCSCubeCoordinates, self).__init__(header)
-        from astropy.io import fits
-        if not isinstance(header, fits.Header):
-            raise TypeError("Header must by an astropy.io.fits.Header "
-                            "instance")
-
-        if _get_ndim(header) != 3:
-            raise AttributeError("Header must describe a 3D array")
-
-        self._header = header
-
-        try:
-            self._cdelt3 = header['CDELT3'] if 'CDELT3' in header \
-                else header['CD3_3']
-            self._crpix3 = header['CRPIX3']
-            self._crval3 = header['CRVAL3']
-        except KeyError:
-            raise AttributeError("Input header must have CRPIX3, CRVAL3, and "
-                                 "CDELT3 or CD3_3 keywords")
-        self._ctype3 = ""
-        if 'CTYPE3' in header:
-            self._ctype3 = header['CTYPE3']
-
-        # make sure there is no non-standard rotation
-        keys = ['CD1_3', 'CD2_3', 'CD3_2', 'CD3_1']
-        for k in keys:
-            if k in header and header[k] != 0:
-                raise AttributeError("Cannot handle non-zero keyword: "
-                                     "%s = %s" %
-                                     (k, header[k]))
-        self._fix_header_for_2d()
-
-        from astropy import wcs
-        self._wcs = wcs.WCS(header)
-
-    def _fix_header_for_2d(self):
-        #workaround for astropy.wcs -- need to remove 3D header keywords
-        self._header['NAXIS'] = 2
-        for tag in ['NAXIS3', 'CDELT3', 'CD3_3', 'CRPIX3', 'CRVAL3', 'CTYPE3']:
-            if tag in self._header:
-                del self._header[tag]
-
-    def pixel2world(self, xpix, ypix, zpix):
-        xout, yout = WCSCoordinates.pixel2world(self, xpix, ypix)
-        zout = (zpix - self._crpix3) * self._cdelt3 + self._crval3
-        return xout, yout, zout
-
-    def world2pixel(self, xworld, yworld, zworld):
-        xout, yout = WCSCoordinates.world2pixel(self, xworld, yworld)
-        zout = (zworld - self._crval3) / self._cdelt3 + self._crpix3
-        return xout, yout, zout
-
-    def axis_label(self, axis):
+    def _3d_axis_label(self, axis):
         letters = ['z', 'y', 'x']
         keys = ["", "", ""]
-        if self._ctype3:
-            keys[0] = ": %s" % self._ctype3
+        if 'CTYPE3' in self._header:
+            keys[0] = ": %s" % self._header['CTYPE3']
         if 'CTYPE2' in self._header:
             keys[1] = ": %s" % self._header['CTYPE2']
         if 'CTYPE1' in self._header:
             keys[2] = ": %s" % self._header['CTYPE1']
-        return "World %s %s" % (letters[axis], keys[axis])
+        return "World %s%s" % (letters[axis], keys[axis])
+
+    def axis_label(self, axis):
+        header = self._header
+        if _get_ndim(header) == 2:
+            return self._2d_axis_label(axis)
+        elif _get_ndim(header) == 3:
+            return self._3d_axis_label(axis)
+        else:
+            return super(WCSCoordinates, self).axis_label(axis)
 
 
 def coordinates_from_header(header):
@@ -219,18 +130,11 @@ def coordinates_from_header(header):
 
     :rtype: :class:`~glue.core.coordinates.Coordinates`
     """
-    f = None
-    ndim = _get_ndim(header)
-    if ndim == 2:
-        f = WCSCoordinates
-    elif ndim == 3:
-        f = WCSCubeCoordinates
-    if f:
-        try:
-            return f(header)
-        except AttributeError as e:
-            print e
-            pass
+    try:
+        return WCSCoordinates(header)
+    except (AttributeError, TypeError) as e:
+        print e
+        pass
     return Coordinates()
 
 

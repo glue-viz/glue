@@ -1,15 +1,18 @@
-# Need to use absolute imports here because
-from glue.qt.widgets.scatter_widget import ScatterWidget
-from glue.qt.widgets.image_widget import ImageWidget
-
-""" Visualization Clients """
-#qt_clients = [ScatterWidget, ImageWidget]
-
-"""Functions to use in the link editor to define mapping between
-ComponentIDs
-"""
-#link_functions = []
+from glue.config import qt_client, data_factory, link_function
 
 
-""" Feel free to define or import any extra functions. These will be
-visible to the custom component definer """
+"""Declare any extra link functions like this"""
+#@link_function(info='translates A to B', output_labels=['b'])
+#def a_to_b(a):
+#    return a * 3
+
+
+"""Data factories take a filename as input and return a Data object"""
+#@data_factory('JPEG Image')
+#def jpeg_reader(file_name):
+#    ...
+#    return data
+
+
+"""Extra qt clients"""
+#qt_client(ClientClass)

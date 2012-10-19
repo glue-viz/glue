@@ -255,7 +255,8 @@ class Data(object):
             def __getitem__(self, key):
                 result = self.data.find_component_id(key)
                 if result is None:
-                    raise KeyError("ComponentID not found: %s" % key)
+                    raise KeyError("ComponentID not found or not unique: %s"
+                                   % key)
                 return result
 
         self.id = ComponentIDDict(self)
@@ -464,11 +465,11 @@ class Data(object):
 
         Returns:
 
-            The associated ComponentID, or None of not found
+            The associated ComponentID if label is found and unique, else None
         """
         result = [cid for cid in self.component_ids() if
                   cid.label == label]
-        if len(result) > 0:
+        if len(result) == 1:
             return result[0]
 
     @property

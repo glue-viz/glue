@@ -112,36 +112,35 @@ class TestWcsCoordinates(object):
         assert_almost_equal(result[0], expected[0])
         assert_almost_equal(result[1], expected[1])
 
-    def test_pixel2world_mismatched_input(self):
-        coord = WCSCoordinates(None)
-        x, y = 0, [5]
-        with pytest.raises(TypeError) as exc:
-            coord.pixel2world(x, y)
-        assert exc.value.args[0].startswith("xpix and ypix types do not match")
-
     def test_world2pixel_mismatched_input(self):
-        coord = WCSCoordinates(None)
-        x, y = 0, [5]
-        with pytest.raises(TypeError) as exc:
-            coord.world2pixel(x, y)
-        assert exc.value.args[0].startswith("xworld and yworld types do not "
-                                            "match")
+        coord = WCSCoordinates(self.default_header())
+        x, y = 0., [5.]
+        expected = 250., 187.5
+
+        result = coord.world2pixel(x, y)
+        assert_almost_equal(result[0], expected[0])
+        assert_almost_equal(result[1], expected[1])
+
+    def test_pixel2world_mismatched_input(self):
+        coord = WCSCoordinates(self.default_header())
+        expected = 0., 5.
+        x, y = [250.], 187.5
+
+        result = coord.pixel2world(x, y)
+        assert_almost_equal(result[0], expected[0])
+        assert_almost_equal(result[1], expected[1])
 
     def test_pixel2world_invalid_input(self):
         coord = WCSCoordinates(None)
         x, y = {}, {}
         with pytest.raises(TypeError) as exc:
             coord.pixel2world(x, y)
-        assert exc.value.args[0].startswith("Unexpected type for "
-                                            "pixel coordinates")
 
     def test_world2pixel_invalid_input(self):
         coord = WCSCoordinates(None)
         x, y = {}, {}
         with pytest.raises(TypeError) as exc:
             coord.world2pixel(x, y)
-        assert exc.value.args[0].startswith("Unexpected type for "
-                                            "world coordinates")
 
     def test_axis_label(self):
         hdr = self.default_header()
@@ -161,7 +160,7 @@ class TestCoordinatesFromHeader(object):
 
     def test_3d(self):
         hdr = {"NAXIS": 3}
-        with patch('glue.core.coordinates.WCSCubeCoordinates') as wcs:
+        with patch('glue.core.coordinates.WCSCoordinates') as wcs:
             coord = coordinates_from_header(hdr)
             wcs.assert_called_once_with(hdr)
 
@@ -252,9 +251,8 @@ def header_from_string(string):
     return fits.Header(cards)
 
 
-@pytest.mark.parametrize(('hdr'), (HDR_2D_VALID, HDR_3D_VALID_NOWCS))
-def test_coords_preserve_shape(hdr):
-    coord = coordinates_from_header(header_from_string(hdr))
+def test_coords_preserve_shape_2d():
+    coord = coordinates_from_header(header_from_string(HDR_2D_VALID))
     x = np.zeros(12)
     y = np.zeros(12)
     result = coord.pixel2world(x, y)
@@ -279,5 +277,38 @@ def test_coords_preserve_shape(hdr):
     for r in result:
         assert r.shape == x.shape
     result = coord.world2pixel(x, y)
+    for r in result:
+        assert r.shape == x.shape
+
+
+def test_coords_preserve_shape_3d():
+    coord = coordinates_from_header(header_from_string(HDR_3D_VALID_NOWCS))
+    x = np.zeros(12)
+    y = np.zeros(12)
+    z = np.zeros(12)
+    result = coord.pixel2world(x, y, z)
+    for r in result:
+        assert r.shape == x.shape
+    result = coord.world2pixel(x, y, z)
+    for r in result:
+        assert r.shape == x.shape
+
+    x.shape = (4, 3)
+    y.shape = (4, 3)
+    z.shape = (4, 3)
+    result = coord.pixel2world(x, y, z)
+    for r in result:
+        assert r.shape == x.shape
+    result = coord.world2pixel(x, y, z)
+    for r in result:
+        assert r.shape == x.shape
+
+    x.shape = (2, 2, 3)
+    y.shape = (2, 2, 3)
+    z.shape = (2, 2, 3)
+    result = coord.pixel2world(x, y, z)
+    for r in result:
+        assert r.shape == x.shape
+    result = coord.world2pixel(x, y, z)
     for r in result:
         assert r.shape == x.shape
