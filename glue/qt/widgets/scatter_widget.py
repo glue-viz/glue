@@ -92,7 +92,7 @@ class ScatterWidget(DataViewer):
 
     def update_combos(self, layer):
         """ Update combo boxes to incorporate attribute fields in layer"""
-        layer_ids = self.client.plottable_attributes(layer)
+        layer_ids = self.client.plottable_attributes(layer, show_hidden=True)
         xcombo = self.ui.xAxisComboBox
         ycombo = self.ui.yAxisComboBox
 
