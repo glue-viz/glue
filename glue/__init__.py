@@ -1,4 +1,9 @@
 # Set up configuration variables
+
+#force use of PyQt4 on IPython when PySide installed
+import os
+os.environ['QT_API'] = 'pyqt'
+
 try:
     from sip import setapi
 except ImportError:
