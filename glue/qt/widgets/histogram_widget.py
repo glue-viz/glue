@@ -1,15 +1,18 @@
+from functools import partial
+
 import numpy as np
 
-from PyQt4 import QtCore, QtGui
-from PyQt4.QtCore import Qt
+from PyQt4 import QtGui
 
-from ...core.hub import HubListener
 from ...core import message as msg
 from ...clients.histogram_client import HistogramClient
 from ..ui.histogramwidget import Ui_HistogramWidget
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import RectangleMode
 from .data_viewer import DataViewer
+from ..layer_artist_model import QtLayerArtistContainer
+
+WARN_SLOW = 10000000
 
 
 class HistogramWidget(DataViewer):
@@ -22,34 +25,54 @@ class HistogramWidget(DataViewer):
         self.setCentralWidget(self.central_widget)
         self.ui = Ui_HistogramWidget()
         self.ui.setupUi(self.central_widget)
-        self.ui.layerTree.set_checkable(True)
+        container = QtLayerArtistContainer()
+        self._artist_container = container
+
         self.client = HistogramClient(data,
-                                      self.ui.mplWidget.canvas.fig)
+                                      self.ui.mplWidget.canvas.fig,
+                                      artist_container=container)
+        self.ui.artist_view.setModel(container.model)
+        self.ui.xmin.setValidator(QtGui.QDoubleValidator())
+        self.ui.xmax.setValidator(QtGui.QDoubleValidator())
+        lo, hi = self.client.xlimits
+        self.ui.xmin.setText(str(lo))
+        self.ui.xmax.setText(str(hi))
         self.make_toolbar()
         self._connect()
-        for d in data:
-            self.add_data(d)
         self._data = data
         self._tweak_geometry()
 
     def _tweak_geometry(self):
-        self.central_widget.resize(400, 400)
+        self.central_widget.resize(600, 400)
         self.ui.splitter.setSizes([350, 120])
+        self.ui.main_splitter.setSizes([300, 100])
         self.resize(self.central_widget.size())
 
     def _connect(self):
         ui = self.ui
         cl = self.client
-        ui.dataCombo.currentIndexChanged.connect(
-            self._set_data_from_combo)
         ui.attributeCombo.currentIndexChanged.connect(
             self._set_attribute_from_combo)
-        ui.binSpinBox.valueChanged.connect(
-            self.client.set_nbins)
-        ui.layerTree._layer_check_changed.connect(cl.set_layer_visible)
-        ui.layerTree.linkButton.hide()
-        ui.normalized_box.toggled.connect(cl.set_normalized)
-        ui.autoscale_box.toggled.connect(cl.set_autoscale)
+        ui.attributeCombo.currentIndexChanged.connect(
+            self._update_minmax_labels)
+        ui.binSpinBox.valueChanged.connect(partial(setattr, cl, 'nbins'))
+        ui.normalized_box.toggled.connect(partial(setattr, cl, 'normed'))
+        ui.autoscale_box.toggled.connect(partial(setattr, cl, 'autoscale'))
+        ui.cumulative_box.toggled.connect(partial(setattr, cl, 'cumulative'))
+        ui.xlog_box.toggled.connect(partial(setattr, cl, 'xlog'))
+        ui.ylog_box.toggled.connect(partial(setattr, cl, 'ylog'))
+        ui.xmin.returnPressed.connect(self._set_limits)
+        ui.xmax.returnPressed.connect(self._set_limits)
+
+    def _set_limits(self):
+        lo = float(self.ui.xmin.text())
+        hi = float(self.ui.xmax.text())
+        self.client.xlimits = lo, hi
+
+    def _update_minmax_labels(self):
+        lo, hi = self.client.xlimits
+        self.ui.xmin.setText(str(lo))
+        self.ui.xmax.setText(str(hi))
 
     def make_toolbar(self):
         result = GlueToolbar(self.ui.mplWidget.canvas, self,
@@ -68,16 +91,13 @@ class HistogramWidget(DataViewer):
         roi = mode.roi()
         self.client._apply_roi(roi)
 
-    def _update_attributes(self, data=None):
+    def _update_attributes(self):
         combo = self.ui.attributeCombo
         combo.clear()
 
-        data = data or self._current_data()
-        if data is None:
-            return
-
-        comps = [c for c in data.visible_components if
-                 np.can_cast(data[c].dtype, np.float)]
+        data = [a.layer.data for a in self._artist_container]
+        comps = set(c for d in data for c in d.visible_components if
+                    np.can_cast(d[c].dtype, np.float))
 
         try:
             combo.currentIndexChanged.disconnect()
@@ -88,6 +108,7 @@ class HistogramWidget(DataViewer):
             combo.addItem(comp.label, userData=comp)
 
         combo.currentIndexChanged.connect(self._set_attribute_from_combo)
+        combo.currentIndexChanged.connect(self._update_minmax_labels)
         combo.setCurrentIndex(0)
         self._set_attribute_from_combo()
 
@@ -98,18 +119,6 @@ class HistogramWidget(DataViewer):
         self.client.set_component(attribute)
         self._update_window_title()
 
-    def _set_data_from_combo(self):
-        current = self._current_data()
-        self._update_attributes()
-        if current is not None:
-            self.client.set_data(current)
-        self._update_window_title()
-
-    def _current_data(self):
-        combo = self.ui.dataCombo
-        layer = combo.itemData(combo.currentIndex())
-        return layer
-
     def add_data(self, data):
         """ Add data item to combo box.
         If first addition, also update attributes """
@@ -117,39 +126,27 @@ class HistogramWidget(DataViewer):
         if self.data_present(data):
             return True
 
-        if self._first_data():
-            self._update_attributes(data)
+        if data.size > WARN_SLOW and not self._confirm_large_data(data):
+            return False
 
-        combo = self.ui.dataCombo
-        combo.addItem(data.label, userData=data)
+        self.client.add_layer(data)
+        self._update_attributes()
+        self._update_minmax_labels()
         return True
+
+    def add_subset(self, subset):
+        pass
 
     def _remove_data(self, data):
         """ Remove data item from the combo box """
-        for i in range(self.ui.dataCombo.count()):
-            obj = self.ui.dataCombo.itemData(i)
-            if obj is data:
-                self.ui.dataCombo.removeItem(i)
-                return
-
-    def _first_data(self):
-        return self.ui.dataCombo.count() == 0
+        pass
 
     def data_present(self, data):
-        for i in range(self.ui.dataCombo.count()):
-            obj = self.ui.dataCombo.itemData(i)
-            if data is obj:
-                return True
-        return False
+        return data in self._artist_container
 
     def register_to_hub(self, hub):
         super(HistogramWidget, self).register_to_hub(hub)
         self.client.register_to_hub(hub)
-        self.ui.layerTree.setup(self._data, hub)
-
-        hub.subscribe(self,
-                      msg.DataCollectionAddMessage,
-                      handler=lambda x: self.add_data(x.data))
 
         hub.subscribe(self,
                       msg.DataCollectionDeleteMessage,
@@ -160,24 +157,17 @@ class HistogramWidget(DataViewer):
                       handler=lambda x: self._sync_data_labels())
 
     def unregister(self, hub):
-        self.ui.layerTree.unregister(hub)
         self.client.unregister(hub)
         hub.unsubscribe_all(self)
 
     def _update_window_title(self):
-        d = self.client.get_data()
         c = self.client.component
-        if d is not None and c is not None:
-            label = '%s - %s' % (d.label, c.label)
+        if c is not None:
+            label = str(c.label)
         else:
-            label = ''
+            label = 'Histogram'
         self.setWindowTitle(label)
-
-    def _update_data_combo_text(self):
-        combo = self.ui.dataCombo
-        for i in range(combo.count()):
-            combo.setItemText(i, combo.itemData(i).label)
 
     def _sync_data_labels(self):
         self._update_window_title()
-        self._update_data_combo_text()
+        self._update_attributes()

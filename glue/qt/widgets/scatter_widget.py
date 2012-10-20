@@ -202,18 +202,6 @@ class ScatterWidget(DataViewer):
         assert isinstance(component_id, core.data.ComponentID)
         self.client.set_ydata(component_id)
 
-    def _confirm_large_data(self, data):
-        warn_msg = ("WARNING: Data set has %i points, and may render slowly."
-                    " Continue?" % data.size)
-        title = "Add large data set?"
-        ok = QtGui.QMessageBox.Ok
-        cancel = QtGui.QMessageBox.Cancel
-        buttons = ok | cancel
-        result = QtGui.QMessageBox.question(self, title, warn_msg,
-                                            buttons=buttons,
-                                            defaultButton=cancel)
-        return result == ok
-
     def _update_window_title(self):
         data = self.client.data
         label = ', '.join([d.label for d in data if

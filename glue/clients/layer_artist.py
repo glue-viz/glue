@@ -268,6 +268,59 @@ class LayerArtistContainer(object):
         return [a for a in self.artists if a.layer is layer]
 
 
+class HistogramLayerArtist(LayerArtist):
+    def __init__(self, layer, axes):
+        super(HistogramLayerArtist, self).__init__(layer, axes)
+        self.lo = 0
+        self.hi = 1
+        self.nbins = 10
+        self.xlog = False
+        self.ylog = False
+        self.cumulative = False
+        self.att = None
+        self.normed = False
+
+        self.y = np.array([])
+        self.x = np.array([])
+
+    def has_patches(self):
+        return len(self.artists) > 0
+
+    def get_data(self):
+        return self.x, self.y
+
+    def update(self, view=None):
+        self.clear()
+        try:
+            data = self.layer[self.att].ravel()
+        except IncompatibleAttribute:
+            return
+        if data.size == 0:
+            return
+        if self.lo > np.nanmax(data) or self.hi < np.nanmin(data):
+            return
+        if self.xlog:
+            data = np.log10(data)
+            rng = [np.log10(self.lo), np.log10(self.hi)]
+        else:
+            rng = self.lo, self.hi
+        nbinpatch = self._axes.hist(data,
+                                    bins=self.nbins,
+                                    range=rng, log=self.ylog,
+                                    cumulative=self.cumulative,
+                                    normed=self.normed)
+        self.y, self.x, self.artists = nbinpatch
+        self._sync_style()
+
+    def _sync_style(self):
+        style = self.layer.style
+        for artist in self.artists:
+            artist.set_facecolor(style.color)
+            artist.set_alpha(style.alpha)
+            artist.set_zorder(self.zorder)
+            artist.set_visible(self.visible and self.enabled)
+
+
 class InvNormalize(Normalize):
     """ Simple wrapper to matplotlib Normalize object, that
     handles the case where vmax <= vmin """

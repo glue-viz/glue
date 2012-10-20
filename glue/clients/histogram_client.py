@@ -7,86 +7,117 @@ from ..core.subset import RangeSubsetState
 from ..core.exceptions import IncompatibleDataException, IncompatibleAttribute
 from ..core.util import relim
 from ..core.edit_subset_mode import EditSubsetMode
+from .layer_artist import HistogramLayerArtist, LayerArtistContainer
+from .util import visible_limits
 
 
-class HistogramLayerManager(object):
-    def __init__(self, axes, layer):
-        self._axes = axes
-        self._layer = layer
-        self._visible = True
-        self._patchlist = None
+class UpdateProperty(object):
+    """Descriptor that calls client's sync_all() method when changed"""
+    def __init__(self, default, relim=False):
+        self._default = default
+        self.relim = relim
+        self._value = {}
 
-    def is_visible(self):
-        return self._visible
+    def __get__(self, instance, type=None):
+        return self._value.get(instance, self._default)
 
-    def set_visible(self, state):
-        self._visible = state
+    def __set__(self, instance, value):
+        changed = value != self.__get__(instance)
+        self._value[instance] = value
+        instance.sync_all()
+        if changed and self.relim:
+            instance._relim()
 
-    def set_patches(self, patchlist):
-        self.clear_patches()
-        self._patchlist = patchlist
 
-    def clear_patches(self):
-        if self._patchlist is None:
-            return
-
-        for patch in self._patchlist:
-            patch.remove()
-
-        self._patchlist = None
-
-    def delete(self):
-        self.clear_patches()
-
-    def has_patches(self):
-        return self._patchlist is not None
+def update(func):
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        args[0].sync_all()
+        return result
+    return wrapper
 
 
 class HistogramClient(Client):
     """
     A client class to display histograms
     """
+    normed = UpdateProperty(False)
+    cumulative = UpdateProperty(False)
+    autoscale = UpdateProperty(True)
+    nbins = UpdateProperty(10)
+    xlog = UpdateProperty(False, relim=True)
+    ylog = UpdateProperty(False)
 
-    def __init__(self, data, figure):
+    def __init__(self, data, figure, artist_container=None):
         super(HistogramClient, self).__init__(data)
 
-        self._managers = {}
+        self._artists = artist_container or LayerArtistContainer()
         self._axes = figure.add_subplot(111)
         self._component = None
-        self._active_data = None
-        self._options = {}
-        self._ymin = None
-        self._ymax = None
-        self._autoscale = True
+
+        self._xlim = {}
+
         try:
             self._axes.figure.set_tight_layout(True)
-        except AttributeError:  # matplotlib < 1.1
+        except AttributeError:  # pragma: nocover (matplotlib < 1.1)
             pass
 
     @property
     def axes(self):
         return self._axes
 
-    def set_option(self, key, value):
-        self._options[key] = value
-        self.sync_all()
+    @property
+    def xlimits(self):
+        try:
+            return self._xlim[self.component]
+        except KeyError:
+            pass
+
+        lo, hi = self._default_limits()
+        self._xlim[self.component] = lo, hi
+        return lo, hi
+
+    def _default_limits(self):
+        if self.component is None:
+            return 0, 1
+        lo, hi = np.inf, -np.inf
+        for a in self._artists:
+            data = a.layer[self.component]
+            if data.size == 0:
+                continue
+            lo = min(lo, np.nanmin(data))
+            hi = max(hi, np.nanmax(data))
+        return lo, hi
+
+    @xlimits.setter
+    @update
+    def xlimits(self, value):
+        lo, hi = value
+        old = self.xlimits
+        if lo is None:
+            lo = old[0]
+        if hi is None:
+            hi = old[1]
+
+        self._xlim[self.component] = min(lo, hi), max(lo, hi)
+        self._relim()
 
     def layer_present(self, layer):
-        return layer in self._managers
+        return layer in self._artists
 
+    @update
     def add_layer(self, layer):
-        if self.layer_present(layer):
-            return
         if layer.data not in self.data:
             raise IncompatibleDataException("Layer not in data collection")
 
         self._ensure_layer_data_present(layer)
+        if self.layer_present(layer):
+            return
 
-        manager = HistogramLayerManager(self._axes, layer)
-        self._managers[layer] = manager
+        art = HistogramLayerArtist(layer, self._axes)
+        self._artists.append(art)
 
         self._ensure_subsets_present(layer)
-        self.sync_all()
 
     def _ensure_layer_data_present(self, layer):
         if layer.data is layer:
@@ -98,120 +129,61 @@ class HistogramClient(Client):
         for subset in layer.data.subsets:
             self.add_layer(subset)
 
+    @update
     def remove_layer(self, layer):
         if not self.layer_present(layer):
             return
 
-        mgr = self._managers.pop(layer)
-        mgr.delete()
+        for a in self._artists.pop(layer):
+            a.clear()
 
         if isinstance(layer, Data):
             for subset in layer.subsets:
                 self.remove_layer(subset)
 
-        self.sync_all()
-
-    def set_normalized(self, state):
-        self.set_option('normed', state)
-        self.sync_all()
-
-    def set_autoscale(self, state):
-        self._autoscale = state
-        self.sync_all()
-
-    def draw_histogram(self):
-        self._clear_patches()
-        if self._active_data is None or self._component is None:
-            return
-
-        x = []
-        colors = []
-        managers = []
-
-        if self.is_layer_visible(self._active_data):
-            try:
-                x.append(self._active_data[self._component].flat)
-            except IncompatibleAttribute:
-                return
-            colors.append(self._active_data.style.color)
-            managers.append(self._managers[self._active_data])
-
-        for subset in self._active_data.subsets:
-
-            if not self.is_layer_visible(subset):
-                continue
-            try:
-                pts = subset[self._component].flatten()
-            except IncompatibleAttribute:
-                pts = np.array([])
-
-            if pts.size == 0:
-                continue
-            x.append(pts)
-            colors.append(subset.style.color)
-            managers.append(self._managers[subset])
-
-        if len(x) >= 1:
-            result = self._axes.hist(x, color=colors, **self._options)
-            self._store_ylimits(result[0])
-
-            if len(x) == 1:
-                patchlists = [result[2]]
-            else:
-                patchlists = result[2]
-        else:
-            patchlists = []
-
-        for m, p in zip(managers, patchlists):
-            m.set_patches(p)
-
-        if self._autoscale:
-            self._snap_ylimits()
-
-    def _store_ylimits(self, vals):
-        if type(vals) != list:
-            vals = [vals]
-        self._ymin = min(v.min() for v in vals)
-        self._ymax = max(v.max() for v in vals)
-
-    def _snap_ylimits(self):
-        if self._ymin is not None and self._ymax is not None:
-            lo, hi = relim(self._ymin, self._ymax)
-            self._axes.set_ylim(lo, hi)
-
+    @update
     def set_layer_visible(self, layer, state):
         if not self.layer_present(layer):
             return
-        self._managers[layer].set_visible(state)
-        self.sync_all()
+        for a in self._artists[layer]:
+            a.visible = state
 
     def is_layer_visible(self, layer):
         if not self.layer_present(layer):
             return False
-        return self._managers[layer].is_visible()
+        return any(a.visible for a in self._artists[layer])
 
-    def _clear_patches(self):
-        for layer in self._managers:
-            self._managers[layer].clear_patches()
+    def _update_axis_labels(self):
+        xlabel = self.component.label if self.component is not None else ''
+        if self.xlog:
+            xlabel = "Log %s" % xlabel
+        ylabel = 'N'
+        self._axes.set_xlabel(xlabel)
+        self._axes.set_ylabel(ylabel)
 
     def sync_all(self):
-        self.draw_histogram()
+        for a in self._artists:
+            a.lo, a.hi = self.xlimits
+            a.nbins = self.nbins
+            a.xlog = self.xlog
+            a.ylog = self.ylog
+            a.cumulative = self.cumulative
+            a.normed = self.normed
+            a.att = self._component
+            a.update()
 
-        if self._component is not None:
-            self._axes.set_xlabel(self._component.label)
-            self._axes.set_ylabel('N')
+        self._update_axis_labels()
+
+        if self.autoscale:
+            lim = visible_limits(self._artists, 1)
+            if lim is not None:
+                lo = 1e-5 if self.ylog else 0
+                self._axes.set_ylim(lo, lim[1])
+
+        yscl = 'log' if self.ylog else 'linear'
+        self._axes.set_yscale(yscl)
 
         self._axes.figure.canvas.draw()
-
-    def set_data(self, data):
-        if not self.layer_present(data):
-            self.add_layer(data)
-        self._active_data = data
-        self.sync_all()
-        self._relim()
-
-    def get_data(self):
-        return self._active_data
 
     @property
     def component(self):
@@ -231,31 +203,22 @@ class HistogramClient(Client):
         self._relim()
 
     def _relim(self):
-        if self._active_data is None:
-            return
-        if self._component is None:
-            return
-        try:
-            data = self._active_data[self._component]
-        except IncompatibleAttribute:
-            return
+        lim = self.xlimits
+        if self.xlog:
+            lim = list(np.log10(lim))
+            if not np.isfinite(lim[0]):
+                lim[0] = 1e-5
+            if not np.isfinite(lim[1]):
+                lim[1] = 1
 
-        self._axes.set_xlim(data.min(), data.max())
+        self._axes.set_xlim(lim)
         self._axes.figure.canvas.draw()
-
-    def set_nbins(self, num):
-        self.set_option('bins', num)
 
     def _update_data(self, message):
         self.sync_all()
 
     def _update_subset(self, message):
         self.sync_all()
-
-    def _add_data(self, message):
-        self.add_layer(message.data)
-        assert self.layer_present(message.data)
-        assert self.is_layer_visible(message.data)
 
     def _add_subset(self, message):
         self.add_layer(message.sender)
@@ -272,15 +235,21 @@ class HistogramClient(Client):
         x, y = roi.to_polygon()
         lo = min(x)
         hi = max(x)
+        if self.xlog:
+            lo = 10 ** lo
+            hi = 10 ** hi
+
         state = RangeSubsetState(lo, hi)
         state.att = self.component
         mode = EditSubsetMode()
-        mode.update(self.data, state)
+        visible = [d for d in self.data if self.is_layer_visible(d)]
+        focus = visible[0] if len(visible) > 0 else None
+        mode.update(self.data, state, focus_data=focus)
 
     def register_to_hub(self, hub):
-        dfilter = lambda x: x.sender.data in self._managers
-        dcfilter = lambda x: x.data in self._managers
-        subfilter = lambda x: x.subset in self._managers
+        dfilter = lambda x: x.sender.data in self._artists
+        dcfilter = lambda x: x.data in self._artists
+        subfilter = lambda x: x.subset in self._artists
 
         hub.subscribe(self,
                       msg.SubsetCreateMessage,
@@ -300,7 +269,3 @@ class HistogramClient(Client):
         hub.subscribe(self,
                       msg.DataCollectionDeleteMessage,
                       handler=self._remove_data)
-        hub.subscribe(self,
-                      msg.DataCollectionAddMessage,
-                      handler=self._add_data,
-                      filter=dcfilter)

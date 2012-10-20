@@ -11,7 +11,7 @@ __all__ = ['Roi', 'RectangularROI', 'CircularROI', 'PolygonalROI',
            'AbstractMplRoi', 'MplRectangularROI', 'MplCircularROI',
            'MplPolygonalROI']
 
-PATCH_COLOR = '#aaaaaa'
+PATCH_COLOR = '#FFFF00'
 
 
 def aspect_ratio(ax):

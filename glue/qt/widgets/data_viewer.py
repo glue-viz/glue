@@ -87,3 +87,15 @@ class DataViewer(QMainWindow, HubListener):
         if self._hub is not None:
             self.unregister(self._hub)
         super(DataViewer, self).closeEvent(event)
+
+    def _confirm_large_data(self, data):
+        warn_msg = ("WARNING: Data set has %i points, and may render slowly."
+                    " Continue?" % data.size)
+        title = "Add large data set?"
+        ok = QMessageBox.Ok
+        cancel = QMessageBox.Cancel
+        buttons = ok | cancel
+        result = QMessageBox.question(self, title, warn_msg,
+                                      buttons=buttons,
+                                      defaultButton=cancel)
+        return result == ok

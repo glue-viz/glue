@@ -13,6 +13,7 @@ from ..core.util import relim
 from ..core.edit_subset_mode import EditSubsetMode
 from .viz_client import init_mpl
 from .layer_artist import ScatterLayerArtist, LayerArtistContainer
+from .util import visible_limits
 
 
 class ScatterClient(Client):
@@ -109,26 +110,7 @@ class ScatterClient(Client):
 
     def _visible_limits(self, axis):
         """Return the min-max visible data boundaries for given axis"""
-        data = []
-        for art in self.artists:
-            if not art.visible:
-                continue
-            xy = art.get_data()
-            assert isinstance(xy, tuple)
-            data.append(xy[axis])
-
-        if len(data) == 0:
-            return
-        data = np.hstack(data)
-        if data.size == 0:
-            return
-
-        data = data[np.isfinite(data)]
-        lo, hi = np.nanmin(data), np.nanmax(data)
-        if not np.isfinite(lo):
-            return
-
-        return lo, hi
+        return visible_limits(self.artists, axis)
 
     def _snap_xlim(self):
         """
