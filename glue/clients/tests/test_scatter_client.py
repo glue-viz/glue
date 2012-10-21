@@ -262,7 +262,7 @@ class TestScatterClient(object):
         roi.update_limits(.5, .5, 1.5, 1.5)
         x = np.array([1])
         y = np.array([1])
-        self.client._apply_roi(roi)
+        self.client.apply_roi(roi)
         assert self.layer_data_correct(data.edit_subset, x, y)
 
     def test_apply_roi_adds_on_empty(self):
@@ -273,7 +273,7 @@ class TestScatterClient(object):
         roi.update_limits(.5, .5, 1.5, 1.5)
         x = np.array([1])
         y = np.array([1])
-        self.client._apply_roi(roi)
+        self.client.apply_roi(roi)
         assert data.edit_subset is not None
 
     def test_apply_roi_applies_to_all_editable_subsets(self):
@@ -285,7 +285,7 @@ class TestScatterClient(object):
         roi.update_limits(.5, .5, 1.5, 1.5)
         x = np.array([1])
         y = np.array([1])
-        self.client._apply_roi(roi)
+        self.client.apply_roi(roi)
         assert d1.edit_subset.subset_state is not state1
         assert d1.edit_subset.subset_state is not state2
 
@@ -299,7 +299,7 @@ class TestScatterClient(object):
         roi.update_limits(.5, .5, 1.5, 1.5)
         x = np.array([1])
         y = np.array([1])
-        self.client._apply_roi(roi)
+        self.client.apply_roi(roi)
         assert len(d1.subsets) == ct
 
     def test_subsets_drawn_over_data(self):
@@ -334,10 +334,10 @@ class TestScatterClient(object):
         roi = core.roi.RectangularROI()
         roi.update_limits(.5, .5, 1.5, 1.5)
         assert self.client.is_visible(data.edit_subset)
-        self.client._apply_roi(roi)
+        self.client.apply_roi(roi)
         self.client.set_visible(data.edit_subset, False)
         assert not self.client.is_visible(data.edit_subset)
-        self.client._apply_roi(roi)
+        self.client.apply_roi(roi)
         assert not self.client.is_visible(data.edit_subset)
 
     def test_2d_data(self):

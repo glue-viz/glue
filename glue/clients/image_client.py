@@ -281,7 +281,7 @@ class ImageClient(VizClient):
             self._redraw()
 
     @requires_data
-    def _apply_roi(self, roi):
+    def apply_roi(self, roi):
 
         subset_state = RoiSubsetState()
         xroi, yroi = roi.to_polygon()

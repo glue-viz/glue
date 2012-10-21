@@ -203,7 +203,7 @@ class ScatterClient(Client):
         self._update_axis_labels()
         self._redraw()
 
-    def _apply_roi(self, roi):
+    def apply_roi(self, roi):
         # every editable subset is updated
         # using specified ROI
         subset_state = RoiSubsetState()

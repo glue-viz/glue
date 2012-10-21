@@ -206,7 +206,7 @@ class TestImageClient(object):
 
         roi = core.roi.PolygonalROI(vx=[10, 20, 20, 10],
                                     vy=[10, 10, 20, 20])
-        client._apply_roi(roi)
+        client.apply_roi(roi)
         roi2 = self.im.edit_subset.subset_state.roi
         state = self.im.edit_subset.subset_state
 
@@ -222,7 +222,7 @@ class TestImageClient(object):
                                     vy=[10, 10, 20, 20])
 
         client.set_slice_ori(0)
-        client._apply_roi(roi)
+        client.apply_roi(roi)
         state = self.cube.edit_subset.subset_state
         roi2 = state.roi
         assert state.xatt is self.cube.get_pixel_component_id(2)
@@ -231,7 +231,7 @@ class TestImageClient(object):
         assert roi2.to_polygon()[1] == roi.to_polygon()[1]
 
         client.set_slice_ori(1)
-        client._apply_roi(roi)
+        client.apply_roi(roi)
         state = self.cube.edit_subset.subset_state
         roi2 = state.roi
         assert state.xatt is self.cube.get_pixel_component_id(2)
@@ -240,7 +240,7 @@ class TestImageClient(object):
         assert roi2.to_polygon()[1] == roi.to_polygon()[1]
 
         client.set_slice_ori(2)
-        client._apply_roi(roi)
+        client.apply_roi(roi)
         state = self.cube.edit_subset.subset_state
         roi2 = state.roi
         assert state.xatt is self.cube.get_pixel_component_id(1)

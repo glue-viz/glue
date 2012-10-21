@@ -217,7 +217,7 @@ class TestHistogramClient(object):
         roi = MagicMock()
         roi.to_polygon.return_value = [1, 2, 3], [2, 3, 4]
 
-        self.client._apply_roi(roi)
+        self.client.apply_roi(roi)
         state = self.data.subsets[0].subset_state
         assert isinstance(state, RangeSubsetState)
         assert state.lo == 1
@@ -230,7 +230,7 @@ class TestHistogramClient(object):
         roi = MagicMock()
         roi.to_polygon.return_value = [1, 2, 3], [2, 3, 4]
 
-        self.client._apply_roi(roi)
+        self.client.apply_roi(roi)
         state = self.data.subsets[0].subset_state
         assert isinstance(state, RangeSubsetState)
         assert state.lo == 10

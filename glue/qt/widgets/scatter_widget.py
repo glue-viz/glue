@@ -81,14 +81,14 @@ class ScatterWidget(DataViewer):
 
     def _mouse_modes(self):
         axes = self.client.axes
-        rect = RectangleMode(axes, release_callback=self._apply_roi)
-        circ = CircleMode(axes, release_callback=self._apply_roi)
-        poly = PolyMode(axes, release_callback=self._apply_roi)
+        rect = RectangleMode(axes, release_callback=self.apply_roi)
+        circ = CircleMode(axes, release_callback=self.apply_roi)
+        poly = PolyMode(axes, release_callback=self.apply_roi)
         return [rect, circ, poly]
 
-    def _apply_roi(self, mode):
+    def apply_roi(self, mode):
         roi = mode.roi()
-        self.client._apply_roi(roi)
+        self.client.apply_roi(roi)
 
     def update_combos(self, layer):
         """ Update combo boxes to incorporate attribute fields in layer"""

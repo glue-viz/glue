@@ -84,12 +84,12 @@ class HistogramWidget(DataViewer):
 
     def _mouse_modes(self):
         axes = self.client.axes
-        rect = RectangleMode(axes, release_callback=self._apply_roi)
+        rect = RectangleMode(axes, release_callback=self.apply_roi)
         return [rect]
 
-    def _apply_roi(self, mode):
+    def apply_roi(self, mode):
         roi = mode.roi()
-        self.client._apply_roi(roi)
+        self.client.apply_roi(roi)
 
     def _update_attributes(self):
         combo = self.ui.attributeCombo

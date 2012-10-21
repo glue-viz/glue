@@ -231,7 +231,7 @@ class HistogramClient(Client):
     def _remove_subset(self, message):
         self.remove_layer(message.subset)
 
-    def _apply_roi(self, roi):
+    def apply_roi(self, roi):
         x, y = roi.to_polygon()
         lo = min(x)
         hi = max(x)
