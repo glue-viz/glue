@@ -12,7 +12,7 @@ from .data_viewer import DataViewer
 from ..layer_artist_model import QtLayerArtistContainer
 from .mpl_widget import MplWidget
 
-WARN_SLOW = 10000000  # max number of points which render quickly
+WARN_SLOW = 1000000  # max number of points which render quickly
 
 
 class ScatterWidget(DataViewer):
