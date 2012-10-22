@@ -93,30 +93,50 @@ class HistogramWidget(DataViewer):
 
     def _update_attributes(self):
         combo = self.ui.attributeCombo
+        component = self.component
+
         combo.clear()
 
         data = [a.layer.data for a in self._artist_container]
-        comps = set(c for d in data for c in d.visible_components if
-                    np.can_cast(d[c].dtype, np.float))
 
         try:
             combo.currentIndexChanged.disconnect()
         except TypeError:
             pass
 
-        for comp in comps:
-            combo.addItem(comp.label, userData=comp)
+        for d in data:
+            for c in d.visible_components:
+                if not np.can_cast(d.dtype(c), np.float):
+                    continue
+                combo.addItem("%s (%s)" % (c.label, d.label), userData=c)
 
         combo.currentIndexChanged.connect(self._set_attribute_from_combo)
         combo.currentIndexChanged.connect(self._update_minmax_labels)
-        combo.setCurrentIndex(0)
+        if component is not None:
+            self.component = component
+        else:
+            combo.setCurrentIndex(0)
         self._set_attribute_from_combo()
 
-    def _set_attribute_from_combo(self):
+    @property
+    def component(self):
         combo = self.ui.attributeCombo
         index = combo.currentIndex()
-        attribute = combo.itemData(index)
-        self.client.set_component(attribute)
+        return combo.itemData(index)
+
+    @component.setter
+    def component(self, component):
+        combo = self.ui.attributeCombo
+        #combo.findData doesn't seem to work in PyQt4
+        for i in range(combo.count()):
+            data = combo.itemData(i)
+            if data is component:
+                combo.setCurrentIndex(i)
+                return
+        raise IndexError("Component not present: %s" % component)
+
+    def _set_attribute_from_combo(self):
+        self.client.set_component(self.component)
         self._update_window_title()
 
     def add_data(self, data):
@@ -154,7 +174,7 @@ class HistogramWidget(DataViewer):
 
         hub.subscribe(self,
                       msg.DataUpdateMessage,
-                      handler=lambda x: self._sync_data_labels())
+                      handler=self._update_labels)
 
     def unregister(self, hub):
         self.client.unregister(hub)
@@ -168,6 +188,6 @@ class HistogramWidget(DataViewer):
             label = 'Histogram'
         self.setWindowTitle(label)
 
-    def _sync_data_labels(self):
+    def _update_labels(self):
         self._update_window_title()
         self._update_attributes()

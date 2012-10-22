@@ -5,7 +5,6 @@ from ..core import message as msg
 from ..core.data import Data
 from ..core.subset import RangeSubsetState
 from ..core.exceptions import IncompatibleDataException, IncompatibleAttribute
-from ..core.util import relim
 from ..core.edit_subset_mode import EditSubsetMode
 from .layer_artist import HistogramLayerArtist, LayerArtistContainer
 from .util import visible_limits
@@ -82,7 +81,11 @@ class HistogramClient(Client):
             return 0, 1
         lo, hi = np.inf, -np.inf
         for a in self._artists:
-            data = a.layer[self.component]
+            try:
+                data = a.layer[self.component]
+            except IncompatibleAttribute:
+                continue
+
             if data.size == 0:
                 continue
             lo = min(lo, np.nanmin(data))

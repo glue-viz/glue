@@ -1,29 +1,32 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
-import sys
-
 import pytest
 
-from PyQt4.QtGui import QApplication
-from PyQt4.QtCore import Qt
-from PyQt4.QtTest import QTest
-
 from ..histogram_widget import HistogramWidget
-from ....clients.histogram_client import HistogramClient
 from .... import core
 
 
+def mock_data():
+    return core.Data(x=[1, 2, 3], y=[2, 3, 4])
+
+
 class TestHistogramWidget(object):
-    def setup_method(self, method):
-        self.data = self.mock_data()
-        self.collect = core.data_collection.DataCollection([self.data])
-        self.widget = HistogramWidget(self.collect)
+    """ Since widget creation is slow, we try to minimize
+    by using class-level variables. Unforunately, the test's aren't isolated
+    now"""
 
-    def teardown_method(self, method):
-        self.widget.close()
+    @classmethod
+    def setup_class(cls):
+        cls.reset()
 
-    def mock_data(self):
-        data = core.Data(x=[1, 2, 3], y=[2, 3, 4])
-        return data
+    @classmethod
+    def reset(cls):
+        cls.data = mock_data()
+        cls.collect = core.data_collection.DataCollection([cls.data])
+        cls.widget = HistogramWidget(cls.collect)
+
+    @classmethod
+    def teardown_class(cls):
+        cls.widget.close()
 
     def set_up_hub(self):
         hub = core.hub.Hub()
@@ -63,21 +66,15 @@ class TestHistogramWidget(object):
         self.widget.add_data(self.data)
         self.collect.remove(self.data)
         assert not self.widget.data_present(self.data)
+        self.reset()
 
     def test_remove_all_data(self):
-        hub = self.set_up_hub()
+        self.set_up_hub()
         self.collect.append(core.Data())
         for data in list(self.collect):
             self.collect.remove(data)
             assert not self.widget.data_present(self.data)
-
-    def test_window_title_matches_component(self):
-        hub = self.set_up_hub()
-        data = self.collect[0]
-        self.widget.client.set_component(data.components[0])
-        self.widget.add_data(data)
-
-        self.widget.windowTitle().startswith(data.components[0].label)
+        self.reset()
 
     @pytest.mark.parametrize(('box', 'prop'),
                              [('normalized_box', 'normed'),
@@ -97,12 +94,29 @@ class TestHistogramWidget(object):
         assert self.widget.client.nbins == 7
 
     def test_update_xmin(self):
+        self.reset()
         self.widget.ui.xmin.setText('-5')
         self.widget._set_limits()
         assert self.widget.client.xlimits[0] == -5
 
     def test_update_xmax(self):
-        self.widget = HistogramWidget(self.collect)
         self.widget.ui.xmin.setText('15')
         self.widget._set_limits()
         assert self.widget.client.xlimits[1] == 15
+
+    def test_update_component_updates_title(self):
+        self.widget.add_data(self.data)
+        for comp in self.data.visible_components:
+            self.widget.component = comp
+            assert self.widget.windowTitle() == str(comp)
+
+    def test_update_attributes_preserves_current_component(self):
+        self.widget.add_data(self.data)
+        self.widget.component = self.data.visible_components[1]
+        self.widget._update_attributes()
+        assert self.widget.component is self.data.visible_components[1]
+
+    def test_invalid_component_set(self):
+        with pytest.raises(IndexError) as exc:
+            self.widget.component = None
+        assert exc.value.args[0] == "Component not present: None"

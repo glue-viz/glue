@@ -298,6 +298,14 @@ class TestHistogramClient(object):
         self.client.xlog = True
         assert self.client.axes.get_xlim() != (-1, 1)
 
+    def test_artist_clear_resets_arrays(self):
+        self.client.add_layer(self.data)
+        self.client.set_component(self.data.components[0])
+        for a in self.client._artists[self.data]:
+            assert a.get_data()[0].size > 0
+            a.clear()
+            assert a.get_data()[0].size == 0
+
 
 class TestCommunication(object):
     def setup_method(self, method):

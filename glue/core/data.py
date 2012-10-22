@@ -320,6 +320,14 @@ class Data(object):
                 return True
             return component.shape == self.shape
 
+    def dtype(self, cid):
+        """Lookup the dtype for the data associated with a ComponentID"""
+
+        #grab a small piece of data
+        ind = np.unravel_index([0], self.shape)
+        arr = self[cid, ind]
+        return arr.dtype
+
     def remove_component(self, component_id):
         """ Remove a component from a data set
 

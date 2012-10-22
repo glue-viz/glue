@@ -289,6 +289,11 @@ class HistogramLayerArtist(LayerArtist):
     def get_data(self):
         return self.x, self.y
 
+    def clear(self):
+        super(HistogramLayerArtist, self).clear()
+        self.x = np.array([])
+        self.y = np.array([])
+
     def update(self, view=None):
         self.clear()
         try:
