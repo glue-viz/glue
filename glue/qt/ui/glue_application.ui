@@ -34,11 +34,20 @@
         <enum>Qt::Vertical</enum>
        </property>
        <widget class="QGroupBox" name="data_layers">
+        <property name="font">
+         <font>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="layoutDirection">
+         <enum>Qt::LeftToRight</enum>
+        </property>
         <property name="title">
-         <string>Data</string>
+         <string>Data Collection</string>
         </property>
         <property name="flat">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
        </widget>
        <widget class="QSplitter" name="plot_splitter">
@@ -46,19 +55,31 @@
          <enum>Qt::Vertical</enum>
         </property>
         <widget class="QGroupBox" name="plot_layers">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="title">
           <string>Plot Layers</string>
          </property>
          <property name="flat">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
         </widget>
         <widget class="QGroupBox" name="plot_options">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="title">
           <string>Plot Options</string>
          </property>
          <property name="flat">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="checkable">
           <bool>false</bool>

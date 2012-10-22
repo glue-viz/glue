@@ -81,8 +81,8 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
     def _tweak_geometry(self):
         """Maximize window"""
         self.setWindowState(Qt.WindowMaximized)
-        self._ui.main_splitter.setSizes([400, 600])
-
+        self._ui.main_splitter.setSizes([100, 800])
+        self._ui.data_plot_splitter.setSizes([100, 200])
     def _new_tab(self):
         """Spawn a new tab page"""
         layout = QGridLayout()
