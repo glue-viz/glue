@@ -1,9 +1,10 @@
-from PyQt4.QtGui import QMainWindow, QMessageBox
+from PyQt4.QtGui import QMainWindow, QMessageBox, QLabel
 from PyQt4.QtCore import Qt
 
 from ...core.hub import HubListener
 from ...core.data import Data
 from ...core.subset import Subset
+from ..layer_artist_model import QtLayerArtistContainer, LayerArtistView
 
 
 class DataViewer(QMainWindow, HubListener):
@@ -20,6 +21,9 @@ class DataViewer(QMainWindow, HubListener):
 
         self._data = data
         self._hub = None
+        self._container = QtLayerArtistContainer()
+        self._view = LayerArtistView()
+        self._view.setModel(self._container.model)
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.setAcceptDrops(True)
         self.setAnimated(False)
@@ -99,3 +103,9 @@ class DataViewer(QMainWindow, HubListener):
                                       buttons=buttons,
                                       defaultButton=cancel)
         return result == ok
+
+    def layer_view(self):
+        return self._view
+
+    def options_widget(self):
+        return QWidget()

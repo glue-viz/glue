@@ -10,6 +10,7 @@ from ..mouse_mode import RectangleMode, CircleMode, PolyMode
 from ..ui.scatterwidget import Ui_ScatterWidget
 from .data_viewer import DataViewer
 from ..layer_artist_model import QtLayerArtistContainer
+from .mpl_widget import MplWidget
 
 WARN_SLOW = 10000000  # max number of points which render quickly
 
@@ -19,19 +20,19 @@ class ScatterWidget(DataViewer):
 
     def __init__(self, data, parent=None):
         super(ScatterWidget, self).__init__(data, parent)
-        self.central_widget = QtGui.QWidget()
+        self.central_widget = MplWidget()
+        self.option_widget = QtGui.QWidget()
+
         self.setCentralWidget(self.central_widget)
+
         self.ui = Ui_ScatterWidget()
-        self.ui.setupUi(self.central_widget)
+        self.ui.setupUi(self.option_widget)
         self._tweak_geometry()
         self._collection = data
 
-        container = QtLayerArtistContainer()
-        self.ui.artist_view.setModel(container.model)
         self.client = ScatterClient(self._collection,
-                                    self.ui.mplWidget.canvas.fig,
-                                    artist_container=container)
-        assert self.client.artists is container
+                                    self.central_widget.canvas.fig,
+                                    artist_container=self._container)
         self._connect()
         self.unique_fields = set()
         self.make_toolbar()
@@ -40,7 +41,6 @@ class ScatterWidget(DataViewer):
 
     def _tweak_geometry(self):
         self.central_widget.resize(600, 400)
-        self.ui.splitter.setSizes([350, 50])
         self.resize(self.central_widget.size())
 
     def _connect(self):
@@ -72,7 +72,7 @@ class ScatterWidget(DataViewer):
         self.add_data(data)
 
     def make_toolbar(self):
-        result = GlueToolbar(self.ui.mplWidget.canvas, self,
+        result = GlueToolbar(self.central_widget.canvas, self,
                              name='Scatter Plot')
         for mode in self._mouse_modes():
             result.add_mode(mode)
@@ -213,3 +213,6 @@ class ScatterWidget(DataViewer):
 
     def __str__(self):
         return "Scatter Widget"
+
+    def options_widget(self):
+        return self.option_widget

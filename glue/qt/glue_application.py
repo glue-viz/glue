@@ -3,7 +3,7 @@
 from PyQt4.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                          QMenu, QMdiSubWindow, QAction, QMessageBox,
                          QFileDialog, QLabel, QPixmap, QDesktopWidget,
-                         QToolButton, QSplitter)
+                         QToolButton, QSplitter, QVBoxLayout, QWidget)
 from PyQt4.QtCore import Qt
 
 from .. import core
@@ -16,7 +16,8 @@ from .actions import act
 from .qtutil import pick_class, data_wizard, GlueTabBar
 from .widgets.glue_mdi_area import GlueMdiArea
 from .widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
-from .widgets.layer_tree_widget import PlotAction
+from .widgets.layer_tree_widget import PlotAction, LayerTreeWidget
+from .widgets.data_viewer import DataViewer
 
 
 class GlueApplication(QMainWindow, core.hub.HubListener):
@@ -29,11 +30,9 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._actions = {}
         self._terminal = None
         self._ui = Ui_GlueApplication()
-        self._ui.setupUi(self)
-        self._ui.tabWidget.setTabBar(GlueTabBar())
+        self._setup_ui()
         self.tab_widget.setMovable(True)
         self.tab_widget.setTabsClosable(True)
-        self._ui.layerWidget.set_checkable(False)
 
         lwidget = self._ui.layerWidget
         act = PlotAction(lwidget, self)
@@ -50,6 +49,19 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._connect()
         self._new_tab()
         self._welcome_window()
+        self._update_plot_dashboard(None)
+
+    def _setup_ui(self):
+        self._ui.setupUi(self)
+        self._ui.tabWidget.setTabBar(GlueTabBar())
+
+        lw = LayerTreeWidget()
+        lw.set_checkable(False)
+        vb = QVBoxLayout()
+        vb.setContentsMargins(0, 0, 0, 0)
+        vb.addWidget(lw)
+        self._ui.data_layers.setLayout(vb)
+        self._ui.layerWidget = lw
 
     def has_terminal(self):
         return self._terminal is not None
@@ -69,6 +81,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
     def _tweak_geometry(self):
         """Maximize window"""
         self.setWindowState(Qt.WindowMaximized)
+        self._ui.main_splitter.setSizes([400, 600])
 
     def _new_tab(self):
         """Spawn a new tab page"""
@@ -80,6 +93,47 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         tab = self.tab_widget
         tab.addTab(widget, str("Tab %i" % (tab.count() + 1)))
         tab.setCurrentWidget(widget)
+        widget.subWindowActivated.connect(self._update_plot_dashboard)
+
+    def _get_plot_dashboards(self, sub_window):
+        if not isinstance(sub_window, QMdiSubWindow):
+            return QWidget(), QWidget(), ""
+
+        widget = sub_window.widget()
+        if not isinstance(widget, DataViewer):
+            return QWidget(), QWidget(), ""
+
+        return widget.layer_view(), widget.options_widget(), str(widget)
+
+    def _update_plot_dashboard(self, sub_window):
+        layer_view, options_widget, title = \
+            self._get_plot_dashboards(sub_window)
+
+        layout = self._ui.plot_layers.layout()
+        if not layout:
+            layout = QVBoxLayout()
+            self._ui.plot_layers.setLayout(layout)
+        while layout.count():
+            layout.takeAt(0).widget().hide()
+        layout.addWidget(layer_view)
+
+        layout = self._ui.plot_options.layout()
+        if not layout:
+            layout = QVBoxLayout()
+            self._ui.plot_options.setLayout(layout)
+        while layout.count():
+            layout.takeAt(0).widget().hide()
+        layout.addWidget(options_widget)
+
+        layer_view.show()
+        options_widget.show()
+
+        if title:
+            self._ui.plot_options.setTitle("Plot Options - %s" % title)
+            self._ui.plot_layers.setTitle("Plot Layers - %s" % title)
+        else:
+            self._ui.plot_options.setTitle("Plot Options")
+            self._ui.plot_layers.setTitle("Plot Layers")
 
     def _close_tab(self, index):
         """ Close a tab window and all associated data viewers """

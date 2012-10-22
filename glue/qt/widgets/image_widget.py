@@ -14,7 +14,7 @@ from ...clients.image_client import ImageClient
 from ..mouse_mode import (RectangleMode, CircleMode, PolyMode,
                           ContrastMode, ContourMode)
 from ..glue_toolbar import GlueToolbar
-from ..layer_artist_model import QtLayerArtistContainer
+from .mpl_widget import MplWidget
 
 from ..ui.imagewidget import Ui_ImageWidget
 from .. import glue_qt_resources  # pylint: disable=W0611
@@ -29,15 +29,15 @@ class ImageWidget(DataViewer):
     def __init__(self, data, parent=None):
         super(ImageWidget, self).__init__(data, parent)
 
-        self.central_widget = QWidget()
+        self.central_widget = MplWidget()
+        self.option_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.ui = Ui_ImageWidget()
-        self.ui.setupUi(self.central_widget)
-        container = QtLayerArtistContainer()
-        self.ui.artist_view.setModel(container.model)
+        self.ui.setupUi(self.option_widget)
         self.client = ImageClient(data,
-                                  self.ui.mplWidget.canvas.fig,
-                                  artist_container=container)
+                                  self.central_widget.canvas.fig,
+                                  artist_container=self._container)
+        self._tweak_geometry()
 
         self._create_actions()
         self.make_toolbar()
@@ -47,11 +47,10 @@ class ImageWidget(DataViewer):
         self.set_orientation(0)
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
-        self.resize(self.central_widget.size())
-        self._tweak_geometry()
 
     def _tweak_geometry(self):
-        self.ui.splitter.setSizes([350, 50])
+        self.central_widget.resize(600, 400)
+        self.resize(self.central_widget.size())
 
     def _create_actions(self):
         #pylint: disable=E1101
@@ -74,7 +73,7 @@ class ImageWidget(DataViewer):
         self._cmaps.append(act('Purple-Green', cm.PRGn))
 
     def make_toolbar(self):
-        result = GlueToolbar(self.ui.mplWidget.canvas, self, name='Image')
+        result = GlueToolbar(self.central_widget.canvas, self, name='Image')
         for mode in self._mouse_modes():
             result.add_mode(mode)
 
@@ -113,7 +112,6 @@ class ImageWidget(DataViewer):
     def _init_widgets(self):
         self.ui.imageSlider.hide()
         self.ui.sliceComboBox.hide()
-        self.ui.sliderLabel.hide()
         self.ui.sliceComboBox.addItems(["xy", "xz", "yz"])
 
     def add_data(self, data):
@@ -158,12 +156,10 @@ class ImageWidget(DataViewer):
         self.set_attribute_combo(data)
         if not self.client.is_3D:
             self.ui.imageSlider.hide()
-            self.ui.sliderLabel.hide()
             self.ui.sliceComboBox.hide()
             self.ui.orientationLabel.hide()
         else:
             self.ui.imageSlider.show()
-            self.ui.sliderLabel.show()
             self.ui.sliceComboBox.show()
             self.ui.orientationLabel.show()
         self.set_slider_range()
@@ -300,3 +296,6 @@ class ImageWidget(DataViewer):
                                       buttons=buttons,
                                       defaultButton=cancel)
         return result == ok
+
+    def options_widget(self):
+        return self.option_widget

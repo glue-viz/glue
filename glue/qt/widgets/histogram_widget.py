@@ -10,7 +10,7 @@ from ..ui.histogramwidget import Ui_HistogramWidget
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import RectangleMode
 from .data_viewer import DataViewer
-from ..layer_artist_model import QtLayerArtistContainer
+from .mpl_widget import MplWidget
 
 WARN_SLOW = 10000000
 
@@ -21,17 +21,16 @@ class HistogramWidget(DataViewer):
     def __init__(self, data, parent=None):
         super(HistogramWidget, self).__init__(self, parent)
 
-        self.central_widget = QtGui.QWidget()
+        self.central_widget = MplWidget()
         self.setCentralWidget(self.central_widget)
+        self.option_widget = QtGui.QWidget()
         self.ui = Ui_HistogramWidget()
-        self.ui.setupUi(self.central_widget)
-        container = QtLayerArtistContainer()
-        self._artist_container = container
-
+        self.ui.setupUi(self.option_widget)
+        self._tweak_geometry()
         self.client = HistogramClient(data,
-                                      self.ui.mplWidget.canvas.fig,
-                                      artist_container=container)
-        self.ui.artist_view.setModel(container.model)
+                                      self.central_widget.canvas.fig,
+                                      artist_container=self._container)
+
         self.ui.xmin.setValidator(QtGui.QDoubleValidator())
         self.ui.xmax.setValidator(QtGui.QDoubleValidator())
         lo, hi = self.client.xlimits
@@ -40,12 +39,9 @@ class HistogramWidget(DataViewer):
         self.make_toolbar()
         self._connect()
         self._data = data
-        self._tweak_geometry()
 
     def _tweak_geometry(self):
         self.central_widget.resize(600, 400)
-        self.ui.splitter.setSizes([350, 120])
-        self.ui.main_splitter.setSizes([300, 100])
         self.resize(self.central_widget.size())
 
     def _connect(self):
@@ -75,7 +71,7 @@ class HistogramWidget(DataViewer):
         self.ui.xmax.setText(str(hi))
 
     def make_toolbar(self):
-        result = GlueToolbar(self.ui.mplWidget.canvas, self,
+        result = GlueToolbar(self.central_widget.canvas, self,
                              name='Histogram')
         for mode in self._mouse_modes():
             result.add_mode(mode)
@@ -97,7 +93,7 @@ class HistogramWidget(DataViewer):
 
         combo.clear()
 
-        data = [a.layer.data for a in self._artist_container]
+        data = [a.layer.data for a in self._container]
 
         try:
             combo.currentIndexChanged.disconnect()
@@ -162,7 +158,7 @@ class HistogramWidget(DataViewer):
         pass
 
     def data_present(self, data):
-        return data in self._artist_container
+        return data in self._container
 
     def register_to_hub(self, hub):
         super(HistogramWidget, self).register_to_hub(hub)
@@ -191,3 +187,9 @@ class HistogramWidget(DataViewer):
     def _update_labels(self):
         self._update_window_title()
         self._update_attributes()
+
+    def __str__(self):
+        return "Histogram Widget"
+
+    def options_widget(self):
+        return self.option_widget

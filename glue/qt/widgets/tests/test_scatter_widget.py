@@ -19,6 +19,7 @@ class TestScatterWidget(object):
         self.win = QMainWindow()
         self.win.setCentralWidget(self.widget)
         self.connect_to_hub()
+        self.widget.options_widget().show()
         self.win.show()
 
     def teardown_method(self, method):
