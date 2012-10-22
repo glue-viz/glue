@@ -39,7 +39,7 @@ import itertools
 from copy_reg import _extension_registry, _inverted_registry, _extension_cache
 import new
 import dis
-import email
+#import email
 from pickle import loads, PicklingError
 from .decorators import memoize
 
@@ -93,7 +93,7 @@ class CloudPickler(pickle.Pickler):
         dispatch[slice] = save_unsupported
 
     #email LazyImporters cannot be saved!
-    dispatch[email.LazyImporter] = save_unsupported
+    #dispatch[email.LazyImporter] = save_unsupported
 
     #itertools objects do not pickle!
     for v in itertools.__dict__.values():
