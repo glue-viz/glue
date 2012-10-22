@@ -32,8 +32,10 @@ class HistogramWidget(DataViewer):
                                       self.ui.mplWidget.canvas.fig,
                                       artist_container=container)
         self.ui.artist_view.setModel(container.model)
-        self.ui.xmin.setValidator(QtGui.QDoubleValidator())
-        self.ui.xmax.setValidator(QtGui.QDoubleValidator())
+        validator = QtGui.QDoubleValidator(None)
+        validator.setDecimals(7)
+        self.ui.xmin.setValidator(validator)
+        self.ui.xmax.setValidator(validator)
         lo, hi = self.client.xlimits
         self.ui.xmin.setText(str(lo))
         self.ui.xmax.setText(str(hi))
