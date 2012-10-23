@@ -172,7 +172,7 @@ class HistogramWidget(DataViewer):
 
         hub.subscribe(self,
                       msg.DataUpdateMessage,
-                      handler=self._update_labels)
+                      handler=lambda *args: self._update_labels())
 
     def unregister(self, hub):
         self.client.unregister(hub)
