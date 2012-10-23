@@ -69,8 +69,8 @@ class HistogramWidget(DataViewer):
 
     def _update_minmax_labels(self):
         lo, hi = self.client.xlimits
-        self.ui.xmin.setText(str(lo))
-        self.ui.xmax.setText(str(hi))
+        self.ui.xmin.setText("%0.3e" % lo)
+        self.ui.xmax.setText("%0.3e" % hi)
 
     def make_toolbar(self):
         result = GlueToolbar(self.central_widget.canvas, self,

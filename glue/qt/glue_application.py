@@ -136,20 +136,16 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
             self._ui.plot_options.setTitle("Plot Options")
             self._ui.plot_layers.setTitle("Plot Layers")
 
-        self._update_toolbar_visibility()
+        self._update_focus_decoration()
 
-    def _update_toolbar_visibility(self):
+    def _update_focus_decoration(self):
         mdi_area = self.current_tab
         active = mdi_area.activeSubWindow()
 
         for win in mdi_area.subWindowList():
             widget = win.widget()
-            if not isinstance(widget, DataViewer):
-                continue
-            if win is active:
-                widget.show_toolbars()
-            else:
-                widget.hide_toolbars()
+            if isinstance(widget, DataViewer):
+                widget.set_focus(win is active)
 
     def _close_tab(self, index):
         """ Close a tab window and all associated data viewers """
