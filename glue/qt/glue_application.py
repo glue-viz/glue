@@ -2,7 +2,7 @@
 
 from PyQt4.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                          QMenu, QMdiSubWindow, QAction, QMessageBox,
-                         QFileDialog, QLabel, QPixmap, QDesktopWidget,
+                         QFileDialog, QLabel, QPixmap,
                          QToolButton, QSplitter, QVBoxLayout, QWidget)
 from PyQt4.QtCore import Qt
 
@@ -135,6 +135,21 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         else:
             self._ui.plot_options.setTitle("Plot Options")
             self._ui.plot_layers.setTitle("Plot Layers")
+
+        self._update_toolbar_visibility()
+
+    def _update_toolbar_visibility(self):
+        mdi_area = self.current_tab
+        active = mdi_area.activeSubWindow()
+
+        for win in mdi_area.subWindowList():
+            widget = win.widget()
+            if not isinstance(widget, DataViewer):
+                continue
+            if win is active:
+                widget.show_toolbars()
+            else:
+                widget.hide_toolbars()
 
     def _close_tab(self, index):
         """ Close a tab window and all associated data viewers """
@@ -312,7 +327,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         Note: Saving of client is not currently supported. Thus,
         restoring this session will lose all current viz windows
         """
-        from ..core.glue_pickle import PicklingError, CloudPickler
+        from ..core.glue_pickle import CloudPickler
         state = (self._data, self._hub)
 
         outfile = QFileDialog.getSaveFileName(self)

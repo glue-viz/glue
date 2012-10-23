@@ -1,4 +1,4 @@
-from PyQt4.QtGui import QMainWindow, QMessageBox, QLabel
+from PyQt4.QtGui import QMainWindow, QMessageBox, QWidget
 from PyQt4.QtCore import Qt
 
 from ...core.hub import HubListener
@@ -24,9 +24,11 @@ class DataViewer(QMainWindow, HubListener):
         self._container = QtLayerArtistContainer()
         self._view = LayerArtistView()
         self._view.setModel(self._container.model)
+        self._tb_vis = {}  # store whether toolbars are enabled
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.setAcceptDrops(True)
         self.setAnimated(False)
+        self._toolbars = []
 
     def register_to_hub(self, hub):
         self._hub = hub
@@ -109,3 +111,25 @@ class DataViewer(QMainWindow, HubListener):
 
     def options_widget(self):
         return QWidget()
+
+    def addToolBar(self, tb):
+        super(DataViewer, self).addToolBar(tb)
+        self._toolbars.append(tb)
+
+    def show_toolbars(self):
+        """Re-enable any toolbars that were hidden with `hide_toolbars()`
+
+        Does not re-enable toolbars that were hidden by other means
+        """
+        for tb in self._toolbars:
+            if self._tb_vis.get(tb, False):
+                tb.setVisible(True)
+
+    def hide_toolbars(self):
+        """ Hide all the toolbars in the viewer.
+
+        This action can be reversed by calling `show_toolbars()`
+        """
+        for tb in self._toolbars:
+            self._tb_vis[tb] = self._tb_vis.get(tb, False) or tb.isVisible()
+            tb.setVisible(False)
