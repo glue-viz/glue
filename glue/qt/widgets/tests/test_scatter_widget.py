@@ -1,11 +1,9 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
-from PyQt4.QtGui import QApplication, QMainWindow
 from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt
 
 from ..scatter_widget import ScatterWidget
 
-from ....tests import example_data
 from .... import core
 
 
@@ -13,17 +11,18 @@ class TestScatterWidget(object):
 
     def setup_method(self, method):
         self.hub = core.hub.Hub()
-        self.data = example_data.test_data()
+        self.d1 = core.Data(x=[1, 2, 3], y=[2, 3, 4],
+                            z=[3, 4, 5], w=[4, 5, 6])
+        self.d2 = core.Data(x=[1, 2, 3], y=[2, 3, 4],
+                            z=[3, 4, 5], w=[4, 5, 6])
+        self.data = [self.d1, self.d2]
         self.collect = core.data_collection.DataCollection(list(self.data))
         self.widget = ScatterWidget(self.collect)
-        self.win = QMainWindow()
-        self.win.setCentralWidget(self.widget)
         self.connect_to_hub()
         self.widget.options_widget().show()
-        self.win.show()
 
     def teardown_method(self, method):
-        self.win.close()
+        self.widget.options_widget().close()
 
     def connect_to_hub(self):
         self.widget.register_to_hub(self.hub)
@@ -60,7 +59,6 @@ class TestScatterWidget(object):
         xlim = ax.get_xlim()
         ylim = ax.get_ylim()
         return xlim, ylim
-        return
 
     def assert_layer_inside_limits(self, layer):
         """Assert that points of a layer are within plot limits """
@@ -157,3 +155,12 @@ class TestScatterWidget(object):
         l2 = self.add_layer_via_method(1)
         expected = '%s | %s' % (l1.label, l2.label)
         self.widget.windowTitle() == expected
+
+    def test_second_data_add_preserves_plot_variables(self):
+        l1 = self.add_layer_via_method(0)
+        self.widget.ui.xAxisComboBox.setCurrentIndex(3)
+        self.widget.ui.yAxisComboBox.setCurrentIndex(2)
+        l2 = self.add_layer_via_method(1)
+
+        assert self.widget.ui.xAxisComboBox.currentIndex() == 3
+        assert self.widget.ui.yAxisComboBox.currentIndex() == 2

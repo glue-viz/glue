@@ -125,6 +125,7 @@ class ImageLayerArtist(LayerArtist):
                                              origin='lower',
                                              extent=extent, zorder=0))
         self.artists = artists
+        self._sync_style()
 
     def set_norm(self, vmin, vmax):
         if self.norm is None:
@@ -136,6 +137,13 @@ class ImageLayerArtist(LayerArtist):
 
     def clear_norm(self):
         self.norm = None
+
+    def _sync_style(self):
+        style = self.layer.style
+        for artist in self.artists:
+            artist.set_alpha(style.alpha)
+            artist.set_zorder(self.zorder)
+            artist.set_visible(self.visible and self.enabled)
 
 
 class SubsetImageLayerArtist(LayerArtist):

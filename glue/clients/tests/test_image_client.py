@@ -334,6 +334,17 @@ class TestImageClient(object):
         client._update_data_plot()
         assert self.scatter in client.artists
 
+    def test_image_hide_persistent(self):
+        """If image layer is disabled, it should stay disabled after update"""
+        client = self.create_client_with_image()
+        assert client.is_visible(self.im)
+        client.set_visible(self.im, False)
+        client.axes.set_xlim(1, 2)
+        client.check_update(None)
+        for a in client.artists[self.im]:
+            for aa in a.artists:
+                assert not aa.get_visible()
+
 
 def test_format_coord_2d():
     """Coordinate display is in world coordinates"""
