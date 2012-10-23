@@ -145,7 +145,7 @@ class EmbeddedQtKernelApp(IPKernelApp):
         stopper = ioloop.PeriodicCallback(loop.stop, 1, loop)
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(loop.start)
-        self.timer.start(0)
+        self.timer.start(100)
         stopper.start()
         super(EmbeddedQtKernelApp, self).start()
 
