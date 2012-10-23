@@ -106,10 +106,10 @@ class ImageClient(VizClient):
             self.add_layer(data)
 
     def check_update(self, event):
-        logging.debug("check update")
+        logging.getLogger(__name__).debug("check update")
         vw = _view_window(self._ax)
         if vw != self._view_window:
-            logging.debug("updating")
+            logging.getLogger(__name__).debug("updating")
             self._update_data_plot()
             self._update_subset_plots()
             self._redraw()
@@ -264,7 +264,7 @@ class ImageClient(VizClient):
         The subset to refresh.
 
         """
-        logging.debug("update subset single: %s", s)
+        logging.getLogger(__name__).debug("update subset single: %s", s)
         self._update_scatter_layer(s)
 
         if s not in self.artists:
@@ -345,7 +345,8 @@ class ImageClient(VizClient):
             raise TypeError("Data not managed by client's data collection")
 
         if not self.can_handle_data(layer.data):
-            logging.warning("Cannot visulize %s. Aborting", layer.label)
+            logging.getLogger(__name__).warning(
+                "Cannot visulize %s. Aborting", layer.label)
             return
 
         if isinstance(layer, Data):
@@ -415,6 +416,13 @@ class ImageClient(VizClient):
             assert self._slice_ori == 2
             return self.slice_ind, x, y
 
+    def is_visible(self, layer):
+        return all(a.visible for a in self.artists[layer])
+
+    def set_visible(self, layer, state):
+        for a in self.artists[layer]:
+            a.visible = state
+
 
 def _2d_shape(shape, slice_ori):
     """Return the shape of the 2D slice through a 2 or 3D image"""
@@ -466,7 +474,7 @@ def _view_window(ax):
     ext = ax.transAxes.transform([1, 1]) - ax.transAxes.transform([0, 0])
     xlim, ylim = ax.get_xlim(), ax.get_ylim()
     result = xlim[0], ylim[0], xlim[1], ylim[1], ext[0], ext[1]
-    logging.debug("view window: %s", result)
+    logging.getLogger(__name__).debug("view window: %s", result)
     return result
 
 

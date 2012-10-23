@@ -123,11 +123,11 @@ class ScatterWidget(DataViewer):
             self.update_xatt(None)
             self.update_yatt(None)
 
-        self.ui.xAxisComboBox.setCurrentIndex(0)
-        if len(data.visible_components) > 1:
-            self.ui.yAxisComboBox.setCurrentIndex(1)
-        else:
-            self.ui.yAxisComboBox.setCurrentIndex(0)
+            self.ui.xAxisComboBox.setCurrentIndex(0)
+            if len(data.visible_components) > 1:
+                self.ui.yAxisComboBox.setCurrentIndex(1)
+            else:
+                self.ui.yAxisComboBox.setCurrentIndex(0)
 
         self._update_window_title()
         return True
