@@ -1,4 +1,6 @@
-from PyQt4.QtGui import QMainWindow, QMessageBox, QWidget
+import os
+
+from PyQt4.QtGui import QMainWindow, QMessageBox, QWidget, QPalette, QColor
 from PyQt4.QtCore import Qt
 
 from ...core.hub import HubListener
@@ -29,6 +31,7 @@ class DataViewer(QMainWindow, HubListener):
         self.setAcceptDrops(True)
         self.setAnimated(False)
         self._toolbars = []
+        self.setContentsMargins(2, 2, 2, 2)
 
     def register_to_hub(self, hub):
         self._hub = hub
@@ -80,15 +83,16 @@ class DataViewer(QMainWindow, HubListener):
     def closeEvent(self, event):
         """ Call unregister on window close """
         # ask for confirmation
-        #buttons = QMessageBox.Ok | QMessageBox.Cancel
-        #dialog = QMessageBox.warning(self, "Confirm Close",
-        #                             "Do you want to close this window?",
-        #                             buttons=buttons,
-        #                             defaultButton=QMessageBox.Cancel)
+        if not os.environ.get('GLUE_TESTING'):
+            buttons = QMessageBox.Ok | QMessageBox.Cancel
+            dialog = QMessageBox.warning(self, "Confirm Close",
+                                         "Do you want to close this window?",
+                                         buttons=buttons,
+                                         defaultButton=QMessageBox.Cancel)
 
-        #if dialog != QMessageBox.Ok:
-        #    event.ignore()
-        #    return
+            if dialog != QMessageBox.Ok:
+                event.ignore()
+                return
 
         if self._hub is not None:
             self.unregister(self._hub)
@@ -133,3 +137,24 @@ class DataViewer(QMainWindow, HubListener):
         for tb in self._toolbars:
             self._tb_vis[tb] = self._tb_vis.get(tb, False) or tb.isVisible()
             tb.setVisible(False)
+
+    def set_focus(self, state):
+        if state:
+            css = """
+            DataViewer
+            {
+            border: 2px solid;
+            border-color: rgb(56, 117, 215);
+            }
+            """
+            self.setStyleSheet(css)
+            self.show_toolbars()
+        else:
+            css = """
+            DataViewer
+            {
+            border: none;
+            }
+            """
+            self.setStyleSheet(css)
+            self.hide_toolbars()

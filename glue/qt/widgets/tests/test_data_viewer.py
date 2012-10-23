@@ -14,6 +14,11 @@ from mock import MagicMock, patch
 ALL_WIDGETS = [HistogramWidget, ScatterWidget, ImageWidget]
 
 
+def setup_function(func):
+    import os
+    os.environ['GLUE_TESTING'] = 'True'
+
+
 @pytest.mark.parametrize(('widget'), ALL_WIDGETS)
 def test_unregister_on_close(widget):
     unreg = MagicMock()
