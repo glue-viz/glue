@@ -179,7 +179,7 @@ class Subset(object):
         self.do_broadcast(False)
 
         if self.data is not None and self in self.data.subsets:
-            self.data.subsets.remove(self)
+            self.data._subsets.remove(self)
 
         if dobroad:
             msg = SubsetDeleteMessage(self)

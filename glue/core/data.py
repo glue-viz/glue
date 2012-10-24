@@ -265,7 +265,7 @@ class Data(object):
         self.tree = None
 
         # Subsets of the data
-        self.subsets = []
+        self._subsets = []
 
         # Hub that the data is attached to
         self.hub = None
@@ -283,6 +283,10 @@ class Data(object):
         for lbl, data in kwargs.items():
             c = Component(np.asarray(data))
             self.add_component(c, lbl)
+
+    @property
+    def subsets(self):
+        return tuple(self._subsets)
 
     @property
     def ndim(self):
@@ -576,7 +580,7 @@ class Data(object):
             subset = Subset(None)
             subset.subset_state = state
 
-        self.subsets.append(subset)
+        self._subsets.append(subset)
 
         if subset.data is not self:
             subset.do_broadcast(False)

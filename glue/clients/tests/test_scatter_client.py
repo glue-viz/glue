@@ -267,7 +267,7 @@ class TestScatterClient(object):
 
     def test_apply_roi_adds_on_empty(self):
         data = self.add_data_and_attributes()
-        data.subsets = []
+        data._subsets = []
         data.edit_subset = None
         roi = core.roi.RectangularROI()
         roi.update_limits(.5, .5, 1.5, 1.5)

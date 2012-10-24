@@ -10,6 +10,7 @@ from .... import core
 
 from matplotlib import __version__ as mpl_version
 
+
 class TestScatterWidget(object):
 
     def setup_method(self, method):
