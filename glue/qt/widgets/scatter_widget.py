@@ -41,7 +41,7 @@ class ScatterWidget(DataViewer):
         self._setup_limit_editors()
 
     def _setup_limit_editors(self):
-        v = QtGui.QDoubleValidator()
+        v = QtGui.QDoubleValidator(None)
         v.setDecimals(4)
         self.ui.xmin.setValidator(v)
         self.ui.xmax.setValidator(v)
