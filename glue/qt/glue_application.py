@@ -168,11 +168,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         page.setActiveSubWindow(sub)
         return sub
 
-    def cascade_current_tab(self):
-        """Arrange windows in current tab via cascade"""
-        self.current_tab.cascadeSubWindows()
-
-    def tile_current_tab(self):
+    def gather_current_tab(self):
         """Arrange windows in current tab via tiling"""
         self.current_tab.tileSubWindows()
 
@@ -201,8 +197,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         menu.addAction(self._actions['tab_new'])
         menu.addAction(self._actions['viewer_new'])
         menu.addSeparator()
-        menu.addAction(self._actions['cascade'])
-        menu.addAction(self._actions['tile'])
+        menu.addAction(self._actions['gather'])
         menu.addAction(self._actions['tab_rename'])
         mbar.addMenu(menu)
 
@@ -263,15 +258,11 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         a.triggered.connect(self.tab_bar.rename_tab)
         self._actions['tab_rename'] = a
 
-        a = act('Cascade', self,
-                tip='Cascade the windows in the current tab')
-        a.triggered.connect(self.cascade_current_tab)
-        self._actions['cascade'] = a
-
-        a = act('Tile', self,
-                tip='Tile the windows in the current tab')
-        a.triggered.connect(self.tile_current_tab)
-        self._actions['tile'] = a
+        a = act('Gather Windows', self,
+                tip='Gather plot windows side-by-side',
+                shortcut='Ctrl+G')
+        a.triggered.connect(self.gather_current_tab)
+        self._actions['gather'] = a
 
         a = act('Save Session', self,
                 tip='Save the current session')

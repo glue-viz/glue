@@ -36,7 +36,7 @@ class LayerAction(QAction):
 
     def __init__(self, layer_tree_widget):
         parent = layer_tree_widget.layerTree
-        super(LayerAction, self).__init__(self._title, parent)
+        super(LayerAction, self).__init__(self._title.title(), parent)
         self._layer_tree = layer_tree_widget
         if self._icon:
             self.setIcon(QIcon(self._icon))
@@ -140,8 +140,8 @@ class DuplicateAction(LayerAction):
 
 
 class DeleteAction(LayerAction):
-    _title = "Delete Selection"
-    _tooltip = "Remove the selection"
+    _title = "Delete Layer"
+    _tooltip = "Delete the selected data and/or subsets"
     _shortcut = QKeySequence.Cut
 
     def _can_trigger(self):
