@@ -3,6 +3,7 @@ from .. import qtutil
 from PyQt4 import QtGui
 from mock import MagicMock, patch
 from ..qtutil import GlueDataDialog
+from ..qtutil import pretty_number
 
 from glue.config import data_factory
 
@@ -99,3 +100,19 @@ def test_data_wizard_error_cancel():
         with patch('glue.qt.qtutil.QMessageBox.critical') as critical:
             critical.return_value = 0
             assert qtutil.data_wizard() == []
+
+
+class TestPrettyNumber():
+    def test_single(self):
+        assert pretty_number([1]) == ['1']
+        assert pretty_number([0]) == ['0']
+        assert pretty_number([-1]) == ['-1']
+        assert pretty_number([1.0001]) == ['1']
+        assert pretty_number([1.01]) == ['1.01']
+        assert pretty_number([1e-5]) == ['1.000e-05']
+        assert pretty_number([1e5]) == ['1.000e+05']
+        assert pretty_number([3.3]) == ['3.3']
+
+    def test_list(self):
+        assert pretty_number([1, 2, 3.3, 1e5]) == ['1', '2', '3.3',
+                                                   '1.000e+05']

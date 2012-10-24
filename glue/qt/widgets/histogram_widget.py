@@ -11,6 +11,7 @@ from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import RectangleMode
 from .data_viewer import DataViewer
 from .mpl_widget import MplWidget
+from ..qtutil import pretty_number
 
 WARN_SLOW = 10000000
 
@@ -59,8 +60,8 @@ class HistogramWidget(DataViewer):
         ui.cumulative_box.toggled.connect(partial(setattr, cl, 'cumulative'))
         ui.xlog_box.toggled.connect(partial(setattr, cl, 'xlog'))
         ui.ylog_box.toggled.connect(partial(setattr, cl, 'ylog'))
-        ui.xmin.returnPressed.connect(self._set_limits)
-        ui.xmax.returnPressed.connect(self._set_limits)
+        ui.xmin.editingFinished.connect(self._set_limits)
+        ui.xmax.editingFinished.connect(self._set_limits)
 
     def _set_limits(self):
         lo = float(self.ui.xmin.text())
@@ -68,9 +69,9 @@ class HistogramWidget(DataViewer):
         self.client.xlimits = lo, hi
 
     def _update_minmax_labels(self):
-        lo, hi = self.client.xlimits
-        self.ui.xmin.setText("%0.3e" % lo)
-        self.ui.xmax.setText("%0.3e" % hi)
+        lo, hi = pretty_number(self.client.xlimits)
+        self.ui.xmin.setText(lo)
+        self.ui.xmax.setText(hi)
 
     def make_toolbar(self):
         result = GlueToolbar(self.central_widget.canvas, self,

@@ -164,3 +164,26 @@ class TestScatterWidget(object):
 
         assert self.widget.ui.xAxisComboBox.currentIndex() == 3
         assert self.widget.ui.yAxisComboBox.currentIndex() == 2
+
+    def test_set_limits(self):
+        l1 = self.add_layer_via_method(0)
+        self.widget.xmin = 1
+        self.widget.xmax = 2
+        self.widget.ymin = 3
+        self.widget.ymax = 4
+        assert self.widget.client.axes.get_xlim() == (1, 2)
+        assert self.widget.client.axes.get_ylim() == (3, 4)
+        assert float(self.widget.ui.xmin.text()) == 1
+        assert float(self.widget.ui.xmax.text()) == 2
+        assert float(self.widget.ui.ymin.text()) == 3
+        assert float(self.widget.ui.ymax.text()) == 4
+
+    def test_labels_sync_with_plot_limits(self):
+        l1 = self.add_layer_via_method(0)
+        self.widget.client.axes.set_xlim((3, 4))
+        self.widget.client.axes.set_ylim((5, 6))
+        self.widget.client.axes.figure.canvas.draw()
+        assert float(self.widget.ui.xmin.text()) == 3
+        assert float(self.widget.ui.xmax.text()) == 4
+        assert float(self.widget.ui.ymin.text()) == 5
+        assert float(self.widget.ui.ymax.text()) == 6

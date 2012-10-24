@@ -396,3 +396,27 @@ class GlueTabBar(QTabBar):
         index = self.tabAt(event.pos())
         if index >= 0:
             self.rename_tab(index)
+
+
+def pretty_number(numbers):
+    """Convert a list of numbers into a nice list of strings
+
+    :param numbers: Numbers to convert
+    :type numbers: List or other iterable of numbers
+
+    :rtype: A list of strings
+    """
+    result = []
+    for n in numbers:
+        if n == 0:
+            result.append('0')
+        elif (abs(n) < 1e-3) or (abs(n) > 1e3):
+            result.append("%0.3e" % n)
+        elif abs(int(n) - n) < 1e-3 and int(n) != 0:
+            result.append("%i" % n)
+        else:
+            result.append("%0.3f" % n)
+        if result[-1].find('.') != -1:
+            result[-1] = result[-1].rstrip('0')
+
+    return result
