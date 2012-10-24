@@ -6,7 +6,7 @@ import numpy as np
 from .io import extract_data_fits, extract_data_hdf5
 from .coordinates import Coordinates, coordinates_from_header
 from .visual import VisualAttributes
-from .visual import RED, GREEN, BLUE, YELLOW, BROWN, ORANGE, PURPLE, PINK
+from .visual import RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK
 from .exceptions import IncompatibleAttribute
 from .component_link import ComponentLink, BinaryComponentLink
 from .subset import Subset, InequalitySubsetState, SubsetState
@@ -24,7 +24,7 @@ from .odict import OrderedDict
 __all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
            'TabularData', 'GriddedData', 'CoordinateComponent']
 
-COLORS = [RED, GREEN, BLUE, YELLOW, BROWN, ORANGE, PURPLE, PINK]
+COLORS = [RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK]
 
 
 class ComponentID(object):
