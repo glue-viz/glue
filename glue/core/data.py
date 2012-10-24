@@ -626,8 +626,8 @@ class Data(object):
         s += "Number of dimensions: %i\n" % self.ndim
         s += "Shape: %s\n" % ' x '.join([str(x) for x in self.shape])
         s += "Components:\n"
-        for component in self._components:
-            s += " * %s\n" % component
+        for i, component in enumerate(self._components):
+            s += " %i) %s\n" % (i, component)
         return s[:-1]
 
     def __setattr__(self, name, value):
