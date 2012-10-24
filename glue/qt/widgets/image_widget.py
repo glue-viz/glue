@@ -170,6 +170,7 @@ class ImageWidget(DataViewer):
         component_id = combo.itemData(index)
         self.client.set_attribute(component_id)
         self.ui.attributeComboBox.setCurrentIndex(index)
+        self._update_window_title()
 
     def set_attribute_combo(self, data):
         """ Update attribute combo box to reflect components in data"""
@@ -265,7 +266,8 @@ class ImageWidget(DataViewer):
         if self.client.display_data is None:
             title = ''
         else:
-            title = self.client.display_data.label
+            title = "%s - %s" % (self.client.display_data.label,
+                                 self.client.display_attribute.label)
         self.setWindowTitle(title)
 
     def _update_data_combo(self):

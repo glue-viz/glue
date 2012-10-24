@@ -3,29 +3,36 @@ from PyQt4.QtGui import QApplication
 
 from ..image_widget import ImageWidget
 
-from ....tests import example_data
 from .... import core
+
+import os
+os.environ['GLUE_TESTING'] = 'True'
 
 
 class TestImageWidget(object):
 
     def setup_method(self, method):
         self.hub = core.hub.Hub()
-        self.im = example_data.test_image()
-        self.cube = example_data.test_cube()
+        self.im = core.Data(label='im',
+                            x=[[1, 2], [3, 4]],
+                            y=[[2, 3], [4, 5]])
+        self.cube = core.Data(label='cube',
+                              x=[[[1, 2], [3, 4]], [[1, 2], [3, 4]]],
+                              y=[[[1, 2], [3, 4]], [[1, 2], [3, 4]]])
         self.collect = core.data_collection.DataCollection()
         self.widget = ImageWidget(self.collect)
         self.connect_to_hub()
         self.collect.append(self.im)
         self.collect.append(self.cube)
 
+    def assert_title_correct(self):
+        expected = "%s - %s" % (self.widget.client.display_data.label,
+                                self.widget.client.display_attribute.label)
+        assert self.widget.windowTitle() == expected
+
     def connect_to_hub(self):
         self.widget.register_to_hub(self.hub)
         self.collect.register_to_hub(self.hub)
-
-    def teardown_method(self, method):
-        self.widget.close()
-        del self.widget
 
     def _test_widget_synced_with_collection(self):
         dc = self.widget.ui.displayDataCombo
@@ -51,13 +58,19 @@ class TestImageWidget(object):
 
     def test_window_title_matches_data(self):
         self.widget.add_data(self.collect[0])
-        assert self.widget.windowTitle() == self.collect[0].label
+        self.assert_title_correct()
 
     def test_window_title_updates_on_label_change(self):
         self.connect_to_hub()
         self.widget.add_data(self.collect[0])
         self.collect[0].label = 'Changed'
-        assert self.widget.windowTitle() == self.collect[0].label
+        self.assert_title_correct()
+
+    def test_window_title_updates_on_component_change(self):
+        self.connect_to_hub()
+        self.widget.add_data(self.collect[0])
+        self.widget.ui.attributeComboBox.setCurrentIndex(1)
+        self.assert_title_correct()
 
     def test_data_combo_updates_on_change(self):
         self.connect_to_hub()
