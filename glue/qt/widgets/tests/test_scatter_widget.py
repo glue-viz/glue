@@ -1,11 +1,14 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+from distutils.version import LooseVersion
 from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt
 
-from ..scatter_widget import ScatterWidget
+import pytest
 
+from ..scatter_widget import ScatterWidget
 from .... import core
 
+from matplotlib import __version__ as mpl_version
 
 class TestScatterWidget(object):
 
@@ -178,11 +181,17 @@ class TestScatterWidget(object):
         assert float(self.widget.ui.ymin.text()) == 3
         assert float(self.widget.ui.ymax.text()) == 4
 
+    @pytest.mark.xfail("LooseVersion(mpl_version) <= LooseVersion('1.1.0')")
     def test_labels_sync_with_plot_limits(self):
+        """For some reason, manually calling draw() doesnt trigger the
+        draw_event in MPL 1.1.0. Ths functionality nevertheless seems
+        to work when actually using Glue"""
+
         l1 = self.add_layer_via_method(0)
         self.widget.client.axes.set_xlim((3, 4))
         self.widget.client.axes.set_ylim((5, 6))
         self.widget.client.axes.figure.canvas.draw()
+
         assert float(self.widget.ui.xmin.text()) == 3
         assert float(self.widget.ui.xmax.text()) == 4
         assert float(self.widget.ui.ymin.text()) == 5
