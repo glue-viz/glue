@@ -1,4 +1,5 @@
 # pylint: disable=W0223
+import sys
 
 from PyQt4.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                          QMenu, QMdiSubWindow, QAction, QMessageBox,
@@ -224,6 +225,9 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         menu.addAction(a)
         menu.addActions(tbar.actions())
         mbar.addMenu(menu)
+
+        if sys.platform == 'darwin':
+            mbar.addMenu('Help')
 
     def _load_data(self):
         for data in data_wizard():

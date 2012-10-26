@@ -172,7 +172,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Remove selection</string>
+          <string>Delete Layer</string>
          </property>
          <property name="text">
           <string/>

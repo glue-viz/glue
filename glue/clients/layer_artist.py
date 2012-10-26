@@ -141,7 +141,6 @@ class ImageLayerArtist(LayerArtist):
     def _sync_style(self):
         style = self.layer.style
         for artist in self.artists:
-            artist.set_alpha(style.alpha)
             artist.set_zorder(self.zorder)
             artist.set_visible(self.visible and self.enabled)
 

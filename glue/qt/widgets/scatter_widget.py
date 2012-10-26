@@ -57,14 +57,10 @@ class ScatterWidget(DataViewer):
         ui = self.ui
         cl = self.client
 
-        ui.xLogCheckBox.stateChanged.connect(
-            lambda x: cl.set_xlog(x == Qt.Checked))
-        ui.yLogCheckBox.stateChanged.connect(
-            lambda x: cl.set_ylog(x == Qt.Checked))
-        ui.xFlipCheckBox.stateChanged.connect(
-            lambda x: cl.set_xflip(x == Qt.Checked))
-        ui.yFlipCheckBox.stateChanged.connect(
-            lambda x: cl.set_yflip(x == Qt.Checked))
+        ui.xLogCheckBox.toggled.connect(cl.set_xlog)
+        ui.yLogCheckBox.toggled.connect(cl.set_ylog)
+        ui.xFlipCheckBox.toggled.connect(cl.set_xflip)
+        ui.yFlipCheckBox.toggled.connect(cl.set_yflip)
         ui.xAxisComboBox.currentIndexChanged.connect(self.update_xatt)
         ui.yAxisComboBox.currentIndexChanged.connect(self.update_yatt)
         ui.swapAxes.clicked.connect(self.swap_axes)

@@ -253,7 +253,7 @@ class ContrastMode(MouseMode):
         dx, dy = self._axes.figure.canvas.get_width_height()
         x = 1.0 * x / dx
         y = 1.0 * y / dy
-        theta = np.pi - max(min(y, 1), 0) * np.pi
+        theta = -.99999 * np.pi + max(min(y, 1), 0) * np.pi * .99998
 
         self.bias = x
         self.contrast = np.tan(theta)
