@@ -16,7 +16,7 @@ from .registry import Registry
 from .util import split_component_view, view_shape
 from .message import (DataUpdateMessage,
                       DataAddComponentMessage,
-                      SubsetCreateMessage)
+                      SubsetCreateMessage, ComponentsChangedMessage)
 
 from .util import file_format
 from .odict import OrderedDict
@@ -391,6 +391,8 @@ class Data(object):
         if self.hub and (not is_present):
             msg = DataAddComponentMessage(self, component_id)
             self.hub.broadcast(msg)
+            msg = ComponentsChangedMessage(self)
+            self.hub.broadcast(msg)
 
         return component_id
 
@@ -522,6 +524,9 @@ class Data(object):
                                  make_topixel_func(i))
             result.append(link)
 
+        for r in result:
+            r.hide_from_editor = True
+
         self._coordinate_links = result
         return result
 
@@ -622,9 +627,16 @@ class Data(object):
         return result
 
     def update_id(self, old, new):
+        """Reassign a component to a different ComponentID
+
+        :param old: :class:`~glue.core.data.ComponentID`. The old componentID
+        :param new: :class:`~glue.core.data.ComponentID`. The new componentID
+        """
         if old not in self._components:
             raise KeyError("ComponentID not in data set: %s" % old)
         self._components[new] = self._components.pop(old)
+        if self.hub is not None:
+            self.hub.broadcast(ComponentsChangedMessage(self))
 
     def __str__(self):
         s = ""

@@ -119,6 +119,10 @@ class DataAddComponentMessage(DataMessage):
         self.component_id = component_id
 
 
+class ComponentsChangedMessage(DataMessage):
+    pass
+
+
 class DataUpdateMessage(DataMessage):
     def __init__(self, sender, attribute, tag=None):
         super(DataUpdateMessage, self).__init__(sender, tag=tag)
