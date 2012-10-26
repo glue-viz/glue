@@ -73,13 +73,13 @@ class LinkEditor(QDialog):
         assert isinstance(comps[0], core.data.ComponentID), comps[0]
         assert isinstance(comps[1], core.data.ComponentID), comps[1]
         link1 = core.component_link.ComponentLink([comps[0]], comps[1])
-        link2 = core.component_link.ComponentLink([comps[1]], comps[0])
-        return [link1, link2]
+        return [link1]
 
     def _add_link(self, link):
         current = self._ui.current_links
         item = QListWidgetItem(str(link))
         current.addItem(item)
+        item.setHidden(link.hide_from_editor)
         current.data[item] = link
 
     def _add_new_link(self):
