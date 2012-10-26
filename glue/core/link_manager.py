@@ -104,13 +104,31 @@ class LinkManager(object):
     """
     def __init__(self):
         self._links = set()
+        self._duplicated_ids = []
 
     def add_link(self, link):
         if isinstance(link, LinkCollection) or isinstance(link, list):
             for l in link:
-                self._links.add(l)
+                self.add_link(l)
         else:
             self._links.add(link)
+            if link.identity:
+                self._duplicated_ids.append((link.get_from_ids()[0],
+                                             link.get_to_id()))
+        self._reassign_mergers()
+
+    def _reassign_mergers(self):
+        """Update all links such that any reference to a duplicate
+        componentID is replaced with the original"""
+        for l in self._links:
+            for o, d in self._duplicated_ids:
+                frm = l.get_from_ids()
+                if d in frm:
+                    idx = frm.index(d)
+                    frm[idx] = o
+                    l.set_from_ids(frm)
+                if l.get_to_id() is d:
+                    l.set_to_id(o)
 
     def remove_link(self, link):
         if link in self._links:
@@ -136,6 +154,7 @@ class LinkManager(object):
         """
         self._remove_underiveable_components(data)
         self._add_deriveable_components(data)
+        self._merge_duplicate_ids(data)
 
     def _remove_underiveable_components(self, data):
         """ Find and remove any DerivedComponent in the data
@@ -161,6 +180,11 @@ class LinkManager(object):
         for cid, link in links.iteritems():
             d = DerivedComponent(data, link)
             data.add_component(d, cid)
+
+    def _merge_duplicate_ids(self, data):
+        for o, d in self._duplicated_ids:
+            if d in data.components:
+                data.update_id(d, o)
 
     @property
     def links(self):

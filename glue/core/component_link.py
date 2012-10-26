@@ -65,6 +65,7 @@ class ComponentLink(object):
         self._to = comp_to
         self._using = using or identity
         self.hidden = using is None or using is identity
+        self.identity = self.hidden
 
         if type(comp_from) is not list:
             raise TypeError("comp_from must be a list: %s" % type(comp_from))
@@ -111,6 +112,11 @@ class ComponentLink(object):
     def get_from_ids(self):
         """ The list of input ComponentIDs """
         return self._from
+
+    def set_from_ids(self, _from):
+        if len(_from) != len(self._from):
+            raise ValueError("New ID list has the wrong length.")
+        self._from = _from
 
     def get_to_id(self):
         """ The target ComponentID """

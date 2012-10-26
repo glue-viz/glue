@@ -382,26 +382,6 @@ def test_add_link_with_binary_link():
     np.testing.assert_array_equal(d[d.id['z']], [5, 7, 9, 11])
 
 
-def test_identity_links_not_in_visible_components():
-    """Visible_components should filter out identity links
-    """
-    from ..link_helpers import LinkSame
-    from ..data_collection import DataCollection
-
-    d1 = Data(x=[1], y=[2])
-    d2 = Data(w=[3], v=[4])
-    dc = DataCollection([d1, d2])
-    dc.add_link(LinkSame(d1.id['x'], d2.id['w']))
-
-    #not present...
-    assert d1.id['x'] not in d2.visible_components
-    assert d2.id['w'] not in d1.visible_components
-
-    #...but still derivable
-    np.testing.assert_array_equal(d1[d2.id['w']], [1])
-    np.testing.assert_array_equal(d2[d1.id['x']], [3])
-
-
 def test_foreign_pixel_components_not_in_visible():
     """Pixel components from other data should not be visible"""
 

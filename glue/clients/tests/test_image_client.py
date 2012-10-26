@@ -56,7 +56,7 @@ class TestImageClient(object):
         iy = self.im.get_world_component_id(1)
 
         self.collect.add_link(LinkSame(self.scatter.id['x'], ix))
-        self.collect.add_link(LinkSame(self.scatter.id['x'], iy))
+        self.collect.add_link(LinkSame(self.scatter.id['y'], iy))
         client.add_scatter_layer(self.scatter)
 
         return client

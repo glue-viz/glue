@@ -108,6 +108,9 @@ class DataCollection(HubListener):
         for d in self._data:
             self._link_manager.update_data_components(d)
 
+    def _merge_link(self, link):
+        pass
+
     def set_links(self, links):
         """Override the links in the collection, and update data
         objects as necessary

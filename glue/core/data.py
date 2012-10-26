@@ -621,6 +621,11 @@ class Data(object):
         result.subset_state = subset.subset_state
         return result
 
+    def update_id(self, old, new):
+        if old not in self._components:
+            raise KeyError("ComponentID not in data set: %s" % old)
+        self._components[new] = self._components.pop(old)
+
     def __str__(self):
         s = ""
         s += "Number of dimensions: %i\n" % self.ndim

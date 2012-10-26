@@ -187,10 +187,9 @@ class TestDataCollection(object):
         d.add_component(comp, id1)
         id2 = ComponentID("id2")
         self.dc.append(d)
-        link = ComponentLink([id1], id2)
+        link = ComponentLink([id1], id2, using=lambda x: None)
 
         self.dc.set_links([link])
-
         assert id2 in d.components
 
     def test_links_propagated(self):
@@ -211,3 +210,21 @@ class TestDataCollection(object):
         links = LinkSame(cid2, cid3)
         dc.add_link(links)
         assert cid3 in d.components
+
+    def test_merge_links(self):
+        """Trivial links should be merged, discarding the duplicate ID"""
+        d1 = Data(x=[1, 2, 3])
+        d2 = Data(x=[2, 3, 4])
+        dc = DataCollection([d1, d2])
+
+        duplicated_id = d2.id['x']
+        link = ComponentLink([d1.id['x']], d2.id['x'])
+        dc.add_link(link)
+
+        assert d1.id['x'] is d2.id['x']
+        assert d1.id['x'] is not duplicated_id
+        assert duplicated_id not in d1.components
+        assert duplicated_id not in d2.components
+
+        np.testing.assert_array_equal(d1[d1.id['x']], [1, 2, 3])
+        np.testing.assert_array_equal(d2[d1.id['x']], [2, 3, 4])

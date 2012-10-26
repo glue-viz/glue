@@ -29,10 +29,10 @@ def example_components(self, add_derived=True):
 
     dummy_using = lambda x, y: (x, y)
     self.cs = [c1, c2, c3, c4, c5, c6, c7, c8]
-    self.links = [ComponentLink([c1], c3),
-                  ComponentLink([c2], c4),
-                  ComponentLink([c3], c1),
-                  ComponentLink([c4], c2),
+    self.links = [ComponentLink([c1], c3, lambda x:x),
+                  ComponentLink([c2], c4, lambda x:x),
+                  ComponentLink([c3], c1, lambda x:x),
+                  ComponentLink([c4], c2, lambda x:x),
                   ComponentLink([c3, c4], c5, dummy_using),
                   ComponentLink([c3, c4], c6, dummy_using)]
 
@@ -160,7 +160,7 @@ class TestLinkManager(object):
 
         lm.update_data_components(self.data)
         derived = set(self.data.derived_components)
-        expected = set(self.direct + self.derived)
+        expected = set(self.derived + self.direct)
         assert derived == expected
 
     def test_update_data_components_removes_correctly(self):
