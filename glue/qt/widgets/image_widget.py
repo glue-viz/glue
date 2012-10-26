@@ -227,6 +227,9 @@ class ImageWidget(DataViewer):
                       core.message.DataUpdateMessage,
                       handler=lambda x: self._sync_data_labels()
                       )
+        hub.subscribe(self,
+                      core.message.ComponentsChangedMessage,
+                      handler=lambda x: self.set_attribute_combo(x.data))
 
     def unregister(self, hub):
         for obj in [self, self.client]:

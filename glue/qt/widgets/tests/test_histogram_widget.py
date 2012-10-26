@@ -8,25 +8,19 @@ from .... import core
 def mock_data():
     return core.Data(x=[1, 2, 3], y=[2, 3, 4])
 
+import os
+os.environ['GLUE_TESTING'] = 'True'
+
 
 class TestHistogramWidget(object):
-    """ Since widget creation is slow, we try to minimize
-    by using class-level variables. Unforunately, the test's aren't isolated
-    now"""
 
-    @classmethod
-    def setup_class(cls):
-        cls.reset()
+    def setup_method(self, method):
+        self.data = mock_data()
+        self.collect = core.data_collection.DataCollection([self.data])
+        self.widget = HistogramWidget(self.collect)
 
-    @classmethod
-    def reset(cls):
-        cls.data = mock_data()
-        cls.collect = core.data_collection.DataCollection([cls.data])
-        cls.widget = HistogramWidget(cls.collect)
-
-    @classmethod
-    def teardown_class(cls):
-        cls.widget.close()
+    def teardown_method(self, method):
+        self.widget.close()
 
     def set_up_hub(self):
         hub = core.hub.Hub()
@@ -66,7 +60,6 @@ class TestHistogramWidget(object):
         self.widget.add_data(self.data)
         self.collect.remove(self.data)
         assert not self.widget.data_present(self.data)
-        self.reset()
 
     def test_remove_all_data(self):
         self.set_up_hub()
@@ -74,7 +67,6 @@ class TestHistogramWidget(object):
         for data in list(self.collect):
             self.collect.remove(data)
             assert not self.widget.data_present(self.data)
-        self.reset()
 
     @pytest.mark.parametrize(('box', 'prop'),
                              [('normalized_box', 'normed'),
@@ -94,7 +86,6 @@ class TestHistogramWidget(object):
         assert self.widget.client.nbins == 7
 
     def test_update_xmin(self):
-        self.reset()
         self.widget.ui.xmin.setText('-5')
         self.widget._set_limits()
         assert self.widget.client.xlimits[0] == -5
@@ -120,3 +111,12 @@ class TestHistogramWidget(object):
         with pytest.raises(IndexError) as exc:
             self.widget.component = None
         assert exc.value.args[0] == "Component not present: None"
+
+    def test_combo_updates_with_component_add(self):
+        hub = self.set_up_hub()
+        self.widget.add_data(self.data)
+        self.data.add_component(self.data[self.data.components[0]], 'testing')
+        combo = self.widget.ui.attributeCombo
+        labels = [combo.itemText(i) for i in range(combo.count())]
+        labels = [l.split()[0] for l in labels]  # remove data reference
+        assert 'testing' in labels

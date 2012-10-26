@@ -197,3 +197,14 @@ class TestScatterWidget(object):
         assert float(self.widget.ui.xmax.text()) == 4
         assert float(self.widget.ui.ymin.text()) == 5
         assert float(self.widget.ui.ymax.text()) == 6
+
+    def assert_component_present(self, label):
+        ui = self.widget.ui
+        for combo in [ui.xAxisComboBox, ui.yAxisComboBox]:
+            atts = [combo.itemText(i) for i in range(combo.count())]
+            assert label in atts
+
+    def test_component_change_syncs_with_combo(self):
+        l1 = self.add_layer_via_method()
+        cid = l1.add_component(l1[l1.components[0]], 'testing')
+        self.assert_component_present('testing')

@@ -242,6 +242,8 @@ class ScatterWidget(DataViewer):
         self.client.register_to_hub(hub)
         hub.subscribe(self, core.message.DataUpdateMessage,
                       lambda x: self._sync_labels())
+        hub.subscribe(self, core.message.ComponentsChangedMessage,
+                      lambda x: self.update_combos(x.data))
 
     def unregister(self, hub):
         hub.unsubscribe_all(self.client)

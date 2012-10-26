@@ -95,3 +95,10 @@ class TestImageWidget(object):
         w.add_data(self.cube)
         assert self.im not in w.client.artists
         assert self.cube in w.client.artists
+
+    def test_component_add_updates_combo(self):
+        self.widget.add_data(self.im)
+        self.im.add_component(self.im[self.im.components[0]], 'testing')
+        combo = self.widget.ui.attributeComboBox
+        cids = [combo.itemText(i) for i in range(combo.count())]
+        assert 'testing' in cids
