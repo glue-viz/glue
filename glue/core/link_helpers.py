@@ -48,12 +48,11 @@ class LinkCollection(list):
 
 class LinkSame(LinkCollection):
     """
-    Return 2 ComponentLinks to represent that two componentIDs
+    Return ComponentLinks to represent that two componentIDs
     describe the same piece of information
     """
     def __init__(self, cid1, cid2):
         self.append(ComponentLink([_toid(cid1)], _toid(cid2)))
-        self.append(ComponentLink([_toid(cid2)], _toid(cid1)))
 
 
 class LinkTwoWay(LinkCollection):
@@ -162,14 +161,14 @@ try:
         return fk52gal(ra, dec)[1]
     radec2glat.output_args = ['b']
 
-    def lb2ra(lat, lon):
+    def lb2ra(lon, lat):
         """Compute right ascension from galactic longitude and latitude"""
-        return gal2fk5(lat, lon)[0]
+        return gal2fk5(lon, lat)[0]
     lb2ra.output_args = ['ra']
 
-    def lb2dec(lat, lon):
+    def lb2dec(lon, lat):
         """Compute declination from galactic longitude and latitude"""
-        return gal2fk5(lat, lon)[1]
+        return gal2fk5(lon, lat)[1]
     lb2dec.output_args = ['dec']
 
     __LINK_FUNCTIONS__.extend([radec2glon, radec2glat, lb2ra, lb2dec])
