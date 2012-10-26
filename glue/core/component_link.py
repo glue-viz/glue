@@ -64,8 +64,10 @@ class ComponentLink(object):
         self._from = comp_from
         self._to = comp_to
         self._using = using or identity
-        self.hidden = using is None or using is identity
-        self.identity = self.hidden
+
+        self.hidden = using is None or using is identity  # show in widgets?
+        self.identity = self.hidden  # identity link?
+        self.hide_from_editor = False
 
         if type(comp_from) is not list:
             raise TypeError("comp_from must be a list: %s" % type(comp_from))
@@ -134,7 +136,7 @@ class ComponentLink(object):
         if self._using is not identity:
             result = "%s <- %s(%s)" % (self._to, self._using.__name__, args)
         else:
-            result = "%s <- %s" % (self._to, self._from)
+            result = "%s <-> %s" % (self._to, self._from)
         return result
 
     def __repr__(self):

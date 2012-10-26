@@ -8,7 +8,8 @@ from ..subset import SubsetState
 from ..hub import Hub, HubListener
 from ..data_collection import DataCollection
 from ..message import (Message, DataCollectionAddMessage,
-                       DataCollectionDeleteMessage, DataAddComponentMessage)
+                       DataCollectionDeleteMessage, DataAddComponentMessage,
+                       ComponentsChangedMessage)
 from ..component_link import ComponentLink
 
 
@@ -157,7 +158,7 @@ class TestDataCollection(object):
         d.add_component(dc, id2)
 
         msg = self.log.messages[-1]
-        assert isinstance(msg, DataAddComponentMessage)
+        assert isinstance(msg, ComponentsChangedMessage)
         assert link in self.dc._link_manager
 
     def test_coordinate_links_auto_added(self):
@@ -194,8 +195,7 @@ class TestDataCollection(object):
 
     def test_links_propagated(self):
         """Web of links is grown and applied to data automatically"""
-        from ..link_helpers import LinkSame
-
+        from ..component_link import ComponentLink
         d = Data()
         dc = DataCollection([d])
 
@@ -203,11 +203,12 @@ class TestDataCollection(object):
         cid2 = ComponentID('b')
         cid3 = ComponentID('c')
 
-        links = LinkSame(cid1, cid2)
+        dummy = lambda x: None
+        links = ComponentLink([cid1], cid2, dummy)
         dc.add_link(links)
         assert cid2 in d.components
 
-        links = LinkSame(cid2, cid3)
+        links = ComponentLink([cid2], cid3, dummy)
         dc.add_link(links)
         assert cid3 in d.components
 

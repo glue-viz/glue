@@ -6,6 +6,7 @@ from ..component_link import ComponentLink
 from ..link_manager import (LinkManager, accessible_links, discover_links,
                             find_dependents)
 from ..data import ComponentID, DerivedComponent
+from ..data_collection import DataCollection
 
 comp = Component(data=np.array([1, 2, 3]))
 
@@ -180,3 +181,25 @@ class TestLinkManager(object):
         derived = set(self.data.derived_components)
         expected = set(self.direct + self.derived) - removed
         assert derived == expected
+
+    def test_derived_links_correctwith_mergers(self):
+        """When the link manager merges components, links that depend on the
+        merged components remain functional"""
+        from ..link_helpers import LinkSame
+
+        d1 = Data(x=[[1, 2], [3, 4]])
+        d2 = Data(u=[[5, 6], [7, 8]])
+
+        dc = DataCollection([d1, d2])
+
+        #link world coordinates...
+        dc.add_link(LinkSame(
+            d1.get_world_component_id(0), d2.get_world_component_id(0)))
+        dc.add_link(LinkSame(
+            d1.get_world_component_id(1), d2.get_world_component_id(1)))
+
+        #and then retrieve pixel coordinates
+        np.testing.assert_array_equal(
+            d2[d1.get_pixel_component_id(0)], [[0, 0], [1, 1]])
+        np.testing.assert_array_equal(
+            d1[d2.get_pixel_component_id(1)], [[0, 1], [0, 1]])

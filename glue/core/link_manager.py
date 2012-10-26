@@ -1,3 +1,5 @@
+import logging
+
 from .data import DerivedComponent
 from .link_helpers import LinkCollection
 
@@ -6,13 +8,10 @@ def accessible_links(cids, links):
     """ Calculate all ComponentLink objects in a list
     that can be calculated from a collection of componentIds
 
-    Parameters
-    ----------
-    cids : Collection of ComponentID objects
-    links : Iterable of ComponentLink objects
+    :param cids: Collection of ComponentID objects
+    :param links: Iterable of ComponentLink objects
 
-    Returns
-    -------
+    :rtype: list
     A list of all links that can be evaluated
     given the input ComponentIDs
     """
@@ -26,12 +25,10 @@ def discover_links(data, links):
     based on the current components known to a dataset, and a set
     of ComponentLinks.
 
-    ------
-    Data : Data object to discover new components for
-    links : Set of ComponentLinks to use
+    :param Data: Data object to discover new components for
+    :param links: Set of ComponentLinks to use
 
-    Output:
-    -------
+    :rtype: dict
     A dict of componentID -> componentLink
     The ComponentLink that data can use to generate the componentID.
     """
@@ -67,13 +64,10 @@ def find_dependents(data, link):
     depend (either directly or implicitly) on a given
     `ComponentLink`.
 
-    Parameters
-    ----------
-    data : The data object to consider
-    link_to_remove: The `ComponentLink` object to consider
+    :param data: The data object to consider
+    :param link: The `ComponentLink` object to consider
 
-    Returns
-    -------
+    :rtype: set
     A `set` of `DerivedComponent` IDs that cannot be
     calculated without the input `Link`
     """
@@ -113,9 +107,19 @@ class LinkManager(object):
         else:
             self._links.add(link)
             if link.identity:
-                self._duplicated_ids.append((link.get_from_ids()[0],
-                                             link.get_to_id()))
+                self._add_duplicated_id(link)
         self._reassign_mergers()
+
+    def _add_duplicated_id(self, link):
+        frm = link.get_from_ids()
+        assert len(frm) == 1
+        frm = frm[0]
+        to = link.get_to_id()
+        if (frm, to) in self._duplicated_ids:
+            return
+        if (to, frm) in self._duplicated_ids:
+            return
+        self._duplicated_ids.append((frm, to))
 
     def _reassign_mergers(self):
         """Update all links such that any reference to a duplicate
@@ -131,6 +135,7 @@ class LinkManager(object):
                     l.set_to_id(o)
 
     def remove_link(self, link):
+        logging.getLogger(__name__).debug('removing link %s', link)
         if link in self._links:
             self._links.remove(link)
 
