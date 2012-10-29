@@ -1,4 +1,5 @@
 from collections import defaultdict
+from contextlib import contextmanager
 
 
 class CallbackProperty(object):
@@ -28,6 +29,7 @@ class CallbackProperty(object):
     def __init__(self, default=None):
         self._default = default
         self._callbacks = defaultdict(list)
+        self._disabled = defaultdict(bool)
         self._values = dict()
 
     def __get__(self, instance, type=None):
@@ -36,11 +38,29 @@ class CallbackProperty(object):
         return self._values.get(instance, self._default)
 
     def __set__(self, instance, value):
-        changed = self._values.get(instance, self._default) != value
+        changed = self.__get__(instance) != value
         self._values[instance] = value
         if changed:
-            for cback in self._callbacks[instance]:
-                cback(value)
+            self.notify(instance)
+
+    def notify(self, instance):
+        """Call all callback functions with the current value
+
+        :param instance: The instance to consider
+        """
+        if self._disabled[instance]:
+            return
+        value = self.__get__(instance)
+        for cback in self._callbacks[instance]:
+            cback(value)
+
+    def disable(self, instance):
+        """Disable callbacks for a specific instance"""
+        self._disabled[instance] = True
+
+    def enable(self, instance):
+        """Enable previously-disabled callbacks for a specific instance"""
+        self._disabled[instance] = False
 
     def add_callback(self, instance, func):
         """Add a callback to a specific instance that manages this property
@@ -97,3 +117,60 @@ def remove_callback(instance, prop, callback):
     if not isinstance(p, CallbackProperty):
         raise TypeError("%s is not a CallbackProperty" % prop)
     p.remove_callback(instance, callback)
+
+
+@contextmanager
+def delay_callback(instance, *props):
+    """Delay any callbacks from a callback property
+
+    This is a context manager. Within the context block, no callbacks
+    will be issued. Each callback will be called once on exit
+
+    :param instance: An instance object with CallbackProperties
+
+    :param props: One or more properties within instance to delay
+    :type prop: str
+    """
+    vals = []
+    for prop in props:
+        p = getattr(type(instance), prop)
+        if not isinstance(p, CallbackProperty):
+            raise TypeError("%s is not a CallbackProperty" % prop)
+        vals.append(p.__get__(instance))
+        p.disable(instance)
+
+    yield
+
+    for v, prop in zip(vals, props):
+        p = getattr(type(instance), prop)
+        assert isinstance(p, CallbackProperty)
+        p.enable(instance)
+        if p.__get__(instance) != v:
+            p.notify(instance)
+
+
+@contextmanager
+def ignore_callback(instance, *props):
+    """Temporarily ignore any callbacks from a callback property
+
+    This is a context manager. Within the context block, no callbacks
+    will be issued. In contrast with delay_callback, no callbakcs
+    will be called on exiting the context manager
+
+    :param instance: An instance object with CallbackProperties
+
+    :param props: One or more properties within instance to delay
+    :type prop: str
+    """
+    for prop in props:
+        p = getattr(type(instance), prop)
+        if not isinstance(p, CallbackProperty):
+            raise TypeError("%s is not a CallbackProperty" % prop)
+        p.disable(instance)
+
+    yield
+
+    for prop in props:
+        p = getattr(type(instance), prop)
+        assert isinstance(p, CallbackProperty)
+        p.enable(instance)
