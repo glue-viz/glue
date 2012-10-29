@@ -1,3 +1,5 @@
+from functools import partial
+
 from PyQt4 import QtGui
 from PyQt4.QtCore import Qt
 
@@ -6,17 +8,53 @@ from ... import core
 from ...clients.scatter_client import ScatterClient
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import RectangleMode, CircleMode, PolyMode
+from ...core.callback_property import add_callback
 
 from ..ui.scatterwidget import Ui_ScatterWidget
 from .data_viewer import DataViewer
 from .mpl_widget import MplWidget
+from ..widget_properties import ButtonProperty, FloatLineProperty
 from ..qtutil import pretty_number
 
 WARN_SLOW = 1000000  # max number of points which render quickly
 
 
+def connect_bool_button(client, prop, widget):
+    add_callback(client, prop, widget.setChecked)
+    widget.toggled.connect(partial(setattr, client, prop))
+
+
+def connect_float_edit(client, prop, widget):
+    v = QtGui.QDoubleValidator(None)
+    v.setDecimals(4)
+    widget.setValidator(v)
+
+    def update_prop():
+        val = widget.text()
+        try:
+            setattr(client, prop, float(val))
+        except ValueError:
+            setattr(client, prop, 0)
+
+    def update_widget(val):
+        widget.setText(pretty_number(val))
+
+    add_callback(client, prop, update_widget)
+    widget.editingFinished.connect(update_prop)
+    update_widget(getattr(client, prop))
+
+
 class ScatterWidget(DataViewer):
     LABEL = "Scatter Plot"
+
+    xlog = ButtonProperty('ui.xLogCheckBox')
+    ylog = ButtonProperty('ui.yLogCheckBox')
+    xflip = ButtonProperty('ui.xFlipCheckBox')
+    yflip = ButtonProperty('ui.yFlipCheckBox')
+    xmin = FloatLineProperty('ui.xmin')
+    xmax = FloatLineProperty('ui.xmax')
+    ymin = FloatLineProperty('ui.ymin')
+    ymax = FloatLineProperty('ui.ymax')
 
     def __init__(self, data, parent=None):
         super(ScatterWidget, self).__init__(data, parent)
@@ -38,16 +76,6 @@ class ScatterWidget(DataViewer):
         self.make_toolbar()
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
-        self._setup_limit_editors()
-
-    def _setup_limit_editors(self):
-        v = QtGui.QDoubleValidator(None)
-        v.setDecimals(4)
-        self.ui.xmin.setValidator(v)
-        self.ui.xmax.setValidator(v)
-        self.ui.ymin.setValidator(v)
-        self.ui.ymax.setValidator(v)
-        self._update_limit_labels()
 
     def _tweak_geometry(self):
         self.central_widget.resize(600, 400)
@@ -57,80 +85,20 @@ class ScatterWidget(DataViewer):
         ui = self.ui
         cl = self.client
 
-        ui.xLogCheckBox.toggled.connect(cl.set_xlog)
-        ui.yLogCheckBox.toggled.connect(cl.set_ylog)
-        ui.xFlipCheckBox.toggled.connect(cl.set_xflip)
-        ui.yFlipCheckBox.toggled.connect(cl.set_yflip)
+        connect_bool_button(cl, 'xlog', ui.xLogCheckBox)
+        connect_bool_button(cl, 'ylog', ui.yLogCheckBox)
+        connect_bool_button(cl, 'xflip', ui.xFlipCheckBox)
+        connect_bool_button(cl, 'yflip', ui.yFlipCheckBox)
+
         ui.xAxisComboBox.currentIndexChanged.connect(self.update_xatt)
         ui.yAxisComboBox.currentIndexChanged.connect(self.update_yatt)
         ui.swapAxes.clicked.connect(self.swap_axes)
         ui.snapLimits.clicked.connect(cl.snap)
-        ui.xmin.editingFinished.connect(self._update_limits)
-        ui.xmax.editingFinished.connect(self._update_limits)
-        ui.ymin.editingFinished.connect(self._update_limits)
-        ui.ymax.editingFinished.connect(self._update_limits)
-        self.central_widget.canvas.mpl_connect('draw_event',
-                                               self._update_limit_labels)
 
-    @property
-    def xmin(self):
-        return float(self.ui.xmin.text())
-
-    @xmin.setter
-    def xmin(self, value):
-        self.ui.xmin.setText(str(value))
-        self._update_limits()
-
-    @property
-    def xmax(self):
-        return float(self.ui.xmin.text())
-
-    @xmax.setter
-    def xmax(self, value):
-        self.ui.xmax.setText(str(value))
-        self._update_limits()
-
-    @property
-    def ymin(self):
-        return float(self.ui.ymin.text())
-
-    @ymin.setter
-    def ymin(self, value):
-        self.ui.ymin.setText(str(value))
-        self._update_limits()
-
-    @property
-    def ymax(self):
-        return float(self.ui.ymax.text())
-
-    @ymax.setter
-    def ymax(self, value):
-        self.ui.ymax.setText(str(value))
-        self._update_limits()
-
-    def _update_limits(self, *args):
-        xlo = self.ui.xmin.text()
-        xhi = self.ui.xmax.text()
-        ylo = self.ui.ymin.text()
-        yhi = self.ui.ymax.text()
-        lims = [xlo, xhi, ylo, yhi]
-        for i, l in enumerate(lims):
-            try:
-                lims[i] = float(l)
-            except ValueError:
-                lims[i] = 0
-
-        self.client.axes.set_xlim((lims[0], lims[1]))
-        self.client.axes.set_ylim((lims[2], lims[3]))
-        self.central_widget.canvas.draw()
-
-    def _update_limit_labels(self, *args):
-        xlo, xhi = pretty_number(self.client.axes.get_xlim())
-        ylo, yhi = pretty_number(self.client.axes.get_ylim())
-        self.ui.xmin.setText(xlo)
-        self.ui.xmax.setText(xhi)
-        self.ui.ymin.setText(ylo)
-        self.ui.ymax.setText(yhi)
+        connect_float_edit(cl, 'xmin', ui.xmin)
+        connect_float_edit(cl, 'xmax', ui.xmax)
+        connect_float_edit(cl, 'ymin', ui.ymin)
+        connect_float_edit(cl, 'ymax', ui.ymax)
 
     def _choose_add_data(self):
         choices = dict([(d.label, d) for d in self._collection])
@@ -268,13 +236,13 @@ class ScatterWidget(DataViewer):
         combo = self.ui.xAxisComboBox
         component_id = combo.itemData(combo.currentIndex())
         assert isinstance(component_id, core.data.ComponentID)
-        self.client.set_xdata(component_id)
+        self.client.xatt = component_id
 
     def update_yatt(self, index):
         combo = self.ui.yAxisComboBox
         component_id = combo.itemData(combo.currentIndex())
         assert isinstance(component_id, core.data.ComponentID)
-        self.client.set_ydata(component_id)
+        self.client.yatt = component_id
 
     def _update_window_title(self):
         data = self.client.data

@@ -1,6 +1,5 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 from distutils.version import LooseVersion
-from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt
 
 import pytest
@@ -23,10 +22,21 @@ class TestScatterWidget(object):
         self.collect = core.data_collection.DataCollection(list(self.data))
         self.widget = ScatterWidget(self.collect)
         self.connect_to_hub()
-        self.widget.options_widget().show()
 
     def teardown_method(self, method):
-        self.widget.options_widget().close()
+        self.assert_widget_synced()
+
+    def assert_widget_synced(self):
+        cl = self.widget.client
+        w = self.widget
+        assert w.xmin == cl.xmin
+        assert w.xmax == cl.xmax
+        assert w.xlog == cl.xlog
+        assert w.ylog == cl.ylog
+        assert w.xflip == cl.xflip
+        assert w.yflip == cl.yflip
+        assert w.ymin == cl.ymin
+        assert w.ymax == cl.ymax
 
     def connect_to_hub(self):
         self.widget.register_to_hub(self.hub)
@@ -49,6 +59,8 @@ class TestScatterWidget(object):
         """
         client = self.widget.client
         x, y = client.artists[layer][0].get_data()
+        assert x.size > 0
+        assert y.size > 0
         xmin = x.min()
         xmax = x.max()
         ymin = y.min()
@@ -59,7 +71,7 @@ class TestScatterWidget(object):
         """ Return the plot limits
         Output format [xmin, xmax], [ymin, ymax]
         """
-        ax = self.widget.client.ax
+        ax = self.widget.client.axes
         xlim = ax.get_xlim()
         ylim = ax.get_ylim()
         return xlim, ylim
@@ -68,7 +80,6 @@ class TestScatterWidget(object):
         """Assert that points of a layer are within plot limits """
         xydata = self.plot_data(layer)
         xylimits = self.plot_limits()
-
         assert xydata[0][0] >= xylimits[0][0]
         assert xydata[1][0] >= xylimits[1][0]
         assert xydata[0][1] <= xylimits[0][1]
@@ -101,30 +112,30 @@ class TestScatterWidget(object):
 
     def test_flip_x(self):
         layer = self.add_layer_via_method()
-        QTest.mouseClick(self.widget.ui.xFlipCheckBox, Qt.LeftButton)
-        assert self.widget.client.is_xflip()
-        QTest.mouseClick(self.widget.ui.xFlipCheckBox, Qt.LeftButton)
-        assert not self.widget.client.is_xflip()
+        self.widget.xflip = True
+        assert self.widget.client.xflip
+        self.widget.xflip = False
+        assert not self.widget.client.xflip
 
     def test_flip_y(self):
         layer = self.add_layer_via_method()
-        QTest.mouseClick(self.widget.ui.yFlipCheckBox, Qt.LeftButton)
-        assert self.widget.client.is_yflip()
-        QTest.mouseClick(self.widget.ui.yFlipCheckBox, Qt.LeftButton)
-        assert not self.widget.client.is_yflip()
+        self.widget.yflip = True
+        assert self.widget.client.yflip
+        self.widget.yflip = False
+        assert not self.widget.client.yflip
 
     def test_log_x(self):
         layer = self.add_layer_via_method()
-        QTest.mouseClick(self.widget.ui.xLogCheckBox, Qt.LeftButton)
-        assert self.widget.client.is_xlog()
-        QTest.mouseClick(self.widget.ui.xLogCheckBox, Qt.LeftButton)
-        assert not self.widget.client.is_xlog()
+        self.widget.xlog = True
+        assert self.widget.client.xlog
+        self.widget.xlog = False
+        assert not self.widget.client.xlog
 
     def test_log_y(self):
-        QTest.mouseClick(self.widget.ui.yLogCheckBox, Qt.LeftButton)
-        assert self.widget.client.is_ylog()
-        QTest.mouseClick(self.widget.ui.yLogCheckBox, Qt.LeftButton)
-        assert not self.widget.client.is_ylog()
+        self.widget.ylog = True
+        assert self.widget.client.ylog
+        self.widget.ylog = False
+        assert not self.widget.client.ylog
 
     def test_double_add_ignored(self):
         layer = self.add_layer_via_method()
@@ -171,16 +182,53 @@ class TestScatterWidget(object):
 
     def test_set_limits(self):
         l1 = self.add_layer_via_method(0)
-        self.widget.xmin = 1
-        self.widget.xmax = 2
-        self.widget.ymin = 3
-        self.widget.ymax = 4
-        assert self.widget.client.axes.get_xlim() == (1, 2)
-        assert self.widget.client.axes.get_ylim() == (3, 4)
-        assert float(self.widget.ui.xmin.text()) == 1
-        assert float(self.widget.ui.xmax.text()) == 2
-        assert float(self.widget.ui.ymin.text()) == 3
-        assert float(self.widget.ui.ymax.text()) == 4
+        w = self.widget
+        c = self.widget.client
+        ax = self.widget.client.axes
+
+        print w.xmin, w.xmax, w.ymin, w.ymax
+        print c.xmin, c.xmax, c.ymin, c.ymax
+        print ax.get_xlim(), ax.get_ylim()
+
+        self.widget.xmax = 20
+        print w.xmin, w.xmax, w.ymin, w.ymax
+        print c.xmin, c.xmax, c.ymin, c.ymax
+        print ax.get_xlim(), ax.get_ylim()
+
+        self.widget.xmin = 10
+        print w.xmin, w.xmax, w.ymin, w.ymax
+        print c.xmin, c.xmax, c.ymin, c.ymax
+        print ax.get_xlim(), ax.get_ylim()
+
+        self.widget.ymax = 40
+        print w.xmin, w.xmax, w.ymin, w.ymax
+        print c.xmin, c.xmax, c.ymin, c.ymax
+        print ax.get_xlim(), ax.get_ylim()
+
+        self.widget.ymin = 30
+        print w.xmin, w.xmax, w.ymin, w.ymax
+        print c.xmin, c.xmax, c.ymin, c.ymax
+        print ax.get_xlim(), ax.get_ylim()
+
+        assert self.widget.client.axes.get_xlim() == (10, 20)
+        assert self.widget.client.axes.get_ylim() == (30, 40)
+        assert float(self.widget.ui.xmin.text()) == 10
+        assert float(self.widget.ui.xmax.text()) == 20
+        assert float(self.widget.ui.ymin.text()) == 30
+        assert float(self.widget.ui.ymax.text()) == 40
+
+    def test_widget_props_synced_with_client(self):
+
+        self.widget.client.xmax = 100
+        assert self.widget.xmax == 100
+        self.widget.client.ymax = 200
+        assert self.widget.ymax == 200
+
+        self.widget.client.xmin = 10
+        assert self.widget.xmin == 10
+
+        self.widget.client.ymin = 30
+        assert self.widget.ymin == 30
 
     @pytest.mark.xfail("LooseVersion(mpl_version) <= LooseVersion('1.1.0')")
     def test_labels_sync_with_plot_limits(self):
