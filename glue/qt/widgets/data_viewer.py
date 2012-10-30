@@ -32,6 +32,7 @@ class DataViewer(QMainWindow, HubListener):
         self.setAcceptDrops(True)
         self.setAnimated(False)
         self._toolbars = []
+        self._warn_close = True
         self.setContentsMargins(2, 2, 2, 2)
 
     def register_to_hub(self, hub):
@@ -81,23 +82,34 @@ class DataViewer(QMainWindow, HubListener):
             down to the MDI area """
         event.accept()
 
+    def close(self, warn=True):
+        self._warn_close = warn
+        super(DataViewer, self).close()
+        self._warn_close = True
+
     def closeEvent(self, event):
         """ Call unregister on window close """
-        # ask for confirmation
-        if not os.environ.get('GLUE_TESTING'):
+        if not self._confirm_close():
+            event.ignore()
+            return
+
+        if self._hub is not None:
+            self.unregister(self._hub)
+        super(DataViewer, self).closeEvent(event)
+
+    def _confirm_close(self):
+        """Ask for close confirmation
+
+        :rtype: bool. True if user wishes to close. False otherwise
+        """
+        if self._warn_close and (not os.environ.get('GLUE_TESTING')):
             buttons = QMessageBox.Ok | QMessageBox.Cancel
             dialog = QMessageBox.warning(self, "Confirm Close",
                                          "Do you want to close this window?",
                                          buttons=buttons,
                                          defaultButton=QMessageBox.Cancel)
-
-            if dialog != QMessageBox.Ok:
-                event.ignore()
-                return
-
-        if self._hub is not None:
-            self.unregister(self._hub)
-        super(DataViewer, self).closeEvent(event)
+            return dialog == QMessageBox.Ok
+        return True
 
     def _confirm_large_data(self, data):
         warn_msg = ("WARNING: Data set has %i points, and may render slowly."
