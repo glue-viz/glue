@@ -1,4 +1,4 @@
-from PyQt4.QtGui import (QTreeWidgetItem,
+from PyQt4.QtGui import (QTreeWidgetItem, QPainter,
                          QPixmap, QTreeWidgetItemIterator, QIcon,
                          QItemSelectionModel
                          )
@@ -6,6 +6,7 @@ from PyQt4.QtCore import Qt
 
 from .. import qtutil
 from ... import core
+from .. import glue_qt_resources
 
 
 class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
@@ -247,6 +248,23 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
     def unregister(self, hub):
         super(DataCollectionView, self).unregister(hub)
         self.data_collection.unregister(hub)
+
+    def paintEvent(self, event):
+        super(DataCollectionView, self).paintEvent(event)
+        if self.topLevelItemCount() != 0:
+            return
+        painter = QPainter(self.viewport())
+        font = painter.font()
+        font.setPointSize(14)
+        painter.setFont(font)
+        painter.setRenderHint(painter.Antialiasing)
+        rect = event.rect()
+        rect.setBottom(rect.bottom() - 30)
+        painter.drawText(rect, Qt.AlignLeft | Qt.AlignBottom,
+                         "  Load Data")
+        x = 10
+        y = event.rect().bottom() - 30
+        painter.drawPixmap(x, y, QPixmap(':icons/glue_down_arrow.png'))
 
 
 def _color_icon(color, size=20, alpha=1.0):
