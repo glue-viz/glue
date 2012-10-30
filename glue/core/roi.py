@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib.nxutils import points_inside_poly
 from matplotlib.patches import Polygon, Rectangle, Ellipse
-from matplotlib.transforms import IdentityTransform
+from matplotlib.transforms import IdentityTransform, blended_transform_factory
 
 np.seterr(all='ignore')
 
@@ -9,7 +9,7 @@ from .exceptions import UndefinedROI
 
 __all__ = ['Roi', 'RectangularROI', 'CircularROI', 'PolygonalROI',
            'AbstractMplRoi', 'MplRectangularROI', 'MplCircularROI',
-           'MplPolygonalROI']
+           'MplPolygonalROI', 'MplXRangeROI', 'MplYRangeROI']
 
 PATCH_COLOR = '#FFFF00'
 
@@ -135,6 +135,64 @@ class RectangularROI(Roi):
                 [self.ymin, self.ymin, self.ymax, self.ymax, self.ymin]
         else:
             return [], []
+
+
+class RangeROI(Roi):
+    def __init__(self, orientation):
+        """:param orientation: 'x' or 'y'. Sets which axis to range"""
+        super(RangeROI, self).__init__()
+        if orientation not in ['x', 'y']:
+            raise TypeError("Orientation must be one of 'x', 'y'")
+
+        self.min = None
+        self.max = None
+        self.ori = orientation
+
+    def __str__(self):
+        if self.defined():
+            return "%0.3f < %s < %0.3f" % (self.min, self.ori,
+                                           self.max)
+        else:
+            return "Undefined %s" % type(self).__name__
+
+    def range(self):
+        return self.min, self.max
+
+    def set_range(self, lo, hi):
+        self.min, self.max = lo, hi
+
+    def contains(self, x, y):
+        if not self.defined():
+            raise UndefinedROI()
+
+        coord = x if self.ori == 'x' else y
+        return (coord > self.min) & (coord < self.max)
+
+    def reset(self):
+        self.min = None
+        self.max = None
+
+    def defined(self):
+        return self.min is not None and self.max is not None
+
+    def to_polygon(self):
+        if self.defined():
+            on = [self.min, self.max, self.max, self.min, self.min]
+            off = [-1e100, -1e100, 1e100, 1e100, -1e100]
+            x, y = (on, off) if (self.ori == 'x') else (off, on)
+            return x, y
+        else:
+            return [], []
+
+
+class XRangeROI(RangeROI):
+    def __init__(self):
+        super(XRangeROI, self).__init__('x')
+
+
+class YRangeROI(RangeROI):
+    def __init__(self):
+        super(YRangeROI, self).__init__('y')
 
 
 class CircularROI(Roi):
@@ -334,6 +392,9 @@ class AbstractMplRoi(object):  # pragma: no cover
         self._ax = ax
         self._roi = self._roi_factory()
 
+    def _draw(self):
+        self._ax.figure.canvas.draw()
+
     def _roi_factory(self):
         raise NotImplementedError()
 
@@ -418,9 +479,6 @@ class MplRectangularROI(AbstractMplRoi):
         self._patch.set_visible(False)
         self._draw()
 
-    def _draw(self):
-        self._ax.figure.canvas.draw()
-
     def _sync_patch(self):
         if self._roi.defined():
             corner = self._roi.corner()
@@ -437,6 +495,126 @@ class MplRectangularROI(AbstractMplRoi):
 
     def __str__(self):
         return "MPL Rectangle: %s" % self._patch
+
+
+class MplXRangeROI(AbstractMplRoi):
+
+    def __init__(self, ax):
+        """
+        :param ax: A matplotlib Axes object to attach the graphical ROI to
+        """
+
+        AbstractMplRoi.__init__(self, ax)
+
+        self._mid_selection = False
+        self._xi = None
+
+        self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
+                          'alpha': 0.3}
+
+        trans = blended_transform_factory(self._ax.transData,
+                                          self._ax.transAxes)
+        self._patch = Rectangle((0., 0.), 1., 1., transform=trans)
+        self._patch.set_zorder(100)
+        self._ax.add_patch(self._patch)
+        self._sync_patch()
+
+    def _roi_factory(self):
+        return XRangeROI()
+
+    def start_selection(self, event):
+        if event.inaxes != self._ax:
+            return
+
+        self._roi.reset()
+        self._roi.set_range(event.xdata, event.xdata)
+        self._xi = event.xdata
+        self._mid_selection = True
+        self._sync_patch()
+
+    def update_selection(self, event):
+        if not self._mid_selection or event.inaxes != self._ax:
+            return
+        self._roi.set_range(min(event.xdata, self._xi),
+                            max(event.xdata, self._xi))
+        self._sync_patch()
+
+    def finalize_selection(self, event):
+        self._mid_selection = False
+        self._patch.set_visible(False)
+        self._draw()
+
+    def _sync_patch(self):
+        if self._roi.defined():
+            rng = self._roi.range()
+            self._patch.set_xy((rng[0], 0))
+            self._patch.set_width(rng[1] - rng[0])
+            self._patch.set_height(1)
+            self._patch.set(**self.plot_opts)
+            self._patch.set_visible(True)
+        else:
+            self._patch.set_visible(False)
+        self._draw()
+
+
+class MplYRangeROI(AbstractMplRoi):
+
+    def __init__(self, ax):
+        """
+        :param ax: A matplotlib Axes object to attach the graphical ROI to
+        """
+
+        AbstractMplRoi.__init__(self, ax)
+
+        self._mid_selection = False
+        self._xi = None
+
+        self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
+                          'alpha': 0.3}
+
+        trans = blended_transform_factory(self._ax.transAxes,
+                                          self._ax.transData)
+        self._patch = Rectangle((0., 0.), 1., 1., transform=trans)
+        self._patch.set_zorder(100)
+        self._ax.add_patch(self._patch)
+        self._sync_patch()
+
+    def _roi_factory(self):
+        return YRangeROI()
+
+    def start_selection(self, event):
+        if event.inaxes != self._ax:
+            return
+
+        self._roi.reset()
+        self._roi.set_range(event.ydata, event.ydata)
+        self._xi = event.ydata
+        self._mid_selection = True
+        self._sync_patch()
+
+    def update_selection(self, event):
+        if not self._mid_selection or event.inaxes != self._ax:
+            return
+        self._roi.set_range(min(event.ydata, self._xi),
+                            max(event.ydata, self._xi))
+        self._sync_patch()
+
+    def finalize_selection(self, event):
+        self._mid_selection = False
+        self._patch.set_visible(False)
+        self._draw()
+
+    def _sync_patch(self):
+        if self._roi.defined():
+            rng = self._roi.range()
+            self._patch.set_xy((0, rng[0]))
+            self._patch.set_height(rng[1] - rng[0])
+            self._patch.set_width(1)
+            self._patch.set(**self.plot_opts)
+            self._patch.set_visible(True)
+        else:
+            self._patch.set_visible(False)
+        self._draw()
 
 
 class MplCircularROI(AbstractMplRoi):

@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 from mock import MagicMock
 
 from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI,
-                   MplCircularROI, MplRectangularROI, MplPolygonalROI)
+                   MplCircularROI, MplRectangularROI, MplPolygonalROI,
+                   XRangeROI, MplXRangeROI, YRangeROI, MplYRangeROI)
 
 from .. import roi as r
 
@@ -87,6 +88,88 @@ class TestRectangle(object):
         """ str method should not crash """
         self.roi.update_limits(1, 2, 3, 4)
         assert type(str(self.roi)) == str
+
+
+class TestXRange(object):
+    def test_undefined_on_init(self):
+        assert not XRangeROI().defined()
+
+    def test_str(self):
+        roi = XRangeROI()
+        assert str(roi) == "Undefined XRangeROI"
+
+        roi.set_range(1, 2)
+        assert str(roi) == "1.000 < x < 2.000"
+
+    def test_reset(self):
+        roi = XRangeROI()
+        roi.set_range(1, 2)
+        assert roi.defined()
+        roi.reset()
+        assert not roi.defined()
+
+    def test_contains(self):
+        roi = XRangeROI()
+        roi.set_range(1, 3)
+        x = np.array([0, 1, 2, 3])
+        y = np.array([-np.inf, 100, 200, 0])
+        np.testing.assert_array_equal(roi.contains(x, y),
+                                      [False, False, True, False])
+
+    def test_contains_undefined(self):
+        roi = XRangeROI()
+        with pytest.raises(UndefinedROI):
+            roi.contains(1, 2)
+
+    def test_to_polygon(self):
+        roi = XRangeROI()
+        assert roi.to_polygon() == ([], [])
+        roi.set_range(1, 2)
+        x, y = roi.to_polygon()
+        np.testing.assert_array_equal(x, [1, 2, 2, 1, 1])
+        np.testing.assert_array_equal(y,
+                                      [-1e100, -1e100, 1e100, 1e100, -1e100])
+
+
+class TestYRange(object):
+    def test_undefined_on_init(self):
+        assert not YRangeROI().defined()
+
+    def test_str(self):
+        roi = YRangeROI()
+        assert str(roi) == "Undefined YRangeROI"
+
+        roi.set_range(1, 2)
+        assert str(roi) == "1.000 < y < 2.000"
+
+    def test_reset(self):
+        roi = YRangeROI()
+        roi.set_range(1, 2)
+        assert roi.defined()
+        roi.reset()
+        assert not roi.defined()
+
+    def test_contains(self):
+        roi = YRangeROI()
+        roi.set_range(1, 3)
+        y = np.array([0, 1, 2, 3])
+        x = np.array([-np.inf, 100, 200, 0])
+        np.testing.assert_array_equal(roi.contains(x, y),
+                                      [False, False, True, False])
+
+    def test_contains_undefined(self):
+        roi = YRangeROI()
+        with pytest.raises(UndefinedROI):
+            roi.contains(1, 2)
+
+    def test_to_polygon(self):
+        roi = YRangeROI()
+        assert roi.to_polygon() == ([], [])
+        roi.set_range(1, 2)
+        x, y = roi.to_polygon()
+        np.testing.assert_array_equal(y, [1, 2, 2, 1, 1])
+        np.testing.assert_array_equal(x,
+                                      [-1e100, -1e100, 1e100, 1e100, -1e100])
 
 
 class TestCircle(object):
@@ -404,6 +487,70 @@ class TestRectangleMpl(TestMpl):
 
         self.assert_roi_correct(.5, 1, .5, 1)
         self.assert_patch_correct(.5, 1, .5, 1)
+
+
+class TestXRangeMpl(TestMpl):
+    def _roi_factory(self):
+        return MplXRangeROI(self.axes)
+
+    def test_proper_roi(self):
+        assert isinstance(self.roi._roi, XRangeROI)
+
+    def test_start_selection(self):
+        event = DummyEvent(1, 1, inaxes=self.axes)
+        self.roi.start_selection(event)
+        assert self.roi._roi.defined()
+
+    def test_update_selection(self):
+        ev0 = DummyEvent(1, 1, inaxes=self.axes)
+        ev1 = DummyEvent(2, 1, inaxes=self.axes)
+        self.roi.start_selection(ev0)
+        self.roi.update_selection(ev1)
+        assert self.roi._roi.defined()
+        assert self.roi._roi.range() == (1, 2)
+
+    def test_finalize_selection(self):
+        ev0 = DummyEvent(1, 1, inaxes=self.axes)
+        ev1 = DummyEvent(2, 1, inaxes=self.axes)
+        self.roi.start_selection(ev0)
+        self.roi.update_selection(ev1)
+        self.roi.finalize_selection(ev1)
+        assert self.roi._roi.defined()
+        assert self.roi._roi.range() == (1, 2)
+
+        assert not self.roi._patch.get_visible()
+
+
+class TestYRangeMpl(TestMpl):
+    def _roi_factory(self):
+        return MplYRangeROI(self.axes)
+
+    def test_proper_roi(self):
+        assert isinstance(self.roi._roi, YRangeROI)
+
+    def test_start_selection(self):
+        event = DummyEvent(1, 1, inaxes=self.axes)
+        self.roi.start_selection(event)
+        assert self.roi._roi.defined()
+
+    def test_update_selection(self):
+        ev0 = DummyEvent(1, 1, inaxes=self.axes)
+        ev1 = DummyEvent(1, 2, inaxes=self.axes)
+        self.roi.start_selection(ev0)
+        self.roi.update_selection(ev1)
+        assert self.roi._roi.defined()
+        assert self.roi._roi.range() == (1, 2)
+
+    def test_finalize_selection(self):
+        ev0 = DummyEvent(1, 1, inaxes=self.axes)
+        ev1 = DummyEvent(1, 2, inaxes=self.axes)
+        self.roi.start_selection(ev0)
+        self.roi.update_selection(ev1)
+        self.roi.finalize_selection(ev1)
+        assert self.roi._roi.defined()
+        assert self.roi._roi.range() == (1, 2)
+
+        assert not self.roi._patch.get_visible()
 
 
 class TestCircleMpl(TestMpl):
