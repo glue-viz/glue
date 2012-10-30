@@ -16,8 +16,10 @@ class TestScatterWidget(object):
         self.hub = core.hub.Hub()
         self.d1 = core.Data(x=[1, 2, 3], y=[2, 3, 4],
                             z=[3, 4, 5], w=[4, 5, 6])
+        self.d1.label = 'd1'
         self.d2 = core.Data(x=[1, 2, 3], y=[2, 3, 4],
                             z=[3, 4, 5], w=[4, 5, 6])
+        self.d2.label = 'd2'
         self.data = [self.d1, self.d2]
         self.collect = core.data_collection.DataCollection(list(self.data))
         self.widget = ScatterWidget(self.collect)
@@ -29,14 +31,14 @@ class TestScatterWidget(object):
     def assert_widget_synced(self):
         cl = self.widget.client
         w = self.widget
-        assert w.xmin == cl.xmin
-        assert w.xmax == cl.xmax
+        assert abs(w.xmin - cl.xmin) < 1e-3
+        assert abs(w.xmax - cl.xmax) < 1e-3
         assert w.xlog == cl.xlog
         assert w.ylog == cl.ylog
         assert w.xflip == cl.xflip
         assert w.yflip == cl.yflip
-        assert w.ymin == cl.ymin
-        assert w.ymax == cl.ymax
+        assert abs(w.ymin - cl.ymin) < 1e-3
+        assert abs(w.ymax - cl.ymax) < 1e-3
 
     def connect_to_hub(self):
         self.widget.register_to_hub(self.hub)
@@ -256,3 +258,27 @@ class TestScatterWidget(object):
         l1 = self.add_layer_via_method()
         cid = l1.add_component(l1[l1.components[0]], 'testing')
         self.assert_component_present('testing')
+
+    def test_swap_axes(self):
+        l1 = self.add_layer_via_method()
+        cl = self.widget.client
+        cl.xlog, cl.xflip = True, True
+        cl.ylog, cl.yflip = False, False
+
+        x, y = cl.xatt, cl.yatt
+
+        self.widget.swap_axes()
+        assert (cl.xlog, cl.xflip) == (False, False)
+        assert (cl.ylog, cl.yflip) == (True, True)
+        assert (cl.xatt, cl.yatt) == (y, x)
+
+    def test_hidden(self):
+        l1 = self.add_layer_via_method()
+        xcombo = self.widget.ui.xAxisComboBox
+
+        self.widget.hidden = False
+        assert xcombo.count() == 4
+        self.widget.hidden = True
+        assert xcombo.count() == 6
+        self.widget.hidden = False
+        assert xcombo.count() == 4
