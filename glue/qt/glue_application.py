@@ -49,7 +49,6 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._create_terminal()
         self._connect()
         self._new_tab()
-        self._welcome_window()
         self._update_plot_dashboard(None)
 
     def _setup_ui(self):
@@ -160,7 +159,6 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
     def _add_to_current_tab(self, new_widget, label=None):
         page = self.current_tab
         sub = QMdiSubWindow()
-
         sub.setWidget(new_widget)
         sub.resize(new_widget.size())
         if label:
@@ -178,6 +176,15 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
                             core.message.ErrorMessage,
                             handler=self._report_error)
         self._ui.layerWidget.setup(self._data, self._hub)
+
+        def sethelp(*args):
+            model = self._ui.layerWidget.layerTree.model()
+            self.current_tab.show_help = model.rowCount() > 0
+
+        model = self._ui.layerWidget.layerTree.model()
+        model.rowsInserted.connect(sethelp)
+        model.rowsRemoved.connect(sethelp)
+
         self._data.register_to_hub(self._hub)
         self.tab_widget.tabCloseRequested.connect(self._close_tab)
 
@@ -418,20 +425,6 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._terminal.show()
         button = self._terminal_button
         button.setArrowType(Qt.UpArrow)
-
-    def _welcome_window(self):
-        widget = QLabel(self)
-        pm = QPixmap(':icons/glue_welcome.png')
-        pm = pm.scaledToHeight(400, mode=Qt.SmoothTransformation)
-        widget.setPixmap(pm)
-        widget.show()
-        widget.resize(pm.size())
-        sub = self._add_to_current_tab(widget, label='Getting Started')
-
-        def do_close(win):
-            sub.close()
-
-        self.current_tab.subWindowActivated.connect(do_close)
 
     def start(self):
         self.show()
