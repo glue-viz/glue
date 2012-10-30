@@ -2,7 +2,7 @@ from PyQt4 import QtGui
 from PyQt4.QtCore import Qt
 
 from ... import core
-from .. import glue_qt_resources
+from .. import glue_qt_resources  # pylint: disable=W0611
 
 
 class GlueMdiArea(QtGui.QMdiArea):

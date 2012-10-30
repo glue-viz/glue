@@ -3,7 +3,7 @@ import sys
 
 from PyQt4.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                          QMenu, QMdiSubWindow, QAction, QMessageBox,
-                         QFileDialog, QLabel, QPixmap,
+                         QFileDialog,
                          QToolButton, QSplitter, QVBoxLayout, QWidget)
 from PyQt4.QtCore import Qt
 

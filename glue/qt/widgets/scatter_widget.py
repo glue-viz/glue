@@ -9,7 +9,7 @@ from ...clients.scatter_client import ScatterClient
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import (RectangleMode, CircleMode,
                           PolyMode, HRangeMode, VRangeMode)
-from ...core.callback_property import add_callback, delay_callback
+from ...core.callback_property import add_callback
 
 from ..ui.scatterwidget import Ui_ScatterWidget
 from .data_viewer import DataViewer

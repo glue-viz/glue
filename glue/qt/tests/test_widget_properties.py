@@ -1,4 +1,4 @@
-from ..widget_properties import (WidgetProperty, ButtonProperty,
+from ..widget_properties import (ButtonProperty,
                                  FloatLineProperty)
 
 from PyQt4.QtGui import QCheckBox, QLineEdit

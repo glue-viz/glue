@@ -1,13 +1,12 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
-from distutils.version import LooseVersion
-from PyQt4.QtCore import Qt
+from distutils.version import LooseVersion  # pylint:disable=W0611
 
 import pytest
 
 from ..scatter_widget import ScatterWidget
 from .... import core
 
-from matplotlib import __version__ as mpl_version
+from matplotlib import __version__ as mpl_version  # pylint:disable=W0611
 
 
 class TestScatterWidget(object):

@@ -6,7 +6,7 @@ from PyQt4.QtCore import Qt
 
 from .. import qtutil
 from ... import core
-from .. import glue_qt_resources
+from .. import glue_qt_resources  # pylint: disable=W0611
 
 
 class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):

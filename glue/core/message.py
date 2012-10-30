@@ -2,8 +2,6 @@
 .. module::glue.message
 
 """
-from inspect import getmro
-
 __all__ = ['Message', 'ErrorMessage', 'SubsetMessage', 'SubsetCreateMessage',
            'SubsetUpdateMessage', 'SubsetDeleteMessage', 'DataMessage',
            'DataAddComponentMessage', 'DataUpdateMessage',

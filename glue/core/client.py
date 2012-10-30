@@ -8,8 +8,6 @@ from .message import (DataUpdateMessage,
                       SubsetDeleteMessage,
                       DataCollectionDeleteMessage)
 
-from . import hub
-
 __all__ = ['Client', 'BasicClient']
 
 

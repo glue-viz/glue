@@ -1,7 +1,7 @@
 import os
 
-from PyQt4.QtGui import (QMainWindow, QMessageBox, QWidget,
-                         QPalette)
+from PyQt4.QtGui import (QMainWindow, QMessageBox, QWidget)
+
 from PyQt4.QtCore import Qt
 
 from ...core.hub import HubListener

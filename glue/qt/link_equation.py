@@ -3,8 +3,6 @@ from inspect import getargspec
 from PyQt4.QtGui import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit
 from PyQt4.QtGui import QSpacerItem, QSizePolicy
 
-from PyQt4.QtCore import Qt
-
 from .ui.link_equation import Ui_LinkEquation
 from .. import core
 from ..core.odict import OrderedDict

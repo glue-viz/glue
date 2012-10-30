@@ -1,4 +1,3 @@
-from PyQt4.QtGui import QListView
 from PyQt4.QtCore import Qt
 
 from mock import MagicMock

@@ -1,6 +1,5 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 from mock import MagicMock, patch
-import PyQt4
 import numpy as np
 from numpy.testing import assert_almost_equal
 

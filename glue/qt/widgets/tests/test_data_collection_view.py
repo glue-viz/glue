@@ -3,8 +3,6 @@ from ..data_collection_view import DataCollectionView
 from .... import core
 from ....tests import example_data
 
-from PyQt4.QtGui import QApplication
-
 
 class Printer(core.hub.HubListener):
     def register_to_hub(self, hub):
