@@ -102,3 +102,11 @@ class TestImageWidget(object):
         combo = self.widget.ui.attributeComboBox
         cids = [combo.itemText(i) for i in range(combo.count())]
         assert 'testing' in cids
+
+    def test_image_correct_on_init_if_first_attribute_hidden(self):
+        """Regression test for #127"""
+        self.im.components[0]._hidden = True
+        self.widget.add_data(self.im)
+        combo = self.widget.ui.attributeComboBox
+        index = combo.currentIndex()
+        assert self.widget.client.display_attribute is combo.itemData(index)

@@ -175,7 +175,7 @@ class ImageWidget(DataViewer):
     def set_attribute_combo(self, data):
         """ Update attribute combo box to reflect components in data"""
         combo = self.ui.attributeComboBox
-        combo.currentIndexChanged.disconnect(self.set_attribute)
+        combo.blockSignals(True)
         combo.clear()
         fields = data.visible_components
         index = 0
@@ -183,8 +183,9 @@ class ImageWidget(DataViewer):
             combo.addItem(f.label, userData=f)
             if f == self.client.display_attribute:
                 index = i
+        combo.blockSignals(False)
         combo.setCurrentIndex(index)
-        combo.currentIndexChanged.connect(self.set_attribute)
+        self.set_attribute(index)
 
     def set_slider(self, index):
         self.client.slice_ind = index
