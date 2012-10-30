@@ -8,6 +8,8 @@ from PyQt4.QtCore import pyqtSignal
 # Qt4Agg backend. It also inherits from QWidget
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as \
     FigureCanvas
+from matplotlib.backends.backend_qt4agg import FigureManagerQTAgg as \
+    FigureManager
 
 # Matplotlib Figure object
 from matplotlib.figure import Figure
@@ -31,12 +33,15 @@ class MplCanvas(FigureCanvas):
 
         # initialization of the canvas
         FigureCanvas.__init__(self, self.fig)
+
         # we define the widget as expandable
         FigureCanvas.setSizePolicy(self,
                                    QtGui.QSizePolicy.Expanding,
                                    QtGui.QSizePolicy.Expanding)
+
         # notify the system of updated policy
         FigureCanvas.updateGeometry(self)
+        self.manager = FigureManager(self, 0)
 
 
 class MplWidget(QtGui.QWidget):
