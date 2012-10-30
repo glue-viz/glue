@@ -6,28 +6,19 @@
 Glue Documentation
 ==================
 
-Glue is a Python framework to link visualizations of multiple related
+Glue is a Python library to link visualizations of multiple related
 datasets. It's goal is to let users easily inter-compare data across
 several files.
-
-Specifically, Glue tries to accomplish the following:
-
- * Provide the user with several modular visualizations for interacting with data (e.g. scatter plots, images, histograms, etc.)
- * Automatically convert between the coordinate spaces of different pieces of data
- * Permit users to define regions of interest, and have these propagate across data sets
- * Provide a sufficiently "pluggable" environment that Python programmers can customize Glue with new visulizations, data connections, etc.
-
-
-
-
-
 
 
 .. toctree::
    :maxdepth: 2
 
+   installation.rst
    getting_started.rst
-   tutorials.rst
+   gui_guide.rst
+   scripting_interface.rst
+   developer_guide.rst
    api.rst
 
 
@@ -37,4 +28,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
