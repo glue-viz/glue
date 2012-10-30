@@ -8,7 +8,7 @@ from ...core import message as msg
 from ...clients.histogram_client import HistogramClient
 from ..ui.histogramwidget import Ui_HistogramWidget
 from ..glue_toolbar import GlueToolbar
-from ..mouse_mode import RectangleMode
+from ..mouse_mode import HRangeMode
 from .data_viewer import DataViewer
 from .mpl_widget import MplWidget
 from ..qtutil import pretty_number
@@ -83,7 +83,7 @@ class HistogramWidget(DataViewer):
 
     def _mouse_modes(self):
         axes = self.client.axes
-        rect = RectangleMode(axes, release_callback=self.apply_roi)
+        rect = HRangeMode(axes, release_callback=self.apply_roi)
         return [rect]
 
     def apply_roi(self, mode):

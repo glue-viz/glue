@@ -7,7 +7,8 @@ from ... import core
 
 from ...clients.scatter_client import ScatterClient
 from ..glue_toolbar import GlueToolbar
-from ..mouse_mode import RectangleMode, CircleMode, PolyMode
+from ..mouse_mode import (RectangleMode, CircleMode,
+                          PolyMode, HRangeMode, VRangeMode)
 from ...core.callback_property import add_callback, delay_callback
 
 from ..ui.scatterwidget import Ui_ScatterWidget
@@ -125,9 +126,11 @@ class ScatterWidget(DataViewer):
     def _mouse_modes(self):
         axes = self.client.axes
         rect = RectangleMode(axes, release_callback=self.apply_roi)
+        xra = HRangeMode(axes, release_callback=self.apply_roi)
+        yra = VRangeMode(axes, release_callback=self.apply_roi)
         circ = CircleMode(axes, release_callback=self.apply_roi)
         poly = PolyMode(axes, release_callback=self.apply_roi)
-        return [rect, circ, poly]
+        return [rect, xra, yra, circ, poly]
 
     def apply_roi(self, mode):
         roi = mode.roi()

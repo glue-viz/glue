@@ -173,6 +173,32 @@ class PolyMode(RoiMode):
         self.shortcut = 'L'
 
 
+class HRangeMode(RoiMode):
+    """ Defines a Range ROI, accessible via the roi() method.
+    This class defines horizontal ranges"""
+    def __init__(self, axes, **kwargs):
+        super(HRangeMode, self).__init__(axes, **kwargs)
+        self.icon = QIcon(':icons/glue_xrange_select.png')
+        self.mode_id = 'X range'
+        self.action_text = 'X range'
+        self.tool_tip = 'Select a range of x values'
+        self._roi_tool = roi.MplXRangeROI(self._axes)
+        self.shortcut = 'H'
+
+
+class VRangeMode(RoiMode):
+    """ Defines a Range ROI, accessible via the roi() method.
+    This class defines vertical ranges"""
+    def __init__(self, axes, **kwargs):
+        super(VRangeMode, self).__init__(axes, **kwargs)
+        self.icon = QIcon(':icons/glue_yrange_select.png')
+        self.mode_id = 'Y range'
+        self.action_text = 'Y range'
+        self.tool_tip = 'Select a range of y values'
+        self._roi_tool = roi.MplYRangeROI(self._axes)
+        self.shortcut = 'V'
+
+
 class ContrastMode(MouseMode):
     """Uses right mouse button drags to set bias and contrast, ala DS9
 
