@@ -3,8 +3,10 @@ from functools import partial
 import numpy as np
 
 from PyQt4 import QtGui
+from PyQt4.QtCore import Qt
 
 from ...core import message as msg
+from ...core import Data
 from ...clients.histogram_client import HistogramClient
 from ..ui.histogramwidget import Ui_HistogramWidget
 from ..glue_toolbar import GlueToolbar
@@ -93,28 +95,37 @@ class HistogramWidget(DataViewer):
     def _update_attributes(self):
         combo = self.ui.attributeCombo
         component = self.component
-
+        combo.blockSignals(True)
         combo.clear()
 
-        data = [a.layer.data for a in self._container]
-
-        try:
-            combo.currentIndexChanged.disconnect()
-        except TypeError:
-            pass
-
-        for d in data:
+        model = QtGui.QStandardItemModel()
+        for d in self._data:
+            if d not in self._container:
+                continue
+            item = QtGui.QStandardItem(d.label)
+            item.setData(d, role=Qt.UserRole)
+            assert item.data(Qt.UserRole) is d
+            item.setFlags(item.flags() & ~Qt.ItemIsEnabled)
+            model.appendRow(item)
             for c in d.visible_components:
                 if not np.can_cast(d.dtype(c), np.float):
                     continue
-                combo.addItem("%s (%s)" % (c.label, d.label), userData=c)
+                item = QtGui.QStandardItem(c.label)
+                item.setData(c, role=Qt.UserRole)
+                model.appendRow(item)
+        combo.setModel(model)
 
-        combo.currentIndexChanged.connect(self._set_attribute_from_combo)
-        combo.currentIndexChanged.connect(self._update_minmax_labels)
+        #separators below data items
+        for i in range(combo.count()):
+            if isinstance(combo.itemData(i), Data):
+                combo.insertSeparator(i + 1)
+
+        combo.blockSignals(False)
+
         if component is not None:
             self.component = component
         else:
-            combo.setCurrentIndex(0)
+            combo.setCurrentIndex(2)  # skip first data + separator
         self._set_attribute_from_combo()
 
     @property

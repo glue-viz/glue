@@ -6,7 +6,7 @@ from .... import core
 
 
 def mock_data():
-    return core.Data(x=[1, 2, 3], y=[2, 3, 4])
+    return core.Data(label='d1', x=[1, 2, 3], y=[2, 3, 4])
 
 import os
 os.environ['GLUE_TESTING'] = 'True'
@@ -28,6 +28,22 @@ class TestHistogramWidget(object):
         self.widget.register_to_hub(hub)
         return hub
 
+    def assert_component_integrity(self, dc=None, widget=None):
+        dc = dc or self.collect
+        widget = widget or self.widget
+        combo = widget.ui.attributeCombo
+        row = 0
+        for data in dc:
+            if data not in widget._container:
+                continue
+            assert combo.itemText(row) == data.label
+            assert combo.itemData(row) is data
+            row += 2  # next row is separator
+            for c in data.visible_components:
+                assert combo.itemText(row) == c.label
+                assert combo.itemData(row) is c
+                row += 1
+
     def test_attribute_set_with_combo(self):
         self.widget.ui.attributeCombo.setCurrentIndex(1)
         obj = self.widget.ui.attributeCombo.itemData(1)
@@ -44,11 +60,7 @@ class TestHistogramWidget(object):
         assert self.widget.client.layer_present(d2)
         print list(self.widget.client._artists)
 
-        comps = set(c for d in self.collect for c in d.visible_components)
-        assert self.widget.ui.attributeCombo.count() == len(comps)
-        for i in range(self.widget.ui.attributeCombo.count()):
-            data = self.widget.ui.attributeCombo.itemData(i)
-            assert data in comps
+        self.assert_component_integrity()
 
     def test_double_add_ignored(self):
         self.widget.add_data(self.data)
@@ -116,7 +128,4 @@ class TestHistogramWidget(object):
         hub = self.set_up_hub()
         self.widget.add_data(self.data)
         self.data.add_component(self.data[self.data.components[0]], 'testing')
-        combo = self.widget.ui.attributeCombo
-        labels = [combo.itemText(i) for i in range(combo.count())]
-        labels = [l.split()[0] for l in labels]  # remove data reference
-        assert 'testing' in labels
+        self.assert_component_integrity()
