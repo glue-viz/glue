@@ -126,13 +126,7 @@ class LinkManager(object):
         componentID is replaced with the original"""
         for l in self._links:
             for o, d in self._duplicated_ids:
-                frm = l.get_from_ids()
-                if d in frm:
-                    idx = frm.index(d)
-                    frm[idx] = o
-                    l.set_from_ids(frm)
-                if l.get_to_id() is d:
-                    l.set_to_id(o)
+                l.replace_ids(d, o)
 
     def remove_link(self, link):
         logging.getLogger(__name__).debug('removing link %s', link)

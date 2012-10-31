@@ -203,3 +203,35 @@ class TestLinkManager(object):
             d2[d1.get_pixel_component_id(0)], [[0, 0], [1, 1]])
         np.testing.assert_array_equal(
             d1[d2.get_pixel_component_id(1)], [[0, 1], [0, 1]])
+
+    def test_binary_links_correct_with_mergers(self):
+        """Regression test. BinaryComponentLinks should work after mergers"""
+        from ..link_helpers import LinkSame
+
+        d1 = Data(x=[1, 2, 3], y=[2, 3, 4])
+        d2 = Data(u=[2, 3, 4], v=[3, 4, 5])
+
+        z = d1.id['x'] + d1.id['y']
+        d1.add_component_link(z, 'z')
+
+        dc = DataCollection([d1, d2])
+        dc.add_link(LinkSame(d2.id['u'], d1.id['x']))
+        assert d1.find_component_id('x') is None
+
+        np.testing.assert_array_equal(d1['z'], [3, 5, 7])
+
+    def test_complex_links_correct_with_mergers(self):
+        """Regression test. multi-level links should work after mergers"""
+        from ..link_helpers import LinkSame
+
+        d1 = Data(x=[1, 2, 3], y=[2, 3, 4])
+        d2 = Data(u=[2, 3, 4], v=[3, 4, 5])
+
+        z = d1.id['x'] + d1.id['y'] + 5
+        d1.add_component_link(z, 'z')
+
+        dc = DataCollection([d1, d2])
+        dc.add_link(LinkSame(d2.id['u'], d1.id['x']))
+        assert d1.find_component_id('x') is None
+
+        np.testing.assert_array_equal(d1['z'], [8, 10, 12])
