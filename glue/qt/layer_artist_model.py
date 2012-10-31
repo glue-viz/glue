@@ -62,7 +62,10 @@ class LayerArtistModel(QAbstractListModel):
         result = super(LayerArtistModel, self).flags(index)
         if index.isValid():
             result = (result | Qt.ItemIsEditable | Qt.ItemIsDragEnabled |
-                      Qt.ItemIsDropEnabled | Qt.ItemIsUserCheckable)
+                      Qt.ItemIsUserCheckable)
+        else:  # only drop between rows, where index isn't valid
+            result = (result | Qt.ItemIsDropEnabled)
+
         return result
 
     def setData(self, index, value, role):
@@ -99,32 +102,37 @@ class LayerArtistModel(QAbstractListModel):
         return PyMimeData(arts)
 
     def supportedDropActions(self):
-        return Qt.CopyAction | Qt.MoveAction
+        return Qt.MoveAction
 
     def dropMimeData(self, data, action, row, column, index):
         data = data.data(PyMimeData.MIME_TYPE)
         #list of a single artist. Move
         if isinstance(data, list) and len(data) == 1 and \
                 isinstance(data[0], LayerArtist) and data[0] in self.artists:
-            self.move_artist(data[0], index.row())
+            self.move_artist(data[0], row)
             return True
 
         return False
 
     def move_artist(self, artist, row):
-        """Move a artist to a different location, and update the zorder"""
+        """Move an artist before the entry in row
+
+        Row could be the end of the list (-> put it at the end)
+        """
+        if len(self.artists) < 2:  # can't rearrange lenght 0 or 1 list
+            return
+
         try:
             loc = self.artists.index(artist)
         except ValueError:
             return
 
         dest = row
-        if (loc <= row):
-            dest += 1
         if not self.beginMoveRows(QModelIndex(), loc, loc,
                                   QModelIndex(), dest):
             return
-
+        if dest >= loc:
+            row -= 1
         self.artists.pop(loc)
         self.artists.insert(row, artist)
         self._update_zorder()
