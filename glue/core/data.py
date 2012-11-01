@@ -328,7 +328,7 @@ class Data(object):
         """Lookup the dtype for the data associated with a ComponentID"""
 
         #grab a small piece of data
-        ind = np.unravel_index([0], self.shape)
+        ind = tuple([slice(0, 1)] * self.ndim)
         arr = self[cid, ind]
         return arr.dtype
 
