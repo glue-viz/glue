@@ -142,7 +142,7 @@ class DuplicateAction(LayerAction):
 class DeleteAction(LayerAction):
     _title = "Delete Layer"
     _tooltip = "Delete the selected data and/or subsets"
-    _shortcut = QKeySequence.Cut
+    _shortcut = Qt.Key_Backspace
 
     def _can_trigger(self):
         selection = self.selected_layers()

@@ -18,6 +18,7 @@ from .qtutil import (PyMimeData, edit_layer_color,
                      layer_artist_icon)
 from ..clients.layer_artist import LayerArtist, LayerArtistContainer
 from . import glue_qt_resources
+from .widgets.style_dialog import StyleDialog
 
 
 class LayerArtistModel(QAbstractListModel):
@@ -166,6 +167,9 @@ class LayerArtistModel(QAbstractListModel):
         self.endInsertRows()
         self.rowsInserted.emit(self.index(row), row, row)
 
+    def row_artist(self, row):
+        return self.artists[row]
+
     def edit_size(self, row):
         index = self.index(row)
         if not index.isValid():
@@ -218,7 +222,7 @@ class LayerArtistView(QListView):
         rows = self.selectionModel().selectedRows()
         if len(rows) != 1:
             return
-        return self.artists[rows[0].row()]
+        return self.model().row_artist(rows[0].row())
 
     def single_selection(self):
         return self.current_artist() is not None
@@ -237,22 +241,32 @@ class LayerArtistView(QListView):
         self.setPalette(p)
 
     def _create_actions(self):
-        act = QAction('size', self)
+        act = QAction('Properties...', self)
+        act.triggered.connect(lambda: StyleDialog.edit_style(
+            self.current_artist().layer))
+        self.addAction(act)
+
+        act = QAction('   size...', self)
         act.triggered.connect(
             lambda: self.model().edit_size(self.current_row()))
         self.addAction(act)
 
-        act = QAction('color', self)
+        act = QAction('   color...', self)
         act.triggered.connect(
             lambda: self.model().edit_color(self.current_row()))
         self.addAction(act)
 
-        act = QAction('symbol', self)
+        act = QAction('   symbol...', self)
         act.triggered.connect(
             lambda: self.model().edit_symbol(self.current_row()))
         self.addAction(act)
 
-        act = QAction('remove', self)
+        act = QAction('', self)
+        act.setSeparator(True)
+        self.addAction(act)
+
+        act = QAction('Remove', self)
+        act.setShortcut(Qt.Key_Backspace)
         act.triggered.connect(
             lambda: self.model().removeRow(self.current_row()))
         self.addAction(act)

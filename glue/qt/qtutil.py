@@ -302,6 +302,15 @@ POINT_ICONS = {'o': ':icons/glue_circle_point.png',
                '+': ':icons/glue_cross.png'}
 
 
+def symbol_icon(symbol, color=None):
+    bm = QBitmap(POINT_ICONS.get(symbol,
+                                 ':icons/glue_circle_point.png'))
+    if color is not None:
+        return QIcon(tint_pixmap(bm, color))
+
+    return QIcon(bm)
+
+
 def layer_icon(layer):
     """Create a QIcon for a Data or Subset instance
 
