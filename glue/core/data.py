@@ -632,10 +632,24 @@ class Data(object):
         :param old: :class:`~glue.core.data.ComponentID`. The old componentID
         :param new: :class:`~glue.core.data.ComponentID`. The new componentID
         """
-        if old not in self._components:
-            raise KeyError("ComponentID not in data set: %s" % old)
-        self._components[new] = self._components.pop(old)
-        if self.hub is not None:
+        changed = False
+        if old in self._components:
+            self._components[new] = self._components.pop(old)
+            changed = True
+        try:
+            index = self._pixel_component_ids.index(old)
+            self._pixel_component_ids[index] = new
+            changed = True
+        except ValueError:
+            pass
+        try:
+            index = self._world_component_ids.index(old)
+            self._world_component_ids[index] = new
+            changed = True
+        except ValueError:
+            pass
+
+        if changed and self.hub is not None:
             self.hub.broadcast(ComponentsChangedMessage(self))
 
     def __str__(self):
