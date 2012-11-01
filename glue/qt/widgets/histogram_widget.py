@@ -7,6 +7,7 @@ from PyQt4.QtCore import Qt
 
 from ...core import message as msg
 from ...core import Data
+from ...core.callback_property import add_callback
 from ...clients.histogram_client import HistogramClient
 from ..ui.histogramwidget import Ui_HistogramWidget
 from ..glue_toolbar import GlueToolbar
@@ -16,6 +17,11 @@ from .mpl_widget import MplWidget
 from ..qtutil import pretty_number
 
 WARN_SLOW = 10000000
+
+
+def connect_int_spin(client, prop, widget):
+    add_callback(client, prop, widget.setValue)
+    widget.valueChanged.connect(partial(setattr, client, prop))
 
 
 class HistogramWidget(DataViewer):
@@ -56,7 +62,7 @@ class HistogramWidget(DataViewer):
             self._set_attribute_from_combo)
         ui.attributeCombo.currentIndexChanged.connect(
             self._update_minmax_labels)
-        ui.binSpinBox.valueChanged.connect(partial(setattr, cl, 'nbins'))
+        connect_int_spin(cl, 'nbins', ui.binSpinBox)
         ui.normalized_box.toggled.connect(partial(setattr, cl, 'normed'))
         ui.autoscale_box.toggled.connect(partial(setattr, cl, 'autoscale'))
         ui.cumulative_box.toggled.connect(partial(setattr, cl, 'cumulative'))

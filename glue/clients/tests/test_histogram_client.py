@@ -185,6 +185,7 @@ class TestHistogramClient(object):
         self.client.add_layer(self.data)
         self.client.set_component(self.data.components[0])
         self.client.axes.set_ylim(0, .1)
+        self.client.autoscale = False
         self.client.autoscale = True
         self.assert_autoscaled()
 
