@@ -168,7 +168,7 @@ class HistogramClient(Client):
         if len(data) == 0:
             return
         dx = np.mean([d.size for d in data])
-        self.nbins = min(max(5, (dx / 1000) ** (1. / 3.) * 30), 400)
+        self.nbins = min(max(5, (dx / 1000) ** (1. / 3.) * 30), 100)
 
     def sync_all(self):
         for a in self._artists:
