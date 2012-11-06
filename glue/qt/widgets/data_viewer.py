@@ -8,6 +8,7 @@ from ...core.hub import HubListener
 from ...core.data import Data
 from ...core.subset import Subset
 from ..layer_artist_model import QtLayerArtistContainer, LayerArtistView
+from .. import get_qapp
 
 
 class DataViewer(QMainWindow, HubListener):
@@ -21,7 +22,7 @@ class DataViewer(QMainWindow, HubListener):
     def __init__(self, data, parent=None):
         QMainWindow.__init__(self, parent)
         HubListener.__init__(self)
-
+        self.setWindowIcon(get_qapp().windowIcon())
         self._data = data
         self._hub = None
         self._container = QtLayerArtistContainer()

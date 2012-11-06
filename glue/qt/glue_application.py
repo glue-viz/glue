@@ -12,6 +12,7 @@ from .. import env
 from ..qt import get_qapp
 from .ui.glue_application import Ui_GlueApplication
 from .decorators import set_cursor, messagebox_on_error
+from ..core.data_factories import load_data
 
 from .actions import act
 from .qtutil import pick_class, data_wizard, GlueTabBar
@@ -27,6 +28,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
     def __init__(self, data_collection=None, hub=None):
         super(GlueApplication, self).__init__()
         self.app = get_qapp()
+        self.setWindowIcon(self.app.windowIcon())
         self.setAttribute(Qt.WA_DeleteOnClose)
         self._actions = {}
         self._terminal = None
@@ -172,6 +174,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self.current_tab.tileSubWindows()
 
     def _connect(self):
+        self.setAcceptDrops(True)
         self._hub.subscribe(self,
                             core.message.ErrorMessage,
                             handler=self._report_error)
@@ -236,9 +239,14 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         if sys.platform == 'darwin':
             mbar.addMenu('Help')
 
-    def _load_data(self):
-        for data in data_wizard():
-            self._data.append(data)
+    def _load_data_interactive(self):
+        for d in data_wizard():
+            self._data.append(d)
+
+    @messagebox_on_error("Could not load data")
+    def _load_data(self, path):
+        d = load_data(path)
+        self._data.append(d)
 
     def _create_actions(self):
         """ Create and connect actions, store in _actions dict """
@@ -247,7 +255,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         a = act("Open Data Set", self,
                 tip="Open a new data set",
                 shortcut=QKeySequence.Open)
-        a.triggered.connect(self._load_data)
+        a.triggered.connect(self._load_data_interactive)
         self._actions['data_new'] = a
 
         a = act("New Data Viewer", self,
@@ -442,3 +450,14 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
     def keyReleaseEvent(self, event):
         """Unset any temporary edit mode"""
         self._mode_toolbar.unset_mode()
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        urls = event.mimeData().urls()
+        for url in urls:
+            self._load_data(url.path())

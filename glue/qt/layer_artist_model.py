@@ -267,6 +267,7 @@ class LayerArtistView(QListView):
 
         act = QAction('Remove', self)
         act.setShortcut(Qt.Key_Backspace)
+        act.setShortcutContext(Qt.WidgetShortcut)
         act.triggered.connect(
             lambda: self.model().removeRow(self.current_row()))
         self.addAction(act)

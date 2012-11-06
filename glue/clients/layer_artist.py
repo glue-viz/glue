@@ -329,7 +329,6 @@ class HistogramLayerArtist(LayerArtist):
         self.x = np.array([])
         self._y = np.array([])
 
-
     def has_patches(self):
         return len(self.artists) > 0
 
