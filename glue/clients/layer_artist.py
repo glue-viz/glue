@@ -13,6 +13,22 @@ from ..core.subset import Subset
 from .util import view_cascade, get_extent
 
 
+class ChangedTrigger(object):
+    """Sets an instance's _changed attribute to True on update"""
+    def __init__(self, default=None):
+        self._default = default
+        self._vals = {}
+
+    def __get__(self, inst, type=None):
+        return self._vals.get(inst, self._default)
+
+    def __set__(self, inst, value):
+        changed = value != self.__get__(inst)
+        self._vals[inst] = value
+        if changed:
+            inst._changed = True
+
+
 class LayerArtist(object):
     def __init__(self, layer, axes):
         """Create a new LayerArtist
@@ -27,6 +43,9 @@ class LayerArtist(object):
         self._zorder = 0
         self.view = None
         self.artists = []
+
+        self._changed = True
+        self._state = None  # cache of subset state, if relevant
 
     def redraw(self):
         self._axes.figure.canvas.draw()
@@ -67,6 +86,16 @@ class LayerArtist(object):
             except ValueError:  # already removed
                 pass
         self.artists = []
+
+    def _check_subset_state_changed(self):
+        """Checks to see if layer is a subset and, if so,
+        if it has changed subset state. Sets _changed flag to True if so"""
+        if not isinstance(self.layer, Subset):
+            return
+        state = self.layer.subset_state
+        if state is not self._state:
+            self._changed = True
+            self._state = state
 
     def _sync_style(self):
         style = self.layer.style
@@ -173,24 +202,33 @@ class SubsetImageLayerArtist(LayerArtist):
 
 
 class ScatterLayerArtist(LayerArtist):
+    xatt = ChangedTrigger()
+    yatt = ChangedTrigger()
+
     def __init__(self, layer, ax):
         super(ScatterLayerArtist, self).__init__(layer, ax)
-        self.xatt = None
-        self.yatt = None
         self.emphasis = None
 
-    def update(self, view=None):
+    def _recalc(self):
         self.clear()
         assert len(self.artists) == 0
-        has_emph = False
 
         try:
             x = self.layer[self.xatt].ravel()
             y = self.layer[self.yatt].ravel()
         except IncompatibleAttribute:
-            return
+            return False
         self.artists = self._axes.plot(x, y)
+        return True
 
+    def update(self, view=None):
+        self._check_subset_state_changed()
+        if self._changed:
+            if not self._recalc():
+                return
+            self._changed = False
+
+        has_emph = False
         if self.emphasis is not None:
             try:
                 s = Subset(self.layer.data)
@@ -275,21 +313,6 @@ class LayerArtistContainer(object):
         return [a for a in self.artists if a.layer is layer]
 
 
-class ChangedTrigger(object):
-    def __init__(self, default=None):
-        self._default = default
-        self._vals = {}
-
-    def __get__(self, inst, type=None):
-        return self._vals.get(inst, self._default)
-
-    def __set__(self, inst, value):
-        changed = value != self.__get__(inst)
-        self._vals[inst] = value
-        if changed:
-            inst._changed = True
-
-
 class HistogramLayerArtist(LayerArtist):
     lo = ChangedTrigger(0)
     hi = ChangedTrigger(1)
@@ -306,9 +329,6 @@ class HistogramLayerArtist(LayerArtist):
         self.x = np.array([])
         self._y = np.array([])
 
-        # set by descriptors
-        self._changed = True
-        self._state = None
 
     def has_patches(self):
         return len(self.artists) > 0
@@ -369,16 +389,6 @@ class HistogramLayerArtist(LayerArtist):
             a.set_height(y)
             x, y = a.get_xy()
             a.set_xy((x, bottom))
-
-    def _check_subset_state_changed(self):
-        """Checks to see if layer is a subset and, if so,
-        if it has changed subset state. Sets _changed flag to True if so"""
-        if not isinstance(self.layer, Subset):
-            return
-        state = self.layer.subset_state
-        if state is not self._state:
-            self._changed = True
-            self._state = state
 
     def update(self, view=None):
         """Sync plot.
