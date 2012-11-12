@@ -168,10 +168,38 @@ class ImageLayerArtist(LayerArtist):
         self.norm = None
 
     def _sync_style(self):
-        style = self.layer.style
         for artist in self.artists:
             artist.set_zorder(self.zorder)
             artist.set_visible(self.visible and self.enabled)
+
+
+class RGBImageLayerArtist(ImageLayerArtist):
+    def __init__(self, layer, ax):
+        super(RGBImageLayerArtist, self).__init__(layer, ax)
+        self.r = None
+        self.g = None
+        self.b = None
+
+    def update(self, view):
+        self.clear()
+        if self.r is None or self.g is None or self.b is None:
+            return
+
+        views = view_cascade(self.layer, view)
+        artists = []
+        for v in views:
+            extent = get_extent(v)
+            v = v[1:]  # discard component suggestion
+            r, g, b = self.r[v], self.g[v], self.b[v]
+            image = np.dstack((r, g, b))
+            self.norm = self.norm or self._default_norm(image)
+            artists.append(self._axes.imshow(image,
+                                             norm=self.norm,
+                                             interpolation='nearest',
+                                             origin='lower',
+                                             extent=extent, zorder=0))
+        self.artists = artists
+        self._sync_style()
 
 
 class SubsetImageLayerArtist(LayerArtist):
