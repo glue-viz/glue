@@ -18,6 +18,7 @@ from .. import qtutil
 from .custom_component_widget import CustomComponentWidget
 from ..actions import act as _act
 from ...core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode
+from .subset_facet import SubsetFacet
 
 
 @core.decorators.singleton
@@ -95,6 +96,18 @@ class PlotAction(LayerAction):
         self.app.new_data_viewer(data)
 
 
+class FacetAction(LayerAction):
+    """Add a sequence of subsets which facet a ComponentID"""
+    _title = "Create faceted subsets"
+    _tooltip = "Create faceted subsets"
+
+    def _can_trigger(self):
+        return len(self._layer_tree.data_collection) > 0
+
+    def _do_action(self):
+        SubsetFacet.facet(self._layer_tree.data_collection, self._layer_tree)
+
+
 class NewAction(LayerAction):
     _title = "New Subset"
     _tooltip = "Create a new subset for the selected data"
@@ -142,7 +155,7 @@ class DuplicateAction(LayerAction):
 class DeleteAction(LayerAction):
     _title = "Delete Layer"
     _tooltip = "Delete the selected data and/or subsets"
-    _shortcut = QKeySequence.Cut
+    _shortcut = Qt.Key_Backspace
 
     def _can_trigger(self):
         selection = self.selected_layers()
@@ -530,6 +543,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
         self._actions['clear'] = ClearAction(self)
         self._actions['duplicate'] = DuplicateAction(self)
         self._actions['delete'] = DeleteAction(self)
+        self._actions['facet'] = FacetAction(self)
 
         # combination actions
         separator = QAction("Subset Combination", tree)

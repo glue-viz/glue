@@ -1,15 +1,13 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
-from PyQt4.QtGui import QApplication
 
 from ....core import Hub
 from ....core.data_collection import DataCollection
-from ..data_viewer import DataViewer
 from ..histogram_widget import HistogramWidget
 from ..scatter_widget import ScatterWidget
 from ..image_widget import ImageWidget
 
 import pytest
-from mock import MagicMock, patch
+from mock import MagicMock
 
 ALL_WIDGETS = [HistogramWidget, ScatterWidget, ImageWidget]
 

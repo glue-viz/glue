@@ -8,23 +8,22 @@ from ..core.exceptions import IncompatibleDataException, IncompatibleAttribute
 from ..core.edit_subset_mode import EditSubsetMode
 from .layer_artist import HistogramLayerArtist, LayerArtistContainer
 from .util import visible_limits
+from ..core.callback_property import CallbackProperty, add_callback
 
 
-class UpdateProperty(object):
+class UpdateProperty(CallbackProperty):
     """Descriptor that calls client's sync_all() method when changed"""
     def __init__(self, default, relim=False):
-        self._default = default
+        super(UpdateProperty, self).__init__(default)
         self.relim = relim
-        self._value = {}
-
-    def __get__(self, instance, type=None):
-        return self._value.get(instance, self._default)
 
     def __set__(self, instance, value):
         changed = value != self.__get__(instance)
-        self._value[instance] = value
+        super(UpdateProperty, self).__set__(instance, value)
+        if not changed:
+            return
         instance.sync_all()
-        if changed and self.relim:
+        if self.relim:
             instance._relim()
 
 
@@ -43,7 +42,7 @@ class HistogramClient(Client):
     normed = UpdateProperty(False)
     cumulative = UpdateProperty(False)
     autoscale = UpdateProperty(True)
-    nbins = UpdateProperty(10)
+    nbins = UpdateProperty(30)
     xlog = UpdateProperty(False, relim=True)
     ylog = UpdateProperty(False)
 
@@ -164,6 +163,13 @@ class HistogramClient(Client):
         self._axes.set_xlabel(xlabel)
         self._axes.set_ylabel(ylabel)
 
+    def _auto_nbin(self):
+        data = set(a.layer.data for a in self._artists)
+        if len(data) == 0:
+            return
+        dx = np.mean([d.size for d in data])
+        self.nbins = min(max(5, (dx / 1000) ** (1. / 3.) * 30), 100)
+
     def sync_all(self):
         for a in self._artists:
             a.lo, a.hi = self.xlimits
@@ -202,6 +208,7 @@ class HistogramClient(Client):
             The name of the new data component to plot
         """
         self._component = component
+        self._auto_nbin()
         self.sync_all()
         self._relim()
 

@@ -1,10 +1,12 @@
 from matplotlib.colors import ColorConverter
+from matplotlib import cm
+import numpy as np
 from PyQt4 import QtGui
 from PyQt4.QtCore import Qt
 from PyQt4.QtCore import QMimeData
 from PyQt4.QtGui import (QColor, QInputDialog, QColorDialog,
                          QListWidget, QTreeWidget, QPushButton, QMessageBox,
-                         QTabBar, QBitmap, QIcon, QPixmap)
+                         QTabBar, QBitmap, QIcon, QPixmap, QImage)
 
 from .decorators import set_cursor
 
@@ -302,6 +304,15 @@ POINT_ICONS = {'o': ':icons/glue_circle_point.png',
                '+': ':icons/glue_cross.png'}
 
 
+def symbol_icon(symbol, color=None):
+    bm = QBitmap(POINT_ICONS.get(symbol,
+                                 ':icons/glue_circle_point.png'))
+    if color is not None:
+        return QIcon(tint_pixmap(bm, color))
+
+    return QIcon(bm)
+
+
 def layer_icon(layer):
     """Create a QIcon for a Data or Subset instance
 
@@ -396,6 +407,32 @@ class GlueTabBar(QTabBar):
         index = self.tabAt(event.pos())
         if index >= 0:
             self.rename_tab(index)
+
+
+def cmap2pixmap(cmap, steps=50):
+    """Convert a maplotlib colormap into a QPixmap
+
+    :param cmap: The colormap to use
+    :type cmap: Matplotlib colormap instance (e.g. matplotlib.cm.gray)
+    :param steps: The number of color steps in the output. Default=50
+    :type steps: int
+
+    :rtype: QPixmap
+    """
+    sm = cm.ScalarMappable(cmap=cmap)
+    sm.norm.vmin = 0.0
+    sm.norm.vmax = 1.0
+    inds = np.linspace(0, 1, steps)
+    rgbas = sm.to_rgba(inds)
+    rgbas = [QColor(int(r * 255), int(g * 255),
+                    int(b * 255), int(a * 255)).rgba() for r, g, b, a in rgbas]
+    im = QImage(steps, 1, QImage.Format_Indexed8)
+    im.setColorTable(rgbas)
+    for i in range(steps):
+        im.setPixel(i, 0, i)
+    im = im.scaled(100, 100)
+    pm = QPixmap.fromImage(im)
+    return pm
 
 
 def pretty_number(numbers):

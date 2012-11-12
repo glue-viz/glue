@@ -40,14 +40,15 @@ __factories__ = []
 _default_factory = {}
 
 
-def load_data(path, factory):
+def load_data(path, factory=None):
     """Use a factory to load a file and assign a label
 
     :param path: Path to a file
     :type path: str
-    :param factory: factory function to use
+    :param factory: factory function to use. Defaults to auto_data
     :type factory: function
     """
+    factory = factory or auto_data
     d = factory(path)
     d.label = data_label(path)
     return d
@@ -126,14 +127,8 @@ def gridded_data(filename, format='auto', **kwargs):
         raise Exception("Unkonwn format: %s" % format)
 
     for component_name in arrays:
-        #XXX ALMA HACK
-        arr = arrays[component_name]
-        shp = arr.shape
-        if len(shp) == 4:
-            arr.shape = (shp[1], shp[2], shp[3])
         comp = Component(arrays[component_name])
         result.add_component(comp, component_name)
-
     return result
 
 

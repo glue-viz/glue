@@ -1,4 +1,4 @@
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtGui
 from functools import partial
 
 from ...core.edit_subset_mode import (EditSubsetMode, OrMode, AndNotMode,

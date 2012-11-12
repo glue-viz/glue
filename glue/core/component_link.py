@@ -115,6 +115,19 @@ class ComponentLink(object):
         """ The list of input ComponentIDs """
         return self._from
 
+    def replace_ids(self, old, new):
+        """Replace all references to an old ComponentID with references
+        to new
+
+        :parma old: ComponentID to replace
+        :param new: ComponentID to replace with
+        """
+        for i, f in enumerate(self._from):
+            if f is old:
+                self._from[i] = new
+        if self._to is old:
+            self._to = new
+
     def set_from_ids(self, _from):
         if len(_from) != len(self._from):
             raise ValueError("New ID list has the wrong length.")
@@ -227,6 +240,17 @@ class BinaryComponentLink(ComponentLink):
         to = ComponentID("")
         null = lambda *args: None
         super(BinaryComponentLink, self).__init__(from_, to, null)
+
+    def replace_ids(self, old, new):
+        super(BinaryComponentLink, self).replace_ids(old, new)
+        if self._left is old:
+            self._left = new
+        elif isinstance(self._left, ComponentLink):
+            self._left.replace_ids(old, new)
+        if self._right is old:
+            self._right = new
+        elif isinstance(self._right, ComponentLink):
+            self._right.replace_ids(old, new)
 
     def compute(self, data, view=None):
         l = self._left

@@ -1,4 +1,3 @@
-from PyQt4.QtGui import QListView
 from PyQt4.QtCore import Qt
 
 from mock import MagicMock
@@ -97,13 +96,57 @@ def test_flags():
 
     assert model.flags(model.index(0)) == (Qt.ItemIsEditable |
                                            Qt.ItemIsDragEnabled |
-                                           Qt.ItemIsDropEnabled |
                                            Qt.ItemIsEnabled |
                                            Qt.ItemIsSelectable |
                                            Qt.ItemIsUserCheckable)
+    assert model.flags(model.index(-1)) == (Qt.ItemIsDropEnabled)
 
 
-def test_move_artist():
+def test_move_artist_empty():
+    mgrs = []
+    model = LayerArtistModel(mgrs)
+    model.move_artist(None, 0)
+
+    assert mgrs == []
+
+
+def test_move_artist_single():
+    ax = MagicMock()
+    m0 = LayerArtist(Data(label="test 0"), ax)
+    mgrs = [m0]
+
+    model = LayerArtistModel(mgrs)
+    model.move_artist(m0, 0)
+    assert mgrs == [m0]
+    model.move_artist(m0, -1)
+    assert mgrs == [m0]
+    model.move_artist(m0, 1)
+    assert mgrs == [m0]
+    model.move_artist(m0, 2)
+    assert mgrs == [m0]
+
+
+def test_move_artist_two():
+    ax = MagicMock()
+    m0 = LayerArtist(Data(label="test 0"), ax)
+    m1 = LayerArtist(Data(label="test 1"), ax)
+    mgrs = [m0, m1]
+    model = LayerArtistModel(mgrs)
+
+    model.move_artist(m0, 0)
+    assert mgrs == [m0, m1]
+
+    model.move_artist(m0, 1)
+    assert mgrs == [m0, m1]
+
+    model.move_artist(m0, 2)
+    assert mgrs == [m1, m0]
+
+    model.move_artist(m0, 0)
+    assert mgrs == [m0, m1]
+
+
+def test_move_artist_three():
     ax = MagicMock()
     m0 = LayerArtist(Data(label='test 0'), ax)
     m1 = LayerArtist(Data(label='test 1'), ax)
@@ -111,25 +154,22 @@ def test_move_artist():
     mgrs = [m0, m1, m2]
     model = LayerArtistModel(mgrs)
 
-    model.move_artist(m0, 1)
-    print mgrs
-    assert mgrs == [m1, m0, m2]
-
-    model.move_artist(m0, 1)
-    print mgrs
-    assert mgrs == [m1, m0, m2]
-
     model.move_artist(m0, 0)
-    print mgrs
     assert mgrs == [m0, m1, m2]
 
-    model.move_artist(m2, 0)
-    print mgrs
-    assert mgrs == [m2, m0, m1]
+    model.move_artist(m0, 1)
+    assert mgrs == [m0, m1, m2]
 
-    model.move_artist(m1, 1)
-    print mgrs
-    assert mgrs == [m2, m1, m0]
+    model.move_artist(m0, 2)
+    assert mgrs == [m1, m0, m2]
+    model.move_artist(m0, 0)
+
+    model.move_artist(m0, 3)
+    assert mgrs == [m1, m2, m0]
+    model.move_artist(m0, 0)
+
+    model.move_artist(m2, 0)
+    assert mgrs == [m2, m0, m1]
 
 
 def test_move_updates_zorder():

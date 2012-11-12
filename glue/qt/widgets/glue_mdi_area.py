@@ -2,6 +2,7 @@ from PyQt4 import QtGui
 from PyQt4.QtCore import Qt
 
 from ... import core
+from .. import glue_qt_resources  # pylint: disable=W0611
 
 
 class GlueMdiArea(QtGui.QMdiArea):
@@ -23,6 +24,20 @@ class GlueMdiArea(QtGui.QMdiArea):
         self.setBackground(QtGui.QBrush(QtGui.QColor(250, 250, 250)))
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self._show_help = False
+
+    @property
+    def show_help(self):
+        return self._show_help
+
+    @show_help.setter
+    def show_help(self, value):
+        self._show_help = value
+        self.repaint()
+
+    def addSubWindow(self, sub):
+        super(GlueMdiArea, self).addSubWindow(sub)
+        self.repaint()
 
     def dragEnterEvent(self, event):
         """ Accept the event if it has an application/py_instance format """
@@ -48,3 +63,18 @@ class GlueMdiArea(QtGui.QMdiArea):
     def close(self):
         self.closeAllSubWindows()
         super(GlueMdiArea, self).close()
+
+    def paintEvent(self, event):
+        super(GlueMdiArea, self).paintEvent(event)
+        if len(self.subWindowList()) != 0 or (not self.show_help):
+            return
+
+        painter = QtGui.QPainter(self.viewport())
+        painter.setPen(QtGui.QColor(210, 210, 210))
+        font = painter.font()
+        font.setPointSize(48)
+        font.setWeight(font.Black)
+        painter.setFont(font)
+        rect = event.rect()
+        painter.drawText(rect, Qt.AlignHCenter | Qt.AlignVCenter,
+                         "Drag Data To Plot")

@@ -4,11 +4,10 @@ from mock import MagicMock
 import pytest
 
 from ..data import Data, Component, ComponentID, DerivedComponent
-from ..subset import SubsetState
 from ..hub import Hub, HubListener
 from ..data_collection import DataCollection
 from ..message import (Message, DataCollectionAddMessage,
-                       DataCollectionDeleteMessage, DataAddComponentMessage,
+                       DataCollectionDeleteMessage,
                        ComponentsChangedMessage)
 from ..component_link import ComponentLink
 

@@ -13,6 +13,22 @@ from ..core.subset import Subset
 from .util import view_cascade, get_extent
 
 
+class ChangedTrigger(object):
+    """Sets an instance's _changed attribute to True on update"""
+    def __init__(self, default=None):
+        self._default = default
+        self._vals = {}
+
+    def __get__(self, inst, type=None):
+        return self._vals.get(inst, self._default)
+
+    def __set__(self, inst, value):
+        changed = value != self.__get__(inst)
+        self._vals[inst] = value
+        if changed:
+            inst._changed = True
+
+
 class LayerArtist(object):
     def __init__(self, layer, axes):
         """Create a new LayerArtist
@@ -27,6 +43,9 @@ class LayerArtist(object):
         self._zorder = 0
         self.view = None
         self.artists = []
+
+        self._changed = True
+        self._state = None  # cache of subset state, if relevant
 
     def redraw(self):
         self._axes.figure.canvas.draw()
@@ -67,6 +86,16 @@ class LayerArtist(object):
             except ValueError:  # already removed
                 pass
         self.artists = []
+
+    def _check_subset_state_changed(self):
+        """Checks to see if layer is a subset and, if so,
+        if it has changed subset state. Sets _changed flag to True if so"""
+        if not isinstance(self.layer, Subset):
+            return
+        state = self.layer.subset_state
+        if state is not self._state:
+            self._changed = True
+            self._state = state
 
     def _sync_style(self):
         style = self.layer.style
@@ -139,10 +168,38 @@ class ImageLayerArtist(LayerArtist):
         self.norm = None
 
     def _sync_style(self):
-        style = self.layer.style
         for artist in self.artists:
             artist.set_zorder(self.zorder)
             artist.set_visible(self.visible and self.enabled)
+
+
+class RGBImageLayerArtist(ImageLayerArtist):
+    def __init__(self, layer, ax):
+        super(RGBImageLayerArtist, self).__init__(layer, ax)
+        self.r = None
+        self.g = None
+        self.b = None
+
+    def update(self, view):
+        self.clear()
+        if self.r is None or self.g is None or self.b is None:
+            return
+
+        views = view_cascade(self.layer, view)
+        artists = []
+        for v in views:
+            extent = get_extent(v)
+            v = v[1:]  # discard component suggestion
+            r, g, b = self.r[v], self.g[v], self.b[v]
+            image = np.dstack((r, g, b))
+            self.norm = self.norm or self._default_norm(image)
+            artists.append(self._axes.imshow(image,
+                                             norm=self.norm,
+                                             interpolation='nearest',
+                                             origin='lower',
+                                             extent=extent, zorder=0))
+        self.artists = artists
+        self._sync_style()
 
 
 class SubsetImageLayerArtist(LayerArtist):
@@ -173,24 +230,33 @@ class SubsetImageLayerArtist(LayerArtist):
 
 
 class ScatterLayerArtist(LayerArtist):
+    xatt = ChangedTrigger()
+    yatt = ChangedTrigger()
+
     def __init__(self, layer, ax):
         super(ScatterLayerArtist, self).__init__(layer, ax)
-        self.xatt = None
-        self.yatt = None
         self.emphasis = None
 
-    def update(self, view=None):
+    def _recalc(self):
         self.clear()
         assert len(self.artists) == 0
-        has_emph = False
 
         try:
             x = self.layer[self.xatt].ravel()
             y = self.layer[self.yatt].ravel()
         except IncompatibleAttribute:
-            return
+            return False
         self.artists = self._axes.plot(x, y)
+        return True
 
+    def update(self, view=None):
+        self._check_subset_state_changed()
+        if self._changed:
+            if not self._recalc():
+                return
+            self._changed = False
+
+        has_emph = False
         if self.emphasis is not None:
             try:
                 s = Subset(self.layer.data)
@@ -276,19 +342,20 @@ class LayerArtistContainer(object):
 
 
 class HistogramLayerArtist(LayerArtist):
+    lo = ChangedTrigger(0)
+    hi = ChangedTrigger(1)
+    nbins = ChangedTrigger(10)
+    xlog = ChangedTrigger(False)
+
     def __init__(self, layer, axes):
         super(HistogramLayerArtist, self).__init__(layer, axes)
-        self.lo = 0
-        self.hi = 1
-        self.nbins = 10
-        self.xlog = False
         self.ylog = False
         self.cumulative = False
-        self.att = None
         self.normed = False
 
         self.y = np.array([])
         self.x = np.array([])
+        self._y = np.array([])
 
     def has_patches(self):
         return len(self.artists) > 0
@@ -300,15 +367,19 @@ class HistogramLayerArtist(LayerArtist):
         super(HistogramLayerArtist, self).clear()
         self.x = np.array([])
         self.y = np.array([])
+        self._y = np.array([])
 
-    def update(self, view=None):
+    def _calculate_histogram(self):
+        """Recalculate the histogram, creating new patches"""
         self.clear()
         try:
             data = self.layer[self.att].ravel()
         except IncompatibleAttribute:
-            return
+            return False
+
         if data.size == 0:
             return
+
         if self.lo > np.nanmax(data) or self.hi < np.nanmin(data):
             return
         if self.xlog:
@@ -318,13 +389,51 @@ class HistogramLayerArtist(LayerArtist):
             rng = self.lo, self.hi
         nbinpatch = self._axes.hist(data,
                                     bins=self.nbins,
-                                    range=rng, log=self.ylog,
-                                    cumulative=self.cumulative,
-                                    normed=self.normed)
-        self.y, self.x, self.artists = nbinpatch
+                                    range=rng)
+        self._y, self.x, self.artists = nbinpatch
+        return True
+
+    def _scale_histogram(self):
+        """Modify height of bins to match ylog, cumulative, and norm"""
+        if self.x.size == 0:
+            return
+
+        y = self._y.astype(np.float)
+        dx = self.x[1] - self.x[0]
+        if self.normed:
+            div = y.sum() * dx
+            if div == 0:
+                div = 1
+            y /= div
+        if self.cumulative:
+            y = y.cumsum()
+            y /= y.max()
+
+        self.y = y
+        bottom = 0 if not self.ylog else 1e-100
+
+        for a, y in zip(self.artists, y):
+            a.set_height(y)
+            x, y = a.get_xy()
+            a.set_xy((x, bottom))
+
+    def update(self, view=None):
+        """Sync plot.
+
+        The _change flag tracks whether the histogram needs to be
+        recalculated. If not, the properties of the existing
+        artists are updated
+        """
+        self._check_subset_state_changed()
+        if self._changed:
+            if not self._calculate_histogram():
+                return
+            self._changed = False
+        self._scale_histogram()
         self._sync_style()
 
     def _sync_style(self):
+        """Update visual properties"""
         style = self.layer.style
         for artist in self.artists:
             artist.set_facecolor(style.color)

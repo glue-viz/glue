@@ -19,6 +19,7 @@ from .mpl_widget import MplWidget
 from ..ui.imagewidget import Ui_ImageWidget
 from .. import glue_qt_resources  # pylint: disable=W0611
 from ..decorators import set_cursor
+from ..qtutil import cmap2pixmap
 
 WARN_THRESH = 10000000  # warn when contouring large images
 
@@ -57,6 +58,8 @@ class ImageWidget(DataViewer):
         def act(name, cmap):
             a = QAction(name, self)
             a.activated.connect(partial(self.client.set_cmap, cmap))
+            pm = cmap2pixmap(cmap)
+            a.setIcon(QIcon(pm))
             return a
 
         self._cmaps = []
@@ -79,6 +82,7 @@ class ImageWidget(DataViewer):
 
         tb = QToolButton()
         tb.setWhatsThis("Set color scale")
+        tb.setToolTip("Set color scale")
         icon = QIcon(":icons/glue_rainbow.png")
         tb.setIcon(icon)
         tb.setPopupMode(QToolButton.InstantPopup)
@@ -214,7 +218,9 @@ class ImageWidget(DataViewer):
     def register_to_hub(self, hub):
         super(ImageWidget, self).register_to_hub(hub)
         self.client.register_to_hub(hub)
+
         dc_filt = lambda x: x.sender is self.client._data
+        layer_present_filter = lambda x: x.data in self.client.artists
 
         hub.subscribe(self,
                       core.message.DataCollectionAddMessage,
@@ -230,7 +236,8 @@ class ImageWidget(DataViewer):
                       )
         hub.subscribe(self,
                       core.message.ComponentsChangedMessage,
-                      handler=lambda x: self.set_attribute_combo(x.data))
+                      handler=lambda x: self.set_attribute_combo(x.data),
+                      filter=layer_present_filter)
 
     def unregister(self, hub):
         for obj in [self, self.client]:

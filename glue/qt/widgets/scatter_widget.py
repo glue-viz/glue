@@ -7,7 +7,8 @@ from ... import core
 
 from ...clients.scatter_client import ScatterClient
 from ..glue_toolbar import GlueToolbar
-from ..mouse_mode import RectangleMode, CircleMode, PolyMode
+from ..mouse_mode import (RectangleMode, CircleMode,
+                          PolyMode, HRangeMode, VRangeMode)
 from ...core.callback_property import add_callback
 
 from ..ui.scatterwidget import Ui_ScatterWidget
@@ -15,6 +16,7 @@ from .data_viewer import DataViewer
 from .mpl_widget import MplWidget
 from ..widget_properties import ButtonProperty, FloatLineProperty
 from ..qtutil import pretty_number
+
 
 WARN_SLOW = 1000000  # max number of points which render quickly
 
@@ -55,6 +57,7 @@ class ScatterWidget(DataViewer):
     xmax = FloatLineProperty('ui.xmax')
     ymin = FloatLineProperty('ui.ymin')
     ymax = FloatLineProperty('ui.ymax')
+    hidden = ButtonProperty('ui.hidden_attributes')
 
     def __init__(self, data, parent=None):
         super(ScatterWidget, self).__init__(data, parent)
@@ -92,6 +95,7 @@ class ScatterWidget(DataViewer):
 
         ui.xAxisComboBox.currentIndexChanged.connect(self.update_xatt)
         ui.yAxisComboBox.currentIndexChanged.connect(self.update_yatt)
+        ui.hidden_attributes.toggled.connect(lambda x: self._update_combos())
         ui.swapAxes.clicked.connect(self.swap_axes)
         ui.snapLimits.clicked.connect(cl.snap)
 
@@ -122,25 +126,51 @@ class ScatterWidget(DataViewer):
     def _mouse_modes(self):
         axes = self.client.axes
         rect = RectangleMode(axes, release_callback=self.apply_roi)
+        xra = HRangeMode(axes, release_callback=self.apply_roi)
+        yra = VRangeMode(axes, release_callback=self.apply_roi)
         circ = CircleMode(axes, release_callback=self.apply_roi)
         poly = PolyMode(axes, release_callback=self.apply_roi)
-        return [rect, circ, poly]
+        return [rect, xra, yra, circ, poly]
 
     def apply_roi(self, mode):
         roi = mode.roi()
         self.client.apply_roi(roi)
 
-    def update_combos(self, layer):
-        """ Update combo boxes to incorporate attribute fields in layer"""
-        layer_ids = self.client.plottable_attributes(layer, show_hidden=True)
+    def _update_combos(self):
+        """ Update combo boxes to current attribute fields"""
+        layer_ids = []
+        for l in self.client.data:
+            if not self.client.is_layer_present(l):
+                continue
+            for lid in self.client.plottable_attributes(
+                    l, show_hidden=self.hidden):
+                if lid not in layer_ids:
+                    layer_ids.append(lid)
+
         xcombo = self.ui.xAxisComboBox
         ycombo = self.ui.yAxisComboBox
 
+        xcombo.blockSignals(True)
+        ycombo.blockSignals(True)
+
+        xid = xcombo.itemData(xcombo.currentIndex())
+        yid = ycombo.itemData(ycombo.currentIndex())
+
+        xcombo.clear()
+        ycombo.clear()
+
         for lid in layer_ids:
-            if lid not in self.unique_fields:
-                xcombo.addItem(lid.label, userData=lid)
-                ycombo.addItem(lid.label, userData=lid)
-            self.unique_fields.add(lid)
+            xcombo.addItem(lid.label, userData=lid)
+            ycombo.addItem(lid.label, userData=lid)
+
+        for index, combo in zip([xid, yid], [xcombo, ycombo]):
+            try:
+                combo.setCurrentIndex(layer_ids.index(index))
+            except ValueError:
+                combo.setCurrentIndex(0)
+
+        xcombo.blockSignals(False)
+        ycombo.blockSignals(False)
 
     def add_data(self, data):
         """Add a new data set to the widget
@@ -157,7 +187,7 @@ class ScatterWidget(DataViewer):
         first_layer = self.client.layer_count == 0
 
         self.client.add_data(data)
-        self.update_combos(data)
+        self._update_combos()
 
         if first_layer:  # forces both x and y axes to be rescaled
             self.update_xatt(None)
@@ -178,9 +208,7 @@ class ScatterWidget(DataViewer):
         :rtype: bool:
         Returns True if the addition was accepted, False otherwise
         """
-        print 'adding subset'
         if self.client.is_layer_present(subset):
-            print 'subset present'
             return
 
         data = subset.data
@@ -190,7 +218,7 @@ class ScatterWidget(DataViewer):
         first_layer = self.client.layer_count == 0
 
         self.client.add_layer(subset)
-        self.update_combos(data)
+        self._update_combos()
 
         if first_layer:  # forces both x and y axes to be rescaled
             self.update_xatt(None)
@@ -211,7 +239,7 @@ class ScatterWidget(DataViewer):
         hub.subscribe(self, core.message.DataUpdateMessage,
                       lambda x: self._sync_labels())
         hub.subscribe(self, core.message.ComponentsChangedMessage,
-                      lambda x: self.update_combos(x.data))
+                      lambda x: self._update_combos())
 
     def unregister(self, hub):
         hub.unsubscribe_all(self.client)

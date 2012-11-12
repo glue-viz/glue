@@ -2,15 +2,13 @@
 from distutils.version import LooseVersion
 
 import pytest
-from mock import patch, MagicMock
+from mock import patch
+
 try:
     from IPython import __version__ as ipy_version
 except:
     ipy_version = '0.0'
 
-from PyQt4.QtGui import QApplication
-
-from .. import get_qapp
 from ..glue_application import GlueApplication
 
 

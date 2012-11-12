@@ -2,7 +2,7 @@ import logging
 from inspect import getmro
 from collections import defaultdict
 
-from .message import ErrorMessage, Message
+from .message import Message
 from .exceptions import InvalidSubscriber, InvalidMessage
 
 __all__ = ['Hub', 'HubListener']

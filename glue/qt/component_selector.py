@@ -1,4 +1,5 @@
 from PyQt4.QtGui import QWidget, QListWidgetItem
+from PyQt4.QtCore import pyqtSignal
 
 from .ui.component_selector import Ui_ComponentSelector
 
@@ -17,6 +18,8 @@ class ComponentSelector(QWidget):
        >>> widget = ComponentSelector()
        >>> widget.setup(data_collection)
     """
+    component_changed = pyqtSignal()
+
     def __init__(self, parent=None):
         super(ComponentSelector, self).__init__(parent)
         self._data = None
@@ -31,6 +34,8 @@ class ComponentSelector(QWidget):
     def _connect(self):
         ds = self._ui.data_selector
         ds.currentIndexChanged.connect(self._set_components)
+        self._ui.component_selector.currentItemChanged.connect(
+            self.component_changed.emit)
 
     def set_current_row(self, row):
         self._ui.component_selector.setCurrentRow(row)
@@ -77,6 +82,13 @@ class ComponentSelector(QWidget):
         """
         item = self._ui.component_selector.currentItem()
         return self._ui.component_selector.get_data(item)
+
+    @property
+    def data(self):
+        index = self._ui.data_selector.currentIndex()
+        if index < 0:
+            return
+        return self._data[index]
 
 
 def main():  # pragma: no cover

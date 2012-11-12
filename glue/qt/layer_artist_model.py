@@ -18,6 +18,7 @@ from .qtutil import (PyMimeData, edit_layer_color,
                      layer_artist_icon)
 from ..clients.layer_artist import LayerArtist, LayerArtistContainer
 from . import glue_qt_resources
+from .widgets.style_dialog import StyleDialog
 
 
 class LayerArtistModel(QAbstractListModel):
@@ -62,7 +63,10 @@ class LayerArtistModel(QAbstractListModel):
         result = super(LayerArtistModel, self).flags(index)
         if index.isValid():
             result = (result | Qt.ItemIsEditable | Qt.ItemIsDragEnabled |
-                      Qt.ItemIsDropEnabled | Qt.ItemIsUserCheckable)
+                      Qt.ItemIsUserCheckable)
+        else:  # only drop between rows, where index isn't valid
+            result = (result | Qt.ItemIsDropEnabled)
+
         return result
 
     def setData(self, index, value, role):
@@ -99,32 +103,37 @@ class LayerArtistModel(QAbstractListModel):
         return PyMimeData(arts)
 
     def supportedDropActions(self):
-        return Qt.CopyAction | Qt.MoveAction
+        return Qt.MoveAction
 
     def dropMimeData(self, data, action, row, column, index):
         data = data.data(PyMimeData.MIME_TYPE)
         #list of a single artist. Move
         if isinstance(data, list) and len(data) == 1 and \
                 isinstance(data[0], LayerArtist) and data[0] in self.artists:
-            self.move_artist(data[0], index.row())
+            self.move_artist(data[0], row)
             return True
 
         return False
 
     def move_artist(self, artist, row):
-        """Move a artist to a different location, and update the zorder"""
+        """Move an artist before the entry in row
+
+        Row could be the end of the list (-> put it at the end)
+        """
+        if len(self.artists) < 2:  # can't rearrange lenght 0 or 1 list
+            return
+
         try:
             loc = self.artists.index(artist)
         except ValueError:
             return
 
         dest = row
-        if (loc <= row):
-            dest += 1
         if not self.beginMoveRows(QModelIndex(), loc, loc,
                                   QModelIndex(), dest):
             return
-
+        if dest >= loc:
+            row -= 1
         self.artists.pop(loc)
         self.artists.insert(row, artist)
         self._update_zorder()
@@ -157,6 +166,9 @@ class LayerArtistModel(QAbstractListModel):
         self.artists.insert(row, artist)
         self.endInsertRows()
         self.rowsInserted.emit(self.index(row), row, row)
+
+    def row_artist(self, row):
+        return self.artists[row]
 
     def edit_size(self, row):
         index = self.index(row)
@@ -210,7 +222,7 @@ class LayerArtistView(QListView):
         rows = self.selectionModel().selectedRows()
         if len(rows) != 1:
             return
-        return self.artists[rows[0].row()]
+        return self.model().row_artist(rows[0].row())
 
     def single_selection(self):
         return self.current_artist() is not None
@@ -229,22 +241,33 @@ class LayerArtistView(QListView):
         self.setPalette(p)
 
     def _create_actions(self):
-        act = QAction('size', self)
+        act = QAction('Properties...', self)
+        act.triggered.connect(lambda: StyleDialog.edit_style(
+            self.current_artist().layer))
+        self.addAction(act)
+
+        act = QAction('   size...', self)
         act.triggered.connect(
             lambda: self.model().edit_size(self.current_row()))
         self.addAction(act)
 
-        act = QAction('color', self)
+        act = QAction('   color...', self)
         act.triggered.connect(
             lambda: self.model().edit_color(self.current_row()))
         self.addAction(act)
 
-        act = QAction('symbol', self)
+        act = QAction('   symbol...', self)
         act.triggered.connect(
             lambda: self.model().edit_symbol(self.current_row()))
         self.addAction(act)
 
-        act = QAction('remove', self)
+        act = QAction('', self)
+        act.setSeparator(True)
+        self.addAction(act)
+
+        act = QAction('Remove', self)
+        act.setShortcut(Qt.Key_Backspace)
+        act.setShortcutContext(Qt.WidgetShortcut)
         act.triggered.connect(
             lambda: self.model().removeRow(self.current_row()))
         self.addAction(act)

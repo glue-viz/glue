@@ -13,6 +13,7 @@ import sys
 import atexit
 
 from PyQt4 import QtCore
+from PyQt4.QtGui import QInputDialog
 from zmq import ZMQError
 from zmq.eventloop.zmqstream import ZMQStream
 from IPython.zmq.ipkernel import IPKernelApp, Kernel
@@ -158,6 +159,7 @@ class EmbeddedIPythonWidget(RichIPythonWidget):
         self._init_kernel_app()
         self._init_kernel_manager()
         self.update_namespace(kwargs)
+        self.setAcceptDrops(True)
 
     def _init_kernel_app(self):
         app = EmbeddedQtKernelApp.instance()
@@ -181,6 +183,24 @@ class EmbeddedIPythonWidget(RichIPythonWidget):
 
     def update_namespace(self, ns):
         self.app.shell.user_ns.update(ns)
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasFormat('application/py_instance'):
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        obj = event.mimeData().data('application/py_instance')
+
+        var, ok = QInputDialog.getText(self, "Choose a variable name",
+                                       "Choose a variable name", text="x")
+        if ok:
+            var = {str(var): obj}
+            self.update_namespace(var)
+            event.accept()
+        else:
+            event.ignore()
 
 
 def _glue_terminal_2(**kwargs):

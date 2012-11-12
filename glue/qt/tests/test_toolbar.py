@@ -1,9 +1,6 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
-import sys
-
-import pytest
 import matplotlib.pyplot as plt
-from PyQt4.QtGui import QApplication, QMainWindow, QIcon
+from PyQt4.QtGui import QMainWindow, QIcon
 
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import MouseMode

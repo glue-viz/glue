@@ -1,10 +1,8 @@
-import os
-
 import pytest
-from mock import MagicMock, patch
+from mock import patch
 
-from ..main import (parse, die_on_error, restore_session, load_data_files,
-                    main, start_glue, get_splash)
+from ..main import (die_on_error, restore_session, load_data_files,
+                    main, start_glue)
 
 from ..core import Data, DataCollection, Hub
 

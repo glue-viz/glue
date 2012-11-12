@@ -490,3 +490,18 @@ class TestScatterClient(object):
         assert xlim[1] == self.client.xmax
         assert ylim[0] == self.client.ymin
         assert ylim[1] == self.client.ymax
+
+    def test_ignore_duplicate_updates(self):
+        """Need not create new artist on every draw. Enforce this"""
+        layer = self.setup_2d_data()
+
+        m = MagicMock()
+        self.client.artists[layer][0].clear = m
+
+        self.client._update_layer(layer)
+        ct0 = m.call_count
+
+        self.client._update_layer(layer)
+        ct1 = m.call_count
+
+        assert ct1 == ct0

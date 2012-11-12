@@ -126,18 +126,16 @@ class LinkManager(object):
         componentID is replaced with the original"""
         for l in self._links:
             for o, d in self._duplicated_ids:
-                frm = l.get_from_ids()
-                if d in frm:
-                    idx = frm.index(d)
-                    frm[idx] = o
-                    l.set_from_ids(frm)
-                if l.get_to_id() is d:
-                    l.set_to_id(o)
+                l.replace_ids(d, o)
+
+    def _merge_duplicate_ids(self, data):
+        for o, d in self._duplicated_ids:
+            if d in data.components:
+                data.update_id(d, o)
 
     def remove_link(self, link):
         logging.getLogger(__name__).debug('removing link %s', link)
-        if link in self._links:
-            self._links.remove(link)
+        self._links.remove(link)
 
     def update_data_components(self, data):
         """Update all the DerivedComponents in a data object, based on
@@ -157,9 +155,9 @@ class LinkManager(object):
         DerivedComponents will be replaced / added into
         the data object
         """
+        self._merge_duplicate_ids(data)
         self._remove_underiveable_components(data)
         self._add_deriveable_components(data)
-        self._merge_duplicate_ids(data)
 
     def _remove_underiveable_components(self, data):
         """ Find and remove any DerivedComponent in the data
@@ -177,7 +175,7 @@ class LinkManager(object):
 
     def _add_deriveable_components(self, data):
         """Find and add any DerivedComponents that a data object can
-        calculate given the ComponentLInks tracked by this
+        calculate given the ComponentLinks tracked by this
         LinkManager
 
         """
@@ -185,11 +183,6 @@ class LinkManager(object):
         for cid, link in links.iteritems():
             d = DerivedComponent(data, link)
             data.add_component(d, cid)
-
-    def _merge_duplicate_ids(self, data):
-        for o, d in self._duplicated_ids:
-            if d in data.components:
-                data.update_id(d, o)
 
     @property
     def links(self):
