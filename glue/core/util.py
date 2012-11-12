@@ -129,3 +129,103 @@ def color2rgb(color):
     from matplotlib.colors import ColorConverter
     result = ColorConverter().to_rgb(color)
     return result
+
+
+def facet_subsets(data, cid, lo=None, hi=None, steps=5,
+                  prefix=None, log=False):
+    """Create a serries of subsets that partition the values of
+    a particular attribute into several bins
+
+    :param data: Data object to use
+    :type data: :class:`~glue.core.data.Data`
+
+    :param cid: ComponentID to facet on
+    :type data: :class:`~glue.core.data.ComponentID`
+
+    :param lo: The lower bound for the faceting. Defaults to minimum value
+    in data
+    :type lo: float
+
+    :param hi: The upper bound for the faceting. Defaults to maximum
+    value in data
+    :type hi: float
+
+    :param steps: The number of subsets to create. Defaults to 5
+    :type steps: int
+
+    :param prefix: If present, the new subsets will be labeled `prefix_1`, etc.
+    :type prefix: str
+
+    :param log: If True, space divisions logarithmically. Default=False
+    :type log: bool
+
+    This creates `steps` new subets, adds them to the data object,
+    and returns the list of newly created subsets.
+
+    :rtype: The subsets that were added to `data`
+
+    Example::
+
+        facet_subset(data, data.id['mass'], lo=0, hi=10, steps=2)
+
+    creates 2 new subsets. The first represents the constraint 0 >=
+    mass < 5. The second represents 5 <= mass < 10::
+
+        facet_subset(data, data.id['mass'], lo=0, hi=10, steps=2, prefix='m')
+
+    Labels the subsets 'm_1' and 'm_2'
+
+    """
+    if lo is None or hi is None:
+        vals = data[cid]
+        if lo is None:
+            lo = np.nanmin(vals)
+        if hi is None:
+            hi = np.nanmax(vals)
+
+    if log:
+        rng = np.logspace(np.log10(lo), np.log10(hi), steps + 1)
+    else:
+        rng = np.linspace(lo, hi, steps + 1)
+
+    states = []
+    for i in range(steps):
+        states.append((cid >= rng[i]) & (cid < rng[i + 1]))
+
+    result = []
+    for i, s in enumerate(states, start=1):
+        result.append(data.new_subset())
+        result[-1].subset_state = s
+        if prefix is not None:
+            result[-1].label = "%s_%i" % (prefix, i)
+
+    return result
+
+
+def colorize_subsets(subsets, cmap, lo=0, hi=1):
+    """Re-color a list of subsets according to a colormap
+
+    :param subsets: List of subsets
+    :param cmap: Matplotlib colormap instance
+    :param lo: Start location in colormap. 0-1. Defaults to 0
+    :param hi: End location in colormap. 0-1. Defaults to 1
+
+    The colormap will be sampled at `len(subsets)` even intervals
+    between `lo` and `hi`. The color at the `ith` interval will be
+    applied to `subsets[i]`
+    """
+
+    from matplotlib import cm
+    sm = cm.ScalarMappable(cmap=cmap)
+    sm.norm.vmin = 0
+    sm.norm.vmax = 1
+
+    vals = np.linspace(lo, hi, len(subsets))
+    rgbas = sm.to_rgba(vals)
+
+    for color, subset in zip(rgbas, subsets):
+        r, g, b, a = color
+        r = int(255 * r)
+        g = int(255 * g)
+        b = int(255 * b)
+        subset.style.color = '#%2.2x%2.2x%2.2x' % (r, g, b)
