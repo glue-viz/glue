@@ -346,7 +346,7 @@ class ImageClient(VizClient):
 
         if not self.can_handle_data(layer.data):
             logging.getLogger(__name__).warning(
-                "Cannot visulize %s. Aborting", layer.label)
+                "Cannot visualize %s. Aborting", layer.label)
             return
 
         if isinstance(layer, Data):
