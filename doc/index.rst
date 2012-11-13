@@ -2,6 +2,9 @@
 Glue Documentation
 ==================
 
+.. figure:: ../glue/logo.png
+   :align: center
+   
 Glue is a Python library to explore relationships within and among related datasets. It's main features include:
 
 * **Linked Statistical Graphics.** With Glue, users can create scatter plots, histograms and images (2D and 3D) of their data. Glue is focused on the brushing and linking paradigm, where selections in any graph propagate to all others.

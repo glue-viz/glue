@@ -26,10 +26,7 @@ class TestData(object):
     def setup_method(self, method):
         self.data = Data(label="Test Data")
         Registry().clear()
-        comp = MagicMock()
-        comp.data.shape = (2, 3)
-        comp.shape = (2, 3)
-        comp.units = None
+        comp = Component(np.random.random((2, 3)))
         self.comp = comp
         self.data.coords = TestCoordinates()
         self.comp_id = self.data.add_component(comp, 'Test Component')
@@ -63,9 +60,7 @@ class TestData(object):
 
     def test_add_component_with_id(self):
         cid = ComponentID("test")
-        comp = MagicMock()
-        comp.shape = (2, 3)
-        comp.units = None
+        comp = Component(np.random.random((2, 3)))
         cid2 = self.data.add_component(comp, cid)
         assert cid2 is cid
 
@@ -295,10 +290,8 @@ class TestData(object):
         assert links == links2
 
     def test_fancy_view(self):
-        self.comp.__getitem__().shape = (2,)
         result = self.data[self.comp_id, :, 2]
-        args = (slice(None, None, None), 2)
-        self.comp.__getitem__.assert_called_with(args)
+        np.testing.assert_array_equal(result, self.data[self.comp_id][:, 2])
 
     def test_get_by_string(self):
         result = self.data['Test Component']

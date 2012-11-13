@@ -351,7 +351,7 @@ class Data(object):
               created and associated with the Component
 
         :type component: :class:`~glue.core.data.Component` or
-                         :class:`numpy.ndarray` instance
+                         array-like
         :type label: :class:`str` or :class:`~glue.core.data.ComponentID`
 
         *Raises*
@@ -363,8 +363,8 @@ class Data(object):
 
            The ComponentID associated with the newly-added component
         """
-        if isinstance(component, np.ndarray):
-            component = Component(component)
+        if not isinstance(component, Component):
+            component = Component(np.asarray(component))
 
         if not(self._check_can_add(component)):
             raise TypeError("Component shape is incompatible with "
