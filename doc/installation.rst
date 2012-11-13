@@ -1,34 +1,59 @@
+.. _installation:
+
 Installing Glue
 ===============
+The source code for Glue is available on `GitHub <http://www.github.com/glue-viz/glue>`_. This page describes how to install Glue on your machine. Alternatively, you can also try downloading a pre-built package.
 
-Requirements
-------------
+Pre-Built Packages
+------------------
+Mac users (OS X >= 10.7) can download the latest version of Glue `here <https://www.dropbox.com/sh/a7jbvaruzdrri8j/8En3jGR3n6>`_. This is the easiest option, as it includes all of Glue's dependencies.
 
-This section lists the dependencies required by Glue. If only using
-``glue.core``, then the only dependencies are:
+Building From Source
+--------------------
+Dependencies
+^^^^^^^^^^^^
 
-* `Python <http://www.python.org>`_ 2.6 or 2.7
-* `Numpy <http://numpy.scipy.org>`_ 1.4.0 or later
+*Required*
 
-If using the graphical user interface (GUI), you will need:
+ * `Python <http://www.python.org>`_ 2.6 or 2.7
+ * `Numpy <http://numpy.scipy.org>`_ 1.4.0 or later
+ * `Matplotlib <http://www.matplotlib.org>`_ 1.1.0 or later
 
+*Optional*
+
+* `Scipy <http://www.scipy.org>`_. Used for some analysis features
 * `PyQt4 <http://www.riverbankcomputing.co.uk/software/pyqt/download>`_
    4.9.4 or later (which requires
-   `SIP <http://www.riverbankcomputing.co.uk/software/sip/download>`_)
-* `Scipy <http://www.scipy.org>`_
-* `Matplotlib <http://www.matplotlib.org>`_
-* `IPython <http://www.ipython.org>`_
+   `SIP <http://www.riverbankcomputing.co.uk/software/sip/download>`_ ). Required for the graphical user interface.
+* `IPython <http://www.ipython.org>`_ For using the IPython terminal within the GUI.
 
-If you are using Glue for Astronomical purposes, you will also need:
+*Optional, for Astronomy*
 
 * `Astropy <http://www.astropy.org>`_
 * `ATpy <http://atpy.github.com>`_
 * `h5py <http://code.google.com/p/h5py/>`_
 
-Linux
------
+*Optional, for development*
 
-Most of the dependencies can be installed on Linux using package managers.
+* `py.test <http://www.pytest.org>`_
+* `mock <http://www.voidspace.org.uk/python/mock/>`_
+
+
+Installation
+^^^^^^^^^^^^
+
+Once Glue's dependencies have been installed (see below), building Glue is straightfoward.
+
+Using git::
+
+    git clone git://github.com/glue-viz/glue.git
+    cd glue
+    python setup.py install
+
+Or, with pip::
+
+    pip install -e git+git://github.com/glue-viz/glue.git#egg=glue
+
 
 Ubuntu
 ^^^^^^
@@ -52,14 +77,9 @@ Once these are installed, you can use ``pip`` to install the remaining ones::
     pip install vo
     pip install atpy
 
-Finally, you can install Glue with::
-
-    git clone git://github.com/glue-viz/glue.git
-    cd glue
-    python setup.py install
 
 MacOS X
--------
+^^^^^^^
 
 There are different ways to set up the dependencies on Mac (including a fully
 manual installation) but we recommend the use of `MacPorts
@@ -82,18 +102,3 @@ Once these are installed, you can use ``pip`` to install the remaining ones::
     pip install astropy
     pip install vo
     pip install atpy
-
-Finally, you can install Glue with::
-
-    git clone git://github.com/glue-viz/glue.git
-    cd glue
-    python setup.py install
-
-Development
------------
-
-For testing/development, you will also need:
-
-* `py.test <http://www.pytest.org>`_
-* `mock <http://www.voidspace.org.uk/python/mock/>`_
-

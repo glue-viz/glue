@@ -1,14 +1,18 @@
-.. Glue documentation master file, created by
-   sphinx-quickstart on Mon Jun 25 12:05:47 2012.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
 Glue Documentation
 ==================
 
-Glue is a Python library to link visualizations of multiple related
-datasets. It's goal is to let users easily inter-compare data across
-several files.
+Glue is a Python library to explore relationships within and among related datasets. It's main features include:
+
+* **Linked Statistical Graphics.** With Glue, users can create scatter plots, histograms and images (2D and 3D) of their data. Glue is focused on the brushing and linking paradigm, where selections in any graph propagate to all others.
+* **Flexible linking across data.** Glue uses the logical links that exist between different data sets to overlay visualizations of different data, and to propagate selections across data sets. These links are specified by the user, and are arbitrarily flexible. 
+* **Full scripting capability.** Glue is written in Python, and built on top of it's standard scientific libraries (i.e., Numpy, Matplotlib, Scipy). Users can easily integrate their own python code for data input, cleaning, and analysis.
+
+.. raw:: html
+
+ <center>
+ <iframe src="http://player.vimeo.com/video/53378575?badge=0"  width="500" height="275" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe> 
+ </center>
 
 
 .. toctree::
