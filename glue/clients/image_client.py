@@ -170,7 +170,7 @@ class ImageClient(VizClient):
         self.display_attribute = attribute
 
         if attribute in self._norm_cache:
-            self.set_norm(*self._norm_cache[attribute])
+            self.set_norm(norm=self._norm_cache[attribute])
         else:
             self.clear_norm()
 
@@ -184,9 +184,9 @@ class ImageClient(VizClient):
         self._ax.figure.canvas.draw()
 
     @requires_data
-    def set_norm(self, vmin, vmax):
+    def set_norm(self, vmin=None, vmax=None, **kwargs):
         for a in self.artists[self.display_data]:
-            a.set_norm(vmin, vmax)
+            a.set_norm(vmin=vmin, vmax=vmax, **kwargs)
         self._update_data_plot()
         self._redraw()
 
@@ -198,8 +198,7 @@ class ImageClient(VizClient):
     @requires_data
     def get_norm(self):
         a = self.artists[self.display_data][0]
-        norm = a.norm
-        return norm.vmin, norm.vmax
+        return a.norm
 
     @requires_data
     def set_cmap(self, cmap):

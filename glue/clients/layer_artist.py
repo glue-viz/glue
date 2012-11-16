@@ -135,6 +135,7 @@ class ImageLayerArtist(LayerArtist):
         vals = np.sort(layer.ravel())
         vals = vals[np.isfinite(vals)]
         result = InvNormalize()
+        result.clip = True
         if vals.size > 0:
             result.vmin = vals[.05 * vals.size]
             result.vmax = vals[.95 * vals.size]
@@ -156,13 +157,26 @@ class ImageLayerArtist(LayerArtist):
         self.artists = artists
         self._sync_style()
 
-    def set_norm(self, vmin, vmax):
+    def set_norm(self, vmin=None, vmax=None,
+                 bias=None, contrast=None, stretch=None, norm=None):
+        if norm is not None:
+            self.norm = norm
+            return
         if self.norm is None:
             self.norm = InvNormalize()
         if vmin is not None:
             self.norm.vmin = vmin
         if vmax is not None:
             self.norm.vmax = vmax
+        if bias is not None:
+            self.norm.bias = bias
+        if contrast is not None:
+            self.norm.contrast = contrast
+        if stretch is not None:
+            if stretch not in ['linear', 'sqrt', 'arcsinh']:
+                raise TypeError(
+                    "Stretch must be one of 'linear', 'sqrt', or 'arcsinh'")
+            self.norm.stretch = stretch
 
     def clear_norm(self):
         self.norm = None
@@ -445,11 +459,33 @@ class HistogramLayerArtist(LayerArtist):
 class InvNormalize(Normalize):
     """ Simple wrapper to matplotlib Normalize object, that
     handles the case where vmax <= vmin """
+    def __init__(self):
+        Normalize.__init__(self)
+        self.stretch = 'linear'
+        self.bias = 0.5
+        self.contrast = 0.5
+
     def __call__(self, value):
-        if self.vmax <= self.vmin:
-            self.vmax, self.vmin = self.vmin, self.vmax
-            result = 1 - Normalize.__call__(self, value)
-            self.vmax, self.vmin = self.vmin, self.vmax
-        else:
-            result = Normalize.__call__(self, value)
+        self.autoscale_None(value)  # set vmin, vmax if unset
+        inverted = self.vmax <= self.vmin
+
+        hi, lo = max(self.vmin, self.vmax), min(self.vmin, self.vmax)
+        ra = hi - lo
+        mid = lo + ra * self.bias
+        mn = mid - ra * self.contrast
+        mx = mid + ra * self.contrast
+        result = (value - mn) * (1.0 / (mx - mn))
+        result = np.clip(result, 0, 1)
+
+        if self.stretch == 'arcsinh':
+            b = max(self.bias, 1e-5)
+            c = self.contrast
+            result = (value - lo) / (1.0 * (hi - lo))
+            result = np.arcsinh(result / b) / np.arcsinh((b + c) / b)
+        elif self.stretch == 'sqrt':
+            result = np.sqrt(result)
+
+        if inverted:
+            result = 1 - result
+
         return result

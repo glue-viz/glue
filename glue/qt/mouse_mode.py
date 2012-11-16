@@ -221,33 +221,16 @@ class ContrastMode(MouseMode):
         self._result = None
         self._percent_lo = 1.
         self._percent_hi = 99.
-
-    def get_scaling(self, data):
-        """ Return the intensity values to set as the darkest and
-        lightest color, given the bias and contrast.
-
-        :param data: Raw intensities to scale
-        :type data: ndarray
-
-        Returns
-           * tuple of lo,hi : the intensity values to set as darkest/brightest
-        :rtype: tuple
-        """
-        lo, hi = self.get_bounds(data)
-        ra = hi - lo
-        bias = lo + ra * self.bias
-        vmin = bias - ra * self.contrast
-        vmax = bias + ra * self.contrast
-        return vmin, vmax
+        self.stretch = 'linear'
 
     def _downsample(self, data):
         shp = data.shape
         slices = tuple(slice(None, None, max(1, s / 30)) for s in shp)
         return data[slices]
 
-    def get_bounds(self, data):
+    def get_scaling(self, data):
         #cache last result. cant use @memoize, since ndarrays dont hash
-        #XXX warning -- results are bad if data values change in-place
+        #note -- results are bad if data values change in-place
         try:
             from scipy import stats
         except ImportError:
@@ -305,9 +288,26 @@ class ContrastMode(MouseMode):
         a.triggered.connect(lambda: self.set_clip_percentile(10, 90))
         result.append(a)
 
+        a = QAction("", None)
+        a.setSeparator(True)
+        result.append(a)
+
+        a = QAction("Linear", None)
+        a.triggered.connect(lambda: setattr(self, 'stretch', 'linear'))
+        result.append(a)
+
+        a = QAction("Sqrt", None)
+        a.triggered.connect(lambda: setattr(self, 'stretch', 'sqrt'))
+        result.append(a)
+
+        a = QAction("ArcSinh", None)
+        a.triggered.connect(lambda:  setattr(self, 'stretch', 'arcsinh'))
+        result.append(a)
+
         for r in result:
             if self._move_callback is not None:
                 r.triggered.connect(lambda: self._move_callback(self))
+
         return result
 
 

@@ -255,8 +255,10 @@ class ImageWidget(DataViewer):
         im = self.client.image
         if im is None:
             return
-        vlo, vhi = mode.get_scaling(im)
-        return self.client.set_norm(vlo, vhi)
+        vmin, vmax = mode.get_scaling(im)
+        stretch = mode.stretch
+        return self.client.set_norm(vmin=vmin, vmax=vmax, stretch=stretch,
+                                    bias=mode.bias, contrast=mode.contrast)
 
     @set_cursor(Qt.WaitCursor)
     def _contour_roi(self, mode):

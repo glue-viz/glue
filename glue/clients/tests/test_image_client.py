@@ -317,15 +317,20 @@ class TestImageClient(object):
         y = x * 2
         self.im.add_component(y, 'y')
 
-        client.set_attribute(self.im.visible_components[0])
+        client.set_attribute(self.
+        im.visible_components[0])
         client.set_norm(1, 2)
-        assert client.get_norm() == (1, 2)
+        n = client.get_norm()
+        assert n.vmin == 1
+        assert n.vmax == 2
 
         client.set_attribute(self.im.visible_components[1])
         client.set_norm(3, 4)
 
         client.set_attribute(self.im.visible_components[0])
-        assert client.get_norm() == (1, 2)
+        n == client.get_norm()
+        assert n.vmin == 1
+        assert n.vmax == 2
 
     def test_scatter_persistent(self):
         """Ensure that updates to data plot don't erase scatter artists"""
