@@ -8,9 +8,9 @@ Main Application Window
 .. figure:: main_window.png
    :align: center
    :width: 500px
-   
+
    Glue's main interface
-   
+
 The main window consists of 3 areas:
 
  A. The **data manager**. This lists all open data sets and subsets (highlighted regions)
@@ -22,8 +22,8 @@ Data Magager
 .. figure:: data_manager.png
    :align: center
    :width: 300px
-   
-A. An open data set. This dataset is also highlighted
+
+A. An open data set. This dataset is also :ref:`highlighted <multi_selection_note>`.
 B. A subset associated with ``data 1``
 C. The **Open Data** button
 D. Add a **New Subset** to the highlighted dataset
@@ -35,9 +35,9 @@ Right Clicking on an entry in the data manager brings up a menu of options (also
 
 .. figure:: manager_menu.png
    :align: center
-  
+
 This menu has the following entries:
-  
+
  * **Change Label**: Change the name of the selection (here, ``data1.1``)
  * **Change Color**: Change the color (and opacity) associated with the selection (here, red)
  * **Change Size**: Change point size for relevant visualizations
