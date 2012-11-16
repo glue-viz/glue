@@ -26,13 +26,13 @@ Some remarks about this code:
  #. ``link_function`` is used as a `decorator <http://stackoverflow.com/questions/739654/understanding-python-decorators/1594484#1594484>`_. The decorator adds the function to Glue's list of link functions
  #. We provide a short summary of the function in the ``info`` keyword, and a list of ``output_labels``. Usually, only one quantity is returned, so ``output_labels`` has one element.
  #. Glue will always pass numpy arrays as inputs to a link function, and expects a numpy array (or a tuple of numpy arrays) as output
- 
+
 With this code in your configuration file, the ``deg_to_rad`` function is available in the ``Link Data`` dialog:
- 
+
 .. figure:: custom_link.png
    :align: center
    :width: 200px
-   
+
 This would allow you to link between two datasets with different conventions for specifying angles.
 
 .. todo:: Add descriptions for adding custom clients and data factories
@@ -47,12 +47,12 @@ and send this information to Glue. This has several benefits:
  #. A script allows you to perform data pre-processing or cleaning before visualization.
  #. It provides a human-readable description of how the data have been loaded and linked. Startup scripts are better documentation than saved sessions
  #. Unlike a saved session, the startup script can evolve over time.
- 
+
 Startup scripts are normal python files that import the Glue module. They can be started from the command line::
 
  python startup_script.py
  glue startup_script.py
- 
+
 Or, if using a pre-built application, by right-clicking on the script icon and telling the operating system to Open the file with Glue.
 
 Here's a simple script to load data and pass it to Glue:
@@ -77,16 +77,16 @@ Here are some of the most common parts of the Glue API, organized by task.
 
 Loading Data
 ^^^^^^^^^^^^
-The easiest way to construct glue Data objects is with the :function:`~glue.core.data_factories.load_data` function::
+The easiest way to construct glue Data objects is with the :func:`~glue.core.data_factories.load_data` function::
 
  from glue.core.data_factories import load_data
  data = load_data('path_to_file')
- 
-:function:`~glue.core.data_factories.load_data` takes a path to a file, and tries to parse its contents (including metadata) into a data object. It uses the file extension to guess how to load the file. If the file extension is non-standard or ambiguous, you can pass a specific data factory as a second argument. For example, :function:`~glue.core.data_factories.load_data` assumes that files ending in ``.fits`` are images, but they may be tables. This code uses Glue's table parser explicitly::
-  
+
+:func:`~glue.core.data_factories.load_data` takes a path to a file, and tries to parse its contents (including metadata) into a data object. It uses the file extension to guess how to load the file. If the file extension is non-standard or ambiguous, you can pass a specific data factory as a second argument. For example, :func:`~glue.core.data_factories.load_data` assumes that files ending in ``.fits`` are images, but they may be tables. This code uses Glue's table parser explicitly::
+
   from glue.core.data_factories import load_data, tabular_data
   data = load_data('table.fits', tabular_data)
-  
+
 Creating Data
 ^^^^^^^^^^^^^
 
@@ -94,20 +94,20 @@ The next easiest way to create a Data object is to pass a set arrays to the cons
 
    from glue.core import Data
    d = Data(label='Custom data', x=[1, 2, 3], y=[2, 3, 4], z=[3, 4, 5])
- 
+
 This creates a data object with 3 components, labeled x, y, and z::
 
    >>> d['x']
    [1, 2, 3]
- 
+
 .. note:: All components within a :class:`~glue.core.data.Data` instance must have the same shape
- 
+
 
 If you need to add components to a data set after it is initialized, use the ``add_component`` method::
 
    d = Data(label='Custom Data', x=[1, 2, 3])
    d.add_component([3, 4, 5], label='z')
-   
+
 
 .. todo:: Describe creating Coordinate objects
 
