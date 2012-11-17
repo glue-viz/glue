@@ -46,6 +46,16 @@ class ComponentID(object):
         """ Return the label """
         return self._label
 
+    @label.setter
+    def label(self, value):
+        """Change label.
+
+        WARNING: Label changes are not currently tracked by client
+        classes. Label's should only be changd before creating other
+        client objects
+        """
+        self._label = value
+
     @property
     def hidden(self):
         """Whether to hide the component in lists"""
