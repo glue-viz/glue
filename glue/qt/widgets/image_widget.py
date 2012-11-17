@@ -19,7 +19,7 @@ from .mpl_widget import MplWidget
 from ..ui.imagewidget import Ui_ImageWidget
 from .. import glue_qt_resources  # pylint: disable=W0611
 from ..decorators import set_cursor
-from ..qtutil import cmap2pixmap
+from ..qtutil import cmap2pixmap, select_rgb
 
 WARN_THRESH = 10000000  # warn when contouring large images
 
@@ -75,6 +75,14 @@ class ImageWidget(DataViewer):
         self._cmaps.append(act('Purple-Orange', cm.PuOr))
         self._cmaps.append(act('Purple-Green', cm.PRGn))
 
+        self._rgb_add = QAction('RGB', self)
+        self._rgb_add.activated.connect(self._add_rgb)
+
+    def _add_rgb(self):
+        drgb = select_rgb(self._data)
+        if drgb is not None:
+            self.client.add_rgb_layer(*drgb)
+
     def make_toolbar(self):
         result = GlueToolbar(self.central_widget.canvas, self, name='Image')
         for mode in self._mouse_modes():
@@ -88,6 +96,8 @@ class ImageWidget(DataViewer):
         tb.setPopupMode(QToolButton.InstantPopup)
         tb.addActions(self._cmaps)
         result.addWidget(tb)
+
+        result.addAction(self._rgb_add)
 
         #connect viewport update buttons to client commands to
         #allow resampling

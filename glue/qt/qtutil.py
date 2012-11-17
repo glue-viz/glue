@@ -6,7 +6,8 @@ from PyQt4.QtCore import Qt
 from PyQt4.QtCore import QMimeData
 from PyQt4.QtGui import (QColor, QInputDialog, QColorDialog,
                          QListWidget, QTreeWidget, QPushButton, QMessageBox,
-                         QTabBar, QBitmap, QIcon, QPixmap, QImage)
+                         QTabBar, QBitmap, QIcon, QPixmap, QImage,
+                         QDialogButtonBox)
 
 from .decorators import set_cursor
 
@@ -461,3 +462,68 @@ def pretty_number(numbers):
         result = result.rstrip('0')
 
     return result
+
+
+class RGBSelector(QtGui.QDialog):
+    def __init__(self, dc, parent=None):
+        from .link_equation import ArgumentWidget
+        from .component_selector import ComponentSelector
+
+        super(RGBSelector, self).__init__(parent)
+        layout = QtGui.QVBoxLayout()
+        self.setLayout(layout)
+
+        comps = ComponentSelector()
+        comps.setup(dc)
+
+        r = ArgumentWidget('r', parent)
+        g = ArgumentWidget('g', parent)
+        b = ArgumentWidget('b', parent)
+
+        okcancel = QDialogButtonBox(QDialogButtonBox.Ok |
+                                    QDialogButtonBox.Cancel)
+
+        layout.addWidget(comps)
+        layout.addWidget(r)
+        layout.addWidget(g)
+        layout.addWidget(b)
+        layout.addWidget(okcancel)
+
+        self.r = r
+        self.g = g
+        self.b = b
+        self.component = comps
+
+        okcancel.accepted.connect(self.accept)
+        okcancel.rejected.connect(self.reject)
+
+        self.setFocusPolicy(Qt.StrongFocus)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_R:
+            self.r.component_id = self.component.component
+            event.accept()
+        elif event.key() == Qt.Key_G:
+            self.g.component_id = self.component.component
+            event.accept()
+        elif event.key() == Qt.Key_B:
+            self.b.component_id = self.component.component
+            event.accept()
+        else:
+            super(RGBSelector, self).keyPressEvent(event)
+
+
+def select_rgb(collect):
+    w = RGBSelector(collect)
+    result = w.exec_()
+    if result == w.Rejected:
+        return None
+    r = w.r.component_id
+    g = w.g.component_id
+    b = w.b.component_id
+    d = w.component.data
+
+    if r is None or g is None or b is None or d is None:
+        return None
+
+    return d, r, g, b

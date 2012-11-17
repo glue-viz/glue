@@ -301,7 +301,7 @@ class ContrastMode(MouseMode):
         result.append(a)
 
         a = QAction("ArcSinh", None)
-        a.triggered.connect(lambda:  setattr(self, 'stretch', 'arcsinh'))
+        a.triggered.connect(lambda: setattr(self, 'stretch', 'arcsinh'))
         result.append(a)
 
         for r in result:

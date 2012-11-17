@@ -193,6 +193,9 @@ class RGBImageLayerArtist(ImageLayerArtist):
         self.r = None
         self.g = None
         self.b = None
+        self.rnorm = None
+        self.gnorm = None
+        self.bnorm = None
 
     def update(self, view):
         self.clear()
@@ -203,12 +206,21 @@ class RGBImageLayerArtist(ImageLayerArtist):
         artists = []
         for v in views:
             extent = get_extent(v)
-            v = v[1:]  # discard component suggestion
-            r, g, b = self.r[v], self.g[v], self.b[v]
-            image = np.dstack((r, g, b))
-            self.norm = self.norm or self._default_norm(image)
+            # first argument = component. swap
+            r = tuple([self.r] + list(v[1:]))
+            g = tuple([self.g] + list(v[1:]))
+            b = tuple([self.b] + list(v[1:]))
+            r = self.layer[r]
+            g = self.layer[g]
+            b = self.layer[b]
+            self.rnorm = self.rnorm or self._default_norm(r)
+            self.gnorm = self.gnorm or self._default_norm(g)
+            self.bnorm = self.bnorm or self._default_norm(b)
+
+            image = np.dstack((self.rnorm(r),
+                               self.bnorm(g),
+                               self.bnorm(b)))
             artists.append(self._axes.imshow(image,
-                                             norm=self.norm,
                                              interpolation='nearest',
                                              origin='lower',
                                              extent=extent, zorder=0))

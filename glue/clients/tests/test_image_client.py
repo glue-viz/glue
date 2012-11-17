@@ -318,7 +318,7 @@ class TestImageClient(object):
         self.im.add_component(y, 'y')
 
         client.set_attribute(self.
-        im.visible_components[0])
+                             im.visible_components[0])
         client.set_norm(1, 2)
         n = client.get_norm()
         assert n.vmin == 1

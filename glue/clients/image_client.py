@@ -11,7 +11,8 @@ from ..core.edit_subset_mode import EditSubsetMode
 
 from .viz_client import VizClient, init_mpl
 from .layer_artist import (ScatterLayerArtist, LayerArtistContainer,
-                           ImageLayerArtist, SubsetImageLayerArtist)
+                           ImageLayerArtist, SubsetImageLayerArtist,
+                           RGBImageLayerArtist)
 
 
 def requires_data(func):
@@ -335,6 +336,15 @@ class ImageClient(VizClient):
 
     def init_layer(self, layer):
         self.add_layer(layer)
+
+    def add_rgb_layer(self, layer, r=None, g=None, b=None):
+        a = RGBImageLayerArtist(layer, self._ax)
+        a.r = r
+        a.g = g
+        a.b = b
+        self.artists.append(a)
+        self._update_data_plot()
+        self._redraw()
 
     def add_layer(self, layer):
         if layer in self.artists:
