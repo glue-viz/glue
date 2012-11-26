@@ -37,5 +37,6 @@
 	<file>icons/glue_xrange_select.png</file>
 	<file>icons/glue_yrange_select.png</file>
 	<file>icons/glue_zoom_to_rect.png</file>
+	<file>icons/wwt_icon.png</file>
 </qresource>
 </RCC>
