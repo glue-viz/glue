@@ -135,41 +135,6 @@ class TestContrastMode(TestMouseMode):
         count = self.mode._axes.figure.canvas.get_width_height.call_count
         assert count == 0
 
-    def test_get_scaling(self):
-        data = np.array([[1, 2, 3], [1, 2, 3]])
-        self.mode.set_clip_percentile(0, 100)
-        lo, hi = self.mode.get_scaling(data)
-        assert_almost_equal(lo, 1)
-        assert_almost_equal(hi, 3)
-
-    def test_set_clip_precentile(self):
-        """ Clip percentile should scale bounds by percentile, not min/max"""
-        data = np.array([[1., 2., 3.], [1., 2., 3.]])
-        self.mode.set_clip_percentile(10, 90)
-        result = self.mode.get_scaling(data)
-        np.testing.assert_array_almost_equal(result,
-                                             np.percentile(data, [10, 90]))
-
-    def test_set_clip_precentile_update(self):
-        """ results updated if clip percentile updates """
-        data = np.array([1., 2., 3.])
-        self.mode.set_clip_percentile(10, 90)
-        result = self.mode.get_scaling(data)
-        self.mode.set_clip_percentile(20, 80)
-        result = self.mode.get_scaling(data)
-        np.testing.assert_array_almost_equal(result,
-                                             np.percentile(data, [20, 80]))
-
-    def test_set_clip_precentile_update_data(self):
-        """ results updated if data updates """
-        data = np.array([1., 2., 3.])
-        self.mode.set_clip_percentile(10, 90)
-        result = self.mode.get_scaling(data)
-        data = data + 3
-        result = self.mode.get_scaling(data)
-        np.testing.assert_array_almost_equal(result,
-                                             np.percentile(data, [10, 90]))
-
 
 class TestContourMode(TestMouseMode):
 

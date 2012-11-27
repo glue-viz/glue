@@ -185,9 +185,9 @@ class ImageClient(VizClient):
         self._ax.figure.canvas.draw()
 
     @requires_data
-    def set_norm(self, vmin=None, vmax=None, **kwargs):
+    def set_norm(self, **kwargs):
         for a in self.artists[self.display_data]:
-            a.set_norm(vmin=vmin, vmax=vmax, **kwargs)
+            a.set_norm(**kwargs)
         self._update_data_plot()
         self._redraw()
 

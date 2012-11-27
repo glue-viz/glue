@@ -262,12 +262,10 @@ class ImageWidget(DataViewer):
 
     def _set_norm(self, mode):
         """ Use the `ContrastMouseMode` to adjust the transfer function """
-        im = self.client.image
-        if im is None:
-            return
-        vmin, vmax = mode.get_scaling(im)
+        clip_lo, clip_hi = mode.get_clip_percentile()
         stretch = mode.stretch
-        return self.client.set_norm(vmin=vmin, vmax=vmax, stretch=stretch,
+        return self.client.set_norm(clip_lo=clip_lo, clip_hi=clip_hi,
+                                    stretch=stretch,
                                     bias=mode.bias, contrast=mode.contrast)
 
     @set_cursor(Qt.WaitCursor)

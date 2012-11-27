@@ -223,36 +223,15 @@ class ContrastMode(MouseMode):
         self._percent_hi = 99.
         self.stretch = 'linear'
 
-    def _downsample(self, data):
-        shp = data.shape
-        slices = tuple(slice(None, None, max(1, s / 30)) for s in shp)
-        return data[slices]
-
-    def get_scaling(self, data):
-        #cache last result. cant use @memoize, since ndarrays dont hash
-        #note -- results are bad if data values change in-place
-        try:
-            from scipy import stats
-        except ImportError:
-            raise ImportError("Contrast MouseMode requires SciPy")
-        if data is not self._last:
-            self._last = data
-            limits = (-np.inf, np.inf)
-            d = self._downsample(data)
-            lo = stats.scoreatpercentile(d.flat, self._percent_lo,
-                                         limit=limits)
-            hi = stats.scoreatpercentile(d.flat, self._percent_hi,
-                                         limit=limits)
-            self._result = lo, hi
-        return self._result
-
     def set_clip_percentile(self, lo, hi):
         """Percentiles at which to clip the data at black/white"""
         if lo == self._percent_lo and hi == self._percent_hi:
             return
         self._percent_lo = lo
         self._percent_hi = hi
-        self._last = None  # clear cache
+
+    def get_clip_percentile(self):
+        return self._percent_lo, self._percent_hi
 
     def move(self, event):
         """ MoveEvent. Update bias and contrast on Right Mouse button drag """

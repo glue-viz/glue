@@ -130,10 +130,10 @@ class TestImageClient(object):
     def test_set_norm(self):
         client = self.create_client_with_image()
         assert client.display_data is not None
-        client.set_norm(vmin=10, vmax=100)
+        client.set_norm(clip_lo=3, clip_hi=97)
         for a in client.artists[self.im]:
-            assert a.norm.vmin == 10
-            assert a.norm.vmax == 100
+            assert a.norm.clip_lo == 3
+            assert a.norm.clip_hi == 97
 
     def test_delete_data(self):
         client = self.create_client_with_image()
@@ -319,18 +319,18 @@ class TestImageClient(object):
 
         client.set_attribute(self.
                              im.visible_components[0])
-        client.set_norm(1, 2)
+        client.set_norm(clip_lo=7, clip_hi=80)
         n = client.get_norm()
-        assert n.vmin == 1
-        assert n.vmax == 2
+        assert n.clip_lo == 7
+        assert n.clip_hi == 80
 
         client.set_attribute(self.im.visible_components[1])
-        client.set_norm(3, 4)
+        client.set_norm(clip_lo=20, clip_hi=30)
 
         client.set_attribute(self.im.visible_components[0])
         n == client.get_norm()
-        assert n.vmin == 1
-        assert n.vmax == 2
+        assert n.clip_lo == 7
+        assert n.clip_hi == 80
 
     def test_scatter_persistent(self):
         """Ensure that updates to data plot don't erase scatter artists"""

@@ -135,20 +135,26 @@ class ImageLayerArtist(LayerArtist):
         vals = np.sort(layer.ravel())
         vals = vals[np.isfinite(vals)]
         result = InvNormalize()
+        result.stretch = 'arcsinh'
         result.clip = True
         if vals.size > 0:
-            result.vmin = vals[.05 * vals.size]
-            result.vmax = vals[.95 * vals.size]
+            result.vmin = vals[.01 * vals.size]
+            result.vmax = vals[.99 * vals.size]
         return result
 
     def update(self, view):
         self.clear()
         views = view_cascade(self.layer, view)
         artists = []
+
+        lr0 = self.layer[views[0]]
+        self.norm = self.norm or self._default_norm(lr0)
+        self.norm = self.norm or self._default_norm(lr0)
+        self.norm.update_clip(self.layer, view[0])
+
         for v in views:
             image = self.layer[v]
             extent = get_extent(v)
-            self.norm = self.norm or self._default_norm(image)
             artists.append(self._axes.imshow(image, cmap=self.cmap,
                                              norm=self.norm,
                                              interpolation='nearest',
@@ -158,10 +164,11 @@ class ImageLayerArtist(LayerArtist):
         self._sync_style()
 
     def set_norm(self, vmin=None, vmax=None,
-                 bias=None, contrast=None, stretch=None, norm=None):
+                 bias=None, contrast=None, stretch=None, norm=None,
+                 clip_lo=None, clip_hi=None):
         if norm is not None:
             self.norm = norm
-            return
+            return norm
         if self.norm is None:
             self.norm = InvNormalize()
         if vmin is not None:
@@ -172,11 +179,16 @@ class ImageLayerArtist(LayerArtist):
             self.norm.bias = bias
         if contrast is not None:
             self.norm.contrast = contrast
+        if clip_lo is not None:
+            self.norm.clip_lo = clip_lo
+        if clip_hi is not None:
+            self.norm.clip_hi = clip_hi
         if stretch is not None:
             if stretch not in ['linear', 'sqrt', 'arcsinh']:
                 raise TypeError(
                     "Stretch must be one of 'linear', 'sqrt', or 'arcsinh'")
             self.norm.stretch = stretch
+        return self.norm
 
     def clear_norm(self):
         self.norm = None
@@ -196,11 +208,32 @@ class RGBImageLayerArtist(ImageLayerArtist):
         self.rnorm = None
         self.gnorm = None
         self.bnorm = None
+        self.contrast_layer = 'green'
+        self.layer_visible = dict(red=True, green=True, blue=True)
 
-    def update(self, view):
+    def set_norm(self, *args, **kwargs):
+        spr = super(RGBImageLayerArtist, self).set_norm
+        if self.contrast_layer == 'red':
+            self.norm = self.rnorm
+            self.rnorm = spr(*args, **kwargs)
+        if self.contrast_layer == 'green':
+            self.norm = self.gnorm
+            self.gnorm = spr(*args, **kwargs)
+        if self.contrast_layer == 'blue':
+            self.norm = self.bnorm
+            self.bnorm = spr(*args, **kwargs)
+
+    def update(self, view=None):
         self.clear()
         if self.r is None or self.g is None or self.b is None:
             return
+
+        if view is None:
+            view = self._last_view
+
+        if view is None:
+            return
+        self._last_view = view
 
         views = view_cascade(self.layer, view)
         artists = []
@@ -218,7 +251,7 @@ class RGBImageLayerArtist(ImageLayerArtist):
             self.bnorm = self.bnorm or self._default_norm(b)
 
             image = np.dstack((self.rnorm(r),
-                               self.bnorm(g),
+                               self.gnorm(g),
                                self.bnorm(b)))
             artists.append(self._axes.imshow(image,
                                              interpolation='nearest',
@@ -486,16 +519,22 @@ class InvNormalize(Normalize):
         mid = lo + ra * self.bias
         mn = mid - ra * self.contrast
         mx = mid + ra * self.contrast
-        result = (value - mn) * (1.0 / (mx - mn))
-        result = np.clip(result, 0, 1)
 
-        if self.stretch == 'arcsinh':
+        if self.stretch == 'linear':
+            result = (value - mn) * (1.0 / (mx - mn))
+            result = np.clip(result, 0, 1)
+        elif self.stretch == 'arcsinh':
             b = max(self.bias, 1e-5)
             c = self.contrast
             result = (value - lo) / (1.0 * (hi - lo))
             result = np.arcsinh(result / b) / np.arcsinh((b + c) / b)
+            result = np.clip(result, 0, 1)
         elif self.stretch == 'sqrt':
+            result = (value - mn) * (1.0 / (mx - mn))
+            result = np.clip(result, 0, 1)
             result = np.sqrt(result)
+        else:
+            raise TypeError("Invalid stretch: %s" % self.stretch)
 
         if inverted:
             result = 1 - result
