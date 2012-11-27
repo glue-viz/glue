@@ -1,3 +1,5 @@
+from functools import partial
+
 from matplotlib.colors import ColorConverter
 from matplotlib import cm
 import numpy as np
@@ -7,7 +9,9 @@ from PyQt4.QtCore import QMimeData
 from PyQt4.QtGui import (QColor, QInputDialog, QColorDialog,
                          QListWidget, QTreeWidget, QPushButton, QMessageBox,
                          QTabBar, QBitmap, QIcon, QPixmap, QImage,
-                         QDialogButtonBox)
+                         QDialogButtonBox, QWidget,
+                         QVBoxLayout, QHBoxLayout, QLabel,
+                         QRadioButton, QButtonGroup, QCheckBox)
 
 from .decorators import set_cursor
 
@@ -527,3 +531,130 @@ def select_rgb(collect):
         return None
 
     return d, r, g, b
+
+
+class RGBEdit(QWidget):
+    """A widget to set the contrast for individual layers in an RGB image
+
+    Based off the ds9 RGB Frame widget
+
+    :param artist: A :class:`~glue.clients.layer_artists.RGBLayerArtist`
+                   instance to control
+
+    :param parent: Optional widget parent
+
+    This widget sets the state of the artist object, such that contrast
+    adjustments from a :class:`~glue.clients.image_client` affect
+    a particular RGB slice
+    """
+    def __init__(self, artist, parent=None):
+        super(RGBEdit, self).__init__(parent)
+        l = QVBoxLayout()
+
+        widths = [40, 50, 50]
+
+        lbl = QHBoxLayout()
+        junk = QLabel("")
+        junk.setMinimumWidth(widths[0])
+        current = QLabel("Current")
+        current.setMinimumWidth(widths[1])
+        visible = QLabel("Visible")
+        visible.setMinimumWidth(widths[2])
+        lbl.addWidget(junk)
+        lbl.addWidget(current)
+        lbl.addWidget(visible)
+
+        r = QHBoxLayout()
+        rl = QLabel("Red")
+        rl.setMinimumWidth(widths[0])
+        rc = QRadioButton()
+        rc.setMinimumWidth(widths[1])
+        rv = QCheckBox()
+        rc.setMinimumWidth(widths[2])
+        rv.setChecked(True)
+        r.addWidget(rl)
+        r.addWidget(rc)
+        r.addWidget(rv)
+
+        g = QHBoxLayout()
+        gl = QLabel("Green")
+        gl.setMinimumWidth(widths[0])
+        gc = QRadioButton()
+        gc.setMinimumWidth(widths[2])
+        gv = QCheckBox()
+        gv.setMinimumWidth(widths[2])
+        gv.setChecked(True)
+        g.addWidget(gl)
+        g.addWidget(gc)
+        g.addWidget(gv)
+
+        b = QHBoxLayout()
+        bl = QLabel("Blue")
+        bl.setMinimumWidth(widths[0])
+        bc = QRadioButton()
+        bv = QCheckBox()
+        bv.setChecked(True)
+        bc.setMinimumWidth(widths[1])
+        bv.setMinimumWidth(widths[2])
+
+        b.addWidget(bl)
+        b.addWidget(bc)
+        b.addWidget(bv)
+
+        l.addLayout(lbl)
+        l.addLayout(r)
+        l.addLayout(g)
+        l.addLayout(b)
+        self.setLayout(l)
+        self.setWindowFlags(Qt.WindowStaysOnTopHint |
+                            Qt.X11BypassWindowManagerHint |
+                            Qt.Tool)
+
+        bg = QButtonGroup()
+        bg.addButton(rc)
+        bg.addButton(gc)
+        bg.addButton(bc)
+
+        currents = {rc: 'red', bc: 'blue', gc: 'green'}
+
+        rc.clicked.connect(lambda: setattr(artist, 'contrast_layer', 'red'))
+        gc.clicked.connect(lambda: setattr(artist, 'contrast_layer', 'green'))
+        bc.clicked.connect(lambda: setattr(artist, 'contrast_layer', 'blue'))
+
+        rv.toggled.connect(self.update_visible)
+        gv.toggled.connect(self.update_visible)
+        bv.toggled.connect(self.update_visible)
+
+        rc.click()
+
+        self.vis = {'red': rv, 'green': gv, 'blue': bv}
+        self.artist = artist
+
+    def update_visible(self):
+        self.artist.layer_visible['red'] = self.vis['red'].isChecked()
+        self.artist.layer_visible['green'] = self.vis['green'].isChecked()
+        self.artist.layer_visible['blue'] = self.vis['blue'].isChecked()
+        self.artist.update()
+        self.artist.redraw()
+
+if __name__ == "__main__":
+    from glue.qt import get_qapp
+
+    class Foo(object):
+        layer_visible = {}
+
+        def update(self):
+            print 'update', self.layer_visible
+
+        def redraw(self):
+            print 'draw'
+
+    app = get_qapp()
+    f = Foo()
+
+    rgb = RGBEdit(f)
+    rgb.show()
+    app.exec_()
+
+    print f.layer_visible
+    print f.contrast_layer

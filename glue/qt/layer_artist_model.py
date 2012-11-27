@@ -15,8 +15,11 @@ from PyQt4.QtCore import Qt, QAbstractListModel, QModelIndex, QSize, QTimer
 
 from .qtutil import (PyMimeData, edit_layer_color,
                      edit_layer_symbol, edit_layer_point_size,
-                     layer_artist_icon)
+                     layer_artist_icon, RGBEdit)
+
 from ..clients.layer_artist import LayerArtist, LayerArtistContainer
+from ..clients.layer_artist import RGBImageLayerArtist
+
 from . import glue_qt_resources
 from .widgets.style_dialog import StyleDialog
 
@@ -212,14 +215,23 @@ class LayerArtistView(QListView):
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
 
         self._set_palette()
+
+        self._actions = {}
         self._create_actions()
 
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.viewport().update)
         self._timer.start(1000)
 
+    def selectionChanged(self, selected, deselected):
+        super(LayerArtistView, self).selectionChanged(selected, deselected)
+        self._update_actions()
+
     def current_artist(self):
-        rows = self.selectionModel().selectedRows()
+        model = self.selectionModel()
+        if model is None:
+            return
+        rows = model.selectedRows()
         if len(rows) != 1:
             return
         return self.model().row_artist(rows[0].row())
@@ -228,7 +240,10 @@ class LayerArtistView(QListView):
         return self.current_artist() is not None
 
     def current_row(self):
-        rows = self.selectionModel().selectedRows()
+        model = self.selectionModel()
+        if model is None:
+            return
+        rows = model.selectedRows()
         if len(rows) != 1:
             return
         return rows[0].row()
@@ -239,6 +254,10 @@ class LayerArtistView(QListView):
         p.setColor(QPalette.Highlight, c)
         p.setColor(QPalette.HighlightedText, QColor(Qt.black))
         self.setPalette(p)
+
+    def _update_actions(self):
+        rgb_show = isinstance(self.current_artist(), RGBImageLayerArtist)
+        self._actions['rgb'].setVisible(rgb_show)
 
     def _create_actions(self):
         act = QAction('Properties...', self)
@@ -263,6 +282,11 @@ class LayerArtistView(QListView):
 
         act = QAction('', self)
         act.setSeparator(True)
+        self.addAction(act)
+
+        act = QAction('RGB Contrast', self)
+        act.triggered.connect(lambda: edit_rgb(self.current_artist(), self))
+        self._actions['rgb'] = act
         self.addAction(act)
 
         act = QAction('Remove', self)
@@ -296,3 +320,10 @@ class QtLayerArtistContainer(LayerArtistContainer):
 
     def __nonzero__(self):
         return True
+
+
+def edit_rgb(layer, parent):
+    if not isinstance(layer, RGBImageLayerArtist):
+        return
+    rgb = RGBEdit(layer, parent)
+    rgb.show()

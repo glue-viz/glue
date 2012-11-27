@@ -1,6 +1,7 @@
 import logging
 
 import numpy as np
+from ..core.decorators import memoize
 
 
 def get_extent(view):
@@ -33,6 +34,33 @@ def view_cascade(data, view):
         v2[i] = slice(0, shp[i - 1], step)
 
     return tuple(v2), view
+
+
+@memoize
+def fast_limits(data, component, plo, phi):
+    """Quickly estimate percentiles in a data object,
+    using a downsampled version
+
+    :param data: data object to inspect
+    :param component: Component to inspect
+    :param plo: Lo percentile
+    :param phi: High percentile
+
+    :rtype: Tuple of floats. Approximate values of each percentile in
+            data[component]
+    """
+    try:
+        from scipy import stats
+    except ImportError:
+        raise ImportError("Scale clipping requires SciPy")
+
+    shp = data.shape
+    view = tuple([slice(None, None, max(s / 50, 1)) for s in shp])
+    values = data[component, view]
+    limits = (-np.inf, np.inf)
+    lo = stats.scoreatpercentile(values.flat, plo, limit=limits)
+    hi = stats.scoreatpercentile(values.flat, phi, limit=limits)
+    return lo, hi
 
 
 def visible_limits(artists, axis):

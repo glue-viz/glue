@@ -342,6 +342,8 @@ class ImageClient(VizClient):
         a.r = r
         a.g = g
         a.b = b
+        for artist in self.artists.pop(layer):
+            artist.clear()
         self.artists.append(a)
         self._update_data_plot()
         self._redraw()

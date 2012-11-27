@@ -10,7 +10,7 @@ from matplotlib.cm import gray
 from ..core.exceptions import IncompatibleAttribute
 from ..core.util import color2rgb
 from ..core.subset import Subset
-from .util import view_cascade, get_extent
+from .util import view_cascade, get_extent, fast_limits
 
 
 class ChangedTrigger(object):
@@ -249,10 +249,22 @@ class RGBImageLayerArtist(ImageLayerArtist):
             self.rnorm = self.rnorm or self._default_norm(r)
             self.gnorm = self.gnorm or self._default_norm(g)
             self.bnorm = self.bnorm or self._default_norm(b)
+            if v is views[0]:
+                self.rnorm.update_clip(self.layer, self.r)
+                self.gnorm.update_clip(self.layer, self.g)
+                self.bnorm.update_clip(self.layer, self.b)
 
             image = np.dstack((self.rnorm(r),
                                self.gnorm(g),
                                self.bnorm(b)))
+
+            if not self.layer_visible['red']:
+                image[:, :, 0] *= 0
+            if not self.layer_visible['green']:
+                image[:, :, 1] *= 0
+            if not self.layer_visible['blue']:
+                image[:, :, 2] *= 0
+
             artists.append(self._axes.imshow(image,
                                              interpolation='nearest',
                                              origin='lower',
@@ -509,6 +521,13 @@ class InvNormalize(Normalize):
         self.stretch = 'linear'
         self.bias = 0.5
         self.contrast = 0.5
+        self.clip_lo = 5.
+        self.clip_hi = 95.
+
+    def update_clip(self, data, component):
+        vmin, vmax = fast_limits(data, component, self.clip_lo, self.clip_hi)
+        self.vmin = vmin
+        self.vmax = vmax
 
     def __call__(self, value):
         self.autoscale_None(value)  # set vmin, vmax if unset
