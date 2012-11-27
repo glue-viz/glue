@@ -217,11 +217,10 @@ class LinkEquation(QWidget):
         signal = self._ui.function.currentIndexChanged
         signal.connect(self._setup_editor)
         signal.connect(self._update_add_enabled)
-        self._ui.addButton.clicked.connect(self._clear_inputs)
         self._output_widget.editor.textChanged.connect(
             self._update_add_enabled)
 
-    def _clear_inputs(self):
+    def clear_inputs(self):
         for w in self._argument_widgets:
             w.clear()
         self._output_widget.clear()

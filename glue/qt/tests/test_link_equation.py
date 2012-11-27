@@ -151,5 +151,5 @@ class TestLinkEquation(object):
         widget.signature = [x, y], None
         assert widget.signature == ([x, y], None)
 
-        widget._clear_inputs()
+        widget.clear_inputs()
         assert widget.signature == ([None, None], None)

@@ -152,7 +152,6 @@
            <height>0</height>
           </size>
          </property>
-         <zorder>output_label</zorder>
         </widget>
        </item>
       </layout>
@@ -178,7 +177,7 @@
           <string>Create a new link defined by this translation description</string>
          </property>
          <property name="text">
-          <string>Add</string>
+          <string>Glue</string>
          </property>
         </widget>
        </item>

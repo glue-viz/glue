@@ -42,6 +42,7 @@ class LinkEditor(QDialog):
         """Set whether the widget is in advanced state"""
         size = self.size()
         self._ui.signature_editor.setVisible(state)
+        self._ui.toggle_editor.setText("Basic" if state else "Advanced")
         self.resize(size)
 
     def _toggle_advanced(self):
@@ -87,6 +88,7 @@ class LinkEditor(QDialog):
             links = self._simple_links()
         else:
             links = self._ui.signature_editor.links()
+            self._ui.signature_editor.clear_inputs()
 
         for link in links:
             self._add_link(link)
