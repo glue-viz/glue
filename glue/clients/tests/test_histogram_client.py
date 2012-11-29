@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from ..histogram_client import HistogramClient
+from ..layer_artist import HistogramLayerArtist
 
 from ...core.data_collection import DataCollection
 from ...core.exceptions import IncompatibleDataException
@@ -384,3 +385,154 @@ class TestCommunication(object):
         assert self.client.layer_present(sub)
         sub.delete()
         assert not self.client.layer_present(sub)
+
+
+class TestHistogramLayerArtist(object):
+
+    def setup_subset(self):
+        ax = MagicMock()
+        d = Data(x=[1, 2, 3])
+        s = d.new_subset()
+        s.subset_state = d.id['x'] > 1
+        self.artist = HistogramLayerArtist(s, ax)
+
+    def setup_hist_calc_counter(self):
+        self.setup_subset()
+        m = MagicMock()
+        self.artist._calculate_histogram = m
+        return m
+
+    def setup_hist_scale_counter(self):
+        self.setup_subset()
+        m = MagicMock()
+        self.artist._scale_histogram = m
+        self.artist._calculate_histogram = MagicMock()
+        return m
+
+    def test_calculate_histogram_efficient(self):
+        ct = self.setup_hist_calc_counter()
+        self.artist.update()
+        assert ct.call_count == 1
+        self.artist.update()
+        assert ct.call_count == 1
+
+    def test_recalc_on_state_changes(self):
+        ct = self.setup_hist_calc_counter()
+        assert ct.call_count == 0
+        self.artist.update()
+        assert ct.call_count == 1
+
+        #lo
+        self.artist.lo -= 1
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 2
+
+        #hi
+        self.artist.hi -= 1
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 3
+
+        #nbins
+        self.artist.nbins += 1
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 4
+
+        #xlog
+        self.artist.xlog ^= True
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 5
+
+        #ylog -- no call
+        self.artist.ylog ^= True
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 5
+
+        #cumulative -- no call
+        self.artist.cumulative ^= True
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 5
+
+        #normed -- no call
+        self.artist.normed ^= True
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 5
+
+        #subset style -- no call
+        self.artist.layer.style.color = '#00ff00'
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 5
+
+        #subset state
+        self.artist.layer.subset_state = self.artist.layer.data.id['x'] > 10
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 6
+
+    def test_rescale_on_state_changes(self):
+        ct = self.setup_hist_scale_counter()
+        assert ct.call_count == 0
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 1
+
+        #lo
+        self.artist.lo -= 1
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 2
+
+        #hi
+        self.artist.hi -= 1
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 3
+
+        #nbins
+        self.artist.nbins += 1
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 4
+
+        #xlog
+        self.artist.xlog ^= True
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 5
+
+        #ylog
+        self.artist.ylog ^= True
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 6
+
+        #cumulative
+        self.artist.cumulative ^= True
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 7
+
+        #normed
+        self.artist.normed ^= True
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 8
+
+        #subset state
+        self.artist.layer.subset_state = self.artist.layer.data.id['x'] > 10
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 9
+
+        #subset style -- no call
+        self.artist.layer.style.color = '#00ff00'
+        self.artist.update()
+        self.artist.update()
+        assert ct.call_count == 9
