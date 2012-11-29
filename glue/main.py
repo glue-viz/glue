@@ -163,7 +163,6 @@ def start_glue(gluefile=None, config=None, datafiles=None):
     #QApplication.instance().processEvents()
     return ga.start()
 
-
 @die_on_error("Error running script")
 def execute_script(script):
     """ Run a python script and exit.
