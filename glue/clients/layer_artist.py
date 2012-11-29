@@ -423,10 +423,11 @@ class HistogramLayerArtist(LayerArtist):
         self.ylog = False
         self.cumulative = False
         self.normed = False
-
         self.y = np.array([])
         self.x = np.array([])
         self._y = np.array([])
+
+        self._scale_state = None
 
     def has_patches(self):
         return len(self.artists) > 0
@@ -488,6 +489,16 @@ class HistogramLayerArtist(LayerArtist):
             x, y = a.get_xy()
             a.set_xy((x, bottom))
 
+    def _check_scale_histogram(self):
+        """
+        If needed, rescale histogram to match cumulative/log/normed state.
+        """
+        state = (self.normed, self.ylog, self.cumulative)
+        if state == self._scale_state:
+            return
+        self._scale_state = state
+        self._scale_histogram()
+
     def update(self, view=None):
         """Sync plot.
 
@@ -500,7 +511,8 @@ class HistogramLayerArtist(LayerArtist):
             if not self._calculate_histogram():
                 return
             self._changed = False
-        self._scale_histogram()
+            self._scale_state = None
+        self._check_scale_histogram()
         self._sync_style()
 
     def _sync_style(self):
