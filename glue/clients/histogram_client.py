@@ -27,10 +27,11 @@ class UpdateProperty(CallbackProperty):
             instance._relim()
 
 
-def update(func):
+def update_on_true(func):
     def wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
-        args[0].sync_all()
+        if result:
+            args[0].sync_all()
         return result
     return wrapper
 
@@ -92,7 +93,7 @@ class HistogramClient(Client):
         return lo, hi
 
     @xlimits.setter
-    @update
+    @update_on_true
     def xlimits(self, value):
         lo, hi = value
         old = self.xlimits
@@ -103,11 +104,11 @@ class HistogramClient(Client):
 
         self._xlim[self.component] = min(lo, hi), max(lo, hi)
         self._relim()
+        return True
 
     def layer_present(self, layer):
         return layer in self._artists
 
-    @update
     def add_layer(self, layer):
         if layer.data not in self.data:
             raise IncompatibleDataException("Layer not in data collection")
@@ -120,6 +121,11 @@ class HistogramClient(Client):
         self._artists.append(art)
 
         self._ensure_subsets_present(layer)
+        self._sync_layer(layer)
+        self._redraw()
+
+    def _redraw(self):
+        self._axes.figure.canvas.draw()
 
     def _ensure_layer_data_present(self, layer):
         if layer.data is layer:
@@ -131,7 +137,7 @@ class HistogramClient(Client):
         for subset in layer.data.subsets:
             self.add_layer(subset)
 
-    @update
+    @update_on_true
     def remove_layer(self, layer):
         if not self.layer_present(layer):
             return
@@ -143,12 +149,15 @@ class HistogramClient(Client):
             for subset in layer.subsets:
                 self.remove_layer(subset)
 
-    @update
+        return True
+
+    @update_on_true
     def set_layer_visible(self, layer, state):
         if not self.layer_present(layer):
             return
         for a in self._artists[layer]:
             a.visible = state
+        return True
 
     def is_layer_visible(self, layer):
         if not self.layer_present(layer):
@@ -170,8 +179,8 @@ class HistogramClient(Client):
         dx = np.mean([d.size for d in data])
         self.nbins = min(max(5, (dx / 1000) ** (1. / 3.) * 30), 100)
 
-    def sync_all(self):
-        for a in self._artists:
+    def _sync_layer(self, layer):
+        for a in self._artists[layer]:
             a.lo, a.hi = self.xlimits
             a.nbins = self.nbins
             a.xlog = self.xlog
@@ -180,6 +189,11 @@ class HistogramClient(Client):
             a.normed = self.normed
             a.att = self._component
             a.update()
+
+    def sync_all(self):
+        layers = set(a.layer for a in self._artists)
+        for l in layers:
+            self._sync_layer(l)
 
         self._update_axis_labels()
 
@@ -192,7 +206,7 @@ class HistogramClient(Client):
         yscl = 'log' if self.ylog else 'linear'
         self._axes.set_yscale(yscl)
 
-        self._axes.figure.canvas.draw()
+        self._redraw()
 
     @property
     def component(self):
@@ -222,13 +236,14 @@ class HistogramClient(Client):
                 lim[1] = 1
 
         self._axes.set_xlim(lim)
-        self._axes.figure.canvas.draw()
+        self._redraw()
 
     def _update_data(self, message):
         self.sync_all()
 
     def _update_subset(self, message):
-        self.sync_all()
+        self._sync_layer(message.subset)
+        self._redraw()
 
     def _add_subset(self, message):
         self.add_layer(message.sender)
