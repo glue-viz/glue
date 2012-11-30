@@ -3,13 +3,14 @@ from PyQt4.QtCore import Qt
 
 from ... import core
 from .. import glue_qt_resources  # pylint: disable=W0611
+from ..mime import LAYER_MIME_TYPE, LAYERS_MIME_TYPE
 
 
 class GlueMdiArea(QtGui.QMdiArea):
     """Glue's MdiArea implementation.
 
     Drop events with :class:`~glue.core.Data` objects in
-    :class:`~glue.qt.qtutil.PyMimeData` load these objects into new
+    :class:`~glue.qt.mime.PyMimeData` load these objects into new
     data viewers
     """
     def __init__(self, application, parent=None):
@@ -41,18 +42,32 @@ class GlueMdiArea(QtGui.QMdiArea):
 
     def dragEnterEvent(self, event):
         """ Accept the event if it has an application/py_instance format """
-        if event.mimeData().hasFormat('application/py_instance'):
+        if event.mimeData().hasFormat(LAYERS_MIME_TYPE):
+            event.accept()
+        elif event.mimeData().hasFormat(LAYER_MIME_TYPE):
             event.accept()
         else:
             event.ignore()
 
     def dropEvent(self, event):
         """ Load a new data viewer if the event has a glue Data object """
-        obj = event.mimeData().data('application/py_instance')
-        if isinstance(obj, core.data.Data):
-            self._application.new_data_viewer(obj)
-        elif isinstance(obj, core.subset.Subset):
-            self._application.new_data_viewer(obj.data)
+        md = event.mimeData()
+
+        def new_layer(layer):
+            if isinstance(layer, core.data.Data):
+                self._application.new_data_viewer(layer)
+            else:
+                assert isinstance(layer, core.subset.Subset)
+                self._application.new_data_viewer(layer.data)
+
+        if md.hasFormat(LAYER_MIME_TYPE):
+            new_layer(md.data(LAYER_MIME_TYPE))
+
+        assert md.hasFormat(LAYERS_MIME_TYPE)
+        for layer in md.data(LAYERS_MIME_TYPE):
+            new_layer(layer)
+
+        event.accept()
 
     def mousePressEvent(self, event):
         """Right mouse press in the MDI area opens a new data viewer"""

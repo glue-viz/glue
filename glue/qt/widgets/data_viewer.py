@@ -9,6 +9,7 @@ from ...core.data import Data
 from ...core.subset import Subset
 from ..layer_artist_model import QtLayerArtistContainer, LayerArtistView
 from .. import get_qapp
+from ..mime import LAYERS_MIME_TYPE, LAYER_MIME_TYPE
 
 
 class DataViewer(QMainWindow, HubListener):
@@ -64,19 +65,32 @@ class DataViewer(QMainWindow, HubListener):
         raise NotImplementedError
 
     def dragEnterEvent(self, event):
-        """ Accept the event if it has an application/py_instance format """
-        if event.mimeData().hasFormat('application/py_instance'):
+        """ Accept the event if it has data layers"""
+        if event.mimeData().hasFormat(LAYER_MIME_TYPE):
+            event.accept()
+        elif event.mimeData().hasFormat(LAYERS_MIME_TYPE):
             event.accept()
         else:
             event.ignore()
 
     def dropEvent(self, event):
-        """ Add data to the viewer if the event has a glue Data object """
-        obj = event.mimeData().data('application/py_instance')
-        if isinstance(obj, Data):
-            self.add_data(obj)
-        elif isinstance(obj, Subset):
-            self.add_subset(obj)
+        """ Add layers to the viewer if contained in mime data """
+        def add_layer(layer):
+            if isinstance(layer, Data):
+                self.add_data(layer)
+            else:
+                assert isinstance(layer, Subset)
+                self.add_subset(layer)
+
+        if event.mimeData().hasFormat(LAYER_MIME_TYPE):
+            add_layer(event.mimeData().data(LAYER_MIME_TYPE))
+
+        assert event.mimeData().hasFormat(LAYERS_MIME_TYPE)
+
+        for layer in event.mimeData().data(LAYERS_MIME_TYPE):
+            add_layer(layer)
+
+        event.accept()
 
     def mousePressEvent(self, event):
         """ Consume mouse press events, and prevent them from propagating
