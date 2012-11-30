@@ -461,3 +461,4 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         urls = event.mimeData().urls()
         for url in urls:
             self._load_data(url.path())
+        event.accept()
