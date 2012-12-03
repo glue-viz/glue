@@ -82,9 +82,13 @@ class ArgumentWidget(QWidget):
 
     def dropEvent(self, event):
         obj = event.mimeData().data('application/py_instance')
+        if isinstance(obj, list):
+            obj = obj[0]
         if not isinstance(obj, core.data.ComponentID):
+            event.ignore()
             return
         self.component_id = obj
+        event.accept()
 
 
 class LinkEquation(QWidget):
