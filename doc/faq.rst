@@ -17,8 +17,8 @@ Take a look at this video. For more details, consult the :ref:`tutorial <getting
 Something is broken, or confusing. What should I do?
 ----------------------------------------------------
 If you think you've found a bug in Glue, feel free to add
-an issue to the `GitHub issues page <https://github.com/glue-viz/glue/issues?state=open>`_. If you have general questions, send us an `email <mailto:cbeaumont@cfa.harvard.edu>`_.
+an issue to the `GitHub issues page <https://github.com/glue-viz/glue/issues?state=open>`_. If you have general questions, send us an `email <mailto:glue.viz@gmail.com>`_.
 
 I have some other question...?
 ------------------------------
-Send us an `email <mailto:cbeaumont@cfa.harvard.edu>`_.
+Send us an `email <mailto:glue.viz@gmail.com>`_.
