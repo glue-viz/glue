@@ -22,7 +22,7 @@ import numpy as np
 
 from ..core import util
 from ..core import roi
-
+from . import get_qapp
 
 class MouseMode(object):
     """ The base class for all MouseModes.
@@ -116,6 +116,10 @@ class RoiMode(MouseMode):
     def __init__(self, axes, **kwargs):
         super(RoiMode, self).__init__(axes, **kwargs)
         self._roi_tool = None
+        self._start_event = None
+        self._drag = False
+        app = get_qapp()
+        self._drag_dist = app.startDragDistance()
 
     def roi(self):
         """ The ROI defined by this mouse mode
@@ -124,16 +128,32 @@ class RoiMode(MouseMode):
         """
         return self._roi_tool.roi()
 
+    def _update_drag(self, event):
+        if self._drag or self._start_event is None:
+            return
+
+        dx = abs(event.x - self._start_event.x)
+        dy = abs(event.y - self._start_event.y)
+        if (dx + dy) > self._drag_dist:
+            self._roi_tool.start_selection(self._start_event)
+            self._drag = True
+
     def press(self, event):
-        self._roi_tool.start_selection(event)
+        self._start_event = event
         super(RoiMode, self).press(event)
 
     def move(self, event):
-        self._roi_tool.update_selection(event)
+        self._update_drag(event)
+        if self._drag:
+            self._roi_tool.update_selection(event)
         super(RoiMode, self).move(event)
 
     def release(self, event):
-        self._roi_tool.finalize_selection(event)
+        if self._drag:
+            self._roi_tool.finalize_selection(event)
+        self._drag = False
+        self._start_event = None
+
         super(RoiMode, self).release(event)
 
 
