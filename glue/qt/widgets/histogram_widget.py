@@ -91,7 +91,7 @@ class HistogramWidget(DataViewer):
 
     def _mouse_modes(self):
         axes = self.client.axes
-        rect = HRangeMode(axes, release_callback=self.apply_roi)
+        rect = HRangeMode(axes, roi_callback=self.apply_roi)
         return [rect]
 
     def apply_roi(self, mode):

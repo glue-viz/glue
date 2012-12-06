@@ -4,16 +4,19 @@ import numpy as np
 from numpy.testing import assert_almost_equal
 
 from ..mouse_mode import (MouseMode, RectangleMode, CircleMode, PolyMode,
-                          ContrastMode, ContourMode, contour_to_roi)
+                          ContrastMode, ContourMode, contour_to_roi, LassoMode,
+                          ClickRoiMode)
 
 
 class Event(object):
-    def __init__(self, x, y, button=3):
+    def __init__(self, x, y, button=3, key='a'):
         self.x = x
         self.y = y
         self.xdata = x
         self.ydata = y
         self.button = button
+        self.key = key
+        self.inaxes = True
 
 
 def axes():
@@ -124,6 +127,52 @@ class TestRoiMode(TestMouseMode):
         self.mode._roi_tool.roi.assert_called_once_with()
 
 
+class TestClickRoiMode(TestMouseMode):
+
+    def setup_method(self, method):
+        TestMouseMode.setup_method(self, method)
+        self.mode._roi_tool = MagicMock()
+        self.mode._roi_tool.active.return_value = False
+
+    def mode_factory(self):
+        raise NotImplemented
+
+    def test_roi_started_on_press(self):
+        e = Event(1, 2)
+        self.mode.press(e)
+        assert self.mode._roi_tool.start_selection.call_count == 1
+
+    def test_roi_updates_on_subsequent_presses(self):
+        e = Event(1, 2)
+        e2 = Event(1, 30)
+        self.mode.press(e)
+        self.mode._roi_tool.active.return_value = True
+        self.mode.press(e2)
+        assert self.mode._roi_tool.start_selection.call_count == 1
+        assert self.mode._roi_tool.update_selection.call_count == 1
+
+    def test_roi_finalizes_on_enter(self):
+        e = Event(1, 2)
+        e2 = Event(1, 20)
+        e3 = Event(1, 30, key='enter')
+        self.mode.press(e)
+        self.mode._roi_tool.active.return_value = True
+        self.mode.press(e2)
+        self.mode.key(e3)
+        self.mode._roi_tool.start_selection.assert_called_once_with(e)
+        self.mode._roi_tool.update_selection.assert_called_once_with(e2)
+        self.mode._roi_tool.finalize_selection.assert_called_once_with(e2)
+
+    def test_roi_resets_on_escape(self):
+        e = Event(1, 2)
+        e2 = Event(1, 30, key='escape')
+        self.mode.press(e)
+        self.mode.key(e2)
+        self.mode.press(e)
+        assert self.mode._roi_tool.reset.call_count == 1
+        assert self.mode._roi_tool.start_selection.call_count == 2
+
+
 class TestRectangleMode(TestRoiMode):
     def mode_factory(self):
         return RectangleMode
@@ -134,7 +183,12 @@ class TestCircleMode(TestRoiMode):
         return CircleMode
 
 
-class TestPolyMode(TestRoiMode):
+class TestLassoMode(TestRoiMode):
+    def mode_factory(self):
+        return LassoMode
+
+
+class TestPolyMode(TestClickRoiMode):
     def mode_factory(self):
         return PolyMode
 
@@ -185,3 +239,4 @@ class TestContourToRoi(object):
             assert p is None
 
 del TestRoiMode  # prevents test discovery from running abstract test
+del TestClickRoiMode
