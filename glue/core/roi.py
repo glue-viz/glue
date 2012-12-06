@@ -391,6 +391,7 @@ class AbstractMplRoi(object):  # pragma: no cover
 
         self._ax = ax
         self._roi = self._roi_factory()
+        self._mid_selection = False
 
     def _draw(self):
         self._ax.figure.canvas.draw()
@@ -400,6 +401,14 @@ class AbstractMplRoi(object):  # pragma: no cover
 
     def roi(self):
         return self._roi
+
+    def reset(self):
+        self._roi.reset()
+        self._mid_selection = False
+        self._sync_patch()
+
+    def active(self):
+        return self._mid_selection
 
     def start_selection(self, event):
         raise NotImplementedError()
@@ -435,7 +444,6 @@ class MplRectangularROI(AbstractMplRoi):
 
         AbstractMplRoi.__init__(self, ax)
 
-        self._mid_selection = False
         self._xi = None
         self._yi = None
 
@@ -505,8 +513,6 @@ class MplXRangeROI(AbstractMplRoi):
         """
 
         AbstractMplRoi.__init__(self, ax)
-
-        self._mid_selection = False
         self._xi = None
 
         self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
@@ -565,8 +571,6 @@ class MplYRangeROI(AbstractMplRoi):
         """
 
         AbstractMplRoi.__init__(self, ax)
-
-        self._mid_selection = False
         self._xi = None
 
         self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
@@ -638,7 +642,6 @@ class MplCircularROI(AbstractMplRoi):
         """
 
         AbstractMplRoi.__init__(self, ax)
-        self._mid_selection = False
         self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
 
@@ -682,7 +685,6 @@ class MplCircularROI(AbstractMplRoi):
         self._roi.set_radius(0.)
         self._xi = xy[0, 0]
         self._yi = xy[0, 1]
-
         self._mid_selection = True
         self._sync_patch()
 
@@ -734,7 +736,6 @@ class MplPolygonalROI(AbstractMplRoi):
         :param ax: A matplotlib Axes object to attach the graphical ROI to
         """
         AbstractMplRoi.__init__(self, ax)
-        self._mid_selection = False
         self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
         self._patch = Polygon(np.array(zip([0, 1], [0, 1])))
