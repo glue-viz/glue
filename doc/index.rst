@@ -27,7 +27,7 @@ Glue is a Python library to explore relationships within and among related datas
    scripting_interface.rst
    developer_guide.rst
    api.rst
-
+   faq.rst
 
 Indices and tables
 ==================

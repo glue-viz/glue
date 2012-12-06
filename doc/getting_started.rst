@@ -127,13 +127,21 @@ Next, create a scatter plot of the catalog by dragging ``w5_psc`` into the visua
    :align: center
    :width: 500px
 
-Finally, we can select ``w5.1``, copy it's definition (``Ctrl+C`` or ``Cmd+C``), selection ``w5_psc.1``, and paste this definition (``Ctrl+V`` or ``Cmd+V``). This will show which entries in the catalog overlap the circular region defined in the image.
+Finally, we can select ``w5.1``, copy it's definition (``Ctrl+C`` or ``Cmd+C``), selecting ``w5_psc.1``, and paste this definition (``Ctrl+V`` or ``Cmd+V``). This will show which entries in the catalog overlap the circular region defined in the image.
 
 .. figure:: link_subset_3.png
    :align: center
    :width: 500px
 
 This cross-data operation was possible because Glue had enough information to apply the spatial constraint in the image (fundamentally, a constraint on ``World x:RA---TAN`` and ``World y:DEC--TAN``) to a constraint in the catalog (since it could derive thsoe quantities from the ``RAJ2000`` and ``DEJ2000`` attributes). Several other cross-data operations are possible at this point. For example, you can drag the ``w5_psc.1`` entry from the data manager to the image window to overplot this subset as a collection of points in the image.
+
+.. tip::
+
+    Glue stores subsets as sets of constraints -- tracing a rectangle
+    subset on a plot defines a set of constraints on the
+    quantities plotted on the x and y axes (left < x < right, bottom <
+    y < top). Copying a subset copies this definition, and pasting it
+    applies the definition to a different subset.
 
 As was mentioned :ref:`above <multi_selection_note>`, the highlighted subsets in the data manager are the ones which are affected by selecting regions in the plots. Thus, instead of manually copy-pasting subsets from the image to the catalog, you can also highlight both subsets before selecting a plot region. This will update both subsets to match the selection.
 
