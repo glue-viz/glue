@@ -2,7 +2,7 @@
 
 # Python Qt4 bindings for GUI objects
 from PyQt4 import QtGui
-from PyQt4.QtCore import pyqtSignal
+from PyQt4.QtCore import pyqtSignal, Qt
 
 # import the Qt4Agg FigureCanvas object, that binds Figure to
 # Qt4Agg backend. It also inherits from QWidget
@@ -42,6 +42,17 @@ class MplCanvas(FigureCanvas):
         # notify the system of updated policy
         FigureCanvas.updateGeometry(self)
         self.manager = FigureManager(self, 0)
+
+    def paintEvent(self, event):
+        #draw the zoom rectangle more prominently
+        drawRect = self.drawRect
+        self.drawRect = False
+        super(MplCanvas, self).paintEvent(event)
+        if drawRect:
+            p = QtGui.QPainter(self)
+            p.setPen(QtGui.QPen(Qt.red, 2, Qt.DotLine))
+            p.drawRect(self.rect[0], self.rect[1], self.rect[2], self.rect[3])
+            p.end()
 
 
 class MplWidget(QtGui.QWidget):
