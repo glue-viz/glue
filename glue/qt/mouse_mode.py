@@ -124,8 +124,19 @@ class MouseMode(object):
 class RoiModeBase(MouseMode):
     """ Base class for defining ROIs. ROIs accessible via the roi() method
 
-    See DragRoiMode and ClickRoiMode subclasses for interaction details"""
+    See RoiMode and ClickRoiMode subclasses for interaction details
+
+    Clients can provide an roi_callback function. When ROIs are
+    finalized (i.e. fully defined), this function will be called with
+    the RoiMode object as the argument. Clients can use RoiMode.roi()
+    to retrieve the new ROI, and take the appropriate action.
+    """
     def __init__(self, axes, **kwargs):
+        """
+        :param roi_callback: Function that will be called when the
+                             ROI is finished being defined.
+        :type roi_callback:  function
+        """
         self._roi_callback = kwargs.pop('roi_callback', None)
         super(RoiModeBase, self).__init__(axes, **kwargs)
         self._roi_tool = None
@@ -138,6 +149,7 @@ class RoiModeBase(MouseMode):
         return self._roi_tool.roi()
 
     def _finish_roi(self, event):
+        """Called by subclasses when ROI is fully defined"""
         self._roi_tool.finalize_selection(event)
         if self._roi_callback is not None:
             self._roi_callback(self)
@@ -187,8 +199,12 @@ class RoiMode(RoiModeBase):
 
 
 class ClickRoiMode(RoiModeBase):
-    """ Alternative to the RoiMode, based around clicks and keypresses
-    instead of clicks and drags"""
+    """
+    Generate ROIs using clicks and click+drags.
+
+    ROIs updated on each click, and each click+drag.
+    ROIs are finalized on enter press, and reset on escape press
+    """
     def __init__(self, axes, **kwargs):
         super(ClickRoiMode, self).__init__(axes, **kwargs)
         self._last_event = None
