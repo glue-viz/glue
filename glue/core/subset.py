@@ -250,6 +250,9 @@ class Subset(object):
             slabel = "Subset: %s" % self.label
         return "%s %s" % (slabel, dlabel)
 
+    def __repr__(self):
+        return self.__str__()
+
     def __or__(self, other):
         return _combine([self, other], operator.or_)
 
