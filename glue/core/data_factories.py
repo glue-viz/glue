@@ -217,7 +217,7 @@ try:
         image into a data object"""
         result = Data()
 
-        data = np.asarray(Image.open(file_name))#.convert('L'))
+        data = np.asarray(Image.open(file_name))  # .convert('L'))
         data = np.flipud(data)
         shp = data.shape
 
