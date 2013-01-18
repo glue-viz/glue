@@ -97,7 +97,8 @@ class QtClientRegistry(Registry):
             from .qt.widgets.scatter_widget import ScatterWidget
             from .qt.widgets.image_widget import ImageWidget
             from .qt.widgets.histogram_widget import HistogramWidget
-            return [ScatterWidget, ImageWidget, HistogramWidget]
+            from .qt.widgets.wwt_widget import WWTWidget
+            return [ScatterWidget, ImageWidget, HistogramWidget, WWTWidget]
         except ImportError:
             logging.getLogger(__name__).warning(
                 "could not import glue.qt in ConfigObject")
