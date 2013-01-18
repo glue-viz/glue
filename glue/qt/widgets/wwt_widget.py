@@ -1,11 +1,13 @@
-from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
-
 from urllib import urlopen
 import logging
 
+import numpy as np
+from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
+
 from .data_viewer import DataViewer
 from ...core.client import Client
+from ...core.exceptions import IncompatibleAttribute
 from ...clients.layer_artist import LayerArtist
 from ..ui.wwt import Ui_WWT
 from .. import glue_qt_resources
@@ -60,7 +62,7 @@ class WWTLayer(LayerArtist):
         try:
             ra = self.layer[self.xatt]
             dec = self.layer[self.yatt]
-        except IncomatibleAttribute:
+        except IncompatibleAttribute:
             print "Cannot fetch attributes %s and %s" % (self.xatt, self.yatt)
             return
 
@@ -261,31 +263,42 @@ class WWTWidget(DataViewer):
         self.move(xcen, ycen, fov)
         return True
 
-    def add_data(self, data):
+    def add_data(self, data, center=True):
         print 'add data'
         if data in self:
             return
-        self._add_layer(data)
+        self._add_layer(data, center)
 
         for s in data.subsets:
-            self.add_subset(s)
+            self.add_subset(s, center=False)
         return True
 
-    def add_subset(self, subset):
+    def add_subset(self, subset, center=True):
         print 'add subset'
         if subset in self:
             return
-        self._add_layer(subset)
+        self._add_layer(subset, center)
         return True
 
-    def _add_layer(self, layer):
+    def _add_layer(self, layer, center=True):
         if layer in self:
             return
         artist = WWTLayer(layer, self._driver)
         self._container.append(artist)
         assert len(self._container[layer]) > 0, self._container[layer]
         self._update_layer(layer)
+        if center:
+            self._center_on(layer)
         return True
+
+    def _center_on(self, layer):
+        """Center view on data"""
+        try:
+            x = np.median(layer[self.ra])
+            y = np.median(layer[self.dec])
+        except IncompatibleAttribute:
+            return
+        self.move(x, y)
 
     def register_to_hub(self, hub):
         from ...core import message as m
