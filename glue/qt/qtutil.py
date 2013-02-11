@@ -84,10 +84,7 @@ def data_wizard():
             decision = report_error(e, gdd.factory())
             if not decision:
                 return []
-    if result is not None:
-        return [result]
-    else:
-        return []
+    return result
 
 
 class GlueDataDialog(object):
@@ -133,14 +130,18 @@ class GlueDataDialog(object):
     def load_data(self):
         """Highest level method to interactively load a data set.
 
-        :rtype: A constructed data object, or None
+        :rtype: A list of constructed data objects
         """
         from glue.core.data_factories import data_label
         path, fac = self._get_path_and_factory()
         if path is not None:
             result = fac.function(path)
+            if isinstance(result, list):
+                return result
+            #single data object
             result.label = data_label(path)
-            return result
+            return [result]
+        return []
 
 
 def edit_layer_color(layer):

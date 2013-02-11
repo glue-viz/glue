@@ -51,7 +51,7 @@ class TestGlueDataDialog(object):
         """Return None if user cancels operation"""
         fd = GlueDataDialog()
         mock_file_exec(fd, cancel=True)
-        assert fd.load_data() is None
+        assert fd.load_data() == []
 
     def test_load_data_normal(self):
         """normal load_data dispatches path to factory"""
@@ -59,6 +59,8 @@ class TestGlueDataDialog(object):
         mock_file_exec(fd, cancel=False, path='ld_data_nrml',
                        factory=dummy_factory_member)
         d = fd.load_data()
+        assert len(d) == 1
+        d = d[0]
         assert d.label == 'ld_data_nrml'
         assert d.made_with_dummy_factory is True
 
@@ -82,14 +84,14 @@ def mock_file_exec(fd, cancel=False, path='junk',
 def test_data_wizard_cancel():
     """Returns empty list if user cancel's dialog"""
     with patch('glue.qt.qtutil.GlueDataDialog') as mock:
-        mock().load_data.return_value = None
+        mock().load_data.return_value = []
         assert qtutil.data_wizard() == []
 
 
 def test_data_wizard_normal():
     """Returns data list if successful"""
     with patch('glue.qt.qtutil.GlueDataDialog') as mock:
-        mock().load_data.return_value = 1
+        mock().load_data.return_value = [1]
         assert qtutil.data_wizard() == [1]
 
 
