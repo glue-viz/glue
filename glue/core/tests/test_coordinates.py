@@ -11,7 +11,7 @@ from ..coordinates import coordinates_from_header, WCSCoordinates, Coordinates
 class TestWcsCoordinates(object):
 
     def default_header(self):
-        from astropy.io import fits
+        from ...external.astro import fits
         hdr = fits.Header()
         hdr.update('NAXIS', 2)
         hdr.update('CRVAL1', 0)
@@ -229,7 +229,7 @@ CDELT3  =        66.4236100000 /
 
 
 def header_from_string(string):
-    from astropy.io import fits
+    from ...external.astro import fits
     cards = []
     for s in string.splitlines():
         try:

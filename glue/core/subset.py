@@ -199,7 +199,7 @@ class Subset(object):
         mask = np.short(self.to_mask())
         if format == 'fits':
             try:
-                from astropy.io import fits
+                from ..external.astro import fits
                 fits.writeto(file_name, mask, clobber=True)
             except ImportError:
                 raise ImportError("Cannot write mask -- requires astropy")
@@ -208,7 +208,7 @@ class Subset(object):
 
     def read_mask(self, file_name):
         try:
-            from astropy.io import fits
+            from ..external.astro import fits
             mask = fits.open(file_name)[0].data
         except ImportError:
             raise ImportError("Cannot write mask -- requires astropy")
