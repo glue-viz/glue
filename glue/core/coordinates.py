@@ -37,11 +37,19 @@ class WCSCoordinates(Coordinates):
         Astrophysics, 446, 747
     '''
 
-    def __init__(self, header):
+    def __init__(self, header, wcs=None):
         super(WCSCoordinates, self).__init__()
-        from astropy import wcs
+        from astropy.wcs import WCS
         self._header = header
-        self._wcs = wcs.WCS(header)
+        wcs = wcs or WCS(header)
+
+        #update WCS interface if using pywcs instead of astropy.wcs
+        if not hasattr(wcs, 'wcs_pix2world'):
+            wcs.wcs_pix2world = wcs.all_pix2sky
+        if not hasattr(wcs, 'wcs_world2pix'):
+            wcs.wcs_world2pix = wcs.wcs_sky2pix
+
+        self._wcs = wcs
 
     @property
     def wcs(self):
@@ -67,7 +75,7 @@ class WCSCoordinates(Coordinates):
         '''
         arrs = [np.asarray(p) for p in pixel]
         pix = np.vstack(a.ravel() for a in arrs).T
-        result = tuple(self._wcs.wcs_pix2world(pix, 1).T)
+        result = tuple(self._wcs.wcs_pix2world(pix, 0).T)
         for r, a in zip(result, arrs):
             r.shape = a.shape
         return result
@@ -87,7 +95,7 @@ class WCSCoordinates(Coordinates):
         '''
         arrs = [np.asarray(w) for w in world]
         pix = np.vstack(a.ravel() for a in arrs).T
-        result = tuple(self._wcs.wcs_world2pix(pix, 1).T)
+        result = tuple(self._wcs.wcs_world2pix(pix, 0).T)
         for r, a in zip(result, arrs):
             r.shape = a.shape
         return result
@@ -155,4 +163,9 @@ def coordinates_from_wcs(wcs):
     from astropy.io import fits
     hdr_str = wcs.wcs.to_header()
     hdr = fits.Header.fromstring(hdr_str)
-    return coordinates_from_header(hdr)
+    try:
+        return WCSCoordinates(hdr, wcs)
+    except (AttributeError, TypeError) as e:
+        print e
+        pass
+    return Coordinates()
