@@ -307,7 +307,7 @@ class TestSubsetIo(object):
     def test_write(self):
         with tempfile.NamedTemporaryFile() as tmp:
             self.subset.write_mask(tmp.name)
-            from astropy.io import fits
+            from ...external.astro import fits
             data = fits.open(tmp.name)[0].data
             expected = np.array([[0, 1, 1, 1],
                                  [0, 0, 0, 0],
