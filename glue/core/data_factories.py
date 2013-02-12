@@ -117,7 +117,7 @@ def gridded_data(filename, format='auto', **kwargs):
 
     # Read in the data
     if format in ['fits', 'fit']:
-        from astropy.io import fits
+        from ..external.astro import fits
         arrays = extract_data_fits(filename, **kwargs)
         header = fits.Header.fromfile(filename)
         result.coords = coordinates_from_header(header)
