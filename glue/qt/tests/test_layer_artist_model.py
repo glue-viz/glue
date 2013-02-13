@@ -1,4 +1,4 @@
-from PyQt4.QtCore import Qt
+from ...external.qt.QtCore import Qt
 
 from mock import MagicMock
 

@@ -1,4 +1,4 @@
-from PyQt4.QtCore import QMimeData
+from ..external.qt.QtCore import QMimeData
 
 
 class PyMimeData(QMimeData):
@@ -24,6 +24,7 @@ class PyMimeData(QMimeData):
         kwargs: Optional mime type / objects pairs to store as objects
         """
         super(PyMimeData, self).__init__()
+
         self._instances = {self.MIME_TYPE: instance}
         self.setData(self.MIME_TYPE, '1')
 

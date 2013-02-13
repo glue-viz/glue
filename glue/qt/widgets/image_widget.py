@@ -1,8 +1,8 @@
 from functools import partial
 
-from PyQt4.QtGui import (QWidget, QAction,
-                         QToolButton, QIcon, QMessageBox)
-from PyQt4.QtCore import Qt
+from ...external.qt.QtGui import (QWidget, QAction,
+                                  QToolButton, QIcon, QMessageBox)
+from ...external.qt.QtCore import Qt
 
 import matplotlib.cm as cm
 

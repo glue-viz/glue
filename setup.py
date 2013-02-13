@@ -100,13 +100,21 @@ class BuildQt(Command):
     def run(self):
 
         from PyQt4.uic import compileUi
+        from cStringIO import StringIO
 
         for infile in glob(os.path.join('glue', 'qt', 'ui', '*.ui')):
             print("Compiling " + infile)
             directory, filename = os.path.split(infile)
             outfile = os.path.join(directory, filename.replace('.ui', '.py'))
+            out = StringIO()
+            compileUi(infile, out)
+            val = out.getvalue()
+            out.close()
+
+            #substitute PyQt4 specific code
+            val = val.replace('PyQt4', 'glue.external.qt')
             with open(outfile, 'wb') as out:
-                compileUi(infile, out)
+                out.write(val)
 
         import subprocess
         from shutil import copyfile
@@ -123,6 +131,12 @@ class BuildQt(Command):
             print("pyrcc4 command failed - make sure that pyrcc4 "
                   "is in your $PATH, or specify a custom command with "
                   "--pyrcc4=command")
+
+        #remove PyQt4/Pyside references
+        data = open('glue/qt/glue_qt_resources.py').read()
+        data = data.replace('PyQt4', 'glue.external.qt').replace('PySide', 'glue.external.qt')
+        with open('glue/qt/glue_qt_resources.py', 'w') as out:
+            out.write(data)
 
         #XXX Hack: pyuic seems to expect glue/qt/ui/glue_rc.py when
         #loading icons. Copy it there

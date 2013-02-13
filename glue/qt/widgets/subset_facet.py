@@ -1,4 +1,4 @@
-from PyQt4.QtGui import (QDialog, QDoubleValidator, QIcon)
+from ...external.qt.QtGui import (QDialog, QDoubleValidator, QIcon)
 import numpy as np
 from matplotlib import cm
 

@@ -86,7 +86,7 @@ def die_on_error(msg):
                 return func(*args, **kwargs)
             except Exception as e:
                 import traceback
-                from PyQt4.QtGui import QMessageBox
+                from .external.qt.QtGui import QMessageBox
                 m = "%s\n%s" % (msg, e)
                 detail = str(traceback.format_exc())
                 qmb = QMessageBox(QMessageBox.Critical, "Error", m)
@@ -130,10 +130,6 @@ def start_glue(gluefile=None, config=None, datafiles=None):
     :param datafiles: An optional list of data files to load
     :type datafiles: list of str
     """
-    #from PyQt4.QtGui import QApplication
-    #app = QApplication.instance() or QApplication(sys.argv)
-    #splash = get_splash()
-
     import glue
     from glue.qt.glue_application import GlueApplication
 
@@ -177,8 +173,8 @@ def execute_script(script):
 
 def get_splash():
     """Instantiate a splash screen"""
-    from PyQt4.QtGui import QSplashScreen, QPixmap
-    from PyQt4.QtCore import Qt
+    from .external.qt.QtGui import QSplashScreen, QPixmap
+    from .external.qt.QtCore import Qt
     import os
 
     pth = os.path.join(os.path.dirname(__file__), 'logo.png')

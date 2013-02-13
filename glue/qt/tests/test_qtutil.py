@@ -1,6 +1,6 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 from .. import qtutil
-from PyQt4 import QtGui
+from ...external.qt import QtGui
 from mock import MagicMock, patch
 from ..qtutil import GlueDataDialog
 from ..qtutil import pretty_number

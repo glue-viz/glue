@@ -1,16 +1,16 @@
 from ..qtutil import (mpl_to_qt4_color, symbol_icon, POINT_ICONS,
                       qt4_to_mpl_color)
 
-from PyQt4.QtGui import (QFormLayout, QDialogButtonBox, QColorDialog,
-                         QWidget, QLineEdit, QListWidget,
-                         QListWidgetItem, QPixmap, QDialog, QLabel,
-                         QSpinBox)
+from ...external.qt.QtGui import (QFormLayout, QDialogButtonBox, QColorDialog,
+                                  QWidget, QLineEdit, QListWidget,
+                                  QListWidgetItem, QPixmap, QDialog, QLabel,
+                                  QSpinBox)
 
-from PyQt4.QtCore import QSize, pyqtSignal
+from ...external.qt.QtCore import QSize, Signal
 
 
 class ColorWidget(QLabel):
-    mousePressed = pyqtSignal()
+    mousePressed = Signal()
 
     def mousePressEvent(self, event):
         self.mousePressed.emit()

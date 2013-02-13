@@ -4,10 +4,11 @@ editing the data collection
 """
 import operator
 
-from PyQt4.QtGui import (QWidget, QIcon, QMenu,
-                         QAction, QKeySequence, QFileDialog)
+from ...external.qt.QtGui import (QWidget, QIcon, QMenu,
+                                  QAction, QKeySequence, QFileDialog)
 
-from PyQt4.QtCore import Qt, pyqtSignal, QObject
+
+from ...external.qt.QtCore import Qt, Signal, QObject
 
 from ..ui.layertree import Ui_LayerTree
 
@@ -112,7 +113,7 @@ class NewAction(LayerAction):
     _title = "New Subset"
     _tooltip = "Create a new subset for the selected data"
     _icon = ":icons/glue_subset.png"
-    _shortcut = 'Ctrl+Shift+N'
+    _shortcut = QKeySequence('Ctrl+Shift+N')
 
     def _can_trigger(self):
         return self.single_selection()
@@ -126,7 +127,7 @@ class NewAction(LayerAction):
 class ClearAction(LayerAction):
     _title = "Clear subset"
     _tooltip = "Clear current subset"
-    _shortcut = 'Ctrl+K'
+    _shortcut = QKeySequence('Ctrl+K')
 
     def _can_trigger(self):
         return self.single_selection_subset()
@@ -140,7 +141,7 @@ class ClearAction(LayerAction):
 class DuplicateAction(LayerAction):
     _title = "Duplicate subset"
     _tooltip = "Duplicate the current subset"
-    _shortcut = 'Ctrl+D'
+    _shortcut = QKeySequence('Ctrl+D')
 
     def _can_trigger(self):
         return self.single_selection_subset()
@@ -155,7 +156,7 @@ class DuplicateAction(LayerAction):
 class DeleteAction(LayerAction):
     _title = "Delete Layer"
     _tooltip = "Delete the selected data and/or subsets"
-    _shortcut = Qt.Key_Backspace
+    _shortcut = QKeySequence(Qt.Key_Backspace)
 
     def _can_trigger(self):
         selection = self.selected_layers()
@@ -423,7 +424,7 @@ class AndCombiner(ReduceCombiner):
 
 
 class LayerCommunicator(QObject):
-    layer_check_changed = pyqtSignal(object, bool)
+    layer_check_changed = Signal(object, bool)
 
 
 class LayerTreeWidget(QWidget, Ui_LayerTree):
@@ -617,7 +618,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
 def load_subset(subset):
     assert isinstance(subset, core.subset.Subset)
     dialog = QFileDialog()
-    file_name = str(dialog.getOpenFileName(caption="Select a subset"))
+    file_name, fltr = str(dialog.getOpenFileName(caption="Select a subset"))
 
     if not file_name:
         return
@@ -631,7 +632,7 @@ def load_subset(subset):
 def save_subset(subset):
     assert isinstance(subset, core.subset.Subset)
     dialog = QFileDialog()
-    file_name = str(dialog.getSaveFileName(
+    file_name, fltr = str(dialog.getSaveFileName(
         caption="Select an output name"))
     if not file_name:
         return

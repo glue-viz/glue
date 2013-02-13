@@ -1,4 +1,4 @@
-from PyQt4.QtGui import QDialog
+from ...external.qt.QtGui import QDialog
 
 from ... import core
 from ...core import parse
@@ -125,7 +125,7 @@ def main():
     import glue
     from glue.tests import example_data
     from glue.core.data_collection import DataCollection
-    from PyQt4.QtGui import QApplication
+    from ...external.qt.QtGui import QApplication
 
     app = QApplication(sys.argv)  # pylint: disable=W0612
     data = example_data.pipe()[:2]

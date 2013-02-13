@@ -8,10 +8,11 @@ The LayerArtistView is a list widget that displays
 these layers, and provides GUI access to the model
 """
 #pylint: disable=I0011, W0613, R0913, R0904, W0611
-from PyQt4.QtGui import (QColor,
-                         QListView, QAbstractItemView, QAction,
-                         QPalette)
-from PyQt4.QtCore import Qt, QAbstractListModel, QModelIndex, QSize, QTimer
+from ..external.qt.QtGui import (QColor,
+                                 QListView, QAbstractItemView, QAction,
+                                 QPalette)
+from ..external.qt.QtCore import (Qt, QAbstractListModel, QModelIndex,
+                                  QSize, QTimer)
 
 from .qtutil import (edit_layer_color,
                      edit_layer_symbol, edit_layer_point_size,

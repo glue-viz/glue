@@ -1,5 +1,5 @@
-from PyQt4 import QtGui
-from PyQt4.QtCore import Qt
+from ...external.qt import QtGui
+from ...external.qt.QtCore import Qt
 
 from ... import core
 from .. import glue_qt_resources  # pylint: disable=W0611
