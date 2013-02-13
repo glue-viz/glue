@@ -1,23 +1,19 @@
-from ..external.qt.QtCore import QMimeData
+from ..external.qt.QtCore import QMimeData, QByteArray
 
 
 class PyMimeData(QMimeData):
-    """Stores references to live python objects.
+    """
+    A custom MimeData object that stores live python objects
 
-    Normal QMimeData instances store all data as QByteArrays. This
-    makes it hard to pass around live python objects in drag/drop
-    events, since one would have to convert between object references
-    and byte sequences.
+    Associate specific objects with a mime type by passing
+    mime type / object kev/value pairs to the __init__ method
 
-    The object to store is passed to the constructor, and stored in
-    the application/py_instance mime_type.
-
-    Additional custom python objects can be stored by passing extra
-    keyword arguments to __init__
+    If a single object is passed to the init method, that
+    object is associated with the PyMimeData.MIME_TYPE mime type
     """
     MIME_TYPE = 'application/py_instance'
 
-    def __init__(self, instance, **kwargs):
+    def __init__(self, instance=None, **kwargs):
         """
         :param instance: The python object to store
 
@@ -25,14 +21,22 @@ class PyMimeData(QMimeData):
         """
         super(PyMimeData, self).__init__()
 
-        self._instances = {self.MIME_TYPE: instance}
-        self.setData(self.MIME_TYPE, '1')
+        self._instances = {}
 
+        self.setData(self.MIME_TYPE, instance)
         for k, v in kwargs.items():
-            print 'setting %s to %s' % (k, v)
-            self.setData(k, '1')
-            assert self.hasFormat(k)
-            self._instances[k] = v
+            self.setData(k, v)
+
+    def formats(self):
+        return list(set(super(PyMimeData, self).formats() +
+                        self._instances.keys()))
+
+    def hasFormat(self, fmt):
+        return fmt in self._instances or super(PyMimeData, self).hasFormat(fmt)
+
+    def setData(self, mime, data):
+        super(PyMimeData, self).setData(mime, QByteArray('1'))
+        self._instances[mime] = data
 
     def data(self, mime_type):
         """ Retrieve the data stored at the specified mime_type
@@ -44,5 +48,8 @@ class PyMimeData(QMimeData):
 
         return super(PyMimeData, self).data(mime_type)
 
+
+#some standard glue mime types
 LAYER_MIME_TYPE = 'glue/layer'
 LAYERS_MIME_TYPE = 'glue/layers'
+INSTANCE_MIME_TYPE = PyMimeData.MIME_TYPE

@@ -15,10 +15,36 @@ Do not use this if you need PyQt with the old QString/QVariant API.
 import os
 import sys
 
+
 # Available APIs.
 QT_API_PYQT = 'pyqt'
 QT_API_PYSIDE = 'pyside'
 QT_API = None
+
+
+#import hook to protect importing of both PySide and PyQt4
+class ImportDenier(object):
+    __forbidden = set()
+
+    def __init__(self):
+        self.__forbidden = None
+
+    def forbid(self, module_name):
+        self.__forbidden = module_name
+
+    def find_module(self, mod_name, pth):
+        if pth:
+            return
+        if mod_name == self.__forbidden:
+            return self
+
+    def load_module(self, mod_name):
+        raise ImportError("Importing %s forbidden by %s"
+                          % (mod_name, __name__))
+
+
+_import_hook = ImportDenier()
+sys.meta_path.append(_import_hook)
 
 
 def prepare_pyqt4():
@@ -36,6 +62,10 @@ def register_module(module, modlabel):
     from glue.qt.QtGui import QMessageBox
     """
     sys.modules[__name__ + '.' + modlabel] = module
+
+
+def deny_module(mod_name):
+    _import_hook.forbid(mod_name)
 
 
 def _load_pyqt4():
@@ -59,6 +89,8 @@ def _load_pyqt4():
     global QT_API
     QT_API = QT_API_PYQT
 
+    deny_module('PySide')
+
 
 def _load_pyside():
     from PySide import QtCore, QtGui, __version__, QtTest
@@ -77,6 +109,7 @@ def _load_pyside():
     global QT_API
     QT_API = QT_API_PYSIDE
 
+    deny_module('PyQt4')
 
 loaders = [_load_pyqt4, _load_pyside]
 if os.environ.get('QT_API') == QT_API_PYSIDE:

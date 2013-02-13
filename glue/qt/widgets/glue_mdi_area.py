@@ -42,6 +42,7 @@ class GlueMdiArea(QtGui.QMdiArea):
 
     def dragEnterEvent(self, event):
         """ Accept the event if it has an application/py_instance format """
+
         if event.mimeData().hasFormat(LAYERS_MIME_TYPE):
             event.accept()
         elif event.mimeData().hasFormat(LAYER_MIME_TYPE):

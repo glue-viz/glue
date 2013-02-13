@@ -14,6 +14,7 @@ def data_collection():
     dc.append(d)
     d.add_component(c1, 'test1')
     d.add_component(c2, 'test2')
+    dc.append(core.data.Data(label='test 2'))
     return dc
 
 
@@ -27,4 +28,11 @@ class TestComponentSelector(object):
     def test_component(self):
         self.comp.set_current_row(1)
         c = self.comp.component
-        assert type(c) == ComponentID
+        assert isinstance(c, ComponentID)
+
+    def test_data(self):
+        self.comp.set_data_row(0)
+        assert self.comp.data is self.data[0]
+
+        self.comp.set_data_row(1)
+        assert self.comp.data is self.data[1]

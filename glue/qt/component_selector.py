@@ -7,11 +7,11 @@ from .ui.component_selector import Ui_ComponentSelector
 class ComponentSelector(QWidget):
     """ An interface to view the components and data of a DataCollection
 
-    The widget supports dragging, and stores an instance of the
-    dragged ComponentID in the application/py_instance mime type
+    Components can be draged and dropped.
 
-    The currently-selected componentID is also stored in the
-    Component attribute
+    The currently-selected componentID is stored in the
+    Component property. The currently-selected Data is stored in the
+    Data property.
 
     Usage:
 
@@ -32,15 +32,24 @@ class ComponentSelector(QWidget):
         self._ui.component_selector.setDragEnabled(True)
 
     def _connect(self):
+        #attach Qt signals
         ds = self._ui.data_selector
         ds.currentIndexChanged.connect(self._set_components)
         self._ui.component_selector.currentItemChanged.connect(
             lambda *args: self.component_changed.emit())
 
     def set_current_row(self, row):
+        """Select which component is selected
+
+        :param row: Row number
+        """
         self._ui.component_selector.setCurrentRow(row)
 
     def set_data_row(self, row):
+        """Select which data object is selected
+
+        :param row: Row number
+        """
         self._ui.data_selector.setCurrentIndex(row)
 
     def setup(self, data_collection):

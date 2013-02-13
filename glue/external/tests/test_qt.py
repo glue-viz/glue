@@ -7,7 +7,15 @@ import pytest
 from mock import MagicMock
 
 
-@pytest.skip()
+"""
+We don't run these tests by default, since they import both PyQt4 and
+PySide, and this brings all manner of sadness to subsequent tests.
+
+To run these tests, run `py.test --qtapi`
+"""
+
+
+@pytest.mark.qtapi
 class TestQT(object):
     def teardown_class(cls):
         for m in sys.modules.keys():
@@ -15,6 +23,7 @@ class TestQT(object):
                 sys.modules.pop(m)
 
     def setup_method(self, method):
+        qt.deny_module(None)
         os.environ.pop('QT_API')
 
     def test_defaults_to_qt4(self):

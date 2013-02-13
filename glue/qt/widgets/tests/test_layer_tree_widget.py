@@ -28,7 +28,6 @@ class TestLayerTree(object):
 
     def teardown_method(self, method):
         self.win.close()
-        del self.win
 
     def select_layers(self, *layers):
         items = [self.widget[l] for l in layers]

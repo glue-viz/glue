@@ -24,6 +24,10 @@ def connect_int_spin(client, prop, widget):
     widget.valueChanged.connect(partial(setattr, client, prop))
 
 
+def _hash(x):
+    return str(id(x))
+
+
 class HistogramWidget(DataViewer):
     LABEL = "Histogram"
 
@@ -50,6 +54,8 @@ class HistogramWidget(DataViewer):
         self.make_toolbar()
         self._connect()
         self._data = data
+
+        self._component_hashes = {}  # maps _hash(componentID) -> componentID
 
     def _tweak_geometry(self):
         self.central_widget.resize(600, 400)
@@ -99,31 +105,39 @@ class HistogramWidget(DataViewer):
         self.client.apply_roi(roi)
 
     def _update_attributes(self):
+        """Repopulate the combo box that selects the quantity to plot"""
         combo = self.ui.attributeCombo
         component = self.component
         combo.blockSignals(True)
         combo.clear()
 
+        #implementation note:
+        #PySide doesn't robustly store python objects with setData
+        #use _hash(x) instead
         model = QtGui.QStandardItemModel()
+        data_ids = set(_hash(d) for d in self._data)
+        self._component_hashes = {_hash(c): c for d in self._data
+                                  for c in d.components}
+
         for d in self._data:
             if d not in self._container:
                 continue
             item = QtGui.QStandardItem(d.label)
-            item.setData(d, role=Qt.UserRole)
-            assert item.data(Qt.UserRole) is d
+            item.setData(_hash(d), role=Qt.UserRole)
+            assert item.data(Qt.UserRole) == _hash(d)
             item.setFlags(item.flags() & ~Qt.ItemIsEnabled)
             model.appendRow(item)
             for c in d.visible_components:
                 if not np.can_cast(d.dtype(c), np.float):
                     continue
                 item = QtGui.QStandardItem(c.label)
-                item.setData(c, role=Qt.UserRole)
+                item.setData(_hash(c), role=Qt.UserRole)
                 model.appendRow(item)
         combo.setModel(model)
 
         #separators below data items
         for i in range(combo.count()):
-            if isinstance(combo.itemData(i), Data):
+            if combo.itemData(i) in data_ids:
                 combo.insertSeparator(i + 1)
 
         combo.blockSignals(False)
@@ -138,7 +152,7 @@ class HistogramWidget(DataViewer):
     def component(self):
         combo = self.ui.attributeCombo
         index = combo.currentIndex()
-        return combo.itemData(index)
+        return self._component_hashes.get(combo.itemData(index), None)
 
     @component.setter
     def component(self, component):
@@ -146,7 +160,7 @@ class HistogramWidget(DataViewer):
         #combo.findData doesn't seem to work in ...external.qt
         for i in range(combo.count()):
             data = combo.itemData(i)
-            if data is component:
+            if data == _hash(component):
                 combo.setCurrentIndex(i)
                 return
         raise IndexError("Component not present: %s" % component)

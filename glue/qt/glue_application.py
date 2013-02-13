@@ -195,7 +195,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self.tab_widget.tabCloseRequested.connect(self._close_tab)
 
     def _create_menu(self):
-        mbar = self._ui.menubar
+        mbar = self.menuBar()
         menu = QMenu(mbar)
         menu.setTitle("File")
 
@@ -239,6 +239,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         menu.addActions(tbar.actions())
         mbar.addMenu(menu)
 
+        #trigger inclusion of Mac Native "Help" tool
         if sys.platform == 'darwin':
             mbar.addMenu('Help')
 

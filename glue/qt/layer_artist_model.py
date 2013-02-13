@@ -10,7 +10,8 @@ these layers, and provides GUI access to the model
 #pylint: disable=I0011, W0613, R0913, R0904, W0611
 from ..external.qt.QtGui import (QColor,
                                  QListView, QAbstractItemView, QAction,
-                                 QPalette)
+                                 QPalette, QKeySequence)
+
 from ..external.qt.QtCore import (Qt, QAbstractListModel, QModelIndex,
                                   QSize, QTimer)
 
@@ -294,7 +295,7 @@ class LayerArtistView(QListView):
         self.addAction(act)
 
         act = QAction('Remove', self)
-        act.setShortcut(Qt.Key_Backspace)
+        act.setShortcut(QKeySequence(Qt.Key_Backspace))
         act.setShortcutContext(Qt.WidgetShortcut)
         act.triggered.connect(
             lambda: self.model().removeRow(self.current_row()))

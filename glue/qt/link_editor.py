@@ -81,7 +81,7 @@ class LinkEditor(QDialog):
         item = QListWidgetItem(str(link))
         current.addItem(item)
         item.setHidden(link.hide_from_editor)
-        current.data[item] = link
+        current.set_data(item, link)
 
     def _add_new_link(self):
         if not self.advanced:
@@ -103,7 +103,7 @@ class LinkEditor(QDialog):
         row = current.currentRow()
         if item is None:
             return
-        current.data.pop(item)
+        current.drop_data(item)
         deleted = current.takeItem(row)
         assert deleted == item  # sanity check
 

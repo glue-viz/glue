@@ -153,3 +153,13 @@ class TestLinkEquation(object):
 
         widget.clear_inputs()
         assert widget.signature == ([None, None], None)
+
+    def test_signal_connections(self):
+        #testing that signal-slot connections don't crash
+        widget = LinkEquation()
+
+        signal = widget._ui.function.currentIndexChanged
+        signal.emit(5)
+
+        signal = widget._output_widget.editor.textChanged
+        signal.emit('changing')

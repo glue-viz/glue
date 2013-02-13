@@ -4,6 +4,7 @@ from ..external.qt.QtGui import (QWidget, QHBoxLayout, QVBoxLayout,
                                  QLabel, QLineEdit)
 
 from ..external.qt.QtGui import QSpacerItem, QSizePolicy
+from ..external.qt import QT_API, QT_API_PYSIDE
 
 from .ui.link_equation import Ui_LinkEquation
 from .. import core
@@ -285,7 +286,11 @@ class LinkEquation(QWidget):
         for a in self._argument_widgets:
             layout.removeWidget(a)
             a.close()
-        layout.removeItem(self.spacer)
+
+        if QT_API != QT_API_PYSIDE:
+            #XXX PySide crashing here
+            layout.removeItem(self.spacer)
+
         self._argument_widgets = []
 
     def _populate_function_combo(self):

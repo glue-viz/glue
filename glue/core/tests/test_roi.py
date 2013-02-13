@@ -3,7 +3,7 @@ import pytest
 
 import numpy as np
 from numpy.testing import assert_almost_equal
-import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 from mock import MagicMock
 
 from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI,
@@ -12,7 +12,8 @@ from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI,
 
 from .. import roi as r
 
-AXES = plt.plot([1, 2, 3])[0].axes
+FIG = Figure()
+AXES = FIG.add_subplot(111)
 
 
 class TestRectangle(object):
@@ -603,9 +604,6 @@ class TestPolyMpl(TestMpl):
     def test_proper_roi(self):
         return isinstance(self.roi._roi, PolygonalROI)
 
-    def teardown_method(self, method):
-        plt.close('all')
-
     def send_events(self):
         ev0 = DummyEvent(0, 0, inaxes=self.axes)
         ev1 = DummyEvent(0, 1, inaxes=self.axes)
@@ -628,6 +626,7 @@ class TestPolyMpl(TestMpl):
 
 
 class TestUtil(object):
+
     def setup_method(self, method):
         self.axes = AXES
 
