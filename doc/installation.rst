@@ -115,5 +115,4 @@ that should be in your path. Running `glue` from the command line will
 start the program. Glue accepts a variety of command-line
 arguments. See `glue --help` for examples.
 
-
-.. note:: Windows users may have to run `python path\to\glue`. Glue is installed to the python scripts directory (e.g., `C:\Python27\Scripts`)
+.. note:: On Windows, installation creates a `glue.bat` script into the python script directory (e.g., `C:\Python27\Scripts`). Windows users can create a desktop shortcut for this file, and run Glue by double clicking on the icon.

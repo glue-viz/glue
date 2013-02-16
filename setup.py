@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 from __future__ import print_function
 from distutils.core import setup, Command
+from distutils.command.install_scripts import install_scripts
 from glob import glob
 import os
 import sys
+import platform
 
 from setupext import (print_line, print_raw, print_status,
                       check_for_numpy, check_for_matplotlib,
@@ -11,6 +13,9 @@ from setupext import (print_line, print_raw, print_status,
                       check_for_astropy, check_for_aplpy, check_for_pytest,
                       check_for_mock, check_for_pil, check_for_atpy,
                       )
+
+def is_windows():
+    return platform.system() == 'Windows'
 
 def print_sysinfo():
     """Print information about relevant dependencies"""
@@ -138,7 +143,23 @@ class build(build_py):
         self.run_command("build_qt")
         build_py.run(self)
 
+class glue_install_scripts(install_scripts):
+    #on windows, make a glue.bat file
+    #lets users just type "glue", instead of "python glue"
+    def run(self):
+        install_scripts.run(self)
+        if not is_windows():
+            return
+        for script in self.get_outputs():
+            if not script.endswith('glue'):
+                continue
+            bat = "@echo off\n python %s %%*" % script
+            outfile = script + '.bat'
+            with open(outfile, 'w') as out:
+                out.write(bat)
+
 cmdclass['build_py'] = build
+cmdclass['install_scripts'] = glue_install_scripts
 
 setup(name='Glue',
       version='0.1.0',
