@@ -13,6 +13,7 @@ from setupext import (print_line, print_raw, print_status,
                       check_for_qt4, check_for_ipython, check_for_scipy,
                       check_for_astropy, check_for_aplpy, check_for_pytest,
                       check_for_mock, check_for_pil, check_for_atpy,
+                      check_for_pyside,
                       )
 
 def is_windows():
@@ -44,6 +45,7 @@ def print_sysinfo():
     print_raw("RECOMMENDED DEPENDENCIES")
     check_for_matplotlib()
     check_for_qt4()
+    check_for_pyside()
     check_for_scipy()
 
     print_raw("")

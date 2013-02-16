@@ -17,14 +17,17 @@ Dependencies
 
  * `Python <http://www.python.org>`_ 2.6 or 2.7
  * `Numpy <http://numpy.scipy.org>`_ 1.4.0 or later
- * `Matplotlib <http://www.matplotlib.org>`_ 1.1.0 or later
-* `PyQt4 <http://www.riverbankcomputing.co.uk/software/pyqt/download>`_
-   4.8.0 or later (which requires
-   `SIP <http://www.riverbankcomputing.co.uk/software/sip/download>`_ ).
+ * `Matplotlib <http://www.matplotlib.org>`_ 1.1.0 or later (1.2.0 or later recommended, due to an image tinting bug in 1.1.1)
+ * `PyQt4 <http://www.riverbankcomputing.co.uk/software/pyqt/download>`_ 4.8.0 or later or `PySide <http://qt-project.org/wiki/PySide>`_ v1.1.0 or later. PyQt4 further requires `SIP <http://www.riverbankcomputing.co.uk/software/sip/download>`_.
+
+.. warning:: PySide support is still experimental. We currently recommend PyQt4.
+
+.. note:: Users with both PyQt4 and PySide can select between bindings by setting the ``QT_API`` environment variable to either ``pyside`` or ``pyqt4``.
+
 
 *Optional*
 
-* `Scipy <http://www.scipy.org>`_. Used for some analysis features
+* `Scipy <http://www.scipy.org>`_. 0.10.0 or greater. Used for some analysis features
 * `IPython <http://www.ipython.org>`_ For using the IPython terminal within the GUI.
 
 *Optional, for Astronomy*
@@ -33,8 +36,7 @@ Dependencies
 * `ATpy <http://atpy.github.com>`_
 * `h5py <http://code.google.com/p/h5py/>`_
 
-.. note:: If Astropy is not installed, Glue will fallback to importing
-the legacy PyFits and PyWCS modules.
+.. note:: If Astropy is not installed, Glue will fallback to importing the legacy PyFits and PyWCS modules.
 
 *Optional, for development*
 
@@ -77,7 +79,7 @@ The main dependencies can be installed with::
 Once these are installed, you can use ``pip`` to install the remaining ones::
 
     pip install astropy
-    pip install vo
+    pip install -e svn+http://svn6.assembla.com/svn/astrolib/trunk/vo/#egg=vo
     pip install atpy
 
 
@@ -103,15 +105,30 @@ The main dependencies can be installed with::
 Once these are installed, you can use ``pip`` to install the remaining ones::
 
     pip install astropy
-    pip install vo
+    pip install -e svn+http://svn6.assembla.com/svn/astrolib/trunk/vo/#egg=vo
     pip install atpy
+    
+The Enthought Python Distribution
+^^^^^^^^^^^^^^^
+
+The `Enthought Python Distribution <http://www.enthought.com/products/epd.php>`_ contains most of Glue's dependencies. Building Glue on top of EPD involves::
+
+    pip install astropy
+    pip install -e svn+http://svn6.assembla.com/svn/astrolib/trunk/vo/#egg=vo
+    pip install atpy
+    pip install -e git+git://github.com/glue-viz/glue.git#egg=glue 
+   
+
+Anaconda
+^^^^^^^^
+The `Anaconda <https://store.continuum.io/cshop/anaconda>`_ distribution also contains most of Glue's dependencies. Installation instructions are the same as for the Enthought Python Distribution Above.
 
 Running Glue
 ------------
 
-Installing glue from source will create a executable `glue` script
-that should be in your path. Running `glue` from the command line will
+Installing glue from source will create a executable ``glue`` script
+that should be in your path. Running ``glue`` from the command line will
 start the program. Glue accepts a variety of command-line
-arguments. See `glue --help` for examples.
+arguments. See ``glue --help`` for examples.
 
-.. note:: On Windows, installation creates a `glue.bat` script into the python script directory (e.g., `C:\Python27\Scripts`). Windows users can create a desktop shortcut for this file, and run Glue by double clicking on the icon.
+.. note:: On Windows, installation creates a ``glue.bat`` script into the python script directory (e.g., ``C:\Python27\Scripts``). Windows users can create a desktop shortcut for this file, and run Glue by double clicking on the icon.
