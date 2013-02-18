@@ -7,5 +7,5 @@ def pytest_addoption(parser):
 
 
 def pytest_runtest_setup(item):
-    if 'qtapi' in item.keywords and not item.config.getoption('--qtapi'):
+    if 'qtapi' in item.keywords and not item.config.getvalue('qtapi'):
         pytest.skip("Need --qtapi option to run")
