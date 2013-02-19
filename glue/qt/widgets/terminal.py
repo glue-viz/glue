@@ -8,16 +8,31 @@ http://stackoverflow.com/a/11525205/1332492
 
 Usage:
    new_widget = glue_terminal(**kwargs)
+
+Implementation Note:
+
+Since v1.0dev, IPython implements embeddable in-process terminal widgets.
+This functionality doesn't exist in v0.12 and v0.13 -- this module provides
+a fallback implmentation for older IPython versions
 """
+
 import sys
 import atexit
 
 from ...external.qt import QtCore
 from ...external.qt.QtGui import QInputDialog
+
 from zmq import ZMQError
 from zmq.eventloop.zmqstream import ZMQStream
-from IPython.zmq.ipkernel import IPKernelApp, Kernel
-from IPython.zmq.iostream import OutStream
+
+try:  # IPython <= 0.13.1
+    from IPython.zmq.ipkernel import IPKernelApp, Kernel
+    from IPython.zmq.iostream import OutStream
+except ImportError:  # IPython >= 1.0dev
+    from IPython.kernel.zmq.ipkernel import Kernel
+    from IPython.kernel.zmq.kernelapp import IPKernelApp
+    from IPython.kernel.zmq.iostream import OutStream
+
 from IPython.lib.kernel import find_connection_file
 from IPython.frontend.qt.kernelmanager import QtKernelManager
 from IPython.frontend.qt.console.rich_ipython_widget import RichIPythonWidget
@@ -25,6 +40,44 @@ from IPython.frontend.qt.console.rich_ipython_widget import RichIPythonWidget
 from contextlib import contextmanager
 from zmq.eventloop import ioloop
 from IPython.utils.traitlets import TraitError
+
+
+class DragAndDropTerminal(RichIPythonWidget):
+    def __init__(self, **kwargs):
+        super(DragAndDropTerminal, self).__init__(**kwargs)
+        self.setAcceptDrops(True)
+        self.shell = None
+
+    @property
+    def namespace(self):
+        return self.shell.user_ns if self.shell is not None else None
+
+    def dragEnterEvent(self, event):
+        fmt = 'application/py_instance'
+        if self.shell is not None and event.mimeData().hasFormat(fmt):
+            event.accept()
+        else:
+            event.ignore()
+
+    def update_namespace(self, kwargs):
+        if self.shell is not None:
+            self.shell.push(kwargs)
+
+    def dropEvent(self, event):
+        obj = event.mimeData().data('application/py_instance')
+
+        var, ok = QInputDialog.getText(self, "Choose a variable name",
+                                       "Choose a variable name", text="x")
+        if ok:
+            #unpack single-item lists for convenience
+            if isinstance(obj, list) and len(obj) == 1:
+                obj = obj[0]
+
+            var = {str(var): obj}
+            self.update_namespace(var)
+            event.accept()
+        else:
+            event.ignore()
 
 
 #Works for IPython 0.12, 0.13
@@ -73,19 +126,18 @@ def _glue_terminal_1(**kwargs):
     manager = default_manager(kernel_app)
 
     try:  # IPython v0.13
-        widget = RichIPythonWidget(gui_completion='droplist')
+        widget = DragAndDropTerminal(gui_completion='droplist')
     except TraitError:  # IPython v0.12
-        widget = RichIPythonWidget(gui_completion=True)
+        widget = DragAndDropTerminal(gui_completion=True)
     widget.kernel_manager = manager
+    widget.shell = kernel_app.shell
 
     # update namespace
-    kernel_app.shell.user_ns.update(kwargs)
+    widget.update_namespace(kwargs)
 
-    # for debugging
-    kernel_app.shell.user_ns['_kernel'] = kernel_app
-    kernel_app.shell.user_ns['_manager'] = manager
-    kernel_app.shell.user_ns['_widget'] = glue_terminal
-
+    #IPython v0.12 turns on MPL interactive. Turn it back off
+    import matplotlib
+    matplotlib.interactive(False)
     return widget
 
 
@@ -151,7 +203,7 @@ class EmbeddedQtKernelApp(IPKernelApp):
         super(EmbeddedQtKernelApp, self).start()
 
 
-class EmbeddedIPythonWidget(RichIPythonWidget):
+class EmbeddedIPythonWidget(DragAndDropTerminal):
     gui_completion = 'droplist'
 
     def __init__(self, **kwargs):
@@ -159,7 +211,6 @@ class EmbeddedIPythonWidget(RichIPythonWidget):
         self._init_kernel_app()
         self._init_kernel_manager()
         self.update_namespace(kwargs)
-        self.setAcceptDrops(True)
 
     def _init_kernel_app(self):
         app = EmbeddedQtKernelApp.instance()
@@ -172,6 +223,7 @@ class EmbeddedIPythonWidget(RichIPythonWidget):
         except RuntimeError:  # already started
             pass
         self.app = app
+        self.shell = app.shell
 
     def _init_kernel_manager(self):
         connection_file = find_connection_file(self.app.connection_file)
@@ -184,28 +236,36 @@ class EmbeddedIPythonWidget(RichIPythonWidget):
     def update_namespace(self, ns):
         self.app.shell.user_ns.update(ns)
 
-    def dragEnterEvent(self, event):
-        if event.mimeData().hasFormat('application/py_instance'):
-            event.accept()
-        else:
-            event.ignore()
-
-    def dropEvent(self, event):
-        obj = event.mimeData().data('application/py_instance')
-
-        var, ok = QInputDialog.getText(self, "Choose a variable name",
-                                       "Choose a variable name", text="x")
-        if ok:
-            var = {str(var): obj}
-            self.update_namespace(var)
-            event.accept()
-        else:
-            event.ignore()
-
 
 def _glue_terminal_2(**kwargs):
     """Used for IPython v0.13, v0.14"""
     return EmbeddedIPythonWidget(**kwargs)
+
+
+def _glue_terminal_3(**kwargs):
+    """Used for IPython v1.0 and beyond
+
+    :param kwargs: Keywords which are passed to Widget init,
+    and which are also passed to the current namespace
+    """
+    # see IPython/docs/examples/frontends/inprocess_qtconsole.py
+
+    from IPython.kernel.inprocess.ipkernel import InProcessKernel
+    from IPython.frontend.qt.inprocess_kernelmanager import \
+        QtInProcessKernelManager
+
+    kernel = InProcessKernel(gui='qt4')
+
+    km = QtInProcessKernelManager(kernel=kernel)
+    km.start_channels()
+    kernel.frontends.append(km)
+
+    control = DragAndDropTerminal()
+    control.kernel_manager = km
+    control.shell = kernel.shell
+    control.update_namespace(kwargs)
+
+    return control
 
 
 def glue_terminal(**kwargs):
@@ -223,7 +283,10 @@ def glue_terminal(**kwargs):
     maj = int(rels[1])
     if rel == 0 and maj < 12:
         raise RuntimeError("Glue terminal requires IPython >= 0.12")
-    if rel > 0 or maj >= 13:
+
+    if rel >= 1:
+        return _glue_terminal_3(**kwargs)
+    if rel == 0 and maj >= 13:
         return _glue_terminal_2(**kwargs)
     else:
         return _glue_terminal_1(**kwargs)
