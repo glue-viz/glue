@@ -29,7 +29,7 @@ class Clipboard(object):
 
 
 class LayerAction(QAction):
-    _title = None
+    _title = ''
     _icon = None
     _tooltip = None
     _enabled_on_init = False
@@ -37,8 +37,8 @@ class LayerAction(QAction):
     _shortcut_context = Qt.WidgetShortcut
 
     def __init__(self, layer_tree_widget):
-        parent = layer_tree_widget.layerTree
-        super(LayerAction, self).__init__(self._title.title(), parent)
+        self._parent = layer_tree_widget.layerTree
+        super(LayerAction, self).__init__(self._title.title(), self._parent)
         self._layer_tree = layer_tree_widget
         if self._icon:
             self.setIcon(QIcon(self._icon))
@@ -49,11 +49,11 @@ class LayerAction(QAction):
             self.setShortcutContext(self._shortcut_context)
         if self._shortcut:
             self.setShortcut(self._shortcut)
-        parent.addAction(self)
+        self._parent.addAction(self)
         self._connect()
 
     def _connect(self):
-        self.parentWidget().itemSelectionChanged.connect(
+        self._parent.itemSelectionChanged.connect(
             self.update_enabled)
         self.triggered.connect(self._do_action)
 
