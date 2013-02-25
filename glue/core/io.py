@@ -6,8 +6,7 @@ def extract_data_fits(filename, use_hdu='all'):
     integers). If the requested HDUs do not have the same dimensions, an
     Exception is raised.
     '''
-
-    from astropy.io import fits
+    from ..external.astro import fits
 
     # Read in all HDUs
     hdulist = fits.open(filename, memmap=True)

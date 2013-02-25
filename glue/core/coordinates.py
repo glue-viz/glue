@@ -39,15 +39,17 @@ class WCSCoordinates(Coordinates):
 
     def __init__(self, header, wcs=None):
         super(WCSCoordinates, self).__init__()
-        from astropy.wcs import WCS
+        from ..external.astro import WCS
         self._header = header
         wcs = wcs or WCS(header)
 
-        #update WCS interface if using pywcs instead of astropy.wcs
-        if not hasattr(wcs, 'wcs_pix2world'):
-            wcs.wcs_pix2world = wcs.all_pix2sky
-        if not hasattr(wcs, 'wcs_world2pix'):
-            wcs.wcs_world2pix = wcs.wcs_sky2pix
+        #update WCS interface if using old API
+        mapping = {'wcs_pix2world': 'wcs_pix2sky',
+                   'wcs_world2pix': 'wcs_sky2pix',
+                   'all_pix2world': 'all_pix2sky'}
+        for k, v in mapping.items():
+            if not hasattr(wcs, k):
+                setattr(wcs, k, getattr(wcs, v))
 
         self._wcs = wcs
 
@@ -58,8 +60,8 @@ class WCSCoordinates(Coordinates):
     def __setstate__(self, state):
         self.__dict__ = state
         # wcs object doesn't seem to unpickle properly. reconstruct it
-        from astropy import wcs
-        self._wcs = wcs.WCS(self._header)
+        from ..external.astro import WCS
+        self._wcs = WCS(self._header)
 
     def pixel2world(self, *pixel):
         '''
@@ -140,7 +142,7 @@ def coordinates_from_header(header):
     """
     try:
         return WCSCoordinates(header)
-    except (AttributeError, TypeError) as e:
+    except (AttributeError, TypeError, AssertionError) as e:
         print e
         pass
     return Coordinates()
@@ -160,7 +162,7 @@ def coordinates_from_wcs(wcs):
     :param wcs: The WCS object to use
     :rtype: :class:`~glue.core.coordinates.Coordinates`
     """
-    from astropy.io import fits
+    from ..external.astro import fits
     hdr_str = wcs.wcs.to_header()
     hdr = fits.Header.fromstring(hdr_str)
     try:
