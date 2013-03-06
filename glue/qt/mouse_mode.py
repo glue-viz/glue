@@ -22,6 +22,7 @@ import numpy as np
 
 from ..core import util
 from ..core import roi
+from . import get_qapp
 
 
 class MouseMode(object):
@@ -44,7 +45,8 @@ class MouseMode(object):
     def __init__(self, axes,
                  press_callback=None,
                  move_callback=None,
-                 release_callback=None):
+                 release_callback=None,
+                 key_callback=None):
 
         self.icon = None
         self.mode_id = None
@@ -54,6 +56,7 @@ class MouseMode(object):
         self._press_callback = press_callback
         self._move_callback = move_callback
         self._release_callback = release_callback
+        self._key_callback = key_callback
         self.shortcut = None
         self._event_x = None
         self._event_y = None
@@ -102,19 +105,40 @@ class MouseMode(object):
         if self._release_callback is not None:
             self._release_callback(self)
 
+    def key(self, event):
+        """ Handles key press events
+
+        Calls key_callback method
+
+        :param event: Key event
+        :type event: Matplotlib event
+        """
+        if self._key_callback is not None:
+            self._key_callback(self)
+
     def menu_actions(self):
         """ List of QActions to be attached to this mode as a context menu """
         return []
 
 
-class RoiMode(MouseMode):
-    """ Defines ROIs, accessible via the roi() method.
+class RoiModeBase(MouseMode):
+    """ Base class for defining ROIs. ROIs accessible via the roi() method
 
-    This is an abstract base class. Subclasses assign an RoiTool
-    to the _roi_tool attribute
+    See RoiMode and ClickRoiMode subclasses for interaction details
+
+    Clients can provide an roi_callback function. When ROIs are
+    finalized (i.e. fully defined), this function will be called with
+    the RoiMode object as the argument. Clients can use RoiMode.roi()
+    to retrieve the new ROI, and take the appropriate action.
     """
     def __init__(self, axes, **kwargs):
-        super(RoiMode, self).__init__(axes, **kwargs)
+        """
+        :param roi_callback: Function that will be called when the
+                             ROI is finished being defined.
+        :type roi_callback:  function
+        """
+        self._roi_callback = kwargs.pop('roi_callback', None)
+        super(RoiModeBase, self).__init__(axes, **kwargs)
         self._roi_tool = None
 
     def roi(self):
@@ -124,17 +148,87 @@ class RoiMode(MouseMode):
         """
         return self._roi_tool.roi()
 
+    def _finish_roi(self, event):
+        """Called by subclasses when ROI is fully defined"""
+        self._roi_tool.finalize_selection(event)
+        if self._roi_callback is not None:
+            self._roi_callback(self)
+
+
+class RoiMode(RoiModeBase):
+    """ Define Roi Modes via click+drag events
+
+    ROIs are updated continuously on click+drag events, and finalized
+    on each mouse release
+    """
+    def __init__(self, axes, **kwargs):
+        super(RoiMode, self).__init__(axes, **kwargs)
+
+        self._start_event = None
+        self._drag = False
+        app = get_qapp()
+        self._drag_dist = app.startDragDistance()
+
+    def _update_drag(self, event):
+        if self._drag or self._start_event is None:
+            return
+
+        dx = abs(event.x - self._start_event.x)
+        dy = abs(event.y - self._start_event.y)
+        if (dx + dy) > self._drag_dist:
+            self._roi_tool.start_selection(self._start_event)
+            self._drag = True
+
     def press(self, event):
-        self._roi_tool.start_selection(event)
+        self._start_event = event
         super(RoiMode, self).press(event)
 
     def move(self, event):
-        self._roi_tool.update_selection(event)
+        self._update_drag(event)
+        if self._drag:
+            self._roi_tool.update_selection(event)
         super(RoiMode, self).move(event)
 
     def release(self, event):
-        self._roi_tool.finalize_selection(event)
+        if self._drag:
+            self._finish_roi(event)
+        self._drag = False
+        self._start_event = None
+
         super(RoiMode, self).release(event)
+
+
+class ClickRoiMode(RoiModeBase):
+    """
+    Generate ROIs using clicks and click+drags.
+
+    ROIs updated on each click, and each click+drag.
+    ROIs are finalized on enter press, and reset on escape press
+    """
+    def __init__(self, axes, **kwargs):
+        super(ClickRoiMode, self).__init__(axes, **kwargs)
+        self._last_event = None
+
+    def press(self, event):
+        if not self._roi_tool.active():
+            self._roi_tool.start_selection(event)
+        else:
+            self._roi_tool.update_selection(event)
+        self._last_event = event
+        super(ClickRoiMode, self).press(event)
+
+    def move(self, event):
+        if event.button is not None and self._roi_tool.active():
+            self._roi_tool.update_selection(event)
+            self._last_event = event
+        super(ClickRoiMode, self).move(event)
+
+    def key(self, event):
+        if event.key == 'enter':
+            self._finish_roi(self._last_event)
+        elif event.key == 'escape':
+            self._roi_tool.reset()
+        super(ClickRoiMode, self).key(event)
 
 
 class RectangleMode(RoiMode):
@@ -161,10 +255,22 @@ class CircleMode(RoiMode):
         self.shortcut = 'C'
 
 
-class PolyMode(RoiMode):
+class PolyMode(ClickRoiMode):
     """ Defines a Polygonal ROI, accessible via the roi() method"""
     def __init__(self, axes, **kwargs):
         super(PolyMode, self).__init__(axes, **kwargs)
+        self.icon = QIcon(':icons/glue_lasso.png')
+        self.mode_id = 'Polygon'
+        self.action_text = 'Polygonal ROI'
+        self.tool_tip = 'Lasso a region of interest'
+        self._roi_tool = roi.MplPolygonalROI(self._axes)
+        self.shortcut = 'G'
+
+
+class LassoMode(RoiMode):
+    """ Defines a Polygonal ROI, accessible via the roi() method"""
+    def __init__(self, axes, **kwargs):
+        super(LassoMode, self).__init__(axes, **kwargs)
         self.icon = QIcon(':icons/glue_lasso.png')
         self.mode_id = 'Lasso'
         self.action_text = 'Polygonal ROI'

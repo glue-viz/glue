@@ -125,11 +125,11 @@ class ScatterWidget(DataViewer):
 
     def _mouse_modes(self):
         axes = self.client.axes
-        rect = RectangleMode(axes, release_callback=self.apply_roi)
-        xra = HRangeMode(axes, release_callback=self.apply_roi)
-        yra = VRangeMode(axes, release_callback=self.apply_roi)
-        circ = CircleMode(axes, release_callback=self.apply_roi)
-        poly = PolyMode(axes, release_callback=self.apply_roi)
+        rect = RectangleMode(axes, roi_callback=self.apply_roi)
+        xra = HRangeMode(axes, roi_callback=self.apply_roi)
+        yra = VRangeMode(axes, roi_callback=self.apply_roi)
+        circ = CircleMode(axes, roi_callback=self.apply_roi)
+        poly = PolyMode(axes, roi_callback=self.apply_roi)
         return [rect, xra, yra, circ, poly]
 
     def apply_roi(self, mode):

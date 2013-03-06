@@ -117,7 +117,7 @@ def gridded_data(filename, format='auto', **kwargs):
 
     # Read in the data
     if format in ['fits', 'fit']:
-        from astropy.io import fits
+        from ..external.astro import fits
         arrays = extract_data_fits(filename, **kwargs)
         header = fits.Header.fromfile(filename)
         result.coords = coordinates_from_header(header)
@@ -217,7 +217,7 @@ try:
         image into a data object"""
         result = Data()
 
-        data = np.asarray(Image.open(file_name).convert('L'))
+        data = np.asarray(Image.open(file_name))  # .convert('L'))
         data = np.flipud(data)
         shp = data.shape
 
@@ -240,14 +240,13 @@ try:
             labels = ['PRIMARY']
 
         #look for AVM coordinate metadata
-        #XXX not debugged
-        #try:
-        #    from pyavm import AVM, NoAVMPresent
-        #    avm = AVM(str(file_name))  # avoid unicode
-        #    wcs = avm.to_wcs()
-        #    result.coords = coordinates_from_wcs(wcs)
-        #except (NoAVMPresent, ImportError):
-        #    pass
+        try:
+            from pyavm import AVM, NoAVMPresent
+            avm = AVM(str(file_name))  # avoid unicode
+            wcs = avm.to_wcs()
+            result.coords = coordinates_from_wcs(wcs)
+        except (NoAVMPresent, ImportError):
+            pass
 
         for c, l in zip(comps, labels):
             result.add_component(c, l)
@@ -262,6 +261,7 @@ try:
     set_default_factory('png', pil_data)
     set_default_factory('bmp', pil_data)
     set_default_factory('tiff', pil_data)
+    set_default_factory('tif', pil_data)
 
 except ImportError:  # pragma: no cover
         pass

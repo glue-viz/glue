@@ -109,6 +109,9 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         return widget.layer_view(), widget.options_widget(), str(widget)
 
     def _update_plot_dashboard(self, sub_window):
+        if sub_window is None:
+            return
+
         layer_view, options_widget, title = \
             self._get_plot_dashboards(sub_window)
 
@@ -461,3 +464,4 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         urls = event.mimeData().urls()
         for url in urls:
             self._load_data(url.path())
+        event.accept()

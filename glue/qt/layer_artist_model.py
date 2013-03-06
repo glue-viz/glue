@@ -13,10 +13,11 @@ from PyQt4.QtGui import (QColor,
                          QPalette)
 from PyQt4.QtCore import Qt, QAbstractListModel, QModelIndex, QSize, QTimer
 
-from .qtutil import (PyMimeData, edit_layer_color,
+from .qtutil import (edit_layer_color,
                      edit_layer_symbol, edit_layer_point_size,
                      layer_artist_icon, RGBEdit)
 
+from .mime import PyMimeData, LAYERS_MIME_TYPE
 from ..clients.layer_artist import LayerArtist, LayerArtistContainer
 from ..clients.layer_artist import RGBImageLayerArtist
 
@@ -97,13 +98,15 @@ class LayerArtistModel(QAbstractListModel):
         return True
 
     def mimeTypes(self):
-        return [PyMimeData.MIME_TYPE]
+        return [PyMimeData.MIME_TYPE, LAYERS_MIME_TYPE]
 
     def mimeData(self, indexes):
         arts = [self.artists[index.row()] for index in indexes]
+        layers = [a.layer for a in arts]
+
         if len(indexes) == 0:
             return 0
-        return PyMimeData(arts)
+        return PyMimeData(arts, **{LAYERS_MIME_TYPE: layers})
 
     def supportedDropActions(self):
         return Qt.MoveAction

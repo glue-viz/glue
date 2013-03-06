@@ -663,13 +663,16 @@ class Data(object):
             self.hub.broadcast(ComponentsChangedMessage(self))
 
     def __str__(self):
-        s = ""
+        s = "Data Set: %s" % self.label
         s += "Number of dimensions: %i\n" % self.ndim
         s += "Shape: %s\n" % ' x '.join([str(x) for x in self.shape])
         s += "Components:\n"
         for i, component in enumerate(self._components):
             s += " %i) %s\n" % (i, component)
         return s[:-1]
+
+    def __repr__(self):
+        return 'Data (label: %s)' % self.label
 
     def __setattr__(self, name, value):
         if name == "hub" and hasattr(self, 'hub') \
@@ -775,7 +778,7 @@ class GriddedData(Data):
 
         # Read in the data
         if format in ['fits', 'fit']:
-            from astropy.io import fits
+            from ..external.astro import fits
             arrays = extract_data_fits(filename, **kwargs)
             header = fits.open(filename, memmap=True)[0].header
             self.coords = coordinates_from_header(header)

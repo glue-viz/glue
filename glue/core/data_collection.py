@@ -157,3 +157,12 @@ class DataCollection(HubListener):
 
     def __len__(self):
         return len(self._data)
+
+    def __str__(self):
+        result = "DataCollection (%i data sets)\n\t" % len(self)
+        result += '\n\t'.join("%3i: %s" % (i, d.label) for
+                              i, d in enumerate(self))
+        return result
+
+    def __repr__(self):
+        return self.__str__()

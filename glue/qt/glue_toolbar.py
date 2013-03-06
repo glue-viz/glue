@@ -33,6 +33,7 @@ class GlueToolbar(NavigationToolbar2QT):
         self.setIconSize(QtCore.QSize(25, 25))
         self.layout().setSpacing(1)
         self.setFocusPolicy(Qt.StrongFocus)
+        self._idKey = None
 
     def _init_toolbar(self):
         self.basedir = os.path.join(matplotlib.rcParams['datapath'], 'images')
@@ -117,6 +118,9 @@ class GlueToolbar(NavigationToolbar2QT):
                 self._idDrag)
             self._idDrag = self.canvas.mpl_connect('motion_notify_event',
                                                    self.mouse_move)
+        if self._idKey is not None:
+            self._idKey = self.canvas.mpl_disconnect(self._idKey)
+
         self.mode = ''
 
     def add_mode(self, mode):
@@ -168,6 +172,8 @@ class GlueToolbar(NavigationToolbar2QT):
                 'motion_notify_event', mode.move)
             self._idRelease = self.canvas.mpl_connect(
                 'button_release_event', mode.release)
+            self._idKey = self.canvas.mpl_connect(
+                'key_press_event', mode.key)
             self.mode = mode.action_text
             self.canvas.widgetlock(self)
         else:

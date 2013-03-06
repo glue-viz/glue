@@ -14,6 +14,7 @@ from PyQt4.QtGui import (QColor, QInputDialog, QColorDialog,
                          QRadioButton, QButtonGroup, QCheckBox)
 
 from .decorators import set_cursor
+from .mime import PyMimeData, LAYERS_MIME_TYPE
 
 
 def mpl_to_qt4_color(color, alpha=1.0):
@@ -83,10 +84,7 @@ def data_wizard():
             decision = report_error(e, gdd.factory())
             if not decision:
                 return []
-    if result is not None:
-        return [result]
-    else:
-        return []
+    return result
 
 
 class GlueDataDialog(object):
@@ -132,14 +130,18 @@ class GlueDataDialog(object):
     def load_data(self):
         """Highest level method to interactively load a data set.
 
-        :rtype: A constructed data object, or None
+        :rtype: A list of constructed data objects
         """
         from glue.core.data_factories import data_label
         path, fac = self._get_path_and_factory()
         if path is not None:
             result = fac.function(path)
+            if isinstance(result, list):
+                return result
+            #single data object
             result.label = data_label(path)
-            return result
+            return [result]
+        return []
 
 
 def edit_layer_color(layer):
@@ -236,38 +238,6 @@ def get_text(title='Enter a label'):
         return str(result)
 
 
-class PyMimeData(QMimeData):
-    """Stores references to live python objects.
-
-    Normal QMimeData instances store all data as QByteArrays. This
-    makes it hard to pass around live python objects in drag/drop
-    events, since one would have to convert between object references
-    and byte sequences.
-
-    The object to store is passed to the constructor, and stored in
-    the application/py_instance mime_type.
-    """
-    MIME_TYPE = 'application/py_instance'
-
-    def __init__(self, instance):
-        """
-        :param instance: The python object to store
-        """
-        super(PyMimeData, self).__init__()
-        self._instance = instance
-        self.setData(self.MIME_TYPE, '1')
-
-    def data(self, mime_type):
-        """ Retrieve the data stored at the specified mime_type
-
-        If mime_type is application/py_instance, a python object
-        is returned. Otherwise, a QByteArray is returned """
-        if str(mime_type) == self.MIME_TYPE:
-            return self._instance
-
-        return super(PyMimeData, self).data(mime_type)
-
-
 class GlueItemView(object):
     """ A partial implementation of QAbstractItemView, with drag events.
 
@@ -279,17 +249,15 @@ class GlueItemView(object):
         self.setDragEnabled(True)
 
     def mimeTypes(self):
-        types = [PyMimeData.MIME_TYPE]
+        types = [LAYERS_MIME_TYPE]
         return types
 
     def mimeData(self, selected_items):
-        assert len(selected_items) == 1
-        item = selected_items[0]
         try:
-            data = self._mime_data[item]
+            data = [self._mime_data[i] for i in selected_items]
         except KeyError:
             data = None
-        return PyMimeData(data)
+        return PyMimeData(data, **{LAYERS_MIME_TYPE: data})
 
     def get_data(self, item):
         return self._mime_data[item]

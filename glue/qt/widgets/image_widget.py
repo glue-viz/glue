@@ -116,9 +116,9 @@ class ImageWidget(DataViewer):
 
     def _mouse_modes(self):
         axes = self.client.axes
-        rect = RectangleMode(axes, release_callback=self.apply_roi)
-        circ = CircleMode(axes, release_callback=self.apply_roi)
-        poly = PolyMode(axes, release_callback=self.apply_roi)
+        rect = RectangleMode(axes, roi_callback=self.apply_roi)
+        circ = CircleMode(axes, roi_callback=self.apply_roi)
+        poly = PolyMode(axes, roi_callback=self.apply_roi)
         contrast = ContrastMode(axes, move_callback=self._set_norm)
         contour = ContourMode(axes, release_callback=self._contour_roi)
         return [rect, circ, poly, contour, contrast]

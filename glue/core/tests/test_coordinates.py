@@ -11,7 +11,7 @@ from ..coordinates import coordinates_from_header, WCSCoordinates, Coordinates
 class TestWcsCoordinates(object):
 
     def default_header(self):
-        from astropy.io import fits
+        from ...external.astro import fits
         hdr = fits.Header()
         hdr.update('NAXIS', 2)
         hdr.update('CRVAL1', 0)
@@ -32,7 +32,7 @@ class TestWcsCoordinates(object):
 
         x, y = 250., 187.5
         result = coord.pixel2world(x, y)
-        expected = 0, 5
+        expected = 359.9832692105993601, 5.0166664867400375
         assert_almost_equal(result[0], expected[0])
         assert_almost_equal(result[1], expected[1])
 
@@ -42,7 +42,7 @@ class TestWcsCoordinates(object):
 
         x, y = 250, 187.5
         result = coord.pixel2world(x, y)
-        expected = 0, 5
+        expected = 359.9832692105993601, 5.0166664867400375
         assert_almost_equal(result[0], expected[0])
         assert_almost_equal(result[1], expected[1])
 
@@ -52,7 +52,9 @@ class TestWcsCoordinates(object):
 
         x, y = [250, 250], [187.5, 187.5]
         result = coord.pixel2world(x, y)
-        expected = [0, 0], [5, 5]
+        expected = ([359.9832692105993601, 359.9832692105993601],
+                    [5.0166664867400375, 5.0166664867400375])
+
         for i in range(0, 1):
             for r, e in zip(result[i], expected[i]):
                 assert_almost_equal(r, e)
@@ -63,7 +65,8 @@ class TestWcsCoordinates(object):
 
         x, y = np.array([250, 250]), np.array([187.5, 187.5])
         result = coord.pixel2world(x, y)
-        expected = np.array([0, 0]), np.array([5, 5])
+        expected = (np.array([359.9832692105993601, 359.9832692105993601]),
+                    np.array([5.0166664867400375, 5.0166664867400375]))
 
         np.testing.assert_array_almost_equal(result[0], expected[0])
         np.testing.assert_array_almost_equal(result[1], expected[1])
@@ -72,19 +75,22 @@ class TestWcsCoordinates(object):
         hdr = self.default_header()
         coord = WCSCoordinates(hdr)
 
-        expected = np.array([250, 250]), np.array([187.5, 187.5])
-        x, y = np.array([0, 0]), np.array([5, 5])
-        result = coord.world2pixel(x, y)
+        x, y = np.array([0, 0]), np.array([0, 0])
+        expected = (np.array([249.0000000000000284, 249.0000000000000284]),
+                    np.array([-114.2632689899972434, -114.2632689899972434]))
 
-        np.testing.assert_array_almost_equal(result[0], expected[0])
-        np.testing.assert_array_almost_equal(result[1], expected[1])
+        result = coord.world2pixel(x, y)
+        np.testing.assert_array_almost_equal(result[0], expected[0], 3)
+        np.testing.assert_array_almost_equal(result[1], expected[1], 3)
 
     def test_world2pixel_list(self):
         hdr = self.default_header()
         coord = WCSCoordinates(hdr)
 
-        expected = [250, 250], [187.5, 187.5]
-        x, y = [0, 0], [5, 5]
+        x, y = [0, 0], [0, 0]
+        expected = ([249.0000000000000284, 249.0000000000000284],
+                    [-114.2632689899972434, -114.2632689899972434])
+
         result = coord.world2pixel(x, y)
         for i in range(0, 1):
             for r, e in zip(result[i], expected[i]):
@@ -94,28 +100,17 @@ class TestWcsCoordinates(object):
         hdr = self.default_header()
         coord = WCSCoordinates(hdr)
 
-        expected = 250., 187.5
-        x, y = 0, 5
+        expected = 249.0000000000000284, -114.2632689899972434
+        x, y = 0, 0
 
         result = coord.world2pixel(x, y)
-        assert_almost_equal(result[0], expected[0])
-        assert_almost_equal(result[1], expected[1])
-
-    def test_world2pixel_different_input_types(self):
-        hdr = self.default_header()
-        coord = WCSCoordinates(hdr)
-
-        expected = 250., 187.5
-        x, y = 0, 5.
-
-        result = coord.world2pixel(x, y)
-        assert_almost_equal(result[0], expected[0])
-        assert_almost_equal(result[1], expected[1])
+        assert_almost_equal(result[0], expected[0], 3)
+        assert_almost_equal(result[1], expected[1], 3)
 
     def test_world2pixel_mismatched_input(self):
         coord = WCSCoordinates(self.default_header())
-        x, y = 0., [5.]
-        expected = 250., 187.5
+        x, y = 0., [0.]
+        expected = coord.world2pixel(x, y[0])
 
         result = coord.world2pixel(x, y)
         assert_almost_equal(result[0], expected[0])
@@ -123,8 +118,8 @@ class TestWcsCoordinates(object):
 
     def test_pixel2world_mismatched_input(self):
         coord = WCSCoordinates(self.default_header())
-        expected = 0., 5.
         x, y = [250.], 187.5
+        expected = coord.pixel2world(x[0], y)
 
         result = coord.pixel2world(x, y)
         assert_almost_equal(result[0], expected[0])
@@ -234,7 +229,7 @@ CDELT3  =        66.4236100000 /
 
 
 def header_from_string(string):
-    from astropy.io import fits
+    from ...external.astro import fits
     cards = []
     for s in string.splitlines():
         try:
