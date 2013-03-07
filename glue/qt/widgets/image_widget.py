@@ -57,7 +57,7 @@ class ImageWidget(DataViewer):
         #pylint: disable=E1101
         def act(name, cmap):
             a = QAction(name, self)
-            a.activated.connect(partial(self.client.set_cmap, cmap))
+            a.triggered.connect(lambda *args: self.client.set_cmap(cmap))
             pm = cmap2pixmap(cmap)
             a.setIcon(QIcon(pm))
             return a
@@ -76,7 +76,7 @@ class ImageWidget(DataViewer):
         self._cmaps.append(act('Purple-Green', cm.PRGn))
 
         self._rgb_add = QAction('RGB', self)
-        self._rgb_add.activated.connect(self._add_rgb)
+        self._rgb_add.triggered.connect(self._add_rgb)
 
     def _add_rgb(self):
         drgb = select_rgb(self._data)

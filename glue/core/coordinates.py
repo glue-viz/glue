@@ -43,6 +43,14 @@ class WCSCoordinates(Coordinates):
         self._header = header
         wcs = wcs or WCS(header)
 
+        #update WCS interface if using old API
+        mapping = {'wcs_pix2world': 'wcs_pix2sky',
+                   'wcs_world2pix': 'wcs_sky2pix',
+                   'all_pix2world': 'all_pix2sky'}
+        for k, v in mapping.items():
+            if not hasattr(wcs, k):
+                setattr(wcs, k, getattr(wcs, v))
+
         self._wcs = wcs
 
     @property
@@ -134,7 +142,7 @@ def coordinates_from_header(header):
     """
     try:
         return WCSCoordinates(header)
-    except (AttributeError, TypeError) as e:
+    except (AttributeError, TypeError, AssertionError) as e:
         print e
         pass
     return Coordinates()
