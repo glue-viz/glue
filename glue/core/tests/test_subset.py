@@ -305,24 +305,26 @@ class TestSubsetIo(object):
         self.subset.subset_state = ElementSubsetState(indices=inds)
 
     def test_write(self):
-        with tempfile.NamedTemporaryFile() as tmp:
-            self.subset.write_mask(tmp.name)
-            from ...external.astro import fits
-            data = fits.open(tmp.name)[0].data
-            expected = np.array([[0, 1, 1, 1],
-                                 [0, 0, 0, 0],
-                                 [0, 0, 0, 0],
-                                 [0, 0, 0, 0]], dtype=np.int16)
-            np.testing.assert_array_equal(data, expected)
+        fobj, tmp = tempfile.mkstemp()
+
+        self.subset.write_mask(tmp)
+        from ...external.astro import fits
+        data = fits.open(tmp)[0].data
+        expected = np.array([[0, 1, 1, 1],
+                             [0, 0, 0, 0],
+                             [0, 0, 0, 0],
+                             [0, 0, 0, 0]], dtype=np.int16)
+        np.testing.assert_array_equal(data, expected)
 
     def test_read(self):
-        with tempfile.NamedTemporaryFile() as tmp:
-            self.subset.write_mask(tmp.name)
-            sub2 = Subset(self.data)
-            sub2.read_mask(tmp.name)
-            mask1 = self.subset.to_mask()
-            mask2 = sub2.to_mask()
-            np.testing.assert_array_equal(mask1, mask2)
+        fobj, tmp = tempfile.mkstemp()
+
+        self.subset.write_mask(tmp)
+        sub2 = Subset(self.data)
+        sub2.read_mask(tmp)
+        mask1 = self.subset.to_mask()
+        mask2 = sub2.to_mask()
+        np.testing.assert_array_equal(mask1, mask2)
 
     def test_read_error(self):
         with pytest.raises(IOError) as exc:

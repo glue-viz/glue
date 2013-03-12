@@ -22,3 +22,5 @@ except ImportError:
     from pywcs import WCS
     #update interface
     WCS.all_pix2world = WCS.all_pix2sky
+    WCS.wcs_pix2world = WCS.wcs_pix2sky
+    WCS.wcs_world2pix = WCS.wcs_sky2pix
