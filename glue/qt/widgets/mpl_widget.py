@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 # Python Qt4 bindings for GUI objects
-from PyQt4 import QtGui
-from PyQt4.QtCore import pyqtSignal, Qt
+from ...external.qt import QtGui
+from ...external.qt.QtCore import Signal, Qt
 
 # import the Qt4Agg FigureCanvas object, that binds Figure to
 # Qt4Agg backend. It also inherits from QWidget
@@ -19,8 +19,8 @@ class MplCanvas(FigureCanvas):
     """Class to represent the FigureCanvas widget"""
 
     #signals
-    rightDrag = pyqtSignal(float, float)
-    leftDrag = pyqtSignal(float, float)
+    rightDrag = Signal(float, float)
+    leftDrag = Signal(float, float)
 
     def __init__(self):
         # setup Matplotlib Figure and Axis
@@ -59,8 +59,8 @@ class MplWidget(QtGui.QWidget):
     """Widget defined in Qt Designer"""
 
     #signals
-    rightDrag = pyqtSignal(float, float)
-    leftDrag = pyqtSignal(float, float)
+    rightDrag = Signal(float, float)
+    leftDrag = Signal(float, float)
 
     def __init__(self, parent=None):
         # initialization of Qt MainWindow widget

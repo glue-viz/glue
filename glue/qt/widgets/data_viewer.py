@@ -1,8 +1,8 @@
 import os
 
-from PyQt4.QtGui import (QMainWindow, QMessageBox, QWidget)
+from ...external.qt.QtGui import (QMainWindow, QMessageBox, QWidget)
 
-from PyQt4.QtCore import Qt
+from ...external.qt.QtCore import Qt
 
 from ...core.hub import HubListener
 from ...core.data import Data

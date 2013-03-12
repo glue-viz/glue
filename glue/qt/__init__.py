@@ -1,8 +1,4 @@
-try:
-    from PyQt4.QtGui import QApplication, QIcon
-except ImportError:
-    raise ImportError("PyQt4 is required for using GUI features of Glue")
-
+from ..external.qt.QtGui import QApplication, QIcon
 from . import glue_qt_resources
 
 
@@ -10,6 +6,7 @@ def get_qapp():
     qapp = QApplication.instance()
     if qapp is None:
         qapp = QApplication([''])
+        qapp.setQuitOnLastWindowClosed(True)
         qapp.setWindowIcon(QIcon(':icons/app_icon.png'))
     return qapp
 

@@ -1,6 +1,6 @@
 from functools import wraps
 import traceback
-from PyQt4.QtGui import QMessageBox
+from ..external.qt.QtGui import QMessageBox
 
 
 def set_cursor(shape):

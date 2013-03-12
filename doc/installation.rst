@@ -22,9 +22,14 @@ Dependencies
    4.8.0 or later (which requires
    `SIP <http://www.riverbankcomputing.co.uk/software/sip/download>`_ ).
 
+.. warning:: PySide support is still experimental. We currently recommend PyQt4.
+
+.. note:: Users with both PyQt4 and PySide can select between bindings by setting the ``QT_API`` environment variable to either ``pyside`` or ``pyqt4``.
+
+
 *Optional*
 
-* `Scipy <http://www.scipy.org>`_. Used for some analysis features
+* `Scipy <http://www.scipy.org>`_. 0.10.0 or greater. Used for some analysis features
 * `IPython <http://www.ipython.org>`_ For using the IPython terminal within the GUI.
 
 *Optional, for Astronomy*
@@ -107,12 +112,27 @@ Once these are installed, you can use ``pip`` to install the remaining ones::
     wget http://stsdas.stsci.edu/astrolib/vo-0.8.tar.gz && tar -xvf vo-0.8.tar.gz && cd vo-0.8 && python setup.py install
     pip install atpy
 
+The Enthought Python Distribution
+^^^^^^^^^^^^^^^
+
+The `Enthought Python Distribution <http://www.enthought.com/products/epd.php>`_ contains most of Glue's dependencies. Building Glue on top of EPD involves::
+
+    pip install astropy
+    wget http://stsdas.stsci.edu/astrolib/vo-0.8.tar.gz && tar -xvf vo-0.8.tar.gz && cd vo-0.8 && python setup.py install
+    pip install atpy
+    pip install -e git+git://github.com/glue-viz/glue.git#egg=glue
+
+
+Anaconda
+^^^^^^^^
+The `Anaconda <https://store.continuum.io/cshop/anaconda>`_ distribution also contains most of Glue's dependencies. Installation instructions are the same as for the Enthought Python Distribution Above.
+
 Running Glue
 ------------
 
-Installing glue from source will create a executable `glue` script
-that should be in your path. Running `glue` from the command line will
+Installing glue from source will create a executable ``glue`` script
+that should be in your path. Running ``glue`` from the command line will
 start the program. Glue accepts a variety of command-line
-arguments. See `glue --help` for examples.
+arguments. See ``glue --help`` for examples.
 
-.. note:: On Windows, installation creates a `glue.bat` script into the python script directory (e.g., `C:\Python27\Scripts`). Windows users can create a desktop shortcut for this file, and run Glue by double clicking on the icon.
+.. note:: On Windows, installation creates a ``glue.bat`` script into the python script directory (e.g., ``C:\Python27\Scripts``). Windows users can create a desktop shortcut for this file, and run Glue by double clicking on the icon.

@@ -54,6 +54,19 @@ def check_for_qt4():
         return True
 
 
+def check_for_pyside():
+    try:
+        from PySide import __version__
+        from PySide import QtCore
+    except ImportError:
+        print_status("PySide", "no")
+        return False
+    else:
+        print_status("PySide", "Qt: %s, PySide: %s" %
+                     (QtCore.__version__, __version__))
+        return True
+
+
 def check_for_numpy(min_version):
     try:
         import numpy

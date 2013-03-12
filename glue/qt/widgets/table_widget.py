@@ -1,7 +1,7 @@
 from .data_viewer import DataViewer
 
-from PyQt4.QtGui import QTableView
-from PyQt4.QtCore import Qt, QAbstractTableModel
+from ...external.qt.QtGui import QTableView
+from ...external.qt.QtCore import Qt, QAbstractTableModel
 
 import numpy as np
 

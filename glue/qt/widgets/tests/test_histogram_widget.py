@@ -1,7 +1,7 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import pytest
 
-from ..histogram_widget import HistogramWidget
+from ..histogram_widget import HistogramWidget, _hash
 from .... import core
 
 
@@ -37,11 +37,11 @@ class TestHistogramWidget(object):
             if data not in widget._container:
                 continue
             assert combo.itemText(row) == data.label
-            assert combo.itemData(row) is data
+            assert combo.itemData(row) == _hash(data)
             row += 2  # next row is separator
             for c in data.visible_components:
                 assert combo.itemText(row) == c.label
-                assert combo.itemData(row) is c
+                assert combo.itemData(row) == _hash(c)
                 row += 1
 
     def test_attribute_set_with_combo(self):
