@@ -160,7 +160,7 @@ class TestCoordinatesFromHeader(object):
             wcs.assert_called_once_with(hdr)
 
     def test_nod(self):
-        hdr = {}
+        hdr = 0
         with patch('glue.core.coordinates.Coordinates') as wcs:
             coord = coordinates_from_header(hdr)
             wcs.assert_called_once_with()
