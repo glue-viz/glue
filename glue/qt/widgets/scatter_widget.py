@@ -1,7 +1,7 @@
 from functools import partial
 
-from PyQt4 import QtGui
-from PyQt4.QtCore import Qt
+from ...external.qt import QtGui
+from ...external.qt.QtCore import Qt
 
 from ... import core
 

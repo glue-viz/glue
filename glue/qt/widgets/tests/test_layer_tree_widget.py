@@ -1,8 +1,8 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
-from PyQt4.QtGui import QMainWindow
-from PyQt4.QtTest import QTest
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QItemSelectionModel
+from ....external.qt.QtGui import QMainWindow
+from ....external.qt.QtTest import QTest
+from ....external.qt.QtCore import Qt
+from ....external.qt.QtGui import QItemSelectionModel
 
 from mock import MagicMock, patch
 
@@ -28,7 +28,6 @@ class TestLayerTree(object):
 
     def teardown_method(self, method):
         self.win.close()
-        del self.win
 
     def select_layers(self, *layers):
         items = [self.widget[l] for l in layers]

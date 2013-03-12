@@ -1,11 +1,11 @@
 # pylint: disable=W0223
 import sys
 
-from PyQt4.QtGui import (QKeySequence, QMainWindow, QGridLayout,
-                         QMenu, QMdiSubWindow, QAction, QMessageBox,
-                         QFileDialog,
-                         QToolButton, QSplitter, QVBoxLayout, QWidget)
-from PyQt4.QtCore import Qt
+from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
+                                 QMenu, QMdiSubWindow, QAction, QMessageBox,
+                                 QFileDialog,
+                                 QToolButton, QSplitter, QVBoxLayout, QWidget)
+from ..external.qt.QtCore import Qt
 
 from .. import core
 from .. import env
@@ -195,7 +195,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self.tab_widget.tabCloseRequested.connect(self._close_tab)
 
     def _create_menu(self):
-        mbar = self._ui.menubar
+        mbar = self.menuBar()
         menu = QMenu(mbar)
         menu.setTitle("File")
 
@@ -239,6 +239,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         menu.addActions(tbar.actions())
         mbar.addMenu(menu)
 
+        #trigger inclusion of Mac Native "Help" tool
         if sys.platform == 'darwin':
             mbar.addMenu('Help')
 
@@ -339,7 +340,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         from ..core.glue_pickle import CloudPickler
         state = (self._data, self._hub)
 
-        outfile = QFileDialog.getSaveFileName(self)
+        outfile, file_filter = QFileDialog.getSaveFileName(self)
         if not outfile:
             return
 
@@ -354,8 +355,8 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         from pickle import Unpickler
 
         fltr = "Glue sessions (*.glu)"
-        file_name = QFileDialog.getOpenFileName(self,
-                                                filter=fltr)
+        file_name, file_filter = QFileDialog.getOpenFileName(self,
+                                                             filter=fltr)
         if not file_name:
             return
 

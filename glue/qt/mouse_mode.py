@@ -16,7 +16,7 @@ The basic usage pattern is thus:
    methods in a MouseMode, for additional behavior
 
 """
-from PyQt4.QtGui import QIcon, QAction
+from ..external.qt.QtGui import QIcon, QAction
 
 import numpy as np
 

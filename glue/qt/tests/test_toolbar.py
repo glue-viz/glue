@@ -1,7 +1,7 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import matplotlib.pyplot as plt
-from PyQt4.QtGui import QMainWindow, QIcon
-
+from ...external.qt.QtGui import QMainWindow, QIcon
+from ..widgets import MplWidget
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import MouseMode
 
@@ -26,15 +26,23 @@ class TestMode(MouseMode):
 class TestToolbar(object):
 
     def setup_method(self, method):
+        from ...external.qt.QtGui import QApplication
+        assert QApplication.instance() is not None
         self.win = QMainWindow()
-        p = plt.plot([1, 2, 3])[0]
-        self.canvas = p.axes.figure.canvas
-        self.axes = p.axes
+        widget, axes = self._make_plot_widget(self.win)
+        self.canvas = widget.canvas
+        self.axes = axes
         self.tb = GlueToolbar(self.canvas, self.win)
         self.mode = TestMode(self.axes, release_callback=self.callback)
         self.tb.add_mode(self.mode)
         self.win.addToolBar(self.tb)
         self._called_back = False
+
+    def _make_plot_widget(self, parent):
+        widget = MplWidget(parent)
+        ax = widget.canvas.fig.add_subplot(111)
+        p = ax.plot([1, 2, 3])[0]
+        return widget, ax
 
     def callback(self, mode):
         self._called_back = True

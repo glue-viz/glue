@@ -10,7 +10,7 @@ from ..core import Data, DataCollection, Hub
 def test_die_on_error_exception():
     """Decorator should spawn a QMessageBox and exit"""
     with pytest.raises(SystemExit):
-        with patch('PyQt4.QtGui.QMessageBox') as qmb:
+        with patch('glue.external.qt.QtGui.QMessageBox') as qmb:
             @die_on_error('test_msg')
             def test():
                 raise Exception()
@@ -114,7 +114,7 @@ def test_start(glue, config, data):
         with patch('glue.config.load_configuration') as lc:
             with patch('glue.main.load_data_files') as ldf:
                 with patch('glue.qt.glue_application.GlueApplication') as ga:
-                    with patch('PyQt4.QtGui') as qt:
+                    with patch('glue.external.qt.QtGui') as qt:
 
                         rs.return_value = DataCollection(), Hub()
                         ldf.return_value = Data()

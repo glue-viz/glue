@@ -1,9 +1,10 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 from .. import qtutil
-from PyQt4 import QtGui
+from ...external.qt import QtGui
+from ...external.qt.QtCore import Qt
 from mock import MagicMock, patch
 from ..qtutil import GlueDataDialog
-from ..qtutil import pretty_number
+from ..qtutil import pretty_number, GlueComboBox
 
 from glue.config import data_factory
 
@@ -104,7 +105,7 @@ def test_data_wizard_error_cancel():
             assert qtutil.data_wizard() == []
 
 
-class TestPrettyNumber():
+class TestPrettyNumber(object):
     def test_single(self):
         assert pretty_number([1]) == ['1']
         assert pretty_number([0]) == ['0']
@@ -118,3 +119,93 @@ class TestPrettyNumber():
     def test_list(self):
         assert pretty_number([1, 2, 3.3, 1e5]) == ['1', '2', '3.3',
                                                    '1.000e+05']
+
+
+class TestGlueComboBox(object):
+
+    def setup_method(self, method):
+        self.combo = GlueComboBox()
+
+    def test_add_data(self):
+        self.combo.addItem('hi', userData=3)
+        assert self.combo.itemData(0) == 3
+
+    def test_add_multi_data(self):
+        self.combo.addItem('hi', userData=3)
+        self.combo.addItem('ho', userData=4)
+        assert self.combo.itemData(0) == 3
+        assert self.combo.itemData(1) == 4
+
+    def test_replace(self):
+        self.combo.addItem('hi', userData=3)
+        self.combo.removeItem(0)
+        self.combo.addItem('ho', userData=4)
+        assert self.combo.itemData(0) == 4
+
+    def test_clear(self):
+        self.combo.addItem('a', 1)
+        self.combo.addItem('b', 2)
+        self.combo.addItem('c', 3)
+        self.combo.clear()
+        self.combo.addItem('d', 4)
+        assert self.combo.itemData(0) == 4
+
+    def test_mid_remove(self):
+        self.combo.addItem('a', 1)
+        self.combo.addItem('b', 2)
+        self.combo.addItem('c', 3)
+        self.combo.removeItem(1)
+        assert self.combo.itemData(1) == 3
+
+    def test_set_item_data(self):
+        self.combo.addItem('a', 1)
+        self.combo.setItemData(0, 2)
+        assert self.combo.itemData(0) == 2
+
+    def test_default_data(self):
+        self.combo.addItem('a')
+        assert self.combo.itemData(0) is None
+
+    def test_add_items(self):
+        self.combo.addItem('a', 1)
+        self.combo.addItems(['b', 'c', 'd'])
+        assert self.combo.itemData(0) == 1
+        assert self.combo.itemData(1) is None
+        assert self.combo.itemData(2) is None
+        assert self.combo.itemData(3) is None
+
+    def test_non_user_role(self):
+        """methods that edit data other than userRole dispatched to super"""
+        self.combo.addItem('a', 1)
+        assert self.combo.itemData(0, role=Qt.DisplayRole) == 'a'
+        self.combo.setItemData(0, 'b', role=Qt.DisplayRole)
+        assert self.combo.itemData(0, role=Qt.DisplayRole) == 'b'
+
+    def test_consistent_with_signals(self):
+        """Ensure that when signal/slot connections interrupt
+        methods mid-call, internal data state is consistent"""
+
+        #Qt swallows exceptions in signals, so we can't assert in this
+        #instead, store state and assert after signal
+        good = [False]
+
+        def assert_consistent(*args):
+            good[0] = len(self.combo._data) == self.combo.count()
+
+        #addItem
+        self.combo.currentIndexChanged.connect(assert_consistent)
+        self.combo.addItem('a', 1)
+        assert good[0]
+
+        #addItems
+        self.combo.clear()
+        good[0] = False
+        self.combo.addItems('b c d'.split())
+        assert good[0]
+
+        #removeItem
+        self.combo.clear()
+        self.combo.addItem('a', 1)
+        good[0] = False
+        self.combo.removeItem(0)
+        assert good[0]

@@ -1,5 +1,5 @@
-from PyQt4 import QtGui
-from PyQt4.QtCore import Qt
+from ...external.qt import QtGui
+from ...external.qt.QtCore import Qt
 
 from ... import core
 from .. import glue_qt_resources  # pylint: disable=W0611
@@ -42,6 +42,7 @@ class GlueMdiArea(QtGui.QMdiArea):
 
     def dragEnterEvent(self, event):
         """ Accept the event if it has an application/py_instance format """
+
         if event.mimeData().hasFormat(LAYERS_MIME_TYPE):
             event.accept()
         elif event.mimeData().hasFormat(LAYER_MIME_TYPE):

@@ -1,5 +1,5 @@
-from PyQt4.QtGui import QWidget, QListWidgetItem
-from PyQt4.QtCore import pyqtSignal
+from ..external.qt.QtGui import QWidget, QListWidgetItem
+from ..external.qt.QtCore import Signal
 
 from .ui.component_selector import Ui_ComponentSelector
 
@@ -7,18 +7,18 @@ from .ui.component_selector import Ui_ComponentSelector
 class ComponentSelector(QWidget):
     """ An interface to view the components and data of a DataCollection
 
-    The widget supports dragging, and stores an instance of the
-    dragged ComponentID in the application/py_instance mime type
+    Components can be draged and dropped.
 
-    The currently-selected componentID is also stored in the
-    Component attribute
+    The currently-selected componentID is stored in the
+    Component property. The currently-selected Data is stored in the
+    Data property.
 
     Usage:
 
        >>> widget = ComponentSelector()
        >>> widget.setup(data_collection)
     """
-    component_changed = pyqtSignal()
+    component_changed = Signal()
 
     def __init__(self, parent=None):
         super(ComponentSelector, self).__init__(parent)
@@ -32,15 +32,24 @@ class ComponentSelector(QWidget):
         self._ui.component_selector.setDragEnabled(True)
 
     def _connect(self):
+        #attach Qt signals
         ds = self._ui.data_selector
         ds.currentIndexChanged.connect(self._set_components)
         self._ui.component_selector.currentItemChanged.connect(
-            self.component_changed.emit)
+            lambda *args: self.component_changed.emit())
 
     def set_current_row(self, row):
+        """Select which component is selected
+
+        :param row: Row number
+        """
         self._ui.component_selector.setCurrentRow(row)
 
     def set_data_row(self, row):
+        """Select which data object is selected
+
+        :param row: Row number
+        """
         self._ui.data_selector.setCurrentIndex(row)
 
     def setup(self, data_collection):
@@ -94,7 +103,8 @@ class ComponentSelector(QWidget):
 def main():  # pragma: no cover
     import glue
     import numpy as np
-    from PyQt4.QtGui import QApplication
+    from . import get_qapp
+    from ..external.qt.QtGui import QApplication
 
     d = glue.core.Data(label="hi")
     d2 = glue.core.Data(label="there")
@@ -110,7 +120,7 @@ def main():  # pragma: no cover
     d.add_component(c2, "b")
     d2.add_component(c3, "c")
 
-    app = QApplication([''])
+    app = get_qapp()
     w = ComponentSelector()
     w.setup(dc)
     w.show()
