@@ -2,9 +2,9 @@ import os
 
 import matplotlib
 from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
-from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import QIcon, QMenu
-from PyQt4.QtCore import Qt
+from ..external.qt import QtCore, QtGui
+from ..external.qt.QtGui import QIcon, QMenu
+from ..external.qt.QtCore import Qt
 
 from . import glue_qt_resources  # pylint: disable=W0611
 

@@ -1,7 +1,9 @@
 from inspect import getargspec
 
-from PyQt4.QtGui import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit
-from PyQt4.QtGui import QSpacerItem, QSizePolicy
+from ..external.qt.QtGui import (QWidget, QHBoxLayout, QVBoxLayout,
+                                 QLabel, QLineEdit)
+
+from ..external.qt.QtGui import QSpacerItem, QSizePolicy
 
 from .ui.link_equation import Ui_LinkEquation
 from .. import core

@@ -1,4 +1,4 @@
-from PyQt4.QtGui import QDialog, QListWidgetItem
+from ..external.qt.QtGui import QDialog, QListWidgetItem
 
 from .. import core
 

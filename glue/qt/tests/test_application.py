@@ -33,7 +33,7 @@ class TestGlueApplication(object):
         from pickle import PicklingError
         with patch('glue.core.glue_pickle.CloudPickler') as cp:
             with patch('glue.qt.glue_application.QFileDialog') as fd:
-                fd.getSaveFileName.return_value = '/tmp/junk'
+                fd.getSaveFileName.return_value = '/tmp/junk', 'jnk'
                 with patch('glue.qt.decorators.QMessageBox') as mb:
                     cp().dump.side_effect = PicklingError
                     self.app._save_session()
@@ -44,7 +44,7 @@ class TestGlueApplication(object):
         with patch('glue.core.glue_pickle.CloudPickler') as cp:
             cp.return_value = ''
             with patch('glue.qt.glue_application.QFileDialog') as fd:
-                fd.getSaveFileName.return_value = ''
+                fd.getSaveFileName.return_value = '', 'jnk'
                 # crashes if open called on null string
                 self.app._save_session()
 
@@ -52,7 +52,7 @@ class TestGlueApplication(object):
         """should show box on ioerror"""
         with patch('glue.qt.glue_application.QFileDialog') as fd:
             # can't write, raises IOError. Dangerous hack!
-            fd.getSaveFileName.return_value = '/_junk'
+            fd.getSaveFileName.return_value = '/_junk', 'jnk'
             with patch('glue.qt.decorators.QMessageBox') as mb:
                 self.app._save_session()
                 assert mb.call_count == 1

@@ -1,7 +1,7 @@
 from ..table_widget import DataTableModel
 from ....core import Data
 
-from PyQt4.QtCore import Qt
+from ....external.qt.QtCore import Qt
 
 
 class TestDataTableModel(object):

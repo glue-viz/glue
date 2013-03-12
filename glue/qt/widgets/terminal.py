@@ -12,8 +12,8 @@ Usage:
 import sys
 import atexit
 
-from PyQt4 import QtCore
-from PyQt4.QtGui import QInputDialog
+from ...external.qt import QtCore
+from ...external.qt.QtGui import QInputDialog
 from zmq import ZMQError
 from zmq.eventloop.zmqstream import ZMQStream
 from IPython.zmq.ipkernel import IPKernelApp, Kernel

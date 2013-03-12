@@ -1,7 +1,7 @@
 from ..widget_properties import (ButtonProperty,
                                  FloatLineProperty)
 
-from PyQt4.QtGui import QCheckBox, QLineEdit
+from ...external.qt.QtGui import QCheckBox, QLineEdit
 
 
 class TestClass(object):

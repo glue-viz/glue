@@ -1,8 +1,8 @@
-from PyQt4.QtGui import (QTreeWidgetItem, QPainter,
-                         QPixmap, QTreeWidgetItemIterator, QIcon,
-                         QItemSelectionModel
-                         )
-from PyQt4.QtCore import Qt
+from ...external.qt.QtGui import (QTreeWidgetItem, QPainter,
+                                  QPixmap, QTreeWidgetItemIterator, QIcon,
+                                  QItemSelectionModel, QTreeWidget
+                                  )
+from ...external.qt.QtCore import Qt
 
 from .. import qtutil
 from ... import core
@@ -121,7 +121,11 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
             return
 
         label = data.label
-        branch = QTreeWidgetItem(self, [label, '', '', ''])
+        assert isinstance(self, QTreeWidget)
+
+        branch = QTreeWidgetItem([label, '', '', ''])
+        self.addTopLevelItem(branch)
+
         if self.checkable:
             branch.setCheckState(0, Qt.Checked)
         self.expandItem(branch)

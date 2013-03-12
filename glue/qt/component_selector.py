@@ -1,5 +1,5 @@
-from PyQt4.QtGui import QWidget, QListWidgetItem
-from PyQt4.QtCore import pyqtSignal
+from ..external.qt.QtGui import QWidget, QListWidgetItem
+from ..external.qt.QtCore import Signal
 
 from .ui.component_selector import Ui_ComponentSelector
 
@@ -18,7 +18,7 @@ class ComponentSelector(QWidget):
        >>> widget = ComponentSelector()
        >>> widget.setup(data_collection)
     """
-    component_changed = pyqtSignal()
+    component_changed = Signal()
 
     def __init__(self, parent=None):
         super(ComponentSelector, self).__init__(parent)
@@ -35,7 +35,7 @@ class ComponentSelector(QWidget):
         ds = self._ui.data_selector
         ds.currentIndexChanged.connect(self._set_components)
         self._ui.component_selector.currentItemChanged.connect(
-            self.component_changed.emit)
+            lambda *args: self.component_changed.emit())
 
     def set_current_row(self, row):
         self._ui.component_selector.setCurrentRow(row)
@@ -94,7 +94,8 @@ class ComponentSelector(QWidget):
 def main():  # pragma: no cover
     import glue
     import numpy as np
-    from PyQt4.QtGui import QApplication
+    from . import get_qapp
+    from ..external.qt.QtGui import QApplication
 
     d = glue.core.Data(label="hi")
     d2 = glue.core.Data(label="there")
@@ -110,7 +111,7 @@ def main():  # pragma: no cover
     d.add_component(c2, "b")
     d2.add_component(c3, "c")
 
-    app = QApplication([''])
+    app = get_qapp()
     w = ComponentSelector()
     w.setup(dc)
     w.show()

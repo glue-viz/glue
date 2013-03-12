@@ -2,8 +2,8 @@ from functools import partial
 
 import numpy as np
 
-from PyQt4 import QtGui
-from PyQt4.QtCore import Qt
+from ...external.qt import QtGui
+from ...external.qt.QtCore import Qt
 
 from ...core import message as msg
 from ...core import Data
@@ -143,7 +143,7 @@ class HistogramWidget(DataViewer):
     @component.setter
     def component(self, component):
         combo = self.ui.attributeCombo
-        #combo.findData doesn't seem to work in PyQt4
+        #combo.findData doesn't seem to work in ...external.qt
         for i in range(combo.count()):
             data = combo.itemData(i)
             if data is component:

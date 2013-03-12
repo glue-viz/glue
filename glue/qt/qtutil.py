@@ -3,15 +3,16 @@ from functools import partial
 from matplotlib.colors import ColorConverter
 from matplotlib import cm
 import numpy as np
-from PyQt4 import QtGui
-from PyQt4.QtCore import Qt
-from PyQt4.QtCore import QMimeData
-from PyQt4.QtGui import (QColor, QInputDialog, QColorDialog,
-                         QListWidget, QTreeWidget, QPushButton, QMessageBox,
-                         QTabBar, QBitmap, QIcon, QPixmap, QImage,
-                         QDialogButtonBox, QWidget,
-                         QVBoxLayout, QHBoxLayout, QLabel,
-                         QRadioButton, QButtonGroup, QCheckBox)
+from ..external.qt import QtGui
+from ..external.qt.QtCore import Qt
+from ..external.qt.QtCore import QMimeData
+from ..external.qt.QtGui import (QColor, QInputDialog, QColorDialog,
+                                 QListWidget, QTreeWidget, QPushButton,
+                                 QMessageBox,
+                                 QTabBar, QBitmap, QIcon, QPixmap, QImage,
+                                 QDialogButtonBox, QWidget,
+                                 QVBoxLayout, QHBoxLayout, QLabel,
+                                 QRadioButton, QButtonGroup, QCheckBox)
 
 from .decorators import set_cursor
 from .mime import PyMimeData, LAYERS_MIME_TYPE
@@ -238,32 +239,42 @@ def get_text(title='Enter a label'):
         return str(result)
 
 
-class GlueItemView(object):
-    """ A partial implementation of QAbstractItemView, with drag events.
-
-    Items can be registered with data via set_data. If the corresponding
-    graphical items are dragged, the data will be wrapped in a PyMimeData"""
+class GlueItemWidget(object):
+    """ A mixin for QListWidget/GlueTreeWidget subclasses, that
+    provides drag+drop funtionality.
+    """
+    #Implementation detail: QXXWidgetItems are unhashable in PySide,
+    #and cannot be used as dictionary keys. we hash on IDs instead
     def __init__(self, parent=None):
-        super(GlueItemView, self).__init__(parent)
+        super(GlueItemWidget, self).__init__(parent)
         self._mime_data = {}
         self.setDragEnabled(True)
 
     def mimeTypes(self):
+        """Return the list of MIME Types supported for this object"""
         types = [LAYERS_MIME_TYPE]
         return types
 
     def mimeData(self, selected_items):
+        """Return a list of MIME data associated with the each selected item
+
+        :param selected_items: List of QListWidgetItems or QTreeWidgetItems
+        :rtype: List of MIME objects
+        """
         try:
-            data = [self._mime_data[i] for i in selected_items]
+            data = [self.get_data(i) for i in selected_items]
         except KeyError:
             data = None
         return PyMimeData(data, **{LAYERS_MIME_TYPE: data})
 
     def get_data(self, item):
-        return self._mime_data[item]
+        """Convenience method to fetch the data associated with a
+        QxxWidgetItem"""
+        return self._mime_data[id(item)]
 
     def set_data(self, item, data):
-        self._mime_data[item] = data
+        """Convenience method to set data associated with a QxxWidgetItem"""
+        self._mime_data[id(item)] = data
 
     @property
     def data(self):
@@ -334,11 +345,11 @@ def tint_pixmap(bm, color):
     return result
 
 
-class GlueListWidget(GlueItemView, QListWidget):
+class GlueListWidget(GlueItemWidget, QListWidget):
     pass
 
 
-class GlueTreeWidget(GlueItemView, QTreeWidget):
+class GlueTreeWidget(GlueItemWidget, QTreeWidget):
     pass
 
 

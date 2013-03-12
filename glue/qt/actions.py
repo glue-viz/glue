@@ -1,4 +1,4 @@
-from PyQt4.QtGui import QAction, QIcon
+from ..external.qt.QtGui import QAction, QIcon
 
 
 def act(name, parent, tip='', icon=None, shortcut=None):

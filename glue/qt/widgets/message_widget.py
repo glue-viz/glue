@@ -1,6 +1,6 @@
 from time import ctime
 
-from PyQt4.QtGui import QWidget, QTableWidgetItem
+from ...external.qt.QtGui import QWidget, QTableWidgetItem
 
 from ... import core
 
