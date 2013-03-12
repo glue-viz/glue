@@ -17,8 +17,10 @@ Dependencies
 
  * `Python <http://www.python.org>`_ 2.6 or 2.7
  * `Numpy <http://numpy.scipy.org>`_ 1.4.0 or later
- * `Matplotlib <http://www.matplotlib.org>`_ 1.1.0 or later (1.2.0 or later recommended, due to an image tinting bug in 1.1.1)
- * `PyQt4 <http://www.riverbankcomputing.co.uk/software/pyqt/download>`_ 4.8.0 or later or `PySide <http://qt-project.org/wiki/PySide>`_ v1.1.0 or later. PyQt4 further requires `SIP <http://www.riverbankcomputing.co.uk/software/sip/download>`_.
+ * `Matplotlib <http://www.matplotlib.org>`_ 1.1.0 or later
+* `PyQt4 <http://www.riverbankcomputing.co.uk/software/pyqt/download>`_
+   4.8.0 or later (which requires
+   `SIP <http://www.riverbankcomputing.co.uk/software/sip/download>`_ ).
 
 .. warning:: PySide support is still experimental. We currently recommend PyQt4.
 
@@ -36,7 +38,8 @@ Dependencies
 * `ATpy <http://atpy.github.com>`_
 * `h5py <http://code.google.com/p/h5py/>`_
 
-.. note:: If Astropy is not installed, Glue will fallback to importing the legacy PyFits and PyWCS modules.
+.. note:: If Astropy is not installed, Glue will fallback to importing
+the legacy PyFits and PyWCS modules.
 
 *Optional, for development*
 
@@ -76,10 +79,11 @@ The main dependencies can be installed with::
 
     sudo apt-get install python-pip
 
+    wget http://stsdas.stsci.edu/astrolib/vo-0.8.tar.gz && tar -xvf vo-0.8.tar.gz && cd vo-0.8 && python setup.py install
+
 Once these are installed, you can use ``pip`` to install the remaining ones::
 
     pip install astropy
-    pip install -e svn+http://svn6.assembla.com/svn/astrolib/trunk/vo/#egg=vo
     pip install atpy
 
 
@@ -105,19 +109,19 @@ The main dependencies can be installed with::
 Once these are installed, you can use ``pip`` to install the remaining ones::
 
     pip install astropy
-    pip install -e svn+http://svn6.assembla.com/svn/astrolib/trunk/vo/#egg=vo
+    wget http://stsdas.stsci.edu/astrolib/vo-0.8.tar.gz && tar -xvf vo-0.8.tar.gz && cd vo-0.8 && python setup.py install
     pip install atpy
-    
+
 The Enthought Python Distribution
 ^^^^^^^^^^^^^^^
 
 The `Enthought Python Distribution <http://www.enthought.com/products/epd.php>`_ contains most of Glue's dependencies. Building Glue on top of EPD involves::
 
     pip install astropy
-    pip install -e svn+http://svn6.assembla.com/svn/astrolib/trunk/vo/#egg=vo
+    wget http://stsdas.stsci.edu/astrolib/vo-0.8.tar.gz && tar -xvf vo-0.8.tar.gz && cd vo-0.8 && python setup.py install
     pip install atpy
-    pip install -e git+git://github.com/glue-viz/glue.git#egg=glue 
-   
+    pip install -e git+git://github.com/glue-viz/glue.git#egg=glue
+
 
 Anaconda
 ^^^^^^^^
