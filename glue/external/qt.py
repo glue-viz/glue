@@ -115,9 +115,10 @@ loaders = [_load_pyqt4, _load_pyside]
 if os.environ.get('QT_API') == QT_API_PYSIDE:
     loaders = loaders[::-1]
 
+msgs = []
+
 #acutally do the loading
 for loader in loaders:
-    msgs = []
     try:
         loader()
         #we set this env var, since IPython also looks for it
