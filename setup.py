@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 from __future__ import print_function
-from distutils.core import setup, Command
-from distutils.command.install_scripts import install_scripts
+from setuptools import setup, Command
+from setuptools.command.install_lib import install_lib
+
+try:  # Python 3.x
+    from setuptools.command.build_py import build_py_2to3 as build_py
+except ImportError:  # Python 2.x
+    from setuptools.command.build_py import build_py
+
 from glob import glob
 import os
 import sys
@@ -39,13 +45,12 @@ def print_sysinfo():
     print_raw("REQUIRED DEPENDENCIES")
     if not check_for_numpy('1.4'):
         sys.exit(1)
-
-
-    print_raw("")
-    print_raw("RECOMMENDED DEPENDENCIES")
     check_for_matplotlib()
     check_for_qt4()
     check_for_pyside()
+
+    print_raw("")
+    print_raw("RECOMMENDED DEPENDENCIES")
     check_for_scipy()
 
     print_raw("")
@@ -67,8 +72,6 @@ def print_sysinfo():
 
 cmdclass = {}
 
-scripts = glob(os.path.join('scripts', '*'))
-
 
 class PyTest(Command):
     user_options = []
@@ -81,8 +84,7 @@ class PyTest(Command):
 
     def run(self):
         import subprocess
-        path = os.path.join('scripts', 'runtests.py')
-        errno = subprocess.call([sys.executable, path, 'glue'])
+        errno = subprocess.call([sys.executable, 'runtests.py', 'glue'])
         raise SystemExit(errno)
 
 cmdclass['test'] = PyTest
@@ -96,11 +98,12 @@ def has_qt4():
     except ImportError:
         return False
 
+
 class BuildQt(Command):
 
     user_options = [
-        ('rcc=', 'r', "Custom rcc command (usually pyside-rcc or pyrcc4)"),
-        ('uic=', 'u', 'Custom uic command (usually pyside-uic or pyuic4)')
+        ('rcc', 'r', "Custom rcc command (usually pyside-rcc or pyrcc4)"),
+        ('uic', 'u', 'Custom uic command (usually pyside-uic or pyuic4)')
     ]
 
     def initialize_options(self):
@@ -113,8 +116,12 @@ class BuildQt(Command):
             self.pyuic = 'pyside-uic'
         else:
             print("Using PyQt4 tools to build Qt interfaces")
-            self.pyrcc4 = 'pyrcc4'
-            self.pyuic = 'pyuic4'
+            if is_windows():
+                self.pyrcc4 = 'pyrcc4.exe'
+                self.pyuic = 'pyuic4.bat'
+            else:
+                self.pyrcc4 = 'pyrcc4'
+                self.pyuic = 'pyuic4'
 
     def finalize_options(self):
         pass
@@ -192,43 +199,42 @@ class BuildQt(Command):
 
 cmdclass['build_qt'] = BuildQt
 
-try:  # Python 3.x
-    from distutils.command.build_py import build_py_2to3 as build_py
-except ImportError:  # Python 2.x
-    from distutils.command.build_py import build_py
-
 
 class build(build_py):
     def run(self):
-        print_sysinfo()
+
+        #print_sysinfo()
         self.run_command("build_qt")
         build_py.run(self)
 
-class glue_install_scripts(install_scripts):
-    #on windows, make a glue.bat file
-    #lets users just type "glue", instead of "python glue"
-    def run(self):
-        install_scripts.run(self)
-        if not is_windows():
-            return
-        for script in self.get_outputs():
-            if not script.endswith('glue'):
-                continue
-            bat = "@echo off\n python %s %%*" % script
-            outfile = script + '.bat'
-            with open(outfile, 'w') as out:
-                out.write(bat)
 
 cmdclass['build_py'] = build
-cmdclass['install_scripts'] = glue_install_scripts
+
+console_scripts = ['glue = glue.main:main',
+                   'glue-config = glue.config_gen:main',
+                   'glue-deps = glue._deps:main',
+                   ]
 
 setup(name='Glue',
       version='0.1.0',
+      description = 'Multidimensional data visualzation across files',
+      author='Chris Beaumont, Thomas Robitaille',
+      author_email='glueviz@gmail.com',
+      url='http://www.glueviz.org',
+      classifiers=[
+          'Intended Audience :: Science/Research',
+          'Operating System :: OS Independent',
+          'Programming Language :: Python :: 2.6',
+          'Programming Language :: Python :: 2.7',
+          'Topic :: Scientific/Engineering :: Data Visualization',
+          ],
+
       packages=['glue', 'glue.external', 'glue.qt', 'glue.core', 'glue.qt.widgets',
                 'glue.qt.ui', 'glue.clients', 'glue.tests', 'glue.core.tests',
                 'glue.clients.tests', 'glue.qt.tests',
                 'glue.qt.widgets.tests'],
+
+      entry_points={'console_scripts' : console_scripts},
       cmdclass=cmdclass,
       package_data={'glue': ['examples/*', 'logo.png']},
-      scripts=scripts
-      )
+    )
