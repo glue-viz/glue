@@ -96,7 +96,9 @@ required = (
 
 general = (
     Dependency('scipy', 'Used for some image processing calculation'),
-    Dependency('PIL', 'Used to read popular image formats (jpeg, png, etc.)'))
+    Dependency('skimage',
+               'Used to read popular image formats (jpeg, png, etc.)',
+               'scikit-image'))
 
 
 ipython = (
