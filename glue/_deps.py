@@ -89,8 +89,10 @@ class QtDep(Dependency):
 required = (
     QtDep(),
     Dependency('numpy', 'Required', min_version='1.4'),
-    Dependency('matplotlib', 'Required', min_version='1.1'),
-    Dependency('asciitable', 'Required'))
+    Dependency('matplotlib', 'Required for plotting', min_version='1.1'),
+    Dependency('astropy', 'Used for FITS I/O, table reading, and WCS Parsing'),
+    Dependency('atpy',
+               'Used to parse common astronomy table formats', 'ATpy'))
 
 general = (
     Dependency('scipy', 'Used for some image processing calculation'),
@@ -104,13 +106,7 @@ ipython = (
 
 
 astronomy = (
-    Dependency('astropy', 'Used for FITS I/O and WCS Parsing'),
-    Dependency('atpy',
-               'Used to parse common astronomy table formats', 'ATpy'),
-    Dependency('vo',
-               'Used to parse VO tables',
-               'http://stsdas.stsci.edu/astrolib/vo-0.8.tar.gz'),
-    Dependency('pyavm', 'Used to parse AVM metadata in image files', 'PyAVM'))
+    Dependency('pyavm', 'Used to parse AVM metadata in image files', 'PyAVM'),)
 
 
 testing = (
