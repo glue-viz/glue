@@ -26,6 +26,7 @@ from atpy import *
 #patch add_column to handle deal with unicode names
 _add_column = Table.add_column
 
+
 def add_column(self, name, data, **kwargs):
     try:
         data = np.asarray(data, dtype=np.float)
@@ -41,6 +42,7 @@ Table.add_column = add_column
 #patch asciitable.read to deal with different call signatures
 #call signatures in asciitable/astropy version
 _read = ascii.read
+
 
 def patch_read(table, numpy=True, guess=None, **kwargs):
     #astropy version does not have numpy kwarg,

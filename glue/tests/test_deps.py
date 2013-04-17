@@ -3,6 +3,7 @@ from mock import MagicMock, patch
 from .._deps import Dependency
 from .. import _deps as dep
 
+
 class TestDependency(object):
 
     def test_installed(self):

@@ -101,9 +101,10 @@ def has_qt4():
 
 class BuildQt(Command):
 
+    # I don't think setuptools uses these options
     user_options = [
-        ('rcc', 'r', "Custom rcc command (usually pyside-rcc or pyrcc4)"),
-        ('uic', 'u', 'Custom uic command (usually pyside-uic or pyuic4)')
+        ('rcc=', 'r', "Custom rcc command (usually pyside-rcc or pyrcc4)"),
+        ('uic=', 'u', 'Custom uic command (usually pyside-uic or pyuic4)')
     ]
 
     def initialize_options(self):
@@ -116,12 +117,11 @@ class BuildQt(Command):
             self.pyuic = 'pyside-uic'
         else:
             print("Using PyQt4 tools to build Qt interfaces")
+            self.pyrcc4 = 'pyrcc4'
+            self.pyuic = 'pyuic4'
+
             if is_windows():
-                self.pyrcc4 = 'pyrcc4.exe'
                 self.pyuic = 'pyuic4.bat'
-            else:
-                self.pyrcc4 = 'pyrcc4'
-                self.pyuic = 'pyuic4'
 
     def finalize_options(self):
         pass
@@ -149,8 +149,7 @@ class BuildQt(Command):
                 return
 
             print("uic command failed - make sure that pyuic4 or pyside-uic "
-                  "is in your $PATH, or specify a custom command with "
-                  "--uic=command")
+                  "is in your $PATH")
 
         self._make_qt_agnostic(outfile)
 

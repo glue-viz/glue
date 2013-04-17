@@ -1,9 +1,14 @@
 #!/usr/bin/env python
+"""
+Script used to create template config.py files for Glue
+"""
 
-import os, sys
+import os
+import sys
 from shutil import copyfile
 
 import glue
+
 
 def get_clobber():
     result = None
@@ -13,6 +18,7 @@ def get_clobber():
         result = raw_input("\nDestination file exists. Overwrite? [y/n] ")
 
     return result == 'y'
+
 
 def main():
     dest = os.path.expanduser('~/.glue/')
