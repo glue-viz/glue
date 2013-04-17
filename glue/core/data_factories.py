@@ -150,8 +150,7 @@ def tabular_data(*args, **kwargs):
     """
     result = Data()
 
-    # Read the table
-    import atpy
+    from ..external import _atpy as atpy
     atpy.registry.register_extensions('ascii', ['csv', 'tsv', 'txt'],
                                       override=True)
 
