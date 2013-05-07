@@ -229,3 +229,22 @@ def colorize_subsets(subsets, cmap, lo=0, hi=1):
         g = int(255 * g)
         b = int(255 * b)
         subset.style.color = '#%2.2x%2.2x%2.2x' % (r, g, b)
+
+
+def coerce_numeric(arr):
+    """Coerce an array into a numeric array, replacing
+       non-numeric elements with nans.
+
+       If the array is already a numeric type, it is returned
+       unchanged
+
+       :param arr: array to coerce
+       :type arr: ndarray instance
+
+       :rtype: ndarray instance.
+    """
+    #already numeric type
+    if np.can_cast(arr.dtype, np.complex):
+        return arr
+
+    return np.genfromtxt(arr)

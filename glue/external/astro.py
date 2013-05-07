@@ -24,3 +24,14 @@ except ImportError:
     WCS.all_pix2world = WCS.all_pix2sky
     WCS.wcs_pix2world = WCS.wcs_pix2sky
     WCS.wcs_world2pix = WCS.wcs_sky2pix
+
+
+try:
+    from astropy.io import ascii
+except ImportError:
+    import asciitable as ascii
+
+try:
+    from astropy.io import votable
+except ImportError:
+    import vo as votable

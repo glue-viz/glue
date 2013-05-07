@@ -135,3 +135,16 @@ def test_colorize_subsets_clip():
     colorize_subsets(subsets, gray, lo=0.5)
     assert subsets[0].style.color == '#808080'
     assert subsets[1].style.color == '#ffffff'
+
+
+def test_coerce_numeric():
+    from ..util import coerce_numeric
+
+    x = np.array(['1', '2', '3.14', '4'])
+
+    np.testing.assert_array_equal(coerce_numeric(x),
+                                  [1, 2, 3.14, 4])
+
+    x = np.array([1, 2, 3])
+
+    assert x is coerce_numeric(x)

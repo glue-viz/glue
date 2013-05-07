@@ -18,7 +18,7 @@ from .message import (DataUpdateMessage,
                       DataAddComponentMessage,
                       SubsetCreateMessage, ComponentsChangedMessage)
 
-from .util import file_format
+from .util import file_format, coerce_numeric
 from .odict import OrderedDict
 
 __all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
@@ -131,6 +131,9 @@ class Component(object):
         self.units = units
 
         # The actual data
+        # subclasses may pass non-arrays here as placeholders.
+        if isinstance(data, np.ndarray):
+            data = coerce_numeric(data)
         self._data = data
 
     @property
