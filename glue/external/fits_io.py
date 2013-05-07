@@ -300,7 +300,9 @@ def write_table_fits(input, output, overwrite=False):
     # Write out file
     table_hdu.writeto(output)
 
-io_registry.register_reader('fits', Table, read_table_fits)
-io_registry.register_writer('fits', Table, write_table_fits)
-io_registry.register_identifier('fits', Table, is_fits)
-
+try:
+    io_registry.register_reader('fits', Table, read_table_fits)
+    io_registry.register_writer('fits', Table, write_table_fits)
+    io_registry.register_identifier('fits', Table, is_fits)
+except:  # FITS readers/writers have already been registered
+    pass
