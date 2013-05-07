@@ -55,14 +55,15 @@ def pipe():
     with open('.__junk2', 'w') as out:
         out.write(cores)
 
-    data = glue.core.data.TabularData(label="Pipe YSOs")
-    data2 = glue.core.data.TabularData(label="Pipe Cores")
+    from glue.core.data_factories import tabular_data
+    data = tabular_data('.__junk1', format='ascii', delimiter='\t',
+                        data_start=2)
+    data.label = "Pipe YSOs"
 
-    data.read_data('.__junk1',
-                   type='ascii',
-                   delimiter='\t', data_start=2)
     s = glue.core.Subset(data, label="YSO subset")
-    data2.read_data('.__junk2', type='vo')
+
+    data2 = tabular_data('.__junk2', format='vo')
+    data2.label = "Pipe Cores"
 
     s2 = glue.core.Subset(data2, label="Core Subset")
 
