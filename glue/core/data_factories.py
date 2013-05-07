@@ -139,33 +139,45 @@ set_default_factory('fits', gridded_data)
 set_default_factory('hd5', gridded_data)
 set_default_factory('hdf5', gridded_data)
 
-
 def tabular_data(*args, **kwargs):
     """
     Build a data set from a table. We restrict ourselves to tables
     with 1D columns.
 
     All arguments are passed to
-        ATpy.Table(...).
+        astropy.table.Table.read(...).
     """
     result = Data()
 
     # Read the table
-    import atpy
-    atpy.registry.register_extensions('ascii', ['csv', 'tsv', 'txt'],
-                                      override=True)
+    from astropy.table import Table
 
-    table = atpy.Table()
-    table.read(*args, **kwargs)
+    # Add identifiers for ASCII data
+    from astropy.io import registry
+    def ascii_identifier(origin, args, kwargs):
+        if isinstance(args[0], basestring):
+            return args[0].endswith(('csv', 'tsv', 'txt'))
+        else:
+            return False
+    registry.register_identifier('ascii', Table, ascii_identifier,
+                                 force=True)
+
+    # Import FITS compatibility (for Astropy 0.2.x)
+    from ..external import fits_io
+
+    table = Table.read(*args, **kwargs)
 
     # Loop through columns and make component list
     for column_name in table.columns:
-        c = Component(table[column_name],
-                      units=table.columns[column_name].unit)
+        if table.masked:
+            c = Component(table[column_name].filled(),  # fill array for now
+                          units=table[column_name].units)
+        else:
+            c = Component(table[column_name],
+                          units=table[column_name].units)
         result.add_component(c, column_name)
 
     return result
-
 
 tabular_data.label = "Catalog"
 tabular_data.file_filter = "*.txt *.vot *.xml *.csv *.tsv *.fits"
@@ -264,4 +276,4 @@ try:
     set_default_factory('tif', pil_data)
 
 except ImportError:  # pragma: no cover
-        pass
+    pass
