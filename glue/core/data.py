@@ -22,7 +22,7 @@ from .util import file_format
 from .odict import OrderedDict
 
 __all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
-           'TabularData', 'GriddedData', 'CoordinateComponent']
+           'GriddedData', 'CoordinateComponent']
 
 COLORS = [RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK]
 
@@ -729,35 +729,6 @@ class Data(object):
         except KeyError:
             raise IncompatibleAttribute("%s not in data set" %
                                         component_id.label)
-
-
-class TabularData(Data):
-    '''
-    A class to represent any form of tabular data. We restrict
-    ourselves to tables with 1D columns.
-    '''
-
-    def read_data(self, *args, **kwargs):
-        '''
-        Read a table from a file or database. All arguments are passed to
-        ATpy.Table(...).
-        '''
-        try:
-            import atpy
-        except ImportError:
-            raise ImportError("TabularData requires ATPy")
-        atpy.registry.register_extensions('ascii', ['csv', 'tsv', 'txt'],
-                                          override=True)
-
-        # Read the table
-        table = atpy.Table()
-        table.read(*args, **kwargs)
-
-        # Loop through columns and make component list
-        for column_name in table.columns:
-            c = Component(table[column_name],
-                          units=table.columns[column_name].unit)
-            self.add_component(c, column_name)
 
 
 class GriddedData(Data):
