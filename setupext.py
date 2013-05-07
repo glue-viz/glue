@@ -126,11 +126,6 @@ def check_for_astropy():
 
 
 @check_warn_version
-def check_for_atpy():
-    return version_standard('atpy')
-
-
-@check_warn_version
 def check_for_aplpy():
     return version_standard('aplpy')
 
