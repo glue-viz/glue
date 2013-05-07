@@ -1,3 +1,7 @@
+# This file is adapted from astropy/io/fits/connect.py in the developer version
+# of Astropy. It can be removed once support for Astropy v0.2 is dropped (since
+# Astropy v0.3 and later will include it).
+
 # Copyright (c) 2011-2013, Astropy Developers
 # 
 # All rights reserved.
