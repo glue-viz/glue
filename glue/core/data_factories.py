@@ -150,8 +150,7 @@ def tabular_data(*args, **kwargs):
     """
     result = Data()
 
-    # Read the table
-    import atpy
+    from ..external import _atpy as atpy
     atpy.registry.register_extensions('ascii', ['csv', 'tsv', 'txt'],
                                       override=True)
 
@@ -168,13 +167,14 @@ def tabular_data(*args, **kwargs):
 
 
 tabular_data.label = "Catalog"
-tabular_data.file_filter = "*.txt *.vot *.xml *.csv *.tsv *.fits"
+tabular_data.file_filter = "*.txt *.vot *.xml *.csv *.tsv *.fits *.tbl"
 __factories__.append(tabular_data)
 set_default_factory('xml', tabular_data)
 set_default_factory('vot', tabular_data)
 set_default_factory('csv', tabular_data)
 set_default_factory('txt', tabular_data)
 set_default_factory('tsv', tabular_data)
+set_default_factory('tbl', tabular_data)
 
 
 def data_dendro_cpp(file):
@@ -208,60 +208,69 @@ data_dendro_cpp.file_filter = "*.fits"
 __factories__.append(data_dendro_cpp)
 
 
-try:
-    from PIL import Image
-    __all__.append('pil_data')
+img_fmt = ['jpg', 'jpeg', 'bmp', 'png', 'tiff', 'tif']
 
-    def pil_data(file_name):
-        """Use the Python Imaging Library to load an
-        image into a data object"""
-        result = Data()
 
-        data = np.asarray(Image.open(file_name))  # .convert('L'))
-        data = np.flipud(data)
-        shp = data.shape
+def img_loader(file_name):
+    """Load an image to a numpy array, using either PIL or skimage
 
-        comps = []
-        labels = []
-
-        #3 color image
-        if len(shp) == 3 and shp[2] in [3, 4]:
-            comps.append(data[:, :, 0])
-            labels.append('red')
-            comps.append(data[:, :, 1])
-            labels.append('green')
-            comps.append(data[:, :, 2])
-            labels.append('blue')
-            if shp[2] == 4:
-                comps.append(data[:, :, 3])
-                labels.append('alpha')
-        else:
-            comps = [data]
-            labels = ['PRIMARY']
-
-        #look for AVM coordinate metadata
-        try:
-            from pyavm import AVM, NoAVMPresent
-            avm = AVM(str(file_name))  # avoid unicode
-            wcs = avm.to_wcs()
-            result.coords = coordinates_from_wcs(wcs)
-        except (NoAVMPresent, ImportError):
-            pass
-
-        for c, l in zip(comps, labels):
-            result.add_component(c, l)
-
-        return result
-
-    pil_data.label = "Image"
-    pil_data.file_filter = "*.jpg *.jpeg *.bmp *.png *.tiff"
-    __factories__.append(pil_data)
-    set_default_factory('jpeg', pil_data)
-    set_default_factory('jpg', pil_data)
-    set_default_factory('png', pil_data)
-    set_default_factory('bmp', pil_data)
-    set_default_factory('tiff', pil_data)
-    set_default_factory('tif', pil_data)
-
-except ImportError:  # pragma: no cover
+    :param file_name: Path of file to load
+    :rtype: Numpy array
+    """
+    try:
+        from skimage.io import imread
+        return np.asarray(imread(file_name))
+    except ImportError:
         pass
+
+    try:
+        from PIL import Image
+        return np.asarray(Image.open(file_name))
+    except ImportError:
+        raise ImportError("Reading %s requires PIL or scikit-image" %
+                          file_name)
+
+
+def img_data(file_name):
+    """Load common image files into a Glue data object"""
+    result = Data()
+
+    data = img_loader(file_name)
+    data = np.flipud(data)
+    shp = data.shape
+
+    comps = []
+    labels = []
+
+    #split 3 color images into each color plane
+    if len(shp) == 3 and shp[2] in [3, 4]:
+        comps.extend([data[:, :, 0], data[:, :, 1], data[:, :, 2]])
+        labels.extend(['red', 'green', 'blue'])
+        if shp[2] == 4:
+            comps.append(data[:, :, 3])
+            labels.append('alpha')
+    else:
+        comps = [data]
+        labels = ['PRIMARY']
+
+    #look for AVM coordinate metadata
+    try:
+        from pyavm import AVM, NoAVMPresent
+        avm = AVM(str(file_name))  # avoid unicode
+        wcs = avm.to_wcs()
+        result.coords = coordinates_from_wcs(wcs)
+    except (NoAVMPresent, ImportError):
+        pass
+
+    for c, l in zip(comps, labels):
+        result.add_component(c, l)
+
+    return result
+
+img_data.label = "Image"
+img_data.file_filter = ' '.join('*.%s' % i for i in img_fmt)
+for i in img_fmt:
+    set_default_factory(i, img_data)
+
+__factories__.append(img_data)
+__all__.append('img_data')

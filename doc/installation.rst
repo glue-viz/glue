@@ -2,71 +2,76 @@
 
 Installing Glue
 ===============
-The source code for Glue is available on `GitHub <http://www.github.com/glue-viz/glue>`_. This page describes how to install Glue on your machine. Alternatively, you can also try downloading a pre-built package.
 
-Pre-Built Packages
-------------------
-Mac users (OS X >= 10.7) can download the latest version of Glue `here <https://www.dropbox.com/sh/a7jbvaruzdrri8j/8En3jGR3n6>`_. This is the easiest option, as it includes all of Glue's dependencies.
+There are several ways to install Glue on your computer. We recommend one of the first two options, which greatly simplify of the (sometimes tricky) task of installing QT, Matplotlib, and other libraries that Glue relies on.
 
-Building From Source
---------------------
+
+Easiest Option (Recommended for Mac users)
+------------------------------------------
+
+Mac users with OS X >= 10.7 can download Glue as a `standalone program
+<https://www.dropbox.com/sh/a7jbvaruzdrri8j/8En3jGR3n6>`_.
+
+
+Easy Option (Recommended for Windows, Unix users)
+-------------------------------------------------
+
+We recommend using the `Anaconda
+<http://continuum.io/downloads.html>`_ Python distribution from
+Continuum Analytics. Anaconda includes all of Glue's main dependencies.
+
+ * Download and install the `appropriate version of Anaconda
+   <http://continuum.io/downloads.html>`_
+
+ * On the command line, install Glue using pip: ``pip install -e git+git://github.com/glue-viz/glue-qt.git#egg=glue``
+
+ * On the command line, install any additional Glue dependencies by running ``glue-deps install``. For more information on ``glue-deps``, see :ref:`below <glue-deps>`
+
+The Entought Python Distribution also includes all non-trivial dependencies. The installation instructions are the same. You can download EPD `here <https://www.enthought.com/products/epd/>`_.
+
+.. note:: Anaconda installs it's own version of Python
+
+.. note:: This GitHub repository is different from the main Glue
+          codebase, and includes pre-generated QT files. This is due
+          to a bug in the current release of Anaconda, which doesn't
+          include the QT compilation tools.
+
+
+Building from Source (For the Brave)
+------------------------------------
+
+The source code for Glue is available on `GitHub
+<http://www.github.com/glue-viz/glue>`_. Glue relies upon a number of
+scientific python libraries, as well as the QT GUI library. Installing
+these packages is somewhat beyond the scope of this document, and
+unforunately trickier than it should be. If you want to dive in, here
+is the basic strategy:
+
+ * Install `Qt 4 <http://qt-project.org/downloads>`_ and either `PyQt4 <http://www.riverbankcomputing.com/software/pyqt/download>`_ or `PySide <http://qt-project.org/wiki/Get-PySide>`_. If at all possible, use the binary installers; building PyQt4 or PySide from source is tricky (this is a euphemism).
+
+ * Install Glue using pip: ``pip install -e git+git://github.com/glue-viz/glue.git#egg=glue``. Alternatively, ``git clone`` the repository and install via ``python setup.py install``
+
+ * Install Glue's remaining dependencies by running ``glue-deps install``. For more information on these dependencies see :ref:`below <glue-deps>`.
+
+
+
 Dependencies
 ^^^^^^^^^^^^
+.. _glue-deps:
 
-*Required*
+Glue has a few essential dependencies (like PyQT4 or PySide and
+numpy), and several recommended dependencies to support various I/O
+and optional functionality. Glue includes a command line utility
+``glue-deps`` to manage these dependencies.
 
- * `Python <http://www.python.org>`_ 2.6 or 2.7
- * `Numpy <http://numpy.scipy.org>`_ 1.4.0 or later
- * `Matplotlib <http://www.matplotlib.org>`_ 1.1.0 or later
-* `PyQt4 <http://www.riverbankcomputing.co.uk/software/pyqt/download>`_
-   4.8.0 or later (which requires
-   `SIP <http://www.riverbankcomputing.co.uk/software/sip/download>`_ ).
+Calling ``glue-deps list`` displays all of Glue's required and optional dependencies, along with whether or not each library is already installed on your system. For missing dependencies, the program also provides a brief description of how it is used within Glue.
 
-.. warning:: PySide support is still experimental. We currently recommend PyQt4.
+Calling ``glue-deps install`` attempts to ``pip install`` all missing libraries. You can install single libraries or categories of libraries by providing additional arguments to ``glue-deps install``.
 
-.. note:: Users with both PyQt4 and PySide can select between bindings by setting the ``QT_API`` environment variable to either ``pyside`` or ``pyqt4``.
+Tips for Ubuntu
+^^^^^^^^^^^^^^^
 
-
-*Optional*
-
-* `Scipy <http://www.scipy.org>`_. 0.10.0 or greater. Used for some analysis features
-* `IPython <http://www.ipython.org>`_ For using the IPython terminal within the GUI.
-
-*Optional, for Astronomy*
-
-* `Astropy <http://www.astropy.org>`_
-* `ATpy <http://atpy.github.com>`_
-* `h5py <http://code.google.com/p/h5py/>`_
-
-.. note:: If Astropy is not installed, Glue will fallback to importing
-the legacy PyFits and PyWCS modules.
-
-*Optional, for development*
-
-* `py.test <http://www.pytest.org>`_
-* `mock <http://www.voidspace.org.uk/python/mock/>`_
-
-
-Installation
-^^^^^^^^^^^^
-
-Once Glue's dependencies have been installed (see below), building Glue is straightfoward.
-
-Using git::
-
-    git clone git://github.com/glue-viz/glue.git
-    cd glue
-    python setup.py install
-
-Or, with pip::
-
-    pip install -e git+git://github.com/glue-viz/glue.git#egg=glue
-
-
-Ubuntu
-^^^^^^
-
-The main dependencies can be installed with::
+Many dependencies can be reliably installed with ``apt``::
 
     sudo apt-get install python-numpy
     sudo apt-get install python-scipy
@@ -77,26 +82,10 @@ The main dependencies can be installed with::
     sudo apt-get install python-zmq
     sudo apt-get install python-pygments
 
-    sudo apt-get install python-pip
 
-    wget http://stsdas.stsci.edu/astrolib/vo-0.8.tar.gz && tar -xvf vo-0.8.tar.gz && cd vo-0.8 && python setup.py install
-
-Once these are installed, you can use ``pip`` to install the remaining ones::
-
-    pip install astropy
-    pip install atpy
-
-
-MacOS X
-^^^^^^^
-
-There are different ways to set up the dependencies on Mac (including a fully
-manual installation) but we recommend the use of `MacPorts
-<http://www.macports.org>`_. For information about using MacPorts to manage
-your Python installation, see `here
-<http://astrofrog.github.com/macports-python/>`_.
-
-The main dependencies can be installed with::
+Mac Ports
+^^^^^^^^^
+Many dependencies can be reliably installed with::
 
     sudo port install python27
     sudo port install py27-numpy
@@ -106,26 +95,9 @@ The main dependencies can be installed with::
     sudo port install py27-ipython
     sudo port install py27-pip
 
-Once these are installed, you can use ``pip`` to install the remaining ones::
-
-    pip install astropy
-    wget http://stsdas.stsci.edu/astrolib/vo-0.8.tar.gz && tar -xvf vo-0.8.tar.gz && cd vo-0.8 && python setup.py install
-    pip install atpy
-
-The Enthought Python Distribution
-^^^^^^^^^^^^^^^
-
-The `Enthought Python Distribution <http://www.enthought.com/products/epd.php>`_ contains most of Glue's dependencies. Building Glue on top of EPD involves::
-
-    pip install astropy
-    wget http://stsdas.stsci.edu/astrolib/vo-0.8.tar.gz && tar -xvf vo-0.8.tar.gz && cd vo-0.8 && python setup.py install
-    pip install atpy
-    pip install -e git+git://github.com/glue-viz/glue.git#egg=glue
-
-
-Anaconda
-^^^^^^^^
-The `Anaconda <https://store.continuum.io/cshop/anaconda>`_ distribution also contains most of Glue's dependencies. Installation instructions are the same as for the Enthought Python Distribution Above.
+For information about using MacPorts to manage your Python
+installation, see `here
+<http://astrofrog.github.com/macports-python/>`_::
 
 Running Glue
 ------------
@@ -135,4 +107,4 @@ that should be in your path. Running ``glue`` from the command line will
 start the program. Glue accepts a variety of command-line
 arguments. See ``glue --help`` for examples.
 
-.. note:: On Windows, installation creates a ``glue.bat`` script into the python script directory (e.g., ``C:\Python27\Scripts``). Windows users can create a desktop shortcut for this file, and run Glue by double clicking on the icon.
+.. note:: On Windows, installation creates an executable ``glue.exe`` file within the python script directory (e.g., ``C:\Python27\Scripts``). Windows users can create a desktop shortcut for this file, and run Glue by double clicking on the icon.
