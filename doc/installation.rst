@@ -30,7 +30,6 @@ Dependencies
 *Optional, for Astronomy*
 
 * `Astropy <http://www.astropy.org>`_
-* `ATpy <http://atpy.github.com>`_
 * `h5py <http://code.google.com/p/h5py/>`_
 
 .. note:: If Astropy is not installed, Glue will fallback to importing
@@ -74,12 +73,9 @@ The main dependencies can be installed with::
 
     sudo apt-get install python-pip
 
-    wget http://stsdas.stsci.edu/astrolib/vo-0.8.tar.gz && tar -xvf vo-0.8.tar.gz && cd vo-0.8 && python setup.py install
-
 Once these are installed, you can use ``pip`` to install the remaining ones::
 
     pip install astropy
-    pip install atpy
 
 
 MacOS X
@@ -104,8 +100,6 @@ The main dependencies can be installed with::
 Once these are installed, you can use ``pip`` to install the remaining ones::
 
     pip install astropy
-    wget http://stsdas.stsci.edu/astrolib/vo-0.8.tar.gz && tar -xvf vo-0.8.tar.gz && cd vo-0.8 && python setup.py install
-    pip install atpy
 
 Running Glue
 ------------
