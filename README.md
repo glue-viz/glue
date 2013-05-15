@@ -1,4 +1,6 @@
-===============
+
+[![Build Status](https://travis-ci.org/glue-viz/glue.png)](https://travis-ci.org/glue-viz/glue?branch=master)
+
 Welcome to Glue
 ===============
 
