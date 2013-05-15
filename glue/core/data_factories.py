@@ -172,8 +172,14 @@ def tabular_data(*args, **kwargs):
     # Loop through columns and make component list
     for column_name in table.columns:
         if table.masked:
-            c = Component(table[column_name].filled(),  # fill array for now
-                          units=table[column_name].units)
+            # fill array for now
+            try:
+                c = Component(table[column_name].filled(fill_value=np.nan),
+                              units=table[column_name].units)
+            except ValueError:  # assigning nan to integer dtype
+                c = Component(table[column_name].filled(fill_value=-1),
+                              units=table[column_name].units)
+
         else:
             c = Component(table[column_name],
                           units=table[column_name].units)
