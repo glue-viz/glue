@@ -71,7 +71,7 @@ def test_multilink_forwards_backwards():
 
 
 def test_Galactic2Equatorial():
-    from aplpy.wcs_util import fk52gal, gal2fk5
+    from ..util import fk52gal, gal2fk5
     result = Galactic2Equatorial(L, B, R, D)
     assert len(result) == 4
     check_link(result[0], [R, D], L)
@@ -87,7 +87,7 @@ def test_Galactic2Equatorial():
 
 
 def test_galactic2ecliptic_individual():
-    from aplpy.wcs_util import fk52gal, gal2fk5
+    from ..util import fk52gal, gal2fk5
 
     r = ComponentLink([L, B], R, lb2ra)
     d = ComponentLink([L, B], R, lb2dec)
