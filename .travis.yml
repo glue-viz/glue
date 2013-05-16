@@ -5,16 +5,16 @@ python:
 env:
    global:
      - PIP_ARGS="--use-mirrors -q"
-
+     - PYTEST_ARGS=""
    matrix:
      - MPL_VER=1.1.1 ASTRO_VER=0.1 IPYTHON_VER=0.13.2
      - MPL_VER=1.2.1 ASTRO_VER=0.1 IPYTHON_VER=0.13.2
      - MPL_VER=1.2.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.13.2
      - MPL_VER=1.1.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.13.2
-     - MPL_VER=1.2.1 ASTRO_VER=0.1 IPYTHON_VER=0.12.1
-     - MPL_VER=1.1.1 ASTRO_VER=0.1 IPYTHON_VER=0.12.1
-     - MPL_VER=1.2.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.12.1
-     - MPL_VER=1.1.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.12.1
+     - MPL_VER=1.2.1 ASTRO_VER=0.1 IPYTHON_VER=0.12.1 PYTEST_ARGS="-s"
+     - MPL_VER=1.1.1 ASTRO_VER=0.1 IPYTHON_VER=0.12.1 PYTEST_ARGS="-s"
+     - MPL_VER=1.2.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.12.1 PYTEST_ARGS="-s"
+     - MPL_VER=1.1.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.12.1 PYTEST_ARGS="-s"
 
 
 before_install:
@@ -38,4 +38,4 @@ install:
   - pip install $PIP_ARGS pyavm
   - python setup.py build
 
-script: py.test glue
+script: py.test $PYTEST_ARGS glue
