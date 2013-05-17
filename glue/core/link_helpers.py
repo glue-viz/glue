@@ -13,7 +13,7 @@ from functools import wraps
 
 from .component_link import ComponentLink
 from .data import ComponentID
-from .util import gal2fk5, fk52gal
+from ..external.aplpy import gal2fk5, fk52gal
 
 __LINK_FUNCTIONS__ = []
 __LINK_HELPERS__ = []
