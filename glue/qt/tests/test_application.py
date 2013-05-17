@@ -51,11 +51,12 @@ class TestGlueApplication(object):
     def test_save_session_ioerror(self):
         """should show box on ioerror"""
         with patch('glue.qt.glue_application.QFileDialog') as fd:
-            # can't write, raises IOError. Dangerous hack!
-            fd.getSaveFileName.return_value = '/_junk', 'jnk'
-            with patch('glue.qt.decorators.QMessageBox') as mb:
-                self.app._save_session()
-                assert mb.call_count == 1
+            with patch('__builtin__.open') as op:
+                op.side_effect = IOError
+                fd.getSaveFileName.return_value = '/tmp/junk', '/tmp/junk'
+                with patch('glue.qt.decorators.QMessageBox') as mb:
+                    self.app._save_session()
+                    assert mb.call_count == 1
 
     @pytest.mark.xfail("LooseVersion(ipy_version) <= LooseVersion('0.11')")
     def test_terminal_present(self):

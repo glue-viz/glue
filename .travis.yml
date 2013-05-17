@@ -1,0 +1,41 @@
+language: python
+python:
+  - 2.7
+
+env:
+   global:
+     - PIP_ARGS="--use-mirrors -q"
+     - PYTEST_ARGS=""
+   matrix:
+     - MPL_VER=1.1.1 ASTRO_VER=0.1 IPYTHON_VER=0.13.2
+     - MPL_VER=1.2.1 ASTRO_VER=0.1 IPYTHON_VER=0.13.2
+     - MPL_VER=1.2.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.13.2
+     - MPL_VER=1.1.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.13.2
+     - MPL_VER=1.2.1 ASTRO_VER=0.1 IPYTHON_VER=0.12.1 PYTEST_ARGS="-s"
+     - MPL_VER=1.1.1 ASTRO_VER=0.1 IPYTHON_VER=0.12.1 PYTEST_ARGS="-s"
+     - MPL_VER=1.2.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.12.1 PYTEST_ARGS="-s"
+     - MPL_VER=1.1.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.12.1 PYTEST_ARGS="-s"
+
+
+before_install:
+  - deactivate
+  - virtualenv --system-site-packages ~/virtualenv/this
+  - source ~/virtualenv/this/bin/activate
+
+  - sudo apt-get install -qq python-scipy python-qt4 pyqt4-dev-tools
+
+# Run GUIs in headless mode
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+
+install:
+  - pip install $PIP_ARGS numpy
+  - pip install $PIP_ARGS astropy==$ASTRO_VER
+  - pip install $PIP_ARGS IPython==$IPYTHON_VER
+  - pip install $PIP_ARGS matplotlib==$MPL_VER
+  - pip install $PIP_ARGS pygments pyzmq
+  - pip install $PIP_ARGS mock pytest
+  - pip install $PIP_ARGS pyavm
+  - python setup.py build
+
+script: py.test $PYTEST_ARGS glue
