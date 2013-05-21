@@ -7,6 +7,7 @@ from ..link_helpers import (LinkTwoWay, MultiLink, Galactic2Equatorial,
                             lb2ra, lb2dec, radec2glon, radec2glat,
                             LinkSame, LinkAligned)
 from ...core import ComponentID, ComponentLink, Data, Component, DataCollection
+from ...external.aplpy import fk52gal, gal2fk5
 
 R, D, L, B = (ComponentID('ra'), ComponentID('dec'),
               ComponentID('lon'), ComponentID('lat'))
@@ -71,7 +72,6 @@ def test_multilink_forwards_backwards():
 
 
 def test_Galactic2Equatorial():
-    from aplpy.wcs_util import fk52gal, gal2fk5
     result = Galactic2Equatorial(L, B, R, D)
     assert len(result) == 4
     check_link(result[0], [R, D], L)
@@ -86,8 +86,7 @@ def test_Galactic2Equatorial():
     check_using(result[3], (x, y), gal2fk5(x, y)[1])
 
 
-def test_galactic2ecliptic_individual():
-    from aplpy.wcs_util import fk52gal, gal2fk5
+def test_galactic2equatorial_individual():
 
     r = ComponentLink([L, B], R, lb2ra)
     d = ComponentLink([L, B], R, lb2dec)

@@ -13,6 +13,7 @@ from functools import wraps
 
 from .component_link import ComponentLink
 from .data import ComponentID
+from ..external.aplpy import gal2fk5, fk52gal
 
 __LINK_FUNCTIONS__ = []
 __LINK_HELPERS__ = []
@@ -127,51 +128,50 @@ class LinkAligned(LinkCollection):
                                      data[i + 1].get_pixel_component_id(j)))
 
 
-try:
-    from aplpy.wcs_util import fk52gal, gal2fk5
+class Galactic2Equatorial(MultiLink):
+    """
+    Instantiate a ComponentList with four ComponentLinks that map galactic
+    and equatorial coordinates
 
-    class Galactic2Equatorial(MultiLink):
-        """
-        Instantiate a ComponentList with four ComponentLinks that map galactic
-        and equatorial coordinates
+    :param l: ComponentID for galactic longitude
+    :param b: ComponentID for galactic latitude
+    :param ra: ComponentID for J2000 Right Ascension
+    :param dec: ComponentID for J2000 Declination
 
-        :param l: ComponentID for galactic longitude
-        :param b: ComponentID for galactic latitude
-        :param ra: ComponentID for J2000 Right Ascension
-        :param dec: ComponentID for J2000 Declination
+    Returns a :class:`~glue.core.LinkCollection` object which links
+    these ComponentIDs
+    """
 
-        Returns a :class:`~glue.core.LinkCollection` object which links
-        these ComponentIDs
-        """
+    #attributes used by the Gui
+    info_text = """Link Galactic and Equatorial coordinates"""
+    input_args = ['l', 'b', 'ra', 'dec']
 
-        #attributes used by the Gui
-        info_text = """Link Galactic and Equatorial coordinates"""
-        input_args = ['l', 'b', 'ra', 'dec']
+    def __init__(self, l, b, ra, dec):
+        MultiLink.__init__(self, [ra, dec], [l, b], fk52gal, gal2fk5)
 
-        def __init__(self, l, b, ra, dec):
-            MultiLink.__init__(self, [ra, dec], [l, b], fk52gal, gal2fk5)
 
-    def radec2glon(ra, dec):
-        """Compute galactic longitude from right ascension and declination"""
-        return fk52gal(ra, dec)[0]
-    radec2glon.output_args = ['l']
+def radec2glon(ra, dec):
+    """Compute galactic longitude from right ascension and declination"""
+    return fk52gal(ra, dec)[0]
+radec2glon.output_args = ['l']
 
-    def radec2glat(ra, dec):
-        """Compute galactic latitude from right ascension and declination"""
-        return fk52gal(ra, dec)[1]
-    radec2glat.output_args = ['b']
 
-    def lb2ra(lon, lat):
-        """Compute right ascension from galactic longitude and latitude"""
-        return gal2fk5(lon, lat)[0]
-    lb2ra.output_args = ['ra']
+def radec2glat(ra, dec):
+    """Compute galactic latitude from right ascension and declination"""
+    return fk52gal(ra, dec)[1]
+radec2glat.output_args = ['b']
 
-    def lb2dec(lon, lat):
-        """Compute declination from galactic longitude and latitude"""
-        return gal2fk5(lon, lat)[1]
-    lb2dec.output_args = ['dec']
 
-    __LINK_FUNCTIONS__.extend([radec2glon, radec2glat, lb2ra, lb2dec])
-    __LINK_HELPERS__.append(Galactic2Equatorial)
-except ImportError:
-    pass
+def lb2ra(lon, lat):
+    """Compute right ascension from galactic longitude and latitude"""
+    return gal2fk5(lon, lat)[0]
+lb2ra.output_args = ['ra']
+
+
+def lb2dec(lon, lat):
+    """Compute declination from galactic longitude and latitude"""
+    return gal2fk5(lon, lat)[1]
+lb2dec.output_args = ['dec']
+
+__LINK_FUNCTIONS__.extend([radec2glon, radec2glat, lb2ra, lb2dec])
+__LINK_HELPERS__.append(Galactic2Equatorial)
