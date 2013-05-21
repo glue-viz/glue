@@ -25,7 +25,7 @@ from ...external.qt.QtGui import QInputDialog
 from zmq import ZMQError
 from zmq.eventloop.zmqstream import ZMQStream
 
-try:  # IPython <= 0.13.1
+try:  # IPython <= 0.13.2
     from IPython.zmq.ipkernel import IPKernelApp, Kernel
     from IPython.zmq.iostream import OutStream
 except ImportError:  # IPython >= 1.0dev
@@ -251,17 +251,21 @@ def _glue_terminal_3(**kwargs):
     # see IPython/docs/examples/frontends/inprocess_qtconsole.py
 
     from IPython.kernel.inprocess.ipkernel import InProcessKernel
-    from IPython.frontend.qt.inprocess_kernelmanager import \
+    from IPython.frontend.qt.inprocess import \
         QtInProcessKernelManager
 
-    kernel = InProcessKernel(gui='qt4')
+    km = QtInProcessKernelManager()
+    km.start_kernel()
 
-    km = QtInProcessKernelManager(kernel=kernel)
-    km.start_channels()
-    kernel.frontends.append(km)
+    kernel = km.kernel
+    kernel.gui = 'qt4'
+
+    client = km.client()
+    client.start_channels()
 
     control = DragAndDropTerminal()
     control.kernel_manager = km
+    control.kernel_client = client
     control.shell = kernel.shell
     control.update_namespace(kwargs)
 
