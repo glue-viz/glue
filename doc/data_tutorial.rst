@@ -3,10 +3,9 @@ Working with Data Objects
 
 .. currentmodule:: glue.core.data
 
-If you would like to extend or customize Glue's functionality, you will
-likely need to deal with managing the :class:`Data` object. This document walks through handling data in Glue.
-
-The basic hierarchy of data objects in Glue looks like this:
+If you are writing Python code that uses Glue (for example, to create
+startup scripts or custom data viewers), you will probably want work
+with data. The hierarchy of data objects in Glue looks like this:
 
 .. image:: glue_hierarchy.png
    :width: 300
@@ -31,11 +30,48 @@ The basic hierarchy of data objects in Glue looks like this:
     a different Data object and store them in a DataCollection
 
 
-.. note::
+Retrieving data
+---------------
+For the moment, let's assume that you already have access to a
+constructed DataCollection. Note that, from the IPython terminal
+window in the Glue GUI, the current DataCollection is stored
+in the variable ``dc``.
 
- It's somewhat unfortunate that the actual "data" (i.e. the numpy
- array in a component object) is so deeply buried. This structure
- helps Glue keep track of other information more easily.
+The DataCollection behaves like a list -- you can access Data objects
+by indexing into it::
+
+    In [1]:  dc
+    Out[1]:
+    DataCollection (2 data sets)
+          0: w5
+          1: w5_psc
+
+    In [2]: dc[0]
+    Out[2]: Data (label: w5)
+
+This DataCollection has two data sets. Let's grab the first one::
+
+    In [3]: data = dc[0]
+
+    In [4]: data.components
+    Out[4]: [PRIMARY, Pixel y, Pixel x, World y: DEC--TAN, World x: RA---TAN]
+
+Data objects behave like dictionaries: you can retrieve the numerical data associated with each one with bracket-syntax::
+
+    In [5]: data['PRIMARY']
+    ... a numpy array ...
+
+Note that this syntax gives you the numpy array, and not the Component object itself. This is usually what you are interested in. However, you can retrieve the Component object if you like with ``get_component``::
+
+    In [6]: primary_id = data.components[0]
+
+    In [7]: print primary_id, type(primary_id)
+    Out[7]: PRIMARY <class 'glue.core.data.ComponentID'>
+
+    In [8]: component = data.get_component(primary_id)  #component object
+    In [9]: component.data   # numpy array
+
+.. note:: The bracket syntax will not work if component labels are not unique. In this case, you must first retrieve the component object as shown above.
 
 
 Creating objects
@@ -44,15 +80,21 @@ Creating objects
 If you need to create your own data objects, the code looks something
 like this::
 
-   import glue.core as gc
+   from glue.core import Component, Data, DataCollection
    import numpy as np
-   data = gc.data.Data(label="first dataset")
-   x = gc.component.Component( np.array([1, 2, 3]))
-   y = gc.component.Component( np.array([4, 5, 6]))
+   data = Data(label="first dataset")
+   x = Component( np.array([1, 2, 3]))
+   y = Component( np.array([4, 5, 6]))
    x_id = data.add_component(x, label = 'X')
    y_id = data.add_component(y, label = 'Y')
-   collection = glue.DataCollection()
-   collection.append(data)
+   collection = DataCollection([data])
+
+Alternatively, you can pass numpy arrays directly to ``Data``::
+
+    x = np.array([1, 2, 3])
+    y = np.array([1, 2, 3])
+    data = Data(label="first dataset", x=x, y=y)
+    collection = DataCollection([data])
 
 Registering with a Hub
 ----------------------
@@ -62,47 +104,13 @@ Simply register the :class:`~glue.core.data_collection.DataCollection` to the hu
    collection.register_to_hub(hub)
 
 
-Retrieving Values
------------------
-
-Components are extracted from data by their componentIDs::
-
-    comp = data.get_component(x_id)
-    comp == x  # True
-    comp.data  # array([1, 2, 3])
-
-To save typing, ``data[component_id]`` fetches the numerical data directly::
-
-   print data[y_id]  # array([4, 5, 6])
-
-To see what ComponentIDs are stored with a data set::
-
-   print data.components
-
-To search by label::
-
-   data.find_component_id('X')   # [component_id]
-   data.find_componenet_id('Z')  # []
-
-To fetch the data stored in the collection::
-
-   print collection.data
-   for d in collection:
-       print d
-
 Working with Files
 ------------------
 
-There are a few classes to help you create :class:`Data` objects from files::
+The functions in ``glue.core.data_factories`` create :class:`Data` objects
+from files. For example::
 
-   catalog_data = gc.data.TabularData()
-   catalog_data.read_data(catalog_filename, *args, **kwargs)
-
-This creates a data object from a catalog, using `ATpy <http://atpy.github.com/>`_ for table parsing. Extra arguments to ``_read_data`` are passed to ATpy's ``read`` method
-
-
-For loading FITS and HDF5 images or cubes::
-
-   image_data = gc.data.GriddedData()
-   image_data.read_data(file_name, format=['hdf5' | 'fits'])
-
+    from glue.core.data_factores import *
+    load_data('image.fits', factory=gridded_data)  # reads a fits image
+    load_data('catalog.csv', factory=tabular_data) # reads a catalog
+    load_data('catalog.csv')  # guesses factory, based on file extension

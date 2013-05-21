@@ -146,25 +146,46 @@ def tabular_data(*args, **kwargs):
     with 1D columns.
 
     All arguments are passed to
-        ATpy.Table(...).
+        astropy.table.Table.read(...).
     """
     result = Data()
 
-    from ..external import _atpy as atpy
-    atpy.registry.register_extensions('ascii', ['csv', 'tsv', 'txt'],
-                                      override=True)
+    # Read the table
+    from astropy.table import Table
 
-    table = atpy.Table()
-    table.read(*args, **kwargs)
+    # Add identifiers for ASCII data
+    from astropy.io import registry
+    def ascii_identifier(origin, *args, **kwargs):
+        # should work with both Astropy 0.2 and 0.3
+        if isinstance(args[0], basestring):
+            return args[0].endswith(('csv', 'tsv', 'txt'))
+        else:
+            return False
+    registry.register_identifier('ascii', Table, ascii_identifier,
+                                 force=True)
+
+    # Import FITS compatibility (for Astropy 0.2.x)
+    from ..external import fits_io
+
+    table = Table.read(*args, **kwargs)
 
     # Loop through columns and make component list
     for column_name in table.columns:
-        c = Component(table[column_name],
-                      units=table.columns[column_name].unit)
+        if table.masked:
+            # fill array for now
+            try:
+                c = Component(table[column_name].filled(fill_value=np.nan),
+                              units=table[column_name].units)
+            except ValueError:  # assigning nan to integer dtype
+                c = Component(table[column_name].filled(fill_value=-1),
+                              units=table[column_name].units)
+
+        else:
+            c = Component(table[column_name],
+                          units=table[column_name].units)
         result.add_component(c, column_name)
 
     return result
-
 
 tabular_data.label = "Catalog"
 tabular_data.file_filter = "*.txt *.vot *.xml *.csv *.tsv *.fits *.tbl"

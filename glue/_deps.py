@@ -90,9 +90,7 @@ required = (
     QtDep(),
     Dependency('numpy', 'Required', min_version='1.4'),
     Dependency('matplotlib', 'Required for plotting', min_version='1.1'),
-    Dependency('astropy', 'Used for FITS I/O, table reading, and WCS Parsing'),
-    Dependency('atpy',
-               'Used to parse common astronomy table formats', 'ATpy'))
+    Dependency('astropy', 'Used for FITS I/O, table reading, and WCS Parsing'))
 
 general = (
     Dependency('scipy', 'Used for some image processing calculation'),
