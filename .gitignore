@@ -9,5 +9,5 @@ glue/qt/glue_qt_resources.py
 *.__junk*
 *.coverage
 *htmlcov*
-*.egg-info
-dist/
+Glue.egg-info
+dist
