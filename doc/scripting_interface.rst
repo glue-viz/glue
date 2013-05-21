@@ -123,7 +123,7 @@ If you need to add components to a data set after it is initialized, use the ``a
 Custom Data Loaders
 ^^^^^^^^^^^^^^^^^^^
 .. _custom_data_factory:
-Glue let's you create custom data loader functions,
+Glue lets you create custom data loader functions,
 to use from within the GUI.
 
 Here's a quick example: the default image loader in Glue
