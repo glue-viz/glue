@@ -20,7 +20,7 @@ Click the arrow button in the lower left to open the terminal window.
 The individual data sets can be found in data_collection.data::
 
     >>> data_collection.data
-    [<glue.core.data.TabularData at 0x112059dd0>]
+    [<glue.core.data.Data at 0x112059dd0>]
     >>> data = data_collection.data[0]
 
 You can also get the data object by indexing into DataCollection::

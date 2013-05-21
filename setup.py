@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
 from setuptools import setup, Command
-from setuptools.command.install_lib import install_lib
 
 try:  # Python 3.x
     from setuptools.command.build_py import build_py_2to3 as build_py
@@ -18,8 +17,7 @@ from setupext import (print_line, print_raw, print_status,
                       check_for_numpy, check_for_matplotlib,
                       check_for_qt4, check_for_ipython, check_for_scipy,
                       check_for_astropy, check_for_aplpy, check_for_pytest,
-                      check_for_mock, check_for_pil, check_for_atpy,
-                      check_for_pyside,
+                      check_for_pyside, check_for_pil, check_for_mock
                       )
 
 def is_windows():
@@ -61,7 +59,6 @@ def print_sysinfo():
     print_raw("")
     print_raw("OPTIONAL DEPENDENCIES : ASTRONOMY")
     check_for_astropy()
-    check_for_atpy()
     check_for_aplpy()
 
     print_raw("")
@@ -83,7 +80,6 @@ class PyTest(Command):
         pass
 
     def run(self):
-        import subprocess
         errno = subprocess.call([sys.executable, 'runtests.py', 'glue'])
         raise SystemExit(errno)
 
@@ -136,8 +132,6 @@ class BuildQt(Command):
             out.write(val)
 
     def _compile_ui(self, infile, outfile):
-        from cStringIO import StringIO
-
         try:
             subprocess.call([self.pyuic, infile, '-o', outfile])
         except OSError:
