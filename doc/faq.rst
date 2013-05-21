@@ -3,6 +3,22 @@
 Frequently Asked Questions
 ==========================
 
+What data formats does Glue understand?
+---------------------------------------
+Glue relies on several libraries to parse different file formats:
+
+ * `Astropy <http://www.astropy.org>`_ for FITS images and tables, a
+   variety of `ascii table formats
+   <http://docs.astropy.org/en/latest/io/ascii/index.html>`_, and VO
+   tables.
+ * `scikit-image <http://scikit-image.org/>`_ to read popular image
+   formats like ``.jpeg`` and ``.tiff``
+ * `h5py <http://www.h5py.org/docs/>`_ to read HDF5 files
+
+You can also :ref:`write your own <custom_data_factory>` data loading
+scripts, and plug them into glue.
+
+
 How do I overplot catalogs on images in Glue?
 ---------------------------------------------
 Take a look at this video. For more details, consult the :ref:`tutorial <getting_started>`.

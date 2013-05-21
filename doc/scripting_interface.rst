@@ -1,9 +1,9 @@
 .. _scripting_interface
 
-Scripting Interface
-===================
+Scripting Glue
+==============
 
-Glue is written in Python, and can be customized or extended by a variety of mechanisms. If you use Python in other contexts, many of these concepts will be familiar to you.
+Glue is written in Python, and can be extended by a variety of mechanisms. If you use Python in other contexts, many of these concepts will be familiar to you.
 
 Configuration Files
 -------------------
@@ -67,9 +67,17 @@ Some remarks:
 
 The Terminal Window
 -------------------
-The terminal window provides an IPython shell with access to the variables used by Glue. As you become familiar with the Glue API, you can use this to inspect the state of Glue as it runs, analyze data in place, etc.
 
-The main variables in the available by default form the termainal window are ``data_collection``, ``dc`` (an alias to ``data_collection``), and ``hub``.
+The terminal window provides an IPython shell with access to the
+variables used by Glue. You can use this to inspect the state of Glue
+as it runs, analyze data in place, etc.
+
+The main variables available by default form the termainal
+window are ``data_collection``, ``dc`` (an alias to
+``data_collection``), and ``hub``.
+
+In addition, you can drag individual datasets or subsets into the terminal,
+and assign them to local variables.
 
 Essential API
 -------------
@@ -110,6 +118,47 @@ If you need to add components to a data set after it is initialized, use the ``a
 
 
 .. todo:: Describe creating Coordinate objects
+
+
+Custom Data Loaders
+^^^^^^^^^^^^^^^^^^^
+.. _custom_data_factory:
+Glue let's you create custom data loader functions,
+to use from within the GUI.
+
+Here's a quick example: the default image loader in Glue
+reads each color in an RGB image into 3 two-dimensional components.
+Perhaps you want to be able to load these images into a single 3-dimensional
+component called ``cube``. Here's how you could do this::
+
+ from glue.config import data_factory
+ from glue.core import Data
+ from skimage.io import imread
+
+ @data_factory('3D image loader', '*.jpg *.bmp *.tiff')
+ def read_jpeg(file_name):
+     im = imread(file_name)
+     return Data(cube=im)
+
+Let's look at this line-by-line:
+
+ * The ``@data_factory`` decorator is how Glue "finds" this function.
+   Its two arguments are a label, and the file formats it can open.
+
+ * The first line in ``read_jpeg`` uses scikit-image to load an image
+   file into a NumPy array.
+
+ * The second line constructs a glue Data object from this array (using
+   the syntax described in the previous section), and returns the result.
+
+If you put this in your ``config.py`` file, you will see a new
+file type when loading data:
+
+  .. figure:: custom_data.png
+     :align: center
+     :width: 50%
+
+
 
 Linking Data
 ^^^^^^^^^^^^
