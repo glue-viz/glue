@@ -23,7 +23,17 @@ def identity(x):
     return x
 identity.output_args = ['y']
 
+
+def lengths_to_volume(width, height, depth):
+    """Compute volume from linear measurements of a box"""
+    #included for demonstration purposes
+    return width * height * depth
+
+
+lengths_to_volume.output_args = ['area']
+
 __LINK_FUNCTIONS__.append(identity)
+__LINK_FUNCTIONS__.append(lengths_to_volume)
 
 
 def _partial_result(func, index):

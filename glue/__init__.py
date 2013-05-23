@@ -21,4 +21,6 @@ logging.getLogger('glue').addHandler(NullHandler())
 from .config import load_configuration
 env = load_configuration()
 
+from .qglue import qglue
+
 from .version import __version__

@@ -164,10 +164,9 @@ class TestData(object):
 
     def test_add_component_invalid_component(self):
         comp = Component(np.array([1]))
-        with pytest.raises(TypeError) as exc:
+        with pytest.raises(ValueError) as exc:
             self.data.add_component(comp, label='bad')
-        assert exc.value.args[0] == ("Component shape is incompatible with "
-                                     "other components in this data: bad")
+        assert exc.value.args[0].startswith("The dimensions of component bad")
 
     def test_add_component_link(self):
         link = MagicMock(spec_set=ComponentLink)
@@ -350,10 +349,9 @@ def test_init_with_inputs(kwargs):
 
 
 def test_init_with_invalid_kwargs():
-    with pytest.raises(TypeError) as exc:
+    with pytest.raises(ValueError) as exc:
         d = Data(x=[1, 2], y=[1, 2, 3])
-    assert exc.value.args[0].startswith('Component shape is incompatible '
-                                        'with other')
+    assert exc.value.args[0].startswith('The dimensions of component')
 
 
 def test_getitem_with_component_link():

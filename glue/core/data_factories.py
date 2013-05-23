@@ -155,6 +155,7 @@ def tabular_data(*args, **kwargs):
 
     # Add identifiers for ASCII data
     from astropy.io import registry
+
     def ascii_identifier(origin, args, kwargs):
         # should work with both Astropy 0.2 and 0.3
         if isinstance(args[0], basestring):

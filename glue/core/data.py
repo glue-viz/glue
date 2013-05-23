@@ -369,8 +369,8 @@ class Data(object):
 
         *Raises*
 
-           TypeError, if label is invalid, or if the component has
-           an incompatible shape
+           TypeError, if label is invalid
+           ValueError if the component has an incompatible shape
 
         *Returns*
 
@@ -380,8 +380,9 @@ class Data(object):
             component = Component(np.asarray(component))
 
         if not(self._check_can_add(component)):
-            raise TypeError("Component shape is incompatible with "
-                            "other components in this data: %s" % label)
+            raise ValueError("The dimensions of component %s are "
+                             "incompatible with the dimensions of this data: "
+                             "%r vs %r" % (label, component.shape, self.shape))
 
         if isinstance(label, ComponentID):
             component_id = label
