@@ -148,6 +148,11 @@ def tabular_data(*args, **kwargs):
     All arguments are passed to
         astropy.table.Table.read(...).
     """
+    from distutils.version import LooseVersion
+    from astropy import __version__
+    if LooseVersion(__version__) < LooseVersion("0.2.0"):
+        raise RuntimeError("Glue requires astropy >= v0.2. Please update")
+
     result = Data()
 
     # Read the table
