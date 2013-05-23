@@ -278,12 +278,13 @@ def img_data(file_name):
 
     #look for AVM coordinate metadata
     try:
-        from pyavm import AVM, NoAVMPresent
+        from pyavm import AVM
         avm = AVM(str(file_name))  # avoid unicode
         wcs = avm.to_wcs()
-        result.coords = coordinates_from_wcs(wcs)
-    except (NoAVMPresent, ImportError):
+    except:
         pass
+    else:
+        result.coords = coordinates_from_wcs(wcs)
 
     for c, l in zip(comps, labels):
         result.add_component(c, l)

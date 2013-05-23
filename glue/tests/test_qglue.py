@@ -1,4 +1,3 @@
-import pandas as pd
 import numpy as np
 from astropy.table import Table
 
@@ -9,6 +8,12 @@ from .. import qglue
 from ..core.registry import Registry
 from ..core.exceptions import IncompatibleAttribute
 
+def has_pandas():
+    try:
+        import pandas
+        return True
+    except:
+        return False
 
 class TestQGlue(object):
     def setup_method(self, method):
@@ -20,7 +25,7 @@ class TestQGlue(object):
         u = [10, 20, 30, 40]
         v = [20, 40, 60, 80]
 
-        self.pandas_data = pd.DataFrame({'x': x, 'y': y})
+        self.xy = {'x':x, 'y':y}
         self.dict_data = {'u': u, 'v': v}
         self.recarray_data = np.rec.array([(0, 1), (2, 3)],
                                           dtype=[('a', 'i'), ('b', 'i')])
@@ -44,15 +49,19 @@ class TestQGlue(object):
                 assert component in components
         assert len(expected) == 0
 
+    @pytest.mark.skipif("not has_pandas()")
     def test_qglue_starts_application(self):
+        import pandas as pd
+        pandas_data = pd.DataFrame(self.xy)
+
         with patch('glue.qt.glue_application.GlueApplication') as ga:
-            dc = qglue(data1=self.pandas_data)
+            dc = qglue(data1=pandas_data)
             ga.assert_called_once_with(dc)
             ga().start.assert_called_once_with()
 
     def test_single_pandas(self):
         with patch('glue.qt.glue_application.GlueApplication') as ga:
-            dc = qglue(data1=self.pandas_data)
+            dc = qglue(data1=self.xy)
             self.check_setup(dc, {'data1': ['x', 'y']})
 
     def test_single_dict(self):
@@ -72,7 +81,7 @@ class TestQGlue(object):
 
     def test_multi_data(self):
         with patch('glue.qt.glue_application.GlueApplication') as ga:
-            dc = qglue(data1=self.dict_data, data2=self.pandas_data)
+            dc = qglue(data1=self.dict_data, data2=self.xy)
             self.check_setup(dc, {'data1': ['u', 'v'],
                                   'data2': ['x', 'y']})
 
@@ -80,7 +89,7 @@ class TestQGlue(object):
         with patch('glue.qt.glue_application.GlueApplication') as ga:
             using = lambda x: x * 2
             links = [['data1.x', 'data2.u', using]]
-            dc = qglue(data1=self.pandas_data, data2=self.dict_data,
+            dc = qglue(data1=self.xy, data2=self.dict_data,
                        links=links)
 
             links = [[['x'], 'u', using]]
@@ -101,7 +110,7 @@ class TestQGlue(object):
 
             links = [[['Data1.x', 'Data1.y'],
                       ['Data2.u', 'Data2.v'], forwards, backwards]]
-            dc = qglue(Data1=self.pandas_data, Data2=self.dict_data,
+            dc = qglue(Data1=self.xy, Data2=self.dict_data,
                        links=links)
 
             self.check_setup(dc, {'Data1': ['x', 'y'],
@@ -123,7 +132,7 @@ class TestQGlue(object):
         with patch('glue.qt.glue_application.GlueApplication') as ga:
             links = [('Data1.x', 'Data2.v'),
                      ('Data1.y', 'Data2.u')]
-            dc = qglue(Data1=self.pandas_data, Data2=self.dict_data,
+            dc = qglue(Data1=self.xy, Data2=self.dict_data,
                        links=links)
         #currently, identity links rename the second link to first,
         #so u/v disappear
@@ -139,7 +148,7 @@ class TestQGlue(object):
         forwards = lambda *args: args
         links = [(['Data1.a'], ['Data2.b'], forwards)]
         with pytest.raises(ValueError) as exc:
-            dc = qglue(Data1=self.pandas_data, Data2=self.dict_data,
+            dc = qglue(Data1=self.xy, Data2=self.dict_data,
                        links=links)
         assert exc.value.args[0] == "Invalid link (no component named Data1.a)"
 

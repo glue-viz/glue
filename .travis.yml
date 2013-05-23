@@ -34,8 +34,8 @@ install:
   - pip install $PIP_ARGS IPython==$IPYTHON_VER
   - pip install $PIP_ARGS matplotlib==$MPL_VER
   - pip install $PIP_ARGS pygments pyzmq
-  - pip install $PIP_ARGS mock pytest
-  - pip install $PIP_ARGS pyavm
+  - pip install $PIP_ARGS mock pytest pyavm cython
+  - pip install --use-mirrors scikit-image
   - python setup.py build
 
 script: py.test $PYTEST_ARGS glue
