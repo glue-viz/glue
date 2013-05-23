@@ -7,12 +7,8 @@ env:
      - PIP_ARGS="--use-mirrors -q"
      - PYTEST_ARGS=""
    matrix:
-     - MPL_VER=1.1.1 ASTRO_VER=0.1 IPYTHON_VER=0.13.2
-     - MPL_VER=1.2.1 ASTRO_VER=0.1 IPYTHON_VER=0.13.2
      - MPL_VER=1.2.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.13.2
      - MPL_VER=1.1.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.13.2
-     - MPL_VER=1.2.1 ASTRO_VER=0.1 IPYTHON_VER=0.12.1 PYTEST_ARGS="-s"
-     - MPL_VER=1.1.1 ASTRO_VER=0.1 IPYTHON_VER=0.12.1 PYTEST_ARGS="-s"
      - MPL_VER=1.2.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.12.1 PYTEST_ARGS="-s"
      - MPL_VER=1.1.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.12.1 PYTEST_ARGS="-s"
 
@@ -34,8 +30,8 @@ install:
   - pip install $PIP_ARGS IPython==$IPYTHON_VER
   - pip install $PIP_ARGS matplotlib==$MPL_VER
   - pip install $PIP_ARGS pygments pyzmq
-  - pip install $PIP_ARGS mock pytest
-  - pip install $PIP_ARGS pyavm
+  - pip install $PIP_ARGS mock pytest pyavm cython
+  - pip install --use-mirrors scikit-image
   - python setup.py build
 
 script: py.test $PYTEST_ARGS glue

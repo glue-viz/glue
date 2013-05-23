@@ -59,6 +59,15 @@ class DataCollection(HubListener):
             self.hub.broadcast(msg)
         self._sync_link_manager()
 
+    def extend(self, data):
+        """Add several new datasets to this collection
+
+        See :meth:`~DataCollection.append` for more information
+
+        :param data: List of data objects to add
+        """
+        [self.append(d) for d in data]
+
     def remove(self, data):
         """ Remove a data set from the collection
 

@@ -1,5 +1,5 @@
-Glue Architecture
-=================
+Publish/subscribe model
+==============================
 
 .. currentmodule:: glue.core
 

@@ -119,7 +119,7 @@ def gridded_data(filename, format='auto', **kwargs):
     if format in ['fits', 'fit']:
         from ..external.astro import fits
         arrays = extract_data_fits(filename, **kwargs)
-        header = fits.Header.fromfile(filename)
+        header = fits.getheader(filename)
         result.coords = coordinates_from_header(header)
     elif format in ['hdf', 'hdf5', 'h5']:
         arrays = extract_data_hdf5(filename, **kwargs)
@@ -148,6 +148,11 @@ def tabular_data(*args, **kwargs):
     All arguments are passed to
         astropy.table.Table.read(...).
     """
+    from distutils.version import LooseVersion
+    from astropy import __version__
+    if LooseVersion(__version__) < LooseVersion("0.2.0"):
+        raise RuntimeError("Glue requires astropy >= v0.2. Please update")
+
     result = Data()
 
     # Read the table
@@ -155,10 +160,11 @@ def tabular_data(*args, **kwargs):
 
     # Add identifiers for ASCII data
     from astropy.io import registry
-    def ascii_identifier(origin, *args, **kwargs):
+
+    def ascii_identifier(origin, args, kwargs):
         # should work with both Astropy 0.2 and 0.3
         if isinstance(args[0], basestring):
-            return args[0].endswith(('csv', 'tsv', 'txt'))
+            return args[0].endswith(('csv', 'tsv', 'txt', 'tbl', 'dat'))
         else:
             return False
     registry.register_identifier('ascii', Table, ascii_identifier,
@@ -188,7 +194,7 @@ def tabular_data(*args, **kwargs):
     return result
 
 tabular_data.label = "Catalog"
-tabular_data.file_filter = "*.txt *.vot *.xml *.csv *.tsv *.fits *.tbl"
+tabular_data.file_filter = "*.txt *.vot *.xml *.csv *.tsv *.fits *.tbl *.dat"
 __factories__.append(tabular_data)
 set_default_factory('xml', tabular_data)
 set_default_factory('vot', tabular_data)
@@ -196,6 +202,7 @@ set_default_factory('csv', tabular_data)
 set_default_factory('txt', tabular_data)
 set_default_factory('tsv', tabular_data)
 set_default_factory('tbl', tabular_data)
+set_default_factory('dat', tabular_data)
 
 
 def data_dendro_cpp(file):
@@ -276,12 +283,13 @@ def img_data(file_name):
 
     #look for AVM coordinate metadata
     try:
-        from pyavm import AVM, NoAVMPresent
+        from pyavm import AVM
         avm = AVM(str(file_name))  # avoid unicode
         wcs = avm.to_wcs()
-        result.coords = coordinates_from_wcs(wcs)
-    except (NoAVMPresent, ImportError):
+    except:
         pass
+    else:
+        result.coords = coordinates_from_wcs(wcs)
 
     for c, l in zip(comps, labels):
         result.add_component(c, l)
