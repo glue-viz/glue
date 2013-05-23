@@ -26,7 +26,7 @@ to intercompare different datasets.
   concepts from SQL, R, or Pandas, you might think data links are like
   data mergers or joins. They are different -- mergers assume
   information about the **same entity** is present in many tables,
-  such that the diffent tables can in principle me merged together.
+  such that the diffent tables can in principle be merged together.
   Data Links in glue, on the other hand, assume that the entrys in
   different datasets correspond to different entities, but may
   describe the **same quantity**. For example, an image and a position

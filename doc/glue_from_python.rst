@@ -30,6 +30,8 @@ For example, say you are working with a `Pandas <http://pandas.pydata.org/>`_ Da
     In [14]: qglue(xyz=df)
 
 This will send this data to Glue, label it ``xyz`` and start the UI.
+When you close the GUI, it will return the DataCollection (including
+any subsets you have defined).
 
 ``qglue`` accepts many data types as inputs. Let's see some examples::
 
