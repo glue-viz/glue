@@ -42,7 +42,7 @@ def fk52gal(ra, dec):
     ra, dec = np.radians(ra), np.radians(dec)
 
     sinb = np.sin(dec) * np.cos(DEC_0) - np.cos(dec) * np.sin(ra - RA_0) \
-      * np.sin(DEC_0)
+        * np.sin(DEC_0)
 
     b = np.arcsin(sinb)
 
@@ -76,7 +76,7 @@ def gal2fk5(l, b):
     b = np.radians(b)
 
     sind = np.sin(b) * np.sin(DEC_NGP) + \
-      np.cos(b) * np.cos(DEC_NGP) * np.sin(l - L_0)
+        np.cos(b) * np.cos(DEC_NGP) * np.sin(l - L_0)
 
     dec = np.arcsin(sind)
 

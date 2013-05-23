@@ -1,10 +1,10 @@
-Working with Data Objects
-==========================
-
+.. _data_tutorial:
 .. currentmodule:: glue.core.data
 
-If you are writing Python code that uses Glue (for example, to create
-startup scripts or custom data viewers), you will probably want work
+Working with Data
+=================
+
+If you are writing Python code that uses Glue, you will probably want work
 with data. The hierarchy of data objects in Glue looks like this:
 
 .. image:: glue_hierarchy.png
@@ -30,12 +30,47 @@ with data. The hierarchy of data objects in Glue looks like this:
     a different Data object and store them in a DataCollection
 
 
-Retrieving data
----------------
-For the moment, let's assume that you already have access to a
-constructed DataCollection. Note that, from the IPython terminal
-window in the Glue GUI, the current DataCollection is stored
-in the variable ``dc``.
+Creating :class:`Data` objects
+------------------------------
+.. _data_creation:
+
+If you need to build your own data objects, the code looks something
+like this::
+
+   from glue.core import Component, Data, DataCollection
+   import numpy as np
+   data = Data(label="first dataset")
+   x = Component( np.array([1, 2, 3]))
+   y = Component( np.array([4, 5, 6]))
+   x_id = data.add_component(x, label = 'X')
+   y_id = data.add_component(y, label = 'Y')
+   collection = DataCollection([data])
+
+Alternatively, you can pass numpy arrays directly to ``Data``::
+
+    x = np.array([1, 2, 3])
+    y = np.array([1, 2, 3])
+    data = Data(label="first dataset", x=x, y=y)
+    collection = DataCollection([data])
+
+Loading from files
+-------------------
+
+The functions in ``glue.core.data_factories`` create
+:class:`~glue.core.Data` objects from files. For example::
+
+    from glue.core.data_factores import *
+    load_data('image.fits', factory=gridded_data)  # reads a fits image
+    load_data('catalog.csv', factory=tabular_data) # reads a catalog
+    load_data('catalog.csv')  # guesses factory, based on file extension
+
+If these functions do not fit your needs, you can also :ref:`write your own
+data loader <custom_data_factory>`, and use it from the Glue GUI.
+
+
+Working with :class:`Data` and :class:`DataCollection` objects
+--------------------------------------------------------------
+.. _data_access_api:
 
 The DataCollection behaves like a list -- you can access Data objects
 by indexing into it::
@@ -72,45 +107,3 @@ Note that this syntax gives you the numpy array, and not the Component object it
     In [9]: component.data   # numpy array
 
 .. note:: The bracket syntax will not work if component labels are not unique. In this case, you must first retrieve the component object as shown above.
-
-
-Creating objects
-----------------
-
-If you need to create your own data objects, the code looks something
-like this::
-
-   from glue.core import Component, Data, DataCollection
-   import numpy as np
-   data = Data(label="first dataset")
-   x = Component( np.array([1, 2, 3]))
-   y = Component( np.array([4, 5, 6]))
-   x_id = data.add_component(x, label = 'X')
-   y_id = data.add_component(y, label = 'Y')
-   collection = DataCollection([data])
-
-Alternatively, you can pass numpy arrays directly to ``Data``::
-
-    x = np.array([1, 2, 3])
-    y = np.array([1, 2, 3])
-    data = Data(label="first dataset", x=x, y=y)
-    collection = DataCollection([data])
-
-Registering with a Hub
-----------------------
-
-Simply register the :class:`~glue.core.data_collection.DataCollection` to the hub -- all the child objects will be auto-subscribed::
-
-   collection.register_to_hub(hub)
-
-
-Working with Files
-------------------
-
-The functions in ``glue.core.data_factories`` create :class:`Data` objects
-from files. For example::
-
-    from glue.core.data_factores import *
-    load_data('image.fits', factory=gridded_data)  # reads a fits image
-    load_data('catalog.csv', factory=tabular_data) # reads a catalog
-    load_data('catalog.csv')  # guesses factory, based on file extension
