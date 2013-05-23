@@ -1,121 +1,82 @@
 .. _component_link:
 
-Understanding Component Links
-=============================
+Fundamentals: Data Linking
+==========================
 
 .. currentmodule: glue.core
 
-Many interactions which manipulate subests in Glue define regions of interest. For example, consider defining a circular ROI in a scatter plot of objects' RA and Dec coordinates:
+Glue makes it possible to compare different, interrelated datasets. For example, Glue allows you to:
 
-.. image:: circular_roi.png
-   :width: 400
+* Overlay scatterplots of the positions of objects in two different catalogs
+* Select a region of interest in an image, and use this spatial constraint to filter a catalog with position information
+* Overlay histograms that compare mass distributions of two different datasets.
 
-Glue uses this ROI to filter objects in the catalog, which the Scatter Client displays by highlighting points inside the ROI.
+To do this, Glue needs to understand how quantities in different datasets relate to each other:
 
-The ROI is basically a constraint on the numerical values of the RA
-and DEC quantities. We often wish to apply this same filter to another
-dataset. However, Glue isn't (yet!) smart enough to understand what the RA and DEC components describe, and thus doesn't realize when the same quantities appear in another dataset.
+* Sometimes, two datasets define the same quantity (e.g., two catalogs that both report time)
+* Sometimes, datasets define the same quantities in different units (elapsed time in hours vs elapsed time in days)
+* Sometimes, a quantity (like area) can be derived from other quantites (like length and width).
 
-We use :class:`~component_link.ComponentLink` objects to give Glue this
-information, so that it knows how to apply the constraints in an ROI
-to another data set. When we use the Link Editor in the GUI, Glue is creating ComponentLinks for us
+**Data Links** tell Glue how to translate between different quantities,
+to intercompare different datasets.
+
+.. note::
+
+  **Are data links like table joins?** If you are familiar with
+  concepts from SQL, R, or Pandas, you might think data links are like
+  data mergers or joins. They are different -- mergers assume
+  information about the **same entity** is present in many tables,
+  such that the diffent tables can in principle me merged together.
+  Data Links in glue, on the other hand, assume that the entrys in
+  different datasets correspond to different entities, but may
+  describe the **same quantity**. For example, an image and a position
+  catalog both have spatial information, but no row in the catalog
+  represents a pixel in the image. Data mergers are not yet supported
+  in Glue.
+
+
+Data Linking from the GUI
+-------------------------
+The :ref:`Data Linking Editor <getting_started_link>` let's users
+define data links from the GUI.
+
 
 .. image:: link_dialog.png
    :width: 400
 
-Understanding how a :class:`~component_link.ComponentLink` works will help you to write custom functions to express connections between data, and to propagate subsets across data sets.
+The simplest link occurs when two datasets define the same quantity in
+the same units. In this case, Glue can trivially overplot
+visualizations in both datasets. For example, in the image above, both
+datasets (a catalog and an image) both have the same RA and Dec
+spatial information (RA and Dec are essentially latitude and longitude
+coordinates on the sky). To link these quantities, we highlight the
+equivalent quantities, and click "Glue".
 
-The ComponentLink
------------------
+.. image:: link_dialog_2.png
+   :width: 400
 
-A typical :class:`~data.Component` stores data as numpy array, and is associated with a :class:`~data.ComponentID`. Regions of Interest are typically expressed as constraints on the values of these IDs. For example::
+In the more general case, one quantity can be computed from one or more others,
+but is not identical to another quantity. The ``advanced`` tab let's us
+specify how to use a translation function to derive one quantity from others:
 
-   ra > 50 and ra < 51 and dec > 31 and dec < 32
+.. image:: link_dialog_3.png
+   :width: 400
 
-A data set can process this ROI only if it has values associated with the ra and dec ComponentIDs.
+Here, a ``boxes`` dataset reports the linear dimensions of some boxes, and a crates dataset reports the volume of crates. The box volumes can be intercompared with the crate volumes by multiplying the box width, height, and depth.
+To specify this link, we select a translation function (``lengths_to_volume``),
+and drag the components to the relevant inputs and output of the translation
+function.
 
-By default, every Component stored in a dataset is given a unique
-ComponentID. Thus, even if two data sets components which we (the
-humans) recognize describe the same quantity, Glue initially sees them
-as unrelated due to their different ComponentIDs.
+Note that this link is one-way: we can compute area from width height
+and depth, but not vice versa. Thus, we will be able to overlay
+information about box volume on a plot of crate volume, but not any
+information about crate height.
 
-.. note::
-    It would be cool if Glue recognized some of these links
-    automatically , given the label names. If you want to solve that
-    problem, that would be great.
-
-A :class:`~component_link.ComponentLink` is a way of expressing a relationship between ComponentIDs so that, if a data set has the necessary prerequisite IDs, it can derive a different ComponentID.
-
-ComponentLinks have 3 pieces of information:
-
-  * A list of prerequisite ComponentIDs
-  * The ComponentID that can be derived from the prerequisites
-  * A function which carries out this transformation
-
-The simplest link function would be::
-
-  def identity(x):
-      return x
-
-
-With this function, we can create a link between the right ascention Components of two datasets::
-
-  link = ComponentLink([id_of_ra_from_data_1], id_of_ra_from_data_2, identity)
-  data_1.add_component_link(link)
-
-After this, ``data_1`` now knows how to compute the data for ``id_of_ra_from_data_2``. It simply passes the data from ``id_of_ra_from_data_1`` through the ``identity`` function, and returns the result.
-
-With this extra information, Glue can apply ROI constraints defined
-relative to ``id_of_ra_form_data_2``. Likewise, any piece of code can access the component data as if it were a normal component::
-
-   numpy_array = data1[id_of_ra_from_data_2]
-
-.. note:: If you are creating visualization clients, this means that
-   you never need to worry about whether a ComponentLink exists. You
-   simply try to extract the desired :class:`~data.Component` from the
-   data as above, which raises in InvalidAttribute exception if it
-   cannot be found or calculated.
-
-Other Link Functions
---------------------
-Of course, you can use more exciting functions than the identity function. For example, suppose you are working with two astronomical catalogs, but one defines right ascension as hour, minute, and second columns, while the other uses decimal degrees. This translation function would do the trick::
-
-    def hms_to_degrees(hours, minutes, seconds):
-        return 15 * (hours + minutes / 60. + seconds / 3600.)
-
-    link = ComponentLink([hour_id, minute_id, second_id], degree_id, hms_to_degrees)
-    catalog_with_hours.add_link(link)
-
-Note that the inputs and outputs to the translation functions are the numerical data -- the numpy arrays themselves, and not glue objects. Glue takes care of packing/unpacking the relevant objects when it calls your translation function
-
-.. note:: Links are one-way. In the above example, we can propagate
-   information from the hms coordinate system to the degree coordinate
-   system, but not vice versa. A second link will allow for two-way
-   propagation
-
-Using custom functions in the GUI
----------------------------------
-It is easy to plug your own translation functions into the GUI. Simply add a reference to your function to the ``link_functions`` list in your config.py file. See :ref:`configuration` for more details about the Configuration system.
-
-.. todo:: Add configuration tutorial
-
-Any functions that you add will be available from the Link Editor.
 
 Links Propagate
 ---------------
 
-As mentioned in :ref:`getting_started`, Glue knows how to string
-:class:`~component_link.ComponentLink` objects together. For example,
-consider 3 datasets with ra/dec information. Logically, there 6 unique
-mappings between the RA attributes in each dataset (3 pairs of data
-sets to link, and 2 directions for each). However, Glue can get by
-with as few as 3 links: ``ra1 -> ra2 -> ra3 -> ra1``. Even though
-there is no direct link, for example, from ``ra1 -> ra3``, Glue can
-get there by first deriving ``ra2`` (using the first link) and then
-``ra3`` (using the second).
-
-Glue builds these networks automatically, and will always know about all
-the Components it can derive from a set of links.
-
-.. note:: technically, that last statement depends on all the data sets being managed by a DataCollection. This is always the case when using the GUI.
-
+Glue knows how to string links together. For example, consider
+4 datasets which report masses in kilograms. There are
+6 pairs of equivalent mass quantities (``m1<->m2, m1<->m3, m1<->m4, m2<->m3, m2<->m4, m3<->m4``). However, you need only define 3 links (say, ``m1<->m2, m1<->m3, m1<->m4``). Even though there is no explicit link between ``m2<->m3``, Glue knows they are equivalent (since ``m3<->m1<->m2``). Glue will always be able
+to figure out these "chains" of connections.

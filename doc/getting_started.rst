@@ -93,6 +93,8 @@ When this mode is active, new regions defined by the mouse are subtracted from t
 
 Linking Data
 ============
+.. _getting_started_link:
+
 Glue is designed so that visualization and drilldown can span multiple datasets. To do this, we need to inform Glue about the logical connections that exist between each dataset.
 
 Open ``w5_psc.vot`` -- a catalog of *Spitzer*-identified point sources towards this region. You will see a new entry in the data manager.

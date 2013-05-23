@@ -60,12 +60,19 @@ This menu has the following entries:
  * **Link Data**: open the Link Data dialog
  * **Plot Data**: An alternative to dragging the entry into the visualization area. Creates a new visualization of the selection
 
-
-Scatter Widget
---------------
-
-Image Widget
-------------
-
-Histogram Widget
+Terminal Window
 ----------------
+The terminal window provides an IPython shell with access to the
+variables used by Glue. You can use this to inspect the state of Glue
+as it runs, analyze data in place, etc.
+
+The main variables available by default form the termainal
+window are ``data_collection``, ``dc`` (an alias to
+``data_collection``), and ``hub``.
+
+In addition, you can drag individual datasets or subsets into the terminal,
+and assign them to local variables.
+
+For examples of how to inspect data objects in Glue (including
+how to extract Numpy arrays from them), see the
+:ref:`data guide <data_tutorial>`.
