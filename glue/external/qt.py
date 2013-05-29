@@ -71,7 +71,8 @@ def deny_module(mod_name):
 def _load_pyqt4():
     prepare_pyqt4()
     from PyQt4 import QtCore, QtGui, QtTest
-    if QtCore.PYQT_VERSION_STR < '4.8':
+    from distutils.version import LooseVersion
+    if LooseVersion(QtCore.PYQT_VERSION_STR) < LooseVersion('4.8'):
         raise ImportError("Glue Requires PyQt4 >= 4.8")
 
     QtCore.Signal = QtCore.pyqtSignal
