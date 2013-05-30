@@ -1,5 +1,6 @@
 import sys
 
+
 def main():
     import glue
     try:

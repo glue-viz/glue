@@ -122,9 +122,11 @@ def load_data_files(datafiles):
         dc.append(load_data(df, auto_data))
     return dc
 
+
 def run_tests():
     from glue import test
     test.main()
+
 
 def start_glue(gluefile=None, config=None, datafiles=None):
     """Run a glue session and exit

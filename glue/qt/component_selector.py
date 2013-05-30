@@ -99,6 +99,15 @@ class ComponentSelector(QWidget):
             return
         return self._data[index]
 
+    @data.setter
+    def data(self, value):
+        for i, d in enumerate(self._data):
+            if d is value:
+                self._ui.data_selector.setCurrentIndex(i)
+                return
+        else:
+            raise ValueError("Data is not part of the DataCollection")
+
 
 def main():  # pragma: no cover
     import glue

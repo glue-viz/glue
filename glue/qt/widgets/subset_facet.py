@@ -11,7 +11,12 @@ from ..widget_properties import ButtonProperty
 class SubsetFacet(QDialog):
     log = ButtonProperty('ui.log')
 
-    def __init__(self, collect, parent=None):
+    def __init__(self, collect, default=None, parent=None):
+        """Create a new dialog for subset faceting
+
+        :param collect: The :class:`~glue.core.DataCollection` to use
+        :param default: The default dataset in the collection (optional)
+        """
         super(SubsetFacet, self).__init__(parent)
         self.setWindowTitle("Subset Facet")
         self.ui = Ui_SubsetFacet()
@@ -19,6 +24,8 @@ class SubsetFacet(QDialog):
 
         self.ui.setupUi(self)
         self.ui.component_selector.setup(self._collect)
+        if default is not None:
+            self.ui.component_selector.data = default
 
         val = QDoubleValidator(-1e100, 1e100, 4, None)
         self.ui.component_selector.component_changed.connect(self._set_limits)
@@ -64,8 +71,11 @@ class SubsetFacet(QDialog):
         colorize_subsets(subsets, self.cmap)
 
     @classmethod
-    def facet(cls, collect, parent=None):
-        self = cls(collect, parent)
+    def facet(cls, collect, default=None, parent=None):
+        """Class method to create facted subsets
+        The arguments are the same as __init__
+        """
+        self = cls(collect, parent=parent, default=default)
         value = self.exec_()
 
         if value == QDialog.Accepted:

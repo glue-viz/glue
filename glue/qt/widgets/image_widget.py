@@ -79,7 +79,7 @@ class ImageWidget(DataViewer):
         self._rgb_add.triggered.connect(self._add_rgb)
 
     def _add_rgb(self):
-        drgb = select_rgb(self._data)
+        drgb = select_rgb(self._data, default=self.current_data)
         if drgb is not None:
             self.client.add_rgb_layer(*drgb)
 
@@ -159,6 +159,14 @@ class ImageWidget(DataViewer):
         if pos == -1:
             combo.addItem(label, userData=data)
         assert combo.findText(label) >= 0
+
+    @property
+    def current_data(self):
+        if self.ui.displayDataCombo.count() == 0:
+            return
+
+        index = self.ui.displayDataCombo.currentIndex()
+        return self.ui.displayDataCombo.itemData(index)
 
     def set_data(self, index):
         if self.ui.displayDataCombo.count() == 0:

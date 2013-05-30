@@ -466,7 +466,9 @@ def pretty_number(numbers):
 
 
 class RGBSelector(QtGui.QDialog):
-    def __init__(self, dc, parent=None):
+    """Dialog to select ComponentIDs
+       to assign to R, G, B color channels"""
+    def __init__(self, dc, default=None, parent=None):
         from .link_equation import ArgumentWidget
         from .component_selector import ComponentSelector
 
@@ -476,6 +478,8 @@ class RGBSelector(QtGui.QDialog):
 
         comps = ComponentSelector()
         comps.setup(dc)
+        if default is not None:
+            comps.data = default
 
         r = ArgumentWidget('r', parent)
         g = ArgumentWidget('g', parent)
@@ -500,6 +504,23 @@ class RGBSelector(QtGui.QDialog):
 
         self.setFocusPolicy(Qt.StrongFocus)
 
+    @property
+    def data(self):
+        #the currently-selected data entry
+        return self.component.data
+
+    @property
+    def red(self):
+        self.r.component_id
+
+    @property
+    def green(self):
+        return self.g.component_id
+
+    @property
+    def blue(self):
+        return self.b.component_id
+
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_R:
             self.r.component_id = self.component.component
@@ -514,15 +535,29 @@ class RGBSelector(QtGui.QDialog):
             super(RGBSelector, self).keyPressEvent(event)
 
 
-def select_rgb(collect):
-    w = RGBSelector(collect)
+def select_rgb(collect, default=None):
+    """
+    Present an interface to build an RGB image from a data collection,
+    return the dataset and components assigned to each color
+
+    :param collect: Data Collection to use
+    :type collect: :class:`~glue.core.DataCollection`
+
+    :param default: Default data set to use
+
+    :rtype: tuple of (dataset, red_id, green_id, blue_id), or None
+            dataset is the :class:`~glue.core.Data` object to use
+            red_id, green_id, blue_id are :class:`~glue.core.ComponentID`s
+            Return None if user cancels the action
+    """
+    w = RGBSelector(collect, default)
     result = w.exec_()
     if result == w.Rejected:
         return None
-    r = w.r.component_id
-    g = w.g.component_id
-    b = w.b.component_id
-    d = w.component.data
+    r = w.red
+    g = w.green
+    b = w.blue
+    d = w.data
 
     if r is None or g is None or b is None or d is None:
         return None

@@ -106,7 +106,10 @@ class FacetAction(LayerAction):
         return len(self._layer_tree.data_collection) > 0
 
     def _do_action(self):
-        SubsetFacet.facet(self._layer_tree.data_collection, self._layer_tree)
+        layers = self.selected_layers()
+        default = layers[0].data if len(layers) > 0 else None
+        SubsetFacet.facet(self._layer_tree.data_collection,
+                          parent=self._layer_tree, default=default)
 
 
 class NewAction(LayerAction):

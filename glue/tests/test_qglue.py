@@ -8,12 +8,14 @@ from .. import qglue
 from ..core.registry import Registry
 from ..core.exceptions import IncompatibleAttribute
 
+
 def has_pandas():
     try:
         import pandas
         return True
     except:
         return False
+
 
 class TestQGlue(object):
     def setup_method(self, method):
@@ -25,7 +27,7 @@ class TestQGlue(object):
         u = [10, 20, 30, 40]
         v = [20, 40, 60, 80]
 
-        self.xy = {'x':x, 'y':y}
+        self.xy = {'x': x, 'y': y}
         self.dict_data = {'u': u, 'v': v}
         self.recarray_data = np.rec.array([(0, 1), (2, 3)],
                                           dtype=[('a', 'i'), ('b', 'i')])

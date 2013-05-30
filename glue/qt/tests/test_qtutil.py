@@ -3,7 +3,7 @@ from .. import qtutil
 from ...external.qt import QtGui
 from ...external.qt.QtCore import Qt
 from mock import MagicMock, patch
-from ..qtutil import GlueDataDialog
+from ..qtutil import GlueDataDialog, RGBSelector
 from ..qtutil import pretty_number, GlueComboBox
 
 from glue.config import data_factory
@@ -209,3 +209,17 @@ class TestGlueComboBox(object):
         good[0] = False
         self.combo.removeItem(0)
         assert good[0]
+
+
+class TestRGBSelector(object):
+    def test_default_data(self):
+        from glue.core import Data, DataCollection
+        d1 = Data(x=[1, 2, 3], y=[2, 3, 4], z=[3, 4, 5])
+        d2 = Data(a=[1, 2, 3], b=[2, 5, 6], c=[1, 1, 1])
+        dc = DataCollection([d1, d2])
+
+        d = RGBSelector(dc, default=d2)
+        assert d.data is d2
+
+        d = RGBSelector(dc, default=d1)
+        assert d.data is d1
