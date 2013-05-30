@@ -32,6 +32,9 @@ def parse(argv):
 
     #run a script
     %prog -x script.py
+
+    #run the test suite
+    %prog -t
     """
     parser = optparse.OptionParser(usage=usage,
                                    version=str(__version__))
@@ -40,6 +43,8 @@ def parse(argv):
                       help="Execute FILE as a python script", default=False)
     parser.add_option('-g', action='store_true', dest='restore',
                       help="Restore glue session from FILE", default=False)
+    parser.add_option('-t', '--test', action='store_true', dest='test',
+                      help="Run test suite", default=False)
     parser.add_option('-c', '--config', type='string', dest='config',
                       metavar='CONFIG',
                       help='use CONFIG as configuration file')
@@ -117,6 +122,9 @@ def load_data_files(datafiles):
         dc.append(load_data(df, auto_data))
     return dc
 
+def run_tests():
+    from glue import test
+    test.main()
 
 def start_glue(gluefile=None, config=None, datafiles=None):
     """Run a glue session and exit
@@ -189,7 +197,9 @@ def main(argv=sys.argv):
     logging.getLogger(__name__).info("Input arguments: %s", sys.argv)
 
     opt, args = parse(argv[1:])
-    if opt.restore:
+    if opt.test:
+        return run_tests()
+    elif opt.restore:
         start_glue(gluefile=args[0], config=opt.config)
     elif opt.script:
         execute_script(args[0])
