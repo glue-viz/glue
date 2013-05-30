@@ -108,6 +108,18 @@ class TestFacetSubsets(object):
         for i, s in enumerate(subsets, start=1):
             assert s.label.startswith('data')
 
+    def test_facet_reversed(self):
+        subsets = facet_subsets(self.data, self.data.id['x'],
+                                lo=3, hi=1, steps=2)
+        assert len(subsets) == 2
+        #ranges should be (2, 3] and (1, 2]
+        np.testing.assert_array_equal(subsets[0].to_mask(),
+                                      [False, False, True, False, False,
+                                       False, False])
+        np.testing.assert_array_equal(subsets[1].to_mask(),
+                                      [False, True, False, False, False,
+                                       False, False])
+
 
 def test_colorize_subsets():
     from glue.core import Data

@@ -168,8 +168,13 @@ def facet_subsets(data, cid, lo=None, hi=None, steps=5,
 
         facet_subset(data, data.id['mass'], lo=0, hi=10, steps=2)
 
-    creates 2 new subsets. The first represents the constraint 0 >=
+    creates 2 new subsets. The first represents the constraint 0 <=
     mass < 5. The second represents 5 <= mass < 10::
+
+        facet_subset(data, data.id['mass'], lo=10, hi=0, steps=2)
+
+    Creates 2 new subsets. The first represents the constraint 10 >= x > 5
+    The second represents 5 >= mass > 0::
 
         facet_subset(data, data.id['mass'], lo=0, hi=10, steps=2, prefix='m')
 
@@ -183,6 +188,7 @@ def facet_subsets(data, cid, lo=None, hi=None, steps=5,
         if hi is None:
             hi = np.nanmax(vals)
 
+    reverse = lo > hi
     if log:
         rng = np.logspace(np.log10(lo), np.log10(hi), steps + 1)
     else:
@@ -190,7 +196,11 @@ def facet_subsets(data, cid, lo=None, hi=None, steps=5,
 
     states = []
     for i in range(steps):
-        states.append((cid >= rng[i]) & (cid < rng[i + 1]))
+        if reverse:
+            states.append((cid <= rng[i]) & (cid > rng[i + 1]))
+
+        else:
+            states.append((cid >= rng[i]) & (cid < rng[i + 1]))
 
     result = []
     for i, s in enumerate(states, start=1):

@@ -289,12 +289,12 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
 
         a = act('Save Session', self,
                 tip='Save the current session')
-        a.triggered.connect(lambda x: self._save_session())
+        a.triggered.connect(lambda *args: self._save_session())
         self._actions['session_save'] = a
 
         a = act('Open Session', self,
                 tip='Restore a saved session')
-        a.triggered.connect(lambda x: self._restore_session())
+        a.triggered.connect(lambda *args: self._restore_session())
         self._actions['session_restore'] = a
 
     def new_data_viewer(self, data=None):
