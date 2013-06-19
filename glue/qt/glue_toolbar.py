@@ -42,7 +42,7 @@ class GlueToolbar(NavigationToolbar2QT):
         a = QtGui.QAction(QIcon(':icons/glue_home.png'),
                           'Home', parent)
         a.triggered.connect(self.home)
-        a.setToolTip('Reset original view')
+        a.setToolTip('Reset original zoom')
         a.setShortcut('H')
         a.setShortcutContext(Qt.WidgetShortcut)
         parent.addAction(a)
