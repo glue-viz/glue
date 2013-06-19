@@ -28,13 +28,14 @@ from zmq.eventloop.zmqstream import ZMQStream
 try:  # IPython <= 0.13.2
     from IPython.zmq.ipkernel import IPKernelApp, Kernel
     from IPython.zmq.iostream import OutStream
+    from IPython.frontend.qt.kernelmanager import QtKernelManager
 except ImportError:  # IPython >= 1.0dev
     from IPython.kernel.zmq.ipkernel import Kernel
     from IPython.kernel.zmq.kernelapp import IPKernelApp
     from IPython.kernel.zmq.iostream import OutStream
+    from IPython.frontend.qt.manager import QtKernelManager
 
 from IPython.lib.kernel import find_connection_file
-from IPython.frontend.qt.kernelmanager import QtKernelManager
 from IPython.frontend.qt.console.rich_ipython_widget import RichIPythonWidget
 
 from contextlib import contextmanager
