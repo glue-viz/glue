@@ -26,7 +26,7 @@ class Registry(object):
         The return value is a list. The contents of the list
         are specified in each subclass"""
         if not self._loaded:
-            self._members.extend(self.default_members())
+            self._members = self.default_members() + self._members
             self._loaded = True
 
         return self._members
@@ -64,7 +64,7 @@ class DataFactoryRegistry(Registry):
 
     New data factories can be registered via:
 
-        @data_factory('label_name', '*.txt')
+        @data_factory('label_name', '*.txt', default='txt')
         def new_factory(file_name):
             ...
     """
@@ -74,8 +74,11 @@ class DataFactoryRegistry(Registry):
         from .core.data_factories import __factories__
         return [self.item(f, f.label, f.file_filter) for f in __factories__]
 
-    def __call__(self, label, fltr):
+    def __call__(self, label, fltr, default=''):
+        from .core.data_factories import set_default_factory
+
         def adder(func):
+            set_default_factory(default, func)
             self.add(self.item(func, label, fltr))
             return func
         return adder

@@ -56,6 +56,14 @@ class TestDataCollection(object):
         self.dc.append(self.data)
         assert self.data in self.dc
 
+    def test_multi_append(self):
+        """ append method works with lists """
+        d = Data('test1', x=[1, 2, 3])
+        d2 = Data('test2', y=[2, 3, 4])
+        self.dc.append([d, d2])
+        assert d in self.dc
+        assert d2 in self.dc
+
     def test_ignore_multi_add(self):
         """ data only added once, even after multiple calls to append """
         self.dc.append(self.data)

@@ -48,6 +48,10 @@ class DataCollection(HubListener):
 
         :param data: :class:`~glue.core.data.Data` object to add
         """
+        if isinstance(data, list):
+            self.extend(data)
+            return
+
         if data in self:
             return
         self._data.append(data)

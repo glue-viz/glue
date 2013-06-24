@@ -40,6 +40,12 @@ __factories__ = []
 _default_factory = {}
 
 
+def as_list(x):
+    if isinstance(x, list):
+        return x
+    return [x]
+
+
 def load_data(path, factory=None):
     """Use a factory to load a file and assign a label
 
@@ -50,7 +56,9 @@ def load_data(path, factory=None):
     """
     factory = factory or auto_data
     d = factory(path)
-    d.label = data_label(path)
+    lbl = data_label(path)
+    for item in as_list(d):
+        item.label = lbl
     return d
 
 
@@ -69,7 +77,8 @@ def set_default_factory(extension, factory):
     :param extension: File extension (do not include the '.')
     :param factory: The factory function to dispatch to
     """
-    _default_factory[extension] = factory
+    for ex in extension.split():
+        _default_factory[ex] = factory
 
 
 def get_default_factory(extension):
@@ -150,7 +159,7 @@ def tabular_data(*args, **kwargs):
     """
     from distutils.version import LooseVersion
     from astropy import __version__
-    if LooseVersion(__version__) < LooseVersion("0.2.0"):
+    if LooseVersion(__version__) < LooseVersion("0.2"):
         raise RuntimeError("Glue requires astropy >= v0.2. Please update")
 
     result = Data()

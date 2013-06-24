@@ -92,7 +92,8 @@ class TestLinkEquation(object):
         self.widget = LinkEquation()
 
     def test_select_function_member(self):
-        member = link_function.members[-1]
+        member = link_function.members[1]
+        assert self.widget.function is not member
         self.widget.function = member
         assert self.widget.function is member
 

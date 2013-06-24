@@ -106,7 +106,7 @@ class ImageClient(VizClient):
         if data not in self.artists:
             self.add_layer(data)
 
-    def check_update(self, event):
+    def check_update(self, *args):
         logging.getLogger(__name__).debug("check update")
         vw = _view_window(self._ax)
         if vw != self._view_window:
