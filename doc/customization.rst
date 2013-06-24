@@ -79,3 +79,5 @@ file type when loading data:
 If you open a file using this file type selection, Glue will pass
 the path of this file to your function, and use the resulting Data
 object.
+
+For more examples of custom data loaders, see the `example repository <https://github.com/glue-viz/glue-data-loaders>`_.
