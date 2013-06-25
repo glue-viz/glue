@@ -2,7 +2,7 @@ import numpy as np
 
 from .core import Data, DataCollection, ComponentLink
 from .core.link_helpers import MultiLink
-
+from .core.data_factories import load_data, as_list
 
 def _parse_data_dataframe(data, label):
     label = label or 'Data'
@@ -29,10 +29,22 @@ def _parse_data_recarray(data, label):
 def _parse_data_astropy_table(data, label):
     return [Data(label=label, **{c: data[c] for c in data.columns})]
 
+def _parse_data_glue_data(data, label):
+    data.label = label
+    return [data]
+
+def _parse_data_path(path, label):
+    data = load_data(path)
+    for d in as_list(data):
+        d.label = label
+    return as_list(data)
+
 
 _parsers = {}  # map base classes -> parser functions
 _parsers[dict] = _parse_data_dict
 _parsers[np.recarray] = _parse_data_recarray
+_parsers[Data] = _parse_data_glue_data
+_parsers[basestring] = _parse_data_path
 
 
 def _parse_data(data, label):

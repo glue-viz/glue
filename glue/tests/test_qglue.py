@@ -7,7 +7,7 @@ import pytest
 from .. import qglue
 from ..core.registry import Registry
 from ..core.exceptions import IncompatibleAttribute
-
+from ..core import Data
 
 def has_pandas():
     try:
@@ -86,6 +86,12 @@ class TestQGlue(object):
             dc = qglue(data1=self.dict_data, data2=self.xy)
             self.check_setup(dc, {'data1': ['u', 'v'],
                                   'data2': ['x', 'y']})
+
+    def test_glue_data(self):
+        d = Data(x=[1,2,3])
+        with patch('glue.qt.glue_application.GlueApplication') as ga:
+            dc = qglue(x=d)
+        assert d.label == 'x'
 
     def test_simple_link(self):
         with patch('glue.qt.glue_application.GlueApplication') as ga:
