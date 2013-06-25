@@ -1,8 +1,31 @@
+from contextlib import contextmanager
+import sys
+
 import numpy as np
 
 from .core import Data, DataCollection, ComponentLink
 from .core.link_helpers import MultiLink
 from .core.data_factories import load_data, as_list
+
+
+@contextmanager
+def restore_io():
+    stdin = sys.stdin
+    stdout = sys.stdout
+    stderr = sys.stderr
+    _in = sys.__stdin__
+    _out = sys.__stdout__
+    _err = sys.__stderr__
+    try:
+        yield
+    finally:
+        sys.stdin = stdin
+        sys.stdout = stdout
+        sys.stderr = stderr
+        sys.__stdin__ = _in
+        sys.__stdout__ = _out
+        sys.__stderr__ = _err
+
 
 def _parse_data_dataframe(data, label):
     label = label or 'Data'
@@ -29,9 +52,11 @@ def _parse_data_recarray(data, label):
 def _parse_data_astropy_table(data, label):
     return [Data(label=label, **{c: data[c] for c in data.columns})]
 
+
 def _parse_data_glue_data(data, label):
     data.label = label
     return [data]
+
 
 def _parse_data_path(path, label):
     data = load_data(path)
@@ -157,6 +182,7 @@ def qglue(**kwargs):
     if links is not None:
         dc.add_link(_parse_links(dc, links))
 
-    ga = GlueApplication(dc)
-    ga.start()
+    with restore_io():
+        ga = GlueApplication(dc)
+        ga.start()
     return dc
