@@ -99,7 +99,7 @@ class ImageClient(VizClient):
         else:
             raise IndexError("Cannot set slice for 2D image")
 
-    def can_handle_data(self, data):
+    def can_image_data(self, data):
         return data.ndim in [2, 3]
 
     def _ensure_data_present(self, data):
@@ -117,6 +117,9 @@ class ImageClient(VizClient):
             self._view_window = vw
 
     def set_data(self, data, attribute=None):
+        if not self.can_image_data(data):
+            return
+
         self._ensure_data_present(data)
 
         attribute = attribute or _default_component(data)
@@ -335,6 +338,9 @@ class ImageClient(VizClient):
             self.delete_layer(s)
 
     def init_layer(self, layer):
+        #only auto-add subsets if they are of the main image
+        if isinstance(layer, Subset) and layer.data is not self.display_data:
+            return
         self.add_layer(layer)
 
     def add_rgb_layer(self, layer, r=None, g=None, b=None):
@@ -355,7 +361,7 @@ class ImageClient(VizClient):
         if layer.data not in self.data:
             raise TypeError("Data not managed by client's data collection")
 
-        if not self.can_handle_data(layer.data):
+        if not self.can_image_data(layer.data):
             if len(layer.data.shape) == 1:  #if data is 1D, try to scatter plot
                 self.add_scatter_layer(layer)
                 return

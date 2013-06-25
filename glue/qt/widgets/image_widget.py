@@ -151,7 +151,7 @@ class ImageWidget(DataViewer):
     def add_data_to_combo(self, data):
         """ Add a data object to the combo box, if not already present
         """
-        if not self.client.can_handle_data(data):
+        if not self.client.can_image_data(data):
             return
         combo = self.ui.displayDataCombo
         label = data.label

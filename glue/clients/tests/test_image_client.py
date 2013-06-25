@@ -350,6 +350,28 @@ class TestImageClient(object):
             for aa in a.artists:
                 assert not aa.get_visible()
 
+    def test_scatter_subsets_not_auto_added(self):
+        """Scatter subsets should not be added by
+        SubsetAddMessage"""
+        c = self.create_client_with_image()
+        hub = core.Hub()
+
+        self.collect.append(self.scatter)
+
+        c.register_to_hub(hub)
+        self.collect.register_to_hub(hub)
+
+        s = self.scatter.new_subset()
+        assert s not in c.artists
+
+    def test_scatter_layer_does_not_set_display_data(self):
+        c = self.create_client_with_image()
+        self.collect.append(self.scatter)
+        d = c.display_data
+        c.set_data(self.scatter)
+        assert c.display_data is d
+
+
 
 def test_format_coord_2d():
     """Coordinate display is in world coordinates"""
