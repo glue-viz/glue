@@ -169,6 +169,9 @@ class ImageWidget(DataViewer):
         return self.ui.displayDataCombo.itemData(index)
 
     def set_data(self, index):
+        if index is None:
+            return
+
         if self.ui.displayDataCombo.count() == 0:
             return
 
