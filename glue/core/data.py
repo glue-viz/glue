@@ -159,6 +159,10 @@ class Component(object):
         logging.debug("Using %s to index data of shape %s", key, self.shape)
         return self._data[key]
 
+    @property
+    def numeric(self):
+        return np.can_cast(self.data[0], np.complex)
+
 
 class DerivedComponent(Component):
     """ A component which derives its data from a function """

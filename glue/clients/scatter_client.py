@@ -110,7 +110,8 @@ class ScatterClient(Client):
         data = layer.data
         comp = data.components if show_hidden else data.visible_components
         return [c for c in comp if
-                np.can_cast(data.dtype(c), np.float)]
+                data.get_component(c).numeric]
+
 
     def add_layer(self, layer):
         """ Adds a new visual layer to a client, to display either a dataset

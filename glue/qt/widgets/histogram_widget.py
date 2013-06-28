@@ -128,7 +128,7 @@ class HistogramWidget(DataViewer):
             item.setFlags(item.flags() & ~Qt.ItemIsEnabled)
             model.appendRow(item)
             for c in d.visible_components:
-                if not np.can_cast(d.dtype(c), np.float):
+                if not d.get_component(c).numeric:
                     continue
                 item = QtGui.QStandardItem(c.label)
                 item.setData(_hash(c), role=Qt.UserRole)
