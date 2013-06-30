@@ -21,6 +21,20 @@ from .widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from .widgets.layer_tree_widget import PlotAction, LayerTreeWidget
 from .widgets.data_viewer import DataViewer
 
+def _fix_ipython_pylab():
+    try:
+        from IPython import get_ipython
+    except ImportError:
+        return
+    shell = get_ipython()
+    if shell is None:
+        return
+    try:
+        shell.enable_pylab('inline', import_all=True)
+    except ValueError:
+        # if the shell is a normal terminal shell, we get here
+        pass
+
 
 class GlueApplication(QMainWindow, core.hub.HubListener):
     """ The main Glue window """
@@ -441,6 +455,11 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
     def start(self):
         self.show()
         self.raise_()  # bring window to front
+        #at some point during all this, the MPL backend
+        #switches. This call restores things, so
+        #figures are still inlined in the notebook.
+        #XXX find out a better place for this
+        _fix_ipython_pylab()
         return self.app.exec_()
 
     exec_ = start

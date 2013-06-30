@@ -10,6 +10,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as \
     FigureCanvas
 from matplotlib.backends.backend_qt4agg import FigureManagerQTAgg as \
     FigureManager
+import matplotlib
 
 # Matplotlib Figure object
 from matplotlib.figure import Figure
@@ -23,6 +24,9 @@ class MplCanvas(FigureCanvas):
     leftDrag = Signal(float, float)
 
     def __init__(self):
+        interactive = matplotlib.is_interactive()
+        matplotlib.interactive(False)
+
         # setup Matplotlib Figure and Axis
         self.fig = Figure(facecolor='#ffffff')
 
@@ -42,6 +46,7 @@ class MplCanvas(FigureCanvas):
         # notify the system of updated policy
         FigureCanvas.updateGeometry(self)
         self.manager = FigureManager(self, 0)
+        matplotlib.interactive(interactive)
 
     def paintEvent(self, event):
         #draw the zoom rectangle more prominently
