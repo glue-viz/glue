@@ -372,7 +372,6 @@ class TestImageClient(object):
         assert c.display_data is d
 
 
-
 def test_format_coord_2d():
     """Coordinate display is in world coordinates"""
 

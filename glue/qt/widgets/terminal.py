@@ -56,7 +56,7 @@ except ImportError:
         RichIPythonWidget
 
 
-def in_process_console(console_class = RichIPythonWidget, **kwargs):
+def in_process_console(console_class=RichIPythonWidget, **kwargs):
     """Create a console widget, connected to an in-process Kernel
 
     This only works on IPython v 0.13 and above
@@ -84,7 +84,7 @@ def in_process_console(console_class = RichIPythonWidget, **kwargs):
     return control
 
 
-def connected_console(console_class = RichIPythonWidget, **kwargs):
+def connected_console(console_class=RichIPythonWidget, **kwargs):
     """Create a console widget, connected to another kernel running in
        the current process
 

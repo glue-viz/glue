@@ -21,6 +21,7 @@ from .widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from .widgets.layer_tree_widget import PlotAction, LayerTreeWidget
 from .widgets.data_viewer import DataViewer
 
+
 def _fix_ipython_pylab():
     try:
         from IPython import get_ipython
