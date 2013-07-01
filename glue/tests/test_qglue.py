@@ -9,6 +9,7 @@ from ..core.registry import Registry
 from ..core.exceptions import IncompatibleAttribute
 from ..core import Data
 
+
 def has_pandas():
     try:
         import pandas
@@ -88,7 +89,7 @@ class TestQGlue(object):
                                   'data2': ['x', 'y']})
 
     def test_glue_data(self):
-        d = Data(x=[1,2,3])
+        d = Data(x=[1, 2, 3])
         with patch('glue.qt.glue_application.GlueApplication') as ga:
             dc = qglue(x=d)
         assert d.label == 'x'

@@ -112,7 +112,6 @@ class ScatterClient(Client):
         return [c for c in comp if
                 data.get_component(c).numeric]
 
-
     def add_layer(self, layer):
         """ Adds a new visual layer to a client, to display either a dataset
         or a subset. Updates both the client data structure and the
