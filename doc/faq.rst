@@ -30,7 +30,11 @@ Take a look at this video. For more details, consult the :ref:`tutorial <getting
 
 How do I use Glue with the IPython notebook?
 --------------------------------------------
-For versions of IPython >= 1.0, Glue can be started from the IPython HTML notebook without blocking, so that both the notebook and the Glue UI can run at once. This requires starting the notebook such that it cooperates with Qt. To do this, start the notebook with::
+
+For IPython version >= 1.0, Glue can be started from the IPython HTML
+notebook without blocking, so that both the notebook and the Glue UI
+can run at once. This requires starting the notebook such that it
+cooperates with Qt. To do this, start the notebook with::
 
     ipython notebook --gui qt
 
