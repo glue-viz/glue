@@ -362,7 +362,7 @@ class ImageClient(VizClient):
             raise TypeError("Data not managed by client's data collection")
 
         if not self.can_image_data(layer.data):
-            if len(layer.data.shape) == 1:  #if data is 1D, try to scatter plot
+            if len(layer.data.shape) == 1:  # if data is 1D, try to scatter plot
                 self.add_scatter_layer(layer)
                 return
             logging.getLogger(__name__).warning(

@@ -131,7 +131,7 @@ class VizClient(Client):
 def init_mpl(figure, axes):
     if axes is not None and figure is not None and \
             axes.figure is not figure:
-        raise Exception("Axes and figure are incompatible")
+        raise ValueError("Axes and figure are incompatible")
 
     if axes is not None:
         _ax = axes

@@ -18,29 +18,96 @@ a fallback implmentation for older IPython versions
 
 import sys
 import atexit
+from contextlib import contextmanager
 
+#must import these first, to set up Qt properly
 from ...external.qt import QtCore
 from ...external.qt.QtGui import QInputDialog
 
 from zmq import ZMQError
 from zmq.eventloop.zmqstream import ZMQStream
+from zmq.eventloop import ioloop
 
-try:  # IPython <= 0.13.2
-    from IPython.zmq.ipkernel import IPKernelApp, Kernel
-    from IPython.zmq.iostream import OutStream
-    from IPython.frontend.qt.kernelmanager import QtKernelManager
-except ImportError:  # IPython >= 1.0dev
+from IPython.utils.traitlets import TraitError
+from IPython.lib.kernel import find_connection_file
+
+try:   # IPython 1.0
     from IPython.kernel.zmq.ipkernel import Kernel
     from IPython.kernel.zmq.kernelapp import IPKernelApp
     from IPython.kernel.zmq.iostream import OutStream
-    from IPython.frontend.qt.manager import QtKernelManager
+    from IPython.qt.manager import QtKernelManager
+    from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
 
-from IPython.lib.kernel import find_connection_file
-from IPython.frontend.qt.console.rich_ipython_widget import RichIPythonWidget
+    #these are only needed for v1.0
+    from IPython.kernel.connect import get_connection_file
+    from IPython import get_ipython
+    from IPython.qt.client import QtKernelClient
+    from IPython.kernel.inprocess.ipkernel import InProcessKernel
+    from IPython.kernel.inprocess.ipkernel import InProcessInteractiveShell
+    from IPython.qt.inprocess import \
+        QtInProcessKernelManager
 
-from contextlib import contextmanager
-from zmq.eventloop import ioloop
-from IPython.utils.traitlets import TraitError
+except ImportError:
+    from IPython.zmq.ipkernel import Kernel
+    from IPython.zmq.ipkernel import IPKernelApp
+    from IPython.zmq.iostream import OutStream
+    from IPython.frontend.qt.kernelmanager import QtKernelManager
+    from IPython.frontend.qt.console.rich_ipython_widget import \
+        RichIPythonWidget
+
+
+def in_process_console(console_class=RichIPythonWidget, **kwargs):
+    """Create a console widget, connected to an in-process Kernel
+
+    This only works on IPython v 0.13 and above
+
+    Parameters
+    ----------
+    console_class : The class of the console widget to create
+    kwargs : Extra variables to put into the namespace
+    """
+
+    km = QtInProcessKernelManager()
+    km.start_kernel()
+
+    kernel = km.kernel
+    kernel.gui = 'qt4'
+
+    client = km.client()
+    client.start_channels()
+
+    control = console_class()
+    control.kernel_manager = km
+    control.kernel_client = client
+    control.shell = kernel.shell
+    control.shell.user_ns.update(**kwargs)
+    return control
+
+
+def connected_console(console_class=RichIPythonWidget, **kwargs):
+    """Create a console widget, connected to another kernel running in
+       the current process
+
+    This only works on IPython v1.0 and above
+
+    Parameters
+    ----------
+    console_class : The class of the console widget to create
+    kwargs : Extra variables to put into the namespace
+    """
+    shell = get_ipython()
+    if shell is None:
+        raise RuntimeError("There is no IPython kernel in this process")
+
+    client = QtKernelClient(connection_file=get_connection_file())
+    client.load_connection_file()
+    client.start_channels()
+
+    control = console_class()
+    control.kernel_client = client
+    control.shell = shell
+    control.shell.user_ns.update(**kwargs)
+    return control
 
 
 class DragAndDropTerminal(RichIPythonWidget):
@@ -249,28 +316,12 @@ def _glue_terminal_3(**kwargs):
     :param kwargs: Keywords which are passed to Widget init,
     and which are also passed to the current namespace
     """
-    # see IPython/docs/examples/frontends/inprocess_qtconsole.py
+    # see IPython/docs/examples/frontends/inprocess_qtconsole.p
 
-    from IPython.kernel.inprocess.ipkernel import InProcessKernel
-    from IPython.frontend.qt.inprocess import \
-        QtInProcessKernelManager
-
-    km = QtInProcessKernelManager()
-    km.start_kernel()
-
-    kernel = km.kernel
-    kernel.gui = 'qt4'
-
-    client = km.client()
-    client.start_channels()
-
-    control = DragAndDropTerminal()
-    control.kernel_manager = km
-    control.kernel_client = client
-    control.shell = kernel.shell
-    control.update_namespace(kwargs)
-
-    return control
+    shell = get_ipython()
+    if shell is None or isinstance(shell, InProcessInteractiveShell):
+        return in_process_console(console_class=DragAndDropTerminal, **kwargs)
+    return connected_console(console_class=DragAndDropTerminal, **kwargs)
 
 
 def glue_terminal(**kwargs):
@@ -282,16 +333,18 @@ def glue_terminal(**kwargs):
 
         :rtype: QWidget
     """
+    from distutils.version import LooseVersion
     import IPython
-    rels = IPython.__version__.split('.')
-    rel = int(rels[0])
-    maj = int(rels[1])
-    if rel == 0 and maj < 12:
-        raise RuntimeError("Glue terminal requires IPython >= 0.12")
+    ver = LooseVersion(IPython.__version__)
+    v1_0 = LooseVersion('1.0')
+    v0_12 = LooseVersion('0.12')
+    v0_13 = LooseVersion('0.13')
 
-    if rel >= 1:
+    if ver >= v1_0:
         return _glue_terminal_3(**kwargs)
-    if rel == 0 and maj >= 13:
+    if ver >= v0_13:
         return _glue_terminal_2(**kwargs)
-    else:
+    if ver >= v0_12:
         return _glue_terminal_1(**kwargs)
+
+    raise RuntimeError("Glue terminal requires IPython >= 0.12")

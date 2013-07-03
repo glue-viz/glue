@@ -65,3 +65,8 @@ class TestTerminal(object):
         gt.dragEnterEvent(event)
 
         event.accept.assert_called_once_with()
+
+
+if __name__ == "__main__":
+    import pytest
+    pytest.main([__file__])
