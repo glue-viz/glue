@@ -1,5 +1,4 @@
 import numpy as np
-from matplotlib.nxutils import points_inside_poly
 from matplotlib.patches import Polygon, Rectangle, Ellipse
 from matplotlib.transforms import IdentityTransform, blended_transform_factory
 
@@ -12,6 +11,16 @@ __all__ = ['Roi', 'RectangularROI', 'CircularROI', 'PolygonalROI',
            'MplPolygonalROI', 'MplXRangeROI', 'MplYRangeROI']
 
 PATCH_COLOR = '#FFFF00'
+
+
+try:
+    from matplotlib.nxutils import points_inside_poly
+except ImportError:  # nxutils removed in MPL v1.3
+    from matplotlib.path import Path
+
+    def points_inside_poly(xypts, xyvts):
+        p = Path(xyvts)
+        return p.contains_points(xypts)
 
 
 def aspect_ratio(ax):
