@@ -1,5 +1,5 @@
 import numpy as np
-from matplotlib.nxutils import points_inside_poly
+from matplotlib import path
 from matplotlib.patches import Polygon, Rectangle, Ellipse
 from matplotlib.transforms import IdentityTransform, blended_transform_factory
 
@@ -321,7 +321,13 @@ class PolygonalROI(Roi):
 
         xypts = np.column_stack((x.flat, y.flat))
         xyvts = np.column_stack((self.vx, self.vy))
-        result = points_inside_poly(xypts, xyvts)
+
+        # Deprecated: result = points_inside_poly(xypts, xyvts)
+        # Function mpl.nxutils.points_inside_poly has apparently been deprecated and removed from latest version.
+        # This is the current recommended replacement:
+        p = path.Path(xypts)
+        result = p.contains_points(xyvts)
+
         result.shape = x.shape
         return result
 
