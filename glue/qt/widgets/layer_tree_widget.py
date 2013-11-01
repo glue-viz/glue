@@ -4,7 +4,7 @@ editing the data collection
 """
 import operator
 
-from ...external.qt.QtGui import (QWidget, QIcon, QMenu,
+from ...external.qt.QtGui import (QWidget, QMenu,
                                   QAction, QKeySequence, QFileDialog)
 
 
@@ -16,6 +16,7 @@ from ... import core
 
 from ..link_editor import LinkEditor
 from .. import qtutil
+from ..qtutil import get_icon
 from .custom_component_widget import CustomComponentWidget
 from ..actions import act as _act
 from ...core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode
@@ -41,7 +42,7 @@ class LayerAction(QAction):
         super(LayerAction, self).__init__(self._title.title(), self._parent)
         self._layer_tree = layer_tree_widget
         if self._icon:
-            self.setIcon(QIcon(self._icon))
+            self.setIcon(get_icon(self._icon))
         if self._tooltip:
             self.setToolTip(self._tooltip)
         self.setEnabled(self._enabled_on_init)
@@ -115,7 +116,7 @@ class FacetAction(LayerAction):
 class NewAction(LayerAction):
     _title = "New Subset"
     _tooltip = "Create a new subset for the selected data"
-    _icon = ":icons/glue_subset.png"
+    _icon = "glue_subset"
     _shortcut = QKeySequence('Ctrl+Shift+N')
 
     def _can_trigger(self):
@@ -179,12 +180,12 @@ class LinkAction(LayerAction):
     _title = "Link Data"
     _tooltip = "Define links between data sets"
     _data_link_message = "Define links between data sets"
-    _icon = ":icons/glue_link.png"
+    _icon = "glue_link"
 
     def __init__(self, *args, **kwargs):
         super(LinkAction, self).__init__(*args, **kwargs)
-        self._link_icon = QIcon(self._icon)
-        self._unlink_icon = QIcon(":icons/glue_unlink.png")
+        self._link_icon = get_icon(self._icon)
+        self._unlink_icon = get_icon('glue_unlink')
 
     def selection_count(self):
         return len(self.selected_layers())
@@ -272,22 +273,22 @@ class PasteSpecialAction(PasteAction):
         m = QMenu()
 
         a = QAction("Or", m)
-        a.setIcon(QIcon(':/icons/glue_or.png'))
+        a.setIcon(get_icon('glue_or'))
         a.triggered.connect(lambda: self._paste(OrMode))
         m.addAction(a)
 
         a = QAction("And", m)
-        a.setIcon(QIcon(':/icons/glue_and.png'))
+        a.setIcon(get_icon('glue_and'))
         a.triggered.connect(lambda: self._paste(AndMode))
         m.addAction(a)
 
         a = QAction("XOR", m)
-        a.setIcon(QIcon(':/icons/glue_xor.png'))
+        a.setIcon(get_icon('glue_xor'))
         a.triggered.connect(lambda: self._paste(XorMode))
         m.addAction(a)
 
         a = QAction("Not", m)
-        a.setIcon(QIcon(':/icons/glue_andnot.png'))
+        a.setIcon(get_icon('glue_andnot'))
         a.triggered.connect(lambda: self._paste(AndNotMode))
         m.addAction(a)
         return m
@@ -349,7 +350,7 @@ class ChangeMarkerAction(LayerAction):
 
 class Inverter(LayerAction):
     _title = "Invert"
-    _icon = ":icons/glue_not.png"
+    _icon = "glue_not"
     _tooltip = "Invert selected subset"
 
     def _can_trigger(self):
@@ -407,21 +408,21 @@ class BinaryCombiner(ReduceCombiner):
 
 class XorCombiner(BinaryCombiner):
     _title = "XOR Combine"
-    _icon = ':icons/glue_xor.png'
+    _icon = 'glue_xor'
     _tooltip = 'Define new subset as non-intersection of selection'
     _reduce_func = operator.xor
 
 
 class OrCombiner(ReduceCombiner):
     _title = "Union Combine"
-    _icon = ':icons/glue_or.png'
+    _icon = 'glue_or'
     _tooltip = 'Define new subset as union of selection'
     _reduce_func = operator.or_
 
 
 class AndCombiner(ReduceCombiner):
     _title = "Intersection Combine"
-    _icon = ':icons/glue_and.png'
+    _icon = 'glue_and'
     _tooltip = 'Define new subset as intersection of selection'
     _reduce_func = operator.and_
 

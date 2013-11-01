@@ -33,15 +33,15 @@ class EditSubsetModeToolBar(QtGui.QToolBar):
 
     def _add_actions(self):
         self._make_mode("Replace Mode", "Replace selection",
-                        'glue_replace.png', ReplaceMode)
+                        'glue_replace', ReplaceMode)
         self._make_mode("Or Mode", "Add to selection",
-                        'glue_or.png', OrMode)
+                        'glue_or', OrMode)
         self._make_mode("And Mode", "Set selection as intersection",
-                        'glue_and.png', AndMode)
+                        'glue_and', AndMode)
         self._make_mode("Xor Mode", "Set selection as exclusive intersection",
-                        'glue_xor.png', XorMode)
+                        'glue_xor', XorMode)
         self._make_mode("Not Mode", "Remove from selection",
-                        'glue_andnot.png', AndNotMode)
+                        'glue_andnot', AndNotMode)
 
     def set_mode(self, mode):
         """Temporarily set the edit mode to mode

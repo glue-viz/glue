@@ -23,7 +23,6 @@ from .mime import PyMimeData, LAYERS_MIME_TYPE
 from ..clients.layer_artist import LayerArtist, LayerArtistContainer
 from ..clients.layer_artist import RGBImageLayerArtist
 
-from . import glue_qt_resources
 from .widgets.style_dialog import StyleDialog
 
 

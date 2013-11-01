@@ -301,16 +301,16 @@ class GlueItemWidget(object):
         return self._mime_data
 
 
-POINT_ICONS = {'o': ':icons/glue_circle_point.png',
-               's': ':icons/glue_box_point.png',
-               '^': ':icons/glue_triangle_up.png',
-               '*': ':icons/glue_star.png',
-               '+': ':icons/glue_cross.png'}
+POINT_ICONS = {'o': 'glue_circle_point',
+               's': 'glue_box_point',
+               '^': 'glue_triangle_up',
+               '*': 'glue_star',
+               '+': 'glue_cross'}
 
 
 def symbol_icon(symbol, color=None):
-    bm = QBitmap(POINT_ICONS.get(symbol,
-                                 ':icons/glue_circle_point.png'))
+    bm = QBitmap(icon_path(POINT_ICONS.get(symbol, 'glue_circle')))
+
     if color is not None:
         return QIcon(tint_pixmap(bm, color))
 
@@ -325,8 +325,8 @@ def layer_icon(layer):
 
     :rtype: QIcon
     """
-    bm = QBitmap(POINT_ICONS.get(layer.style.marker,
-                                 ':icons/glue_circle_point.png'))
+    bm = QBitmap(icon_path(POINT_ICONS.get(layer.style.marker, 'circle_point')))
+
     color = mpl_to_qt4_color(layer.style.color)
     pm = tint_pixmap(bm, color)
     return QIcon(pm)
@@ -336,10 +336,10 @@ def layer_artist_icon(artist):
     """Create a QIcon for a LayerArtist instance"""
     from ..clients.layer_artist import ImageLayerArtist
     if isinstance(artist, ImageLayerArtist):
-        bm = QBitmap(':icons/glue_image.png')
+        bm = QBitmap(icon_path('glue_image'))
     else:
-        bm = QBitmap(POINT_ICONS.get(artist.layer.style.marker,
-                                     ':icons/glue_circle_point.png'))
+        bm = QBitmap(icon_path(POINT_ICONS.get(artist.layer.style.marker,
+                                               'glue_circle_point')))
     color = mpl_to_qt4_color(artist.layer.style.color)
 
     pm = tint_pixmap(bm, color)
@@ -761,6 +761,24 @@ def load_ui(name, parent):
     return _load_ui_pyqt(path, parent)
 
 
+def icon_path(icon_name):
+    """Return the absolute path to an icon
+
+    Parameters
+    ----------
+    icon_name : str
+       Name of icon, without .png or directory prefix
+
+    Returns
+    -------
+    path : str
+      Full path to icon
+    """
+    directory = os.path.abspath(os.path.dirname(__file__))
+    path = os.path.join(directory, 'icons', icon_name + '.png')
+    assert os.path.exists(path), path
+    return path
+
 def get_icon(icon_name):
     """
     Build a QIcon from an image name
@@ -775,9 +793,7 @@ def get_icon(icon_name):
     -------
     A QIcon object
     """
-    directory = os.path.abspath(os.path.dirname(__file__))
-    path = os.path.join(directory, 'icons', name + '.png')
-    return QIcon(path)
+    return QIcon(icon_path(icon_name))
 
 
 if __name__ == "__main__":

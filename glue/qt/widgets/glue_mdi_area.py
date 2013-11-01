@@ -2,7 +2,6 @@ from ...external.qt import QtGui
 from ...external.qt.QtCore import Qt
 
 from ... import core
-from .. import glue_qt_resources  # pylint: disable=W0611
 from ..mime import LAYER_MIME_TYPE, LAYERS_MIME_TYPE
 
 

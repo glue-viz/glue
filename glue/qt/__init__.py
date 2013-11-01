@@ -1,13 +1,14 @@
 from ..external.qt.QtGui import QApplication, QIcon
-from . import glue_qt_resources
-
+import os
 
 def get_qapp():
     qapp = QApplication.instance()
     if qapp is None:
         qapp = QApplication([''])
         qapp.setQuitOnLastWindowClosed(True)
-        qapp.setWindowIcon(QIcon(':icons/app_icon.png'))
+        pth = os.path.abspath(os.path.dirname(__file__))
+        pth = os.path.join(pth, 'icons', 'app_icon.png')
+        qapp.setWindowIcon(QIcon(pth))
     return qapp
 
 

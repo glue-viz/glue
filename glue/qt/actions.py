@@ -1,12 +1,12 @@
-from ..external.qt.QtGui import QAction, QIcon
-
+from ..external.qt.QtGui import QAction
+from .qtutil import get_icon
 
 def act(name, parent, tip='', icon=None, shortcut=None):
     """ Factory for making a new action """
     a = QAction(name, parent)
     a.setToolTip(tip)
     if icon:
-        a.setIcon(QIcon(':icons/%s' % icon))
+        a.setIcon(get_icon(icon))
     if shortcut:
         a.setShortcut(shortcut)
     return a
@@ -26,19 +26,19 @@ window_new = act('New Window',
                  tip='Add a new visualization window to the current tab')
 
 subset_or = act("Union Combine",
-                icon='glue_or.png',
+                icon='glue_or',
                 tip = 'Define a new subset as a union of selection')
 
 subste_and = act("Intersection Combine",
-                 icon="glue_and.png",
+                 icon="glue_and",
                  tip = 'Define a new subset as intersection of selection')
 
 subset_xor = act("XOR Combine",
-                 icon='glue_xor.png',
+                 icon='glue_xor',
                  tip= 'Define a new subset as non-intersection of selection')
 
 subset_not = act("Invert",
-                 icon="glue_not.png",
+                 icon="glue_not",
                  tip="Invert current subset")
 
 subset_copy = act("Copy subset",

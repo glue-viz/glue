@@ -4,13 +4,13 @@ from ...external.qt.QtGui import QMainWindow, QIcon
 from ..widgets import MplWidget
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import MouseMode
-
+from ..qtutil import get_icon
 
 class TestMode(MouseMode):
 
     def __init__(self, axes, release_callback=None):
         super(TestMode, self).__init__(axes, release_callback=release_callback)
-        self.icon = QIcon(':icons/square.png')
+        self.icon = get_icon('square')
         self.mode_id = 'TEST'
         self.action_text = 'test text'
         self.tool_tip = 'just testing'

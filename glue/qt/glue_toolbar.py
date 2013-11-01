@@ -3,11 +3,9 @@ import os
 import matplotlib
 from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
 from ..external.qt import QtCore, QtGui
-from ..external.qt.QtGui import QIcon, QMenu
+from ..external.qt.QtGui import QMenu
 from ..external.qt.QtCore import Qt
-
-from . import glue_qt_resources  # pylint: disable=W0611
-
+from .qtutil import get_icon
 
 class GlueToolbar(NavigationToolbar2QT):
 
@@ -39,7 +37,7 @@ class GlueToolbar(NavigationToolbar2QT):
         self.basedir = os.path.join(matplotlib.rcParams['datapath'], 'images')
         parent = self.parent()
 
-        a = QtGui.QAction(QIcon(':icons/glue_home.png'),
+        a = QtGui.QAction(get_icon('glue_home'),
                           'Home', parent)
         a.triggered.connect(self.home)
         a.setToolTip('Reset original zoom')
@@ -49,7 +47,7 @@ class GlueToolbar(NavigationToolbar2QT):
         self.buttons['HOME'] = a
         self.addAction(a)
 
-        a = QtGui.QAction(QIcon(':icons/glue_filesave.png'),
+        a = QtGui.QAction(get_icon('glue_filesave'),
                           'Save', parent)
         a.triggered.connect(self.save_figure)
         a.setToolTip('Save the figure')
@@ -58,7 +56,7 @@ class GlueToolbar(NavigationToolbar2QT):
         self.buttons['SAVE'] = a
         self.addAction(a)
 
-        a = QtGui.QAction(QIcon(':icons/glue_back.png'),
+        a = QtGui.QAction(get_icon('glue_back'),
                           'Back', parent)
         a.triggered.connect(self.back)
         parent.addAction(a)
@@ -66,7 +64,7 @@ class GlueToolbar(NavigationToolbar2QT):
         self.buttons['BACK'] = a
         a.setToolTip('Back to previous view')
 
-        a = QtGui.QAction(QIcon(':icons/glue_forward.png'),
+        a = QtGui.QAction(get_icon('glue_forward'),
                           'Forward', parent)
         a.triggered.connect(self.forward)
         a.setToolTip('Forward to next view')
@@ -74,7 +72,7 @@ class GlueToolbar(NavigationToolbar2QT):
         self.buttons['FORWARD'] = a
         self.addAction(a)
 
-        a = QtGui.QAction(QIcon(':icons/glue_move.png'),
+        a = QtGui.QAction(get_icon('glue_move'),
                           'Pan', parent)
         a.triggered.connect(self.pan)
         a.setToolTip('Pan axes with left mouse, zoom with right')
@@ -85,7 +83,7 @@ class GlueToolbar(NavigationToolbar2QT):
         self.addAction(a)
         self.buttons['PAN'] = a
 
-        a = QtGui.QAction(QIcon(':icons/glue_zoom_to_rect.png'),
+        a = QtGui.QAction(get_icon('glue_zoom_to_rect'),
                           'Zoom', parent)
         a.triggered.connect(self.zoom)
         a.setToolTip('Zoom to rectangle')

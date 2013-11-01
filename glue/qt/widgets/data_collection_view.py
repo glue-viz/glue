@@ -6,7 +6,7 @@ from ...external.qt.QtCore import Qt
 
 from .. import qtutil
 from ... import core
-from .. import glue_qt_resources  # pylint: disable=W0611
+from ..qtutil import icon_path
 
 
 class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
@@ -268,7 +268,7 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
                          "  Load Data")
         x = 10
         y = event.rect().bottom() - 30
-        painter.drawPixmap(x, y, QPixmap(':icons/glue_down_arrow.png'))
+        painter.drawPixmap(x, y, QPixmap(icon_path('glue_down_arrow')))
 
 
 def _color_icon(color, size=20, alpha=1.0):

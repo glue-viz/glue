@@ -36,7 +36,6 @@ class CustomComponentWidget(QDialog):
         self._labels = {}
         self._data = {}
         self.ui = load_ui('custom_component_widget', self)
-        self.ui.setupUi(self)
 
         self._collection = collection
         self._gather_components()
@@ -116,6 +115,7 @@ class CustomComponentWidget(QDialog):
         """
         # pylint: disable=W0212
         widget = CustomComponentWidget(collection)
+        widget.show()
         if widget.exec_() == QDialog.Accepted:
             link = widget._create_link()
             if link:

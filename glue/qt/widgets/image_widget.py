@@ -16,9 +16,9 @@ from ..mouse_mode import (RectangleMode, CircleMode, PolyMode,
 from ..glue_toolbar import GlueToolbar
 from .mpl_widget import MplWidget
 
-from .. import glue_qt_resources  # pylint: disable=W0611
+
 from ..decorators import set_cursor
-from ..qtutil import cmap2pixmap, select_rgb, load_ui
+from ..qtutil import cmap2pixmap, select_rgb, load_ui, get_icon
 
 WARN_THRESH = 10000000  # warn when contouring large images
 
@@ -89,7 +89,7 @@ class ImageWidget(DataViewer):
         tb = QToolButton()
         tb.setWhatsThis("Set color scale")
         tb.setToolTip("Set color scale")
-        icon = QIcon(":icons/glue_rainbow.png")
+        icon = get_icon('glue_rainbow')
         tb.setIcon(icon)
         tb.setPopupMode(QToolButton.InstantPopup)
         tb.addActions(self._cmaps)

@@ -16,13 +16,14 @@ The basic usage pattern is thus:
    methods in a MouseMode, for additional behavior
 
 """
-from ..external.qt.QtGui import QIcon, QAction
+from ..external.qt.QtGui import QAction
 
 import numpy as np
 
 from ..core import util
 from ..core import roi
 from . import get_qapp
+from .qtutil import get_icon
 
 
 class MouseMode(object):
@@ -235,7 +236,7 @@ class RectangleMode(RoiMode):
     """ Defines a Rectangular ROI, accessible via the roi() method"""
     def __init__(self, axes, **kwargs):
         super(RectangleMode, self).__init__(axes, **kwargs)
-        self.icon = QIcon(':icons/glue_square.png')
+        self.icon = get_icon('glue_square')
         self.mode_id = 'Rectangle'
         self.action_text = 'Rectangular ROI'
         self.tool_tip = 'Define a rectangular region of interest'
@@ -247,7 +248,7 @@ class CircleMode(RoiMode):
     """ Defines a Circular ROI, accessible via the roi() method"""
     def __init__(self, axes, **kwargs):
         super(CircleMode, self).__init__(axes, **kwargs)
-        self.icon = QIcon(':icons/glue_circle.png')
+        self.icon = get_icon('glue_circle')
         self.mode_id = 'Circle'
         self.action_text = 'Circular ROI'
         self.tool_tip = 'Define a circular region of interest'
@@ -259,7 +260,7 @@ class PolyMode(ClickRoiMode):
     """ Defines a Polygonal ROI, accessible via the roi() method"""
     def __init__(self, axes, **kwargs):
         super(PolyMode, self).__init__(axes, **kwargs)
-        self.icon = QIcon(':icons/glue_lasso.png')
+        self.icon = get_icon('glue_lasso')
         self.mode_id = 'Polygon'
         self.action_text = 'Polygonal ROI'
         self.tool_tip = 'Lasso a region of interest'
@@ -271,7 +272,7 @@ class LassoMode(RoiMode):
     """ Defines a Polygonal ROI, accessible via the roi() method"""
     def __init__(self, axes, **kwargs):
         super(LassoMode, self).__init__(axes, **kwargs)
-        self.icon = QIcon(':icons/glue_lasso.png')
+        self.icon = get_icon('glue_lasso')
         self.mode_id = 'Lasso'
         self.action_text = 'Polygonal ROI'
         self.tool_tip = 'Lasso a region of interest'
@@ -284,7 +285,7 @@ class HRangeMode(RoiMode):
     This class defines horizontal ranges"""
     def __init__(self, axes, **kwargs):
         super(HRangeMode, self).__init__(axes, **kwargs)
-        self.icon = QIcon(':icons/glue_xrange_select.png')
+        self.icon = get_icon('glue_xrange_select')
         self.mode_id = 'X range'
         self.action_text = 'X range'
         self.tool_tip = 'Select a range of x values'
@@ -297,7 +298,7 @@ class VRangeMode(RoiMode):
     This class defines vertical ranges"""
     def __init__(self, axes, **kwargs):
         super(VRangeMode, self).__init__(axes, **kwargs)
-        self.icon = QIcon(':icons/glue_yrange_select.png')
+        self.icon = get_icon('glue_yrange_select')
         self.mode_id = 'Y range'
         self.action_text = 'Y range'
         self.tool_tip = 'Select a range of y values'
@@ -314,7 +315,7 @@ class ContrastMode(MouseMode):
     """
     def __init__(self, *args, **kwargs):
         super(ContrastMode, self).__init__(*args, **kwargs)
-        self.icon = QIcon(':icons/glue_contrast.png')
+        self.icon = get_icon('glue_contrast')
         self.mode_id = 'Contrast'
         self.action_text = 'Contrast'
         self.tool_tip = 'Adjust the bias/contrast'
@@ -401,7 +402,7 @@ class ContourMode(MouseMode):
     def __init__(self, *args, **kwargs):
         super(ContourMode, self).__init__(*args, **kwargs)
 
-        self.icon = QIcon(":icons/glue_contour.png")
+        self.icon = get_icon("glue_contour")
         self.mode_id = 'Contour'
         self.action_text = 'Contour'
         self.tool_tip = 'Define a region of intrest via contours'
