@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
-from setuptools import setup, Command
+from setuptools import setup, Command, find_packages
 
 try:  # Python 3.x
     from setuptools.command.build_py import build_py_2to3 as build_py
@@ -201,7 +201,7 @@ class build(build_py):
         build_py.run(self)
 
 
-cmdclass['build_py'] = build
+        #cmdclass['build_py'] = build
 
 console_scripts = ['glue = glue.main:main',
                    'glue-config = glue.config_gen:main',
@@ -221,13 +221,8 @@ setup(name='Glue',
           'Programming Language :: Python :: 2.7',
           'Topic :: Scientific/Engineering :: Data Visualization',
           ],
-
-      packages=['glue', 'glue.external', 'glue.qt', 'glue.core', 'glue.qt.widgets',
-                'glue.qt.ui', 'glue.clients', 'glue.tests', 'glue.core.tests',
-                'glue.clients.tests', 'glue.qt.tests',
-                'glue.qt.widgets.tests'],
-
+      packages = find_packages(),
       entry_points={'console_scripts' : console_scripts},
       cmdclass=cmdclass,
-      package_data={'glue': ['examples/*', 'logo.png']},
+      package_data={'': ['*.png', '*.ui']}
     )

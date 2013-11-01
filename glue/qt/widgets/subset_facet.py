@@ -2,8 +2,8 @@ from ...external.qt.QtGui import (QDialog, QDoubleValidator, QIcon)
 import numpy as np
 from matplotlib import cm
 
-from ..ui.subset_facet import Ui_SubsetFacet
-from ..qtutil import pretty_number, cmap2pixmap
+
+from ..qtutil import pretty_number, cmap2pixmap, load_ui
 from ...core.util import colorize_subsets, facet_subsets
 from ..widget_properties import ButtonProperty
 
@@ -19,10 +19,9 @@ class SubsetFacet(QDialog):
         """
         super(SubsetFacet, self).__init__(parent)
         self.setWindowTitle("Subset Facet")
-        self.ui = Ui_SubsetFacet()
+        self.ui = load_ui('subset_facet', self)
         self._collect = collect
 
-        self.ui.setupUi(self)
         self.ui.component_selector.setup(self._collect)
         if default is not None:
             self.ui.component_selector.data = default

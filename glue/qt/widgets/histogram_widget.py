@@ -9,12 +9,11 @@ from ...core import message as msg
 from ...core import Data
 from ...core.callback_property import add_callback
 from ...clients.histogram_client import HistogramClient
-from ..ui.histogramwidget import Ui_HistogramWidget
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import HRangeMode
 from .data_viewer import DataViewer
 from .mpl_widget import MplWidget
-from ..qtutil import pretty_number
+from ..qtutil import pretty_number, load_ui
 
 WARN_SLOW = 10000000
 
@@ -37,8 +36,7 @@ class HistogramWidget(DataViewer):
         self.central_widget = MplWidget()
         self.setCentralWidget(self.central_widget)
         self.option_widget = QtGui.QWidget()
-        self.ui = Ui_HistogramWidget()
-        self.ui.setupUi(self.option_widget)
+        self.ui = load_ui('histogramwidget', self.option_widget)
         self._tweak_geometry()
         self.client = HistogramClient(data,
                                       self.central_widget.canvas.fig,

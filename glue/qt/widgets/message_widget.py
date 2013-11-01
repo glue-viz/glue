@@ -4,7 +4,7 @@ from ...external.qt.QtGui import QWidget, QTableWidgetItem
 
 from ... import core
 
-from ..ui.messagewidget import Ui_MessageWidget
+from ..qtutil import load_ui
 
 
 class MessageWidget(QWidget, core.hub.HubListener):
@@ -12,8 +12,7 @@ class MessageWidget(QWidget, core.hub.HubListener):
     by a hub. It is mainly intended for debugging """
     def __init__(self):
         QWidget.__init__(self)
-        self.ui = Ui_MessageWidget()
-        self.ui.setupUi(self)
+        self.ui = load_ui('messagewidget', self)
         self.ui.messageTable.setColumnCount(3)
         labels = ['Time', 'Message', 'Sender']
         self.ui.messageTable.setHorizontalHeaderLabels(labels)

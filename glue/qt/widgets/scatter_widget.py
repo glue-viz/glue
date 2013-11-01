@@ -11,11 +11,10 @@ from ..mouse_mode import (RectangleMode, CircleMode,
                           PolyMode, HRangeMode, VRangeMode)
 from ...core.callback_property import add_callback
 
-from ..ui.scatterwidget import Ui_ScatterWidget
 from .data_viewer import DataViewer
 from .mpl_widget import MplWidget
 from ..widget_properties import ButtonProperty, FloatLineProperty
-from ..qtutil import pretty_number
+from ..qtutil import pretty_number, load_ui
 
 
 WARN_SLOW = 1000000  # max number of points which render quickly
@@ -66,8 +65,8 @@ class ScatterWidget(DataViewer):
 
         self.setCentralWidget(self.central_widget)
 
-        self.ui = Ui_ScatterWidget()
-        self.ui.setupUi(self.option_widget)
+        self.ui = load_ui('scatterwidget', self.option_widget)
+        #self.ui.setupUi(self.option_widget)
         self._tweak_geometry()
         self._collection = data
 

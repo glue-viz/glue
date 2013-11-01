@@ -3,7 +3,8 @@ from ...external.qt.QtGui import QDialog
 from ... import core
 from ...core import parse
 
-from ..ui.custom_component_widget import Ui_CustomComponentWidget
+from ..qtutil import load_ui
+
 
 
 def disambiguate(label, labels):
@@ -34,8 +35,9 @@ class CustomComponentWidget(QDialog):
         super(CustomComponentWidget, self).__init__(parent)
         self._labels = {}
         self._data = {}
-        self.ui = Ui_CustomComponentWidget()
+        self.ui = load_ui('custom_component_widget', self)
         self.ui.setupUi(self)
+
         self._collection = collection
         self._gather_components()
         self._gather_data()
@@ -123,15 +125,14 @@ class CustomComponentWidget(QDialog):
 def main():
     import sys
     import glue
-    from glue.tests import example_data
+    from glue.core.datq import Data
     from glue.core.data_collection import DataCollection
-    from ...external.qt.QtGui import QApplication
+    import numpy as np
 
-    app = QApplication(sys.argv)  # pylint: disable=W0612
-    data = example_data.pipe()[:2]
-    dc = glue.DataCollection(list(data))
+    x = np.random.random((5,5))
+    data = DataCollection(Data(x=x))
 
-    CustomComponentWidget.create_component(dc)
+    CustomComponentWidget.create_component(data)
     for d in dc:
         print d.label
         for c in d.components:

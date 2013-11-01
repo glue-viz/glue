@@ -1,7 +1,7 @@
 from ..external.qt.QtGui import QWidget, QListWidgetItem
 from ..external.qt.QtCore import Signal
 
-from .ui.component_selector import Ui_ComponentSelector
+from .qtutil import load_ui
 
 
 class ComponentSelector(QWidget):
@@ -23,12 +23,11 @@ class ComponentSelector(QWidget):
     def __init__(self, parent=None):
         super(ComponentSelector, self).__init__(parent)
         self._data = None
-        self._ui = Ui_ComponentSelector()
+        self._ui = load_ui('component_selector', self)
         self._init_widgets()
         self._connect()
 
     def _init_widgets(self):
-        self._ui.setupUi(self)
         self._ui.component_selector.setDragEnabled(True)
 
     def _connect(self):

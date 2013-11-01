@@ -2,7 +2,7 @@ from ..external.qt.QtGui import QDialog, QListWidgetItem
 
 from .. import core
 
-from .ui.link_editor import Ui_LinkEditor
+from .qtutil import load_ui
 
 
 class LinkEditor(QDialog):
@@ -11,7 +11,7 @@ class LinkEditor(QDialog):
         super(LinkEditor, self).__init__(parent)
         self._collection = collection
 
-        self._ui = Ui_LinkEditor()
+        self._ui = load_ui('link_editor', self)
         self._init_widgets()
         self._connect()
         if len(collection) > 1:
@@ -19,7 +19,6 @@ class LinkEditor(QDialog):
         self._size = None
 
     def _init_widgets(self):
-        self._ui.setupUi(self)
         self._ui.left_components.setup(self._collection)
         self._ui.right_components.setup(self._collection)
         self._ui.signature_editor.hide()

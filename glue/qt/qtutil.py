@@ -3,10 +3,12 @@ Various standalone utility code for
 working with Qt
 """
 from functools import partial
+import os
 
 from matplotlib.colors import ColorConverter
 from matplotlib import cm
 import numpy as np
+from ..external import qt
 from ..external.qt import QtGui
 from ..external.qt.QtCore import Qt
 from ..external.qt.QtCore import QMimeData
@@ -20,7 +22,7 @@ from ..external.qt.QtGui import (QColor, QInputDialog, QColorDialog,
 
 from .decorators import set_cursor
 from .mime import PyMimeData, LAYERS_MIME_TYPE
-
+from ..external.qt import is_pyside
 
 def mpl_to_qt4_color(color, alpha=1.0):
     """ Convert a matplotlib color stirng into a Qt QColor object
@@ -714,6 +716,68 @@ class GlueComboBox(QtGui.QComboBox):
     def removeItem(self, index):
         self._data.pop(index)
         return super(GlueComboBox, self).removeItem(index)
+
+
+def _custom_widgets():
+    #iterate over custom widgets referenced in .ui files
+    yield GlueListWidget
+    yield GlueComboBox
+    yield GlueActionButton
+    from .widgets.data_collection_view import DataCollectionView
+    yield DataCollectionView
+
+    from .component_selector import ComponentSelector
+    yield ComponentSelector
+
+    from .link_equation import LinkEquation
+    yield LinkEquation
+
+
+def _load_ui_pyside(path, parent):
+    from PySide.QtUiTools import QUiLoader
+    from PySide.QtCore import QFile
+    loader = QUiLoader()
+
+    # must register custom widgets referenced in .ui files
+    for w in _custom_widgets():
+        loader.registerCustomWidget(w)
+
+    ui_file = QFile(path)
+    ui_file.open(QFile.ReadOnly)
+    widget = loader.load(ui_file, parent)
+
+    return widget
+
+def _load_ui_pyqt4(path, parent):
+    raise NotImplementedError("No Qt4 loader method yet")
+
+
+def load_ui(name, parent):
+    directory = os.path.abspath(os.path.dirname(__file__))
+    path = os.path.join(directory, 'ui', name + '.ui')
+
+    if is_pyside():
+        return _load_ui_pyside(path, parent)
+    return _load_ui_pyqt(path, parent)
+
+
+def get_icon(icon_name):
+    """
+    Build a QIcon from an image name
+
+    Parameters
+    ----------
+    icon_name : str
+      Name of image file. Assumed to be a png file in glue/qt/icons
+      Do not include .png
+
+    Returns
+    -------
+    A QIcon object
+    """
+    directory = os.path.abspath(os.path.dirname(__file__))
+    path = os.path.join(directory, 'icons', name + '.png')
+    return QIcon(path)
 
 
 if __name__ == "__main__":

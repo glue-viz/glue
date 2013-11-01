@@ -16,10 +16,9 @@ from ..mouse_mode import (RectangleMode, CircleMode, PolyMode,
 from ..glue_toolbar import GlueToolbar
 from .mpl_widget import MplWidget
 
-from ..ui.imagewidget import Ui_ImageWidget
 from .. import glue_qt_resources  # pylint: disable=W0611
 from ..decorators import set_cursor
-from ..qtutil import cmap2pixmap, select_rgb
+from ..qtutil import cmap2pixmap, select_rgb, load_ui
 
 WARN_THRESH = 10000000  # warn when contouring large images
 
@@ -33,8 +32,7 @@ class ImageWidget(DataViewer):
         self.central_widget = MplWidget()
         self.option_widget = QWidget()
         self.setCentralWidget(self.central_widget)
-        self.ui = Ui_ImageWidget()
-        self.ui.setupUi(self.option_widget)
+        self.ui = load_ui('imagewidget', self.option_widget)
         self.client = ImageClient(data,
                                   self.central_widget.canvas.fig,
                                   artist_container=self._container)

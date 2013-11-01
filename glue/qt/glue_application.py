@@ -10,12 +10,11 @@ from ..external.qt.QtCore import Qt
 from .. import core
 from .. import env
 from ..qt import get_qapp
-from .ui.glue_application import Ui_GlueApplication
 from .decorators import set_cursor, messagebox_on_error
 from ..core.data_factories import load_data
 
 from .actions import act
-from .qtutil import pick_class, data_wizard, GlueTabBar
+from .qtutil import pick_class, data_wizard, GlueTabBar, load_ui
 from .widgets.glue_mdi_area import GlueMdiArea
 from .widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from .widgets.layer_tree_widget import PlotAction, LayerTreeWidget
@@ -47,7 +46,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self.setAttribute(Qt.WA_DeleteOnClose)
         self._actions = {}
         self._terminal = None
-        self._ui = Ui_GlueApplication()
+        self._ui = load_ui('glue_application', self)
         self._setup_ui()
         self.tab_widget.setMovable(True)
         self.tab_widget.setTabsClosable(True)
@@ -69,7 +68,6 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._update_plot_dashboard(None)
 
     def _setup_ui(self):
-        self._ui.setupUi(self)
         self._ui.tabWidget.setTabBar(GlueTabBar())
 
         lw = LayerTreeWidget()

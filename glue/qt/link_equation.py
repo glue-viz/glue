@@ -6,10 +6,9 @@ from ..external.qt.QtGui import (QWidget, QHBoxLayout, QVBoxLayout,
 from ..external.qt.QtGui import QSpacerItem, QSizePolicy
 from ..external.qt import QT_API, QT_API_PYSIDE
 
-from .ui.link_equation import Ui_LinkEquation
 from .. import core
 from ..core.odict import OrderedDict
-
+from .qtutil import load_ui
 
 def function_label(function):
     """ Provide a label for a function
@@ -120,7 +119,7 @@ class LinkEquation(QWidget):
         self._argument_widgets = []
         self.spacer = None
         self._output_widget = ArgumentWidget("")
-        self._ui = Ui_LinkEquation()
+        self._ui = load_ui('link_equation', self)
 
         self._init_widgets()
         self._populate_function_combo()
@@ -140,7 +139,6 @@ class LinkEquation(QWidget):
             type(self.function).__name__ == 'LinkFunction'
 
     def _init_widgets(self):
-        self._ui.setupUi(self)
         layout = QVBoxLayout()
         layout.setSpacing(1)
         self._ui.input_canvas.setLayout(layout)
