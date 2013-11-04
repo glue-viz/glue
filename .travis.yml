@@ -33,5 +33,15 @@ install:
   - pip install $PIP_ARGS mock pytest pyavm cython
   - pip install --use-mirrors scikit-image
   - python setup.py build
+  - if [[ $SETUP_CMD == cov ]]; then pip install pytest -q --use-mirrors; fi
+  - if [[ $SETUP_CMD == cov ]]; then pip install pytest-cov -q --use-mirrors; fi
+  - if [[ $SETUP_CMD == cov ]]; then pip install coveralls -q --use-mirrors; fi
 
-script: py.test $PYTEST_ARGS glue
+
+
+script:
+  - if [[ $SETUP_CMD == test ]]; then py.test $PYTEST_ARGS glue; fi
+  - if [[ $SETUP_CMD == cov ]]; then py.test --cov glue; fi
+
+after_success:
+  - if [[ $SETUP_CMD == cov ]]; then coveralls; fi
