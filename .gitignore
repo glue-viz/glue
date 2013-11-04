@@ -4,7 +4,6 @@ doc/_build
 *.ropeproject
 *.pyc
 glue/tests/htmlcov
-glue/qt/ui/*py
 glue/qt/glue_qt_resources.py
 *.__junk*
 *.coverage
