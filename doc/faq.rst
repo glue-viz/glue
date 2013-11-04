@@ -3,6 +3,16 @@
 Frequently Asked Questions
 ==========================
 
+Why is Glue crashing on startup?
+--------------------------------
+You might run into an error message like::
+
+    Qt internal error: qt_menu.nib could not be loaded.
+    The .nib file should be placed in QtGui.framework/Versions/Current/Resources/
+    or in the resources directory of your application bundle.
+
+This due to a quirk in Anaconda that requires that python GUIs be run with ``pythonw`` instead of ``python``. See :ref:`the installtion page <pythonw_note>` about how to properly install Glue with Anaconda.
+
 What data formats does Glue understand?
 ---------------------------------------
 Glue relies on several libraries to parse different file formats:

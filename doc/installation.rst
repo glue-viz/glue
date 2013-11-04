@@ -23,7 +23,7 @@ Continuum Analytics. Anaconda includes all of Glue's main dependencies.
  * Download and install the `appropriate version of Anaconda
    <http://continuum.io/downloads.html>`_
 
- * On the command line, install Glue using pip: ``pip install -e git+git://github.com/glue-viz/glue-qt.git#egg=glue``
+ * On the command line, install Glue using pip: ``pythonw -m pip install -e git+git://github.com/glue-viz/glue.git#egg=glue``
 
  * On the command line, install any additional Glue dependencies by running ``glue-deps install``. For more information on ``glue-deps``, see :ref:`below <glue-deps>`
 
@@ -31,10 +31,8 @@ The Entought Python Distribution also includes all non-trivial dependencies. The
 
 .. note:: Anaconda installs it's own version of Python
 
-.. note:: This GitHub repository is different from the main Glue
-          codebase, and includes pre-generated QT files. This is due
-          to a bug in the current release of Anaconda, which doesn't
-          include the QT compilation tools.
+.. _pythonw_note:
+.. note:: The nonstandard pip invocation (``pythonw -m pip``) is needed on Anaconda, because programs which create graphical windows must be invoked using ``pythonw`` instead of ``python``.
 
 
 Building from Source (For the Brave)
@@ -52,7 +50,6 @@ is the basic strategy:
  * Install Glue using pip: ``pip install -e git+git://github.com/glue-viz/glue.git#egg=glue``. Alternatively, ``git clone`` the repository and install via ``python setup.py install``
 
  * Install Glue's remaining dependencies by running ``glue-deps install``. For more information on these dependencies see :ref:`below <glue-deps>`.
-
 
 
 Dependencies
