@@ -187,7 +187,7 @@
   <customwidget>
    <class>GlueComboBox</class>
    <extends>QComboBox</extends>
-   <header>..qtutil</header>
+   <header>glue.qt.qtutil</header>
   </customwidget>
  </customwidgets>
  <resources/>

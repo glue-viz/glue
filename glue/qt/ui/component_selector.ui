@@ -70,7 +70,7 @@ p, li { white-space: pre-wrap; }
   <customwidget>
    <class>GlueListWidget</class>
    <extends>QListWidget</extends>
-   <header>..qtutil</header>
+   <header>glue.qt.qtutil</header>
   </customwidget>
  </customwidgets>
  <resources/>

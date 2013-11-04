@@ -220,19 +220,19 @@
   <customwidget>
    <class>ComponentSelector</class>
    <extends>QWidget</extends>
-   <header>..component_selector</header>
+   <header>glue.qt.component_selector</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>LinkEquation</class>
    <extends>QWidget</extends>
-   <header>..link_equation</header>
+   <header>glue.qt.link_equation</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>GlueListWidget</class>
    <extends>QListWidget</extends>
-   <header>..qtutil</header>
+   <header>glue.qt.qtutil</header>
   </customwidget>
  </customwidgets>
  <resources/>

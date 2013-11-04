@@ -132,7 +132,7 @@
   <customwidget>
    <class>ComponentSelector</class>
    <extends>QWidget</extends>
-   <header>..component_selector</header>
+   <header>glue.qt.component_selector</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
