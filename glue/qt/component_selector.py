@@ -29,6 +29,7 @@ class ComponentSelector(QWidget):
 
     def _init_widgets(self):
         self._ui.component_selector.setDragEnabled(True)
+        self._ui.setMinimumWidth(300)
 
     def _connect(self):
         #attach Qt signals

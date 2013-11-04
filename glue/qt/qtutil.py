@@ -18,7 +18,8 @@ from ..external.qt.QtGui import (QColor, QInputDialog, QColorDialog,
                                  QTabBar, QBitmap, QIcon, QPixmap, QImage,
                                  QDialogButtonBox, QWidget,
                                  QVBoxLayout, QHBoxLayout, QLabel,
-                                 QRadioButton, QButtonGroup, QCheckBox)
+                                 QRadioButton, QButtonGroup, QCheckBox,
+                                 QSizePolicy)
 
 from .decorators import set_cursor
 from .mime import PyMimeData, LAYERS_MIME_TYPE
@@ -479,6 +480,9 @@ class RGBSelector(QtGui.QDialog):
         self.setLayout(layout)
 
         comps = ComponentSelector()
+        comps.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        comps.setMinimumHeight(400)
+        comps.setMinimumWidth(300)
         comps.setup(dc)
         if default is not None:
             comps.data = default
@@ -495,6 +499,12 @@ class RGBSelector(QtGui.QDialog):
         layout.addWidget(g)
         layout.addWidget(b)
         layout.addWidget(okcancel)
+
+        layout.setStretchFactor(comps, 5)
+        for w in [r, g, b, okcancel]:
+            layout.setStretchFactor(w, 0)
+            layout.setStretchFactor(w, 0)
+            layout.setStretchFactor(w, 0)
 
         self.r = r
         self.g = g
