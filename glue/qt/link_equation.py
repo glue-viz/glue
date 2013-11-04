@@ -118,7 +118,13 @@ class LinkEquation(QWidget):
         self._argument_widgets = []
         self.spacer = None
         self._output_widget = ArgumentWidget("")
-        self._ui = load_ui('link_equation', self)
+
+        # pyqt4 can't take self as second argument here
+        # for some reason. Manually embed
+        self._ui = load_ui('link_equation', None)
+        l = QHBoxLayout()
+        l.addWidget(self._ui)
+        self.setLayout(l)
 
         self._init_widgets()
         self._populate_function_combo()
