@@ -748,7 +748,7 @@ def _load_ui_pyside(path, parent):
 
 def _load_ui_pyqt4(path, parent):
     from PyQt4.uic import loadUi
-    return loadUi(ui_path(path), parent)
+    return loadUi(path, parent)
 
 
 def load_ui(name, parent):
@@ -757,7 +757,7 @@ def load_ui(name, parent):
 
     if is_pyside():
         return _load_ui_pyside(path, parent)
-    return _load_ui_pyqt(path, parent)
+    return _load_ui_pyqt4(path, parent)
 
 
 def icon_path(icon_name):

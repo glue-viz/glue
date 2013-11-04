@@ -7,8 +7,6 @@ try:  # Python 3.x
 except ImportError:  # Python 2.x
     from setuptools.command.build_py import build_py
 
-from glob import glob
-import os
 import sys
 import platform
 import subprocess
@@ -85,123 +83,6 @@ class PyTest(Command):
 
 cmdclass['test'] = PyTest
 
-def has_qt4():
-    """Check if PyQt4 is installed, but do not import"""
-    import imp
-    try:
-        imp.find_module('PyQt4')
-        return True
-    except ImportError:
-        return False
-
-
-class BuildQt(Command):
-
-    # I don't think setuptools uses these options
-    user_options = [
-        ('rcc=', 'r', "Custom rcc command (usually pyside-rcc or pyrcc4)"),
-        ('uic=', 'u', 'Custom uic command (usually pyside-uic or pyuic4)')
-    ]
-
-    def initialize_options(self):
-        """Select between PyQt4 and PySide tools"""
-        use_pyside = os.environ.get('QT_API', None) == 'pyside'
-        use_pyside = use_pyside or not has_qt4()
-        if use_pyside:
-            print("Using PySide tools to build Qt interfaces")
-            self.pyrcc4 = 'pyside-rcc'
-            self.pyuic = 'pyside-uic'
-        else:
-            print("Using PyQt4 tools to build Qt interfaces")
-            self.pyrcc4 = 'pyrcc4'
-            self.pyuic = 'pyuic4'
-
-            if is_windows():
-                self.pyuic = 'pyuic4.bat'
-
-    def finalize_options(self):
-        pass
-
-    def _make_qt_agnostic(self, fname):
-        """Remove Qt4/PySide specific imports"""
-        with open(fname) as infile:
-            val = infile.read()
-        val = val.replace('PyQt4', 'glue.external.qt')
-        val = val.replace('PySide', 'glue.external.qt')
-        with open(fname, 'wb') as out:
-            out.write(val)
-
-    def _compile_ui(self, infile, outfile):
-        try:
-            subprocess.call([self.pyuic, infile, '-o', outfile])
-        except OSError:
-            #note: pyuic4 may be named like pyuic4-2.7
-            if self.pyuic == 'pyuic4':
-                self.pyuic = 'pyuic4-%i.%i' % sys.version_info[0:2]
-                print('falling back to %s' % self.pyuic)
-                self._compile_ui(infile, outfile)
-                return
-
-            print("uic command failed - make sure that pyuic4 or pyside-uic "
-                  "is in your $PATH")
-
-        self._make_qt_agnostic(outfile)
-
-    def _build_rcc(self, infile, outfile):
-        if sys.version_info[0] == 2:
-            option = '-py2'
-        else:
-            option = '-py3'
-        try:
-            subprocess.call([self.pyrcc4, option, infile, '-o',
-                             outfile])
-        except OSError:
-            #note: pyrcc4 may be named like  pyrcc4-2.7
-            if self.pyrcc4 == 'pyrcc4':
-                self.pyrcc4 = 'pyrcc4-%i.%i' % sys.version_info[0:2]
-                print('falling back to %s' % self.pyrcc4)
-                self._build_rcc(infile, outfile)
-                return
-
-            print("rcc command failed - make sure that pyrcc4 "
-                  "or pyside-rcc4 is in your $PATH, or specify "
-                  "a custom command with --rcc=command")
-
-        self._make_qt_agnostic(outfile)
-
-    def run(self):
-        from shutil import copyfile
-
-        #compile ui files
-        for infile in glob(os.path.join('glue', 'qt', 'ui', '*.ui')):
-            print("Compiling " + infile)
-            directory, filename = os.path.split(infile)
-            outfile = os.path.join(directory, filename.replace('.ui', '.py'))
-            self._compile_ui(infile, outfile)
-
-        #build qt resource files
-        print("Compiling glue/qt/glue.qrc")
-        infile = os.path.join('glue', 'qt', 'glue.qrc')
-        outfile = os.path.join('glue', 'qt', 'glue_qt_resources.py')
-        self._build_rcc(infile, outfile)
-
-        #Hack: pyuic seems to expect glue/qt/ui/glue_rc.py when
-        #loading icons. Copy it there
-        copyfile(outfile, os.path.join('glue', 'qt', 'ui', 'glue_rc.py'))
-
-
-cmdclass['build_qt'] = BuildQt
-
-
-class build(build_py):
-    def run(self):
-
-        #print_sysinfo()
-        self.run_command("build_qt")
-        build_py.run(self)
-
-
-        #cmdclass['build_py'] = build
 
 console_scripts = ['glue = glue.main:main',
                    'glue-config = glue.config_gen:main',
@@ -213,7 +94,7 @@ setup(name='Glue',
       description = 'Multidimensional data visualzation across files',
       author='Chris Beaumont, Thomas Robitaille',
       author_email='glueviz@gmail.com',
-      url='http://www.glueviz.org',
+      url='http://glueviz.org',
       classifiers=[
           'Intended Audience :: Science/Research',
           'Operating System :: OS Independent',
