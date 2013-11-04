@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>854</width>
-    <height>507</height>
+    <width>1054</width>
+    <height>528</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,7 +35,7 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>200</width>
+               <width>300</width>
                <height>0</height>
               </size>
              </property>
@@ -51,7 +51,7 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>200</width>
+               <width>300</width>
                <height>0</height>
               </size>
              </property>
@@ -185,6 +185,12 @@
            <horstretch>100</horstretch>
            <verstretch>100</verstretch>
           </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>300</height>
+          </size>
          </property>
          <property name="acceptDrops">
           <bool>true</bool>

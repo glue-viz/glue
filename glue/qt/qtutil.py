@@ -742,14 +742,13 @@ def _load_ui_pyside(path, parent):
     for w in _custom_widgets():
         loader.registerCustomWidget(w)
 
-    ui_file = QFile(path)
-    ui_file.open(QFile.ReadOnly)
-    widget = loader.load(ui_file, parent)
+    widget = loader.load(path, parent)
 
     return widget
 
 def _load_ui_pyqt4(path, parent):
-    raise NotImplementedError("No Qt4 loader method yet")
+    from PyQt4.uic import loadUi
+    return loadUi(ui_path(path), parent)
 
 
 def load_ui(name, parent):

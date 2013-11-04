@@ -1,17 +1,16 @@
-from ..external.qt.QtGui import QDialog, QListWidgetItem
+from ..external.qt.QtGui import QDialog, QListWidgetItem, QWidget
 
 from .. import core
 
 from .qtutil import load_ui
 
 
-class LinkEditor(QDialog):
+class LinkEditor(object):
 
     def __init__(self, collection, functions=None, parent=None):
-        super(LinkEditor, self).__init__(parent)
         self._collection = collection
 
-        self._ui = load_ui('link_editor', self)
+        self._ui = load_ui('link_editor', parent)
         self._init_widgets()
         self._connect()
         if len(collection) > 1:
@@ -39,10 +38,8 @@ class LinkEditor(QDialog):
     @advanced.setter
     def advanced(self, state):
         """Set whether the widget is in advanced state"""
-        size = self.size()
         self._ui.signature_editor.setVisible(state)
         self._ui.toggle_editor.setText("Basic" if state else "Advanced")
-        self.resize(size)
 
     def _toggle_advanced(self):
         """Show or hide the signature editor widget"""
@@ -109,7 +106,21 @@ class LinkEditor(QDialog):
     @classmethod
     def update_links(cls, collection):
         widget = cls(collection)
-        isok = widget.exec_()
+        isok = widget._ui.exec_()
         if isok:
             links = widget.links()
             collection.set_links(links)
+
+
+def main():
+    import numpy as np
+    from glue.core import Data, DataCollection
+
+    x = np.array([1,2,3])
+    d = Data(label='data', x=x, y=x*2)
+    dc = DataCollection(d)
+
+    LinkEditor.update_links(dc)
+
+if __name__ == "__main__":
+    main()

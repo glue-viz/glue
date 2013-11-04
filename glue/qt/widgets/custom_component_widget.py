@@ -6,7 +6,6 @@ from ...core import parse
 from ..qtutil import load_ui
 
 
-
 def disambiguate(label, labels):
     """ Changes name of label if it conflicts with labels list
 
@@ -29,14 +28,12 @@ def disambiguate(label, labels):
     return label + ('_%i' % suffix)
 
 
-class CustomComponentWidget(QDialog):
+class CustomComponentWidget(object):
     """ Dialog to add derived components to data via parsed commands """
     def __init__(self, collection, parent=None):
-        super(CustomComponentWidget, self).__init__(parent)
+        self.ui = load_ui('custom_component_widget', parent)
         self._labels = {}
         self._data = {}
-        self.ui = load_ui('custom_component_widget', self)
-
         self._collection = collection
         self._gather_components()
         self._gather_data()
@@ -115,25 +112,24 @@ class CustomComponentWidget(QDialog):
         """
         # pylint: disable=W0212
         widget = CustomComponentWidget(collection)
-        widget.show()
-        if widget.exec_() == QDialog.Accepted:
+        widget.ui.show()
+        if widget.ui.exec_() == QDialog.Accepted:
             link = widget._create_link()
             if link:
                 widget._add_link_to_targets(link)
 
 
 def main():
-    import sys
-    import glue
-    from glue.core.datq import Data
+    from glue.core.data import Data
     from glue.core.data_collection import DataCollection
     import numpy as np
 
-    x = np.random.random((5,5))
-    data = DataCollection(Data(x=x))
+    x = np.random.random((5, 5))
+    y = x * 3
+    data = DataCollection(Data(label='test', x=x, y=y))
 
     CustomComponentWidget.create_component(data)
-    for d in dc:
+    for d in data:
         print d.label
         for c in d.components:
             print '\t%s' % c

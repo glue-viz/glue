@@ -4,11 +4,10 @@ from ..external.qt.QtGui import (QWidget, QHBoxLayout, QVBoxLayout,
                                  QLabel, QLineEdit)
 
 from ..external.qt.QtGui import QSpacerItem, QSizePolicy
-from ..external.qt import QT_API, QT_API_PYSIDE
 
 from .. import core
 from ..core.odict import OrderedDict
-from .qtutil import load_ui
+from .qtutil import load_ui, is_pyside
 
 def function_label(function):
     """ Provide a label for a function
@@ -285,8 +284,8 @@ class LinkEquation(QWidget):
             layout.removeWidget(a)
             a.close()
 
-        if QT_API != QT_API_PYSIDE:
-            #XXX PySide crashing here
+        if not is_pyside():
+            # PySide crashing here
             layout.removeItem(self.spacer)
 
         self._argument_widgets = []

@@ -7,18 +7,24 @@
     <x>0</x>
     <y>0</y>
     <width>295</width>
-    <height>452</height>
+    <height>392</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
+  <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0">
    <property name="margin">
     <number>2</number>
    </property>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
+    <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,1">
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
