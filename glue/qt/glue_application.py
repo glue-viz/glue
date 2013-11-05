@@ -409,7 +409,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
 
         splitter = QSplitter(self)
         splitter.setOrientation(Qt.Vertical)
-        splitter.addWidget(self._ui.centralwidget)
+        splitter.addWidget(self._ui)
         splitter.addWidget(widget)
         splitter.setStretchFactor(0, 5)
         splitter.setStretchFactor(1, 1)
