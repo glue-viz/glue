@@ -776,7 +776,7 @@ def icon_path(icon_name):
     Parameters
     ----------
     icon_name : str
-       Name of icon, without .png or directory prefix
+       Name of icon, without extension or directory prefix
 
     Returns
     -------
@@ -785,6 +785,8 @@ def icon_path(icon_name):
     """
     directory = os.path.abspath(os.path.dirname(__file__))
     path = os.path.join(directory, 'icons', icon_name + '.png')
+    if not os.path.exists(path):
+        path = os.path.join(directory, 'icons', icon_name + '.svg')
     assert os.path.exists(path), path
     return path
 
@@ -795,8 +797,8 @@ def get_icon(icon_name):
     Parameters
     ----------
     icon_name : str
-      Name of image file. Assumed to be a png file in glue/qt/icons
-      Do not include .png
+      Name of image file. Assumed to be a png or svg file in glue/qt/icons
+      Do not include the extension
 
     Returns
     -------

@@ -5,7 +5,7 @@ from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                                  QMenu, QMdiSubWindow, QAction, QMessageBox,
                                  QFileDialog,
                                  QToolButton, QSplitter, QVBoxLayout, QWidget)
-from ..external.qt.QtCore import Qt
+from ..external.qt.QtCore import Qt, QSize
 
 from .. import core
 from .. import env
@@ -14,7 +14,7 @@ from .decorators import set_cursor, messagebox_on_error
 from ..core.data_factories import load_data
 
 from .actions import act
-from .qtutil import pick_class, data_wizard, GlueTabBar, load_ui
+from .qtutil import pick_class, data_wizard, GlueTabBar, load_ui, get_icon
 from .widgets.glue_mdi_area import GlueMdiArea
 from .widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from .widgets.layer_tree_widget import PlotAction, LayerTreeWidget
@@ -46,7 +46,6 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self.setAttribute(Qt.WA_DeleteOnClose)
         self._actions = {}
         self._terminal = None
-        self._ui = load_ui('glue_application', self)
         self._setup_ui()
         self.tab_widget.setMovable(True)
         self.tab_widget.setTabsClosable(True)
@@ -62,12 +61,14 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._tweak_geometry()
         self._create_actions()
         self._create_menu()
-        self._create_terminal()
         self._connect()
         self._new_tab()
+        self._create_terminal()
         self._update_plot_dashboard(None)
 
     def _setup_ui(self):
+        self._ui = load_ui('glue_application', self)
+        self.setCentralWidget(self._ui)
         self._ui.tabWidget.setTabBar(GlueTabBar())
 
         lw = LayerTreeWidget()
@@ -389,10 +390,13 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         assert self._terminal is None, \
             "should only call _create_terminal once"
 
-        self._terminal_button = QToolButton(None)
-        self._terminal_button.setToolTip("Toggle command line")
+        self._terminal_button = QToolButton(self._ui)
+        self._terminal_button.setToolTip("Toggle IPython Prompt")
+        i = get_icon('IPythonConsole')
+        self._terminal_button.setIcon(i)
+        self._terminal_button.setIconSize(QSize(25, 25))
+
         self._ui.layerWidget.button_row.addWidget(self._terminal_button)
-        self._terminal_button.setArrowType(Qt.DownArrow)
 
         try:
             from .widgets.terminal import glue_terminal
@@ -407,16 +411,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
             self._setup_terminal_error_dialog(e)
             return
 
-        splitter = QSplitter(self)
-        splitter.setOrientation(Qt.Vertical)
-        splitter.addWidget(self._ui)
-        splitter.addWidget(widget)
-        splitter.setStretchFactor(0, 5)
-        splitter.setStretchFactor(1, 1)
-
-        self.setCentralWidget(splitter)
-        self._terminal = widget
-
+        self._terminal = self._add_to_current_tab(widget, label='IPython')
         self._hide_terminal()
 
     def _setup_terminal_error_dialog(self, exception):
@@ -444,12 +439,11 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
     def _hide_terminal(self):
         self._terminal.hide()
         button = self._terminal_button
-        button.setArrowType(Qt.DownArrow)
 
     def _show_terminal(self):
         self._terminal.show()
+        self._terminal.widget().show()
         button = self._terminal_button
-        button.setArrowType(Qt.UpArrow)
 
     def start(self):
         self.show()
