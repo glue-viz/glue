@@ -523,7 +523,7 @@ class RGBSelector(QtGui.QDialog):
 
     @property
     def red(self):
-        self.r.component_id
+        return self.r.component_id
 
     @property
     def green(self):
