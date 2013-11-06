@@ -33,6 +33,11 @@ class GlueToolbar(NavigationToolbar2QT):
         self.setFocusPolicy(Qt.StrongFocus)
         self._idKey = None
 
+        # pyside is prone to segfaults if slots hold the only
+        # reference to a signal, so we hold an extra reference
+        # see https://bugreports.qt-project.org/browse/PYSIDE-88
+        self.__signals = []
+
     def _init_toolbar(self):
         self.basedir = os.path.join(matplotlib.rcParams['datapath'], 'images')
         parent = self.parent()
@@ -135,6 +140,8 @@ class GlueToolbar(NavigationToolbar2QT):
         action = QtGui.QAction(mode.icon, mode.action_text, parent)
         action.triggered.connect(toggle)
         parent.addAction(action)
+
+        self.__signals.extend([toggle, enable])
 
         if mode.shortcut is not None:
             action.setShortcut(mode.shortcut)
