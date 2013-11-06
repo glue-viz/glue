@@ -67,7 +67,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._update_plot_dashboard(None)
 
     def _setup_ui(self):
-        self._ui = load_ui('glue_application', self)
+        self._ui = load_ui('glue_application', None)
         self.setCentralWidget(self._ui)
         self._ui.tabWidget.setTabBar(GlueTabBar())
 
