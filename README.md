@@ -1,5 +1,5 @@
 
-[![Build Status](https://travis-ci.org/glue-viz/glue.png)](https://travis-ci.org/glue-viz/glue?branch=master)
+[![Build Status](https://travis-ci.org/glue-viz/glue.png)](https://travis-ci.org/glue-viz/glue?branch=master) [![Coverage Status](https://coveralls.io/repos/glue-viz/glue/badge.png)](https://coveralls.io/r/glue-viz/glue)
 
 Welcome to Glue
 ===============
