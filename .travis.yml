@@ -42,7 +42,7 @@ install:
 
 script:
   - if [[ $SETUP_CMD == test ]]; then py.test $PYTEST_ARGS glue; fi
-  - if [[ $SETUP_CMD == cov ]]; then py.test --cov glue; fi
+  - if [[ $SETUP_CMD == cov ]]; then py.test --cov glue glue; fi
 
 after_success:
   - if [[ $SETUP_CMD == cov ]]; then coveralls; fi
