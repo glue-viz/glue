@@ -215,7 +215,6 @@ class ScatterWidget(DataViewer):
             return False
 
         first_layer = self.client.layer_count == 0
-        print first_layer
 
         self.client.add_layer(subset)
         self._update_combos()

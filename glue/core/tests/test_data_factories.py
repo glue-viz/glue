@@ -18,7 +18,7 @@ def make_file(contents, suffix):
     :param suffix: File suffix. string
     """
     try:
-        fobj, fname = tempfile.mkstemp(suffix=suffix)
+        _, fname = tempfile.mkstemp(suffix=suffix)
         with open(fname, 'wb') as infile:
             infile.write(contents)
         yield fname
@@ -93,9 +93,25 @@ def test_fits_catalog_factory():
                           ('\t', '.tbl')))
 def test_ascii_catalog_factory(delim, suffix):
     data = "#a%sb\n1%s2" % (delim, delim)
-    print data
     with make_file(data, suffix) as fname:
         d = df.load_data(fname)
 
     np.testing.assert_array_equal(d['a'], [1])
     np.testing.assert_array_equal(d['b'], [2])
+
+
+def test_fits_gz_factory():
+    data = '\x1f\x8b\x08\x08\xdd\x1a}R\x00\x03test.fits\x00\xed\xd1\xb1\n\xc20\x10\xc6q\x1f\xe5\xde@ZA]\x1cZ\x8d\x10\xd0ZL\x87\xe2\x16m\x0b\x1d\x9aHR\x87n>\xba\xa5".\tRq\x11\xbe_\xe6\xfb\x93\xe3\x04\xdf\xa7;F\xb4"\x87\x8c\xa6t\xd1\xaa\xd2\xa6\xb1\xd4j\xda\xf2L\x90m\xa5*\xa4)\\\x03D1\xcfR\x9e\xbb{\xc1\xbc\xefIcdG\x85l%\xb5\xdd\xb5tW\xde\x92(\xe7\x82<\xff\x0b\xfb\x9e\xba5\xe7\xd2\x90\xae^\xe5\xba)\x95\xad\xb5\xb2\xfe^\xe0\xed\x8d6\xf4\xc2\xdf\xf5X\x9e\xb1d\xe3\xbd\xc7h\xb1XG\xde\xfb\x06_\xf4N\xecx Go\x16.\xe6\xcb\xf1\xbdaY\x00\x00\x00\x80?r\x9f<\x1f\x00\x00\x00\x00\x00|\xf6\x00\x03v\xd8\xf6\x80\x16\x00\x00'
+
+    with make_file(data, '.fits.gz') as fname:
+        d = df.load_data(fname)
+
+    np.testing.assert_array_equal(d['PRIMARY'], [[0, 0], [0, 0]])
+
+
+def test_csv_gz_factory():
+    data = '\x1f\x8b\x08\x08z\x1e}R\x00\x03test.csv\x00\xab\xe02\xe42\xe22\xe6\x02\x00y\xffzx\x08\x00\x00\x00'
+    with make_file(data, '.csv.gz') as fname:
+        d = df.load_data(fname)
+
+    np.testing.assert_array_equal(d['x'], [1, 2, 3])
