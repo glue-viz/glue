@@ -48,16 +48,18 @@ def as_list(x):
     return [x]
 
 
-def load_data(path, factory=None):
+def load_data(path, factory=None, **kwargs):
     """Use a factory to load a file and assign a label
 
     :param path: Path to a file
     :type path: str
     :param factory: factory function to use. Defaults to auto_data
     :type factory: function
+
+    Extra keywords are passed through to factory functions
     """
     factory = factory or auto_data
-    d = factory(path)
+    d = factory(path, **kwargs)
     lbl = data_label(path)
     for item in as_list(d):
         item.label = lbl
