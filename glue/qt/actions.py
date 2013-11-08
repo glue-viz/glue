@@ -1,6 +1,7 @@
 from ..external.qt.QtGui import QAction
 from .qtutil import get_icon
 
+
 def act(name, parent, tip='', icon=None, shortcut=None):
     """ Factory for making a new action """
     a = QAction(name, parent)

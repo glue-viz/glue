@@ -21,7 +21,9 @@ QT_API_PYQT = 'pyqt'
 QT_API_PYSIDE = 'pyside'
 QT_API = None
 
-#import hook to protect importing of both PySide and PyQt4
+# import hook to protect importing of both PySide and PyQt4
+
+
 class ImportDenier(object):
     __forbidden = set()
 
@@ -65,6 +67,7 @@ def register_module(module, modlabel):
 
 def deny_module(mod_name):
     _import_hook.forbid(mod_name)
+
 
 def _load_pyqt4():
     prepare_pyqt4()
@@ -116,11 +119,11 @@ if os.environ.get('QT_API') == QT_API_PYSIDE:
 
 msgs = []
 
-#acutally do the loading
+# acutally do the loading
 for loader in loaders:
     try:
         loader()
-        #we set this env var, since IPython also looks for it
+        # we set this env var, since IPython also looks for it
         os.environ['QT_API'] = QT_API
         QtCore = sys.modules[__name__ + '.QtCore']
         QtGui = sys.modules[__name__ + '.QtGui']
@@ -133,8 +136,10 @@ else:
                       " Encountered the following errors: %s" %
                       '\n'.join(msgs))
 
+
 def is_pyside():
     return QT_API == QT_API_PYSIDE
+
 
 def is_pyqt():
     return QT_API == QT_API_PYQT

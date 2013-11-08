@@ -1,4 +1,4 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import pytest
 import numpy as np
 from mock import MagicMock
@@ -32,7 +32,7 @@ class TestParse(object):
         refs = {'a': 1, 'b': 2, 'c': 3, 'd': 4}
         expected = set([1, 2, 3])
         result = set(parse._reference_list(cmd, refs))
-        assert  expected == result
+        assert expected == result
 
     def test_reference_list_invalid_cmd(self):
         with pytest.raises(KeyError) as exc:
@@ -131,6 +131,7 @@ class TestParsedComponentLink(object):
 
 
 class TestParsedSubsetState(object):
+
     def setup_method(self, method):
         data = Data()
         c1 = Component(np.array([2, 4, 6, 8]))

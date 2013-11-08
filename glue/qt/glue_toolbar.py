@@ -7,6 +7,7 @@ from ..external.qt.QtGui import QMenu
 from ..external.qt.QtCore import Qt
 from .qtutil import get_icon
 
+
 class GlueToolbar(NavigationToolbar2QT):
 
     def __init__(self, canvas, frame, name=None):
@@ -133,7 +134,7 @@ class GlueToolbar(NavigationToolbar2QT):
             self._custom_mode(mode)
 
         def enable():
-            #turn on if not
+            # turn on if not
             if self._active != mode.mode_id:
                 self._custom_mode(mode)
 

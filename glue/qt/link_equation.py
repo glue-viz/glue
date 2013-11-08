@@ -9,6 +9,7 @@ from .. import core
 from ..core.odict import OrderedDict
 from .qtutil import load_ui, is_pyside
 
+
 def function_label(function):
     """ Provide a label for a function
 
@@ -32,6 +33,7 @@ def helper_label(helper):
 
 
 class ArgumentWidget(QWidget):
+
     def __init__(self, argument, parent=None):
         super(ArgumentWidget, self).__init__(parent)
         self.layout = QHBoxLayout()
@@ -93,6 +95,7 @@ class ArgumentWidget(QWidget):
 
 
 class LinkEquation(QWidget):
+
     """ Interactively define ComponentLinks from existing functions
 
     This widget inspects the calling signatures of helper functions,
@@ -111,7 +114,7 @@ class LinkEquation(QWidget):
     def __init__(self, parent=None):
         super(LinkEquation, self).__init__(parent)
         from ..config import link_function, link_helper
-        #map of function/helper name -> function/helper tuple
+        # map of function/helper name -> function/helper tuple
         f = [f for f in link_function.members if len(f.output_labels) == 1]
         self._functions = OrderedDict((l[0].__name__, l) for l in
                                       f + link_helper.members)

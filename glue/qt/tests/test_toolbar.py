@@ -1,10 +1,11 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import matplotlib.pyplot as plt
 from ...external.qt.QtGui import QMainWindow, QIcon
 from ..widgets import MplWidget
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import MouseMode
 from ..qtutil import get_icon
+
 
 class TestMode(MouseMode):
 

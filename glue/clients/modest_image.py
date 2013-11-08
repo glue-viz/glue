@@ -8,6 +8,7 @@ import numpy as np
 
 
 class ModestImage(mi.AxesImage):
+
     """
     Computationally modest image class.
 
@@ -24,6 +25,7 @@ class ModestImage(mi.AxesImage):
     may also be weird coordinate warping operations for images that
     I'm not aware of. Don't expect those to work either.
     """
+
     def __init__(self, *args, **kwargs):
         if 'extent' in kwargs and kwargs['extent'] is not None:
             raise NotImplementedError("ModestImage does not support extents")
@@ -47,9 +49,8 @@ class ModestImage(mi.AxesImage):
             raise TypeError("Image data can not convert to float")
 
         if (self._A.ndim not in (2, 3) or
-            (self._A.ndim == 3 and self._A.shape[-1] not in (3, 4))
-                ):
-            raise TypeError("Invalid dimensions for image data")
+                (self._A.ndim == 3 and self._A.shape[-1] not in (3, 4))):
+                raise TypeError("Invalid dimensions for image data")
 
         self._imcache = None
         self._rgbacache = None
@@ -100,7 +101,7 @@ def main():
     f = plt.figure()
     ax = f.add_subplot(111)
 
-    #try switching between
+    # try switching between
     artist = ModestImage(ax, data=data)
     #artist = mi.AxesImage(ax, data=data)
 
@@ -150,7 +151,7 @@ def imshow(axes, X, cmap=None, norm=None, aspect=None,
         # image does not already have clipping set, clip to axes patch
         im.set_clip_path(axes.patch)
 
-    #if norm is None and shape is None:
+    # if norm is None and shape is None:
     #    im.set_clim(vmin, vmax)
     if vmin is not None or vmax is not None:
         im.set_clim(vmin, vmax)
