@@ -281,3 +281,18 @@ class TestScatterWidget(object):
         assert xcombo.count() == 6
         self.widget.hidden = False
         assert xcombo.count() == 4
+
+    def test_add_subset_preserves_plot_variables(self):
+        l1 = self.add_layer_via_method(0)
+        print self.widget.client.layer_count
+
+        self.widget.ui.xAxisComboBox.setCurrentIndex(3)
+        self.widget.ui.yAxisComboBox.setCurrentIndex(2)
+        assert self.widget.ui.xAxisComboBox.currentIndex() == 3
+        assert self.widget.ui.yAxisComboBox.currentIndex() == 2
+
+        s = self.data[1].new_subset(label='new')
+        self.widget.add_subset(s)
+
+        assert self.widget.ui.xAxisComboBox.currentIndex() == 3
+        assert self.widget.ui.yAxisComboBox.currentIndex() == 2

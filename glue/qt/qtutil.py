@@ -5,6 +5,7 @@ working with Qt
 from functools import partial
 import os
 
+import pkg_resources
 from matplotlib.colors import ColorConverter
 from matplotlib import cm
 import numpy as np
@@ -24,6 +25,7 @@ from ..external.qt.QtGui import (QColor, QInputDialog, QColorDialog,
 from .decorators import set_cursor
 from .mime import PyMimeData, LAYERS_MIME_TYPE
 from ..external.qt import is_pyside
+
 
 def mpl_to_qt4_color(color, alpha=1.0):
     """ Convert a matplotlib color stirng into a Qt QColor object
@@ -326,8 +328,8 @@ def layer_icon(layer):
 
     :rtype: QIcon
     """
-    bm = QBitmap(icon_path(POINT_ICONS.get(layer.style.marker, 'circle_point')))
-
+    bm = QBitmap(icon_path(POINT_ICONS.get(layer.style.marker,
+                                           'circle_point')))
     color = mpl_to_qt4_color(layer.style.color)
     pm = tint_pixmap(bm, color)
     return QIcon(pm)
@@ -745,7 +747,6 @@ def _custom_widgets():
 
 def _load_ui_pyside(path, parent):
     from PySide.QtUiTools import QUiLoader
-    from PySide.QtCore import QFile
     loader = QUiLoader()
 
     # must register custom widgets referenced in .ui files
@@ -756,18 +757,54 @@ def _load_ui_pyside(path, parent):
 
     return widget
 
+
 def _load_ui_pyqt4(path, parent):
     from PyQt4.uic import loadUi
     return loadUi(path, parent)
 
 
-def load_ui(name, parent):
-    directory = os.path.abspath(os.path.dirname(__file__))
-    path = os.path.join(directory, 'ui', name + '.ui')
+def load_ui(name, parent=None):
+    """
+    Load a UI file, given it's name
 
+    Parameters
+    ----------
+    name : str
+      Name of ui file to load (without .ui extension)
+
+    parent : QObject
+      Object to use as the parent of this widget
+
+    Returns
+    -------
+    w : QWidget
+      The new widget
+    """
+    path = ui_path(name)
     if is_pyside():
         return _load_ui_pyside(path, parent)
     return _load_ui_pyqt4(path, parent)
+
+
+def ui_path(ui_name):
+    """Return the absolute path to a .ui file
+
+    Parameters
+    ----------
+    ui_name : str
+      The name of a ui_file to load (without directory prefix or
+      file extensions)
+
+    Returns
+    -------
+    path : str
+      Path of a file
+    """
+    if not ui_name.endswith('.ui'):
+        ui_name = ui_name + '.ui'
+    assert pkg_resources.resource_exists('glue.qt.ui', ui_name)
+    result = pkg_resources.resource_filename('glue.qt.ui', ui_name)
+    return result
 
 
 def icon_path(icon_name):
@@ -783,12 +820,14 @@ def icon_path(icon_name):
     path : str
       Full path to icon
     """
-    directory = os.path.abspath(os.path.dirname(__file__))
-    path = os.path.join(directory, 'icons', icon_name + '.png')
-    if not os.path.exists(path):
-        path = os.path.join(directory, 'icons', icon_name + '.svg')
-    assert os.path.exists(path), path
-    return path
+    for ext in ['.png']:
+        rc = icon_name + ext
+        if pkg_resources.resource_exists('glue.qt.icons', rc):
+            result = pkg_resources.resource_filename('glue.qt.icons', rc)
+            return result
+    else:
+        raise RuntimeError("Icon does not exist: %s" % icon_name)
+
 
 def get_icon(icon_name):
     """
@@ -797,7 +836,7 @@ def get_icon(icon_name):
     Parameters
     ----------
     icon_name : str
-      Name of image file. Assumed to be a png or svg file in glue/qt/icons
+      Name of image file. Assumed to be a png file in glue/qt/icons
       Do not include the extension
 
     Returns
