@@ -7,7 +7,7 @@ from ..qtutil import GlueDataDialog, RGBSelector
 from ..qtutil import pretty_number, GlueComboBox
 
 from glue.config import data_factory
-
+from glue.core import Subset
 
 def test_glue_action_button():
     a = QtGui.QAction(None)
@@ -223,3 +223,136 @@ class TestRGBSelector(object):
 
         d = RGBSelector(dc, default=d1)
         assert d.data is d1
+
+
+def test_qt4_to_mpl_color():
+    assert qtutil.qt4_to_mpl_color(QtGui.QColor(255, 0, 0)) == '#ff0000'
+    assert qtutil.qt4_to_mpl_color(QtGui.QColor(255, 255, 255)) == '#ffffff'
+
+def test_edit_color():
+    with patch('glue.qt.qtutil.QColorDialog') as d:
+        d.getColor.return_value = QtGui.QColor(0, 1, 0)
+        d.isValid.return_value = True
+        s = Subset(None)
+        qtutil.edit_layer_color(s)
+        assert s.style.color == '#000100'
+
+def test_edit_color_cancel():
+    with patch('glue.qt.qtutil.QColorDialog') as d:
+        d.getColor.return_value = QtGui.QColor(0, -1, 0)
+        s = Subset(None)
+        qtutil.edit_layer_color(s)
+
+def test_edit_symbol():
+    with patch('glue.qt.qtutil.QInputDialog') as d:
+        d.getItem.return_value = ('*', True)
+        s = Subset(None)
+        qtutil.edit_layer_symbol(s)
+        assert s.style.marker == '*'
+
+def test_edit_symbol_cancel():
+    with patch('glue.qt.qtutil.QInputDialog') as d:
+        d.getItem.return_value = ('*', False)
+        s = Subset(None)
+        qtutil.edit_layer_symbol(s)
+        assert s.style.marker != '*'
+
+def test_edit_point_size():
+    with patch('glue.qt.qtutil.QInputDialog') as d:
+        d.getInt.return_value = 123, True
+        s = Subset(None)
+        qtutil.edit_layer_point_size(s)
+        assert s.style.markersize == 123
+
+def test_edit_point_size_cancel():
+    with patch('glue.qt.qtutil.QInputDialog') as d:
+        d.getInt.return_value = 123, False
+        s = Subset(None)
+        qtutil.edit_layer_point_size(s)
+        assert s.style.markersize != 123
+
+def test_edit_layer_label():
+    with patch('glue.qt.qtutil.QInputDialog') as d:
+        d.getText.return_value = ('accepted label', True)
+        s = Subset(None)
+        qtutil.edit_layer_label(s)
+        assert s.label == 'accepted label'
+
+def test_edit_layer_label_cancel():
+    with patch('glue.qt.qtutil.QInputDialog') as d:
+        d.getText.return_value = ('rejected label', False)
+        s = Subset(None)
+        qtutil.edit_layer_label(s)
+        assert s.label != 'rejected label'
+
+def test_pick_item():
+    items = ['a', 'b', 'c']
+    labels = ['1', '2', '3']
+    with patch('glue.qt.qtutil.QInputDialog') as d:
+        d.getItem.return_value = '1', True
+        assert qtutil.pick_item(items, labels) == 'a'
+        d.getItem.return_value = '2', True
+        assert qtutil.pick_item(items, labels) == 'b'
+        d.getItem.return_value = '3', True
+        assert qtutil.pick_item(items, labels) == 'c'
+        d.getItem.return_value = '3', False
+        assert qtutil.pick_item(items, labels) == None
+
+def test_pick_class():
+    class Foo:
+        pass
+    class Bar:
+        pass
+    Bar.LABEL = 'Baz'
+    with patch('glue.qt.qtutil.pick_item') as d:
+        qtutil.pick_class([Foo, Bar])
+        d.assert_called_once_with([Foo, Bar], ['Foo', 'Baz'])
+
+
+def test_get_text():
+    with patch('glue.qt.qtutil.QInputDialog') as d:
+        d.getText.return_value = 'abc', True
+        assert qtutil.get_text() == 'abc'
+
+        d.getText.return_value = 'abc', False
+        assert qtutil.get_text() == None
+
+
+class TestGlueListWidget(object):
+    def setup_method(self, method):
+        self.w = qtutil.GlueListWidget()
+
+    def test_mime_type(self):
+        assert self.w.mimeTypes() == [qtutil.LAYERS_MIME_TYPE]
+
+    def test_mime_data(self):
+        self.w.set_data(3, 'test data')
+        self.w.set_data(4, 'do not pick')
+        mime = self.w.mimeData([3])
+        mime.data(qtutil.LAYERS_MIME_TYPE) == ['test data']
+
+    def test_mime_data_multiselect(self):
+        self.w.set_data(3, 'test data')
+        self.w.set_data(4, 'also pick')
+        mime = self.w.mimeData([3, 4])
+        mime.data(qtutil.LAYERS_MIME_TYPE) == ['test data', 'also pick']
+
+
+class TestRGBEdit(object):
+    def setup_method(self, method):
+        from glue.clients.layer_artist import RGBImageLayerArtist
+        from glue.core import Data
+        d = Data()
+        self.artist = RGBImageLayerArtist(d, None)
+        self.w = qtutil.RGBEdit(self.artist)
+
+    def test_update_visible(self):
+        for color in ['red', 'green', 'blue']:
+            state = self.artist.layer_visible[color]
+            self.w.vis[color].click()
+            assert self.artist.layer_visible[color] != state
+
+    def test_update_current(self):
+        for color in ['red', 'green', 'blue']:
+            self.w.current[color].click()
+            assert self.artist.contrast_layer == color

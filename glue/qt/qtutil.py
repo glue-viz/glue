@@ -169,13 +169,12 @@ def edit_layer_color(layer):
 
 def edit_layer_symbol(layer):
     """ Interactively edit a layer's symbol """
-    dialog = QInputDialog()
     options = ['o', '^', '*', 's']
     try:
         initial = options.index(layer.style.marker)
     except IndexError:
         initial = 0
-    symb, isok = dialog.getItem(None, 'Pick a Symbol',
+    symb, isok = QInputDialog.getItem(None, 'Pick a Symbol',
                                 'Pick a Symbol',
                                 options, current=initial)
     if isok and symb != layer.style.marker:
@@ -184,8 +183,7 @@ def edit_layer_symbol(layer):
 
 def edit_layer_point_size(layer):
     """ Interactively edit a layer's point size """
-    dialog = QInputDialog()
-    size, isok = dialog.getInt(None, 'Point Size', 'Point Size',
+    size, isok = QInputDialog.getInt(None, 'Point Size', 'Point Size',
                                value=layer.style.markersize,
                                min=1, max=1000, step=1)
     if isok and size != layer.style.markersize:
@@ -194,8 +192,7 @@ def edit_layer_point_size(layer):
 
 def edit_layer_label(layer):
     """ Interactively edit a layer's label """
-    dialog = QInputDialog()
-    label, isok = dialog.getText(None, 'New Label:', 'New Label:',
+    label, isok = QInputDialog.getText(None, 'New Label:', 'New Label:',
                                  text=layer.label)
     if isok and str(label) != layer.label:
         layer.label = str(label)
@@ -215,7 +212,8 @@ def pick_item(items, labels, title="Pick an item", label="Pick an item",
     choice, isok = QInputDialog.getItem(None, title, label,
                                         labels, current=default)
     if isok:
-        return dict(zip(labels, items))[str(choice)]
+        index = labels.index(str(choice))
+        return items[index]
 
 
 def pick_class(classes, **kwargs):
@@ -245,8 +243,7 @@ def get_text(title='Enter a label'):
     *Returns*
        The text the user typed, or None
     """
-    dialog = QInputDialog()
-    result, isok = dialog.getText(None, title, title)
+    result, isok = QInputDialog.getText(None, title, title)
     if isok:
         return str(result)
 
@@ -675,6 +672,7 @@ class RGBEdit(QWidget):
 
         self.vis = {'red': rv, 'green': gv, 'blue': bv}
         self.artist = artist
+        self.current = dict(red=rc, green=gc, blue=bc)
 
     def update_visible(self):
         self.artist.layer_visible['red'] = self.vis['red'].isChecked()
