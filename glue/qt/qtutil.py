@@ -151,7 +151,7 @@ class GlueDataDialog(object):
             result = fac.function(path)
             if isinstance(result, list):
                 return result
-            #single data object
+            # single data object
             result.label = data_label(path)
             return [result]
         return []
@@ -175,8 +175,8 @@ def edit_layer_symbol(layer):
     except IndexError:
         initial = 0
     symb, isok = QInputDialog.getItem(None, 'Pick a Symbol',
-                                'Pick a Symbol',
-                                options, current=initial)
+                                      'Pick a Symbol',
+                                      options, current=initial)
     if isok and symb != layer.style.marker:
         layer.style.marker = symb
 
@@ -184,8 +184,8 @@ def edit_layer_symbol(layer):
 def edit_layer_point_size(layer):
     """ Interactively edit a layer's point size """
     size, isok = QInputDialog.getInt(None, 'Point Size', 'Point Size',
-                               value=layer.style.markersize,
-                               min=1, max=1000, step=1)
+                                     value=layer.style.markersize,
+                                     min=1, max=1000, step=1)
     if isok and size != layer.style.markersize:
         layer.style.markersize = size
 
@@ -193,7 +193,7 @@ def edit_layer_point_size(layer):
 def edit_layer_label(layer):
     """ Interactively edit a layer's label """
     label, isok = QInputDialog.getText(None, 'New Label:', 'New Label:',
-                                 text=layer.label)
+                                       text=layer.label)
     if isok and str(label) != layer.label:
         layer.label = str(label)
 
@@ -249,11 +249,13 @@ def get_text(title='Enter a label'):
 
 
 class GlueItemWidget(object):
+
     """ A mixin for QListWidget/GlueTreeWidget subclasses, that
     provides drag+drop funtionality.
     """
-    #Implementation detail: QXXWidgetItems are unhashable in PySide,
-    #and cannot be used as dictionary keys. we hash on IDs instead
+    # Implementation detail: QXXWidgetItems are unhashable in PySide,
+    # and cannot be used as dictionary keys. we hash on IDs instead
+
     def __init__(self, parent=None):
         super(GlueItemWidget, self).__init__(parent)
         self._mime_data = {}
@@ -276,8 +278,8 @@ class GlueItemWidget(object):
             data = None
         result = PyMimeData(data, **{LAYERS_MIME_TYPE: data})
 
-        #apparent bug in pyside garbage collects custom mime
-        #data, and crashes. Save result here to avoid
+        # apparent bug in pyside garbage collects custom mime
+        # data, and crashes. Save result here to avoid
         self._mime = result
 
         return result
@@ -285,7 +287,7 @@ class GlueItemWidget(object):
     def get_data(self, item):
         """Convenience method to fetch the data associated with a
         QxxWidgetItem"""
-        #return item.data(Qt.UserRole)
+        # return item.data(Qt.UserRole)
         return self._mime_data[id(item)]
 
     def set_data(self, item, data):
@@ -374,6 +376,7 @@ class GlueTreeWidget(GlueItemWidget, QTreeWidget):
 
 
 class GlueActionButton(QPushButton):
+
     def set_action(self, action, text=True):
         self._text = text
         self._action = action
@@ -468,8 +471,10 @@ def pretty_number(numbers):
 
 
 class RGBSelector(QtGui.QDialog):
+
     """Dialog to select ComponentIDs
        to assign to R, G, B color channels"""
+
     def __init__(self, dc, default=None, parent=None):
         from .link_equation import ArgumentWidget
         from .component_selector import ComponentSelector
@@ -517,7 +522,7 @@ class RGBSelector(QtGui.QDialog):
 
     @property
     def data(self):
-        #the currently-selected data entry
+        # the currently-selected data entry
         return self.component.data
 
     @property
@@ -577,6 +582,7 @@ def select_rgb(collect, default=None):
 
 
 class RGBEdit(QWidget):
+
     """A widget to set the contrast for individual layers in an RGB image
 
     Based off the ds9 RGB Frame widget
@@ -590,6 +596,7 @@ class RGBEdit(QWidget):
     adjustments from a :class:`~glue.clients.image_client` affect
     a particular RGB slice
     """
+
     def __init__(self, artist, parent=None):
         super(RGBEdit, self).__init__(parent)
         l = QVBoxLayout()
@@ -683,15 +690,17 @@ class RGBEdit(QWidget):
 
 
 class GlueComboBox(QtGui.QComboBox):
+
     """ Modification of QComboBox, that sidesteps PySide
     sefgaults when storing some python objects as user data
     """
+
     def __init__(self, parent=None):
         super(GlueComboBox, self).__init__(parent)
         self._data = []
 
     def addItem(self, text, userData=None):
-        #set before super, since super may trigger signals
+        # set before super, since super may trigger signals
         self._data.append(userData)
         super(GlueComboBox, self).addItem(text)
 
@@ -729,7 +738,7 @@ class GlueComboBox(QtGui.QComboBox):
 
 
 def _custom_widgets():
-    #iterate over custom widgets referenced in .ui files
+    # iterate over custom widgets referenced in .ui files
     yield GlueListWidget
     yield GlueComboBox
     yield GlueActionButton

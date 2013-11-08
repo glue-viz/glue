@@ -116,8 +116,8 @@ def main():
     import numpy as np
     from glue.core import Data, DataCollection
 
-    x = np.array([1,2,3])
-    d = Data(label='data', x=x, y=x*2)
+    x = np.array([1, 2, 3])
+    d = Data(label='data', x=x, y=x * 2)
     dc = DataCollection(d)
 
     LinkEditor.update_links(dc)

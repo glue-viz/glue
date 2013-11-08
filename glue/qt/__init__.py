@@ -1,6 +1,7 @@
 from ..external.qt.QtGui import QApplication, QIcon
 import os
 
+
 def get_qapp():
     qapp = QApplication.instance()
     if qapp is None:
