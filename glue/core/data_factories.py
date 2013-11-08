@@ -27,6 +27,8 @@ Putting this together, the simplest data factory code looks like this:
     __factories__.append(dummy_factory)
     set_default_factory("foo", dummy_factory)
 """
+import os
+
 import numpy as np
 
 from .data import Component, Data
@@ -65,7 +67,6 @@ def load_data(path, factory=None):
 def data_label(path):
     """Convert a file path into a data label, by stripping out
     slashes, file extensions, etc."""
-    import os
     base, fname = os.path.split(path)
     name, ext = os.path.splitext(fname)
     return name
@@ -94,21 +95,41 @@ def get_default_factory(extension):
         return None
 
 
-def auto_data(filename):
+def auto_data(filename, *args, **kwargs):
     """Attempt to automatically construct a data object,
     by looking at the file extension and dispatching to a default factory.
     """
-    import os
     base, ext = os.path.splitext(filename)
     ext = ext.strip('.')
     fac = get_default_factory(ext)
     if fac is None:
         raise KeyError("Don't know what to do with file extension: %s" % ext)
-    return fac(filename)
+    return fac(filename, *args, **kwargs)
 
 auto_data.label = 'Auto'
 auto_data.file_filter = '*.*'
 __factories__.append(auto_data)
+
+
+def gz_data(filename, *args, **kwargs):
+    """Load a gzipped-compressed data file
+
+    We simply pass the file along to the handler
+    for the extension before the .gz
+    """
+    stripped_name = filename.strip('.gz')
+    base, ext = os.path.splitext(stripped_name)
+    ext = ext.strip('.')
+    fac = get_default_factory(ext)
+    if fac is None:
+        raise KeyError("Don't know what to do with file extension: %s" % ext)
+    return fac(filename, *args, **kwargs)
+
+
+gz_data.label = 'GZip'
+gz_data.file_filter = '*.gz'
+__factories__.append(gz_data)
+set_default_factory('gz', gz_data)
 
 
 def gridded_data(filename, format='auto', **kwargs):
@@ -173,7 +194,9 @@ def tabular_data(*args, **kwargs):
     def ascii_identifier(origin, args, kwargs):
         # should work with both Astropy 0.2 and 0.3
         if isinstance(args[0], basestring):
-            return args[0].endswith(('csv', 'tsv', 'txt', 'tbl', 'dat'))
+            return args[0].endswith(('csv', 'tsv', 'txt', 'tbl', 'dat',
+                                     'csv.gz', 'tsv.gz', 'txt.gz', 'tbl.gz',
+                                     'dat.gz'))
         else:
             return False
     registry.register_identifier('ascii', Table, ascii_identifier,
