@@ -635,10 +635,8 @@ def load_subset(subset):
 
 def save_subset(subset):
     assert isinstance(subset, core.subset.Subset)
-    dialog = QFileDialog()
-    file_name, fltr = str(dialog.getSaveFileName(
-        caption="Select an output name"))
-    if not file_name:
+    fname, fltr = QFileDialog.getSaveFileName(caption="Select an output name")
+    fname = str(fname)
+    if not fname:
         return
-
-    subset.write_mask(file_name)
+    subset.write_mask(fname)
