@@ -6,7 +6,7 @@ from ....external.qt.QtGui import QItemSelectionModel
 
 from mock import MagicMock, patch
 
-from ..layer_tree_widget import LayerTreeWidget, Clipboard
+from ..layer_tree_widget import LayerTreeWidget, Clipboard, save_subset
 
 from ....tests import example_data
 from .... import core
@@ -319,3 +319,17 @@ class TestLayerTree(object):
         assert self.widget.selected_layers() == [layer]
         sub = layer.new_subset()
         assert self.widget.selected_layers() == [sub]
+
+    def test_save_subset(self):
+        subset = MagicMock(core.Subset)
+        with patch('glue.qt.widgets.layer_tree_widget.QFileDialog') as d:
+            d.getSaveFileName.return_value = ('test.fits', None)
+            save_subset(subset)
+        subset.write_mask.assert_called_once_with('test.fits')
+
+    def test_save_subset_cancel(self):
+        subset = MagicMock(core.Subset)
+        with patch('glue.qt.widgets.layer_tree_widget.QFileDialog') as d:
+            d.getSaveFileName.return_value = ('', '')
+            save_subset(subset)
+        assert subset.write_mask.call_count == 0
