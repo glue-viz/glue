@@ -105,8 +105,11 @@ class GlueDataDialog(object):
                         for f in data_factory.members]
         self.setNameFilter()
         self._fd.setFileMode(QtGui.QFileDialog.ExistingFile)
-        self._fd.setOption(QtGui.QFileDialog.Option.HideNameFilterDetails,
-                           True)
+        try:
+            self._fd.setOption(QtGui.QFileDialog.Option.HideNameFilterDetails,
+                               True)
+        except AttributeError:  #HideNameFilterDetails not present
+            pass
 
     def factory(self):
         fltr = self._fd.selectedNameFilter()
