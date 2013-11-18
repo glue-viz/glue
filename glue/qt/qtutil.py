@@ -109,11 +109,13 @@ class GlueDataDialog(object):
                         for f in data_factory.members]
         self.setNameFilter()
         self._fd.setFileMode(QtGui.QFileDialog.ExistingFile)
+        self._fd.setOption(QtGui.QFileDialog.Option.HideNameFilterDetails,
+                           True)
 
     def factory(self):
-        fltr = self._fd.selectedFilter()
+        fltr = self._fd.selectedNameFilter()
         for k, v in self.filters:
-            if v == fltr:
+            if v.startswith(fltr):
                 return k
 
     def setNameFilter(self):
@@ -121,7 +123,7 @@ class GlueDataDialog(object):
         self._fd.setNameFilter(fltr)
 
     def _filter(self, factory):
-        return "%s (%s)" % (factory.label, factory.filter)
+        return "%s (*)" % factory.label
 
     def path(self):
         return self._fd.selectedFiles()[0]

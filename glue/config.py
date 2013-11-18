@@ -58,28 +58,34 @@ class DataFactoryRegistry(Registry):
     """Stores data factories. Data factories take filenames as input,
     and return :class:`~glue.core.Data` instances
 
-    The members property returns a list of (function, label, filter)
-    namedtuples. Filter specifies what kind of file extensions
-    the factory can open
+    The members property returns a list of (function, label, identifier)
+    namedtuples.
+    - Function is the factory that creates the data object
+    - label is a short human-readable description of the factory
+    - identifier is a function that takes (filename, **kwargs) as input
+      and returns True if the factory can open the file
 
     New data factories can be registered via:
 
-        @data_factory('label_name', '*.txt', default='txt')
-        def new_factory(file_name):
-            ...
+    @data_factory('label_name', identifier, default='txt')
+    def new_factory(file_name):
+        ...
+
+    This has the additional side-effect of associating
+    this this factory with filenames ending in `txt` by default
     """
-    item = namedtuple('DataFactory', 'function label filter')
+    item = namedtuple('DataFactory', 'function label identifier')
 
     def default_members(self):
         from .core.data_factories import __factories__
-        return [self.item(f, f.label, f.file_filter) for f in __factories__]
+        return [self.item(f, f.label, f.identifier) for f in __factories__]
 
-    def __call__(self, label, fltr, default=''):
+    def __call__(self, label, identifier, default=''):
         from .core.data_factories import set_default_factory
 
         def adder(func):
             set_default_factory(default, func)
-            self.add(self.item(func, label, fltr))
+            self.add(self.item(func, label, identifier))
             return func
         return adder
 
