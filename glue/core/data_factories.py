@@ -51,7 +51,7 @@ def as_list(x):
 
 
 def _extension(path):
-    #split a path into an extension with possibly multipler periods
+    # split a path into an extension with possibly multipler periods
     #  test.fits -> fits
     #  test.fits.gz -> fits.gz
     _, path = os.path.split(path)
@@ -85,7 +85,7 @@ def has_extension(exts):
 
 
 def is_hdf5(filename):
-    #All hdf5 files begin with the same sequence
+    # All hdf5 files begin with the same sequence
     with open(filename) as infile:
         return infile.read(8) == '\x89HDF\r\n\x1a\n'
 
@@ -150,7 +150,7 @@ def get_default_factory(extension):
 def find_factory(filename, **kwargs):
     from ..config import data_factory
 
-    #on first pass, only try the default factory
+    # on first pass, only try the default factory
     default = _default_factory.get(_extension(filename))
     for func, _, identifier in data_factory:
         if func is auto_data:
@@ -158,7 +158,7 @@ def find_factory(filename, **kwargs):
         if (func is default) and identifier(filename, **kwargs):
             return func
 
-    #if that fails, try everything
+    # if that fails, try everything
     for func, _, identifier in data_factory:
         if func is auto_data:
             continue
@@ -287,8 +287,8 @@ def tabular_data(*args, **kwargs):
 
 tabular_data.label = "Catalog"
 tabular_data.identifier = has_extension('xml vot csv txt tsv tbl dat fits '
-                                         'xml.gz vot.gz csv.gz txt.gz tbl.bz '
-                                         'dat.gz fits.gz')
+                                        'xml.gz vot.gz csv.gz txt.gz tbl.bz '
+                                        'dat.gz fits.gz')
 
 __factories__.append(tabular_data)
 set_default_factory('xml', tabular_data)
@@ -322,7 +322,7 @@ def data_dendro_cpp(file):
     result.tree = DendroMerge(merge_list, index_map=im)
     return result
 
-#XXX This doesn't belong in core. its too specific
+# XXX This doesn't belong in core. its too specific
 #data_dendro_cpp.label = "C++ Dendrogram"
 #data_dendro_cpp.identifier = has_extension('fits')
 #__factories__.append(data_dendro_cpp)
@@ -362,7 +362,7 @@ def img_data(file_name):
     comps = []
     labels = []
 
-    #split 3 color images into each color plane
+    # split 3 color images into each color plane
     if len(shp) == 3 and shp[2] in [3, 4]:
         comps.extend([data[:, :, 0], data[:, :, 1], data[:, :, 2]])
         labels.extend(['red', 'green', 'blue'])
@@ -373,7 +373,7 @@ def img_data(file_name):
         comps = [data]
         labels = ['PRIMARY']
 
-    #look for AVM coordinate metadata
+    # look for AVM coordinate metadata
     try:
         from pyavm import AVM
         avm = AVM(str(file_name))  # avoid unicode

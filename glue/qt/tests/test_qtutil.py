@@ -71,16 +71,28 @@ class TestGlueDataDialog(object):
         fd = GlueDataDialog()
         assert len(fd.filters) == len(data_factory.members)
 
+    def test_load_multiple(self):
+        fd = GlueDataDialog()
+        mock_file_exec(fd, cancel=False, path=['a.fits', 'b.fits'],
+                       factory=dummy_factory_member)
+        ds = fd.load_data()
+        assert len(ds) == 2
+        for d, label in zip(ds, 'ab'):
+            assert d.label == label
+            assert d.made_with_dummy_factory is True
+
 
 def mock_file_exec(fd, cancel=False, path='junk',
                    factory=dummy_factory_member):
+    if not isinstance(path, list):
+        path = [path]
 
     fd._fd.exec_ = MagicMock()
     fd._fd.exec_.return_value = 1 - cancel
     fd.factory = MagicMock()
     fd.factory.return_value = factory
-    fd.path = MagicMock()
-    fd.path.return_value = path
+    fd.paths = MagicMock()
+    fd.paths.return_value = path
 
 
 def test_data_wizard_cancel():
