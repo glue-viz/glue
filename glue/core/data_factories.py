@@ -23,7 +23,7 @@ Putting this together, the simplest data factory code looks like this:
     def dummy_factory(file_name):
         return glue.core.Data()
     dummy_factory.label = "Foo file"
-    dummy_factory.identifier = _has_extension('foo FOO')
+    dummy_factory.identifier = has_extension('foo FOO')
     __factories__.append(dummy_factory)
     set_default_factory("foo", dummy_factory)
 """
@@ -61,8 +61,25 @@ def _extension(path):
     return ext
 
 
-def _has_extension(exts, **kwargs):
-    def tester(x):
+def has_extension(exts):
+    """
+    A simple default filetype identifier function
+
+    It returns a function that tests whether its input
+    filename contains a particular extension
+
+    Inputs
+    ------
+    exts : str
+      A space-delimited string listing the extensions
+      (e.g., 'txt', or 'txt csv fits')
+
+    Returns
+    -------
+    A function suitable as a factory identifier function
+    """
+
+    def tester(x, **kwargs):
         return _extension(x) in set(exts.split())
     return tester
 
@@ -269,7 +286,7 @@ def tabular_data(*args, **kwargs):
     return result
 
 tabular_data.label = "Catalog"
-tabular_data.identifier = _has_extension('xml vot csv txt tsv tbl dat fits '
+tabular_data.identifier = has_extension('xml vot csv txt tsv tbl dat fits '
                                          'xml.gz vot.gz csv.gz txt.gz tbl.bz '
                                          'dat.gz fits.gz')
 
@@ -307,7 +324,7 @@ def data_dendro_cpp(file):
 
 #XXX This doesn't belong in core. its too specific
 #data_dendro_cpp.label = "C++ Dendrogram"
-#data_dendro_cpp.identifier = _has_extension('fits')
+#data_dendro_cpp.identifier = has_extension('fits')
 #__factories__.append(data_dendro_cpp)
 
 
@@ -372,7 +389,7 @@ def img_data(file_name):
     return result
 
 img_data.label = "Image"
-img_data.identifier = _has_extension(' '.join(img_fmt))
+img_data.identifier = has_extension(' '.join(img_fmt))
 for i in img_fmt:
     set_default_factory(i, img_data)
 
