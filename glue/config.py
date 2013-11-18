@@ -220,7 +220,6 @@ def _default_search_order():
        * HOME/.glue/config.py
        * Glue's own default config
     """
-    current_module = sys.modules['glue'].__path__[0]
     search_order = [os.path.join(os.getcwd(), 'config.py')]
     if 'GLUERC' in os.environ:
         search_order.append(os.environ['GLUERC'])

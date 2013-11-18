@@ -2,17 +2,13 @@
 Various standalone utility code for
 working with Qt
 """
-from functools import partial
-import os
 
 import pkg_resources
 from matplotlib.colors import ColorConverter
 from matplotlib import cm
 import numpy as np
-from ..external import qt
 from ..external.qt import QtGui
 from ..external.qt.QtCore import Qt
-from ..external.qt.QtCore import QMimeData
 from ..external.qt.QtGui import (QColor, QInputDialog, QColorDialog,
                                  QListWidget, QTreeWidget, QPushButton,
                                  QMessageBox,
