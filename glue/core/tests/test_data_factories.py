@@ -121,6 +121,7 @@ def test_dtype_int():
         d = df.load_data(fname)
     assert d['a'].dtype == np.int
 
+
 def test_dtype_float():
     data = '# a, b\n1., 1 \n2, 2 \n3, 3'
     with make_file(data, '.csv') as fname:
@@ -135,12 +136,14 @@ def test_dtype_badtext():
     assert d['a'].dtype == np.float
     np.testing.assert_array_equal(d['a'], [np.nan, 2, 3])
 
+
 def test_dtype_missing_data_col2():
     data = '# a, b\n1 , 1 \n2,  \n3, 3'
     with make_file(data, '.csv') as fname:
         d = df.load_data(fname)
     assert d['b'].dtype == np.float
     np.testing.assert_array_equal(d['b'], [1, np.nan, 3])
+
 
 def test_dtype_missing_data_col1():
     data = '# a, b\n1, 1 \n , 2 \n3, 3'

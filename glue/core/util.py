@@ -253,16 +253,16 @@ def coerce_numeric(arr):
 
        :rtype: ndarray instance.
     """
-    #already numeric type
+    # already numeric type
     if np.issubdtype(arr.dtype, np.number):
         return arr
 
-    #a string dtype
+    # a string dtype
     if np.issubdtype(arr.dtype, np.character):
         lens = np.char.str_len(arr)
         lmax = lens.max()
         nonnull = lens > 0
-        coerced = np.genfromtxt(arr, delimiter = lmax + 1)
+        coerced = np.genfromtxt(arr, delimiter=lmax + 1)
         has_missing = not nonnull.all()
         dtype = np.float if has_missing else coerced.dtype
         result = np.empty(arr.shape, dtype=dtype)
