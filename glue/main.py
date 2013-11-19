@@ -95,6 +95,10 @@ def die_on_error(msg):
                 from .external.qt.QtGui import QMessageBox
                 m = "%s\n%s" % (msg, e)
                 detail = str(traceback.format_exc())
+                if len(m) > 500:
+                    detail = "Full message:\n\n%s\n\n%s" % (m, detail)
+                    m = m[:500] + '...'
+
                 qmb = QMessageBox(QMessageBox.Critical, "Error", m)
                 qmb.setDetailedText(detail)
                 qmb.exec_()

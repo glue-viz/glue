@@ -74,9 +74,8 @@ def data_wizard():
         buttons = retry | cancel
         detail = traceback.format_exc()
         msg = "\n".join(["Could not load data (wrong load method?)",
-                         "File load method: %s" % factory.label,
-                         "",
-                         "%s" % error])
+                         "File load method: %s" % factory.label])
+        detail = "\n\n".join(["Error message: %s" % error, detail])
         mb = QMessageBox(QMessageBox.Critical, "Data Load Error", msg)
         mb.setDetailedText(detail)
         mb.setDefaultButton(cancel)
