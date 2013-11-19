@@ -10,8 +10,8 @@ helps the GUI Frontend easily load data:
 3) The function has a .label attribute that describes (in human
 language) what kinds of files it understands
 
-4) The function has a .file_filter attribute that lists the extensions
-it can open. The string is formatted like "*.fits *.fit *.hdf5"
+4) The function has a callable .identifier attribute that returns
+whether it can handle a requested filename and keyword set
 
 5) The function is added to the __factories__ list
 
@@ -23,7 +23,7 @@ Putting this together, the simplest data factory code looks like this:
     def dummy_factory(file_name):
         return glue.core.Data()
     dummy_factory.label = "Foo file"
-    dummy_factory.file_filter = "*.foo *.FOO"
+    dummy_factory.identifier = has_extension('foo FOO')
     __factories__.append(dummy_factory)
     set_default_factory("foo", dummy_factory)
 """
@@ -36,6 +36,8 @@ from .tree import DendroMerge
 from .io import extract_data_fits, extract_data_hdf5
 from .util import file_format
 from .coordinates import coordinates_from_header, coordinates_from_wcs
+from ..external.astro import fits
+
 
 __all__ = ['gridded_data', 'tabular_data', 'data_dendro_cpp']
 __factories__ = []
@@ -46,6 +48,54 @@ def as_list(x):
     if isinstance(x, list):
         return x
     return [x]
+
+
+def _extension(path):
+    # split a path into an extension with possibly multipler periods
+    #  test.fits -> fits
+    #  test.fits.gz -> fits.gz
+    _, path = os.path.split(path)
+    if '.' not in path:
+        return ''
+    ext = '.'.join(path.split('.')[1:])
+    return ext
+
+
+def has_extension(exts):
+    """
+    A simple default filetype identifier function
+
+    It returns a function that tests whether its input
+    filename contains a particular extension
+
+    Inputs
+    ------
+    exts : str
+      A space-delimited string listing the extensions
+      (e.g., 'txt', or 'txt csv fits')
+
+    Returns
+    -------
+    A function suitable as a factory identifier function
+    """
+
+    def tester(x, **kwargs):
+        return _extension(x) in set(exts.split())
+    return tester
+
+
+def is_hdf5(filename):
+    # All hdf5 files begin with the same sequence
+    with open(filename) as infile:
+        return infile.read(8) == '\x89HDF\r\n\x1a\n'
+
+
+def is_fits(filename):
+    try:
+        with fits.open(filename):
+            return True
+    except IOError:
+        return False
 
 
 def load_data(path, factory=None, **kwargs):
@@ -69,8 +119,8 @@ def load_data(path, factory=None, **kwargs):
 def data_label(path):
     """Convert a file path into a data label, by stripping out
     slashes, file extensions, etc."""
-    base, fname = os.path.split(path)
-    name, ext = os.path.splitext(fname)
+    _, fname = os.path.split(path)
+    name, _ = os.path.splitext(fname)
     return name
 
 
@@ -97,41 +147,37 @@ def get_default_factory(extension):
         return None
 
 
+def find_factory(filename, **kwargs):
+    from ..config import data_factory
+
+    # on first pass, only try the default factory
+    default = _default_factory.get(_extension(filename))
+    for func, _, identifier in data_factory:
+        if func is auto_data:
+            continue
+        if (func is default) and identifier(filename, **kwargs):
+            return func
+
+    # if that fails, try everything
+    for func, _, identifier in data_factory:
+        if func is auto_data:
+            continue
+        if identifier(filename, **kwargs):
+            return func
+
+
 def auto_data(filename, *args, **kwargs):
     """Attempt to automatically construct a data object,
-    by looking at the file extension and dispatching to a default factory.
+    by trying all known factory methods.
     """
-    base, ext = os.path.splitext(filename)
-    ext = ext.strip('.')
-    fac = get_default_factory(ext)
+    fac = find_factory(filename, **kwargs)
     if fac is None:
-        raise KeyError("Don't know what to do with file extension: %s" % ext)
+        raise KeyError("Don't know how to open file: %s" % filename)
     return fac(filename, *args, **kwargs)
 
 auto_data.label = 'Auto'
-auto_data.file_filter = '*.*'
+auto_data.identifier = lambda x: True
 __factories__.append(auto_data)
-
-
-def gz_data(filename, *args, **kwargs):
-    """Load a gzipped-compressed data file
-
-    We simply pass the file along to the handler
-    for the extension before the .gz
-    """
-    stripped_name = filename.strip('.gz')
-    base, ext = os.path.splitext(stripped_name)
-    ext = ext.strip('.')
-    fac = get_default_factory(ext)
-    if fac is None:
-        raise KeyError("Don't know what to do with file extension: %s" % ext)
-    return fac(filename, *args, **kwargs)
-
-
-gz_data.label = 'GZip'
-gz_data.file_filter = '*.gz'
-__factories__.append(gz_data)
-set_default_factory('gz', gz_data)
 
 
 def gridded_data(filename, format='auto', **kwargs):
@@ -148,12 +194,11 @@ def gridded_data(filename, format='auto', **kwargs):
         format = file_format(filename)
 
     # Read in the data
-    if format in ['fits', 'fit']:
-        from ..external.astro import fits
+    if is_fits(filename):
         arrays = extract_data_fits(filename, **kwargs)
         header = fits.getheader(filename)
         result.coords = coordinates_from_header(header)
-    elif format in ['hdf', 'hdf5', 'h5']:
+    elif is_hdf5(filename):
         arrays = extract_data_hdf5(filename, **kwargs)
     else:
         raise Exception("Unkonwn format: %s" % format)
@@ -164,8 +209,21 @@ def gridded_data(filename, format='auto', **kwargs):
     return result
 
 
-gridded_data.label = "Image"
-gridded_data.file_filter = "*.fits *.FITS *hdf5 *hd5"
+def is_gridded_data(filename, **kwargs):
+    if is_hdf5(filename):
+        return True
+
+    if is_fits(filename):
+        with fits.open(filename) as hdulist:
+            for hdu in hdulist:
+                if not isinstance(hdu, (fits.PrimaryHDU, fits.ImageHDU)):
+                    return False
+            return True
+    return False
+
+
+gridded_data.label = "FITS/HDF5 Image"
+gridded_data.identifier = is_gridded_data
 __factories__.append(gridded_data)
 set_default_factory('fits', gridded_data)
 set_default_factory('hd5', gridded_data)
@@ -228,7 +286,10 @@ def tabular_data(*args, **kwargs):
     return result
 
 tabular_data.label = "Catalog"
-tabular_data.file_filter = "*.txt *.vot *.xml *.csv *.tsv *.fits *.tbl *.dat"
+tabular_data.identifier = has_extension('xml vot csv txt tsv tbl dat fits '
+                                        'xml.gz vot.gz csv.gz txt.gz tbl.bz '
+                                        'dat.gz fits.gz')
+
 __factories__.append(tabular_data)
 set_default_factory('xml', tabular_data)
 set_default_factory('vot', tabular_data)
@@ -248,7 +309,6 @@ def data_dendro_cpp(file):
     *Returns*
     A glue data structure representing the file
     """
-    #XXX This doesn't belong in core. its too specific
 
     data = extract_data_fits(file, use_hdu=[0, 1])
     m = extract_data_fits(file, use_hdu=[2])
@@ -258,16 +318,14 @@ def data_dendro_cpp(file):
     im = data['INDEX_MAP']
     val = data['PRIMARY']
 
-    c = Component(val)
-
     result = gridded_data(file, use_hdu=['PRIMARY', 'INDEX_MAP'])
     result.tree = DendroMerge(merge_list, index_map=im)
     return result
 
-
-data_dendro_cpp.label = "C++ Dendrogram"
-data_dendro_cpp.file_filter = "*.fits"
-__factories__.append(data_dendro_cpp)
+# XXX This doesn't belong in core. its too specific
+#data_dendro_cpp.label = "C++ Dendrogram"
+#data_dendro_cpp.identifier = has_extension('fits')
+#__factories__.append(data_dendro_cpp)
 
 
 img_fmt = ['jpg', 'jpeg', 'bmp', 'png', 'tiff', 'tif']
@@ -304,7 +362,7 @@ def img_data(file_name):
     comps = []
     labels = []
 
-    #split 3 color images into each color plane
+    # split 3 color images into each color plane
     if len(shp) == 3 and shp[2] in [3, 4]:
         comps.extend([data[:, :, 0], data[:, :, 1], data[:, :, 2]])
         labels.extend(['red', 'green', 'blue'])
@@ -315,7 +373,7 @@ def img_data(file_name):
         comps = [data]
         labels = ['PRIMARY']
 
-    #look for AVM coordinate metadata
+    # look for AVM coordinate metadata
     try:
         from pyavm import AVM
         avm = AVM(str(file_name))  # avoid unicode
@@ -331,7 +389,7 @@ def img_data(file_name):
     return result
 
 img_data.label = "Image"
-img_data.file_filter = ' '.join('*.%s' % i for i in img_fmt)
+img_data.identifier = has_extension(' '.join(img_fmt))
 for i in img_fmt:
     set_default_factory(i, img_data)
 

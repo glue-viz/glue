@@ -2,17 +2,13 @@
 Various standalone utility code for
 working with Qt
 """
-from functools import partial
-import os
 
 import pkg_resources
 from matplotlib.colors import ColorConverter
 from matplotlib import cm
 import numpy as np
-from ..external import qt
 from ..external.qt import QtGui
 from ..external.qt.QtCore import Qt
-from ..external.qt.QtCore import QMimeData
 from ..external.qt.QtGui import (QColor, QInputDialog, QColorDialog,
                                  QListWidget, QTreeWidget, QPushButton,
                                  QMessageBox,
@@ -108,12 +104,17 @@ class GlueDataDialog(object):
         self.filters = [(f, self._filter(f))
                         for f in data_factory.members]
         self.setNameFilter()
-        self._fd.setFileMode(QtGui.QFileDialog.ExistingFile)
+        self._fd.setFileMode(QtGui.QFileDialog.ExistingFiles)
+        try:
+            self._fd.setOption(QtGui.QFileDialog.Option.HideNameFilterDetails,
+                               True)
+        except AttributeError:  # HideNameFilterDetails not present
+            pass
 
     def factory(self):
-        fltr = self._fd.selectedFilter()
+        fltr = self._fd.selectedNameFilter()
         for k, v in self.filters:
-            if v == fltr:
+            if v.startswith(fltr):
                 return k
 
     def setNameFilter(self):
@@ -121,21 +122,25 @@ class GlueDataDialog(object):
         self._fd.setNameFilter(fltr)
 
     def _filter(self, factory):
-        return "%s (%s)" % (factory.label, factory.filter)
+        return "%s (*)" % factory.label
 
-    def path(self):
-        return self._fd.selectedFiles()[0]
+    def paths(self):
+        """
+        Return all selected paths, as a list of unicode strings
+        """
+        return self._fd.selectedFiles()
 
-    def _get_path_and_factory(self):
+    def _get_paths_and_factory(self):
         """Show dialog to get a file path and data factory
 
-        :rtype: tuple of (string, func) giving the path and data factory.
-                returns (None, None) if user cancel's dialog
+        :rtype: tuple of (list-of-strings, func)
+                giving the path and data factory.
+                returns ([], None) if user cancels dialog
         """
         result = self._fd.exec_()
         if result == QtGui.QDialog.Rejected:
-            return None, None
-        path = str(self.path())  # cast out of unicode
+            return [], None
+        path = map(str, self.paths())  # cast out of unicode
         factory = self.factory()
         return path, factory
 
@@ -146,15 +151,17 @@ class GlueDataDialog(object):
         :rtype: A list of constructed data objects
         """
         from glue.core.data_factories import data_label
-        path, fac = self._get_path_and_factory()
-        if path is not None:
-            result = fac.function(path)
-            if isinstance(result, list):
-                return result
-            # single data object
-            result.label = data_label(path)
-            return [result]
-        return []
+        paths, fac = self._get_paths_and_factory()
+        result = []
+
+        for path in paths:
+            d = fac.function(path)
+            if not isinstance(d, list):
+                d.label = data_label(path)
+                d = [d]
+            result.extend(d)
+
+        return result
 
 
 def edit_layer_color(layer):

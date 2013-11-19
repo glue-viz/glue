@@ -55,15 +55,21 @@ component called ``cube``. Here's how you could do this::
  from glue.core import Data
  from skimage.io import imread
 
- @data_factory('3D image loader', '*.jpg *.bmp *.tiff')
+ def is_jpeg(filename, **kwargs):
+     return filename.endswith('.jpeg')
+
+ @data_factory('3D image loader', is_jpeg)
  def read_jpeg(file_name):
      im = imread(file_name)
      return Data(cube=im)
 
 Let's look at this line-by-line:
 
+* The `is_jpeg` function takes a filename and keywords as input,
+  and returns True if a data factory can handle this file
+
 * The ``@data_factory`` decorator is how Glue "finds" this function.
-   Its two arguments are a label, and the file formats it can open.
+   Its two arguments are a label, and the `is_jpeg` identifier function
 
 * The first line in ``read_jpeg`` uses scikit-image to load an image file into a NumPy array.
 

@@ -90,7 +90,6 @@ def is_fits(origin, args, kwargs):
     is_fits : bool
         Returns `True` if the given file is a FITS file.
     """
-    print("IS_FITS", args[0], type(args[0]))
     if isinstance(args[0], basestring):
         if args[0].lower().endswith(('.fits', '.fits.gz', '.fit', '.fit.gz')):
             return True

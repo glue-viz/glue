@@ -19,7 +19,7 @@ before_install:
   - virtualenv --system-site-packages ~/virtualenv/this
   - source ~/virtualenv/this/bin/activate
 
-  - sudo apt-get install -qq python-scipy python-qt4 pyqt4-dev-tools
+  - sudo apt-get install -qq python-scipy python-qt4 pyqt4-dev-tools python-h5py
 
 # Run GUIs in headless mode
   - "export DISPLAY=:99.0"
@@ -31,7 +31,7 @@ install:
   - pip install $PIP_ARGS IPython==$IPYTHON_VER
   - pip install $PIP_ARGS matplotlib==$MPL_VER
   - pip install $PIP_ARGS pygments pyzmq
-  - pip install $PIP_ARGS mock pytest pyavm cython
+  - pip install $PIP_ARGS mock pytest pyavm cython h5py
   - pip install --use-mirrors scikit-image
   - python setup.py build
   - if [[ $SETUP_CMD == cov ]]; then pip install pytest -q --use-mirrors; fi

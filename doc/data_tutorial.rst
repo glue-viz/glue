@@ -62,7 +62,7 @@ The functions in ``glue.core.data_factories`` create
     from glue.core.data_factores import *
     load_data('image.fits', factory=gridded_data)  # reads a fits image
     load_data('catalog.csv', factory=tabular_data) # reads a catalog
-    load_data('catalog.csv')  # guesses factory, based on file extension
+    load_data('catalog.csv')  # guesses factory
 
 If these functions do not fit your needs, you can also :ref:`write your own
 data loader <custom_data_factory>`, and use it from the Glue GUI.
