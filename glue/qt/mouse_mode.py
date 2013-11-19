@@ -322,7 +322,7 @@ class ContrastMode(MouseMode):
         self.shortcut = 'B'
 
         self.bias = 0.5
-        self.contrast = 0.5
+        self.contrast = 1.0
 
         self._last = None
         self._result = None
@@ -348,10 +348,9 @@ class ContrastMode(MouseMode):
         dx, dy = self._axes.figure.canvas.get_width_height()
         x = 1.0 * x / dx
         y = 1.0 * y / dy
-        theta = -.99999 * np.pi + max(min(y, 1), 0) * np.pi * .99998
 
         self.bias = x
-        self.contrast = np.tan(theta)
+        self.contrast = (1 - y) * 10
 
         super(ContrastMode, self).move(event)
 
@@ -378,15 +377,27 @@ class ContrastMode(MouseMode):
         a.setSeparator(True)
         result.append(a)
 
-        a = QAction("Linear", None)
+        a = QAction("linear", None)
         a.triggered.connect(lambda: setattr(self, 'stretch', 'linear'))
         result.append(a)
 
-        a = QAction("Sqrt", None)
+        a = QAction("log", None)
+        a.triggered.connect(lambda: setattr(self, 'stretch', 'log'))
+        result.append(a)
+
+        a = QAction("power", None)
+        a.triggered.connect(lambda: setattr(self, 'stretch', 'power'))
+        result.append(a)
+
+        a = QAction("square root", None)
         a.triggered.connect(lambda: setattr(self, 'stretch', 'sqrt'))
         result.append(a)
 
-        a = QAction("ArcSinh", None)
+        a = QAction("squared", None)
+        a.triggered.connect(lambda: setattr(self, 'stretch', 'squared'))
+        result.append(a)
+
+        a = QAction("asinh", None)
         a.triggered.connect(lambda: setattr(self, 'stretch', 'arcsinh'))
         result.append(a)
 
