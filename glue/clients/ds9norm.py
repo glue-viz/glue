@@ -111,10 +111,12 @@ warpers = dict(linear=linear_warp,
                arcsinh=asinh_warp)
 
 
-class DS9Normalize(Normalize):
+# for mpl <= 1.1, Normalize is an old-style class
+# explicitly inheriting from object allows property to work
+class DS9Normalize(Normalize, object):
 
     def __init__(self):
-        Normalize.__init__(self)
+        super(DS9Normalize, self).__init__()
         self.stretch = 'linear'
         self.bias = 0.5
         self.contrast = 1.0
