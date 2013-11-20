@@ -5,16 +5,18 @@ or dataset
 import logging
 
 import numpy as np
-from matplotlib.colors import Normalize
 from matplotlib.cm import gray
 from ..core.exceptions import IncompatibleAttribute
 from ..core.util import color2rgb
 from ..core.subset import Subset
-from .util import view_cascade, get_extent, fast_limits
+from .util import view_cascade, get_extent
+from .ds9norm import DS9Normalize
 
 
 class ChangedTrigger(object):
+
     """Sets an instance's _changed attribute to True on update"""
+
     def __init__(self, default=None):
         self._default = default
         self._vals = {}
@@ -30,6 +32,7 @@ class ChangedTrigger(object):
 
 
 class LayerArtist(object):
+
     def __init__(self, layer, axes):
         """Create a new LayerArtist
 
@@ -116,6 +119,7 @@ class LayerArtist(object):
 
 
 class ImageLayerArtist(LayerArtist):
+
     def __init__(self, layer, ax):
         super(ImageLayerArtist, self).__init__(layer, ax)
         self.norm = None
@@ -134,7 +138,7 @@ class ImageLayerArtist(LayerArtist):
     def _default_norm(self, layer):
         vals = np.sort(layer.ravel())
         vals = vals[np.isfinite(vals)]
-        result = InvNormalize()
+        result = DS9Normalize()
         result.stretch = 'arcsinh'
         result.clip = True
         if vals.size > 0:
@@ -170,7 +174,7 @@ class ImageLayerArtist(LayerArtist):
             self.norm = norm
             return norm
         if self.norm is None:
-            self.norm = InvNormalize()
+            self.norm = DS9Normalize()
         if vmin is not None:
             self.norm.vmin = vmin
         if vmax is not None:
@@ -184,9 +188,6 @@ class ImageLayerArtist(LayerArtist):
         if clip_hi is not None:
             self.norm.clip_hi = clip_hi
         if stretch is not None:
-            if stretch not in ['linear', 'sqrt', 'arcsinh']:
-                raise TypeError(
-                    "Stretch must be one of 'linear', 'sqrt', or 'arcsinh'")
             self.norm.stretch = stretch
         return self.norm
 
@@ -200,6 +201,7 @@ class ImageLayerArtist(LayerArtist):
 
 
 class RGBImageLayerArtist(ImageLayerArtist):
+
     def __init__(self, layer, ax):
         super(RGBImageLayerArtist, self).__init__(layer, ax)
         self.r = None
@@ -286,7 +288,7 @@ class SubsetImageLayerArtist(LayerArtist):
             return
         logging.debug("View mask has shape %s", mask.shape)
 
-        #shortcut for empty subsets
+        # shortcut for empty subsets
         if not mask.any():
             return
 
@@ -353,7 +355,9 @@ class ScatterLayerArtist(LayerArtist):
 
 
 class LayerArtistContainer(object):
+
     """A collection of LayerArtists"""
+
     def __init__(self):
         self.artists = []
 
@@ -523,51 +527,3 @@ class HistogramLayerArtist(LayerArtist):
             artist.set_alpha(style.alpha)
             artist.set_zorder(self.zorder)
             artist.set_visible(self.visible and self.enabled)
-
-
-class InvNormalize(Normalize):
-    """ Simple wrapper to matplotlib Normalize object, that
-    handles the case where vmax <= vmin """
-    def __init__(self):
-        Normalize.__init__(self)
-        self.stretch = 'linear'
-        self.bias = 0.5
-        self.contrast = 0.5
-        self.clip_lo = 5.
-        self.clip_hi = 95.
-
-    def update_clip(self, data, component):
-        vmin, vmax = fast_limits(data, component, self.clip_lo, self.clip_hi)
-        self.vmin = vmin
-        self.vmax = vmax
-
-    def __call__(self, value):
-        self.autoscale_None(value)  # set vmin, vmax if unset
-        inverted = self.vmax <= self.vmin
-
-        hi, lo = max(self.vmin, self.vmax), min(self.vmin, self.vmax)
-        ra = hi - lo
-        mid = lo + ra * self.bias
-        mn = mid - ra * self.contrast
-        mx = mid + ra * self.contrast
-
-        if self.stretch == 'linear':
-            result = (value - mn) * (1.0 / (mx - mn))
-            result = np.clip(result, 0, 1)
-        elif self.stretch == 'arcsinh':
-            b = max(self.bias, 1e-5)
-            c = self.contrast
-            result = (value - lo) / (1.0 * (hi - lo))
-            result = np.arcsinh(result / b) / np.arcsinh((b + c) / b)
-            result = np.clip(result, 0, 1)
-        elif self.stretch == 'sqrt':
-            result = (value - mn) * (1.0 / (mx - mn))
-            result = np.clip(result, 0, 1)
-            result = np.sqrt(result)
-        else:
-            raise TypeError("Invalid stretch: %s" % self.stretch)
-
-        if inverted:
-            result = 1 - result
-
-        return result
