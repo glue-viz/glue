@@ -22,7 +22,7 @@ from .util import file_format, coerce_numeric
 from .odict import OrderedDict
 
 __all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
-           'GriddedData', 'CoordinateComponent']
+           'CoordinateComponent']
 
 COLORS = [RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK]
 
@@ -732,38 +732,6 @@ class Data(object):
         except KeyError:
             raise IncompatibleAttribute("%s not in data set" %
                                         component_id.label)
-
-
-class GriddedData(Data):
-    '''
-    A class to represent uniformly gridded data (images, data cubes, etc.)
-    '''
-
-    def read_data(self, filename, format='auto', **kwargs):
-        '''
-        Read n-dimensional data from `filename`. If the format cannot be
-        determined from the extension, it can be specified using the
-        `format=` option. Valid formats are 'fits' and 'hdf5'.
-        '''
-
-        # Try and automatically find the format if not specified
-        if format == 'auto':
-            format = file_format(filename)
-
-        # Read in the data
-        if format in ['fits', 'fit']:
-            from ..external.astro import fits
-            arrays = extract_data_fits(filename, **kwargs)
-            header = fits.open(filename, memmap=True)[0].header
-            self.coords = coordinates_from_header(header)
-        elif format in ['hdf', 'hdf5', 'h5']:
-            arrays = extract_data_hdf5(filename, **kwargs)
-        else:
-            raise Exception("Unkonwn format: %s" % format)
-
-        for component_name in arrays:
-            comp = Component(arrays[component_name])
-            self.add_component(comp, component_name)
 
 
 def pixel_label(i, ndim):
