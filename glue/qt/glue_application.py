@@ -364,7 +364,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
 
     @messagebox_on_error("Failed to restore session")
     @set_cursor(Qt.WaitCursor)
-    def _restore_session(self):
+    def _restore_session(self, show=True):
         """ Load a previously-saved state, and restart the session """
         from pickle import Unpickler
 
@@ -383,8 +383,11 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         ga.move(pos)
         ga.resize(size)
 
-        ga.show()
+        if show:
+            ga.show()
+
         self.close()
+        return ga
 
     def _create_terminal(self):
         assert self._terminal is None, \
@@ -438,12 +441,10 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
 
     def _hide_terminal(self):
         self._terminal.hide()
-        button = self._terminal_button
 
     def _show_terminal(self):
         self._terminal.show()
         self._terminal.widget().show()
-        button = self._terminal_button
 
     def start(self):
         self.show()

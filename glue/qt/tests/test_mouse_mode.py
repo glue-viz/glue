@@ -91,7 +91,7 @@ class TestRoiMode(TestMouseMode):
         self.mode._roi_tool = MagicMock()
 
     def mode_factory(self):
-        raise NotImplemented
+        raise NotImplementedError()
 
     def test_roi_not_called_on_press(self):
         e = Event(1, 2)
@@ -135,7 +135,7 @@ class TestClickRoiMode(TestMouseMode):
         self.mode._roi_tool.active.return_value = False
 
     def mode_factory(self):
-        raise NotImplemented
+        raise NotImplementedError()
 
     def test_roi_started_on_press(self):
         e = Event(1, 2)
