@@ -15,7 +15,7 @@ To run these tests, run `py.test --qtapi`
 """
 
 
-@pytest.mark.qtapi
+@pytest.mark.skipif("'--qtapi' not in sys.argv")
 class TestQT(object):
     def teardown_class(cls):
         for m in sys.modules.keys():
