@@ -68,15 +68,3 @@ def pipe():
     s2 = glue.core.Subset(data2, label="Core Subset")
 
     return data, data2, s, s2
-
-
-def simple_image():
-    data = glue.core.data.GriddedData(label='Pipe Extinction')
-    data.read_data('../../tests/examples/Pipe.fits')
-    return data
-
-
-def simple_cube():
-    data = glue.core.data.GriddedData(label="Dummy Cube")
-    data.read_data('../../tests/examples/cps_12co_05.fits')
-    return data
