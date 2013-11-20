@@ -4,7 +4,7 @@ python:
 
 env:
    global:
-     - PIP_ARGS="--use-mirrors -q"
+     - PIP_ARGS="--use-mirrors"
      - PYTEST_ARGS=""
    matrix:
      - MPL_VER=1.2.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.13.2 SETUP_CMD='test'
