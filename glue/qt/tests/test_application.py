@@ -1,4 +1,4 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 from distutils.version import LooseVersion
 import tempfile
 import os
@@ -16,6 +16,7 @@ from ..glue_application import GlueApplication
 from ..widgets.scatter_widget import ScatterWidget
 from ..widgets.image_widget import ImageWidget
 from ...core import Data
+
 
 def tab_count(app):
     return app.tab_bar.count()
@@ -64,7 +65,7 @@ class TestGlueApplication(object):
                     assert mb.call_count == 1
 
     def test_save_restore(self):
-        self.app._data.append(Data(label='x', x=[1,2,3]))
+        self.app._data.append(Data(label='x', x=[1, 2, 3]))
 
         with patch('glue.qt.glue_application.QFileDialog') as fd:
             _, fname = tempfile.mkstemp(suffix='.glu')
@@ -134,7 +135,7 @@ class TestGlueApplication(object):
         assert self.app.tab_widget.count() == 2
         self.app._close_tab(0)
         assert self.app.tab_widget.count() == 1
-        #do not delete last tab
+        # do not delete last tab
         self.app._close_tab(0)
         assert self.app.tab_widget.count() == 1
 
@@ -163,8 +164,8 @@ class TestGlueApplication(object):
         with patch('glue.qt.glue_application.pick_class') as pc:
             pc.return_value = None
 
-            d2 = Data(x=np.array([[1,2,3], [4,5,6]]))
-            d1 = Data(x=np.array([1,2,3]))
+            d2 = Data(x=np.array([[1, 2, 3], [4, 5, 6]]))
+            d1 = Data(x=np.array([1, 2, 3]))
 
             self.app.new_data_viewer(data=d1)
             args, kwargs = pc.call_args

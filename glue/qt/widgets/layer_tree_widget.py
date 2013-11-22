@@ -621,8 +621,8 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
 
 def load_subset(subset):
     assert isinstance(subset, core.subset.Subset)
-    dialog = QFileDialog()
-    file_name, fltr = str(dialog.getOpenFileName(caption="Select a subset"))
+    file_name, fltr = QFileDialog.getOpenFileName(caption="Select a subset")
+    file_name = str(file_name)
 
     if not file_name:
         return
