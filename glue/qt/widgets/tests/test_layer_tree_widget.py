@@ -1,4 +1,4 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 from ....external.qt.QtGui import QMainWindow
 from ....external.qt.QtTest import QTest
 from ....external.qt.QtCore import Qt
@@ -6,13 +6,15 @@ from ....external.qt.QtGui import QItemSelectionModel
 
 from mock import MagicMock, patch
 
-from ..layer_tree_widget import LayerTreeWidget, Clipboard, save_subset
+from ..layer_tree_widget import (LayerTreeWidget, Clipboard,
+                                 save_subset, load_subset)
 
 from ....tests import example_data
 from .... import core
 
 
 class TestLayerTree(object):
+
     """ Unit tests for the layer_tree_widget class """
 
     def setup_method(self, method):
@@ -332,4 +334,18 @@ class TestLayerTree(object):
         with patch('glue.qt.widgets.layer_tree_widget.QFileDialog') as d:
             d.getSaveFileName.return_value = ('', '')
             save_subset(subset)
+        assert subset.write_mask.call_count == 0
+
+    def test_load_subset(self):
+        subset = MagicMock(core.Subset)
+        with patch('glue.qt.widgets.layer_tree_widget.QFileDialog') as d:
+            d.getOpenFileName.return_value = ('test.fits', None)
+            load_subset(subset)
+        subset.read_mask.assert_called_once_with('test.fits')
+
+    def test_load_subset_cancel(self):
+        subset = MagicMock(core.Subset)
+        with patch('glue.qt.widgets.layer_tree_widget.QFileDialog') as d:
+            d.getOpenFileName.return_value = ('', '')
+            load_subset(subset)
         assert subset.write_mask.call_count == 0
