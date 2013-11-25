@@ -8,6 +8,7 @@ from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
 from ..external.qt.QtCore import Qt, QSize
 
 from .. import core
+from ..core import command
 from .. import env
 from ..qt import get_qapp
 from .decorators import set_cursor, messagebox_on_error
@@ -332,7 +333,9 @@ class GlueApplication(Application, QMainWindow):
         client = pick_class(list(qt_client.members), title='Data Viewer',
                             label="Choose a new data viewer",
                             default=default)
-        self.new_data_viewer(client, data)
+
+        cmd = command.NewDataViewer(viewer=client, data=data)
+        return self.do(cmd)
 
     @set_cursor(Qt.WaitCursor)
     def _choose_save_session(self):

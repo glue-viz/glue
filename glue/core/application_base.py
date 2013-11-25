@@ -1,10 +1,11 @@
 from functools import wraps
 import traceback
+from collections import namedtuple
 
 from .hub import HubListener, Hub
 from .data_collection import DataCollection
 from .data_factories import load_data
-
+from .command import CommandStack
 
 def catch_error(msg):
     def decorator(func):
@@ -27,6 +28,9 @@ class Application(HubListener):
 
         self._data = data_collection or DataCollection()
         self._hub = hub or Hub(self._data)
+        context = namedtuple('GlueContext', 'data_collection application')
+        context = context(data_collection=self._data, application=self)
+        self._cmds = CommandStack(context)
 
 
     def new_data_viewer(self, viewer_class, data=None):
@@ -71,3 +75,12 @@ class Application(HubListener):
 
     def report_error(self, message, detail):
         raise NotImplementedError()
+
+    def do(self, command):
+        self._cmds.do(command)
+
+    def undo(self):
+        self._cmds.undo()
+
+    def redo(self):
+        self._cmds.redo()
