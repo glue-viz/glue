@@ -32,54 +32,34 @@ class TestGlueApplication(object):
 
     def test_new_tabs(self):
         t0 = tab_count(self.app)
-        self.app._new_tab()
+        self.app.new_tab()
         assert tab_count(self.app) == t0 + 1
 
-    def test_save_session_pickle_error(self):
-        from pickle import PicklingError
-        with patch('glue.core.glue_pickle.CloudPickler') as cp:
-            with patch('glue.qt.glue_application.QFileDialog') as fd:
-                fd.getSaveFileName.return_value = '/tmp/junk', 'jnk'
-                with patch('glue.qt.decorators.QMessageBox') as mb:
-                    cp().dump.side_effect = PicklingError
-                    self.app._save_session()
-                    assert mb.call_count == 1
+    def test_save_session(self):
+        self.app.save_session = MagicMock()
+        with patch('glue.qt.glue_application.QFileDialog') as fd:
+            fd.getSaveFileName.return_value = '/tmp/junk', 'jnk'
+            self.app._choose_save_session()
+            self.app.save_session.assert_called_once_with('/tmp/junk')
 
-    def test_save_session_no_file(self):
+    def test_save_session_cancel(self):
         """shouldnt try to save file if no file name provided"""
-        with patch('glue.core.glue_pickle.CloudPickler') as cp:
-            cp.return_value = ''
-            with patch('glue.qt.glue_application.QFileDialog') as fd:
-                fd.getSaveFileName.return_value = '', 'jnk'
-                # crashes if open called on null string
-                self.app._save_session()
+        self.app.save_session = MagicMock()
+        with patch('glue.qt.glue_application.QFileDialog') as fd:
+            fd.getSaveFileName.return_value = '', 'jnk'
+            self.app._choose_save_session()
+            assert self.app.save_session.call_count == 0
 
-    def test_save_session_ioerror(self):
+    def test_choose_save_session_ioerror(self):
         """should show box on ioerror"""
         with patch('glue.qt.glue_application.QFileDialog') as fd:
             with patch('__builtin__.open') as op:
                 op.side_effect = IOError
                 fd.getSaveFileName.return_value = '/tmp/junk', '/tmp/junk'
-                with patch('glue.qt.decorators.QMessageBox') as mb:
-                    self.app._save_session()
+                with patch('glue.qt.glue_application.QMessageBox') as mb:
+                    self.app._choose_save_session()
                     assert mb.call_count == 1
 
-    def test_save_restore(self):
-        self.app._data.append(Data(label='x', x=[1, 2, 3]))
-
-        with patch('glue.qt.glue_application.QFileDialog') as fd:
-            _, fname = tempfile.mkstemp(suffix='.glu')
-            fd.getSaveFileName.return_value = fname, '*.*'
-
-            self.app._save_session()
-
-            fd.getOpenFileName.return_value = fname, '*.*'
-
-            new = self.app._restore_session(show=False)
-            assert new._data[0].label == 'x'
-            np.testing.assert_array_equal(new._data[0]['x'], [1, 2, 3])
-
-            os.unlink(fname)
 
     @pytest.mark.xfail("LooseVersion(ipy_version) <= LooseVersion('0.11')")
     def test_terminal_present(self):
@@ -131,12 +111,12 @@ class TestGlueApplication(object):
 
     def test_close_tab(self):
         assert self.app.tab_widget.count() == 1
-        self.app._new_tab()
+        self.app.new_tab()
         assert self.app.tab_widget.count() == 2
-        self.app._close_tab(0)
+        self.app.close_tab(0)
         assert self.app.tab_widget.count() == 1
         # do not delete last tab
-        self.app._close_tab(0)
+        self.app.close_tab(0)
         assert self.app.tab_widget.count() == 1
 
     def test_new_data_viewer_cancel(self):
@@ -145,7 +125,7 @@ class TestGlueApplication(object):
 
             ct = len(self.app.current_tab.subWindowList())
 
-            self.app.new_data_viewer()
+            self.app._choose_new_data_viewer()
             assert len(self.app.current_tab.subWindowList()) == ct
 
     def test_new_data_viewer(self):
@@ -155,7 +135,7 @@ class TestGlueApplication(object):
 
             ct = len(self.app.current_tab.subWindowList())
 
-            self.app.new_data_viewer()
+            self.app._choose_new_data_viewer()
             assert len(self.app.current_tab.subWindowList()) == ct + 1
 
     def test_new_data_defaults(self):
@@ -167,10 +147,10 @@ class TestGlueApplication(object):
             d2 = Data(x=np.array([[1, 2, 3], [4, 5, 6]]))
             d1 = Data(x=np.array([1, 2, 3]))
 
-            self.app.new_data_viewer(data=d1)
+            self.app._choose_new_data_viewer(data=d1)
             args, kwargs = pc.call_args
             assert qt_client.members[kwargs['default']] == ScatterWidget
 
-            self.app.new_data_viewer(data=d2)
+            self.app._choose_new_data_viewer(data=d2)
             args, kwargs = pc.call_args
             assert qt_client.members[kwargs['default']] == ImageWidget

@@ -11,7 +11,7 @@ from .. import core
 from .. import env
 from ..qt import get_qapp
 from .decorators import set_cursor, messagebox_on_error
-from ..core.data_factories import load_data
+from ..core.application_base import Application
 
 from .actions import act
 from .qtutil import pick_class, data_wizard, GlueTabBar, load_ui, get_icon
@@ -35,12 +35,13 @@ def _fix_ipython_pylab():
         # if the shell is a normal terminal shell, we get here
         pass
 
-
-class GlueApplication(QMainWindow, core.hub.HubListener):
+class GlueApplication(Application, QMainWindow):
     """ The main Glue window """
 
     def __init__(self, data_collection=None, hub=None):
-        super(GlueApplication, self).__init__()
+        QMainWindow.__init__(self)
+        Application.__init__(self, data_collection=data_collection, hub=hub)
+
         self.app = get_qapp()
         self.setWindowIcon(self.app.windowIcon())
         self.setAttribute(Qt.WA_DeleteOnClose)
@@ -55,14 +56,12 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         lwidget.layerTree.addAction(act)
         lwidget.bind_selection_to_edit_subset()
 
-        self._data = data_collection or core.data_collection.DataCollection()
-        self._hub = hub or core.hub.Hub(self._data)
 
         self._tweak_geometry()
         self._create_actions()
         self._create_menu()
         self._connect()
-        self._new_tab()
+        self.new_tab()
         self._create_terminal()
         self._update_plot_dashboard(None)
 
@@ -79,8 +78,11 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self._ui.data_layers.setLayout(vb)
         self._ui.layerWidget = lw
 
-    def has_terminal(self):
-        return self._terminal is not None
+    def _tweak_geometry(self):
+        """Maximize window"""
+        self.setWindowState(Qt.WindowMaximized)
+        self._ui.main_splitter.setSizes([100, 800])
+        self._ui.data_plot_splitter.setSizes([100, 200])
 
     @property
     def tab_widget(self):
@@ -94,13 +96,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
     def current_tab(self):
         return self._ui.tabWidget.currentWidget()
 
-    def _tweak_geometry(self):
-        """Maximize window"""
-        self.setWindowState(Qt.WindowMaximized)
-        self._ui.main_splitter.setSizes([100, 800])
-        self._ui.data_plot_splitter.setSizes([100, 200])
-
-    def _new_tab(self):
+    def new_tab(self):
         """Spawn a new tab page"""
         layout = QGridLayout()
         layout.setSpacing(1)
@@ -111,6 +107,30 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         tab.addTab(widget, str("Tab %i" % (tab.count() + 1)))
         tab.setCurrentWidget(widget)
         widget.subWindowActivated.connect(self._update_plot_dashboard)
+
+    def close_tab(self, index):
+        """ Close a tab window and all associated data viewers """
+        #do not delete the last tab
+        if self.tab_widget.count() == 1:
+            return
+        w = self.tab_widget.widget(index)
+        w.close()
+        self.tab_widget.removeTab(index)
+
+    def add_to_current_tab(self, new_widget, label=None):
+        page = self.current_tab
+        sub = QMdiSubWindow()
+        sub.setWidget(new_widget)
+        sub.resize(new_widget.size())
+        if label:
+            sub.setWindowTitle(label)
+        page.addSubWindow(sub)
+        page.setActiveSubWindow(sub)
+        return sub
+
+    def gather_current_tab(self):
+        """Arrange windows in current tab via tiling"""
+        self.current_tab.tileSubWindows()
 
     def _get_plot_dashboards(self, sub_window):
         if not isinstance(sub_window, QMdiSubWindow):
@@ -166,35 +186,8 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
             if isinstance(widget, DataViewer):
                 widget.set_focus(win is active)
 
-    def _close_tab(self, index):
-        """ Close a tab window and all associated data viewers """
-        #do not delete the last tab
-        if self.tab_widget.count() == 1:
-            return
-        w = self.tab_widget.widget(index)
-        w.close()
-        self.tab_widget.removeTab(index)
-
-    def _add_to_current_tab(self, new_widget, label=None):
-        page = self.current_tab
-        sub = QMdiSubWindow()
-        sub.setWidget(new_widget)
-        sub.resize(new_widget.size())
-        if label:
-            sub.setWindowTitle(label)
-        page.addSubWindow(sub)
-        page.setActiveSubWindow(sub)
-        return sub
-
-    def gather_current_tab(self):
-        """Arrange windows in current tab via tiling"""
-        self.current_tab.tileSubWindows()
-
     def _connect(self):
         self.setAcceptDrops(True)
-        self._hub.subscribe(self,
-                            core.message.ErrorMessage,
-                            handler=self._report_error)
         self._ui.layerWidget.setup(self._data, self._hub)
 
         def sethelp(*args):
@@ -206,7 +199,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         model.rowsRemoved.connect(sethelp)
 
         self._data.register_to_hub(self._hub)
-        self.tab_widget.tabCloseRequested.connect(self._close_tab)
+        self.tab_widget.tabCloseRequested.connect(self.close_tab)
 
     def _create_menu(self):
         mbar = self.menuBar()
@@ -257,14 +250,9 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         if sys.platform == 'darwin':
             mbar.addMenu('Help')
 
-    def _load_data_interactive(self):
+    def _choose_load_data(self):
         for d in data_wizard():
             self._data.append(d)
-
-    @messagebox_on_error("Could not load data")
-    def _load_data(self, path):
-        d = load_data(path)
-        self._data.append(d)
 
     def _create_actions(self):
         """ Create and connect actions, store in _actions dict """
@@ -273,20 +261,20 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         a = act("Open Data Set", self,
                 tip="Open a new data set",
                 shortcut=QKeySequence.Open)
-        a.triggered.connect(self._load_data_interactive)
+        a.triggered.connect(self._choose_load_data)
         self._actions['data_new'] = a
 
         a = act("New Data Viewer", self,
                 tip="Open a new visualization window in the current tab",
                 shortcut=QKeySequence.New
                 )
-        a.triggered.connect(self.new_data_viewer)
+        a.triggered.connect(self._choose_new_data_viewer)
         self._actions['viewer_new'] = a
 
         a = act('New Tab', self,
                 shortcut=QKeySequence.AddTab,
                 tip='Add a new tab')
-        a.triggered.connect(self._new_tab)
+        a.triggered.connect(self.new_tab)
         self._actions['tab_new'] = a
 
         a = act('Rename Tab', self,
@@ -303,7 +291,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
 
         a = act('Save Session', self,
                 tip='Save the current session')
-        a.triggered.connect(lambda *args: self._save_session())
+        a.triggered.connect(lambda *args: self._choose_save_session())
         self._actions['session_save'] = a
 
         a = act('Open Session', self,
@@ -311,7 +299,23 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         a.triggered.connect(lambda *args: self._restore_session())
         self._actions['session_restore'] = a
 
-    def new_data_viewer(self, data=None):
+
+    def new_data_viewer(self, viewer_cls, data=None):
+        if viewer_cls is None:
+            return
+
+        c = viewer_cls(self._data)
+        c.register_to_hub(self._hub)
+        if data and not c.add_data(data):
+            c.close(warn=False)
+            return
+
+        self.add_to_current_tab(c)
+        c.show()
+        return c
+
+
+    def _choose_new_data_viewer(self, data=None):
         """ Create a new visualization window in the current tab
         """
 
@@ -328,22 +332,10 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         client = pick_class(list(qt_client.members), title='Data Viewer',
                             label="Choose a new data viewer",
                             default=default)
-        if client:
-            c = client(self._data)
-            c.register_to_hub(self._hub)
-            if data and not c.add_data(data):
-                c.close(warn=False)
-                return
+        self.new_data_viewer(client, data)
 
-            self._add_to_current_tab(c)
-            c.show()
-
-    def _report_error(self, message):
-        self.statusBar().showMessage(str(message))
-
-    @messagebox_on_error("Failed to save session")
     @set_cursor(Qt.WaitCursor)
-    def _save_session(self):
+    def _choose_save_session(self):
         """ Save the data collection and hub to file.
 
         Can be restored via restore_session
@@ -351,16 +343,10 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         Note: Saving of client is not currently supported. Thus,
         restoring this session will lose all current viz windows
         """
-        from ..core.glue_pickle import CloudPickler
-        state = (self._data, self._hub)
-
         outfile, file_filter = QFileDialog.getSaveFileName(self)
         if not outfile:
             return
-
-        with open(outfile, 'w') as out:
-            cp = CloudPickler(out, protocol=2)
-            cp.dump(state)
+        self.save_session(outfile)
 
     @messagebox_on_error("Failed to restore session")
     @set_cursor(Qt.WaitCursor)
@@ -389,6 +375,9 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         self.close()
         return ga
 
+    def has_terminal(self):
+        return self._terminal is not None
+
     def _create_terminal(self):
         assert self._terminal is None, \
             "should only call _create_terminal once"
@@ -414,7 +403,7 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
             self._setup_terminal_error_dialog(e)
             return
 
-        self._terminal = self._add_to_current_tab(widget, label='IPython')
+        self._terminal = self.add_to_current_tab(widget, label='IPython')
         self._hide_terminal()
 
     def _setup_terminal_error_dialog(self, exception):
@@ -479,3 +468,9 @@ class GlueApplication(QMainWindow, core.hub.HubListener):
         for url in urls:
             self._load_data(url.path())
         event.accept()
+
+    def report_error(self, message, detail):
+        qmb = QMessageBox(QMessageBox.Critical, "Error", message)
+        qmb.setDetailedText(detail)
+        qmb.resize(400, qmb.size().height())
+        qmb.exec_()
