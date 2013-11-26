@@ -29,7 +29,6 @@ class ImageWidget(DataViewer):
 
     def __init__(self, session, parent=None):
         super(ImageWidget, self).__init__(session, parent)
-
         self.central_widget = MplWidget()
         self.option_widget = QWidget()
         self.setCentralWidget(self.central_widget)

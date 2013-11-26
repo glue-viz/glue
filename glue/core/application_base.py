@@ -56,8 +56,6 @@ class Application(HubListener):
         c.show()
         return c
 
-        raise NotImplementedError()
-
     @catch_error("Failed to save session")
     def save_session(self, path):
         """ Save the data collection and hub to file.
@@ -96,9 +94,21 @@ class Application(HubListener):
 
     def do(self, command):
         self._cmds.do(command)
+        self._update_undo_redo_enabled()
 
     def undo(self):
-        self._cmds.undo()
+        try:
+            self._cmds.undo()
+        except RuntimeError:
+            pass
+        self._update_undo_redo_enabled()
 
     def redo(self):
-        self._cmds.redo()
+        try:
+            self._cmds.redo()
+        except RuntimeError:
+            pass
+        self._update_undo_redo_enabled()
+
+    def _update_undo_redo_enabled(self):
+        raise NotImplementedError()

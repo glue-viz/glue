@@ -110,6 +110,9 @@ class CommandStack(object):
         self._command_stack.append(c)
         return result
 
+    def can_undo_redo(self):
+        return len(self._command_stack) > 0, len(self._undo_stack) > 0
+
 #session needs;
 # data collection
 # application
@@ -151,10 +154,10 @@ class RemoveData(Command):
 # application has non-interactive new_viewer, close_viewer method
 # viewer types should have a unique name
 class NewDataViewer(Command):
-    kwargs = ['viewer']
+    kwargs = ['viewer', 'data']
 
     def do(self, session):
-        v = session.application.new_data_viewer(self.viewer)
+        v = session.application.new_data_viewer(self.viewer, self.data)
         self.created = v
         return v
 

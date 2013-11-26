@@ -123,6 +123,9 @@ class GlueApplication(Application, QMainWindow):
         page = self.current_tab
         sub = QMdiSubWindow()
         sub.setWidget(new_widget)
+
+        new_widget.destroyed.connect(sub.close)
+
         sub.resize(new_widget.size())
         if label:
             sub.setWindowTitle(label)
@@ -212,7 +215,12 @@ class GlueApplication(Application, QMainWindow):
         #menu.addAction(self._actions['data_save'])  # XXX add this
         menu.addAction(self._actions['session_restore'])
         menu.addAction(self._actions['session_save'])
+        mbar.addMenu(menu)
 
+        menu = QMenu(mbar)
+        menu.setTitle("Edit")
+        menu.addAction(self._actions['undo'])
+        menu.addAction(self._actions['redo'])
         mbar.addMenu(menu)
 
         menu = QMenu(mbar)
@@ -300,6 +308,20 @@ class GlueApplication(Application, QMainWindow):
                 tip='Restore a saved session')
         a.triggered.connect(lambda *args: self._restore_session())
         self._actions['session_restore'] = a
+
+        a = act("Undo", self,
+                tip='Undo last action',
+                shortcut=QKeySequence.Undo)
+        a.triggered.connect(lambda *args: self.undo())
+        a.setEnabled(False)
+        self._actions['undo'] = a
+
+        a = act("Redo", self,
+                tip='Redo last action',
+                shortcut=QKeySequence.Redo)
+        a.triggered.connect(lambda *args: self.redo())
+        a.setEnabled(False)
+        self._actions['redo'] = a
 
 
     def _choose_new_data_viewer(self, data=None):
@@ -463,3 +485,8 @@ class GlueApplication(Application, QMainWindow):
         qmb.setDetailedText(detail)
         qmb.resize(400, qmb.size().height())
         qmb.exec_()
+
+    def _update_undo_redo_enabled(self):
+        undo, redo = self._cmds.can_undo_redo()
+        self._actions['undo'].setEnabled(undo)
+        self._actions['redo'].setEnabled(redo)
