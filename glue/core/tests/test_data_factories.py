@@ -138,7 +138,7 @@ def test_dtype_badtext():
 
 
 def test_dtype_missing_data_col2():
-    data = '# a, b\n1 , 1 \n2,  \n3, 3'
+    data = '# a, b\n1 , 1 \n2,  \n3, 3.0'
     with make_file(data, '.csv') as fname:
         d = df.load_data(fname)
     assert d['b'].dtype == np.float
@@ -146,7 +146,7 @@ def test_dtype_missing_data_col2():
 
 
 def test_dtype_missing_data_col1():
-    data = '# a, b\n1, 1 \n , 2 \n3, 3'
+    data = '# a, b\n1.0, 1 \n , 2 \n3, 3'
     with make_file(data, '.csv') as fname:
         d = df.load_data(fname)
     assert d['a'].dtype == np.float

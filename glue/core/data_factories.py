@@ -230,6 +230,21 @@ set_default_factory('hd5', gridded_data)
 set_default_factory('hdf5', gridded_data)
 
 
+def _ascii_identifier_v02(origin, args, kwargs):
+    # this works for astropy v0.2
+    if isinstance(args[0], basestring):
+        return args[0].endswith(('csv', 'tsv', 'txt', 'tbl', 'dat',
+                                 'csv.gz', 'tsv.gz', 'txt.gz', 'tbl.gz',
+                                 'dat.gz'))
+    else:
+        return False
+
+
+def _ascii_identifier_v03(origin, *args, **kwargs):
+    # this works for astropy v0.3
+    return _ascii_identifier_v02(origin, args, kwargs)
+
+
 def tabular_data(*args, **kwargs):
     """
     Build a data set from a table. We restrict ourselves to tables
@@ -250,17 +265,12 @@ def tabular_data(*args, **kwargs):
 
     # Add identifiers for ASCII data
     from astropy.io import registry
-
-    def ascii_identifier(origin, args, kwargs):
-        # should work with both Astropy 0.2 and 0.3
-        if isinstance(args[0], basestring):
-            return args[0].endswith(('csv', 'tsv', 'txt', 'tbl', 'dat',
-                                     'csv.gz', 'tsv.gz', 'txt.gz', 'tbl.gz',
-                                     'dat.gz'))
-        else:
-            return False
-    registry.register_identifier('ascii', Table, ascii_identifier,
-                                 force=True)
+    if LooseVersion(__version__) < LooseVersion("0.3"):
+        registry.register_identifier('ascii', Table, _ascii_identifier_v02,
+                                     force=True)
+    else:
+        registry.register_identifier('ascii', Table, _ascii_identifier_v03,
+                                     force=True)
 
     # Import FITS compatibility (for Astropy 0.2.x)
     from ..external import fits_io
