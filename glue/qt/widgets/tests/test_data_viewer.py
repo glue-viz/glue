@@ -6,6 +6,8 @@ from ..histogram_widget import HistogramWidget
 from ..scatter_widget import ScatterWidget
 from ..image_widget import ImageWidget
 
+from . import simple_session
+
 import pytest
 from mock import MagicMock
 
@@ -20,9 +22,11 @@ def setup_function(func):
 @pytest.mark.parametrize(('widget'), ALL_WIDGETS)
 def test_unregister_on_close(widget):
     unreg = MagicMock()
-    hub = Hub()
-    collect = DataCollection()
-    w = widget(collect)
+    session = simple_session()
+    hub = session.hub
+    collect = session.data_collection
+
+    w = widget(session)
     w.unregister = unreg
     w.register_to_hub(hub)
     w.close()

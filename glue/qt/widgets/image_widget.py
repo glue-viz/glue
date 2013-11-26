@@ -27,14 +27,14 @@ WARN_THRESH = 10000000  # warn when contouring large images
 class ImageWidget(DataViewer):
     LABEL = "Image Viewer"
 
-    def __init__(self, data, parent=None):
-        super(ImageWidget, self).__init__(data, parent)
+    def __init__(self, session, parent=None):
+        super(ImageWidget, self).__init__(session, parent)
 
         self.central_widget = MplWidget()
         self.option_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.ui = load_ui('imagewidget', self.option_widget)
-        self.client = ImageClient(data,
+        self.client = ImageClient(self._data,
                                   self.central_widget.canvas.fig,
                                   artist_container=self._container)
         self._tweak_geometry()

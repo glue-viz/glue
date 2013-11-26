@@ -58,8 +58,8 @@ class ScatterWidget(DataViewer):
     ymax = FloatLineProperty('ui.ymax')
     hidden = ButtonProperty('ui.hidden_attributes')
 
-    def __init__(self, data, parent=None):
-        super(ScatterWidget, self).__init__(data, parent)
+    def __init__(self, session, parent=None):
+        super(ScatterWidget, self).__init__(session, parent)
         self.central_widget = MplWidget()
         self.option_widget = QtGui.QWidget()
 
@@ -68,11 +68,11 @@ class ScatterWidget(DataViewer):
         self.ui = load_ui('scatterwidget', self.option_widget)
         #self.ui.setupUi(self.option_widget)
         self._tweak_geometry()
-        self._collection = data
 
-        self.client = ScatterClient(self._collection,
+        self.client = ScatterClient(self._data,
                                     self.central_widget.canvas.fig,
                                     artist_container=self._container)
+
         self._connect()
         self.unique_fields = set()
         self.make_toolbar()
@@ -104,7 +104,7 @@ class ScatterWidget(DataViewer):
         connect_float_edit(cl, 'ymax', ui.ymax)
 
     def _choose_add_data(self):
-        choices = dict([(d.label, d) for d in self._collection])
+        choices = dict([(d.label, d) for d in self._data])
         dialog = QtGui.QInputDialog()
         choice, isok = dialog.getItem(self, "Data Chooser | Scatter Plot",
                                       "Choose a data set to add",

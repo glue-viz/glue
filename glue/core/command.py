@@ -11,7 +11,7 @@ class Command(object):
     `do` and `undo` methods.
 
     Both `do` and `undo` receive a single input argument named
-    `context` -- this is whatever object is passed to the constructor
+    `session` -- this is whatever object is passed to the constructor
     of :class:`glue.core.command.CommandStack`. This object is used
     to store and retrieve resources needed by each command
 
@@ -34,32 +34,43 @@ class Command(object):
         self.extra = kwargs
 
     @abstractmethod
-    def do(self, context):
+    def do(self, session):
         """
         Execute the command
 
-        :param context: An object used to store and fetch resources
+        :param session: An object used to store and fetch resources
                         needed by a Command.
         """
         pass
 
     @abstractmethod
-    def undo(self, context):
+    def undo(self, session):
         pass
 
 class CommandStack(object):
     """The command stack collects commands,
        and saves them to enable undoing/redoing
     """
-    def __init__(self, context):
+    def __init__(self):
         """
-        :param context: An object passed to commands. Commands can
+        :param session: An object passed to commands. Commands can
                         use this however they wish to store/fetch data
-        :type context: object
+        :type session: object
         """
-        self._context = context
+        self._session = None
         self._command_stack = []
         self._undo_stack = []
+
+
+    @property
+    def session(self):
+        return self._session
+
+
+    @session.setter
+    def session(self, value):
+        self._session = value
+
 
     def do(self, cmd):
         """
@@ -68,7 +79,7 @@ class CommandStack(object):
         :rtype: The return value of cmd.do()
         """
         self._command_stack.append(cmd)
-        result = cmd.do(self._context)
+        result = cmd.do(self._session)
         self._undo_stack = []
         return result
 
@@ -83,7 +94,7 @@ class CommandStack(object):
         except IndexError:
             raise IndexError("No commands to undo")
         self._undo_stack.append(c)
-        c.undo(self._context)
+        c.undo(self._session)
 
     def redo(self):
         """
@@ -95,11 +106,11 @@ class CommandStack(object):
             c = self._undo_stack.pop()
         except IndexError:
             raise IndexError("No commands to redo")
-        result = c.do(self._context)
+        result = c.do(self._session)
         self._command_stack.append(c)
         return result
 
-#context needs;
+#session needs;
 # data collection
 # application
 
@@ -109,31 +120,31 @@ class CommandStack(object):
 class LoadData(Command):
     kwargs = ['path', 'factory']
 
-    def do(self, context):
+    def do(self, session):
         return load_data(self.path, self.factory)
 
-    def undo(self, context):
+    def undo(self, session):
         pass
 
 
 class AddData(Command):
     kwargs = ['data']
 
-    def do(self, context):
-        context.data_collection.append(self.data)
+    def do(self, session):
+        session.data_collection.append(self.data)
 
-    def undo(self, context):
-        context.data_collection.remove(self.data)
+    def undo(self, session):
+        session.data_collection.remove(self.data)
 
 
 class RemoveData(Command):
     kwargs = ['data']
 
-    def do(self, context):
-        context.data_collection.remove(self.data)
+    def do(self, session):
+        session.data_collection.remove(self.data)
 
-    def undo(self, context):
-        context.data_collection.append(self.data)
+    def undo(self, session):
+        session.data_collection.append(self.data)
 
 
 #refactoring needed:
@@ -142,22 +153,22 @@ class RemoveData(Command):
 class NewDataViewer(Command):
     kwargs = ['viewer']
 
-    def do(self, context):
-        v = context.application.new_data_viewer(self.viewer)
+    def do(self, session):
+        v = session.application.new_data_viewer(self.viewer)
         self.created = v
         return v
 
-    def undo(self, context):
+    def undo(self, session):
         self.created.close(warn=False)
 
 
 class AddLayer(Command):
     kwargs = ['layer', 'viewer']
 
-    def do(self, context):
+    def do(self, session):
         self.viewer.add_layer(self.layer)
 
-    def undo(self, context):
+    def undo(self, session):
         self.viewer.remove_layer(self.layer)
 
 

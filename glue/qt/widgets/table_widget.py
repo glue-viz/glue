@@ -46,8 +46,8 @@ class DataTableModel(QAbstractTableModel):
 
 
 class TableWidget(DataViewer):
-    def __init__(self, dc, parent=None):
-        super(TableWidget, self).__init__(dc, parent)
+    def __init__(self, session, parent=None):
+        super(TableWidget, self).__init__(session, parent)
         self.widget = QTableView()
         self.setCentralWidget(self.widget)
 
@@ -88,27 +88,3 @@ class TableWidget(DataViewer):
         d = Data(x=[0])
         self.widget.setModel(DataTableModel(d))
         event.accept()
-
-
-def main():
-    from glue.core import Data, DataCollection
-    from glue.qt import get_qapp
-    import numpy as np
-
-    app = get_qapp()
-
-    sz = 10 ** 5
-    x = np.random.normal(0, 1, sz)
-    y = np.random.random(sz)
-    d = Data(x=x, y=y)
-    dc = DataCollection([d])
-
-    tw = TableWidget(dc)
-    tw.set_data(d)
-
-    tw.show()
-
-    app.exec_()
-
-if __name__ == "__main__":
-    main()

@@ -20,11 +20,14 @@ class DataViewer(QMainWindow, HubListener):
        * An automatic call to unregister on window close
        * Drag and drop support for adding data
     """
-    def __init__(self, data, parent=None):
+    def __init__(self, session, parent=None):
+        """
+        :type session: :class:`~glue.core.Session`
+        """
         QMainWindow.__init__(self, parent)
         HubListener.__init__(self)
         self.setWindowIcon(get_qapp().windowIcon())
-        self._data = data
+        self._data = session.data_collection
         self._hub = None
         self._container = QtLayerArtistContainer()
         self._view = LayerArtistView()

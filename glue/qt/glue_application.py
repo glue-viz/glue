@@ -44,6 +44,7 @@ class GlueApplication(Application, QMainWindow):
         Application.__init__(self, data_collection=data_collection, hub=hub)
 
         self.app = get_qapp()
+
         self.setWindowIcon(self.app.windowIcon())
         self.setAttribute(Qt.WA_DeleteOnClose)
         self._actions = {}
@@ -299,21 +300,6 @@ class GlueApplication(Application, QMainWindow):
                 tip='Restore a saved session')
         a.triggered.connect(lambda *args: self._restore_session())
         self._actions['session_restore'] = a
-
-
-    def new_data_viewer(self, viewer_cls, data=None):
-        if viewer_cls is None:
-            return
-
-        c = viewer_cls(self._data)
-        c.register_to_hub(self._hub)
-        if data and not c.add_data(data):
-            c.close(warn=False)
-            return
-
-        self.add_to_current_tab(c)
-        c.show()
-        return c
 
 
     def _choose_new_data_viewer(self, data=None):
