@@ -6,19 +6,32 @@ env:
    global:
      - PIP_ARGS="--use-mirrors"
      - PYTEST_ARGS=""
+     - BASE_DEPS="numpy mock pytest pyavm cython h5py pygments pyzmq"
    matrix:
-     - MPL_VER=1.2.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.13.2 SETUP_CMD='test'
-     - MPL_VER=1.1.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.13.2 SETUP_CMD='test'
-     - MPL_VER=1.2.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.12.1 PYTEST_ARGS="-s" SETUP_CMD='test'
-     - MPL_VER=1.1.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.12.1 PYTEST_ARGS="-s" SETUP_CMD='test'
-     - MPL_VER=1.2.1 ASTRO_VER=0.2.1 IPYTHON_VER=0.13.2 SETUP_CMD='cov'
+     # current versions of everything
+     - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0 SETUP_CMD='test'
+
+     # old MPL
+     - MPL_VER=1.2.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0 SETUP_CMD='test'
+     - MPL_VER=1.1.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0 SETUP_CMD='test'
+
+     # old and unstable astropy
+     - MPL_VER=1.3.1 ASTRO_VER=0.2.5 IPYTHON_VER=1.1.0 SETUP_CMD='test'
+     - MPL_VER=1.3.1 ASTRO_VER=dev IPYTHON_VER=1.1.0 SETUP_CMD='test'
+
+     # old ipython
+     - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0 SETUP_CMD='test'
+     - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.0.0 SETUP_CMD='test'
+     - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=0.13.2 SETUP_CMD='test'
+
+     # coverage
+     - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0 SETUP_CMD='cov'
 
 
 before_install:
   - deactivate
   - virtualenv --system-site-packages ~/virtualenv/this
   - source ~/virtualenv/this/bin/activate
-
   - sudo apt-get install -qq python-scipy python-qt4 pyqt4-dev-tools python-h5py
 
 # Run GUIs in headless mode
@@ -26,15 +39,12 @@ before_install:
   - "sh -e /etc/init.d/xvfb start"
 
 install:
-  - pip install $PIP_ARGS numpy
-  - pip install $PIP_ARGS astropy==$ASTRO_VER
+  - pip install $PIP_ARGS $BASE_DEPS
+  - if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy; else pip install $PIP_ARGS astropy==$ASTRO_VER; fi
   - pip install $PIP_ARGS IPython==$IPYTHON_VER
   - pip install $PIP_ARGS matplotlib==$MPL_VER
-  - pip install $PIP_ARGS pygments pyzmq
-  - pip install $PIP_ARGS mock pytest pyavm cython h5py
-  - pip install --use-mirrors scikit-image
+  - pip install $PIP_ARGS scikit-image  # must be installed after cython
   - python setup.py build
-  - if [[ $SETUP_CMD == cov ]]; then pip install pytest -q --use-mirrors; fi
   - if [[ $SETUP_CMD == cov ]]; then pip install pytest-cov -q --use-mirrors; fi
   - if [[ $SETUP_CMD == cov ]]; then pip install coveralls -q --use-mirrors; fi
 
