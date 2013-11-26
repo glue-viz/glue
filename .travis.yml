@@ -15,8 +15,9 @@ env:
      - MPL_VER=1.2.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0 SETUP_CMD='test'
      - MPL_VER=1.1.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0 SETUP_CMD='test'
 
-     # old astropy
+     # old and unstable astropy
      - MPL_VER=1.3.1 ASTRO_VER=0.2.5 IPYTHON_VER=1.1.0 SETUP_CMD='test'
+     - MPL_VER=1.3.1 ASTRO_VER=dev IPYTHON_VER=1.1.0 SETUP_CMD='test'
 
      # old ipython
      - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0 SETUP_CMD='test'
@@ -39,7 +40,7 @@ before_install:
 
 install:
   - pip install $PIP_ARGS $BASE_DEPS
-  - pip install $PIP_ARGS astropy==$ASTRO_VER
+  - if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy; else pip install $PIP_ARGS astropy==$ASTRO_VER; fi
   - pip install $PIP_ARGS IPython==$IPYTHON_VER
   - pip install $PIP_ARGS matplotlib==$MPL_VER
   - pip install $PIP_ARGS scikit-image  # must be installed after cython
