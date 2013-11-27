@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 
 from .data_factories import load_data
 
+MAX_UNDO = 50
 """
 The classes in this module allow user actions to be stored as commands,
 which can be undone/redone
@@ -96,6 +97,7 @@ class CommandStack(object):
         """
         self._command_stack.append(cmd)
         result = cmd.do(self._session)
+        self._command_stack = self._command_stack[-MAX_UNDO:]
         self._undo_stack = []
         return result
 
