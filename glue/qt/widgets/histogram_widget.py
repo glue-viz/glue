@@ -94,12 +94,12 @@ class HistogramWidget(DataViewer):
 
     def _mouse_modes(self):
         axes = self.client.axes
-        rect = HRangeMode(axes, roi_callback=self.apply_roi)
-        return [rect]
 
-    def apply_roi(self, mode):
-        roi = mode.roi()
-        self.client.apply_roi(roi)
+        def apply_mode(mode):
+            return self.apply_roi(mode.roi())
+
+        rect = HRangeMode(axes, roi_callback=apply_mode)
+        return [rect]
 
     def _update_attributes(self):
         """Repopulate the combo box that selects the quantity to plot"""

@@ -106,6 +106,9 @@ class Client(HubListener):
         """ Default handler for SubsetUpdateMessage """
         raise NotImplementedError
 
+    def apply_roi(self, roi):
+        raise NotImplementedError
+
 
 class BasicClient(Client):
 

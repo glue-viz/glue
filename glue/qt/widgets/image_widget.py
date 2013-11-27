@@ -97,17 +97,17 @@ class ImageWidget(DataViewer):
         self.addToolBar(result)
         return result
 
-    @set_cursor(Qt.WaitCursor)
-    def apply_roi(self, mode):
-        roi = mode.roi()
-        self.client.apply_roi(roi)
 
     def _mouse_modes(self):
         axes = self.client.axes
-        rect = RectangleMode(axes, roi_callback=self.apply_roi)
-        circ = CircleMode(axes, roi_callback=self.apply_roi)
-        poly = PolyMode(axes, roi_callback=self.apply_roi)
-        contrast = ContrastMode(axes, move_callback=self._set_norm)
+
+        def apply_mode(mode):
+            self.apply_roi(mode.roi())
+
+        rect = RectangleMode(axes, roi_callback=apply_mode)
+        circ = CircleMode(axes, roi_callback=apply_mode)
+        poly = PolyMode(axes, roi_callback=apply_mode)
+        contrast = ContrastMode(axes, move_callback=apply_mode)
         contour = ContourMode(axes, release_callback=self._contour_roi)
         return [rect, circ, poly, contour, contrast]
 
@@ -280,7 +280,7 @@ class ImageWidget(DataViewer):
 
         roi = mode.roi(im[att])
         if roi:
-            self.client.apply_roi(roi)
+            self.apply_roi(roi)
 
     def _update_window_title(self):
         if self.client.display_data is None:

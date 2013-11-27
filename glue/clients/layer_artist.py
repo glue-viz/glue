@@ -380,7 +380,11 @@ class LayerArtistContainer(object):
         artist.zorder = max(a.zorder for a in self.artists) + 1
 
     def remove(self, artist):
-        """Remove a LayerArtist from this collection"""
+        """Remove a LayerArtist from this collection
+
+        :param artist: The artist to remove
+        :type artist: :class:`LayerArtist`
+        """
         try:
             self.artists.remove(artist)
             artist.clear()

@@ -2,6 +2,18 @@ from abc import ABCMeta, abstractmethod
 
 from .data_factories import load_data
 
+"""
+The classes in this module allow user actions to be stored as commands,
+which can be undone/redone
+
+All UI frontends should map interactions to command objects, instead
+of directly performing an action.
+
+Commands have access to two sources of data: the first are the
+keyword arguments passed to the constructor. These are stored as
+attributes of self. The second is a session object passed to all
+Command.do and Command.undo calls.
+"""
 
 class Command(object):
     """
@@ -13,11 +25,13 @@ class Command(object):
     Both `do` and `undo` receive a single input argument named
     `session` -- this is whatever object is passed to the constructor
     of :class:`glue.core.command.CommandStack`. This object is used
-    to store and retrieve resources needed by each command
+    to store and retrieve resources needed by each command. The
+    Glue application itself uses a :class:`~glue.core.session.Session`
+    instance for this.
 
-    Each class should also override the kwargs class list,
-    to list the keyword arguments that should be passed to the
-    command instructor. The base class will check that these
+    Each class should also override the class-level kwargs list,
+    to list the required keyword arguments that should be passed to the
+    command constructor. The base class will check that these
     keywords are indeed provided. Commands should not take
     non-keyword arguments in the constructor method
     """
@@ -47,16 +61,17 @@ class Command(object):
     def undo(self, session):
         pass
 
+
 class CommandStack(object):
-    """The command stack collects commands,
-       and saves them to enable undoing/redoing
+    """
+    The command stack collects commands,
+    and saves them to enable undoing/redoing
+
+    After instantiation, something can be assigned to
+    the session property. This is passed as the sole argument
+    of all Command (un)do methods.
     """
     def __init__(self):
-        """
-        :param session: An object passed to commands. Commands can
-                        use this however they wish to store/fetch data
-        :type session: object
-        """
         self._session = None
         self._command_stack = []
         self._undo_stack = []
@@ -111,15 +126,14 @@ class CommandStack(object):
         return result
 
     def can_undo_redo(self):
+        """
+        Return whether undo and redo options are possible
+
+        :rtype: (bool, bool) - Whether undo and redo are possible, respectively
+        """
         return len(self._command_stack) > 0, len(self._undo_stack) > 0
 
-#session needs;
-# data collection
-# application
 
-
-# refactoring needed
-# factories identifiable by unique names
 class LoadData(Command):
     kwargs = ['path', 'factory']
 
@@ -150,10 +164,13 @@ class RemoveData(Command):
         session.data_collection.append(self.data)
 
 
-#refactoring needed:
-# application has non-interactive new_viewer, close_viewer method
-# viewer types should have a unique name
 class NewDataViewer(Command):
+    """Add a new data viewer to the application
+
+    :param viewer: The class of viewer to create
+    :param data: The data object to initialize the viewer with, or None
+    :type date: :class:`~glue.core.Data` or None
+    """
     kwargs = ['viewer', 'data']
 
     def do(self, session):
@@ -166,6 +183,12 @@ class NewDataViewer(Command):
 
 
 class AddLayer(Command):
+    """Add a new layer to a viewer
+
+    :param layer: The layer to add
+    :type layer: :class:`~glue.core.Data` or :class:`~glue.core.Subset`
+    :param viewer: The viewer to add the layer to
+    """
     kwargs = ['layer', 'viewer']
 
     def do(self, session):
@@ -176,7 +199,32 @@ class AddLayer(Command):
 
 
 class ApplyROI(Command):
-    pass
+    """
+    Apply an ROI to a client, updating subset states
+
+    :param client: Client to work on
+    :type client: :class:`~glue.core.client.Client`
+
+    :param roi: Roi to apply
+    :type roi: :class:`~glue.core.roi.Roi`
+    """
+    kwargs = ['client', 'roi']
+    def do(self, session):
+        self.old_states = {}
+        for data in self.client.data:
+            for subset in data.subsets:
+                self.old_states[subset] = subset.subset_state
+
+        self.client.apply_roi(self.roi)
+
+    def undo(self, session):
+        for data in self.client.data:
+            for subset in data.subsets:
+                if subset not in self.old_states:
+                    subset.delete()
+
+        for k, v in self.old_states.items():
+            k.subset_state = v
 
 
 class LinkData(Command):
