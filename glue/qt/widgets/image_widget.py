@@ -52,7 +52,7 @@ class ImageWidget(DataViewer):
         self.resize(self.central_widget.size())
 
     def _create_actions(self):
-        #pylint: disable=E1101
+        # pylint: disable=E1101
         def act(name, cmap):
             a = QAction(name, self)
             a.triggered.connect(lambda *args: self.client.set_cmap(cmap))
@@ -87,8 +87,8 @@ class ImageWidget(DataViewer):
 
         result.addAction(self._rgb_add)
 
-        #connect viewport update buttons to client commands to
-        #allow resampling
+        # connect viewport update buttons to client commands to
+        # allow resampling
         cl = self.client
         result.buttons['HOME'].triggered.connect(cl.check_update)
         result.buttons['FORWARD'].triggered.connect(cl.check_update)
@@ -96,7 +96,6 @@ class ImageWidget(DataViewer):
 
         self.addToolBar(result)
         return result
-
 
     def _mouse_modes(self):
         axes = self.client.axes

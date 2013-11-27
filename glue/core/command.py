@@ -15,7 +15,9 @@ attributes of self. The second is a session object passed to all
 Command.do and Command.undo calls.
 """
 
+
 class Command(object):
+
     """
     A class to encapsulate (and possibly undo) state changes
 
@@ -63,6 +65,7 @@ class Command(object):
 
 
 class CommandStack(object):
+
     """
     The command stack collects commands,
     and saves them to enable undoing/redoing
@@ -71,21 +74,19 @@ class CommandStack(object):
     the session property. This is passed as the sole argument
     of all Command (un)do methods.
     """
+
     def __init__(self):
         self._session = None
         self._command_stack = []
         self._undo_stack = []
 
-
     @property
     def session(self):
         return self._session
 
-
     @session.setter
     def session(self, value):
         self._session = value
-
 
     def do(self, cmd):
         """
@@ -165,6 +166,7 @@ class RemoveData(Command):
 
 
 class NewDataViewer(Command):
+
     """Add a new data viewer to the application
 
     :param viewer: The class of viewer to create
@@ -183,6 +185,7 @@ class NewDataViewer(Command):
 
 
 class AddLayer(Command):
+
     """Add a new layer to a viewer
 
     :param layer: The layer to add
@@ -199,6 +202,7 @@ class AddLayer(Command):
 
 
 class ApplyROI(Command):
+
     """
     Apply an ROI to a client, updating subset states
 
@@ -209,6 +213,7 @@ class ApplyROI(Command):
     :type roi: :class:`~glue.core.roi.Roi`
     """
     kwargs = ['client', 'roi']
+
     def do(self, session):
         self.old_states = {}
         for data in self.client.data:

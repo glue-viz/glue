@@ -36,7 +36,9 @@ def _fix_ipython_pylab():
         # if the shell is a normal terminal shell, we get here
         pass
 
+
 class GlueApplication(Application, QMainWindow):
+
     """ The main Glue window """
 
     def __init__(self, data_collection=None, hub=None):
@@ -57,7 +59,6 @@ class GlueApplication(Application, QMainWindow):
         act = PlotAction(lwidget, self)
         lwidget.layerTree.addAction(act)
         lwidget.bind_selection_to_edit_subset()
-
 
         self._tweak_geometry()
         self._create_actions()
@@ -112,7 +113,7 @@ class GlueApplication(Application, QMainWindow):
 
     def close_tab(self, index):
         """ Close a tab window and all associated data viewers """
-        #do not delete the last tab
+        # do not delete the last tab
         if self.tab_widget.count() == 1:
             return
         w = self.tab_widget.widget(index)
@@ -212,7 +213,7 @@ class GlueApplication(Application, QMainWindow):
         menu.setTitle("File")
 
         menu.addAction(self._actions['data_new'])
-        #menu.addAction(self._actions['data_save'])  # XXX add this
+        # menu.addAction(self._actions['data_save'])  # XXX add this
         menu.addAction(self._actions['session_restore'])
         menu.addAction(self._actions['session_save'])
         mbar.addMenu(menu)
@@ -256,7 +257,7 @@ class GlueApplication(Application, QMainWindow):
         menu.addActions(tbar.actions())
         mbar.addMenu(menu)
 
-        #trigger inclusion of Mac Native "Help" tool
+        # trigger inclusion of Mac Native "Help" tool
         if sys.platform == 'darwin':
             mbar.addMenu('Help')
 
@@ -322,7 +323,6 @@ class GlueApplication(Application, QMainWindow):
         a.triggered.connect(lambda *args: self.redo())
         a.setEnabled(False)
         self._actions['redo'] = a
-
 
     def _choose_new_data_viewer(self, data=None):
         """ Create a new visualization window in the current tab
@@ -449,10 +449,10 @@ class GlueApplication(Application, QMainWindow):
     def start(self):
         self.show()
         self.raise_()  # bring window to front
-        #at some point during all this, the MPL backend
-        #switches. This call restores things, so
-        #figures are still inlined in the notebook.
-        #XXX find out a better place for this
+        # at some point during all this, the MPL backend
+        # switches. This call restores things, so
+        # figures are still inlined in the notebook.
+        # XXX find out a better place for this
         _fix_ipython_pylab()
         return self.app.exec_()
 

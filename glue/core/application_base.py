@@ -36,7 +36,6 @@ class Application(HubListener):
         self._cmds.session = session
         self._session = session
 
-
     def new_data_viewer(self, viewer_class, data=None):
         """
         Create a new data viewer, add it to the UI,
@@ -71,7 +70,6 @@ class Application(HubListener):
         with open(path, 'w') as out:
             cp = CloudPickler(out, protocol=2)
             cp.dump(state)
-
 
     def new_tab(self):
         raise NotImplementedError()

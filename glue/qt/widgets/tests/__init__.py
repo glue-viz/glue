@@ -1,5 +1,6 @@
 from .... import core
 
+
 def simple_session():
     collect = core.data_collection.DataCollection()
     hub = core.hub.Hub()

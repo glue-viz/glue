@@ -60,7 +60,6 @@ class TestGlueApplication(object):
                     self.app._choose_save_session()
                     assert mb.call_count == 1
 
-
     @pytest.mark.xfail("LooseVersion(ipy_version) <= LooseVersion('0.11')")
     def test_terminal_present(self):
         """For good setups, terminal is available"""

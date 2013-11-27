@@ -10,6 +10,7 @@ import numpy as np
 import glue.core.data_factories as df
 from .util import make_file
 
+
 def test_load_data():
     factory = MagicMock()
     d = df.load_data('test.fits', factory)
