@@ -106,7 +106,7 @@ class ImageWidget(DataViewer):
         rect = RectangleMode(axes, roi_callback=apply_mode)
         circ = CircleMode(axes, roi_callback=apply_mode)
         poly = PolyMode(axes, roi_callback=apply_mode)
-        contrast = ContrastMode(axes, move_callback=apply_mode)
+        contrast = ContrastMode(axes, move_callback=self._set_norm)
         contour = ContourMode(axes, release_callback=self._contour_roi)
         return [rect, circ, poly, contour, contrast]
 
