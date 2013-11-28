@@ -1,58 +1,56 @@
 language: python
 python:
   - 2.7
+notifications:
+  email: false
 
 env:
    global:
-     - PIP_ARGS="--use-mirrors"
-     - PYTEST_ARGS=""
-     - BASE_DEPS="numpy mock pytest pyavm cython h5py pygments pyzmq"
+     - CONDA_ARGS="--yes"
+     - PIP_ARGS="--upgrade --use-mirrors"
+     - PYTEST_ARGS="--cov glue"
+     - CONDA_BASE="pip numpy scipy pyside cython h5py pygments pyzmq scikit-image"
+     - PIP_BASE="mock pytest pytest-cov coveralls pyavm pillow"
+
    matrix:
      # current versions of everything
-     - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0 SETUP_CMD='test'
+     - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0
 
      # old MPL
-     - MPL_VER=1.2.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0 SETUP_CMD='test'
-     - MPL_VER=1.1.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0 SETUP_CMD='test'
+     - MPL_VER=1.2.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0
+     - MPL_VER=1.1.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0
 
      # old and unstable astropy
-     - MPL_VER=1.3.1 ASTRO_VER=0.2.5 IPYTHON_VER=1.1.0 SETUP_CMD='test'
-     - MPL_VER=1.3.1 ASTRO_VER=dev IPYTHON_VER=1.1.0 SETUP_CMD='test'
+     - MPL_VER=1.3.1 ASTRO_VER=0.2.5 IPYTHON_VER=1.1.0
+     - MPL_VER=1.3.1 ASTRO_VER=dev IPYTHON_VER=1.1.0
 
      # old ipython
-     - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0 SETUP_CMD='test'
-     - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.0.0 SETUP_CMD='test'
-     - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=0.13.2 SETUP_CMD='test'
-
-     # coverage
-     - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0 SETUP_CMD='cov'
-
+     - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0
+     - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.0.0
+     - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=0.13.2
 
 before_install:
-  - deactivate
-  - virtualenv --system-site-packages ~/virtualenv/this
-  - source ~/virtualenv/this/bin/activate
-  - sudo apt-get install -qq python-scipy python-qt4 pyqt4-dev-tools python-h5py
+  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then wget http://repo.continuum.io/miniconda/Miniconda-2.0.0-Linux-x86_64.sh -O miniconda.sh; else wget http://repo.continuum.io/miniconda/Miniconda3-2.0.0-Linux-x86_64.sh -O miniconda.sh; fi
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/travis/anaconda/bin:$PATH
+  - sudo rm -rf /dev/shm
+  - sudo ln -s /run/shm /dev/shm
 
 # Run GUIs in headless mode
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
 
 install:
-  - pip install $PIP_ARGS $BASE_DEPS
-  - if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy; else pip install $PIP_ARGS astropy==$ASTRO_VER; fi
-  - pip install $PIP_ARGS IPython==$IPYTHON_VER
-  - pip install $PIP_ARGS matplotlib==$MPL_VER
-  - pip install $PIP_ARGS scikit-image  # must be installed after cython
+  - conda install $CONDA_ARGS python=$TRAVIS_PYTHON_VERSION $CONDA_BASE
+  - pip install $PIP_ARGS $PIP_BASE
+  - if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy; else conda install $CONDA_ARGS astropy==$ASTRO_VER; fi
+  - conda install $CONDA_ARGS IPython==$IPYTHON_VER
+  - conda install $CONDA_ARGS matplotlib==$MPL_VER
   - python setup.py build
-  - if [[ $SETUP_CMD == cov ]]; then pip install pytest-cov -q --use-mirrors; fi
-  - if [[ $SETUP_CMD == cov ]]; then pip install coveralls -q --use-mirrors; fi
-
-
 
 script:
-  - if [[ $SETUP_CMD == test ]]; then py.test $PYTEST_ARGS glue; fi
-  - if [[ $SETUP_CMD == cov ]]; then py.test --cov glue glue; fi
+  - py.test $PYTEST_ARGS glue
 
 after_success:
-  - if [[ $SETUP_CMD == cov ]]; then coveralls; fi
+  - coveralls
