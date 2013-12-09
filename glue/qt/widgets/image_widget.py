@@ -8,6 +8,7 @@ import matplotlib.cm as cm
 
 from .data_viewer import DataViewer
 from ... import core
+from ... import config
 
 from ...clients.image_client import ImageClient
 
@@ -61,18 +62,8 @@ class ImageWidget(DataViewer):
             return a
 
         self._cmaps = []
-        self._cmaps.append(act('Gray', cm.gray))
-        self._cmaps.append(act('Purple-Blue', cm.PuBu))
-        self._cmaps.append(act('Yellow-Green-Blue', cm.YlGnBu))
-        self._cmaps.append(act('Yellow-Orange-Red', cm.YlOrRd))
-        self._cmaps.append(act('Red-Purple', cm.RdPu))
-        self._cmaps.append(act('Blue-Green', cm.BuGn))
-        self._cmaps.append(act('Hot', cm.hot))
-        self._cmaps.append(act('Red-Blue', cm.RdBu))
-        self._cmaps.append(act('Red-Yellow-Blue', cm.RdYlBu))
-        self._cmaps.append(act('Purple-Orange', cm.PuOr))
-        self._cmaps.append(act('Purple-Green', cm.PRGn))
-
+        for label, cmap in config.colormaps:
+            self._cmaps.append(act(label,cmap))
         self._rgb_add = QAction('RGB', self)
         self._rgb_add.triggered.connect(self._add_rgb)
 

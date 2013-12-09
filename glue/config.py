@@ -4,7 +4,6 @@ import imp
 import logging
 from collections import namedtuple
 
-
 class Registry(object):
     """Registry instances are used by Glue to track objects
     used for various tasks like data linking, widget creation, etc.
@@ -53,7 +52,32 @@ class Registry(object):
         self.add(arg)
         return arg
 
+class ColormapRegistry(Registry):
+    """Stores colormaps for the Image Viewer. The members property is
+    a list of colormaps, each represented as a [name,cmap] pair.
+    """
+    def default_members(self):
+        import matplotlib.cm as cm
+        members = []
+        members.append(['Gray', cm.gray])
+        members.append(['Purple-Blue', cm.PuBu])
+        members.append(['Yellow-Green-Blue', cm.YlGnBu])
+        members.append(['Yellow-Orange-Red', cm.YlOrRd])
+        members.append(['Red-Purple', cm.RdPu])
+        members.append(['Blue-Green', cm.BuGn])
+        members.append(['Hot', cm.hot])
+        members.append(['Red-Blue', cm.RdBu])
+        members.append(['Red-Yellow-Blue', cm.RdYlBu])
+        members.append(['Purple-Orange', cm.PuOr])
+        members.append(['Purple-Green', cm.PRGn])
+        return members
 
+    def add(self, label, cmap):
+        """
+        Add colormap *cmap* with label *label*.
+        """
+        self.members.append([label,cmap])
+        
 class DataFactoryRegistry(Registry):
     """Stores data factories. Data factories take filenames as input,
     and return :class:`~glue.core.Data` instances
@@ -182,7 +206,7 @@ qt_client = QtClientRegistry()
 data_factory = DataFactoryRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
-
+colormaps = ColormapRegistry()
 
 def load_configuration(search_path=None):
     ''' Find and import a config.py file
