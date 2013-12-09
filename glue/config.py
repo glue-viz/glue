@@ -72,6 +72,12 @@ class ColormapRegistry(Registry):
         members.append(['Purple-Green', cm.PRGn])
         return members
 
+    def add(self, label, cmap):
+        """
+        Add colormap *cmap* with label *label*.
+        """
+        self.members.append([label,cmap])
+        
 class DataFactoryRegistry(Registry):
     """Stores data factories. Data factories take filenames as input,
     and return :class:`~glue.core.Data` instances
