@@ -3,7 +3,7 @@ import sys
 import imp
 import logging
 from collections import namedtuple
-
+import matplotlib.cm as cm
 
 class Registry(object):
     """Registry instances are used by Glue to track objects
@@ -53,6 +53,22 @@ class Registry(object):
         self.add(arg)
         return arg
 
+class ColormapRegistry(Registry):
+
+    def default_members(self):
+        members = []
+        members.append(['Gray', cm.gray])
+        members.append(['Purple-Blue', cm.PuBu])
+        members.append(['Yellow-Green-Blue', cm.YlGnBu])
+        members.append(['Yellow-Orange-Red', cm.YlOrRd])
+        members.append(['Red-Purple', cm.RdPu])
+        members.append(['Blue-Green', cm.BuGn])
+        members.append(['Hot', cm.hot])
+        members.append(['Red-Blue', cm.RdBu])
+        members.append(['Red-Yellow-Blue', cm.RdYlBu])
+        members.append(['Purple-Orange', cm.PuOr])
+        members.append(['Purple-Green', cm.PRGn])
+        return members
 
 class DataFactoryRegistry(Registry):
     """Stores data factories. Data factories take filenames as input,
@@ -182,7 +198,7 @@ qt_client = QtClientRegistry()
 data_factory = DataFactoryRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
-
+colormaps = ColormapRegistry()
 
 def load_configuration(search_path=None):
     ''' Find and import a config.py file
