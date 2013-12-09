@@ -3,7 +3,6 @@ import sys
 import imp
 import logging
 from collections import namedtuple
-import matplotlib.cm as cm
 
 class Registry(object):
     """Registry instances are used by Glue to track objects
@@ -54,8 +53,11 @@ class Registry(object):
         return arg
 
 class ColormapRegistry(Registry):
-
+    """Stores colormaps for the Image Viewer. The members property is
+    a list of colormaps, each represented as a [name,cmap] pair.
+    """
     def default_members(self):
+        import matplotlib.cm as cm
         members = []
         members.append(['Gray', cm.gray])
         members.append(['Purple-Blue', cm.PuBu])
