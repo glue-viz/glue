@@ -44,6 +44,17 @@ __factories__ = []
 _default_factory = {}
 
 
+def load_numpy_str(x):
+    """ 
+    Load the contents of a npz file into a numpy array 
+
+    :param x: str
+    """
+    from cStringIO import StringIO
+    s = StringIO(x.decode('base64'))
+    return np.load(s)
+
+
 def as_list(x):
     if isinstance(x, list):
         return x

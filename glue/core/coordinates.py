@@ -6,6 +6,7 @@ __all__ = ['Coordinates', 'WCSCoordinates']
 
 
 class Coordinates(object):
+
     '''
     Base class for coordinate transformation
     '''
@@ -22,8 +23,12 @@ class Coordinates(object):
     def axis_label(self, axis):
         return "World %i" % axis
 
+    def __gluestate__(self, context):
+        return {}  # no state
+
 
 class WCSCoordinates(Coordinates):
+
     '''
     Class for coordinate transformation based on the WCS FITS
     standard.  This class does not take into account
@@ -43,7 +48,7 @@ class WCSCoordinates(Coordinates):
         self._header = header
         wcs = wcs or WCS(header)
 
-        #update WCS interface if using old API
+        # update WCS interface if using old API
         mapping = {'wcs_pix2world': 'wcs_pix2sky',
                    'wcs_world2pix': 'wcs_sky2pix',
                    'all_pix2world': 'all_pix2sky'}

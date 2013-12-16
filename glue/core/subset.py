@@ -15,9 +15,11 @@ OPSYM = {operator.ge: '>=', operator.gt: '>',
          operator.le: '<=', operator.lt: '<',
          operator.and_: '&', operator.or_: '|',
          operator.xor: '^'}
+SYMOP = dict((v, k) for k, v in OPSYM.items())
 
 
 class Subset(object):
+
     """Base class to handle subsets of data.
 
     These objects both describe subsets of a dataset, and relay any
@@ -265,8 +267,16 @@ class Subset(object):
     def __xor__(self, other):
         return _combine([self, other], operator.xor)
 
+    def __eq__(self, other):
+        if not isinstance(other, Subset):
+            return False
+        # XXX need to add equality specification for subset states
+        return (self.subset_state == other.subset_state and
+                self.style == other.style)
+
 
 class SubsetState(object):
+
     def __init__(self):
         self._parent = None
 
@@ -306,11 +316,12 @@ class SubsetState(object):
 
 
 class RoiSubsetState(SubsetState):
-    def __init__(self):
+
+    def __init__(self, xatt=None, yatt=None, roi=None):
         super(RoiSubsetState, self).__init__()
-        self.xatt = None
-        self.yatt = None
-        self.roi = None
+        self.xatt = xatt
+        self.yatt = yatt
+        self.roi = roi
 
     @memoize_attr_check('parent')
     def to_mask(self, view=None):
@@ -329,6 +340,7 @@ class RoiSubsetState(SubsetState):
 
 
 class RangeSubsetState(SubsetState):
+
     def __init__(self, lo, hi, att=None):
         super(RangeSubsetState, self).__init__()
         self.lo = lo
@@ -394,6 +406,7 @@ class XorState(CompositeSubsetState):
 
 
 class InvertState(CompositeSubsetState):
+
     @memoize_attr_check('parent')
     def to_mask(self, view=None):
         return ~self.state1.to_mask(view)
@@ -403,13 +416,14 @@ class InvertState(CompositeSubsetState):
 
 
 class ElementSubsetState(SubsetState):
+
     def __init__(self, indices=None):
         super(ElementSubsetState, self).__init__()
         self._indices = indices
 
     @memoize_attr_check('parent')
     def to_mask(self, view=None):
-        #XXX this is inefficient for views
+        # XXX this is inefficient for views
         result = np.zeros(self.parent.data.shape, dtype=bool)
         if self._indices is not None:
             result.flat[self._indices] = True
@@ -422,6 +436,7 @@ class ElementSubsetState(SubsetState):
 
 
 class InequalitySubsetState(SubsetState):
+
     def __init__(self, left, right, op):
         from .component_link import ComponentLink
 

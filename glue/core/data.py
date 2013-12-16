@@ -3,22 +3,21 @@ import logging
 
 import numpy as np
 
-from .io import extract_data_fits, extract_data_hdf5
-from .coordinates import Coordinates, coordinates_from_header
+from .coordinates import Coordinates
 from .visual import VisualAttributes
 from .visual import RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK
 from .exceptions import IncompatibleAttribute
-from .component_link import ComponentLink, BinaryComponentLink
+from .component_link import (ComponentLink, CoordinateComponentLink,
+                             BinaryComponentLink)
 from .subset import Subset, InequalitySubsetState, SubsetState
 from .hub import Hub
 from .tree import Tree
-from .registry import Registry
 from .util import split_component_view, view_shape
 from .message import (DataUpdateMessage,
                       DataAddComponentMessage,
                       SubsetCreateMessage, ComponentsChangedMessage)
 
-from .util import file_format, coerce_numeric
+from .util import coerce_numeric
 from .odict import OrderedDict
 
 __all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
@@ -28,6 +27,7 @@ COLORS = [RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK]
 
 
 class ComponentID(object):
+
     """ References a Component object within a data object
 
     Components are retrieved from data objects via ComponentIDs::
@@ -111,6 +111,7 @@ class ComponentID(object):
 
 
 class Component(object):
+
     """ Stores the actual, numerical information for a particular quantity
 
     Data objects hold one or more components, accessed via
@@ -163,9 +164,36 @@ class Component(object):
     def numeric(self):
         return np.can_cast(self.data[0], np.complex)
 
+    def __str__(self):
+        return "Component with shape %s" % self.shape
+
+    @property
+    def creation_info(self):
+        """A 4-tuple describing how this component was created
+
+        :rtype: (callable, tuple, dict, indexers)
+        A 4-tuple of (factory, args, kwargs, indexers),
+        which communicates that this component's data
+        can be created via
+
+        bundle = factory(*args, **kwargs)
+        for i in indexers:
+            bundle = bundle[i]
+        component.data == bundle
+        """
+        from .data_factories import load_numpy_str
+        from cStringIO import StringIO
+        f = StringIO()
+        np.save(f, self.data)
+        f.seek(0)
+        data = f.read().encode('base64')
+        return load_numpy_str, (data,), {}, []
+
 
 class DerivedComponent(Component):
+
     """ A component which derives its data from a function """
+
     def __init__(self, data, link, units=None):
         """
         :param data: The data object to use for calculation
@@ -198,6 +226,7 @@ class DerivedComponent(Component):
 
 
 class CoordinateComponent(Component):
+
     def __init__(self, data, axis, world=False):
         super(CoordinateComponent, self).__init__(None, None)
         self.world = world
@@ -233,6 +262,7 @@ class CoordinateComponent(Component):
 
 
 class Data(object):
+
     """Stores data and manages subsets.
 
     The data object stores data as a collection of
@@ -266,6 +296,7 @@ class Data(object):
 
         # access to ComponentIDs via .item[name]
         class ComponentIDDict(object):
+
             def __init__(self, data, **kwargs):
                 self.data = data
 
@@ -339,7 +370,7 @@ class Data(object):
     def dtype(self, cid):
         """Lookup the dtype for the data associated with a ComponentID"""
 
-        #grab a small piece of data
+        # grab a small piece of data
         ind = tuple([slice(0, 1)] * self.ndim)
         arr = self[cid, ind]
         return arr.dtype
@@ -528,13 +559,13 @@ class Data(object):
 
         result = []
         for i in range(self.ndim):
-            link = ComponentLink(self._pixel_component_ids,
-                                 self._world_component_ids[i],
-                                 make_toworld_func(i))
+            link = CoordinateComponentLink(self._pixel_component_ids,
+                                           self._world_component_ids[i],
+                                           self.coords, i)
             result.append(link)
-            link = ComponentLink(self._world_component_ids,
-                                 self._pixel_component_ids[i],
-                                 make_topixel_func(i))
+            link = CoordinateComponentLink(self._world_component_ids,
+                                           self._pixel_component_ids[i],
+                                           self.coords, i, pixel2world=False)
             result.append(link)
 
         for r in result:

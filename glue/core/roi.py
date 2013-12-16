@@ -53,6 +53,7 @@ def pixel_to_data(ax, x, y):
 
 
 class Roi(object):  # pragma: no cover
+
     def contains(self, x, y):
         """Return true/false for each x/y pair. Raises UndefinedROI
         exception if not defined
@@ -73,16 +74,17 @@ class Roi(object):  # pragma: no cover
 
 
 class RectangularROI(Roi):
+
     """
     A 2D rectangular region of interest.
     """
 
-    def __init__(self):
+    def __init__(self, xmin=None, xmax=None, ymin=None, ymax=None):
         super(RectangularROI, self).__init__()
-        self.xmin = None
-        self.xmax = None
-        self.ymin = None
-        self.ymax = None
+        self.xmin = xmin
+        self.xmax = xmax
+        self.ymin = ymin
+        self.ymax = ymax
 
     def __str__(self):
         if self.defined():
@@ -149,16 +151,25 @@ class RectangularROI(Roi):
         else:
             return [], []
 
+    def __gluestate__(self, context):
+        return dict(xmin=self.xmin, xmax=self.xmax, ymin=self.ymin, ymax=self.ymax)
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(xmin=rec['xmin'], xmax=rec['xmax'],
+                   ymin=rec['ymin'], ymax=rec['ymax'])
+
 
 class RangeROI(Roi):
-    def __init__(self, orientation):
+
+    def __init__(self, orientation, min=None, max=None):
         """:param orientation: 'x' or 'y'. Sets which axis to range"""
         super(RangeROI, self).__init__()
         if orientation not in ['x', 'y']:
             raise TypeError("Orientation must be one of 'x', 'y'")
 
-        self.min = None
-        self.max = None
+        self.min = min
+        self.max = max
         self.ori = orientation
 
     def __str__(self):
@@ -197,27 +208,37 @@ class RangeROI(Roi):
         else:
             return [], []
 
+    def __gluestate__(self, context):
+        return dict(ori=self.ori, min=self.min, max=self.max)
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(rec['ori'], min=rec['min'], max=rec['max'])
+
 
 class XRangeROI(RangeROI):
-    def __init__(self):
-        super(XRangeROI, self).__init__('x')
+
+    def __init__(self, min=None, max=None):
+        super(XRangeROI, self).__init__('x', min=min, max=max)
 
 
 class YRangeROI(RangeROI):
-    def __init__(self):
-        super(YRangeROI, self).__init__('y')
+
+    def __init__(self, min=None, max=None):
+        super(YRangeROI, self).__init__('y', min=min, max=max)
 
 
 class CircularROI(Roi):
+
     """
     A 2D circular region of interest.
     """
 
-    def __init__(self):
+    def __init__(self, xc=None, yc=None, radius=None):
         super(CircularROI, self).__init__()
-        self.xc = None
-        self.yc = None
-        self.radius = None
+        self.xc = xc
+        self.yc = yc
+        self.radius = radius
 
     def contains(self, x, y):
         """
@@ -283,8 +304,16 @@ class CircularROI(Roi):
         y = self.yc + self.radius * np.sin(theta)
         return x, y
 
+    def __gluestate__(self, context):
+        return dict(xc=self.xc, yc=self.yc, radius=self.radius)
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(xc=rec['xc'], yc=rec['yc'], radius=rec['radius'])
+
 
 class PolygonalROI(Roi):
+
     """
     A class to define 2D polygonal regions-of-interest
     """
@@ -392,11 +421,21 @@ class PolygonalROI(Roi):
     def to_polygon(self):
         return self.vx, self.vy
 
+    def __gluestate__(self, context):
+        return dict(vx=np.asarray(self.vx).tolist(),
+                    vy=np.asarray(self.vy).tolist())
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(vx=rec['vx'], vy=rec['vy'])
+
 
 class AbstractMplRoi(object):  # pragma: no cover
+
     """ Base class for objects which use
     Matplotlib user events to edit/display ROIs
     """
+
     def __init__(self, ax):
         """
         :param ax: The Matplotlib Axes object to draw to
@@ -437,6 +476,7 @@ class AbstractMplRoi(object):  # pragma: no cover
 
 
 class MplRectangularROI(AbstractMplRoi):
+
     """
     A subclass of RectangularROI that also renders the ROI to a plot
 
@@ -635,6 +675,7 @@ class MplYRangeROI(AbstractMplRoi):
 
 
 class MplCircularROI(AbstractMplRoi):
+
     """
     Class to display / edit circular ROIs using matplotlib
 
@@ -733,6 +774,7 @@ class MplCircularROI(AbstractMplRoi):
 
 
 class MplPolygonalROI(AbstractMplRoi):
+
     """
     Defines and displays polygonal ROIs on matplotlib plots
 

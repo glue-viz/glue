@@ -21,6 +21,7 @@ __all__ = ['VisualAttributes']
 
 
 class VisualAttributes(object):
+
     '''
     This class is used to define visual attributes for any kind of objects
     '''
@@ -33,7 +34,7 @@ class VisualAttributes(object):
         #  * A string containing a float in the rng [0:1] for a shade of
         #    gray ('0.0' = black,'1.0' = white)
         #  * A tuple of three floats in the rng [0:1] for (R, G, B)
-        #  * An HTML hexadecimal string (e.g. '#eeefff')
+        # * An HTML hexadecimal string (e.g. '#eeefff')
         self.color = color
         self.alpha = .5
 
@@ -51,6 +52,11 @@ class VisualAttributes(object):
 
         self._atts = ['color', 'alpha', 'linewidth', 'linestyle', 'marker',
                       'markersize']
+
+    def __eq__(self, other):
+        if not isinstance(other, VisualAttributes):
+            return False
+        return all(getattr(self, a) == getattr(other, a) for a in self._atts)
 
     def set(self, other):
         for att in self._atts:
