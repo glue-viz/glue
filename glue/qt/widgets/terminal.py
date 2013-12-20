@@ -20,9 +20,9 @@ import sys
 import atexit
 from contextlib import contextmanager
 
-#must import these first, to set up Qt properly
+# must import these first, to set up Qt properly
 from ...external.qt import QtCore
-from ...external.qt.QtGui import QInputDialog
+from ...external.qt.QtGui import QInputDialog, QMdiSubWindow
 
 from zmq import ZMQError
 from zmq.eventloop.zmqstream import ZMQStream
@@ -38,7 +38,7 @@ try:   # IPython 1.0
     from IPython.qt.manager import QtKernelManager
     from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
 
-    #these are only needed for v1.0
+    # these are only needed for v1.0
     from IPython.kernel.connect import get_connection_file
     from IPython import get_ipython
     from IPython.qt.client import QtKernelClient
@@ -111,10 +111,19 @@ def connected_console(console_class=RichIPythonWidget, **kwargs):
 
 
 class DragAndDropTerminal(RichIPythonWidget):
+
     def __init__(self, **kwargs):
         super(DragAndDropTerminal, self).__init__(**kwargs)
         self.setAcceptDrops(True)
         self.shell = None
+
+    def mdi_wrap(self):
+        sub = QMdiSubWindow()
+        sub.setWidget(self)
+        self.destroyed.connect(sub.close)
+        sub.resize(self.size())
+        self._mdi_wrapper = sub
+        return sub
 
     @property
     def namespace(self):
@@ -137,7 +146,7 @@ class DragAndDropTerminal(RichIPythonWidget):
         var, ok = QInputDialog.getText(self, "Choose a variable name",
                                        "Choose a variable name", text="x")
         if ok:
-            #unpack single-item lists for convenience
+            # unpack single-item lists for convenience
             if isinstance(obj, list) and len(obj) == 1:
                 obj = obj[0]
 
@@ -148,7 +157,7 @@ class DragAndDropTerminal(RichIPythonWidget):
             event.ignore()
 
 
-#Works for IPython 0.12, 0.13
+# Works for IPython 0.12, 0.13
 def default_kernel_app():
     """ Return a configured IPKernelApp """
 
@@ -203,13 +212,13 @@ def _glue_terminal_1(**kwargs):
     # update namespace
     widget.update_namespace(kwargs)
 
-    #IPython v0.12 turns on MPL interactive. Turn it back off
+    # IPython v0.12 turns on MPL interactive. Turn it back off
     import matplotlib
     matplotlib.interactive(False)
     return widget
 
 
-#works on IPython v0.13, v0.14
+# works on IPython v0.13, v0.14
 @contextmanager
 def redirect_output(session, pub_socket):
     """Prevent any of the widgets from permanently hijacking stdout or
@@ -230,6 +239,7 @@ def non_blocking_eventloop(kernel):
 
 
 class EmbeddedQtKernel(Kernel):
+
     def __init__(self, *args, **kwargs):
         super(EmbeddedQtKernel, self).__init__(*args, **kwargs)
         self.eventloop = non_blocking_eventloop
@@ -245,6 +255,7 @@ class EmbeddedQtKernel(Kernel):
 
 
 class EmbeddedQtKernelApp(IPKernelApp):
+
     def init_kernel(self):
         shell_stream = ZMQStream(self.shell_socket)
         kernel = EmbeddedQtKernel(config=self.config, session=self.session,
@@ -258,7 +269,7 @@ class EmbeddedQtKernelApp(IPKernelApp):
         kernel.record_ports(self.ports)
 
     def start(self):
-        #handoff between IOLoop and QApplication event loops
+        # handoff between IOLoop and QApplication event loops
         loop = ioloop.IOLoop.instance()
         # We used to have a value of 0ms as the second argument
         # (callback_time) in the following call, but this caused the

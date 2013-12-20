@@ -137,6 +137,16 @@ class TestGlueApplication(object):
             self.app._choose_new_data_viewer()
             assert len(self.app.current_tab.subWindowList()) == ct + 1
 
+    def test_move(self):
+        viewer = self.app.new_data_viewer(ScatterWidget)
+        viewer.move(10, 20)
+        assert viewer.position == (10, 20)
+
+    def test_resize(self):
+        viewer = self.app.new_data_viewer(ScatterWidget)
+        viewer.viewer_size = (100, 200)
+        assert viewer.viewer_size == (100, 200)
+
     def test_new_data_defaults(self):
         from ...config import qt_client
 

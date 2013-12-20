@@ -79,9 +79,11 @@ class ComponentLink(object):
             raise TypeError("comp_from must be a list: %s" % type(comp_from))
 
         if not all(isinstance(f, ComponentID) for f in self._from):
-            raise TypeError("from argument is not a list of ComponentIDs")
+            raise TypeError("from argument is not a list of ComponentIDs: %s" %
+                            self._from)
         if not isinstance(self._to, ComponentID):
-            raise TypeError("to argument is not a ComponentID")
+            raise TypeError("to argument is not a ComponentID: %s" %
+                            type(self._to))
 
         if using is None:
             if len(comp_from) != 1:

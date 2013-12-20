@@ -13,40 +13,19 @@ from ...core.callback_property import add_callback
 
 from .data_viewer import DataViewer
 from .mpl_widget import MplWidget
-from ..widget_properties import ButtonProperty, FloatLineProperty
-from ..qtutil import pretty_number, load_ui
+from ..widget_properties import (ButtonProperty, FloatLineProperty,
+                                 CurrentComboProperty,
+                                 connect_bool_button, connect_float_edit)
 
+from ..qtutil import pretty_number, load_ui
 
 WARN_SLOW = 1000000  # max number of points which render quickly
 
 
-def connect_bool_button(client, prop, widget):
-    add_callback(client, prop, widget.setChecked)
-    widget.toggled.connect(partial(setattr, client, prop))
-
-
-def connect_float_edit(client, prop, widget):
-    v = QtGui.QDoubleValidator(None)
-    v.setDecimals(4)
-    widget.setValidator(v)
-
-    def update_prop():
-        val = widget.text()
-        try:
-            setattr(client, prop, float(val))
-        except ValueError:
-            setattr(client, prop, 0)
-
-    def update_widget(val):
-        widget.setText(pretty_number(val))
-
-    add_callback(client, prop, update_widget)
-    widget.editingFinished.connect(update_prop)
-    update_widget(getattr(client, prop))
-
-
 class ScatterWidget(DataViewer):
     LABEL = "Scatter Plot"
+    _property_set = DataViewer._property_set + \
+      'xlog ylog xflip yflip xmin xmax ymin ymax hidden xatt yatt'.split()
 
     xlog = ButtonProperty('ui.xLogCheckBox')
     ylog = ButtonProperty('ui.yLogCheckBox')
@@ -57,6 +36,8 @@ class ScatterWidget(DataViewer):
     ymin = FloatLineProperty('ui.ymin')
     ymax = FloatLineProperty('ui.ymax')
     hidden = ButtonProperty('ui.hidden_attributes')
+    xatt = CurrentComboProperty('ui.xAxisComboBox')
+    yatt = CurrentComboProperty('ui.yAxisComboBox')
 
     def __init__(self, session, parent=None):
         super(ScatterWidget, self).__init__(session, parent)
@@ -66,7 +47,7 @@ class ScatterWidget(DataViewer):
         self.setCentralWidget(self.central_widget)
 
         self.ui = load_ui('scatterwidget', self.option_widget)
-        #self.ui.setupUi(self.option_widget)
+        # self.ui.setupUi(self.option_widget)
         self._tweak_geometry()
 
         self.client = ScatterClient(self._data,
@@ -249,15 +230,11 @@ class ScatterWidget(DataViewer):
         self.ui.yFlipCheckBox.setChecked(xflip)
 
     def update_xatt(self, index):
-        combo = self.ui.xAxisComboBox
-        component_id = combo.itemData(combo.currentIndex())
-        assert isinstance(component_id, core.data.ComponentID)
+        component_id = self.xatt
         self.client.xatt = component_id
 
     def update_yatt(self, index):
-        combo = self.ui.yAxisComboBox
-        component_id = combo.itemData(combo.currentIndex())
-        assert isinstance(component_id, core.data.ComponentID)
+        component_id = self.yatt
         self.client.yatt = component_id
 
     def _update_window_title(self):
@@ -274,3 +251,7 @@ class ScatterWidget(DataViewer):
 
     def options_widget(self):
         return self.option_widget
+
+    def restore_layers(self, rec, context):
+        self.client.restore_layers(rec, context)
+        self._update_combos()

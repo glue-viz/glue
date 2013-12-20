@@ -207,6 +207,10 @@ class DerivedComponent(Component):
         super(DerivedComponent, self).__init__(data, units=units)
         self._link = link
 
+    def set_parent(self, data):
+        """ Reassign the Data object that this DerivedComponent operates on """
+        self._data = data
+
     @property
     def hidden(self):
         return self._link.hidden
@@ -409,6 +413,9 @@ class Data(object):
         if not isinstance(component, Component):
             component = Component(np.asarray(component))
 
+        if isinstance(component, DerivedComponent):
+            component.set_parent(self)
+
         if not(self._check_can_add(component)):
             raise ValueError("The dimensions of component %s are "
                              "incompatible with the dimensions of this data: "
@@ -481,7 +488,7 @@ class Data(object):
     def components(self):
         """ Returns a list of ComponentIDs for all components
         (primary and derived) in the data"""
-        return self._components.keys()
+        return sorted(self._components.keys(), key=lambda x: x.label)
 
     @property
     def visible_components(self):

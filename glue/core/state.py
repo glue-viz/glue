@@ -2,38 +2,32 @@
 Code to convert Glue objects to and from JSON descriptions
 """
 from itertools import count
+from inspect import isgeneratorfunction
 import json
 import types
 import logging
+from traceback import extract_stack
+
+import numpy as np
 
 from .subset import (OPSYM, SYMOP, CompositeSubsetState,
-                     SubsetState, Subset, RoiSubsetState, InequalitySubsetState)
+                     SubsetState, Subset, RoiSubsetState,
+                     InequalitySubsetState)
 from .data import (Data, Component, ComponentID, DerivedComponent,
                    CoordinateComponent)
-from . import (VisualAttributes, ComponentLink)
+from . import (VisualAttributes, ComponentLink, DataCollection)
 from .component_link import CoordinateComponentLink
+from .util import lookup_class
 from .roi import Roi
 from .glue_pickle import dumps, loads
-
+from .. import core
 
 literals = tuple([types.NoneType, types.FloatType,
                  types.IntType, types.LongType,
                  types.NoneType, types.StringType,
-                 types.BooleanType, types.UnicodeType])
+                 types.BooleanType, types.UnicodeType, types.ListType])
 
-
-def _lookup(ref):
-    mod = ref.split('.')[0]
-    try:
-        result = __import__(mod)
-    except ImportError:
-        return None
-    try:
-        for attr in ref.split('.')[1:]:
-            result = getattr(result, attr)
-        return result
-    except AttributeError:
-        return None
+_lookup = lookup_class
 
 
 class GlueSerializeError(RuntimeError):
@@ -167,32 +161,41 @@ class GlueSerializer(object):
     def restore(cls, obj):
         raise NotImplementedError()
 
-    def _serialize_application(self, application):
-        data = list(application.data_collection)
-        cids, components = zip(*((cid, d.get_component(cid))
-                                 for d in data
-                                 for cid in d.component_ids()))
-        subset_states = list(set([s.subset_state
-                                  for d in data
-                                  for s in d.subsets]))
-        links = application.data_collection.links
+    @classmethod
+    def dumpo(cls, obj):
+        """
+        Dump an object (with needed dependencies) into a
+        JSON Serializable data structure.
 
-        todo = data + list(components) + list(
-            cids) + subset_states + list(links)
-        map(self.id, todo)
-        result = self.do_all()
+        Note: If eventually dumping to a string or file, dumps or dump
+              are more robust
+        """
+        self = cls()
+        oid = self.id(obj)
+        return self.do_all()
 
-        return result
+    @staticmethod
+    def json_default(o):
+        """Default JSON enconding, to handle some special cases
+
+        In particular, coerces numpy scalars to the equivalent
+        python types
+
+        Can be used as default kwarg in json.dumps/json.dump
+        """
+        if np.isscalar(o):
+            return np.asscalar(o)  # coerce to pure-python type
+        return o
 
     @classmethod
-    def dumps(cls, application, indent=None):
-        result = cls()._serialize_application(application)
-        return json.dumps(result, indent=indent)
+    def dumps(cls, obj, indent=None):
+        result = cls.dumpo(obj)
+        return json.dumps(result, indent=indent, default=cls.json_default)
 
     @classmethod
-    def dump(cls, application, outfile):
-        result = cls()._serialize_application(application)
-        return json.dump(result, outfile)
+    def dump(cls, obj, outfile):
+        result = cls.dumpo(obj)
+        return json.dump(result, outfile, default=cls.json_default)
 
 
 class GlueUnSerializer(object):
@@ -203,6 +206,7 @@ class GlueUnSerializer(object):
         self._objs = {}   # map name -> object
         self._working = set()
         self._rec = json.loads(record_set)
+        self._stack_depth = len(extract_stack())
 
     @classmethod
     def unserializes(cls, *objs):
@@ -225,10 +229,16 @@ class GlueUnSerializer(object):
         raise GlueSerializeError("Don't know how to load"
                                  " objects of type %s" % typ)
 
+    def register_object(self, obj_id, obj):
+        self._objs[obj_id] = obj
+
     def object(self, obj_id):
         if isinstance(obj_id, basestring):
             if obj_id in self._objs:
                 return self._objs[obj_id]
+
+            d = (len(extract_stack()) - self._stack_depth) / 2
+            print '|  ' * d + 'unserialize %s' % obj_id
 
             if obj_id not in self._rec:
                 raise GlueSerializeError("Unrecognized object %s" % obj_id)
@@ -236,9 +246,10 @@ class GlueUnSerializer(object):
             if obj_id in self._working:
                 raise GlueSerializeError(
                     "Circular Reference detected: %s" % obj_id)
-            self._working.add(obj_id)
 
+            self._working.add(obj_id)
             rec = self._rec[obj_id]
+
         elif isinstance(obj_id, literals):
             return obj_id
         else:
@@ -349,11 +360,22 @@ def _load_subset(rec, context):
     result.label = rec['label']
     return result
 
-
+@saver(DataCollection)
 def _save_data_collection(dc, context):
-    return dict(data=[context.id(data) for data in dc],
-                links=[context.id(link) for link in dc.links])
+    cids = [c for data in dc for c in data.component_ids()]
+    components = [data.get_component(c)
+                  for data in dc for c in data.component_ids()]
+    return dict(data=map(context.id, dc),
+                links=map(context.id, dc.links),
+                cids=map(context.id, cids),
+                components=map(context.id, components))
 
+@loader(DataCollection)
+def _load_data_collection(rec, context):
+    dc = DataCollection(map(context.object, rec['data']))
+    for link in rec['links']:
+        dc.add_link(context.object(link))
+    return dc
 
 @saver(Data)
 def _save_data(data, context):
@@ -372,8 +394,13 @@ def _load_data(rec, context):
     label = rec['label']
     result = Data(label=label)
     # xxx coordinates
-    for cid, comp in rec['components'].items():
-        result.add_component(context.object(comp), context.object(cid))
+    comps = [map(context.object, [k, v])
+             for k, v in rec['components'].items()]
+    comps = sorted(comps,
+                   key=lambda x: isinstance(x[1], (DerivedComponent,
+                                                   CoordinateComponent)))
+    for cid, comp in comps:
+        result.add_component(comp, cid)
 
     for s in rec['subsets']:
         result.add_subset(context.object(s))
@@ -421,9 +448,7 @@ def _save_derived_component(component, context):
 
 @loader(DerivedComponent)
 def _load_derived_component(rec, context):
-    # XXX wont work -- needs data reference
-    raise NotImplementedError
-    return DerivedComponent(link=context.object(rec['link']))
+    return DerivedComponent(None, link=context.object(rec['link']))
 
 
 @saver(ComponentLink)
@@ -435,6 +460,15 @@ def _save_component_link(link, context):
     return dict(frm=frm, to=to, using=using, inverse=inverse)
 
 
+@loader(ComponentLink)
+def _load_component_link(rec, context):
+    frm = map(context.object, rec['frm'])
+    to = map(context.object, rec['to'])[0]
+    using = context.object(rec['using'])
+    inverse = context.object(rec['inverse'])
+    return ComponentLink(frm, to, using, inverse)
+
+
 @saver(CoordinateComponentLink)
 def _save_coordinate_component_link(link, context):
     frm = map(context.id, [context.id(f) for f in link.get_from_ids()])
@@ -444,6 +478,16 @@ def _save_coordinate_component_link(link, context):
     pix2world = link.pixel2world
     return dict(frm=frm, to=to, coords=coords, index=index,
                 pix2world=pix2world)
+
+
+@loader(CoordinateComponentLink)
+def _load_coordinate_component_link(rec, context):
+    frm = map(context.object, rec['frm'])
+    to = map(context.object, rec['to'])[0]  #XXX why is this a list?
+    coords = context.object(rec['coords'])
+    index = rec['index']
+    pix2world = rec['pix2world']
+    return CoordinateComponentLink(frm, to, coords, index, pix2world)
 
 
 @saver(types.FunctionType)
@@ -459,3 +503,9 @@ def _load_function(rec, context):
     if 'pickle' in rec:
         return loads(rec['pickle'].decode('base64'))
     return _lookup(rec['function'])
+
+
+@saver(core.Session)
+def _save_session(session, context):
+    # we will rely on GlueApplication to re-populate
+    return {}

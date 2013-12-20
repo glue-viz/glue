@@ -26,6 +26,10 @@ class Coordinates(object):
     def __gluestate__(self, context):
         return {}  # no state
 
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls()
+
 
 class WCSCoordinates(Coordinates):
 

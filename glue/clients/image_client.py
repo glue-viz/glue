@@ -5,6 +5,7 @@ import numpy as np
 from .modest_image import extract_matched_slices
 from ..core.exceptions import IncompatibleAttribute
 from ..core.data import Data
+from ..core.util import lookup_class
 from ..core.subset import Subset, RoiSubsetState
 from ..core.roi import PolygonalROI
 from ..core.edit_subset_mode import EditSubsetMode
@@ -353,31 +354,35 @@ class ImageClient(VizClient):
         self.artists.append(a)
         self._update_data_plot()
         self._redraw()
+        return a
 
     def add_layer(self, layer):
         if layer in self.artists:
-            return
+            return self.artists[layer][0]
 
         if layer.data not in self.data:
             raise TypeError("Data not managed by client's data collection")
 
         if not self.can_image_data(layer.data):
             if len(layer.data.shape) == 1:  # if data is 1D, try to scatter plot
-                self.add_scatter_layer(layer)
-                return
+                return self.add_scatter_layer(layer)
             logging.getLogger(__name__).warning(
                 "Cannot visualize %s. Aborting", layer.label)
             return
 
         if isinstance(layer, Data):
-            self.artists.append(ImageLayerArtist(layer, self._ax))
+            result = ImageLayerArtist(layer, self._ax)
+            self.artists.append(result)
             for s in layer.subsets:
                 self.add_layer(s)
         elif isinstance(layer, Subset):
-            self.artists.append(SubsetImageLayerArtist(layer, self._ax))
+            result = SubsetImageLayerArtist(layer, self._ax)
+            self.artists.append(result)
             self._update_subset_single(layer)
         else:
             raise TypeError("Unrecognized layer type: %s" % type(layer))
+
+        return result
 
     def add_scatter_layer(self, layer):
         logging.getLogger(
@@ -386,8 +391,10 @@ class ImageClient(VizClient):
             logging.getLogger(__name__).debug('Layer already present')
             return
 
-        self.artists.append(ScatterLayerArtist(layer, self._ax))
+        result = ScatterLayerArtist(layer, self._ax)
+        self.artists.append(result)
         self._update_scatter_layer(layer)
+        return result
 
     @requires_data
     def _update_scatter_layer(self, layer):
@@ -443,6 +450,27 @@ class ImageClient(VizClient):
         for a in self.artists[layer]:
             a.visible = state
 
+    def restore_layers(self, layers, context):
+        """ Restore a list of glue-serialized layer dicts """
+        for layer in layers:
+            c = lookup_class(layer.pop('_type'))
+            props = dict((k, v if k == 'stretch' else context.object(v))
+                          for k, v in layer.items())
+            l = props['layer']
+
+            if c == ScatterLayerArtist:
+                l = self.add_scatter_layer(l)
+            elif c == ImageLayerArtist or c == SubsetImageLayerArtist:
+                l = self.add_layer(l)
+            elif c == RGBImageLayerArtist:
+                r = props.pop('r')
+                g = props.pop('g')
+                b = props.pop('b')
+                layer = props.pop('layer')
+                l = self.add_rgb_layer(layer, r=r, g=g, b=b)
+            else:
+                raise ValueError("Cannot restore layer of type %s" % l)
+            l.properties = props
 
 def _2d_shape(shape, slice_ori):
     """Return the shape of the 2D slice through a 2 or 3D image"""

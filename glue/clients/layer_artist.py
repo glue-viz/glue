@@ -7,7 +7,7 @@ import logging
 import numpy as np
 from matplotlib.cm import gray
 from ..core.exceptions import IncompatibleAttribute
-from ..core.util import color2rgb
+from ..core.util import color2rgb, PropertySetMixin
 from ..core.subset import Subset
 from .util import view_cascade, get_extent
 from .ds9norm import DS9Normalize
@@ -31,7 +31,8 @@ class ChangedTrigger(object):
             inst._changed = True
 
 
-class LayerArtist(object):
+class LayerArtist(PropertySetMixin):
+    _property_set = ['zorder', 'visible', 'layer']
 
     def __init__(self, layer, axes):
         """Create a new LayerArtist
@@ -39,7 +40,7 @@ class LayerArtist(object):
         :param layer: Data or subset to draw
         :type layer: :class:`~glue.core.data.Data` or `glue.core.subset.Subset`
         """
-        self.layer = layer
+        self._layer = layer
         self._axes = axes
         self._visible = True
 
@@ -52,6 +53,14 @@ class LayerArtist(object):
 
     def redraw(self):
         self._axes.figure.canvas.draw()
+
+    @property
+    def layer(self):
+        return self._layer
+
+    @layer.setter
+    def layer(self, value):
+        self._layer = value
 
     @property
     def zorder(self):
@@ -115,15 +124,28 @@ class LayerArtist(object):
     def __str__(self):
         return "%s for %s" % (self.__class__.__name__, self.layer.label)
 
+    def __gluestate__(self, context):
+        #note, this doesn't yet have a restore method. Will rely on client
+        return dict((k, context.id(v)) for k, v in self.properties.items())
+
     __repr__ = __str__
 
 
 class ImageLayerArtist(LayerArtist):
+    _property_set = LayerArtist._property_set + ['norm']
 
     def __init__(self, layer, ax):
         super(ImageLayerArtist, self).__init__(layer, ax)
-        self.norm = None
+        self._norm = None
         self._cmap = gray
+
+    @property
+    def norm(self):
+        return self._norm
+
+    @norm.setter
+    def norm(self, value):
+        self._norm = value
 
     @property
     def cmap(self):
@@ -171,7 +193,7 @@ class ImageLayerArtist(LayerArtist):
                  bias=None, contrast=None, stretch=None, norm=None,
                  clip_lo=None, clip_hi=None):
         if norm is not None:
-            self.norm = norm
+            self.norm = norm # XXX Should wrap ala DS9Normalize(norm)
             return norm
         if self.norm is None:
             self.norm = DS9Normalize()
@@ -200,17 +222,31 @@ class ImageLayerArtist(LayerArtist):
             artist.set_visible(self.visible and self.enabled)
 
 
+class Pointer(object):
+    def __init__(self, key):
+        self.key = key
+
+    def __get__(self, instance, type=None):
+        return getattr(instance, self.key, None)
+
+    def __set__(self, instance, value):
+        setattr(instance, self.key, value)
+
+
 class RGBImageLayerArtist(ImageLayerArtist):
+    _property_set = ImageLayerArtist._property_set + \
+      ['r', 'g', 'b', 'rnorm', 'gnorm', 'bnorm', 'color_visible']
+
+    r = Pointer('_r')
+    g = Pointer('_g')
+    b = Pointer('_b')
+    rnorm = Pointer('_rnorm')
+    gnorm = Pointer('_gnorm')
+    bnorm = Pointer('_bnorm')
 
     def __init__(self, layer, ax):
         super(RGBImageLayerArtist, self).__init__(layer, ax)
-        self.r = None
-        self.g = None
-        self.b = None
-        self.rnorm = None
-        self.gnorm = None
-        self.bnorm = None
-        self.contrast_layer = 'green'
+        self._contrast_layer = 'green'
         self.layer_visible = dict(red=True, green=True, blue=True)
 
     def set_norm(self, *args, **kwargs):
@@ -224,6 +260,17 @@ class RGBImageLayerArtist(ImageLayerArtist):
         if self.contrast_layer == 'blue':
             self.norm = self.bnorm
             self.bnorm = spr(*args, **kwargs)
+
+    @property
+    def color_visible(self):
+        return [self.layer_visible['red'], self.layer_visible['green'],
+                self.layer_visible['blue']]
+
+    @color_visible.setter
+    def color_visible(self, value):
+        self.layer_visible['red'] = value[0]
+        self.layer_visible['green'] = value[1]
+        self.layer_visible['blue'] = value[2]
 
     def update(self, view=None):
         self.clear()
@@ -305,6 +352,7 @@ class SubsetImageLayerArtist(LayerArtist):
 class ScatterLayerArtist(LayerArtist):
     xatt = ChangedTrigger()
     yatt = ChangedTrigger()
+    _property_set = LayerArtist._property_set + ['xatt', 'yatt']
 
     def __init__(self, layer, ax):
         super(ScatterLayerArtist, self).__init__(layer, ax)
@@ -407,7 +455,7 @@ class LayerArtistContainer(object):
         return len(self.artists)
 
     def __iter__(self):
-        return iter(self.artists)
+        return iter(sorted(self.artists, key=lambda x: x.zorder))
 
     def __contains__(self, item):
         if isinstance(item, LayerArtist):
@@ -421,6 +469,8 @@ class LayerArtistContainer(object):
 
 
 class HistogramLayerArtist(LayerArtist):
+    _property_set = LayerArtist._property_set + 'lo hi nbins xlog'.split()
+
     lo = ChangedTrigger(0)
     hi = ChangedTrigger(1)
     nbins = ChangedTrigger(10)

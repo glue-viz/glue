@@ -272,3 +272,50 @@ def coerce_numeric(arr):
         return result
 
     return np.genfromtxt(arr)
+
+
+def lookup_class(ref):
+    """ Look up an object via it's module string (e.g., 'glue.core.Data')
+
+    :param ref: reference
+    :type ref: str
+    :rtype: object, or None if not found
+    """
+    mod = ref.split('.')[0]
+    try:
+        result = __import__(mod)
+    except ImportError:
+        return None
+    try:
+        for attr in ref.split('.')[1:]:
+            result = getattr(result, attr)
+        return result
+    except AttributeError:
+        return None
+
+
+class PropertySetMixin(object):
+    """An object that provides a set of properties that
+    are meant to encapsulate state information
+
+    This class exposes a properties attribute, which is a dict
+    of all properties. Similarly, assigning to the properties dict
+    will update the individual properties
+    """
+    _property_set = []
+
+    @property
+    def properties(self):
+        """ A dict mapping property names to values """
+        return {p: getattr(self, p) for p in self._property_set}
+
+    @properties.setter
+    def properties(self, value):
+        """ Update the properties with a new dict.
+
+        Keys in the new dict must be valid property names defined in
+        the _property_set class level attribute"""
+        for k, v in value.items():
+            if k not in self._property_set:
+                raise ValueError("%s has no property %s" % (type(self), k))
+            setattr(self, k, v)
