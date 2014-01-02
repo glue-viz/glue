@@ -7,9 +7,6 @@ from ..config import exporters
 from ..qt.widgets import ScatterWidget, HistogramWidget
 
 
-D3PO_BASE = '/Users/beaumont/d3po'
-
-
 def save_page(page, label):
     """ Convert a tab of a glue session into a D3PO page
 
