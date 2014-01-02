@@ -20,6 +20,7 @@ logging.getLogger('glue').addHandler(NullHandler())
 
 from .config import load_configuration
 env = load_configuration()
+from . import plugins
 
 from .qglue import qglue
 
