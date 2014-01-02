@@ -234,6 +234,10 @@ class GlueApplication(Application, QMainWindow):
         # menu.addAction(self._actions['data_save'])  # XXX add this
         menu.addAction(self._actions['session_restore'])
         menu.addAction(self._actions['session_save'])
+        if 'session_export' in self._actions:
+            submenu = menu.addMenu("Export")
+            for a in self._actions['session_export']:
+                submenu.addAction(a)
         mbar.addMenu(menu)
 
         menu = QMenu(mbar)
@@ -323,6 +327,20 @@ class GlueApplication(Application, QMainWindow):
         a.triggered.connect(lambda *args: self._choose_save_session())
         self._actions['session_save'] = a
 
+        from glue.config import exporters
+        if len(exporters) > 0:
+            acts = []
+            name = 'Export Session'
+            for e in exporters:
+                label, saver, checker, isdir = e
+                a = act(label, self,
+                        tip='Export the current session to %s format' % label)
+                def save(*args):
+                    self._choose_export_session(saver, checker, isdir)
+                a.triggered.connect(save)
+                acts.append(a)
+            self._actions['session_export'] = acts
+
         a = act('Open Session', self,
                 tip='Restore a saved session')
         a.triggered.connect(lambda *args: self._restore_session())
@@ -376,6 +394,14 @@ class GlueApplication(Application, QMainWindow):
         if not outfile:
             return
         self.save_session(outfile)
+
+    @messagebox_on_error("Failed to export session")
+    def _choose_export_session(self, saver, checker, isdir):
+        checker(self)
+        outfile, file_filter = QFileDialog.getSaveFileName(self)
+        if not outfile:
+            return
+        saver(self, outfile)
 
     @messagebox_on_error("Failed to restore session")
     @set_cursor(Qt.WaitCursor)

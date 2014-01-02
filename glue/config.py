@@ -42,6 +42,9 @@ class Registry(object):
     def __iter__(self):
         return iter(self.members)
 
+    def __len__(self):
+        return len(self.members)
+
     def __contains__(self, value):
         return value in self.members
 
@@ -51,6 +54,45 @@ class Registry(object):
         code object to the registry, and return the original function"""
         self.add(arg)
         return arg
+
+
+class ExporterRegistry(Registry):
+    """Stores functions which can export an applocation to an output file
+
+    The members property is a list of exporters, each represented
+    as a (label, save_function, can_save_function, directory) doubles
+
+    save_function takes an (application, path) as input, and saves
+    the session
+
+    can_save_function takes an application as input, and raises an
+    exception if saving this session is not possible
+
+    directory is a boolean value that encodes whether the output
+    file is a directory
+    """
+    def default_members(self):
+        return []
+
+    def add(self, label, exporter, checker, directory=False):
+        """
+        Add a new exporter
+        :param label: Short label for the exporter
+        :type label: str
+
+        :param exporter: exporter function
+        :type exporter: function(application, path)
+
+        :param checker: function that checks if save is possible
+        :type exporter: function(application). Raises exception if
+                        export impossible
+
+        :param directory: Does the exporter create a directory?
+        :type directory: bool
+        """
+        self.members.append([label, exporter, checker, directory])
+
+
 
 class ColormapRegistry(Registry):
     """Stores colormaps for the Image Viewer. The members property is
@@ -77,7 +119,7 @@ class ColormapRegistry(Registry):
         Add colormap *cmap* with label *label*.
         """
         self.members.append([label,cmap])
-        
+
 class DataFactoryRegistry(Registry):
     """Stores data factories. Data factories take filenames as input,
     and return :class:`~glue.core.Data` instances
@@ -207,6 +249,7 @@ data_factory = DataFactoryRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
 colormaps = ColormapRegistry()
+exporters = ExporterRegistry()
 
 def load_configuration(search_path=None):
     ''' Find and import a config.py file
