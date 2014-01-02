@@ -17,11 +17,10 @@ from ..external.qt.QtCore import (Qt, QAbstractListModel, QModelIndex,
 
 from .qtutil import (edit_layer_color,
                      edit_layer_symbol, edit_layer_point_size,
-                     layer_artist_icon, RGBEdit)
+                     layer_artist_icon)
 
 from .mime import PyMimeData, LAYERS_MIME_TYPE
 from ..clients.layer_artist import LayerArtist, LayerArtistContainer
-from ..clients.layer_artist import RGBImageLayerArtist
 
 from .widgets.style_dialog import StyleDialog
 
@@ -260,8 +259,7 @@ class LayerArtistView(QListView):
         self.setPalette(p)
 
     def _update_actions(self):
-        rgb_show = isinstance(self.current_artist(), RGBImageLayerArtist)
-        self._actions['rgb'].setVisible(rgb_show)
+        pass
 
     def _create_actions(self):
         act = QAction('Properties...', self)
@@ -286,11 +284,6 @@ class LayerArtistView(QListView):
 
         act = QAction('', self)
         act.setSeparator(True)
-        self.addAction(act)
-
-        act = QAction('RGB Contrast', self)
-        act.triggered.connect(lambda: edit_rgb(self.current_artist(), self))
-        self._actions['rgb'] = act
         self.addAction(act)
 
         act = QAction('Remove', self)
@@ -324,10 +317,3 @@ class QtLayerArtistContainer(LayerArtistContainer):
 
     def __nonzero__(self):
         return True
-
-
-def edit_rgb(layer, parent):
-    if not isinstance(layer, RGBImageLayerArtist):
-        return
-    rgb = RGBEdit(layer, parent)
-    rgb.show()

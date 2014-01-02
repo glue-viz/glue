@@ -14,13 +14,14 @@ from ..external.qt.QtGui import (QColor, QInputDialog, QColorDialog,
                                  QMessageBox,
                                  QTabBar, QBitmap, QIcon, QPixmap, QImage,
                                  QDialogButtonBox, QWidget,
-                                 QVBoxLayout, QHBoxLayout, QLabel,
+                                 QVBoxLayout, QHBoxLayout, QLabel, QGridLayout,
                                  QRadioButton, QButtonGroup, QCheckBox,
                                  QSizePolicy)
 
 from .decorators import set_cursor
 from .mime import PyMimeData, LAYERS_MIME_TYPE
 from ..external.qt import is_pyside
+from .. import core
 
 
 def mpl_to_qt4_color(color, alpha=1.0):
@@ -603,91 +604,100 @@ class RGBEdit(QWidget):
     a particular RGB slice
     """
 
-    def __init__(self, artist, parent=None):
+    def __init__(self, parent=None):
         super(RGBEdit, self).__init__(parent)
-        l = QVBoxLayout()
+        self._artist = None
 
-        widths = [40, 50, 50]
+        l = QGridLayout()
 
-        lbl = QHBoxLayout()
-        junk = QLabel("")
-        junk.setMinimumWidth(widths[0])
         current = QLabel("Current")
-        current.setMinimumWidth(widths[1])
         visible = QLabel("Visible")
-        visible.setMinimumWidth(widths[2])
-        lbl.addWidget(junk)
-        lbl.addWidget(current)
-        lbl.addWidget(visible)
+        l.addWidget(current, 0, 2, 1, 1)
+        l.addWidget(visible, 0, 3, 1, 1)
+        l.setColumnStretch(0, 0)
+        l.setColumnStretch(1, 10)
+        l.setColumnStretch(2, 0)
+        l.setColumnStretch(3, 0)
 
-        r = QHBoxLayout()
-        rl = QLabel("Red")
-        rl.setMinimumWidth(widths[0])
-        rc = QRadioButton()
-        rc.setMinimumWidth(widths[1])
-        rv = QCheckBox()
-        rc.setMinimumWidth(widths[2])
-        rv.setChecked(True)
-        r.addWidget(rl)
-        r.addWidget(rc)
-        r.addWidget(rv)
+        l.setRowStretch(0, 0)
+        l.setRowStretch(1, 0)
+        l.setRowStretch(2, 0)
+        l.setRowStretch(3, 0)
+        l.setRowStretch(4, 10)
 
-        g = QHBoxLayout()
-        gl = QLabel("Green")
-        gl.setMinimumWidth(widths[0])
-        gc = QRadioButton()
-        gc.setMinimumWidth(widths[2])
-        gv = QCheckBox()
-        gv.setMinimumWidth(widths[2])
-        gv.setChecked(True)
-        g.addWidget(gl)
-        g.addWidget(gc)
-        g.addWidget(gv)
+        curr_grp = QButtonGroup()
+        self.current = {}
+        self.vis = {}
+        self.cid = {}
 
-        b = QHBoxLayout()
-        bl = QLabel("Blue")
-        bl.setMinimumWidth(widths[0])
-        bc = QRadioButton()
-        bv = QCheckBox()
-        bv.setChecked(True)
-        bc.setMinimumWidth(widths[1])
-        bv.setMinimumWidth(widths[2])
+        for row, color in enumerate(['red', 'green', 'blue'], 1):
+            lbl = QLabel(color.title())
 
-        b.addWidget(bl)
-        b.addWidget(bc)
-        b.addWidget(bv)
+            cid = ComponentIDCombo()
 
-        l.addLayout(lbl)
-        l.addLayout(r)
-        l.addLayout(g)
-        l.addLayout(b)
+            curr = QRadioButton()
+            curr_grp.addButton(curr)
+
+            vis = QCheckBox()
+            vis.setChecked(True)
+
+            l.addWidget(lbl, row, 0, 1, 1)
+            l.addWidget(cid, row, 1, 1, 1)
+            l.addWidget(curr, row, 2, 1, 1)
+            l.addWidget(vis, row, 3, 1, 1)
+
+            curr.clicked.connect(self.update_current)
+            vis.toggled.connect(self.update_visible)
+            cid.currentIndexChanged.connect(self.update_layers)
+
+            self.cid[color] = cid
+            self.vis[color] = vis
+            self.current[color] = curr
+
         self.setLayout(l)
-        self.setWindowFlags(Qt.WindowStaysOnTopHint |
-                            Qt.X11BypassWindowManagerHint |
-                            Qt.Tool)
+        self.current['red'].click()
 
-        bg = QButtonGroup()
-        bg.addButton(rc)
-        bg.addButton(gc)
-        bg.addButton(bc)
+    @property
+    def artist(self):
+        return self._artist
 
-        currents = {rc: 'red', bc: 'blue', gc: 'green'}
+    @artist.setter
+    def artist(self, value):
+        self._artist = value
+        for cid in self.cid.values():
+            cid.data = value.layer
 
-        rc.clicked.connect(lambda: setattr(artist, 'contrast_layer', 'red'))
-        gc.clicked.connect(lambda: setattr(artist, 'contrast_layer', 'green'))
-        bc.clicked.connect(lambda: setattr(artist, 'contrast_layer', 'blue'))
+    def update_layers(self):
+        if self.artist is None:
+            return
 
-        rv.toggled.connect(self.update_visible)
-        gv.toggled.connect(self.update_visible)
-        bv.toggled.connect(self.update_visible)
+        r = self.cid['red'].component
+        g = self.cid['green'].component
+        b = self.cid['blue'].component
 
-        rc.click()
+        self.artist.r = r
+        self.artist.g = g
+        self.artist.b = b
+        print 'update'
+        self.artist.update()
+        self.artist.redraw()
 
-        self.vis = {'red': rv, 'green': gv, 'blue': bv}
-        self.artist = artist
-        self.current = dict(red=rc, green=gc, blue=bc)
 
-    def update_visible(self):
+    def update_current(self, *args):
+        if self.artist is None:
+            return
+
+        for c in ['red', 'green', 'blue']:
+            if self.current[c].isChecked():
+                self.artist.contrast_layer = c
+                break
+        else:
+            raise RuntimeError("Could not determine which layer is current")
+
+    def update_visible(self, *args):
+        if self.artist is None:
+            return
+
         self.artist.layer_visible['red'] = self.vis['red'].isChecked()
         self.artist.layer_visible['green'] = self.vis['green'].isChecked()
         self.artist.layer_visible['blue'] = self.vis['blue'].isChecked()
@@ -748,6 +758,8 @@ def _custom_widgets():
     yield GlueListWidget
     yield GlueComboBox
     yield GlueActionButton
+    yield RGBEdit
+
     from .widgets.data_collection_view import DataCollectionView
     yield DataCollectionView
 
@@ -859,22 +871,88 @@ def get_icon(icon_name):
     return QIcon(icon_path(icon_name))
 
 
+class ComponentIDCombo(QtGui.QComboBox, core.HubListener):
+    """ A widget to select among componentIDs in a dataset """
+
+    def __init__(self, data=None, parent=None, visible_only=True):
+        QtGui.QComboBox.__init__(self, parent)
+        self._data = data
+        self._visible_only = visible_only
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        if value is None:
+            return
+        self._data = value
+        if value.hub is not None:
+            self.register_to_hub(value.hub)
+        self.refresh_components()
+
+    @property
+    def component(self):
+        return self.itemData(self.currentIndex())
+
+    @component.setter
+    def component(self, value):
+        for i in range(self.count()):
+            if self.itemData(i) is value:
+                self.setCurrentIndex(i)
+                return
+        else:
+            raise ValueError("Unable to select %s" % value)
+
+    def refresh_components(self):
+        if self.data is None:
+            return
+
+        self.blockSignals(True)
+        old_data = self.itemData(self.currentIndex())
+
+        self.clear()
+        if self._visible_only:
+            fields = self.data.visible_components
+        else:
+            fields = self.data.components
+
+        index = 0
+        for i, f in enumerate(fields):
+            self.addItem(f.label, userData=f)
+            if f == old_data:
+                index = i
+
+        self.blockSignals(False)
+        self.setCurrentIndex(i)
+
+
+    def register_to_hub(self, hub):
+        hub.subscribe(self,
+                      core.message.ComponentsChangedMessage,
+                      handler=lambda x: self.refresh_components,
+                      filter=lambda x: x.data is self._data)
+
+
 if __name__ == "__main__":
     from glue.qt import get_qapp
 
     class Foo(object):
         layer_visible = {}
-
+        layer = None
         def update(self):
             print 'update', self.layer_visible
 
         def redraw(self):
             print 'draw'
 
+
+
     app = get_qapp()
     f = Foo()
 
-    rgb = RGBEdit(f)
+    rgb = RGBEdit()
     rgb.show()
     app.exec_()
 

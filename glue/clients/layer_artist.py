@@ -238,17 +238,18 @@ class RGBImageLayerArtist(ImageLayerArtist):
     _property_set = ImageLayerArtist._property_set + \
         ['r', 'g', 'b', 'rnorm', 'gnorm', 'bnorm', 'color_visible']
 
-    r = Pointer('_r')
-    g = Pointer('_g')
-    b = Pointer('_b')
+    r = ChangedTrigger()
+    g = ChangedTrigger()
+    b = ChangedTrigger()
     rnorm = Pointer('_rnorm')
     gnorm = Pointer('_gnorm')
     bnorm = Pointer('_bnorm')
 
     def __init__(self, layer, ax):
         super(RGBImageLayerArtist, self).__init__(layer, ax)
-        self._contrast_layer = 'green'
+        self.contrast_layer = 'green'
         self.layer_visible = dict(red=True, green=True, blue=True)
+        self.last_view = None
 
     def set_norm(self, *args, **kwargs):
         spr = super(RGBImageLayerArtist, self).set_norm
@@ -279,11 +280,11 @@ class RGBImageLayerArtist(ImageLayerArtist):
             return
 
         if view is None:
-            view = self._last_view
+            view = self.last_view
 
         if view is None:
             return
-        self._last_view = view
+        self.last_view = view
 
         views = view_cascade(self.layer, view)
         artists = []

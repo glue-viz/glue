@@ -344,17 +344,28 @@ class ImageClient(VizClient):
             return
         self.add_layer(layer)
 
-    def add_rgb_layer(self, layer, r=None, g=None, b=None):
-        a = RGBImageLayerArtist(layer, self._ax)
-        a.r = r
-        a.g = g
-        a.b = b
-        for artist in self.artists.pop(layer):
-            artist.clear()
-        self.artists.append(a)
+    def rgb_mode(self, enable):
+        result = None
+        layer = self.display_data
+        if enable:
+            layer = self.display_data
+            a = RGBImageLayerArtist(layer, self._ax)
+            a.last_view = self._view or self._build_view(matched=True)
+
+            for artist in self.artists.pop(layer):
+                artist.clear()
+            self.artists.append(a)
+            result = a
+        else:
+            for artist in list(self.artists):
+                if isinstance(artist, RGBImageLayerArtist):
+                    artist.clear()
+                self.artists.remove(artist)
+            result = self.add_layer(layer)
+
         self._update_data_plot()
         self._redraw()
-        return a
+        return result
 
     def add_layer(self, layer):
         if layer in self.artists:

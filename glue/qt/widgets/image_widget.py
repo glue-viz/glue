@@ -19,7 +19,7 @@ from .mpl_widget import MplWidget
 
 
 from ..decorators import set_cursor
-from ..qtutil import cmap2pixmap, select_rgb, load_ui, get_icon
+from ..qtutil import cmap2pixmap, load_ui, get_icon
 
 WARN_THRESH = 10000000  # warn when contouring large images
 
@@ -50,6 +50,7 @@ class ImageWidget(DataViewer):
     def _tweak_geometry(self):
         self.central_widget.resize(600, 400)
         self.resize(self.central_widget.size())
+        self.ui.rgb_options.hide()
 
     def _create_actions(self):
         # pylint: disable=E1101
@@ -63,13 +64,6 @@ class ImageWidget(DataViewer):
         self._cmaps = []
         for label, cmap in config.colormaps:
             self._cmaps.append(act(label, cmap))
-        self._rgb_add = QAction('RGB', self)
-        self._rgb_add.triggered.connect(self._add_rgb)
-
-    def _add_rgb(self):
-        drgb = select_rgb(self._data, default=self.current_data)
-        if drgb is not None:
-            self.client.add_rgb_layer(*drgb)
 
     def make_toolbar(self):
         result = GlueToolbar(self.central_widget.canvas, self, name='Image')
@@ -84,8 +78,6 @@ class ImageWidget(DataViewer):
         tb.setPopupMode(QToolButton.InstantPopup)
         tb.addActions(self._cmaps)
         result.addWidget(tb)
-
-        result.addAction(self._rgb_add)
 
         # connect viewport update buttons to client commands to
         # allow resampling
@@ -222,6 +214,22 @@ class ImageWidget(DataViewer):
         ui.attributeComboBox.currentIndexChanged.connect(self.set_attribute)
         ui.sliceComboBox.currentIndexChanged.connect(self.set_orientation)
         ui.imageSlider.sliderMoved.connect(self.set_slider)
+
+        ui.monochrome.toggled.connect(self._update_rgb_console)
+
+    def _update_rgb_console(self, is_monochrome):
+        if is_monochrome:
+            self.ui.rgb_options.hide()
+            self.ui.mono_att_label.show()
+            self.ui.attributeComboBox.show()
+            self.client.rgb_mode(False)
+        else:
+            self.ui.mono_att_label.hide()
+            self.ui.attributeComboBox.hide()
+            self.ui.rgb_options.show()
+            rgb = self.client.rgb_mode(True)
+            if rgb is not None:
+                self.ui.rgb_options.artist = rgb
 
     def register_to_hub(self, hub):
         super(ImageWidget, self).register_to_hub(hub)
