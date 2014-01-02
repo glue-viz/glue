@@ -4,11 +4,10 @@ import sys
 from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                                  QMenu, QMdiSubWindow, QAction, QMessageBox,
                                  QFileDialog,
-                                 QToolButton, QSplitter, QVBoxLayout, QWidget)
+                                 QToolButton, QVBoxLayout, QWidget)
 from ..external.qt.QtCore import Qt, QSize
 
-from .. import core
-from ..core import command
+from ..core import command, Session
 from .. import env
 from ..qt import get_qapp
 from .decorators import set_cursor, messagebox_on_error
@@ -41,9 +40,10 @@ class GlueApplication(Application, QMainWindow):
 
     """ The main Glue window """
 
-    def __init__(self, data_collection=None, hub=None):
+    def __init__(self, data_collection=None, session=None):
         QMainWindow.__init__(self)
-        Application.__init__(self, data_collection=data_collection, hub=hub)
+        Application.__init__(self, data_collection=data_collection,
+                             session=session)
 
         self.app = get_qapp()
 
@@ -96,8 +96,17 @@ class GlueApplication(Application, QMainWindow):
         return self._ui.tabWidget.tabBar()
 
     @property
+    def tab_count(self):
+        return self._ui.tabWidget.count()
+
+    @property
     def current_tab(self):
         return self._ui.tabWidget.currentWidget()
+
+    def tab(self, index=None):
+        if index is None:
+            return self.current_tab
+        return self._ui.tabWidget.widget(index)
 
     def new_tab(self):
         """Spawn a new tab page"""
@@ -120,14 +129,23 @@ class GlueApplication(Application, QMainWindow):
         w.close()
         self.tab_widget.removeTab(index)
 
-    def add_to_current_tab(self, new_widget, label=None):
-        page = self.current_tab
-        sub = QMdiSubWindow()
-        sub.setWidget(new_widget)
+    def add_widget(self, new_widget, label=None, tab=None):
+        """ Add a widget to one of the tabs
 
-        new_widget.destroyed.connect(sub.close)
+        :param new_widget: Widge to add
+        :type new_widget: QWidget
 
-        sub.resize(new_widget.size())
+        :param label: label for the new window. Optional
+        :type label: str
+
+        :param tab: Tab to add to. Optional (default: current tab)
+        :type tab: int
+
+        :rtype: QMdiSubWindow. The window that this widget is wrapped in
+        """
+        page = self.tab(tab)
+
+        sub = new_widget.mdi_wrap()
         if label:
             sub.setWindowTitle(label)
         page.addSubWindow(sub)
@@ -216,6 +234,10 @@ class GlueApplication(Application, QMainWindow):
         # menu.addAction(self._actions['data_save'])  # XXX add this
         menu.addAction(self._actions['session_restore'])
         menu.addAction(self._actions['session_save'])
+        if 'session_export' in self._actions:
+            submenu = menu.addMenu("Export")
+            for a in self._actions['session_export']:
+                submenu.addAction(a)
         mbar.addMenu(menu)
 
         menu = QMenu(mbar)
@@ -305,6 +327,21 @@ class GlueApplication(Application, QMainWindow):
         a.triggered.connect(lambda *args: self._choose_save_session())
         self._actions['session_save'] = a
 
+        from glue.config import exporters
+        if len(exporters) > 0:
+            acts = []
+            name = 'Export Session'
+            for e in exporters:
+                label, saver, checker, isdir = e
+                a = act(label, self,
+                        tip='Export the current session to %s format' % label)
+
+                def save(*args):
+                    self._choose_export_session(saver, checker, isdir)
+                a.triggered.connect(save)
+                acts.append(a)
+            self._actions['session_export'] = acts
+
         a = act('Open Session', self,
                 tip='Restore a saved session')
         a.triggered.connect(lambda *args: self._restore_session())
@@ -359,6 +396,14 @@ class GlueApplication(Application, QMainWindow):
             return
         self.save_session(outfile)
 
+    @messagebox_on_error("Failed to export session")
+    def _choose_export_session(self, saver, checker, isdir):
+        checker(self)
+        outfile, file_filter = QFileDialog.getSaveFileName(self)
+        if not outfile:
+            return
+        saver(self, outfile)
+
     @messagebox_on_error("Failed to restore session")
     @set_cursor(Qt.WaitCursor)
     def _restore_session(self, show=True):
@@ -376,7 +421,8 @@ class GlueApplication(Application, QMainWindow):
         data, hub = state
         pos = self.pos()
         size = self.size()
-        ga = GlueApplication(data_collection=data, hub=hub)
+        session = Session(data_collection=data, hub=hub)
+        ga = GlueApplication(session=session)
         ga.move(pos)
         ga.resize(size)
 
@@ -414,7 +460,7 @@ class GlueApplication(Application, QMainWindow):
             self._setup_terminal_error_dialog(e)
             return
 
-        self._terminal = self.add_to_current_tab(widget, label='IPython')
+        self._terminal = self.add_widget(widget, label='IPython')
         self._hide_terminal()
 
     def _setup_terminal_error_dialog(self, exception):
@@ -490,3 +536,20 @@ class GlueApplication(Application, QMainWindow):
         undo, redo = self._cmds.can_undo_redo()
         self._actions['undo'].setEnabled(undo)
         self._actions['redo'].setEnabled(redo)
+
+    @property
+    def viewers(self):
+        result = []
+        for t in range(self.tab_count):
+            tab = self.tab(t)
+            item = []
+            for subwindow in tab.subWindowList():
+                widget = subwindow.widget()
+                if isinstance(widget, DataViewer):
+                    item.append(widget)
+            result.append(tuple(item))
+        return tuple(result)
+
+    @property
+    def tab_names(self):
+        return [self.tab_bar.tabText(i) for i in range(self.tab_count)]

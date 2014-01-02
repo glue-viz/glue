@@ -4,7 +4,9 @@ import imp
 import logging
 from collections import namedtuple
 
+
 class Registry(object):
+
     """Registry instances are used by Glue to track objects
     used for various tasks like data linking, widget creation, etc.
     They have the following properties:
@@ -15,6 +17,7 @@ class Registry(object):
     - A call interface, allowing the instance to be used as a decorator
       for users to add new items to the registry in their config files
     """
+
     def __init__(self):
         self._members = []
         self._loaded = False
@@ -42,6 +45,9 @@ class Registry(object):
     def __iter__(self):
         return iter(self.members)
 
+    def __len__(self):
+        return len(self.members)
+
     def __contains__(self, value):
         return value in self.members
 
@@ -52,10 +58,52 @@ class Registry(object):
         self.add(arg)
         return arg
 
+
+class ExporterRegistry(Registry):
+
+    """Stores functions which can export an applocation to an output file
+
+    The members property is a list of exporters, each represented
+    as a (label, save_function, can_save_function, directory) doubles
+
+    save_function takes an (application, path) as input, and saves
+    the session
+
+    can_save_function takes an application as input, and raises an
+    exception if saving this session is not possible
+
+    directory is a boolean value that encodes whether the output
+    file is a directory
+    """
+
+    def default_members(self):
+        return []
+
+    def add(self, label, exporter, checker, directory=False):
+        """
+        Add a new exporter
+        :param label: Short label for the exporter
+        :type label: str
+
+        :param exporter: exporter function
+        :type exporter: function(application, path)
+
+        :param checker: function that checks if save is possible
+        :type exporter: function(application). Raises exception if
+                        export impossible
+
+        :param directory: Does the exporter create a directory?
+        :type directory: bool
+        """
+        self.members.append([label, exporter, checker, directory])
+
+
 class ColormapRegistry(Registry):
+
     """Stores colormaps for the Image Viewer. The members property is
     a list of colormaps, each represented as a [name,cmap] pair.
     """
+
     def default_members(self):
         import matplotlib.cm as cm
         members = []
@@ -76,9 +124,11 @@ class ColormapRegistry(Registry):
         """
         Add colormap *cmap* with label *label*.
         """
-        self.members.append([label,cmap])
-        
+        self.members.append([label, cmap])
+
+
 class DataFactoryRegistry(Registry):
+
     """Stores data factories. Data factories take filenames as input,
     and return :class:`~glue.core.Data` instances
 
@@ -115,6 +165,7 @@ class DataFactoryRegistry(Registry):
 
 
 class QtClientRegistry(Registry):
+
     """Stores QT widgets to visualize data.
 
     The members property is a list of Qt widget classes
@@ -125,6 +176,7 @@ class QtClientRegistry(Registry):
         class CustomWidget(QMainWindow):
             ...
     """
+
     def default_members(self):
         try:
             from .qt.widgets.scatter_widget import ScatterWidget
@@ -138,6 +190,7 @@ class QtClientRegistry(Registry):
 
 
 class LinkFunctionRegistry(Registry):
+
     """Stores functions to convert between quantities
 
     The members properety is a list of (function, info_string,
@@ -170,6 +223,7 @@ class LinkFunctionRegistry(Registry):
 
 
 class LinkHelperRegistry(Registry):
+
     """Stores helper objects that compute many ComponentLinks at once
 
     The members property is a list of (object, info_string,
@@ -207,6 +261,8 @@ data_factory = DataFactoryRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
 colormaps = ColormapRegistry()
+exporters = ExporterRegistry()
+
 
 def load_configuration(search_path=None):
     ''' Find and import a config.py file

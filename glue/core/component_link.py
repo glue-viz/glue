@@ -16,6 +16,7 @@ OPSYM = {operator.add: '+', operator.sub: '-',
 
 
 class ComponentLink(object):
+
     """ ComponentLinks represent transformation logic between ComponentIDs
 
     ComponentLinks are used by Glue to derive information not stored
@@ -39,7 +40,8 @@ class ComponentLink(object):
     Now, if a data set has information stored with the hour componentID,
     ``link.compute(data)`` will convert that information to minutes
     """
-    def __init__(self, comp_from, comp_to, using=None):
+
+    def __init__(self, comp_from, comp_to, using=None, inverse=None):
         """
         :param comp_from: The input ComponentIDs
         :type comp_from: list of :class:`~glue.core.data.ComponentID`
@@ -49,11 +51,14 @@ class ComponentLink(object):
 
         :pram using: The translation function which maps data from
                      comp_from to comp_to
-        :type using: callable
+        :type using: callable, or None
 
         The using function should satisfy::
 
                using(data[comp_from[0]],...,data[comp_from[-1]]) = desired data
+
+        :param inverse: The inverse translation function, if exists
+        :type inverse: callable, or None
 
         *Raises*:
 
@@ -64,6 +69,7 @@ class ComponentLink(object):
         self._from = comp_from
         self._to = comp_to
         self._using = using or identity
+        self._inverse = inverse
 
         self.hidden = using is None or using is identity  # show in widgets?
         self.identity = self.hidden  # identity link?
@@ -73,9 +79,11 @@ class ComponentLink(object):
             raise TypeError("comp_from must be a list: %s" % type(comp_from))
 
         if not all(isinstance(f, ComponentID) for f in self._from):
-            raise TypeError("from argument is not a list of ComponentIDs")
+            raise TypeError("from argument is not a list of ComponentIDs: %s" %
+                            self._from)
         if not isinstance(self._to, ComponentID):
-            raise TypeError("to argument is not a ComponentID")
+            raise TypeError("to argument is not a ComponentID: %s" %
+                            type(self._to))
 
         if using is None:
             if len(comp_from) != 1:
@@ -144,6 +152,10 @@ class ComponentLink(object):
         """ The transformation function """
         return self._using
 
+    def get_inverse(self):
+        """ The inverse transformation, or None """
+        return self._inverse
+
     def __str__(self):
         args = ", ".join([t.label for t in self._from])
         if self._using is not identity:
@@ -198,7 +210,23 @@ class ComponentLink(object):
         return InequalitySubsetState(self, other, operator.ge)
 
 
+class CoordinateComponentLink(ComponentLink):
+
+    def __init__(self, comp_from, comp_to, coords, index, pixel2world=True):
+        self.coords = coords
+        self.index = index
+        self.pixel2world = pixel2world
+        super(CoordinateComponentLink, self).__init__(
+            comp_from, comp_to, self.using)
+
+    def using(self, *args):
+        attr = 'pixel2world' if self.pixel2world else 'world2pixel'
+        func = getattr(self.coords, attr)
+        return func(*args[::-1])[::-1][self.index]
+
+
 class BinaryComponentLink(ComponentLink):
+
     """
     A ComponentLink that combines two inputs with a binary function
 
@@ -213,6 +241,7 @@ class BinaryComponentLink(ComponentLink):
     The CompoentLink represents the logic of applying `op` to the
     data associated with the inputs `left` and `right`.
     """
+
     def __init__(self, left, right, op):
         from .data import ComponentID
 

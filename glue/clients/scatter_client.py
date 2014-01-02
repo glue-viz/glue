@@ -7,7 +7,7 @@ from ..core.client import Client
 from ..core.data import Data
 from ..core.subset import RoiSubsetState
 from ..core.roi import PolygonalROI
-from ..core.util import relim
+from ..core.util import relim, lookup_class
 from ..core.edit_subset_mode import EditSubsetMode
 from .viz_client import init_mpl
 from .layer_artist import ScatterLayerArtist, LayerArtistContainer
@@ -117,16 +117,21 @@ class ScatterClient(Client):
         or a subset. Updates both the client data structure and the
         plot.
 
+        Returns the created layer artist
+
         :param layer: the layer to add
         :type layer: :class:`~glue.core.Data` or :class:`~glue.core.Subset`
         """
         if layer.data not in self.data:
             raise TypeError("Layer not in data collection")
         if layer in self.artists:
-            return
-        self.artists.append(ScatterLayerArtist(layer, self.axes))
+            return self.artists[layer][0]
+
+        result = ScatterLayerArtist(layer, self.axes)
+        self.artists.append(result)
         self._update_layer(layer)
         self._ensure_subsets_added(layer)
+        return result
 
     def _ensure_subsets_added(self, layer):
         if not isinstance(layer, Data):
@@ -318,9 +323,10 @@ class ScatterClient(Client):
         subset.do_broadcast(True)
 
     def add_data(self, data):
-        self.add_layer(data)
+        result = self.add_layer(data)
         for subset in data.subsets:
             self.add_layer(subset)
+        return result
 
     @property
     def data(self):
@@ -329,6 +335,17 @@ class ScatterClient(Client):
 
     def _update_subset(self, message):
         self._update_layer(message.sender)
+
+    def restore_layers(self, layers, context):
+        """ Re-generate a list of plot layers from a glue-serialized list"""
+        for l in layers:
+            cls = lookup_class(l.pop('_type'))
+            if cls != ScatterLayerArtist:
+                raise ValueError("Scatter client cannot restore layer of type "
+                                 "%s" % cls)
+            props = dict((k, context.object(v)) for k, v in l.items())
+            layer = self.add_layer(props['layer'])
+            layer.properties = props
 
     def _update_layer(self, layer):
         """ Update both the style and data for the requested layer"""

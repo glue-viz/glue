@@ -1,6 +1,7 @@
 import os
 
-from ...external.qt.QtGui import (QMainWindow, QMessageBox, QWidget)
+from ...external.qt.QtGui import (
+    QMainWindow, QMessageBox, QWidget, QMdiSubWindow)
 
 from ...external.qt.QtCore import Qt
 
@@ -8,6 +9,7 @@ from ...core.hub import HubListener
 from ...core.data import Data
 from ...core.subset import Subset
 from ...core import command
+from ...core.application_base import ViewerBase
 from ..decorators import set_cursor
 
 from ..layer_artist_model import QtLayerArtistContainer, LayerArtistView
@@ -15,7 +17,8 @@ from .. import get_qapp
 from ..mime import LAYERS_MIME_TYPE, LAYER_MIME_TYPE
 
 
-class DataViewer(QMainWindow, HubListener):
+class DataViewer(QMainWindow, ViewerBase):
+
     """Base class for all Qt DataViewer widgets.
 
     This defines a minimal interface, and implemlements the following:
@@ -23,17 +26,15 @@ class DataViewer(QMainWindow, HubListener):
        * An automatic call to unregister on window close
        * Drag and drop support for adding data
     """
+    _container_cls = QtLayerArtistContainer
+
     def __init__(self, session, parent=None):
         """
         :type session: :class:`~glue.core.Session`
         """
         QMainWindow.__init__(self, parent)
-        HubListener.__init__(self)
+        ViewerBase.__init__(self, session)
         self.setWindowIcon(get_qapp().windowIcon())
-        self._data = session.data_collection
-        self._session = session
-        self._hub = None
-        self._container = QtLayerArtistContainer()
         self._view = LayerArtistView()
         self._view.setModel(self._container.model)
         self._tb_vis = {}  # store whether toolbars are enabled
@@ -43,48 +44,10 @@ class DataViewer(QMainWindow, HubListener):
         self._toolbars = []
         self._warn_close = True
         self.setContentsMargins(2, 2, 2, 2)
-
-    def register_to_hub(self, hub):
-        self._hub = hub
-
-    def unregister(self, hub):
-        """ Abstract method to unsubscribe from messages """
-        raise NotImplementedError
-
-    def request_add_layer(self, layer):
-        """ Issue a command to add a layer """
-        cmd = command.AddLayer(layer=layer, viewer=self)
-        self._session.command_stack.do(cmd)
-
-    def add_layer(self, layer):
-        if isinstance(layer, Data):
-            self.add_data(layer)
-        else:
-            assert isinstance(layer, Subset)
-            self.add_subset(layer)
+        self._mdi_wrapper = None  # QMdiSubWindow that self is embedded in
 
     def remove_layer(self, layer):
         self._container.pop(layer)
-
-    def add_data(self, data):
-        """ Add a data instance to the viewer
-
-        This must be overridden by a subclass
-
-        :param data: Data object to add
-        :type data: :class:`~glue.core.Data`
-        """
-        raise NotImplementedError
-
-    def add_subset(self, subset):
-        """ Add a subset to the viewer
-
-        This must be overridden by a subclass
-
-        :param subset: Subset instance to add
-        :type subset: :class:`~glue.core.subset.Subset`
-        """
-        raise NotImplementedError
 
     def dragEnterEvent(self, event):
         """ Accept the event if it has data layers"""
@@ -113,21 +76,51 @@ class DataViewer(QMainWindow, HubListener):
             down to the MDI area """
         event.accept()
 
-    @set_cursor(Qt.WaitCursor)
-    def apply_roi(self, roi):
-        """
-        Apply an ROI to the client
-
-        :param roi: The ROI to apply
-        :type roi: :class:`~glue.core.roi.Roi`
-        """
-        cmd = command.ApplyROI(client=self.client, roi=roi)
-        self._session.command_stack.do(cmd)
+    apply_roi = set_cursor(Qt.WaitCursor)(ViewerBase.apply_roi)
 
     def close(self, warn=True):
         self._warn_close = warn
         super(DataViewer, self).close()
         self._warn_close = True
+
+    def mdi_wrap(self):
+        """Wrap this object in a QMdiSubWindow"""
+        sub = QMdiSubWindow()
+        sub.setWidget(self)
+        self.destroyed.connect(sub.close)
+        sub.resize(self.size())
+        self._mdi_wrapper = sub
+        return sub
+
+    @property
+    def position(self):
+        target = self._mdi_wrapper or self
+        pos = target.pos()
+        return pos.x(), pos.y()
+
+    def move(self, x=None, y=None):
+        x0, y0 = self.position
+        target = self._mdi_wrapper or self
+        if x is None:
+            x = x0
+        if y is None:
+            y = y0
+        if self._mdi_wrapper is not None:
+            self._mdi_wrapper.move(x, y)
+        else:
+            QMainWindow.move(self, x, y)
+
+    @property
+    def viewer_size(self):
+        sz = QMainWindow.size(self)
+        return sz.width(), sz.height()
+
+    @viewer_size.setter
+    def viewer_size(self, value):
+        width, height = value
+        self.resize(width, height)
+        if self._mdi_wrapper is not None:
+            self._mdi_wrapper.resize(width, height)
 
     def closeEvent(self, event):
         """ Call unregister on window close """

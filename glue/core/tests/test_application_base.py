@@ -22,7 +22,7 @@ class MockApplication(Application):
     def new_tab(self):
         self.tab.tab()
 
-    def add_to_current_tab(self, widget, label=None):
+    def add_widget(self, widget, label=None, tab=None):
         self.tab.add(widget, label)
 
     def close_tab(self):

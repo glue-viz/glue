@@ -7,8 +7,10 @@ from ...external.qt.QtCore import Qt
 
 from ...core import message as msg
 from ...core import Data
-from ...core.callback_property import add_callback
 from ...clients.histogram_client import HistogramClient
+from ..widget_properties import (connect_int_spin, ButtonProperty,
+                                 FloatLineProperty, CurrentComboProperty,
+                                 SpinnerProperty)
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import HRangeMode
 from .data_viewer import DataViewer
@@ -18,17 +20,24 @@ from ..qtutil import pretty_number, load_ui
 WARN_SLOW = 10000000
 
 
-def connect_int_spin(client, prop, widget):
-    add_callback(client, prop, widget.setValue)
-    widget.valueChanged.connect(partial(setattr, client, prop))
-
-
 def _hash(x):
     return str(id(x))
 
 
 class HistogramWidget(DataViewer):
     LABEL = "Histogram"
+    _property_set = DataViewer._property_set + \
+        'xmin xmax normed autoscale cumulative xlog ylog component nbins'.split(
+        )
+
+    xmin = FloatLineProperty('ui.xmin')
+    xmax = FloatLineProperty('ui.xmax')
+    normed = ButtonProperty('ui.normalized_box')
+    autoscale = ButtonProperty('ui.autoscale_box')
+    cumulative = ButtonProperty('ui.cumulative_box')
+    nbins = SpinnerProperty('ui.binSpinBox')
+    xlog = ButtonProperty('ui.xlog_box')
+    ylog = ButtonProperty('ui.ylog_box')
 
     def __init__(self, session, parent=None):
         super(HistogramWidget, self).__init__(session, parent)
@@ -108,9 +117,9 @@ class HistogramWidget(DataViewer):
         combo.blockSignals(True)
         combo.clear()
 
-        #implementation note:
-        #PySide doesn't robustly store python objects with setData
-        #use _hash(x) instead
+        # implementation note:
+        # PySide doesn't robustly store python objects with setData
+        # use _hash(x) instead
         model = QtGui.QStandardItemModel()
         data_ids = set(_hash(d) for d in self._data)
         self._component_hashes = {_hash(c): c for d in self._data
@@ -132,7 +141,7 @@ class HistogramWidget(DataViewer):
                 model.appendRow(item)
         combo.setModel(model)
 
-        #separators below data items
+        # separators below data items
         for i in range(combo.count()):
             if combo.itemData(i) in data_ids:
                 combo.insertSeparator(i + 1)
@@ -154,7 +163,10 @@ class HistogramWidget(DataViewer):
     @component.setter
     def component(self, component):
         combo = self.ui.attributeCombo
-        #combo.findData doesn't seem to work in ...external.qt
+        if combo.count() == 0:  # cold start problem, when restoring
+            self._update_attributes()
+
+        # combo.findData doesn't seem to work robustly
         for i in range(combo.count()):
             data = combo.itemData(i)
             if data == _hash(component):

@@ -9,6 +9,7 @@ from ..core.edit_subset_mode import EditSubsetMode
 from .layer_artist import HistogramLayerArtist, LayerArtistContainer
 from .util import visible_limits
 from ..core.callback_property import CallbackProperty, add_callback
+from ..core.util import lookup_class
 
 
 class UpdateProperty(CallbackProperty):
@@ -115,7 +116,7 @@ class HistogramClient(Client):
 
         self._ensure_layer_data_present(layer)
         if self.layer_present(layer):
-            return
+            return self._artists[layer][0]
 
         art = HistogramLayerArtist(layer, self._axes)
         self._artists.append(art)
@@ -123,6 +124,7 @@ class HistogramClient(Client):
         self._ensure_subsets_present(layer)
         self._sync_layer(layer)
         self._redraw()
+        return art
 
     def _redraw(self):
         self._axes.figure.canvas.draw()
@@ -294,3 +296,12 @@ class HistogramClient(Client):
         hub.subscribe(self,
                       msg.DataCollectionDeleteMessage,
                       handler=self._remove_data)
+
+    def restore_layers(self, layers, context):
+        for layer in layers:
+            lcls = lookup_class(layer.pop('_type'))
+            if lcls != HistogramLayerArtist:
+                raise ValueError("Cannot restore layers of type %s" % lcls)
+            data_or_subset = context.object(layer.pop('layer'))
+            result = self.add_layer(data_or_subset)
+            result.properties = layer

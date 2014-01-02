@@ -91,17 +91,17 @@ class TestComponentLink(object):
         cid = ComponentID('test')
         with pytest.raises(TypeError) as exc:
             ComponentLink([None], cid)
-        assert exc.value.args[0] == \
-            'from argument is not a list of ComponentIDs'
+        assert exc.value.args[0].startswith('from argument is not a list '
+                                            'of ComponentIDs')
 
         with pytest.raises(TypeError) as exc:
             ComponentLink([cid], None)
-        assert exc.value.args[0] == 'to argument is not a ComponentID'
+        assert exc.value.args[0].startswith('to argument is not a ComponentID')
 
         with pytest.raises(TypeError) as exc:
             ComponentLink([cid, None], None, using=lambda x, y: None)
-        assert exc.value.args[0] == \
-            'from argument is not a list of ComponentIDs'
+        assert exc.value.args[0].startswith('from argument is not a list '
+                                            'of ComponentIDs')
 
 l = ComponentLink([ComponentID('a')], ComponentID('b'))
 cid = ComponentID('a')

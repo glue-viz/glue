@@ -152,3 +152,15 @@ class DS9Normalize(Normalize, object):
             result = np.subtract(1, result, out=result)
 
         return result
+
+    def __gluestate__(self, context):
+        return dict(vmin=self.vmin, vmax=self.vmax, clip_lo=self.clip_lo,
+                    clip_hi=self.clip_hi, stretch=self.stretch, bias=self.bias,
+                    contrast=self.contrast)
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        result = cls()
+        for k, v in rec.items():
+            setattr(result, k, v)
+        return result

@@ -62,7 +62,7 @@ class ImageWidget(DataViewer):
 
         self._cmaps = []
         for label, cmap in config.colormaps:
-            self._cmaps.append(act(label,cmap))
+            self._cmaps.append(act(label, cmap))
         self._rgb_add = QAction('RGB', self)
         self._rgb_add.triggered.connect(self._add_rgb)
 

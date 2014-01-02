@@ -167,7 +167,8 @@ def start_glue(gluefile=None, config=None, datafiles=None):
         else:
             hub = glue.core.Hub()
 
-    ga = GlueApplication(data_collection=data, hub=hub)
+    session = glue.core.Session(data_collection=data, hub=hub)
+    ga = GlueApplication(session=session)
     #ga.show()
     #splash.close()
     #ga.raise_()
