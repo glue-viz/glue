@@ -24,14 +24,14 @@ def save_page(page, label):
 
     d = page[0]._data[0]
     unselected = dict(opacity=d.style.alpha,
-                      size=d.style.markersize,
+                      size=d.style.markersize / 2,
                       color=d.style.color)
     result['markerStyle'] = dict(unselected=unselected)
 
     has_subset = len(page[0]._data[0].subsets) == 1
     if has_subset:
         s = d.subsets[0].style
-        selected = dict(opacity=s.alpha, size=s.markersize, color=s.color)
+        selected = dict(opacity=s.alpha, size=s.markersize / 2, color=s.color)
         result['markerStyle']['selected'] = selected
         result['selection'] = {'type': 'booleanColumn',
                                'columnName': 'selection'}
