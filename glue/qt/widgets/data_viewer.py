@@ -7,6 +7,9 @@ from ...external.qt.QtCore import Qt
 from ...core.hub import HubListener
 from ...core.data import Data
 from ...core.subset import Subset
+from ...core import command
+from ..decorators import set_cursor
+
 from ..layer_artist_model import QtLayerArtistContainer, LayerArtistView
 from .. import get_qapp
 from ..mime import LAYERS_MIME_TYPE, LAYER_MIME_TYPE
@@ -20,11 +23,15 @@ class DataViewer(QMainWindow, HubListener):
        * An automatic call to unregister on window close
        * Drag and drop support for adding data
     """
-    def __init__(self, data, parent=None):
+    def __init__(self, session, parent=None):
+        """
+        :type session: :class:`~glue.core.Session`
+        """
         QMainWindow.__init__(self, parent)
         HubListener.__init__(self)
         self.setWindowIcon(get_qapp().windowIcon())
-        self._data = data
+        self._data = session.data_collection
+        self._session = session
         self._hub = None
         self._container = QtLayerArtistContainer()
         self._view = LayerArtistView()
@@ -43,6 +50,21 @@ class DataViewer(QMainWindow, HubListener):
     def unregister(self, hub):
         """ Abstract method to unsubscribe from messages """
         raise NotImplementedError
+
+    def request_add_layer(self, layer):
+        """ Issue a command to add a layer """
+        cmd = command.AddLayer(layer=layer, viewer=self)
+        self._session.command_stack.do(cmd)
+
+    def add_layer(self, layer):
+        if isinstance(layer, Data):
+            self.add_data(layer)
+        else:
+            assert isinstance(layer, Subset)
+            self.add_subset(layer)
+
+    def remove_layer(self, layer):
+        self._container.pop(layer)
 
     def add_data(self, data):
         """ Add a data instance to the viewer
@@ -75,20 +97,14 @@ class DataViewer(QMainWindow, HubListener):
 
     def dropEvent(self, event):
         """ Add layers to the viewer if contained in mime data """
-        def add_layer(layer):
-            if isinstance(layer, Data):
-                self.add_data(layer)
-            else:
-                assert isinstance(layer, Subset)
-                self.add_subset(layer)
 
         if event.mimeData().hasFormat(LAYER_MIME_TYPE):
-            add_layer(event.mimeData().data(LAYER_MIME_TYPE))
+            self.request_add_layer(event.mimeData().data(LAYER_MIME_TYPE))
 
         assert event.mimeData().hasFormat(LAYERS_MIME_TYPE)
 
         for layer in event.mimeData().data(LAYERS_MIME_TYPE):
-            add_layer(layer)
+            self.request_add_layer(layer)
 
         event.accept()
 
@@ -96,6 +112,17 @@ class DataViewer(QMainWindow, HubListener):
         """ Consume mouse press events, and prevent them from propagating
             down to the MDI area """
         event.accept()
+
+    @set_cursor(Qt.WaitCursor)
+    def apply_roi(self, roi):
+        """
+        Apply an ROI to the client
+
+        :param roi: The ROI to apply
+        :type roi: :class:`~glue.core.roi.Roi`
+        """
+        cmd = command.ApplyROI(client=self.client, roi=roi)
+        self._session.command_stack.do(cmd)
 
     def close(self, warn=True):
         self._warn_close = warn

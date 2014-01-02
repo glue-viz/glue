@@ -2,6 +2,7 @@
 from ..image_widget import ImageWidget
 
 from .... import core
+from . import simple_session
 
 import os
 os.environ['GLUE_TESTING'] = 'True'
@@ -10,15 +11,17 @@ os.environ['GLUE_TESTING'] = 'True'
 class TestImageWidget(object):
 
     def setup_method(self, method):
-        self.hub = core.hub.Hub()
+        self.session = simple_session()
+        self.hub = self.session.hub
+        self.collect = self.session.data_collection
+
         self.im = core.Data(label='im',
                             x=[[1, 2], [3, 4]],
                             y=[[2, 3], [4, 5]])
         self.cube = core.Data(label='cube',
                               x=[[[1, 2], [3, 4]], [[1, 2], [3, 4]]],
                               y=[[[1, 2], [3, 4]], [[1, 2], [3, 4]]])
-        self.collect = core.data_collection.DataCollection()
-        self.widget = ImageWidget(self.collect)
+        self.widget = ImageWidget(self.session)
         self.connect_to_hub()
         self.collect.append(self.im)
         self.collect.append(self.cube)
@@ -82,11 +85,11 @@ class TestImageWidget(object):
         return [combo.itemText(i) for i in range(combo.count())]
 
     def test_data_not_added_on_init(self):
-        w = ImageWidget(self.collect)
+        w = ImageWidget(self.session)
         assert self.im not in w.client.artists
 
     def test_selection_switched_on_add(self):
-        w = ImageWidget(self.collect)
+        w = ImageWidget(self.session)
         assert self.im not in w.client.artists
         w.add_data(self.im)
         assert self.im in w.client.artists

@@ -30,15 +30,15 @@ def _hash(x):
 class HistogramWidget(DataViewer):
     LABEL = "Histogram"
 
-    def __init__(self, data, parent=None):
-        super(HistogramWidget, self).__init__(self, parent)
+    def __init__(self, session, parent=None):
+        super(HistogramWidget, self).__init__(session, parent)
 
         self.central_widget = MplWidget()
         self.setCentralWidget(self.central_widget)
         self.option_widget = QtGui.QWidget()
         self.ui = load_ui('histogramwidget', self.option_widget)
         self._tweak_geometry()
-        self.client = HistogramClient(data,
+        self.client = HistogramClient(self._data,
                                       self.central_widget.canvas.fig,
                                       artist_container=self._container)
 
@@ -51,7 +51,6 @@ class HistogramWidget(DataViewer):
         self.ui.xmax.setText(str(hi))
         self.make_toolbar()
         self._connect()
-        self._data = data
 
         self._component_hashes = {}  # maps _hash(componentID) -> componentID
 
@@ -95,12 +94,12 @@ class HistogramWidget(DataViewer):
 
     def _mouse_modes(self):
         axes = self.client.axes
-        rect = HRangeMode(axes, roi_callback=self.apply_roi)
-        return [rect]
 
-    def apply_roi(self, mode):
-        roi = mode.roi()
-        self.client.apply_roi(roi)
+        def apply_mode(mode):
+            return self.apply_roi(mode.roi())
+
+        rect = HRangeMode(axes, roi_callback=apply_mode)
+        return [rect]
 
     def _update_attributes(self):
         """Repopulate the combo box that selects the quantity to plot"""

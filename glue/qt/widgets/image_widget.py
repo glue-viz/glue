@@ -27,14 +27,13 @@ WARN_THRESH = 10000000  # warn when contouring large images
 class ImageWidget(DataViewer):
     LABEL = "Image Viewer"
 
-    def __init__(self, data, parent=None):
-        super(ImageWidget, self).__init__(data, parent)
-
+    def __init__(self, session, parent=None):
+        super(ImageWidget, self).__init__(session, parent)
         self.central_widget = MplWidget()
         self.option_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.ui = load_ui('imagewidget', self.option_widget)
-        self.client = ImageClient(data,
+        self.client = ImageClient(self._data,
                                   self.central_widget.canvas.fig,
                                   artist_container=self._container)
         self._tweak_geometry()
@@ -53,7 +52,7 @@ class ImageWidget(DataViewer):
         self.resize(self.central_widget.size())
 
     def _create_actions(self):
-        #pylint: disable=E1101
+        # pylint: disable=E1101
         def act(name, cmap):
             a = QAction(name, self)
             a.triggered.connect(lambda *args: self.client.set_cmap(cmap))
@@ -88,8 +87,8 @@ class ImageWidget(DataViewer):
 
         result.addAction(self._rgb_add)
 
-        #connect viewport update buttons to client commands to
-        #allow resampling
+        # connect viewport update buttons to client commands to
+        # allow resampling
         cl = self.client
         result.buttons['HOME'].triggered.connect(cl.check_update)
         result.buttons['FORWARD'].triggered.connect(cl.check_update)
@@ -98,16 +97,15 @@ class ImageWidget(DataViewer):
         self.addToolBar(result)
         return result
 
-    @set_cursor(Qt.WaitCursor)
-    def apply_roi(self, mode):
-        roi = mode.roi()
-        self.client.apply_roi(roi)
-
     def _mouse_modes(self):
         axes = self.client.axes
-        rect = RectangleMode(axes, roi_callback=self.apply_roi)
-        circ = CircleMode(axes, roi_callback=self.apply_roi)
-        poly = PolyMode(axes, roi_callback=self.apply_roi)
+
+        def apply_mode(mode):
+            self.apply_roi(mode.roi())
+
+        rect = RectangleMode(axes, roi_callback=apply_mode)
+        circ = CircleMode(axes, roi_callback=apply_mode)
+        poly = PolyMode(axes, roi_callback=apply_mode)
         contrast = ContrastMode(axes, move_callback=self._set_norm)
         contour = ContourMode(axes, release_callback=self._contour_roi)
         return [rect, circ, poly, contour, contrast]
@@ -281,7 +279,7 @@ class ImageWidget(DataViewer):
 
         roi = mode.roi(im[att])
         if roi:
-            self.client.apply_roi(roi)
+            self.apply_roi(roi)
 
     def _update_window_title(self):
         if self.client.display_data is None:

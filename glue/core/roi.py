@@ -1,6 +1,7 @@
 import numpy as np
 from matplotlib.patches import Polygon, Rectangle, Ellipse
 from matplotlib.transforms import IdentityTransform, blended_transform_factory
+import copy
 
 np.seterr(all='ignore')
 
@@ -66,6 +67,9 @@ class Roi(object):  # pragma: no cover
         """ Returns a tuple of x and y points, approximating the ROI
         as a polygon."""
         raise NotImplementedError
+
+    def copy(self):
+        return copy.copy(self)
 
 
 class RectangularROI(Roi):
@@ -409,7 +413,7 @@ class AbstractMplRoi(object):  # pragma: no cover
         raise NotImplementedError()
 
     def roi(self):
-        return self._roi
+        return self._roi.copy()
 
     def reset(self):
         self._roi.reset()

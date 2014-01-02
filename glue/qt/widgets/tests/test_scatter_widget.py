@@ -5,6 +5,7 @@ import pytest
 
 from ..scatter_widget import ScatterWidget
 from .... import core
+from . import simple_session
 
 from matplotlib import __version__ as mpl_version  # pylint:disable=W0611
 
@@ -12,7 +13,8 @@ from matplotlib import __version__ as mpl_version  # pylint:disable=W0611
 class TestScatterWidget(object):
 
     def setup_method(self, method):
-        self.hub = core.hub.Hub()
+        s = simple_session()
+        self.hub = s.hub
         self.d1 = core.Data(x=[1, 2, 3], y=[2, 3, 4],
                             z=[3, 4, 5], w=[4, 5, 6])
         self.d1.label = 'd1'
@@ -20,8 +22,10 @@ class TestScatterWidget(object):
                             z=[3, 4, 5], w=[4, 5, 6])
         self.d2.label = 'd2'
         self.data = [self.d1, self.d2]
-        self.collect = core.data_collection.DataCollection(list(self.data))
-        self.widget = ScatterWidget(self.collect)
+        self.collect = s.data_collection
+        self.collect.append(self.data)
+        self.widget = ScatterWidget(s)
+        self.session = s
         self.connect_to_hub()
 
     def teardown_method(self, method):

@@ -1,6 +1,7 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import pytest
 
+from . import simple_session
 from ..histogram_widget import HistogramWidget, _hash
 from .... import core
 
@@ -16,17 +17,19 @@ class TestHistogramWidget(object):
 
     def setup_method(self, method):
         self.data = mock_data()
-        self.collect = core.data_collection.DataCollection([self.data])
-        self.widget = HistogramWidget(self.collect)
+        self.session = simple_session()
+        self.collect = self.session.data_collection
+        self.hub = self.session.hub
+        self.collect.append(self.data)
+        self.widget = HistogramWidget(self.session)
 
     def teardown_method(self, method):
         self.widget.close()
 
     def set_up_hub(self):
-        hub = core.hub.Hub()
-        self.collect.register_to_hub(hub)
-        self.widget.register_to_hub(hub)
-        return hub
+        self.collect.register_to_hub(self.hub)
+        self.widget.register_to_hub(self.hub)
+        return self.hub
 
     def assert_component_integrity(self, dc=None, widget=None):
         dc = dc or self.collect

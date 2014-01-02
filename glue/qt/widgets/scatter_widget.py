@@ -58,8 +58,8 @@ class ScatterWidget(DataViewer):
     ymax = FloatLineProperty('ui.ymax')
     hidden = ButtonProperty('ui.hidden_attributes')
 
-    def __init__(self, data, parent=None):
-        super(ScatterWidget, self).__init__(data, parent)
+    def __init__(self, session, parent=None):
+        super(ScatterWidget, self).__init__(session, parent)
         self.central_widget = MplWidget()
         self.option_widget = QtGui.QWidget()
 
@@ -68,11 +68,11 @@ class ScatterWidget(DataViewer):
         self.ui = load_ui('scatterwidget', self.option_widget)
         #self.ui.setupUi(self.option_widget)
         self._tweak_geometry()
-        self._collection = data
 
-        self.client = ScatterClient(self._collection,
+        self.client = ScatterClient(self._data,
                                     self.central_widget.canvas.fig,
                                     artist_container=self._container)
+
         self._connect()
         self.unique_fields = set()
         self.make_toolbar()
@@ -103,17 +103,6 @@ class ScatterWidget(DataViewer):
         connect_float_edit(cl, 'ymin', ui.ymin)
         connect_float_edit(cl, 'ymax', ui.ymax)
 
-    def _choose_add_data(self):
-        choices = dict([(d.label, d) for d in self._collection])
-        dialog = QtGui.QInputDialog()
-        choice, isok = dialog.getItem(self, "Data Chooser | Scatter Plot",
-                                      "Choose a data set to add",
-                                      choices.keys())
-        if not isok:
-            return
-        data = choices[str(choice)]
-        self.add_data(data)
-
     def make_toolbar(self):
         result = GlueToolbar(self.central_widget.canvas, self,
                              name='Scatter Plot')
@@ -124,16 +113,16 @@ class ScatterWidget(DataViewer):
 
     def _mouse_modes(self):
         axes = self.client.axes
-        rect = RectangleMode(axes, roi_callback=self.apply_roi)
-        xra = HRangeMode(axes, roi_callback=self.apply_roi)
-        yra = VRangeMode(axes, roi_callback=self.apply_roi)
-        circ = CircleMode(axes, roi_callback=self.apply_roi)
-        poly = PolyMode(axes, roi_callback=self.apply_roi)
-        return [rect, xra, yra, circ, poly]
 
-    def apply_roi(self, mode):
-        roi = mode.roi()
-        self.client.apply_roi(roi)
+        def apply_mode(mode):
+            return self.apply_roi(mode.roi())
+
+        rect = RectangleMode(axes, roi_callback=apply_mode)
+        xra = HRangeMode(axes, roi_callback=apply_mode)
+        yra = VRangeMode(axes, roi_callback=apply_mode)
+        circ = CircleMode(axes, roi_callback=apply_mode)
+        poly = PolyMode(axes, roi_callback=apply_mode)
+        return [rect, xra, yra, circ, poly]
 
     def _update_combos(self):
         """ Update combo boxes to current attribute fields"""

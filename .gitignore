@@ -10,3 +10,4 @@ glue/qt/glue_qt_resources.py
 *htmlcov*
 Glue.egg-info
 dist
+*.orig
