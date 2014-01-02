@@ -335,6 +335,7 @@ class GlueApplication(Application, QMainWindow):
                 label, saver, checker, isdir = e
                 a = act(label, self,
                         tip='Export the current session to %s format' % label)
+
                 def save(*args):
                     self._choose_export_session(saver, checker, isdir)
                 a.triggered.connect(save)

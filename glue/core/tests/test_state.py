@@ -9,6 +9,7 @@ from ...qt.widgets.scatter_widget import ScatterWidget
 from ...qt.widgets.image_widget import ImageWidget
 from ...qt.widgets.histogram_widget import HistogramWidget
 
+
 def clone(object):
     gs = GlueSerializer()
     oid = gs.id(object)
@@ -18,10 +19,12 @@ def clone(object):
     result = gu.object(oid)
     return result
 
+
 def dump(object):
     gs = GlueSerializer()
     oid = gs.id(object)
     return gs.do_all()
+
 
 def test_data():
     d = core.Data(x=[1, 2, 3], label='testing')
@@ -96,6 +99,7 @@ def test_polygonal_roi():
     assert r2.vx == [0, 0, 1]
     assert r2.vy == [0, 1, 0]
 
+
 class TestApplication(object):
 
     def check_clone(self, app):
@@ -142,13 +146,13 @@ class TestApplication(object):
 
     def test_data_application(self):
         dc = core.DataCollection([core.Data(label='test',
-                                            x=[1,2,3], y=[2,3,4])])
+                                            x=[1, 2, 3], y=[2, 3, 4])])
         app = GlueApplication(dc)
         self.check_clone(app)
 
     def test_links(self):
-        d1 = core.Data(label='x', x=[1,2,3])
-        d2 = core.Data(label='y', y=[3,4,8])
+        d1 = core.Data(label='x', x=[1, 2, 3])
+        d2 = core.Data(label='y', y=[3, 4, 8])
         dc = core.DataCollection([d1, d2])
         link = core.ComponentLink([d1.id['x']], d2.id['y'], lambda x: 2 * x)
         dc.add_link(link)
@@ -159,7 +163,7 @@ class TestApplication(object):
         self.check_clone(app)
 
     def test_scatter_viewer(self):
-        d = core.Data(label='x', x=[1,2,3,4,5], y=[2,3,4,5,6])
+        d = core.Data(label='x', x=[1, 2, 3, 4, 5], y=[2, 3, 4, 5, 6])
         dc = core.DataCollection([d])
         app = GlueApplication(dc)
         w = app.new_data_viewer(ScatterWidget, data=d)
@@ -171,9 +175,9 @@ class TestApplication(object):
         l1, l2, l3 = w.layers
         l1.zorder, l2.zorder = l2.zorder, l1.zorder
         l3.visible = False
-        assert l3.visible == False
+        assert l3.visible is False
         copy = self.check_clone(app)
-        assert copy.viewers[0][0].layers[-1].visible == False
+        assert copy.viewers[0][0].layers[-1].visible is False
 
     def test_image_viewer(self):
         LinkSame = core.link_helpers.LinkSame
@@ -196,7 +200,7 @@ class TestApplication(object):
         assert len(w.layers) == 2
         self.check_clone(app)
 
-        #add scatter layer
+        # add scatter layer
         s.label = 'testing 2'
         l = w.add_layer(d2)
         assert len(w.layers) == 3
@@ -210,7 +214,7 @@ class TestApplication(object):
 
         assert l is not None
         clone = self.check_clone(app)
-        assert clone.viewers[0][0].layers[-1].layer_visible['blue'] == False
+        assert clone.viewers[0][0].layers[-1].layer_visible['blue'] is False
 
     def test_histogram(self):
         d = core.Data(label='hist', x=[[1, 2], [2, 3]])

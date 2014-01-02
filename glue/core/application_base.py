@@ -144,7 +144,6 @@ class Application(HubListener):
         return dict(session=context.id(self.session), viewers=viewers,
                     data=context.id(data))
 
-
     @classmethod
     def __setgluestate__(cls, rec, context):
         self = cls(data_collection=context.object(rec['data']))
@@ -159,6 +158,7 @@ class Application(HubListener):
 
 
 class ViewerBase(HubListener, PropertySetMixin):
+
     """ Base class for data viewers in an application """
 
     # the glue.clients.layer_artist.LayerArtistContainer

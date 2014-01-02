@@ -25,7 +25,7 @@ WARN_SLOW = 1000000  # max number of points which render quickly
 class ScatterWidget(DataViewer):
     LABEL = "Scatter Plot"
     _property_set = DataViewer._property_set + \
-      'xlog ylog xflip yflip xmin xmax ymin ymax hidden xatt yatt'.split()
+        'xlog ylog xflip yflip xmin xmax ymin ymax hidden xatt yatt'.split()
 
     xlog = ButtonProperty('ui.xLogCheckBox')
     ylog = ButtonProperty('ui.yLogCheckBox')

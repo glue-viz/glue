@@ -52,7 +52,7 @@ class ImageClient(VizClient):
         self._figure = figure
         self._norm_cache = {}
 
-        #format axes
+        # format axes
         fc = self._ax.format_coord
 
         def format_coord(x, y):
@@ -339,7 +339,7 @@ class ImageClient(VizClient):
             self.delete_layer(s)
 
     def init_layer(self, layer):
-        #only auto-add subsets if they are of the main image
+        # only auto-add subsets if they are of the main image
         if isinstance(layer, Subset) and layer.data is not self.display_data:
             return
         self.add_layer(layer)
@@ -364,7 +364,8 @@ class ImageClient(VizClient):
             raise TypeError("Data not managed by client's data collection")
 
         if not self.can_image_data(layer.data):
-            if len(layer.data.shape) == 1:  # if data is 1D, try to scatter plot
+            # if data is 1D, try to scatter plot
+            if len(layer.data.shape) == 1:
                 return self.add_scatter_layer(layer)
             logging.getLogger(__name__).warning(
                 "Cannot visualize %s. Aborting", layer.label)
@@ -455,7 +456,7 @@ class ImageClient(VizClient):
         for layer in layers:
             c = lookup_class(layer.pop('_type'))
             props = dict((k, v if k == 'stretch' else context.object(v))
-                          for k, v in layer.items())
+                         for k, v in layer.items())
             l = props['layer']
 
             if c == ScatterLayerArtist:
@@ -471,6 +472,7 @@ class ImageClient(VizClient):
             else:
                 raise ValueError("Cannot restore layer of type %s" % l)
             l.properties = props
+
 
 def _2d_shape(shape, slice_ori):
     """Return the shape of the 2D slice through a 2 or 3D image"""

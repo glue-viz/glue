@@ -24,11 +24,13 @@ from ..core.callback_property import add_callback
 
 
 class WidgetProperty(object):
+
     """ Base class for widget properties
 
     Subclasses implement, at a minimum, the "get" and "set" methods,
     which translate between widget states and python variables
     """
+
     def __init__(self, att):
         """
         :param att: The location, within a class instance, of the widget
@@ -57,7 +59,9 @@ class WidgetProperty(object):
 
 
 class CurrentComboProperty(WidgetProperty):
+
     """Wrapper around ComboBoxes"""
+
     def getter(self, widget):
         """ Return the itemData stored in the currently-selected item """
         return widget.itemData(widget.currentIndex())
@@ -75,7 +79,9 @@ class CurrentComboProperty(WidgetProperty):
 
 
 class ButtonProperty(WidgetProperty):
+
     """Wrapper around the check state for QAbstractButton widgets"""
+
     def getter(self, widget):
         return widget.isChecked()
 
@@ -84,10 +90,12 @@ class ButtonProperty(WidgetProperty):
 
 
 class FloatLineProperty(WidgetProperty):
+
     """Wrapper around the text state for QLineEdit widgets.
 
     Assumes that the text is a floating point number
     """
+
     def getter(self, widget):
         try:
             return float(widget.text())
@@ -100,13 +108,14 @@ class FloatLineProperty(WidgetProperty):
 
 
 class SpinnerProperty(WidgetProperty):
+
     """Wrapper around intspin boxes"""
+
     def getter(self, widget):
         return widget.value()
 
     def setter(self, widget, value):
         widget.setValue(value)
-
 
 
 def connect_bool_button(client, prop, widget):

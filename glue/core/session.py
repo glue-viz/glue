@@ -1,6 +1,8 @@
 from . import DataCollection, CommandStack, Hub
 
+
 class Session(object):
+
     def __init__(self, application=None, data_collection=None,
                  command_stack=None, hub=None):
 

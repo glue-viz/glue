@@ -125,7 +125,7 @@ class LayerArtist(PropertySetMixin):
         return "%s for %s" % (self.__class__.__name__, self.layer.label)
 
     def __gluestate__(self, context):
-        #note, this doesn't yet have a restore method. Will rely on client
+        # note, this doesn't yet have a restore method. Will rely on client
         return dict((k, context.id(v)) for k, v in self.properties.items())
 
     __repr__ = __str__
@@ -193,7 +193,7 @@ class ImageLayerArtist(LayerArtist):
                  bias=None, contrast=None, stretch=None, norm=None,
                  clip_lo=None, clip_hi=None):
         if norm is not None:
-            self.norm = norm # XXX Should wrap ala DS9Normalize(norm)
+            self.norm = norm  # XXX Should wrap ala DS9Normalize(norm)
             return norm
         if self.norm is None:
             self.norm = DS9Normalize()
@@ -223,6 +223,7 @@ class ImageLayerArtist(LayerArtist):
 
 
 class Pointer(object):
+
     def __init__(self, key):
         self.key = key
 
@@ -235,7 +236,7 @@ class Pointer(object):
 
 class RGBImageLayerArtist(ImageLayerArtist):
     _property_set = ImageLayerArtist._property_set + \
-      ['r', 'g', 'b', 'rnorm', 'gnorm', 'bnorm', 'color_visible']
+        ['r', 'g', 'b', 'rnorm', 'gnorm', 'bnorm', 'color_visible']
 
     r = Pointer('_r')
     g = Pointer('_g')

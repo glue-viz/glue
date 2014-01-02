@@ -27,7 +27,8 @@ def _hash(x):
 class HistogramWidget(DataViewer):
     LABEL = "Histogram"
     _property_set = DataViewer._property_set + \
-      'xmin xmax normed autoscale cumulative xlog ylog component nbins'.split()
+        'xmin xmax normed autoscale cumulative xlog ylog component nbins'.split(
+        )
 
     xmin = FloatLineProperty('ui.xmin')
     xmax = FloatLineProperty('ui.xmax')
@@ -116,9 +117,9 @@ class HistogramWidget(DataViewer):
         combo.blockSignals(True)
         combo.clear()
 
-        #implementation note:
-        #PySide doesn't robustly store python objects with setData
-        #use _hash(x) instead
+        # implementation note:
+        # PySide doesn't robustly store python objects with setData
+        # use _hash(x) instead
         model = QtGui.QStandardItemModel()
         data_ids = set(_hash(d) for d in self._data)
         self._component_hashes = {_hash(c): c for d in self._data
@@ -140,7 +141,7 @@ class HistogramWidget(DataViewer):
                 model.appendRow(item)
         combo.setModel(model)
 
-        #separators below data items
+        # separators below data items
         for i in range(combo.count()):
             if combo.itemData(i) in data_ids:
                 combo.insertSeparator(i + 1)
@@ -164,7 +165,8 @@ class HistogramWidget(DataViewer):
         combo = self.ui.attributeCombo
         if combo.count() == 0:  # cold start problem, when restoring
             self._update_attributes()
-        #combo.findData doesn't seem to work robustly
+
+        # combo.findData doesn't seem to work robustly
         for i in range(combo.count()):
             data = combo.itemData(i)
             if data == _hash(component):

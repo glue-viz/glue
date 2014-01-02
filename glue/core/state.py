@@ -360,6 +360,7 @@ def _load_subset(rec, context):
     result.label = rec['label']
     return result
 
+
 @saver(DataCollection)
 def _save_data_collection(dc, context):
     cids = [c for data in dc for c in data.component_ids()]
@@ -370,12 +371,14 @@ def _save_data_collection(dc, context):
                 cids=map(context.id, cids),
                 components=map(context.id, components))
 
+
 @loader(DataCollection)
 def _load_data_collection(rec, context):
     dc = DataCollection(map(context.object, rec['data']))
     for link in rec['links']:
         dc.add_link(context.object(link))
     return dc
+
 
 @saver(Data)
 def _save_data(data, context):
@@ -483,7 +486,7 @@ def _save_coordinate_component_link(link, context):
 @loader(CoordinateComponentLink)
 def _load_coordinate_component_link(rec, context):
     frm = map(context.object, rec['frm'])
-    to = map(context.object, rec['to'])[0]  #XXX why is this a list?
+    to = map(context.object, rec['to'])[0]  # XXX why is this a list?
     coords = context.object(rec['coords'])
     index = rec['index']
     pix2world = rec['pix2world']

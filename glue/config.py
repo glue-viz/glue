@@ -4,7 +4,9 @@ import imp
 import logging
 from collections import namedtuple
 
+
 class Registry(object):
+
     """Registry instances are used by Glue to track objects
     used for various tasks like data linking, widget creation, etc.
     They have the following properties:
@@ -15,6 +17,7 @@ class Registry(object):
     - A call interface, allowing the instance to be used as a decorator
       for users to add new items to the registry in their config files
     """
+
     def __init__(self):
         self._members = []
         self._loaded = False
@@ -57,6 +60,7 @@ class Registry(object):
 
 
 class ExporterRegistry(Registry):
+
     """Stores functions which can export an applocation to an output file
 
     The members property is a list of exporters, each represented
@@ -71,6 +75,7 @@ class ExporterRegistry(Registry):
     directory is a boolean value that encodes whether the output
     file is a directory
     """
+
     def default_members(self):
         return []
 
@@ -93,11 +98,12 @@ class ExporterRegistry(Registry):
         self.members.append([label, exporter, checker, directory])
 
 
-
 class ColormapRegistry(Registry):
+
     """Stores colormaps for the Image Viewer. The members property is
     a list of colormaps, each represented as a [name,cmap] pair.
     """
+
     def default_members(self):
         import matplotlib.cm as cm
         members = []
@@ -118,9 +124,11 @@ class ColormapRegistry(Registry):
         """
         Add colormap *cmap* with label *label*.
         """
-        self.members.append([label,cmap])
+        self.members.append([label, cmap])
+
 
 class DataFactoryRegistry(Registry):
+
     """Stores data factories. Data factories take filenames as input,
     and return :class:`~glue.core.Data` instances
 
@@ -157,6 +165,7 @@ class DataFactoryRegistry(Registry):
 
 
 class QtClientRegistry(Registry):
+
     """Stores QT widgets to visualize data.
 
     The members property is a list of Qt widget classes
@@ -167,6 +176,7 @@ class QtClientRegistry(Registry):
         class CustomWidget(QMainWindow):
             ...
     """
+
     def default_members(self):
         try:
             from .qt.widgets.scatter_widget import ScatterWidget
@@ -180,6 +190,7 @@ class QtClientRegistry(Registry):
 
 
 class LinkFunctionRegistry(Registry):
+
     """Stores functions to convert between quantities
 
     The members properety is a list of (function, info_string,
@@ -212,6 +223,7 @@ class LinkFunctionRegistry(Registry):
 
 
 class LinkHelperRegistry(Registry):
+
     """Stores helper objects that compute many ComponentLinks at once
 
     The members property is a list of (object, info_string,
@@ -250,6 +262,7 @@ link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
 colormaps = ColormapRegistry()
 exporters = ExporterRegistry()
+
 
 def load_configuration(search_path=None):
     ''' Find and import a config.py file

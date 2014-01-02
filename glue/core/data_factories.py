@@ -45,8 +45,8 @@ _default_factory = {}
 
 
 def load_numpy_str(x):
-    """ 
-    Load the contents of a npz file into a numpy array 
+    """
+    Load the contents of a npz file into a numpy array
 
     :param x: str
     """
