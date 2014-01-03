@@ -209,7 +209,11 @@ class TestApplication(object):
         # add RGB Image
         s.label = 'testing 3'
         x = d.id['x']
-        l = w.client.add_rgb_layer(d, r=x, g=x, b=x)
+        w.client.display_data = d
+        l = w.client.rgb_mode(True)
+        l.r = x
+        l.g = x
+        l.b = x
         l.layer_visible['blue'] = False
 
         assert l is not None

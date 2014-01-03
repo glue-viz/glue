@@ -100,6 +100,7 @@ class ImageWidget(DataViewer):
         poly = PolyMode(axes, roi_callback=apply_mode)
         contrast = ContrastMode(axes, move_callback=self._set_norm)
         contour = ContourMode(axes, release_callback=self._contour_roi)
+        self._contrast = contrast
         return [rect, circ, poly, contour, contrast]
 
     def _init_widgets(self):
@@ -216,6 +217,9 @@ class ImageWidget(DataViewer):
         ui.imageSlider.sliderMoved.connect(self.set_slider)
 
         ui.monochrome.toggled.connect(self._update_rgb_console)
+        ui.rgb_options.colors_changed.connect(self._update_window_title)
+        ui.rgb_options.current_changed.connect(
+            lambda: self._toolbars[0].set_mode(self._contrast))
 
     def _update_rgb_console(self, is_monochrome):
         if is_monochrome:
@@ -293,8 +297,16 @@ class ImageWidget(DataViewer):
         if self.client.display_data is None:
             title = ''
         else:
-            title = "%s - %s" % (self.client.display_data.label,
-                                 self.client.display_attribute.label)
+            data = self.client.display_data.label
+            a = self.client.rgb_mode()
+            if a is None:  # monochrome mode
+                title = "%s - %s" % (self.client.display_data.label,
+                                     self.client.display_attribute.label)
+            else:
+                r = a.r.label if a.r is not None else ''
+                g = a.g.label if a.g is not None else ''
+                b = a.b.label if a.b is not None else ''
+                title = "%s Red = %s  Green = %s  Blue = %s" % (data, r, g, b)
         self.setWindowTitle(title)
 
     def _update_data_combo(self):

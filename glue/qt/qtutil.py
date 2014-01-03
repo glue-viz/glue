@@ -21,6 +21,7 @@ from ..external.qt.QtGui import (QColor, QInputDialog, QColorDialog,
 from .decorators import set_cursor
 from .mime import PyMimeData, LAYERS_MIME_TYPE
 from ..external.qt import is_pyside
+from ..external.qt.QtCore import Signal
 from .. import core
 
 
@@ -477,117 +478,6 @@ def pretty_number(numbers):
     return result
 
 
-class RGBSelector(QtGui.QDialog):
-
-    """Dialog to select ComponentIDs
-       to assign to R, G, B color channels"""
-
-    def __init__(self, dc, default=None, parent=None):
-        from .link_equation import ArgumentWidget
-        from .component_selector import ComponentSelector
-
-        super(RGBSelector, self).__init__(parent)
-        layout = QtGui.QVBoxLayout()
-        self.setLayout(layout)
-
-        comps = ComponentSelector()
-        comps.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        comps.setMinimumHeight(400)
-        comps.setMinimumWidth(300)
-        comps.setup(dc)
-        if default is not None:
-            comps.data = default
-
-        r = ArgumentWidget('r', parent)
-        g = ArgumentWidget('g', parent)
-        b = ArgumentWidget('b', parent)
-
-        okcancel = QDialogButtonBox(QDialogButtonBox.Ok |
-                                    QDialogButtonBox.Cancel)
-
-        layout.addWidget(comps)
-        layout.addWidget(r)
-        layout.addWidget(g)
-        layout.addWidget(b)
-        layout.addWidget(okcancel)
-
-        layout.setStretchFactor(comps, 5)
-        for w in [r, g, b, okcancel]:
-            layout.setStretchFactor(w, 0)
-            layout.setStretchFactor(w, 0)
-            layout.setStretchFactor(w, 0)
-
-        self.r = r
-        self.g = g
-        self.b = b
-        self.component = comps
-
-        okcancel.accepted.connect(self.accept)
-        okcancel.rejected.connect(self.reject)
-
-        self.setFocusPolicy(Qt.StrongFocus)
-
-    @property
-    def data(self):
-        # the currently-selected data entry
-        return self.component.data
-
-    @property
-    def red(self):
-        return self.r.component_id
-
-    @property
-    def green(self):
-        return self.g.component_id
-
-    @property
-    def blue(self):
-        return self.b.component_id
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key_R:
-            self.r.component_id = self.component.component
-            event.accept()
-        elif event.key() == Qt.Key_G:
-            self.g.component_id = self.component.component
-            event.accept()
-        elif event.key() == Qt.Key_B:
-            self.b.component_id = self.component.component
-            event.accept()
-        else:
-            super(RGBSelector, self).keyPressEvent(event)
-
-
-def select_rgb(collect, default=None):
-    """
-    Present an interface to build an RGB image from a data collection,
-    return the dataset and components assigned to each color
-
-    :param collect: Data Collection to use
-    :type collect: :class:`~glue.core.DataCollection`
-
-    :param default: Default data set to use
-
-    :rtype: tuple of (dataset, red_id, green_id, blue_id), or None
-            dataset is the :class:`~glue.core.Data` object to use
-            red_id, green_id, blue_id are :class:`~glue.core.ComponentID`s
-            Return None if user cancels the action
-    """
-    w = RGBSelector(collect, default)
-    result = w.exec_()
-    if result == w.Rejected:
-        return None
-    r = w.red
-    g = w.green
-    b = w.blue
-    d = w.data
-
-    if r is None or g is None or b is None or d is None:
-        return None
-
-    return d, r, g, b
-
-
 class RGBEdit(QWidget):
 
     """A widget to set the contrast for individual layers in an RGB image
@@ -603,14 +493,16 @@ class RGBEdit(QWidget):
     adjustments from a :class:`~glue.clients.image_client` affect
     a particular RGB slice
     """
+    current_changed = Signal(str)
+    colors_changed = Signal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, artist=None):
         super(RGBEdit, self).__init__(parent)
-        self._artist = None
+        self._artist = artist
 
         l = QGridLayout()
 
-        current = QLabel("Current")
+        current = QLabel("Contrast")
         visible = QLabel("Visible")
         l.addWidget(current, 0, 2, 1, 1)
         l.addWidget(visible, 0, 3, 1, 1)
@@ -674,14 +566,19 @@ class RGBEdit(QWidget):
         r = self.cid['red'].component
         g = self.cid['green'].component
         b = self.cid['blue'].component
+        changed = self.artist.r is not r or \
+            self.artist.g is not g or\
+            self.artist.b is not b
 
         self.artist.r = r
         self.artist.g = g
         self.artist.b = b
-        print 'update'
+
+        if changed:
+            self.colors_changed.emit()
+
         self.artist.update()
         self.artist.redraw()
-
 
     def update_current(self, *args):
         if self.artist is None:
@@ -690,6 +587,7 @@ class RGBEdit(QWidget):
         for c in ['red', 'green', 'blue']:
             if self.current[c].isChecked():
                 self.artist.contrast_layer = c
+                self.current_changed.emit(c)
                 break
         else:
             raise RuntimeError("Could not determine which layer is current")
@@ -872,6 +770,7 @@ def get_icon(icon_name):
 
 
 class ComponentIDCombo(QtGui.QComboBox, core.HubListener):
+
     """ A widget to select among componentIDs in a dataset """
 
     def __init__(self, data=None, parent=None, visible_only=True):
@@ -927,7 +826,6 @@ class ComponentIDCombo(QtGui.QComboBox, core.HubListener):
         self.blockSignals(False)
         self.setCurrentIndex(i)
 
-
     def register_to_hub(self, hub):
         hub.subscribe(self,
                       core.message.ComponentsChangedMessage,
@@ -941,13 +839,12 @@ if __name__ == "__main__":
     class Foo(object):
         layer_visible = {}
         layer = None
+
         def update(self):
             print 'update', self.layer_visible
 
         def redraw(self):
             print 'draw'
-
-
 
     app = get_qapp()
     f = Foo()

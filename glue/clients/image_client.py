@@ -344,13 +344,32 @@ class ImageClient(VizClient):
             return
         self.add_layer(layer)
 
-    def rgb_mode(self, enable):
+    def rgb_mode(self, enable=None):
+        """ Query whether RGB mode is enabled, or toggle RGB mode
+
+        :param enable: bool, or None
+        If True or False, explicitly enable/disable RGB mode.
+        If None, check if RGB mode is enabled
+
+        :rtype: LayerArtist or None
+          If RGB mode is enabled, returns an RGBImageLayerArtist
+          If enable=False, return the new ImageLayerArtist
+        """
+        #XXX need to better handle case where two RGBImageLayerArtists
+        #    are created
+
+        if enable is None:
+            for a in self.artists:
+                if isinstance(a, RGBImageLayerArtist):
+                    return a
+            return None
+
         result = None
         layer = self.display_data
         if enable:
             layer = self.display_data
-            a = RGBImageLayerArtist(layer, self._ax)
-            a.last_view = self._view or self._build_view(matched=True)
+            v = self._view or self._build_view(matched=True)
+            a = RGBImageLayerArtist(layer, self._ax, last_view=v)
 
             for artist in self.artists.pop(layer):
                 artist.clear()
@@ -475,11 +494,16 @@ class ImageClient(VizClient):
             elif c == ImageLayerArtist or c == SubsetImageLayerArtist:
                 l = self.add_layer(l)
             elif c == RGBImageLayerArtist:
+                layer = props.pop('layer')
                 r = props.pop('r')
                 g = props.pop('g')
                 b = props.pop('b')
-                layer = props.pop('layer')
-                l = self.add_rgb_layer(layer, r=r, g=g, b=b)
+                self.display_data = layer
+                self.display_attribute = r
+                l = self.rgb_mode(True)
+                l.r = r
+                l.g = g
+                l.b = b
             else:
                 raise ValueError("Cannot restore layer of type %s" % l)
             l.properties = props

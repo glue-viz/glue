@@ -1,4 +1,4 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import pytest
 
 import matplotlib.pyplot as plt
@@ -8,7 +8,7 @@ import numpy as np
 from ...tests import example_data
 from ... import core
 from ...core.exceptions import IncompatibleAttribute
-
+from ..layer_artist import RGBImageLayerArtist, ImageLayerArtist
 from ..image_client import ImageClient
 
 # share matplotlib instance, and disable rendering, for speed
@@ -18,11 +18,13 @@ plt.close('all')
 
 
 class DummyCoords(core.coordinates.Coordinates):
+
     def pixel2world(self, *args):
         return tuple(a * (i + 1) for i, a in enumerate(args))
 
 
 class TrueState(core.subset.SubsetState):
+
     def to_mask(self, view=None):
         data = np.ones(self.parent.data.shape, dtype=bool)
         if view is not None:
@@ -371,6 +373,14 @@ class TestImageClient(object):
         c.set_data(self.scatter)
         assert c.display_data is d
 
+    def test_rgb_mode_toggle(self):
+        c = self.create_client_with_image()
+        im = c.rgb_mode(True)
+        assert isinstance(im, RGBImageLayerArtist)
+        assert c.rgb_mode() is im
+        assert isinstance(c.rgb_mode(False), ImageLayerArtist)
+        assert c.rgb_mode() is None
+
 
 def test_format_coord_2d():
     """Coordinate display is in world coordinates"""
@@ -383,11 +393,11 @@ def test_format_coord_2d():
     c.add_layer(d)
     ax = c.axes
 
-    #no data set. Use default
+    # no data set. Use default
     xy = ax.format_coord(1, 2)
     assert xy == 'x=1            y=2           '
 
-    #use coord object
+    # use coord object
     c.set_data(d)
     xy = ax.format_coord(1, 2)
     assert xy == 'World 1=1          World 0=4'
@@ -404,7 +414,7 @@ def test_format_coord_3d():
     c.add_layer(d)
     ax = c.axes
 
-    #no data set. Use default
+    # no data set. Use default
     xy = ax.format_coord(1, 2)
     assert xy == 'x=1            y=2           '
 
@@ -421,3 +431,19 @@ def test_format_coord_3d():
     c.set_slice_ori(2)  # constant x
     xy = ax.format_coord(1, 2)
     assert xy == 'World 1=2          World 0=6'
+
+
+class TestRGBImageLayerArtist(object):
+
+    def setup_method(self, method):
+        self.ax = MagicMock('matplotlib.axes.Axes')
+        self.data = MagicMock('glue.core.Data')
+        self.artist = RGBImageLayerArtist(self.data, self.ax)
+
+    def test_set_norm(self):
+        a = self.artist
+        for c, n in zip(['red', 'green', 'blue'],
+                        ['rnorm', 'gnorm', 'bnorm']):
+            a.contrast_layer = c
+            a.set_norm(vmin=5)
+            assert getattr(a, n).vmin == 5

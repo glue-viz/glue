@@ -163,6 +163,10 @@ class GlueToolbar(NavigationToolbar2QT):
 
         self.addAction(action)
 
+    def set_mode(self, mode):
+        if self._active != mode.mode_id:
+            self._custom_mode(mode)
+
     def _custom_mode(self, mode):
         if self._active == mode.mode_id:
             self._active = None

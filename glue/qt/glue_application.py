@@ -85,7 +85,8 @@ class GlueApplication(Application, QMainWindow):
         """Maximize window"""
         self.setWindowState(Qt.WindowMaximized)
         self._ui.main_splitter.setSizes([100, 800])
-        self._ui.data_plot_splitter.setSizes([100, 200])
+        self._ui.data_plot_splitter.setSizes([100, 400])
+        self._ui.plot_splitter.setSizes([150, 250])
 
     @property
     def tab_widget(self):

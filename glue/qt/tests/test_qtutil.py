@@ -3,7 +3,7 @@ from .. import qtutil
 from ...external.qt import QtGui
 from ...external.qt.QtCore import Qt
 from mock import MagicMock, patch
-from ..qtutil import GlueDataDialog, RGBSelector
+from ..qtutil import GlueDataDialog
 from ..qtutil import pretty_number, GlueComboBox
 
 from glue.config import data_factory
@@ -225,21 +225,6 @@ class TestGlueComboBox(object):
         assert good[0]
 
 
-class TestRGBSelector(object):
-
-    def test_default_data(self):
-        from glue.core import Data, DataCollection
-        d1 = Data(x=[1, 2, 3], y=[2, 3, 4], z=[3, 4, 5])
-        d2 = Data(a=[1, 2, 3], b=[2, 5, 6], c=[1, 1, 1])
-        dc = DataCollection([d1, d2])
-
-        d = RGBSelector(dc, default=d2)
-        assert d.data is d2
-
-        d = RGBSelector(dc, default=d1)
-        assert d.data is d1
-
-
 def test_qt4_to_mpl_color():
     assert qtutil.qt4_to_mpl_color(QtGui.QColor(255, 0, 0)) == '#ff0000'
     assert qtutil.qt4_to_mpl_color(QtGui.QColor(255, 255, 255)) == '#ffffff'
@@ -372,7 +357,7 @@ class TestRGBEdit(object):
         from glue.core import Data
         d = Data()
         self.artist = RGBImageLayerArtist(d, None)
-        self.w = qtutil.RGBEdit(self.artist)
+        self.w = qtutil.RGBEdit(artist=self.artist)
 
     def test_update_visible(self):
         for color in ['red', 'green', 'blue']:

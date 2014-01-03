@@ -245,11 +245,11 @@ class RGBImageLayerArtist(ImageLayerArtist):
     gnorm = Pointer('_gnorm')
     bnorm = Pointer('_bnorm')
 
-    def __init__(self, layer, ax):
+    def __init__(self, layer, ax, last_view=None):
         super(RGBImageLayerArtist, self).__init__(layer, ax)
         self.contrast_layer = 'green'
         self.layer_visible = dict(red=True, green=True, blue=True)
-        self.last_view = None
+        self.last_view = last_view
 
     def set_norm(self, *args, **kwargs):
         spr = super(RGBImageLayerArtist, self).set_norm
