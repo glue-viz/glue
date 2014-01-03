@@ -7,6 +7,7 @@ from ..config import exporters
 from ..qt.widgets import ScatterWidget, HistogramWidget
 from ..core import Subset
 
+
 def save_page(page, page_number, label, subset):
     """ Convert a tab of a glue session into a D3PO page
 
@@ -95,6 +96,7 @@ def save_histogram(plot, index):
     # XXX normed, cumultive, log
     return result
 
+
 def stage_subsets(application):
     """
     Return a tuple of the subset to use for each stage/tab,
@@ -107,6 +109,8 @@ def stage_subsets(application):
         subset = None
         for viewer in page:
             for layer_artist in viewer.layers:
+                if not layer_artist.visible:
+                    continue
                 s = layer_artist.layer
                 if not isinstance(s, Subset):
                     continue
