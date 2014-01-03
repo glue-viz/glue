@@ -5,9 +5,9 @@ from astropy.table import Table
 
 from ..config import exporters
 from ..qt.widgets import ScatterWidget, HistogramWidget
+from ..core import Subset
 
-
-def save_page(page, label):
+def save_page(page, page_number, label, subset):
     """ Convert a tab of a glue session into a D3PO page
 
     :param page: Tuple of data viewers to save
@@ -27,13 +27,12 @@ def save_page(page, label):
                       color=d.style.color)
     result['markerStyle'] = dict(unselected=unselected)
 
-    has_subset = len(page[0]._data[0].subsets) == 1
-    if has_subset:
-        s = d.subsets[0].style
+    if subset is not None:
+        s = subset.style
         selected = dict(opacity=s.alpha, size=s.markersize / 2, color=s.color)
         result['markerStyle']['selected'] = selected
         result['selection'] = {'type': 'booleanColumn',
-                               'columnName': 'selection'}
+                               'columnName': 'selection_%i' % page_number}
     result['histogramStyle'] = result['markerStyle']
 
     # save each plot
@@ -96,6 +95,28 @@ def save_histogram(plot, index):
     # XXX normed, cumultive, log
     return result
 
+def stage_subsets(application):
+    """
+    Return a tuple of the subset to use for each stage/tab,
+    or None if the tab has no subset
+
+    If more than one subset is used per stage/tab, returns None
+    """
+    result = []
+    for page in application.viewers:
+        subset = None
+        for viewer in page:
+            for layer_artist in viewer.layers:
+                s = layer_artist.layer
+                if not isinstance(s, Subset):
+                    continue
+                if subset is not None and s is not subset:
+                    return None
+                if subset is None:
+                    subset = s
+        result.append(subset)
+    return tuple(result)
+
 
 def can_save_d3po(application):
     """
@@ -109,9 +130,6 @@ def can_save_d3po(application):
         raise ValueError("D3PO Export only supports a single dataset")
     data = dc[0]
 
-    if len(data.subsets) > 1:
-        raise ValueError("D3PO Export only supports a single subset")
-
     for tab in application.viewers:
         for viewer in tab:
             if not isinstance(viewer, (ScatterWidget, HistogramWidget)):
@@ -120,6 +138,10 @@ def can_save_d3po(application):
     if sum(len(tab) for tab in application.viewers) == 0:
         raise ValueError("D3PO Export requires at least one scatterplot "
                          "or histogram")
+
+    if stage_subsets(application) is None:
+        raise ValueError("D3PO Export restricted to 0 or 1 subsets visible "
+                         "in each tab")
 
 
 def save_d3po(application, path):
@@ -140,9 +162,8 @@ def save_d3po(application, path):
         os.mkdir(path)
 
     data = application.session.data_collection[0]
-    subset = None
-    if len(data.subsets) == 1:
-        subset = data.subsets[0]
+    subsets = stage_subsets(application)
+    viewers = application.viewers
 
     # write the csv file
     data_path = os.path.join(path, 'data.csv')
@@ -150,8 +171,10 @@ def save_d3po(application, path):
     t = Table([data[c] for c in data.components],
               names=[c.label for c in data.components])
 
-    if subset is not None:
-        t['selection'] = subset.to_mask().astype('i')
+    for i, subset in enumerate(subsets):
+        if subset is None:
+            continue
+        t['selection_%i' % i] = subset.to_mask().astype('i')
 
     t.write(data_path, format='ascii', delimiter=',')
 
@@ -160,7 +183,9 @@ def save_d3po(application, path):
     result['filename'] = 'data.csv'  # XXX don't think this is needed?
     result['title'] = "Glue export of %s" % data.label
     result['states'] = map(save_page, application.viewers,
-                           application.tab_names)
+                           range(len(viewers)),
+                           application.tab_names,
+                           subsets)
 
     state_path = os.path.join(path, 'states.json')
     with open(state_path, 'w') as outfile:
