@@ -1,7 +1,7 @@
 import json
 import os
 
-from astropy.table import Table
+from astropy.table import Table, Column
 
 from ..config import exporters
 from ..qt.widgets import ScatterWidget, HistogramWidget
@@ -148,6 +148,24 @@ def can_save_d3po(application):
                          "in each tab")
 
 
+def make_data_file(data, subsets, path):
+    """
+    Create the data.csv file, given Data and tuple of subsets
+    """
+    data_path = os.path.join(path, 'data.csv')
+
+    t = Table([data[c] for c in data.components],
+              names=[c.label for c in data.components])
+
+    for i, subset in enumerate(subsets):
+        if subset is None:
+            continue
+        c = Column(data=subset.to_mask().astype('i'), name='selection_%i' % i)
+        t.add_column(c)
+
+    t.write(data_path, format='ascii', delimiter=',')
+
+
 def save_d3po(application, path):
     """Save a Glue session to a D3PO bundle.
 
@@ -169,20 +187,10 @@ def save_d3po(application, path):
     subsets = stage_subsets(application)
     viewers = application.viewers
 
-    # write the csv file
-    data_path = os.path.join(path, 'data.csv')
+    # data.csv
+    make_data_file(data, subsets, path)
 
-    t = Table([data[c] for c in data.components],
-              names=[c.label for c in data.components])
-
-    for i, subset in enumerate(subsets):
-        if subset is None:
-            continue
-        t['selection_%i' % i] = subset.to_mask().astype('i')
-
-    t.write(data_path, format='ascii', delimiter=',')
-
-    # make the state JSON file
+    # states.json
     result = {}
     result['filename'] = 'data.csv'  # XXX don't think this is needed?
     result['title'] = "Glue export of %s" % data.label
@@ -195,7 +203,7 @@ def save_d3po(application, path):
     with open(state_path, 'w') as outfile:
         json.dump(result, outfile, indent=2)
 
-    # write the html
+    # index.html
     html_path = os.path.join(path, 'index.html')
     with open(html_path, 'w') as outfile:
         outfile.write(HTML)
