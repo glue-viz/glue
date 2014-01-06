@@ -17,11 +17,8 @@ Glue is a Python library to explore relationships within and among related datas
  <iframe src="http://player.vimeo.com/video/53378575?badge=0"  width="500" height="275" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
  </center>
 
-Also take a look at our 2013 SciPy Conference Talk
+For more demos, check out the :ref:`videos <demo_videos>` page
 
-.. raw:: html
-
-  <center><iframe width="640" height="390" src="http://www.youtube.com/embed/47LNpvDlKUk" frameborder="0" allowfullscreen></iframe></center>
 
 .. toctree::
    :maxdepth: 2
@@ -32,6 +29,7 @@ Also take a look at our 2013 SciPy Conference Talk
    gui_guide.rst
    coding_with_glue.rst
    advanced.rst
+   videos.rst
    api.rst
    faq.rst
 

@@ -10,7 +10,7 @@ Easiest Option (Recommended for Mac users)
 ------------------------------------------
 
 Mac users with OS X >= 10.7 can download Glue as a `standalone program
-<https://www.dropbox.com/sh/a7jbvaruzdrri8j/8En3jGR3n6>`_.
+<http://mac.glueviz.org>`_.
 
 
 Easy Option (Recommended for Windows, Unix users)
