@@ -2,11 +2,13 @@
 Various standalone utility code for
 working with Qt
 """
+import os
 
 import pkg_resources
 from matplotlib.colors import ColorConverter
 from matplotlib import cm
 import numpy as np
+
 from ..external.qt import QtGui
 from ..external.qt.QtCore import Qt
 from ..external.qt.QtGui import (QColor, QInputDialog, QColorDialog,
@@ -725,9 +727,15 @@ def ui_path(ui_name):
     """
     if not ui_name.endswith('.ui'):
         ui_name = ui_name + '.ui'
-    assert pkg_resources.resource_exists('glue.qt.ui', ui_name)
-    result = pkg_resources.resource_filename('glue.qt.ui', ui_name)
-    return result
+
+    try:
+        result = pkg_resources.resource_filename('glue.qt.ui', ui_name)
+        return result
+    except NotImplementedError:
+        # workaround for mac app
+        result = os.path.dirname(ui.__file__)
+        return os.path.join(result.replace('site-packages.zip', 'glue'),
+                            ui_name)
 
 
 def icon_path(icon_name):
@@ -743,13 +751,20 @@ def icon_path(icon_name):
     path : str
       Full path to icon
     """
-    for ext in ['.png']:
-        rc = icon_name + ext
+    if not icon_name.endswith('.png'):
+        icon_name += '.png'
+
+    try:
+        rc = icon_name
         if pkg_resources.resource_exists('glue.qt.icons', rc):
             result = pkg_resources.resource_filename('glue.qt.icons', rc)
             return result
-    else:
-        raise RuntimeError("Icon does not exist: %s" % icon_name)
+        else:
+            raise RuntimeError("Icon does not exist: %s" % icon_name)
+    except NotImplementedError:  # workaround for mac app
+        result = os.path.dirname(icons.__file__)
+        return os.path.join(result.replace('site-packages.zip', 'glue'),
+                            icon_name)
 
 
 def get_icon(icon_name):
