@@ -31,7 +31,10 @@ before_install:
 - sudo ln -s /run/shm /dev/shm
 - export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
+- sudo apt-get install rubygems
 - sudo gem install travis
+- gem environment
+- export PATH=$PATH:`gem environment | grep "EXECUTABLE DIRECTORY" | cut -d":" -f2 | cut -c 2-`
 
 install:
 - conda install $CONDA_ARGS python=$TRAVIS_PYTHON_VERSION $CONDA_BASE
@@ -45,4 +48,4 @@ script:
 - py.test $PYTEST_ARGS glue
 after_success:
 - coveralls
-- if [ $APP_TRIGGER ]; then trigger_app_build.sh; fi
+- if [ $APP_TRIGGER ]; then ./trigger_app_build.sh; fi

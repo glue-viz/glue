@@ -11,7 +11,12 @@ if [ $TRAVIS_REPO_SLUG != "glue-viz/glue" ]; then
 fi
 
 travis login --github-token=$GITHUB_TOKEN
+echo "Travis MacGlue Branch Summary"
+travis branches -r glue-viz/Travis-MacGlue
+
 job_id=`travis branches -r glue-viz/Travis-MacGlue | grep $TRAVIS_BRANCH | cut -d" " -f 2-3 | cut -d '#' -f2`
+
+echo "job_id is $job_id"
 
 if ! [ $job_id ]; then
    echo "Could not find a Travis-MacGlue branch named $TRAVIS_BRANCH. Exiting"
