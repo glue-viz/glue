@@ -1,56 +1,48 @@
 language: python
 python:
-  - 2.7
+- 2.7
 notifications:
   email: false
-
 env:
-   global:
-     - CONDA_ARGS="--yes"
-     - PIP_ARGS="--upgrade --use-mirrors"
-     - PYTEST_ARGS="--cov glue"
-     - CONDA_BASE="pip numpy scipy pyside cython h5py pygments pyzmq scikit-image"
-     - PIP_BASE="mock pytest pytest-cov coveralls pyavm pillow"
-
-   matrix:
-     # current versions of everything
-     - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0
-
-     # old MPL
-     - MPL_VER=1.2.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0
-     - MPL_VER=1.1.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0
-
-     # old and unstable astropy
-     - MPL_VER=1.3.1 ASTRO_VER=0.2.5 IPYTHON_VER=1.1.0
-     - MPL_VER=1.3.1 ASTRO_VER=dev IPYTHON_VER=1.1.0
-
-     # old ipython
-     - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0
-     - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.0.0
-     - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=0.13.2
-
+  global:
+  - CONDA_ARGS="--yes"
+  - PIP_ARGS="--upgrade --use-mirrors"
+  - PYTEST_ARGS="--cov glue"
+  - CONDA_BASE="pip numpy scipy pyside cython h5py pygments pyzmq scikit-image"
+  - PIP_BASE="mock pytest pytest-cov coveralls pyavm pillow"
+  - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
+  matrix:
+  - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0 APP_TRIGGER=1
+  - MPL_VER=1.2.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0
+  - MPL_VER=1.1.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0
+  - MPL_VER=1.3.1 ASTRO_VER=0.2.5 IPYTHON_VER=1.1.0
+  - MPL_VER=1.3.1 ASTRO_VER=dev IPYTHON_VER=1.1.0
+  - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0
+  - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.0.0
+  - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=0.13.2
 before_install:
-  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then wget http://repo.continuum.io/miniconda/Miniconda-2.0.0-Linux-x86_64.sh -O miniconda.sh; else wget http://repo.continuum.io/miniconda/Miniconda3-2.0.0-Linux-x86_64.sh -O miniconda.sh; fi
-  - chmod +x miniconda.sh
-  - ./miniconda.sh -b
-  - export PATH=/home/travis/anaconda/bin:$PATH
-  - sudo rm -rf /dev/shm
-  - sudo ln -s /run/shm /dev/shm
-
-# Run GUIs in headless mode
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
+- if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then wget http://repo.continuum.io/miniconda/Miniconda-2.0.0-Linux-x86_64.sh
+  -O miniconda.sh; else wget http://repo.continuum.io/miniconda/Miniconda3-2.0.0-Linux-x86_64.sh
+  -O miniconda.sh; fi
+- chmod +x miniconda.sh
+- ./miniconda.sh -b
+- export PATH=/home/travis/anaconda/bin:$PATH
+- sudo rm -rf /dev/shm
+- sudo ln -s /run/shm /dev/shm
+- export DISPLAY=:99.0
+- sh -e /etc/init.d/xvfb start
+- sudo gem install travis
 
 install:
-  - conda install $CONDA_ARGS python=$TRAVIS_PYTHON_VERSION $CONDA_BASE
-  - pip install $PIP_ARGS $PIP_BASE
-  - if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy; else conda install $CONDA_ARGS astropy==$ASTRO_VER; fi
-  - conda install $CONDA_ARGS IPython==$IPYTHON_VER
-  - conda install $CONDA_ARGS matplotlib==$MPL_VER
-  - python setup.py build
-
+- conda install $CONDA_ARGS python=$TRAVIS_PYTHON_VERSION $CONDA_BASE
+- pip install $PIP_ARGS $PIP_BASE
+- if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy;
+  else conda install $CONDA_ARGS astropy==$ASTRO_VER; fi
+- conda install $CONDA_ARGS IPython==$IPYTHON_VER
+- conda install $CONDA_ARGS matplotlib==$MPL_VER
+- python setup.py build
 script:
-  - py.test $PYTEST_ARGS glue
-
+- py.test $PYTEST_ARGS glue
 after_success:
-  - coveralls
+- coveralls
+- if [ $APP_TRIGGER ]; then trigger_app_build.sh; fi
