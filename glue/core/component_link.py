@@ -1,6 +1,8 @@
 import logging
 import operator
 
+import numpy as np
+
 from .util import join_component_view
 from .subset import InequalitySubsetState
 
@@ -216,13 +218,30 @@ class CoordinateComponentLink(ComponentLink):
         self.coords = coords
         self.index = index
         self.pixel2world = pixel2world
+
+        #Some coordss don't need all pixel coords
+        #to compute a given world coord, and vice versa
+        # (e.g., spectral data cubes)
+        self.ndim = len(comp_from)
+        self.from_needed = coords.dependent_axes(index)
+
+        comp_from = [comp_from[i] for i in self.from_needed]
         super(CoordinateComponentLink, self).__init__(
             comp_from, comp_to, self.using)
 
     def using(self, *args):
         attr = 'pixel2world' if self.pixel2world else 'world2pixel'
         func = getattr(self.coords, attr)
-        return func(*args[::-1])[::-1][self.index]
+
+        args2 = [None] * self.ndim
+        for f, a in zip(self.from_needed, args):
+            args2[f] = a
+        for i in range(self.ndim):
+            if args2[i] is None:
+                args2[i] = np.zeros_like(args[0])
+        args2 = tuple(args2)
+
+        return func(*args2[::-1])[::-1][self.index]
 
 
 class BinaryComponentLink(ComponentLink):

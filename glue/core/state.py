@@ -479,17 +479,21 @@ def _save_coordinate_component_link(link, context):
     coords = context.id(link.coords)
     index = link.index
     pix2world = link.pixel2world
+    from_needed = list(link.from_needed)
     return dict(frm=frm, to=to, coords=coords, index=index,
-                pix2world=pix2world)
+                pix2world=pix2world, from_needed=from_needed)
 
 
 @loader(CoordinateComponentLink)
 def _load_coordinate_component_link(rec, context):
-    frm = map(context.object, rec['frm'])
     to = map(context.object, rec['to'])[0]  # XXX why is this a list?
     coords = context.object(rec['coords'])
     index = rec['index']
     pix2world = rec['pix2world']
+    frm = [None] * (max(rec['from_needed']) + 1)
+    for i, f in zip(rec['from_needed'], rec['frm']):
+        frm[i] = context.object(f)
+
     return CoordinateComponentLink(frm, to, coords, index, pix2world)
 
 

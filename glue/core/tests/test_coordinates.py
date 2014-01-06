@@ -5,7 +5,10 @@ from mock import patch
 import numpy as np
 from numpy.testing import assert_almost_equal
 
-from ..coordinates import coordinates_from_header, WCSCoordinates, Coordinates
+from ..coordinates import (coordinates_from_header,
+                           WCSCoordinates,
+                           Coordinates,
+                           header_from_string)
 
 
 class TestWcsCoordinates(object):
@@ -226,24 +229,6 @@ CRVAL3  =       -9960.07902777 /
 CRPIX3  =             -102.000 /
 CDELT3  =        66.4236100000 /
 """
-
-
-def header_from_string(string):
-    from ...external.astro import fits
-    cards = []
-    for s in string.splitlines():
-        try:
-            l, r = s.split('=')
-            key = l.strip()
-            value = r.split('/')[0].strip()
-            try:
-                value = int(value)
-            except ValueError:
-                pass
-        except ValueError:
-            continue
-        cards.append(fits.Card(key, value))
-    return fits.Header(cards)
 
 
 def test_coords_preserve_shape_2d():

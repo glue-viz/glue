@@ -23,6 +23,11 @@ class Coordinates(object):
     def axis_label(self, axis):
         return "World %i" % axis
 
+    def dependent_axes(self, axis):
+        """Return a tuple of which world-axes are non-orthogonal
+        to a given pixel axis"""
+        return (axis,)
+
     def __gluestate__(self, context):
         return {}  # no state
 
@@ -49,6 +54,7 @@ class WCSCoordinates(Coordinates):
     def __init__(self, header, wcs=None):
         super(WCSCoordinates, self).__init__()
         from ..external.astro import WCS
+
         self._header = header
         wcs = wcs or WCS(header)
 
@@ -65,6 +71,22 @@ class WCSCoordinates(Coordinates):
     @property
     def wcs(self):
         return self._wcs
+
+    @property
+    def header(self):
+        return self._header
+
+    def dependent_axes(self, axis):
+        # XXX Could do better here: VXY cubes, orthogonal projection, etc
+        h = self.header
+        ndim = h['NAXIS']
+        if ndim != 3:
+            return tuple(range(ndim))
+        if h.get('CD3_1', 0) != 0 or h.get('CD3_2', 0) != 0:
+            return tuple(range(ndim))
+        if axis == 0:
+            return (0,)
+        return (1, 2)
 
     def __setstate__(self, state):
         self.__dict__ = state
@@ -180,3 +202,24 @@ def coordinates_from_wcs(wcs):
         print e
         pass
     return Coordinates()
+
+
+def header_from_string(string):
+    """
+    Convert a string to a FITS header
+    """
+    from ..external.astro import fits
+    cards = []
+    for s in string.splitlines():
+        try:
+            l, r = s.split('=')
+            key = l.strip()
+            value = r.split('/')[0].strip()
+            try:
+                value = int(value)
+            except ValueError:
+                pass
+        except ValueError:
+            continue
+        cards.append(fits.Card(key, value))
+    return fits.Header(cards)
