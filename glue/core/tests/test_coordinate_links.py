@@ -1,11 +1,11 @@
 import numpy as np
 from astropy.io import fits
-from zlib import decompress
 from cStringIO import StringIO
 
 from .. import Data, DataCollection
 from ..coordinates import coordinates_from_header
 from ..link_helpers import LinkSame
+from .util import make_file
 
 
 def test_wcs_3d_to_2d():
@@ -14,8 +14,8 @@ def test_wcs_3d_to_2d():
     though the third axis isn't present
     """
     d = Data(label='D1')
-    file = StringIO(decompress(test_fits))
-    header = fits.getheader(file)
+    with make_file(test_fits, suffix='.fits', decompress=True) as file:
+        header = fits.getheader(file)
     d.coords = coordinates_from_header(header)
     d.add_component(np.zeros((3, 2, 1)), label='test')
 
