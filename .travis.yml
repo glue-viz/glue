@@ -31,10 +31,12 @@ before_install:
 - sudo ln -s /run/shm /dev/shm
 - export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
-- sudo apt-get install rubygems
-- sudo gem install travis
-- gem environment
-- export PATH=$PATH:`gem environment | grep "EXECUTABLE DIRECTORY" | cut -d":" -f2 | cut -c 2-`
+- if [ $APP_TRIGGER ]; then sudo apt-get install rubygems; fi
+- if [ $APP_TRIGGER ]; then rvmsudo gem install travis; fi
+- if [ $APP_TRIGGER ]; then gem environment; fi
+- if [ $APP_TRIGGER ]; then export PATH=`gem environment | grep "EXECUTABLE DIRECTORY" | cut -d":" -f2 | cut -c 2-`:$PATH; fi
+- if [ $APP_TRIGGER ]; then which travis; fi
+- if [ $APP_TRIGGER ]; then echo y | travis; fi  # install shell completion tool
 
 install:
 - conda install $CONDA_ARGS python=$TRAVIS_PYTHON_VERSION $CONDA_BASE
