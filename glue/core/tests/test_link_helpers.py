@@ -1,4 +1,7 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+
+from __future__ import absolute_import, division, print_function
+
 import pytest
 import numpy as np
 
@@ -14,12 +17,12 @@ R, D, L, B = (ComponentID('ra'), ComponentID('dec'),
 
 
 def forwards(x, y):
-    print 'forwads inputs', x, y
+    print('forwads inputs', x, y)
     return x * 3, y * 5
 
 
 def backwards(x, y):
-    print 'backwards inputs', x, y
+    print('backwards inputs', x, y)
     return x / 3, y / 5
 
 

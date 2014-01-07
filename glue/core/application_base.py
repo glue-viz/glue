@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from functools import wraps, partial
 import traceback
 
@@ -21,7 +23,7 @@ def catch_error(msg):
             try:
                 return func(*args, **kwargs)
             except Exception as e:
-                m = "%s\n%s" % (msg, e.message)
+                m = "%s\n%s" % (msg, str(e))
                 detail = str(traceback.format_exc())
                 self = args[0]
                 self.report_error(m, detail)
@@ -212,7 +214,7 @@ class Application(HubListener):
         raise NotImplementedError()
 
     def __gluestate__(self, context):
-        viewers = [map(context.id, tab) for tab in self.viewers]
+        viewers = [list(map(context.id, tab)) for tab in self.viewers]
         data = self.session.data_collection
 
         return dict(session=context.id(self.session), viewers=viewers,
@@ -379,7 +381,7 @@ class ViewerBase(HubListener, PropertySetMixin):
                     pos=self.position,
                     properties=dict((k, context.id(v))
                                     for k, v in self.properties.items()),
-                    layers=map(context.do, self.layers)
+                    layers=list(map(context.do, self.layers))
                     )
 
     @classmethod

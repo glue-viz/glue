@@ -7,6 +7,8 @@
 """
 #pylint: disable=I0011, R0903
 
+from __future__ import absolute_import, division, print_function
+
 import logging
 
 from .decorators import singleton

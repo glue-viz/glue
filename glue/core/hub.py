@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import logging
 from inspect import getmro
 from collections import defaultdict
@@ -192,7 +194,7 @@ class Hub(object):
             except AttributeError:
                 module = ''
             if not module.startswith('glue.core'):
-                print 'Pickle warning: Hub removing subscription to %s' % s
+                print('Pickle warning: Hub removing subscription to %s' % s)
                 result['_subscriptions'].pop(s)
         return result
 

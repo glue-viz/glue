@@ -9,7 +9,7 @@ the items are returned in the order their keys were first added.
 See: http://docs.python.org/library/collections.html#collections.OrderedDict
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 __all__ = ['OrderedDict']
 

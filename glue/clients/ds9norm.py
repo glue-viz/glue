@@ -19,6 +19,9 @@ intensities are as follows:
 #
 # As much as possible, we use verbose but inplace ufuncs to minimize
 # temporary arrays
+
+from __future__ import absolute_import, division, print_function
+
 import numpy as np
 from matplotlib.colors import Normalize
 

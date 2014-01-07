@@ -1,8 +1,8 @@
 """
 Widgets for sending feedback reports
 """
-from urllib2 import Request, urlopen
-from urllib import urlencode
+from ..external.six.moves.urllib.request import Request, urlopen
+from ..external.six.moves.urllib.parse import urlencode
 import sys
 
 from ..external.qt.QtGui import QTextCursor

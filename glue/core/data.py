@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import operator
 import logging
 from types import NoneType
@@ -21,6 +23,7 @@ from .message import (DataUpdateMessage,
                       SubsetCreateMessage, ComponentsChangedMessage)
 
 from .odict import OrderedDict
+from ..external import six
 
 __all__ = ['Data', 'ComponentID', 'Component', 'DerivedComponent',
            'CategoricalComponent', 'CoordinateComponent']
@@ -129,6 +132,12 @@ class ComponentID(object):
 
     def __rdiv__(self, other):
         return BinaryComponentLink(other, self, operator.div)
+
+    def __truediv__(self, other):
+        return BinaryComponentLink(self, other, operator.truediv)
+
+    def __rtruediv__(self, other):
+        return BinaryComponentLink(other, self, operator.truediv)
 
     def __pow__(self, other):
         return BinaryComponentLink(self, other, operator.pow)
@@ -676,7 +685,7 @@ class Data(object):
 
         if isinstance(label, ComponentID):
             component_id = label
-        elif isinstance(label, basestring):
+        elif isinstance(label, six.string_types):
             component_id = ComponentID(label, hidden=hidden)
         else:
             raise TypeError("label must be a ComponentID or string")
@@ -712,7 +721,7 @@ class Data(object):
             The :class:`DerivedComponent` that was added
         """
         if label is not None:
-            if isinstance(label, basestring):
+            if isinstance(label, six.string_types):
                 label = ComponentID(label)
             link.set_to_id(label)
 
@@ -1010,7 +1019,7 @@ class Data(object):
         :returns: :class:`~numpy.ndarray`
         """
         key, view = split_component_view(key)
-        if isinstance(key, basestring):
+        if isinstance(key, six.string_types):
             _k = key
             key = self.find_component_id(key)
             if key is None:
@@ -1048,7 +1057,7 @@ class Data(object):
         if component_id is None:
             raise IncompatibleAttribute()
 
-        if isinstance(component_id, basestring):
+        if isinstance(component_id, six.string_types):
             component_id = self.id[component_id]
 
         try:

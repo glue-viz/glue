@@ -2,6 +2,9 @@
 LayerArtist classes handle the visualization of an individual subset
 or dataset
 """
+
+from __future__ import absolute_import, division, print_function
+
 import logging
 
 import numpy as np
@@ -11,6 +14,7 @@ from ..core.util import color2rgb, PropertySetMixin, Pointer
 from ..core.subset import Subset
 from .util import view_cascade, get_extent, small_view, small_view_array
 from .ds9norm import DS9Normalize
+from ..external.six.moves import reduce
 
 
 class ChangedTrigger(object):

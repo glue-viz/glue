@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from .tree import Tree
 
 
@@ -14,6 +16,9 @@ class TreeTraversal(object):
 
     def next(self):
         raise NotImplementedError()
+
+    def __next__(self):
+        return self.next()
 
 
 class PreOrderTraversal(TreeTraversal):

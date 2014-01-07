@@ -3,11 +3,15 @@ Class which embellishes the DataCollectionView with buttons and actions for
 editing the data collection
 """
 
+from __future__ import absolute_import, division, print_function
+
+
 from ...external.qt.QtGui import (QWidget, QMenu,
                                   QAction, QKeySequence, QFileDialog)
 
 
 from ...external.qt.QtCore import Qt, Signal, QObject
+from ...external.six.moves import reduce
 
 from ..ui.layertree import Ui_LayerTree
 

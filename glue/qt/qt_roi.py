@@ -143,7 +143,7 @@ class QtCircularROI(QtROI, roi.MplCircularROI):
         roi.MplCircularROI.__init__(self, axes)
 
     def paint(self, canvas):
-        xy = map(int, self._roi.get_center())
+        xy = list(map(int, self._roi.get_center()))
         radius = int(self._roi.get_radius())
         center = QtCore.QPoint(xy[0], canvas.height() - xy[1])
 

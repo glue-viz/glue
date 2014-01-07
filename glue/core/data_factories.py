@@ -1,6 +1,5 @@
-""" Factory methods to build Data objects from files"""
+""" Factory methods to build Data objects from files
 
-"""
 Implementation notes:
 
 Each factory method conforms to the folowing structure, which
@@ -30,6 +29,9 @@ Putting this together, the simplest data factory code looks like this::
     __factories__.append(dummy_factory)
     set_default_factory("foo", dummy_factory)
 """
+
+from __future__ import absolute_import, division, print_function
+
 import os
 import warnings
 
@@ -41,6 +43,7 @@ from .util import file_format, as_list
 from .coordinates import coordinates_from_header, coordinates_from_wcs
 from ..backends import get_backend
 from ..config import auto_refresh
+from ..external import six
 
 __all__ = ['load_data', 'gridded_data', 'casalike_cube',
            'tabular_data', 'img_data', 'auto_data']
@@ -90,8 +93,8 @@ def has_extension(exts):
 
 def is_hdf5(filename):
     # All hdf5 files begin with the same sequence
-    with open(filename) as infile:
-        return infile.read(8) == '\x89HDF\r\n\x1a\n'
+    with open(filename, 'rb') as infile:
+        return infile.read(8) == b'\x89HDF\r\n\x1a\n'
 
 
 def is_fits(filename):
@@ -416,7 +419,7 @@ casalike_cube.identifier = is_casalike
 
 def _ascii_identifier_v02(origin, args, kwargs):
     # this works for astropy v0.2
-    if isinstance(args[0], basestring):
+    if isinstance(args[0], six.string_types):
         return args[0].endswith(('csv', 'tsv', 'txt', 'tbl', 'dat',
                                  'csv.gz', 'tsv.gz', 'txt.gz', 'tbl.gz',
                                  'dat.gz'))

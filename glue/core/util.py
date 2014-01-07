@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import logging
 from contextlib import contextmanager
 import string
@@ -5,6 +7,8 @@ from itertools import count
 
 import numpy as np
 import pandas as pd
+
+from ..external.six.moves import reduce
 
 
 def identity(x):

@@ -1,4 +1,7 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+
+from __future__ import absolute_import, division, print_function
+
 import numpy as np
 
 from ..data import Data, Component
@@ -53,7 +56,7 @@ def example_components(self, add_derived=True):
 class TestAccessibleLinks(object):
 
     def setup_method(self, method):
-        self.cs = [ComponentID("%i" % i) for i in xrange(10)]
+        self.cs = [ComponentID("%i" % i) for i in range(10)]
 
     def test_returned_if_available(self):
         cids = self.cs[0:5]
@@ -159,7 +162,7 @@ class TestLinkManager(object):
     def test_update_data_components_adds_correctly(self):
         example_components(self, add_derived=False)
         lm = LinkManager()
-        map(lm.add_link, self.links)
+        list(map(lm.add_link, self.links))
 
         lm.update_data_components(self.data)
         derived = set(self.data.derived_components)
@@ -170,7 +173,7 @@ class TestLinkManager(object):
         # add all but last link to manager
         example_components(self, add_derived=False)
         lm = LinkManager()
-        map(lm.add_link, self.links[:-1])
+        list(map(lm.add_link, self.links[:-1]))
 
         # manually add last link as derived component
         dc = DerivedComponent(self.data, self.links[-1])

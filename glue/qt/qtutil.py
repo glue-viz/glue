@@ -2,6 +2,9 @@
 Various standalone utility code for
 working with Qt
 """
+
+from __future__ import absolute_import, division, print_function
+
 import os
 
 import pkg_resources
@@ -149,7 +152,7 @@ class GlueDataDialog(object):
         result = self._fd.exec_()
         if result == QtGui.QDialog.Rejected:
             return [], None
-        path = map(str, self.paths())  # cast out of unicode
+        path = list(map(str, self.paths()))  # cast out of unicode
         factory = self.factory()
         return path, factory
 
@@ -908,10 +911,10 @@ if __name__ == "__main__":
         layer = None
 
         def update(self):
-            print 'update', self.layer_visible
+            print('update', self.layer_visible)
 
         def redraw(self):
-            print 'draw'
+            print('draw')
 
     app = get_qapp()
     f = Foo()
@@ -920,8 +923,8 @@ if __name__ == "__main__":
     rgb.show()
     app.exec_()
 
-    print f.layer_visible
-    print f.contrast_layer
+    print(f.layer_visible)
+    print(f.contrast_layer)
 
 
 class Worker(QThread):

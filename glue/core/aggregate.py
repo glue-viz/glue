@@ -9,6 +9,7 @@ except ImportError:  # python3
 from functools import wraps
 
 import numpy as np
+from ..external.six.moves import range as xrange
 
 
 def check_empty(func):

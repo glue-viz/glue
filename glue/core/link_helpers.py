@@ -10,9 +10,13 @@ The :class:`LinkCollection` class and its sublcasses are factories to create
 multiple ComponentLinks easily. They are meant to be passed to
 :meth:`~glue.core.data_collection.DataCollection.add_link()`
 """
+
+from __future__ import absolute_import, division, print_function
+
 from .component_link import ComponentLink
 from .data import ComponentID
 from ..external.aplpy import gal2fk5, fk52gal
+from ..external import six
 
 __all__ = ['LinkCollection', 'LinkSame', 'LinkTwoWay', 'MultiLink',
            'LinkAligned', 'Galactic2Equatorial']
@@ -60,7 +64,7 @@ def _toid(arg):
     """Coerce the input to a ComponentID, if possible"""
     if isinstance(arg, ComponentID):
         return arg
-    elif isinstance(arg, basestring):
+    elif isinstance(arg, six.string_types):
         return ComponentID(arg)
     else:
         raise TypeError('Cannot be cast to a ComponentID: %s' % arg)
@@ -119,8 +123,8 @@ class MultiLink(LinkCollection):
     """
 
     def __init__(self, cids_left, cids_right, forwards=None, backwards=None):
-        cids_left = map(_toid, cids_left)
-        cids_right = map(_toid, cids_right)
+        cids_left = list(map(_toid, cids_left))
+        cids_right = list(map(_toid, cids_right))
 
         if forwards is None and backwards is None:
             raise TypeError("Must supply either forwards or backwards")

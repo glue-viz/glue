@@ -321,7 +321,7 @@ class CoordinateHelper(object):
         lblinfo = []
         lbl_world = []
 
-        for axis, spine in frame.iteritems():
+        for axis, spine in six.iteritems(frame):
 
             # Determine tick rotation in display coordinates and compare to
             # the normal angle in display coordinates.
