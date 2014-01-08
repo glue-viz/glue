@@ -245,7 +245,7 @@ def launch(path):
     webbrowser.open('http://0.0.0.0:%i' % PORT)
 
 
-exporters.add('D3PO', save_d3po, can_save_d3po, directory=True)
+exporters.add('D3PO', save_d3po, can_save_d3po, outmode='directory')
 
 
 HTML = """

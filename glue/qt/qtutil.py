@@ -27,6 +27,7 @@ from ..external.qt.QtCore import Signal
 from .. import core
 from . import ui, icons
 
+
 def mpl_to_qt4_color(color, alpha=1.0):
     """ Convert a matplotlib color stirng into a Qt QColor object
 

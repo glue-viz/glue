@@ -9,6 +9,7 @@ from . import command
 from ..core import Data, Subset
 from ..core.util import lookup_class, PropertySetMixin
 from .session import Session
+from ..config import settings
 
 
 def catch_error(msg):
@@ -41,6 +42,10 @@ class Application(HubListener):
 
         self._hub = self._session.hub
         self._cmds = self._session.command_stack
+        self._settings = {}
+        for key, value, validator in settings:
+            self._settings[key] = [value, validator]
+        self._load_settings()
 
     @property
     def session(self):
@@ -88,6 +93,31 @@ class Application(HubListener):
         raise NotImplementedError()
 
     def close_tab(self):
+        raise NotImplementedError()
+
+    def get_setting(self, key):
+        """
+        Fetch the value of an application setting
+        """
+        return self._settings[key][0]
+
+    def set_setting(self, key, value):
+        """
+        Set the value of an application setting
+
+        Raises a KeyError if the setting does not exist
+        Raises a ValueError if the value is invalid
+        """
+        validator = self._settings[key][1]
+        self._settings[key][0] = validator(value)
+
+    @property
+    def settings(self):
+        """Iterate over settings"""
+        for key, (value, _) in self._settings.items():
+            yield key, value
+
+    def _load_settings(self, path=None):
         raise NotImplementedError()
 
     @catch_error("Could not load data")

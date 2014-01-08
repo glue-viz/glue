@@ -59,12 +59,28 @@ class Registry(object):
         return arg
 
 
+class SettingRegistry(Registry):
+
+    """Stores key/value settings that code can use to customize Glue
+
+    Each member is a tuple of 3 items:
+      - key: the setting name [str]
+      - value: the default setting [object]
+      - validator: A function which tests whether the input is a valid value,
+                   and raises a ValueError if invalid. On valid input,
+                   returns the (possibly sanitized) setting value.
+    """
+
+    def add(self, key, value, validator=str):
+        self.members.append((key, value, validator))
+
+
 class ExporterRegistry(Registry):
 
     """Stores functions which can export an applocation to an output file
 
     The members property is a list of exporters, each represented
-    as a (label, save_function, can_save_function, directory) doubles
+    as a (label, save_function, can_save_function, outmode) tuple.
 
     save_function takes an (application, path) as input, and saves
     the session
@@ -72,14 +88,16 @@ class ExporterRegistry(Registry):
     can_save_function takes an application as input, and raises an
     exception if saving this session is not possible
 
-    directory is a boolean value that encodes whether the output
-    file is a directory
+    outmode is a string, with one of 3 values:
+      'file': indicates that exporter creates a file
+      'directory': exporter creates a directory
+      'label': exporter doesn't write to disk, but needs a label
     """
 
     def default_members(self):
         return []
 
-    def add(self, label, exporter, checker, directory=False):
+    def add(self, label, exporter, checker, outmode='file'):
         """
         Add a new exporter
         :param label: Short label for the exporter
@@ -92,10 +110,10 @@ class ExporterRegistry(Registry):
         :type exporter: function(application). Raises exception if
                         export impossible
 
-        :param directory: Does the exporter create a directory?
-        :type directory: bool
+        :param outmode: What kind of output is created?
+        :type outmode: str ('file' | 'directory' | 'label')
         """
-        self.members.append([label, exporter, checker, directory])
+        self.members.append([label, exporter, checker, outmode])
 
 
 class ColormapRegistry(Registry):
@@ -262,6 +280,7 @@ link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
 colormaps = ColormapRegistry()
 exporters = ExporterRegistry()
+settings = SettingRegistry()
 
 
 def load_configuration(search_path=None):

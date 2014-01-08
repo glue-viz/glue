@@ -3,9 +3,9 @@ import sys
 
 from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                                  QMenu, QMdiSubWindow, QAction, QMessageBox,
-                                 QFileDialog,
+                                 QFileDialog, QInputDialog,
                                  QToolButton, QVBoxLayout, QWidget)
-from ..external.qt.QtCore import Qt, QSize
+from ..external.qt.QtCore import Qt, QSize, QSettings
 
 from ..core import command, Session
 from .. import env
@@ -19,6 +19,7 @@ from .widgets.glue_mdi_area import GlueMdiArea
 from .widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from .widgets.layer_tree_widget import PlotAction, LayerTreeWidget
 from .widgets.data_viewer import DataViewer
+from .widgets.settings_editor import SettingsEditor
 
 
 def _fix_ipython_pylab():
@@ -153,6 +154,22 @@ class GlueApplication(Application, QMainWindow):
         page.setActiveSubWindow(sub)
         return sub
 
+    def set_setting(self, key, value):
+        super(GlueApplication, self).set_setting(key, value)
+        settings = QSettings('glue-viz', 'glue')
+        settings.setValue(key, value)
+
+    def _load_settings(self, path=None):
+        settings = QSettings('glue-viz', 'glue')
+        for k, v in self.settings:
+            if settings.contains(k):
+                super(GlueApplication, self).set_setting(k, settings.value(k))
+
+    def _edit_settings(self):
+        # save it to prevent garbage collection
+        self._editor = SettingsEditor(self)
+        self._editor.widget.show()
+
     def gather_current_tab(self):
         """Arrange windows in current tab via tiling"""
         self.current_tab.tileSubWindows()
@@ -239,6 +256,8 @@ class GlueApplication(Application, QMainWindow):
             submenu = menu.addMenu("Export")
             for a in self._actions['session_export']:
                 submenu.addAction(a)
+        menu.addSeparator()
+        menu.addAction("Edit Settings", self._edit_settings)
         mbar.addMenu(menu)
 
         menu = QMenu(mbar)
@@ -398,12 +417,20 @@ class GlueApplication(Application, QMainWindow):
         self.save_session(outfile)
 
     @messagebox_on_error("Failed to export session")
-    def _choose_export_session(self, saver, checker, isdir):
+    def _choose_export_session(self, saver, checker, outmode):
         checker(self)
-        outfile, file_filter = QFileDialog.getSaveFileName(self)
-        if not outfile:
-            return
-        saver(self, outfile)
+        if outmode in ['file', 'directory']:
+            outfile, file_filter = QFileDialog.getSaveFileName(self)
+            if not outfile:
+                return
+            return saver(self, outfile)
+        else:
+            assert outmode == 'label'
+            label, ok = QInputDialog.getText(self, 'Choose a label:',
+                                             'Choose a label:')
+            if not ok:
+                return
+            return saver(self, label)
 
     @messagebox_on_error("Failed to restore session")
     @set_cursor(Qt.WaitCursor)

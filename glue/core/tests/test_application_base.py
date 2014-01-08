@@ -28,6 +28,9 @@ class MockApplication(Application):
     def close_tab(self):
         self.tab.close()
 
+    def _load_settings(self):
+        pass
+
 
 class TestApplicationBase(object):
     def setup_method(self, method):
