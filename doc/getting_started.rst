@@ -159,6 +159,23 @@ You can save a Glue session for later work via the ``File->Save Session`` menu. 
 
 .. warning:: Due to the way python objects are saved, it is unlikely that a saved session will restore properly if you change Glue versions.
 
+**Exporting the plots**
+Glue can export certain kinds of plot combinations to other formats and web services.
+
+`Plot.ly <http://plot.ly>`_ is a cloud-based plot service whose features in clude the ability to tweak plot features (colors, annotations, etc.) through a GUI, and to easily share plots via web URLs. If your Glue session contains four or fewer scatter plots and/or histograms, these can be exported to a plotly page.
+
+To do this, first sign up for a plotly account, and enter your user name and API key under ``File->Edit Settings``. Then, select ``File->Export->Plotly``. This will create a new plot, and open a browser window showing you the plot.
+
+**Exporting to D3PO**
+
+`D3PO <http://d3po.org>`_ is an application created by `Adrian Price Whelan <http://adrian.pw>`_, `Josh Peek <http://user.astro.columbia.edu/~jpeek/>`_ and others to create multi-stage "data stories". Glue can export to the D3PO format under the following conditions:
+
+  - Only scatterplots or histograms are used.
+  - A single dataset is used.
+  - Only one subset is visible within the viewers of each Glue tab.
+
+Saving a session via ``File->Export->D3PO`` creates a directory with thee files that convert the Glue plots to a minimal D3PO page. Glue will also start a small webserver and open a browser window to show you the exported page.
+
 **Saving Plots**
 Static images of individual visualizations can be saved by clicking the floppy disk icon on a given visualization window.
 
