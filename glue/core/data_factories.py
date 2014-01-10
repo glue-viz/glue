@@ -282,6 +282,11 @@ def tabular_data(*args, **kwargs):
     else:
         registry.register_identifier('ascii', Table, _ascii_identifier_v03,
                                      force=True)
+        # Clobber the identifier
+        # added in astropy/astropy/pull/1935
+        registry.register_identifier('ascii.csv', Table, lambda *a, **k: False,
+                                     force=True)
+
 
     # Import FITS compatibility (for Astropy 0.2.x)
     from ..external import fits_io
