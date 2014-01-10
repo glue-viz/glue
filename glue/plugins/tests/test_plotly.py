@@ -81,9 +81,9 @@ class TestPlotly(object):
         args, kwargs = build_plotly_call(app)
 
         xaxis = dict(type='log', rangemode='normal',
-                     range=[1, 2], title='y')
+                     range=[1, 2], title='y', zeroline=False)
         yaxis = dict(type='linear', rangemode='normal',
-                     range=[2, 4], title='x')
+                     range=[2, 4], title='x', zeroline=False)
         layout = kwargs['layout']
         assert layout['xaxis'] == xaxis
         assert layout['yaxis'] == yaxis
