@@ -1,5 +1,6 @@
 # pylint: disable=W0223
 import sys
+from functools import partial
 
 from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                                  QMenu, QMdiSubWindow, QAction, QMessageBox,
@@ -352,14 +353,14 @@ class GlueApplication(Application, QMainWindow):
             acts = []
             name = 'Export Session'
             for e in exporters:
-                label, saver, checker, isdir = e
+                label, saver, checker, mode = e
                 a = act(label, self,
-                        tip='Export the current session to %s format' % label)
-
-                def save(*args):
-                    self._choose_export_session(saver, checker, isdir)
-                a.triggered.connect(save)
+                        tip='Export the current session to %s format' %
+                        label)
+                a.triggered.connect(partial(self._choose_export_session,
+                                            saver, checker, mode))
                 acts.append(a)
+
             self._actions['session_export'] = acts
 
         a = act('Open Session', self,

@@ -113,7 +113,7 @@ class ExporterRegistry(Registry):
         :param outmode: What kind of output is created?
         :type outmode: str ('file' | 'directory' | 'label')
         """
-        self.members.append([label, exporter, checker, outmode])
+        self.members.append((label, exporter, checker, outmode))
 
 
 class ColormapRegistry(Registry):
