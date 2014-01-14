@@ -24,8 +24,12 @@ class Coordinates(object):
         return "World %i" % axis
 
     def dependent_axes(self, axis):
-        """Return a tuple of which world-axes are non-orthogonal
-        to a given pixel axis"""
+        """Return a tuple of which world-axes are non-indepndent
+        from a given pixel axis
+
+        The axis index is given in numpy ordering convention (note that
+        opposite the fits convention)
+        """
         return (axis,)
 
     def __gluestate__(self, context):
@@ -77,16 +81,33 @@ class WCSCoordinates(Coordinates):
         return self._header
 
     def dependent_axes(self, axis):
-        # XXX Could do better here: VXY cubes, orthogonal projection, etc
-        h = self.header
-        ndim = h['NAXIS']
-        if ndim != 3:
+        # if distorted, all bets are off
+        try:
+            if any([self._wcs.sip, self._wcs.det2im1, self._wcs.det2im2]):
+                return tuple(range(ndim))
+        except AttributeError:
+            pass
+
+        # here, axis is the index number in numpy convention
+        # we flip with [::-1] because WCS and numpy index
+        # conventions are reversed
+        pc = np.array(self._wcs.wcs.get_pc()[::-1, ::-1])
+        ndim = pc.shape[0]
+        pc[np.eye(ndim, dtype=np.bool)] = 0
+        axes = self._wcs.get_axis_types()[::-1]
+
+        # axes rotated
+        if pc[axis, :].any() or pc[:, axis].any():
             return tuple(range(ndim))
-        if h.get('CD3_1', 0) != 0 or h.get('CD3_2', 0) != 0:
-            return tuple(range(ndim))
-        if axis == 0:
-            return (0,)
-        return (1, 2)
+
+        # XXX can spectral still couple with other axes by this point??
+        if axes[axis].get('coordinate_type') != 'celestial':
+            return (axis,)
+
+        # in some cases, even the celestial coordinates are
+        # independent. We don't catch that here.
+        return tuple(i for i, a in enumerate(axes) if
+                     a.get('coordinate_type') == 'celestial')
 
     def __setstate__(self, state):
         self.__dict__ = state
