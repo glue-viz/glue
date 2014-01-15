@@ -154,34 +154,27 @@ class WCSCoordinates(Coordinates):
             r.shape = a.shape
         return result
 
-    def _2d_axis_label(self, axis):
-        letters = ['y', 'x']
-        header = self._header
-        num = _get_ndim(header) - axis  # number orientation reversed
-        key = 'CTYPE%i' % num
-        if key in header:
-            return 'World %s: %s' % (letters[axis], header[key])
-        return 'World %s' % (letters[axis])
-
-    def _3d_axis_label(self, axis):
-        letters = ['z', 'y', 'x']
-        keys = ["", "", ""]
-        if 'CTYPE3' in self._header:
-            keys[0] = ": %s" % self._header['CTYPE3']
-        if 'CTYPE2' in self._header:
-            keys[1] = ": %s" % self._header['CTYPE2']
-        if 'CTYPE1' in self._header:
-            keys[2] = ": %s" % self._header['CTYPE1']
-        return "World %s%s" % (letters[axis], keys[axis])
-
     def axis_label(self, axis):
         header = self._header
-        if _get_ndim(header) == 2:
-            return self._2d_axis_label(axis)
-        elif _get_ndim(header) == 3:
-            return self._3d_axis_label(axis)
-        else:
-            return super(WCSCoordinates, self).axis_label(axis)
+        ndim = _get_ndim(header)
+        num = _get_ndim(header) - axis  # number orientation reversed
+        ax = self._header.get('CTYPE%i' % num)
+        if ax is not None:
+            if len(ax) == 8 or '-' in ax:  # assume standard format
+                ax = ax[:5].split('-')[0].title()
+            else:
+                ax = ax.title()
+
+            translate = dict(
+                Glon='Galactic Longitude',
+                Glat='Galactic Latitude',
+                Ra='Right Ascension',
+                Dec='Declination',
+                Velo='Velocity',
+                Freq='Frequency'
+            )
+            return translate.get(ax, ax)
+        return super(WCSCoordinates, self).axis_label(axis)
 
 
 def coordinates_from_header(header):

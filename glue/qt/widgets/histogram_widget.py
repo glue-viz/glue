@@ -10,7 +10,7 @@ from ...core import Data
 from ...clients.histogram_client import HistogramClient
 from ..widget_properties import (connect_int_spin, ButtonProperty,
                                  FloatLineProperty, CurrentComboProperty,
-                                 SpinnerProperty)
+                                 ValueProperty)
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import HRangeMode
 from .data_viewer import DataViewer
@@ -35,7 +35,7 @@ class HistogramWidget(DataViewer):
     normed = ButtonProperty('ui.normalized_box')
     autoscale = ButtonProperty('ui.autoscale_box')
     cumulative = ButtonProperty('ui.cumulative_box')
-    nbins = SpinnerProperty('ui.binSpinBox')
+    nbins = ValueProperty('ui.binSpinBox')
     xlog = ButtonProperty('ui.xlog_box')
     ylog = ButtonProperty('ui.ylog_box')
 

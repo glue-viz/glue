@@ -287,7 +287,6 @@ def tabular_data(*args, **kwargs):
         registry.register_identifier('ascii.csv', Table, lambda *a, **k: False,
                                      force=True)
 
-
     # Import FITS compatibility (for Astropy 0.2.x)
     from ..external import fits_io
 
