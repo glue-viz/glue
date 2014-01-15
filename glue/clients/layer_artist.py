@@ -168,7 +168,7 @@ class ImageLayerArtist(LayerArtist):
             result.vmax = vals[.99 * vals.size]
         return result
 
-    def update(self, view):
+    def update(self, view, transpose=False):
         self.clear()
         views = view_cascade(self.layer, view)
         artists = []
@@ -180,7 +180,9 @@ class ImageLayerArtist(LayerArtist):
 
         for v in views:
             image = self.layer[v]
-            extent = get_extent(v)
+            extent = get_extent(v, transpose)
+            if transpose:
+                image = image.T
             artists.append(self._axes.imshow(image, cmap=self.cmap,
                                              norm=self.norm,
                                              interpolation='nearest',
@@ -274,7 +276,7 @@ class RGBImageLayerArtist(ImageLayerArtist):
         self.layer_visible['green'] = value[1]
         self.layer_visible['blue'] = value[2]
 
-    def update(self, view=None):
+    def update(self, view=None, transpose=False):
         self.clear()
         if self.r is None or self.g is None or self.b is None:
             return
@@ -289,7 +291,7 @@ class RGBImageLayerArtist(ImageLayerArtist):
         views = view_cascade(self.layer, view)
         artists = []
         for v in views:
-            extent = get_extent(v)
+            extent = get_extent(v, transpose)
             # first argument = component. swap
             r = tuple([self.r] + list(v[1:]))
             g = tuple([self.g] + list(v[1:]))
@@ -297,6 +299,10 @@ class RGBImageLayerArtist(ImageLayerArtist):
             r = self.layer[r]
             g = self.layer[g]
             b = self.layer[b]
+            if transpose:
+                r = r.T
+                g = g.T
+                b = b.T
             self.rnorm = self.rnorm or self._default_norm(r)
             self.gnorm = self.gnorm or self._default_norm(g)
             self.bnorm = self.bnorm or self._default_norm(b)
@@ -326,7 +332,7 @@ class RGBImageLayerArtist(ImageLayerArtist):
 
 class SubsetImageLayerArtist(LayerArtist):
 
-    def update(self, view):
+    def update(self, view, transpose=False):
         subset = self.layer
         self.clear()
         logging.debug("View into subset %s is %s", self.layer, view)
@@ -341,7 +347,7 @@ class SubsetImageLayerArtist(LayerArtist):
         if not mask.any():
             return
 
-        extent = get_extent(view)
+        extent = get_extent(view, transpose)
         r, g, b = color2rgb(self.layer.style.color)
         mask = np.dstack((r * mask, g * mask, b * mask, mask * .5))
         mask = (255 * mask).astype(np.uint8)
@@ -372,7 +378,7 @@ class ScatterLayerArtist(LayerArtist):
         self.artists = self._axes.plot(x, y)
         return True
 
-    def update(self, view=None):
+    def update(self, view=None, transpose=False):
         self._check_subset_state_changed()
         if self._changed:
             if not self._recalc():

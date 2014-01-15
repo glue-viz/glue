@@ -144,8 +144,8 @@ class TestWcsCoordinates(object):
         hdr = self.default_header()
         coord = WCSCoordinates(hdr)
 
-        assert coord.axis_label(0) == 'World y: GLAT-TAN'
-        assert coord.axis_label(1) == 'World x: GLON-TAN'
+        assert coord.axis_label(0) == 'Galactic Latitude'
+        assert coord.axis_label(1) == 'Galactic Longitude'
 
 
 class TestCoordinatesFromHeader(object):

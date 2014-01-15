@@ -4,8 +4,10 @@ import numpy as np
 from ..core.decorators import memoize
 
 
-def get_extent(view):
+def get_extent(view, transpose=False):
     sy, sx = [s for s in view if isinstance(s, slice)]
+    if transpose:
+        return (sy.start, sy.stop, sx.start, sx.stop)
     return (sx.start, sx.stop, sy.start, sy.stop)
 
 
