@@ -10,7 +10,7 @@ if [ $TRAVIS_REPO_SLUG != "glue-viz/glue" ]; then
    exit 0
 fi
 
-if [ $TRAVIS_PULL_REQUEST = 'true' ]; then
+if [ $TRAVIS_PULL_REQUEST != 'false' ]; then
     echo "Not building for pull request."
     exit 0
 fi
