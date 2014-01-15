@@ -26,10 +26,13 @@ class SliceWidget(QWidget):
         if pix2world is not None:
             raise NotImplmentedError("Pix2world option not implemented")
 
-        layout = QHBoxLayout()
+        layout = QVBoxLayout()
+        layout.setContentsMargins(3, 1, 3, 1)
+
+        top = QHBoxLayout()
+        top.setContentsMargins(3, 3, 3, 3)
         label = QLabel(label)
-        layout.addWidget(label)
-        layout.setContentsMargins(3, 3, 3, 3)
+        top.addWidget(label)
 
         mode = QComboBox()
         mode.addItem('x', 'x')
@@ -38,7 +41,9 @@ class SliceWidget(QWidget):
         mode.currentIndexChanged.connect(lambda x:
                                          self.mode_changed.emit(self.mode))
         mode.currentIndexChanged.connect(self._update_mode)
-        layout.addWidget(mode)
+        top.addWidget(mode)
+
+        layout.addLayout(top)
 
         slider = QSlider(Qt.Horizontal)
         slider.setMinimum(lo)
@@ -46,8 +51,6 @@ class SliceWidget(QWidget):
         slider.valueChanged.connect(lambda x:
                                     self.slice_changed.emit(self.mode))
         layout.addWidget(slider)
-        layout.setStretchFactor(slider, 5)
-        layout.addStretch(0)
 
         self.setLayout(layout)
 
