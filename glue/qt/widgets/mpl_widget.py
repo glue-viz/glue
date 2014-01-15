@@ -8,8 +8,14 @@ from ...external.qt.QtCore import Signal, Qt
 # Qt4Agg backend. It also inherits from QWidget
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as \
     FigureCanvas
-from matplotlib.backends.backend_qt4agg import FigureManagerQTAgg as \
-    FigureManager
+
+try:
+    from matplotlib.backends.backend_qt4agg import FigureManagerQTAgg as \
+     FigureManager
+except ImportError:  # mpl >= 0.4
+    from matplotlib.backends.backend_qt4agg import FigureManagerQT as \
+     FigureManager
+
 import matplotlib
 
 # Matplotlib Figure object
