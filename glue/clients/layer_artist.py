@@ -512,6 +512,8 @@ class HistogramLayerArtist(LayerArtist):
         self.clear()
         try:
             data = self.layer[self.att].ravel()
+            if not np.isfinite(data).any():
+                return False
         except IncompatibleAttribute:
             return False
 
