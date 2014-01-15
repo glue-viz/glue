@@ -241,6 +241,48 @@ set_default_factory('hd5', gridded_data)
 set_default_factory('hdf5', gridded_data)
 
 
+def casalike_cube(filename, **kwargs):
+    """
+    This provides special support for 4D CASA-like cubes,
+    which have 2 spatial axes, a spectral axis, and a stokes axis
+    in that order.
+
+    Each stokes cube is split out as a separate component
+    """
+    result = Data()
+    with fits.open(filename, **kwargs) as hdulist:
+        array = hdulist[0].data
+        header = hdulist[0].header
+    result.coords = coordinates_from_header(header)
+    for i in range(array.shape[0]):
+        result.add_component(array[[i]], label='STOKES %i' % i)
+    return result
+
+
+def is_casalike(filename, **kwargs):
+    """
+    Check if a file is a CASA like cube,
+    with (P,P,V,Stokes) layout
+    """
+    if not is_fits(filename):
+        return False
+    with fits.open(filename) as hdulist:
+        if len(hdulist) != 1:
+            return False
+        if hdulist[0].header['NAXIS'] != 4:
+            return False
+
+        from astropy.wcs import WCS
+        w = WCS(hdulist[0].header)
+
+    ax = [a.get('coordinate_type') for a in w.get_axis_types()]
+    return ax == ['celestial', 'celestial', 'spectral', 'stokes']
+
+
+casalike_cube.label = 'CASA PPV Cube'
+casalike_cube.identifier = is_casalike
+
+
 def _ascii_identifier_v02(origin, args, kwargs):
     # this works for astropy v0.2
     if isinstance(args[0], basestring):
@@ -419,3 +461,4 @@ for i in img_fmt:
 
 __factories__.append(img_data)
 __all__.append('img_data')
+__factories__.append(casalike_cube)

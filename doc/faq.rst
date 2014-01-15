@@ -59,6 +59,24 @@ set the ``QT_API`` environment variable to either ``pyqt`` or ``pyside``, depend
     QT_API=pyside notebook --gui qt
 
 
+Does Glue Understand CASA Cubes?
+--------------------------------
+Many radio astronomy datacubes are 4 dimensional, and give intensity
+as a function of 2 spatial dimensions, a frequency dimension, and a
+Stokes polarization dimension. By default, Glue will read these images
+in as 4D hypercubes.
+
+However, you might wish to load the image as a series of 3D cubes,
+one for each Stokes parameter. This would more easily allow you,
+for example, to compare histograms of intensities for each Stokes
+parameter.
+
+Because of this, Glue has a special "CASA image loader", to load
+these kinds of files. To open a file in this mode, select "CASA PPV Cube"
+in the file type dropdown when opening a file. This will create a single
+Data object with 1 attribute for each Stokes parameter.
+
+
 Something is broken, or confusing. What should I do?
 ----------------------------------------------------
 If you think you've found a bug in Glue, feel free to add
