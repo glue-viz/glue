@@ -132,3 +132,12 @@ class TestHistogramWidget(object):
         self.widget.add_data(self.data)
         self.data.add_component(self.data[self.data.components[0]], 'testing')
         self.assert_component_integrity()
+
+    def test_nonnumeric_first_component(self):
+        # regression test for #208. Shouldn't complain if
+        # first component is non-numerical
+        data = core.Data()
+        data.add_component(['a', 'b', 'c'], label='c1')
+        data.add_component([1, 2, 3], label='c2')
+        self.collect.append(data)
+        self.widget.add_data(data)
