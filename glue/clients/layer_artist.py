@@ -360,6 +360,9 @@ class ScatterLayerArtist(LayerArtist):
         super(ScatterLayerArtist, self).__init__(layer, ax)
         self.emphasis = None
 
+    def _do_plotting(self, x, y):
+        return self._axes.plot(x, y)
+
     def _recalc(self):
         self.clear()
         assert len(self.artists) == 0
@@ -369,7 +372,7 @@ class ScatterLayerArtist(LayerArtist):
             y = self.layer[self.yatt].ravel()
         except IncompatibleAttribute:
             return False
-        self.artists = self._axes.plot(x, y)
+        self.artists = self._do_plotting(x, y)
         return True
 
     def update(self, view=None):
@@ -386,7 +389,7 @@ class ScatterLayerArtist(LayerArtist):
                 s.subset_state = self.emphasis & self.layer.subset_state
                 x = s[self.xatt].ravel()
                 y = s[self.yatt].ravel()
-                self.artists.extend(self._axes.plot(x, y))
+                self.artists.extend(self._do_plotting(x, y))
                 has_emph = True
             except IncompatibleAttribute:
                 pass
