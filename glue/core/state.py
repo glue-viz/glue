@@ -1,7 +1,57 @@
 """
-Code to convert Glue objects to and from JSON descriptions
+Module to convert Glue objects to and from JSON descriptions
+
+Example Usage:
+
+s = GlueSerializer(object)
+s.dumpo() -> a JSON-serializeable dict
+s.dumps() -> a JSON string
+s.dump(file) -> dump to a file object
+
+varname = s.id(x) -> string identifier that uniquely labels an object in
+                     the Serialized state
+
+u = GlueUnSerializer.load(file)
+u = GlueUnSerializer.loads(str)
+u.object(varname) -> A reconstituted version of `x`
+
+
+Developer Notes:
+
+Custom methods to serialize a class of objects can be registered either by:
+ - wrapping a serialization function in the @saver decorator::
+
+    @saver(TypeToSave)
+    def save(object, context):
+        ...
+
+ - Defining a __gluestate__(self, context) method
+
+These methods should return a JSON-serializable dict representing the
+object.  context is a GlueSerializer instance. The `context.id` and
+`context.do` methods are helpful for referencing or serializing or
+dependencies
+
+Unserializer methods can be registered either via:
+ - wrapping the method in the @loader decorator::
+
+     @loader(TypeToLoad)
+     def load(rec, context)
+
+`rec` is the JSON dict created from the saver, and `context` is a
+GlueUnserializer object. context.object() is useful for unserializing
+dependencies.
+
+Versions:
+
+Both the @saver and @loader take an optional version keyword. Whenever
+you modify the serialization format for an object, you should register a
+new saver and loader version. This ensures Glue can still load old
+serialization protocols. Versions must be sequential integers,
+starting from 1.
 """
 from itertools import count
+from collections import defaultdict
 from inspect import isgeneratorfunction
 import json
 import types
@@ -19,7 +69,7 @@ from . import (VisualAttributes, ComponentLink, DataCollection)
 from .component_link import CoordinateComponentLink
 from .util import lookup_class
 from .roi import Roi
-from .glue_pickle import dumps, loads
+from . import glue_pickle as gp
 from .. import core
 
 literals = tuple([types.NoneType, types.FloatType,
@@ -30,12 +80,108 @@ literals = tuple([types.NoneType, types.FloatType,
 _lookup = lookup_class
 
 
+def dumpo(obj):
+    return GlueSerializer(obj).dumpo()
+
+def dumps(obj):
+    return GlueSerializer(obj).dumps()
+
+def dump(obj, fobj):
+    return GlueSerializer(obj).dump(fobj)
+
 class GlueSerializeError(RuntimeError):
     pass
 
 
-class GlueSerializer(object):
+class VersionedDict(object):
+    """
+    A dict-like object which associates (key, version_int) pairs
+    with an object. Bracket syntax (d[key]) returns the highest-version
+    value stored with a key.
 
+    Versions must be sequential integers starting with 1, and must be
+    added in order
+
+    Examples
+    --------
+    v = VersionedDict()
+    v['key', 1] = 'v1'
+    v['key', 2] = 'v2'
+
+    v['key'] -> 'v2', 2
+    v.get_version('key', 2) -> 'v2'
+    v.get_version('key', 1) -> 'v1'
+    'key' in v -> True
+
+    Not allowed:
+    v['key', 4] = 'cannot skip versions'
+    v['key', 2] = 'cannot overwrite versions'
+    v['key', 'bad'] = 'versions must be integers'
+    """
+    def __init__(self):
+        self._data = defaultdict(dict)
+
+    def __contains__(self, key):
+        return key in self._data
+
+    def get_version(self, key, version=None):
+        """
+        Get a specific version of a value stored with a key
+
+        :param key: The key to fetch
+        :param value: the version of the value to fetch. Defaults to latest
+        """
+        if version is None:
+            if key not in self._data:
+                raise KeyError("No value associated with any version of %s"
+                               % key)
+            vs = self._data[key]
+            return vs[max(vs)]
+
+        try:
+            return self._data[key][version]
+        except KeyError:
+            raise KeyError("No value associated with version %s of %s" %
+                           (version, key))
+
+    def __getitem__(self, key):
+        """Retrieve the highest-version value stored with a key
+
+        Returns a tuple of the value, and the version it is associated with
+        """
+        if key not in self._data:
+            raise KeyError(key)
+        versions = self._data[key]
+        result = versions[max(versions)]
+        return versions[max(versions)], max(versions)
+
+    def __setitem__(self, key, value):
+        """ Assign a new value with a particular key and version
+
+        :param key: a tuple of (key, version)
+        version must be an integer, equal to the previous version + 1 (or 1)
+        Overwriting versions is not permitted, and will raise a KeyError
+
+        :param value: The value to associate with the (key, version) pair
+        """
+        if len(key) != 2:
+            raise ValueError("Key must be a (item, version) pair")
+        item, version = key
+        try:
+            version = int(version)
+        except ValueError:
+            raise ValueError("Version must be an integer: %s" % version)
+        if version > 1 and (version - 1) not in self._data[item]:
+            raise KeyError("Cannot assign version %i of item before adding "
+                             "version %i" % (version, version - 1))
+        if version in self._data[item]:
+            raise KeyError("Cannot overwrite version %i of %s" %
+                           (version, item))
+
+        self._data[item][version] = value
+
+
+class GlueSerializer(object):
     """
     strategy:
 
@@ -62,18 +208,18 @@ class GlueSerializer(object):
     restore(class, json) : return json into object
     object(id): fetch an object referenced by id
     """
-    dispatch = {}
+    dispatch = VersionedDict()
 
-    def __init__(self):
+    def __init__(self, obj):
         self._names = {}  # map id(object) -> name
         self._objs = {}   # map name -> object
         self._working = set()
+        self.id(obj)
 
     @classmethod
-    def serializes(cls, *objs):
+    def serializes(cls, obj, version=1):
         def decorator(func):
-            for obj in objs:
-                cls.dispatch[obj] = func
+            cls.dispatch[(obj, version)] = func
             return func
         return decorator
 
@@ -125,7 +271,7 @@ class GlueSerializer(object):
             raise GlueSerializeError("Circular reference detected")
         self._working.add(oid)
 
-        fun = self._dispatch(obj)
+        fun, version = self._dispatch(obj)
         logging.debug("Serializing %s with %s", obj, fun)
         result = fun(obj, self)
 
@@ -133,13 +279,15 @@ class GlueSerializer(object):
             result['_type'] = 'types.FunctionType'
         else:
             result['_type'] = "%s.%s" % (obj.__module__, type(obj).__name__)
+        if version > 1:
+            result['_protocol'] = version
 
         self._working.remove(oid)
         return result
 
     def _dispatch(self, obj):
         if hasattr(obj, '__gluestate__'):
-            return type(obj).__gluestate__
+            return type(obj).__gluestate__, 1
 
         for typ in type(obj).mro():
             if typ in self.dispatch:
@@ -161,8 +309,7 @@ class GlueSerializer(object):
     def restore(cls, obj):
         raise NotImplementedError()
 
-    @classmethod
-    def dumpo(cls, obj):
+    def dumpo(self):
         """
         Dump an object (with needed dependencies) into a
         JSON Serializable data structure.
@@ -170,8 +317,6 @@ class GlueSerializer(object):
         Note: If eventually dumping to a string or file, dumps or dump
               are more robust
         """
-        self = cls()
-        oid = self.id(obj)
         return self.do_all()
 
     @staticmethod
@@ -187,44 +332,54 @@ class GlueSerializer(object):
             return np.asscalar(o)  # coerce to pure-python type
         return o
 
-    @classmethod
-    def dumps(cls, obj, indent=None):
-        result = cls.dumpo(obj)
-        return json.dumps(result, indent=indent, default=cls.json_default)
+    def dumps(self, indent=None):
+        result = self.dumpo()
+        return json.dumps(result, indent=indent, default=self.json_default)
 
-    @classmethod
-    def dump(cls, obj, outfile):
-        result = cls.dumpo(obj)
-        return json.dump(result, outfile, default=cls.json_default)
+    def dump(self, outfile):
+        result = self.dumpo()
+        return json.dump(result, outfile, default=self.json_default)
 
 
 class GlueUnSerializer(object):
-    dispatch = {}
+    dispatch = VersionedDict()
 
-    def __init__(self, record_set):
+    def __init__(self, string=None, fobj=None):
+        if string is None and fobj is None:
+            raise ValueError("Most provide either a string or a file")
         self._names = {}  # map id(object) -> name
         self._objs = {}   # map name -> object
         self._working = set()
-        self._rec = json.loads(record_set)
+        self._rec = json.loads(string) if string else json.load(fobj)
         self._stack_depth = len(extract_stack())
 
     @classmethod
-    def unserializes(cls, *objs):
+    def loads(cls, string):
+        return cls(string=string)
+
+    @classmethod
+    def load(cls, fobj):
+        return cls(fobj=fobj)
+
+    @classmethod
+    def unserializes(cls, obj, version=1):
         def decorator(func):
-            for obj in objs:
-                cls.dispatch[obj] = func
+            cls.dispatch[(obj, version)] = func
             return func
         return decorator
 
     def _dispatch(self, rec):
         typ = _lookup(rec['_type'])
+        version = rec.get('_protocol')
 
         if hasattr(typ, '__setgluestate__'):
             return typ.__setgluestate__
 
         for t in typ.mro():
-            if t in self.dispatch:
-                return self.dispatch[t]
+            try:
+                return self.dispatch.get_version(t, version)
+            except KeyError:
+                continue
 
         raise GlueSerializeError("Don't know how to load"
                                  " objects of type %s" % typ)
@@ -502,13 +657,13 @@ def _save_function(function, context):
     ref = "%s.%s" % (function.__module__, function.__name__)
     if _lookup(ref) is function:
         return {'function': "%s.%s" % (function.__module__, function.__name__)}
-    return {'pickle': dumps(function).encode('base64')}
+    return {'pickle': gp.dumps(function).encode('base64')}
 
 
 @loader(types.FunctionType)
 def _load_function(rec, context):
     if 'pickle' in rec:
-        return loads(rec['pickle'].decode('base64'))
+        return gp.loads(rec['pickle'].decode('base64'))
     return _lookup(rec['function'])
 
 

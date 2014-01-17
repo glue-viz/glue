@@ -2,28 +2,25 @@ import numpy as np
 import json
 import pytest
 
-from ..state import GlueSerializer, GlueUnSerializer
+from ..state import (GlueSerializer, GlueUnSerializer,
+                     saver, loader, VersionedDict)
+
 from ... import core
 from ...qt.glue_application import GlueApplication
 from ...qt.widgets.scatter_widget import ScatterWidget
 from ...qt.widgets.image_widget import ImageWidget
 from ...qt.widgets.histogram_widget import HistogramWidget
-
+from .util import make_file
+from ..data_factories import load_data
+from .test_data_factories import TEST_FITS_DATA
 
 def clone(object):
-    gs = GlueSerializer()
+    gs = GlueSerializer(object)
     oid = gs.id(object)
-    dump1 = gs.do_all()
-    state = json.dumps(dump1, default=gs.json_default)
-    gu = GlueUnSerializer(state)
+    dump = gs.dumps()
+    gu = GlueUnSerializer.loads(dump)
     result = gu.object(oid)
     return result
-
-
-def dump(object):
-    gs = GlueSerializer()
-    oid = gs.id(object)
-    return gs.do_all()
 
 
 def test_data():
@@ -231,3 +228,86 @@ class TestApplication(object):
         s = d.new_subset(label='wxy')
         assert len(w.layers) == 2
         self.check_clone(app)
+
+
+class TestVersioning(object):
+
+    def setup_method(self, method):
+
+        @saver(core.Data, version=2)
+        def s(d, context):
+            return dict(v=2)
+
+        @loader(core.Data, version=2)
+        def l(d, context):
+            return 2
+
+        @saver(core.Data, version=3)
+        def s(d, context):
+            return dict(v=3)
+
+        @loader(core.Data, version=3)
+        def l(rec, context):
+            return 3
+
+    def teardown_method(self, method):
+        GlueSerializer.dispatch._data[core.Data].pop(2)
+        GlueSerializer.dispatch._data[core.Data].pop(3)
+        GlueUnSerializer.dispatch._data[core.Data].pop(2)
+        GlueUnSerializer.dispatch._data[core.Data].pop(3)
+
+
+    def test_defualt_latest_save(self):
+        assert GlueSerializer(core.Data()).dumpo().values()[0]['v'] == 3
+
+    def test_legacy_load(self):
+        data = json.dumps({'':{'_type':'glue.core.Data',
+                               '_protocol': 2, 'v':2}})
+        assert GlueUnSerializer(data).object('') == 2
+
+    def test_default_latest_load(self):
+        data = json.dumps({'':{'_type':'glue.core.Data'}})
+        assert GlueUnSerializer(data).object('') == 3
+
+
+class TestVersionedDict(object):
+
+    def test_bad_add(self):
+        d = VersionedDict()
+        with pytest.raises(KeyError):
+            d['nonsequential', 2] = 5
+
+    def test_get(self):
+        d = VersionedDict()
+        d['key', 1] = 5
+        d['key', 2] = 6
+        d['key', 3] = 7
+
+        assert d['key'] == (7, 3)
+        assert d.get_version('key', 1) == 5
+        assert d.get_version('key', 2) == 6
+        assert d.get_version('key', 3) == 7
+
+        with pytest.raises(KeyError) as exc:
+            d['missing']
+
+    def test_contains(self):
+
+        d = VersionedDict()
+        assert 'key' not in d
+
+        d['key', 1] = 3
+        assert 'key' in d
+
+    def test_overwrite_forbidden(self):
+
+        d = VersionedDict()
+        d['key', 1] = 3
+
+        with pytest.raises(KeyError) as exc:
+            d['key', 1] = 3
+
+    def test_noninteger_version(self):
+        d = VersionedDict()
+        with pytest.raises(ValueError) as exc:
+            d['key', 'bad'] = 4
