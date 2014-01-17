@@ -407,6 +407,10 @@ class ScatterLayerArtist(LayerArtist):
             return np.array([]), np.array([])
 
 
+class BeeSwarmArtist(ScatterLayerArtist):
+    pass
+
+
 class LayerArtistContainer(object):
 
     """A collection of LayerArtists"""
