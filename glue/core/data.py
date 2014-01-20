@@ -135,6 +135,9 @@ class Component(object):
         # subclasses may pass non-arrays here as placeholders.
         if isinstance(data, np.ndarray):
             data = coerce_numeric(data)
+            if np.all(np.isnan(data)):
+                raise ValueError('All data is Nan, could this be Categorical Data?')
+
         self._data = data
 
     @property
@@ -263,6 +266,33 @@ class CoordinateComponent(Component):
 
     def __getitem__(self, key):
         return self._calculate(key)
+
+
+class CategoricalComponent(Component):
+
+    def __init__(self, categorical_data, categories=None):
+        super(CategoricalComponent, self).__init__(None, None)
+        if not isinstance(categorical_data, np.ndarray):
+            self._categorical_data = np.array(categorical_data)
+        else:
+            self._categorical_data = categorical_data
+        self._categories = categories
+        self._data = None
+        if self._categories is None:
+            self._update_categories()
+        else:
+            self._update_data()
+
+    def _update_categories(self, categories=None):
+        if categories is None:
+            categories = sorted(set(self._categorical_data))
+        self._categories = categories
+        self._update_data()
+
+    def _update_data(self):
+        self._data = np.nan*np.zeros(self._categorical_data.shape)
+        for num, category in enumerate(self._categories):
+            self._data[self._categorical_data == category] = num
 
 
 class Data(object):
@@ -514,6 +544,17 @@ class Data(object):
         """
         return [c for c in self.component_ids() if
                 isinstance(self._components[c], DerivedComponent)]
+
+    @property
+    def categorical_components(self):
+        """A list of ComponentIDs for each
+        :class:`~glue.core.data.CategoricalComponent` in the data.
+
+        (Read only)
+        """
+        return [c for c in self.component_ids() if
+                isinstance(self._components[c], CategoricalComponent)]
+
 
     @property
     def pixel_component_ids(self):

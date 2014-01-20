@@ -31,7 +31,7 @@ import os
 
 import numpy as np
 
-from .data import Component, Data
+from .data import Component, Data, CategoricalComponent
 from .tree import DendroMerge
 from .io import extract_data_fits, extract_data_hdf5
 from .util import file_format
@@ -346,7 +346,10 @@ def tabular_data(*args, **kwargs):
             except ValueError:  # assigning nan to integer dtype
                 c = c.filled(fill_value=-1)
 
-        c = Component(np.asarray(c), units=u)
+        try:
+            c = Component(np.asarray(c), units=u)
+        except ValueError:
+            c = CategoricalComponent(np.asarray(c))
         result.add_component(c, column_name)
 
     return result
