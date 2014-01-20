@@ -29,6 +29,22 @@ def test_data():
     return data, data2
 
 
+def test_categorical_data():
+
+    data = glue.core.data.Data(label="Test Cat Data 1")
+    data2 = glue.core.data.Data(label="Teset Cat Data 2")
+
+    comp_x1 = glue.core.data.CategoricalComponent(np.array(['a', 'a', 'b']))
+    comp_y1 = glue.core.data.Component(np.array([1, 2, 3]))
+    comp_x2 = glue.core.data.CategoricalComponent(np.array(['c', 'a', 'b']))
+    comp_y2 = glue.core.data.Component(np.array([1, 3, 5]))
+    data.add_component(comp_x1, 'x1')
+    data.add_component(comp_y1, 'y1')
+    data2.add_component(comp_x2, 'x2')
+    data2.add_component(comp_y2, 'y2')
+    return data, data2
+
+
 def test_image():
     data = glue.core.data.Data(label="Test Image")
     comp_a = glue.core.data.Component(np.ones((25, 25)))
