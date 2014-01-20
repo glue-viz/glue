@@ -277,6 +277,8 @@ class CategoricalComponent(Component):
         self._data = None
         if self._categories is None:
             self._update_categories()
+        else:
+            self._update_data()
 
     def _update_categories(self, categories=None):
         if categories is None:
@@ -288,9 +290,6 @@ class CategoricalComponent(Component):
         self._data = np.nan*np.zeros(self._categorical_data.shape)
         for num, category in enumerate(self._categories):
             self._data[self._categorical_data == category] = num
-
-
-
 
 
 class Data(object):

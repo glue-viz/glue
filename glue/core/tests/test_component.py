@@ -87,8 +87,13 @@ class TestCategoricalComponent(object):
         assert np.all(cat_comp._data == np.array([0, 0, 1, 1]))
 
     def test_accepts_provided_grouping(self):
-        pass
+        ncategories = ['b', 'c']
+        cat_comp = CategoricalComponent(self.array_data, categories=ncategories)
 
+        assert cat_comp._categories == ncategories
+        assert np.all(np.isnan(cat_comp._data[:1]))
+        assert np.all(cat_comp._data[2:] == 0)
+        assert not np.any(cat_comp._data == 1)
 
 
 class TestCoordinateComponent(object):
