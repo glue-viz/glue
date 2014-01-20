@@ -135,6 +135,8 @@ class Component(object):
         # subclasses may pass non-arrays here as placeholders.
         if isinstance(data, np.ndarray):
             data = coerce_numeric(data)
+            if np.isnan(data).all():
+                raise ValueError('All data is Nan, are you sure this numeric data?')
         self._data = data
 
     @property
@@ -263,6 +265,54 @@ class CoordinateComponent(Component):
 
     def __getitem__(self, key):
         return self._calculate(key)
+
+
+class CategoricalComponent(Component):
+
+    def __init__(self, categorical_data, categories=None, jitter=None):
+        super(CategoricalComponent, self).__init__(None, None)
+        self._categorical_data = np.asarray(categorical_data, dtype=np.object)
+        self._categories = categories
+        self._jitter_method = jitter
+        self._is_jittered = False
+        self._data = None
+        if self._categories is None:
+            self._update_categories()
+        else:
+            self._update_data()
+
+    def _update_categories(self, categories=None):
+        if categories is None:
+            categories, inv = np.unique(self._categorical_data, return_inverse=True)
+            self._categories = categories
+            self._data = inv.astype(np.float)
+            self.jitter(method=self._jitter_method)
+        else:
+            self._categories = categories
+            self._update_data()
+
+    def _update_data(self):
+        self._is_jittered = False
+        self._data = np.nan*np.zeros(self._categorical_data.shape)
+        for num, category in enumerate(self._categories):
+            self._data[self._categorical_data == category] = num
+
+        self.jitter(method=self._jitter_method)
+
+    def jitter(self, method=None):
+        """
+        :param method: Currently only supports None
+        :return:
+        """
+        self._jitter_method = method
+        seed = np.abs(hash(tuple(self._categorical_data.flatten())))
+        rand_state = np.random.RandomState(seed)
+
+        if (self._jitter_method is None) and self._is_jittered:
+            self._update_data()
+        elif (self._jitter_method is 'uniform') and not self._is_jittered:
+            self._data += rand_state.uniform(-0.5, 0.5, size=self._data.shape)
+            self._is_jittered = True
 
 
 class Data(object):

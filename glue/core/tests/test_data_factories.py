@@ -110,6 +110,13 @@ def test_dtype_float():
     assert d['a'].dtype == np.float
 
 
+def test_dtype_float_on_categorical():
+    data = '# a, b\nf, 1 \nr, 2 \nk, 3'
+    with make_file(data, '.csv') as fname:
+        d = df.load_data(fname)
+    assert d['a'].dtype == np.float
+
+
 def test_dtype_badtext():
     data = '# a, b\nlabel1, 1 \n2, 2 \n3, 3'
     with make_file(data, '.csv') as fname:
