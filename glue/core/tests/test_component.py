@@ -83,7 +83,7 @@ class TestCategoricalComponent(object):
 
     def test_calculate_grouping(self):
         cat_comp = CategoricalComponent(self.array_data)
-        assert cat_comp._categories == ['a', 'b']
+        assert np.all(cat_comp._categories == np.asarray(['a', 'b']))
         assert np.all(cat_comp._data == np.array([0, 0, 1, 1]))
 
     def test_accepts_provided_grouping(self):

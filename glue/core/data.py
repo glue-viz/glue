@@ -269,10 +269,7 @@ class CategoricalComponent(Component):
 
     def __init__(self, categorical_data, categories=None):
         super(CategoricalComponent, self).__init__(None, None)
-        if not isinstance(categorical_data, np.ndarray):
-            self._categorical_data = np.array(categorical_data)
-        else:
-            self._categorical_data = categorical_data
+        self._categorical_data = np.asarray(categorical_data)
         self._categories = categories
         self._data = None
         if self._categories is None:
@@ -282,9 +279,12 @@ class CategoricalComponent(Component):
 
     def _update_categories(self, categories=None):
         if categories is None:
-            categories = sorted(set(self._categorical_data))
-        self._categories = categories
-        self._update_data()
+            categories, inv = np.unique(self._categorical_data, return_inverse=True)
+            self._categories = categories
+            self._data = inv
+        else:
+            self._categories = categories
+            self._update_data()
 
     def _update_data(self):
         self._data = np.nan*np.zeros(self._categorical_data.shape)
