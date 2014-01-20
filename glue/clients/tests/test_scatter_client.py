@@ -24,6 +24,8 @@ class TestScatterClient(object):
                     self.data[0].find_component_id('b'),
                     self.data[1].find_component_id('c'),
                     self.data[1].find_component_id('d')]
+        self.roi_limits = (0.5, 0.5, 1.5, 1.5)
+        self.roi_points = (np.array([1]), np.array([1]))
         self.hub = core.hub.Hub()
         self.collect = core.data_collection.DataCollection()
 
@@ -311,9 +313,8 @@ class TestScatterClient(object):
     def test_apply_roi(self):
         data = self.add_data_and_attributes()
         roi = core.roi.RectangularROI()
-        roi.update_limits(.5, .5, 1.5, 1.5)
-        x = np.array([1])
-        y = np.array([1])
+        roi.update_limits(*self.roi_limits)
+        x, y = self.roi_points
         self.client.apply_roi(roi)
         assert self.layer_data_correct(data.edit_subset, x, y)
 
@@ -322,9 +323,8 @@ class TestScatterClient(object):
         data._subsets = []
         data.edit_subset = None
         roi = core.roi.RectangularROI()
-        roi.update_limits(.5, .5, 1.5, 1.5)
-        x = np.array([1])
-        y = np.array([1])
+        roi.update_limits(*self.roi_limits)
+        x, y = self.roi_points
         self.client.apply_roi(roi)
         assert data.edit_subset is not None
 
@@ -334,9 +334,8 @@ class TestScatterClient(object):
         state1 = d1.edit_subset.subset_state
         state2 = d2.edit_subset.subset_state
         roi = core.roi.RectangularROI()
-        roi.update_limits(.5, .5, 1.5, 1.5)
-        x = np.array([1])
-        y = np.array([1])
+        roi.update_limits(*self.roi_limits)
+        x, y = self.roi_points
         self.client.apply_roi(roi)
         assert d1.edit_subset.subset_state is not state1
         assert d1.edit_subset.subset_state is not state2
@@ -348,9 +347,8 @@ class TestScatterClient(object):
         d2.edit_subset = d2.new_subset()
         ct = len(d1.subsets)
         roi = core.roi.RectangularROI()
-        roi.update_limits(.5, .5, 1.5, 1.5)
-        x = np.array([1])
-        y = np.array([1])
+        roi.update_limits(*self.roi_limits)
+        x, y = self.roi_points
         self.client.apply_roi(roi)
         assert len(d1.subsets) == ct
 
@@ -388,7 +386,7 @@ class TestScatterClient(object):
     def test_visibility_sticky(self):
         data = self.add_data_and_attributes()
         roi = core.roi.RectangularROI()
-        roi.update_limits(.5, .5, 1.5, 1.5)
+        roi.update_limits(*self.roi_limits)
         assert self.client.is_visible(data.edit_subset)
         self.client.apply_roi(roi)
         self.client.set_visible(data.edit_subset, False)
