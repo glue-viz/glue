@@ -265,6 +265,33 @@ class CoordinateComponent(Component):
         return self._calculate(key)
 
 
+class CategoricalComponent(Component):
+
+    def __init__(self, categorical_data, categories=None):
+        super(CategoricalComponent, self).__init__(None, None)
+        if not isinstance(categorical_data, np.ndarray):
+            self._categorical_data = np.array(categorical_data)
+        else:
+            self._categorical_data = categorical_data
+        self._categories = categories
+        self._data = None
+        if self._categories is None:
+            self._update_categories()
+        else:
+            self._update_data()
+
+    def _update_categories(self, categories=None):
+        if categories is None:
+            categories = sorted(set(self._categorical_data))
+        self._categories = categories
+        self._update_data()
+
+    def _update_data(self):
+        self._data = np.nan*np.zeros(self._categorical_data.shape)
+        for num, category in enumerate(self._categories):
+            self._data[self._categorical_data == category] = num
+
+
 class Data(object):
 
     """Stores data and manages subsets.
