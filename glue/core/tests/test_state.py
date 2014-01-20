@@ -14,6 +14,7 @@ from .util import make_file
 from ..data_factories import load_data
 from .test_data_factories import TEST_FITS_DATA
 
+
 def clone(object):
     gs = GlueSerializer(object)
     oid = gs.id(object)
@@ -23,12 +24,45 @@ def clone(object):
     return result
 
 
+def test_none():
+    assert clone(None) is None
+
+
 def test_data():
     d = core.Data(x=[1, 2, 3], label='testing')
     d2 = clone(d)
     assert d2.label == 'testing'
+
     np.testing.assert_array_equal(d2['x'], [1, 2, 3])
     np.testing.assert_array_equal(d2['Pixel Axis 0'], [0, 1, 2])
+
+
+def test_data_factory():
+    with make_file(TEST_FITS_DATA, '.fits') as infile:
+        d = load_data(infile)
+        d2 = clone(d)
+
+    np.testing.assert_array_equal(d['PRIMARY'], d2['PRIMARY'])
+
+
+def test_save_numpy_scalar():
+    assert clone(np.float32(5)) == 5
+
+
+def tests_data_factory_double():
+
+    from cStringIO import StringIO
+    from astropy.io import fits
+    d = np.random.normal(0, 1, (100, 100, 100))
+    s = StringIO()
+    fits.writeto(s, d)
+
+    with make_file(s.getvalue(), '.fits') as infile:
+        d = load_data(infile)
+        d2 = clone(d)
+
+    assert len(GlueSerializer(d).dumps()) < \
+        1.1 * len(GlueSerializer(d2).dumps())
 
 
 def test_inequality_subset():
@@ -60,15 +94,26 @@ def test_empty_subset():
 
 
 def test_box_roi_subset():
-    d = core.Data(x=[1, 2, 3], y=[1, 2, 3])
+    d = core.Data(x=[1, 2, 3], y=[2, 4, 8])
     s = d.new_subset(label='box')
-    roi = core.roi.RectangularROI(xmin=1.1, xmax=2.1, ymin=1.1, ymax=2.1)
+    roi = core.roi.RectangularROI(xmin=1.1, xmax=2.1, ymin=2.2, ymax=4.2)
     s.subset_state = core.subset.RoiSubsetState(xatt=d.id['x'],
                                                 yatt=d.id['y'], roi=roi)
 
     d2 = clone(d)
     np.testing.assert_array_equal(
         d2.subsets[0].to_mask(), [False, True, False])
+
+
+def test_complex_state():
+    d = core.Data(x=[1, 2, 3], y=[2, 4, 8])
+    s = d.new_subset(label='test')
+    s.subset_state = (d.id['x'] > 2) | (d.id['y'] < 4)
+    s.subset_state = s.subset_state & (d.id['x'] < 4)
+
+    d2 = clone(d)
+    s2 = d2.subsets[0]
+    np.testing.assert_array_equal(s2.to_mask(), [True, False, True])
 
 
 def test_range_roi():
@@ -229,6 +274,9 @@ class TestApplication(object):
         assert len(w.layers) == 2
         self.check_clone(app)
 
+        w.nbins = 7
+        self.check_clone(app)
+
 
 class TestVersioning(object):
 
@@ -256,17 +304,16 @@ class TestVersioning(object):
         GlueUnSerializer.dispatch._data[core.Data].pop(2)
         GlueUnSerializer.dispatch._data[core.Data].pop(3)
 
-
     def test_defualt_latest_save(self):
         assert GlueSerializer(core.Data()).dumpo().values()[0]['v'] == 3
 
     def test_legacy_load(self):
-        data = json.dumps({'':{'_type':'glue.core.Data',
-                               '_protocol': 2, 'v':2}})
+        data = json.dumps({'': {'_type': 'glue.core.Data',
+                                '_protocol': 2, 'v': 2}})
         assert GlueUnSerializer(data).object('') == 2
 
     def test_default_latest_load(self):
-        data = json.dumps({'':{'_type':'glue.core.Data'}})
+        data = json.dumps({'': {'_type': 'glue.core.Data'}})
         assert GlueUnSerializer(data).object('') == 3
 
 

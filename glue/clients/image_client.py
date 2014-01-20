@@ -101,7 +101,7 @@ class ImageClient(VizClient):
 
     @slice.setter
     def slice(self, value):
-        self._slice = value
+        self._slice = tuple(value)
         self._update_axis_labels()
         self._update_data_plot(relim=True)
         self._update_subset_plots()
@@ -505,17 +505,17 @@ class ImageClient(VizClient):
             props = dict((k, v if k == 'stretch' else context.object(v))
                          for k, v in layer.items())
             l = props['layer']
-
             if c == ScatterLayerArtist:
                 l = self.add_scatter_layer(l)
             elif c == ImageLayerArtist or c == SubsetImageLayerArtist:
+                if isinstance(l, Data):
+                    self.set_data(l)
                 l = self.add_layer(l)
             elif c == RGBImageLayerArtist:
-                layer = props.pop('layer')
                 r = props.pop('r')
                 g = props.pop('g')
                 b = props.pop('b')
-                self.display_data = layer
+                self.display_data = l
                 self.display_attribute = r
                 l = self.rgb_mode(True)
                 l.r = r

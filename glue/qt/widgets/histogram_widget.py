@@ -27,7 +27,7 @@ def _hash(x):
 class HistogramWidget(DataViewer):
     LABEL = "Histogram"
     _property_set = DataViewer._property_set + \
-        'xmin xmax normed autoscale cumulative xlog ylog component nbins'.split(
+        'component xlog ylog normed cumulative autoscale xmin xmax nbins'.split(
         )
 
     xmin = FloatLineProperty('ui.xmin')

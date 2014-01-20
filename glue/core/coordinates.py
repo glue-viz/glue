@@ -176,6 +176,14 @@ class WCSCoordinates(Coordinates):
             return translate.get(ax, ax)
         return super(WCSCoordinates, self).axis_label(axis)
 
+    def __gluestate__(self, context):
+        return dict(header=self._wcs.to_header_string())
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        from ..external.astro import fits
+        return cls(fits.Header.fromstring(rec['header']))
+
 
 def coordinates_from_header(header):
     """ Convert a FITS header into a glue Coordinates object

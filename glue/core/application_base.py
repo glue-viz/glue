@@ -79,12 +79,10 @@ class Application(HubListener):
         Note: Saving of client is not currently supported. Thus,
         restoring this session will lose all current viz windows
         """
-        from .glue_pickle import CloudPickler
-        state = (self._data, self._hub)
-
+        from .state import GlueSerializer
+        gs = GlueSerializer(self)
         with open(path, 'w') as out:
-            cp = CloudPickler(out, protocol=2)
-            cp.dump(state)
+            gs.dump(out, indent=2)
 
     def new_tab(self):
         raise NotImplementedError()
@@ -183,7 +181,7 @@ class Application(HubListener):
         for i, tab in enumerate(rec['viewers']):
             for v in tab:
                 viewer = context.object(v)
-                self.add_widget(viewer, i)
+                w = self.add_widget(viewer, i)
         return self
 
 
@@ -342,5 +340,4 @@ class ViewerBase(HubListener, PropertySetMixin):
         result.restore_layers(rec['layers'], context)
 
         result.properties = prop
-
         return result

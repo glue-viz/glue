@@ -1,6 +1,9 @@
-from .decorators import singleton
+from contextlib import contextmanager
 from collections import defaultdict
 from itertools import count
+from functools import wraps
+
+from .decorators import singleton
 
 
 def disambiguate(label, taken):
@@ -24,6 +27,7 @@ def disambiguate(label, taken):
 
 @singleton
 class Registry(object):
+
     """ Stores labels for classes of objects. Ensures uniqueness
 
     The registry ensures that labels for objects of the same "group"
@@ -47,8 +51,10 @@ class Registry(object):
         >>> r.register(z, 'Label', group=int) # put z in integer registry
         'Label_02'
     """
+
     def __init__(self):
         self._registry = defaultdict(dict)
+        self._disable = False
 
     def register(self, obj, label, group=None):
         """ Register label with object (possibly disamgiguating)
@@ -74,7 +80,8 @@ class Registry(object):
             values = set(reg.values())
             if has_obj:
                 values.remove(reg[obj])
-            label = disambiguate(label, values)
+            if not self._disable:
+                label = disambiguate(label, values)
 
         reg[obj] = label
         return label
@@ -88,3 +95,19 @@ class Registry(object):
     def clear(self):
         """ Reset registry, clearing all stored values """
         self._registry = defaultdict(dict)
+
+
+def disable(func):
+    """ Decorator to temporarily disable disambiguation """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        r = Registry()
+        old = r._disable
+        r._disable = True
+        try:
+            return func(*args, **kwargs)
+        finally:
+            r._disable = old
+
+    return wrapper

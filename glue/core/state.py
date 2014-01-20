@@ -56,7 +56,7 @@ from inspect import isgeneratorfunction
 import json
 import types
 import logging
-from traceback import extract_stack
+from cStringIO import StringIO
 
 import numpy as np
 
@@ -75,7 +75,9 @@ from .. import core
 literals = tuple([types.NoneType, types.FloatType,
                  types.IntType, types.LongType,
                  types.NoneType, types.StringType,
-                 types.BooleanType, types.UnicodeType, types.ListType])
+                 types.BooleanType, types.UnicodeType, types.ListType,
+                 tuple])
+literals += np.ScalarType
 
 _lookup = lookup_class
 
@@ -83,17 +85,21 @@ _lookup = lookup_class
 def dumpo(obj):
     return GlueSerializer(obj).dumpo()
 
+
 def dumps(obj):
     return GlueSerializer(obj).dumps()
 
+
 def dump(obj, fobj):
     return GlueSerializer(obj).dump(fobj)
+
 
 class GlueSerializeError(RuntimeError):
     pass
 
 
 class VersionedDict(object):
+
     """
     A dict-like object which associates (key, version_int) pairs
     with an object. Bracket syntax (d[key]) returns the highest-version
@@ -118,6 +124,7 @@ class VersionedDict(object):
     v['key', 2] = 'cannot overwrite versions'
     v['key', 'bad'] = 'versions must be integers'
     """
+
     def __init__(self):
         self._data = defaultdict(dict)
 
@@ -173,7 +180,7 @@ class VersionedDict(object):
             raise ValueError("Version must be an integer: %s" % version)
         if version > 1 and (version - 1) not in self._data[item]:
             raise KeyError("Cannot assign version %i of item before adding "
-                             "version %i" % (version, version - 1))
+                           "version %i" % (version, version - 1))
         if version in self._data[item]:
             raise KeyError("Cannot overwrite version %i of %s" %
                            (version, item))
@@ -182,31 +189,9 @@ class VersionedDict(object):
 
 
 class GlueSerializer(object):
+
     """
-    strategy:
-
-    do -> return python JSON
-    id -> create an ID
-    either of these could rely on a not-yet-serialized object
-    external references, only make sense when stitched together
-    who is in charge of the stiching? This, or another object?
-
-    At last step, will dump into a big object. At that point,
-    complain about undefined references
-
-    Top Level Interface
-    ----------------
-    dump(application, file)
-    dumps(application)
-    load(file) -> json
-    loads(str) -> json
-
-    Low Level Interface
-    -------------------
-    do : turn an object into json
-    id : return an id
-    restore(class, json) : return json into object
-    object(id): fetch an object referenced by id
+    Serialize an object graph
     """
     dispatch = VersionedDict()
 
@@ -214,6 +199,7 @@ class GlueSerializer(object):
         self._names = {}  # map id(object) -> name
         self._objs = {}   # map name -> object
         self._working = set()
+        self._main = obj
         self.id(obj)
 
     @classmethod
@@ -222,6 +208,14 @@ class GlueSerializer(object):
             cls.dispatch[(obj, version)] = func
             return func
         return decorator
+
+    def _label(self, obj):
+        if obj is self._main:
+            return '__main__'
+        elif hasattr(obj, 'label'):
+            return self._disambiguate(obj.label)
+        else:
+            return self._disambiguate(type(obj).__name__)
 
     def id(self, obj):
         """
@@ -236,11 +230,9 @@ class GlueSerializer(object):
         if oid in self._names:
             return self._names[oid]
 
-        if hasattr(obj, 'label'):
-            name = self._disambiguate(obj.label)
-        else:
-            name = self._disambiguate(type(obj).__name__)
+        name = self._label(obj)
         assert name not in self._objs
+
         logging.debug("Registering %r as %s", obj, name)
         self._objs[name] = obj
         self._names[oid] = name
@@ -278,7 +270,8 @@ class GlueSerializer(object):
         if isinstance(obj, types.FunctionType):
             result['_type'] = 'types.FunctionType'
         else:
-            result['_type'] = "%s.%s" % (obj.__module__, type(obj).__name__)
+            result['_type'] = "%s.%s" % (type(obj).__module__,
+                                         type(obj).__name__)
         if version > 1:
             result['_protocol'] = version
 
@@ -330,15 +323,18 @@ class GlueSerializer(object):
         """
         if np.isscalar(o):
             return np.asscalar(o)  # coerce to pure-python type
+        if isinstance(o, tuple):
+            return list(o)
         return o
 
     def dumps(self, indent=None):
         result = self.dumpo()
         return json.dumps(result, indent=indent, default=self.json_default)
 
-    def dump(self, outfile):
+    def dump(self, outfile, indent=None):
         result = self.dumpo()
-        return json.dump(result, outfile, default=self.json_default)
+        return json.dump(result, outfile, default=self.json_default,
+                         indent=indent)
 
 
 class GlueUnSerializer(object):
@@ -351,7 +347,6 @@ class GlueUnSerializer(object):
         self._objs = {}   # map name -> object
         self._working = set()
         self._rec = json.loads(string) if string else json.load(fobj)
-        self._stack_depth = len(extract_stack())
 
     @classmethod
     def loads(cls, string):
@@ -387,13 +382,11 @@ class GlueUnSerializer(object):
     def register_object(self, obj_id, obj):
         self._objs[obj_id] = obj
 
+    @core.registry.disable
     def object(self, obj_id):
         if isinstance(obj_id, basestring):
             if obj_id in self._objs:
                 return self._objs[obj_id]
-
-            d = (len(extract_stack()) - self._stack_depth) / 2
-            print '|  ' * d + 'unserialize %s' % obj_id
 
             if obj_id not in self._rec:
                 raise GlueSerializeError("Unrecognized object %s" % obj_id)
@@ -427,15 +420,15 @@ loader = GlueUnSerializer.unserializes
 
 @saver(CompositeSubsetState)
 def _save_composite_subset_state(state, context):
-    return dict(op=OPSYM[state.op], state1=context.id(state.state1),
+    return dict(state1=context.id(state.state1),
                 state2=context.id(state.state2))
 
 
 @loader(CompositeSubsetState)
 def _load_composite_subset_state(rec, context):
-    result = CompositeSubsetState(context.object(rec['state1']),
-                                  context.object(rec['state2']))
-    result.op = SYMOP[rec['op']]
+    cls = _lookup(rec['_type'])
+    result = cls(context.object(rec['state1']),
+                 context.object(rec['state2']))
     return result
 
 
@@ -451,7 +444,7 @@ def _load_subset_state(rec, context):
 
 @saver(RoiSubsetState)
 def _save_roi_subset_state(state, context):
-    return dict(xatt=context.id(state.yatt),
+    return dict(xatt=context.id(state.xatt),
                 yatt=context.id(state.yatt),
                 roi=context.id(state.roi))
 
@@ -467,7 +460,7 @@ def _load_roi_subset_state(rec, context):
 def _save_inequality_subset_state(state, context):
     return dict(left=context.id(state.left),
                 right=context.id(state.right),
-                op=OPSYM[state.operator])
+                op=OPSYM.get(state.operator))
 
 
 @loader(InequalitySubsetState)
@@ -512,6 +505,7 @@ def _load_subset(rec, context):
     result = Subset(None)
     result.style = context.object(rec['style'])
     result.subset_state = context.object(rec['state'])
+    assert result.subset_state.parent is result
     result.label = rec['label']
     return result
 
@@ -540,25 +534,41 @@ def _save_data(data, context):
 
     return dict(components=dict((context.id(c),
                                  context.id(data.get_component(c)))
-                                for c in data.components
-                                if not isinstance(data.get_component(c),
-                                                  CoordinateComponent)),
+                                for c in data.components),
                 subsets=[context.id(s) for s in data.subsets],
-                label=data.label)
+                label=data.label,
+                coords=context.id(data.coords))
 
 
 @loader(Data)
 def _load_data(rec, context):
     label = rec['label']
     result = Data(label=label)
-    # xxx coordinates
+    result.coords = context.object(rec['coords'])
+
+    # we manually rebuild pixel/world components, so
+    # we override this function. This is pretty ugly
+    result._create_pixel_and_world_components = lambda: None
+
     comps = [map(context.object, [k, v])
              for k, v in rec['components'].items()]
     comps = sorted(comps,
                    key=lambda x: isinstance(x[1], (DerivedComponent,
                                                    CoordinateComponent)))
     for cid, comp in comps:
+        if isinstance(comp, CoordinateComponent):
+            comp._data = result
         result.add_component(comp, cid)
+
+    assert result._world_component_ids == []
+
+    coord = [c for c in comps if isinstance(c[1], CoordinateComponent)]
+    coord = [x[0] for x in sorted(coord, key=lambda x: x[1])]
+
+    assert len(coord) == result.ndim * 2
+
+    result._world_component_ids = coord[:len(coord) / 2]
+    result._pixel_component_ids = coord[len(coord) / 2:]
 
     for s in rec['subsets']:
         result.add_subset(context.object(s))
@@ -578,25 +588,22 @@ def _load_component_id(rec, context):
 
 @saver(Component)
 def _save_component(component, context):
-    fac, args, kwargs, oid = component.creation_info
-    fac = context.do(fac)
+    if hasattr(component, '_load_log'):
+        log = component._load_log
+        return dict(log=context.id(log),
+                    log_item=log.id(component))
 
-    return dict(factory=fac,
-                factory_args=args,
-                factory_kwargs=kwargs,
-                output_index=oid)
+    return dict(data=context.do(component.data),
+                units=component.units)
 
 
 @loader(Component)
 def _load_component(rec, context):
-    fac = context.object(rec['factory'])
-    args = rec['factory_args']
-    kwargs = rec['factory_kwargs']
-    oid = rec['output_index']
-    result = fac(*args, **kwargs)
-    for o in oid:
-        result = result[o]
-    return result
+    if 'log' in rec:
+        return context.object(rec['log']).component(rec['log_item'])
+
+    return Component(data=context.object(rec['data']),
+                     units=rec['units'])
 
 
 @saver(DerivedComponent)
@@ -671,3 +678,18 @@ def _load_function(rec, context):
 def _save_session(session, context):
     # we will rely on GlueApplication to re-populate
     return {}
+
+
+@loader(np.ndarray)
+def _load_numpy(rec, context):
+    s = StringIO(rec['data'].decode('base64'))
+    return np.load(s)
+
+
+@saver(np.ndarray)
+def _save_numpy(obj, context):
+    f = StringIO()
+    np.save(f, obj)
+    f.seek(0)
+    data = f.read().encode('base64')
+    return dict(data=data)

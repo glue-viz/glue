@@ -1,5 +1,5 @@
 import pytest
-from mock import patch
+from mock import patch, MagicMock
 
 from ..main import (die_on_error, restore_session, load_data_files,
                     main, start_glue)
@@ -24,13 +24,6 @@ def test_die_on_error_noexception():
     def test():
         return 0
     assert test() == 0
-
-
-@patch('__builtin__.open')
-def test_restore_session(open_mock):
-    with patch('pickle.Unpickler') as up:
-        result = restore_session('test.glu')
-        assert up.call_count == 1
 
 
 def test_load_data_files():
@@ -116,7 +109,7 @@ def test_start(glue, config, data):
                 with patch('glue.qt.glue_application.GlueApplication') as ga:
                     with patch('glue.external.qt.QtGui') as qt:
 
-                        rs.return_value = DataCollection(), Hub()
+                        rs.return_value = ga
                         ldf.return_value = Data()
 
                         start_glue(glue, config, data)
@@ -126,4 +119,3 @@ def test_start(glue, config, data):
                             lc.assert_called_once_with(search_path=[config])
                         if data:
                             ldf.assert_called_once_with(data)
-                        assert ga.call_count == 1

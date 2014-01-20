@@ -20,12 +20,18 @@ from .mpl_widget import MplWidget
 
 from ..decorators import set_cursor
 from ..qtutil import cmap2pixmap, load_ui, get_icon
+from ..widget_properties import CurrentComboProperty
 
 WARN_THRESH = 10000000  # warn when contouring large images
 
 
 class ImageWidget(DataViewer):
     LABEL = "Image Viewer"
+    _property_set = DataViewer._property_set + \
+        'data attribute slice'.split()
+
+    attribute = CurrentComboProperty('ui.attributeComboBox')
+    data = CurrentComboProperty('ui.displayDataCombo')
 
     def __init__(self, session, parent=None):
         super(ImageWidget, self).__init__(session, parent)
@@ -161,6 +167,14 @@ class ImageWidget(DataViewer):
         self.ui.displayDataCombo.setCurrentIndex(index)
         self.set_attribute_combo(data)
         self._update_window_title()
+
+    @property
+    def slice(self):
+        return self.client.slice
+
+    @slice.setter
+    def slice(self, value):
+        self.client.slice = value
 
     def set_attribute(self, index):
         combo = self.ui.attributeComboBox
@@ -318,3 +332,11 @@ class ImageWidget(DataViewer):
 
     def options_widget(self):
         return self.option_widget
+
+    def restore_layers(self, rec, context):
+        self.client.restore_layers(rec, context)
+        for artist in self.layers:
+            self.add_data_to_combo(artist.layer.data)
+
+        self.set_attribute_combo(self.client.display_data)
+        self._update_data_combo()
