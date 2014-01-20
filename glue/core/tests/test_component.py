@@ -6,7 +6,8 @@ import pytest
 import numpy as np
 
 from ..data import (Component, ComponentID,
-                    DerivedComponent, CoordinateComponent)
+                    DerivedComponent, CoordinateComponent,
+                    CategoricalComponent)
 from ... import core
 
 
@@ -63,6 +64,26 @@ class TestDerivedComponent(object):
 
     def test_link(self):
         assert self.cid.link == self.link
+
+
+class TestCategoricalComponent(object):
+
+    def setup_method(self, method):
+        pass
+
+    def test_accepts_numpy(self):
+        pass
+
+    def test_accepts_list(self):
+        """Should accept a list and convert to numpy!"""
+        pass
+
+    def test_calculate_grouping(self):
+        pass
+
+    def test_accepts_provided_grouping(self):
+        pass
+
 
 
 class TestCoordinateComponent(object):
