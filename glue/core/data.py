@@ -135,6 +135,9 @@ class Component(object):
         # subclasses may pass non-arrays here as placeholders.
         if isinstance(data, np.ndarray):
             data = coerce_numeric(data)
+            if np.all(np.isnan(data)):
+                raise ValueError('All data is Nan, could this be Categorical Data?')
+
         self._data = data
 
     @property
