@@ -38,3 +38,19 @@ class TestBeeSwarmClient(TestScatterClient):
         self.client = BeeSwarmClient(self.collect, axes=axes)
 
         self.connect()
+
+    def test_change_axis_labels(self):
+
+        self.add_data()
+        self.client._set_xydata('x', 'x1')
+        nticks = [label.get_text() for label in self.client.axes.get_xticklabels()]
+        assert nticks == ['a', 'b']
+
+    def test_axis_labels_sync_with_setters(self):
+        layer = self.add_data()
+        self.client.xatt = self.ids[0]
+        assert self.client.axes.get_xlabel() == self.ids[0].label
+        self.client.yatt = self.ids[1]
+        assert self.client.axes.get_ylabel() == self.ids[1].label
+        nticks = [label.get_text() for label in self.client.axes.get_xticklabels()]
+        assert nticks == ['a', 'b']

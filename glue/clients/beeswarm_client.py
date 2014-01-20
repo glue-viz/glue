@@ -5,7 +5,7 @@ from collections import defaultdict
 import numpy as np
 
 from ..core.client import Client
-from ..core.data import Data
+from ..core.data import Data, ComponentID
 from ..core.subset import RoiSubsetState
 from ..core.roi import PolygonalROI
 from ..core.util import relim, lookup_class
@@ -73,3 +73,60 @@ class BeeSwarmClient(ScatterClient):
         self._ensure_subsets_added(layer)
         return result
 
+    def _update_categorical_labels(self):
+
+        if self.xatt is None:
+            return
+
+        data = self.data[0]
+        try:
+            #sometimes xatt is ComponentID
+            x_comp_id = data.find_component_id(self.xatt._label)
+        except AttributeError:
+            #sometimes its a string
+            x_comp_id = data.find_component_id(self.xatt)
+        categories = data.get_component(x_comp_id)._categories
+        self.axes.set_xticks(np.arange(len(categories)))
+        self.axes.set_xticklabels(categories)
+
+    def _set_xydata(self, coord, attribute, snap=True):
+        """ Redefine which components get assigned to the x/y axes
+
+        :param coord: 'x' or 'y'
+           Which axis to reassign
+        :param attribute:
+           Which attribute of the data to use.
+        :type attribute: str
+        :param snap:
+           If True, will rescale x/y axes to fit the data
+        :type snap: bool
+        """
+
+        if coord not in ('x', 'y'):
+            raise TypeError("coord must be one of x,y")
+
+        #update coordinates of data and subsets
+        if coord == 'x':
+            new_add = not self._xset
+            self.xatt = attribute
+            self._xset = self.xatt is not None
+        elif coord == 'y':
+            new_add = not self._yset
+            self._yset = self.yatt is not None
+
+        #update plots
+        map(self._update_layer, self.artists.layers)
+
+        if coord == 'x' and snap:
+            self._snap_xlim()
+            if new_add:
+                self._snap_ylim()
+        elif coord == 'y' and snap:
+            self._snap_ylim()
+            if new_add:
+                self._snap_xlim()
+
+        self._update_axis_labels()
+        self._pull_properties()
+        self._redraw()
+        self._update_categorical_labels()
