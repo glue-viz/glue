@@ -5,7 +5,7 @@ from ...external.qt.QtCore import Qt
 
 from ... import core
 
-from ...clients.scatter_client import ScatterClient
+from ...clients.beeswarm_client import BeeSwarmClient
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import (RectangleMode, CircleMode,
                           PolyMode, HRangeMode, VRangeMode)
@@ -23,3 +23,24 @@ from scatter_widget import ScatterWidget
 
 class BeeSwarmWidget(ScatterWidget):
     LABEL = 'BeeSwarm Plot'
+
+    def __init__(self, session, parent=None):
+        super(BeeSwarmWidget, self).__init__(session, parent)
+        self.central_widget = MplWidget()
+        self.option_widget = QtGui.QWidget()
+
+        self.setCentralWidget(self.central_widget)
+
+        self.ui = load_ui('scatterwidget', self.option_widget)
+        # self.ui.setupUi(self.option_widget)
+        self._tweak_geometry()
+
+        self.client = BeeSwarmClient(self._data,
+                                     self.central_widget.canvas.fig,
+                                     artist_container=self._container)
+
+        self._connect()
+        self.unique_fields = set()
+        self.make_toolbar()
+        self.statusBar().setSizeGripEnabled(False)
+        self.setFocusPolicy(Qt.StrongFocus)
