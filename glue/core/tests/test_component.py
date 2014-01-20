@@ -72,11 +72,13 @@ class TestCategoricalComponent(object):
         pass
 
     def test_accepts_numpy(self):
-        pass
+        cat_comp = CategoricalComponent(np.array(['a', 'a', 'b', 'b']))
+        assert cat_comp._categorical_data.shape == (4,)
 
     def test_accepts_list(self):
         """Should accept a list and convert to numpy!"""
-        pass
+        cat_comp = CategoricalComponent(['a', 'a', 'b', 'b'])
+        assert np.all(cat_comp._categorical_data == np.array(['a', 'a', 'b', 'b']))
 
     def test_calculate_grouping(self):
         pass

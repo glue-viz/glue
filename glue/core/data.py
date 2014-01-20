@@ -269,7 +269,10 @@ class CategoricalComponent(Component):
 
     def __init__(self, categorical_data, categories=None):
         super(CategoricalComponent, self).__init__(None, None)
-        self._categorical_data = categorical_data
+        if not isinstance(categorical_data, np.ndarray):
+            self._categorical_data = np.array(categorical_data)
+        else:
+            self._categorical_data = categorical_data
         self._categories = categories
         self._data = None
         if self._categories is None:
