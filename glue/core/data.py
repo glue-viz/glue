@@ -285,7 +285,9 @@ class CategoricalComponent(Component):
         self._update_data()
 
     def _update_data(self):
-        self._data = np.zeros(self._categorical_data.shape)
+        self._data = np.nan*np.zeros(self._categorical_data.shape)
+        for num, category in enumerate(self._categories):
+            self._data[self._categorical_data == category] = num
 
 
 
