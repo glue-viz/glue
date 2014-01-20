@@ -269,7 +269,7 @@ class CategoricalComponent(Component):
 
     def __init__(self, categorical_data, categories=None):
         super(CategoricalComponent, self).__init__(None, None)
-        self._categorical_data = np.asarray(categorical_data)
+        self._categorical_data = np.asarray(categorical_data, dtype=np.object)
         self._categories = categories
         self._data = None
         if self._categories is None:

@@ -81,6 +81,14 @@ class TestCategoricalComponent(object):
         cat_comp = CategoricalComponent(self.list_data)
         assert np.all(cat_comp._categorical_data == self.array_data)
 
+    def test_multi_nans(self):
+        cat_comp = CategoricalComponent([np.nan, np.nan, 'a', 'b', 'c', 'zanthia'])
+        np.testing.assert_equal(cat_comp._data,
+                                np.array([0, 0, 1, 2, 3, 4]))
+        np.testing.assert_equal(cat_comp._categories,
+                                np.asarray([np.nan, 'a', 'b', 'c', 'zanthia'],
+                                           dtype=np.object))
+
     def test_calculate_grouping(self):
         cat_comp = CategoricalComponent(self.array_data)
         assert np.all(cat_comp._categories == np.asarray(['a', 'b']))
