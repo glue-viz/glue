@@ -546,6 +546,17 @@ class Data(object):
                 isinstance(self._components[c], DerivedComponent)]
 
     @property
+    def categorical_components(self):
+        """A list of ComponentIDs for each
+        :class:`~glue.core.data.CategoricalComponent` in the data.
+
+        (Read only)
+        """
+        return [c for c in self.component_ids() if
+                isinstance(self._components[c], CategoricalComponent)]
+
+
+    @property
     def pixel_component_ids(self):
         return self._pixel_component_ids
 
