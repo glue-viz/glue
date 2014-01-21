@@ -106,8 +106,12 @@ class TestCategoricalComponent(object):
 
     def test_uniform_jitter(self):
         cat_comp = CategoricalComponent(self.array_data)
+        second_comp = CategoricalComponent(self.array_data)
         cat_comp.jitter(method='uniform')
-        assert np.all(cat_comp._data != CategoricalComponent(self.array_data)._data)
+        assert np.all(cat_comp._data != second_comp._data), "Didn't jitter data!"
+        second_comp.jitter(method='uniform')
+        assert np.all(cat_comp._data == second_comp._data), "Didn't jitter data consistently!"
+
 
 
 class TestCoordinateComponent(object):
