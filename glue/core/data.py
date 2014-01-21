@@ -272,6 +272,7 @@ class CategoricalComponent(Component):
         self._categorical_data = np.asarray(categorical_data, dtype=np.object)
         self._categories = categories
         self._data = None
+        self.current_jitter = None
         if self._categories is None:
             self._update_categories()
         else:
@@ -281,7 +282,7 @@ class CategoricalComponent(Component):
         if categories is None:
             categories, inv = np.unique(self._categorical_data, return_inverse=True)
             self._categories = categories
-            self._data = inv
+            self._data = inv.astype(np.float)
         else:
             self._categories = categories
             self._update_data()
@@ -291,6 +292,17 @@ class CategoricalComponent(Component):
         for num, category in enumerate(self._categories):
             self._data[self._categorical_data == category] = num
 
+    def jitter(self, method=None):
+        """
+        :param method: Currently only supports None
+        :return:
+        """
+        seed = hash(tuple(self._categorical_data.flatten()))
+        rand_state = np.random.RandomState(seed)
+        if method is None:
+            return
+        elif method is 'uniform':
+            self._data += rand_state.uniform(-0.5, 0.5, size=self._data.shape)
 
 class Data(object):
 

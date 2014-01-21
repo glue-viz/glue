@@ -93,6 +93,7 @@ class TestCategoricalComponent(object):
         cat_comp = CategoricalComponent(self.array_data)
         assert np.all(cat_comp._categories == np.asarray(['a', 'b']))
         assert np.all(cat_comp._data == np.array([0, 0, 1, 1]))
+        assert cat_comp._data.dtype == np.float
 
     def test_accepts_provided_grouping(self):
         ncategories = ['b', 'c']
@@ -102,6 +103,11 @@ class TestCategoricalComponent(object):
         assert np.all(np.isnan(cat_comp._data[:1]))
         assert np.all(cat_comp._data[2:] == 0)
         assert not np.any(cat_comp._data == 1)
+
+    def test_uniform_jitter(self):
+        cat_comp = CategoricalComponent(self.array_data)
+        cat_comp.jitter(method='uniform')
+        assert np.all(cat_comp._data != CategoricalComponent(self.array_data)._data)
 
 
 class TestCoordinateComponent(object):
