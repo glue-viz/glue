@@ -111,7 +111,7 @@ class TestCategoricalComponent(object):
         assert np.all(cat_comp._data != second_comp._data), "Didn't jitter data!"
         second_comp.jitter(method='uniform')
         assert np.all(cat_comp._data == second_comp._data), "Didn't jitter data consistently!"
-        assert cat_comp._current_jitter == 'uniform'
+        assert cat_comp._jitter_method == 'uniform'
 
     def test_no_double_jitter(self):
         cat_comp = CategoricalComponent(self.array_data)
@@ -132,6 +132,14 @@ class TestCategoricalComponent(object):
 
         cat_comp.jitter(method=None)
         assert np.all(cat_comp._data == second_comp._data), "Didn't un-jitter data!"
+
+    def test_jitter_on_init(self):
+
+        cat_comp = CategoricalComponent(self.array_data, jitter='uniform')
+        second_comp = CategoricalComponent(self.array_data)
+        second_comp.jitter(method='uniform')
+        assert np.all(cat_comp._data == second_comp._data)
+
 
 
 
