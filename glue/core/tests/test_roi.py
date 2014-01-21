@@ -273,6 +273,10 @@ class TestPolygon(object):
         self.roi.remove_point(1, 0)
         assert not self.roi.contains(.9, .01)
 
+    def test_nan(self):
+        self.define_as_square()
+        assert not self.roi.contains(np.nan, .5)
+
     def test_remove_unsuccessful(self):
         self.define_as_square()
         assert self.roi.contains(.9, .02)
