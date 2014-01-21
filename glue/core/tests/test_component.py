@@ -141,9 +141,6 @@ class TestCategoricalComponent(object):
         assert np.all(cat_comp._data == second_comp._data)
 
 
-
-
-
 class TestCoordinateComponent(object):
 
     def setup_method(self, method):
