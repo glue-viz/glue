@@ -272,7 +272,7 @@ class CategoricalComponent(Component):
         self._categorical_data = np.asarray(categorical_data, dtype=np.object)
         self._categories = categories
         self._data = None
-        self.current_jitter = None
+        self._current_jitter = None
         if self._categories is None:
             self._update_categories()
         else:
@@ -297,12 +297,19 @@ class CategoricalComponent(Component):
         :param method: Currently only supports None
         :return:
         """
+        if method == self._current_jitter:
+            return
+
         seed = hash(tuple(self._categorical_data.flatten()))
         rand_state = np.random.RandomState(seed)
+
         if method is None:
-            return
+            self._current_jitter = None
+            self._update_data()
         elif method is 'uniform':
             self._data += rand_state.uniform(-0.5, 0.5, size=self._data.shape)
+            self._current_jitter = 'uniform'
+
 
 class Data(object):
 
