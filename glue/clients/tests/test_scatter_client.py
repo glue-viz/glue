@@ -508,14 +508,14 @@ class TestScatterClient(object):
 class TestCategoricalScatterClient(TestScatterClient):
 
     def setup_method(self, method):
-        self.data = example_data.test_data()
+        self.data = example_data.test_categorical_data()
         self.ids = [self.data[0].find_component_id('x1'),
                     self.data[0].find_component_id('y1'),
                     self.data[1].find_component_id('x2'),
                     self.data[1].find_component_id('y2')]
         self.hub = core.hub.Hub()
-        self.roi_limits = (0.5, 0.5, 4, 4)
-        self.roi_points = (np.array([1]), np.array([3]))
+        self.roi_limits = (1.5, 1.5, 4, 4)
+        self.roi_points = (np.array([2]), np.array([3]))
         self.collect = core.data_collection.DataCollection()
 
         FIGURE.clf()
