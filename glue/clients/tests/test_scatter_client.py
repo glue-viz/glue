@@ -554,3 +554,28 @@ class TestCategoricalScatterClient(TestScatterClient):
         assert np.all((delta > 0) & (delta < 1))
         self.client.jitter = None
         assert np.all(orig_data == grab_data(self.client))
+
+    def test_ticks_go_back_after_changing(self):
+        """ If you change to a categorical axis and then change back
+        to a numeric, the axis ticks should fix themselves properly.
+        """
+        data = core.Data()
+        data.add_component(core.Component(np.arange(100)), 'y')
+        data.add_component(core.data.CategoricalComponent(['a']*50 + ['b']*50), 'xcat')
+        data.add_component(core.Component(2*np.arange(100)), 'xcont')
+
+        self.add_data(data=data)
+        self.client.yatt = data.find_component_id('y')
+        self.client.xatt = data.find_component_id('xcat')
+        nticks = [label.get_text() for label in self.client.axes.get_xticklabels()]
+        assert nticks == ['a', 'b']
+        assert self.client.xmax < 5
+
+        self.client.xatt = data.find_component_id('xcont')
+        assert len(self.client.axes.get_xticklabels()) > 2
+        assert self.client.xmax > 198
+
+
+
+
+

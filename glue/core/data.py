@@ -167,6 +167,9 @@ class Component(object):
     def __str__(self):
         return "Component with shape %s" % self.shape
 
+    def jitter(self, method=None):
+        raise NotImplementedError
+
     @property
     def creation_info(self):
         """A 4-tuple describing how this component was created

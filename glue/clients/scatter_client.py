@@ -4,7 +4,7 @@ from functools import partial
 import numpy as np
 
 from ..core.client import Client
-from ..core.data import Data, IncompatibleAttribute, ComponentID
+from ..core.data import Data, IncompatibleAttribute, ComponentID, CategoricalComponent
 from ..core.subset import RoiSubsetState
 from ..core.roi import PolygonalROI
 from ..core.util import relim, lookup_class
@@ -30,6 +30,8 @@ class ScatterClient(Client):
     xflip = CallbackProperty(False)
     xatt = CallbackProperty()
     yatt = CallbackProperty()
+    xcat = CallbackProperty()
+    ycat = CallbackProperty()
     jitter = CallbackProperty()
 
     def __init__(self, data=None, figure=None, axes=None,
@@ -89,7 +91,9 @@ class ScatterClient(Client):
         add_callback(self, 'ymax', self._set_limits)
         add_callback(self, 'xatt', partial(self._set_xydata, 'x'))
         add_callback(self, 'yatt', partial(self._set_xydata, 'y'))
-        add_callback(self, 'jitter', self._update_axis_labels)
+        add_callback(self, 'xcat', partial(self._update_ticks, 'x'))
+        add_callback(self, 'ycat', partial(self._update_ticks, 'y'))
+        add_callback(self, 'jitter', self._jitter)
         self.axes.figure.canvas.mpl_connect('draw_event',
                                             lambda x: self._pull_properties())
 
@@ -314,14 +318,46 @@ class ScatterClient(Client):
     def _redraw(self):
         self.axes.figure.canvas.draw()
 
-    def _update_categorical_data(self, coord, attribute):
+    def _update_ticks(self, *args):
+        coord = args[0]
+        print 'got', args
+
+        if coord == 'x':
+            if self.xcat:
+                self._update_categorical_data(coord)
+            else:
+                rng = self.axes.get_xlim()
+                self.axes.set_xticks(np.linspace(rng[0], rng[1], 5))
+        elif coord == 'y':
+            if self.ycat:
+                self._update_categorical_data(coord)
+            else:
+                rng = self.axes.get_ylim()
+                self.axes.set_yticks(np.linspace(rng[0], rng[1], 5))
+
+    def _jitter(self, *args):
+
+        for attribute in [self.xatt, self.yatt]:
+            if attribute is not None:
+                for data in self.data:
+                    try:
+                        comp = data.get_component(attribute)
+                    except IncompatibleAttribute:
+                        continue
+                    try:
+                        comp.jitter(method=self.jitter)
+                    except NotImplementedError:
+                        pass
+
+    def _update_categorical_data(self, coord):
+        attribute = self.xatt if coord == 'x' else self.yatt
         if attribute is None:
             return
         all_categories = set()
         for data in self._data:
             try:
                 all_categories |= set(data.get_component(attribute)._categories)
-            except (AttributeError, IncompatibleAttribute):
+            except IncompatibleAttribute:
                 return
         categories = sorted(all_categories)
         for data in self._data:
@@ -336,9 +372,15 @@ class ScatterClient(Client):
 
     def _update_axis_labels(self, *args):
         self.axes.set_xlabel(self.xatt)
-        self._update_categorical_data('x', self.xatt)
         self.axes.set_ylabel(self.yatt)
-        self._update_categorical_data('y', self.yatt)
+        try:
+            self.xcat = isinstance(self.data[0].get_component(self.xatt), CategoricalComponent)
+        except IncompatibleAttribute:
+            pass
+        try:
+            self.ycat = isinstance(self.data[0].get_component(self.yatt), CategoricalComponent)
+        except IncompatibleAttribute:
+            pass
 
     def _add_subset(self, message):
         subset = message.sender
