@@ -336,6 +336,7 @@ class ScatterClient(Client):
             else:
                 rng = self.axes.get_ylim()
                 self.axes.set_yticks(np.linspace(rng[0], rng[1], 5))
+        self._redraw()
 
     def _jitter(self, *args):
 
