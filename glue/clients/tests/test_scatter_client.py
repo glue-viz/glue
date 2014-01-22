@@ -8,7 +8,7 @@ from mock import MagicMock
 from ...tests import example_data
 from ... import core
 
-from ..scatter_client import ScatterClient
+from ..scatter_client import ScatterClient, MAX_CATEGORIES
 
 # share matplotlib instance, and disable rendering, for speed
 FIGURE = plt.figure()
@@ -575,7 +575,15 @@ class TestCategoricalScatterClient(TestScatterClient):
         assert len(self.client.axes.get_xticklabels()) > 2
         assert self.client.xmax > 198
 
+    def test_max_ten_ticks(self):
+        """Too many ticks makes it harder to read data!"""
 
+        data = core.Data()
+        cat_data = list('abcdefghijklmnopqrstuv')
+        data.add_component(core.Component(np.arange(len(cat_data))), 'y')
+        data.add_component(core.data.CategoricalComponent(cat_data), 'xcat')
+
+        assert len(self.client.axes.get_xticklabels()) <= MAX_CATEGORIES
 
 
 

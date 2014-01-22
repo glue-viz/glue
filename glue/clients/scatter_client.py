@@ -15,6 +15,7 @@ from .util import visible_limits
 from ..core.callback_property import (CallbackProperty, add_callback,
                                       delay_callback)
 
+MAX_CATEGORIES = 10
 
 class ScatterClient(Client):
     """
@@ -363,12 +364,18 @@ class ScatterClient(Client):
         for data in self._data:
             data.get_component(attribute)._update_categories(categories=categories)
             data.get_component(attribute).jitter(self.jitter)
+
+        if len(categories) > MAX_CATEGORIES:
+            ticks = np.floor(np.linspace(0, len(categories), MAX_CATEGORIES))+1
+        else:
+            ticks = np.arange(len(categories))+1
+        categories = np.asarray(categories, dtype=np.object)[ticks-1]
         if coord == 'x':
-            self.axes.set_xticks(range(1, len(categories)+1))
-            self.axes.set_xticklabels(categories, rotation=45)
+            self.axes.set_xticks(ticks)
+            self.axes.set_xticklabels(categories, rotation=90)
         if coord == 'y':
-            self.axes.set_yticks(range(1, len(categories)+1))
-            self.axes.set_yticklabels(categories, rotation=45)
+            self.axes.set_yticks(ticks)
+            self.axes.set_yticklabels(categories)
 
     def _update_axis_labels(self, *args):
         self.axes.set_xlabel(self.xatt)
