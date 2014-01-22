@@ -503,3 +503,39 @@ class TestScatterClient(object):
         ct1 = m.call_count
 
         assert ct1 == ct0
+
+
+class TestCategoricalScatterClient(TestScatterClient):
+
+    def setup_method(self, method):
+        self.data = example_data.test_data()
+        self.ids = [self.data[0].find_component_id('x1'),
+                    self.data[0].find_component_id('y1'),
+                    self.data[1].find_component_id('x2'),
+                    self.data[1].find_component_id('y2')]
+        self.hub = core.hub.Hub()
+        self.roi_limits = (0.5, 0.5, 4, 4)
+        self.roi_points = (np.array([1]), np.array([3]))
+        self.collect = core.data_collection.DataCollection()
+
+        FIGURE.clf()
+        axes = FIGURE.add_subplot(111)
+        self.client = ScatterClient(self.collect, axes=axes)
+
+        self.connect()
+
+    def test_change_axis_labels(self):
+
+        self.add_data()
+        self.client._set_xydata('x', 'x1')
+        nticks = [label.get_text() for label in self.client.axes.get_xticklabels()]
+        assert nticks == ['a', 'b']
+
+    def test_axis_labels_sync_with_setters(self):
+        layer = self.add_data()
+        self.client.xatt = self.ids[0]
+        assert self.client.axes.get_xlabel() == self.ids[0].label
+        self.client.yatt = self.ids[1]
+        assert self.client.axes.get_ylabel() == self.ids[1].label
+        nticks = [label.get_text() for label in self.client.axes.get_xticklabels()]
+        assert nticks == ['a', 'b']
