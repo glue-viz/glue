@@ -765,6 +765,8 @@ class Data(object):
 
         :param component_id: the component_id to retrieve
         """
+        if component_id is None:
+            raise IncompatibleAttribute("None not in data set")
         try:
             return self._components[component_id]
         except KeyError:
