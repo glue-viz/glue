@@ -84,7 +84,7 @@ class TestCategoricalComponent(object):
     def test_multi_nans(self):
         cat_comp = CategoricalComponent([np.nan, np.nan, 'a', 'b', 'c', 'zanthia'])
         np.testing.assert_equal(cat_comp._data,
-                                np.array([0, 0, 1, 2, 3, 4]))
+                                np.array([1, 1, 2, 3, 4, 5]))
         np.testing.assert_equal(cat_comp._categories,
                                 np.asarray([np.nan, 'a', 'b', 'c', 'zanthia'],
                                            dtype=np.object))
@@ -92,7 +92,7 @@ class TestCategoricalComponent(object):
     def test_calculate_grouping(self):
         cat_comp = CategoricalComponent(self.array_data)
         assert np.all(cat_comp._categories == np.asarray(['a', 'b']))
-        assert np.all(cat_comp._data == np.array([0, 0, 1, 1]))
+        assert np.all(cat_comp._data == np.array([1, 1, 2, 2]))
         assert cat_comp._data.dtype == np.float
 
     def test_accepts_provided_grouping(self):
@@ -101,8 +101,8 @@ class TestCategoricalComponent(object):
 
         assert cat_comp._categories == ncategories
         assert np.all(np.isnan(cat_comp._data[:1]))
-        assert np.all(cat_comp._data[2:] == 0)
-        assert not np.any(cat_comp._data == 1)
+        assert np.all(cat_comp._data[2:] == 1)
+        assert not np.any(cat_comp._data == 2)
 
     def test_uniform_jitter(self):
         cat_comp = CategoricalComponent(self.array_data)
