@@ -4,7 +4,7 @@ from functools import partial
 import numpy as np
 
 from ..core.client import Client
-from ..core.data import Data, IncompatibleAttribute
+from ..core.data import Data, IncompatibleAttribute, ComponentID
 from ..core.subset import RoiSubsetState
 from ..core.roi import PolygonalROI
 from ..core.util import relim, lookup_class
@@ -209,7 +209,7 @@ class ScatterClient(Client):
            Which axis to reassign
         :param attribute:
            Which attribute of the data to use.
-        :type attribute: str
+        :type attribute: core.data.ComponentID
         :param snap:
            If True, will rescale x/y axes to fit the data
         :type snap: bool
@@ -217,9 +217,8 @@ class ScatterClient(Client):
 
         if coord not in ('x', 'y'):
             raise TypeError("coord must be one of x,y")
-        if hasattr(attribute, '_label'):
-            #temporary fix for issue #214
-            attribute = attribute._label
+        if not isinstance(attribute, ComponentID):
+            raise TypeError("attribute must be a ComponentID")
 
         #update coordinates of data and subsets
         if coord == 'x':
@@ -319,21 +318,15 @@ class ScatterClient(Client):
         if attribute is None:
             return
         all_categories = set()
-        comps = []
         for data in self._data:
-            comp_id = data.find_component_id(attribute)
-            comps.append(comp_id)
-            if comp_id is None:
-                continue
             try:
-                all_categories |= set(data.get_component(comp_id)._categories)
-            except AttributeError:
+                all_categories |= set(data.get_component(attribute)._categories)
+            except (AttributeError, IncompatibleAttribute):
                 return
         categories = sorted(all_categories)
-        for comp_id, data in zip(comps, self._data):
-            if comp_id:
-                data.get_component(comp_id)._update_categories(categories=categories)
-                data.get_component(comp_id).jitter(self.jitter)
+        for data in self._data:
+            data.get_component(attribute)._update_categories(categories=categories)
+            data.get_component(attribute).jitter(self.jitter)
         if coord == 'x':
             self.axes.set_xticks(range(1, len(categories)+1))
             self.axes.set_xticklabels(categories, rotation=45)
