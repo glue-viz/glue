@@ -8,7 +8,7 @@ env:
   - CONDA_ARGS="--yes"
   - PIP_ARGS="--upgrade --use-mirrors"
   - PYTEST_ARGS="--cov glue"
-  - CONDA_BASE="pip numpy scipy pyside cython h5py pygments pyzmq scikit-image"
+  - CONDA_BASE="pip numpy scipy pyside cython h5py pygments pyzmq scikit-image pandas"
   - PIP_BASE="mock pytest pytest-cov coveralls pyavm pillow"
   - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
   matrix:

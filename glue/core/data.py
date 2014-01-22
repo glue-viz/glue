@@ -135,8 +135,6 @@ class Component(object):
         # subclasses may pass non-arrays here as placeholders.
         if isinstance(data, np.ndarray):
             data = coerce_numeric(data)
-            if np.isnan(data).all():
-                raise ValueError('All data is Nan, are you sure this numeric data?')
         self._data = data
 
     @property
@@ -168,6 +166,9 @@ class Component(object):
 
     def __str__(self):
         return "Component with shape %s" % self.shape
+
+    def jitter(self, method=None):
+        raise NotImplementedError
 
     @property
     def creation_info(self):
@@ -285,7 +286,7 @@ class CategoricalComponent(Component):
         if categories is None:
             categories, inv = np.unique(self._categorical_data, return_inverse=True)
             self._categories = categories
-            self._data = inv.astype(np.float)+1
+            self._data = inv.astype(np.float)
             self.jitter(method=self._jitter_method)
         else:
             self._categories = categories
@@ -294,7 +295,7 @@ class CategoricalComponent(Component):
     def _update_data(self):
         self._is_jittered = False
         self._data = np.nan*np.zeros(self._categorical_data.shape)
-        for num, category in enumerate(self._categories, 1):
+        for num, category in enumerate(self._categories):
             self._data[self._categorical_data == category] = num
 
         self.jitter(method=self._jitter_method)
@@ -815,6 +816,8 @@ class Data(object):
 
         :param component_id: the component_id to retrieve
         """
+        if component_id is None:
+            raise IncompatibleAttribute("None not in data set")
         try:
             return self._components[component_id]
         except KeyError:
