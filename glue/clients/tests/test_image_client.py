@@ -37,6 +37,7 @@ class TestImageClient(object):
     def setup_method(self, method):
         self.im = example_data.test_image()
         self.cube = example_data.test_cube()
+        self.cube4 = core.Data(x=np.ones((2, 3, 4, 5)))
         self.scatter = core.Data(x=[1, 2, 3, 4], y=[4, 5, 6, 7])
         self.im.edit_subset = self.im.new_subset()
         self.cube.edit_subset = self.cube.new_subset()
@@ -46,6 +47,12 @@ class TestImageClient(object):
         client = ImageClient(self.collect, figure=FIGURE)
         self.collect.append(self.im)
         client.set_data(self.im)
+        return client
+
+    def create_client_with_hypercube(self):
+        client = ImageClient(self.collect, figure=FIGURE)
+        self.collect.append(self.cube4)
+        client.set_data(self.cube4)
         return client
 
     def create_client_with_image_and_scatter(self):
@@ -95,14 +102,14 @@ class TestImageClient(object):
         assert client.slice_ind is None
         with pytest.raises(IndexError) as exc:
             client.slice_ind = 10
-        assert exc.value.args[0] == "Cannot set slice for 2D image"
+        assert exc.value.args[0] == "Can only set slice_ind for 3D images"
 
     def test_slice_disabled_for_no_data(self):
         client = ImageClient(self.collect, figure=FIGURE)
         assert client.slice_ind is None
         with pytest.raises(IndexError) as exc:
             client.slice_ind = 10
-        assert exc.value.args[0] == "Cannot set slice for 2D image"
+        assert exc.value.args[0] == "Can only set slice_ind for 3D images"
 
     def test_slice_enabled_for_3D(self):
         client = self.create_client_with_cube()
@@ -167,38 +174,17 @@ class TestImageClient(object):
             assert client.display_attribute is att
             assert client.display_data is self.im
 
-    def test_set_slice(self):
-        client = self.create_client_with_image()
-        with pytest.raises(IndexError) as exc:
-            client.slice_ind = 10
-        assert exc.value.args[0] == "Cannot set slice for 2D image"
-
-    def test_slice_bounds_2d(self):
-        client = self.create_client_with_image()
-        assert client.slice_bounds() == (0, 0)
-
-    def test_slice_bounds_3d(self):
-        client = self.create_client_with_cube()
-        shape = self.cube.shape
-        assert client.slice_bounds() == (0, shape[2] - 1)
-        client.set_slice_ori(0)
-        assert client.slice_bounds() == (0, shape[0] - 1)
-        client.set_slice_ori(1)
-        assert client.slice_bounds() == (0, shape[1] - 1)
-        client.set_slice_ori(2)
-        assert client.slice_bounds() == (0, shape[2] - 1)
-
     def test_slice_ori_on_2d_raises(self):
         client = self.create_client_with_image()
         with pytest.raises(IndexError) as exc:
             client.set_slice_ori(0)
-        assert exc.value.args[0] == "Cannot set orientation of 2D image"
+        assert exc.value.args[0] == "Can only set slice_ori for 3D images"
 
     def test_slice_ori_out_of_bounds(self):
         client = self.create_client_with_image()
         self.collect.append(self.cube)
         client.set_data(self.cube)
-        with pytest.raises(TypeError) as exc:
+        with pytest.raises(ValueError) as exc:
             client.set_slice_ori(100)
         assert exc.value.args[0] == "Orientation must be 0, 1, or 2"
 
@@ -381,6 +367,19 @@ class TestImageClient(object):
         assert isinstance(c.rgb_mode(False), ImageLayerArtist)
         assert c.rgb_mode() is None
 
+    def test_transpose(self):
+        c = self.create_client_with_image()
+        shp = self.im.shape
+        c.slice = 'x', 'y'
+        assert c._ax.get_xlim() == (0, shp[0])
+        assert c._ax.get_ylim() == (0, shp[1])
+        assert c._ax.get_xlabel() == 'World 0'
+        assert c._ax.get_ylabel() == 'World 1'
+
+    def test_4d(self):
+        c = self.create_client_with_hypercube()
+        assert c.display_data is self.cube4
+
 
 def test_format_coord_2d():
     """Coordinate display is in world coordinates"""
@@ -400,7 +399,7 @@ def test_format_coord_2d():
     # use coord object
     c.set_data(d)
     xy = ax.format_coord(1, 2)
-    assert xy == 'World 1=1          World 0=4'
+    assert xy == 'World 0=4         World 1=1'
 
 
 def test_format_coord_3d():
@@ -422,15 +421,15 @@ def test_format_coord_3d():
     c.set_data(d)
     c.set_slice_ori(0)  # constant z
     xy = ax.format_coord(1, 2)
-    assert xy == 'World 2=1          World 1=4'
+    assert xy == 'World 0=0         World 1=4         World 2=1'
 
     c.set_slice_ori(1)  # constant y
     xy = ax.format_coord(1, 2)
-    assert xy == 'World 2=1          World 0=6'
+    assert xy == 'World 0=6         World 1=0         World 2=1'
 
     c.set_slice_ori(2)  # constant x
     xy = ax.format_coord(1, 2)
-    assert xy == 'World 1=2          World 0=6'
+    assert xy == 'World 0=6         World 1=2         World 2=0'
 
 
 class TestRGBImageLayerArtist(object):

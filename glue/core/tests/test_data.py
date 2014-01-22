@@ -256,6 +256,11 @@ class TestData(object):
     def test_get_component(self):
         assert self.data.get_component(self.comp_id) is self.comp
 
+    def test_get_None_component(self):
+
+        with pytest.raises(IncompatibleAttribute):
+            self.data.get_component(None)
+
     def test_get_item(self):
         assert self.data[self.comp_id] is self.comp.data
 

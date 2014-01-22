@@ -71,11 +71,20 @@ class CurrentComboProperty(WidgetProperty):
         its itemData
         """
         for i in range(widget.count()):
-            if widget.itemData(i) is value:
+            if widget.itemData(i) == value:
                 widget.setCurrentIndex(i)
                 return
         else:
             raise ValueError("%s not found in combo box" % value)
+
+
+class TextProperty(WidgetProperty):
+    """ Wrapper around the text() and setText() methods for QLabel etc"""
+    def getter(self, widget):
+        return widget.text()
+
+    def setter(self, widget, value):
+        widget.setText(value)
 
 
 class ButtonProperty(WidgetProperty):
@@ -107,9 +116,9 @@ class FloatLineProperty(WidgetProperty):
         widget.editingFinished.emit()
 
 
-class SpinnerProperty(WidgetProperty):
+class ValueProperty(WidgetProperty):
 
-    """Wrapper around intspin boxes"""
+    """Wrapper around value() and setValue() intspin boxes"""
 
     def getter(self, widget):
         return widget.value()

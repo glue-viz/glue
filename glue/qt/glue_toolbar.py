@@ -41,7 +41,7 @@ class GlueToolbar(NavigationToolbar2QT):
 
     def _init_toolbar(self):
         self.basedir = os.path.join(matplotlib.rcParams['datapath'], 'images')
-        parent = self.parent()
+        parent = QtGui.QToolBar.parent(self)
 
         a = QtGui.QAction(get_icon('glue_home'),
                           'Home', parent)
@@ -128,7 +128,7 @@ class GlueToolbar(NavigationToolbar2QT):
         self.mode = ''
 
     def add_mode(self, mode):
-        parent = self.parent()
+        parent = QtGui.QToolBar.parent(self)
 
         def toggle():
             self._custom_mode(mode)
@@ -201,7 +201,7 @@ class GlueToolbar(NavigationToolbar2QT):
 
     def set_message(self, s):
         self.emit(QtCore.SIGNAL("message"), s)
-        parent = self.parent()
+        parent = QtGui.QToolBar.parent(self)
         if parent is None:
             return
         sb = parent.statusBar()
