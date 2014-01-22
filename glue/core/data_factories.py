@@ -347,10 +347,7 @@ def tabular_data(*args, **kwargs):
             except ValueError:  # assigning nan to integer dtype
                 c = c.filled(fill_value=-1)
 
-        try:
-            nc = Component(np.asarray(c), units=u)
-        except ValueError:
-            nc = CategoricalComponent(c)
+        nc = Component(np.asarray(c), units=u)
         result.add_component(nc, column_name)
 
     return result
