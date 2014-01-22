@@ -26,6 +26,8 @@ class TestScatterClient(object):
                     self.data[1].find_component_id('c'),
                     self.data[1].find_component_id('d')]
         self.hub = core.hub.Hub()
+        self.roi_limits = (0.5, 0.5, 1.5, 1.5)
+        self.roi_points = (np.array([1]), np.array([1]))
         self.collect = core.data_collection.DataCollection()
 
         FIGURE.clf()
@@ -319,9 +321,8 @@ class TestScatterClient(object):
     def test_apply_roi(self):
         data = self.add_data_and_attributes()
         roi = core.roi.RectangularROI()
-        roi.update_limits(.5, .5, 1.5, 1.5)
-        x = np.array([1])
-        y = np.array([1])
+        roi.update_limits(*self.roi_limits)
+        x, y = self.roi_points
         self.client.apply_roi(roi)
         assert self.layer_data_correct(data.edit_subset, x, y)
 
@@ -330,9 +331,8 @@ class TestScatterClient(object):
         data._subsets = []
         data.edit_subset = None
         roi = core.roi.RectangularROI()
-        roi.update_limits(.5, .5, 1.5, 1.5)
-        x = np.array([1])
-        y = np.array([1])
+        roi.update_limits(*self.roi_limits)
+        x, y = self.roi_points
         self.client.apply_roi(roi)
         assert data.edit_subset is not None
 
@@ -342,9 +342,8 @@ class TestScatterClient(object):
         state1 = d1.edit_subset.subset_state
         state2 = d2.edit_subset.subset_state
         roi = core.roi.RectangularROI()
-        roi.update_limits(.5, .5, 1.5, 1.5)
-        x = np.array([1])
-        y = np.array([1])
+        roi.update_limits(*self.roi_limits)
+        x, y = self.roi_points
         self.client.apply_roi(roi)
         assert d1.edit_subset.subset_state is not state1
         assert d1.edit_subset.subset_state is not state2
@@ -356,9 +355,8 @@ class TestScatterClient(object):
         d2.edit_subset = d2.new_subset()
         ct = len(d1.subsets)
         roi = core.roi.RectangularROI()
-        roi.update_limits(.5, .5, 1.5, 1.5)
-        x = np.array([1])
-        y = np.array([1])
+        roi.update_limits(*self.roi_limits)
+        x, y = self.roi_points
         self.client.apply_roi(roi)
         assert len(d1.subsets) == ct
 
@@ -396,7 +394,7 @@ class TestScatterClient(object):
     def test_visibility_sticky(self):
         data = self.add_data_and_attributes()
         roi = core.roi.RectangularROI()
-        roi.update_limits(.5, .5, 1.5, 1.5)
+        roi.update_limits(*self.roi_limits)
         assert self.client.is_visible(data.edit_subset)
         self.client.apply_roi(roi)
         self.client.set_visible(data.edit_subset, False)
@@ -513,3 +511,54 @@ class TestScatterClient(object):
         ct1 = m.call_count
 
         assert ct1 == ct0
+
+
+class TestCategoricalScatterClient(TestScatterClient):
+
+    def setup_method(self, method):
+        self.data = example_data.test_categorical_data()
+        self.ids = [self.data[0].find_component_id('x1'),
+                    self.data[0].find_component_id('y1'),
+                    self.data[1].find_component_id('x2'),
+                    self.data[1].find_component_id('y2')]
+        self.hub = core.hub.Hub()
+        self.roi_limits = (1.5, 1.5, 4, 4)
+        self.roi_points = (np.array([2]), np.array([3]))
+        self.collect = core.data_collection.DataCollection()
+
+        FIGURE.clf()
+        axes = FIGURE.add_subplot(111)
+        self.client = ScatterClient(self.collect, axes=axes)
+
+        self.connect()
+
+    def test_change_axis_labels(self):
+
+        self.add_data()
+        self.client._set_xydata('x', 'x1')
+        nticks = [label.get_text() for label in self.client.axes.get_xticklabels()]
+        assert nticks == ['a', 'b']
+
+    def test_axis_labels_sync_with_setters(self):
+        layer = self.add_data()
+        self.client.xatt = self.ids[0]
+        assert self.client.axes.get_xlabel() == self.ids[0].label
+        self.client.yatt = self.ids[1]
+        assert self.client.axes.get_ylabel() == self.ids[1].label
+        nticks = [label.get_text() for label in self.client.axes.get_xticklabels()]
+        assert nticks == ['a', 'b']
+
+    def test_jitter_with_setter_change(self):
+
+        grab_data = lambda client: client.data[0][client.xatt].copy()
+        layer = self.add_data()
+        self.client.xatt = self.ids[0]
+        self.client.yatt = self.ids[1]
+        orig_data = grab_data(self.client)
+        self.client.jitter = None
+        assert np.all(orig_data == grab_data(self.client))
+        self.client.jitter = 'uniform'
+        delta = np.abs(orig_data - grab_data(self.client))
+        assert np.all((delta > 0) & (delta < 1))
+        self.client.jitter = None
+        assert np.all(orig_data == grab_data(self.client))

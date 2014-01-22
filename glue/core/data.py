@@ -285,7 +285,7 @@ class CategoricalComponent(Component):
         if categories is None:
             categories, inv = np.unique(self._categorical_data, return_inverse=True)
             self._categories = categories
-            self._data = inv.astype(np.float)
+            self._data = inv.astype(np.float)+1
             self.jitter(method=self._jitter_method)
         else:
             self._categories = categories
@@ -294,7 +294,7 @@ class CategoricalComponent(Component):
     def _update_data(self):
         self._is_jittered = False
         self._data = np.nan*np.zeros(self._categorical_data.shape)
-        for num, category in enumerate(self._categories):
+        for num, category in enumerate(self._categories, 1):
             self._data[self._categorical_data == category] = num
 
         self.jitter(method=self._jitter_method)
