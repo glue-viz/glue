@@ -148,6 +148,11 @@ class TestScatterClient(object):
         self.client.yatt = self.ids[0]
         assert self.client.axes.get_ylabel() == self.ids[0].label
 
+    def test_setters_require_componentID(self):
+        layer = self.add_data()
+        with pytest.raises(TypeError):
+            self.client.xatt = self.ids[1]._label
+
     def test_logs(self):
         layer = self.add_data()
         self.client.xlog = True

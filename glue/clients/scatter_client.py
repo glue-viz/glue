@@ -207,7 +207,7 @@ class ScatterClient(Client):
            Which axis to reassign
         :param attribute:
            Which attribute of the data to use.
-        :type attribute: str
+        :type attribute: core.data.ComponentID or None
         :param snap:
            If True, will rescale x/y axes to fit the data
         :type snap: bool
@@ -215,7 +215,8 @@ class ScatterClient(Client):
 
         if coord not in ('x', 'y'):
             raise TypeError("coord must be one of x,y")
-        if not isinstance(attribute, ComponentID):
+        if (attribute is not None) and not isinstance(attribute, ComponentID):
+            self._set_xydata(coord, None)
             raise TypeError("attribute must be a ComponentID")
 
         #update coordinates of data and subsets
