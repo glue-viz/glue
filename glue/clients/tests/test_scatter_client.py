@@ -365,8 +365,8 @@ class TestScatterClient(object):
         self.client.ylog = True
         self.assert_logs(True, True)
 
-        self.client.xatt = data.find_component_id('b')
-        self.client.yatt = data.find_component_id('b')
+        self.client.xatt = self.ids[1]
+        self.client.yatt = self.ids[0]
         self.assert_logs(True, True)
 
     def assert_logs(self, xlog, ylog):
@@ -378,9 +378,9 @@ class TestScatterClient(object):
         data = self.add_data_and_attributes()
         self.client.xflip = True
         self.assert_flips(True, False)
-        self.client.xatt = data.find_component_id('b')
+        self.client.xatt = self.ids[1]
         self.assert_flips(True, False)
-        self.client.xatt = data.find_component_id('a')
+        self.client.xatt = self.ids[0]
         self.assert_flips(True, False)
 
     def test_visibility_sticky(self):
@@ -527,7 +527,7 @@ class TestCategoricalScatterClient(TestScatterClient):
     def test_change_axis_labels(self):
 
         self.add_data()
-        self.client._set_xydata('x', 'x1')
+        self.client.xatt = self.ids[0]
         nticks = [label.get_text() for label in self.client.axes.get_xticklabels()]
         assert nticks == ['a', 'b']
 
