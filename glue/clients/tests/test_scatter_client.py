@@ -579,10 +579,12 @@ class TestCategoricalScatterClient(TestScatterClient):
         """Too many ticks makes it harder to read data!"""
 
         data = core.Data()
-        cat_data = list('abcdefghijklmnopqrstuv')
+        cat_data = np.asarray(list('abcdefghijklmnopqrstuv'), dtype=np.object)
         data.add_component(core.Component(np.arange(len(cat_data))), 'y')
         data.add_component(core.data.CategoricalComponent(cat_data), 'xcat')
-
+        self.add_data(data=data)
+        self.client.yatt = data.find_component_id('y')
+        self.client.xatt = data.find_component_id('xcat')
         assert len(self.client.axes.get_xticklabels()) <= MAX_CATEGORIES
 
 

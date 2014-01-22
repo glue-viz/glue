@@ -321,7 +321,6 @@ class ScatterClient(Client):
 
     def _update_ticks(self, *args):
         coord = args[0]
-        print 'got', args
 
         if coord == 'x':
             if self.xcat:
@@ -366,10 +365,10 @@ class ScatterClient(Client):
             data.get_component(attribute).jitter(self.jitter)
 
         if len(categories) > MAX_CATEGORIES:
-            ticks = np.floor(np.linspace(0, len(categories), MAX_CATEGORIES))+1
+            ticks = np.floor(np.linspace(1, len(categories), MAX_CATEGORIES))
         else:
-            ticks = np.arange(len(categories))+1
-        categories = np.asarray(categories, dtype=np.object)[ticks-1]
+            ticks = np.arange(1, len(categories)+1)
+        categories = np.asarray(categories, dtype=np.object)[ticks.astype(np.int)-1]
         if coord == 'x':
             self.axes.set_xticks(ticks)
             self.axes.set_xticklabels(categories, rotation=90)
