@@ -4,7 +4,7 @@ from functools import partial
 import numpy as np
 
 from ..core.client import Client
-from ..core.data import Data
+from ..core.data import Data, IncompatibleAttribute, ComponentID
 from ..core.subset import RoiSubsetState
 from ..core.roi import PolygonalROI
 from ..core.util import relim, lookup_class
@@ -30,6 +30,7 @@ class ScatterClient(Client):
     xflip = CallbackProperty(False)
     xatt = CallbackProperty()
     yatt = CallbackProperty()
+    jitter = CallbackProperty()
 
     def __init__(self, data=None, figure=None, axes=None,
                  artist_container=None):
@@ -88,6 +89,7 @@ class ScatterClient(Client):
         add_callback(self, 'ymax', self._set_limits)
         add_callback(self, 'xatt', partial(self._set_xydata, 'x'))
         add_callback(self, 'yatt', partial(self._set_xydata, 'y'))
+        add_callback(self, 'jitter', self._update_axis_labels)
         self.axes.figure.canvas.mpl_connect('draw_event',
                                             lambda x: self._pull_properties())
 
@@ -207,7 +209,7 @@ class ScatterClient(Client):
            Which axis to reassign
         :param attribute:
            Which attribute of the data to use.
-        :type attribute: str
+        :type attribute: core.data.ComponentID
         :param snap:
            If True, will rescale x/y axes to fit the data
         :type snap: bool
@@ -215,6 +217,8 @@ class ScatterClient(Client):
 
         if coord not in ('x', 'y'):
             raise TypeError("coord must be one of x,y")
+        if not isinstance(attribute, ComponentID):
+            raise TypeError("attribute must be a ComponentID")
 
         #update coordinates of data and subsets
         if coord == 'x':
@@ -223,6 +227,7 @@ class ScatterClient(Client):
             self._xset = self.xatt is not None
         elif coord == 'y':
             new_add = not self._yset
+            self.yatt = attribute
             self._yset = self.yatt is not None
 
         #update plots
@@ -309,9 +314,31 @@ class ScatterClient(Client):
     def _redraw(self):
         self.axes.figure.canvas.draw()
 
-    def _update_axis_labels(self):
+    def _update_categorical_data(self, coord, attribute):
+        if attribute is None:
+            return
+        all_categories = set()
+        for data in self._data:
+            try:
+                all_categories |= set(data.get_component(attribute)._categories)
+            except (AttributeError, IncompatibleAttribute):
+                return
+        categories = sorted(all_categories)
+        for data in self._data:
+            data.get_component(attribute)._update_categories(categories=categories)
+            data.get_component(attribute).jitter(self.jitter)
+        if coord == 'x':
+            self.axes.set_xticks(range(1, len(categories)+1))
+            self.axes.set_xticklabels(categories, rotation=45)
+        if coord == 'y':
+            self.axes.set_yticks(range(1, len(categories)+1))
+            self.axes.set_yticklabels(categories, rotation=45)
+
+    def _update_axis_labels(self, *args):
         self.axes.set_xlabel(self.xatt)
+        self._update_categorical_data('x', self.xatt)
         self.axes.set_ylabel(self.yatt)
+        self._update_categorical_data('y', self.yatt)
 
     def _add_subset(self, message):
         subset = message.sender
