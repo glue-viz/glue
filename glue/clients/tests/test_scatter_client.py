@@ -539,3 +539,18 @@ class TestCategoricalScatterClient(TestScatterClient):
         assert self.client.axes.get_ylabel() == self.ids[1].label
         nticks = [label.get_text() for label in self.client.axes.get_xticklabels()]
         assert nticks == ['a', 'b']
+
+    def test_jitter_with_setter_change(self):
+
+        grab_data = lambda client: client.data[0][client.xatt].copy()
+        layer = self.add_data()
+        self.client.xatt = self.ids[0]
+        self.client.yatt = self.ids[1]
+        orig_data = grab_data(self.client)
+        self.client.jitter = None
+        assert np.all(orig_data == grab_data(self.client))
+        self.client.jitter = 'uniform'
+        delta = np.abs(orig_data - grab_data(self.client))
+        assert np.all((delta > 0) & (delta < 1))
+        self.client.jitter = None
+        assert np.all(orig_data == grab_data(self.client))

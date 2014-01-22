@@ -30,6 +30,7 @@ class ScatterClient(Client):
     xflip = CallbackProperty(False)
     xatt = CallbackProperty()
     yatt = CallbackProperty()
+    jitter = CallbackProperty()
 
     def __init__(self, data=None, figure=None, axes=None,
                  artist_container=None):
@@ -88,6 +89,7 @@ class ScatterClient(Client):
         add_callback(self, 'ymax', self._set_limits)
         add_callback(self, 'xatt', partial(self._set_xydata, 'x'))
         add_callback(self, 'yatt', partial(self._set_xydata, 'y'))
+        add_callback(self, 'jitter', self._update_axis_labels)
         self.axes.figure.canvas.mpl_connect('draw_event',
                                             lambda x: self._pull_properties())
 
@@ -331,6 +333,7 @@ class ScatterClient(Client):
         for comp_id, data in zip(comps, self._data):
             if comp_id:
                 data.get_component(comp_id)._update_categories(categories=categories)
+                data.get_component(comp_id).jitter(self.jitter)
         if coord == 'x':
             self.axes.set_xticks(range(1, len(categories)+1))
             self.axes.set_xticklabels(categories, rotation=45)
@@ -338,7 +341,7 @@ class ScatterClient(Client):
             self.axes.set_yticks(range(1, len(categories)+1))
             self.axes.set_yticklabels(categories, rotation=45)
 
-    def _update_axis_labels(self):
+    def _update_axis_labels(self, *args):
         self.axes.set_xlabel(self.xatt)
         self._update_categorical_data('x', self.xatt)
         self.axes.set_ylabel(self.yatt)
