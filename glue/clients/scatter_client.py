@@ -4,7 +4,7 @@ from functools import partial
 import numpy as np
 
 from ..core.client import Client
-from ..core.data import Data
+from ..core.data import Data, ComponentID
 from ..core.subset import RoiSubsetState
 from ..core.roi import PolygonalROI
 from ..core.util import relim, lookup_class
@@ -215,6 +215,8 @@ class ScatterClient(Client):
 
         if coord not in ('x', 'y'):
             raise TypeError("coord must be one of x,y")
+        if not isinstance(attribute, ComponentID):
+            raise TypeError("attribute must be a ComponentID")
 
         #update coordinates of data and subsets
         if coord == 'x':
