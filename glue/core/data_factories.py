@@ -30,6 +30,7 @@ Putting this together, the simplest data factory code looks like this:
 import os
 
 import numpy as np
+import pandas as pd
 
 from .data import Component, Data, CategoricalComponent
 from .tree import DendroMerge
@@ -326,6 +327,60 @@ set_default_factory('txt', tabular_data)
 set_default_factory('tsv', tabular_data)
 set_default_factory('tbl', tabular_data)
 set_default_factory('dat', tabular_data)
+
+
+def panda_process(indf):
+    """
+    Build a data set from a table using pandas. This attempts to respect
+    categorical data input by letting pandas.read_csv infer the type
+
+    """
+
+    result = Data()
+    #indf = pd.read_csv(path, **kwargs)
+    for name, column in indf.iteritems():
+        if column.dtype == np.object:
+            c = CategoricalComponent(column.values)
+        else:
+            c = Component(column.values)
+        result.add_component(c, name)
+
+    return result
+
+
+def panda_read_excel(path, sheet='Sheet1', **kwargs):
+    """ A factory for reading excel data using pandas.
+    :param path: path/to/file
+    :param sheet: The sheet to read
+    :param kwargs: All other kwargs are passed to pandas.read_excel
+    :return: core.data.Data object.
+    """
+
+    indf = pd.read_excel(path, sheet, **kwargs)
+    return panda_process(indf)
+
+panda_read_excel.label = "Excel"
+panda_read_excel.identifier = has_extension('xls xlsx')
+__factories__.append(panda_read_excel)
+set_default_factory('xls', panda_read_excel)
+set_default_factory('xlsx', panda_read_excel)
+
+
+def pandas_read_csv(path, **kwargs):
+    """ A factory for reading tabular data using pandas
+    :param path: path/to/file
+    :param kwargs: All kwargs are passed to pandas.read_csv
+    :return: core.data.Data object
+    """
+
+    indf = pd.read_csv(path, **kwargs)
+    return panda_process(indf)
+
+pandas_read_csv.label = "Panda-Table"
+pandas_read_csv.identifier = has_extension('csv')
+__factories__.append(panda_read_excel)
+__factories__.append(pandas_read_csv)
+
 
 
 def data_dendro_cpp(file):
