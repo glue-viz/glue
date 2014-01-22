@@ -579,13 +579,35 @@ class TestCategoricalScatterClient(TestScatterClient):
         """Too many ticks makes it harder to read data!"""
 
         data = core.Data()
-        cat_data = np.asarray(list('abcdefghijklmnopqrstuv'), dtype=np.object)
+        cat_data = list('abcdefghijklmnopqrstuv')
         data.add_component(core.Component(np.arange(len(cat_data))), 'y')
         data.add_component(core.data.CategoricalComponent(cat_data), 'xcat')
         self.add_data(data=data)
         self.client.yatt = data.find_component_id('y')
         self.client.xatt = data.find_component_id('xcat')
         assert len(self.client.axes.get_xticklabels()) <= MAX_CATEGORIES
+
+    def test_re_ticking(self):
+
+        data = core.Data()
+        alpha_data = list('abcdefghi')
+        numer_data = list('012345678')
+        data.add_component(core.Component(np.arange(len(alpha_data))), 'y')
+        data.add_component(core.data.CategoricalComponent(alpha_data), 'xalpha')
+        data.add_component(core.data.CategoricalComponent(numer_data), 'xnumer')
+
+        self.add_data(data=data)
+        self.client.yatt = data.find_component_id('y')
+        self.client.xatt = data.find_component_id('xalpha')
+        nticks = [label.get_text() for label in self.client.axes.get_xticklabels()]
+        assert nticks == alpha_data
+
+        self.client.xatt = data.find_component_id('xnumer')
+        nticks = [label.get_text() for label in self.client.axes.get_xticklabels()]
+        assert nticks == numer_data
+
+
+
 
 
 
