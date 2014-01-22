@@ -4,7 +4,7 @@ from functools import partial
 import numpy as np
 
 from ..core.client import Client
-from ..core.data import Data
+from ..core.data import Data, IncompatibleAttribute
 from ..core.subset import RoiSubsetState
 from ..core.roi import PolygonalROI
 from ..core.util import relim, lookup_class
@@ -215,6 +215,9 @@ class ScatterClient(Client):
 
         if coord not in ('x', 'y'):
             raise TypeError("coord must be one of x,y")
+        if hasattr(attribute, '_label'):
+            #temporary fix for issue #214
+            attribute = attribute._label
 
         #update coordinates of data and subsets
         if coord == 'x':
@@ -223,6 +226,7 @@ class ScatterClient(Client):
             self._xset = self.xatt is not None
         elif coord == 'y':
             new_add = not self._yset
+            self.yatt = attribute
             self._yset = self.yatt is not None
 
         #update plots
@@ -309,9 +313,36 @@ class ScatterClient(Client):
     def _redraw(self):
         self.axes.figure.canvas.draw()
 
+    def _update_categorical_data(self, coord, attribute):
+        if attribute is None:
+            return
+        all_categories = set()
+        comps = []
+        for data in self._data:
+            comp_id = data.find_component_id(attribute)
+            comps.append(comp_id)
+            if comp_id is None:
+                continue
+            try:
+                all_categories |= set(data.get_component(comp_id)._categories)
+            except AttributeError:
+                return
+        categories = sorted(all_categories)
+        for comp_id, data in zip(comps, self._data):
+            if comp_id:
+                data.get_component(comp_id)._update_categories(categories=categories)
+        if coord == 'x':
+            self.axes.set_xticks(range(1, len(categories)+1))
+            self.axes.set_xticklabels(categories, rotation=45)
+        if coord == 'y':
+            self.axes.set_yticks(range(1, len(categories)+1))
+            self.axes.set_yticklabels(categories, rotation=45)
+
     def _update_axis_labels(self):
         self.axes.set_xlabel(self.xatt)
+        self._update_categorical_data('x', self.xatt)
         self.axes.set_ylabel(self.yatt)
+        self._update_categorical_data('y', self.yatt)
 
     def _add_subset(self, message):
         subset = message.sender
