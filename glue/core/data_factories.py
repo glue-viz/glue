@@ -378,7 +378,6 @@ def pandas_read_csv(path, **kwargs):
 
 pandas_read_csv.label = "Panda-Table"
 pandas_read_csv.identifier = has_extension('csv')
-__factories__.append(panda_read_excel)
 __factories__.append(pandas_read_csv)
 
 
