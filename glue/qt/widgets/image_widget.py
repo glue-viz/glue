@@ -1,7 +1,6 @@
-from functools import partial
-
 from ...external.qt.QtGui import (QWidget, QAction,
                                   QToolButton, QIcon, QMessageBox)
+
 from ...external.qt.QtCore import Qt
 
 import matplotlib.cm as cm
@@ -11,6 +10,7 @@ from ... import core
 from ... import config
 
 from ...clients.image_client import ImageClient
+from .data_slice_widget import DataSlice
 
 from ..mouse_mode import (RectangleMode, CircleMode, PolyMode,
                           ContrastMode, ContourMode)
@@ -33,6 +33,8 @@ class ImageWidget(DataViewer):
         self.option_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.ui = load_ui('imagewidget', self.option_widget)
+        self.ui.slice = DataSlice()
+        self.ui.slice_layout.addWidget(self.ui.slice)
         self.client = ImageClient(self._data,
                                   self.central_widget.canvas.fig,
                                   artist_container=self._container)
@@ -43,7 +45,6 @@ class ImageWidget(DataViewer):
         self._connect()
         self._init_widgets()
         self.set_data(0)
-        self.set_orientation(0)
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
 
@@ -104,9 +105,7 @@ class ImageWidget(DataViewer):
         return [rect, circ, poly, contour, contrast]
 
     def _init_widgets(self):
-        self.ui.imageSlider.hide()
-        self.ui.sliceComboBox.hide()
-        self.ui.sliceComboBox.addItems(["xy", "xz", "yz"])
+        pass
 
     def add_data(self, data):
         """Private method to ingest new data into widget"""
@@ -156,18 +155,11 @@ class ImageWidget(DataViewer):
             return
 
         data = self.ui.displayDataCombo.itemData(index)
+        self.ui.slice.set_data(data)
         self.client.set_data(data)
+        self.client.slice = self.ui.slice.slice
         self.ui.displayDataCombo.setCurrentIndex(index)
         self.set_attribute_combo(data)
-        if not self.client.is_3D:
-            self.ui.imageSlider.hide()
-            self.ui.sliceComboBox.hide()
-            self.ui.orientationLabel.hide()
-        else:
-            self.ui.imageSlider.show()
-            self.ui.sliceComboBox.show()
-            self.ui.orientationLabel.show()
-        self.set_slider_range()
         self._update_window_title()
 
     def set_attribute(self, index):
@@ -192,34 +184,20 @@ class ImageWidget(DataViewer):
         combo.setCurrentIndex(index)
         self.set_attribute(index)
 
-    def set_slider(self, index):
-        self.client.slice_ind = index
-        self.ui.imageSlider.setValue(index)
-
-    def set_orientation(self, ori):
-        # ignore for 2D data (sometimes gets triggered when widgets
-        # switch state)
-        if not self.client.is_3D:
-            return
-        self.client.set_slice_ori(ori)
-        self.ui.sliceComboBox.setCurrentIndex(ori)
-        self.set_slider_range()
-
-    def set_slider_range(self):
-        self.ui.imageSlider.setRange(*self.client.slice_bounds())
-
     def _connect(self):
         ui = self.ui
 
         ui.displayDataCombo.currentIndexChanged.connect(self.set_data)
         ui.attributeComboBox.currentIndexChanged.connect(self.set_attribute)
-        ui.sliceComboBox.currentIndexChanged.connect(self.set_orientation)
-        ui.imageSlider.sliderMoved.connect(self.set_slider)
 
         ui.monochrome.toggled.connect(self._update_rgb_console)
         ui.rgb_options.colors_changed.connect(self._update_window_title)
         ui.rgb_options.current_changed.connect(
             lambda: self._toolbars[0].set_mode(self._contrast))
+        ui.slice.slice_changed.connect(self._update_slice)
+
+    def _update_slice(self):
+        self.client.slice = self.ui.slice.slice
 
     def _update_rgb_console(self, is_monochrome):
         if is_monochrome:

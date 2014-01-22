@@ -8,8 +8,14 @@ from ...external.qt.QtCore import Signal, Qt
 # Qt4Agg backend. It also inherits from QWidget
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as \
     FigureCanvas
-from matplotlib.backends.backend_qt4agg import FigureManagerQTAgg as \
-    FigureManager
+
+try:
+    from matplotlib.backends.backend_qt4agg import FigureManagerQTAgg as \
+        FigureManager
+except ImportError:  # mpl >= 0.4
+    from matplotlib.backends.backend_qt4agg import FigureManagerQT as \
+        FigureManager
+
 import matplotlib
 
 # Matplotlib Figure object
@@ -17,9 +23,10 @@ from matplotlib.figure import Figure
 
 
 class MplCanvas(FigureCanvas):
+
     """Class to represent the FigureCanvas widget"""
 
-    #signals
+    # signals
     rightDrag = Signal(float, float)
     leftDrag = Signal(float, float)
 
@@ -49,7 +56,7 @@ class MplCanvas(FigureCanvas):
         matplotlib.interactive(interactive)
 
     def paintEvent(self, event):
-        #draw the zoom rectangle more prominently
+        # draw the zoom rectangle more prominently
         drawRect = self.drawRect
         self.drawRect = False
         super(MplCanvas, self).paintEvent(event)
@@ -61,9 +68,10 @@ class MplCanvas(FigureCanvas):
 
 
 class MplWidget(QtGui.QWidget):
+
     """Widget defined in Qt Designer"""
 
-    #signals
+    # signals
     rightDrag = Signal(float, float)
     leftDrag = Signal(float, float)
 

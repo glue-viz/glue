@@ -391,7 +391,7 @@ class GlueApplication(Application, QMainWindow):
 
         if data and data.ndim == 1 and ScatterWidget in qt_client.members:
             default = qt_client.members.index(ScatterWidget)
-        elif data and data.ndim in [2, 3] and ImageWidget in qt_client.members:
+        elif data and data.ndim > 1 and ImageWidget in qt_client.members:
             default = qt_client.members.index(ImageWidget)
         else:
             default = 0

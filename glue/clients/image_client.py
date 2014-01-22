@@ -1,4 +1,5 @@
 import logging
+from functools import wraps
 
 import numpy as np
 
@@ -19,6 +20,7 @@ from .layer_artist import (ScatterLayerArtist, LayerArtistContainer,
 def requires_data(func):
     """Decorator that checks an ImageClient for a non-null display_data
     attribute. Only executes decorated function if present"""
+    @wraps(func)
     def result(*args, **kwargs):
         if args[0].display_data is None:
             return
@@ -40,8 +42,7 @@ class ImageClient(VizClient):
 
         self.display_data = None
         self.display_attribute = None
-        self._slice_ori = 0
-        self._slice_ind = 0
+        self._slice = None
         self._view_window = None
         self._view = None
         self._image = None
@@ -56,19 +57,55 @@ class ImageClient(VizClient):
         fc = self._ax.format_coord
 
         def format_coord(x, y):
-            if self.display_data is None:
+            data = self.display_data
+            if data is None:
                 return fc(x, y)
             pix = self._pixel_coords(x, y)
-            world = self.display_data.coords.pixel2world(*pix)
+            world = data.coords.pixel2world(*pix[::-1])
             world = world[::-1]   # reverse for numpy convention
-            ind = _slice_axis(self.display_data.shape, self._slice_ori)
-            labels = _slice_labels(self.display_data, self._slice_ori)
-            return '%s=%s          %s=%s' % (labels[1], world[ind[1]],
-                                             labels[0], world[ind[0]])
+            labels = ['%s=%s' % (data.get_world_component_id(i).label, w)
+                      for i, w in enumerate(world)]
+            return '         '.join(labels)
+
         self._ax.format_coord = format_coord
 
         self._cid = self._ax.figure.canvas.mpl_connect('button_release_event',
                                                        self.check_update)
+
+    @property
+    def slice(self):
+        """
+        Returns a tuple describing the current slice through the data
+
+        The tuple has length equal to the dimensionality of the display
+        data. Each entry is either:
+
+        'x' if the dimension is mapped to the X image axis
+        'y' if the dimension is mapped to the Y image axis
+        a number, indicating which fixed slice the dimension is restricted to
+        """
+        if self._slice is not None:
+            return self._slice
+
+        if self.display_data is None:
+            return tuple()
+        ndim = self.display_data.ndim
+        if ndim == 1:
+            self._slice = ('x',)
+        elif ndim == 2:
+            self._slice = ('y', 'x')
+        else:
+            self._slice = (0,) * (ndim - 2) + ('y', 'x')
+
+        return self._slice
+
+    @slice.setter
+    def slice(self, value):
+        self._slice = value
+        self._update_axis_labels()
+        self._update_data_plot(relim=True)
+        self._update_subset_plots()
+        self._redraw()
 
     @property
     def axes(self):
@@ -76,14 +113,22 @@ class ImageClient(VizClient):
 
     @property
     def is_3D(self):
+        """
+        Returns True if the display data has 3 dimensions """
         if not self.display_data:
             return False
         return len(self.display_data.shape) == 3
 
     @property
     def slice_ind(self):
+        """
+        For 3D data, returns the pixel index of the current slice.
+        Otherwise, returns None
+        """
         if self.is_3D:
-            return self._slice_ind
+            for s in self.slice:
+                if s not in ['x', 'y']:
+                    return s
         return None
 
     @property
@@ -93,15 +138,16 @@ class ImageClient(VizClient):
     @slice_ind.setter
     def slice_ind(self, value):
         if self.is_3D:
-            self._slice_ind = value
+            slc = [s if s in ['x', 'y'] else value for s in self.slice]
+            self.slice = slc
             self._update_data_plot()
             self._update_subset_plots()
             self._redraw()
         else:
-            raise IndexError("Cannot set slice for 2D image")
+            raise IndexError("Can only set slice_ind for 3D images")
 
     def can_image_data(self, data):
-        return data.ndim in [2, 3]
+        return data.ndim > 1
 
     def _ensure_data_present(self, data):
         if data not in self.artists:
@@ -122,6 +168,7 @@ class ImageClient(VizClient):
             return
 
         self._ensure_data_present(data)
+        self._slice = None
 
         attribute = attribute or _default_component(data)
 
@@ -132,35 +179,10 @@ class ImageClient(VizClient):
         self._update_subset_plots()
         self._redraw()
 
-    def slice_bounds(self):
-        if not self.is_3D:
-            return (0, 0)
-        if self._slice_ori == 2:
-            return (0, self.display_data.shape[2] - 1)
-        if self._slice_ori == 1:
-            return (0, self.display_data.shape[1] - 1)
-        if self._slice_ori == 0:
-            return (0, self.display_data.shape[0] - 1)
-
-    def set_slice_ori(self, ori):
-        if not self.is_3D:
-            raise IndexError("Cannot set orientation of 2D image")
-        if ori not in [0, 1, 2]:
-            raise TypeError("Orientation must be 0, 1, or 2")
-        self._slice_ori = ori
-        self.slice_ind = min(self.slice_ind, self.slice_bounds()[1])
-        self.slice_ind = max(self.slice_ind, self.slice_bounds()[0])
-        self._update_axis_labels()
-
-        self._update_data_plot(relim=True)
-        self._update_subset_plots()
-
-        self._redraw()
-
     @requires_data
     def _update_axis_labels(self):
         ori = self._slice_ori
-        labels = _slice_labels(self.display_data, ori)
+        labels = _axis_labels(self.display_data, self.slice)
         self._ax.set_xlabel(labels[1])
         self._ax.set_ylabel(labels[0])
 
@@ -214,21 +236,17 @@ class ImageClient(VizClient):
     def _build_view(self, matched=False):
         att = self.display_attribute
         shp = self.display_data.shape
-        shp_2d = _2d_shape(shp, self._slice_ori)
+        shp_2d = _2d_shape(shp, self.slice)
         x, y = np.s_[:], np.s_[:]
         if matched:
             v = extract_matched_slices(self._ax, shp_2d)
             x = slice(v[0], v[1], v[2])
             y = slice(v[3], v[4], v[5])
 
-        if not self.is_3D:
-            return (att, y, x)
-        if self._slice_ori == 0:
-            return (att, self.slice_ind, y, x)
-        if self._slice_ori == 1:
-            return (att, y, self.slice_ind, x)
-        assert self._slice_ori == 2
-        return (att, y, x, self.slice_ind)
+        slc = list(self.slice)
+        slc[slc.index('x')] = x
+        slc[slc.index('y')] = y
+        return (att,) + tuple(slc)
 
     @requires_data
     def _update_data_plot(self, relim=False):
@@ -241,6 +259,7 @@ class ImageClient(VizClient):
 
         view = self._build_view(matched=True)
         self._image = self.display_data[view]
+        transpose = self.slice.index('x') < self.slice.index('y')
 
         self._view = view
         for a in list(self.artists):
@@ -248,12 +267,12 @@ class ImageClient(VizClient):
                     a.layer.data is not self.display_data:
                 self.artists.remove(a)
             else:
-                a.update(view)
+                a.update(view, transpose)
         for a in self.artists[self.display_data]:
-            a.update(view)
+            a.update(view, transpose=transpose)
 
     def relim(self):
-        shp = _2d_shape(self.display_data.shape, self._slice_ori)
+        shp = _2d_shape(self.display_data.shape, self.slice)
         self._ax.set_xlim(0, shp[1])
         self._ax.set_ylim(0, shp[0])
 
@@ -278,42 +297,32 @@ class ImageClient(VizClient):
             return
 
         view = self._build_view(matched=True)
+        transpose = self.slice.index('x') < self.slice.index('y')
         for a in self.artists[s]:
-            a.update(view)
+            a.update(view, transpose)
 
         if redraw:
             self._redraw()
+
+    @property
+    def _slice_ori(self):
+        if not self.is_3D:
+            return None
+        for i, s in enumerate(self.slice):
+            if s not in ['x', 'y']:
+                return i
 
     @requires_data
     def apply_roi(self, roi):
 
         subset_state = RoiSubsetState()
         xroi, yroi = roi.to_polygon()
-        x, y = self._get_axis_components()
+        x, y = self._get_plot_attributes()
         subset_state.xatt = x
         subset_state.yatt = y
         subset_state.roi = PolygonalROI(xroi, yroi)
         mode = EditSubsetMode()
         mode.update(self.data, subset_state, focus_data=self.display_data)
-
-    def _horizontal_axis_index(self):
-        """Which index (in numpy convention - zyx) does the horizontal
-        axis coorespond to?"""
-        if not self.is_3D or self._slice_ori == 2:
-            return 1
-        return 2
-
-    def _vertical_axis_index(self):
-        """Which index (in numpy convention - zyx) does the vertical
-        axis coorespond to?"""
-        if self.is_3D and self._slice_ori == 0:
-            return 1
-        return 0
-
-    def _get_axis_components(self):
-        data = self.display_data
-        ids = [self._horizontal_axis_index(), self._vertical_axis_index()]
-        return map(data.get_pixel_component_id, ids)
 
     def _remove_subset(self, message):
         self.delete_layer(message.sender)
@@ -355,7 +364,7 @@ class ImageClient(VizClient):
           If RGB mode is enabled, returns an RGBImageLayerArtist
           If enable=False, return the new ImageLayerArtist
         """
-        #XXX need to better handle case where two RGBImageLayerArtists
+        # XXX need to better handle case where two RGBImageLayerArtists
         #    are created
 
         if enable is None:
@@ -439,7 +448,7 @@ class ImageClient(VizClient):
                 zatt = self.display_data.get_pixel_component_id(
                     self._slice_ori)
                 subset = (
-                    zatt > self._slice_ind) & (zatt <= self._slice_ind + 1)
+                    zatt > self.slice_ind) & (zatt <= self.slice_ind + 1)
                 a.emphasis = subset
             else:
                 a.emphasis = None
@@ -449,30 +458,26 @@ class ImageClient(VizClient):
 
     @requires_data
     def _get_plot_attributes(self):
-        y, x = _slice_axis(self.display_data.shape, self._slice_ori)
+        x, y = _slice_axis(self.display_data.shape, self.slice)
         ids = self.display_data.pixel_component_ids
         return ids[x], ids[y]
 
     def _pixel_coords(self, x, y):
         """From a slice coordinate (x,y), return the full (possibly
-        3D) location
+        >2D) numpy index into the full data
 
         *Note*
-        The order of inputs and outputs from this function are reverse
-        the numpy convention (i.e. x axis specified first, not last)
+        The inputs to this function are the reverse of numpy convention
+        (horizontal axis first, then vertical)
+
 
         *Returns*
         Either (x,y) or (x,y,z)
         """
-        if not self.is_3D:
-            return x, y
-        if self._slice_ori == 0:
-            return x, y, self.slice_ind
-        elif self._slice_ori == 1:
-            return x, self.slice_ind, y
-        else:
-            assert self._slice_ori == 2
-            return self.slice_ind, x, y
+        result = list(self.slice)
+        result[result.index('x')] = x
+        result[result.index('y')] = y
+        return result
 
     def is_visible(self, layer):
         return all(a.visible for a in self.artists[layer])
@@ -480,6 +485,18 @@ class ImageClient(VizClient):
     def set_visible(self, layer, state):
         for a in self.artists[layer]:
             a.visible = state
+
+    def set_slice_ori(self, ori):
+        if not self.is_3D:
+            raise IndexError("Can only set slice_ori for 3D images")
+        if ori == 0:
+            self.slice = (0, 'y', 'x')
+        elif ori == 1:
+            self.slice = ('y', 0, 'x')
+        elif ori == 2:
+            self.slice = ('y', 'x', 0)
+        else:
+            raise ValueError("Orientation must be 0, 1, or 2")
 
     def restore_layers(self, layers, context):
         """ Restore a list of glue-serialized layer dicts """
@@ -509,44 +526,29 @@ class ImageClient(VizClient):
             l.properties = props
 
 
-def _2d_shape(shape, slice_ori):
-    """Return the shape of the 2D slice through a 2 or 3D image"""
-    if len(shape) == 2:
-        return shape
-    if slice_ori == 0:
-        return shape[1:]
-    if slice_ori == 1:
-        return shape[0], shape[2]
-    assert slice_ori == 2
-    return shape[0:2]
+def _2d_shape(shape, slc):
+    """Return the shape of the 2D slice through a 2 or 3D image
+    """
+    # - numpy ordering here
+    return shape[slc.index('y')], shape[slc.index('x')]
 
 
-def _slice_axis(shape, slice_ori):
-    """Return a 2-tuple of the axis indices for the given
-    image and slice orientation"""
-    if len(shape) == 2:
-        return 0, 1
-    if slice_ori == 0:
-        return 1, 2
-    if slice_ori == 1:
-        return 0, 2
-    assert slice_ori == 2
-    return 0, 1
+def _slice_axis(shape, slc):
+    """
+    Return a 2-tuple of which axes in a dataset lie along the
+    x and y axes of the image
+
+    :param shape: Shape of original data. tuple of ints
+    :param slc: Slice through the data, tuple of ints, 'x', and 'y'
+    """
+    return slc.index('x'), slc.index('y')
 
 
-def _slice_labels(data, slice_ori):
+def _axis_labels(data, slc):
     shape = data.shape
     names = [data.get_world_component_id(i).label
              for i in range(len(shape))]
-    names = [n.split(':')[-1].split('-')[0] for n in names]
-    if len(shape) == 2:
-        return names[0], names[1]
-    if slice_ori == 0:
-        return names[1], names[2]
-    if slice_ori == 1:
-        return names[0], names[2]
-    assert slice_ori == 2
-    return names[0], names[1]
+    return names[slc.index('y')], names[slc.index('x')]
 
 
 def _view_window(ax):
