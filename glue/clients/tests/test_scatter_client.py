@@ -3,6 +3,7 @@ import pytest
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import AutoLocator, IndexLocator, LogLocator
 from mock import MagicMock
 
 from ...tests import example_data
@@ -37,6 +38,7 @@ class TestScatterClient(object):
 
     def teardown_method(self, methdod):
         self.assert_properties_correct()
+        self.assert_axes_ticks_correct()
 
     def assert_properties_correct(self):
         ax = self.client.axes
@@ -51,6 +53,24 @@ class TestScatterClient(object):
         assert cl.yflip == (ylim[1] < ylim[0])
         assert cl.xlog == (ax.get_xscale() == 'log')
         assert cl.ylog == (ax.get_yscale() == 'log')
+
+    def assert_axes_ticks_correct(self):
+        ax = self.client.axes
+        client = self.client
+        xlocator = ax.xaxis.get_major_locator()
+        ylocator = ax.yaxis.get_major_locator()
+        if client.xlog:
+            assert isinstance(xlocator, LogLocator)
+        elif client._xcat:
+            assert isinstance(xlocator, IndexLocator)
+        else:
+            assert isinstance(xlocator, AutoLocator)
+        if client.ylog:
+            assert isinstance(ylocator, LogLocator)
+        elif client._ycat:
+            assert isinstance(ylocator, IndexLocator)
+        else:
+            assert isinstance(ylocator, AutoLocator)
 
     def plot_data(self, layer):
         """ Return the data bounds for a given layer (data or subset)
