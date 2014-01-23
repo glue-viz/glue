@@ -247,6 +247,7 @@ class ScatterClient(Client):
         else:
             if coord == 'x':
                 self._xcat = None
+                print 'nulled out xcat'
             else:
                 self._ycat = None
 
@@ -370,7 +371,7 @@ class ScatterClient(Client):
             format_func = partial(self._get_category_tick, coord)
             axis.set_major_formatter(FuncFormatter(format_func))
         else:
-            axis.set_major_formatter(AutoLocator())
+            axis.set_major_locator(AutoLocator())
             axis.set_major_formatter(ScalarFormatter())
 
     def _jitter(self, *args):

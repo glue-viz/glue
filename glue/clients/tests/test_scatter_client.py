@@ -619,6 +619,7 @@ class TestCategoricalScatterClient(TestScatterClient):
         self.check_ticks(self.client.axes.yaxis, False, False)
 
         self.client.xatt = data.find_component_id('xcont')
+        self.check_ticks(self.client.axes.yaxis, False, False)
         self.check_ticks(self.client.axes.xaxis, False, False)
 
     #REMOVED TESTS
