@@ -321,9 +321,13 @@ class CategoricalComponent(Component):
         self.jitter(method=self._jitter_method)
 
     def jitter(self, method=None):
-        """
-        :param method: Currently only supports None
-        :return:
+        """ Jitter the data so the density of points can be easily seen in a
+        scatter plot.
+        :param method: Currently only supports None and 'uniform'
+            None: No jittering is done (or any jittering is undone).
+            uniform: A unformly distributed random variable (-0.5, 0.5) is
+                     applied to each point.
+        :return: None
         """
         self._jitter_method = method
         seed = 1234567890
