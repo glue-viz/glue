@@ -30,7 +30,6 @@ Putting this together, the simplest data factory code looks like this:
 import os
 
 import numpy as np
-import pandas as pd
 
 from .data import Component, Data, CategoricalComponent
 from .tree import DendroMerge
@@ -393,6 +392,10 @@ def panda_read_excel(path, sheet='Sheet1', **kwargs):
     :param kwargs: All other kwargs are passed to pandas.read_excel
     :return: core.data.Data object.
     """
+    try:
+        import pandas as pd
+    except ImportError:
+        raise ImportError('Pandas is required for Excel input.')
 
     indf = pd.read_excel(path, sheet, **kwargs)
     return panda_process(indf)
@@ -410,6 +413,7 @@ def pandas_read_csv(path, **kwargs):
     :param kwargs: All kwargs are passed to pandas.read_csv
     :return: core.data.Data object
     """
+    import pandas as pd
 
     indf = pd.read_csv(path, **kwargs)
     return panda_process(indf)
