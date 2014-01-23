@@ -100,10 +100,17 @@ class ScatterClient(Client):
                                             lambda x: self._pull_properties())
 
     def _set_limits(self, *args):
-        xlim = min(self.xmin, self.xmax), max(self.xmin, self.xmax)
+
+        if self._xcat is not None:
+            xlim = -0.5, len(self._xcat)+0.5
+        else:
+            xlim = min(self.xmin, self.xmax), max(self.xmin, self.xmax)
         if self.xflip:
             xlim = xlim[::-1]
-        ylim = min(self.ymin, self.ymax), max(self.ymin, self.ymax)
+        if self._ycat is not None:
+            ylim = -0.5, len(self._ycat)+0.5
+        else:
+            ylim = min(self.ymin, self.ymax), max(self.ymin, self.ymax)
         if self.yflip:
             ylim = ylim[::-1]
 
@@ -231,14 +238,17 @@ class ScatterClient(Client):
             new_add = not self._xset
             self.xatt = attribute
             self._xset = self.xatt is not None
-            if self._check_categorical(attribute):
-                self._update_categorical_data('x')
         elif coord == 'y':
             new_add = not self._yset
             self.yatt = attribute
             self._yset = self.yatt is not None
-            if self._check_categorical(attribute):
-                self._update_categorical_data('y')
+        if self._check_categorical(attribute):
+            self._update_categorical_data(coord)
+        else:
+            if coord == 'x':
+                self._xcat = None
+            else:
+                self._ycat = None
 
         #update plots
         map(self._update_layer, self.artists.layers)
@@ -330,14 +340,15 @@ class ScatterClient(Client):
          :return: tick-label
         """
         int_pos = int(position)
-        if int_pos != position:
-            raise TypeError('position must be an integer!')
-        if coord == 'x':
-            return self._xcat[int_pos]
-        elif coord == 'y':
-            return self._ycat[int_pos]
-        else:
-            raise TypeError("coord must be one of x,y")
+        try:
+            if coord == 'x':
+                return self._xcat[int_pos]
+            elif coord == 'y':
+                return self._ycat[int_pos]
+            else:
+                raise TypeError("coord must be one of x,y")
+        except IndexError:
+            return ''
 
     def _update_ticks(self, coord, *args):
         if coord == 'x':
@@ -354,7 +365,7 @@ class ScatterClient(Client):
         if is_log:
             axis.set_major_locator(LogLocator())
             axis.set_major_formatter(LogFormatterMathtext())
-        elif cats:
+        elif cats is not None:
             axis.set_major_locator(MaxNLocator(MAX_CATEGORIES, integer=True))
             format_func = partial(self._get_category_tick, coord)
             axis.set_major_formatter(FuncFormatter(format_func))
@@ -381,10 +392,8 @@ class ScatterClient(Client):
         """
         if coord == 'x':
             attribute = self.xatt
-            client_catergoires = self._xcat
         elif coord == 'y':
             attribute = self.yatt
-            client_catergoires = self._ycat
         else:
             raise TypeError("coord must be one of x,y")
 
@@ -396,9 +405,20 @@ class ScatterClient(Client):
                 all_categories |= set(data.get_component(attribute)._categories)
             except IncompatibleAttribute:
                 return
-        client_catergoires = np.asarray(sorted(all_categories), dtype=np.object)
+        all_categories = np.asarray(sorted(all_categories), dtype=np.object)
+
         for data in self._data:
-            data.get_component(attribute)._update_categories(categories=client_catergoires)
+            data.get_component(attribute)._update_categories(categories=all_categories)
+
+        with delay_callback(self, 'xmin', 'xmax', 'ymin', 'ymax'):
+            if coord == 'x':
+                self._xcat = all_categories
+                self.xmin = -0.5
+                self.xmax = len(all_categories)+0.5
+            else:
+                self._ycat = all_categories
+                self.ymin = -0.5
+                self.ymax = len(all_categories)+0.5
 
     def _update_axis_labels(self, *args):
         self.axes.set_xlabel(self.xatt)
