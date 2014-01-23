@@ -12,7 +12,7 @@ from .component_link import (ComponentLink, CoordinateComponentLink,
 from .subset import Subset, InequalitySubsetState, SubsetState
 from .hub import Hub
 from .tree import Tree
-from .util import split_component_view, view_shape
+from .util import split_component_view, view_shape, check_sorted
 from .message import (DataUpdateMessage,
                       DataAddComponentMessage,
                       SubsetCreateMessage, ComponentsChangedMessage)
@@ -283,21 +283,31 @@ class CategoricalComponent(Component):
             self._update_data()
 
     def _update_categories(self, categories=None):
+        """
+        :param categories: A sorted array of categories to find in the dataset.
+        If None the categories are the unique items in the data.
+        :return: None
+        """
         if categories is None:
             categories, inv = np.unique(self._categorical_data, return_inverse=True)
             self._categories = categories
             self._data = inv.astype(np.float)
             self.jitter(method=self._jitter_method)
         else:
-            self._categories = categories
-            self._update_data()
+            if check_sorted(categories):
+                self._categories = categories
+                self._update_data()
+            else:
+                raise ValueError("Provided categories must be Sorted")
 
     def _update_data(self):
+        """ Converts the categorical data into the numeric representations
+        given self._categories
+        """
         self._is_jittered = False
-        self._data = np.nan*np.zeros(self._categorical_data.shape)
-        for num, category in enumerate(self._categories):
-            self._data[self._categorical_data == category] = num
-
+        self._data = np.searchsorted(self._categorical_data,
+                                     self._categories).astype(float)
+        self._data[self._data == len(self._categories)] = np.nan
         self.jitter(method=self._jitter_method)
 
     def jitter(self, method=None):
@@ -306,7 +316,7 @@ class CategoricalComponent(Component):
         :return:
         """
         self._jitter_method = method
-        seed = np.abs(hash(tuple(self._categorical_data.flatten())))
+        seed = 1234567890
         rand_state = np.random.RandomState(seed)
 
         if (self._jitter_method is None) and self._is_jittered:
