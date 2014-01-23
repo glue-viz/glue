@@ -147,7 +147,7 @@ class TestCategoricalComponent(object):
         second_comp = CategoricalComponent(self.array_data)
         second_comp.jitter(method='uniform')
         delta = np.abs(cat_comp._data - second_comp._data).sum()
-        assert delta > 0
+        assert delta == 0
 
 
 class TestCoordinateComponent(object):
