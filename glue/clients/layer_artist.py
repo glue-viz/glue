@@ -230,10 +230,15 @@ class Pointer(object):
         self.key = key
 
     def __get__(self, instance, type=None):
-        return getattr(instance, self.key, None)
+        val = instance
+        for k in self.key.split('.'):
+            val = getattr(val, k, None)
+        return val
 
     def __set__(self, instance, value):
-        setattr(instance, self.key, value)
+        v = self.key.split('.')
+        attr = reduce(getattr, [instance] + v[:-1])
+        setattr(attr, v[-1], value)
 
 
 class RGBImageLayerArtist(ImageLayerArtist):

@@ -241,47 +241,6 @@ class TestApplication(object):
         copy = self.check_clone(app)
         assert copy.viewers[0][0].layers[-1].visible is False
 
-    def test_image_viewer(self):
-        LinkSame = core.link_helpers.LinkSame
-
-        d = core.Data(label='im', x=[[1, 2], [2, 3]])
-        d2 = core.Data(label='cat',
-                       x=[0, 1, 0, 1],
-                       y=[0, 0, 1, 1],
-                       z=[1, 2, 3, 4])
-
-        dc = core.DataCollection([d, d2])
-        dc.add_link(LinkSame(d.get_pixel_component_id(0), d2.id['x']))
-        dc.add_link(LinkSame(d.get_pixel_component_id(1), d2.id['y']))
-
-        app = GlueApplication(dc)
-        w = app.new_data_viewer(ImageWidget, data=d)
-        self.check_clone(app)
-
-        s = d.new_subset(label='testing')
-        assert len(w.layers) == 2
-        self.check_clone(app)
-
-        # add scatter layer
-        s.label = 'testing 2'
-        l = w.add_layer(d2)
-        assert len(w.layers) == 3
-        self.check_clone(app)
-
-        # add RGB Image
-        s.label = 'testing 3'
-        x = d.id['x']
-        w.client.display_data = d
-        l = w.client.rgb_mode(True)
-        l.r = x
-        l.g = x
-        l.b = x
-        l.layer_visible['blue'] = False
-
-        assert l is not None
-        clone = self.check_clone(app)
-        assert clone.viewers[0][0].layers[-1].layer_visible['blue'] is False
-
     def test_histogram(self):
         d = core.Data(label='hist', x=[[1, 2], [2, 3]])
         dc = core.DataCollection([d])

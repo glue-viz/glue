@@ -218,8 +218,8 @@ class CoordinateComponentLink(ComponentLink):
         self.index = index
         self.pixel2world = pixel2world
 
-        #Some coords don't need all pixel coords
-        #to compute a given world coord, and vice versa
+        # Some coords don't need all pixel coords
+        # to compute a given world coord, and vice versa
         # (e.g., spectral data cubes)
         self.ndim = len(comp_from)
         self.from_needed = coords.dependent_axes(index)
@@ -248,7 +248,6 @@ class CoordinateComponentLink(ComponentLink):
         rep = 'pix2world' if self.pixel2world else 'world2pix'
         sup = super(CoordinateComponentLink, self).__str__()
         return sup.replace('using', rep)
-
 
 
 class BinaryComponentLink(ComponentLink):

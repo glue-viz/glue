@@ -24,7 +24,7 @@ identity.output_args = ['y']
 
 def lengths_to_volume(width, height, depth):
     """Compute volume from linear measurements of a box"""
-    #included for demonstration purposes
+    # included for demonstration purposes
     return width * height * depth
 
 
@@ -33,7 +33,9 @@ lengths_to_volume.output_args = ['area']
 __LINK_FUNCTIONS__.append(identity)
 __LINK_FUNCTIONS__.append(lengths_to_volume)
 
+
 class PartialResult(object):
+
     def __init__(self, func, index):
         self.func = func
         self.index = index
@@ -65,15 +67,18 @@ class LinkCollection(list):
 
 
 class LinkSame(LinkCollection):
+
     """
     Return ComponentLinks to represent that two componentIDs
     describe the same piece of information
     """
+
     def __init__(self, cid1, cid2):
         self.append(ComponentLink([_toid(cid1)], _toid(cid2)))
 
 
 class LinkTwoWay(LinkCollection):
+
     def __init__(self, cid1, cid2, forwards, backwards):
         """ Return 2 links that connect input ComponentIDs in both directions
 
@@ -91,6 +96,7 @@ class LinkTwoWay(LinkCollection):
 
 
 class MultiLink(LinkCollection):
+
     """
     Compute all the ComponentLinks to link groups of ComponentIDs
 
@@ -129,11 +135,13 @@ class MultiLink(LinkCollection):
 
 
 class LinkAligned(LinkCollection):
+
     """Compute all the links to specify that the input data are pixel-aligned
 
     :param data: An iterable of :class:`~glue.core.Data` instances
     that are aligned at the pixel level. They must be the same shape.
     """
+
     def __init__(self, data):
         shape = data[0].shape
         ndim = data[0].ndim
@@ -146,6 +154,7 @@ class LinkAligned(LinkCollection):
 
 
 class Galactic2Equatorial(MultiLink):
+
     """
     Instantiate a ComponentList with four ComponentLinks that map galactic
     and equatorial coordinates
@@ -159,7 +168,7 @@ class Galactic2Equatorial(MultiLink):
     these ComponentIDs
     """
 
-    #attributes used by the Gui
+    # attributes used by the Gui
     info_text = """Link Galactic and Equatorial coordinates"""
     input_args = ['l', 'b', 'ra', 'dec']
 
