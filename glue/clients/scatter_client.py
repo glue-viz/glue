@@ -2,6 +2,8 @@ import logging
 from functools import partial
 
 import numpy as np
+from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
+from matplotlib.ticker import LogFormatterMathtext, ScalarFormatter, FuncFormatter
 
 from ..core.client import Client
 from ..core.data import Data, IncompatibleAttribute, ComponentID, CategoricalComponent
@@ -16,6 +18,7 @@ from ..core.callback_property import (CallbackProperty, add_callback,
                                       delay_callback)
 
 MAX_CATEGORIES = 10
+
 
 class ScatterClient(Client):
     """
@@ -56,8 +59,8 @@ class ScatterClient(Client):
         self._layer_updated = False  # debugging
         self._xset = False
         self._yset = False
-        self._xcat = False
-        self._ycat = False
+        self._xcat = None  #The actual categories!
+        self._ycat = None
         self.axes = axes
 
         self._connect()
@@ -228,10 +231,14 @@ class ScatterClient(Client):
             new_add = not self._xset
             self.xatt = attribute
             self._xset = self.xatt is not None
+            if self._check_categorical(attribute):
+                self._update_categorical_data('x')
         elif coord == 'y':
             new_add = not self._yset
             self.yatt = attribute
             self._yset = self.yatt is not None
+            if self._check_categorical(attribute):
+                self._update_categorical_data('y')
 
         #update plots
         map(self._update_layer, self.artists.layers)
@@ -317,22 +324,43 @@ class ScatterClient(Client):
     def _redraw(self):
         self.axes.figure.canvas.draw()
 
-    def _update_ticks(self, *args):
-        coord = args[0]
-
+    def _get_category_tick(self, coord, position, *args):
+        """ A simple utility function to make the tick-formatting cleaner.
+         :param position: Position in the catagories. MaxNLocator
+         :return: tick-label
+        """
+        int_pos = int(position)
+        if int_pos != position:
+            raise TypeError('position must be an integer!')
         if coord == 'x':
-            if self._xcat:
-                self._update_categorical_data(coord)
-            else:
-                rng = self.axes.get_xlim()
-                self.axes.set_xticks(np.linspace(rng[0], rng[1], 5))
+            return self._xcat[int_pos]
         elif coord == 'y':
-            if self._ycat:
-                self._update_categorical_data(coord)
-            else:
-                rng = self.axes.get_ylim()
-                self.axes.set_yticks(np.linspace(rng[0], rng[1], 5))
-        self._redraw()
+            return self._ycat[int_pos]
+        else:
+            raise TypeError("coord must be one of x,y")
+
+    def _update_ticks(self, coord, *args):
+        if coord == 'x':
+            axis = self.axes.xaxis
+            is_log = self.xlog
+            cats = self._xcat
+        elif coord == 'y':
+            axis = self.axes.yaxis
+            is_log = self.ylog
+            cats = self._ycat
+        else:
+            raise TypeError("coord must be one of x,y")
+
+        if is_log:
+            axis.set_major_locator(LogLocator())
+            axis.set_major_formatter(LogFormatterMathtext())
+        elif cats:
+            axis.set_major_locator(MaxNLocator(MAX_CATEGORIES, integer=True))
+            format_func = partial(self._get_category_tick, coord)
+            axis.set_major_formatter(FuncFormatter(format_func))
+        else:
+            axis.set_major_formatter(AutoLocator())
+            axis.set_major_formatter(ScalarFormatter())
 
     def _jitter(self, *args):
 
@@ -341,15 +369,25 @@ class ScatterClient(Client):
                 for data in self.data:
                     try:
                         comp = data.get_component(attribute)
-                    except IncompatibleAttribute:
-                        continue
-                    try:
                         comp.jitter(method=self.jitter)
-                    except NotImplementedError:
-                        pass
+                    except (IncompatibleAttribute, NotImplementedError):
+                        continue
 
     def _update_categorical_data(self, coord):
-        attribute = self.xatt if coord == 'x' else self.yatt
+        """ Iterates through client._data and 'synchronizes' the categories
+        of the CategoricalComponents.
+        :param coord: x or y
+        :return: None
+        """
+        if coord == 'x':
+            attribute = self.xatt
+            client_catergoires = self._xcat
+        elif coord == 'y':
+            attribute = self.yatt
+            client_catergoires = self._ycat
+        else:
+            raise TypeError("coord must be one of x,y")
+
         if attribute is None:
             return
         all_categories = set()
@@ -358,34 +396,15 @@ class ScatterClient(Client):
                 all_categories |= set(data.get_component(attribute)._categories)
             except IncompatibleAttribute:
                 return
-        categories = sorted(all_categories)
+        client_catergoires = np.asarray(sorted(all_categories), dtype=np.object)
         for data in self._data:
-            data.get_component(attribute)._update_categories(categories=categories)
-            data.get_component(attribute).jitter(self.jitter)
-
-        if len(categories) > MAX_CATEGORIES:
-            ticks = np.floor(np.linspace(1, len(categories), MAX_CATEGORIES))
-        else:
-            ticks = np.arange(1, len(categories)+1)
-        categories = np.asarray(categories, dtype=np.object)[ticks.astype(np.int)-1]
-        if coord == 'x':
-            self.axes.set_xticks(ticks)
-            self.axes.set_xticklabels(categories, rotation=90)
-        if coord == 'y':
-            self.axes.set_yticks(ticks)
-            self.axes.set_yticklabels(categories)
+            data.get_component(attribute)._update_categories(categories=client_catergoires)
 
     def _update_axis_labels(self, *args):
         self.axes.set_xlabel(self.xatt)
         self.axes.set_ylabel(self.yatt)
-        try:
-            self._xcat = isinstance(self.data[0].get_component(self.xatt), CategoricalComponent)
-        except IncompatibleAttribute:
-            pass
-        try:
-            self._ycat = isinstance(self.data[0].get_component(self.yatt), CategoricalComponent)
-        except IncompatibleAttribute:
-            pass
+        self._update_ticks('x')
+        self._update_ticks('y')
 
     def _add_subset(self, message):
         subset = message.sender
@@ -406,6 +425,21 @@ class ScatterClient(Client):
     def data(self):
         """The data objects in the scatter plot"""
         return list(self._data)
+
+    def _check_categorical(self, attribute):
+        """ A simple function to figure out if an attribute is categorical.
+        :param attribute: a core.Data.ComponentID
+        :return: True iff the attribute represents a CategoricalComponent
+        """
+
+        for data in self._data:
+            try:
+                comp = data.get_component(attribute)
+                if isinstance(comp, CategoricalComponent):
+                    return True
+            except IncompatibleAttribute:
+                pass
+        return False
 
     def _update_subset(self, message):
         self._update_layer(message.sender)
