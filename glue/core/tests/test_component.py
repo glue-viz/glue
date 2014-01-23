@@ -149,6 +149,12 @@ class TestCategoricalComponent(object):
         delta = np.abs(cat_comp._data - second_comp._data).sum()
         assert delta == 0
 
+    def test_valueerror_on_bad_jitter(self):
+
+        with pytest.raises(ValueError):
+            cat_comp = CategoricalComponent(self.array_data)
+            cat_comp.jitter(method='this will never be a jitter method')
+
 
 class TestCoordinateComponent(object):
 

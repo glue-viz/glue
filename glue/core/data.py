@@ -329,6 +329,9 @@ class CategoricalComponent(Component):
                      applied to each point.
         :return: None
         """
+
+        if method not in {'uniform', None}:
+            raise ValueError('%s jitter not supported' % method)
         self._jitter_method = method
         seed = 1234567890
         rand_state = np.random.RandomState(seed)
