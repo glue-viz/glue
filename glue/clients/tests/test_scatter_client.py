@@ -3,7 +3,8 @@ import pytest
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.ticker import AutoLocator, IndexLocator, LogLocator
+from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
+from matplotlib.ticker import LogFormatterMathtext, ScalarFormatter, IndexLocator
 from mock import MagicMock
 
 from ...tests import example_data
@@ -54,23 +55,24 @@ class TestScatterClient(object):
         assert cl.xlog == (ax.get_xscale() == 'log')
         assert cl.ylog == (ax.get_yscale() == 'log')
 
+    def check_ticks(self, axis, is_log, is_cat):
+        locator = axis.get_major_locator()
+        formatter = axis.get_major_formatter()
+        if is_log:
+            assert isinstance(locator, LogLocator)
+            assert isinstance(formatter, LogFormatterMathtext)
+        elif is_cat:
+            assert isinstance(locator, MaxNLocator)
+            assert isinstance(formatter, IndexLocator)
+        else:
+            assert isinstance(locator, AutoLocator)
+            assert isinstance(formatter, ScalarFormatter)
+
     def assert_axes_ticks_correct(self):
         ax = self.client.axes
         client = self.client
-        xlocator = ax.xaxis.get_major_locator()
-        ylocator = ax.yaxis.get_major_locator()
-        if client.xlog:
-            assert isinstance(xlocator, LogLocator)
-        elif client._xcat:
-            assert isinstance(xlocator, IndexLocator)
-        else:
-            assert isinstance(xlocator, AutoLocator)
-        if client.ylog:
-            assert isinstance(ylocator, LogLocator)
-        elif client._ycat:
-            assert isinstance(ylocator, IndexLocator)
-        else:
-            assert isinstance(ylocator, AutoLocator)
+        self.check_ticks(ax.xaxis, client.xlog, client._xcat)
+        self.check_ticks(ax.yaxis, client.ylog, client._ycat)
 
     def plot_data(self, layer):
         """ Return the data bounds for a given layer (data or subset)
