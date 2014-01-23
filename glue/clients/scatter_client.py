@@ -31,8 +31,6 @@ class ScatterClient(Client):
     xflip = CallbackProperty(False)
     xatt = CallbackProperty()
     yatt = CallbackProperty()
-    xcat = CallbackProperty()
-    ycat = CallbackProperty()
     jitter = CallbackProperty()
 
     def __init__(self, data=None, figure=None, axes=None,
@@ -58,6 +56,8 @@ class ScatterClient(Client):
         self._layer_updated = False  # debugging
         self._xset = False
         self._yset = False
+        self._xcat = False
+        self._ycat = False
         self.axes = axes
 
         self._connect()
@@ -91,11 +91,7 @@ class ScatterClient(Client):
         add_callback(self, 'ymin', self._set_limits)
         add_callback(self, 'ymax', self._set_limits)
         add_callback(self, 'xatt', partial(self._set_xydata, 'x'))
-        add_callback(self, 'xatt', partial(self._update_ticks, 'x'))
         add_callback(self, 'yatt', partial(self._set_xydata, 'y'))
-        add_callback(self, 'yatt', partial(self._update_ticks, 'y'))
-        add_callback(self, 'xcat', partial(self._update_ticks, 'x'))
-        add_callback(self, 'ycat', partial(self._update_ticks, 'y'))
         add_callback(self, 'jitter', self._jitter)
         self.axes.figure.canvas.mpl_connect('draw_event',
                                             lambda x: self._pull_properties())
@@ -325,13 +321,13 @@ class ScatterClient(Client):
         coord = args[0]
 
         if coord == 'x':
-            if self.xcat:
+            if self._xcat:
                 self._update_categorical_data(coord)
             else:
                 rng = self.axes.get_xlim()
                 self.axes.set_xticks(np.linspace(rng[0], rng[1], 5))
         elif coord == 'y':
-            if self.ycat:
+            if self._ycat:
                 self._update_categorical_data(coord)
             else:
                 rng = self.axes.get_ylim()
@@ -383,11 +379,11 @@ class ScatterClient(Client):
         self.axes.set_xlabel(self.xatt)
         self.axes.set_ylabel(self.yatt)
         try:
-            self.xcat = isinstance(self.data[0].get_component(self.xatt), CategoricalComponent)
+            self._xcat = isinstance(self.data[0].get_component(self.xatt), CategoricalComponent)
         except IncompatibleAttribute:
             pass
         try:
-            self.ycat = isinstance(self.data[0].get_component(self.yatt), CategoricalComponent)
+            self._ycat = isinstance(self.data[0].get_component(self.yatt), CategoricalComponent)
         except IncompatibleAttribute:
             pass
 
