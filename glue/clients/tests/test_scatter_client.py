@@ -596,12 +596,12 @@ class TestCategoricalScatterClient(TestScatterClient):
         self.client.yatt = self.ids[1]
         orig_data = grab_data(self.client)
         self.client.jitter = None
-        assert np.all(orig_data == grab_data(self.client))
+        assert np.testing.assert_equal(orig_data == grab_data(self.client))
         self.client.jitter = 'uniform'
         delta = np.abs(orig_data - grab_data(self.client))
-        assert np.all((delta > 0) & (delta < 1))
+        assert np.testing.assert_equal((delta > 0) & (delta < 1))
         self.client.jitter = None
-        assert np.all(orig_data == grab_data(self.client))
+        assert np.testing.assert_equal(orig_data == grab_data(self.client))
 
     def test_ticks_go_back_after_changing(self):
         """ If you change to a categorical axis and then change back
