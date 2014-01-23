@@ -102,7 +102,10 @@ def test_csv_pandas_factory():
 1,2.1,some
 2,2.4,categorical
 3,1.4,data
-4,4.0,here"""
+4,4.0,here
+5,6.3,
+6,8.7,
+8,9.2,"""
 
     with make_file(data, '.csv') as fname:
         d = df.load_data(fname, factory=df.pandas_read_csv)
@@ -111,6 +114,12 @@ def test_csv_pandas_factory():
     assert d['c'].dtype == np.float
     cat_comp = d.find_component_id('c')
     assert isinstance(d.get_component(cat_comp), CategoricalComponent)
+    correct_cats = np.unique(np.asarray(['some', 'categorical',
+                                         'data', 'here',
+                                         np.nan, np.nan, np.nan],
+                                        dtype=np.object))
+    np.testing.assert_equal(d.get_component(cat_comp)._categories,
+                            correct_cats)
 
 
 def test_dtype_int():

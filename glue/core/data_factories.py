@@ -374,10 +374,11 @@ def panda_process(indf):
     """
 
     result = Data()
-    #indf = pd.read_csv(path, **kwargs)
     for name, column in indf.iteritems():
         if column.dtype == np.object:
-            c = CategoricalComponent(column.values)
+            #pandas has a 'special' nan implementation and this doesn't
+            #play well with np.unique
+            c = CategoricalComponent(column.fillna(np.nan))
         else:
             c = Component(column.values)
         result.add_component(c, name)

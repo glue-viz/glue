@@ -400,13 +400,14 @@ class ScatterClient(Client):
 
         if attribute is None:
             return
-        all_categories = set()
+        all_categories = np.empty((0,), dtype=np.object)
         for data in self._data:
             try:
-                all_categories |= set(data.get_component(attribute)._categories)
+                comps = data.get_component(attribute)._categories
+                all_categories = np.union1d(comps,
+                                            all_categories)
             except IncompatibleAttribute:
                 return
-        all_categories = np.asarray(sorted(all_categories), dtype=np.object)
 
         for data in self._data:
             data.get_component(attribute)._update_categories(categories=all_categories)
