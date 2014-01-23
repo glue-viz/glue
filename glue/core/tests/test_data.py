@@ -31,6 +31,9 @@ class TestData(object):
         self.data.coords = TestCoordinates()
         self.comp_id = self.data.add_component(comp, 'Test Component')
 
+    def test_2d_component_print(self):
+        assert str(self.comp) == 'Component with shape (2, 3)'
+
     def test_shape_empty(self):
         d = Data()
         assert d.shape == ()

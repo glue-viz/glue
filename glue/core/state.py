@@ -532,9 +532,9 @@ def _load_data_collection(rec, context):
 @saver(Data)
 def _save_data(data, context):
 
-    return dict(components=dict((context.id(c),
-                                 context.id(data.get_component(c)))
-                                for c in data.components),
+    return dict(components=[(context.id(c),
+                            context.id(data.get_component(c)))
+                            for c in data._components],
                 subsets=[context.id(s) for s in data.subsets],
                 label=data.label,
                 coords=context.id(data.coords))
@@ -550,8 +550,8 @@ def _load_data(rec, context):
     # we override this function. This is pretty ugly
     result._create_pixel_and_world_components = lambda: None
 
-    comps = [map(context.object, [k, v])
-             for k, v in rec['components'].items()]
+    comps = [map(context.object, [cid, comp])
+             for cid, comp in rec['components']]
     comps = sorted(comps,
                    key=lambda x: isinstance(x[1], (DerivedComponent,
                                                    CoordinateComponent)))
@@ -622,7 +622,8 @@ def _save_component_link(link, context):
     to = map(context.id, [link.get_to_id()])
     using = context.do(link.get_using())
     inverse = context.do(link.get_inverse())
-    return dict(frm=frm, to=to, using=using, inverse=inverse)
+    hidden = link.hidden
+    return dict(frm=frm, to=to, using=using, inverse=inverse, hidden=hidden)
 
 
 @loader(ComponentLink)
@@ -631,19 +632,20 @@ def _load_component_link(rec, context):
     to = map(context.object, rec['to'])[0]
     using = context.object(rec['using'])
     inverse = context.object(rec['inverse'])
-    return ComponentLink(frm, to, using, inverse)
+    result = ComponentLink(frm, to, using, inverse)
+    result.hidden = rec['hidden']
+    return result
 
 
 @saver(CoordinateComponentLink)
 def _save_coordinate_component_link(link, context):
-    frm = map(context.id, [context.id(f) for f in link.get_from_ids()])
+    frm = map(context.id, [context.id(f) for f in link._from_all])
     to = map(context.id, [link.get_to_id()])
     coords = context.id(link.coords)
     index = link.index
     pix2world = link.pixel2world
-    from_needed = list(link.from_needed)
     return dict(frm=frm, to=to, coords=coords, index=index,
-                pix2world=pix2world, from_needed=from_needed)
+                pix2world=pix2world)
 
 
 @loader(CoordinateComponentLink)
@@ -652,9 +654,7 @@ def _load_coordinate_component_link(rec, context):
     coords = context.object(rec['coords'])
     index = rec['index']
     pix2world = rec['pix2world']
-    frm = [None] * (max(rec['from_needed']) + 1)
-    for i, f in zip(rec['from_needed'], rec['frm']):
-        frm[i] = context.object(f)
+    frm = map(context.object, rec['frm'])
 
     return CoordinateComponentLink(frm, to, coords, index, pix2world)
 
@@ -663,7 +663,8 @@ def _load_coordinate_component_link(rec, context):
 def _save_function(function, context):
     ref = "%s.%s" % (function.__module__, function.__name__)
     if _lookup(ref) is function:
-        return {'function': "%s.%s" % (function.__module__, function.__name__)}
+        l = _lookup(ref)
+        return {'function': ref}
     return {'pickle': gp.dumps(function).encode('base64')}
 
 

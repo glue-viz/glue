@@ -9,8 +9,6 @@ The LinkCollection class and its sublcasses are factories to create
 multiple ComponentLinks easily. They are meant to be passed to
 :func:`DataCollection.add_link()`
 """
-from functools import wraps
-
 from .component_link import ComponentLink
 from .data import ComponentID
 from ..external.aplpy import gal2fk5, fk52gal
@@ -35,12 +33,21 @@ lengths_to_volume.output_args = ['area']
 __LINK_FUNCTIONS__.append(identity)
 __LINK_FUNCTIONS__.append(lengths_to_volume)
 
+class PartialResult(object):
+    def __init__(self, func, index):
+        self.func = func
+        self.index = index
+        self.__name__ = '%s_%i' % (func.__name__, index + 1)
 
-def _partial_result(func, index):
-    @wraps(func)
-    def getter(*args, **kwargs):
-        return func(*args, **kwargs)[index]
-    return getter
+    def __call__(self, *args, **kwargs):
+        return self.func(*args, **kwargs)[self.index]
+
+    def __gluestate__(self, context):
+        return dict(func=context.do(self.func), index=self.index)
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(context.object(rec['func']), rec['index'])
 
 
 def _toid(arg):
@@ -112,12 +119,12 @@ class MultiLink(LinkCollection):
 
         if forwards is not None:
             for i, r in enumerate(cids_right):
-                func = _partial_result(forwards, i)
+                func = PartialResult(forwards, i)
                 self.append(ComponentLink(cids_left, r, func))
 
         if backwards is not None:
             for i, l in enumerate(cids_left):
-                func = _partial_result(backwards, i)
+                func = PartialResult(backwards, i)
                 self.append(ComponentLink(cids_right, l, func))
 
 

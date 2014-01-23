@@ -8,6 +8,14 @@ def test_subset_pickleable():
     dumps(s)
 
 
+def test_closuere():
+    y = 5
+
+    def foo(x):
+        return y + x
+    assert loads(dumps(foo))(7) == 12
+
+
 def test_visual_attriubute_pickleable():
     v = core.visual.VisualAttributes()
     dumps(v)

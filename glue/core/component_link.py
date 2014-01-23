@@ -73,9 +73,8 @@ class ComponentLink(object):
         self._using = using or identity
         self._inverse = inverse
 
-        self.hidden = using is None or using is identity  # show in widgets?
-        self.identity = self.hidden  # identity link?
-        self.hide_from_editor = False
+        self.hidden = False  # show in widgets?
+        self.identity = self._using is identity
 
         if type(comp_from) is not list:
             raise TypeError("comp_from must be a list: %s" % type(comp_from))
@@ -219,15 +218,17 @@ class CoordinateComponentLink(ComponentLink):
         self.index = index
         self.pixel2world = pixel2world
 
-        #Some coordss don't need all pixel coords
+        #Some coords don't need all pixel coords
         #to compute a given world coord, and vice versa
         # (e.g., spectral data cubes)
         self.ndim = len(comp_from)
         self.from_needed = coords.dependent_axes(index)
+        self._from_all = comp_from
 
         comp_from = [comp_from[i] for i in self.from_needed]
         super(CoordinateComponentLink, self).__init__(
             comp_from, comp_to, self.using)
+        self.hidden = True
 
     def using(self, *args):
         attr = 'pixel2world' if self.pixel2world else 'world2pixel'
@@ -242,6 +243,12 @@ class CoordinateComponentLink(ComponentLink):
         args2 = tuple(args2)
 
         return func(*args2[::-1])[::-1][self.index]
+
+    def __str__(self):
+        rep = 'pix2world' if self.pixel2world else 'world2pix'
+        sup = super(CoordinateComponentLink, self).__str__()
+        return sup.replace('using', rep)
+
 
 
 class BinaryComponentLink(ComponentLink):
