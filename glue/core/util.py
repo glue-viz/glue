@@ -274,6 +274,12 @@ def coerce_numeric(arr):
     return np.genfromtxt(arr)
 
 
+def check_sorted(array):
+    """ Return True if the array is sorted, False otherwise
+    """
+    return all(array[i] <= array[i+1] for i in xrange(len(array)-1))
+
+
 def lookup_class(ref):
     """ Look up an object via it's module string (e.g., 'glue.core.Data')
 

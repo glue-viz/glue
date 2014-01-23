@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
 from matplotlib.ticker import LogFormatterMathtext, ScalarFormatter, FuncFormatter
 from mock import MagicMock
+from timeit import timeit
+from functools import partial
 
 from ...tests import example_data
 from ... import core
@@ -596,12 +598,12 @@ class TestCategoricalScatterClient(TestScatterClient):
         self.client.yatt = self.ids[1]
         orig_data = grab_data(self.client)
         self.client.jitter = None
-        assert np.all(orig_data == grab_data(self.client))
+        np.testing.assert_equal(orig_data, grab_data(self.client))
         self.client.jitter = 'uniform'
         delta = np.abs(orig_data - grab_data(self.client))
         assert np.all((delta > 0) & (delta < 1))
         self.client.jitter = None
-        assert np.all(orig_data == grab_data(self.client))
+        np.testing.assert_equal(orig_data, grab_data(self.client))
 
     def test_ticks_go_back_after_changing(self):
         """ If you change to a categorical axis and then change back
@@ -621,6 +623,35 @@ class TestCategoricalScatterClient(TestScatterClient):
         self.client.xatt = data.find_component_id('xcont')
         self.check_ticks(self.client.axes.yaxis, False, False)
         self.check_ticks(self.client.axes.xaxis, False, False)
+
+    def test_high_cardinatility_timing(self):
+
+        card = 50000
+        data = core.Data()
+        card_data = [str(num) for num in range(card)]
+        data.add_component(core.Component(np.arange(card*5)), 'y')
+        data.add_component(core.data.CategoricalComponent([card_data]*5), 'xcat')
+        self.add_data(data)
+        comp = data.find_component_id('xcat')
+        timer_func = partial(self.client._set_xydata, 'x', comp)
+
+        timer = timeit(timer_func, number=1)
+        assert timer < 1
+
+    def test_nan_cardinality(self):
+        print 'nan test start'
+        card = 50
+        data = core.Data()
+        card_data = [np.nan]+[str(num) for num in range(card)]
+        card_array = np.asarray(card_data, dtype=np.object)
+        multi_nan = np.asarray(50*[np.nan]+card_data, dtype=np.object)
+        data.add_component(core.data.CategoricalComponent(multi_nan), 'xcat')
+        self.add_data(data)
+        comp = data.find_component_id('xcat')
+        self.client._set_xydata('x', comp)
+
+        np.testing.assert_equal(np.sort(card_array),
+                                self.client._xcat)
 
     #REMOVED TESTS
     def test_invalid_plot(self):
