@@ -305,8 +305,18 @@ class CategoricalComponent(Component):
         given self._categories
         """
         self._is_jittered = False
-        self._data = np.searchsorted(self._categorical_data,
-                                     self._categories).astype(float)
+        #Complicated because of the case of items not in
+        #self._categories may be on either side of the sorted list
+        left = np.searchsorted(self._categories,
+                               self._categorical_data,
+                               side='left')
+        right = np.searchsorted(self._categories,
+                                self._categorical_data,
+                                side='right')
+        self._data = left.astype(float)
+        self._data[(left == 0) & (right == 0)] = np.nan
+        self._data[left == len(self._categories)] = np.nan
+
         self._data[self._data == len(self._categories)] = np.nan
         self.jitter(method=self._jitter_method)
 

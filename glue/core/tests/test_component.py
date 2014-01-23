@@ -97,12 +97,14 @@ class TestCategoricalComponent(object):
 
     def test_accepts_provided_grouping(self):
         ncategories = ['b', 'c']
-        cat_comp = CategoricalComponent(self.array_data, categories=ncategories)
+        cat_data = list('aaabbbcccddd')
+        cat_comp = CategoricalComponent(cat_data, categories=ncategories)
 
         assert cat_comp._categories == ncategories
-        assert np.all(np.isnan(cat_comp._data[:1]))
-        assert np.all(cat_comp._data[2:] == 0)
-        assert not np.any(cat_comp._data == 1)
+        assert np.all(np.isnan(cat_comp._data[:3]))
+        assert np.all(cat_comp._data[3:6] == 0)
+        assert np.all(cat_comp._data[6:9] == 1)
+        assert np.all(np.isnan(cat_comp._data[9:]))
 
     def test_uniform_jitter(self):
         cat_comp = CategoricalComponent(self.array_data)
@@ -119,9 +121,8 @@ class TestCategoricalComponent(object):
         cat_comp = CategoricalComponent(self.array_data)
         second_comp = CategoricalComponent(self.array_data)
         cat_comp.jitter(method='uniform')
-        np.testing.assert_equal(cat_comp._data,
-                                second_comp._data,
-                                "Didn't jitter data!")
+        delta = np.abs(cat_comp._data - second_comp._data).sum()
+        assert delta > 0
         second_comp.jitter(method='uniform')
         second_comp.jitter(method='uniform')
         np.testing.assert_equal(cat_comp._data,
@@ -129,14 +130,12 @@ class TestCategoricalComponent(object):
                                 "Data double jittered!")
 
     def test_unjitter_data(self):
-
         cat_comp = CategoricalComponent(self.array_data)
         second_comp = CategoricalComponent(self.array_data)
 
         cat_comp.jitter(method='uniform')
-        np.testing.assert_equal(cat_comp._data,
-                                second_comp._data,
-                                "Didn't jitter data!")
+        delta = np.abs(cat_comp._data - second_comp._data).sum()
+        assert delta > 0
 
         cat_comp.jitter(method=None)
         np.testing.assert_equal(cat_comp._data,
@@ -144,11 +143,11 @@ class TestCategoricalComponent(object):
                                 "Didn't un-jitter data!")
 
     def test_jitter_on_init(self):
-
         cat_comp = CategoricalComponent(self.array_data, jitter='uniform')
         second_comp = CategoricalComponent(self.array_data)
         second_comp.jitter(method='uniform')
-        np.testing.assert_equal(cat_comp._data, second_comp._data)
+        delta = np.abs(cat_comp._data - second_comp._data).sum()
+        assert delta > 0
 
 
 class TestCoordinateComponent(object):
