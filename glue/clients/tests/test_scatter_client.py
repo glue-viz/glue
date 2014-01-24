@@ -7,6 +7,7 @@ from mock import MagicMock
 
 from ...tests import example_data
 from ... import core
+from ...core.data import ComponentID
 
 from ..scatter_client import ScatterClient
 
@@ -49,6 +50,8 @@ class TestScatterClient(object):
         assert cl.yflip == (ylim[1] < ylim[0])
         assert cl.xlog == (ax.get_xscale() == 'log')
         assert cl.ylog == (ax.get_yscale() == 'log')
+        assert (self.client.xatt is None) or isinstance(self.client.xatt, ComponentID)
+        assert (self.client.yatt is None) or isinstance(self.client.yatt, ComponentID)
 
     def plot_data(self, layer):
         """ Return the data bounds for a given layer (data or subset)
@@ -144,6 +147,11 @@ class TestScatterClient(object):
         assert self.client.axes.get_xlabel() == self.ids[1].label
         self.client.yatt = self.ids[0]
         assert self.client.axes.get_ylabel() == self.ids[0].label
+
+    def test_setters_require_componentID(self):
+        layer = self.add_data()
+        with pytest.raises(TypeError):
+            self.client.xatt = self.ids[1]._label
 
     def test_logs(self):
         layer = self.add_data()

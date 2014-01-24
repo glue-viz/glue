@@ -4,7 +4,7 @@ from functools import partial
 import numpy as np
 
 from ..core.client import Client
-from ..core.data import Data
+from ..core.data import Data, ComponentID
 from ..core.subset import RoiSubsetState
 from ..core.roi import PolygonalROI
 from ..core.util import relim, lookup_class
@@ -207,7 +207,7 @@ class ScatterClient(Client):
            Which axis to reassign
         :param attribute:
            Which attribute of the data to use.
-        :type attribute: str
+        :type attribute: core.data.ComponentID or None
         :param snap:
            If True, will rescale x/y axes to fit the data
         :type snap: bool
@@ -215,6 +215,9 @@ class ScatterClient(Client):
 
         if coord not in ('x', 'y'):
             raise TypeError("coord must be one of x,y")
+        if (attribute is not None) and not isinstance(attribute, ComponentID):
+            self._set_xydata(coord, None)
+            raise TypeError("attribute must be a ComponentID")
 
         #update coordinates of data and subsets
         if coord == 'x':
