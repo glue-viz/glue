@@ -101,9 +101,11 @@ class ImageClient(VizClient):
 
     @slice.setter
     def slice(self, value):
+        relim = value.index('x') != self._slice.index('x') or \
+          value.index('y') != self._slice.index('y')
         self._slice = tuple(value)
         self._update_axis_labels()
-        self._update_data_plot(relim=True)
+        self._update_data_plot(relim=relim)
         self._update_subset_plots()
         self._redraw()
 
