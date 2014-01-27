@@ -497,7 +497,6 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
     def _connect(self):
         """ Connect widget signals to methods """
         self._actions['link'] = LinkAction(self)
-        self.layerTree.itemDoubleClicked.connect(self.edit_current_layer)
         self.layerAddButton.clicked.connect(self._load_data)
         self.layerRemoveButton.clicked.connect(self._actions['delete'].trigger)
         self.linkButton.set_action(self._actions['link'])
@@ -581,20 +580,6 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
         is_checked = item.checkState(0) == Qt.Checked
         layer = self[item]
         self._layer_check_changed.emit(layer, is_checked)
-
-    def edit_current_layer(self):
-        """ Allow user to interactively set layer properties of
-        the currently highlighted layer """
-        item = self.layerTree.currentItem()
-        if item is None:
-            return
-
-        layer = self[item]
-        qtutil.edit_layer_label(layer)
-
-        # this triggers toggling of expansion state. re-toggle
-        expand = item.isExpanded()
-        item.setExpanded(not expand)
 
     def _load_data(self):
         """ Interactively loads data from a data set. Adds

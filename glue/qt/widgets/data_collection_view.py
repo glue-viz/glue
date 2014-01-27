@@ -45,7 +45,25 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
 
         for data in data_collection:
             self._add_data(data, check_sync=False)
+        self._connect()
         self._assert_view_synced()
+
+    def _connect(self):
+        self.setEditTriggers(self.NoEditTriggers)
+        self.itemDoubleClicked.connect(self._edit_item)
+        self.itemChanged.connect(self._on_item_change)
+
+    def _edit_item(self, item, column):
+        if column == 0:
+            self.editItem(item)
+        elif column == 1:
+            qtutil.edit_layer_color(self[item])
+
+    def _on_item_change(self, item, column):
+        layer = self[item]
+        if layer.label == item.text(0):
+            return
+        layer.label = item.text(0)
 
     @property
     def data_collection(self):
@@ -124,6 +142,7 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         assert isinstance(self, QTreeWidget)
 
         branch = QTreeWidgetItem([label, '', '', ''])
+        branch.setFlags(branch.flags() | Qt.ItemIsEditable)
         self.addTopLevelItem(branch)
 
         if self.checkable:
@@ -160,6 +179,7 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         label = subset.label
         parent = self[subset.data]
         branch = QTreeWidgetItem(parent, [label, '', '', ''])
+        branch.setFlags(branch.flags() | Qt.ItemIsEditable)
 
         if self.checkable:
             branch.setCheckState(0, Qt.Checked)
@@ -187,6 +207,7 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         if layer not in self:
             return
 
+        old_state = self.blockSignals(True)
         widget_item = self[layer]
         icon = qtutil.layer_icon(layer)
         widget_item.setIcon(1, icon)
@@ -196,6 +217,7 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
         ncol = self.columnCount()
         for i in range(ncol):
             self.resizeColumnToContents(i)
+        state = self.blockSignals(old_state)
 
     def _remove_layer(self, layer, check_sync=True):
         """ Remove a data or subset from the layer tree.
