@@ -14,7 +14,7 @@ varname = s.id(x) -> string identifier that uniquely labels an object in
 u = GlueUnSerializer.load(file)
 u = GlueUnSerializer.loads(str)
 u.object(varname) -> A reconstituted version of `x`
-
+u.object('__main__') -> The object passed to the GlueSerializer constructor
 
 Developer Notes:
 
@@ -52,7 +52,6 @@ starting from 1.
 """
 from itertools import count
 from collections import defaultdict
-from inspect import isgeneratorfunction
 import json
 import types
 import logging
@@ -62,7 +61,7 @@ import numpy as np
 
 from .subset import (OPSYM, SYMOP, CompositeSubsetState,
                      SubsetState, Subset, RoiSubsetState,
-                     InequalitySubsetState)
+                     InequalitySubsetState, RangeSubsetState)
 from .data import (Data, Component, ComponentID, DerivedComponent,
                    CoordinateComponent)
 from . import (VisualAttributes, ComponentLink, DataCollection)
@@ -80,18 +79,6 @@ literals = tuple([types.NoneType, types.FloatType,
 literals += np.ScalarType
 
 _lookup = lookup_class
-
-
-def dumpo(obj):
-    return GlueSerializer(obj).dumpo()
-
-
-def dumps(obj):
-    return GlueSerializer(obj).dumps()
-
-
-def dump(obj, fobj):
-    return GlueSerializer(obj).dump(fobj)
 
 
 class GlueSerializeError(RuntimeError):
@@ -159,8 +146,13 @@ class VersionedDict(object):
         if key not in self._data:
             raise KeyError(key)
         versions = self._data[key]
-        result = versions[max(versions)]
         return versions[max(versions)], max(versions)
+
+    def __delitem__(self, key):
+        raise ValueError("Cannot remove items from VersionedDict")
+
+    def __len__(self):
+        return len(self._data)
 
     def __setitem__(self, key, value):
         """ Assign a new value with a particular key and version
@@ -297,10 +289,6 @@ class GlueSerializer(object):
             newname = "%s_%i" % (name, i)
             if newname not in self._objs:
                 return newname
-
-    @classmethod
-    def restore(cls, obj):
-        raise NotImplementedError()
 
     def dumpo(self):
         """
@@ -440,6 +428,16 @@ def _save_subset_state(state, context):
 @loader(SubsetState)
 def _load_subset_state(rec, context):
     return SubsetState()
+
+
+@saver(RangeSubsetState)
+def _save_range_subset_state(state, context):
+    return dict(lo=state.lo, hi=state.hi, att=context.id(state.att))
+
+
+@loader(RangeSubsetState)
+def _load_range_subset_state(rec, context):
+    return RangeSubsetState(rec['lo'], rec['hi'], context.object(rec['att']))
 
 
 @saver(RoiSubsetState)

@@ -1,4 +1,6 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+import numpy as np
+
 from ..image_widget import ImageWidget
 
 from .... import core
@@ -153,6 +155,17 @@ class TestStateSave(TestApplication):
         w.add_data(d2)
         assert len(w.layers) == 2
         self.check_clone(app)
+
+    def test_cube(self):
+        d = core.Data(label='cube',
+                      x=np.zeros((2, 2, 2)))
+        dc = core.DataCollection([d])
+        app = GlueApplication(dc)
+        w = app.new_data_viewer(ImageWidget, d)
+        w.slice = ('x', 'y', 1)
+        c = self.check_clone(app)
+        w2 = c.viewers[0][0]
+        assert w2.ui.slice.slice == ('x', 'y', 1)
 
     def test_rgb_layer(self):
         d, w, app = self.d, self.w, self.app

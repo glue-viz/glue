@@ -29,6 +29,7 @@ def doubler(x):
 
 
 class Cloner(object):
+
     def __init__(self, obj):
         self.s = GlueSerializer(obj)
         self.us = GlueUnSerializer.loads(self.s.dumps())
@@ -118,6 +119,16 @@ def test_box_roi_subset():
         d2.subsets[0].to_mask(), [False, True, False])
 
 
+def test_range_subset():
+    d = core.Data(x=[1, 2, 3])
+    s = d.new_subset(label='range')
+    s.subset_state = core.subset.RangeSubsetState(0.5, 2.5, att=d.id['x'])
+    d2 = clone(d)
+
+    np.testing.assert_array_equal(
+        d2.subsets[0].to_mask(), [True, True, False])
+
+
 def test_complex_state():
     d = core.Data(x=[1, 2, 3], y=[2, 4, 8])
     s = d.new_subset(label='test')
@@ -173,7 +184,7 @@ class TestApplication(object):
             for cid1, cid2 in zip(d1.components, d2.components):
                 assert cid1.label == cid2.label
 
-                #order of components unspecified if label collisions
+                # order of components unspecified if label collisions
                 cid2 = c.get(cid1)
                 np.testing.assert_array_almost_equal(d1[cid1, 0:1],
                                                      d2[cid2, 0:1], 3)
@@ -316,6 +327,13 @@ class TestVersionedDict(object):
 
         with pytest.raises(KeyError) as exc:
             d['missing']
+
+    def test_get_missing(self):
+        d = VersionedDict()
+        d['key', 1] = 5
+        with pytest.raises(KeyError) as exc:
+            d.get_version('key', 2)
+        assert exc.value.args[0] == 'No value associated with version 2 of key'
 
     def test_contains(self):
 

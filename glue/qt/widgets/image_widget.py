@@ -30,7 +30,7 @@ WARN_THRESH = 10000000  # warn when contouring large images
 class ImageWidget(DataViewer):
     LABEL = "Image Viewer"
     _property_set = DataViewer._property_set + \
-        'data attribute slice rgb_mode rgb_viz ratt gatt batt'.split()
+        'data attribute rgb_mode rgb_viz ratt gatt batt slice'.split()
 
     attribute = CurrentComboProperty('ui.attributeComboBox')
     data = CurrentComboProperty('ui.displayDataCombo')
@@ -211,7 +211,7 @@ class ImageWidget(DataViewer):
 
     @slice.setter
     def slice(self, value):
-        self.client.slice = value
+        self.ui.slice.slice = value
 
     def set_attribute(self, index):
         combo = self.ui.attributeComboBox

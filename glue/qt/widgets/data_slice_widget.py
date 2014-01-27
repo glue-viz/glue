@@ -200,3 +200,12 @@ class DataSlice(QWidget):
 
         return tuple(s.mode if s.mode != 'slice' else s.slice_center
                      for s in self._slices)
+
+    @slice.setter
+    def slice(self, value):
+        for v, s in zip(value, self._slices):
+            if v in ['x', 'y']:
+                s.mode = v
+            else:
+                s.mode = 'slice'
+                s.slice_center = v
