@@ -364,6 +364,8 @@ class PolygonalROI(Roi):
         xypts = np.column_stack((x.flat, y.flat))
         xyvts = np.column_stack((self.vx, self.vy))
         result = points_inside_poly(xypts, xyvts)
+        good = np.isfinite(xypts).all(axis=1)
+        result[~good] = False
         result.shape = x.shape
         return result
 
