@@ -110,10 +110,8 @@ def die_on_error(msg):
 @die_on_error("Error restoring Glue session")
 def restore_session(gluefile):
     """Load a .glu file and return a DataCollection, Hub tuple"""
-    from pickle import Unpickler
-    with open(gluefile) as f:
-        state = Unpickler(f).load()
-    return state
+    from glue.qt.glue_application import GlueApplication
+    return GlueApplication.restore(gluefile)
 
 
 @die_on_error("Error reading data file")
@@ -153,7 +151,8 @@ def start_glue(gluefile=None, config=None, datafiles=None):
     data, hub = None, None
 
     if gluefile is not None:
-        data, hub = restore_session(gluefile)
+        app = restore_session(gluefile)
+        return app.start()
 
     if config is not None:
         glue.env = glue.config.load_configuration(search_path=[config])

@@ -255,3 +255,6 @@ class ScatterWidget(DataViewer):
     def restore_layers(self, rec, context):
         self.client.restore_layers(rec, context)
         self._update_combos()
+        # manually force client attributes to sync
+        self.update_xatt(None)
+        self.update_yatt(None)

@@ -10,6 +10,8 @@ from ... import core
 from ... import config
 
 from ...clients.image_client import ImageClient
+from ...clients.layer_artist import Pointer
+
 from .data_slice_widget import DataSlice
 
 from ..mouse_mode import (RectangleMode, CircleMode, PolyMode,
@@ -20,12 +22,20 @@ from .mpl_widget import MplWidget
 
 from ..decorators import set_cursor
 from ..qtutil import cmap2pixmap, load_ui, get_icon
+from ..widget_properties import CurrentComboProperty, ButtonProperty
 
 WARN_THRESH = 10000000  # warn when contouring large images
 
 
 class ImageWidget(DataViewer):
     LABEL = "Image Viewer"
+    _property_set = DataViewer._property_set + \
+        'data attribute rgb_mode rgb_viz ratt gatt batt slice'.split()
+
+    attribute = CurrentComboProperty('ui.attributeComboBox')
+    data = CurrentComboProperty('ui.displayDataCombo')
+    rgb_mode = ButtonProperty('ui.rgb')
+    rgb_viz = Pointer('ui.rgb_options.rgb_visible')
 
     def __init__(self, session, parent=None):
         super(ImageWidget, self).__init__(session, parent)
@@ -140,6 +150,39 @@ class ImageWidget(DataViewer):
         assert combo.findText(label) >= 0
 
     @property
+    def ratt(self):
+        """ComponentID assigned to R channel in RGB Mode"""
+        return self.ui.rgb_options.attributes[0]
+
+    @ratt.setter
+    def ratt(self, value):
+        att = list(self.ui.rgb_options.attributes)
+        att[0] = value
+        self.ui.rgb_options.attributes = att
+
+    @property
+    def gatt(self):
+        """ComponentID assigned to G channel in RGB Mode"""
+        return self.ui.rgb_options.attributes[1]
+
+    @gatt.setter
+    def gatt(self, value):
+        att = list(self.ui.rgb_options.attributes)
+        att[1] = value
+        self.ui.rgb_options.attributes = att
+
+    @property
+    def batt(self):
+        """ComponentID assigned to B channel in RGB Mode"""
+        return self.ui.rgb_options.attributes[2]
+
+    @batt.setter
+    def batt(self, value):
+        att = list(self.ui.rgb_options.attributes)
+        att[2] = value
+        self.ui.rgb_options.attributes = att
+
+    @property
     def current_data(self):
         if self.ui.displayDataCombo.count() == 0:
             return
@@ -161,6 +204,14 @@ class ImageWidget(DataViewer):
         self.ui.displayDataCombo.setCurrentIndex(index)
         self.set_attribute_combo(data)
         self._update_window_title()
+
+    @property
+    def slice(self):
+        return self.client.slice
+
+    @slice.setter
+    def slice(self, value):
+        self.ui.slice.slice = value
 
     def set_attribute(self, index):
         combo = self.ui.attributeComboBox
@@ -318,3 +369,11 @@ class ImageWidget(DataViewer):
 
     def options_widget(self):
         return self.option_widget
+
+    def restore_layers(self, rec, context):
+        self.client.restore_layers(rec, context)
+        for artist in self.layers:
+            self.add_data_to_combo(artist.layer.data)
+
+        self.set_attribute_combo(self.client.display_data)
+        self._update_data_combo()

@@ -76,7 +76,7 @@ class LinkEditor(object):
         current = self._ui.current_links
         item = QListWidgetItem(str(link))
         current.addItem(item)
-        item.setHidden(link.hide_from_editor)
+        item.setHidden(link.hidden)
         current.set_data(item, link)
 
     def _add_new_link(self):

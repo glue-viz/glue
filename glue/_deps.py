@@ -93,6 +93,7 @@ required = (
     Dependency('astropy', 'Used for FITS I/O, table reading, and WCS Parsing'))
 
 general = (
+    Dependency('dill', 'Used when saving Glue sessions'),
     Dependency('scipy', 'Used for some image processing calculation'),
     Dependency('skimage',
                'Used to read popular image formats (jpeg, png, etc.)',

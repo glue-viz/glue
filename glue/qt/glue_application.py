@@ -132,7 +132,8 @@ class GlueApplication(Application, QMainWindow):
         w.close()
         self.tab_widget.removeTab(index)
 
-    def add_widget(self, new_widget, label=None, tab=None):
+    def add_widget(self, new_widget, label=None, tab=None,
+                   hold_position=False):
         """ Add a widget to one of the tabs
 
         :param new_widget: Widge to add
@@ -144,15 +145,23 @@ class GlueApplication(Application, QMainWindow):
         :param tab: Tab to add to. Optional (default: current tab)
         :type tab: int
 
+        :param hold_position: If True, then override Qt's default
+                              placement and retain the original position
+                              of new_widget
+        :type hold_position: bool
+
         :rtype: QMdiSubWindow. The window that this widget is wrapped in
         """
         page = self.tab(tab)
-
+        pos = getattr(new_widget, 'position', None)
         sub = new_widget.mdi_wrap()
+
         if label:
             sub.setWindowTitle(label)
         page.addSubWindow(sub)
         page.setActiveSubWindow(sub)
+        if hold_position and pos is not None:
+            new_widget.move(pos[0], pos[1])
         return sub
 
     def set_setting(self, key, value):
@@ -437,28 +446,26 @@ class GlueApplication(Application, QMainWindow):
     @set_cursor(Qt.WaitCursor)
     def _restore_session(self, show=True):
         """ Load a previously-saved state, and restart the session """
-        from pickle import Unpickler
-
         fltr = "Glue sessions (*.glu)"
         file_name, file_filter = QFileDialog.getOpenFileName(self,
                                                              filter=fltr)
         if not file_name:
             return
 
-        state = Unpickler(open(file_name)).load()
+        ga = self.restore(file_name, show=True)
+        self.close()
+        return ga
 
-        data, hub = state
-        pos = self.pos()
-        size = self.size()
-        session = Session(data_collection=data, hub=hub)
-        ga = GlueApplication(session=session)
-        ga.move(pos)
-        ga.resize(size)
+    @staticmethod
+    def restore(path, show=True):
+        from ..core.state import GlueUnSerializer
 
+        with open(path) as infile:
+            state = GlueUnSerializer.load(infile)
+
+        ga = state.object('__main__')
         if show:
             ga.show()
-
-        self.close()
         return ga
 
     def has_terminal(self):

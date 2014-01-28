@@ -380,6 +380,15 @@ class TestImageClient(object):
         c = self.create_client_with_hypercube()
         assert c.display_data is self.cube4
 
+    def test_slice_move_retains_zoom(self):
+        # regression test for #224
+        c = self.create_client_with_cube()
+        c._ax.set_xlim(2, 11)
+        c._ax.set_ylim(4, 11)
+        c.slice = 1, 'y', 'x'
+        assert c._ax.get_xlim() == (2, 11)
+        assert c._ax.get_ylim() == (4, 11)
+
 
 def test_format_coord_2d():
     """Coordinate display is in world coordinates"""

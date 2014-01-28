@@ -47,15 +47,19 @@ class SliceWidget(QWidget):
 
         slider = QSlider(Qt.Horizontal)
         slider.setMinimum(lo)
+        slider_lbl = QLabel()
         slider.setMaximum(hi)
         slider.valueChanged.connect(lambda x:
                                     self.slice_changed.emit(self.mode))
+        slider.valueChanged.connect(lambda x: slider_lbl.setText(str(x)))
+        layout.addWidget(slider_lbl)
         layout.addWidget(slider)
 
         self.setLayout(layout)
 
         self._ui_label = label
         self._ui_slider = slider
+        self._slider_lbl = slider_lbl
         self._ui_mode = mode
         self._update_mode()
         self._frozen = False
@@ -63,8 +67,10 @@ class SliceWidget(QWidget):
     def _update_mode(self, *args):
         if self.mode != 'slice':
             self._ui_slider.hide()
+            self._slider_lbl.hide()
         else:
             self._ui_slider.show()
+            self._slider_lbl.show()
 
     def freeze(self):
         self.mode = 'slice'
@@ -200,3 +206,12 @@ class DataSlice(QWidget):
 
         return tuple(s.mode if s.mode != 'slice' else s.slice_center
                      for s in self._slices)
+
+    @slice.setter
+    def slice(self, value):
+        for v, s in zip(value, self._slices):
+            if v in ['x', 'y']:
+                s.mode = v
+            else:
+                s.mode = 'slice'
+                s.slice_center = v

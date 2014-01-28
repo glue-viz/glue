@@ -90,6 +90,7 @@ class DataViewer(QMainWindow, ViewerBase):
         self.destroyed.connect(sub.close)
         sub.resize(self.size())
         self._mdi_wrapper = sub
+
         return sub
 
     @property
@@ -167,6 +168,7 @@ class DataViewer(QMainWindow, ViewerBase):
     def addToolBar(self, tb):
         super(DataViewer, self).addToolBar(tb)
         self._toolbars.append(tb)
+        self._tb_vis[tb] = True
 
     def show_toolbars(self):
         """Re-enable any toolbars that were hidden with `hide_toolbars()`

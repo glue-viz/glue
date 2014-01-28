@@ -324,7 +324,11 @@ class PropertySetMixin(object):
 
         Keys in the new dict must be valid property names defined in
         the _property_set class level attribute"""
-        for k, v in value.items():
-            if k not in self._property_set:
-                raise ValueError("%s has no property %s" % (type(self), k))
-            setattr(self, k, v)
+        invalid = set(value.keys()) - set(self._property_set)
+        if invalid:
+            raise ValueError("Invalid property values: %s" % invalid)
+
+        for k in self._property_set:
+            if k not in value:
+                continue
+            setattr(self, k, value[k])

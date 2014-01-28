@@ -553,6 +553,28 @@ class RGBEdit(QWidget):
         self.current['red'].click()
 
     @property
+    def attributes(self):
+        """A 3-tuple of the ComponentIDs for each RGB layer"""
+        return tuple(self.cid[c].component for c in ['red', 'green', 'blue'])
+
+    @attributes.setter
+    def attributes(self, cids):
+        for cid, c in zip(cids, ['red', 'green', 'blue']):
+            if cid is None:
+                continue
+            self.cid[c].component = cid
+
+    @property
+    def rgb_visible(self):
+        """ A 3-tuple of the visibility of each layer, as bools """
+        return tuple(self.vis[c].isChecked() for c in ['red', 'green', 'blue'])
+
+    @rgb_visible.setter
+    def rgb_visible(self, value):
+        for v, c in zip(value, 'red green blue'.split()):
+            self.vis[c].setChecked(v)
+
+    @property
     def artist(self):
         return self._artist
 

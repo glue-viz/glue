@@ -12,18 +12,32 @@ from .component_link import (ComponentLink, CoordinateComponentLink,
 from .subset import Subset, InequalitySubsetState, SubsetState
 from .hub import Hub
 from .tree import Tree
-from .util import split_component_view, view_shape, check_sorted
+from .util import (split_component_view, view_shape,
+                   coerce_numeric, check_sorted)
 from .message import (DataUpdateMessage,
                       DataAddComponentMessage,
                       SubsetCreateMessage, ComponentsChangedMessage)
 
-from .util import coerce_numeric
 from .odict import OrderedDict
 
 __all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
            'CoordinateComponent']
 
 COLORS = [RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK]
+
+
+# access to ComponentIDs via .item[name]
+class ComponentIDDict(object):
+
+    def __init__(self, data, **kwargs):
+        self.data = data
+
+    def __getitem__(self, key):
+        result = self.data.find_component_id(key)
+        if result is None:
+            raise KeyError("ComponentID not found or not unique: %s"
+                           % key)
+        return result
 
 
 class ComponentID(object):
@@ -165,7 +179,7 @@ class Component(object):
         return np.can_cast(self.data[0], np.complex)
 
     def __str__(self):
-        return "Component with shape %s" % self.shape
+        return "Component with shape %s" % (self.shape,)
 
     def jitter(self, method=None):
         raise NotImplementedError
@@ -266,6 +280,18 @@ class CoordinateComponent(Component):
 
     def __getitem__(self, key):
         return self._calculate(key)
+
+    def __lt__(self, other):
+        if self.world == other.world:
+            return self.axis < other.axis
+        return self.world
+
+    def __gluestate__(self, context):
+        return dict(axis=self.axis, world=self.world)
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(None, rec['axis'], rec['world'])
 
 
 class CategoricalComponent(Component):
@@ -375,19 +401,6 @@ class Data(object):
         self._components = OrderedDict()
         self._pixel_component_ids = []
         self._world_component_ids = []
-
-        # access to ComponentIDs via .item[name]
-        class ComponentIDDict(object):
-
-            def __init__(self, data, **kwargs):
-                self.data = data
-
-            def __getitem__(self, key):
-                result = self.data.find_component_id(key)
-                if result is None:
-                    raise KeyError("ComponentID not found or not unique: %s"
-                                   % key)
-                return result
 
         self.id = ComponentIDDict(self)
 
@@ -652,9 +665,6 @@ class Data(object):
                                            self._pixel_component_ids[i],
                                            self.coords, i, pixel2world=False)
             result.append(link)
-
-        for r in result:
-            r.hide_from_editor = True
 
         self._coordinate_links = result
         return result

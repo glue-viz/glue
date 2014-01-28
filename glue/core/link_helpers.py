@@ -9,8 +9,6 @@ The LinkCollection class and its sublcasses are factories to create
 multiple ComponentLinks easily. They are meant to be passed to
 :func:`DataCollection.add_link()`
 """
-from functools import wraps
-
 from .component_link import ComponentLink
 from .data import ComponentID
 from ..external.aplpy import gal2fk5, fk52gal
@@ -26,7 +24,7 @@ identity.output_args = ['y']
 
 def lengths_to_volume(width, height, depth):
     """Compute volume from linear measurements of a box"""
-    #included for demonstration purposes
+    # included for demonstration purposes
     return width * height * depth
 
 
@@ -36,11 +34,22 @@ __LINK_FUNCTIONS__.append(identity)
 __LINK_FUNCTIONS__.append(lengths_to_volume)
 
 
-def _partial_result(func, index):
-    @wraps(func)
-    def getter(*args, **kwargs):
-        return func(*args, **kwargs)[index]
-    return getter
+class PartialResult(object):
+
+    def __init__(self, func, index):
+        self.func = func
+        self.index = index
+        self.__name__ = '%s_%i' % (func.__name__, index + 1)
+
+    def __call__(self, *args, **kwargs):
+        return self.func(*args, **kwargs)[self.index]
+
+    def __gluestate__(self, context):
+        return dict(func=context.do(self.func), index=self.index)
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(context.object(rec['func']), rec['index'])
 
 
 def _toid(arg):
@@ -58,15 +67,18 @@ class LinkCollection(list):
 
 
 class LinkSame(LinkCollection):
+
     """
     Return ComponentLinks to represent that two componentIDs
     describe the same piece of information
     """
+
     def __init__(self, cid1, cid2):
         self.append(ComponentLink([_toid(cid1)], _toid(cid2)))
 
 
 class LinkTwoWay(LinkCollection):
+
     def __init__(self, cid1, cid2, forwards, backwards):
         """ Return 2 links that connect input ComponentIDs in both directions
 
@@ -84,6 +96,7 @@ class LinkTwoWay(LinkCollection):
 
 
 class MultiLink(LinkCollection):
+
     """
     Compute all the ComponentLinks to link groups of ComponentIDs
 
@@ -112,21 +125,23 @@ class MultiLink(LinkCollection):
 
         if forwards is not None:
             for i, r in enumerate(cids_right):
-                func = _partial_result(forwards, i)
+                func = PartialResult(forwards, i)
                 self.append(ComponentLink(cids_left, r, func))
 
         if backwards is not None:
             for i, l in enumerate(cids_left):
-                func = _partial_result(backwards, i)
+                func = PartialResult(backwards, i)
                 self.append(ComponentLink(cids_right, l, func))
 
 
 class LinkAligned(LinkCollection):
+
     """Compute all the links to specify that the input data are pixel-aligned
 
     :param data: An iterable of :class:`~glue.core.Data` instances
     that are aligned at the pixel level. They must be the same shape.
     """
+
     def __init__(self, data):
         shape = data[0].shape
         ndim = data[0].ndim
@@ -139,6 +154,7 @@ class LinkAligned(LinkCollection):
 
 
 class Galactic2Equatorial(MultiLink):
+
     """
     Instantiate a ComponentList with four ComponentLinks that map galactic
     and equatorial coordinates
@@ -152,7 +168,7 @@ class Galactic2Equatorial(MultiLink):
     these ComponentIDs
     """
 
-    #attributes used by the Gui
+    # attributes used by the Gui
     info_text = """Link Galactic and Equatorial coordinates"""
     input_args = ['l', 'b', 'ra', 'dec']
 

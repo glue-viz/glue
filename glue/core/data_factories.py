@@ -39,20 +39,10 @@ from .coordinates import coordinates_from_header, coordinates_from_wcs
 from ..external.astro import fits
 
 
-__all__ = ['gridded_data', 'tabular_data', 'data_dendro_cpp']
+__all__ = ['load_data', 'gridded_data', 'casalike_cube',
+           'tabular_data', 'img_data']
 __factories__ = []
 _default_factory = {}
-
-
-def load_numpy_str(x):
-    """
-    Load the contents of a npz file into a numpy array
-
-    :param x: str
-    """
-    from cStringIO import StringIO
-    s = StringIO(x.decode('base64'))
-    return np.load(s)
 
 
 def as_list(x):
@@ -109,8 +99,58 @@ def is_fits(filename):
         return False
 
 
+class LoadLog(object):
+    """
+    This class attaches some metadata to data created
+    from load_data, so that the data can be re-constructed
+    when loading saved state. It's only meant to be used
+    within load_data
+    """
+    def __init__(self, path, factory, kwargs):
+        self.path = path
+        self.factory = factory
+        self.kwargs = kwargs
+        self.components = []
+        self.data = []
+
+    def _log_component(self, component):
+        self.components.append(component)
+
+    def _log_data(self, data):
+        self.data.append(data)
+
+    def log(self, obj):
+        if isinstance(obj, Component):
+            self._log_component(obj)
+        elif isinstance(obj, Data):
+            self._log_data(obj)
+        obj._load_log = self
+
+    def id(self, component):
+        return self.components.index(component)
+
+    def component(self, index):
+        return self.components[index]
+
+    def __gluestate__(self, context):
+        return dict(path=self.path,
+                    factory=context.do(self.factory),
+                    kwargs=[list(self.kwargs.items())])
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        fac = context.object(rec['factory'])
+        kwargs = dict(*rec['kwargs'])
+        d = load_data(rec['path'], factory=fac, **kwargs)
+        return as_list(d)[0]._load_log
+
+
 def load_data(path, factory=None, **kwargs):
     """Use a factory to load a file and assign a label
+
+    This is the preferred interface for loading data into Glue,
+    as it logs metadata about how data objects relate to files
+    on disk
 
     :param path: Path to a file
     :type path: str
@@ -122,8 +162,13 @@ def load_data(path, factory=None, **kwargs):
     factory = factory or auto_data
     d = factory(path, **kwargs)
     lbl = data_label(path)
+
+    log = LoadLog(path, factory, kwargs)
     for item in as_list(d):
         item.label = lbl
+        log.log(item)
+        for cid in item.primary_components:
+            log.log(item.get_component(cid))
     return d
 
 
@@ -518,5 +563,4 @@ for i in img_fmt:
     set_default_factory(i, img_data)
 
 __factories__.append(img_data)
-__all__.append('img_data')
 __factories__.append(casalike_cube)

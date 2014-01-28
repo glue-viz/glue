@@ -1,7 +1,12 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+import numpy as np
+
 from ..image_widget import ImageWidget
 
 from .... import core
+from ....core.tests.test_state import TestApplication
+from ...glue_application import GlueApplication
+
 from . import simple_session
 
 import os
@@ -111,3 +116,75 @@ class TestImageWidget(object):
         combo = self.widget.ui.attributeComboBox
         index = combo.currentIndex()
         assert self.widget.client.display_attribute is combo.itemData(index)
+
+
+class TestStateSave(TestApplication):
+
+    def setup_method(self, method):
+        LinkSame = core.link_helpers.LinkSame
+
+        d = core.Data(label='im', x=[[1, 2], [2, 3]], y=[[2, 3], [4, 5]])
+        d2 = core.Data(label='cat',
+                       x=[0, 1, 0, 1],
+                       y=[0, 0, 1, 1],
+                       z=[1, 2, 3, 4])
+
+        dc = core.DataCollection([d, d2])
+        dc.add_link(LinkSame(d.get_pixel_component_id(0), d2.id['x']))
+        dc.add_link(LinkSame(d.get_pixel_component_id(1), d2.id['y']))
+
+        app = GlueApplication(dc)
+        w = app.new_data_viewer(ImageWidget, data=d)
+        self.d = d
+        self.app = app
+        self.w = w
+        self.d2 = d2
+
+    def test_image_viewer(self):
+        self.check_clone(self.app)
+
+    def test_subset(self):
+        d, w, app = self.d, self.w, self.app
+        s = d.new_subset(label='testing')
+        assert len(w.layers) == 2
+        self.check_clone(app)
+
+    def test_scatter_layer(self):
+        # add scatter layer
+        d, w, app, d2 = self.d, self.w, self.app, self.d2
+        w.add_data(d2)
+        assert len(w.layers) == 2
+        self.check_clone(app)
+
+    def test_cube(self):
+        d = core.Data(label='cube',
+                      x=np.zeros((2, 2, 2)))
+        dc = core.DataCollection([d])
+        app = GlueApplication(dc)
+        w = app.new_data_viewer(ImageWidget, d)
+        w.slice = ('x', 'y', 1)
+        c = self.check_clone(app)
+        w2 = c.viewers[0][0]
+        assert w2.ui.slice.slice == ('x', 'y', 1)
+
+    def test_rgb_layer(self):
+        d, w, app = self.d, self.w, self.app
+
+        x = d.id['x']
+        y = d.id['y']
+        w.client.display_data = d
+        w.rgb_mode = True
+        w.rgb_viz = (True, True, False)
+        w.ratt = x
+        w.gatt = y
+        w.batt = x
+
+        clone = self.check_clone(app)
+
+        w = clone.viewers[0][0]
+
+        assert w.rgb_viz == (True, True, False)
+        assert w.rgb_mode
+        assert w.ratt.label == 'x'
+        assert w.gatt.label == 'y'
+        assert w.batt.label == 'x'
