@@ -97,14 +97,14 @@ def test_csv_gz_factory():
 
 
 def test_csv_pandas_factory():
-    data = """a,b,c
-1,2.1,some
-2,2.4,categorical
-3,1.4,data
-4,4.0,here
-5,6.3,
-6,8.7,
-8,9.2,"""
+    data = """a,b,c,d
+1,2.1,some,True
+2,2.4,categorical,False
+3,1.4,data,True
+4,4.0,here,True
+5,6.3,,False
+6,8.7,,False
+8,9.2,,True"""
 
     with make_file(data, '.csv') as fname:
         d = df.load_data(fname, factory=df.pandas_read_csv)
@@ -119,6 +119,9 @@ def test_csv_pandas_factory():
                                         dtype=np.object))
     np.testing.assert_equal(d.get_component(cat_comp)._categories,
                             correct_cats)
+    cat_comp = d.find_component_id('d')
+    assert isinstance(d.get_component(cat_comp), CategoricalComponent)
+
 
 
 def test_dtype_int():
