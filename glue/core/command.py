@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+import logging
 
 from .data_factories import load_data
 
@@ -95,6 +96,7 @@ class CommandStack(object):
 
         :rtype: The return value of cmd.do()
         """
+        logging.getLogger(__name__).debug("Do %s", cmd)
         self._command_stack.append(cmd)
         result = cmd.do(self._session)
         self._command_stack = self._command_stack[-MAX_UNDO:]
@@ -109,6 +111,7 @@ class CommandStack(object):
         """
         try:
             c = self._command_stack.pop()
+            logging.getLogger(__name__).debug("Undo %s", c)
         except IndexError:
             raise IndexError("No commands to undo")
         self._undo_stack.append(c)
@@ -122,6 +125,7 @@ class CommandStack(object):
         """
         try:
             c = self._undo_stack.pop()
+            logging.getLogger(__name__).debug("Undo %s", c)
         except IndexError:
             raise IndexError("No commands to redo")
         result = c.do(self._session)
@@ -168,7 +172,6 @@ class RemoveData(Command):
 
 
 class NewDataViewer(Command):
-
     """Add a new data viewer to the application
 
     :param viewer: The class of viewer to create
