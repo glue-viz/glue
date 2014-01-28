@@ -373,7 +373,6 @@ class ScatterClient(Client):
         else:
             axis.set_major_locator(AutoLocator())
             axis.set_major_formatter(ScalarFormatter())
-        print axis.get_major_locator(), axis.get_major_formatter()
 
     def _jitter(self, *args):
 

@@ -178,6 +178,7 @@ class TestScatterClient(object):
         layer = self.add_data()
         with pytest.raises(TypeError):
             self.client.xatt = self.ids[1]._label
+        self.client.xatt = self.ids[1]
 
     def test_logs(self):
         layer = self.add_data()

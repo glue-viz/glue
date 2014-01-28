@@ -275,9 +275,12 @@ def coerce_numeric(arr):
 
 
 def check_sorted(array):
-    """ Return True if the array is sorted, False otherwise
+    """ Return True if the array is sorted, False otherwise.
     """
-    return all(array[i] <= array[i+1] for i in xrange(len(array)-1))
+    # this ignores NANs, and does the right thing if nans
+    # are concentrated at beginning or end of array
+    # otherwise, it will miss things at nan/finite boundaries
+    return not (array[:-1] > array[1:]).any()
 
 
 def lookup_class(ref):
