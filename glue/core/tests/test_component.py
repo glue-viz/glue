@@ -6,7 +6,8 @@ import pytest
 import numpy as np
 
 from ..data import (Component, ComponentID,
-                    DerivedComponent, CoordinateComponent)
+                    DerivedComponent, CoordinateComponent,
+                    CategoricalComponent)
 from ... import core
 
 
@@ -63,6 +64,96 @@ class TestDerivedComponent(object):
 
     def test_link(self):
         assert self.cid.link == self.link
+
+
+class TestCategoricalComponent(object):
+
+    def setup_method(self, method):
+        self.list_data = ['a', 'a', 'b', 'b']
+        self.array_data = np.array(self.list_data)
+
+    def test_accepts_numpy(self):
+        cat_comp = CategoricalComponent(self.array_data)
+        assert cat_comp._categorical_data.shape == (4,)
+
+    def test_accepts_list(self):
+        """Should accept a list and convert to numpy!"""
+        cat_comp = CategoricalComponent(self.list_data)
+        np.testing.assert_equal(cat_comp._categorical_data, self.array_data)
+
+    def test_multi_nans(self):
+        cat_comp = CategoricalComponent([np.nan, np.nan, 'a', 'b', 'c', 'zanthia'])
+        np.testing.assert_equal(cat_comp._data,
+                                np.array([0, 0, 1, 2, 3, 4]))
+        np.testing.assert_equal(cat_comp._categories,
+                                np.asarray([np.nan, 'a', 'b', 'c', 'zanthia'],
+                                           dtype=np.object))
+
+    def test_calculate_grouping(self):
+        cat_comp = CategoricalComponent(self.array_data)
+        np.testing.assert_equal(cat_comp._categories, np.asarray(['a', 'b']))
+        np.testing.assert_equal(cat_comp._data, np.array([0, 0, 1, 1]))
+        assert cat_comp._data.dtype == np.float
+
+    def test_accepts_provided_grouping(self):
+        ncategories = ['b', 'c']
+        cat_data = list('aaabbbcccddd')
+        cat_comp = CategoricalComponent(cat_data, categories=ncategories)
+
+        assert cat_comp._categories == ncategories
+        assert np.all(np.isnan(cat_comp._data[:3]))
+        assert np.all(cat_comp._data[3:6] == 0)
+        assert np.all(cat_comp._data[6:9] == 1)
+        assert np.all(np.isnan(cat_comp._data[9:]))
+
+    def test_uniform_jitter(self):
+        cat_comp = CategoricalComponent(self.array_data)
+        second_comp = CategoricalComponent(self.array_data)
+        cat_comp.jitter(method='uniform')
+        assert np.all(cat_comp._data != second_comp._data), "Didn't jitter data!"
+        second_comp.jitter(method='uniform')
+        np.testing.assert_equal(cat_comp._data,
+                                second_comp._data,
+                                "Didn't jitter data consistently!")
+        assert cat_comp._jitter_method == 'uniform'
+
+    def test_no_double_jitter(self):
+        cat_comp = CategoricalComponent(self.array_data)
+        second_comp = CategoricalComponent(self.array_data)
+        cat_comp.jitter(method='uniform')
+        delta = np.abs(cat_comp._data - second_comp._data).sum()
+        assert delta > 0
+        second_comp.jitter(method='uniform')
+        second_comp.jitter(method='uniform')
+        np.testing.assert_equal(cat_comp._data,
+                                second_comp._data,
+                                "Data double jittered!")
+
+    def test_unjitter_data(self):
+        cat_comp = CategoricalComponent(self.array_data)
+        second_comp = CategoricalComponent(self.array_data)
+
+        cat_comp.jitter(method='uniform')
+        delta = np.abs(cat_comp._data - second_comp._data).sum()
+        assert delta > 0
+
+        cat_comp.jitter(method=None)
+        np.testing.assert_equal(cat_comp._data,
+                                second_comp._data,
+                                "Didn't un-jitter data!")
+
+    def test_jitter_on_init(self):
+        cat_comp = CategoricalComponent(self.array_data, jitter='uniform')
+        second_comp = CategoricalComponent(self.array_data)
+        second_comp.jitter(method='uniform')
+        delta = np.abs(cat_comp._data - second_comp._data).sum()
+        assert delta == 0
+
+    def test_valueerror_on_bad_jitter(self):
+
+        with pytest.raises(ValueError):
+            cat_comp = CategoricalComponent(self.array_data)
+            cat_comp.jitter(method='this will never be a jitter method')
 
 
 class TestCoordinateComponent(object):

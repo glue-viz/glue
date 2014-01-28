@@ -274,6 +274,15 @@ def coerce_numeric(arr):
     return np.genfromtxt(arr)
 
 
+def check_sorted(array):
+    """ Return True if the array is sorted, False otherwise.
+    """
+    # this ignores NANs, and does the right thing if nans
+    # are concentrated at beginning or end of array
+    # otherwise, it will miss things at nan/finite boundaries
+    return not (array[:-1] > array[1:]).any()
+
+
 def lookup_class(ref):
     """ Look up an object via it's module string (e.g., 'glue.core.Data')
 

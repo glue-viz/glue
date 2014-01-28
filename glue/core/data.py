@@ -12,7 +12,7 @@ from .component_link import (ComponentLink, CoordinateComponentLink,
 from .subset import Subset, InequalitySubsetState, SubsetState
 from .hub import Hub
 from .tree import Tree
-from .util import split_component_view, view_shape
+from .util import split_component_view, view_shape, check_sorted
 from .message import (DataUpdateMessage,
                       DataAddComponentMessage,
                       SubsetCreateMessage, ComponentsChangedMessage)
@@ -167,6 +167,9 @@ class Component(object):
     def __str__(self):
         return "Component with shape %s" % self.shape
 
+    def jitter(self, method=None):
+        raise NotImplementedError
+
     @property
     def creation_info(self):
         """A 4-tuple describing how this component was created
@@ -263,6 +266,81 @@ class CoordinateComponent(Component):
 
     def __getitem__(self, key):
         return self._calculate(key)
+
+
+class CategoricalComponent(Component):
+
+    def __init__(self, categorical_data, categories=None, jitter=None):
+        super(CategoricalComponent, self).__init__(None, None)
+        self._categorical_data = np.asarray(categorical_data, dtype=np.object)
+        self._categories = categories
+        self._jitter_method = jitter
+        self._is_jittered = False
+        self._data = None
+        if self._categories is None:
+            self._update_categories()
+        else:
+            self._update_data()
+
+    def _update_categories(self, categories=None):
+        """
+        :param categories: A sorted array of categories to find in the dataset.
+        If None the categories are the unique items in the data.
+        :return: None
+        """
+        if categories is None:
+            categories, inv = np.unique(self._categorical_data, return_inverse=True)
+            self._categories = categories
+            self._data = inv.astype(np.float)
+            self.jitter(method=self._jitter_method)
+        else:
+            if check_sorted(categories):
+                self._categories = categories
+                self._update_data()
+            else:
+                raise ValueError("Provided categories must be Sorted")
+
+    def _update_data(self):
+        """ Converts the categorical data into the numeric representations
+        given self._categories
+        """
+        self._is_jittered = False
+        #Complicated because of the case of items not in
+        #self._categories may be on either side of the sorted list
+        left = np.searchsorted(self._categories,
+                               self._categorical_data,
+                               side='left')
+        right = np.searchsorted(self._categories,
+                                self._categorical_data,
+                                side='right')
+        self._data = left.astype(float)
+        self._data[(left == 0) & (right == 0)] = np.nan
+        self._data[left == len(self._categories)] = np.nan
+
+        self._data[self._data == len(self._categories)] = np.nan
+        self.jitter(method=self._jitter_method)
+
+    def jitter(self, method=None):
+        """ Jitter the data so the density of points can be easily seen in a
+        scatter plot.
+        :param method: Currently only supports None and 'uniform'
+            None: No jittering is done (or any jittering is undone).
+            uniform: A unformly distributed random variable (-0.5, 0.5) is
+                     applied to each point.
+        :return: None
+        """
+
+        if method not in {'uniform', None}:
+            raise ValueError('%s jitter not supported' % method)
+        self._jitter_method = method
+        seed = 1234567890
+        rand_state = np.random.RandomState(seed)
+
+        if (self._jitter_method is None) and self._is_jittered:
+            self._update_data()
+        elif (self._jitter_method is 'uniform') and not self._is_jittered:
+            self._data += rand_state.uniform(-0.5, 0.5, size=self._data.shape)
+            self._is_jittered = True
 
 
 class Data(object):

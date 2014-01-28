@@ -8,6 +8,7 @@ from mock import MagicMock
 import numpy as np
 
 import glue.core.data_factories as df
+from glue.core.data import CategoricalComponent
 from .util import make_file
 
 
@@ -96,6 +97,31 @@ def test_csv_gz_factory():
     np.testing.assert_array_equal(d['x'], [1, 2, 3])
 
 
+def test_csv_pandas_factory():
+    data = """a,b,c
+1,2.1,some
+2,2.4,categorical
+3,1.4,data
+4,4.0,here
+5,6.3,
+6,8.7,
+8,9.2,"""
+
+    with make_file(data, '.csv') as fname:
+        d = df.load_data(fname, factory=df.pandas_read_csv)
+    assert d['a'].dtype == np.int
+    assert d['b'].dtype == np.float
+    assert d['c'].dtype == np.float
+    cat_comp = d.find_component_id('c')
+    assert isinstance(d.get_component(cat_comp), CategoricalComponent)
+    correct_cats = np.unique(np.asarray(['some', 'categorical',
+                                         'data', 'here',
+                                         np.nan, np.nan, np.nan],
+                                        dtype=np.object))
+    np.testing.assert_equal(d.get_component(cat_comp)._categories,
+                            correct_cats)
+
+
 def test_dtype_int():
     data = '# a, b\n1, 1 \n2, 2 \n3, 3'
     with make_file(data, '.csv') as fname:
@@ -105,6 +131,13 @@ def test_dtype_int():
 
 def test_dtype_float():
     data = '# a, b\n1., 1 \n2, 2 \n3, 3'
+    with make_file(data, '.csv') as fname:
+        d = df.load_data(fname)
+    assert d['a'].dtype == np.float
+
+
+def test_dtype_float_on_categorical():
+    data = '# a, b\nf, 1 \nr, 2 \nk, 3'
     with make_file(data, '.csv') as fname:
         d = df.load_data(fname)
     assert d['a'].dtype == np.float
