@@ -24,9 +24,11 @@ from ..core import util
 from ..core import roi
 from . import get_qapp
 from .qtutil import get_icon
+from . import qt_roi
 
 
 class MouseMode(object):
+
     """ The base class for all MouseModes.
 
     MouseModes have the following attributes:
@@ -43,6 +45,7 @@ class MouseMode(object):
     The _callback hooks are called with the MouseMode as its only
     argument
     """
+
     def __init__(self, axes,
                  press_callback=None,
                  move_callback=None,
@@ -123,6 +126,7 @@ class MouseMode(object):
 
 
 class RoiModeBase(MouseMode):
+
     """ Base class for defining ROIs. ROIs accessible via the roi() method
 
     See RoiMode and ClickRoiMode subclasses for interaction details
@@ -132,6 +136,7 @@ class RoiModeBase(MouseMode):
     the RoiMode object as the argument. Clients can use RoiMode.roi()
     to retrieve the new ROI, and take the appropriate action.
     """
+
     def __init__(self, axes, **kwargs):
         """
         :param roi_callback: Function that will be called when the
@@ -157,11 +162,13 @@ class RoiModeBase(MouseMode):
 
 
 class RoiMode(RoiModeBase):
+
     """ Define Roi Modes via click+drag events
 
     ROIs are updated continuously on click+drag events, and finalized
     on each mouse release
     """
+
     def __init__(self, axes, **kwargs):
         super(RoiMode, self).__init__(axes, **kwargs)
 
@@ -200,12 +207,14 @@ class RoiMode(RoiModeBase):
 
 
 class ClickRoiMode(RoiModeBase):
+
     """
     Generate ROIs using clicks and click+drags.
 
     ROIs updated on each click, and each click+drag.
     ROIs are finalized on enter press, and reset on escape press
     """
+
     def __init__(self, axes, **kwargs):
         super(ClickRoiMode, self).__init__(axes, **kwargs)
         self._last_event = None
@@ -233,86 +242,100 @@ class ClickRoiMode(RoiModeBase):
 
 
 class RectangleMode(RoiMode):
+
     """ Defines a Rectangular ROI, accessible via the roi() method"""
+
     def __init__(self, axes, **kwargs):
         super(RectangleMode, self).__init__(axes, **kwargs)
         self.icon = get_icon('glue_square')
         self.mode_id = 'Rectangle'
         self.action_text = 'Rectangular ROI'
         self.tool_tip = 'Define a rectangular region of interest'
-        self._roi_tool = roi.MplRectangularROI(self._axes)
+        self._roi_tool = qt_roi.QtRectangularROI(self._axes)
         self.shortcut = 'R'
 
 
 class CircleMode(RoiMode):
+
     """ Defines a Circular ROI, accessible via the roi() method"""
+
     def __init__(self, axes, **kwargs):
         super(CircleMode, self).__init__(axes, **kwargs)
         self.icon = get_icon('glue_circle')
         self.mode_id = 'Circle'
         self.action_text = 'Circular ROI'
         self.tool_tip = 'Define a circular region of interest'
-        self._roi_tool = roi.MplCircularROI(self._axes)
+        self._roi_tool = qt_roi.QtCircularROI(self._axes)
         self.shortcut = 'C'
 
 
 class PolyMode(ClickRoiMode):
+
     """ Defines a Polygonal ROI, accessible via the roi() method"""
+
     def __init__(self, axes, **kwargs):
         super(PolyMode, self).__init__(axes, **kwargs)
         self.icon = get_icon('glue_lasso')
         self.mode_id = 'Polygon'
         self.action_text = 'Polygonal ROI'
         self.tool_tip = 'Lasso a region of interest'
-        self._roi_tool = roi.MplPolygonalROI(self._axes)
+        self._roi_tool = qt_roi.QtPolygonalROI(self._axes)
         self.shortcut = 'G'
 
 
 class LassoMode(RoiMode):
+
     """ Defines a Polygonal ROI, accessible via the roi() method"""
+
     def __init__(self, axes, **kwargs):
         super(LassoMode, self).__init__(axes, **kwargs)
         self.icon = get_icon('glue_lasso')
         self.mode_id = 'Lasso'
         self.action_text = 'Polygonal ROI'
         self.tool_tip = 'Lasso a region of interest'
-        self._roi_tool = roi.MplPolygonalROI(self._axes)
+        self._roi_tool = qt_roi.QtPolygonalROI(self._axes)
         self.shortcut = 'L'
 
 
 class HRangeMode(RoiMode):
+
     """ Defines a Range ROI, accessible via the roi() method.
     This class defines horizontal ranges"""
+
     def __init__(self, axes, **kwargs):
         super(HRangeMode, self).__init__(axes, **kwargs)
         self.icon = get_icon('glue_xrange_select')
         self.mode_id = 'X range'
         self.action_text = 'X range'
         self.tool_tip = 'Select a range of x values'
-        self._roi_tool = roi.MplXRangeROI(self._axes)
+        self._roi_tool = qt_roi.QtXRangeROI(self._axes)
         self.shortcut = 'H'
 
 
 class VRangeMode(RoiMode):
+
     """ Defines a Range ROI, accessible via the roi() method.
     This class defines vertical ranges"""
+
     def __init__(self, axes, **kwargs):
         super(VRangeMode, self).__init__(axes, **kwargs)
         self.icon = get_icon('glue_yrange_select')
         self.mode_id = 'Y range'
         self.action_text = 'Y range'
         self.tool_tip = 'Select a range of y values'
-        self._roi_tool = roi.MplYRangeROI(self._axes)
+        self._roi_tool = qt_roi.QtYRangeROI(self._axes)
         self.shortcut = 'V'
 
 
 class ContrastMode(MouseMode):
+
     """Uses right mouse button drags to set bias and contrast, ala DS9
 
     The horizontal position of the mouse sets the bias, the vertical
     position sets the contrast. The get_scaling method converts
     this information into scaling information for a particular data set
     """
+
     def __init__(self, *args, **kwargs):
         super(ContrastMode, self).__init__(*args, **kwargs)
         self.icon = get_icon('glue_contrast')
@@ -409,7 +432,9 @@ class ContrastMode(MouseMode):
 
 
 class ContourMode(MouseMode):
+
     """ Creates ROIs by using the mouse to 'pick' contours out of the data """
+
     def __init__(self, *args, **kwargs):
         super(ContourMode, self).__init__(*args, **kwargs)
 
