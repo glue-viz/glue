@@ -132,7 +132,8 @@ class GlueApplication(Application, QMainWindow):
         w.close()
         self.tab_widget.removeTab(index)
 
-    def add_widget(self, new_widget, label=None, tab=None):
+    def add_widget(self, new_widget, label=None, tab=None,
+                   hold_position=False):
         """ Add a widget to one of the tabs
 
         :param new_widget: Widge to add
@@ -144,6 +145,11 @@ class GlueApplication(Application, QMainWindow):
         :param tab: Tab to add to. Optional (default: current tab)
         :type tab: int
 
+        :param hold_position: If True, then override Qt's default
+                              placement and retain the original position
+                              of new_widget
+        :type hold_position: bool
+
         :rtype: QMdiSubWindow. The window that this widget is wrapped in
         """
         page = self.tab(tab)
@@ -154,8 +160,8 @@ class GlueApplication(Application, QMainWindow):
             sub.setWindowTitle(label)
         page.addSubWindow(sub)
         page.setActiveSubWindow(sub)
-        if pos is not None:
-            new_widget.move(x=pos[0], y=pos[1])
+        if hold_position and pos is not None:
+            new_widget.move(pos[0], pos[1])
         return sub
 
     def set_setting(self, key, value):

@@ -179,9 +179,11 @@ class Application(HubListener):
         # the viewers need
         context.register_object(rec['session'], self.session)
         for i, tab in enumerate(rec['viewers']):
+            if self.tab(i) is None:
+                self.new_tab()
             for v in tab:
                 viewer = context.object(v)
-                w = self.add_widget(viewer, i)
+                w = self.add_widget(viewer, tab=i, hold_position=True)
         return self
 
 

@@ -252,6 +252,18 @@ class TestApplication(object):
         copy = self.check_clone(app)
         assert copy.viewers[0][0].layers[-1].visible is False
 
+    def test_multi_tab(self):
+        d = core.Data(label='hist', x=[[1, 2], [2, 3]])
+        dc = core.DataCollection([d])
+
+        app = GlueApplication(dc)
+        w1 = app.new_data_viewer(HistogramWidget, data=d)
+        app.new_tab()
+        w2 = app.new_data_viewer(HistogramWidget, data=d)
+        assert app.viewers == ((w1,), (w2,))
+
+        self.check_clone(app)
+
     def test_histogram(self):
         d = core.Data(label='hist', x=[[1, 2], [2, 3]])
         dc = core.DataCollection([d])
