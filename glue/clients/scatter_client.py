@@ -247,9 +247,9 @@ class ScatterClient(Client):
         else:
             if coord == 'x':
                 self._xcat = None
-                print 'nulled out xcat'
-            else:
+            elif coord == 'y':
                 self._ycat = None
+            self._update_ticks(coord)
 
         #update plots
         map(self._update_layer, self.artists.layers)
@@ -373,6 +373,7 @@ class ScatterClient(Client):
         else:
             axis.set_major_locator(AutoLocator())
             axis.set_major_formatter(ScalarFormatter())
+        print axis.get_major_locator(), axis.get_major_formatter()
 
     def _jitter(self, *args):
 
