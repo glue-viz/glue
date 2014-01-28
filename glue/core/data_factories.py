@@ -39,7 +39,8 @@ from .coordinates import coordinates_from_header, coordinates_from_wcs
 from ..external.astro import fits
 
 
-__all__ = ['gridded_data', 'tabular_data', 'data_dendro_cpp']
+__all__ = ['load_data', 'gridded_data', 'casalike_cube',
+           'tabular_data', 'img_data']
 __factories__ = []
 _default_factory = {}
 
@@ -99,7 +100,12 @@ def is_fits(filename):
 
 
 class LoadLog(object):
-
+    """
+    This class attaches some metadata to data created
+    from load_data, so that the data can be re-constructed
+    when loading saved state. It's only meant to be used
+    within load_data
+    """
     def __init__(self, path, factory, kwargs):
         self.path = path
         self.factory = factory
@@ -557,5 +563,4 @@ for i in img_fmt:
     set_default_factory(i, img_data)
 
 __factories__.append(img_data)
-__all__.append('img_data')
 __factories__.append(casalike_cube)
