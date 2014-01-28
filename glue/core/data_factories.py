@@ -376,8 +376,8 @@ def panda_process(indf):
     result = Data()
     for name, column in indf.iteritems():
         if column.dtype == np.object:
-            #pandas has a 'special' nan implementation and this doesn't
-            #play well with np.unique
+            # pandas has a 'special' nan implementation and this doesn't
+            # play well with np.unique
             c = CategoricalComponent(column.fillna(np.nan))
         else:
             c = Component(column.values)
@@ -422,7 +422,6 @@ def pandas_read_csv(path, **kwargs):
 pandas_read_csv.label = "Panda-Table"
 pandas_read_csv.identifier = has_extension('csv')
 __factories__.append(pandas_read_csv)
-
 
 
 def data_dendro_cpp(file):

@@ -21,6 +21,7 @@ MAX_CATEGORIES = 10
 
 
 class ScatterClient(Client):
+
     """
     A client class that uses matplotlib to visualize tables as scatter plots.
     """
@@ -59,7 +60,7 @@ class ScatterClient(Client):
         self._layer_updated = False  # debugging
         self._xset = False
         self._yset = False
-        self._xcat = None  #The actual categories!
+        self._xcat = None  # The actual categories!
         self._ycat = None
         self.axes = axes
 
@@ -102,13 +103,13 @@ class ScatterClient(Client):
     def _set_limits(self, *args):
 
         if self._xcat is not None:
-            xlim = -0.5, len(self._xcat)+0.5
+            xlim = -0.5, len(self._xcat) + 0.5
         else:
             xlim = min(self.xmin, self.xmax), max(self.xmin, self.xmax)
         if self.xflip:
             xlim = xlim[::-1]
         if self._ycat is not None:
-            ylim = -0.5, len(self._ycat)+0.5
+            ylim = -0.5, len(self._ycat) + 0.5
         else:
             ylim = min(self.ymin, self.ymax), max(self.ymin, self.ymax)
         if self.yflip:
@@ -233,7 +234,7 @@ class ScatterClient(Client):
         if not isinstance(attribute, ComponentID):
             raise TypeError("attribute must be a ComponentID")
 
-        #update coordinates of data and subsets
+        # update coordinates of data and subsets
         if coord == 'x':
             new_add = not self._xset
             self.xatt = attribute
@@ -251,7 +252,7 @@ class ScatterClient(Client):
                 self._ycat = None
             self._update_ticks(coord)
 
-        #update plots
+        # update plots
         map(self._update_layer, self.artists.layers)
 
         if coord == 'x' and snap:
@@ -291,7 +292,7 @@ class ScatterClient(Client):
         lim = self.axes.get_xlim()
         self.axes.set_xscale(mode)
 
-        #Rescale if switching to log with negative bounds
+        # Rescale if switching to log with negative bounds
         if state and min(lim) <= 0:
             self._snap_xlim()
 
@@ -306,7 +307,7 @@ class ScatterClient(Client):
         mode = 'log' if state else 'linear'
         lim = self.axes.get_ylim()
         self.axes.set_yscale(mode)
-        #Rescale if switching to log with negative bounds
+        # Rescale if switching to log with negative bounds
         if state and min(lim) <= 0:
             self._snap_ylim()
 
@@ -410,17 +411,18 @@ class ScatterClient(Client):
                 return
 
         for data in self._data:
-            data.get_component(attribute)._update_categories(categories=all_categories)
+            data.get_component(attribute)._update_categories(
+                categories=all_categories)
 
         with delay_callback(self, 'xmin', 'xmax', 'ymin', 'ymax'):
             if coord == 'x':
                 self._xcat = all_categories
                 self.xmin = -0.5
-                self.xmax = len(all_categories)+0.5
+                self.xmax = len(all_categories) + 0.5
             else:
                 self._ycat = all_categories
                 self.ymin = -0.5
-                self.ymax = len(all_categories)+0.5
+                self.ymax = len(all_categories) + 0.5
 
     def _update_axis_labels(self, *args):
         self.axes.set_xlabel(self.xatt)
@@ -430,7 +432,7 @@ class ScatterClient(Client):
 
     def _add_subset(self, message):
         subset = message.sender
-        #only add subset if data layer present
+        # only add subset if data layer present
         if subset.data not in self.artists:
             return
         subset.do_broadcast(False)
