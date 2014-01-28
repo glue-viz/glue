@@ -12,12 +12,12 @@ from .component_link import (ComponentLink, CoordinateComponentLink,
 from .subset import Subset, InequalitySubsetState, SubsetState
 from .hub import Hub
 from .tree import Tree
-from .util import split_component_view, view_shape
+from .util import (split_component_view, view_shape,
+                   coerce_numeric, check_sorted)
 from .message import (DataUpdateMessage,
                       DataAddComponentMessage,
                       SubsetCreateMessage, ComponentsChangedMessage)
 
-from .util import coerce_numeric
 from .odict import OrderedDict
 
 __all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
