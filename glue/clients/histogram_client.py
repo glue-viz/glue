@@ -178,8 +178,12 @@ class HistogramClient(Client):
             bins = update_ticks(self.axes, 'x',
                                 components,
                                 self.xlog)
+
             if bins is not None:
-                self.nbins = self.nbins or min(bins, 100)
+                prev_bins = self.nbins
+                auto_bins = self._auto_nbin(calculate_only=True)
+                if prev_bins == auto_bins:
+                    self.nbins = min(bins, 100)
 
     def _get_data_components(self, coord):
         """ Returns the components for each dataset for x and y axes.
@@ -195,12 +199,15 @@ class HistogramClient(Client):
             except IncompatibleAttribute:
                 pass
 
-    def _auto_nbin(self):
+    def _auto_nbin(self, calculate_only=False):
         data = set(a.layer.data for a in self._artists)
         if len(data) == 0:
             return
         dx = np.mean([d.size for d in data])
-        self.nbins = min(max(5, (dx / 1000) ** (1. / 3.) * 30), 100)
+        val = min(max(5, (dx / 1000) ** (1. / 3.) * 30), 100)
+        if not calculate_only:
+            self.nbins = val
+        return val
 
     def _sync_layer(self, layer):
         for a in self._artists[layer]:
