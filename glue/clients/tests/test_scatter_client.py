@@ -526,7 +526,6 @@ class TestScatterClient(object):
         xlim = ax.get_xlim()
         ylim = ax.get_ylim()
 
-        print xlim, ylim, self.client.xflip, self.client.yflip
         assert xlim[0] == self.client.xmin
         assert xlim[1] == self.client.xmax
         assert ylim[0] == self.client.ymin
