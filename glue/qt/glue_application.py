@@ -271,7 +271,7 @@ class GlueApplication(Application, QMainWindow):
         mbar.addMenu(menu)
 
         menu = QMenu(mbar)
-        menu.setTitle("Edit")
+        menu.setTitle("Edit ")
         menu.addAction(self._actions['undo'])
         menu.addAction(self._actions['redo'])
         mbar.addMenu(menu)
