@@ -33,6 +33,7 @@ class MplCanvas(FigureCanvas):
     def __init__(self):
         interactive = matplotlib.is_interactive()
         matplotlib.interactive(False)
+        self.roi_callback = None
 
         # setup Matplotlib Figure and Axis
         self.fig = Figure(facecolor='#ffffff')
@@ -65,6 +66,9 @@ class MplCanvas(FigureCanvas):
             p.setPen(QtGui.QPen(Qt.red, 2, Qt.DotLine))
             p.drawRect(self.rect[0], self.rect[1], self.rect[2], self.rect[3])
             p.end()
+
+        if self.roi_callback is not None:
+            self.roi_callback(self)
 
 
 class MplWidget(QtGui.QWidget):
