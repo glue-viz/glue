@@ -179,7 +179,7 @@ class HistogramClient(Client):
                                 components,
                                 self.xlog)
             if bins is not None:
-                self.nbins = min(bins, 100)
+                self.nbins = self.nbins or min(bins, 100)
 
     def _get_data_components(self, coord):
         """ Returns the components for each dataset for x and y axes.
