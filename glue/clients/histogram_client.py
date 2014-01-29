@@ -7,7 +7,7 @@ from ..core.subset import RangeSubsetState
 from ..core.exceptions import IncompatibleDataException, IncompatibleAttribute
 from ..core.edit_subset_mode import EditSubsetMode
 from .layer_artist import HistogramLayerArtist, LayerArtistContainer
-from .util import visible_limits
+from .util import visible_limits, update_ticks
 from ..core.callback_property import CallbackProperty, add_callback
 from ..core.util import lookup_class
 
@@ -173,6 +173,25 @@ class HistogramClient(Client):
         ylabel = 'N'
         self._axes.set_xlabel(xlabel)
         self._axes.set_ylabel(ylabel)
+        bins = update_ticks(self.axes, 'x',
+                            list(self._get_data_components('x')),
+                            self.xlog, max_categories=5)
+        if bins is not None:
+            self.nbins = bins
+
+    def _get_data_components(self, coord):
+        """ Returns the components for each dataset for x and y axes.
+        """
+        if coord == 'x':
+            attribute = self.component
+        else:
+            raise TypeError('coord must be x')
+
+        for data in self._data:
+            try:
+                yield data.get_component(attribute)
+            except IncompatibleAttribute:
+                pass
 
     def _auto_nbin(self):
         data = set(a.layer.data for a in self._artists)
