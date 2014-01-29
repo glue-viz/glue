@@ -60,6 +60,9 @@ class DataCollectionView(qtutil.GlueTreeWidget, core.hub.HubListener):
             qtutil.edit_layer_color(self[item])
 
     def _on_item_change(self, item, column):
+        if item not in self:
+            return
+
         layer = self[item]
         if layer.label == item.text(0):
             return
