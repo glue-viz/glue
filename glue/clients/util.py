@@ -124,7 +124,7 @@ def update_ticks(axes, coord, components, is_log, max_categories=5):
     :param components: A list() of components that are plotted along this axis
     :param is_log: Boolean for log-scale.
     :kwarg max_categories: The maximum number of categories to display.
-    :return: None
+    :return: None or #categories if components is Categorical
     """
 
     if coord == 'x':
@@ -135,7 +135,6 @@ def update_ticks(axes, coord, components, is_log, max_categories=5):
         raise TypeError("coord must be one of x,y")
 
     is_cat = all(isinstance(comp, CategoricalComponent) for comp in components)
-    assert not (is_log and is_cat), 'Axis cannot be both Categorical and log-scale'
     if is_log:
         axis.set_major_locator(LogLocator())
         axis.set_major_formatter(LogFormatterMathtext())
@@ -150,6 +149,7 @@ def update_ticks(axes, coord, components, is_log, max_categories=5):
 
         axis.set_major_locator(locator)
         axis.set_major_formatter(formatter)
+        return all_categories.shape[0]
     else:
         axis.set_major_locator(AutoLocator())
         axis.set_major_formatter(ScalarFormatter())
