@@ -81,7 +81,7 @@ class GlueMdiArea(QtGui.QMdiArea):
 
     def paintEvent(self, event):
         super(GlueMdiArea, self).paintEvent(event)
-        if len(self.subWindowList()) != 0 or (not self.show_help):
+        if (not self.show_help):
             return
 
         painter = QtGui.QPainter(self.viewport())
@@ -90,6 +90,6 @@ class GlueMdiArea(QtGui.QMdiArea):
         font.setPointSize(48)
         font.setWeight(font.Black)
         painter.setFont(font)
-        rect = event.rect()
+        rect = self.contentsRect()
         painter.drawText(rect, Qt.AlignHCenter | Qt.AlignVCenter,
                          "Drag Data To Plot")
