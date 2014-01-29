@@ -107,7 +107,7 @@ class LoadLog(object):
     within load_data
     """
     def __init__(self, path, factory, kwargs):
-        self.path = path
+        self.path = os.path.abspath(path)
         self.factory = factory
         self.kwargs = kwargs
         self.components = []

@@ -507,7 +507,11 @@ class MplRectangularROI(AbstractMplRoi):
 
         self._patch = Rectangle((0., 0.), 1., 1.)
         self._patch.set_zorder(100)
+        self._setup_patch()
+
+    def _setup_patch(self):
         self._ax.add_patch(self._patch)
+        self._patch.set_visible(False)
 
         self._sync_patch()
 
@@ -577,7 +581,11 @@ class MplXRangeROI(AbstractMplRoi):
                                           self._ax.transAxes)
         self._patch = Rectangle((0., 0.), 1., 1., transform=trans)
         self._patch.set_zorder(100)
+        self._setup_patch()
+
+    def _setup_patch(self):
         self._ax.add_patch(self._patch)
+        self._patch.set_visible(False)
         self._sync_patch()
 
     def _roi_factory(self):
@@ -635,7 +643,11 @@ class MplYRangeROI(AbstractMplRoi):
                                           self._ax.transData)
         self._patch = Rectangle((0., 0.), 1., 1., transform=trans)
         self._patch.set_zorder(100)
+        self._setup_patch()
+
+    def _setup_patch(self):
         self._ax.add_patch(self._patch)
+        self._patch.set_visible(False)
         self._sync_patch()
 
     def _roi_factory(self):
@@ -703,12 +715,15 @@ class MplCircularROI(AbstractMplRoi):
 
         self._xi = None
         self._yi = None
+        self._setup_patch()
 
+    def _setup_patch(self):
         self._patch = Ellipse((0., 0.), transform=IdentityTransform(),
                               width=0., height=0.,)
         self._patch.set_zorder(100)
         self._patch.set(**self.plot_opts)
         self._ax.add_patch(self._patch)
+        self._patch.set_visible(False)
         self._sync_patch()
 
     def _roi_factory(self):
@@ -798,8 +813,11 @@ class MplPolygonalROI(AbstractMplRoi):
         self._patch = Polygon(np.array(zip([0, 1], [0, 1])))
         self._patch.set_zorder(100)
         self._patch.set(**self.plot_opts)
+        self._setup_patch()
 
+    def _setup_patch(self):
         self._ax.add_patch(self._patch)
+        self._patch.set_visible(False)
         self._sync_patch()
 
     def _roi_factory(self):

@@ -15,6 +15,10 @@ class QtROI(object):
     This permits smoother ROI selection for dense plots
     that take long to render
     """
+
+    def setup_patch(self):
+        pass
+
     def _draw(self):
         pass
 

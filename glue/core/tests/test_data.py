@@ -1,9 +1,10 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103,R0903,R0904
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103,R0903,R0904
 import pytest
 import numpy as np
 from mock import MagicMock
 
-from ..data import ComponentID, Component, Data, DerivedComponent, pixel_label
+from ..data import (ComponentID, Component, Data,
+                    DerivedComponent, pixel_label, CategoricalComponent)
 from ..coordinates import Coordinates
 from ..subset import Subset, SubsetState
 from ..hub import Hub
@@ -90,6 +91,10 @@ class TestData(object):
         with pytest.raises(IncompatibleAttribute) as exc:
             self.data.get_component(cid)
         assert exc.value.args[0] == "bad not in data set"
+
+    def test_get_component_name(self):
+        d = Data(x=[1, 2, 3])
+        assert isinstance(d.get_component('x'), Component)
 
     def test_component_ids(self):
         cid = self.data.component_ids()
@@ -309,6 +314,23 @@ class TestData(object):
             result = self.data['xyz']
         assert exc.value.args[0].startswith('xyz not in data')
 
+    def test_immutable(self):
+        d = Data(x=[1, 2, 3])
+        with pytest.raises(ValueError) as exc:
+            d['x'][:] = 5
+        assert 'read-only' in exc.value.args[0]
+        assert not d['x'].flags['WRITEABLE']
+
+    def test_categorical_immutable(self):
+        d = Data()
+        c = CategoricalComponent(['M', 'M', 'F'], categories=['M', 'F'])
+        d.add_component(c, label='gender')
+
+        with pytest.raises(ValueError) as exc:
+            d['gender'][:] = 5
+        assert 'read-only' in exc.value.args[0]
+        assert not d['gender'].flags['WRITEABLE']
+
 
 def test_component_id_item_access():
 
@@ -384,7 +406,7 @@ def test_add_link_with_binary_link():
 def test_foreign_pixel_components_not_in_visible():
     """Pixel components from other data should not be visible"""
 
-    #currently, this is trivially satisfied since all coordinates are hidden
+    # currently, this is trivially satisfied since all coordinates are hidden
     from ..link_helpers import LinkSame
     from ..data_collection import DataCollection
 

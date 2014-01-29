@@ -123,7 +123,6 @@ def test_csv_pandas_factory():
     assert isinstance(d.get_component(cat_comp), CategoricalComponent)
 
 
-
 def test_dtype_int():
     data = '# a, b\n1, 1 \n2, 2 \n3, 3'
     with make_file(data, '.csv') as fname:

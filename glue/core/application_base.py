@@ -42,6 +42,8 @@ class Application(HubListener):
 
         self._hub = self._session.hub
         self._cmds = self._session.command_stack
+        self._cmds.add_callback(lambda x: self._update_undo_redo_enabled())
+
         self._settings = {}
         for key, value, validator in settings:
             self._settings[key] = [value, validator]
@@ -139,21 +141,18 @@ class Application(HubListener):
 
     def do(self, command):
         self._cmds.do(command)
-        self._update_undo_redo_enabled()
 
     def undo(self):
         try:
             self._cmds.undo()
         except RuntimeError:
             pass
-        self._update_undo_redo_enabled()
 
     def redo(self):
         try:
             self._cmds.redo()
         except RuntimeError:
             pass
-        self._update_undo_redo_enabled()
 
     def _update_undo_redo_enabled(self):
         raise NotImplementedError()
