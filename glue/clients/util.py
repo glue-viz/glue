@@ -116,7 +116,7 @@ def tick_linker(all_categories, pos, *args):
         return ''
 
 
-def update_ticks(axes, coord, components, is_log, max_categories=5):
+def update_ticks(axes, coord, components, is_log):
     """ Changes the axes to have the proper tick formatting based on the
      type of component.
     :param axes: A matplotlib axis object to alter
@@ -142,7 +142,7 @@ def update_ticks(axes, coord, components, is_log, max_categories=5):
         all_categories = np.empty((0,), dtype=np.object)
         for comp in components:
             all_categories = np.union1d(comp._categories, all_categories)
-        locator = MaxNLocator(max_categories, integer=True)
+        locator = MaxNLocator(10, integer=True)
         locator.view_limits(0, all_categories.shape[0])
         format_func = partial(tick_linker, all_categories)
         formatter = FuncFormatter(format_func)

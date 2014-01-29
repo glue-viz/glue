@@ -13,7 +13,7 @@ from ...tests import example_data
 from ... import core
 from ...core.data import ComponentID
 
-from ..scatter_client import ScatterClient, MAX_CATEGORIES
+from ..scatter_client import ScatterClient
 
 # share matplotlib instance, and disable rendering, for speed
 FIGURE = plt.figure()

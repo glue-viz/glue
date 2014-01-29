@@ -173,11 +173,13 @@ class HistogramClient(Client):
         ylabel = 'N'
         self._axes.set_xlabel(xlabel)
         self._axes.set_ylabel(ylabel)
-        bins = update_ticks(self.axes, 'x',
-                            list(self._get_data_components('x')),
-                            self.xlog, max_categories=5)
-        if bins is not None:
-            self.nbins = bins
+        components = list(self._get_data_components('x'))
+        if components:
+            bins = update_ticks(self.axes, 'x',
+                                components,
+                                self.xlog)
+            if bins is not None:
+                self.nbins = min(bins, 100)
 
     def _get_data_components(self, coord):
         """ Returns the components for each dataset for x and y axes.

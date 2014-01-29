@@ -17,8 +17,6 @@ from .util import visible_limits, update_ticks
 from ..core.callback_property import (CallbackProperty, add_callback,
                                       delay_callback)
 
-MAX_CATEGORIES = 10
-
 
 class ScatterClient(Client):
 
@@ -338,12 +336,12 @@ class ScatterClient(Client):
         if self.xatt is not None:
             update_ticks(self.axes, 'x',
                          list(self._get_data_components('x')),
-                         self.xlog, max_categories=MAX_CATEGORIES)
+                         self.xlog)
 
         if self.yatt is not None:
             update_ticks(self.axes, 'y',
                          list(self._get_data_components('y')),
-                         self.xlog, max_categories=MAX_CATEGORIES)
+                         self.xlog)
 
     def _add_subset(self, message):
         subset = message.sender
