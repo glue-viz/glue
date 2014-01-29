@@ -109,6 +109,10 @@ def visible_limits(artists, axis):
     return lo, hi
 
 
+def tick_linker(all_categories, pos, *args):
+    return all_categories[pos]
+
+
 def update_ticks(axes, coord, components, is_log, max_categories=5):
     """ Changes the axes to have the proper tick formatting based on the
      type of component.
@@ -138,7 +142,7 @@ def update_ticks(axes, coord, components, is_log, max_categories=5):
             all_categories = np.union1d(comp._categories, all_categories)
 
         axis.set_major_locator(MaxNLocator(max_categories, integer=True))
-        format_func = itemgetter(all_categories)
+        format_func = partial(tick_linker, all_categories)
         axis.set_major_formatter(FuncFormatter(format_func))
     else:
         axis.set_major_locator(AutoLocator())
