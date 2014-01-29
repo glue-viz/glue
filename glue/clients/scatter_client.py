@@ -335,12 +335,15 @@ class ScatterClient(Client):
     def _update_axis_labels(self, *args):
         self.axes.set_xlabel(self.xatt)
         self.axes.set_ylabel(self.yatt)
-        update_ticks(self.axes, 'x',
-                     list(self._get_data_components('x')),
-                     self.xlog, max_categories=MAX_CATEGORIES)
-        update_ticks(self.axes, 'y',
-                     list(self._get_data_components('y')),
-                     self.xlog, max_categories=MAX_CATEGORIES)
+        if self.xatt is not None:
+            update_ticks(self.axes, 'x',
+                         list(self._get_data_components('x')),
+                         self.xlog, max_categories=MAX_CATEGORIES)
+
+        if self.yatt is not None:
+            update_ticks(self.axes, 'y',
+                         list(self._get_data_components('y')),
+                         self.xlog, max_categories=MAX_CATEGORIES)
 
     def _add_subset(self, message):
         subset = message.sender

@@ -110,7 +110,10 @@ def visible_limits(artists, axis):
 
 
 def tick_linker(all_categories, pos, *args):
-    return all_categories[pos]
+    try:
+        return all_categories[int(pos)]
+    except IndexError:
+        return ''
 
 
 def update_ticks(axes, coord, components, is_log, max_categories=5):
@@ -140,10 +143,13 @@ def update_ticks(axes, coord, components, is_log, max_categories=5):
         all_categories = np.empty((0,), dtype=np.object)
         for comp in components:
             all_categories = np.union1d(comp._categories, all_categories)
-
-        axis.set_major_locator(MaxNLocator(max_categories, integer=True))
+        locator = MaxNLocator(max_categories, integer=True)
+        locator.view_limits(0, all_categories.shape[0])
         format_func = partial(tick_linker, all_categories)
-        axis.set_major_formatter(FuncFormatter(format_func))
+        formatter = FuncFormatter(format_func)
+
+        axis.set_major_locator(locator)
+        axis.set_major_formatter(formatter)
     else:
         axis.set_major_locator(AutoLocator())
         axis.set_major_formatter(ScalarFormatter())
