@@ -149,6 +149,8 @@ class Component(object):
         # subclasses may pass non-arrays here as placeholders.
         if isinstance(data, np.ndarray):
             data = coerce_numeric(data)
+            data.setflags(write=False)  # data is read-only
+
         self._data = data
 
     @property
@@ -299,6 +301,8 @@ class CategoricalComponent(Component):
     def __init__(self, categorical_data, categories=None, jitter=None):
         super(CategoricalComponent, self).__init__(None, None)
         self._categorical_data = np.asarray(categorical_data, dtype=np.object)
+        self._categorical_data.setflags(write=False)
+
         self._categories = categories
         self._jitter_method = jitter
         self._is_jittered = False
@@ -315,9 +319,11 @@ class CategoricalComponent(Component):
         :return: None
         """
         if categories is None:
-            categories, inv = np.unique(self._categorical_data, return_inverse=True)
+            categories, inv = np.unique(self._categorical_data,
+                                        return_inverse=True)
             self._categories = categories
             self._data = inv.astype(np.float)
+            self._data.setflags(write=False)
             self.jitter(method=self._jitter_method)
         else:
             if check_sorted(categories):
@@ -345,6 +351,7 @@ class CategoricalComponent(Component):
 
         self._data[self._data == len(self._categories)] = np.nan
         self.jitter(method=self._jitter_method)
+        self._data.setflags(write=False)
 
     def jitter(self, method=None):
         """ Jitter the data so the density of points can be easily seen in a
@@ -365,8 +372,11 @@ class CategoricalComponent(Component):
         if (self._jitter_method is None) and self._is_jittered:
             self._update_data()
         elif (self._jitter_method is 'uniform') and not self._is_jittered:
+            iswrite = self._data.flags['WRITEABLE']
+            self._data.setflags(write=True)
             self._data += rand_state.uniform(-0.5, 0.5, size=self._data.shape)
             self._is_jittered = True
+            self._data.setflags(write=iswrite)
 
 
 class Data(object):
