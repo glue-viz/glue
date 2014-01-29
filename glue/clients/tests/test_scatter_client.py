@@ -78,8 +78,12 @@ class TestScatterClient(object):
     def assert_axes_ticks_correct(self):
         ax = self.client.axes
         client = self.client
-        self.check_ticks(ax.xaxis, client.xlog, client._xcat is not None)
-        self.check_ticks(ax.yaxis, client.ylog, client._ycat is not None)
+        self.check_ticks(ax.xaxis,
+                         client.xlog,
+                         client._check_categorical(client.xatt))
+        self.check_ticks(ax.yaxis,
+                         client.ylog,
+                         client._check_categorical(client.yatt))
 
     def plot_data(self, layer):
         """ Return the data bounds for a given layer (data or subset)

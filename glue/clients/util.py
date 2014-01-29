@@ -1,6 +1,10 @@
 import logging
-
+from functools import partial
+from operator import itemgetter
 import numpy as np
+from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
+from matplotlib.ticker import LogFormatterMathtext, ScalarFormatter, FuncFormatter
+from ..core.data import CategoricalComponent
 from ..core.decorators import memoize
 
 
@@ -103,3 +107,39 @@ def visible_limits(artists, axis):
         return
 
     return lo, hi
+
+
+def update_ticks(axes, coord, components, is_log, max_categories=5):
+    """ Changes the axes to have the proper tick formatting based on the
+     type of component.
+    :param axes: A matplotlib axis object to alter
+    :param coord: 'x' or 'y'
+    :param components: A list() of components that are plotted along this axis
+    :param is_log: Boolean for log-scale.
+    :kwarg max_categories: The maximum number of categories to display.
+    :return: None
+    """
+
+    if coord == 'x':
+        axis = axes.xaxis
+    elif coord == 'y':
+        axis = axes.yaxis
+    else:
+        raise TypeError("coord must be one of x,y")
+
+    is_cat = all(isinstance(comp, CategoricalComponent) for comp in components)
+    assert not (is_log and is_cat), 'Axis cannot be both Categorical and log-scale'
+    if is_log:
+        axis.set_major_locator(LogLocator())
+        axis.set_major_formatter(LogFormatterMathtext())
+    elif is_cat:
+        all_categories = np.empty((0,), dtype=np.object)
+        for comp in components:
+            all_categories = np.union1d(comp._categories, all_categories)
+
+        axis.set_major_locator(MaxNLocator(max_categories, integer=True))
+        format_func = itemgetter(all_categories)
+        axis.set_major_formatter(FuncFormatter(format_func))
+    else:
+        axis.set_major_locator(AutoLocator())
+        axis.set_major_formatter(ScalarFormatter())
