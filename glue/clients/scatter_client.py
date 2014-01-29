@@ -13,7 +13,7 @@ from ..core.util import relim, lookup_class
 from ..core.edit_subset_mode import EditSubsetMode
 from .viz_client import init_mpl
 from .layer_artist import ScatterLayerArtist, LayerArtistContainer
-from .util import visible_limits
+from .util import visible_limits, update_ticks
 from ..core.callback_property import (CallbackProperty, add_callback,
                                       delay_callback)
 
@@ -60,8 +60,6 @@ class ScatterClient(Client):
         self._layer_updated = False  # debugging
         self._xset = False
         self._yset = False
-        self._xcat = None  # The actual categories!
-        self._ycat = None
         self.axes = axes
 
         self._connect()
@@ -102,16 +100,10 @@ class ScatterClient(Client):
 
     def _set_limits(self, *args):
 
-        if self._xcat is not None:
-            xlim = -0.5, len(self._xcat) + 0.5
-        else:
-            xlim = min(self.xmin, self.xmax), max(self.xmin, self.xmax)
+        xlim = min(self.xmin, self.xmax), max(self.xmin, self.xmax)
         if self.xflip:
             xlim = xlim[::-1]
-        if self._ycat is not None:
-            ylim = -0.5, len(self._ycat) + 0.5
-        else:
-            ylim = min(self.ymin, self.ymax), max(self.ymin, self.ymax)
+        ylim = min(self.ymin, self.ymax), max(self.ymin, self.ymax)
         if self.yflip:
             ylim = ylim[::-1]
 
@@ -243,14 +235,7 @@ class ScatterClient(Client):
             new_add = not self._yset
             self.yatt = attribute
             self._yset = self.yatt is not None
-        if self._check_categorical(attribute):
-            self._update_categorical_data(coord)
-        else:
-            if coord == 'x':
-                self._xcat = None
-            elif coord == 'y':
-                self._ycat = None
-            self._update_ticks(coord)
+
 
         # update plots
         map(self._update_layer, self.artists.layers)
@@ -336,45 +321,6 @@ class ScatterClient(Client):
     def _redraw(self):
         self.axes.figure.canvas.draw()
 
-    def _get_category_tick(self, coord, position, *args):
-        """ A simple utility function to make the tick-formatting cleaner.
-         :param position: Position in the catagories. MaxNLocator
-         :return: tick-label
-        """
-        int_pos = int(position)
-        try:
-            if coord == 'x':
-                return self._xcat[int_pos]
-            elif coord == 'y':
-                return self._ycat[int_pos]
-            else:
-                raise TypeError("coord must be one of x,y")
-        except IndexError:
-            return ''
-
-    def _update_ticks(self, coord, *args):
-        if coord == 'x':
-            axis = self.axes.xaxis
-            is_log = self.xlog
-            cats = self._xcat
-        elif coord == 'y':
-            axis = self.axes.yaxis
-            is_log = self.ylog
-            cats = self._ycat
-        else:
-            raise TypeError("coord must be one of x,y")
-
-        if is_log:
-            axis.set_major_locator(LogLocator())
-            axis.set_major_formatter(LogFormatterMathtext())
-        elif cats is not None:
-            axis.set_major_locator(MaxNLocator(MAX_CATEGORIES, integer=True))
-            format_func = partial(self._get_category_tick, coord)
-            axis.set_major_formatter(FuncFormatter(format_func))
-        else:
-            axis.set_major_locator(AutoLocator())
-            axis.set_major_formatter(ScalarFormatter())
-
     def _jitter(self, *args):
 
         for attribute in [self.xatt, self.yatt]:
@@ -386,49 +332,18 @@ class ScatterClient(Client):
                     except (IncompatibleAttribute, NotImplementedError):
                         continue
 
-    def _update_categorical_data(self, coord):
-        """ Iterates through client._data and 'synchronizes' the categories
-        of the CategoricalComponents.
-        :param coord: x or y
-        :return: None
-        """
-        if coord == 'x':
-            attribute = self.xatt
-        elif coord == 'y':
-            attribute = self.yatt
-        else:
-            raise TypeError("coord must be one of x,y")
-
-        if attribute is None:
-            return
-        all_categories = np.empty((0,), dtype=np.object)
-        for data in self._data:
-            try:
-                comps = data.get_component(attribute)._categories
-                all_categories = np.union1d(comps,
-                                            all_categories)
-            except IncompatibleAttribute:
-                return
-
-        for data in self._data:
-            data.get_component(attribute)._update_categories(
-                categories=all_categories)
-
-        with delay_callback(self, 'xmin', 'xmax', 'ymin', 'ymax'):
-            if coord == 'x':
-                self._xcat = all_categories
-                self.xmin = -0.5
-                self.xmax = len(all_categories) + 0.5
-            else:
-                self._ycat = all_categories
-                self.ymin = -0.5
-                self.ymax = len(all_categories) + 0.5
-
     def _update_axis_labels(self, *args):
         self.axes.set_xlabel(self.xatt)
         self.axes.set_ylabel(self.yatt)
-        self._update_ticks('x')
-        self._update_ticks('y')
+        if self.xatt is not None:
+            update_ticks(self.axes, 'x',
+                         list(self._get_data_components('x')),
+                         self.xlog, max_categories=MAX_CATEGORIES)
+
+        if self.yatt is not None:
+            update_ticks(self.axes, 'y',
+                         list(self._get_data_components('y')),
+                         self.xlog, max_categories=MAX_CATEGORIES)
 
     def _add_subset(self, message):
         subset = message.sender
@@ -449,6 +364,22 @@ class ScatterClient(Client):
     def data(self):
         """The data objects in the scatter plot"""
         return list(self._data)
+
+    def _get_data_components(self, coord):
+        """ Returns the components for each dataset for x and y axes.
+        """
+        if coord == 'x':
+            attribute = self.xatt
+        elif coord == 'y':
+            attribute = self.yatt
+        else:
+            raise TypeError('coord must be x or y')
+
+        for data in self._data:
+            try:
+                yield data.get_component(attribute)
+            except IncompatibleAttribute:
+                pass
 
     def _check_categorical(self, attribute):
         """ A simple function to figure out if an attribute is categorical.
