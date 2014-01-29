@@ -92,6 +92,10 @@ class TestData(object):
             self.data.get_component(cid)
         assert exc.value.args[0] == "bad not in data set"
 
+    def test_get_component_name(self):
+        d = Data(x=[1, 2, 3])
+        assert isinstance(d.get_component('x'), Component)
+
     def test_component_ids(self):
         cid = self.data.component_ids()
         assert self.comp_id in cid

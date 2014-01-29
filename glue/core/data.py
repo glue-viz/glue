@@ -393,7 +393,7 @@ class Data(object):
     There two ways to extract the actual numerical data stored in a
     :class:`~glue.core.data.Data` object::
 
-       data.get_component(component_id)
+       data.get_component(component_id).data
        data[component_id]
 
     These statements are equivalent. The second is provided since the
@@ -865,6 +865,10 @@ class Data(object):
         """
         if component_id is None:
             raise IncompatibleAttribute("None not in data set")
+
+        if isinstance(component_id, basestring):
+            component_id = self.id[component_id]
+
         try:
             return self._components[component_id]
         except KeyError:
