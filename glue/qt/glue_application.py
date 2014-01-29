@@ -572,6 +572,8 @@ class GlueApplication(Application, QMainWindow):
         undo, redo = self._cmds.can_undo_redo()
         self._actions['undo'].setEnabled(undo)
         self._actions['redo'].setEnabled(redo)
+        self._actions['undo'].setText('Undo ' + self._cmds.undo_label)
+        self._actions['redo'].setText('Redo ' + self._cmds.redo_label)
 
     @property
     def viewers(self):

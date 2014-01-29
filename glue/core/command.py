@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 import logging
 
 from .data_factories import load_data
+from .util import CallbackMixin
 
 MAX_UNDO = 50
 """
@@ -65,8 +66,12 @@ class Command(object):
     def undo(self, session):
         pass
 
+    @property
+    def label(self):
+        return type(self).__name__
 
-class CommandStack(object):
+
+class CommandStack(CallbackMixin):
 
     """
     The command stack collects commands,
@@ -78,6 +83,7 @@ class CommandStack(object):
     """
 
     def __init__(self):
+        super(CommandStack, self).__init__()
         self._session = None
         self._command_stack = []
         self._undo_stack = []
@@ -90,6 +96,22 @@ class CommandStack(object):
     def session(self, value):
         self._session = value
 
+    @property
+    def undo_label(self):
+        """ Brief label for the command reversed by an undo """
+        if len(self._command_stack) == 0:
+            return ''
+        cmd = self._command_stack[-1]
+        return cmd.label
+
+    @property
+    def redo_label(self):
+        """ Brief label for the command executed on a redo"""
+        if len(self._undo_stack) == 0:
+            return ''
+        cmd = self._undo_stack[-1]
+        return cmd.label
+
     def do(self, cmd):
         """
         Execute and log a new command
@@ -101,6 +123,7 @@ class CommandStack(object):
         result = cmd.do(self._session)
         self._command_stack = self._command_stack[-MAX_UNDO:]
         self._undo_stack = []
+        self.notify('do')
         return result
 
     def undo(self):
@@ -116,6 +139,7 @@ class CommandStack(object):
             raise IndexError("No commands to undo")
         self._undo_stack.append(c)
         c.undo(self._session)
+        self.notify('undo')
 
     def redo(self):
         """
@@ -130,6 +154,7 @@ class CommandStack(object):
             raise IndexError("No commands to redo")
         result = c.do(self._session)
         self._command_stack.append(c)
+        self.notify('redo')
         return result
 
     def can_undo_redo(self):
@@ -143,6 +168,7 @@ class CommandStack(object):
 
 class LoadData(Command):
     kwargs = ['path', 'factory']
+    label = 'load data'
 
     def do(self, session):
         return load_data(self.path, self.factory)
@@ -153,6 +179,7 @@ class LoadData(Command):
 
 class AddData(Command):
     kwargs = ['data']
+    label = 'add data'
 
     def do(self, session):
         session.data_collection.append(self.data)
@@ -163,6 +190,7 @@ class AddData(Command):
 
 class RemoveData(Command):
     kwargs = ['data']
+    label = 'remove data'
 
     def do(self, session):
         session.data_collection.remove(self.data)
@@ -179,6 +207,7 @@ class NewDataViewer(Command):
     :type date: :class:`~glue.core.Data` or None
     """
     kwargs = ['viewer', 'data']
+    label = 'new data viewer'
 
     def do(self, session):
         v = session.application.new_data_viewer(self.viewer, self.data)
@@ -190,7 +219,6 @@ class NewDataViewer(Command):
 
 
 class AddLayer(Command):
-
     """Add a new layer to a viewer
 
     :param layer: The layer to add
@@ -198,6 +226,7 @@ class AddLayer(Command):
     :param viewer: The viewer to add the layer to
     """
     kwargs = ['layer', 'viewer']
+    label = 'add layer'
 
     def do(self, session):
         self.viewer.add_layer(self.layer)
@@ -218,6 +247,7 @@ class ApplyROI(Command):
     :type roi: :class:`~glue.core.roi.Roi`
     """
     kwargs = ['client', 'roi']
+    label = 'apply ROI'
 
     def do(self, session):
         self.old_states = {}
