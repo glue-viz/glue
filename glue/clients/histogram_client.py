@@ -183,7 +183,12 @@ class HistogramClient(Client):
                 prev_bins = self.nbins
                 auto_bins = self._auto_nbin(calculate_only=True)
                 if prev_bins == auto_bins:
+                    # try to assign a bin to each category,
+                    # but only if self.nbins hasn't been overridden
+                    # from auto_nbin
                     self.nbins = min(bins, 100)
+                    self.xlimits = (-0.5, bins - 0.5)
+
 
     def _get_data_components(self, coord):
         """ Returns the components for each dataset for x and y axes.
