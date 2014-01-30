@@ -11,7 +11,7 @@ from ..layer_artist import HistogramLayerArtist
 from ...core.data_collection import DataCollection
 from ...core.exceptions import IncompatibleDataException
 from ...core.hub import Hub
-from ...core.data import Data
+from ...core.data import Data, CategoricalComponent
 from ...core.subset import RangeSubsetState
 
 FIGURE = plt.figure()
@@ -307,6 +307,61 @@ class TestHistogramClient(object):
             assert a.get_data()[0].size > 0
             a.clear()
             assert a.get_data()[0].size == 0
+
+
+class TestCategoricalHistogram(TestHistogramClient):
+
+    def setup_method(self, method):
+        self.data = Data(y=[-1, -1, -1, -2, -2, -2, -3, -5, -10])
+        self.data.add_component(CategoricalComponent(['a', 'a', 'a', 'b', 'c', 'd', 'd', 'e', 'f']), 'x')
+        self.subset = self.data.new_subset()
+        self.collect = DataCollection(self.data)
+        self.client = HistogramClient(self.collect, FIGURE)
+        self.axes = self.client.axes
+        FIGURE.canvas.draw = MagicMock()
+        assert FIGURE.canvas.draw.call_count == 0
+
+    def test_xlimit_single_set(self):
+        self.client.add_layer(self.data)
+        self.client.set_component(self.data.id['x'])
+
+        self.client.xlimits = (None, 5)
+        assert self.client.xlimits == (-0.5, 5)
+        self.client.xlimits = (3, None)
+        assert self.client.xlimits == (3, 5)
+
+    def test_default_xlimits(self):
+        self.client.add_layer(self.data)
+        self.client.set_component(self.data.id['x'])
+        assert self.client.xlimits == (-0.5, 5.5)
+        self.client.set_component(self.data.id['y'])
+        assert self.client.xlimits == (-10, -1)
+
+    def test_change_default_bins(self):
+        self.client.add_layer(self.data)
+        self.client.set_component(self.data.id['x'])
+        assert self.client.nbins == 6
+
+    def test_tick_labels(self):
+        self.client.add_layer(self.data)
+        self.client.set_component(self.data.id['x'])
+        correct_labels = ['a', 'b', 'c', 'd', 'e', 'f']
+        formatter = self.client.axes.xaxis.get_major_formatter()
+        xlabels = [formatter.format_data(pos) for pos in range(6)]
+        assert correct_labels == xlabels
+
+    # REMOVED TESTS
+    def test_xlog_axes_labels(self):
+        """ log-scale doesn't make sense for categorical data"""
+        pass
+
+    def test_xlog_snaps_limits(self):
+        """ log-scale doesn't make sense for categorical data"""
+        pass
+
+    def test_apply_roi_xlog(self):
+        """ log-scale doesn't make sense for categorical data"""
+        pass
 
 
 class TestCommunication(object):

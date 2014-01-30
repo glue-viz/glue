@@ -1,6 +1,10 @@
 import logging
-
+from functools import partial
+from operator import itemgetter
 import numpy as np
+from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
+from matplotlib.ticker import LogFormatterMathtext, ScalarFormatter, FuncFormatter
+from ..core.data import CategoricalComponent
 from ..core.decorators import memoize
 
 
@@ -24,8 +28,8 @@ def view_cascade(data, view):
     v2 = list(view)
     logging.debug("image shape: %s, view: %s", shp, view)
 
-    #choose stride length that roughly samples entire image
-    #at roughly the same pixel count
+    # choose stride length that roughly samples entire image
+    # at roughly the same pixel count
     step = max(shp[i - 1] * v.step / max(v.stop - v.start, 1)
                for i, v in enumerate(view) if isinstance(v, slice))
     step = max(step, 1)
@@ -103,3 +107,49 @@ def visible_limits(artists, axis):
         return
 
     return lo, hi
+
+
+def tick_linker(all_categories, pos, *args):
+    try:
+        return all_categories[int(pos)]
+    except IndexError:
+        return ''
+
+
+def update_ticks(axes, coord, components, is_log):
+    """ Changes the axes to have the proper tick formatting based on the
+     type of component.
+    :param axes: A matplotlib axis object to alter
+    :param coord: 'x' or 'y'
+    :param components: A list() of components that are plotted along this axis
+    :param is_log: Boolean for log-scale.
+    :kwarg max_categories: The maximum number of categories to display.
+    :return: None or #categories if components is Categorical
+    """
+
+    if coord == 'x':
+        axis = axes.xaxis
+    elif coord == 'y':
+        axis = axes.yaxis
+    else:
+        raise TypeError("coord must be one of x,y")
+
+    is_cat = all(isinstance(comp, CategoricalComponent) for comp in components)
+    if is_log:
+        axis.set_major_locator(LogLocator())
+        axis.set_major_formatter(LogFormatterMathtext())
+    elif is_cat:
+        all_categories = np.empty((0,), dtype=np.object)
+        for comp in components:
+            all_categories = np.union1d(comp._categories, all_categories)
+        locator = MaxNLocator(10, integer=True)
+        locator.view_limits(0, all_categories.shape[0])
+        format_func = partial(tick_linker, all_categories)
+        formatter = FuncFormatter(format_func)
+
+        axis.set_major_locator(locator)
+        axis.set_major_formatter(formatter)
+        return all_categories.shape[0]
+    else:
+        axis.set_major_locator(AutoLocator())
+        axis.set_major_formatter(ScalarFormatter())

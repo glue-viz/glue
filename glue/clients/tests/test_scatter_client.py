@@ -13,7 +13,7 @@ from ...tests import example_data
 from ... import core
 from ...core.data import ComponentID
 
-from ..scatter_client import ScatterClient, MAX_CATEGORIES
+from ..scatter_client import ScatterClient
 
 # share matplotlib instance, and disable rendering, for speed
 FIGURE = plt.figure()
@@ -78,8 +78,14 @@ class TestScatterClient(object):
     def assert_axes_ticks_correct(self):
         ax = self.client.axes
         client = self.client
-        self.check_ticks(ax.xaxis, client.xlog, client._xcat is not None)
-        self.check_ticks(ax.yaxis, client.ylog, client._ycat is not None)
+        if client.xatt is not None:
+            self.check_ticks(ax.xaxis,
+                             client.xlog,
+                             client._check_categorical(client.xatt))
+        if client.yatt is not None:
+            self.check_ticks(ax.yaxis,
+                             client.ylog,
+                             client._check_categorical(client.yatt))
 
     def plot_data(self, layer):
         """ Return the data bounds for a given layer (data or subset)
@@ -283,6 +289,7 @@ class TestScatterClient(object):
         c = core.data.ComponentID('bad id')
         self.client.xatt = c
         assert not self.layer_drawn(layer)
+        self.client.xatt = self.ids[0]
 
     def test_redraw_called_on_invalid_plot(self):
         """ Plot should be updated when given invalid data,
@@ -298,6 +305,7 @@ class TestScatterClient(object):
         ncall = ct1 - ct0
         expected = len(self.client.artists)
         assert ncall >= expected
+        self.client.xatt = self.ids[0]
 
     def test_two_incompatible_data(self):
         d0 = self.add_data(self.data[0])
@@ -518,7 +526,6 @@ class TestScatterClient(object):
         xlim = ax.get_xlim()
         ylim = ax.get_ylim()
 
-        print xlim, ylim, self.client.xflip, self.client.yflip
         assert xlim[0] == self.client.xmin
         assert xlim[1] == self.client.xmax
         assert ylim[0] == self.client.ymin
@@ -559,44 +566,19 @@ class TestCategoricalScatterClient(TestScatterClient):
 
         self.connect()
 
-    def test_update_categories(self):
-        self.add_data()
-        self.client.xatt = self.ids[0]
-        self.client.yatt = self.ids[0]
-        np.testing.assert_equal(['a', 'b'], self.client._xcat)
-        np.testing.assert_equal(['a', 'b'], self.client._ycat)
-
     def test_get_category_tick(self):
 
         self.add_data()
         self.client.xatt = self.ids[0]
         self.client.yatt = self.ids[0]
-        xlabels = [self.client._get_category_tick('x', pos)
-                   for pos in range(2)]
-        ylabels = [self.client._get_category_tick('y', pos)
-                   for pos in range(2)]
+        axes = self.client.axes
+        xformat = axes.xaxis.get_major_formatter()
+        yformat = axes.yaxis.get_major_formatter()
+
+        xlabels = [xformat.format_data(pos) for pos in range(2)]
+        ylabels = [yformat.format_data(pos) for pos in range(2)]
         assert xlabels == ['a', 'b']
         assert ylabels == ['a', 'b']
-
-    def test_change_axis_limits(self):
-
-        data = core.Data()
-        alpha_cat_data = list('abcdefghijklmnopqrstuv')
-        numer_cat_data = list('01' * (len(alpha_cat_data) / 2))
-        data.add_component(
-            core.data.CategoricalComponent(alpha_cat_data), 'xcat')
-        data.add_component(
-            core.data.CategoricalComponent(numer_cat_data), 'ycat')
-        self.add_data(data=data)
-        self.client.yatt = data.find_component_id('ycat')
-        self.client.xatt = data.find_component_id('xcat')
-
-        assert self.client.ymin == -0.5
-        assert self.client.xmin == -0.5
-        assert self.client.ymax == 2.5
-        assert self.client.xmax == len(alpha_cat_data) + 0.5
-        self.check_ticks(self.client.axes.xaxis, False, True)
-        self.check_ticks(self.client.axes.yaxis, False, True)
 
     def test_axis_labels_sync_with_setters(self):
         layer = self.add_data()
@@ -655,21 +637,6 @@ class TestCategoricalScatterClient(TestScatterClient):
         timer = timeit(timer_func, number=1)
         assert timer < 3  # this is set for Travis speed
 
-    def test_nan_cardinality(self):
-        print 'nan test start'
-        card = 50
-        data = core.Data()
-        card_data = [np.nan] + [str(num) for num in range(card)]
-        card_array = np.asarray(card_data, dtype=np.object)
-        multi_nan = np.asarray(50 * [np.nan] + card_data, dtype=np.object)
-        data.add_component(core.data.CategoricalComponent(multi_nan), 'xcat')
-        self.add_data(data)
-        comp = data.find_component_id('xcat')
-        self.client._set_xydata('x', comp)
-
-        np.testing.assert_equal(np.sort(card_array),
-                                self.client._xcat)
-
     # REMOVED TESTS
     def test_invalid_plot(self):
         """ This fails because the axis ticks shouldn't reset after
@@ -683,3 +650,12 @@ class TestCategoricalScatterClient(TestScatterClient):
 
     def test_xlog_relimits_if_negative(self):
         """ Log-based tests don't make sense here."""
+        pass
+
+    def test_log_sticky(self):
+        """ Log-based tests don't make sense here."""
+        pass
+
+    def test_logs(self):
+        """ Log-based tests don't make sense here."""
+        pass

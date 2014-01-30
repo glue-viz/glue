@@ -7,13 +7,15 @@ from ..core.subset import RangeSubsetState
 from ..core.exceptions import IncompatibleDataException, IncompatibleAttribute
 from ..core.edit_subset_mode import EditSubsetMode
 from .layer_artist import HistogramLayerArtist, LayerArtistContainer
-from .util import visible_limits
+from .util import visible_limits, update_ticks
 from ..core.callback_property import CallbackProperty, add_callback
 from ..core.util import lookup_class
 
 
 class UpdateProperty(CallbackProperty):
+
     """Descriptor that calls client's sync_all() method when changed"""
+
     def __init__(self, default, relim=False):
         super(UpdateProperty, self).__init__(default)
         self.relim = relim
@@ -38,6 +40,7 @@ def update_on_true(func):
 
 
 class HistogramClient(Client):
+
     """
     A client class to display histograms
     """
@@ -173,13 +176,45 @@ class HistogramClient(Client):
         ylabel = 'N'
         self._axes.set_xlabel(xlabel)
         self._axes.set_ylabel(ylabel)
+        components = list(self._get_data_components('x'))
+        if components:
+            bins = update_ticks(self.axes, 'x',
+                                components,
+                                self.xlog)
 
-    def _auto_nbin(self):
+            if bins is not None:
+                prev_bins = self.nbins
+                auto_bins = self._auto_nbin(calculate_only=True)
+                if prev_bins == auto_bins:
+                    # try to assign a bin to each category,
+                    # but only if self.nbins hasn't been overridden
+                    # from auto_nbin
+                    self.nbins = min(bins, 100)
+                    self.xlimits = (-0.5, bins - 0.5)
+
+    def _get_data_components(self, coord):
+        """ Returns the components for each dataset for x and y axes.
+        """
+        if coord == 'x':
+            attribute = self.component
+        else:
+            raise TypeError('coord must be x')
+
+        for data in self._data:
+            try:
+                yield data.get_component(attribute)
+            except IncompatibleAttribute:
+                pass
+
+    def _auto_nbin(self, calculate_only=False):
         data = set(a.layer.data for a in self._artists)
         if len(data) == 0:
             return
         dx = np.mean([d.size for d in data])
-        self.nbins = min(max(5, (dx / 1000) ** (1. / 3.) * 30), 100)
+        val = min(max(5, (dx / 1000) ** (1. / 3.) * 30), 100)
+        if not calculate_only:
+            self.nbins = val
+        return val
 
     def _sync_layer(self, layer):
         for a in self._artists[layer]:
