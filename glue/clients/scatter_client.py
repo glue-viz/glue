@@ -234,7 +234,6 @@ class ScatterClient(Client):
             self.yatt = attribute
             self._yset = self.yatt is not None
 
-
         # update plots
         map(self._update_layer, self.artists.layers)
 

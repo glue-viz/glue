@@ -13,7 +13,9 @@ from ..core.util import lookup_class
 
 
 class UpdateProperty(CallbackProperty):
+
     """Descriptor that calls client's sync_all() method when changed"""
+
     def __init__(self, default, relim=False):
         super(UpdateProperty, self).__init__(default)
         self.relim = relim
@@ -38,6 +40,7 @@ def update_on_true(func):
 
 
 class HistogramClient(Client):
+
     """
     A client class to display histograms
     """
@@ -188,7 +191,6 @@ class HistogramClient(Client):
                     # from auto_nbin
                     self.nbins = min(bins, 100)
                     self.xlimits = (-0.5, bins - 0.5)
-
 
     def _get_data_components(self, coord):
         """ Returns the components for each dataset for x and y axes.
