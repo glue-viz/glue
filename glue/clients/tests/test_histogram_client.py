@@ -321,10 +321,19 @@ class TestCategoricalHistogram(TestHistogramClient):
         FIGURE.canvas.draw = MagicMock()
         assert FIGURE.canvas.draw.call_count == 0
 
+    def test_xlimit_single_set(self):
+        self.client.add_layer(self.data)
+        self.client.set_component(self.data.id['x'])
+
+        self.client.xlimits = (None, 5)
+        assert self.client.xlimits == (-0.5, 5)
+        self.client.xlimits = (3, None)
+        assert self.client.xlimits == (3, 5)
+
     def test_default_xlimits(self):
         self.client.add_layer(self.data)
         self.client.set_component(self.data.id['x'])
-        assert self.client.xlimits == (0, 5)
+        assert self.client.xlimits == (-0.5, 5.5)
         self.client.set_component(self.data.id['y'])
         assert self.client.xlimits == (-10, -1)
 
