@@ -352,3 +352,9 @@ class CallbackMixin(object):
     def notify(self, *args, **kwargs):
         for func in self._callbacks:
             func(*args, **kwargs)
+
+
+def as_list(x):
+    if isinstance(x, list):
+        return x
+    return [x]

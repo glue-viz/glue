@@ -373,7 +373,7 @@ class TestCommunication(object):
         self.collect = DataCollection()
         self.client = HistogramClient(self.collect, figure)
         self.axes = self.client.axes
-        self.hub = Hub()
+        self.hub = self.collect.hub
         self.connect()
 
     def draw_count(self):

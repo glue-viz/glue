@@ -5,6 +5,7 @@ from .registry import Registry
 from .message import (DataCollectionAddMessage,
                       DataCollectionDeleteMessage,
                       DataAddComponentMessage)
+from .util import as_list
 
 __all__ = ['DataCollection']
 
@@ -16,23 +17,21 @@ class DataCollection(HubListener):
        * Providing a way to retrieve and store data
        * Broadcasting messages when data are added or removed
        * Keeping each managed data set's list of DerivedComponents up-to-date
+       * Creating the hub that all other objects should use to communicate
+         with one another (stored in DataCollection.hub)
     """
-
-    def __init__(self, data=None):
+    def __init__(self, data=None, hub=None):
         """
         :param data: glue.Data object, or list of such objects (optional)
                       These objects will be auto-appended to the collection
         """
         super(DataCollection, self).__init__()
-        self.hub = None
         self._link_manager = LinkManager()
-
         self._data = []
-        if isinstance(data, Data):
-            self.append(data)
-        elif isinstance(data, list):
-            for d in data:
-                self.append(d)
+        self.hub = None
+        self.register_to_hub(Hub())
+        self.extend(as_list(data or []))
+
 
     @property
     def data(self):
@@ -51,12 +50,11 @@ class DataCollection(HubListener):
         if isinstance(data, list):
             self.extend(data)
             return
-
         if data in self:
             return
         self._data.append(data)
         if self.hub:
-            data.hub = self.hub
+            data.register_to_hub(self.hub)
             for s in data.subsets:
                 s.register()
             msg = DataCollectionAddMessage(self, data)
@@ -145,6 +143,12 @@ class DataCollection(HubListener):
         :param hub: The hub to register with
         :type hub: :class:`~glue.core.hub.Hub`
         """
+        if self.hub is hub:
+            return
+        if self.hub is not None:
+            raise RuntimeError("Data Collection already registered "
+                               "to a different Hub")
+
         if not isinstance(hub, Hub):
             raise TypeError("Input is not a Hub object: %s" % type(hub))
         self.hub = hub
@@ -179,3 +183,9 @@ class DataCollection(HubListener):
 
     def __repr__(self):
         return self.__str__()
+
+    def __bool__(self):
+        return True
+
+    def __nonzero__(self):
+        return True

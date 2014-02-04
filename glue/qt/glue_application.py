@@ -250,7 +250,6 @@ class GlueApplication(Application, QMainWindow):
         model.rowsInserted.connect(sethelp)
         model.rowsRemoved.connect(sethelp)
 
-        self._data.register_to_hub(self._hub)
         self.tab_widget.tabCloseRequested.connect(self.close_tab)
 
     def _create_menu(self):

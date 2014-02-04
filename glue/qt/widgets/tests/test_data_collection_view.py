@@ -17,7 +17,7 @@ class TestDataCollectionView(object):
     def setup_method(self, method):
         self.data = example_data.test_data()[0]
         self.collect = core.DataCollection()
-        self.hub = core.hub.Hub()
+        self.hub = self.collect.hub
         self.view = DataCollectionView()
         self.view.setup(self.collect, self.hub)
         p = Printer()

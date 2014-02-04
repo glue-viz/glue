@@ -160,11 +160,10 @@ def start_glue(gluefile=None, config=None, datafiles=None):
     if datafiles:
         data = load_data_files(datafiles)
 
-    if not hub:
-        if data:
-            hub = glue.core.Hub(data)
-        else:
-            hub = glue.core.Hub()
+    if not data:
+        data = glue.core.DataCollection()
+
+    hub = data.hub
 
     session = glue.core.Session(data_collection=data, hub=hub)
     ga = GlueApplication(session=session)

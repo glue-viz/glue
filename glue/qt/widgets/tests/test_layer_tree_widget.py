@@ -19,8 +19,8 @@ class TestLayerTree(object):
 
     def setup_method(self, method):
         self.data = example_data.test_data()
-        self.hub = core.hub.Hub()
         self.collect = core.data_collection.DataCollection(list(self.data))
+        self.hub = self.collect.hub
         self.widget = LayerTreeWidget()
         self.win = QMainWindow()
         self.win.setCentralWidget(self.widget)
