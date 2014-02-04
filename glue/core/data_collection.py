@@ -28,6 +28,7 @@ class DataCollection(HubListener):
         super(DataCollection, self).__init__()
         self._link_manager = LinkManager()
         self._data = []
+        self._subset_groups = []
         self.hub = None
         self.register_to_hub(Hub())
         self.extend(as_list(data or []))
@@ -162,6 +163,30 @@ class DataCollection(HubListener):
         hub.subscribe(self, DataAddComponentMessage,
                       lambda msg: self._sync_link_manager(),
                       filter=lambda x: x.sender in self._data)
+
+    def new_subset_group(self):
+        """
+        Create and return a new :class:`~glue.core.subset_group.SubsetGroup`
+        """
+        from .subset_group import SubsetGroup
+        result = SubsetGroup(self)
+        self._subset_groups.append(result)
+        return result
+
+    def remove_subset_group(self, subset_grp):
+        """
+        Remove an existing :class:`~glue.core.subset_group.SubsetGroup`
+        """
+        if subset_grp not in self._subset_groups:
+            return
+        for s in subset_grp.subsets:
+            s.delete()
+        self._subset_groups.remove(subset_grp)
+
+    @property
+    def subset_groups(self):
+        """ View of current subset groups """
+        return tuple(self._subset_groups)
 
     def __contains__(self, obj):
         return obj in self._data

@@ -40,21 +40,20 @@ class Subset(object):
     def __init__(self, data, color=RED, alpha=0.5, label=None):
         """ Create a new subset object.
 
-        Note: the preferred way for creating subsets is through
-        the data objects new_subset method. If instantiating
-        new subsets manually, you will need to explicitly need
-        to call the data objects add_subset method to inform
-        the data set of the new subset
+        Note: the preferred way for creating subsets is
+        via DataCollection.new_subset_group. Manually-instantiated
+        subsets will probably *not* be represented properly by the UI
         """
         self._broadcasting = False  # must be first def
         self.data = data
         self.color = color
         self._label = None
         self.label = label  # trigger disambiguation
-        self._style = VisualAttributes(parent=self)
-        self._style.markersize *= 2.5
-        self._style.color = color
-        self._style.alpha = alpha
+        self.style = VisualAttributes(parent=self)
+        self.style.markersize *= 2.5
+        self.style.color = color
+        self.style.alpha = alpha
+
         self._subset_state = None
         self.subset_state = SubsetState()  # calls proper setter method
 

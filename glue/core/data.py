@@ -691,9 +691,9 @@ class Data(object):
     def new_subset(self, subset=None, color=None, label=None, **kwargs):
         """ Create a new subset, and attach to self.
 
-        This is the preferred way for creating subsets, as it
-        takes care setting the label, color, and link between
-        data and subset
+        Note: The preferred way for creating subsets is
+        via DataCollection.new_subset_group. Manually-instantiated
+        subsets will probably *not* be represented properly by the UI
 
         :param subset: optional, reference subset or subset state.
         If provided, the new subset will copy the logic of this subset.
@@ -722,9 +722,9 @@ class Data(object):
         automatically
 
         NOTE:
-
-        The preferred way for creating empty subsets is through the
-        data.new_subset method
+        The preferred way for creating subsets is
+        via DataCollection.new_subset_group. Manually-instantiated
+        subsets will probably *not* be represented properly by the UI
         """
         if subset in self.subsets:
             return  # prevents infinite recursion
