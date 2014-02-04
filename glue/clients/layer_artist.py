@@ -7,7 +7,7 @@ import logging
 import numpy as np
 from matplotlib.cm import gray
 from ..core.exceptions import IncompatibleAttribute
-from ..core.util import color2rgb, PropertySetMixin
+from ..core.util import color2rgb, PropertySetMixin, Pointer
 from ..core.subset import Subset
 from .util import view_cascade, get_extent
 from .ds9norm import DS9Normalize
@@ -222,23 +222,6 @@ class ImageLayerArtist(LayerArtist):
         for artist in self.artists:
             artist.set_zorder(self.zorder)
             artist.set_visible(self.visible and self.enabled)
-
-
-class Pointer(object):
-
-    def __init__(self, key):
-        self.key = key
-
-    def __get__(self, instance, type=None):
-        val = instance
-        for k in self.key.split('.'):
-            val = getattr(val, k, None)
-        return val
-
-    def __set__(self, instance, value):
-        v = self.key.split('.')
-        attr = reduce(getattr, [instance] + v[:-1])
-        setattr(attr, v[-1], value)
 
 
 class RGBImageLayerArtist(ImageLayerArtist):

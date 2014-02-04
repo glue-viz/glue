@@ -358,3 +358,20 @@ def as_list(x):
     if isinstance(x, list):
         return x
     return [x]
+
+
+class Pointer(object):
+
+    def __init__(self, key):
+        self.key = key
+
+    def __get__(self, instance, type=None):
+        val = instance
+        for k in self.key.split('.'):
+            val = getattr(val, k, None)
+        return val
+
+    def __set__(self, instance, value):
+        v = self.key.split('.')
+        attr = reduce(getattr, [instance] + v[:-1])
+        setattr(attr, v[-1], value)
