@@ -26,7 +26,6 @@ class TestEditSubsetMode(object):
         data.edit_subset = data.new_subset()
 
         data.edit_subset.subset_state = state1
-        state2.parent = state1.parent
         self.data = data
         self.cid = cid
         self.state1 = state1

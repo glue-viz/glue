@@ -513,7 +513,6 @@ def _load_subset(rec, context):
     result = Subset(None)
     result.style = context.object(rec['style'])
     result.subset_state = context.object(rec['state'])
-    assert result.subset_state.parent is result
     result.label = rec['label']
     return result
 

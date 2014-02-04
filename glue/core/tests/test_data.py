@@ -228,7 +228,6 @@ class TestData(object):
         self.data.add_subset(state)
         added = self.data.subsets[-1]
         assert added.subset_state is state
-        assert added.subset_state.parent is added
         assert added.data is self.data
 
     def test_add_subset_reparents_subset(self):

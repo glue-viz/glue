@@ -2,7 +2,7 @@ import operator
 import numpy as np
 
 from .visual import VisualAttributes, RED
-from .decorators import memoize_attr_check
+from .decorators import memoize
 from .message import SubsetDeleteMessage, SubsetUpdateMessage
 from .registry import Registry
 from .util import split_component_view, view_shape
@@ -38,7 +38,7 @@ class Subset(object):
     """
 
     def __init__(self, data, color=RED, alpha=0.5, label=None):
-        """ Create a new subclass object.
+        """ Create a new subset object.
 
         Note: the preferred way for creating subsets is through
         the data objects new_subset method. If instantiating
@@ -64,7 +64,6 @@ class Subset(object):
 
     @subset_state.setter
     def subset_state(self, state):
-        state.parent = self
         self._subset_state = state
 
     @property
@@ -121,7 +120,7 @@ class Subset(object):
            for the requested data set.
 
         """
-        return self.subset_state.to_index_list()
+        return self.subset_state.to_index_list(self.data)
 
     def to_mask(self, view=None):
         """
@@ -137,7 +136,7 @@ class Subset(object):
            defines whether each element belongs to the subset.
 
         """
-        return self.subset_state.to_mask(view)
+        return self.subset_state.to_mask(self.data, view)
 
     def do_broadcast(self, value):
         """
@@ -240,7 +239,6 @@ class Subset(object):
     def paste(self, other_subset):
         """paste subset state from other_subset onto self """
         state = other_subset.subset_state.copy()
-        state.parent = self
         self.subset_state = state
 
     def __str__(self):
@@ -278,25 +276,17 @@ class Subset(object):
 class SubsetState(object):
 
     def __init__(self):
-        self._parent = None
-
-    @property
-    def parent(self):
-        return self._parent
-
-    @parent.setter
-    def parent(self, value):
-        self._parent = value
+        pass
 
     @property
     def subset_state(self):  # convenience method, mimic interface of Subset
         return self
 
-    def to_index_list(self):
-        return np.where(self.to_mask().flat)[0]
+    def to_index_list(self, data):
+        return np.where(self.to_mask(data).flat)[0]
 
-    def to_mask(self, view=None):
-        shp = view_shape(self.parent.data.shape, view)
+    def to_mask(self, data, view=None):
+        shp = view_shape(data.shape, view)
         return np.zeros(shp, dtype=bool)
 
     def copy(self):
@@ -323,10 +313,10 @@ class RoiSubsetState(SubsetState):
         self.yatt = yatt
         self.roi = roi
 
-    @memoize_attr_check('parent')
-    def to_mask(self, view=None):
-        x = self.parent.data[self.xatt, view]
-        y = self.parent.data[self.yatt, view]
+    @memoize
+    def to_mask(self, data, view=None):
+        x = data[self.xatt, view]
+        y = data[self.yatt, view]
         result = self.roi.contains(x, y)
         assert x.shape == result.shape
         return result
@@ -347,8 +337,8 @@ class RangeSubsetState(SubsetState):
         self.hi = hi
         self.att = att
 
-    def to_mask(self, view=None):
-        x = self.parent.data[self.att, view]
+    def to_mask(self, data, view=None):
+        x = data[self.att, view]
         result = (x >= self.lo) & (x <= self.hi)
         return result
 
@@ -365,28 +355,14 @@ class CompositeSubsetState(SubsetState):
         if state2:
             state2 = state2.copy()
         self.state2 = state2
-        self.parent = None
-
-    @property
-    def parent(self):
-        return self._parent
-
-    @parent.setter
-    def parent(self, parent):
-        if self.state1 is not None:
-            self.state1.parent = parent
-        if self.state2 is not None:
-            self.state2.parent = parent
-        self._parent = parent
 
     def copy(self):
         return type(self)(self.state1, self.state2)
 
-    @memoize_attr_check('parent')
-    def to_mask(self, view=None):
-        assert self.state1.parent is self._parent
-        assert self.state2.parent is self._parent
-        return self.op(self.state1.to_mask(view), self.state2.to_mask(view))
+    @memoize
+    def to_mask(self, data, view=None):
+        return self.op(self.state1.to_mask(data, view),
+                       self.state2.to_mask(data, view))
 
     def __str__(self):
         sym = OPSYM.get(self.op, self.op)
@@ -407,9 +383,9 @@ class XorState(CompositeSubsetState):
 
 class InvertState(CompositeSubsetState):
 
-    @memoize_attr_check('parent')
-    def to_mask(self, view=None):
-        return ~self.state1.to_mask(view)
+    @memoize
+    def to_mask(self, data, view=None):
+        return ~self.state1.to_mask(data, view)
 
     def __str__(self):
         return "(~%s)" % self.state1
@@ -421,10 +397,10 @@ class ElementSubsetState(SubsetState):
         super(ElementSubsetState, self).__init__()
         self._indices = indices
 
-    @memoize_attr_check('parent')
-    def to_mask(self, view=None):
+    @memoize
+    def to_mask(self, data, view=None):
         # XXX this is inefficient for views
-        result = np.zeros(self.parent.data.shape, dtype=bool)
+        result = np.zeros(data.shape, dtype=bool)
         if self._indices is not None:
             result.flat[self._indices] = True
         if view is not None:
@@ -472,16 +448,16 @@ class InequalitySubsetState(SubsetState):
     def operator(self):
         return self._operator
 
-    @memoize_attr_check('parent')
-    def to_mask(self, view=None):
+    @memoize
+    def to_mask(self, data, view=None):
         from .data import ComponentID
         left = self._left
         if not operator.isNumberType(self._left):
-            left = self.parent.data[self._left, view]
+            left = data[self._left, view]
 
         right = self._right
         if not operator.isNumberType(self._right):
-            right = self.parent.data[self._right, view]
+            right = data[self._right, view]
 
         return self._operator(left, right)
 
