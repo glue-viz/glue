@@ -17,6 +17,7 @@ from . import Subset
 from .subset import SubsetState
 from .util import Pointer
 from .hub import HubListener
+from .visual import VisualAttributes, RED
 from .message import (DataCollectionAddMessage,
                       DataCollectionDeleteMessage
                       )
@@ -30,14 +31,16 @@ class GroupedSubset(Subset):
     subset_state = Pointer('group.subset_state')
     label = Pointer('group.label')
 
-    def __init__(self, data, group, **kwargs):
+    def __init__(self, data, group):
         """
         :param data: :class:`~glue.core.data.Data` instance to bind to
         :param group: :class:`~glue.core.subset_group.SubsetGroup`
         """
         self.group = group
         self._style_override = None
-        super(GroupedSubset, self).__init__(data, **kwargs)
+        super(GroupedSubset, self).__init__(data, label=group.label,
+                                            color=group.style.color,
+                                            alpha=group.style.alpha)
 
     @property
     def style(self):
@@ -45,6 +48,7 @@ class GroupedSubset(Subset):
 
     @style.setter
     def style(self, value):
+        value.parent = self.group
         self.group.style = value
 
     def override_style(self, attr, value):
@@ -63,7 +67,7 @@ class GroupedSubset(Subset):
 
 
 class SubsetGroup(HubListener):
-    def __init__(self):
+    def __init__(self, color=RED, alpha=0.5, label=None):
         """
         Create a new empty SubsetGroup
 
@@ -71,9 +75,13 @@ class SubsetGroup(HubListener):
         DataCollection.new_subset.
         """
         self.subsets = []
-        self.state = SubsetState()
-        self.label = ''
-        self.style = None
+        self.subset_state = SubsetState()
+        self.label = label
+
+        self.style = VisualAttributes(parent=self)
+        self.style.markersize *= 2.5
+        self.style.color = color
+        self.style.alpha = alpha
 
     def register(self, data):
         """
@@ -93,6 +101,11 @@ class SubsetGroup(HubListener):
         for d, s in zip(data, self.subsets):
             d.add_subset(s)
 
+    def paste(self, other_subset):
+        """paste subset state from other_subset onto self """
+        state = other_subset.subset_state.copy()
+        self.subset_state = state
+
     def _add_data(self, data):
         s = GroupedSubset(data, self)
         data.add_subset(s)
@@ -108,3 +121,13 @@ class SubsetGroup(HubListener):
                       lambda x: self._add_data(x.data))
         hub.subscribe(self, DataCollectionDeleteMessage,
                       lambda x: self._remove_data(x.data))
+
+    def broadcast(self, item):
+        #used by __setattr__ and VisualAttributes.__setattr__
+        for s in self.subsets:
+            s.broadcast(item)
+
+    def __setattr__(self, attr, value):
+        object.__setattr__(self, attr, value)
+        if attr in ['subset_state', 'label', 'style']:
+            self.broadcast(attr)

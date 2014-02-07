@@ -5,7 +5,7 @@ import numpy as np
 
 from .coordinates import Coordinates
 from .visual import VisualAttributes
-from .visual import RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK
+from .visual import COLORS
 from .exceptions import IncompatibleAttribute
 from .component_link import (ComponentLink, CoordinateComponentLink,
                              BinaryComponentLink)
@@ -22,9 +22,6 @@ from .odict import OrderedDict
 
 __all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
            'CoordinateComponent']
-
-COLORS = [RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK]
-
 
 # access to ComponentIDs via .item[name]
 class ComponentIDDict(object):

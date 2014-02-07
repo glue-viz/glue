@@ -2,6 +2,7 @@ from .hub import Hub, HubListener
 from .data import Data
 from .link_manager import LinkManager
 from .registry import Registry
+from .visual import COLORS
 from .message import (DataCollectionAddMessage,
                       DataCollectionDeleteMessage,
                       DataAddComponentMessage)
@@ -34,6 +35,7 @@ class DataCollection(HubListener):
         self.hub = None
         self.register_to_hub(Hub())
         self.extend(as_list(data or []))
+        self._sg_count = 0
 
     @property
     def data(self):
@@ -170,7 +172,11 @@ class DataCollection(HubListener):
         Create and return a new :class:`~glue.core.subset_group.SubsetGroup`
         """
         from .subset_group import SubsetGroup
-        result = SubsetGroup()
+        color = COLORS[self._sg_count % len(COLORS)]
+        self._sg_count += 1
+        label = "%i" % (self._sg_count)
+
+        result = SubsetGroup(color=color, label=label)
         self._subset_groups.append(result)
         result.register(self)
         return result
@@ -191,7 +197,7 @@ class DataCollection(HubListener):
         return tuple(self._subset_groups)
 
     def __contains__(self, obj):
-        return obj in self._data
+        return obj in self._data or obj in self.subset_groups
 
     def __getitem__(self, key):
         return self._data[key]

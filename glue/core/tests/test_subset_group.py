@@ -10,20 +10,24 @@ class TestSubsetGroup(object):
         x = Data(label='x', x=[1, 2, 3])
         y = Data(label='y', y=[2, 4, 8])
         self.dc = DataCollection([x, y])
+        self.sg = SubsetGroup()
 
     def test_creation(self):
-        sg = SubsetGroup(self.dc)
+        self.sg.register(self.dc)
+        sg = self.sg
         for subset, data in zip(sg.subsets, self.dc):
             assert subset is data.subsets[0]
 
     def test_attributes_matched_to_group(self):
-        sg = SubsetGroup(self.dc)
+        self.sg.register(self.dc)
+        sg = self.sg
         for subset in sg.subsets:
             assert subset.subset_state is sg.subset_state
             assert subset.label is sg.label
 
     def test_attributes_synced_to_group(self):
-        sg = SubsetGroup(self.dc)
+        self.sg.register(self.dc)
+        sg = self.sg
         sg.subsets[0].subset_state = SubsetState()
         sg.subsets[0].label = 'testing'
         sg.subsets[1].style.color = 'blue'
@@ -42,7 +46,6 @@ class TestSubsetGroup(object):
         sg = self.dc.new_subset_group()
         sub = self.dc[0].subsets[0]
         self.dc.remove(self.dc[0])
-        print sg.subsets, sub, sub in sg.subsets
         assert sub not in sg.subsets
 
     def test_subsets_given_data_reference(self):
@@ -57,13 +60,15 @@ class TestSubsetGroup(object):
 
     def test_remove_subset(self):
         sg = self.dc.new_subset_group()
+        n = len(self.dc[0].subsets)
         self.dc.remove_subset_group(sg)
-        assert len(self.dc[0].subsets) == 0
+        assert len(self.dc[0].subsets) == n - 1
 
     def test_edit_broadcasts(self):
         sg = self.dc.new_subset_group()
         bcast = MagicMock()
         sg.subsets[0].broadcast = bcast
+        bcast.reset_mock()
         sg.subsets[0].style.color = 'red'
         assert bcast.call_count == 1
 
@@ -74,3 +79,29 @@ class TestSubsetGroup(object):
         assert sg.subsets[1].style.color != 'black'
         sg.subsets[0].clear_override_style()
         assert sg.subsets[0].style is sg.subsets[1].style
+
+    def test_braodcast(self):
+        sg = self.dc.new_subset_group()
+        bcast = MagicMock()
+        sg.subsets[0].broadcast = bcast
+        bcast.reset_mock()
+
+        sg.subset_state = SubsetState()
+        assert bcast.call_count == 1
+
+        sg.style.color = 'red'
+        assert bcast.call_count == 2
+
+        sg.label = 'new label'
+        assert bcast.call_count == 3
+
+    def test_auto_labeled(self):
+        sg = self.dc.new_subset_group()
+        assert sg.label is not None
+
+    def test_label_color_cycle(self):
+        sg1 = self.dc.new_subset_group()
+        sg2 = self.dc.new_subset_group()
+
+        assert sg1.label != sg2.label
+        assert sg1.style.color != sg2.style.color

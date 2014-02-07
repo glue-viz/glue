@@ -128,6 +128,7 @@ def setup_multi(empty, local_select, global_select, focus):
     d1 = Data()
     d2 = Data()
     dc = DataCollection([d1, d2])
+    EditSubsetMode().data_collection = dc
 
     d2.new_subset()
     if not empty:

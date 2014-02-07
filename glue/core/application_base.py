@@ -6,8 +6,9 @@ from .data_collection import DataCollection
 from .data_factories import load_data
 from .command import CommandStack
 from . import command
-from ..core import Data, Subset
-from ..core.util import lookup_class, PropertySetMixin
+from . import Data, Subset
+from .util import lookup_class, PropertySetMixin
+from .edit_subset_mode import EditSubsetMode
 from .session import Session
 from ..config import settings
 
@@ -30,7 +31,6 @@ def catch_error(msg):
 class Application(HubListener):
 
     def __init__(self, data_collection=None, session=None):
-
         if session is not None:
             self._session = session
             session.application = self
@@ -40,6 +40,7 @@ class Application(HubListener):
             self._session = Session(data_collection=self._data,
                                     application=self)
 
+        EditSubsetMode().data_collection = self._data
         self._hub = self._session.hub
         self._cmds = self._session.command_stack
         self._cmds.add_callback(lambda x: self._update_undo_redo_enabled())

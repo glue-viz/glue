@@ -8,6 +8,7 @@ from .qtutil import layer_icon
 from .mime import LAYERS_MIME_TYPE, PyMimeData
 from ..core import message as m
 from ..core.hub import HubListener
+from .. import core
 from .widgets.style_dialog import StyleDialog
 
 DATA_IDX = 0
@@ -44,6 +45,7 @@ class Item(object):
 
 
 class DataCollectionItem(Item):
+
     def __init__(self, dc):
         self.dc = dc
         self.row = 0
@@ -212,6 +214,8 @@ class SubsetItem(Item):
 
 
 class DataCollectionModel(QAbstractItemModel, HubListener):
+    new_item = Signal(QModelIndex)
+
     def __init__(self, data_collection, parent=None):
         QAbstractItemModel.__init__(self, parent)
         HubListener.__init__(self)
@@ -253,6 +257,25 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
             assert result.internalPointer() is item
             return result
         return self.createIndex(row, column)
+
+    def to_indices(self, items):
+        """Translate a list of Data, Subset, or SubsetGroups
+        to a list of indices"""
+        result = []
+        for item in items:
+            if isinstance(item, core.Data):
+                idx = self.data_index(list(self.data_collection).index(item))
+            elif isinstance(item, core.SubsetGroup):
+                idx = self.subsets_index(self.data_collection.subset_groups.index(item))
+            elif isinstance(item, core.subset_group.GroupedSubset):
+                grp = item.group
+                idx = self.subsets_index(self.data_collection.subset_groups.index(grp))
+                row = list(self.data_collection).index(item.data)
+                idx = self.index(grow, idx)
+            else:
+                raise NotImplementedError(type(item))
+            result.append(idx)
+        return result
 
     def flags(self, index=QModelIndex()):
         return (Qt.ItemIsSelectable | Qt.ItemIsEnabled |
@@ -344,11 +367,17 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
         return 1
 
     def register_to_hub(self, hub):
-        for msg in [m.DataCollectionAddMessage,
-                    m.DataCollectionDeleteMessage,
+        for msg in [m.DataCollectionDeleteMessage,
                     m.SubsetCreateMessage,
                     m.SubsetDeleteMessage]:
             hub.subscribe(self, msg, lambda x: self.invalidate())
+
+        hub.subscribe(self, m.DataCollectionAddMessage, self._on_add)
+
+    def _on_add(self, message):
+        self.invalidate()
+        idx = self.to_indices([message.data])[0]
+        self.new_item.emit(idx)
 
     def invalidate(self):
         self.reset()
@@ -363,7 +392,6 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
         return items
 
     def mimeData(self, indices):
-        print indices
         data = self.glue_data(indices)
         result = PyMimeData(data, **{LAYERS_MIME_TYPE: data})
         self._mime = result  # hold reference to prevent segfault
@@ -386,8 +414,19 @@ class DataCollectionView(QTreeView):
         self._timer.start(1000)
 
     def selected_layers(self):
-        idxs = self.selectionModel().selectedIndexes()
+        idxs = self.selectedIndexes()
         return self._model.glue_data(idxs)
+
+    def set_selected_layers(self, layers):
+        sm = self.selectionModel()
+        idxs = self._model.to_indices(layers)
+        self.select_indices(*idxs)
+
+    def select_indices(self, *indices):
+        sm = self.selectionModel()
+        sm.clearSelection()
+        for idx in indices:
+            sm.select(idx, sm.Select)
 
     def set_data_collection(self, data_collection):
         self._model = DataCollectionModel(data_collection)
@@ -402,6 +441,7 @@ class DataCollectionView(QTreeView):
         self.setExpandsOnDoubleClick(False)
         self.expandToDepth(0)
         self._model.layoutChanged.connect(lambda: self.expandToDepth(0))
+        self._model.new_item.connect(self.select_indices)
 
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
