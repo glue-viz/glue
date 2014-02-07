@@ -29,7 +29,6 @@ class GroupedSubset(Subset):
     """
     subset_state = Pointer('group.subset_state')
     label = Pointer('group.label')
-    style = Pointer('group.style')
 
     def __init__(self, data, group, **kwargs):
         """
@@ -37,7 +36,27 @@ class GroupedSubset(Subset):
         :param group: :class:`~glue.core.subset_group.SubsetGroup`
         """
         self.group = group
+        self._style_override = None
         super(GroupedSubset, self).__init__(data, **kwargs)
+
+    @property
+    def style(self):
+        return self._style_override or self.group.style
+
+    @style.setter
+    def style(self, value):
+        self.group.style = value
+
+    def override_style(self, attr, value):
+        style = self.group.style.copy()
+        style.parent=self
+        setattr(style, attr, value)
+        self._style_override = style
+        self.broadcast('style')
+
+    def clear_override_style(self):
+        self._style_override = None
+        self.broadcast('style')
 
     def __eq__(self, other):
         return other is self

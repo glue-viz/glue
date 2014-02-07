@@ -11,6 +11,7 @@ __all__ = ['DataCollection']
 
 
 class DataCollection(HubListener):
+
     """DataCollections manage sets of data. They have the following
     responsibilities:
 
@@ -20,6 +21,7 @@ class DataCollection(HubListener):
        * Creating the hub that all other objects should use to communicate
          with one another (stored in DataCollection.hub)
     """
+
     def __init__(self, data=None, hub=None):
         """
         :param data: glue.Data object, or list of such objects (optional)
@@ -32,7 +34,6 @@ class DataCollection(HubListener):
         self.hub = None
         self.register_to_hub(Hub())
         self.extend(as_list(data or []))
-
 
     @property
     def data(self):
@@ -154,7 +155,7 @@ class DataCollection(HubListener):
             raise TypeError("Input is not a Hub object: %s" % type(hub))
         self.hub = hub
 
-        #re-assign all data, subset hub instances to this hub
+        # re-assign all data, subset hub instances to this hub
         for d in self._data:
             d.register_to_hub(hub)
             for s in d.subsets:

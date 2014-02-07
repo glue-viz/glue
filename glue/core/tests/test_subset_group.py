@@ -1,5 +1,8 @@
+from mock import MagicMock
+
 from .. import DataCollection, Data, SubsetGroup
 from ..subset import SubsetState
+
 
 class TestSubsetGroup(object):
 
@@ -56,3 +59,18 @@ class TestSubsetGroup(object):
         sg = self.dc.new_subset_group()
         self.dc.remove_subset_group(sg)
         assert len(self.dc[0].subsets) == 0
+
+    def test_edit_broadcasts(self):
+        sg = self.dc.new_subset_group()
+        bcast = MagicMock()
+        sg.subsets[0].broadcast = bcast
+        sg.subsets[0].style.color = 'red'
+        assert bcast.call_count == 1
+
+    def test_style_override(self):
+        sg = self.dc.new_subset_group()
+        sg.subsets[0].override_style('color', 'black')
+        assert sg.subsets[0].style.color == 'black'
+        assert sg.subsets[1].style.color != 'black'
+        sg.subsets[0].clear_override_style()
+        assert sg.subsets[0].style is sg.subsets[1].style
