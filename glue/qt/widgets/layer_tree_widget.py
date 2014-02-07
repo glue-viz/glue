@@ -54,7 +54,7 @@ class LayerAction(QAction):
         self._connect()
 
     def _connect(self):
-        self._parent.itemSelectionChanged.connect(
+        self._parent.selection_changed.connect(
             self.update_enabled)
         self.triggered.connect(self._do_action)
 
@@ -124,12 +124,12 @@ class NewAction(LayerAction):
     _shortcut = QKeySequence('Ctrl+Shift+N')
 
     def _can_trigger(self):
-        return self.single_selection()
+        return True
 
     def _do_action(self):
         assert self._can_trigger()
         data = self.selected_layers()[0].data
-        data.new_subset()
+        self.data_collection.new_subset_group()
 
 
 class ClearAction(LayerAction):
@@ -461,10 +461,10 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
     def data_collection(self):
         return self._data_collection
 
-    def setup(self, collection, hub):
+    def setup(self, collection):
         self._data_collection = collection
-        self._hub = hub
-        self.layerTree.setup(collection, hub)
+        self._hub = collection.hub
+        self.layerTree.set_data_collection(collection)
 
     def unregister(self, hub):
         """Unsubscribe from hub"""
@@ -480,9 +480,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
 
     def selected_layers(self):
         """ Return a list of selected layers (subsets and data objects) """
-        items = self.layerTree.selectedItems()
-        result = [self[item] for item in items]
-        return result
+        return self.layerTree.selected_layers()
 
     def current_layer(self):
         """Return the layer if a single item is selected, else None """
@@ -506,11 +504,11 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
 
         def update_enabled():
             return rbut.setEnabled(self._actions['delete'].isEnabled())
-        self.layerTree.itemSelectionChanged.connect(update_enabled)
-        self.layerTree.itemChanged.connect(self._on_item_change)
+        self.layerTree.selection_changed.connect(update_enabled)
+
 
     def bind_selection_to_edit_subset(self):
-        self.layerTree.itemSelectionChanged.connect(
+        self.layerTree.selection_changed.connect(
             self._update_editable_subset)
 
     def _update_editable_subset(self):

@@ -240,7 +240,7 @@ class GlueApplication(Application, QMainWindow):
 
     def _connect(self):
         self.setAcceptDrops(True)
-        self._ui.layerWidget.setup(self._data, self._hub)
+        self._ui.layerWidget.setup(self._data)
 
         def sethelp(*args):
             model = self._ui.layerWidget.layerTree.model()
