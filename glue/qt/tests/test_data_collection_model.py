@@ -1,6 +1,7 @@
 from ...external.qt.QtCore import Qt
 from ...core import DataCollection, Data
 from ..data_collection_model import DataCollectionModel
+from ..qtutil import LAYERS_MIME_TYPE
 
 class TestDataCollectionModel(object):
 
@@ -82,44 +83,6 @@ class TestDataCollectionModel(object):
         assert model.columnCount(model.subsets_index(0)) == 1
         assert model.columnCount(model.subsets_index(1)) == 1
 
-    def test_remove_first_data(self):
-        model = self.make_model(2, 3)
-        dc = model.data_collection
-        data = list(dc)
-        assert len(dc) == 2
-
-        index = model.data_index()
-        model.removeRow(0, index)
-        assert list(dc) == [data[1]]
-
-    def test_remove_nonfirst_data(self):
-        model = self.make_model(2, 3)
-        dc = model.data_collection
-        data = list(dc)
-        assert len(dc) == 2
-
-        index = model.data_index()
-        model.removeRow(1, index)
-        assert list(dc) == [data[0]]
-
-    def test_remove_subset_group(self):
-
-        model = self.make_model(2, 3)
-        dc = model.data_collection
-        sg = list(dc.subset_groups)
-
-        index = model.subsets_index()
-        model.removeRow(0, index)
-        assert list(dc.subset_groups) == sg[1:]
-
-
-    def test_invalid_remove(self):
-
-        model = self.make_model(2, 2)
-        assert not model.removeRow(0)
-        assert not model.removeRow(1)
-
-
     def test_header_data(self):
         model = self.make_model()
 
@@ -141,3 +104,20 @@ class TestDataCollectionModel(object):
 
         base = model.index(0, 0)
         assert model.flags(base) == base
+
+    def test_layers_mime_type_data(self):
+        model = self.make_model(1, 2)
+        index = model.data_index(0)
+
+        expected = [model.data_collection[0]]
+        assert model.mimeData([index]).data(LAYERS_MIME_TYPE) == expected
+
+    def test_layers_mime_type_multiselection(self):
+        model = self.make_model(1, 2)
+        idxs = [model.data_index(0),
+                model.subsets_index(0),
+                model.index(0, 0, model.subsets_index(0))]
+
+        dc = model.data_collection
+        expected = [dc[0], dc.subset_groups[0], dc.subset_groups[0].subsets[0]]
+        assert model.mimeData(idxs).data(LAYERS_MIME_TYPE) == expected

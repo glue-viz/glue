@@ -170,8 +170,9 @@ class DataCollection(HubListener):
         Create and return a new :class:`~glue.core.subset_group.SubsetGroup`
         """
         from .subset_group import SubsetGroup
-        result = SubsetGroup(self)
+        result = SubsetGroup()
         self._subset_groups.append(result)
+        result.register(self)
         return result
 
     def remove_subset_group(self, subset_grp):

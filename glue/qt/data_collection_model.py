@@ -1,10 +1,14 @@
+# pylint: disable=E1101,F0401
 from ..external.qt.QtCore import (QAbstractItemModel, QModelIndex,
-                                  QObject, Qt, QTimer)
-from ..external.qt.QtGui import (QFont, QTreeView)
+                                  QObject, Qt, QTimer, Signal)
+from ..external.qt.QtGui import (QFont, QTreeView, QItemSelectionModel,
+                                 QAbstractItemView)
 
 from .qtutil import layer_icon
+from .mime import LAYERS_MIME_TYPE, PyMimeData
 from ..core import message as m
 from ..core.hub import HubListener
+from .widgets.style_dialog import StyleDialog
 
 DATA_IDX = 0
 SUBSET_IDX = 1
@@ -26,6 +30,7 @@ def restricted_edit_factory(item, rect):
 
 class Item(object):
     edit_factory = None
+    glue_data = None
 
     def font(self):
         return QFont()
@@ -54,9 +59,6 @@ class DataCollectionItem(Item):
             return SubsetListItem(self.dc, self)
         return None
 
-    def remove(self):
-        return False
-
 
 class DataListItem(Item):
     def __init__(self, dc, parent):
@@ -73,9 +75,6 @@ class DataListItem(Item):
     @property
     def children_count(self):
         return len(self.dc)
-
-    def remove(self):
-        return False
 
     def font(self):
         result = QFont()
@@ -98,6 +97,10 @@ class DataItem(Item):
         return self.dc[self.row]
 
     @property
+    def glue_data(self):
+        return self.data
+
+    @property
     def label(self):
         return self.data.label
 
@@ -108,10 +111,6 @@ class DataItem(Item):
     @property
     def style(self):
         return self.data.style
-
-    def remove(self):
-        self.dc.remove(self.data)
-        return True
 
     def icon(self):
         return layer_icon(self.data)
@@ -134,9 +133,6 @@ class SubsetListItem(Item):
     def children_count(self):
         return len(self.dc.subset_groups)
 
-    def remove(self):
-        return False
-
     def font(self):
         result = QFont()
         result.setBold(True)
@@ -157,6 +153,10 @@ class SubsetGroupItem(Item):
         return self.dc.subset_groups[self.row]
 
     @property
+    def glue_data(self):
+        return self.subset_group
+
+    @property
     def label(self):
         return self.subset_group.label
 
@@ -171,10 +171,6 @@ class SubsetGroupItem(Item):
     @property
     def children_count(self):
         return len(self.subset_group.subsets)
-
-    def remove(self):
-        self.dc.remove_subset_group(self.subset_group)
-        return True
 
     def child(self, row):
         return SubsetItem(self.dc, self.subset_group, row, self)
@@ -210,16 +206,23 @@ class SubsetItem(Item):
     def style(self):
         return self.subset.style
 
+    @property
+    def glue_data(self):
+        return self.subset
+
 
 class DataCollectionModel(QAbstractItemModel, HubListener):
     def __init__(self, data_collection, parent=None):
-        super(DataCollectionModel, self).__init__(parent)
+        QAbstractItemModel.__init__(self, parent)
+        HubListener.__init__(self)
+
         self.data_collection = data_collection
         self.root = DataCollectionItem(data_collection)
         self._items = {}   # map hashes of Model pointers to model items
                            # without this reference, PySide clobbers instance
                            # data of model items
         self.register_to_hub(self.data_collection.hub)
+        self.setSupportedDragActions(Qt.CopyAction)
 
     def index(self, row, column, parent=QModelIndex()):
         if column != 0:
@@ -252,7 +255,8 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
         return self.createIndex(row, column)
 
     def flags(self, index=QModelIndex()):
-        return Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        return (Qt.ItemIsSelectable | Qt.ItemIsEnabled |
+                Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled)
 
     def data(self, index, role):
         if not index.isValid():
@@ -270,7 +274,6 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
     def setData(self, index, value, role=Qt.EditRole):
         if role != Qt.EditRole:
             return False
-
         try:
             self._get_item(index).label = value
             return True
@@ -319,10 +322,12 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
         return self.index(subset_number, 0, base)
 
     def rowCount(self, index=QModelIndex()):
-        if not index.isValid():
+        item = self._get_item(index)
+
+        if item is None:
             return self.root.children_count
 
-        return self._get_item(index).children_count
+        return item.children_count
 
     def parent(self, index=None):
 
@@ -338,34 +343,41 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
     def columnCount(self, index):
         return 1
 
-    def removeRow(self, row, parent=QModelIndex()):
-        if not parent.isValid():
-            return False
-
-        item = self._get_item(parent).child(row)
-        if item is None:
-            return False
-
-        return item.remove()
-
     def register_to_hub(self, hub):
         for msg in [m.DataCollectionAddMessage,
                     m.DataCollectionDeleteMessage,
                     m.SubsetCreateMessage,
                     m.SubsetDeleteMessage]:
-            hub.subscribe(self, msg, lambda x: self.reset())
+            hub.subscribe(self, msg, lambda x: self.invalidate())
+
+    def invalidate(self):
+        self.reset()
+        self.layoutChanged.emit()
+
+    def glue_data(self, indices):
+        """ Given a list of indices, return a list of all selected
+        Data, Subset, and SubsetGroup objects.
+        """
+        items = [self._get_item(idx) for idx in indices]
+        items = [item.glue_data for item in items]
+        return items
+
+    def mimeData(self, indices):
+        print indices
+        data = self.glue_data(indices)
+        result = PyMimeData(data, **{LAYERS_MIME_TYPE: data})
+        self._mime = result  # hold reference to prevent segfault
+        return result
+
+    def mimeTypes(self):
+        return [LAYERS_MIME_TYPE]
 
 
 class DataCollectionView(QTreeView):
+    selection_changed = Signal()
 
-    def __init__(self, data_collection, parent=None):
+    def __init__(self, parent=None):
         super(DataCollectionView, self).__init__(parent)
-        self._model = DataCollectionModel(data_collection)
-        self.setModel(self._model)
-
-        self.setRootIsDecorated(False)
-        self.setExpandsOnDoubleClick(False)
-        self.expandToDepth(0)
 
         self.doubleClicked.connect(self._edit)
 
@@ -373,9 +385,33 @@ class DataCollectionView(QTreeView):
         self._timer.timeout.connect(self.viewport().update)
         self._timer.start(1000)
 
+    def selected_layers(self):
+        idxs = self.selectionModel().selectedIndexes()
+        return self._model.glue_data(idxs)
+
+    def set_data_collection(self, data_collection):
+        self._model = DataCollectionModel(data_collection)
+        self.setModel(self._model)
+
+        sm = QItemSelectionModel(self._model)
+        sm.selectionChanged.connect(lambda *args:
+                                    self.selection_changed.emit())
+        self.setSelectionModel(sm)
+
+        self.setRootIsDecorated(False)
+        self.setExpandsOnDoubleClick(False)
+        self.expandToDepth(0)
+        self._model.layoutChanged.connect(lambda: self.expandToDepth(0))
+
+        self.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.setDragEnabled(True)
+        self.setDropIndicatorShown(True)
+        self.setDragDropMode(QAbstractItemView.DragOnly)
+
     def _edit(self, index):
         item = self._model.data(index, role=Qt.UserRole)
-        if item.edit_factory is None:
+        if item is None or item.edit_factory is None:
             return
 
         rect = self.visualRect(index)
@@ -388,17 +424,17 @@ if __name__ == "__main__":
     from glue.qt import get_qapp
     from glue.external.qt.QtGui import QTreeView
     from glue.core import Data, DataCollection
-    from glue.qt.widgets.style_dialog import StyleDialog
 
     app = get_qapp()
 
-    dc = DataCollection([Data(label='x', x=[1, 2, 3]),
-                         Data(label='y', y=[1, 2, 3]),
-                         Data(label='z', z=[1, 2, 3])])
-    sg = dc.new_subset_group()
-    sg.label = 'hi'
+    dc = DataCollection()
+    dc.append(Data(label='w'))
 
-    view = DataCollectionView(dc)
+    view = DataCollectionView()
+    view.set_data_collection(dc)
     view.show()
     view.raise_()
+    dc.extend([Data(label='x', x=[1, 2, 3]),
+               Data(label='y', y=[1, 2, 3]),
+               Data(label='z', z=[1, 2, 3])])
     app.exec_()

@@ -63,25 +63,35 @@ class GroupedSubset(Subset):
 
 
 class SubsetGroup(HubListener):
-    def __init__(self, data):
+    def __init__(self):
         """
-        Create a new SubsetGroup from a DataCollection.
+        Create a new empty SubsetGroup
 
         Note: By convention, SubsetGroups should be created via
         DataCollection.new_subset.
-
-        :param data: :class:`~glue.core.DataCollection`
         """
         self.subsets = []
         self.state = SubsetState()
         self.label = ''
         self.style = None
+
+    def register(self, data):
+        """
+        Register to a :class:`~glue.core.DataCollection`
+
+        This is called automatically by DataCollection.new_subset_grouop
+        """
         self.register_to_hub(data.hub)
+
+        #add to self, then register, so fully populated by first
+        #broadcast
 
         for d in data:
             s = GroupedSubset(d, self)
-            d.add_subset(s)
             self.subsets.append(s)
+
+        for d, s in zip(data, self.subsets):
+            d.add_subset(s)
 
     def _add_data(self, data):
         s = GroupedSubset(data, self)
