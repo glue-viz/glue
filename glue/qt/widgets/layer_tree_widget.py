@@ -61,6 +61,10 @@ class LayerAction(QAction):
     def selected_layers(self):
         return self._layer_tree.selected_layers()
 
+    @property
+    def data_collection(self):
+        return self._layer_tree.data_collection
+
     def update_enabled(self):
         self.setEnabled(self._can_trigger())
 
@@ -189,10 +193,6 @@ class LinkAction(LayerAction):
 
     def selection_count(self):
         return len(self.selected_layers())
-
-    @property
-    def data_collection(self):
-        return self._layer_tree.data_collection
 
     def _can_trigger(self):
         return self.selection_count() > 0
