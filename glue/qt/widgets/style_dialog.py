@@ -4,9 +4,9 @@ from ..qtutil import (mpl_to_qt4_color, symbol_icon, POINT_ICONS,
 from ...external.qt.QtGui import (QFormLayout, QDialogButtonBox, QColorDialog,
                                   QWidget, QLineEdit, QListWidget,
                                   QListWidgetItem, QPixmap, QDialog, QLabel,
-                                  QSpinBox)
+                                  QSpinBox, QComboBox)
 
-from ...external.qt.QtCore import QSize, Signal
+from ...external.qt.QtCore import QSize, Signal, Qt
 
 
 class ColorWidget(QLabel):
@@ -22,10 +22,11 @@ class StyleDialog(QDialog):
 
     Use via StyleDialog.edit_style(layer)
     """
-    def __init__(self, layer, parent=None):
+    def __init__(self, layer, parent=None, edit_label=True):
         super(StyleDialog, self).__init__(parent)
         self.setWindowTitle("Style Editor")
         self.layer = layer
+        self._edit_label = edit_label
         self._symbols = POINT_ICONS.keys()
 
         self._setup_widgets()
@@ -42,14 +43,14 @@ class StyleDialog(QDialog):
         self.label_widget = QLineEdit()
         self.label_widget.setText(self.layer.label)
 
-        self.symbol_widget = QListWidget()
-        for symbol in self._symbols:
+        self.symbol_widget = QComboBox()
+        for idx, symbol in enumerate(self._symbols):
             icon = symbol_icon(symbol)
-            item = QListWidgetItem(icon, '', self.symbol_widget)
-            self.symbol_widget.addItem(item)
+            self.symbol_widget.addItem(icon, '')
             if symbol is self.layer.style.marker:
-                self.symbol_widget.setCurrentItem(item)
+                self.symbol_widget.setCurrentIndex(idx)
         self.symbol_widget.setIconSize(QSize(20, 20))
+        self.symbol_widget.setMinimumSize(10, 32)
 
         self.color_widget = ColorWidget()
         self.color_widget.setStyleSheet('ColorWidget {border: 1px solid;}')
@@ -60,7 +61,8 @@ class StyleDialog(QDialog):
         self.okcancel = QDialogButtonBox(QDialogButtonBox.Ok |
                                          QDialogButtonBox.Cancel)
 
-        self.layout.addRow("Label", self.label_widget)
+        if self._edit_label:
+            self.layout.addRow("Label", self.label_widget)
         self.layout.addRow("Symbol", self.symbol_widget)
         self.layout.addRow("Color", self.color_widget)
         self.layout.addRow("Size", self.size_widget)
@@ -68,20 +70,21 @@ class StyleDialog(QDialog):
         self.layout.addWidget(self.okcancel)
 
         self.setLayout(self.layout)
-        self.resize(252, 300)
+        self.layout.setContentsMargins(6, 6, 6, 6)
 
     def _connect(self):
         self.color_widget.mousePressed.connect(self.query_color)
-        self.symbol_widget.currentItemChanged.connect(
+        self.symbol_widget.currentIndexChanged.connect(
             lambda x: self.set_color(self.color()))
         self.okcancel.accepted.connect(self.accept)
         self.okcancel.rejected.connect(self.reject)
+        self.setFocusPolicy(Qt.StrongFocus)
 
     def query_color(self, *args):
         color = QColorDialog.getColor(self._color, self.color_widget,
                                       "",
                                       QColorDialog.ShowAlphaChannel)
-        if color is not None:
+        if color.isValid():
             self.set_color(color)
 
     def color(self):
@@ -99,10 +102,11 @@ class StyleDialog(QDialog):
         return str(self.label_widget.text())
 
     def symbol(self):
-        return self._symbols[self.symbol_widget.currentRow()]
+        return self._symbols[self.symbol_widget.currentIndex()]
 
     def update_style(self):
-        self.layer.label = self.label()
+        if self._edit_label:
+            self.layer.label = self.label()
         self.layer.style.color = qt4_to_mpl_color(self.color())
         self.layer.style.alpha = self.color().alpha() / 255.
         self.layer.style.marker = self.symbol()
