@@ -52,19 +52,12 @@ class GroupedSubset(Subset):
 
     @style.setter
     def style(self, value):
-        value.parent = self.group
-        self.group.style = value
-
-    def override_style(self, attr, value):
-        style = self.group.style.copy()
-        style.parent=self
-        setattr(style, attr, value)
-        self._style_override = style
-        self.broadcast('style')
+        self._style_override = value
 
     def clear_override_style(self):
-        self._style_override = None
-        self.broadcast('style')
+        if self._style_override is not None:
+            self._style_override = None
+            self.broadcast('style')
 
     def __eq__(self, other):
         return other is self
@@ -81,6 +74,7 @@ class SubsetGroup(HubListener):
         self.subsets = []
         self.subset_state = SubsetState()
         self.label = label
+        self._style = None
 
         self.style = VisualAttributes(parent=self)
         self.style.markersize *= 2.5
@@ -126,8 +120,25 @@ class SubsetGroup(HubListener):
         hub.subscribe(self, DataCollectionDeleteMessage,
                       lambda x: self._remove_data(x.data))
 
+    @property
+    def style(self):
+        return self._style
+
+    @style.setter
+    def style(self, value):
+        self._style = value
+        self._clear_overrides()
+
+    def _clear_overrides(self):
+        for s in self.subsets:
+            s.clear_override_style()
+
     def broadcast(self, item):
         #used by __setattr__ and VisualAttributes.__setattr__
+        if isinstance(item, VisualAttributes):
+            self._clear_overrides()
+            return
+
         for s in self.subsets:
             s.broadcast(item)
 

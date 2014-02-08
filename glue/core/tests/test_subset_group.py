@@ -30,11 +30,22 @@ class TestSubsetGroup(object):
         sg = self.sg
         sg.subsets[0].subset_state = SubsetState()
         sg.subsets[0].label = 'testing'
-        sg.subsets[1].style.color = 'blue'
         for subset in sg.subsets:
             assert subset.subset_state is sg.subset_state
             assert subset.label is sg.label
-            assert subset.style.color == 'blue'
+
+    def test_set_style_overrides(self):
+        self.sg.register(self.dc)
+        sg = self.sg
+        sg.subsets[0].style.color = 'blue'
+        for s in sg.subsets[1:]:
+            assert s.style.color != 'blue'
+
+    def test_set_group_style_clears_override(self):
+        sg = self.dc.new_subset_group()
+        sg.subsets[0].style.color = 'blue'
+        sg.style.color = 'red'
+        assert sg.subsets[0].style.color == 'red'
 
     def test_new_data_creates_subset(self):
         sg = self.dc.new_subset_group()
@@ -71,14 +82,6 @@ class TestSubsetGroup(object):
         bcast.reset_mock()
         sg.subsets[0].style.color = 'red'
         assert bcast.call_count == 1
-
-    def test_style_override(self):
-        sg = self.dc.new_subset_group()
-        sg.subsets[0].override_style('color', 'black')
-        assert sg.subsets[0].style.color == 'black'
-        assert sg.subsets[1].style.color != 'black'
-        sg.subsets[0].clear_override_style()
-        assert sg.subsets[0].style is sg.subsets[1].style
 
     def test_braodcast(self):
         sg = self.dc.new_subset_group()

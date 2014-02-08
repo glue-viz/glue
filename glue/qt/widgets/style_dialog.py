@@ -122,6 +122,24 @@ class StyleDialog(QDialog):
         if result == self.Accepted:
             self.update_style()
 
+    @classmethod
+    def dropdown_editor(cls, item, pos, **kwargs):
+        """
+        Create a dropdown-style modal editor to edit the style of a
+        given item
+
+        :param item: Item with a .label and .style to edit
+        :param pos: A QPoint to anchor the top-left corner of the dropdown at
+        :param kwargs: Extra keywords to pass to StyleDialogs's constructor
+        """
+        self = cls(item, **kwargs)
+        self.setWindowFlags(Qt.Tool | Qt.FramelessWindowHint)
+
+        pos = self.mapFromGlobal(pos)
+        self.move(pos)
+        if self.exec_() == self.Accepted:
+            self.update_style()
+
 
 if __name__ == "__main__":
     from glue.core import Data

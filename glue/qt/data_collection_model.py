@@ -15,18 +15,12 @@ DATA_IDX = 0
 SUBSET_IDX = 1
 
 
-def full_edit_factory(item, pos, **kwargs):
-    s = StyleDialog(item, **kwargs)
-    s.setWindowFlags(Qt.Tool | Qt.FramelessWindowHint)
-
-    pos = s.mapFromGlobal(pos)
-    s.move(pos)
-    if s.exec_() == s.Accepted:
-        s.update_style()
+def full_edit_factory(item, pos):
+    StyleDialog.dropdown_editor(item, pos)
 
 
-def restricted_edit_factory(item, rect):
-    return full_edit_factory(item, rect, edit_label=False)
+def restricted_edit_factory(item, pos):
+    StyleDialog.dropdown_editor(item, pos, edit_label=False)
 
 
 class Item(object):
