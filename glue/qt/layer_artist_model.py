@@ -156,7 +156,10 @@ class LayerArtistModel(QAbstractListModel):
 
     def row_label(self, row):
         """ The textual label for the row"""
-        return self.artists[row].layer.label
+        layer = self.artists[row]
+        if hasattr(layer, 'verbose_layer'):
+            return layer.verbose_label
+        return layer.label
 
     def change_label(self, row, label):
         """ Reassign the labeel for whatever layer the artist manages"""

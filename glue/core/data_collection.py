@@ -187,9 +187,12 @@ class DataCollection(HubListener):
         """
         if subset_grp not in self._subset_groups:
             return
+
+        # remove from list first, so that group appears deleted
+        # by the time the first SubsetDelete message is broadcast
+        self._subset_groups.remove(subset_grp)
         for s in subset_grp.subsets:
             s.delete()
-        self._subset_groups.remove(subset_grp)
 
     @property
     def subset_groups(self):

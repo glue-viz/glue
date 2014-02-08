@@ -198,8 +198,7 @@ class SubsetItem(Item):
 
     @property
     def label(self):
-        sub = self.subset
-        return '%s (%s)' % (sub.label, sub.data.label)
+        return self.subset.verbose_label
 
     def icon(self):
         return layer_icon(self.subset)
@@ -409,6 +408,9 @@ class DataCollectionView(QTreeView):
 
         self.doubleClicked.connect(self._edit)
 
+        # this keeps the full-row of the selection bar in-sync
+        self.pressed.connect(lambda x: self.viewport().update())
+
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.viewport().update)
         self._timer.start(1000)
@@ -442,6 +444,7 @@ class DataCollectionView(QTreeView):
         self.expandToDepth(0)
         self._model.layoutChanged.connect(lambda: self.expandToDepth(0))
         self._model.new_item.connect(self.select_indices)
+
 
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)

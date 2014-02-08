@@ -42,6 +42,7 @@ class StyleDialog(QDialog):
 
         self.label_widget = QLineEdit()
         self.label_widget.setText(self.layer.label)
+        self.label_widget.selectAll()
 
         self.symbol_widget = QComboBox()
         for idx, symbol in enumerate(self._symbols):
@@ -71,6 +72,7 @@ class StyleDialog(QDialog):
 
         self.setLayout(self.layout)
         self.layout.setContentsMargins(6, 6, 6, 6)
+
 
     def _connect(self):
         self.color_widget.mousePressed.connect(self.query_color)

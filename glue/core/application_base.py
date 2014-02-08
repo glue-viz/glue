@@ -218,9 +218,9 @@ class ViewerBase(HubListener, PropertySetMixin):
     def add_layer(self, layer):
         if isinstance(layer, Data):
             self.add_data(layer)
-        else:
-            assert isinstance(layer, Subset)
+        elif isinstance(layer, Subset):
             self.add_subset(layer)
+        #else: SubsetGroup
 
     def add_data(self, data):
         """ Add a data instance to the viewer

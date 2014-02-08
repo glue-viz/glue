@@ -43,6 +43,10 @@ class GroupedSubset(Subset):
                                             alpha=group.style.alpha)
 
     @property
+    def verbose_label(self):
+        return "%s (%s)" % (self.label, self.data.label)
+
+    @property
     def style(self):
         return self._style_override or self.group.style
 

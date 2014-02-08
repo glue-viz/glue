@@ -183,11 +183,8 @@ class LinkAction(LayerAction):
         self._link_icon = get_icon(self._icon)
         self._unlink_icon = get_icon('glue_unlink')
 
-    def selection_count(self):
-        return len(self.selected_layers())
-
     def _can_trigger(self):
-        return self.selection_count() > 0
+        return len(self.data_collection) > 0
 
     def _do_action(self):
         LinkEditor.update_links(self.data_collection)
