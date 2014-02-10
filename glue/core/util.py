@@ -131,13 +131,13 @@ def color2rgb(color):
     return result
 
 
-def facet_subsets(data, cid, lo=None, hi=None, steps=5,
+def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
                   prefix=None, log=False):
-    """Create a serries of subsets that partition the values of
+    """Create a series of subsets that partition the values of
     a particular attribute into several bins
 
-    :param data: Data object to use
-    :type data: :class:`~glue.core.data.Data`
+    :param data: DataCollection object to use
+    :type data: :class:`~glue.core.DataCollection`
 
     :param cid: ComponentID to facet on
     :type data: :class:`~glue.core.data.ComponentID`
@@ -159,10 +159,11 @@ def facet_subsets(data, cid, lo=None, hi=None, steps=5,
     :param log: If True, space divisions logarithmically. Default=False
     :type log: bool
 
-    This creates `steps` new subets, adds them to the data object,
-    and returns the list of newly created subsets.
+    This creates `steps` new subet groups, adds them to the data collection,
+    and returns the list of newly created subset groups.
 
-    :rtype: The subsets that were added to `data`
+    :rtype: List of :class:`glue.core.subset_group.SubsetGroup`s
+            added to `data`
 
     Example::
 
@@ -181,13 +182,23 @@ def facet_subsets(data, cid, lo=None, hi=None, steps=5,
     Labels the subsets 'm_1' and 'm_2'
 
     """
+    from .exceptions import IncompatibleAttribute
     if lo is None or hi is None:
-        vals = data[cid]
+        for data in data_collection:
+            try:
+                vals = data[cid]
+                break
+            except IncompatibleAttribute:
+                continue
+        else:
+            raise ValueError("Cannot infer data limits for ComponentID %s"
+                             % cid)
         if lo is None:
             lo = np.nanmin(vals)
         if hi is None:
             hi = np.nanmax(vals)
 
+    prefix = prefix or cid.label
     reverse = lo > hi
     if log:
         rng = np.logspace(np.log10(lo), np.log10(hi), steps + 1)
@@ -204,10 +215,9 @@ def facet_subsets(data, cid, lo=None, hi=None, steps=5,
 
     result = []
     for i, s in enumerate(states, start=1):
-        result.append(data.new_subset())
+        result.append(data_collection.new_subset_group())
         result[-1].subset_state = s
-        if prefix is not None:
-            result[-1].label = "%s_%i" % (prefix, i)
+        result[-1].label = "%s_%i" % (prefix, i)
 
     return result
 
