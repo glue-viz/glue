@@ -56,6 +56,7 @@ import json
 import types
 import logging
 from cStringIO import StringIO
+from inspect import isgeneratorfunction
 
 import numpy as np
 
@@ -392,12 +393,21 @@ class GlueUnSerializer(object):
             rec = obj_id
 
         func = self._dispatch(rec)
-
         obj = func(rec, self)
 
-        if isinstance(obj_id, basestring):
+        # loader functions might yield the constructed value,
+        # and then futher populate it. This deals with circular
+        # dependencies.
+        if isgeneratorfunction(func):
+            gen, obj = obj, next(obj)  # get the partially-constructed value...
+
+        if isinstance(obj_id, basestring): # ... add it to the registry ...
             self._objs[obj_id] = obj
             self._working.remove(obj_id)
+
+        if isgeneratorfunction(func):
+            for _ in gen:  # ... and finish constructing it
+                pass
 
         return obj
 
