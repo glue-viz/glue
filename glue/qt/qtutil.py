@@ -683,9 +683,6 @@ def _custom_widgets():
     yield GlueActionButton
     yield RGBEdit
 
-    from .widgets.data_collection_view import DataCollectionView
-    yield DataCollectionView
-
     from .component_selector import ComponentSelector
     yield ComponentSelector
 
