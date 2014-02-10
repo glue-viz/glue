@@ -155,7 +155,7 @@ class LayerArtistModel(QAbstractListModel):
     def row_label(self, row):
         """ The textual label for the row"""
         layer = self.artists[row].layer
-        if hasattr(layer, 'verbose_layer'):
+        if hasattr(layer, 'verbose_label'):
             return layer.verbose_label
         return layer.label
 

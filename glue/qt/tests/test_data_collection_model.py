@@ -96,14 +96,23 @@ class TestDataCollectionModel(object):
         assert model.data(model.data_index(), Qt.FontRole).bold()
         assert model.data(model.subsets_index(), Qt.FontRole).bold()
 
-    def _test_flags(self):
+    def test_drag_flags(self):
         model = self.make_model(1, 2)
 
-        base = (Qt.ItemIsDragEnabled | Qt.ItemIsEnabled)
-        edit = base | Qt.ItemIsEditable | Qt.ItemIsSelectable
+        sg = model.subsets_index(0)
+        subset = model.index(0, 0, sg)
+        assert model.flags(model.data_index(0)) & Qt.ItemIsDragEnabled
+        assert model.flags(subset) & Qt.ItemIsDragEnabled
 
-        base = model.index(0, 0)
-        assert model.flags(base) == base
+        assert not model.flags(model.data_index()) & Qt.ItemIsDragEnabled
+        assert not model.flags(model.subsets_index()) & Qt.ItemIsDragEnabled
+        assert not model.flags(sg) & Qt.ItemIsDragEnabled
+
+    def test_selectable_flags(self):
+        model = self.make_model(1, 2)
+
+        assert not model.flags(model.data_index()) & Qt.ItemIsSelectable
+        assert not model.flags(model.subsets_index()) & Qt.ItemIsSelectable
 
     def test_layers_mime_type_data(self):
         model = self.make_model(1, 2)

@@ -6,6 +6,7 @@ from ..external.qt.QtGui import (QFont, QTreeView, QItemSelectionModel,
 
 from .qtutil import layer_icon
 from .mime import LAYERS_MIME_TYPE, PyMimeData
+from ..core.decorators import memoize
 from ..core import message as m
 from ..core.hub import HubListener
 from .. import core
@@ -26,6 +27,7 @@ def restricted_edit_factory(item, pos):
 class Item(object):
     edit_factory = None
     glue_data = None
+    flags = Qt.ItemIsEnabled
 
     def font(self):
         return QFont()
@@ -48,6 +50,7 @@ class DataCollectionItem(Item):
         self._label = ''
         self.children_count = 2
 
+    @memoize
     def child(self, row):
         if row == DATA_IDX:
             return DataListItem(self.dc, self)
@@ -57,6 +60,7 @@ class DataCollectionItem(Item):
 
 
 class DataListItem(Item):
+
     def __init__(self, dc, parent):
         self.dc = dc
         self.parent = parent
@@ -64,6 +68,7 @@ class DataListItem(Item):
         self.column = 0
         self._label = 'Data'
 
+    @memoize
     def child(self, row):
         if row < len(self.dc):
             return DataItem(self.dc, row, self)
@@ -80,6 +85,7 @@ class DataListItem(Item):
 
 class DataItem(Item):
     edit_factory = full_edit_factory
+    flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsDragEnabled
 
     def __init__(self, dc, row, parent):
         self.dc = dc
@@ -121,6 +127,7 @@ class SubsetListItem(Item):
         self._label = 'Subsets'
         self.column = 0
 
+    @memoize
     def child(self, row):
         if row < self.dc.subset_groups:
             return SubsetGroupItem(self.dc, row, self)
@@ -137,6 +144,7 @@ class SubsetListItem(Item):
 
 class SubsetGroupItem(Item):
     edit_factory = full_edit_factory
+    flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
 
     def __init__(self, dc, row, parent):
         self.parent = parent
@@ -168,6 +176,7 @@ class SubsetGroupItem(Item):
     def children_count(self):
         return len(self.subset_group.subsets)
 
+    @memoize
     def child(self, row):
         return SubsetItem(self.dc, self.subset_group, row, self)
 
@@ -177,6 +186,7 @@ class SubsetGroupItem(Item):
 
 class SubsetItem(Item):
     edit_factory = restricted_edit_factory
+    flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsDragEnabled
 
     def __init__(self, dc, subset_group, subset_idx, parent):
         self.parent = parent
@@ -271,8 +281,10 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
         return result
 
     def flags(self, index=QModelIndex()):
-        return (Qt.ItemIsSelectable | Qt.ItemIsEnabled |
-                Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled)
+        if not index.isValid():
+            return Qt.NoItemFlags
+
+        return self._get_item(index).flags
 
     def data(self, index, role):
         if not index.isValid():
@@ -361,18 +373,25 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
 
     def register_to_hub(self, hub):
         for msg in [m.DataCollectionDeleteMessage,
-                    m.SubsetCreateMessage,
                     m.SubsetDeleteMessage]:
             hub.subscribe(self, msg, lambda x: self.invalidate())
 
-        hub.subscribe(self, m.DataCollectionAddMessage, self._on_add)
+        hub.subscribe(self, m.DataCollectionAddMessage, self._on_add_data)
+        hub.subscribe(self, m.SubsetCreateMessage, self._on_add_subset)
 
-    def _on_add(self, message):
+    def _on_add_data(self, message):
         self.invalidate()
-        idx = self.to_indices([message.data])[0]
+        idx = self.data_index(len(self.data_collection)-1)
+        self.new_item.emit(idx)
+
+    def _on_add_subset(self, message):
+        self.invalidate()
+        idx = self.subsets_index(len(self.data_collection.subset_groups)-1)
         self.new_item.emit(idx)
 
     def invalidate(self):
+        self.root = DataCollectionItem(self.data_collection)
+        self._items.clear()
         self.reset()
         self.layoutChanged.emit()
 
