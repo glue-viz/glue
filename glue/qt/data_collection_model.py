@@ -2,7 +2,7 @@
 from ..external.qt.QtCore import (QAbstractItemModel, QModelIndex,
                                   QObject, Qt, QTimer, Signal)
 from ..external.qt.QtGui import (QFont, QTreeView, QItemSelectionModel,
-                                 QAbstractItemView)
+                                 QAbstractItemView, QStyledItemDelegate)
 
 from .qtutil import layer_icon
 from .mime import LAYERS_MIME_TYPE, PyMimeData
@@ -85,7 +85,8 @@ class DataListItem(Item):
 
 class DataItem(Item):
     edit_factory = full_edit_factory
-    flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsDragEnabled
+    flags = (Qt.ItemIsSelectable | Qt.ItemIsEnabled |
+             Qt.ItemIsDragEnabled)
 
     def __init__(self, dc, row, parent):
         self.dc = dc
@@ -144,7 +145,7 @@ class SubsetListItem(Item):
 
 class SubsetGroupItem(Item):
     edit_factory = full_edit_factory
-    flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+    flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
 
     def __init__(self, dc, row, parent):
         self.parent = parent
@@ -426,6 +427,10 @@ class DataCollectionView(QTreeView):
         # this keeps the full-row of the selection bar in-sync
         self.pressed.connect(lambda x: self.viewport().update())
 
+        # only edit label on model.new_item
+        self.setItemDelegate(LabeledDelegate())
+        self.setEditTriggers(self.NoEditTriggers)
+
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.viewport().update)
         self._timer.start(1000)
@@ -459,12 +464,18 @@ class DataCollectionView(QTreeView):
         self.expandToDepth(0)
         self._model.layoutChanged.connect(lambda: self.expandToDepth(0))
         self._model.new_item.connect(self.select_indices)
+        self._model.new_item.connect(self.edit_label)
 
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.setDragEnabled(True)
         self.setDropIndicatorShown(True)
         self.setDragDropMode(QAbstractItemView.DragOnly)
+
+    def edit_label(self, index):
+        if not (self._model.flags(index) & Qt.ItemIsEditable):
+            return
+        self.edit(index)
 
     def _edit(self, index):
         item = self._model.data(index, role=Qt.UserRole)
@@ -475,6 +486,14 @@ class DataCollectionView(QTreeView):
         pos = self.mapToGlobal(rect.bottomLeft())
         pos.setY(pos.y() + 1)
         item.edit_factory(pos)
+
+
+class LabeledDelegate(QStyledItemDelegate):
+    """ Add placeholder text to default delegate """
+    def setEditorData(self, editor, index):
+        label = index.model().data(index, role=Qt.DisplayRole)
+        editor.selectAll()
+        editor.setText(label)
 
 
 if __name__ == "__main__":
