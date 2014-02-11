@@ -50,6 +50,28 @@ class LayerArtist(PropertySetMixin):
 
         self._changed = True
         self._state = None  # cache of subset state, if relevant
+        self._disabled_reason = ''
+
+    def disable(self, reason):
+        self._disabled_reason = reason
+        self.clear()
+
+    def disable_invalid_attributes(self, *attributes):
+        if len(attributes) == 0:
+            self.disable('')
+
+        msg = ('Layer depends on attributes that '
+               'cannot be derived for %s:\n -%s' %
+               (self._layer.data.label,
+                '\n -'.join(map(str, attributes))))
+
+        self.disable(msg)
+
+    @property
+    def disabled_message(self):
+        if self.enabled:
+            return ''
+        return "Cannot visualize this layer\n%s" % self._disabled_reason
 
     def redraw(self):
         self._axes.figure.canvas.draw()
@@ -327,8 +349,9 @@ class SubsetImageLayerArtist(LayerArtist):
 
         try:
             mask = subset.to_mask(view[1:])
-        except IncompatibleAttribute:
-            return
+        except IncompatibleAttribute as exc:
+            self.disable_invalid_attributes(*exc.args)
+            return False
         logging.debug("View mask has shape %s", mask.shape)
 
         # shortcut for empty subsets
@@ -361,8 +384,10 @@ class ScatterLayerArtist(LayerArtist):
         try:
             x = self.layer[self.xatt].ravel()
             y = self.layer[self.yatt].ravel()
-        except IncompatibleAttribute:
+        except IncompatibleAttribute as exc:
+            self.disable_invalid_attributes(*exc.args)
             return False
+
         self.artists = self._axes.plot(x, y)
         return True
 
@@ -504,7 +529,8 @@ class HistogramLayerArtist(LayerArtist):
             data = self.layer[self.att].ravel()
             if not np.isfinite(data).any():
                 return False
-        except IncompatibleAttribute:
+        except IncompatibleAttribute as exc:
+            self.disable_invalid_attributes(*exc.args)
             return False
 
         if data.size == 0:

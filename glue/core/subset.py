@@ -91,6 +91,14 @@ class Subset(object):
         value = Registry().register(self, value, group=self.data)
         self._label = value
 
+    @property
+    def attributes(self):
+        """
+        Returns a tuple of the ComponentIDs that this subset
+        depends upon
+        """
+        return self.subset_state.attributes
+
     def register(self):
         """ Register a subset to its data, and start broadcasting
         state changes
@@ -280,6 +288,10 @@ class SubsetState(object):
         pass
 
     @property
+    def attributes(self):
+        return tuple()
+
+    @property
     def subset_state(self):  # convenience method, mimic interface of Subset
         return self
 
@@ -314,6 +326,10 @@ class RoiSubsetState(SubsetState):
         self.yatt = yatt
         self.roi = roi
 
+    @property
+    def attributes(self):
+        return (self.xatt, self.yatt)
+
     @memoize
     def to_mask(self, data, view=None):
         x = data[self.xatt, view]
@@ -338,6 +354,10 @@ class RangeSubsetState(SubsetState):
         self.hi = hi
         self.att = att
 
+    @property
+    def attributes(self):
+        return (self.att,)
+
     def to_mask(self, data, view=None):
         x = data[self.att, view]
         result = (x >= self.lo) & (x <= self.hi)
@@ -359,6 +379,13 @@ class CompositeSubsetState(SubsetState):
 
     def copy(self):
         return type(self)(self.state1, self.state2)
+
+    @property
+    def attributes(self):
+        att = self.state1.attributes
+        if self.state2 is not None:
+            att += self.state2.attributes
+        return tuple(sorted(set(att)))
 
     @memoize
     def to_mask(self, data, view=None):

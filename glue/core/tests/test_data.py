@@ -84,13 +84,13 @@ class TestData(object):
         cid = ComponentID('bad')
         with pytest.raises(IncompatibleAttribute) as exc:
             self.data.__getitem__(cid)
-        assert exc.value.args[0] == "bad not in data set Test Data"
+        assert exc.value.args[0] is cid
 
     def test_get_component_incompatible_attribute(self):
         cid = ComponentID('bad')
         with pytest.raises(IncompatibleAttribute) as exc:
             self.data.get_component(cid)
-        assert exc.value.args[0] == "bad not in data set"
+        assert exc.value.args[0] is cid
 
     def test_get_component_name(self):
         d = Data(x=[1, 2, 3])
@@ -311,7 +311,7 @@ class TestData(object):
     def test_get_by_missing_string(self):
         with pytest.raises(IncompatibleAttribute) as exc:
             result = self.data['xyz']
-        assert exc.value.args[0].startswith('xyz not in data')
+        assert exc.value.args[0] == 'xyz'
 
     def test_immutable(self):
         d = Data(x=[1, 2, 3])

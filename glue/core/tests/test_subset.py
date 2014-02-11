@@ -7,7 +7,8 @@ import numpy as np
 from mock import MagicMock
 
 from ..data import Data, ComponentID, Component
-from ..subset import Subset, SubsetState, ElementSubsetState
+from ..subset import (Subset, SubsetState,
+                      ElementSubsetState, RoiSubsetState, RangeSubsetState)
 from ..subset import OrState
 from ..subset import AndState
 from ..subset import XorState
@@ -506,3 +507,35 @@ def test_inequality_state_str():
     assert str((x < y) | (x < 2)) == '((x < y) | (x < 2))'
     assert str(~(x < y)) == '(~(x < y))'
     assert repr(x < 5) == ('<InequalitySubsetState: (x < 5)>')
+
+
+class TestAttributes(object):
+
+    def test_empty(self):
+        assert SubsetState().attributes == tuple()
+
+    def test_roi(self):
+        d = Data(x=[1], y=[2])
+        s = RoiSubsetState(xatt=d.id['x'], yatt=d.id['y'])
+        assert s.attributes == (d.id['x'], d.id['y'])
+
+    def test_range(self):
+        d = Data(x=[1])
+        s = RangeSubsetState(0, 1, att=d.id['x'])
+        assert s.attributes == (d.id['x'],)
+
+    def test_composite(self):
+        d = Data(x=[1])
+        s = RangeSubsetState(0, 1, att=d.id['x'])
+        assert (s & s).attributes == (d.id['x'],)
+
+    def test_not(self):
+        d = Data(x=[1])
+        s = RangeSubsetState(0, 1, att=d.id['x'])
+        assert (~s).attributes == (d.id['x'],)
+
+    def test_subset(self):
+        d = Data(x=[1])
+        s = d.new_subset()
+        s.subset_state = RangeSubsetState(0, 1, att=d.id['x'])
+        assert s.attributes == (d.id['x'],)

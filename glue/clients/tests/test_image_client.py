@@ -247,7 +247,7 @@ class TestImageClient(object):
         m = MagicMock()
         client.artists[sub][0].clear = m
         client._update_subset_single(sub)
-        assert m.call_count == 1
+        assert m.call_count == 2
 
     def test_subsets_shown_on_init(self):
         client = self.create_client_with_image()

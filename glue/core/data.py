@@ -835,8 +835,7 @@ class Data(object):
             _k = key
             key = self.find_component_id(key)
             if key is None:
-                raise IncompatibleAttribute("%s not in data set %s" %
-                                            (_k, self.label))
+                raise IncompatibleAttribute(_k)
 
         if isinstance(key, ComponentLink):
             return key.compute(self, view)
@@ -844,8 +843,7 @@ class Data(object):
         try:
             comp = self._components[key]
         except KeyError:
-            raise IncompatibleAttribute("%s not in data set %s" %
-                                        (key, self.label))
+            raise IncompatibleAttribute(key)
 
         shp = view_shape(self.shape, view)
         if view is not None:
@@ -863,7 +861,7 @@ class Data(object):
         :param component_id: the component_id to retrieve
         """
         if component_id is None:
-            raise IncompatibleAttribute("None not in data set")
+            raise IncompatibleAttribute()
 
         if isinstance(component_id, basestring):
             component_id = self.id[component_id]
@@ -871,8 +869,7 @@ class Data(object):
         try:
             return self._components[component_id]
         except KeyError:
-            raise IncompatibleAttribute("%s not in data set" %
-                                        component_id.label)
+            raise IncompatibleAttribute(component_id)
 
 
 def pixel_label(i, ndim):

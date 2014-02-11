@@ -60,6 +60,10 @@ class LayerArtistModel(QAbstractListModel):
             art = self.artists[index.row()]
             result = Qt.Checked if art.visible else Qt.Unchecked
             return result
+        if role == Qt.ToolTipRole:
+            art = self.artists[index.row()]
+            if not art.enabled:
+                return art.disabled_message
 
     def flags(self, index):
         result = super(LayerArtistModel, self).flags(index)

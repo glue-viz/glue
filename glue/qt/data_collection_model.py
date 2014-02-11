@@ -28,6 +28,7 @@ class Item(object):
     edit_factory = None
     glue_data = None
     flags = Qt.ItemIsEnabled
+    tooltip = None
 
     def font(self):
         return QFont()
@@ -170,6 +171,18 @@ class SubsetGroupItem(Item):
         self.subset_group.label = value
 
     @property
+    def tooltip(self):
+        if type(self.subset_group.subset_state) == core.subset.SubsetState:
+            return "Empty subset"
+
+        atts = self.subset_group.subset_state.attributes
+        atts = [a for a in atts if isinstance(a, core.ComponentID)]
+
+        if len(atts) > 0:
+            lbl = ', '.join(a.label for a in atts)
+            return "Selection on %s" % lbl
+
+    @property
     def style(self):
         return self.subset_group.style
 
@@ -297,7 +310,8 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
             Qt.DisplayRole: self._display_data,
             Qt.FontRole: self._font_data,
             Qt.DecorationRole: self._icon_data,
-            Qt.UserRole: self._user_data}
+            Qt.UserRole: self._user_data,
+            Qt.ToolTipRole: self._tooltip_data}
 
         if role in dispatch:
             return dispatch[role](index)
@@ -310,6 +324,10 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
             return True
         except AttributeError:
             return False
+
+    def _tooltip_data(self, index):
+        tooltip = self._get_item(index).tooltip
+        return tooltip
 
     def _user_data(self, index):
         return self._get_item(index)
