@@ -25,8 +25,7 @@ For more demos, check out the :ref:`videos <demo_videos>` page
 
    installation.rst
    getting_started.rst
-   link_tutorial.rst
-   gui_guide.rst
+   tutorials.rst
    coding_with_glue.rst
    advanced.rst
    videos.rst

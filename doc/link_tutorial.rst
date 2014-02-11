@@ -1,7 +1,7 @@
 .. _component_link:
 
-Fundamentals: Data Linking
-==========================
+How Data Linking Works
+======================
 
 .. currentmodule: glue.core
 
