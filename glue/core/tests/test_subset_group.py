@@ -153,6 +153,7 @@ class TestSerialze(TestSubsetGroup):
         assert dc.subset_groups[0].style == sg.style
         assert dc.subset_groups[0].subsets[0].style.color == 'blue'
 
+
 class TestCoerce(object):
 
     def setup_method(self, method):
@@ -164,7 +165,6 @@ class TestCoerce(object):
         with patch('glue.core.subset_group.warn') as warn:
             coerce_subset_groups(self.dc)
         assert warn.call_count == 0
-
 
     def test_reassign_non_grouped_subsets(self):
         s = self.x.new_subset()

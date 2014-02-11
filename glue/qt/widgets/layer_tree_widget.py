@@ -25,6 +25,7 @@ from .subset_facet import SubsetFacet
 
 @core.decorators.singleton
 class Clipboard(object):
+
     def __init__(self):
         self.contents = None
 
@@ -91,6 +92,7 @@ class LayerAction(QAction):
 
 
 class PlotAction(LayerAction):
+
     """Visualize the selection. Requires GlueApplication"""
     _title = "Plot Data"
     _tooltip = "Make a plot of this selection"
@@ -109,6 +111,7 @@ class PlotAction(LayerAction):
 
 
 class FacetAction(LayerAction):
+
     """Add a sequence of subsets which facet a ComponentID"""
     _title = "Create faceted subsets"
     _tooltip = "Create faceted subsets"
@@ -314,6 +317,7 @@ class LayerCommunicator(QObject):
 
 
 class LayerTreeWidget(QWidget, Ui_LayerTree):
+
     """The layertree widget provides a way to visualize the various
     data and subset layers in a Glue session.
 
@@ -321,6 +325,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
     to maintin synchronization with the data collection it manages. If
     it isn't attached to a hub, interactions may not propagate properly.
     """
+
     def __init__(self, parent=None):
         Ui_LayerTree.__init__(self)
         QWidget.__init__(self, parent)
@@ -387,7 +392,6 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
         def update_enabled():
             return rbut.setEnabled(self._actions['delete'].isEnabled())
         self.layerTree.selection_changed.connect(update_enabled)
-
 
     def bind_selection_to_edit_subset(self):
         self.layerTree.selection_changed.connect(

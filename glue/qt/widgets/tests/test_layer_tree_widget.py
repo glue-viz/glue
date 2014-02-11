@@ -50,7 +50,7 @@ class TestLayerTree(object):
     def layer_present(self, layer):
         """ Test that a layer exists in the data collection """
         return layer in self.collect or \
-          getattr(layer, 'data', None) in self.collect
+            getattr(layer, 'data', None) in self.collect
 
     def test_current_layer_method_correct(self):
         layer = self.add_layer()
@@ -175,35 +175,31 @@ class TestLayerTree(object):
         self.clear_action.trigger()
         assert sub.subset_state is not dummy_state
 
-    @pytest.mark.xfail()
     def test_single_selection_updates_editable(self):
         self.widget.bind_selection_to_edit_subset()
         layer = self.add_layer()
         grp1 = self.collect.new_subset_group()
         grp2 = self.collect.new_subset_group()
-        assert layer.edit_subset != [grp1]
+        assert layer.edit_subset[0].group is not grp1
         self.select_layers(grp1)
-        assert layer.edit_subset == [grp1]
+        assert layer.edit_subset[0].group is grp1
 
-    @pytest.mark.xfail()
     def test_multi_selection_updates_editable(self):
         """Selection disables edit_subset for all other data"""
         self.widget.bind_selection_to_edit_subset()
         layer = self.add_layer()
-        subset = layer.new_subset()
         layer2 = self.add_layer()
-        subset2 = layer2.new_subset()
-        subset3 = layer2.new_subset()
-        self.select_layers(subset, subset2)
-        assert subset in layer.edit_subset
-        assert subset2 in layer2.edit_subset
-        assert subset3 not in layer2.edit_subset
+        grps = [self.collect.new_subset_group() for _ in range(3)]
+        self.select_layers(*grps[:2])
+        selected = [s.group for s in layer.edit_subset + layer2.edit_subset]
+        assert grps[0] in selected
+        assert grps[1] in selected
+        assert grps[2] not in selected
 
     def test_selection_updates_on_data_add(self):
         layer = self.add_layer()
         assert self.widget.selected_layers() == [layer]
 
-    @pytest.mark.xfail()
     def test_selection_updates_on_subset_group_add(self):
         layer = self.add_layer()
         grp = self.collect.new_subset_group()

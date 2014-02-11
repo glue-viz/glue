@@ -402,7 +402,7 @@ class GlueUnSerializer(object):
         if isgeneratorfunction(func):
             gen, obj = obj, next(obj)  # get the partially-constructed value...
 
-        if isinstance(obj_id, basestring): # ... add it to the registry ...
+        if isinstance(obj_id, basestring):  # ... add it to the registry ...
             self._objs[obj_id] = obj
             self._working.remove(obj_id)
 
@@ -527,6 +527,7 @@ def _save_data_collection(dc, context):
                 links=map(context.id, dc.links),
                 cids=map(context.id, cids),
                 components=map(context.id, components))
+
 
 @saver(DataCollection, version=2)
 def _save_data_collection_2(dc, context):

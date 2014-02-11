@@ -24,6 +24,8 @@ __all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
            'CoordinateComponent']
 
 # access to ComponentIDs via .item[name]
+
+
 class ComponentIDDict(object):
 
     def __init__(self, data, **kwargs):
@@ -334,8 +336,8 @@ class CategoricalComponent(Component):
         given self._categories
         """
         self._is_jittered = False
-        #Complicated because of the case of items not in
-        #self._categories may be on either side of the sorted list
+        # Complicated because of the case of items not in
+        # self._categories may be on either side of the sorted list
         left = np.searchsorted(self._categories,
                                self._categorical_data,
                                side='left')

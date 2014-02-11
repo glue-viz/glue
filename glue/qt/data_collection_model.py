@@ -269,10 +269,12 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
             if isinstance(item, core.Data):
                 idx = self.data_index(list(self.data_collection).index(item))
             elif isinstance(item, core.SubsetGroup):
-                idx = self.subsets_index(self.data_collection.subset_groups.index(item))
+                idx = self.subsets_index(
+                    self.data_collection.subset_groups.index(item))
             elif isinstance(item, core.subset_group.GroupedSubset):
                 grp = item.group
-                idx = self.subsets_index(self.data_collection.subset_groups.index(grp))
+                idx = self.subsets_index(
+                    self.data_collection.subset_groups.index(grp))
                 row = list(self.data_collection).index(item.data)
                 idx = self.index(grow, idx)
             else:
@@ -381,12 +383,12 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
 
     def _on_add_data(self, message):
         self.invalidate()
-        idx = self.data_index(len(self.data_collection)-1)
+        idx = self.data_index(len(self.data_collection) - 1)
         self.new_item.emit(idx)
 
     def _on_add_subset(self, message):
         self.invalidate()
-        idx = self.subsets_index(len(self.data_collection.subset_groups)-1)
+        idx = self.subsets_index(len(self.data_collection.subset_groups) - 1)
         self.new_item.emit(idx)
 
     def invalidate(self):
@@ -457,7 +459,6 @@ class DataCollectionView(QTreeView):
         self.expandToDepth(0)
         self._model.layoutChanged.connect(lambda: self.expandToDepth(0))
         self._model.new_item.connect(self.select_indices)
-
 
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)

@@ -1,4 +1,4 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import numpy as np
 
 from ..util import (file_format, point_contour, view_shape, facet_subsets,
@@ -33,6 +33,7 @@ class TestFileFormat(object):
 
 
 class TestPointContour(object):
+
     def test(self):
         data = np.array([[0, 0, 0, 0],
                          [0, 2, 3, 0],
@@ -55,6 +56,7 @@ def test_view_shape():
 
 
 class TestFacetSubsets(object):
+
     def setup_method(self, method):
         from glue.core import Data, DataCollection
         self.data = Data(label='data', x=[1, 2, 3, 4, 5, 6, 7])
@@ -62,7 +64,7 @@ class TestFacetSubsets(object):
 
     def test_facet_fully_specified(self):
         grps = facet_subsets(self.collect, self.data.id['x'],
-                                lo=3, hi=6, steps=3)
+                             lo=3, hi=6, steps=3)
         assert len(grps) == 3
         np.testing.assert_array_equal(grps[0].subsets[0].to_mask(),
                                       [False, False, True,
@@ -76,7 +78,7 @@ class TestFacetSubsets(object):
 
     def test_default_lo_value(self):
         grps = facet_subsets(self.collect, self.data.id['x'],
-                                hi=7, steps=2)
+                             hi=7, steps=2)
         assert len(grps) == 2
         np.testing.assert_array_equal(grps[0].subsets[0].to_mask(),
                                       [True, True, True, False,
@@ -87,7 +89,7 @@ class TestFacetSubsets(object):
 
     def test_default_hi_value(self):
         grps = facet_subsets(self.collect, self.data.id['x'],
-                                lo=3, steps=2)
+                             lo=3, steps=2)
         assert len(grps) == 2
         np.testing.assert_array_equal(grps[0].subsets[0].to_mask(),
                                       [False, False, True, True, False,
@@ -111,9 +113,9 @@ class TestFacetSubsets(object):
 
     def test_facet_reversed(self):
         grps = facet_subsets(self.collect, self.data.id['x'],
-                                lo=3, hi=1, steps=2)
+                             lo=3, hi=1, steps=2)
         assert len(grps) == 2
-        #ranges should be (2, 3] and (1, 2]
+        # ranges should be (2, 3] and (1, 2]
         np.testing.assert_array_equal(grps[0].subsets[0].to_mask(),
                                       [False, False, True, False, False,
                                        False, False])

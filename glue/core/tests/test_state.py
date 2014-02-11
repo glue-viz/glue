@@ -37,7 +37,9 @@ class Cloner(object):
     def get(self, o):
         return self.us.object(self.s.id(o))
 
+
 class Circular(object):
+
     def __gluestate__(self, context):
         return dict(other=context.id(self.other))
 
@@ -57,6 +59,7 @@ def test_generator_loaders():
 
     f2 = clone(f)
     assert f2.other.other is f2
+
 
 def test_none():
     assert clone(None) is None

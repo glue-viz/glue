@@ -18,10 +18,12 @@ class ColorWidget(QLabel):
 
 
 class StyleDialog(QDialog):
+
     """Dialog which edits the style of a layer (Data or Subset)
 
     Use via StyleDialog.edit_style(layer)
     """
+
     def __init__(self, layer, parent=None, edit_label=True):
         super(StyleDialog, self).__init__(parent)
         self.setWindowTitle("Style Editor")
@@ -72,7 +74,6 @@ class StyleDialog(QDialog):
 
         self.setLayout(self.layout)
         self.layout.setContentsMargins(6, 6, 6, 6)
-
 
     def _connect(self):
         self.color_widget.mousePressed.connect(self.query_color)

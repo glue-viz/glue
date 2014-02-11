@@ -100,5 +100,5 @@ class VisualAttributes(object):
         # if parent has a broadcast method, broadcast the change
         if (changed and hasattr(self, 'parent') and
             hasattr(self.parent, 'broadcast') and
-            attribute != 'parent'):
+                attribute != 'parent'):
             self.parent.broadcast(self)

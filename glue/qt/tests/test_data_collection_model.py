@@ -3,11 +3,11 @@ from ...core import DataCollection, Data
 from ..data_collection_model import DataCollectionModel
 from ..qtutil import LAYERS_MIME_TYPE
 
+
 class TestDataCollectionModel(object):
 
-
     def make_model(self, n_data=1, n_subsets=0):
-        dc = DataCollection([Data(x=[1,2,3]) for _ in range(n_data)])
+        dc = DataCollection([Data(x=[1, 2, 3]) for _ in range(n_data)])
         for _ in range(n_subsets):
             dc.new_subset_group()
         return DataCollectionModel(dc)
@@ -88,7 +88,6 @@ class TestDataCollectionModel(object):
 
         assert model.headerData(0, Qt.Vertical) == ''
         assert model.headerData(0, Qt.Horizontal) == ''
-
 
     def test_font_role(self):
         model = self.make_model(1, 2)
