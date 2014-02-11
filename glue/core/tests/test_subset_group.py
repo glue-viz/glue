@@ -2,6 +2,7 @@ from mock import MagicMock, patch
 import numpy as np
 
 from .. import DataCollection, Data, SubsetGroup
+from .. import subset
 from ..subset import SubsetState
 from ..subset_group import coerce_subset_groups
 from .test_state import clone
@@ -121,6 +122,15 @@ class TestSubsetGroup(object):
         assert sg1.label != sg2.label
         assert sg1.style.color != sg2.style.color
 
+    def test_new_label(self):
+        sg = self.dc.new_subset_group(label='test')
+        assert sg.label == 'test'
+
+    def test_new_state(self):
+        state = SubsetState()
+        sg = self.dc.new_subset_group(subset_state=state)
+        assert sg.subset_state is state
+
 
 class TestSerialze(TestSubsetGroup):
 
@@ -152,6 +162,30 @@ class TestSerialze(TestSubsetGroup):
 
         assert dc.subset_groups[0].style == sg.style
         assert dc.subset_groups[0].subsets[0].style.color == 'blue'
+
+
+class TestCombination(object):
+
+    def check_type_and_children(self, s1, s2, s3, statetype):
+        assert isinstance(s3, statetype)
+        assert s3.state1 is s1.subset_state
+        assert s3.state2 is s2.subset_state
+
+    def test_and(self):
+        s1, s2 = SubsetGroup(), SubsetGroup()
+        assert isinstance(s1 & s2, subset.AndState)
+
+    def test_or(self):
+        s1, s2 = SubsetGroup(), SubsetGroup()
+        assert isinstance(s1 | s2, subset.OrState)
+
+    def test_xor(self):
+        s1, s2 = SubsetGroup(), SubsetGroup()
+        assert isinstance(s1 ^ s2, subset.XorState)
+
+    def test_invert(self):
+        s1 = SubsetGroup()
+        assert isinstance(~s1, subset.InvertState)
 
 
 class TestCoerce(object):

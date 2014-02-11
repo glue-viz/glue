@@ -491,6 +491,7 @@ class DataCollectionView(QTreeView):
 class LabeledDelegate(QStyledItemDelegate):
     """ Add placeholder text to default delegate """
     def setEditorData(self, editor, index):
+        super(LabeledDelegate, self).setEditorData(editor, index)
         label = index.model().data(index, role=Qt.DisplayRole)
         editor.selectAll()
         editor.setText(label)

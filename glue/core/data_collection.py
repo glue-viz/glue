@@ -167,16 +167,16 @@ class DataCollection(HubListener):
                       lambda msg: self._sync_link_manager(),
                       filter=lambda x: x.sender in self._data)
 
-    def new_subset_group(self):
+    def new_subset_group(self, label=None, subset_state=None):
         """
         Create and return a new :class:`~glue.core.subset_group.SubsetGroup`
         """
         from .subset_group import SubsetGroup
         color = COLORS[self._sg_count % len(COLORS)]
         self._sg_count += 1
-        label = "%i" % (self._sg_count)
+        label = label or "%i" % (self._sg_count)
 
-        result = SubsetGroup(color=color, label=label)
+        result = SubsetGroup(color=color, label=label, subset_state=subset_state)
         self._subset_groups.append(result)
         result.register(self)
         return result

@@ -43,6 +43,15 @@ class GroupedSubset(Subset):
                                             color=group.style.color,
                                             alpha=group.style.alpha)
 
+    def _setup(self, color, alpha, label):
+        self.color = color
+        self.label = label  # trigger disambiguation
+        self.style = VisualAttributes(parent=self)
+        self.style.markersize *= 2.5
+        self.style.color = color
+        self.style.alpha = alpha
+        # skip state setting here
+
     @property
     def verbose_label(self):
         return "%s (%s)" % (self.label, self.data.label)
@@ -67,7 +76,7 @@ class GroupedSubset(Subset):
 
 
 class SubsetGroup(HubListener):
-    def __init__(self, color=RED, alpha=0.5, label=None):
+    def __init__(self, color=RED, alpha=0.5, label=None, subset_state=None):
         """
         Create a new empty SubsetGroup
 
@@ -75,7 +84,11 @@ class SubsetGroup(HubListener):
         DataCollection.new_subset.
         """
         self.subsets = []
-        self.subset_state = SubsetState()
+        if subset_state is None:
+            subset_state = SubsetState()
+        else:
+            print 'using', subset_state
+        self.subset_state = subset_state
         self.label = label
         self._style = None
 
@@ -164,6 +177,18 @@ class SubsetGroup(HubListener):
         result.label = rec['label']
         result.style = context.object(rec['style'])
         result.subsets = map(context.object, rec['subsets'])
+
+    def __and__(self, other):
+        return self.subset_state & other.subset_state
+
+    def __or__(self, other):
+        return self.subset_state | other.subset_state
+
+    def __xor__(self, other):
+        return self.subset_state ^ other.subset_state
+
+    def __invert__(self):
+        return ~self.subset_state
 
 
 def coerce_subset_groups(collect):

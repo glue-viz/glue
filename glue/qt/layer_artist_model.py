@@ -192,6 +192,7 @@ class LayerArtistView(QListView):
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
         self.doubleClicked.connect(lambda x: self._edit_style())
+        self.setEditTriggers(self.NoEditTriggers)
 
         self._set_palette()
         self._actions = {}
@@ -234,10 +235,6 @@ class LayerArtistView(QListView):
         self.setPalette(p)
 
     def _update_actions(self):
-        pass
-
-    def edit(self, *args):
-        # override to prevent editing on double click
         pass
 
     def _bottom_left_of_current_index(self):
