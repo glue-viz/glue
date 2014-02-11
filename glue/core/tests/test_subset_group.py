@@ -131,6 +131,14 @@ class TestSubsetGroup(object):
         sg = self.dc.new_subset_group(subset_state=state)
         assert sg.subset_state is state
 
+    def test_deleted_subsets_dont_respawn(self):
+        # regression test
+        sg1 = self.dc.new_subset_group()
+        self.dc.remove_subset_group(sg1)
+        d = Data(label='z', z=[1, 2, 3])
+        self.dc.append(d)
+        assert len(d.subsets) == 0
+
 
 class TestSerialze(TestSubsetGroup):
 

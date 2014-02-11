@@ -193,6 +193,7 @@ class DataCollection(HubListener):
         self._subset_groups.remove(subset_grp)
         for s in subset_grp.subsets:
             s.delete()
+        subset_grp.unregister(self.hub)
 
     @property
     def subset_groups(self):
