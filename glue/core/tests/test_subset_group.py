@@ -1,7 +1,10 @@
-from mock import MagicMock
+from mock import MagicMock, patch
+import numpy as np
 
 from .. import DataCollection, Data, SubsetGroup
 from ..subset import SubsetState
+from ..subset_group import coerce_subset_groups
+from .test_state import clone
 
 
 class TestSubsetGroup(object):
@@ -40,10 +43,19 @@ class TestSubsetGroup(object):
         sg.subsets[0].style.color = 'blue'
         for s in sg.subsets[1:]:
             assert s.style.color != 'blue'
+        assert sg.subsets[0].style.color == 'blue'
+
+    def test_new_subset_group_syncs_style(self):
+        sg = self.dc.new_subset_group()
+        for s in sg.subsets:
+            assert s.style == sg.style
 
     def test_set_group_style_clears_override(self):
         sg = self.dc.new_subset_group()
-        sg.subsets[0].style.color = 'blue'
+        style = sg.style.copy()
+        style.parent = sg.subsets[0]
+        sg.subsets[0].style = style
+        style.color = 'blue'
         sg.style.color = 'red'
         assert sg.subsets[0].style.color == 'red'
 
@@ -92,7 +104,7 @@ class TestSubsetGroup(object):
         sg.subset_state = SubsetState()
         assert bcast.call_count == 1
 
-        sg.style.color = 'red'
+        sg.style.color = '#123456'
         assert bcast.call_count == 2
 
         sg.label = 'new label'
@@ -108,3 +120,60 @@ class TestSubsetGroup(object):
 
         assert sg1.label != sg2.label
         assert sg1.style.color != sg2.style.color
+
+
+class TestSerialze(TestSubsetGroup):
+
+    def test_save_group(self):
+        sg = self.dc.new_subset_group()
+        sg2 = clone(sg)
+
+        assert sg.style == sg2.style
+        assert sg.label == sg2.label
+
+    def test_save_subset(self):
+        sg = self.dc.new_subset_group()
+        sg.subset_state = self.dc[0].id['x'] > 1
+
+        sub = sg.subsets[0]
+        dc = clone(self.dc)
+
+        sub2 = dc[0].subsets[0]
+
+        np.testing.assert_array_equal(sub2.to_mask(), [False, True, True])
+        assert sub2.style == sg.style
+        assert sub2.label == sg.label
+
+    def test_save_override(self):
+        sg = self.dc.new_subset_group()
+        sg.subsets[0].style.color = 'blue'
+
+        dc = clone(self.dc)
+
+        assert dc.subset_groups[0].style == sg.style
+        assert dc.subset_groups[0].subsets[0].style.color == 'blue'
+
+class TestCoerce(object):
+
+    def setup_method(self, method):
+        self.x = Data(label='x', x=[1, 2, 3])
+        self.y = Data(label='y', y=[1, 2, 3])
+        self.dc = DataCollection([self.x, self.y])
+
+    def test_noop_on_good_setup(self):
+        with patch('glue.core.subset_group.warn') as warn:
+            coerce_subset_groups(self.dc)
+        assert warn.call_count == 0
+
+
+    def test_reassign_non_grouped_subsets(self):
+        s = self.x.new_subset()
+        dc = self.dc
+        with patch('glue.core.subset_group.warn') as warn:
+            coerce_subset_groups(dc)
+
+        assert len(dc.subset_groups) == 1
+        assert dc.subset_groups[0].subset_state is s.subset_state
+        assert dc.subset_groups[0].style == s.style
+        assert dc.subset_groups[0].label == s.label
+        assert warn.call_count == 1

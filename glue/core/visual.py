@@ -63,9 +63,11 @@ class VisualAttributes(object):
         for att in self._atts:
             setattr(self, att, getattr(other, att))
 
-    def copy(self):
+    def copy(self, new_parent=None):
         result = VisualAttributes()
         result.set(self)
+        if new_parent is not None:
+            result.parent = new_parent
         return result
 
     def __eq__(self, other):
@@ -92,8 +94,11 @@ class VisualAttributes(object):
         if attribute not in allowed:
             raise Exception("Attribute %s does not exist" % attribute)
 
+        changed = getattr(self, attribute, None) != value
         object.__setattr__(self, attribute, value)
 
         # if parent has a broadcast method, broadcast the change
-        if hasattr(self, 'parent') and hasattr(self.parent, 'broadcast'):
+        if (changed and hasattr(self, 'parent') and
+            hasattr(self.parent, 'broadcast') and
+            attribute != 'parent'):
             self.parent.broadcast(self)

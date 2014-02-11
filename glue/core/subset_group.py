@@ -13,6 +13,8 @@ Client code should *only* create Subset Groups via
 DataCollection.new_subset_group. It should *not* call Data.add_subset
 or Data.new_subset directly
 """
+from warnings import warn
+
 from . import Subset
 from .subset import SubsetState
 from .util import Pointer
@@ -37,7 +39,6 @@ class GroupedSubset(Subset):
         :param group: :class:`~glue.core.subset_group.SubsetGroup`
         """
         self.group = group
-        self._style_override = None
         super(GroupedSubset, self).__init__(data, label=group.label,
                                             color=group.style.color,
                                             alpha=group.style.alpha)
@@ -46,21 +47,23 @@ class GroupedSubset(Subset):
     def verbose_label(self):
         return "%s (%s)" % (self.label, self.data.label)
 
-    @property
-    def style(self):
-        return self._style_override or self.group.style
-
-    @style.setter
-    def style(self, value):
-        self._style_override = value
-
-    def clear_override_style(self):
-        if self._style_override is not None:
-            self._style_override = None
-            self.broadcast('style')
+    def sync_style(self, other):
+        self.style.set(other)
 
     def __eq__(self, other):
         return other is self
+
+    def __gluestate__(self, context):
+        return dict(group=context.id(self.group),
+                    style=context.do(self.style))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        dummy_grp = SubsetGroup()  # __init__ needs group.label
+        self = cls(None, dummy_grp)
+        yield self
+        self.group = context.object(rec['group'])
+        self.style = context.object(rec['style'])
 
 
 class SubsetGroup(HubListener):
@@ -127,16 +130,16 @@ class SubsetGroup(HubListener):
     @style.setter
     def style(self, value):
         self._style = value
-        self._clear_overrides()
+        self._sync_style()
 
-    def _clear_overrides(self):
+    def _sync_style(self):
         for s in self.subsets:
-            s.clear_override_style()
+            s.sync_style(self.style)
 
     def broadcast(self, item):
         #used by __setattr__ and VisualAttributes.__setattr__
         if isinstance(item, VisualAttributes):
-            self._clear_overrides()
+            self._sync_style()
             return
 
         for s in self.subsets:
@@ -146,3 +149,39 @@ class SubsetGroup(HubListener):
         object.__setattr__(self, attr, value)
         if attr in ['subset_state', 'label', 'style']:
             self.broadcast(attr)
+
+    def __gluestate__(self, context):
+        return dict(label=self.label,
+                    state=context.id(self.subset_state),
+                    style=context.do(self.style),
+                    subsets=map(context.id, self.subsets))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        result = cls()
+        yield result
+        result.subset_state = context.object(rec['state'])
+        result.label = rec['label']
+        result.style = context.object(rec['style'])
+        result.subsets = map(context.object, rec['subsets'])
+
+
+def coerce_subset_groups(collect):
+    """
+    If necessary, reassign non-grouped subsets in a DataCollection
+    into SubsetGroups.
+
+    This is used to support DataCollections saved with
+    version 1 of glue.core.state.save_data_collection
+    """
+    for data in collect:
+        for subset in data.subsets:
+            if not isinstance(subset, GroupedSubset):
+                warn("DataCollection has subsets outside of "
+                     "subset groups, which are no longer supported. "
+                     "Moving to subset groups")
+                subset.delete()
+                grp = collect.new_subset_group()
+                grp.subset_state = subset.subset_state
+                grp.style = subset.style
+                grp.label = subset.label

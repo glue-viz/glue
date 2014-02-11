@@ -262,8 +262,8 @@ class TestApplication(object):
         w = app.new_data_viewer(ScatterWidget, data=d)
         self.check_clone(app)
 
-        s1 = d.new_subset(label='testing 123')
-        s2 = d.new_subset(label='testing 234')
+        s1 = dc.new_subset_group()
+        s2 = dc.new_subset_group()
         assert len(w.layers) == 3
         l1, l2, l3 = w.layers
         l1.zorder, l2.zorder = l2.zorder, l1.zorder
@@ -292,7 +292,7 @@ class TestApplication(object):
         w = app.new_data_viewer(HistogramWidget, data=d)
         self.check_clone(app)
 
-        s = d.new_subset(label='wxy')
+        dc.new_subset_group()
         assert len(w.layers) == 2
         self.check_clone(app)
 

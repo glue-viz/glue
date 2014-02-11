@@ -71,6 +71,7 @@ from .util import lookup_class
 from .roi import Roi
 from . import glue_pickle as gp
 from .. import core
+from .subset_group import coerce_subset_groups
 
 literals = tuple([types.NoneType, types.FloatType,
                  types.IntType, types.LongType,
@@ -527,13 +528,29 @@ def _save_data_collection(dc, context):
                 cids=map(context.id, cids),
                 components=map(context.id, components))
 
+@saver(DataCollection, version=2)
+def _save_data_collection_2(dc, context):
+    result = _save_data_collection(dc, context)
+    result['groups'] = map(context.id, dc.subset_groups)
+    return result
+
 
 @loader(DataCollection)
 def _load_data_collection(rec, context):
     dc = DataCollection(map(context.object, rec['data']))
     for link in rec['links']:
         dc.add_link(context.object(link))
+    coerce_subset_groups(dc)
     return dc
+
+
+@loader(DataCollection, version=2)
+def _load_data_collection_2(rec, context):
+    result = _load_data_collection(rec, context)
+    result._subset_groups = map(context.object, rec['groups'])
+    for grp in result.subset_groups:
+        grp.register_to_hub(result.hub)
+    return result
 
 
 @saver(Data)
