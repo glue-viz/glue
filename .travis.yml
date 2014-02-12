@@ -8,7 +8,7 @@ env:
   - CONDA_ARGS="--yes"
   - PIP_ARGS="--upgrade --use-mirrors"
   - PYTEST_ARGS="--cov glue"
-  - CONDA_BASE="pip numpy scipy pyside cython h5py pygments pyzmq scikit-image pandas"
+  - CONDA_BASE="pip numpy=1.7 scipy=0.12 pyside cython h5py pygments pyzmq scikit-image pandas=0.12"
   - PIP_BASE="mock pytest pytest-cov coveralls pyavm pillow"
   - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
   matrix:
@@ -41,7 +41,7 @@ install:
 - conda install $CONDA_ARGS python=$TRAVIS_PYTHON_VERSION $CONDA_BASE
 - pip install $PIP_ARGS $PIP_BASE
 - if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy;
-  else conda install $CONDA_ARGS astropy==$ASTRO_VER; fi
+  else conda install $CONDA_ARGS astropy=$ASTRO_VER numpy=1.7; fi
 - conda install $CONDA_ARGS IPython==$IPYTHON_VER
 - conda install $CONDA_ARGS matplotlib==$MPL_VER
 - python setup.py build
