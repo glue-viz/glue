@@ -179,8 +179,7 @@ class HistogramClient(Client):
         components = list(self._get_data_components('x'))
         if components:
             bins = update_ticks(self.axes, 'x',
-                                components,
-                                self.xlog)
+                                components, False)
 
             if bins is not None:
                 prev_bins = self.nbins
@@ -238,7 +237,13 @@ class HistogramClient(Client):
             lim = visible_limits(self._artists, 1)
             if lim is not None:
                 lo = 1e-5 if self.ylog else 0
-                self._axes.set_ylim(lo, lim[1])
+                hi = lim[1]
+                # pad the top
+                if self.ylog:
+                    hi = lo * (hi / lo) ** 1.03
+                else:
+                    hi *= 1.03
+                self._axes.set_ylim(lo, hi)
 
         yscl = 'log' if self.ylog else 'linear'
         self._axes.set_yscale(yscl)
@@ -255,9 +260,11 @@ class HistogramClient(Client):
 
         Parameters
         ----------
-        component: string
-            The name of the new data component to plot
+        component: ComponentID
+            The new component to plot
         """
+        if self._component is component:
+            return
         self._component = component
         self._auto_nbin()
         self.sync_all()

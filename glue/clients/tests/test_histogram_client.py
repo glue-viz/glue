@@ -54,8 +54,8 @@ class TestHistogramClient(object):
                 datara[0] = min(datara[0], a.y.min())
                 datara[1] = max(datara[1], a.y.max())
 
-        np.testing.assert_array_almost_equal(yra[0], 0)
-        np.testing.assert_array_almost_equal(datara[1], yra[1])
+        assert yra[0] <= datara[0]
+        assert yra[1] >= datara[1]
 
     def test_empty_on_creation(self):
         assert self.data not in self.client._artists
@@ -120,9 +120,11 @@ class TestHistogramClient(object):
 
     def test_set_component_redraws(self):
         self.client.add_layer(self.data)
-        comp = self.data.find_component_id('uniform')
-        ct0 = self.draw_count()
+        comp = self.data.id['x']
+        comp2 = self.data.id['y']
         self.client.set_component(comp)
+        ct0 = self.draw_count()
+        self.client.set_component(comp2)
         assert self.draw_count() > ct0
 
     def test_remove_not_present_ignored(self):
