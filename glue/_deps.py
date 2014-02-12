@@ -95,6 +95,7 @@ required = (
 general = (
     Dependency('dill', 'Used when saving Glue sessions'),
     Dependency('scipy', 'Used for some image processing calculation'),
+    Dependency('pandas', 'Adds support for Excel files and DataFrames'),
     Dependency('skimage',
                'Used to read popular image formats (jpeg, png, etc.)',
                'scikit-image'))
@@ -114,12 +115,16 @@ testing = (
     Dependency('mock', 'Used in test code'),
     Dependency('pytest', 'Used in test code'))
 
+export = (
+    Dependency('plotly', 'Used to explort plots to Plot.ly'),
+    )
 
 categories = (('required', required),
               ('general', general),
               ('ipython terminal', ipython),
               ('astronomy', astronomy),
-              ('testing', testing))
+              ('testing', testing),
+              ('export', export))
 
 dependencies = {d.module: d for c in categories for d in c[1]}
 
