@@ -237,7 +237,13 @@ class HistogramClient(Client):
             lim = visible_limits(self._artists, 1)
             if lim is not None:
                 lo = 1e-5 if self.ylog else 0
-                self._axes.set_ylim(lo, lim[1])
+                hi = lim[1]
+                # pad the top
+                if self.ylog:
+                    hi = lo * (hi / lo) ** 1.03
+                else:
+                    hi *= 1.03
+                self._axes.set_ylim(lo, hi)
 
         yscl = 'log' if self.ylog else 'linear'
         self._axes.set_yscale(yscl)
