@@ -254,9 +254,11 @@ class HistogramClient(Client):
 
         Parameters
         ----------
-        component: string
-            The name of the new data component to plot
+        component: ComponentID
+            The new component to plot
         """
+        if self._component is component:
+            return
         self._component = component
         self._auto_nbin()
         self.sync_all()
