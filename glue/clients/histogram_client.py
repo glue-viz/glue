@@ -179,8 +179,7 @@ class HistogramClient(Client):
         components = list(self._get_data_components('x'))
         if components:
             bins = update_ticks(self.axes, 'x',
-                                components,
-                                self.xlog)
+                                components, False)
 
             if bins is not None:
                 prev_bins = self.nbins
