@@ -2,7 +2,6 @@
 import pytest
 
 import numpy as np
-import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
 from matplotlib.ticker import LogFormatterMathtext, ScalarFormatter, FuncFormatter
 from mock import MagicMock
@@ -14,11 +13,10 @@ from ... import core
 from ...core.data import ComponentID
 
 from ..scatter_client import ScatterClient
+from .util import renderless_figure
 
 # share matplotlib instance, and disable rendering, for speed
-FIGURE = plt.figure()
-FIGURE.canvas.draw = lambda: 0
-plt.close('all')
+FIGURE = renderless_figure()
 
 
 class TestScatterClient(object):

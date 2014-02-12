@@ -369,7 +369,7 @@ class ScatterLayerArtist(LayerArtist):
 
     def __init__(self, layer, ax):
         super(ScatterLayerArtist, self).__init__(layer, ax)
-        self.emphasis = None
+        self.emphasis = None  # an optional SubsetState of emphasized points
 
     def _recalc(self):
         self.clear()
@@ -394,7 +394,9 @@ class ScatterLayerArtist(LayerArtist):
         if self.emphasis is not None:
             try:
                 s = Subset(self.layer.data)
-                s.subset_state = self.emphasis & self.layer.subset_state
+                s.subset_state = self.emphasis
+                if hasattr(self.layer, 'subset_state'):
+                    s.subset_state &= self.layer.subset_state
                 x = s[self.xatt].ravel()
                 y = s[self.yatt].ravel()
                 self.artists.extend(self._axes.plot(x, y))
