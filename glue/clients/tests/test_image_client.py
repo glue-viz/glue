@@ -1,7 +1,6 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import pytest
 
-import matplotlib.pyplot as plt
 from mock import MagicMock
 import numpy as np
 
@@ -11,10 +10,9 @@ from ...core.exceptions import IncompatibleAttribute
 from ..layer_artist import RGBImageLayerArtist, ImageLayerArtist
 from ..image_client import ImageClient
 
-# share matplotlib instance, and disable rendering, for speed
-FIGURE = plt.figure()
-FIGURE.canvas.draw = lambda: 0
-plt.close('all')
+from .util import renderless_figure
+
+FIGURE = renderless_figure()
 
 
 class DummyCoords(core.coordinates.Coordinates):

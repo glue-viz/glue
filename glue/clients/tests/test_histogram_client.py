@@ -2,7 +2,6 @@
 import pytest
 
 from mock import MagicMock
-import matplotlib.pyplot as plt
 import numpy as np
 
 from ..histogram_client import HistogramClient
@@ -14,8 +13,9 @@ from ...core.hub import Hub
 from ...core.data import Data, CategoricalComponent
 from ...core.subset import RangeSubsetState
 
-FIGURE = plt.figure()
-plt.close('all')
+from .util import renderless_figure
+
+FIGURE = renderless_figure()
 
 
 class TestException(Exception):

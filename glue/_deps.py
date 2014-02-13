@@ -3,14 +3,15 @@
 Guide users through installing Glue's dependencies
 """
 
-#Unfortunately, we can't rely on setuptools' install_requires
-#keyword, because matplotlib doesn't properly install its dependencies
+# Unfortunately, we can't rely on setuptools' install_requires
+# keyword, because matplotlib doesn't properly install its dependencies
 from subprocess import check_call, CalledProcessError
 import sys
 from imp import find_module
 
 
 class Dependency(object):
+
     def __init__(self, module, info, package=None, min_version=None):
         self.module = module
         self.info = info
@@ -58,6 +59,7 @@ PIP package name:
 
 
 class QtDep(Dependency):
+
     def __init__(self):
         self.module = 'PyQt4 or PySide'
         self.info = ('GUI Library (install at http://bit.ly/YfTFxj or '
@@ -84,8 +86,8 @@ class QtDep(Dependency):
                )
 
 
-#Add any dependencies here
-#Make sure to add new categories to the categories tuple
+# Add any dependencies here
+# Make sure to add new categories to the categories tuple
 required = (
     QtDep(),
     Dependency('numpy', 'Required', min_version='1.4'),
@@ -117,7 +119,7 @@ testing = (
 
 export = (
     Dependency('plotly', 'Used to explort plots to Plot.ly'),
-    )
+)
 
 categories = (('required', required),
               ('general', general),
