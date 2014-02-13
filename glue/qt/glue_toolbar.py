@@ -102,14 +102,18 @@ class GlueToolbar(NavigationToolbar2QT):
 
         #self.adj_window = None
 
+    def home(self, *args):
+        super(GlueToolbar, self).home(*args)
+        self.canvas.homeButton.emit()
+
     def zoom(self, *args):
         self._deactivate_custom_modes()
-        super(GlueToolbar, self).zoom(self, *args)
+        super(GlueToolbar, self).zoom(*args)
         self._update_buttons_checked()
 
     def pan(self, *args):
         self._deactivate_custom_modes()
-        super(GlueToolbar, self).pan(self, *args)
+        super(GlueToolbar, self).pan(*args)
         self._update_buttons_checked()
 
     def _deactivate_custom_modes(self):
