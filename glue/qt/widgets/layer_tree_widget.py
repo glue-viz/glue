@@ -67,7 +67,9 @@ class LayerAction(QAction):
         return self._layer_tree.data_collection
 
     def update_enabled(self):
-        self.setEnabled(self._can_trigger())
+        enabled = self._can_trigger()
+        self.setEnabled(enabled)
+        self.setVisible(enabled)
 
     def single_selection(self):
         return len(self.selected_layers()) == 1
@@ -191,19 +193,6 @@ class LinkAction(LayerAction):
 
     def _do_action(self):
         LinkEditor.update_links(self.data_collection)
-
-
-class LoadAction(LayerAction):
-    _title = "Load subset"
-    _tooltip = "Load a subset from a file"
-
-    def _can_trigger(self):
-        return self.single_selection_subset()
-
-    def _do_action(self):
-        assert self._can_trigger()
-        subset = self.selected_layers()[0]
-        load_subset(subset)
 
 
 class SaveAction(LayerAction):
@@ -417,7 +406,6 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
         sep.setSeparator(True)
         tree.addAction(sep)
 
-        self._actions['load'] = LoadAction(self)
         self._actions['save'] = SaveAction(self)
         self._actions['copy'] = CopyAction(self)
         self._actions['paste'] = PasteAction(self)
@@ -470,20 +458,6 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
 
     def __len__(self):
         return len(self.layerTree)
-
-
-def load_subset(subset):
-    assert isinstance(subset, core.subset.Subset)
-    file_name, fltr = QFileDialog.getOpenFileName(caption="Select a subset")
-    file_name = str(file_name)
-
-    if not file_name:
-        return
-
-    try:
-        subset.read_mask(file_name)
-    except Exception as e:
-        print "Exception raised -- could not load\n%s" % e
 
 
 def save_subset(subset):

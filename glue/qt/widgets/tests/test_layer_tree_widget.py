@@ -8,7 +8,7 @@ from mock import MagicMock, patch
 import pytest
 
 from ..layer_tree_widget import (LayerTreeWidget, Clipboard,
-                                 save_subset, load_subset)
+                                 save_subset)
 
 from ....tests import example_data
 from .... import core
@@ -217,18 +217,4 @@ class TestLayerTree(object):
         with patch('glue.qt.widgets.layer_tree_widget.QFileDialog') as d:
             d.getSaveFileName.return_value = ('', '')
             save_subset(subset)
-        assert subset.write_mask.call_count == 0
-
-    def test_load_subset(self):
-        subset = MagicMock(core.Subset)
-        with patch('glue.qt.widgets.layer_tree_widget.QFileDialog') as d:
-            d.getOpenFileName.return_value = ('test.fits', None)
-            load_subset(subset)
-        subset.read_mask.assert_called_once_with('test.fits')
-
-    def test_load_subset_cancel(self):
-        subset = MagicMock(core.Subset)
-        with patch('glue.qt.widgets.layer_tree_widget.QFileDialog') as d:
-            d.getOpenFileName.return_value = ('', '')
-            load_subset(subset)
         assert subset.write_mask.call_count == 0
