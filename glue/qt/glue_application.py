@@ -330,7 +330,7 @@ class GlueApplication(Application, QMainWindow):
                 tip="Open a new visualization window in the current tab",
                 shortcut=QKeySequence.New
                 )
-        a.triggered.connect(self._choose_new_data_viewer)
+        a.triggered.connect(self.choose_new_data_viewer)
         self._actions['viewer_new'] = a
 
         a = act('New Tab', self,
@@ -390,7 +390,7 @@ class GlueApplication(Application, QMainWindow):
         a.setEnabled(False)
         self._actions['redo'] = a
 
-    def _choose_new_data_viewer(self, data=None):
+    def choose_new_data_viewer(self, data=None):
         """ Create a new visualization window in the current tab
         """
 

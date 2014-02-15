@@ -109,7 +109,7 @@ class PlotAction(LayerAction):
     def _do_action(self):
         assert self._can_trigger()
         data = self.selected_layers()[0].data
-        self.app.new_data_viewer(data)
+        self.app.choose_new_data_viewer(data)
 
 
 class FacetAction(LayerAction):
