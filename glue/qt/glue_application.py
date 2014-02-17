@@ -559,7 +559,7 @@ class GlueApplication(Application, QMainWindow):
     def dropEvent(self, event):
         urls = event.mimeData().urls()
         for url in urls:
-            self._load_data(url.path())
+            self.load_data(url.path())
         event.accept()
 
     def report_error(self, message, detail):

@@ -13,6 +13,7 @@ except:
     ipy_version = '0.0'
 
 from ..glue_application import GlueApplication
+from ...external.qt.QtCore import QMimeData
 from ..widgets.scatter_widget import ScatterWidget
 from ..widgets.image_widget import ImageWidget
 from ...core import Data
@@ -163,3 +164,13 @@ class TestGlueApplication(object):
             self.app._choose_new_data_viewer(data=d2)
             args, kwargs = pc.call_args
             assert qt_client.members[kwargs['default']] == ImageWidget
+
+    def test_drop_load_data(self):
+        m = QMimeData()
+        m.setUrls(['test.fits'])
+        e = MagicMock()
+        e.mimeData.return_value = m
+        load = MagicMock()
+        self.app.load_data = load
+        self.app.dropEvent(e)
+        assert load.call_count == 1
