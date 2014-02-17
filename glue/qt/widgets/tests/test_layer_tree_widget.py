@@ -70,6 +70,16 @@ class TestLayerTree(object):
         self.remove_layer(layer)
         assert not self.layer_present(layer)
 
+    def test_remove_subset_triggers_selection_changed(self):
+        layer = self.add_layer()
+        grp = self.collect.new_subset_group()
+        mock = MagicMock()
+        self.select_layers(grp)
+        self.widget.layerTree.selection_changed.connect(mock)
+        QTest.mousePress(self.widget.layerRemoveButton, Qt.LeftButton)
+        QTest.mouseRelease(self.widget.layerRemoveButton, Qt.LeftButton)
+        assert mock.call_count > 0
+
     def test_remove_subset_layer(self):
         """ Test that widget remove button works properly on subset groups"""
         layer = self.add_layer()

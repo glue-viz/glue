@@ -481,6 +481,7 @@ class DataCollectionView(QTreeView):
         self.setExpandsOnDoubleClick(False)
         self.expandToDepth(0)
         self._model.layoutChanged.connect(lambda: self.expandToDepth(0))
+        self._model.layoutChanged.connect(self.selection_changed.emit)
         self._model.new_item.connect(self.select_indices)
         self._model.new_item.connect(self.edit_label)
 
