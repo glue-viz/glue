@@ -47,8 +47,8 @@ class TestParse(object):
         s2 = Subset(None, label='s2')
         refs = dict([('c1', c1), ('c2', c2), ('s1', s1), ('s2', s2)])
         cmd = '({c1} > 10) and {s1}'
-        expected = ('(data[references["c1"]] > 10) and '
-                    'references["s1"].to_mask()')
+        expected = ('(data[references["c1"], __view] > 10) and '
+                    'references["s1"].to_mask(__view)')
         result = parse._dereference(cmd, refs)
         assert expected == result
 
@@ -86,7 +86,7 @@ class TestParsedCommand(object):
         refs = {'comp1': c1}
         pc = parse.ParsedCommand(cmd, refs)
         assert pc.evaluate(data) == 25
-        data.__getitem__.assert_called_once_with(c1)
+        data.__getitem__.assert_called_once_with((c1, None))
 
     def test_evaluate_subset(self):
         sub = MagicMock(spec_set=Subset)
@@ -106,12 +106,12 @@ class TestParsedCommand(object):
         refs = {'comp1': c1}
         pc = parse.ParsedCommand(cmd, refs)
         assert pc.evaluate(data) == 100
-        data.__getitem__.assert_called_once_with(c1)
+        data.__getitem__.assert_called_once_with((c1, None))
 
 
 class TestParsedComponentLink(object):
 
-    def test(self):
+    def make_link(self):
         data = Data()
         comp = Component(np.array([1, 2, 3]))
         c1 = ComponentID('c1')
@@ -124,10 +124,42 @@ class TestParsedComponentLink(object):
 
         cl = parse.ParsedComponentLink(c2, pc)
         data.add_component_link(cl)
+        return data, c2
 
-        result = data[c2]
+    def test(self):
+        data, cid = self.make_link()
+        result = data[cid]
         expected = np.array([100, 200, 300])
         np.testing.assert_array_equal(result, expected)
+
+    def test_not_identity(self):
+        # regression test
+        d = Data(x=[1, 2, 3])
+        c2 = ComponentID('c2')
+        cmd = '{x}'
+        refs = {'x': d.id['x']}
+        pc = parse.ParsedCommand(cmd, refs)
+        link = parse.ParsedComponentLink(c2, pc)
+        assert not link.identity
+
+    def test_slice(self):
+        data, cid = self.make_link()
+        result = data[cid, ::2]
+        np.testing.assert_array_equal(result, [100, 300])
+
+    def test_save_load(self):
+        from .test_state import clone
+
+        d = Data(x=[1, 2, 3])
+        c2 = ComponentID('c2')
+        cmd = '{x} + 1'
+        refs = {'x': d.id['x']}
+        pc = parse.ParsedCommand(cmd, refs)
+        link = parse.ParsedComponentLink(c2, pc)
+        d.add_component_link(link)
+
+        d2 = clone(d)
+        np.testing.assert_array_equal(d2['c2'], [2, 3, 4])
 
 
 class TestParsedSubsetState(object):

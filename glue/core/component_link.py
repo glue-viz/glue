@@ -70,7 +70,9 @@ class ComponentLink(object):
 
         self._from = comp_from
         self._to = comp_to
-        self._using = using or identity
+        if using is None:
+            using = identity
+        self._using = using
         self._inverse = inverse
 
         self.hidden = False  # show in widgets?
@@ -86,7 +88,7 @@ class ComponentLink(object):
             raise TypeError("to argument is not a ComponentID: %s" %
                             type(self._to))
 
-        if using is None:
+        if using is identity:
             if len(comp_from) != 1:
                 raise TypeError("comp_from must have only 1 element, "
                                 "or a 'using' function must be provided")
