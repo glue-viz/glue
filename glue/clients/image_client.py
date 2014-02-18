@@ -71,6 +71,9 @@ class ImageClient(VizClient):
 
         self._cid = self._ax.figure.canvas.mpl_connect('button_release_event',
                                                        self.check_update)
+        if hasattr(self._ax.figure.canvas, 'homeButton'):
+            # test code doesn't always use Glue's custom FigureCanvas
+            self._ax.figure.canvas.homeButton.connect(self.check_update)
 
     @property
     def slice(self):

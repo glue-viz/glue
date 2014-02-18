@@ -29,6 +29,7 @@ class MplCanvas(FigureCanvas):
     # signals
     rightDrag = Signal(float, float)
     leftDrag = Signal(float, float)
+    homeButton = Signal()
 
     def __init__(self):
         interactive = matplotlib.is_interactive()
