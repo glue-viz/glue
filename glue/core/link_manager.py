@@ -101,7 +101,7 @@ class LinkManager(object):
         self._duplicated_ids = []
 
     def add_link(self, link):
-        if isinstance(link, LinkCollection) or isinstance(link, list):
+        if isinstance(link, (LinkCollection, list)):
             for l in link:
                 self.add_link(l)
         else:

@@ -73,8 +73,11 @@ def _dereference(cmd, references):
     Returns
     -------
     A new command, where all the tags have been subsituted as follows:
-      "{tag}" -> 'data[references["tag"]]', if references[tag] is a ComponentID
-      "{tag}" -> 'references["tag"].to_mask()' if references[tag] is a Subset
+      "{tag}" -> 'data[references["tag"], __view]', if references[tag] is a ComponentID
+      "{tag}" -> 'references["tag"].to_mask(__view)' if references[tag] is a Subset
+
+    __view is a placeholder variable referencing the view
+    passed to data.__getitem__ and subset.to_mask
 
     Raises
     ------
@@ -84,9 +87,9 @@ def _dereference(cmd, references):
     def sub_func(match):
         tag = match.group('tag')
         if isinstance(references[tag], ComponentID):
-            return 'data[references["%s"]]' % tag
+            return 'data[references["%s"], __view]' % tag
         elif isinstance(references[tag], Subset):
-            return 'references["%s"].to_mask()' % tag
+            return 'references["%s"].to_mask(__view)' % tag
         else:
             raise TypeError("Tag %s maps to unrecognized type: %s" %
                             (tag, type(references[tag])))
@@ -129,12 +132,26 @@ class ParsedCommand(object):
     def reference_list(self):
         return _reference_list(self._cmd, self._references)
 
-    def evaluate(self, data):
+    def evaluate(self, data, view=None):
         from .. import env
         # pylint: disable=W0613, W0612
         references = self._references
         cmd = _dereference(self._cmd, self._references)
+        scope = vars(env)
+        scope['__view'] = view
         return eval(cmd, vars(env), locals())  # careful!
+
+    def __gluestate__(self, context):
+        return dict(cmd=self._cmd,
+                    references=dict((k, context.id(v))
+                                    for k, v in self._references.items()))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        cmd = rec['cmd']
+        ref = dict((k, context.object(v))
+                   for k, v in rec['references'].items())
+        return cls(cmd, ref)
 
 
 class ParsedComponentLink(ComponentLink):
@@ -150,11 +167,20 @@ class ParsedComponentLink(ComponentLink):
         """
         parsed.ensure_only_component_references()
         super(ParsedComponentLink, self).__init__(
-            parsed.reference_list, to_, 0)
+            parsed.reference_list, to_, 'dummy')
         self._parsed = parsed
 
-    def compute(self, data):
-        return self._parsed.evaluate(data)
+    def compute(self, data, view=None):
+        return self._parsed.evaluate(data, view)
+
+    def __gluestate__(self, context):
+        return dict(parsed=context.do(self._parsed),
+                    to=context.id(self.get_to_id()))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(context.object(rec['to']),
+                   context.object(rec['parsed']))
 
 
 class ParsedSubsetState(SubsetState):
