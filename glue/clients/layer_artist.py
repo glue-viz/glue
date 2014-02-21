@@ -134,7 +134,9 @@ class LayerArtist(PropertySetMixin):
     def _sync_style(self):
         style = self.layer.style
         for artist in self.artists:
-            artist.set_markeredgecolor('none')
+            edgecolor = style.color if style.marker == '+' else 'none'
+            artist.set_markeredgecolor(edgecolor)
+            artist.set_markeredgewidth(3)
             artist.set_markerfacecolor(style.color)
             artist.set_marker(style.marker)
             artist.set_markersize(style.markersize)
