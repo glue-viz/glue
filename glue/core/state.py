@@ -565,6 +565,13 @@ def _save_data(data, context):
                 coords=context.id(data.coords))
 
 
+@saver(Data, version=2)
+def _save_data_2(data, context):
+    result = _save_data(data, context)
+    result['style'] = context.do(data.style)
+    return result
+
+
 @loader(Data)
 def _load_data(rec, context):
     label = rec['label']
@@ -598,6 +605,14 @@ def _load_data(rec, context):
     for s in rec['subsets']:
         result.add_subset(context.object(s))
 
+    return result
+
+
+@loader(Data, version=2)
+def _load_datda_2(rec, context):
+    # adds style saving
+    result = _load_data(rec, context)
+    result.style = context.object(rec['style'])
     return result
 
 

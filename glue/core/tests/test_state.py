@@ -74,6 +74,13 @@ def test_data():
     np.testing.assert_array_equal(d2['Pixel Axis 0'], [0, 1, 2])
 
 
+def test_data_style():
+    d = core.Data(x=[1, 2, 3])
+    d.style.color = 'blue'
+    d2 = clone(d)
+    assert d2.style.color == 'blue'
+
+
 def test_data_factory():
     with make_file(TEST_FITS_DATA, '.fits') as infile:
         d = load_data(infile)
@@ -307,39 +314,39 @@ class TestVersioning(object):
 
     def setup_method(self, method):
 
-        @saver(core.Data, version=2)
-        def s(d, context):
-            return dict(v=2)
-
-        @loader(core.Data, version=2)
-        def l(d, context):
-            return 2
-
         @saver(core.Data, version=3)
         def s(d, context):
             return dict(v=3)
 
         @loader(core.Data, version=3)
-        def l(rec, context):
+        def l(d, context):
             return 3
 
-    def teardown_method(self, method):
-        GlueSerializer.dispatch._data[core.Data].pop(2)
-        GlueSerializer.dispatch._data[core.Data].pop(3)
-        GlueUnSerializer.dispatch._data[core.Data].pop(2)
-        GlueUnSerializer.dispatch._data[core.Data].pop(3)
+        @saver(core.Data, version=4)
+        def s(d, context):
+            return dict(v=4)
 
-    def test_defualt_latest_save(self):
-        assert GlueSerializer(core.Data()).dumpo().values()[0]['v'] == 3
+        @loader(core.Data, version=4)
+        def l(rec, context):
+            return 4
+
+    def teardown_method(self, method):
+        GlueSerializer.dispatch._data[core.Data].pop(3)
+        GlueSerializer.dispatch._data[core.Data].pop(4)
+        GlueUnSerializer.dispatch._data[core.Data].pop(3)
+        GlueUnSerializer.dispatch._data[core.Data].pop(4)
+
+    def test_default_latest_save(self):
+        assert GlueSerializer(core.Data()).dumpo().values()[0]['v'] == 4
 
     def test_legacy_load(self):
         data = json.dumps({'': {'_type': 'glue.core.Data',
-                                '_protocol': 2, 'v': 2}})
-        assert GlueUnSerializer(data).object('') == 2
+                                '_protocol': 3, 'v': 2}})
+        assert GlueUnSerializer(data).object('') == 3
 
     def test_default_latest_load(self):
         data = json.dumps({'': {'_type': 'glue.core.Data'}})
-        assert GlueUnSerializer(data).object('') == 3
+        assert GlueUnSerializer(data).object('') == 4
 
 
 class TestVersionedDict(object):
