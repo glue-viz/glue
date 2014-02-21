@@ -487,6 +487,8 @@ class GlueApplication(Application, QMainWindow):
             widget = glue_terminal(data_collection=self._data,
                                    dc=self._data,
                                    hub=self._hub,
+                                   session=self.session,
+                                   application=self,
                                    **vars(env))
             self._terminal_button.clicked.connect(self._toggle_terminal)
         except Exception as e:  # pylint: disable=W0703
