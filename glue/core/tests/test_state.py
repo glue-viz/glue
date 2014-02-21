@@ -38,6 +38,29 @@ class Cloner(object):
         return self.us.object(self.s.id(o))
 
 
+class Circular(object):
+
+    def __gluestate__(self, context):
+        return dict(other=context.id(self.other))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        result = cls()
+        yield result
+        result.other = context.object(rec['other'])
+
+
+def test_generator_loaders():
+
+    f = Circular()
+    b = Circular()
+    f.other = b
+    b.other = f
+
+    f2 = clone(f)
+    assert f2.other.other is f2
+
+
 def test_none():
     assert clone(None) is None
 
@@ -49,6 +72,13 @@ def test_data():
 
     np.testing.assert_array_equal(d2['x'], [1, 2, 3])
     np.testing.assert_array_equal(d2['Pixel Axis 0'], [0, 1, 2])
+
+
+def test_data_style():
+    d = core.Data(x=[1, 2, 3])
+    d.style.color = 'blue'
+    d2 = clone(d)
+    assert d2.style.color == 'blue'
 
 
 def test_data_factory():
@@ -242,8 +272,8 @@ class TestApplication(object):
         w = app.new_data_viewer(ScatterWidget, data=d)
         self.check_clone(app)
 
-        s1 = d.new_subset(label='testing 123')
-        s2 = d.new_subset(label='testing 234')
+        s1 = dc.new_subset_group()
+        s2 = dc.new_subset_group()
         assert len(w.layers) == 3
         l1, l2, l3 = w.layers
         l1.zorder, l2.zorder = l2.zorder, l1.zorder
@@ -272,7 +302,7 @@ class TestApplication(object):
         w = app.new_data_viewer(HistogramWidget, data=d)
         self.check_clone(app)
 
-        s = d.new_subset(label='wxy')
+        dc.new_subset_group()
         assert len(w.layers) == 2
         self.check_clone(app)
 
@@ -284,39 +314,39 @@ class TestVersioning(object):
 
     def setup_method(self, method):
 
-        @saver(core.Data, version=2)
-        def s(d, context):
-            return dict(v=2)
-
-        @loader(core.Data, version=2)
-        def l(d, context):
-            return 2
-
         @saver(core.Data, version=3)
         def s(d, context):
             return dict(v=3)
 
         @loader(core.Data, version=3)
-        def l(rec, context):
+        def l(d, context):
             return 3
 
-    def teardown_method(self, method):
-        GlueSerializer.dispatch._data[core.Data].pop(2)
-        GlueSerializer.dispatch._data[core.Data].pop(3)
-        GlueUnSerializer.dispatch._data[core.Data].pop(2)
-        GlueUnSerializer.dispatch._data[core.Data].pop(3)
+        @saver(core.Data, version=4)
+        def s(d, context):
+            return dict(v=4)
 
-    def test_defualt_latest_save(self):
-        assert GlueSerializer(core.Data()).dumpo().values()[0]['v'] == 3
+        @loader(core.Data, version=4)
+        def l(rec, context):
+            return 4
+
+    def teardown_method(self, method):
+        GlueSerializer.dispatch._data[core.Data].pop(3)
+        GlueSerializer.dispatch._data[core.Data].pop(4)
+        GlueUnSerializer.dispatch._data[core.Data].pop(3)
+        GlueUnSerializer.dispatch._data[core.Data].pop(4)
+
+    def test_default_latest_save(self):
+        assert GlueSerializer(core.Data()).dumpo().values()[0]['v'] == 4
 
     def test_legacy_load(self):
         data = json.dumps({'': {'_type': 'glue.core.Data',
-                                '_protocol': 2, 'v': 2}})
-        assert GlueUnSerializer(data).object('') == 2
+                                '_protocol': 3, 'v': 2}})
+        assert GlueUnSerializer(data).object('') == 3
 
     def test_default_latest_load(self):
         data = json.dumps({'': {'_type': 'glue.core.Data'}})
-        assert GlueUnSerializer(data).object('') == 3
+        assert GlueUnSerializer(data).object('') == 4
 
 
 class TestVersionedDict(object):

@@ -53,7 +53,7 @@ We can highlight the west arm of W5 using the rectangle selector:
     :align: center
     :width: 500px
 
-Notice that this highlights the relevant pixels in the image, adds a new subset (``W5.1``) to the data manager, and adds a new visualization layer (also labeled ``W5.1``) in the visualization dashboard.
+Notice that this highlights the relevant pixels in the image, adds a new subset (which we've named ``west arm``) to the data manager, and adds a new visualization layer (also labeled ``west arm (w5)``) in the visualization dashboard.
 
 We can redefine this subset by dragging a new rectangle in the image. Alternately, we could define a second subset by clicking the ``New Subset`` button (next to the folder button).
 
@@ -61,10 +61,11 @@ We can redefine this subset by dragging a new rectangle in the image. Alternatel
 .. note:: When multiple subsets are defined, only the highlighted entries in the data manager are affected when drawing new subsets. If no subsets are highlighted, then a new subset is created.
 
 
-You can edit the properties of a visualization layer (color, name, etc.) By right-clicking on the entry in the visualization dashboard.
+You can edit the properties of a visualization layer (color, name, etc.) By double-clicking on the entry in the visualization dashboard.
 
   .. figure:: layer_options.png
      :align: center
+     :width: 200px
 
 Likewise, you can re-arrange the rows in this widget to change the order in which each layer is drawn -- the top entry will appear above all other entries.
 
@@ -76,7 +77,7 @@ Visualizations are linked in Glue -- that is, we can plot this data in many diff
     :align: center
     :width: 500px
 
-This shows the distribution of intensities for the image as a whole (gray), and for the subset in red (the label `PRIMARY` comes from the FITS header)
+This shows the distribution of intensities for the image as a whole (gray), and for the subset in red (the label ``PRIMARY`` comes from the FITS header)
 
 Perhaps we wish to remove faint pixels from our selection. To do this, we first enable the selection mode toolbar via ``Toolbars->Selection Mode Toolbar``, and then pick the last mode (``Remove From Selection`` mode).:
 
@@ -101,6 +102,7 @@ Open ``w5_psc.vot`` -- a catalog of *Spitzer*-identified point sources towards t
 
 .. figure:: psc_layer.png
    :align: center
+   :width: 400px
 
 At this point, you can visualize and drilldown into this catalog. However, Glue doesn't know enough to intercompare the catalog and image. To do that, we must ``Link`` these two data entries. Click on the ``Link Data`` button in the data manager. This brings up a new window, showing all the pieces of information within each dataset:
 
@@ -108,34 +110,29 @@ At this point, you can visualize and drilldown into this catalog. However, Glue 
    :align: center
    :width: 400px
 
-The image has an attribute ``World x:RA---TAN``. This is the same quantity as the ``RAJ2000`` attribute in the ``w5_psc`` catalog -- they are both describing Right Ascension (the horizontal spatial coordinate on the sky). Select these entries, and click ``Glue`` to instruct the program that these quantities are equivalent. Likewise, link ``World y: DEC--TAN`` and ``DEJ2000`` (Declination, the other coordinate). Click ``OK``.
+The image has an attribute ``Right Ascension``. This is the same quantity as the ``RAJ2000`` attribute in the ``w5_psc`` catalog -- they are both describing Right Ascension (the horizontal spatial coordinate on the sky). Select these entries, and click ``Glue`` to instruct the program that these quantities are equivalent. Likewise, link ``Declination`` and ``DEJ2000`` (Declination, the other coordinate). Click ``OK``.
 
 .. note::
-   What does this do? This tells Glue how to derive the catalog-defined quantities ``DEJ2000`` and ``RAJ2000`` using data from the image, and vice versa. In this case, the derivation is simple (it aliases the quantity ``World y:DEC--TAN`` or ``World x:RA---TAN``). In general, the derivation can be more complex (i.e. an arbitrary function that maps quantities in the image to a quantity in the catalog). Glue uses this information to apply subset definitions to different data sets, overplot multiple datasets, etc.
+   What does this do? This tells Glue how to derive the catalog-defined quantities ``DEJ2000`` and ``RAJ2000`` using data from the image, and vice versa. In this case, the derivation is simple (it aliases the quantity ``Declination`` or ``Right Ascension``). In general, the derivation can be more complex (i.e. an arbitrary function that maps quantities in the image to a quantity in the catalog). Glue uses this information to apply subset definitions to different data sets, overplot multiple datasets, etc.
 
 After these connections are defined, subsets that are defined via spatial constraints in the image can be used to filter rows in the catalog. Let's see how that works.
 
-First, define a subset in the image as before. I chose a circle towards the east arm:
+First, make a scatter plot of the point source catalog. Then, delete the West Arm subset (by highlighting it and clicking the ``X`` button). Then, highlight a new region in the image. You should see this selection applied to both plots:
 
 .. figure:: link_subset_1.png
    :align: center
    :width: 500px
 
-Next, create a new (empty) subset in the catalog by highlighting ``w5_psc`` and clicking the ``New Subset`` button (next to the red folder button).
-
-Next, create a scatter plot of the catalog by dragging ``w5_psc`` into the visuaslization area. At this point, your window should look like this:
+You can also overplot the catalog rows on top of the image. To do this, click the arrow next to the new subset -- this shows the individual selections applied to each dataset. Click and drag the subset for the point source catalog on top of the image. To see these points more easily, you may want to disable the
+selection applied to the image itself by unchecking the `East arm
+(w5)` entry in the plot layer window.
 
 .. figure:: link_subset_2.png
    :align: center
    :width: 500px
 
-Finally, we can select ``w5.1``, copy it's definition (``Ctrl+C`` or ``Cmd+C``), selecting ``w5_psc.1``, and paste this definition (``Ctrl+V`` or ``Cmd+V``). This will show which entries in the catalog overlap the circular region defined in the image.
 
-.. figure:: link_subset_3.png
-   :align: center
-   :width: 500px
-
-This cross-data operation was possible because Glue had enough information to apply the spatial constraint in the image (fundamentally, a constraint on ``World x:RA---TAN`` and ``World y:DEC--TAN``) to a constraint in the catalog (since it could derive thsoe quantities from the ``RAJ2000`` and ``DEJ2000`` attributes). Several other cross-data operations are possible at this point. For example, you can drag the ``w5_psc.1`` entry from the data manager to the image window to overplot this subset as a collection of points in the image.
+Glue is able to apply this filter to both datasets because it has enough information to apply the spatial constraint in the image (fundamentally, a constraint on ``Right Ascension`` and ``Declination``) to a constraint in the catalog (since it could derive thsoe quantities from the ``RAJ2000`` and ``DEJ2000`` attributes).
 
 .. tip::
 
@@ -147,7 +144,7 @@ This cross-data operation was possible because Glue had enough information to ap
 
 As was mentioned :ref:`above <multi_selection_note>`, the highlighted subsets in the data manager are the ones which are affected by selecting regions in the plots. Thus, instead of manually copy-pasting subsets from the image to the catalog, you can also highlight both subsets before selecting a plot region. This will update both subsets to match the selection.
 
-.. note:: Careful readers will notice that we didn't use the image subset from earlier sections when working with the catalog. This is because that selection combined spatial constraints (the original rectangle in the image) with a constraint on intensity (the histogram selection). There is no mapping from image intensity to quantities in the catalog, so it isn't possible to filter the catalog on that subset. If you try to paste a subset onto a dataset and Glue doesn't know what to do, it clears the target subset as an indication that the operation cannot be completed.
+.. note:: Careful readers will notice that we didn't use the image subset from earlier sections when working with the catalog. This is because that selection combined spatial constraints (the original rectangle in the image) with a constraint on intensity (the histogram selection). There is no mapping from image intensity to quantities in the catalog, so it isn't possible to filter the catalog on that subset. In situations where Glue is unable to apply a filter to a dataset, it doesn't render the subset in the visualization.
 
 
 Saving your work
@@ -155,9 +152,9 @@ Saving your work
 Glue provides a number of ways to save your work, and to export your work for further analysis in other programs.
 
 **Saving The Session**
-You can save a Glue session for later work via the ``File->Save Session`` menu. This creates a glue session file (the preferred file extension is ``.glu``). Currently, this saves the data and subsets, but not the visualization windows. You can restore this session later via ``File->Open Session``
+You can save a Glue session for later work via the ``File->Save Session`` menu. This creates a glue session file (the preferred file extension is ``.glu``). You can restore this session later via ``File->Open Session``
 
-.. warning:: Due to the way python objects are saved, it is unlikely that a saved session will restore properly if you change Glue versions.
+.. warning:: These files store references to the files you opened, and not copies of the files themselves. Thus, you won't be able to re-load this session if you move any of the original data.
 
 **Exporting the plots**
 Glue can export certain kinds of plot combinations to other formats and web services.

@@ -15,9 +15,7 @@ from ..external.qt.QtGui import (QColor,
 from ..external.qt.QtCore import (Qt, QAbstractListModel, QModelIndex,
                                   QSize, QTimer)
 
-from .qtutil import (edit_layer_color,
-                     edit_layer_symbol, edit_layer_point_size,
-                     layer_artist_icon)
+from .qtutil import (layer_artist_icon)
 
 from .mime import PyMimeData, LAYERS_MIME_TYPE
 from ..clients.layer_artist import LayerArtist, LayerArtistContainer
@@ -62,6 +60,10 @@ class LayerArtistModel(QAbstractListModel):
             art = self.artists[index.row()]
             result = Qt.Checked if art.visible else Qt.Unchecked
             return result
+        if role == Qt.ToolTipRole:
+            art = self.artists[index.row()]
+            if not art.enabled:
+                return art.disabled_message
 
     def flags(self, index):
         result = super(LayerArtistModel, self).flags(index)
@@ -156,7 +158,10 @@ class LayerArtistModel(QAbstractListModel):
 
     def row_label(self, row):
         """ The textual label for the row"""
-        return self.artists[row].layer.label
+        layer = self.artists[row].layer
+        if hasattr(layer, 'verbose_label'):
+            return layer.verbose_label
+        return layer.label
 
     def change_label(self, row, label):
         """ Reassign the labeel for whatever layer the artist manages"""
@@ -176,37 +181,11 @@ class LayerArtistModel(QAbstractListModel):
     def row_artist(self, row):
         return self.artists[row]
 
-    def edit_size(self, row):
-        index = self.index(row)
-        if not index.isValid():
-            return
-        artist = self.artists[row]
-        edit_layer_point_size(artist.layer)
-        index = self.index(row)
-        self.dataChanged.emit(index, index)
-
-    def edit_color(self, row):
-        index = self.index(row)
-        if not index.isValid():
-            return
-        artist = self.artists[row]
-        edit_layer_color(artist.layer)
-        self.dataChanged.emit(index, index)
-
-    def edit_symbol(self, row):
-        index = self.index(row)
-        if not index.isValid():
-            return
-        artist = self.artists[row]
-        edit_layer_symbol(artist.layer)
-        self.dataChanged.emit(index, index)
-
 
 class LayerArtistView(QListView):
     """A list view into an artist model. The zorder
     of each artist can be shuffled by dragging and dropping
-    items. Right-clicking brings up a menu to edit color, size, and
-    marker"""
+    items. Right-clicking brings up a menu to edit style or delete"""
     def __init__(self, parent=None):
         super(LayerArtistView, self).__init__(parent)
         self.setDragEnabled(True)
@@ -216,9 +195,10 @@ class LayerArtistView(QListView):
         self.setSelectionMode(QAbstractItemView.SingleSelection)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
+        self.doubleClicked.connect(lambda x: self._edit_style())
+        self.setEditTriggers(self.NoEditTriggers)
 
         self._set_palette()
-
         self._actions = {}
         self._create_actions()
 
@@ -261,29 +241,25 @@ class LayerArtistView(QListView):
     def _update_actions(self):
         pass
 
+    def _bottom_left_of_current_index(self):
+        idx = self.currentIndex()
+        if not idx.isValid():
+            return
+        rect = self.visualRect(idx)
+        pos = self.mapToGlobal(rect.bottomLeft())
+        pos.setY(pos.y() + 1)
+        return pos
+
+    def _edit_style(self):
+        pos = self._bottom_left_of_current_index()
+        if pos is None:
+            return
+        item = self.current_artist().layer
+        StyleDialog.dropdown_editor(item, pos, edit_label=False)
+
     def _create_actions(self):
-        act = QAction('Properties...', self)
-        act.triggered.connect(lambda: StyleDialog.edit_style(
-            self.current_artist().layer))
-        self.addAction(act)
-
-        act = QAction('   size...', self)
-        act.triggered.connect(
-            lambda: self.model().edit_size(self.current_row()))
-        self.addAction(act)
-
-        act = QAction('   color...', self)
-        act.triggered.connect(
-            lambda: self.model().edit_color(self.current_row()))
-        self.addAction(act)
-
-        act = QAction('   symbol...', self)
-        act.triggered.connect(
-            lambda: self.model().edit_symbol(self.current_row()))
-        self.addAction(act)
-
-        act = QAction('', self)
-        act.setSeparator(True)
+        act = QAction('Edit style', self)
+        act.triggered.connect(self._edit_style)
         self.addAction(act)
 
         act = QAction('Remove', self)

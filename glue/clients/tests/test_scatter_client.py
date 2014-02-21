@@ -11,7 +11,7 @@ from functools import partial
 from ...tests import example_data
 from ... import core
 from ...core.data import ComponentID
-
+from ...core.edit_subset_mode import EditSubsetMode
 from ..scatter_client import ScatterClient
 from .util import renderless_figure
 
@@ -27,10 +27,12 @@ class TestScatterClient(object):
                     self.data[0].find_component_id('b'),
                     self.data[1].find_component_id('c'),
                     self.data[1].find_component_id('d')]
-        self.hub = core.hub.Hub()
         self.roi_limits = (0.5, 0.5, 1.5, 1.5)
         self.roi_points = (np.array([1]), np.array([1]))
         self.collect = core.data_collection.DataCollection()
+        EditSubsetMode().data_collection = self.collect
+
+        self.hub = self.collect.hub
 
         FIGURE.clf()
         axes = FIGURE.add_subplot(111)
@@ -553,10 +555,10 @@ class TestCategoricalScatterClient(TestScatterClient):
                     self.data[0].find_component_id('y1'),
                     self.data[1].find_component_id('x2'),
                     self.data[1].find_component_id('y2')]
-        self.hub = core.hub.Hub()
         self.roi_limits = (0.5, 0.5, 4, 4)
         self.roi_points = (np.array([1]), np.array([3]))
         self.collect = core.data_collection.DataCollection()
+        self.hub = self.collect.hub
 
         FIGURE.clf()
         axes = FIGURE.add_subplot(111)

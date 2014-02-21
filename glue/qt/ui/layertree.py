@@ -1,5 +1,5 @@
 from glue.external.qt import QtCore, QtGui
-from ..widgets.data_collection_view import DataCollectionView
+from ..data_collection_model import DataCollectionView
 from ..qtutil import GlueActionButton, get_icon
 
 
@@ -72,8 +72,6 @@ class Ui_LayerTree(object):
 
     def retranslateUi(self, LayerTree):
         LayerTree.setWindowTitle(QtGui.QApplication.translate("LayerTree", "Form", None, QtGui.QApplication.UnicodeUTF8))
-        self.layerTree.headerItem().setText(0, QtGui.QApplication.translate("LayerTree", "Layer", None, QtGui.QApplication.UnicodeUTF8))
-        self.layerTree.headerItem().setText(1, QtGui.QApplication.translate("LayerTree", "Symbol", None, QtGui.QApplication.UnicodeUTF8))
         self.layerAddButton.setToolTip(QtGui.QApplication.translate("LayerTree", "Load a new data set", None, QtGui.QApplication.UnicodeUTF8))
         self.newSubsetButton.setToolTip(QtGui.QApplication.translate("LayerTree", "Create a new empty subset", None, QtGui.QApplication.UnicodeUTF8))
         self.layerRemoveButton.setToolTip(QtGui.QApplication.translate("LayerTree", "Delete Layer", None, QtGui.QApplication.UnicodeUTF8))

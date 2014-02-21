@@ -195,12 +195,9 @@ class ParsedSubsetState(SubsetState):
         super(ParsedSubsetState, self).__init__()
         self._parsed = parsed
 
-    def to_mask(self, view=None):
+    def to_mask(self, data, view=None):
         """ Calculate the new mask by evaluating the dereferenced command """
-        if self.parent is None:
-            raise TypeError("ParsedSubsetState has no parent subset: %s" %
-                            self)
-        result = self._parsed.evaluate(self.parent.data)
+        result = self._parsed.evaluate(data)
         if view is not None:
             result = result[view]
         return result

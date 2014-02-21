@@ -7,7 +7,8 @@ import numpy as np
 from mock import MagicMock
 
 from ..data import Data, ComponentID, Component
-from ..subset import Subset, SubsetState, ElementSubsetState
+from ..subset import (Subset, SubsetState,
+                      ElementSubsetState, RoiSubsetState, RangeSubsetState)
 from ..subset import OrState
 from ..subset import AndState
 from ..subset import XorState
@@ -28,14 +29,14 @@ class TestSubset(object):
         state = MagicMock(spec=SubsetState)
         s.subset_state = state
         s.to_mask()
-        state.to_mask.assert_called_once_with(None)
+        state.to_mask.assert_called_once_with(self.data, None)
 
     def test_subset_index_wraps_state(self):
         s = Subset(self.data)
         state = MagicMock(spec=SubsetState)
         s.subset_state = state
         s.to_index_list()
-        state.to_index_list.assert_called_once_with()
+        state.to_index_list.assert_called_once_with(self.data)
 
     def test_set_label(self):
         s = Subset(self.data, label='hi')
@@ -54,12 +55,6 @@ class TestSubset(object):
     def test_set_color(self):
         s = Subset(self.data, color='blue')
         assert s.style.color == 'blue'
-
-    def test_subset_state_reparented_on_assignment(self):
-        s = Subset(self.data)
-        state = SubsetState()
-        s.subset_state = state
-        assert state.parent is s
 
     def test_paste_returns_copy_of_state(self):
         s = Subset(self.data)
@@ -169,26 +164,6 @@ def test_binary_subset_combination(x):
     assert isinstance(newsub.subset_state, target)
 
 
-def test_subset_combinations_reparent():
-    """ parent property of nested subset states assigned correctly """
-    s = (Subset(None) & Subset(None)) | Subset(None)
-    assert s.subset_state.parent is s
-    assert s.subset_state.state1.parent is s
-    assert s.subset_state.state1.state1.parent is s
-    assert s.subset_state.state1.state2.parent is s
-    assert s.subset_state.state2.parent is s
-
-
-def test_inequality_subsets_reparent():
-    """ hierarchical subsets using InequalityStates reparent properly """
-    s = Subset(None) & ((ComponentID("") > 5) | (ComponentID("") < 2))
-    assert s.subset_state.parent is s
-    assert s.subset_state.state1.parent is s
-    assert s.subset_state.state2.parent is s
-    assert s.subset_state.state2.state1.parent is s
-    assert s.subset_state.state2.state2.parent is s
-
-
 class TestSubsetStateCombinations(object):
     def setup_method(self, method):
         self.data = None
@@ -222,7 +197,7 @@ class TestCompositeSubsetStates(object):
         def __init__(self, mask):
             self._mask = mask
 
-        def to_mask(self, view):
+        def to_mask(self, data, view):
             return self._mask
 
         def copy(self):
@@ -231,35 +206,36 @@ class TestCompositeSubsetStates(object):
     def setup_method(self, method):
         self.sub1 = self.DummyState(np.array([1, 1, 0, 0], dtype='bool'))
         self.sub2 = self.DummyState(np.array([1, 0, 1, 0], dtype='bool'))
+        self.data = None
 
     def test_or(self):
         s3 = OrState(self.sub1, self.sub2)
-        answer = s3.to_mask()
+        answer = s3.to_mask(self.data)
         expected = np.array([True, True, True, False])
         np.testing.assert_array_equal(answer, expected)
 
     def test_and(self):
         s3 = AndState(self.sub1, self.sub2)
-        answer = s3.to_mask()
+        answer = s3.to_mask(self.data)
         expected = np.array([True, False, False, False])
         np.testing.assert_array_equal(answer, expected)
 
     def test_xor(self):
         s3 = XorState(self.sub1, self.sub2)
-        answer = s3.to_mask()
+        answer = s3.to_mask(self.data)
         expected = np.array([False, True, True, False])
         np.testing.assert_array_equal(answer, expected)
 
     def test_invert(self):
         s3 = InvertState(self.sub1)
-        answer = s3.to_mask()
+        answer = s3.to_mask(self.data)
         expected = np.array([False, False, True, True])
         np.testing.assert_array_equal(answer, expected)
 
     def test_multicomposite(self):
         s3 = AndState(self.sub1, self.sub2)
         s4 = XorState(s3, self.sub1)
-        answer = s4.to_mask()
+        answer = s4.to_mask(self.data)
         expected = np.array([False, True, False, False])
         np.testing.assert_array_equal(answer, expected)
 
@@ -268,25 +244,24 @@ class TestElementSubsetState(object):
 
     def setup_method(self, method):
         self.state = ElementSubsetState()
-        self.state.parent = MagicMock()
-        self.state.parent.data.shape = (2, 1)
+        self.data = Data(x=[[1], [2]])
 
     def test_empty_mask(self):
-        mask = self.state.to_mask()
+        mask = self.state.to_mask(self.data)
         np.testing.assert_array_equal(mask, np.array([[False], [False]]))
 
     def test_empty_index_list(self):
-        ilist = self.state.to_index_list()
+        ilist = self.state.to_index_list(self.data)
         np.testing.assert_array_equal(ilist, np.array([]))
 
     def test_nonempty_index_list(self):
         self.state._indices = [0]
-        ilist = self.state.to_index_list()
+        ilist = self.state.to_index_list(self.data)
         np.testing.assert_array_equal(ilist, np.array([0]))
 
     def test_nonempty_mask(self):
         self.state._indices = [0]
-        mask = self.state.to_mask()
+        mask = self.state.to_mask(self.data)
         np.testing.assert_array_equal(mask, np.array([[True], [False]]))
 
     def test_define_on_init(self):
@@ -342,12 +317,11 @@ class TestSubsetState(object):
 
     def setup_method(self, method):
         self.state = SubsetState()
-        self.state.parent = MagicMock()
 
     def mask_check(self, mask, answer):
         self.state.to_mask = MagicMock()
         self.state.to_mask.return_value = mask
-        np.testing.assert_array_equal(self.state.to_index_list(), answer)
+        np.testing.assert_array_equal(self.state.to_index_list(None), answer)
 
     def test_to_index_list_1d(self):
         mask = np.array([False, True])
@@ -397,8 +371,8 @@ class TestCompositeSubsetStateCopy(object):
 
 
 class DummySubsetState(SubsetState):
-    def to_mask(self, view=None):
-        result = np.ones(self.parent.data.shape, dtype=bool)
+    def to_mask(self, data, view=None):
+        result = np.ones(data.shape, dtype=bool)
         if view is not None:
             result = result[view]
         return result
@@ -533,3 +507,35 @@ def test_inequality_state_str():
     assert str((x < y) | (x < 2)) == '((x < y) | (x < 2))'
     assert str(~(x < y)) == '(~(x < y))'
     assert repr(x < 5) == ('<InequalitySubsetState: (x < 5)>')
+
+
+class TestAttributes(object):
+
+    def test_empty(self):
+        assert SubsetState().attributes == tuple()
+
+    def test_roi(self):
+        d = Data(x=[1], y=[2])
+        s = RoiSubsetState(xatt=d.id['x'], yatt=d.id['y'])
+        assert s.attributes == (d.id['x'], d.id['y'])
+
+    def test_range(self):
+        d = Data(x=[1])
+        s = RangeSubsetState(0, 1, att=d.id['x'])
+        assert s.attributes == (d.id['x'],)
+
+    def test_composite(self):
+        d = Data(x=[1])
+        s = RangeSubsetState(0, 1, att=d.id['x'])
+        assert (s & s).attributes == (d.id['x'],)
+
+    def test_not(self):
+        d = Data(x=[1])
+        s = RangeSubsetState(0, 1, att=d.id['x'])
+        assert (~s).attributes == (d.id['x'],)
+
+    def test_subset(self):
+        d = Data(x=[1])
+        s = d.new_subset()
+        s.subset_state = RangeSubsetState(0, 1, att=d.id['x'])
+        assert s.attributes == (d.id['x'],)

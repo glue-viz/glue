@@ -10,3 +10,4 @@ from .visual import VisualAttributes
 from .command import Command, CommandStack
 from .session import Session
 from .application_base import Application
+from .subset_group import SubsetGroup

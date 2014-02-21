@@ -247,7 +247,7 @@ class TestImageClient(object):
         m = MagicMock()
         client.artists[sub][0].clear = m
         client._update_subset_single(sub)
-        assert m.call_count == 1
+        assert m.call_count == 2
 
     def test_subsets_shown_on_init(self):
         client = self.create_client_with_image()
@@ -340,12 +340,10 @@ class TestImageClient(object):
         """Scatter subsets should not be added by
         SubsetAddMessage"""
         c = self.create_client_with_image()
-        hub = core.Hub()
 
         self.collect.append(self.scatter)
 
-        c.register_to_hub(hub)
-        self.collect.register_to_hub(hub)
+        c.register_to_hub(self.collect.hub)
 
         s = self.scatter.new_subset()
         assert s not in c.artists

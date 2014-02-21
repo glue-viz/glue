@@ -56,6 +56,7 @@ import json
 import types
 import logging
 from cStringIO import StringIO
+from inspect import isgeneratorfunction
 
 import numpy as np
 
@@ -70,6 +71,7 @@ from .util import lookup_class
 from .roi import Roi
 from . import glue_pickle as gp
 from .. import core
+from .subset_group import coerce_subset_groups
 
 literals = tuple([types.NoneType, types.FloatType,
                  types.IntType, types.LongType,
@@ -392,12 +394,21 @@ class GlueUnSerializer(object):
             rec = obj_id
 
         func = self._dispatch(rec)
-
         obj = func(rec, self)
 
-        if isinstance(obj_id, basestring):
+        # loader functions might yield the constructed value,
+        # and then futher populate it. This deals with circular
+        # dependencies.
+        if isgeneratorfunction(func):
+            gen, obj = obj, next(obj)  # get the partially-constructed value...
+
+        if isinstance(obj_id, basestring):  # ... add it to the registry ...
             self._objs[obj_id] = obj
             self._working.remove(obj_id)
+
+        if isgeneratorfunction(func):
+            for _ in gen:  # ... and finish constructing it
+                pass
 
         return obj
 
@@ -503,7 +514,6 @@ def _load_subset(rec, context):
     result = Subset(None)
     result.style = context.object(rec['style'])
     result.subset_state = context.object(rec['state'])
-    assert result.subset_state.parent is result
     result.label = rec['label']
     return result
 
@@ -519,12 +529,29 @@ def _save_data_collection(dc, context):
                 components=map(context.id, components))
 
 
+@saver(DataCollection, version=2)
+def _save_data_collection_2(dc, context):
+    result = _save_data_collection(dc, context)
+    result['groups'] = map(context.id, dc.subset_groups)
+    return result
+
+
 @loader(DataCollection)
 def _load_data_collection(rec, context):
     dc = DataCollection(map(context.object, rec['data']))
     for link in rec['links']:
         dc.add_link(context.object(link))
+    coerce_subset_groups(dc)
     return dc
+
+
+@loader(DataCollection, version=2)
+def _load_data_collection_2(rec, context):
+    result = _load_data_collection(rec, context)
+    result._subset_groups = map(context.object, rec['groups'])
+    for grp in result.subset_groups:
+        grp.register_to_hub(result.hub)
+    return result
 
 
 @saver(Data)
@@ -536,6 +563,13 @@ def _save_data(data, context):
                 subsets=[context.id(s) for s in data.subsets],
                 label=data.label,
                 coords=context.id(data.coords))
+
+
+@saver(Data, version=2)
+def _save_data_2(data, context):
+    result = _save_data(data, context)
+    result['style'] = context.do(data.style)
+    return result
 
 
 @loader(Data)
@@ -571,6 +605,14 @@ def _load_data(rec, context):
     for s in rec['subsets']:
         result.add_subset(context.object(s))
 
+    return result
+
+
+@loader(Data, version=2)
+def _load_datda_2(rec, context):
+    # adds style saving
+    result = _load_data(rec, context)
+    result.style = context.object(rec['style'])
     return result
 
 

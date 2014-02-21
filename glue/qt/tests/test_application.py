@@ -125,7 +125,7 @@ class TestGlueApplication(object):
 
             ct = len(self.app.current_tab.subWindowList())
 
-            self.app._choose_new_data_viewer()
+            self.app.choose_new_data_viewer()
             assert len(self.app.current_tab.subWindowList()) == ct
 
     def test_new_data_viewer(self):
@@ -135,7 +135,7 @@ class TestGlueApplication(object):
 
             ct = len(self.app.current_tab.subWindowList())
 
-            self.app._choose_new_data_viewer()
+            self.app.choose_new_data_viewer()
             assert len(self.app.current_tab.subWindowList()) == ct + 1
 
     def test_move(self):
@@ -157,11 +157,11 @@ class TestGlueApplication(object):
             d2 = Data(x=np.array([[1, 2, 3], [4, 5, 6]]))
             d1 = Data(x=np.array([1, 2, 3]))
 
-            self.app._choose_new_data_viewer(data=d1)
+            self.app.choose_new_data_viewer(data=d1)
             args, kwargs = pc.call_args
             assert qt_client.members[kwargs['default']] == ScatterWidget
 
-            self.app._choose_new_data_viewer(data=d2)
+            self.app.choose_new_data_viewer(data=d2)
             args, kwargs = pc.call_args
             assert qt_client.members[kwargs['default']] == ImageWidget
 

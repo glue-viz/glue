@@ -5,7 +5,7 @@ import numpy as np
 
 from .coordinates import Coordinates
 from .visual import VisualAttributes
-from .visual import RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK
+from .visual import COLORS
 from .exceptions import IncompatibleAttribute
 from .component_link import (ComponentLink, CoordinateComponentLink,
                              BinaryComponentLink)
@@ -23,10 +23,9 @@ from .odict import OrderedDict
 __all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
            'CoordinateComponent']
 
-COLORS = [RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK]
-
-
 # access to ComponentIDs via .item[name]
+
+
 class ComponentIDDict(object):
 
     def __init__(self, data, **kwargs):
@@ -337,8 +336,8 @@ class CategoricalComponent(Component):
         given self._categories
         """
         self._is_jittered = False
-        #Complicated because of the case of items not in
-        #self._categories may be on either side of the sorted list
+        # Complicated because of the case of items not in
+        # self._categories may be on either side of the sorted list
         left = np.searchsorted(self._categories,
                                self._categorical_data,
                                side='left')
@@ -691,9 +690,9 @@ class Data(object):
     def new_subset(self, subset=None, color=None, label=None, **kwargs):
         """ Create a new subset, and attach to self.
 
-        This is the preferred way for creating subsets, as it
-        takes care setting the label, color, and link between
-        data and subset
+        Note: The preferred way for creating subsets is
+        via DataCollection.new_subset_group. Manually-instantiated
+        subsets will probably *not* be represented properly by the UI
 
         :param subset: optional, reference subset or subset state.
         If provided, the new subset will copy the logic of this subset.
@@ -722,9 +721,9 @@ class Data(object):
         automatically
 
         NOTE:
-
-        The preferred way for creating empty subsets is through the
-        data.new_subset method
+        The preferred way for creating subsets is
+        via DataCollection.new_subset_group. Manually-instantiated
+        subsets will probably *not* be represented properly by the UI
         """
         if subset in self.subsets:
             return  # prevents infinite recursion
@@ -836,8 +835,7 @@ class Data(object):
             _k = key
             key = self.find_component_id(key)
             if key is None:
-                raise IncompatibleAttribute("%s not in data set %s" %
-                                            (_k, self.label))
+                raise IncompatibleAttribute(_k)
 
         if isinstance(key, ComponentLink):
             return key.compute(self, view)
@@ -845,8 +843,7 @@ class Data(object):
         try:
             comp = self._components[key]
         except KeyError:
-            raise IncompatibleAttribute("%s not in data set %s" %
-                                        (key, self.label))
+            raise IncompatibleAttribute(key)
 
         shp = view_shape(self.shape, view)
         if view is not None:
@@ -864,7 +861,7 @@ class Data(object):
         :param component_id: the component_id to retrieve
         """
         if component_id is None:
-            raise IncompatibleAttribute("None not in data set")
+            raise IncompatibleAttribute()
 
         if isinstance(component_id, basestring):
             component_id = self.id[component_id]
@@ -872,8 +869,7 @@ class Data(object):
         try:
             return self._components[component_id]
         except KeyError:
-            raise IncompatibleAttribute("%s not in data set" %
-                                        component_id.label)
+            raise IncompatibleAttribute(component_id)
 
 
 def pixel_label(i, ndim):

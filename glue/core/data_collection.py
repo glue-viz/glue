@@ -2,37 +2,40 @@ from .hub import Hub, HubListener
 from .data import Data
 from .link_manager import LinkManager
 from .registry import Registry
+from .visual import COLORS
 from .message import (DataCollectionAddMessage,
                       DataCollectionDeleteMessage,
                       DataAddComponentMessage)
+from .util import as_list
 
 __all__ = ['DataCollection']
 
 
 class DataCollection(HubListener):
+
     """DataCollections manage sets of data. They have the following
     responsibilities:
 
        * Providing a way to retrieve and store data
        * Broadcasting messages when data are added or removed
        * Keeping each managed data set's list of DerivedComponents up-to-date
+       * Creating the hub that all other objects should use to communicate
+         with one another (stored in DataCollection.hub)
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, hub=None):
         """
         :param data: glue.Data object, or list of such objects (optional)
                       These objects will be auto-appended to the collection
         """
         super(DataCollection, self).__init__()
-        self.hub = None
         self._link_manager = LinkManager()
-
         self._data = []
-        if isinstance(data, Data):
-            self.append(data)
-        elif isinstance(data, list):
-            for d in data:
-                self.append(d)
+        self._subset_groups = []
+        self.hub = None
+        self.register_to_hub(Hub())
+        self.extend(as_list(data or []))
+        self._sg_count = 0
 
     @property
     def data(self):
@@ -51,12 +54,11 @@ class DataCollection(HubListener):
         if isinstance(data, list):
             self.extend(data)
             return
-
         if data in self:
             return
         self._data.append(data)
         if self.hub:
-            data.hub = self.hub
+            data.register_to_hub(self.hub)
             for s in data.subsets:
                 s.register()
             msg = DataCollectionAddMessage(self, data)
@@ -145,11 +147,17 @@ class DataCollection(HubListener):
         :param hub: The hub to register with
         :type hub: :class:`~glue.core.hub.Hub`
         """
+        if self.hub is hub:
+            return
+        if self.hub is not None:
+            raise RuntimeError("Data Collection already registered "
+                               "to a different Hub")
+
         if not isinstance(hub, Hub):
             raise TypeError("Input is not a Hub object: %s" % type(hub))
         self.hub = hub
 
-        #re-assign all data, subset hub instances to this hub
+        # re-assign all data, subset hub instances to this hub
         for d in self._data:
             d.register_to_hub(hub)
             for s in d.subsets:
@@ -159,8 +167,41 @@ class DataCollection(HubListener):
                       lambda msg: self._sync_link_manager(),
                       filter=lambda x: x.sender in self._data)
 
+    def new_subset_group(self, label=None, subset_state=None):
+        """
+        Create and return a new :class:`~glue.core.subset_group.SubsetGroup`
+        """
+        from .subset_group import SubsetGroup
+        color = COLORS[self._sg_count % len(COLORS)]
+        self._sg_count += 1
+        label = label or "%i" % (self._sg_count)
+
+        result = SubsetGroup(color=color, label=label, subset_state=subset_state)
+        self._subset_groups.append(result)
+        result.register(self)
+        return result
+
+    def remove_subset_group(self, subset_grp):
+        """
+        Remove an existing :class:`~glue.core.subset_group.SubsetGroup`
+        """
+        if subset_grp not in self._subset_groups:
+            return
+
+        # remove from list first, so that group appears deleted
+        # by the time the first SubsetDelete message is broadcast
+        self._subset_groups.remove(subset_grp)
+        for s in subset_grp.subsets:
+            s.delete()
+        subset_grp.unregister(self.hub)
+
+    @property
+    def subset_groups(self):
+        """ View of current subset groups """
+        return tuple(self._subset_groups)
+
     def __contains__(self, obj):
-        return obj in self._data
+        return obj in self._data or obj in self.subset_groups
 
     def __getitem__(self, key):
         return self._data[key]
@@ -179,3 +220,9 @@ class DataCollection(HubListener):
 
     def __repr__(self):
         return self.__str__()
+
+    def __bool__(self):
+        return True
+
+    def __nonzero__(self):
+        return True

@@ -1,4 +1,4 @@
-from . import DataCollection, CommandStack, Hub
+from . import DataCollection, CommandStack
 
 
 class Session(object):
@@ -10,6 +10,6 @@ class Session(object):
         self.application = application
 
         self.data_collection = data_collection or DataCollection()
+        self.hub = self.data_collection.hub
         self.command_stack = command_stack or CommandStack()
-        self.hub = hub or Hub(self.data_collection)
         self.command_stack.session = self

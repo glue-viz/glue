@@ -23,7 +23,7 @@ Processed (or ignored!) by clients
 """
 
 
-class C(Client):
+class TestClient(Client):
 
     def __init__(self, data):
         Client.__init__(self, data)
@@ -53,9 +53,11 @@ class TestCommunication(object):
         self.hub = Hub()
         self.d1 = Data()
         self.d2 = Data()
-        self.c1 = C(DataCollection([self.d1]))
-        self.c2 = C(DataCollection([self.d2]))
-        self.c3 = C(DataCollection([self.d1]))
+        self.d3 = Data()
+        dc = DataCollection([self.d1])
+        self.c1 = TestClient(dc)
+        self.c2 = TestClient(DataCollection([self.d2]))
+        self.c3 = TestClient(dc)
         self.s1 = Subset(self.d1)
         self.s2 = Subset(self.d2)
         self.m1 = SubsetCreateMessage(self.s1)
@@ -69,7 +71,7 @@ class TestCommunication(object):
 
         h = Hub()
         d = Data()
-        c = C(DataCollection([d]))
+        c = TestClient(DataCollection([d]))
         assert not c in h._subscriptions
         c.register_to_hub(h)
         assert c in h._subscriptions
@@ -168,16 +170,15 @@ class TestCommunication(object):
     def test_subset_relay(self):
         #make sure subset modification
         #sends messages
-        self.c1.register_to_hub(self.hub)
-        self.d1.register_to_hub(self.hub)
-        self.s1.no_echo_before_registration = 1
+        d = Data()
+        dc = DataCollection(d)
+        c = TestClient(dc)
 
-        assert self.c1.last_message is None
-        self.s1.register()
-        assert self.c1.last_message is not None
-        assert self.c1.last_message.sender is self.s1
-        assert self.c1.call == self.c1._add_subset
+        c.register_to_hub(dc.hub)
+        sub = d.new_subset()
+        assert c.last_message.sender is sub
+        assert c.call == c._add_subset
 
-        self.s1.echo_after_registration = "1"
-        assert self.c1.call == self.c1._update_subset
-        assert self.c1.last_message.attribute == 'echo_after_registration'
+        sub.modified = "modify"
+        assert c.call == c._update_subset
+        assert c.last_message.attribute == 'modified'

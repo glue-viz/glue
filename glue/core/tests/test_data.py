@@ -84,13 +84,13 @@ class TestData(object):
         cid = ComponentID('bad')
         with pytest.raises(IncompatibleAttribute) as exc:
             self.data.__getitem__(cid)
-        assert exc.value.args[0] == "bad not in data set Test Data"
+        assert exc.value.args[0] is cid
 
     def test_get_component_incompatible_attribute(self):
         cid = ComponentID('bad')
         with pytest.raises(IncompatibleAttribute) as exc:
             self.data.get_component(cid)
-        assert exc.value.args[0] == "bad not in data set"
+        assert exc.value.args[0] is cid
 
     def test_get_component_name(self):
         d = Data(x=[1, 2, 3])
@@ -228,7 +228,6 @@ class TestData(object):
         self.data.add_subset(state)
         added = self.data.subsets[-1]
         assert added.subset_state is state
-        assert added.subset_state.parent is added
         assert added.data is self.data
 
     def test_add_subset_reparents_subset(self):
@@ -312,7 +311,7 @@ class TestData(object):
     def test_get_by_missing_string(self):
         with pytest.raises(IncompatibleAttribute) as exc:
             result = self.data['xyz']
-        assert exc.value.args[0].startswith('xyz not in data')
+        assert exc.value.args[0] == 'xyz'
 
     def test_immutable(self):
         d = Data(x=[1, 2, 3])

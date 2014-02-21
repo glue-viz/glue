@@ -34,7 +34,7 @@ import numpy as np
 from .data import Component, Data, CategoricalComponent
 from .tree import DendroMerge
 from .io import extract_data_fits, extract_data_hdf5
-from .util import file_format
+from .util import file_format, as_list
 from .coordinates import coordinates_from_header, coordinates_from_wcs
 from ..external.astro import fits
 
@@ -43,12 +43,6 @@ __all__ = ['load_data', 'gridded_data', 'casalike_cube',
            'tabular_data', 'img_data']
 __factories__ = []
 _default_factory = {}
-
-
-def as_list(x):
-    if isinstance(x, list):
-        return x
-    return [x]
 
 
 def _extension(path):

@@ -333,13 +333,15 @@ def symbol_icon(symbol, color=None):
 def layer_icon(layer):
     """Create a QIcon for a Data or Subset instance
 
-    :type layer: :class:`~glue.core.data.Data` or
-                 :class:`~glue.core.subset.Subset`
+    :type layer: :class:`~glue.core.data.Data`,
+                 :class:`~glue.core.subset.Subset`,
+                 or object with a .style attribute
 
     :rtype: QIcon
     """
-    bm = QBitmap(icon_path(POINT_ICONS.get(layer.style.marker,
-                                           'circle_point')))
+    icon = POINT_ICONS.get(layer.style.marker, 'circle_point')
+
+    bm = QBitmap(icon_path(icon))
     color = mpl_to_qt4_color(layer.style.color)
     pm = tint_pixmap(bm, color)
     return QIcon(pm)
@@ -348,7 +350,10 @@ def layer_icon(layer):
 def layer_artist_icon(artist):
     """Create a QIcon for a LayerArtist instance"""
     from ..clients.layer_artist import ImageLayerArtist
-    if isinstance(artist, ImageLayerArtist):
+
+    if not artist.enabled:
+        bm = QBitmap(icon_path('glue_delete'))
+    elif isinstance(artist, ImageLayerArtist):
         bm = QBitmap(icon_path('glue_image'))
     else:
         bm = QBitmap(icon_path(POINT_ICONS.get(artist.layer.style.marker,
@@ -682,9 +687,6 @@ def _custom_widgets():
     yield GlueComboBox
     yield GlueActionButton
     yield RGBEdit
-
-    from .widgets.data_collection_view import DataCollectionView
-    yield DataCollectionView
 
     from .component_selector import ComponentSelector
     yield ComponentSelector

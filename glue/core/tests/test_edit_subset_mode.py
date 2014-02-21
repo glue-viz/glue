@@ -26,7 +26,6 @@ class TestEditSubsetMode(object):
         data.edit_subset = data.new_subset()
 
         data.edit_subset.subset_state = state1
-        state2.parent = state1.parent
         self.data = data
         self.cid = cid
         self.state1 = state1
@@ -129,6 +128,7 @@ def setup_multi(empty, local_select, global_select, focus):
     d1 = Data()
     d2 = Data()
     dc = DataCollection([d1, d2])
+    EditSubsetMode().data_collection = dc
 
     d2.new_subset()
     if not empty:

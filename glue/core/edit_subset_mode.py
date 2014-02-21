@@ -6,9 +6,13 @@
    EditSubsetMode object a singleton.
 """
 #pylint: disable=I0011, R0903
+
+import logging
+
 from .decorators import singleton
 from .data import Data
 from .data_collection import DataCollection
+from .util import as_list
 
 
 @singleton
@@ -16,6 +20,7 @@ class EditSubsetMode(object):
     """ Implements how new SubsetStates modify the edit_subset state """
     def __init__(self):
         self.mode = ReplaceMode
+        self.data_collection = None
 
     def _combine_data(self, data, new_state, add_if_empty=False):
         """ Dispatches to the combine method of mode attribute.
@@ -32,13 +37,15 @@ class EditSubsetMode(object):
         """
         empty = data.edit_subset is None or data.edit_subset == []
         if add_if_empty and empty:
-            data.edit_subset = data.new_subset()
+            if self.data_collection is None:
+                raise RuntimeError("Must set data_collection before "
+                                   "calling update")
+            data.edit_subset = self.data_collection.new_subset_group()
         if empty and not add_if_empty:
+            logging.getLogger(__name__).info("Ignoring subset update")
             return
         subs = data.edit_subset
-        if not isinstance(subs, list):
-            subs = [subs]
-        for s in subs:
+        for s in as_list(subs):
             self.mode(s, new_state)
 
     def update(self, d, new_state, focus_data=None):
@@ -56,6 +63,8 @@ class EditSubsetMode(object):
         if relevant. If a data set is in focus and has no subsets,
         a new one will be created using new_state.
         """
+        logging.getLogger(__name__).debug("Update subset for %s", d)
+
         if isinstance(d, Data):
             self._combine_data(d, new_state, add_if_empty=d is focus_data)
         elif isinstance(d, DataCollection):
@@ -72,6 +81,7 @@ class EditSubsetMode(object):
 
 def ReplaceMode(edit_subset, new_state):
     """ Replaces edit_subset.subset_state with new_state """
+    logging.getLogger(__name__).debug("Replace %s", edit_subset)
     edit_subset.subset_state = new_state.copy()
 
 

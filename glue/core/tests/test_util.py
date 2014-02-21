@@ -1,4 +1,4 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import numpy as np
 
 from ..util import (file_format, point_contour, view_shape, facet_subsets,
@@ -33,6 +33,7 @@ class TestFileFormat(object):
 
 
 class TestPointContour(object):
+
     def test(self):
         data = np.array([[0, 0, 0, 0],
                          [0, 2, 3, 0],
@@ -55,98 +56,101 @@ def test_view_shape():
 
 
 class TestFacetSubsets(object):
+
     def setup_method(self, method):
-        from glue.core import Data
+        from glue.core import Data, DataCollection
         self.data = Data(label='data', x=[1, 2, 3, 4, 5, 6, 7])
+        self.collect = DataCollection([self.data])
 
     def test_facet_fully_specified(self):
-        subsets = facet_subsets(self.data, self.data.id['x'],
-                                lo=3, hi=6, steps=3)
-        assert len(subsets) == 3
-        np.testing.assert_array_equal(subsets[0].to_mask(),
+        grps = facet_subsets(self.collect, self.data.id['x'],
+                             lo=3, hi=6, steps=3)
+        assert len(grps) == 3
+        np.testing.assert_array_equal(grps[0].subsets[0].to_mask(),
                                       [False, False, True,
                                        False, False, False, False])
-        np.testing.assert_array_equal(subsets[1].to_mask(),
+        np.testing.assert_array_equal(grps[1].subsets[0].to_mask(),
                                       [False, False, False,
                                        True, False, False, False])
-        np.testing.assert_array_equal(subsets[2].to_mask(),
+        np.testing.assert_array_equal(grps[2].subsets[0].to_mask(),
                                       [False, False, False,
                                        False, True, False, False])
 
     def test_default_lo_value(self):
-        subsets = facet_subsets(self.data, self.data.id['x'],
-                                hi=7, steps=2)
-        assert len(subsets) == 2
-        np.testing.assert_array_equal(subsets[0].to_mask(),
+        grps = facet_subsets(self.collect, self.data.id['x'],
+                             hi=7, steps=2)
+        assert len(grps) == 2
+        np.testing.assert_array_equal(grps[0].subsets[0].to_mask(),
                                       [True, True, True, False,
                                        False, False, False])
-        np.testing.assert_array_equal(subsets[1].to_mask(),
+        np.testing.assert_array_equal(grps[1].subsets[0].to_mask(),
                                       [False, False, False, True,
                                        True, True, False])
 
     def test_default_hi_value(self):
-        subsets = facet_subsets(self.data, self.data.id['x'],
-                                lo=3, steps=2)
-        assert len(subsets) == 2
-        np.testing.assert_array_equal(subsets[0].to_mask(),
+        grps = facet_subsets(self.collect, self.data.id['x'],
+                             lo=3, steps=2)
+        assert len(grps) == 2
+        np.testing.assert_array_equal(grps[0].subsets[0].to_mask(),
                                       [False, False, True, True, False,
                                        False, False])
-        np.testing.assert_array_equal(subsets[1].to_mask(),
+        np.testing.assert_array_equal(grps[1].subsets[0].to_mask(),
                                       [False, False, False, False, True,
                                        True, False])
 
     def test_default_steps(self):
-        subsets = facet_subsets(self.data, self.data.id['x'])
-        assert len(subsets) == 5
+        grps = facet_subsets(self.collect, self.data.id['x'])
+        assert len(grps) == 5
 
     def test_prefix(self):
-        subsets = facet_subsets(self.data, self.data.id['x'], prefix='test')
-        for i, s in enumerate(subsets, start=1):
+        grps = facet_subsets(self.collect, self.data.id['x'], prefix='test')
+        for i, s in enumerate(grps, start=1):
             assert s.label == "test_%i" % i
 
-        subsets = facet_subsets(self.data, self.data.id['x'])
-        for i, s in enumerate(subsets, start=1):
-            assert s.label.startswith('data')
+        grps = facet_subsets(self.collect, self.data.id['x'])
+        for i, s in enumerate(grps, start=1):
+            assert s.label.startswith('x')
 
     def test_facet_reversed(self):
-        subsets = facet_subsets(self.data, self.data.id['x'],
-                                lo=3, hi=1, steps=2)
-        assert len(subsets) == 2
-        #ranges should be (2, 3] and (1, 2]
-        np.testing.assert_array_equal(subsets[0].to_mask(),
+        grps = facet_subsets(self.collect, self.data.id['x'],
+                             lo=3, hi=1, steps=2)
+        assert len(grps) == 2
+        # ranges should be (2, 3] and (1, 2]
+        np.testing.assert_array_equal(grps[0].subsets[0].to_mask(),
                                       [False, False, True, False, False,
                                        False, False])
-        np.testing.assert_array_equal(subsets[1].to_mask(),
+        np.testing.assert_array_equal(grps[1].subsets[0].to_mask(),
                                       [False, True, False, False, False,
                                        False, False])
 
 
 def test_colorize_subsets():
-    from glue.core import Data
+    from glue.core import Data, DataCollection
     from matplotlib.cm import gray
 
     data = Data(label='test', x=[1, 2, 3])
-    subsets = facet_subsets(data, data.id['x'], steps=2)
-    colorize_subsets(subsets, gray)
+    dc = DataCollection(data)
+    grps = facet_subsets(dc, data.id['x'], steps=2)
+    colorize_subsets(grps, gray)
 
-    assert subsets[0].style.color == '#000000'
-    assert subsets[1].style.color == '#ffffff'
+    assert grps[0].style.color == '#000000'
+    assert grps[1].style.color == '#ffffff'
 
 
 def test_colorize_subsets_clip():
-    from glue.core import Data
+    from glue.core import Data, DataCollection
     from matplotlib.cm import gray
 
     data = Data(label='test', x=[1, 2, 3])
-    subsets = facet_subsets(data, data.id['x'], steps=2)
+    grps = facet_subsets(DataCollection(data), data.id['x'], steps=2)
 
-    colorize_subsets(subsets, gray, hi=0.5)
-    assert subsets[0].style.color == '#000000'
-    assert subsets[1].style.color == '#808080'
+    colorize_subsets(grps, gray, hi=0.5)
+    assert grps[0].style.color == '#000000'
+    assert grps[1].style.color == '#808080'
 
-    colorize_subsets(subsets, gray, lo=0.5)
-    assert subsets[0].style.color == '#808080'
-    assert subsets[1].style.color == '#ffffff'
+    colorize_subsets(grps, gray, lo=0.5)
+    assert grps[0].style.color == '#808080'
+    assert grps[1].style.color == '#ffffff'
 
 
 def test_coerce_numeric():

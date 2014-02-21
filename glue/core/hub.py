@@ -32,7 +32,6 @@ class Hub(object):
         Any arguments that are passed to Hub will be registered
         to the new hub object.
         """
-
         # Dictionary of subscriptions
         self._subscriptions = defaultdict(dict)
 

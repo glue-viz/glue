@@ -28,7 +28,7 @@ class TestDataCollection(object):
     def setup_method(self, method):
         self.dc = DataCollection()
         self.data = MagicMock()
-        self.hub = Hub()
+        self.hub = self.dc.hub
         self.log = HubLog()
         self.log.register_to_hub(self.hub)
 
@@ -83,7 +83,6 @@ class TestDataCollection(object):
 
     def test_append_broadcast(self):
         """ Call to append generates a DataCollectionAddMessage """
-        self.dc.register_to_hub(self.hub)
         self.dc.append(self.data)
         msg = self.log.messages[-1]
         assert msg.sender == self.dc
@@ -92,7 +91,6 @@ class TestDataCollection(object):
 
     def test_remove_broadcast(self):
         """ call to remove generates a DataCollectionDeleteMessage """
-        self.dc.register_to_hub(self.hub)
         self.dc.append(self.data)
         self.dc.remove(self.data)
         msg = self.log.messages[-1]
@@ -100,19 +98,8 @@ class TestDataCollection(object):
         assert isinstance(msg, DataCollectionDeleteMessage)
         assert msg.data is self.data
 
-    def test_register_adds_hub(self):
-        self.dc.register_to_hub(self.hub)
-        assert self.dc.hub is self.hub
-
-    def test_invalid_register(self):
-        """Type error is raised if hub is not a Hub object"""
-        with pytest.raises(TypeError) as exc:
-            self.dc.register_to_hub(3)
-        assert exc.value.args[0] == "Input is not a Hub object: <type 'int'>"
-
     def test_register_assigns_hub_of_data(self):
         self.dc.append(self.data)
-        self.dc.register_to_hub(self.hub)
         self.data.register_to_hub.assert_called_once_with(self.hub)
 
     def test_get_item(self):
@@ -158,7 +145,6 @@ class TestDataCollection(object):
         link = ComponentLink([id1], id2)
         dc = DerivedComponent(d, link)
 
-        self.dc.register_to_hub(self.hub)
         self.dc.append(d)
         d.add_component(Component(np.array([1, 2, 3])), id1)
         assert not link in self.dc._link_manager

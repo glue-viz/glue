@@ -7,7 +7,7 @@ import logging
 import numpy as np
 from matplotlib.cm import gray
 from ..core.exceptions import IncompatibleAttribute
-from ..core.util import color2rgb, PropertySetMixin
+from ..core.util import color2rgb, PropertySetMixin, Pointer
 from ..core.subset import Subset
 from .util import view_cascade, get_extent
 from .ds9norm import DS9Normalize
@@ -50,6 +50,28 @@ class LayerArtist(PropertySetMixin):
 
         self._changed = True
         self._state = None  # cache of subset state, if relevant
+        self._disabled_reason = ''
+
+    def disable(self, reason):
+        self._disabled_reason = reason
+        self.clear()
+
+    def disable_invalid_attributes(self, *attributes):
+        if len(attributes) == 0:
+            self.disable('')
+
+        msg = ('Layer depends on attributes that '
+               'cannot be derived for %s:\n -%s' %
+               (self._layer.data.label,
+                '\n -'.join(map(str, attributes))))
+
+        self.disable(msg)
+
+    @property
+    def disabled_message(self):
+        if self.enabled:
+            return ''
+        return "Cannot visualize this layer\n%s" % self._disabled_reason
 
     def redraw(self):
         self._axes.figure.canvas.draw()
@@ -112,7 +134,9 @@ class LayerArtist(PropertySetMixin):
     def _sync_style(self):
         style = self.layer.style
         for artist in self.artists:
-            artist.set_markeredgecolor('none')
+            edgecolor = style.color if style.marker == '+' else 'none'
+            artist.set_markeredgecolor(edgecolor)
+            artist.set_markeredgewidth(3)
             artist.set_markerfacecolor(style.color)
             artist.set_marker(style.marker)
             artist.set_markersize(style.markersize)
@@ -224,23 +248,6 @@ class ImageLayerArtist(LayerArtist):
             artist.set_visible(self.visible and self.enabled)
 
 
-class Pointer(object):
-
-    def __init__(self, key):
-        self.key = key
-
-    def __get__(self, instance, type=None):
-        val = instance
-        for k in self.key.split('.'):
-            val = getattr(val, k, None)
-        return val
-
-    def __set__(self, instance, value):
-        v = self.key.split('.')
-        attr = reduce(getattr, [instance] + v[:-1])
-        setattr(attr, v[-1], value)
-
-
 class RGBImageLayerArtist(ImageLayerArtist):
     _property_set = ImageLayerArtist._property_set + \
         ['r', 'g', 'b', 'rnorm', 'gnorm', 'bnorm', 'color_visible']
@@ -344,8 +351,9 @@ class SubsetImageLayerArtist(LayerArtist):
 
         try:
             mask = subset.to_mask(view[1:])
-        except IncompatibleAttribute:
-            return
+        except IncompatibleAttribute as exc:
+            self.disable_invalid_attributes(*exc.args)
+            return False
         logging.debug("View mask has shape %s", mask.shape)
 
         # shortcut for empty subsets
@@ -378,8 +386,10 @@ class ScatterLayerArtist(LayerArtist):
         try:
             x = self.layer[self.xatt].ravel()
             y = self.layer[self.yatt].ravel()
-        except IncompatibleAttribute:
+        except IncompatibleAttribute as exc:
+            self.disable_invalid_attributes(*exc.args)
             return False
+
         self.artists = self._axes.plot(x, y)
         return True
 
@@ -521,7 +531,8 @@ class HistogramLayerArtist(LayerArtist):
             data = self.layer[self.att].ravel()
             if not np.isfinite(data).any():
                 return False
-        except IncompatibleAttribute:
+        except IncompatibleAttribute as exc:
+            self.disable_invalid_attributes(*exc.args)
             return False
 
         if data.size == 0:

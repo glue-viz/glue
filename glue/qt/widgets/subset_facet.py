@@ -64,7 +64,7 @@ class SubsetFacet(object):
         data = self.ui.component_selector.data
         cid = self.ui.component_selector.component
 
-        subsets = facet_subsets(data, cid, lo=lo, hi=hi,
+        subsets = facet_subsets(self._collect, cid, lo=lo, hi=hi,
                                 steps=steps, log=self.log)
         colorize_subsets(subsets, self.cmap)
 
@@ -78,28 +78,3 @@ class SubsetFacet(object):
 
         if value == QDialog.Accepted:
             self._apply()
-
-
-def main():
-    from glue.core import Data, DataCollection
-    from glue.qt import get_qapp
-    app = get_qapp()
-
-    d = Data(label='d1', x=[1, 2, 3], y=[2, 3, 4])
-    d2 = Data(label='d2', z=[1, 2, 3], w=[2, 3, 4])
-
-    dc = DataCollection([d, d2])
-    SubsetFacet.facet(dc)
-
-    print 'd1 subsets'
-    for s in d.subsets:
-        print s.label, s.subset_state, s.style.color
-
-    print 'd2 subsets'
-    for s in d2.subsets:
-        print s.label, s.subset_state, s.style.color
-
-    del app
-
-if __name__ == "__main__":
-    main()

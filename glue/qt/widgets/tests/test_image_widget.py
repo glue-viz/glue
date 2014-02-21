@@ -139,13 +139,14 @@ class TestStateSave(TestApplication):
         self.app = app
         self.w = w
         self.d2 = d2
+        self.dc = dc
 
     def test_image_viewer(self):
         self.check_clone(self.app)
 
     def test_subset(self):
         d, w, app = self.d, self.w, self.app
-        s = d.new_subset(label='testing')
+        self.dc.new_subset_group()
         assert len(w.layers) == 2
         self.check_clone(app)
 

@@ -55,10 +55,10 @@ class GlueMdiArea(QtGui.QMdiArea):
 
         def new_layer(layer):
             if isinstance(layer, core.data.Data):
-                self._application._choose_new_data_viewer(layer)
+                self._application.choose_new_data_viewer(layer)
             else:
                 assert isinstance(layer, core.subset.Subset)
-                self._application._choose_new_data_viewer(layer.data)
+                self._application.choose_new_data_viewer(layer.data)
 
         if md.hasFormat(LAYER_MIME_TYPE):
             new_layer(md.data(LAYER_MIME_TYPE))
@@ -73,7 +73,7 @@ class GlueMdiArea(QtGui.QMdiArea):
         """Right mouse press in the MDI area opens a new data viewer"""
         if event.button() != Qt.RightButton:
             return
-        self._application._choose_new_data_viewer()
+        self._application.choose_new_data_viewer()
 
     def close(self):
         self.closeAllSubWindows()

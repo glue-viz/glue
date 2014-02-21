@@ -240,7 +240,7 @@ class GlueApplication(Application, QMainWindow):
 
     def _connect(self):
         self.setAcceptDrops(True)
-        self._ui.layerWidget.setup(self._data, self._hub)
+        self._ui.layerWidget.setup(self._data)
 
         def sethelp(*args):
             model = self._ui.layerWidget.layerTree.model()
@@ -250,7 +250,6 @@ class GlueApplication(Application, QMainWindow):
         model.rowsInserted.connect(sethelp)
         model.rowsRemoved.connect(sethelp)
 
-        self._data.register_to_hub(self._hub)
         self.tab_widget.tabCloseRequested.connect(self.close_tab)
 
     def _create_menu(self):
@@ -331,7 +330,7 @@ class GlueApplication(Application, QMainWindow):
                 tip="Open a new visualization window in the current tab",
                 shortcut=QKeySequence.New
                 )
-        a.triggered.connect(self._choose_new_data_viewer)
+        a.triggered.connect(self.choose_new_data_viewer)
         self._actions['viewer_new'] = a
 
         a = act('New Tab', self,
@@ -391,7 +390,7 @@ class GlueApplication(Application, QMainWindow):
         a.setEnabled(False)
         self._actions['redo'] = a
 
-    def _choose_new_data_viewer(self, data=None):
+    def choose_new_data_viewer(self, data=None):
         """ Create a new visualization window in the current tab
         """
 
