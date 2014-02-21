@@ -23,6 +23,7 @@ from contextlib import contextmanager
 # must import these first, to set up Qt properly
 from ...external.qt import QtCore
 from ...external.qt.QtGui import QInputDialog, QMdiSubWindow
+from ...version import __version__
 
 from zmq import ZMQError
 from zmq.eventloop.zmqstream import ZMQStream
@@ -30,6 +31,7 @@ from zmq.eventloop import ioloop
 
 from IPython.utils.traitlets import TraitError
 from IPython.lib.kernel import find_connection_file
+from IPython.core.usage import default_banner
 
 try:   # IPython 1.0
     from IPython.kernel.zmq.ipkernel import Kernel
@@ -110,7 +112,19 @@ def connected_console(console_class=RichIPythonWidget, **kwargs):
     return control
 
 
+glue_banner_parts = []
+glue_banner_parts.append("Glue %s " %  __version__)
+glue_banner_parts.append("Predefined variables - drag additional items into "
+                         "this window to use:")
+glue_banner_parts.append("\t* data_collection (aliased to dc)")
+glue_banner_parts.append("\t* application")
+glue_banner_parts.append("\t* hub")
+
+glue_banner = '\n'.join(glue_banner_parts)
+
+
 class DragAndDropTerminal(RichIPythonWidget):
+    banner = default_banner + '\n' + glue_banner
 
     def __init__(self, **kwargs):
         super(DragAndDropTerminal, self).__init__(**kwargs)
