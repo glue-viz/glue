@@ -19,6 +19,7 @@ from matplotlib.figure import Figure
 
 
 class MplCanvas(FigureCanvas):
+
     """Class to represent the FigureCanvas widget"""
 
     rightDrag = Signal(float, float)
@@ -65,7 +66,7 @@ class MplCanvas(FigureCanvas):
         self._draw_timer.start()
 
     def _on_timeout(self):
-        buttons =  QtGui.QApplication.instance().mouseButtons()
+        buttons = QtGui.QApplication.instance().mouseButtons()
         if buttons != Qt.NoButton:
             self._resize_timer.start()
         else:

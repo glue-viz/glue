@@ -20,18 +20,20 @@ from matplotlib.collections import QuadMesh
 
 
 class RenderCapture(object):
+
     """
     A RemderCapture saves an image of a fully-rendered
     Axes instance, and provides a method for re-rendering
     a properly transformed image during panning and zooming
     """
+
     def __init__(self, axes, renderer):
         self.axes = axes
         self._corners = self._get_corners(axes)
         px, py, dx, dy = self._corners
 
         im = self.extract_image(renderer)
-        im = im[py[0] : py[-1] + 1, px[0] : px[-1] + 1, :]
+        im = im[py[0]: py[-1] + 1, px[0]: px[-1] + 1, :]
         self.im = im
         self._mesh = None
         self._image = None
@@ -74,7 +76,7 @@ class RenderCapture(object):
 
     def draw(self, renderer, *args, **kwargs):
         if self.axes.get_xscale() == 'linear' and \
-          self.axes.get_yscale() == 'linear':
+                self.axes.get_yscale() == 'linear':
             self.image.draw(renderer, *args, **kwargs)
         else:
             self.mesh.draw(renderer, *args, **kwargs)
@@ -174,13 +176,13 @@ if __name__ == "__main__":
     plt.subplot(111)
     plt.subplots_adjust(bottom=.5, top=.8)
     plt.scatter(np.random.randn(num), np.random.randn(num),
-                s = np.random.randint(10, 50, num),
-                c = np.random.randint(0, 255, num),
+                s=np.random.randint(10, 50, num),
+                c=np.random.randint(0, 255, num),
                 alpha=.2, linewidths=0)
-    plt.plot([0, 1,2,3], [0, 1,2,3])
+    plt.plot([0, 1, 2, 3], [0, 1, 2, 3])
     cache = AxesCache(plt.gca())
     cache.enable()
     plt.grid('on')
-    #plt.xscale('log')
+    # plt.xscale('log')
 
     plt.show()
