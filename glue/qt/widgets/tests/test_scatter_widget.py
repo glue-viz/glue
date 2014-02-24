@@ -4,6 +4,7 @@ from distutils.version import LooseVersion  # pylint:disable=W0611
 import pytest
 
 from ..scatter_widget import ScatterWidget
+from ..mpl_widget import MplCanvas
 from .... import core
 from . import simple_session
 
@@ -244,7 +245,9 @@ class TestScatterWidget(object):
         l1 = self.add_layer_via_method(0)
         self.widget.client.axes.set_xlim((3, 4))
         self.widget.client.axes.set_ylim((5, 6))
-        self.widget.client.axes.figure.canvas.draw()
+
+        #call MPL draw to force render, not Glue draw
+        super(MplCanvas, self.widget.client.axes.figure.canvas).draw()
 
         assert float(self.widget.ui.xmin.text()) == 3
         assert float(self.widget.ui.xmax.text()) == 4
