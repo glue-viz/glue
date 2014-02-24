@@ -2,7 +2,7 @@
 
 # Python Qt4 bindings for GUI objects
 from ...external.qt import QtGui
-from ...external.qt.QtCore import Signal, Qt
+from ...external.qt.QtCore import Signal, Qt, QTimer
 
 # import the Qt4Agg FigureCanvas object, that binds Figure to
 # Qt4Agg backend. It also inherits from QWidget
@@ -30,6 +30,8 @@ class MplCanvas(FigureCanvas):
     rightDrag = Signal(float, float)
     leftDrag = Signal(float, float)
     homeButton = Signal()
+    resize_begin = Signal()
+    resize_end = Signal()
 
     def __init__(self):
         interactive = matplotlib.is_interactive()
@@ -57,6 +59,18 @@ class MplCanvas(FigureCanvas):
         self.manager = FigureManager(self, 0)
         matplotlib.interactive(interactive)
 
+        self._resize_timer = QTimer()
+        self._resize_timer.setInterval(250)
+        self._resize_timer.setSingleShot(True)
+        self._resize_timer.timeout.connect(self._on_timeout)
+
+    def _on_timeout(self):
+        buttons =  QtGui.QApplication.instance().mouseButtons()
+        if buttons != Qt.NoButton:
+            self._resize_timer.start()
+        else:
+            self.resize_end.emit()
+
     def paintEvent(self, event):
         # draw the zoom rectangle more prominently
         drawRect = self.drawRect
@@ -70,6 +84,12 @@ class MplCanvas(FigureCanvas):
 
         if self.roi_callback is not None:
             self.roi_callback(self)
+
+    def resizeEvent(self, event):
+        if not self._resize_timer.isActive():
+            self.resize_begin.emit()
+        self._resize_timer.start()
+        super(MplCanvas, self).resizeEvent(event)
 
 
 class MplWidget(QtGui.QWidget):

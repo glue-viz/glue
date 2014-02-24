@@ -4,11 +4,13 @@ import matplotlib
 from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
 from ..external.qt import QtCore, QtGui
 from ..external.qt.QtGui import QMenu
-from ..external.qt.QtCore import Qt
+from ..external.qt.QtCore import Qt, Signal
 from .qtutil import get_icon
 
 
 class GlueToolbar(NavigationToolbar2QT):
+    pan_begin = Signal()
+    pan_end = Signal()
 
     def __init__(self, canvas, frame, name=None):
         """ Create a new toolbar object
@@ -198,6 +200,14 @@ class GlueToolbar(NavigationToolbar2QT):
 
         self.set_message(self.mode)
         self._update_buttons_checked()
+
+    def press_pan(self, event):
+        self.pan_begin.emit()
+        super(GlueToolbar, self).press_pan(event)
+
+    def release_pan(self, event):
+        self.pan_end.emit()
+        super(GlueToolbar, self).release_pan(event)
 
     def _update_buttons_checked(self):
         for mode in self.buttons:

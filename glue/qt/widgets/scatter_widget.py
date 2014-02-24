@@ -17,7 +17,7 @@ from ..widget_properties import (ButtonProperty, FloatLineProperty,
                                  CurrentComboProperty,
                                  connect_bool_button, connect_float_edit)
 
-from ..qtutil import pretty_number, load_ui
+from ..qtutil import pretty_number, load_ui, cache_axes
 
 WARN_SLOW = 1000000  # max number of points which render quickly
 
@@ -56,7 +56,8 @@ class ScatterWidget(DataViewer):
 
         self._connect()
         self.unique_fields = set()
-        self.make_toolbar()
+        tb = self.make_toolbar()
+        cache_axes(self.client.axes, tb)
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
 
