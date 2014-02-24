@@ -9,6 +9,7 @@ from matplotlib.colors import ColorConverter
 from matplotlib import cm
 import numpy as np
 
+from ..external.axescache import AxesCache
 from ..external.qt import QtGui
 from ..external.qt.QtCore import Qt
 from ..external.qt.QtGui import (QColor, QInputDialog, QColorDialog,
@@ -871,6 +872,27 @@ class ComponentIDCombo(QtGui.QComboBox, core.HubListener):
                       core.message.ComponentsChangedMessage,
                       handler=lambda x: self.refresh_components,
                       filter=lambda x: x.data is self._data)
+
+
+def cache_axes(axes, toolbar):
+    """ Setup an caching for an axes object
+
+    After this, cached renders will be used to quickly
+    re-render an axes during window resizing or
+    interactive pan/zooming.
+
+    :param axes: The matplotlib Axes object to cache
+    :param toolbar: The GlueToolbar managing the axes' canvas
+
+    :rtype: The AxesCache instance
+    """
+    canvas = axes.figure.canvas
+    cache = AxesCache(axes)
+    canvas.resize_begin.connect(cache.enable)
+    canvas.resize_end.connect(cache.disable)
+    toolbar.pan_begin.connect(cache.enable)
+    toolbar.pan_end.connect(cache.disable)
+    return cache
 
 
 if __name__ == "__main__":
