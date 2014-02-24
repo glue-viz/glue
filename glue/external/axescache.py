@@ -112,8 +112,12 @@ class RenderCapture(object):
 
     @staticmethod
     def extract_image(renderer):
-        result = np.frombuffer(renderer.buffer_rgba(),
-                               dtype=np.uint8)
+        try:
+            buf = renderer.buffer_rgba()
+        except TypeError:  # mpl v1.1 has different signature
+            buf = renderer.buffer_rgba(0, 0)
+
+        result = np.frombuffer(buf, dtype=np.uint8)
         result = result.reshape((int(renderer.height),
                                  int(renderer.width), 4)).copy()
         return np.flipud(result)
