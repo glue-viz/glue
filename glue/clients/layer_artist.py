@@ -212,6 +212,7 @@ class ImageLayerArtist(LayerArtist):
                                              interpolation='nearest',
                                              origin='lower',
                                              extent=extent, zorder=0))
+            self._axes.set_aspect('equal', adjustable='datalim')
         self.artists = artists
         self._sync_style()
 
@@ -338,6 +339,7 @@ class RGBImageLayerArtist(ImageLayerArtist):
                                              interpolation='nearest',
                                              origin='lower',
                                              extent=extent, zorder=0))
+            self._axes.set_aspect('equal', adjustable='datalim')
         self.artists = artists
         self._sync_style()
 
