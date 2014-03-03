@@ -107,8 +107,11 @@ class ScatterWidget(DataViewer):
         return [rect, xra, yra, circ, poly]
 
     def _update_combos(self):
-        """ Update combo boxes to current attribute fields"""
+        """ Update contents of combo boxes """
         layer_ids = []
+
+        # look at all plottable components of datasets we are plotting,
+        # + hidden values if requested
         for l in self.client.data:
             if not self.client.is_layer_present(l):
                 continue
@@ -117,30 +120,18 @@ class ScatterWidget(DataViewer):
                 if lid not in layer_ids:
                     layer_ids.append(lid)
 
-        xcombo = self.ui.xAxisComboBox
-        ycombo = self.ui.yAxisComboBox
+        for combo, att in zip([self.ui.xAxisComboBox, self.ui.yAxisComboBox],
+                              [self.xatt, self.yatt]):
+            combo.blockSignals(True)
+            combo.clear()
 
-        xcombo.blockSignals(True)
-        ycombo.blockSignals(True)
-
-        xid = xcombo.itemData(xcombo.currentIndex())
-        yid = ycombo.itemData(ycombo.currentIndex())
-
-        xcombo.clear()
-        ycombo.clear()
-
-        for lid in layer_ids:
-            xcombo.addItem(lid.label, userData=lid)
-            ycombo.addItem(lid.label, userData=lid)
-
-        for index, combo in zip([xid, yid], [xcombo, ycombo]):
+            for lid in layer_ids:
+                combo.addItem(lid.label, userData=lid)
             try:
-                combo.setCurrentIndex(layer_ids.index(index))
+                combo.setCurrentIndex(layer_ids.index(att))
             except ValueError:
                 combo.setCurrentIndex(0)
-
-        xcombo.blockSignals(False)
-        ycombo.blockSignals(False)
+            combo.blockSignals(False)
 
     def add_data(self, data):
         """Add a new data set to the widget
