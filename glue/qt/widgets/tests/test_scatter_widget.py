@@ -2,6 +2,7 @@
 from distutils.version import LooseVersion  # pylint:disable=W0611
 
 import pytest
+from mock import patch
 
 from ..scatter_widget import ScatterWidget
 from ..mpl_widget import MplCanvas
@@ -303,3 +304,21 @@ class TestScatterWidget(object):
 
         assert self.widget.ui.xAxisComboBox.currentIndex() == 3
         assert self.widget.ui.yAxisComboBox.currentIndex() == 2
+
+
+class TestDrawCount(TestScatterWidget):
+
+    def patch_draw(self):
+        return patch('glue.qt.widgets.mpl_widget.MplCanvas.draw')
+
+    def test_xatt_redraws_once(self):
+        self.add_layer_via_method()
+        with self.patch_draw() as draw:
+            self.widget.yatt = self.widget.xatt
+        assert draw.call_count == 1
+
+    def test_swap_redraws_once(self):
+        self.add_layer_via_method()
+        with self.patch_draw() as draw:
+            self.widget.swap_axes()
+        assert draw.call_count == 1

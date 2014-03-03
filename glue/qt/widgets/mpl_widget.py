@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from functools import partial, wraps
 
 from ...external.qt import QtGui
 from ...external.qt.QtCore import Signal, Qt, QTimer
@@ -14,8 +15,57 @@ except ImportError:  # mpl >= 1.4
         FigureManager
 
 import matplotlib
-
 from matplotlib.figure import Figure
+
+
+class DeferredMethod(object):
+    """
+    This class stubs out a method, and provides a
+    callable interface that logs its calls. These
+    can later be actually executed on the original (non-stubbed)
+    method by calling executed_deferred_calls
+    """
+    def __init__(self, method):
+        self.method = method
+        self.calls = []  # avoid hashability issues with dict/set
+
+    @property
+    def original_method(self):
+        return self.method
+
+    def __call__(self, instance, *a, **k):
+        if instance not in (c[0] for c in self.calls):
+            self.calls.append((instance, a, k))
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        return partial(self.__call__, instance)
+
+    def execute_deferred_calls(self):
+        for instance, args, kwargs in self.calls:
+            self.method(instance, *args, **kwargs)
+
+
+def defer_draw(func):
+    """
+    Decorator that globally defers all MplCanvas draw requests until
+    function exit.
+
+    If an MplCanvas instance's draw method is invoked multiple times,
+    it will only be called once after the wrapped function returns.
+    """
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            MplCanvas.draw = DeferredMethod(MplCanvas.draw)
+            result = func(*args, **kwargs)
+        finally:
+            MplCanvas.draw.execute_deferred_calls()
+            MplCanvas.draw = MplCanvas.draw.original_method
+        return result
+
+    return wrapper
 
 
 class MplCanvas(FigureCanvas):
@@ -53,17 +103,7 @@ class MplCanvas(FigureCanvas):
         self._resize_timer.setSingleShot(True)
         self._resize_timer.timeout.connect(self._on_timeout)
 
-        self._draw_timer = QTimer()
-        self._draw_timer.setInterval(10)
-        self._draw_timer.setSingleShot(True)
-        self._draw_timer.timeout.connect(super(MplCanvas, self).draw)
-
         self.renderer = None
-
-    def draw(self):
-        # delay a bit before actually drawing,
-        # to avoid multiple rapid draws
-        self._draw_timer.start()
 
     def _on_timeout(self):
         buttons = QtGui.QApplication.instance().mouseButtons()

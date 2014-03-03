@@ -14,7 +14,7 @@ from ..widget_properties import (connect_int_spin, ButtonProperty,
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import HRangeMode
 from .data_viewer import DataViewer
-from .mpl_widget import MplWidget
+from .mpl_widget import MplWidget, defer_draw
 from ..qtutil import pretty_number, load_ui
 
 WARN_SLOW = 10000000
@@ -50,7 +50,13 @@ class HistogramWidget(DataViewer):
         self.client = HistogramClient(self._data,
                                       self.central_widget.canvas.fig,
                                       artist_container=self._container)
+        self._init_limits()
+        self.make_toolbar()
+        self._connect()
+        # maps _hash(componentID) -> componentID
+        self._component_hashes = {}
 
+    def _init_limits(self):
         validator = QtGui.QDoubleValidator(None)
         validator.setDecimals(7)
         self.ui.xmin.setValidator(validator)
@@ -58,10 +64,6 @@ class HistogramWidget(DataViewer):
         lo, hi = self.client.xlimits
         self.ui.xmin.setText(str(lo))
         self.ui.xmax.setText(str(hi))
-        self.make_toolbar()
-        self._connect()
-
-        self._component_hashes = {}  # maps _hash(componentID) -> componentID
 
     def _tweak_geometry(self):
         self.central_widget.resize(600, 400)
@@ -83,6 +85,7 @@ class HistogramWidget(DataViewer):
         ui.xmin.editingFinished.connect(self._set_limits)
         ui.xmax.editingFinished.connect(self._set_limits)
 
+    @defer_draw
     def _set_limits(self):
         lo = float(self.ui.xmin.text())
         hi = float(self.ui.xmax.text())
@@ -110,6 +113,7 @@ class HistogramWidget(DataViewer):
         rect = HRangeMode(axes, roi_callback=apply_mode)
         return [rect]
 
+    @defer_draw
     def _update_attributes(self):
         """Repopulate the combo box that selects the quantity to plot"""
         combo = self.ui.attributeCombo
@@ -174,10 +178,12 @@ class HistogramWidget(DataViewer):
                 return
         raise IndexError("Component not present: %s" % component)
 
-    def _set_attribute_from_combo(self):
+    @defer_draw
+    def _set_attribute_from_combo(self, *args):
         self.client.set_component(self.component)
         self._update_window_title()
 
+    @defer_draw
     def add_data(self, data):
         """ Add data item to combo box.
         If first addition, also update attributes """
@@ -191,6 +197,7 @@ class HistogramWidget(DataViewer):
         self.client.add_layer(data)
         self._update_attributes()
         self._update_minmax_labels()
+
         return True
 
     def add_subset(self, subset):

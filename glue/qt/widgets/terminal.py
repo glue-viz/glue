@@ -113,7 +113,7 @@ def connected_console(console_class=RichIPythonWidget, **kwargs):
 
 
 glue_banner_parts = []
-glue_banner_parts.append("Glue %s " %  __version__)
+glue_banner_parts.append("Glue %s " % __version__)
 glue_banner_parts.append("Predefined variables - drag additional items into "
                          "this window to use:")
 glue_banner_parts.append("\t* data_collection (aliased to dc)")
