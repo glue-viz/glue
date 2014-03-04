@@ -1,9 +1,12 @@
+from collections import namedtuple
+
 from mock import MagicMock
 
 from ..profile_viewer import ProfileViewer
 from .util import renderless_figure
 
 FIG = renderless_figure()
+Event = namedtuple('Event', 'xdata ydata inaxes')
 
 class TestProfileViewer(object):
 
@@ -52,4 +55,47 @@ class TestProfileViewer(object):
 
         assert self.viewer.pick_handle(1.5, 20) is s
         assert self.viewer.pick_handle(2.5, 20) is s
-        assert self.viewer.pick_handle(2.0, 20) is None
+        assert self.viewer.pick_handle(1.0, 20) is None
+
+    def test_slider_drag_updates_value(self):
+        h = self.viewer.new_slider_handle()
+        x2 = h.value + 10
+
+        self._click(h.value)
+        self._drag(x2)
+        self._release()
+
+        assert h.value == x2
+
+    def test_range_translates_on_center_drag(self):
+        h = self.viewer.new_range_handle()
+        h.range = (1, 3)
+        self._click_range_center(h)
+        self._drag(1)
+        self._release()
+        assert h.range == (0, 2)
+
+    def test_range_stretches_on_edge_drag(self):
+        h = self.viewer.new_range_handle()
+        h.range = (1, 3)
+
+        self._click(1)
+        self._drag(2)
+        self._release()
+        assert h.range == (2, 3)
+
+    def _click_range_center(self, handle):
+        x, y = sum(handle.range) / 2, 0
+        self._click(x, y)
+
+    def _click(self, x, y=0):
+        e = Event(xdata=x, ydata=y, inaxes=True)
+        self.viewer._on_down(e)
+
+    def _drag(self, x, y=0):
+        e = Event(xdata=x, ydata=y, inaxes=True)
+        self.viewer._on_move(e)
+
+    def _release(self):
+        e = Event(xdata=0, ydata=0, inaxes=True)
+        self.viewer._on_up(e)
