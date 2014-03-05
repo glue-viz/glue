@@ -17,7 +17,7 @@ from .data_slice_widget import DataSlice
 from ..mouse_mode import (RectangleMode, CircleMode, PolyMode,
                           ContrastMode, ContourMode)
 from ..glue_toolbar import GlueToolbar
-from .mpl_widget import MplWidget
+from .mpl_widget import MplWidget, defer_draw
 
 
 from ..decorators import set_cursor
@@ -117,6 +117,7 @@ class ImageWidget(DataViewer):
     def _init_widgets(self):
         pass
 
+    @defer_draw
     def add_data(self, data):
         """Private method to ingest new data into widget"""
         self.client.add_layer(data)
@@ -124,6 +125,7 @@ class ImageWidget(DataViewer):
         self.set_data(self._data_index(data))
         return True
 
+    @defer_draw
     def add_subset(self, subset):
         self.client.add_scatter_layer(subset)
         assert subset in self.client.artists
@@ -190,6 +192,7 @@ class ImageWidget(DataViewer):
         index = self.ui.displayDataCombo.currentIndex()
         return self.ui.displayDataCombo.itemData(index)
 
+    @defer_draw
     def set_data(self, index):
         if index is None:
             return
@@ -213,6 +216,7 @@ class ImageWidget(DataViewer):
     def slice(self, value):
         self.ui.slice.slice = value
 
+    @defer_draw
     def set_attribute(self, index):
         combo = self.ui.attributeComboBox
         component_id = combo.itemData(index)
@@ -250,6 +254,7 @@ class ImageWidget(DataViewer):
     def _update_slice(self):
         self.client.slice = self.ui.slice.slice
 
+    @defer_draw
     def _update_rgb_console(self, is_monochrome):
         if is_monochrome:
             self.ui.rgb_options.hide()
@@ -370,6 +375,7 @@ class ImageWidget(DataViewer):
     def options_widget(self):
         return self.option_widget
 
+    @defer_draw
     def restore_layers(self, rec, context):
         self.client.restore_layers(rec, context)
         for artist in self.layers:

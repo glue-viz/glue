@@ -21,6 +21,7 @@ from .widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from .widgets.layer_tree_widget import PlotAction, LayerTreeWidget
 from .widgets.data_viewer import DataViewer
 from .widgets.settings_editor import SettingsEditor
+from .widgets.mpl_widget import defer_draw
 
 
 def _fix_ipython_pylab():
@@ -410,6 +411,8 @@ class GlueApplication(Application, QMainWindow):
 
         cmd = command.NewDataViewer(viewer=client, data=data)
         return self.do(cmd)
+
+    new_data_viewer = defer_draw(Application.new_data_viewer)
 
     @set_cursor(Qt.WaitCursor)
     def _choose_save_session(self):

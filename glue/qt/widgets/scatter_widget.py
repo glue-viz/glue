@@ -2,7 +2,6 @@ from functools import partial
 
 from ...external.qt import QtGui
 from ...external.qt.QtCore import Qt
-
 from ... import core
 
 from ...clients.scatter_client import ScatterClient
@@ -12,7 +11,7 @@ from ..mouse_mode import (RectangleMode, CircleMode,
 from ...core.callback_property import add_callback
 
 from .data_viewer import DataViewer
-from .mpl_widget import MplWidget
+from .mpl_widget import MplWidget, defer_draw
 from ..widget_properties import (ButtonProperty, FloatLineProperty,
                                  CurrentComboProperty,
                                  connect_bool_button, connect_float_edit)
@@ -47,7 +46,6 @@ class ScatterWidget(DataViewer):
         self.setCentralWidget(self.central_widget)
 
         self.ui = load_ui('scatterwidget', self.option_widget)
-        # self.ui.setupUi(self.option_widget)
         self._tweak_geometry()
 
         self.client = ScatterClient(self._data,
@@ -106,6 +104,7 @@ class ScatterWidget(DataViewer):
         poly = PolyMode(axes, roi_callback=apply_mode)
         return [rect, xra, yra, circ, poly]
 
+    @defer_draw
     def _update_combos(self):
         """ Update contents of combo boxes """
         layer_ids = []
@@ -133,6 +132,7 @@ class ScatterWidget(DataViewer):
                 combo.setCurrentIndex(0)
             combo.blockSignals(False)
 
+    @defer_draw
     def add_data(self, data):
         """Add a new data set to the widget
 
@@ -163,6 +163,7 @@ class ScatterWidget(DataViewer):
         self._update_window_title()
         return True
 
+    @defer_draw
     def add_subset(self, subset):
         """Add a subset to the widget
 
@@ -206,6 +207,7 @@ class ScatterWidget(DataViewer):
         hub.unsubscribe_all(self.client)
         hub.unsubscribe_all(self)
 
+    @defer_draw
     def swap_axes(self):
         xid = self.ui.xAxisComboBox.currentIndex()
         yid = self.ui.yAxisComboBox.currentIndex()
@@ -221,10 +223,12 @@ class ScatterWidget(DataViewer):
         self.ui.xFlipCheckBox.setChecked(yflip)
         self.ui.yFlipCheckBox.setChecked(xflip)
 
+    @defer_draw
     def update_xatt(self, index):
         component_id = self.xatt
         self.client.xatt = component_id
 
+    @defer_draw
     def update_yatt(self, index):
         component_id = self.yatt
         self.client.yatt = component_id
@@ -244,6 +248,7 @@ class ScatterWidget(DataViewer):
     def options_widget(self):
         return self.option_widget
 
+    @defer_draw
     def restore_layers(self, rec, context):
         self.client.restore_layers(rec, context)
         self._update_combos()
