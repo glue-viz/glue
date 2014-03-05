@@ -45,6 +45,9 @@ def mpl_to_qt4_color(color, alpha=1.0):
 
     :rtype: QColor
     """
+    if color in [None, 'none', 'None']:
+        return QColor(0, 0, 0, 0)
+
     cc = ColorConverter()
     r, g, b = cc.to_rgb(color)
     alpha = max(0, min(255, int(256 * alpha)))

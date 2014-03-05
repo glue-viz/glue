@@ -160,7 +160,6 @@ class RoiModeBase(MouseMode):
         if self._roi_callback is not None:
             self._roi_callback(self)
 
-
 class RoiMode(RoiModeBase):
 
     """ Define Roi Modes via click+drag events
@@ -206,6 +205,16 @@ class RoiMode(RoiModeBase):
         super(RoiMode, self).release(event)
 
 
+class PersistentRoiMode(RoiMode):
+    """
+    Same functionality as RoiMode, but the Roi is never
+    finalized, and remains rendered after mouse gestures
+    """
+    def _finish_roi(self, event):
+        if self._roi_callback is not None:
+            self._roi_callback(self)
+
+
 class ClickRoiMode(RoiModeBase):
 
     """
@@ -242,7 +251,6 @@ class ClickRoiMode(RoiModeBase):
 
 
 class RectangleMode(RoiMode):
-
     """ Defines a Rectangular ROI, accessible via the roi() method"""
 
     def __init__(self, axes, **kwargs):
@@ -429,6 +437,25 @@ class ContrastMode(MouseMode):
                 r.triggered.connect(nonpartial(self._move_callback, self))
 
         return result
+
+
+class SpectrumExtractorMode(PersistentRoiMode):
+    """
+    Let's the user select a region in an image and,
+    when connected to a SpectrumExtractorTool, uses this
+    to display spectra extracted from that position
+    """
+    def __init__(self, axes, **kwargs):
+        super(SpectrumExtractorMode, self).__init__(axes, **kwargs)
+        self.icon = get_icon('glue_square')
+        self.mode_id = 'Spectrum'
+        self.action_text = 'Extract a spectrum from a selection'
+        self._roi_tool = qt_roi.QtRectangularROI(self._axes)
+        self._roi_tool.plot_opts.update(edgecolor='#91cf60',
+                                        facecolor=None,
+                                        edgewidth=3,
+                                        alpha=1.0)
+        self.shortcut = 'S'
 
 
 class ContourMode(MouseMode):

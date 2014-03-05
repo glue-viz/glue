@@ -15,7 +15,7 @@ from ...clients.layer_artist import Pointer
 from .data_slice_widget import DataSlice
 
 from ..mouse_mode import (RectangleMode, CircleMode, PolyMode,
-                          ContrastMode, ContourMode)
+                          ContrastMode, ContourMode, SpectrumExtractorMode)
 from ..glue_toolbar import GlueToolbar
 from .mpl_widget import MplWidget, defer_draw
 
@@ -112,8 +112,9 @@ class ImageWidget(DataViewer):
         poly = PolyMode(axes, roi_callback=apply_mode)
         contrast = ContrastMode(axes, move_callback=self._set_norm)
         contour = ContourMode(axes, release_callback=self._contour_roi)
+        spectrum = SpectrumExtractorMode(axes)
         self._contrast = contrast
-        return [rect, circ, poly, contour, contrast]
+        return [rect, circ, poly, contour, contrast, spectrum]
 
     def _init_widgets(self):
         pass
