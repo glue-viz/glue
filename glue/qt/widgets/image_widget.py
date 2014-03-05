@@ -11,12 +11,14 @@ from ... import config
 
 from ...clients.image_client import ImageClient
 from ...clients.layer_artist import Pointer
+from ...core.callback_property import add_callback
 
 from .data_slice_widget import DataSlice
 
 from ..mouse_mode import (RectangleMode, CircleMode, PolyMode,
-                          ContrastMode, ContourMode, SpectrumExtractorMode)
+                          ContrastMode, ContourMode)
 from ..glue_toolbar import GlueToolbar
+from ..spectrum_tool import SpectrumTool
 from .mpl_widget import MplWidget, defer_draw
 
 
@@ -48,6 +50,7 @@ class ImageWidget(DataViewer):
         self.client = ImageClient(self._data,
                                   self.central_widget.canvas.fig,
                                   artist_container=self._container)
+        self._spectrum_tool = SpectrumTool(self)
         self._tweak_geometry()
 
         self._create_actions()
@@ -112,7 +115,7 @@ class ImageWidget(DataViewer):
         poly = PolyMode(axes, roi_callback=apply_mode)
         contrast = ContrastMode(axes, move_callback=self._set_norm)
         contour = ContourMode(axes, release_callback=self._contour_roi)
-        spectrum = SpectrumExtractorMode(axes)
+        spectrum = self._spectrum_tool.mouse_mode
         self._contrast = contrast
         return [rect, circ, poly, contour, contrast, spectrum]
 
@@ -252,9 +255,9 @@ class ImageWidget(DataViewer):
         ui.rgb_options.current_changed.connect(
             lambda: self._toolbars[0].set_mode(self._contrast))
         ui.slice.slice_changed.connect(self._update_slice)
-        add_callback(self.client, 'slice', lambda val: setattr(ui.slice,
-                                                               'slice',
-                                                               val))
+
+        update_ui_slice = lambda val: setattr(ui.slice, 'slice', val)
+        add_callback(self.client, 'slice', update_ui_slice)
 
     def _update_slice(self):
         self.client.slice = self.ui.slice.slice

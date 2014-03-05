@@ -105,6 +105,9 @@ class ImageClient(VizClient):
 
     @slice.setter
     def slice(self, value):
+        if self.slice == tuple(value):
+            return
+
         relim = value.index('x') != self._slice.index('x') or \
             value.index('y') != self._slice.index('y')
         self._slice = tuple(value)

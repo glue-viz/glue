@@ -451,7 +451,7 @@ class SpectrumExtractorMode(PersistentRoiMode):
         self.mode_id = 'Spectrum'
         self.action_text = 'Extract a spectrum from a selection'
         self._roi_tool = qt_roi.QtRectangularROI(self._axes)
-        self._roi_tool.plot_opts.update(edgecolor='#91cf60',
+        self._roi_tool.plot_opts.update(edgecolor='#c51b7d',
                                         facecolor=None,
                                         edgewidth=3,
                                         alpha=1.0)
