@@ -9,6 +9,7 @@ from ..core.data import Data
 from ..core.util import lookup_class
 from ..core.subset import Subset, RoiSubsetState
 from ..core.roi import PolygonalROI
+from ..core.callback_property import callback_property
 from ..core.edit_subset_mode import EditSubsetMode
 
 from .viz_client import VizClient, init_mpl
@@ -75,7 +76,7 @@ class ImageClient(VizClient):
             # test code doesn't always use Glue's custom FigureCanvas
             self._ax.figure.canvas.homeButton.connect(self.check_update)
 
-    @property
+    @callback_property
     def slice(self):
         """
         Returns a tuple describing the current slice through the data

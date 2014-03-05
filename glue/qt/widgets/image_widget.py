@@ -252,6 +252,9 @@ class ImageWidget(DataViewer):
         ui.rgb_options.current_changed.connect(
             lambda: self._toolbars[0].set_mode(self._contrast))
         ui.slice.slice_changed.connect(self._update_slice)
+        add_callback(self.client, 'slice', lambda val: setattr(ui.slice,
+                                                               'slice',
+                                                               val))
 
     def _update_slice(self):
         self.client.slice = self.ui.slice.slice
