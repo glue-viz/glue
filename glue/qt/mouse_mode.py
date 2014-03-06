@@ -23,7 +23,7 @@ import numpy as np
 from ..core import util
 from ..core import roi
 from . import get_qapp
-from .qtutil import get_icon
+from .qtutil import get_icon, nonpartial
 from . import qt_roi
 
 
@@ -381,19 +381,19 @@ class ContrastMode(MouseMode):
         result = []
 
         a = QAction("minmax", None)
-        a.triggered.connect(lambda: self.set_clip_percentile(0, 100))
+        a.triggered.connect(nonpartial(self.set_clip_percentile, 0, 100))
         result.append(a)
 
         a = QAction("99%", None)
-        a.triggered.connect(lambda: self.set_clip_percentile(1, 99))
+        a.triggered.connect(nonpartial(self.set_clip_percentile, 1, 99))
         result.append(a)
 
         a = QAction("95%", None)
-        a.triggered.connect(lambda: self.set_clip_percentile(5, 95))
+        a.triggered.connect(nonpartial(self.set_clip_percentile, 5, 95))
         result.append(a)
 
         a = QAction("90%", None)
-        a.triggered.connect(lambda: self.set_clip_percentile(10, 90))
+        a.triggered.connect(nonpartial(self.set_clip_percentile, 10, 90))
         result.append(a)
 
         a = QAction("", None)
@@ -401,32 +401,32 @@ class ContrastMode(MouseMode):
         result.append(a)
 
         a = QAction("linear", None)
-        a.triggered.connect(lambda: setattr(self, 'stretch', 'linear'))
+        a.triggered.connect(nonpartial(setattr, self, 'stretch', 'linear'))
         result.append(a)
 
         a = QAction("log", None)
-        a.triggered.connect(lambda: setattr(self, 'stretch', 'log'))
+        a.triggered.connect(nonpartial(setattr, self, 'stretch', 'log'))
         result.append(a)
 
         a = QAction("power", None)
-        a.triggered.connect(lambda: setattr(self, 'stretch', 'power'))
+        a.triggered.connect(nonpartial(setattr, self, 'stretch', 'power'))
         result.append(a)
 
         a = QAction("square root", None)
-        a.triggered.connect(lambda: setattr(self, 'stretch', 'sqrt'))
+        a.triggered.connect(nonpartial(setattr, self, 'stretch', 'sqrt'))
         result.append(a)
 
         a = QAction("squared", None)
-        a.triggered.connect(lambda: setattr(self, 'stretch', 'squared'))
+        a.triggered.connect(nonpartial(setattr, self, 'stretch', 'squared'))
         result.append(a)
 
         a = QAction("asinh", None)
-        a.triggered.connect(lambda: setattr(self, 'stretch', 'arcsinh'))
+        a.triggered.connect(nonpartial(setattr, self, 'stretch', 'arcsinh'))
         result.append(a)
 
         for r in result:
             if self._move_callback is not None:
-                r.triggered.connect(lambda: self._move_callback(self))
+                r.triggered.connect(nonpartial(self._move_callback, self))
 
         return result
 

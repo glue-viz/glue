@@ -15,7 +15,8 @@ from .decorators import set_cursor, messagebox_on_error
 from ..core.application_base import Application
 
 from .actions import act
-from .qtutil import pick_class, data_wizard, GlueTabBar, load_ui, get_icon
+from .qtutil import (pick_class, data_wizard,
+                     GlueTabBar, load_ui, get_icon, nonpartial)
 from .widgets.glue_mdi_area import GlueMdiArea
 from .widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from .widgets.layer_tree_widget import PlotAction, LayerTreeWidget
@@ -324,37 +325,37 @@ class GlueApplication(Application, QMainWindow):
         a = act("Open Data Set", self,
                 tip="Open a new data set",
                 shortcut=QKeySequence.Open)
-        a.triggered.connect(self._choose_load_data)
+        a.triggered.connect(nonpartial(self._choose_load_data))
         self._actions['data_new'] = a
 
         a = act("New Data Viewer", self,
                 tip="Open a new visualization window in the current tab",
                 shortcut=QKeySequence.New
                 )
-        a.triggered.connect(self.choose_new_data_viewer)
+        a.triggered.connect(nonpartial(self.choose_new_data_viewer))
         self._actions['viewer_new'] = a
 
         a = act('New Tab', self,
                 shortcut=QKeySequence.AddTab,
                 tip='Add a new tab')
-        a.triggered.connect(self.new_tab)
+        a.triggered.connect(nonpartial(self.new_tab))
         self._actions['tab_new'] = a
 
         a = act('Rename Tab', self,
                 shortcut="Ctrl+R",
                 tip='Set a new label for the current tab')
-        a.triggered.connect(self.tab_bar.rename_tab)
+        a.triggered.connect(nonpartial(self.tab_bar.rename_tab))
         self._actions['tab_rename'] = a
 
         a = act('Gather Windows', self,
                 tip='Gather plot windows side-by-side',
                 shortcut='Ctrl+G')
-        a.triggered.connect(self.gather_current_tab)
+        a.triggered.connect(nonpartial(self.gather_current_tab))
         self._actions['gather'] = a
 
         a = act('Save Session', self,
                 tip='Save the current session')
-        a.triggered.connect(lambda *args: self._choose_save_session())
+        a.triggered.connect(nonpartial(self._choose_save_session))
         self._actions['session_save'] = a
 
         from glue.config import exporters
@@ -366,28 +367,28 @@ class GlueApplication(Application, QMainWindow):
                 a = act(label, self,
                         tip='Export the current session to %s format' %
                         label)
-                a.triggered.connect(partial(self._choose_export_session,
-                                            saver, checker, mode))
+                a.triggered.connect(nonpartial(self._choose_export_session,
+                                               saver, checker, mode))
                 acts.append(a)
 
             self._actions['session_export'] = acts
 
         a = act('Open Session', self,
                 tip='Restore a saved session')
-        a.triggered.connect(lambda *args: self._restore_session())
+        a.triggered.connect(nonpartial(self._restore_session))
         self._actions['session_restore'] = a
 
         a = act("Undo", self,
                 tip='Undo last action',
                 shortcut=QKeySequence.Undo)
-        a.triggered.connect(lambda *args: self.undo())
+        a.triggered.connect(nonpartial(self.undo))
         a.setEnabled(False)
         self._actions['undo'] = a
 
         a = act("Redo", self,
                 tip='Redo last action',
                 shortcut=QKeySequence.Redo)
-        a.triggered.connect(lambda *args: self.redo())
+        a.triggered.connect(nonpartial(self.redo))
         a.setEnabled(False)
         self._actions['redo'] = a
 

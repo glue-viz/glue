@@ -1,9 +1,9 @@
 from ...external.qt import QtGui
-from functools import partial
 
 from ...core.edit_subset_mode import (EditSubsetMode, OrMode, AndNotMode,
                                       AndMode, XorMode, ReplaceMode)
 from ..actions import act
+from ..qtutil import nonpartial
 
 
 def set_mode(mode):
@@ -24,7 +24,7 @@ class EditSubsetModeToolBar(QtGui.QToolBar):
     def _make_mode(self, name, tip, icon, mode):
         a = act(name, self, tip, icon)
         a.setCheckable(True)
-        a.triggered.connect(partial(set_mode, mode))
+        a.triggered.connect(nonpartial(set_mode, mode))
         self._group.addAction(a)
         self.addAction(a)
         self._modes[mode] = a

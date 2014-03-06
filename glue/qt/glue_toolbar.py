@@ -5,7 +5,7 @@ from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
 from ..external.qt import QtCore, QtGui
 from ..external.qt.QtGui import QMenu
 from ..external.qt.QtCore import Qt, Signal
-from .qtutil import get_icon
+from .qtutil import get_icon, nonpartial
 
 
 class GlueToolbar(NavigationToolbar2QT):
@@ -47,7 +47,7 @@ class GlueToolbar(NavigationToolbar2QT):
 
         a = QtGui.QAction(get_icon('glue_home'),
                           'Home', parent)
-        a.triggered.connect(self.home)
+        a.triggered.connect(nonpartial(self.home))
         a.setToolTip('Reset original zoom')
         a.setShortcut('H')
         a.setShortcutContext(Qt.WidgetShortcut)
@@ -57,7 +57,7 @@ class GlueToolbar(NavigationToolbar2QT):
 
         a = QtGui.QAction(get_icon('glue_filesave'),
                           'Save', parent)
-        a.triggered.connect(self.save_figure)
+        a.triggered.connect(nonpartial(self.save_figure))
         a.setToolTip('Save the figure')
         a.setShortcut('Ctrl+Shift+S')
         parent.addAction(a)
@@ -66,7 +66,7 @@ class GlueToolbar(NavigationToolbar2QT):
 
         a = QtGui.QAction(get_icon('glue_back'),
                           'Back', parent)
-        a.triggered.connect(self.back)
+        a.triggered.connect(nonpartial(self.back))
         parent.addAction(a)
         self.addAction(a)
         self.buttons['BACK'] = a
@@ -74,7 +74,7 @@ class GlueToolbar(NavigationToolbar2QT):
 
         a = QtGui.QAction(get_icon('glue_forward'),
                           'Forward', parent)
-        a.triggered.connect(self.forward)
+        a.triggered.connect(nonpartial(self.forward))
         a.setToolTip('Forward to next view')
         parent.addAction(a)
         self.buttons['FORWARD'] = a
@@ -82,7 +82,7 @@ class GlueToolbar(NavigationToolbar2QT):
 
         a = QtGui.QAction(get_icon('glue_move'),
                           'Pan', parent)
-        a.triggered.connect(self.pan)
+        a.triggered.connect(nonpartial(self.pan))
         a.setToolTip('Pan axes with left mouse, zoom with right')
         a.setCheckable(True)
         a.setShortcut('M')
@@ -93,7 +93,7 @@ class GlueToolbar(NavigationToolbar2QT):
 
         a = QtGui.QAction(get_icon('glue_zoom_to_rect'),
                           'Zoom', parent)
-        a.triggered.connect(self.zoom)
+        a.triggered.connect(nonpartial(self.zoom))
         a.setToolTip('Zoom to rectangle')
         a.setShortcut('Z')
         a.setShortcutContext(Qt.WidgetShortcut)
@@ -145,7 +145,7 @@ class GlueToolbar(NavigationToolbar2QT):
                 self._custom_mode(mode)
 
         action = QtGui.QAction(mode.icon, mode.action_text, parent)
-        action.triggered.connect(toggle)
+        action.triggered.connect(nonpartial(toggle))
         parent.addAction(action)
 
         self.__signals.extend([toggle, enable])
@@ -165,7 +165,7 @@ class GlueToolbar(NavigationToolbar2QT):
                 ma.setParent(self)
                 menu.addAction(ma)
             action.setMenu(menu)
-            menu.triggered.connect(enable)
+            menu.triggered.connect(nonpartial(enable))
 
         self.addAction(action)
 

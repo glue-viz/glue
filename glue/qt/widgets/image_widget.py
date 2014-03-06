@@ -21,7 +21,7 @@ from .mpl_widget import MplWidget, defer_draw
 
 
 from ..decorators import set_cursor
-from ..qtutil import cmap2pixmap, load_ui, get_icon
+from ..qtutil import cmap2pixmap, load_ui, get_icon, nonpartial
 from ..widget_properties import CurrentComboProperty, ButtonProperty
 
 WARN_THRESH = 10000000  # warn when contouring large images
@@ -67,7 +67,7 @@ class ImageWidget(DataViewer):
         # pylint: disable=E1101
         def act(name, cmap):
             a = QAction(name, self)
-            a.triggered.connect(lambda *args: self.client.set_cmap(cmap))
+            a.triggered.connect(nonpartial(self.client.set_cmap, cmap))
             pm = cmap2pixmap(cmap)
             a.setIcon(QIcon(pm))
             return a
@@ -93,9 +93,10 @@ class ImageWidget(DataViewer):
         # connect viewport update buttons to client commands to
         # allow resampling
         cl = self.client
-        result.buttons['HOME'].triggered.connect(cl.check_update)
-        result.buttons['FORWARD'].triggered.connect(cl.check_update)
-        result.buttons['BACK'].triggered.connect(cl.check_update)
+        result.buttons['HOME'].triggered.connect(nonpartial(cl.check_update))
+        result.buttons['FORWARD'].triggered.connect(nonpartial(
+            cl.check_update))
+        result.buttons['BACK'].triggered.connect(nonpartial(cl.check_update))
 
         self.addToolBar(result)
         return result
