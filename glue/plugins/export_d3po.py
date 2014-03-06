@@ -255,8 +255,8 @@ HTML = """
 <head>
 <meta charset="utf-8" />
 
-<link rel="stylesheet" type="text/css" href="http://deimos.astro.columbia.edu:5000/static/css/style.css">
-<link rel="stylesheet" type="text/css" href="http://deimos.astro.columbia.edu:5000/static/css/d3po.css">
+<link rel="stylesheet" type="text/css" href="http://d3po.org/static/css/style.css">
+<link rel="stylesheet" type="text/css" href="http://d3po.org/static/css/d3po.css">
 <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:100,200,300,400,700' rel='stylesheet' type='text/css'>
 
 <style>
@@ -270,10 +270,10 @@ right: 0;
 
 <!-- Javscript dependencies -->
 <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-<script src="http://deimos.astro.columbia.edu:5000/static/js/util.js"></script>
+<script src="http://d3po.org/static/js/util.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-<script src="http://deimos.astro.columbia.edu:5000/static/js/d3po.js"></script>
-<script src="http://deimos.astro.columbia.edu:5000/static/js/d3po.init.js"></script>
+<script src="http://d3po.org/static/js/d3po.js"></script>
+<script src="http://d3po.org/static/js/d3po.init.js"></script>
 </head>
 
 <body>
