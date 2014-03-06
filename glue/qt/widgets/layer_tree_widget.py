@@ -16,7 +16,7 @@ from ... import core
 
 from ..link_editor import LinkEditor
 from .. import qtutil
-from ..qtutil import get_icon
+from ..qtutil import get_icon, nonpartial
 from .custom_component_widget import CustomComponentWidget
 from ..actions import act as _act
 from ...core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode
@@ -57,7 +57,7 @@ class LayerAction(QAction):
     def _connect(self):
         self._parent.selection_changed.connect(
             self.update_enabled)
-        self.triggered.connect(self._do_action)
+        self.triggered.connect(nonpartial(self._do_action))
 
     def selected_layers(self):
         return self._layer_tree.selected_layers()
@@ -255,22 +255,22 @@ class PasteSpecialAction(PasteAction):
 
         a = QAction("Or", m)
         a.setIcon(get_icon('glue_or'))
-        a.triggered.connect(lambda: self._paste(OrMode))
+        a.triggered.connect(nonpartial(self._paste, OrMode))
         m.addAction(a)
 
         a = QAction("And", m)
         a.setIcon(get_icon('glue_and'))
-        a.triggered.connect(lambda: self._paste(AndMode))
+        a.triggered.connect(nonpartial(self._paste, AndMode))
         m.addAction(a)
 
         a = QAction("XOR", m)
         a.setIcon(get_icon('glue_xor'))
-        a.triggered.connect(lambda: self._paste(XorMode))
+        a.triggered.connect(nonpartial(self._paste, XorMode))
         m.addAction(a)
 
         a = QAction("Not", m)
         a.setIcon(get_icon('glue_andnot'))
-        a.triggered.connect(lambda: self._paste(AndNotMode))
+        a.triggered.connect(nonpartial(self._paste, AndNotMode))
         m.addAction(a)
         return m
 
@@ -424,7 +424,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
         a = _act("Define new component", self,
                  tip="Define a new component using python expressions")
         tree.addAction(a)
-        a.triggered.connect(self._create_component)
+        a.triggered.connect(nonpartial(self._create_component))
         self._actions['new_component'] = a
 
         # right click pulls up menu

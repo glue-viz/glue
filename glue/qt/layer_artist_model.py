@@ -15,7 +15,7 @@ from ..external.qt.QtGui import (QColor,
 from ..external.qt.QtCore import (Qt, QAbstractListModel, QModelIndex,
                                   QSize, QTimer)
 
-from .qtutil import (layer_artist_icon)
+from .qtutil import (layer_artist_icon, nonpartial)
 
 from .mime import PyMimeData, LAYERS_MIME_TYPE
 from ..clients.layer_artist import LayerArtist, LayerArtistContainer
@@ -259,14 +259,14 @@ class LayerArtistView(QListView):
 
     def _create_actions(self):
         act = QAction('Edit style', self)
-        act.triggered.connect(self._edit_style)
+        act.triggered.connect(nonpartial(self._edit_style))
         self.addAction(act)
 
         act = QAction('Remove', self)
         act.setShortcut(QKeySequence(Qt.Key_Backspace))
         act.setShortcutContext(Qt.WidgetShortcut)
         act.triggered.connect(
-            lambda: self.model().removeRow(self.current_row()))
+            lambda *args: self.model().removeRow(self.current_row()))
         self.addAction(act)
 
 

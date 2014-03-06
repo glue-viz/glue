@@ -917,3 +917,19 @@ if __name__ == "__main__":
 
     print f.layer_visible
     print f.contrast_layer
+
+
+def nonpartial(func, *args, **kwargs):
+    """Like functools.partial, this returns a function which,
+    when called, calls func(*args, **kwargs). Unlike functools.partial,
+    extra arguments passed to the returned function are *not* passed
+    to the input function.
+
+    This is used when connecting slots to QAction.triggered signals,
+    which appear to have different signatures, which seem to add
+    and extra argument in PyQt4 but not PySide
+    """
+    def result(*a, **k):
+        return func(*args, **kwargs)
+
+    return result
