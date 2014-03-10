@@ -60,6 +60,14 @@ class Roi(object):  # pragma: no cover
         """
         raise NotImplementedError()
 
+    def center(self):
+        """Return the (x,y) coordinates of the ROI center"""
+        raise NotImplementedError()
+
+    def move_to(self, x, y):
+        """Translate the ROI to a center of (x, y)"""
+        raise NotImplementedError()
+
     def defined(self):
         """ Returns whether or not the subset is properly defined """
         raise NotImplementedError()
@@ -94,6 +102,18 @@ class RectangularROI(Roi):
                                                            self.ymax)
         else:
             return "Undefined Rectangular ROI"
+
+    def center(self):
+        return self.xmin + self.width() / 2, self.ymin + self.height() / 2
+
+    def move_to(self, x, y):
+        cx, cy = self.center()
+        dx = x - cx
+        dy = y - cy
+        self.xmin += dx
+        self.xmax += dx
+        self.ymin += dy
+        self.ymax += dy
 
     def corner(self):
         return (self.xmin, self.ymin)
@@ -501,6 +521,7 @@ class MplRectangularROI(AbstractMplRoi):
 
         self._xi = None
         self._yi = None
+        self._scrubbing = False
 
         self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
@@ -522,11 +543,18 @@ class MplRectangularROI(AbstractMplRoi):
         if event.inaxes != self._ax:
             return
 
-        self._roi.reset()
-        self._roi.update_limits(event.xdata, event.ydata,
-                                event.xdata, event.ydata)
         self._xi = event.xdata
         self._yi = event.ydata
+
+        if self._roi.defined() and \
+          self._roi.contains(event.xdata, event.ydata):
+            self._scrubbing=True
+            self._cx, self._cy = self._roi.center()
+        else:
+            self._scrubbing = False
+            self._roi.reset()
+            self._roi.update_limits(event.xdata, event.ydata,
+                                    event.xdata, event.ydata)
 
         self._mid_selection = True
         self._sync_patch()
@@ -535,10 +563,14 @@ class MplRectangularROI(AbstractMplRoi):
         if not self._mid_selection or event.inaxes != self._ax:
             return
 
-        self._roi.update_limits(min(event.xdata, self._xi),
-                                min(event.ydata, self._yi),
-                                max(event.xdata, self._xi),
-                                max(event.ydata, self._yi))
+        if self._scrubbing:
+            self._roi.move_to(self._cx + event.xdata - self._xi,
+                              self._cy + event.ydata - self._yi)
+        else:
+            self._roi.update_limits(min(event.xdata, self._xi),
+                                    min(event.ydata, self._yi),
+                                    max(event.xdata, self._xi),
+                                    max(event.ydata, self._yi))
         self._sync_patch()
 
     def finalize_selection(self, event):
