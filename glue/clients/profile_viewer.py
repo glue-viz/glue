@@ -170,7 +170,7 @@ class ProfileViewer(object):
 
         self._artist = None
         self._x = self._xatt = self._y = self._yatt = None
-        self._attach_events()
+        self.connect()
         self._selected_handle = None
 
     def set_profile(self, x, y, xatt=None, yatt=None, **kwargs):
@@ -206,11 +206,17 @@ class ProfileViewer(object):
 
         return self._artist
 
-    def _attach_events(self):
+    def connect(self):
         connect = self.axes.figure.canvas.mpl_connect
         self._down_id = connect('button_press_event', self._on_down)
         self._up_id = connect('button_release_event', self._on_up)
         self._move_id = connect('motion_notify_event', self._on_move)
+
+    def disconnect(self):
+        off = self.axes.figure.canvas.mpl_disconnect
+        self._down_id = off(self._down_id)
+        self._up_id = off(self._up_id)
+        self._move_id = off(self._move_id)
 
     def _on_down(self, event):
         handle = self.pick_handle(event.xdata, event.ydata)

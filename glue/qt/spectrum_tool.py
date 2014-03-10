@@ -1,22 +1,30 @@
 import numpy as np
 
 from ..external.qt.QtCore import Qt
+from ..external.qt.QtGui import QMainWindow
 from ..clients.profile_viewer import ProfileViewer, SliderArtist
 from .widgets.mpl_widget import MplWidget
 from .mouse_mode import SpectrumExtractorMode
 from ..core.callback_property import add_callback
+from .glue_toolbar import GlueToolbar
 
 class SpectrumTool(object):
 
     def __init__(self, image_widget):
         self.image_widget = image_widget
-        self.widget = MplWidget()
+        self.widget = QMainWindow()
         self.widget.setWindowFlags(Qt.Tool)
+        w = MplWidget()
+
+        self.widget.setCentralWidget(w)
+        self.canvas = w.canvas
+
         self.client = self.image_widget.client
-        self.axes = self.widget.canvas.fig.add_subplot(111)
+        self.axes = self.canvas.fig.add_subplot(111)
         self.profile = ProfileViewer(self.axes)
         self.mouse_mode = self._setup_mouse_mode()
         self._setup_handles()
+        self._setup_toolbar()
 
     def _setup_mouse_mode(self):
         mode = SpectrumExtractorMode(self.image_widget.client.axes,
@@ -29,6 +37,14 @@ class SpectrumTool(object):
         set_slicer = lambda *args: setattr(self.slice_handle,
                                            'value', self.current_channel)
         add_callback(self.client, 'slice', set_slicer)
+
+    def _setup_toolbar(self):
+        tb = GlueToolbar(self.canvas, self.widget)
+        tb.mode_activated.connect(self.profile.disconnect)
+        tb.mode_deactivated.connect(self.profile.connect)
+
+        self.widget.addToolBar(tb)
+        return tb
 
     @property
     def current_channel(self):
