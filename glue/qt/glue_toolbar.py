@@ -4,6 +4,7 @@ from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
 from ..external.qt import QtCore, QtGui
 from ..external.qt.QtGui import QMenu
 from ..external.qt.QtCore import Qt, Signal
+from ..core.callback_property import add_callback
 from .qtutil import get_icon, nonpartial
 
 
@@ -185,6 +186,14 @@ class GlueToolbar(NavigationToolbar2QT):
             menu.triggered.connect(nonpartial(enable))
 
         self.addAction(action)
+
+        # bind action status to mode.enabled
+        def toggle(state):
+            action.setVisible(state)
+            action.setEnabled(state)
+        add_callback(mode, 'enabled', toggle)
+
+        return action
 
     def set_mode(self, mode):
         if self._active != mode.mode_id:

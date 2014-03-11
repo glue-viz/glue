@@ -18,10 +18,9 @@ The basic usage pattern is thus:
 """
 from ..external.qt.QtGui import QAction
 
-import numpy as np
-
 from ..core import util
 from ..core import roi
+from ..core.callback_property import CallbackProperty
 from . import get_qapp
 from .qtutil import get_icon, nonpartial
 from . import qt_roi
@@ -45,6 +44,7 @@ class MouseMode(object):
     The _callback hooks are called with the MouseMode as its only
     argument
     """
+    enabled = CallbackProperty(True)
 
     def __init__(self, axes,
                  press_callback=None,
@@ -160,6 +160,7 @@ class RoiModeBase(MouseMode):
         if self._roi_callback is not None:
             self._roi_callback(self)
 
+
 class RoiMode(RoiModeBase):
 
     """ Define Roi Modes via click+drag events
@@ -206,10 +207,12 @@ class RoiMode(RoiModeBase):
 
 
 class PersistentRoiMode(RoiMode):
+
     """
     Same functionality as RoiMode, but the Roi is never
     finalized, and remains rendered after mouse gestures
     """
+
     def _finish_roi(self, event):
         if self._roi_callback is not None:
             self._roi_callback(self)
@@ -251,6 +254,7 @@ class ClickRoiMode(RoiModeBase):
 
 
 class RectangleMode(RoiMode):
+
     """ Defines a Rectangular ROI, accessible via the roi() method"""
 
     def __init__(self, axes, **kwargs):
@@ -440,22 +444,27 @@ class ContrastMode(MouseMode):
 
 
 class SpectrumExtractorMode(PersistentRoiMode):
+
     """
     Let's the user select a region in an image and,
     when connected to a SpectrumExtractorTool, uses this
     to display spectra extracted from that position
     """
+
     def __init__(self, axes, **kwargs):
         super(SpectrumExtractorMode, self).__init__(axes, **kwargs)
         self.icon = get_icon('glue_square')
         self.mode_id = 'Spectrum'
-        self.action_text = 'Extract a spectrum from a selection'
+        self.action_text = 'Spectrum'
         self._roi_tool = qt_roi.QtRectangularROI(self._axes)
         self._roi_tool.plot_opts.update(edgecolor='#c51b7d',
                                         facecolor=None,
                                         edgewidth=3,
                                         alpha=1.0)
         self.shortcut = 'S'
+
+    def clear(self):
+        self._roi_tool.reset()
 
 
 class ContourMode(MouseMode):
