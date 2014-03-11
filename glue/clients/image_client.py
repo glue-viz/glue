@@ -9,7 +9,7 @@ from ..core.data import Data
 from ..core.util import lookup_class
 from ..core.subset import Subset, RoiSubsetState
 from ..core.roi import PolygonalROI
-from ..core.callback_property import callback_property
+from ..core.callback_property import callback_property, CallbackProperty
 from ..core.edit_subset_mode import EditSubsetMode
 
 from .viz_client import VizClient, init_mpl
@@ -30,6 +30,8 @@ def requires_data(func):
 
 
 class ImageClient(VizClient):
+    display_data = CallbackProperty(None)
+    display_attribute = CallbackProperty(None)
 
     def __init__(self, data, figure=None, axes=None, artist_container=None):
 
@@ -41,8 +43,6 @@ class ImageClient(VizClient):
         if self.artists is None:
             self.artists = LayerArtistContainer()
 
-        self.display_data = None
-        self.display_attribute = None
         self._slice = None
         self._view_window = None
         self._view = None
@@ -190,7 +190,6 @@ class ImageClient(VizClient):
 
     @requires_data
     def _update_axis_labels(self):
-        ori = self._slice_ori
         labels = _axis_labels(self.display_data, self.slice)
         self._ax.set_xlabel(labels[1])
         self._ax.set_ylabel(labels[0])
