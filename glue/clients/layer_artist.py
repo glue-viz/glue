@@ -362,6 +362,9 @@ class SubsetImageLayerArtist(LayerArtist):
         if not mask.any():
             return
 
+        if transpose:
+            mask = mask.T
+
         extent = get_extent(view, transpose)
         r, g, b = color2rgb(self.layer.style.color)
         mask = np.dstack((r * mask, g * mask, b * mask, mask * .5))
