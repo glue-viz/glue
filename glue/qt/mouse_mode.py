@@ -453,9 +453,10 @@ class SpectrumExtractorMode(PersistentRoiMode):
 
     def __init__(self, axes, **kwargs):
         super(SpectrumExtractorMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_square')
+        self.icon = get_icon('glue_spectrum')
         self.mode_id = 'Spectrum'
         self.action_text = 'Spectrum'
+        self.tool_tip = 'Extract a spectrum from the selection'
         self._roi_tool = qt_roi.QtRectangularROI(self._axes)
         self._roi_tool.plot_opts.update(edgecolor='#c51b7d',
                                         facecolor=None,
