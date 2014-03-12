@@ -75,6 +75,7 @@ class Test3DExtractor(object):
         np.testing.assert_array_equal(expected, actual)
 
     def test_pixel2world(self):
+        # p2w(x) = 2x, 0 <= x <= 2
         assert Extractor.pixel2world(self.data, 0, 1) == 2
 
         # clips to boundary
@@ -82,6 +83,7 @@ class Test3DExtractor(object):
         assert Extractor.pixel2world(self.data, 0, 5) == 4
 
     def test_world2pixel(self):
+        # w2p(x) = x/2, 0 <= x <= 4
         assert Extractor.world2pixel(self.data, 0, 2) == 1
 
         # clips to boundary

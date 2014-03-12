@@ -178,7 +178,8 @@ class SpectrumTool(object):
         # relim y range to data within the view window
         mask = (self.axes.get_xlim()[0] <= x) & (x <= self.axes.get_xlim()[1])
         ymask = y[mask]
-        self.axes.set_ylim(np.nanmin(ymask), np.nanmax(ymask))
+        ylim = np.nanmin(ymask), np.nanmax(ymask)
+        self.axes.set_ylim(ylim[0], ylim[1] + .05 * (ylim[1] - ylim[0]))
 
         if self.axes.get_xlim() != xlim:
             self._recenter_handles()
@@ -187,7 +188,16 @@ class SpectrumTool(object):
         self.axes.figure.canvas.draw()
         self.show()
 
+    def _move_below_image_widget(self):
+        rect = self.image_widget.frameGeometry()
+        pos = self.image_widget.mapToGlobal(rect.bottomLeft())
+        self.widget.setGeometry(pos.x(), pos.y(),
+                                rect.width(), rect.width() / 2.5)
+
     def show(self):
+        if self.widget.isVisible():
+            return
+        self._move_below_image_widget()
         self.widget.show()
 
     def hide(self):
