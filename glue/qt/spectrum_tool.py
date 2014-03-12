@@ -72,6 +72,7 @@ class SpectrumTool(object):
 
         self._setup_handles()
         self._setup_toolbar()
+        self._setup_double_click_handler()
 
     def _setup_mouse_mode(self):
         mode = SpectrumExtractorMode(self.image_widget.client.axes,
@@ -82,6 +83,14 @@ class SpectrumTool(object):
 
         add_callback(self.client, 'display_data', toggle_mode_enabled)
         return mode
+
+    def _setup_double_click_handler(self):
+        def _check_recenter(event):
+            if event.dblclick:
+                self.slice_handle.value = event.xdata
+
+        self.canvas.mpl_connect('button_press_event',
+                                _check_recenter)
 
     def _setup_toolbar(self):
         tb = GlueToolbar(self.canvas, self.widget)
