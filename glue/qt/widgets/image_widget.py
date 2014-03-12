@@ -3,8 +3,6 @@ from ...external.qt.QtGui import (QWidget, QAction,
 
 from ...external.qt.QtCore import Qt
 
-import matplotlib.cm as cm
-
 from .data_viewer import DataViewer
 from ... import core
 from ... import config
