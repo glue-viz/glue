@@ -547,8 +547,8 @@ class MplRectangularROI(AbstractMplRoi):
         self._yi = event.ydata
 
         if self._roi.defined() and \
-          self._roi.contains(event.xdata, event.ydata):
-            self._scrubbing=True
+                self._roi.contains(event.xdata, event.ydata):
+            self._scrubbing = True
             self._cx, self._cy = self._roi.center()
         else:
             self._scrubbing = False

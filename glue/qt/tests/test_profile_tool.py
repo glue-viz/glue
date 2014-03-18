@@ -18,7 +18,7 @@ class TestCoordinates(Coordinates):
         return [a / 2 for a in args]
 
 
-class TestProfileTool(object):
+class TestSpectrumTool(object):
 
     def setup_method(self, method):
         d = Data(x=np.zeros((3, 3, 3)))
