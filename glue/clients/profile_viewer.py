@@ -7,7 +7,7 @@ from ..core.callback_property import CallbackProperty, add_callback
 PICK_THRESH = 30  # pixel distance threshold for picking
 
 
-class Handle(object):
+class Grip(object):
 
     def __init__(self, viewer, artist=True):
         self.viewer = viewer
@@ -27,7 +27,7 @@ class Handle(object):
         """
         Return the distance, in pixels,
         between a point in (x,y) data space and
-        the handle
+        the grip
         """
         raise NotImplementedError()
 
@@ -62,15 +62,15 @@ class Handle(object):
             self.viewer.axes.figure.canvas.draw()
 
 
-class SliderHandle(Handle):
+class ValueGrip(Grip):
     value = CallbackProperty(None)
 
     def __init__(self, viewer, artist=True):
-        super(SliderHandle, self).__init__(viewer, artist)
+        super(ValueGrip, self).__init__(viewer, artist)
         self._drag = False
 
     def _artist_factory(self):
-        return SliderArtist(self)
+        return ValueArtist(self)
 
     def pick_dist(self, x, y):
         xy = [[x, y], [self.value, y]]
@@ -90,11 +90,11 @@ class SliderHandle(Handle):
         self._drag = False
 
 
-class RangeHandle(Handle):
+class RangeGrip(Grip):
     range = CallbackProperty((None, None))
 
     def __init__(self, viewer):
-        super(RangeHandle, self).__init__(viewer)
+        super(RangeGrip, self).__init__(viewer)
 
         # track state during drags
         self._move = None
@@ -172,18 +172,18 @@ class RangeHandle(Handle):
         self._refnew = None
 
 
-class SliderArtist(object):
+class ValueArtist(object):
 
-    def __init__(self, slider, **kwargs):
-        self.slider = slider
-        add_callback(slider, 'value', self._update)
-        ax = self.slider.viewer.axes
+    def __init__(self, grip, **kwargs):
+        self.grip = grip
+        add_callback(grip, 'value', self._update)
+        ax = self.grip.viewer.axes
 
         kwargs.setdefault('lw', 2)
         kwargs.setdefault('alpha', 0.5)
         kwargs.setdefault('c', '#ffb304')
         trans = blended_transform_factory(ax.transData, ax.transAxes)
-        self._line, = ax.plot([slider.value, slider.value], [0, 1],
+        self._line, = ax.plot([grip.value, grip.value], [0, 1],
                               transform=trans, **kwargs)
 
     def _update(self, value):
@@ -196,10 +196,10 @@ class SliderArtist(object):
 
 class RangeArtist(object):
 
-    def __init__(self, handle, **kwargs):
-        self.handle = handle
-        add_callback(handle, 'range', self._update)
-        ax = handle.viewer.axes
+    def __init__(self, grip, **kwargs):
+        self.grip = grip
+        add_callback(grip, 'range', self._update)
+        ax = grip.viewer.axes
         trans = blended_transform_factory(ax.transData, ax.transAxes)
 
         kwargs.setdefault('lw', 2)
@@ -209,7 +209,7 @@ class RangeArtist(object):
 
     @property
     def x(self):
-        l, r = self.handle.range
+        l, r = self.grip.range
         return [l, l, l, r, r, r]
 
     @property
@@ -225,8 +225,8 @@ class RangeArtist(object):
 
 
 class ProfileViewer(object):
-    slider_cls = SliderHandle
-    range_cls = RangeHandle
+    value_cls = ValueGrip
+    range_cls = RangeGrip
 
     def __init__(self, axes):
         self.axes = axes
@@ -236,8 +236,8 @@ class ProfileViewer(object):
         self.connect()
 
         self._fit_artist = None
-        self.active_handle = None  # which handle should receive events?
-        self.handles = []
+        self.active_grip = None  # which grip should receive events?
+        self.grips = []
 
     def set_profile(self, x, y, xatt=None, yatt=None, **kwargs):
         """
@@ -294,24 +294,24 @@ class ProfileViewer(object):
         if not event.inaxes:
             return
 
-        if self.active_handle is not None and self.active_handle.enabled:
-            self.active_handle.select(event.xdata, event.ydata)
+        if self.active_grip is not None and self.active_grip.enabled:
+            self.active_grip.select(event.xdata, event.ydata)
 
     def _on_up(self, event):
         if not event.inaxes:
             return
-        if self.active_handle is None or not self.active_handle.enabled:
+        if self.active_grip is None or not self.active_grip.enabled:
             return
 
-        self.active_handle.release()
+        self.active_grip.release()
 
     def _on_move(self, event):
         if not event.inaxes or event.button != 1:
             return
-        if self.active_handle is None or not self.active_handle.enabled:
+        if self.active_grip is None or not self.active_grip.enabled:
             return
 
-        self.active_handle.drag(event.xdata, event.ydata)
+        self.active_grip.drag(event.xdata, event.ydata)
 
     def _redraw(self):
         self.axes.figure.canvas.draw()
@@ -350,28 +350,28 @@ class ProfileViewer(object):
                                            lw=3, alpha=0.8,
                                            scalex=False, scaley=False)
 
-    def new_slider_handle(self, callback=None):
+    def new_value_grip(self, callback=None):
         """
-        Create and return new SliderHandle
+        Create and return new ValueGrip
 
         :param callback: A callback function to be invoked
-        whenever the handle.value property changes
+        whenever the grip.value property changes
         """
-        result = self.slider_cls(self)
+        result = self.value_cls(self)
         result.value = self._center[0]
 
         if callback is not None:
             add_callback(result, 'value', callback)
-        self.handles.append(result)
-        self.active_handle = result
+        self.grips.append(result)
+        self.active_grip = result
         return result
 
-    def new_range_handle(self, callback=None):
+    def new_range_grip(self, callback=None):
         """
-        Create and return new RangeHandle
+        Create and return new RangeGrip
 
         :param callback: A callback function to be invoked
-        whenever the handle.range property changes
+        whenever the grip.range property changes
         """
         result = self.range_cls(self)
         center = self._center[0]
@@ -381,8 +381,8 @@ class ProfileViewer(object):
         if callback is not None:
             add_callback(result, 'range', callback)
 
-        self.handles.append(result)
-        self.active_handle = result
+        self.grips.append(result)
+        self.active_grip = result
 
         return result
 
@@ -399,21 +399,21 @@ class ProfileViewer(object):
         xlim = self.axes.get_xlim()
         return xlim[1] - xlim[0]
 
-    def pick_handle(self, x, y):
+    def pick_grip(self, x, y):
         """
         Given a coordinate in Data units,
-        return the enabled Handle object nearest
+        return the enabled Grip object nearest
         that point, or None if none are nearby
         """
-        handles = [h for h in self.handles if h.enabled]
-        if not handles:
+        grips = [h for h in self.grips if h.enabled]
+        if not grips:
             return
 
-        dist, handle = min((h.pick_dist(x, y), h)
-                           for h in handles)
+        dist, grip = min((h.pick_dist(x, y), h)
+                         for h in grips)
 
         if dist < PICK_THRESH:
-            return handle
+            return grip
 
 
 def main():
@@ -428,18 +428,15 @@ def main():
     y = np.exp(-(x - 5) ** 2) + np.random.normal(0, 0.03, 1000)
     pv.set_profile(x, y, c='k')
 
-    #handle = pv.new_slider_handle()
-    # SliderArtist(handle)
-
-    handle = pv.new_range_handle()
-    RangeArtist(handle)
+    grip = pv.new_range_grip()
+    RangeArtist(grip)
 
     def fit(range):
         from glue.core.fitters import AstropyModelFitter
         fitter = AstropyModelFitter.gaussian_fitter()
         pv.fit(fitter, xlim=range, plot=True)
 
-    add_callback(handle, 'range', fit)
+    add_callback(grip, 'range', fit)
 
     w.show()
     w.raise_()

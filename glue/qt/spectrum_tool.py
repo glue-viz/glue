@@ -67,15 +67,15 @@ class SpectrumContext(object):
     def __init__(self, main):
 
         self.main = main
-        self.handle = None
+        self.grip = None
         self.panel = None
         self.widget = None
 
-        self._setup_handle()
+        self._setup_grip()
         self._setup_widget()
         self._connect()
 
-    def _setup_handle(self):
+    def _setup_grip(self):
         raise NotImplementedError()
 
     def _setup_widget(self):
@@ -88,12 +88,12 @@ class SpectrumContext(object):
         self.enable() if enabled else self.disable()
 
     def enable(self):
-        if self.handle is not None:
-            self.handle.enable()
+        if self.grip is not None:
+            self.grip.enable()
 
     def disable(self):
-        if self.handle is not None:
-            self.handle.disable()
+        if self.grip is not None:
+            self.grip.disable()
 
     def recenter(self, lim):
         """Re-center the grip to the given x axlis limit tuple"""
@@ -102,9 +102,9 @@ class SpectrumContext(object):
 
 class NavContext(SpectrumContext):
 
-    def _setup_handle(self):
-        def _set_client_from_handle(value):
-            """Update client.slice given handle value"""
+    def _setup_grip(self):
+        def _set_client_from_grip(value):
+            """Update client.slice given grip value"""
             slc = list(self.client.slice)
 
             # client.slice stored in pixel coords
@@ -114,32 +114,32 @@ class NavContext(SpectrumContext):
             slc[self.profile_axis] = value
             self.client.slice = tuple(slc)
 
-        def _set_handle_from_client(slc):
-            """Update handle.value given client.slice"""
-            # handle.value is stored in world coordinates
+        def _set_grip_from_client(slc):
+            """Update grip.value given client.slice"""
+            # grip.value is stored in world coordinates
             val = slc[self.profile_axis]
             val = Extractor.pixel2world(self.data, self.profile_axis, val)
-            self.handle.value = val
+            self.grip.value = val
 
-        self.handle = self.main.profile.new_slider_handle()
+        self.grip = self.main.profile.new_value_grip()
 
-        add_callback(self.client, 'slice', _set_handle_from_client)
-        add_callback(self.handle, 'value', _set_client_from_handle)
+        add_callback(self.client, 'slice', _set_grip_from_client)
+        add_callback(self.grip, 'value', _set_client_from_grip)
 
     def _connect(self):
-        self._setup_double_click_handler()
+        self._setup_double_click_gripr()
 
     def _setup_widget(self):
         self.widget = QWidget()
 
-    def _setup_double_click_handler(self):
+    def _setup_double_click_gripr(self):
 
         def _check_recenter(event):
-            if not self.handle.enabled:
+            if not self.grip.enabled:
                 return
 
             if event.dblclick:
-                self.handle.value = event.xdata
+                self.grip.value = event.xdata
 
         self.canvas.mpl_connect('button_press_event',
                                 _check_recenter)
@@ -152,8 +152,8 @@ class FitContext(SpectrumContext):
     error = CurrentComboProperty('ui.uncertainty_combo')
     fitter = CurrentComboProperty('ui.profile_combo')
 
-    def _setup_handle(self):
-        self.handle = self.main.profile.new_range_handle()
+    def _setup_grip(self):
+        self.grip = self.main.profile.new_range_grip()
 
     def _setup_widget(self):
         self.ui = load_ui('spectrum_fit_panel')
@@ -161,7 +161,7 @@ class FitContext(SpectrumContext):
 
     @property
     def fitter(self):
-        x, y = self.main.profile.profile_data(xlim=self.handle.range)
+        x, y = self.main.profile.profile_data(xlim=self.grip.range)
         amp = y.max()
         y = y / y.sum()
 
@@ -175,7 +175,7 @@ class FitContext(SpectrumContext):
         self.ui.fit_button.clicked.connect(nonpartial(self.fit))
 
     def fit(self):
-        xlim = self.handle.range
+        xlim = self.grip.range
         fitter = self.fitter
         fit = self.main.profile.fit(fitter, xlim=xlim)
         self._report_fit(fit)
@@ -187,7 +187,7 @@ class FitContext(SpectrumContext):
     def recenter(self, lim):
         cen = sum(lim) / 2
         wid = max(lim) - min(lim)
-        self.handle.range = cen - wid / 4, cen + wid / 4
+        self.grip.range = cen - wid / 4, cen + wid / 4
 
 
 class SpectrumTool(object):
@@ -234,7 +234,7 @@ class SpectrumTool(object):
         self.nav, self.fit = self._contexts
 
         tabs = QTabWidget()
-        tabs.addTab(self._contexts[0].widget, 'Slide')
+        tabs.addTab(self._contexts[0].widget, 'Navigate')
         tabs.addTab(self._contexts[1].widget, 'Fit')
         self._tabs = tabs
         l.addWidget(tabs)
@@ -249,7 +249,7 @@ class SpectrumTool(object):
             for i, ctx in enumerate(self._contexts):
                 ctx.set_enabled(i == index)
                 if i == index:
-                    self.profile.active_handle = ctx.handle
+                    self.profile.active_grip = ctx.grip
 
         self._tabs.currentChanged.connect(_on_tab_change)
         _on_tab_change(self._tabs.currentIndex())
@@ -304,7 +304,7 @@ class SpectrumTool(object):
         candidates = [i for i, s in enumerate(slc) if s not in ['x', 'y']]
         return max(candidates, key=lambda i: self.data.shape[i])
 
-    def _recenter_handles(self):
+    def _recenter_grips(self):
         self.nav.recenter(self.axes.get_xlim())
         self.fit.recenter(self.axes.get_xlim())
 
@@ -342,7 +342,7 @@ class SpectrumTool(object):
         self.axes.set_ylim(ylim[0], ylim[1] + .05 * (ylim[1] - ylim[0]))
 
         if self.axes.get_xlim() != xlim:
-            self._recenter_handles()
+            self._recenter_grips()
 
         self.axes.set_xlabel(xlabel)
         self.axes.figure.canvas.draw()
