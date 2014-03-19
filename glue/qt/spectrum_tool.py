@@ -28,6 +28,9 @@ class Extractor(object):
     def spectrum(data, attribute, roi, xaxis, yaxis, zaxis):
         l, r, b, t = roi.xmin, roi.xmax, roi.ymin, roi.ymax
         slc = [slice(None) for _ in data.shape]
+        shp = data.shape
+        l, r = np.clip([l, r], 0, shp[xaxis])
+        b, t = np.clip([b, t], 0, shp[yaxis])
         slc[xaxis] = slice(l, r)
         slc[yaxis] = slice(b, t)
 
@@ -97,7 +100,16 @@ class SpectrumContext(object):
 
     def recenter(self, lim):
         """Re-center the grip to the given x axlis limit tuple"""
-        raise NotImplementedError()
+        if self.grip is None:
+            return
+        if hasattr(self.grip, 'value'):
+            self.grip.value = sum(lim) / 2.
+            return
+
+        # Range grip
+        cen = sum(lim) / 2
+        wid = max(lim) - min(lim)
+        self.grip.range = cen - wid / 4, cen + wid / 4
 
 
 class NavContext(SpectrumContext):
@@ -144,8 +156,6 @@ class NavContext(SpectrumContext):
         self.canvas.mpl_connect('button_press_event',
                                 _check_recenter)
 
-    def recenter(self, lim):
-        self.value = sum(lim) / 2.
 
 
 class FitContext(SpectrumContext):
@@ -183,11 +193,6 @@ class FitContext(SpectrumContext):
 
     def _report_fit(self, fit):
         self.ui.results_box.document().setPlainText(str(fit))
-
-    def recenter(self, lim):
-        cen = sum(lim) / 2
-        wid = max(lim) - min(lim)
-        self.grip.range = cen - wid / 4, cen + wid / 4
 
 
 class SpectrumTool(object):
@@ -305,8 +310,8 @@ class SpectrumTool(object):
         return max(candidates, key=lambda i: self.data.shape[i])
 
     def _recenter_grips(self):
-        self.nav.recenter(self.axes.get_xlim())
-        self.fit.recenter(self.axes.get_xlim())
+        for ctx in self._contexts:
+            ctx.recenter(self.axes.get_xlim())
 
     def _update_profile(self, *args):
         data = self.data
@@ -339,8 +344,9 @@ class SpectrumTool(object):
         # relim y range to data within the view window
         mask = (self.axes.get_xlim()[0] <= x) & (x <= self.axes.get_xlim()[1])
         ymask = y[mask]
-        ylim = np.nanmin(ymask), np.nanmax(ymask)
-        self.axes.set_ylim(ylim[0], ylim[1] + .05 * (ylim[1] - ylim[0]))
+        if ymask.size > 0:
+            ylim = np.nan_to_num([np.nanmin(ymask), np.nanmax(ymask)])
+            self.axes.set_ylim(ylim[0], ylim[1] + .05 * (ylim[1] - ylim[0]))
 
         if self.axes.get_xlim() != xlim:
             self._recenter_grips()

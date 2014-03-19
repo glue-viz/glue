@@ -369,11 +369,13 @@ class ProfileViewer(object):
         except ValueError:
             raise ValueError("Must set profile before fitting")
 
-        result = fitter.fit(x, y)
+        try:
+            result = fitter.fit(x, y)
+        except Exception as e:
+            return "Failed fit: %s" % e
 
         if plot:
             self._plot_fit(fitter)
-
         return result
 
     def _plot_fit(self, fitter):

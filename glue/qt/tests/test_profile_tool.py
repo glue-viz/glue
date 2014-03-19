@@ -74,6 +74,14 @@ class Test3DExtractor(object):
             self.data, self.data.id['x'], roi, 1, 2, 0)
         np.testing.assert_array_equal(expected, actual)
 
+    def test_spectrum_oob(self):
+        roi = RectangularROI()
+        roi.update_limits(-1, -1, 3, 3)
+        expected = [1, 1, 1]
+        _, actual = Extractor.spectrum(self.data, self.data.id['x'],
+                                       roi, 1, 2, 0)
+        np.testing.assert_array_equal(expected, actual)
+
     def test_pixel2world(self):
         # p2w(x) = 2x, 0 <= x <= 2
         assert Extractor.pixel2world(self.data, 0, 1) == 2

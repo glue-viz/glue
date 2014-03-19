@@ -157,6 +157,14 @@ class TestProfileViewer(object):
         self.viewer.fit(fitter, xlim=[1, 3], plot=True)
         self.viewer._plot_fit.assert_called_once_with(fitter)
 
+    def test_fit_fail(self):
+        fitter = MagicMock()
+        fitter.fit.side_effect = ValueError("BOOM!")
+
+        self.viewer.set_profile([0, 1, 2, 3], [2, 3, 4, 5])
+        model = self.viewer.fit(fitter)
+        assert model == 'Failed fit: BOOM!'
+
     def test_new_select(self):
         h = self.viewer.new_range_grip()
 
