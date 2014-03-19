@@ -2,7 +2,8 @@ import numpy as np
 
 from ..external.qt.QtCore import Qt
 from ..external.qt.QtGui import (QMainWindow, QWidget,
-                                 QHBoxLayout, QTabWidget)
+                                 QHBoxLayout, QTabWidget,
+                                 QComboBox, QFormLayout, QPushButton)
 
 from ..clients.profile_viewer import ProfileViewer
 from .widgets.mpl_widget import MplWidget
@@ -13,6 +14,7 @@ from .glue_toolbar import GlueToolbar
 from .qtutil import load_ui, nonpartial
 from .widget_properties import CurrentComboProperty
 from ..core.fitters import AstropyModelFitter
+from ..core.aggregate import Aggregate
 
 
 class Extractor(object):
@@ -157,6 +159,45 @@ class NavContext(SpectrumContext):
                                 _check_recenter)
 
 
+class CollapseContext(SpectrumContext):
+
+    def _setup_grip(self):
+        self.grip = self.main.profile.new_range_grip()
+
+    def _setup_widget(self):
+        w = QWidget()
+        l = QFormLayout()
+        w.setLayout(l)
+
+        combo = QComboBox()
+        combo.addItem("Mean", userData=Aggregate.mean)
+        combo.addItem("Max", userData=Aggregate.max)
+        combo.addItem("Centroid", userData=Aggregate.mom1)
+
+        run = QPushButton("Collapse")
+        self._run = run
+
+        l.addRow("Collapse Function", combo)
+        l.addRow("", run)
+        self.widget = w
+        self._combo = combo
+
+    def _connect(self):
+        self._run.clicked.connect(nonpartial(self._aggregate))
+
+    def _aggregate(self):
+        func = self._combo.itemData(self._combo.currentIndex())
+
+        rng = Extractor.world2pixel(self.data,
+                                    self.profile_axis,
+                                    self.grip.range)
+
+        agg = Aggregate(self.data, self.client.display_attribute,
+                        self.main.profile_axis, self.client.slice, rng)
+
+        im = func(agg)
+        self.client.override_image(im)
+
 
 class FitContext(SpectrumContext):
     error = CurrentComboProperty('ui.uncertainty_combo')
@@ -234,13 +275,13 @@ class SpectrumTool(object):
     def _setup_ctxbar(self):
         l = self.widget.centralWidget().layout()
         self._contexts = [NavContext(self),
-                          FitContext(self)]
-
-        self.nav, self.fit = self._contexts
+                          FitContext(self),
+                          CollapseContext(self)]
 
         tabs = QTabWidget()
         tabs.addTab(self._contexts[0].widget, 'Navigate')
         tabs.addTab(self._contexts[1].widget, 'Fit')
+        tabs.addTab(self._contexts[2].widget, 'Collapse')
         self._tabs = tabs
         l.addWidget(tabs)
         l.setStretchFactor(tabs, 0)

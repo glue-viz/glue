@@ -162,6 +162,7 @@ class ImageLayerArtist(LayerArtist):
         super(ImageLayerArtist, self).__init__(layer, ax)
         self._norm = None
         self._cmap = gray
+        self._override_image = None
 
     @property
     def norm(self):
@@ -192,6 +193,25 @@ class ImageLayerArtist(LayerArtist):
             result.vmax = vals[.99 * vals.size]
         return result
 
+    def override_image(self, image):
+        """Temporarily show a different image"""
+        self._override_image = image
+
+    def clear_override(self):
+        self._override_image = None
+
+    def _extract_view(self, view, transpose):
+        if self._override_image is None:
+            result = self.layer[view]
+            if transpose:
+                result = result.T
+            return result
+        else:
+            v = [v for v in view if isinstance(v, slice)]
+            assert len(v) == 2
+            result = self._override_image[v]
+            return result
+
     def update(self, view, transpose=False):
         self.clear()
         views = view_cascade(self.layer, view)
@@ -203,10 +223,8 @@ class ImageLayerArtist(LayerArtist):
         self.norm.update_clip(self.layer, view[0])
 
         for v in views:
-            image = self.layer[v]
+            image = self._extract_view(v, transpose)
             extent = get_extent(v, transpose)
-            if transpose:
-                image = image.T
             artists.append(self._axes.imshow(image, cmap=self.cmap,
                                              norm=self.norm,
                                              interpolation='nearest',
