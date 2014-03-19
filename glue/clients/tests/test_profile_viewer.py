@@ -16,8 +16,8 @@ class TestProfileViewer(object):
     def setup_method(self, method):
         FIG.clf()
         FIG.canvas.draw = MagicMock()
-        self.axes = FIG.add_subplot(111)
-        self.viewer = ProfileViewer(self.axes)
+        self.viewer = ProfileViewer(FIG)
+        self.axes = self.viewer.axes
 
     def test_set_profile(self):
         self.viewer.set_profile([1, 2, 3], [2, 3, 4])

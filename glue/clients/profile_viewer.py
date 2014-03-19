@@ -224,20 +224,50 @@ class RangeArtist(object):
         self._line.set_visible(visible)
 
 
+def _build_axes(figure):
+
+    # tight-layout clobbers manual positioning
+    figure.set_tight_layout(False)
+    ax2 = figure.add_subplot(122)
+    ax1 = figure.add_subplot(121, sharex=ax2)
+
+    return ax1, ax2
+
+
 class ProfileViewer(object):
     value_cls = ValueGrip
     range_cls = RangeGrip
 
-    def __init__(self, axes):
-        self.axes = axes
+    def __init__(self, figure):
+        self.axes, self.resid_axes = _build_axes(figure)
 
         self._artist = None
+        self._resid_artist = None
         self._x = self._xatt = self._y = self._yatt = None
         self.connect()
 
         self._fit_artist = None
         self.active_grip = None  # which grip should receive events?
         self.grips = []
+        self._xlabel = ''
+
+    def set_xlabel(self, xlabel):
+        self._xlabel = xlabel
+
+    def _relayout(self):
+        if self._resid_artist is not None:
+            self.axes.set_position([0.1, .35, .88, .6])
+            self.resid_axes.set_position([0.1, .15, .88, .2])
+            self.resid_axes.set_xlabel(self._xlabel)
+            self.resid_axes.set_visible(True)
+            self.axes.set_xlabel('')
+            [t.set_visible(False) for t in self.axes.get_xticklabels()]
+        else:
+            self.resid_axes.set_visible(False)
+            self.axes.set_position([0.1, .15, .88, .83])
+            self.axes.set_xlabel(self._xlabel)
+            print self._xlabel
+            [t.set_visible(True) for t in self.axes.get_xticklabels()]
 
     def set_profile(self, x, y, xatt=None, yatt=None, **kwargs):
         """
@@ -269,6 +299,7 @@ class ProfileViewer(object):
             self._artist.remove()
 
         self._artist = self.axes.plot(x, y, **kwargs)[0]
+        self._relayout()
         self._redraw()
 
         return self._artist
@@ -277,6 +308,9 @@ class ProfileViewer(object):
         if self._fit_artist is not None:
             self._fit_artist.remove()
             self._fit_artist = None
+        if self._resid_artist is not None:
+            self._resid_artist.remove()
+            self._resid_artist = None
 
     def connect(self):
         connect = self.axes.figure.canvas.mpl_connect
@@ -349,6 +383,10 @@ class ProfileViewer(object):
         self._fit_artist, = self.axes.plot(x, y, '#4daf4a',
                                            lw=3, alpha=0.8,
                                            scalex=False, scaley=False)
+
+        resid = self._y - y
+        self._resid_artist, = self.resid_axes.plot(x, resid, 'k')
+        self._relayout()
 
     def new_value_grip(self, callback=None):
         """

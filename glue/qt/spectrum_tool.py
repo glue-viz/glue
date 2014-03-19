@@ -193,14 +193,14 @@ class FitContext(SpectrumContext):
 class SpectrumTool(object):
 
     def __init__(self, image_widget):
-        self._relim_requested = False
+        self._relim_requested = True
 
         self.image_widget = image_widget
         self._build_main_widget()
 
         self.client = self.image_widget.client
-        self.axes = self.canvas.fig.add_subplot(111)
-        self.profile = ProfileViewer(self.axes)
+        self.profile = ProfileViewer(self.canvas.fig)
+        self.axes = self.profile.axes
 
         self.mouse_mode = self._setup_mouse_mode()
         self._setup_toolbar()
@@ -328,6 +328,7 @@ class SpectrumTool(object):
         x, y = Extractor.spectrum(data, att, roi, xax, yax, zax)
 
         xlim = self.axes.get_xlim()
+        self.profile.set_xlabel(xlabel)
         self.profile.set_profile(x, y, c='k')
 
         # relim x range if requested
@@ -344,7 +345,6 @@ class SpectrumTool(object):
         if self.axes.get_xlim() != xlim:
             self._recenter_grips()
 
-        self.axes.set_xlabel(xlabel)
         self.axes.figure.canvas.draw()
         self.show()
 
@@ -352,7 +352,7 @@ class SpectrumTool(object):
         rect = self.image_widget.frameGeometry()
         pos = self.image_widget.mapToGlobal(rect.bottomLeft())
         self.widget.setGeometry(pos.x(), pos.y(),
-                                rect.width(), rect.width() / 2.5)
+                                rect.width(), rect.width() / 1.5)
 
     def show(self):
         if self.widget.isVisible():
