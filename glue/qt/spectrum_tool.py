@@ -1,20 +1,24 @@
 import numpy as np
 
-from ..external.qt.QtCore import Qt
+from ..external.qt.QtCore import Qt, Signal
 from ..external.qt.QtGui import (QMainWindow, QWidget,
                                  QHBoxLayout, QTabWidget,
-                                 QComboBox, QFormLayout, QPushButton)
+                                 QComboBox, QFormLayout, QPushButton,
+                                 QAction)
 
 from ..clients.profile_viewer import ProfileViewer
 from .widgets.mpl_widget import MplWidget
 from .mouse_mode import SpectrumExtractorMode
 from ..core.callback_property import add_callback, ignore_callback
 from ..core.util import Pointer
+from ..core import Subset
+from ..core.exceptions import IncompatibleAttribute
 from .glue_toolbar import GlueToolbar
 from .qtutil import load_ui, nonpartial
 from .widget_properties import CurrentComboProperty
 from ..core.fitters import AstropyModelFitter
 from ..core.aggregate import Aggregate
+from .mime import LAYERS_MIME_TYPE
 
 
 class Extractor(object):
@@ -30,23 +34,40 @@ class Extractor(object):
         return data[att, tuple(slc)].ravel()
 
     @staticmethod
-    def spectrum(data, attribute, roi, xaxis, yaxis, zaxis):
+    def spectrum(data, attribute, roi, slc, zaxis):
+        xaxis = slc.index('x')
+        yaxis = slc.index('y')
+        ndim, nz = data.ndim, data.shape[zaxis]
+
         l, r, b, t = roi.xmin, roi.xmax, roi.ymin, roi.ymax
-        slc = [slice(None) for _ in data.shape]
         shp = data.shape
         l, r = np.clip([l, r], 0, shp[xaxis])
         b, t = np.clip([b, t], 0, shp[yaxis])
+
+        # extract sub-slice, without changing dimension
+        slc = [slice(s, s + 1)
+               if s not in ['x', 'y'] else slice(None)
+               for s in slc]
         slc[xaxis] = slice(l, r)
         slc[yaxis] = slice(b, t)
-
+        slc[zaxis] = slice(None)
         x = Extractor.abcissa(data, zaxis)
 
         data = data[attribute, tuple(slc)]
-        for i in reversed(list(range(data.ndim))):
-            if i != zaxis:
-                data = np.nansum(data, axis=i) / np.isfinite(data).sum(axis=i)
+        finite = np.isfinite(data)
 
-        data = data.ravel()
+        assert data.ndim == ndim
+
+        for i in reversed(list(range(ndim))):
+            if i != zaxis:
+                data = np.nansum(data, axis=i)
+                finite = finite.sum(axis=i)
+
+        assert data.ndim == 1
+        assert data.size == nz
+
+        data = (1. * data / finite).ravel()
+        print x.shape, data.shape, slc
         return x, data
 
     @staticmethod
@@ -63,6 +84,31 @@ class Extractor(object):
     def pixel2world(data, axis, value):
         x = Extractor.abcissa(data, axis)
         return x[np.clip(value, 0, x.size - 1)]
+
+    @staticmethod
+    def subset_spectrum(subset, attribute, slc, zaxis):
+        """
+        Extract a spectrum from a subset, by averaging over
+        elements of the subset in each Z-plane
+        """
+        data = subset.data
+        x = Extractor.abcissa(data, zaxis)
+
+        view = [slice(s, s + 1)
+                if s not in ['x', 'y'] else slice(None)
+                for s in slc]
+
+        result = 1. * x
+        # treat each channel separately, to reduce memory storage
+        for i in xrange(data.shape[zaxis]):
+            view[zaxis] = i
+            mask = subset.to_mask(view)
+            val = data[attribute, view] * mask
+            result[i] = 1. * np.nansum(val) / mask.sum()
+
+        y = result
+
+        return x, y
 
 
 class SpectrumContext(object):
@@ -237,6 +283,26 @@ class FitContext(SpectrumContext):
         self.ui.results_box.document().setPlainText(str(fit))
 
 
+class SpectrumMainWindow(QMainWindow):
+
+    subset_dropped = Signal(object)
+
+    def __init__(self, parent=None):
+        super(SpectrumMainWindow, self).__init__(parent=parent)
+        self.setAcceptDrops(True)
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasFormat(LAYERS_MIME_TYPE):
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        layer = event.mimeData().data(LAYERS_MIME_TYPE)[0]
+        if isinstance(layer, Subset):
+            self.subset_dropped.emit(layer)
+
+
 class SpectrumTool(object):
 
     def __init__(self, image_widget):
@@ -257,7 +323,7 @@ class SpectrumTool(object):
         self._connect()
 
     def _build_main_widget(self):
-        self.widget = QMainWindow()
+        self.widget = SpectrumMainWindow()
         self.widget.setWindowFlags(Qt.Tool)
 
         w = QWidget()
@@ -301,6 +367,8 @@ class SpectrumTool(object):
 
         self._tabs.currentChanged.connect(_on_tab_change)
         _on_tab_change(self._tabs.currentIndex())
+
+        self.widget.subset_dropped.connect(self._extract_subset_profile)
 
     def _setup_mouse_mode(self):
         # This will be added to the ImageWidget's toolbar
@@ -364,24 +432,38 @@ class SpectrumTool(object):
         for ctx in self._contexts:
             ctx.recenter(self.axes.get_xlim())
 
+    def _extract_subset_profile(self, subset):
+        slc = self.client.slice
+        try:
+            x, y = Extractor.subset_spectrum(subset,
+                                             self.client.display_attribute,
+                                             slc,
+                                             self.profile_axis)
+        except IncompatibleAttribute:
+            return
+
+        self._set_profile(x, y)
+
     def _update_profile(self, *args):
         data = self.data
         att = self.client.display_attribute
         slc = self.client.slice
         roi = self.mouse_mode.roi()
 
-        xid = data.get_world_component_id(self.profile_axis)
-        units = data.get_component(xid).units
-        xlabel = str(xid) if units is None else '%s [%s]' % (xid, units)
-
         if data is None or att is None:
             return
 
-        xax = slc.index('x')
-        yax = slc.index('y')
         zax = self.profile_axis
 
-        x, y = Extractor.spectrum(data, att, roi, xax, yax, zax)
+        x, y = Extractor.spectrum(data, att, roi, slc, zax)
+        self._set_profile(x, y)
+
+    def _set_profile(self, x, y):
+        data = self.data
+
+        xid = data.get_world_component_id(self.profile_axis)
+        units = data.get_component(xid).units
+        xlabel = str(xid) if units is None else '%s [%s]' % (xid, units)
 
         xlim = self.axes.get_xlim()
         self.profile.set_xlabel(xlabel)

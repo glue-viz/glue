@@ -50,7 +50,8 @@ class Test3DExtractor(object):
     def setup_method(self, method):
         self.data = Data()
         self.data.coords = TestCoordinates()
-        self.data.add_component(np.ones((3, 4, 5)), label='x')
+        self.data.add_component(np.random.random((3, 4, 5)), label='x')
+        self.x = self.data['x']
 
     def test_abcissa(self):
         expected = [0, 2, 4]
@@ -69,18 +70,20 @@ class Test3DExtractor(object):
         roi = RectangularROI()
         roi.update_limits(0, 0, 3, 3)
 
-        expected = [1, 1, 1]
+        expected = self.x[:, :3, :3].mean(axis=1).mean(axis=1)
         _, actual = Extractor.spectrum(
-            self.data, self.data.id['x'], roi, 1, 2, 0)
-        np.testing.assert_array_equal(expected, actual)
+            self.data, self.data.id['x'], roi, (0, 'x', 'y'), 0)
+        np.testing.assert_array_almost_equal(expected, actual)
 
     def test_spectrum_oob(self):
         roi = RectangularROI()
         roi.update_limits(-1, -1, 3, 3)
-        expected = [1, 1, 1]
+
+        expected = self.x[:, :3, :3].mean(axis=1).mean(axis=1)
+
         _, actual = Extractor.spectrum(self.data, self.data.id['x'],
-                                       roi, 1, 2, 0)
-        np.testing.assert_array_equal(expected, actual)
+                                       roi, (0, 'x', 'y'), 0)
+        np.testing.assert_array_almost_equal(expected, actual)
 
     def test_pixel2world(self):
         # p2w(x) = 2x, 0 <= x <= 2
@@ -97,3 +100,49 @@ class Test3DExtractor(object):
         # clips to boundary
         assert Extractor.world2pixel(self.data, 0, -1) == 0
         assert Extractor.world2pixel(self.data, 0, 8) == 2
+
+    def test_extract_subset(self):
+        sub = self.data.new_subset()
+        sub.subset_state = self.data.id['x'] > .5
+
+        mask = sub.to_mask()
+        expected = (self.x * mask).sum(axis=1).sum(axis=1)
+        expected /= mask.sum(axis=1).sum(axis=1)
+        _, actual = Extractor.subset_spectrum(sub, self.data.id['x'],
+                                              (0, 'x', 'y'), 0)
+        np.testing.assert_array_almost_equal(expected, actual)
+
+
+class Test4DExtractor(object):
+
+    def setup_method(self, method):
+        self.data = Data()
+        self.data.coords = TestCoordinates()
+        x, y, z, w = np.mgrid[:3, :4, :5, :4]
+        self.data.add_component(1. * w, label='x')
+
+    def test_extract(self):
+
+        roi = RectangularROI()
+        roi.update_limits(0, 0, 2, 3)
+
+        expected = self.data['x'][:, :2, :3, 1].mean(axis=1).mean(axis=1)
+        _, actual = Extractor.spectrum(self.data, self.data.id['x'],
+                                       roi, (0, 'x', 'y', 1), 0)
+
+        np.testing.assert_array_equal(expected, actual)
+
+
+def test_4d_single_channel():
+
+    x = np.random.random((1, 7, 5, 9))
+    d = Data(x=x)
+    slc = (0, 0, 'x', 'y')
+    zaxis = 1
+    expected = x[0, :, :, :].mean(axis=1).mean(axis=1)
+    roi = RectangularROI()
+    roi.update_limits(0, 0, 10, 10)
+
+    _, actual = Extractor.spectrum(d, d.id['x'], roi, slc, zaxis)
+
+    np.testing.assert_array_almost_equal(expected, actual)
