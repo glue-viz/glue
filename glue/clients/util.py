@@ -1,9 +1,9 @@
 import logging
 from functools import partial
-from operator import itemgetter
 import numpy as np
 from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
-from matplotlib.ticker import LogFormatterMathtext, ScalarFormatter, FuncFormatter
+from matplotlib.ticker import (LogFormatterMathtext, ScalarFormatter,
+                               FuncFormatter)
 from ..core.data import CategoricalComponent
 from ..core.decorators import memoize
 
@@ -42,13 +42,31 @@ def view_cascade(data, view):
     return tuple(v2), view
 
 
+def small_view(data, attribute):
+    """
+    Extract a downsampled view from a dataset, for quick
+    statistical summaries
+    """
+    shp = data.shape
+    view = tuple([slice(None, None, max(s / 50, 1)) for s in shp])
+    return data[attribute, view]
+
+
+def small_view_array(data):
+    """
+    Same as small_view, except using a numpy array as input
+    """
+    shp = data.shape
+    view = tuple([slice(None, None, max(s / 50, 1)) for s in shp])
+    return np.asarray(data)[view]
+
+
 @memoize
-def fast_limits(data, component, plo, phi):
-    """Quickly estimate percentiles in a data object,
+def fast_limits(data, plo, phi):
+    """Quickly estimate percentiles in an array,
     using a downsampled version
 
-    :param data: data object to inspect
-    :param component: Component to inspect
+    :param data: array-like
     :param plo: Lo percentile
     :param phi: High percentile
 
@@ -62,7 +80,7 @@ def fast_limits(data, component, plo, phi):
 
     shp = data.shape
     view = tuple([slice(None, None, max(s / 50, 1)) for s in shp])
-    values = data[component, view]
+    values = np.asarray(data)[view]
     limits = (-np.inf, np.inf)
     lo = stats.scoreatpercentile(values.flat, plo, limit=limits)
     hi = stats.scoreatpercentile(values.flat, phi, limit=limits)

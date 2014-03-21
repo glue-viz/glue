@@ -9,7 +9,7 @@ from matplotlib.cm import gray
 from ..core.exceptions import IncompatibleAttribute
 from ..core.util import color2rgb, PropertySetMixin, Pointer
 from ..core.subset import Subset
-from .util import view_cascade, get_extent
+from .util import view_cascade, get_extent, small_view, small_view_array
 from .ds9norm import DS9Normalize
 
 
@@ -208,19 +208,27 @@ class ImageLayerArtist(LayerArtist):
             return result
         else:
             v = [v for v in view if isinstance(v, slice)]
-            assert len(v) == 2
+            if transpose:
+                v = v[::-1]
             result = self._override_image[v]
             return result
+
+    def _update_clip(self, att):
+        if self._override_image is None:
+            data = small_view(self.layer, att)
+        else:
+            data = small_view_array(self._override_image)
+        self.norm.update_clip(data)
 
     def update(self, view, transpose=False):
         self.clear()
         views = view_cascade(self.layer, view)
         artists = []
 
-        lr0 = self.layer[views[0]]
+        lr0 = self._extract_view(views[0], transpose)
         self.norm = self.norm or self._default_norm(lr0)
         self.norm = self.norm or self._default_norm(lr0)
-        self.norm.update_clip(self.layer, view[0])
+        self._update_clip(views[0][0])
 
         for v in views:
             image = self._extract_view(v, transpose)

@@ -10,7 +10,7 @@ from ..core.util import lookup_class
 from ..core.subset import Subset, RoiSubsetState
 from ..core.roi import PolygonalROI
 from ..core.callback_property import (
-    callback_property, CallbackProperty, add_callback)
+    callback_property, CallbackProperty)
 from ..core.edit_subset_mode import EditSubsetMode
 
 from .viz_client import VizClient, init_mpl
@@ -77,8 +77,6 @@ class ImageClient(VizClient):
             # test code doesn't always use Glue's custom FigureCanvas
             self._ax.figure.canvas.homeButton.connect(self.check_update)
 
-        add_callback(self, 'slice', lambda x: self.clear_override())
-
     @callback_property
     def slice(self):
         """
@@ -114,6 +112,7 @@ class ImageClient(VizClient):
         relim = value.index('x') != self._slice.index('x') or \
             value.index('y') != self._slice.index('y')
         self._slice = tuple(value)
+        self._clear_override()
         self._update_axis_labels()
         self._update_data_plot(relim=relim)
         self._update_subset_plots()
@@ -158,7 +157,7 @@ class ImageClient(VizClient):
         self._update_data_plot()
         self._redraw()
 
-    def clear_override(self):
+    def _clear_override(self):
         for a in self.artists[self.display_data]:
             if isinstance(a, ImageLayerArtist):
                 a.clear_override()
