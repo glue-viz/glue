@@ -8,7 +8,7 @@ from ..external.qt.QtGui import (QMainWindow, QWidget,
 from ..clients.profile_viewer import ProfileViewer
 from .widgets.mpl_widget import MplWidget
 from .mouse_mode import SpectrumExtractorMode
-from ..core.callback_property import add_callback
+from ..core.callback_property import add_callback, ignore_callback
 from ..core.util import Pointer
 from .glue_toolbar import GlueToolbar
 from .qtutil import load_ui, nonpartial
@@ -18,6 +18,9 @@ from ..core.aggregate import Aggregate
 
 
 class Extractor(object):
+    # Warning:
+    # Coordinate conversion is not well-defined if pix2world is not
+    # monotonic!
 
     @staticmethod
     def abcissa(data, axis):
@@ -126,6 +129,7 @@ class NavContext(SpectrumContext):
                 self.data,
                 self.profile_axis, value)
             slc[self.profile_axis] = value
+
             self.client.slice = tuple(slc)
 
         def _set_grip_from_client(slc):
@@ -133,7 +137,12 @@ class NavContext(SpectrumContext):
             # grip.value is stored in world coordinates
             val = slc[self.profile_axis]
             val = Extractor.pixel2world(self.data, self.profile_axis, val)
-            self.grip.value = val
+
+            # If pix2world not monotonic, this can trigger infinite recursion.
+            # Avoid by disabling callback loop
+            # XXX better to specifically ignore _set_client_from_grip
+            with ignore_callback(self.client, 'slice'):
+                self.grip.value = val
 
         self.grip = self.main.profile.new_value_grip()
 
