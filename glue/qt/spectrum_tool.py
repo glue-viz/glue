@@ -223,13 +223,11 @@ class CollapseContext(SpectrumContext):
         combo.addItem("Max", userData=Aggregate.max)
         combo.addItem("Centroid", userData=Aggregate.mom1)
         combo.addItem("Linewidth", userData=Aggregate.mom2)
-        combo.addItem("Coordinate of maximum", userData=Aggregate.argmax)
-        combo.addItem("Coordinate of minimum", userData=Aggregate.argmin)
 
         run = QPushButton("Collapse")
         self._run = run
 
-        l.addRow("Collapse Function", combo)
+        l.addRow("", combo)
         l.addRow("", run)
         self.widget = w
         self._combo = combo
@@ -260,6 +258,10 @@ class FitContext(SpectrumContext):
 
     def _setup_widget(self):
         self.ui = load_ui('spectrum_fit_panel')
+        self.ui.uncertainty_combo.hide()
+        self.ui.profile_combo.hide()
+        self.ui.uncertainty_label.hide()
+        self.ui.profile_label.hide()
         self.widget = self.ui
 
     @property
