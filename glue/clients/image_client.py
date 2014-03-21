@@ -48,6 +48,7 @@ class ImageClient(VizClient):
         self._view_window = None
         self._view = None
         self._image = None
+        self._override_image = None
 
         self._ax = axes
         self._ax.get_xaxis().set_ticks([])
@@ -62,12 +63,8 @@ class ImageClient(VizClient):
             data = self.display_data
             if data is None:
                 return fc(x, y)
-            pix = self._pixel_coords(x, y)
-            world = data.coords.pixel2world(*pix[::-1])
-            world = world[::-1]   # reverse for numpy convention
-            labels = ['%s=%s' % (data.get_world_component_id(i).label, w)
-                      for i, w in enumerate(world)]
-            return '         '.join(labels)
+            info = self.point_details(x, y)
+            return '         '.join(info['labels'])
 
         self._ax.format_coord = format_coord
 
@@ -76,6 +73,31 @@ class ImageClient(VizClient):
         if hasattr(self._ax.figure.canvas, 'homeButton'):
             # test code doesn't always use Glue's custom FigureCanvas
             self._ax.figure.canvas.homeButton.connect(self.check_update)
+
+    def point_details(self, x, y):
+        data = self.display_data
+        pix = self._pixel_coords(x, y)
+        world = data.coords.pixel2world(*pix[::-1])
+        world = world[::-1]   # reverse for numpy convention
+        labels = ['%s=%s' % (data.get_world_component_id(i).label, w)
+                  for i, w in enumerate(world)]
+
+        view = []
+        for p, s in zip(pix, data.shape):
+            p = int(p)
+            if not (0 <= p < s):
+                value = None
+                break
+            view.append(slice(p, p + 1))
+        else:
+            if self._override_image is None:
+                value = self.display_data[self.display_attribute, view]
+            else:
+                value = self._override_image[int(y), int(x)]
+
+            value = value.ravel()[0]
+
+        return dict(pix=pix, world=world, labels=labels, value=value)
 
     @callback_property
     def slice(self):
@@ -151,6 +173,7 @@ class ImageClient(VizClient):
         """Temporarily override the current slice view with another
         image (i.e., an aggregate)
         """
+        self._override_image = image
         for a in self.artists[self.display_data]:
             if isinstance(a, ImageLayerArtist):
                 a.override_image(image)
@@ -158,6 +181,7 @@ class ImageClient(VizClient):
         self._redraw()
 
     def _clear_override(self):
+        self._override_image = None
         for a in self.artists[self.display_data]:
             if isinstance(a, ImageLayerArtist):
                 a.clear_override()

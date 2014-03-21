@@ -1,7 +1,7 @@
-from ...external.qt.QtGui import (QWidget, QAction,
+from ...external.qt.QtGui import (QWidget, QAction, QLabel, QCursor,
                                   QToolButton, QIcon, QMessageBox)
 
-from ...external.qt.QtCore import Qt
+from ...external.qt.QtCore import Qt, QRect
 
 from .data_viewer import DataViewer
 from ... import core
@@ -40,9 +40,10 @@ class ImageWidget(DataViewer):
     def __init__(self, session, parent=None):
         super(ImageWidget, self).__init__(session, parent)
         self.central_widget = MplWidget()
-        self.option_widget = QWidget()
+        self.label_widget = QLabel("", self.central_widget)
         self.setCentralWidget(self.central_widget)
-        self.ui = load_ui('imagewidget', self.option_widget)
+        self.ui = load_ui('imagewidget', None)
+        self.option_widget = self.ui
         self.ui.slice = DataSlice()
         self.ui.slice_layout.addWidget(self.ui.slice)
         self.client = ImageClient(self._data,
@@ -389,3 +390,20 @@ class ImageWidget(DataViewer):
 
         self.set_attribute_combo(self.client.display_data)
         self._update_data_combo()
+
+    def paintEvent(self, event):
+        super(ImageWidget, self).paintEvent(event)
+        pos = self.central_widget.canvas.mapFromGlobal(QCursor.pos())
+        x, y = pos.x(), self.central_widget.canvas.height() - pos.y()
+        self._update_intensity_label(x, y)
+
+    def _update_intensity_label(self, x, y):
+        x, y = self.client.axes.transData.inverted().transform([x, y])
+        value = self.client.point_details(x, y)['value']
+        lbl = '' if value is None else "data: %s" % value
+        self.label_widget.setText(lbl)
+
+        fm = self.label_widget.fontMetrics()
+        w, h = fm.width(lbl), fm.height()
+        g = QRect(20, self.central_widget.geometry().height() - h, w, h)
+        self.label_widget.setGeometry(g)

@@ -4,7 +4,7 @@ from ..external.qt.QtCore import Qt, Signal
 from ..external.qt.QtGui import (QMainWindow, QWidget,
                                  QHBoxLayout, QTabWidget,
                                  QComboBox, QFormLayout, QPushButton,
-                                 QAction)
+                                 QAction, QTextEdit)
 
 from ..clients.profile_viewer import ProfileViewer
 from .widgets.mpl_widget import MplWidget
@@ -67,7 +67,6 @@ class Extractor(object):
         assert data.size == nz
 
         data = (1. * data / finite).ravel()
-        print x.shape, data.shape, slc
         return x, data
 
     @staticmethod
@@ -199,7 +198,13 @@ class NavContext(SpectrumContext):
         pass
 
     def _setup_widget(self):
-        self.widget = QWidget()
+        self.widget = QTextEdit()
+        self.widget.setHtml("To <b> slide </b> through the cube, "
+                            "drag the handle or double-click<br><br><br>"
+                            "To make a <b> new profile </b>, "
+                            "click-drag a new box in the image, or drag "
+                            "a subset onto the plot to the left")
+        self.widget.setTextInteractionFlags(Qt.NoTextInteraction)
 
 
 class CollapseContext(SpectrumContext):
