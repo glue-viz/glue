@@ -31,6 +31,13 @@ class Grip(object):
         """
         raise NotImplementedError()
 
+    def dblclick(self, x, y):
+        """Respond to a double-click event
+
+        Default is to ignore
+        """
+        pass
+
     def select(self, x, y):
         """
         Process a selection event (click) at x,y
@@ -71,6 +78,9 @@ class ValueGrip(Grip):
 
     def _artist_factory(self):
         return ValueArtist(self)
+
+    def dblclick(self, x, y):
+        self.value = x
 
     def pick_dist(self, x, y):
         xy = [[x, y], [self.value, y]]
@@ -244,6 +254,7 @@ class ProfileViewer(object):
         self._artist = None
         self._resid_artist = None
         self._x = self._xatt = self._y = self._yatt = None
+        self._resid = None
         self.connect()
 
         self._fit_artist = None
@@ -253,6 +264,26 @@ class ProfileViewer(object):
 
     def set_xlabel(self, xlabel):
         self._xlabel = xlabel
+
+    def autoscale_ylim(self):
+        x, y = self._x, self._y
+        xlim = self.axes.get_xlim()
+        mask = (xlim[0] <= x) & (x <= xlim[1])
+        ymask = y[mask]
+        if ymask.size == 0:
+            return
+
+        ylim = np.nan_to_num([np.nanmin(ymask), np.nanmax(ymask)])
+        self.axes.set_ylim(ylim[0], ylim[1] + .05 * (ylim[1] - ylim[0]))
+
+        if self._resid is None:
+            return
+        assert self._resid.size == y.size
+
+        ymask = self._resid[mask]
+        ylim = np.nan_to_num([np.nanmin(ymask), np.nanmax(ymask)])
+        diff = .05 * (ylim[1] - ylim[0])
+        self.resid_axes.set_ylim(ylim[0] - diff, ylim[1] + diff)
 
     def _relayout(self):
         if self._resid_artist is not None:
@@ -327,6 +358,11 @@ class ProfileViewer(object):
         if not event.inaxes:
             return
 
+        if event.dblclick:
+            if self.active_grip is not None:
+                self.active_grip.dblclick(event.xdata, event.ydata)
+            return
+
         if self.active_grip is not None and self.active_grip.enabled:
             self.active_grip.select(event.xdata, event.ydata)
 
@@ -386,7 +422,9 @@ class ProfileViewer(object):
                                            scalex=False, scaley=False)
 
         resid = self._y - y
+        self._resid = resid
         self._resid_artist, = self.resid_axes.plot(x, resid, 'k')
+        self.autoscale_ylim()
         self._relayout()
 
     def new_value_grip(self, callback=None):

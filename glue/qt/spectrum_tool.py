@@ -150,22 +150,10 @@ class NavContext(SpectrumContext):
         add_callback(self.grip, 'value', _set_client_from_grip)
 
     def _connect(self):
-        self._setup_double_click_gripr()
+        pass
 
     def _setup_widget(self):
         self.widget = QWidget()
-
-    def _setup_double_click_gripr(self):
-
-        def _check_recenter(event):
-            if not self.grip.enabled:
-                return
-
-            if event.dblclick:
-                self.grip.value = event.xdata
-
-        self.canvas.mpl_connect('button_press_event',
-                                _check_recenter)
 
 
 class CollapseContext(SpectrumContext):
@@ -296,6 +284,7 @@ class SpectrumTool(object):
         tabs.addTab(self._contexts[1].widget, 'Fit')
         tabs.addTab(self._contexts[2].widget, 'Collapse')
         self._tabs = tabs
+        self._tabs.setVisible(False)
         l.addWidget(tabs)
         l.setStretchFactor(tabs, 0)
 
@@ -331,8 +320,16 @@ class SpectrumTool(object):
         tb.mode_activated.connect(self.profile.disconnect)
         tb.mode_deactivated.connect(self.profile.connect)
 
+        self._menu_toggle_action = QAction("Options", tb)
+        self._menu_toggle_action.setCheckable(True)
+        self._menu_toggle_action.toggled.connect(self._toggle_menu)
+
+        tb.addAction(self._menu_toggle_action)
         self.widget.addToolBar(tb)
         return tb
+
+    def _toggle_menu(self, active):
+        self._tabs.setVisible(active)
 
     def _check_invalidate(self, slc_old, slc_new):
         """
@@ -396,11 +393,7 @@ class SpectrumTool(object):
             self.axes.set_xlim(np.nanmin(x), np.nanmax(x))
 
         # relim y range to data within the view window
-        mask = (self.axes.get_xlim()[0] <= x) & (x <= self.axes.get_xlim()[1])
-        ymask = y[mask]
-        if ymask.size > 0:
-            ylim = np.nan_to_num([np.nanmin(ymask), np.nanmax(ymask)])
-            self.axes.set_ylim(ylim[0], ylim[1] + .05 * (ylim[1] - ylim[0]))
+        self.profile.autoscale_ylim()
 
         if self.axes.get_xlim() != xlim:
             self._recenter_grips()

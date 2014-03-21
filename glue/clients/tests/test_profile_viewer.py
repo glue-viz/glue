@@ -8,7 +8,7 @@ from ..profile_viewer import ProfileViewer
 from .util import renderless_figure
 
 FIG = renderless_figure()
-Event = namedtuple('Event', 'xdata ydata inaxes button')
+Event = namedtuple('Event', 'xdata ydata inaxes button dblclick')
 
 
 class TestProfileViewer(object):
@@ -120,20 +120,27 @@ class TestProfileViewer(object):
 
         assert h.range == (1, 1.5)
 
+    def test_dblclick_sets_value(self):
+        h = self.viewer.new_value_grip()
+        h.value = 1
+
+        self._click(1.5, double=True)
+        assert h.value == 1.5
+
     def _click_range_center(self, grip):
         x, y = sum(grip.range) / 2, 0
         self._click(x, y)
 
-    def _click(self, x, y=0):
-        e = Event(xdata=x, ydata=y, inaxes=True, button=1)
+    def _click(self, x, y=0, double=False):
+        e = Event(xdata=x, ydata=y, inaxes=True, button=1, dblclick=double)
         self.viewer._on_down(e)
 
     def _drag(self, x, y=0):
-        e = Event(xdata=x, ydata=y, inaxes=True, button=1)
+        e = Event(xdata=x, ydata=y, inaxes=True, button=1, dblclick=False)
         self.viewer._on_move(e)
 
     def _release(self):
-        e = Event(xdata=0, ydata=0, inaxes=True, button=1)
+        e = Event(xdata=0, ydata=0, inaxes=True, button=1, dblclick=False)
         self.viewer._on_up(e)
 
     def test_fit(self):
