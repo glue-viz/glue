@@ -1,6 +1,6 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 
-from ....core import Hub, Data, DataCollection
+from ....core import Data, DataCollection
 from ..histogram_widget import HistogramWidget
 from ..scatter_widget import ScatterWidget
 from ..image_widget import ImageWidget
@@ -9,7 +9,7 @@ from ...glue_application import GlueApplication
 from . import simple_session
 
 import pytest
-from mock import MagicMock, patch
+from mock import MagicMock
 
 ALL_WIDGETS = [HistogramWidget, ScatterWidget, ImageWidget]
 
@@ -24,7 +24,6 @@ def test_unregister_on_close(widget):
     unreg = MagicMock()
     session = simple_session()
     hub = session.hub
-    collect = session.data_collection
 
     w = widget(session)
     w.unregister = unreg
@@ -44,7 +43,10 @@ def test_single_draw_call_on_create(widget):
         draw = MplCanvas.draw
         MplCanvas.draw = MagicMock()
 
-        w = app.new_data_viewer(widget, data=d)
-        assert MplCanvas.draw.call_count == 1
+        app.new_data_viewer(widget, data=d)
+
+        # each Canvas instance gives at most 1 draw call
+        selfs = [c[0][0] for c in MplCanvas.draw.call_arg_list]
+        assert len(set(selfs)) == len(selfs)
     finally:
         MplCanvas.draw = draw

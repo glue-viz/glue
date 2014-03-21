@@ -346,9 +346,9 @@ class RGBImageLayerArtist(ImageLayerArtist):
             self.gnorm = self.gnorm or self._default_norm(g)
             self.bnorm = self.bnorm or self._default_norm(b)
             if v is views[0]:
-                self.rnorm.update_clip(self.layer, self.r)
-                self.gnorm.update_clip(self.layer, self.g)
-                self.bnorm.update_clip(self.layer, self.b)
+                self.rnorm.update_clip(small_view(self.layer, self.r))
+                self.gnorm.update_clip(small_view(self.layer, self.g))
+                self.bnorm.update_clip(small_view(self.layer, self.b))
 
             image = np.dstack((self.rnorm(r),
                                self.gnorm(g),
