@@ -266,7 +266,6 @@ class ProfileViewer(object):
             self.resid_axes.set_visible(False)
             self.axes.set_position([0.1, .15, .88, .83])
             self.axes.set_xlabel(self._xlabel)
-            print self._xlabel
             [t.set_visible(True) for t in self.axes.get_xticklabels()]
 
     def set_profile(self, x, y, xatt=None, yatt=None, **kwargs):

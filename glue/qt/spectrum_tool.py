@@ -180,8 +180,12 @@ class CollapseContext(SpectrumContext):
 
         combo = QComboBox()
         combo.addItem("Mean", userData=Aggregate.mean)
+        combo.addItem("Median", userData=Aggregate.median)
         combo.addItem("Max", userData=Aggregate.max)
         combo.addItem("Centroid", userData=Aggregate.mom1)
+        combo.addItem("Linewidth", userData=Aggregate.mom2)
+        combo.addItem("Coordinate of maximum", userData=Aggregate.argmax)
+        combo.addItem("Coordinate of minimum", userData=Aggregate.argmin)
 
         run = QPushButton("Collapse")
         self._run = run
