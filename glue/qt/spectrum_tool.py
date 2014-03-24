@@ -4,7 +4,10 @@ from ..external.qt.QtCore import Qt, Signal
 from ..external.qt.QtGui import (QMainWindow, QWidget,
                                  QHBoxLayout, QTabWidget,
                                  QComboBox, QFormLayout, QPushButton,
-                                 QAction, QTextEdit)
+                                 QAction, QTextEdit, QFont, QDialog,
+                                 QSpinBox, QDialogButtonBox, QLineEdit,
+                                 QDoubleValidator, QCheckBox, QGridLayout,
+                                 QLabel)
 
 from ..clients.profile_viewer import ProfileViewer
 from .widgets.mpl_widget import MplWidget
@@ -16,9 +19,10 @@ from ..core.exceptions import IncompatibleAttribute
 from .glue_toolbar import GlueToolbar
 from .qtutil import load_ui, nonpartial
 from .widget_properties import CurrentComboProperty
-from ..core.fitters import AstropyModelFitter
+from ..core.fitters import GaussianFitter, PolynomialFitter
 from ..core.aggregate import Aggregate
 from .mime import LAYERS_MIME_TYPE
+from .simpleforms import build_form_item
 
 
 class Extractor(object):
@@ -249,9 +253,140 @@ class CollapseContext(SpectrumContext):
         self.client.override_image(im)
 
 
+class ConstraintsWidget(QWidget):
+
+    def __init__(self, constraints, parent=None):
+        super(ConstraintsWidget, self).__init__(parent)
+        self.constraints = constraints
+
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+
+        self.layout.addWidget(QLabel("Estimate"), 0, 1)
+        self.layout.addWidget(QLabel("Fixed"), 0, 2)
+        self.layout.addWidget(QLabel("Bounded"), 0, 3)
+        self.layout.addWidget(QLabel("Lower Bound"), 0, 4)
+        self.layout.addWidget(QLabel("Upper Bound"), 0, 5)
+
+        self.rows = []
+        for k in sorted(self.constraints):
+            row = []
+            w = QLabel(k)
+            row.append(w)
+
+            v = QDoubleValidator()
+            e = QLineEdit()
+            e.setValidator(v)
+            e.setText(str(constraints[k]['value'] or ''))
+            row.append(e)
+
+            w = QCheckBox()
+            w.setChecked(constraints[k]['fixed'])
+            fix = w
+            row.append(w)
+
+            w = QCheckBox()
+            limits = constraints[k]['limits']
+            w.setChecked(limits is not None)
+            bound = w
+            row.append(w)
+
+            e = QLineEdit()
+            e.setValidator(v)
+            if limits is not None:
+                e.setText(str(limits[0]))
+            row.append(e)
+
+            e = QLineEdit()
+            e.setValidator(v)
+            if limits is not None:
+                e.setText(str(limits[1]))
+            row.append(e)
+
+            def unset(w):
+                def result(active):
+                    if active:
+                        w.setChecked(False)
+                return result
+
+            fix.toggled.connect(unset(bound))
+            bound.toggled.connect(unset(fix))
+
+            self.rows.append(row)
+
+        for i, row in enumerate(self.rows, 1):
+            for j, widget in enumerate(row):
+                self.layout.addWidget(widget, i, j)
+
+    def update_constraints(self, fitter):
+        l = self.layout
+        for row in self.rows:
+            name, value, fixed, limited, lo, hi = row
+            name = str(name.text())
+            value = float(value.text()) if value.text() else None
+            fixed = fixed.isChecked()
+            limited = limited.isChecked()
+            lo = lo.text()
+            hi = hi.text()
+            limited = limited and not ((not lo) or (not hi))
+            limits = None if not limited else [float(lo), float(hi)]
+            fitter.set_constraint(name, fixed=fixed, value=value,
+                                  limits=limits)
+
+
+class FitSettingsWidget(QDialog):
+
+    def __init__(self, fitter, parent=None):
+        super(FitSettingsWidget, self).__init__(parent)
+        self.fitter = fitter
+
+        self._build_form()
+        self._connect()
+        self.setModal(True)
+
+    def _build_form(self):
+        fitter = self.fitter
+
+        l = QFormLayout()
+        options = fitter.options
+        self.widgets = {}
+        self.forms = {}
+
+        for k in sorted(options):
+            item = build_form_item(fitter, k)
+            l.addRow(item.label, item.widget)
+            self.widgets[k] = item.widget
+            self.forms[k] = item  # need to prevent garbage collection
+
+        constraints = fitter.constraints
+        if constraints:
+            self.constraints = ConstraintsWidget(constraints)
+            l.addRow(self.constraints)
+        else:
+            self.constraints = None
+
+        self.okcancel = QDialogButtonBox(QDialogButtonBox.Ok |
+                                         QDialogButtonBox.Cancel)
+        l.addRow(self.okcancel)
+        self.setLayout(l)
+
+    def _connect(self):
+        self.okcancel.accepted.connect(self.accept)
+        self.okcancel.rejected.connect(self.reject)
+        self.accepted.connect(self.update_fitter_from_settings)
+
+    def update_fitter_from_settings(self):
+        for k, v in self.widgets.items():
+            setattr(self.fitter, k, v.value())
+        if self.constraints is not None:
+            self.constraints.update_constraints(self.fitter)
+
+
 class FitContext(SpectrumContext):
     error = CurrentComboProperty('ui.uncertainty_combo')
     fitter = CurrentComboProperty('ui.profile_combo')
+
+    fitter_classes = [GaussianFitter, PolynomialFitter]
 
     def _setup_grip(self):
         self.grip = self.main.profile.new_range_grip()
@@ -259,35 +394,35 @@ class FitContext(SpectrumContext):
     def _setup_widget(self):
         self.ui = load_ui('spectrum_fit_panel')
         self.ui.uncertainty_combo.hide()
-        self.ui.profile_combo.hide()
         self.ui.uncertainty_label.hide()
-        self.ui.profile_label.hide()
+        font = QFont("Courier")
+        font.setStyleHint(font.Monospace)
+        self.ui.results_box.document().setDefaultFont(font)
         self.widget = self.ui
 
-    @property
-    def fitter(self):
-        x, y = self.main.profile.profile_data(xlim=self.grip.range)
-        amp = y.max()
-        y = y / y.sum()
+        for fitter in self.fitter_classes:
+            self.ui.profile_combo.addItem(fitter.label,
+                                          userData=fitter())
 
-        mean = (x * y).sum()
-        stddev = np.sqrt((y * (x - mean) ** 2).sum())
-        return AstropyModelFitter.gaussian_fitter(amplitude=amp,
-                                                  mean=mean,
-                                                  stddev=stddev)
+    def _edit_model_options(self):
+
+        d = FitSettingsWidget(self.fitter)
+        d.exec_()
 
     def _connect(self):
         self.ui.fit_button.clicked.connect(nonpartial(self.fit))
+        self.ui.settings_button.clicked.connect(
+            nonpartial(self._edit_model_options))
 
     def fit(self):
         xlim = self.grip.range
         fitter = self.fitter
-        fit = self.main.profile.fit(fitter, xlim=xlim)
-        self._report_fit(fit)
+        result = self.main.profile.fit(fitter, xlim=xlim)
+        self._report_fit(fitter.summarize(*result))
         self.canvas.draw()
 
-    def _report_fit(self, fit):
-        self.ui.results_box.document().setPlainText(str(fit))
+    def _report_fit(self, report):
+        self.ui.results_box.document().setPlainText(report)
 
 
 class SpectrumMainWindow(QMainWindow):

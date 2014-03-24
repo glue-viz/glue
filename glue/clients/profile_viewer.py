@@ -257,7 +257,7 @@ class ProfileViewer(object):
         self._resid = None
         self.connect()
 
-        self._fit_artist = None
+        self._fit_artists = []
         self.active_grip = None  # which grip should receive events?
         self.grips = []
         self._xlabel = ''
@@ -328,6 +328,8 @@ class ProfileViewer(object):
         if self._artist is not None:
             self._artist.remove()
 
+        kwargs.setdefault('drawstyle', 'steps-mid')
+
         self._artist = self.axes.plot(x, y, **kwargs)[0]
         self._relayout()
         self._redraw()
@@ -335,9 +337,9 @@ class ProfileViewer(object):
         return self._artist
 
     def _clear_fit(self):
-        if self._fit_artist is not None:
-            self._fit_artist.remove()
-            self._fit_artist = None
+        for a in self._fit_artists:
+            a.remove()
+        self._fit_artists = []
         if self._resid_artist is not None:
             self._resid_artist.remove()
             self._resid_artist = None
@@ -401,26 +403,22 @@ class ProfileViewer(object):
     def fit(self, fitter, xlim=None, plot=True):
         try:
             x, y = self.profile_data(xlim)
+            dy = None
         except ValueError:
             raise ValueError("Must set profile before fitting")
 
-        try:
-            result = fitter.fit(x, y)
-        except Exception as e:
-            return "Failed fit: %s" % e
+        result = fitter.build_and_fit(x, y)
 
         if plot:
-            self._plot_fit(fitter)
-        return result
+            self._plot_fit(fitter, result)
 
-    def _plot_fit(self, fitter):
+        return result, x, y, dy
+
+    def _plot_fit(self, fitter, fit_result):
         self._clear_fit()
         x = self._x
-        y = fitter.predict(x)
-        self._fit_artist, = self.axes.plot(x, y, '#4daf4a',
-                                           lw=3, alpha=0.8,
-                                           scalex=False, scaley=False)
-
+        y = fitter.predict(fit_result, x)
+        self._fit_artists = fitter.plot(fit_result, self.axes, x)
         resid = self._y - y
         self._resid = resid
         self._resid_artist, = self.resid_axes.plot(x, resid, 'k')
@@ -491,33 +489,3 @@ class ProfileViewer(object):
 
         if dist < PICK_THRESH:
             return grip
-
-
-def main():
-    from glue.qt.widgets.mpl_widget import MplWidget
-    from glue.external.qt.QtGui import QApplication
-
-    w = MplWidget()
-    ax = w.canvas.fig.add_subplot(111)
-    pv = ProfileViewer(ax)
-
-    x = np.linspace(0, 10, 1000)
-    y = np.exp(-(x - 5) ** 2) + np.random.normal(0, 0.03, 1000)
-    pv.set_profile(x, y, c='k')
-
-    grip = pv.new_range_grip()
-    RangeArtist(grip)
-
-    def fit(range):
-        from glue.core.fitters import AstropyModelFitter
-        fitter = AstropyModelFitter.gaussian_fitter()
-        pv.fit(fitter, xlim=range, plot=True)
-
-    add_callback(grip, 'range', fit)
-
-    w.show()
-    w.raise_()
-    QApplication.instance().exec_()
-
-if __name__ == "__main__":
-    main()
