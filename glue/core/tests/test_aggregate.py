@@ -8,7 +8,7 @@ from .. import Data
 class TestFunctions(object):
 
     def setup_method(self, method):
-        self.d = Data(a=np.random.random((3, 3, 3)))
+        self.d = Data(a=np.random.random((3, 3, 3)) - 0.5)
         self.agg = Aggregate(self.d, 'a', 0, (0, 'y', 'x'), (0, 3))
 
     def test_max(self):
@@ -38,7 +38,7 @@ class TestFunctions(object):
 
     def test_mom1(self):
         actual = self.agg.mom1()
-        a = self.d['a']
+        a = np.maximum(self.d['a'], 0)
         z = self.d[self.d.get_world_component_id(0)]
         expected = (a * z).sum(axis=0) / a.sum(axis=0)
         np.testing.assert_array_equal(expected, actual)
@@ -46,7 +46,9 @@ class TestFunctions(object):
     def test_mom2(self):
         # this is a different implementation, as a sanity check
         actual = self.agg.mom2()
-        a = self.d['a']
+
+        # negative values clipped at 0 for weight calculation
+        a = np.maximum(self.d['a'], 0)
         z = self.d[self.d.get_world_component_id(0)]
         a = a / a.sum(axis=0)
         mom1 = self.agg.mom1()

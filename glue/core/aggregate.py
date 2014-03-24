@@ -114,8 +114,10 @@ class Aggregate(object):
         # build up slice-by-slice, to avoid big temporary cubes
         loop = self._iter_slice_index()
         val, loc = next(loop)
+        val = np.maximum(val, 0)
         w, result = val, loc * val
         for val, loc in loop:
+            val = np.maximum(val, 0)
             result += val * loc
             w += val
         return self._finalize(result / w)
@@ -123,8 +125,10 @@ class Aggregate(object):
     def mom2(self):
         loop = self._iter_slice_index()
         val, loc = next(loop)
+        val = np.maximum(val, 0)
         w, x, x2 = val, val * loc, val * loc * loc
         for val, loc in loop:
+            val = np.maximum(val, 0)
             w += val
             x += loc * val
             x2 += loc ** 2 * val
