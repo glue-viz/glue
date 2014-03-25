@@ -1,0 +1,116 @@
+"""
+This module provides descriptor classes for describing basic input fields.
+
+These descriptors are added to classes (e.g., in the
+:module:`~glue.core.fitters` module) to describe user-tweakable settings.
+Other code knows how to introspect objects using :class:`Option` descriptors
+to build simple GUI forms to edit each setting
+"""
+
+
+class Option(object):
+
+    def __init__(self, default, label):
+        self.label = label
+        self.default = default
+        self.name = "__%s_%i" % (type(self), id(self))
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+        return getattr(instance, self.name, self.default)
+
+    def __set__(self, instance, value):
+        value = self._validate(value)
+        setattr(instance, self.name, value)
+
+    def _validate(self, value):
+        return value
+
+
+class IntOption(Option):
+
+    def __init__(self, min=0, max=10, default=1, label="Integer"):
+        """
+        An integer-valued option
+
+        :param min: The minimum valid value
+        :type min: integer
+        :param max: The maximum valid value
+        :type max: integer
+        :param default: The default value
+        :type default: integer
+        :param label: A short label for this option
+        :type label: str
+        """
+        super(IntOption, self).__init__(default, label)
+
+        self.min = min
+        self.max = max
+
+    def _validate(self, value):
+
+        try:
+            if value != int(value):
+                raise ValueError()
+            value = int(value)
+        except ValueError:
+            raise ValueError("%s must be an integer" % self.label)
+
+        if value < self.min:
+            raise ValueError("%s must be >= %i" % (self.label, self.min))
+
+        if value > self.max:
+            raise ValueError("%s must be <= %i" % (self.label, self.max))
+
+        return value
+
+
+class FloatOption(Option):
+
+    def __init__(self, min=0, max=10, default=1, label="Float"):
+        """
+        An floating-point option
+
+        :param min: The minimum valid value
+        :type min: float
+        :param max: The maximum valid value
+        :type max: float
+        :param default: The default value
+        :type default: float
+        :param label: A short label for this option
+        :type label: str
+        """
+        super(FloatOption, self).__init__(default, label)
+        self.min = min
+        self.max = max
+
+    def _validate(self, value):
+        value = float(value)
+
+        if value < self.min or value > self.max:
+            raise ValueError("%s must be between %e and %e" % (self.label,
+                             self.min, self.max))
+        return value
+
+
+class BoolOption(Option):
+
+    def __init__(self, label="Bool", default=False):
+        """
+        A boolean-valued option
+
+        :param default: The default True/False value
+        :type default: bool
+
+        :param label: A short label for this option
+        :type label: str
+        """
+        super(BoolOption, self).__init__(default, label)
+
+    def _validate(self, value):
+        if value not in [True, False]:
+            raise ValueError(
+                "%s must be True or False: %s" % (self.label, value))
+
+        return value
