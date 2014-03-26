@@ -231,6 +231,70 @@ class AstropyFitter1D(BaseFitter1D):
         pass
 
 
+def _gaussian_parameter_estimates(x, y, dy):
+
+    y = np.maximum(y / y.sum(), 0)
+    mean = (x * y).sum()
+    stddev = np.sqrt((y * (x - mean) ** 2).sum())
+    amplitude = np.percentile(y, 95)
+    return dict(mean=mean, stddev=stddev, amplitude=amplitude)
+
+
+class BasicGaussianFitter(BaseFitter1D):
+
+    """
+    Fallback Gaussian fitter, for astropy < 0.3
+
+    If astropy.modeling exists, this class is replaced by
+    SimpleAstropyGaussianFitter
+    """
+    label = "Gaussian"
+
+    def _errorfunc(self, params, x, y, dy):
+        yp = self.eval(x, *params)
+        result = (yp - y)
+        if dy is not None:
+            result /= dy
+        return result
+
+    @staticmethod
+    def eval(x, amplitude, mean, stddev):
+        return np.exp(-(x - mean) ** 2 / (2 * stddev ** 2)) * amplitude
+
+    @staticmethod
+    def fit_deriv(x, amplitude, mean, stddev):
+        """
+        Gaussian1D model function derivatives.
+        """
+
+        d_amplitude = np.exp(-0.5 / stddev ** 2 * (x - mean) ** 2)
+        d_mean = amplitude * d_amplitude * (x - mean) / stddev ** 2
+        d_stddev = amplitude * d_amplitude * (x - mean) ** 2 / stddev ** 3
+        return [d_amplitude, d_mean, d_stddev]
+
+    def fit(self, x, y, dy, constraints):
+        from scipy import optimize
+        init_values = _gaussian_parameter_estimates(x, y, dy)
+        init_values = [init_values[p] for p in ['amplitude', 'mean', 'stddev']]
+        farg = (x, y, dy)
+        dfunc = None
+        fitparams, status, dinfo, mess, ierr = optimize.leastsq(
+            self._errorfunc, init_values, args=farg, Dfun=dfunc,
+            full_output=True)
+        return fitparams
+
+    def predict(self, fit_result, x):
+        return self.eval(x, *fit_result)
+
+    def summarize(self, fit_result, x, y, dy=None):
+        return ("amplitude = %e\n"
+                "mean      = %e\n"
+                "stddev    = %e" % tuple(fit_result))
+
+
+GaussianFitter = BasicGaussianFitter
+
+
 try:
     from astropy.modeling import models, fitting
 
@@ -239,14 +303,10 @@ try:
         fitting_cls = fitting.NonLinearLSQFitter
         label = "Gaussian"
 
-        def _parameter_guesses(self, x, y, dy):
-            y = np.maximum(y / y.sum(), 0)
-            mean = (x * y).sum()
-            stddev = np.sqrt((y * (x - mean) ** 2).sum())
-            amplitude = np.percentile(y, 95)
-            return dict(mean=mean, stddev=stddev, amplitude=amplitude)
+        _parameter_guesses = staticmethod(_gaussian_parameter_estimates)
 
     GaussianFitter = SimpleAstropyGaussianFitter
+
 
 except ImportError:
     pass
@@ -273,3 +333,5 @@ def _report_fitter(fitter):
     if "nfev" in fitter.fit_info:
         return "Converged in %i iterations" % fitter.fit_info['nfev']
     return 'Converged'
+
+__FITTERS__ = [PolynomialFitter, GaussianFitter]

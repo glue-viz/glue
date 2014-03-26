@@ -19,10 +19,10 @@ from ..core.exceptions import IncompatibleAttribute
 from .glue_toolbar import GlueToolbar
 from .qtutil import load_ui, nonpartial
 from .widget_properties import CurrentComboProperty
-from ..core.fitters import GaussianFitter, PolynomialFitter
 from ..core.aggregate import Aggregate
 from .mime import LAYERS_MIME_TYPE
 from .simpleforms import build_form_item
+from ..config import fitters
 
 
 class Extractor(object):
@@ -386,7 +386,7 @@ class FitContext(SpectrumContext):
     error = CurrentComboProperty('ui.uncertainty_combo')
     fitter = CurrentComboProperty('ui.profile_combo')
 
-    fitter_classes = [GaussianFitter, PolynomialFitter]
+    fitter_classes = list(fitters)
 
     def _setup_grip(self):
         self.grip = self.main.profile.new_range_grip()

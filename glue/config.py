@@ -274,6 +274,20 @@ class LinkHelperRegistry(Registry):
         return adder
 
 
+class ProfileFitterRegistry(Registry):
+    item = namedtuple('ProfileFitter', 'cls')
+
+    def add(self, cls):
+        """
+        Add colormap *cmap* with label *label*.
+        """
+        self.members.append(cls)
+
+    def default_members(self):
+        from .core.fitters import __FITTERS__
+        return list(__FITTERS__)
+
+
 qt_client = QtClientRegistry()
 data_factory = DataFactoryRegistry()
 link_function = LinkFunctionRegistry()
@@ -281,6 +295,7 @@ link_helper = LinkHelperRegistry()
 colormaps = ColormapRegistry()
 exporters = ExporterRegistry()
 settings = SettingRegistry()
+fitters = ProfileFitterRegistry()
 
 
 def load_configuration(search_path=None):

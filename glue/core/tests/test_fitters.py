@@ -4,7 +4,8 @@ from astropy.modeling.models import Gaussian1D
 from astropy.modeling.fitting import NonLinearLSQFitter
 
 from ..fitters import (SimpleAstropyGaussianFitter,
-                       PolynomialFitter, IntOption)
+                       PolynomialFitter, IntOption,
+                       BasicGaussianFitter)
 
 
 class TestAstropyFitter(object):
@@ -161,3 +162,18 @@ class TestSetConstraints(object):
             'mean': dict(value=2, fixed=False, limits=[1, 2]),
             'stddev': dict(value=3, fixed=False, limits=None)
         }
+
+
+class TestBasicGaussianFitter(object):
+
+    def test(self):
+
+        f1 = SimpleAstropyGaussianFitter()
+        f2 = BasicGaussianFitter()
+
+        x = np.linspace(-10, 10)
+        y = np.exp(-x ** 2)
+        r1 = f1.build_and_fit(x, y)
+        r2 = f2.build_and_fit(x, y)
+        np.testing.assert_array_almost_equal(f1.predict(r1, [1, 2, 3]),
+                                             f2.predict(r2, [1, 2, 3]))
