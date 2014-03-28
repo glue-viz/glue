@@ -1,3 +1,5 @@
+import traceback
+
 import numpy as np
 
 from ..external.qt.QtCore import Qt, Signal
@@ -5,7 +7,7 @@ from ..external.qt.QtGui import (QMainWindow, QWidget,
                                  QHBoxLayout, QTabWidget,
                                  QComboBox, QFormLayout, QPushButton,
                                  QAction, QTextEdit, QFont, QDialog,
-                                 QSpinBox, QDialogButtonBox, QLineEdit,
+                                 QDialogButtonBox, QLineEdit,
                                  QDoubleValidator, QCheckBox, QGridLayout,
                                  QLabel)
 
@@ -17,7 +19,7 @@ from ..core.util import Pointer
 from ..core import Subset
 from ..core.exceptions import IncompatibleAttribute
 from .glue_toolbar import GlueToolbar
-from .qtutil import load_ui, nonpartial
+from .qtutil import load_ui, nonpartial, Worker
 from .widget_properties import CurrentComboProperty
 from ..core.aggregate import Aggregate
 from .mime import LAYERS_MIME_TYPE
@@ -319,7 +321,6 @@ class ConstraintsWidget(QWidget):
                 self.layout.addWidget(widget, i, j)
 
     def update_constraints(self, fitter):
-        l = self.layout
         for row in self.rows:
             name, value, fixed, limited, lo, hi = row
             name = str(name.text())
@@ -396,6 +397,7 @@ class FitContext(SpectrumContext):
         font = QFont("Courier")
         font.setStyleHint(font.Monospace)
         self.ui.results_box.document().setDefaultFont(font)
+        self.ui.results_box.setLineWrapMode(self.ui.results_box.NoWrap)
         self.widget = self.ui
 
         for fitter in list(fit_plugin):
@@ -413,11 +415,39 @@ class FitContext(SpectrumContext):
             nonpartial(self._edit_model_options))
 
     def fit(self):
+        """
+        Fit a model to the data
+
+        The fitting happens on a dedicated thread, to keep the UI
+        responsive
+        """
         xlim = self.grip.range
         fitter = self.fitter
-        result = self.main.profile.fit(fitter, xlim=xlim)
-        self._report_fit(fitter.summarize(*result))
-        self.canvas.draw()
+
+        def on_success(result):
+            fit_result, _, _, _ = result
+            self._report_fit(fitter.summarize(*result))
+            self.main.profile.plot_fit(fitter, fit_result)
+
+        def on_fail(exc_info):
+            exc = '\n'.join(traceback.format_exception(*exc_info))
+            self._report_fit("Error during fitting:\n%s" % exc)
+
+        def on_done():
+            self.ui.fit_button.setText("Fit")
+            self.ui.fit_button.setEnabled(True)
+            self.canvas.draw()
+
+        self.ui.fit_button.setText("Running...")
+        self.ui.fit_button.setEnabled(False)
+
+        w = Worker(self.main.profile.fit, fitter, xlim=xlim)
+        w.result.connect(on_success)
+        w.error.connect(on_fail)
+        w.finished.connect(on_done)
+
+        self._fit_worker = w  # hold onto a reference
+        w.start()
 
     def _report_fit(self, report):
         self.ui.results_box.document().setPlainText(report)

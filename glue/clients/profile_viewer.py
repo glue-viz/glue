@@ -400,7 +400,7 @@ class ProfileViewer(object):
 
         return x, y
 
-    def fit(self, fitter, xlim=None, plot=True):
+    def fit(self, fitter, xlim=None):
         try:
             x, y = self.profile_data(xlim)
             dy = None
@@ -409,12 +409,9 @@ class ProfileViewer(object):
 
         result = fitter.build_and_fit(x, y)
 
-        if plot:
-            self._plot_fit(fitter, result)
-
         return result, x, y, dy
 
-    def _plot_fit(self, fitter, fit_result):
+    def plot_fit(self, fitter, fit_result):
         self._clear_fit()
         x = self._x
         y = fitter.predict(fit_result, x)

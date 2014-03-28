@@ -47,8 +47,8 @@ class BaseFitter1D(object):
         :param axes: The Matplotlib axes to add the fit to
         :param x: The values of X at which to visualize the model
 
-        :returns: A list of matplotlib artists. This is important,
-        and fit plots will not be properly cleared if this isn't provided
+        :returns: A list of matplotlib artists. This is important: plots
+        will not be properly cleared if this isn't provided
         """
         y = self.predict(fit_result, x)
         result = axes.plot(x, y, '#4daf4a',
@@ -74,6 +74,7 @@ class BaseFitter1D(object):
 
         :param fit_result: The returh value from :meth:`fit`
         :param x: The x values passed to fit
+        :returns: A string
         """
         return str(fit_result)
 
@@ -188,7 +189,7 @@ class AstropyFitter1D(BaseFitter1D):
 
     In addition, they should override:
     - The label with a better label
-    - The _parameter_guesses method to generate initial guesses for
+    - The parameter_guesses method to generate initial guesses for
       model parameters
     """
 
@@ -226,7 +227,7 @@ class AstropyFitter1D(BaseFitter1D):
         params = dict((k, v['value']) for k, v in constraints.items())
 
         # update unset parameters with guesses from data
-        for k, v in self._parameter_guesses(x, y, dy).items():
+        for k, v in self.parameter_guesses(x, y, dy).items():
             if params[k] is not None or constraints[k]['fixed']:
                 continue
             params[k] = v
@@ -242,7 +243,7 @@ class AstropyFitter1D(BaseFitter1D):
                 param.min, param.max = constraint['limits']
         return m, f
 
-    def _parameter_guesses(self, x, y, dy):
+    def parameter_guesses(self, x, y, dy):
         """
         Provide initial guesses for each model parameter
 
@@ -333,7 +334,7 @@ try:
         fitting_cls = fitting.NonLinearLSQFitter
         label = "Gaussian"
 
-        _parameter_guesses = staticmethod(_gaussian_parameter_estimates)
+        parameter_guesses = staticmethod(_gaussian_parameter_estimates)
 
     GaussianFitter = SimpleAstropyGaussianFitter
 
