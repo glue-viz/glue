@@ -262,6 +262,9 @@ class ConstraintsWidget(QWidget):
         self.constraints = constraints
 
         self.layout = QGridLayout()
+        self.layout.setContentsMargins(2, 2, 2, 2)
+        self.layout.setSpacing(4)
+
         self.setLayout(self.layout)
 
         self.layout.addWidget(QLabel("Estimate"), 0, 1)
@@ -270,8 +273,10 @@ class ConstraintsWidget(QWidget):
         self.layout.addWidget(QLabel("Lower Bound"), 0, 4)
         self.layout.addWidget(QLabel("Upper Bound"), 0, 5)
 
-        self.rows = []
-        for k in sorted(self.constraints):
+        self._widgets = {}
+        names = sorted(list(self.constraints.keys()))
+
+        for k in names:
             row = []
             w = QLabel(k)
             row.append(w)
@@ -314,25 +319,28 @@ class ConstraintsWidget(QWidget):
             fix.toggled.connect(unset(bound))
             bound.toggled.connect(unset(fix))
 
-            self.rows.append(row)
+            self._widgets[k] = row
 
-        for i, row in enumerate(self.rows, 1):
-            for j, widget in enumerate(row):
+        for i, row in enumerate(names, 1):
+            for j, widget in enumerate(self._widgets[row]):
                 self.layout.addWidget(widget, i, j)
 
+    def settings(self, name):
+        row = self._widgets[name]
+        name, value, fixed, limited, lo, hi = row
+        value = float(value.text()) if value.text() else None
+        fixed = fixed.isChecked()
+        limited = limited.isChecked()
+        lo = lo.text()
+        hi = hi.text()
+        limited = limited and not ((not lo) or (not hi))
+        limits = None if not limited else [float(lo), float(hi)]
+        return dict(value=value, fixed=fixed, limits=limits)
+
     def update_constraints(self, fitter):
-        for row in self.rows:
-            name, value, fixed, limited, lo, hi = row
-            name = str(name.text())
-            value = float(value.text()) if value.text() else None
-            fixed = fixed.isChecked()
-            limited = limited.isChecked()
-            lo = lo.text()
-            hi = hi.text()
-            limited = limited and not ((not lo) or (not hi))
-            limits = None if not limited else [float(lo), float(hi)]
-            fitter.set_constraint(name, fixed=fixed, value=value,
-                                  limits=limits)
+        for name in self._widgets:
+            s = self.settings(name)
+            fitter.set_constraint(name, **s)
 
 
 class FitSettingsWidget(QDialog):
