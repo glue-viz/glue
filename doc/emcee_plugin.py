@@ -31,7 +31,6 @@ class EmceeGaussianFitter(BaseFitter1D):
     def fit(self, x, y, dy, constraints,
             walkers=50, burnin=500, steps=500):
         ndim = 3
-
         # initialize walker parameters
         amp = y.max()
         mean = (x * y).sum() / y.sum()

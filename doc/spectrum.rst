@@ -30,14 +30,14 @@ Cube Collapse
 Click on the options button of the spectrum window, and then select the
 **collapse** tab. This allows you to partially collapse the cube, and
 send the result back to the image viewer. The two-sided handle on the plot
-defines the slices to collapse over, which you can edit by draging the edges.
+defines the slices to collapse over, which you can edit by dragging the edges.
 
 
 Profile Fitting
 ^^^^^^^^^^^^^^^^
 By clicking on the fit tab, you can fit a model to the extracted spectrum.
 Again, the two sided handle on the plot defines the range of data to fit.
-Clicking the fit button will add a best-fit line to the plot. The dropdown
+Clicking the fit button will add a best-fit model to the plot. The dropdown
 lets you choose which model to fit to the data.
 
 Different models have different settings, which you can adjust by clicking
@@ -50,7 +50,7 @@ Custom fitting plugins
 
 The profile fitting tool is designed to be easily extended, so that
 you can plug in your own model fitting code worrying about GUI code.
-We will walk through 3 examples of custom fitting plugins,
+We will walk through several examples of custom fitting plugins,
 to demonstrate the various features of the plugin system.
 
 
@@ -65,8 +65,7 @@ Our first example is a simple linear model. Here's the code:
 Let's look at this line by line:
 
 Line 6 wraps a subclass of BaseFitter1D in the ``fit_plugin`` decorator.
-All plugins follow this basic structure, and this is how Glue discovers
-plugins.
+All plugins follow this basic structure.
 
 Line 8 gives this class a label, which is used in the GUI to label
 this model in the model selection dropdown.
@@ -98,9 +97,7 @@ This code is enough to let us fit lines to data:
 
 Polygon fitter, with Options
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Generalizing the fit/predict functions in the line fitter above to handle
-higher degree polynomials is trivial, since polyfit/polyeval both handle
-this case. We might want to make the degree of the fit a user-settable
+Generalizing the line fitter above to higher degree polynomials is trivial, since ``polyfit/polyval`` both handle this case. We might want to make the degree of the fit a user-settable
 parameter. We can do this by adding a UI :mod:`option <glue.core.simpleforms>`, and a few keywords to our class:
 
 .. literalinclude:: poly_fit_plugin.py
@@ -152,10 +149,10 @@ The :class:`~glue.core.fitters.AstropyFitter1D` base class can be subclassed to 
         fitting_cls = fitting.NonLinearLSQFitter
         label = "Gaussian"
 
-        def _parameter_guesses(self, x, y, dy):
+        def parameter_guesses(self, x, y, dy):
             return dict(amplitude=1, stddev=1, mean=1)
 
-The ``_parameter_guesses`` method is optional, and provides initial guesses
+The :meth:`~glue.core.fitters.AstropyFitter1D.parameter_guesses` method is optional, and provides initial guesses
 for the model parameters if they weren't set by the user.
 
 Custom Plotting
