@@ -41,7 +41,7 @@ class BaseFitter1D(object):
 
     def plot(self, fit_result, axes, x):
         """
-        Plot the result of a fit
+        Plot the result of a fit.
 
         :param fit_result: The output from fit
         :param axes: The Matplotlib axes to add the fit to
@@ -69,10 +69,26 @@ class BaseFitter1D(object):
         return dict((o, getattr(self, o)) for o in result)
 
     def summarize(self, fit_result, x, y, dy=None):
+        """
+        Return a textual summary of the fit.
+
+        :param fit_result: The returh value from :meth:`fit`
+        :param x: The x values passed to fit
+        """
         return str(fit_result)
 
     @property
     def constraints(self):
+        """
+        A dictionary of the constraints on each parameter in param_names.
+        Each value is a dictionary with 4 values:
+            - value:
+                The default value
+            - fixed:
+                True / False, indicating whether the parameter is fixed
+            - bounds:
+                [min, max] or None
+        """
         result = {}
         for p in self.param_names:
             result[p] = dict(value=None, fixed=False, limits=None)
@@ -81,7 +97,15 @@ class BaseFitter1D(object):
 
     def set_constraint(self, parameter_name, value=None,
                        fixed=None, limits=None):
+        """
+        Update a constraint.
 
+        :param parameter_name: name of the parameter to update
+        :type parameter_name: str
+        :param value: Set the default value(optional)
+        :param limits: Set the limits to[min, max](optional)
+        :param fixed: Set whether the parameter is fixed(optional)
+        """
         c = self._constraints.setdefault(parameter_name, {})
         if value is not None:
             c['value'] = value
@@ -91,6 +115,9 @@ class BaseFitter1D(object):
             c['limits'] = limits
 
     def build_and_fit(self, x, y, dy=None):
+        """
+        Method which builds the arguments to fit, and calls that method
+        """
         x = np.asarray(x).ravel()
         y = np.asarray(y).ravel()
         if dy is not None:
@@ -104,21 +131,25 @@ class BaseFitter1D(object):
         """
         Fit the model to data.
 
-        This must be ovverriden by a subclass
+        **This must be ovverriden by a subclass**
 
-        :param x: The X-values of the data
+        :param x: The X - values of the data
         :type x: numpy array
-        :param y: The Y-values of the data
-        :param y: numpy array
-        :param dy: The uncertainties (assumed to be 1sigma) on each datum
+        :param y: The Y - values of the data
+        :type y: numpy array
+        :param dy: The uncertainties(assumed to be 1sigma) on each datum
         :type dy: numpy array, or None
-        :param constraints: A dictionary of constraints on model
-        parameters. Each value is itself a dictionary, with 4 keys:
-            - value: The requested initial value for this parameter
-            - fixed: if True, this parameter should be held fixed
-            - limits: None, or [min, max], giving the allowed range
+        :param constraints: A dictionary of constraints on model parameters.
+        Each value is itself a dictionary, with 4 keys:
+            - value:
+                The requested initial value for this parameter
+            - fixed:
+                if True, this parameter should be held fixed
+            - limits:
+                None, or [min, max], giving the allowed range
                       for this parameter
-        **options: A dict of {option name: option value} for each
+        **options:
+            A dict of {option name: option value} for each
                    hyperparameter of this model
 
         :returns: An object representing the fit. This is
@@ -132,8 +163,7 @@ class BaseFitter1D(object):
         """
         Evaulate the model at a set of locations.
 
-        This must be overridden in a subclass.
-
+        **This must be overridden in a subclass.**
 
         :param fit_result: The result from the fit method
         :param x: Locations to evaluate model at
@@ -149,7 +179,7 @@ class AstropyFitter1D(BaseFitter1D):
 
     """
     A generic class for wrapping astropy model classes in
-    Glue fitters
+    Glue fitters.
 
     Subclasses must override:
 
@@ -306,7 +336,6 @@ try:
         _parameter_guesses = staticmethod(_gaussian_parameter_estimates)
 
     GaussianFitter = SimpleAstropyGaussianFitter
-
 
 except ImportError:
     pass

@@ -1,14 +1,19 @@
 """
-This module provides descriptor classes for describing basic input fields.
+The descriptors in this module are meant to be added to classes, to
+specify simple user-settable forms. These classes are used to automatically
+cponstruct GUIs, without having to write GUI code in the form class itself.
 
-These descriptors are added to classes (e.g., in the
-:module:`~glue.core.fitters` module) to describe user-tweakable settings.
-Other code knows how to introspect objects using :class:`Option` descriptors
-to build simple GUI forms to edit each setting
+The :mod:`~glue.core.fitters` module uses these objects, for example.
 """
 
 
 class Option(object):
+
+    """
+    Base class for other options
+
+    This shouldn't be used directly
+    """
 
     def __init__(self, default, label):
         self.label = label
