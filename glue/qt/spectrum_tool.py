@@ -22,7 +22,7 @@ from .widget_properties import CurrentComboProperty
 from ..core.aggregate import Aggregate
 from .mime import LAYERS_MIME_TYPE
 from .simpleforms import build_form_item
-from ..config import fitters
+from ..config import fit_plugin
 
 
 class Extractor(object):
@@ -386,8 +386,6 @@ class FitContext(SpectrumContext):
     error = CurrentComboProperty('ui.uncertainty_combo')
     fitter = CurrentComboProperty('ui.profile_combo')
 
-    fitter_classes = list(fitters)
-
     def _setup_grip(self):
         self.grip = self.main.profile.new_range_grip()
 
@@ -400,7 +398,7 @@ class FitContext(SpectrumContext):
         self.ui.results_box.document().setDefaultFont(font)
         self.widget = self.ui
 
-        for fitter in self.fitter_classes:
+        for fitter in list(fit_plugin):
             self.ui.profile_combo.addItem(fitter.label,
                                           userData=fitter())
 

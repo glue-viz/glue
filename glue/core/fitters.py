@@ -216,27 +216,27 @@ class AstropyFitter1D(BaseFitter1D):
         """
         Provide initial guesses for each model parameter
 
-        The base implementation does nothing, and should be overridden
+        **The base implementation does nothing, and should be overridden**
 
-        :param x: X-values of the data
-        :type x: numpy array
-        :param y: Y-values of the data
-        :type y: numpy array
-        :param dy: Uncertainties on Y (assumed to be 1 sigma)
+        :param x: X - values of the data
+        :type x:  numpy array
+        :param y: Y - values of the data
+        :type y:  numpy array
+        :param dy: ncertainties on Y(assumed to be 1 sigma)
         :type dy: numpy array
 
         :returns: A dict maping {parameter_name: value guess} for each
                   parameter
         """
-        pass
+        return {}
 
 
 def _gaussian_parameter_estimates(x, y, dy):
 
+    amplitude = np.percentile(y, 95)
     y = np.maximum(y / y.sum(), 0)
     mean = (x * y).sum()
     stddev = np.sqrt((y * (x - mean) ** 2).sum())
-    amplitude = np.percentile(y, 95)
     return dict(mean=mean, stddev=stddev, amplitude=amplitude)
 
 

@@ -295,7 +295,7 @@ link_helper = LinkHelperRegistry()
 colormaps = ColormapRegistry()
 exporters = ExporterRegistry()
 settings = SettingRegistry()
-fitters = ProfileFitterRegistry()
+fit_plugin = ProfileFitterRegistry()
 
 
 def load_configuration(search_path=None):
@@ -313,7 +313,9 @@ def load_configuration(search_path=None):
     result = imp.new_module('config')
 
     for config_file in search_order:
+        dir = os.path.dirname(config_file)
         try:
+            sys.path.append(dir)
             config = imp.load_source('config', config_file)
             result = config
         except IOError:
@@ -321,6 +323,8 @@ def load_configuration(search_path=None):
         except Exception as e:
             raise Exception("Error loading config file %s:\n%s" %
                             (config_file, e))
+        finally:
+            sys.path.remove(dir)
 
     return result
 
