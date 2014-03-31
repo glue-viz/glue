@@ -1,6 +1,7 @@
-========
-Glue API
-========
+===
+API
+===
+
 
 .. automodapi:: glue.core.data
 
@@ -13,3 +14,7 @@ Glue API
 .. automodapi:: glue.core.fitters
 
 .. automodapi:: glue.core.simpleforms
+
+.. automodapi:: glue.core.component_link
+
+.. automodapi:: glue.external.aplpy

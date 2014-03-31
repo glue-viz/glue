@@ -25,12 +25,11 @@ For more demos, check out the :ref:`videos <demo_videos>` page
 
    installation.rst
    getting_started.rst
-   tutorials.rst
-   coding_with_glue.rst
-   advanced.rst
-   videos.rst
-   api.rst
+   gui_guide.rst
+   python_guide.rst
+   developer_guide.rst
    faq.rst
+   videos.rst
 
 Indices and tables
 ==================

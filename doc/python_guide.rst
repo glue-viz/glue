@@ -1,5 +1,5 @@
-Coding with Glue
-----------------
+Python Guide
+------------
 
 Glue is designed with "data-hacking" workflows in mind. Because Glue
 is a python library for data interaction, it blurs the boundary between
