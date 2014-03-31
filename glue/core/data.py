@@ -185,28 +185,6 @@ class Component(object):
     def jitter(self, method=None):
         raise NotImplementedError
 
-    @property
-    def creation_info(self):
-        """A 4-tuple describing how this component was created
-
-        :rtype: (callable, tuple, dict, indexers)
-        A 4-tuple of (factory, args, kwargs, indexers),
-        which communicates that this component's data
-        can be created via
-
-        bundle = factory(*args, **kwargs)
-        for i in indexers:
-            bundle = bundle[i]
-        component.data == bundle
-        """
-        from .data_factories import load_numpy_str
-        from cStringIO import StringIO
-        f = StringIO()
-        np.save(f, self.data)
-        f.seek(0)
-        data = f.read().encode('base64')
-        return load_numpy_str, (data,), {}, []
-
 
 class DerivedComponent(Component):
 
