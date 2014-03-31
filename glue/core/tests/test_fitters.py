@@ -1,13 +1,23 @@
+import pytest
+
 from mock import MagicMock
 import numpy as np
-from astropy.modeling.models import Gaussian1D
-from astropy.modeling.fitting import NonLinearLSQFitter
 
-from ..fitters import (SimpleAstropyGaussianFitter,
-                       PolynomialFitter, IntOption,
+needs_modeling = pytest.mark.skipif(False, reason='')
+
+try:
+    from astropy.modeling.models import Gaussian1D
+    from astropy.modeling.fitting import NonLinearLSQFitter
+    from ..fitters import SimpleAstropyGaussianFitter
+except ImportError:
+    needs_modeling = pytest.mark.skipif(True,
+                                        reason='Requires astropy >= v0.3')
+
+from ..fitters import (PolynomialFitter, IntOption,
                        BasicGaussianFitter)
 
 
+@needs_modeling
 class TestAstropyFitter(object):
 
     def test_fit(self):
@@ -123,6 +133,7 @@ class TestOptions(object):
         assert p.fit.call_args[1]['degree'] == 4
 
 
+@needs_modeling
 class TestFitWrapper(object):
 
     def setup_method(self, method):
@@ -151,6 +162,7 @@ class TestFitWrapper(object):
         np.testing.assert_array_equal(y, self.y)
 
 
+@needs_modeling
 class TestSetConstraints(object):
 
     def test(self):
@@ -168,12 +180,12 @@ class TestBasicGaussianFitter(object):
 
     def test(self):
 
-        f1 = SimpleAstropyGaussianFitter()
-        f2 = BasicGaussianFitter()
+        f = BasicGaussianFitter()
 
         x = np.linspace(-10, 10)
         y = np.exp(-x ** 2)
-        r1 = f1.build_and_fit(x, y)
-        r2 = f2.build_and_fit(x, y)
-        np.testing.assert_array_almost_equal(f1.predict(r1, [1, 2, 3]),
-                                             f2.predict(r2, [1, 2, 3]))
+        r = f.build_and_fit(x, y)
+
+        expected = [3.67879441e-01, 1.83156389e-02, 1.23409804e-04]
+        np.testing.assert_array_almost_equal(f.predict(r, [1, 2, 3]),
+                                             expected)

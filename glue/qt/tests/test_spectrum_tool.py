@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 from mock import MagicMock
 
@@ -7,10 +8,16 @@ from ...core.roi import RectangularROI
 from ..widgets import ImageWidget
 
 from ..spectrum_tool import Extractor, ConstraintsWidget, FitSettingsWidget
-from ...core.fitters import PolynomialFitter, SimpleAstropyGaussianFitter
+from ...core.fitters import PolynomialFitter
+
+needs_modeling = lambda x: x
+try:
+    from ...core.fitters import SimpleAstropyGaussianFitter
+except ImportError:
+    needs_modeling = pytest.mark.skipif(True, reason='Needs astropy >= 0.3')
 
 
-class TestCoordinates(Coordinates):
+class MockCoordinates(Coordinates):
 
     def pixel2world(self, *args):
         return [a * 2 for a in args]
@@ -50,7 +57,7 @@ class Test3DExtractor(object):
 
     def setup_method(self, method):
         self.data = Data()
-        self.data.coords = TestCoordinates()
+        self.data.coords = MockCoordinates()
         self.data.add_component(np.random.random((3, 4, 5)), label='x')
         self.x = self.data['x']
 
@@ -118,7 +125,7 @@ class Test4DExtractor(object):
 
     def setup_method(self, method):
         self.data = Data()
-        self.data.coords = TestCoordinates()
+        self.data.coords = MockCoordinates()
         x, y, z, w = np.mgrid[:3, :4, :5, :4]
         self.data.add_component(1. * w, label='x')
 
@@ -167,6 +174,7 @@ class TestFitSettingsWidget(object):
         w.update_fitter_from_settings()
         assert f.degree == 5
 
+    @needs_modeling
     def test_set_constraints(self):
         f = SimpleAstropyGaussianFitter()
         w = FitSettingsWidget(f)

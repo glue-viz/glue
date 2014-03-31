@@ -237,7 +237,11 @@ class RangeArtist(object):
 def _build_axes(figure):
 
     # tight-layout clobbers manual positioning
-    figure.set_tight_layout(False)
+    try:
+        figure.set_tight_layout(False)
+    except AttributeError:  # old MPL
+        pass
+
     ax2 = figure.add_subplot(122)
     ax1 = figure.add_subplot(121, sharex=ax2)
 
