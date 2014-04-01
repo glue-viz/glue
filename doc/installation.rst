@@ -23,11 +23,11 @@ Continuum Analytics. Anaconda includes all of Glue's main dependencies.
  * Download and install the `appropriate version of Anaconda
    <http://continuum.io/downloads.html>`_
 
- * On the command line, install Glue using pip: ``pythonw -m pip install -e git+git://github.com/glue-viz/glue.git#egg=glue``
+ * On the command line, install Glue using pip: ``pythonw -m pip install git+git://github.com/glue-viz/glue.git#egg=glue``
 
  * On the command line, install any additional Glue dependencies by running ``glue-deps install``. For more information on ``glue-deps``, see :ref:`below <glue-deps>`
 
-The `Enthought Python Distribution <https://www.enthought.com/products/epd/>`_ also includes all non-trivial dependencies. The installation instructions are the same. You can download EPD .
+The `Enthought Python Distribution <https://www.enthought.com/products/epd/>`_ also includes all non-trivial dependencies. The installation instructions are the same.
 
 .. note :: Anaconda installs it's own version of Python
 
@@ -47,7 +47,7 @@ is the basic strategy:
 
  * Install `Qt 4 <http://qt-project.org/downloads>`_ and either `PyQt4 <http://www.riverbankcomputing.com/software/pyqt/download>`_ or `PySide <http://qt-project.org/wiki/Get-PySide>`_. If at all possible, use the binary installers; building PyQt4 or PySide from source is tricky (this is a euphemism).
 
- * Install Glue using pip: ``pip install -e git+git://github.com/glue-viz/glue.git#egg=glue``. Alternatively, ``git clone`` the repository and install via ``python setup.py install``
+ * Install Glue using pip: ``pip install git+git://github.com/glue-viz/glue.git#egg=glue``. Alternatively, ``git clone`` the repository and install via ``python setup.py install``
 
  * Install Glue's remaining dependencies by running ``glue-deps install``. For more information on these dependencies see :ref:`below <glue-deps>`.
 
@@ -80,8 +80,8 @@ Many dependencies can be reliably installed with ``apt``::
     sudo apt-get install python-pygments
 
 
-Mac Ports
-^^^^^^^^^
+MacPorts
+^^^^^^^^
 Many dependencies can be reliably installed with::
 
     sudo port install python27
