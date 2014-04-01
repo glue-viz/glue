@@ -55,34 +55,34 @@ any subsets you have defined).
 
 .. note::
 
-   Terminology reminder: In Glue, *Data* sets are collections of one
-   or more *components*. Components in a dataset are bascially arrays
-   of the same shape. For more information, see the :ref:`Data API
+   Terminology reminder: In Glue, :class:`~glue.core.data.Data` sets are collections of one or more :`~glue.core.data.Component` objects.
+   Components in a dataset are bascially arrays of the same shape. For more information, see the :ref:`Data API
    Tutorial <data_tutorial>`
 
 
-* ``qglue(xy=pandas_data)``
- constructs a dataset labeled ``xy``, with two components (``x`` and ``y``)
+* ``qglue(xy=pandas_data)``:
+   constructs a dataset labeled ``xy``, with two components (``x`` and ``y``)
 
-* ``qglue(uv=dict_data)``
+* ``qglue(uv=dict_data)``:
    construct a dataset labeled ``uv``, with two components (``u`` and ``v``)
 
-* ``qglue(xy=pandas_data, uv=dict_data)``
- constructs both of the previous two data sets.
+* ``qglue(xy=pandas_data, uv=dict_data)``:
+   constructs both of the previous two data sets.
 
-* ``qglue(rec=recarray_data, astro=astropy_table)``
- constructs two datasets: ``rec`` (components ``a`` and ``b``), and ``astro`` (components ``x`` and ``y``)
+* ``qglue(rec=recarray_data, astro=astropy_table)``:
+   constructs two datasets: ``rec`` (components ``a`` and ``b``), and
+   ``astro`` (components ``x`` and ``y``)
 
-* ``qglue(bad=bad_data)``
- doesn't work, because the two components ``x`` and ``u`` have
- different shapes.
+* ``qglue(bad=bad_data)``:
+   doesn't work, because the two components ``x`` and ``u`` have
+   different shapes.
 
 .. note:: Datasets cannot be given the label ``links``.
 
 Linking data with ``qglue``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The :ref:`Data Linking <linking>` tutorial discusses how Glue uses the
+The :ref:`Data Linking <component_link>` tutorial discusses how Glue uses the
 concept of links to compare different datasets. From the GUI, links
 are defined using the :ref:`Link Manager <getting_started_link>`. It is
 also possible to define some of these links with ``qglue``.
@@ -116,6 +116,7 @@ recorded in different units. The seonc link is a 1-way link that computes
 an the area of items in dataset 1, based on their width and height (there is
 no way to compute the width and height from the area measurements in dataset 2,
 so the reverse function is not provided). These links would enable the following interaction, for example:
+
  #. Overplot histograms of the mass distribution of both datasets
  #. Define a region in a plot of mass vs area for data 2, and apply that filter to dataset 1
 
@@ -130,9 +131,10 @@ Here's a simple script to load data and pass it to Glue:
 .. literalinclude:: w5.py
 
 Some remarks:
- * The ``load_data`` function constructs Glue Data objects from files. It uses the file extension as a hit for file type
- * Individual data objects are bundled inside a ``DataCollection``
- * The ``LinkSame`` function indicates that two attributes in different data sets descirbe the same quantity
+ * :func:`~glue.core.data_factories.load_data` constructs Glue Data objects from files. It uses the file extension as a hint for file type
+ * Individual data objects are bundled inside a
+   :class:`~glue.core.data_collection.DataCollection`
+ * The :class:`~glue.core.link_helpers.LinkSame` function indicates that two attributes in different data sets descirbe the same quantity
  * ``GlueApplication`` takes a ``DataCollection`` as input, and starts the GUI via ``start()``
 
 For more details on using Glue's data API, see the :ref:`Data Tutorial <data_tutorial>`

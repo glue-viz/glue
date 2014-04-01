@@ -136,11 +136,10 @@ class Subset(object):
         Convert the current subset to a mask.
 
         :param view: An optional view into the dataset (e.g. a slice)
-        If present, the mask will pertain to the view and not the
-        entire dataset.
+                     If present, the mask will pertain to the view and not the
+                     entire dataset.
 
         Returns:
-
            A boolean numpy array, the same shape as the data, that
            defines whether each element belongs to the subset.
 
@@ -201,7 +200,7 @@ class Subset(object):
         """ Write a subset mask out to file
 
         :param file_name: name of file to write to
-        format:
+        :param format:
            Name of format to write to. Currently, only "fits" is
            supported
 

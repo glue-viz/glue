@@ -20,8 +20,8 @@ from .message import (DataUpdateMessage,
 
 from .odict import OrderedDict
 
-__all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
-           'CoordinateComponent']
+__all__ = ['Data', 'ComponentID', 'Component', 'DerivedComponent',
+           'CategoricalComponent', 'CoordinateComponent']
 
 # access to ComponentIDs via .item[name]
 
@@ -331,12 +331,16 @@ class CategoricalComponent(Component):
         self._data.setflags(write=False)
 
     def jitter(self, method=None):
-        """ Jitter the data so the density of points can be easily seen in a
+        """
+        Jitter the data so the density of points can be easily seen in a
         scatter plot.
-        :param method: Currently only supports None and 'uniform'
-            None: No jittering is done (or any jittering is undone).
-            uniform: A unformly distributed random variable (-0.5, 0.5) is
-                     applied to each point.
+
+        :param method: None | 'uniform':
+
+        * None: No jittering is done (or any jittering is undone).
+        * uniform: A unformly distributed random variable (-0.5, 0.5)
+            is applied to each point.
+
         :return: None
         """
 
@@ -666,18 +670,19 @@ class Data(object):
         return self._components.keys()
 
     def new_subset(self, subset=None, color=None, label=None, **kwargs):
-        """ Create a new subset, and attach to self.
+        """
+        Create a new subset, and attach to self.
 
-        Note: The preferred way for creating subsets is
-        via DataCollection.new_subset_group. Manually-instantiated
-        subsets will probably *not* be represented properly by the UI
+        .. note:: The preferred way for creating subsets is via
+            :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
+            Manually-instantiated subsets will **not** be
+            represented properly by the UI
 
         :param subset: optional, reference subset or subset state.
-        If provided, the new subset will copy the logic of this subset.
+                       If provided, the new subset will copy the logic of
+                       this subset.
 
-        Returns:
-
-           The new subset object
+        :returns: The new subset object
         """
         nsub = len(self.subsets)
         color = color or COLORS[nsub % len(COLORS)]
@@ -692,16 +697,16 @@ class Data(object):
     def add_subset(self, subset):
         """Assign a pre-existing subset to this data object.
 
-        :param subset: A :class:`~glue.core.Subset` or
-        :class:`glue.core.subset.SubsetState` object
+        :param subset: A :class:`~glue.core.subset.Subset` or
+                       :class:`glue.core.subset.SubsetState` object
 
-        if input is a SubsetState, it will be wrapped in a new Subset
-        automatically
+        If input is a :class:`~glue.core.subset.SubsetState`,
+        it will be wrapped in a new Subset automatically
 
-        NOTE:
-        The preferred way for creating subsets is
-        via DataCollection.new_subset_group. Manually-instantiated
-        subsets will probably *not* be represented properly by the UI
+        .. note:: The preferred way for creating subsets is via
+            :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
+            Manually-instantiated subsets will **not** be
+            represented properly by the UI
         """
         if subset in self.subsets:
             return  # prevents infinite recursion

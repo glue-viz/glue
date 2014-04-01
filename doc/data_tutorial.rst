@@ -39,25 +39,20 @@ like this::
 
    from glue.core import Component, Data, DataCollection
    import numpy as np
-   data = Data(label="first dataset")
-   x = Component( np.array([1, 2, 3]))
-   y = Component( np.array([4, 5, 6]))
-   x_id = data.add_component(x, label = 'X')
-   y_id = data.add_component(y, label = 'Y')
+
+   # pass components in as keywords...
+   data = Data(x=[1, 2, 3], label="first dataset")
+
+   # or add as components after creation...
+   y_id = data.add_component([4, 5, 6], label = 'Y')
+
    collection = DataCollection([data])
-
-Alternatively, you can pass numpy arrays directly to ``Data``::
-
-    x = np.array([1, 2, 3])
-    y = np.array([1, 2, 3])
-    data = Data(label="first dataset", x=x, y=y)
-    collection = DataCollection([data])
 
 Loading from files
 -------------------
 
-The functions in ``glue.core.data_factories`` create
-:class:`~glue.core.Data` objects from files. For example::
+The functions in :mod:`glue.core.data_factories` create
+:class:`Data` objects from files. For example::
 
     from glue.core.data_factores import *
     load_data('image.fits', factory=gridded_data)  # reads a fits image
@@ -68,9 +63,11 @@ If these functions do not fit your needs, you can also :ref:`write your own
 data loader <custom_data_factory>`, and use it from the Glue GUI.
 
 
-Working with :class:`Data` and :class:`DataCollection` objects
---------------------------------------------------------------
 .. _data_access_api:
+.. currentmodule :: glue.core
+
+Working with :class:`~data.Data` and :class:`~data_collection.DataCollection`
+-----------------------------------------------------------------------------
 
 The DataCollection behaves like a list -- you can access Data objects
 by indexing into it::

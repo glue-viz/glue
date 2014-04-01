@@ -36,7 +36,7 @@ def point_contour(x, y, data):
     :param x: x location
     :param y: y location
     :param data: 2D image
-    :type data: ndarray
+    :type data: :class:`numpy.ndarray`
 
     Returns:
 
@@ -64,9 +64,8 @@ def point_contour(x, y, data):
 def split_component_view(arg):
     """Split the input to data or subset.__getitem__ into its pieces.
 
-    :param arg:
-    The input passed to data or subset.__getitem__. Assumed to be either a
-    scalar or tuple
+    :param arg: The input passed to data or subset.__getitem__.
+                Assumed to be either a scalar or tuple
 
     :rtype: tuple
 
@@ -136,18 +135,21 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
     """Create a series of subsets that partition the values of
     a particular attribute into several bins
 
+    This creates `steps` new subet groups, adds them to the data collection,
+    and returns the list of newly created subset groups.
+
     :param data: DataCollection object to use
-    :type data: :class:`~glue.core.DataCollection`
+    :type data: :class:`~glue.core.data_collection.DataCollection`
 
     :param cid: ComponentID to facet on
     :type data: :class:`~glue.core.data.ComponentID`
 
     :param lo: The lower bound for the faceting. Defaults to minimum value
-    in data
+               in data
     :type lo: float
 
     :param hi: The upper bound for the faceting. Defaults to maximum
-    value in data
+               value in data
     :type hi: float
 
     :param steps: The number of subsets to create. Defaults to 5
@@ -159,11 +161,8 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
     :param log: If True, space divisions logarithmically. Default=False
     :type log: bool
 
-    This creates `steps` new subet groups, adds them to the data collection,
-    and returns the list of newly created subset groups.
-
-    :rtype: List of :class:`glue.core.subset_group.SubsetGroup`s
-            added to `data`
+    :returns: List of :class:`~glue.core.subset_group.SubsetGroup` instances
+              added to `data`
 
     Example::
 
@@ -179,7 +178,7 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
 
         facet_subset(data, data.id['mass'], lo=0, hi=10, steps=2, prefix='m')
 
-    Labels the subsets 'm_1' and 'm_2'
+    Labels the subsets ``m_1`` and ``m_2``
 
     """
     from .exceptions import IncompatibleAttribute
@@ -259,9 +258,9 @@ def coerce_numeric(arr):
        unchanged
 
        :param arr: array to coerce
-       :type arr: ndarray instance
+       :type arr: :class:`numpy.ndarray`
 
-       :rtype: ndarray instance.
+       :returns: array.
     """
     # already numeric type
     if np.issubdtype(arr.dtype, np.number):
@@ -314,6 +313,7 @@ def lookup_class(ref):
 
 
 class PropertySetMixin(object):
+
     """An object that provides a set of properties that
     are meant to encapsulate state information
 
@@ -345,6 +345,7 @@ class PropertySetMixin(object):
 
 
 class CallbackMixin(object):
+
     """
     A mixin that provides a utility for attaching callback
     functions to methods

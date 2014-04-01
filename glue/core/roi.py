@@ -9,7 +9,8 @@ from .exceptions import UndefinedROI
 
 __all__ = ['Roi', 'RectangularROI', 'CircularROI', 'PolygonalROI',
            'AbstractMplRoi', 'MplRectangularROI', 'MplCircularROI',
-           'MplPolygonalROI', 'MplXRangeROI', 'MplYRangeROI']
+           'MplPolygonalROI', 'MplXRangeROI', 'MplYRangeROI',
+           'XRangeROI', 'RangeROI', 'YRangeROI']
 
 PATCH_COLOR = '#FFFF00'
 

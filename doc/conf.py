@@ -108,7 +108,7 @@ pygments_style = 'sphinx'
 try:  # use ReadTheDocs theme, if installed
     import sphinx_rtd_theme
     html_theme = 'sphinx_rtd_theme'
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path(),]
+    html_theme_path = [sphinx_rtd_theme.get_html_theme_path(), ]
 except ImportError:
     pass
 
@@ -260,3 +260,7 @@ texinfo_documents = [
 
 todo_include_todos = True
 autoclass_content = 'both'
+
+nitpick_ignore = [('py:class', 'object'), ('py:class', 'str'),
+                  ('py:class', 'list'), ('py:obj', 'numpy array'),
+                  ('py:obj', 'integer'), ('py:obj', 'Callable')]

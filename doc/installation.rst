@@ -27,12 +27,12 @@ Continuum Analytics. Anaconda includes all of Glue's main dependencies.
 
  * On the command line, install any additional Glue dependencies by running ``glue-deps install``. For more information on ``glue-deps``, see :ref:`below <glue-deps>`
 
-The Entought Python Distribution also includes all non-trivial dependencies. The installation instructions are the same. You can download EPD `here <https://www.enthought.com/products/epd/>`_.
+The `Enthought Python Distribution <https://www.enthought.com/products/epd/>`_ also includes all non-trivial dependencies. The installation instructions are the same. You can download EPD .
 
-.. note:: Anaconda installs it's own version of Python
+.. note :: Anaconda installs it's own version of Python
 
 .. _pythonw_note:
-.. note:: The nonstandard pip invocation (``pythonw -m pip``) is needed on Anaconda, because programs which create graphical windows must be invoked using ``pythonw`` instead of ``python``.
+.. note :: The nonstandard pip invocation (``pythonw -m pip``) is needed on some OSes with Anaconda, because programs which create graphical windows must be invoked using ``pythonw`` instead of ``python``.
 
 
 Building from Source (For the Brave)
@@ -94,7 +94,7 @@ Many dependencies can be reliably installed with::
 
 For information about using MacPorts to manage your Python
 installation, see `here
-<http://astrofrog.github.com/macports-python/>`_::
+<http://astrofrog.github.com/macports-python/>`_
 
 Running Glue
 ------------

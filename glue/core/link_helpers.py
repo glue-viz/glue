@@ -3,11 +3,12 @@ assist in linking data.
 
 The functions in this class (and stored in the __LINK_FUNCTIONS__
 list) define common coordinate transformations. They are meant to be
-used for the `using` parameter in :class:`ComponentLink` instances.
+used for the `using` parameter in
+:class:`glue.core.component_link.ComponentLink` instances.
 
-The LinkCollection class and its sublcasses are factories to create
+The :class:`LinkCollection` class and its sublcasses are factories to create
 multiple ComponentLinks easily. They are meant to be passed to
-:func:`DataCollection.add_link()`
+:meth:`~glue.core.data_collection.DataCollection.add_link()`
 """
 from .component_link import ComponentLink
 from .data import ComponentID
@@ -87,9 +88,8 @@ class LinkTwoWay(LinkCollection):
         :param forwards: Function which maps cid1 to cid2 (e.g. cid2=f(cid1))
         :param backwards: Function which maps cid2 to cid1 (e.g. cid1=f(cid2))
 
-        :rtype: Tuple of :class:`~glue.core.ComponentLink`
-
-        Returns two ComponentLinks, specifying the link in each direction
+        :returns: Two :class:`~glue.core.component_link.ComponentLink`
+                  instances, specifying the link in each direction
         """
         self.append(ComponentLink([_toid(cid1)], _toid(cid2), forwards))
         self.append(ComponentLink([_toid(cid2)], _toid(cid1), backwards))
@@ -100,20 +100,19 @@ class MultiLink(LinkCollection):
     """
     Compute all the ComponentLinks to link groups of ComponentIDs
 
-    Uses functions assumed to output tuples
-
     :param cids_left: first collection of ComponentIDs
     :param cids_right: second collection of ComponentIDs
     :param forwards:
-       Function that maps cids_left to cids_right. Assumed to have signature
-       cids_right = forwards(*cids_left), and assumed to return a tuple.
-       If not provided, the relevant ComponentIDs will not be generated
+        Function that maps ``cids_left -> cids_right``. Assumed to have
+        signature ``cids_right = forwards(*cids_left)``, and assumed
+        to return a tuple. If not provided, the relevant ComponentIDs
+        will not be generated
     :param backwards:
        The inverse function to forwards. If not provided, the relevant
        ComponentIDs will not be generated
 
-    Returns a collection of :class:`~glue.core.ComponentLink`
-    objects.
+    :returns: a collection of :class:`~glue.core.component_link.ComponentLink`
+              objects.
     """
 
     def __init__(self, cids_left, cids_right, forwards=None, backwards=None):
@@ -136,10 +135,11 @@ class MultiLink(LinkCollection):
 
 class LinkAligned(LinkCollection):
 
-    """Compute all the links to specify that the input data are pixel-aligned
+    """Compute all the links to specify that the input data are pixel-aligned.
 
-    :param data: An iterable of :class:`~glue.core.Data` instances
-    that are aligned at the pixel level. They must be the same shape.
+    :param data: An iterable of :class:`~glue.core.data.Data` instances
+                 that are aligned at the pixel level. They must be the
+                 same shape.
     """
 
     def __init__(self, data):
@@ -164,7 +164,7 @@ class Galactic2Equatorial(MultiLink):
     :param ra: ComponentID for J2000 Right Ascension
     :param dec: ComponentID for J2000 Declination
 
-    Returns a :class:`~glue.core.LinkCollection` object which links
+    Returns a :class:`LinkCollection` object which links
     these ComponentIDs
     """
 
