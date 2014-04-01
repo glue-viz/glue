@@ -6,9 +6,6 @@ data objects in Glue. This tutorial demonstrates how to use it to build
 custom subsets that would be cumbersome to define manually. We will be using
 the W5 Point Source catalog from the :ref:`tutorial <getting_started>`.
 
-
-.. note:: The terminal window requires that you have IPython > v0.12 on your system
-
 We are using the example data for this tutorial. We also define a few
 subsets to play with. Our setup looks like this.
 
@@ -21,7 +18,7 @@ Assign variables to the two subsets defined for this data collection::
 
     >>> red, faint_h = data_collection.subset_groups
 
-Let's also grab a components in the data::
+Let's also grab a component in the data::
 
     >>> catalog = data_collection[0]
     >>> hmag = catalog.id['Hmag']
