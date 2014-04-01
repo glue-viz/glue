@@ -1,7 +1,7 @@
 .. _qglue:
 
-Starting Glue from Python
-=========================
+Driving Glue with Python
+========================
 
 In addition to using Glue as a standalone program, you can import glue
 as a library from Python. There are (at least) two good reasons to do this:
@@ -9,10 +9,11 @@ as a library from Python. There are (at least) two good reasons to do this:
  #. You are working with multidimensional data in python, and want to use Glue for quick interactive visualization.
  #. You find yourself repeatedly loading the same sets of data each time you run Glue. You want to write a startup script to automate this process.
 
-Quickly send data to Glue with ``qglue``
-----------------------------------------
+Quickly send data to Glue with :func:`~glue.qglue.qglue`
+--------------------------------------------------------
 
-The easiest way to send python variables to Glue is to use ``qglue``::
+The easiest way to send python variables to Glue is to use
+:func:`~glue.qglue.qglue`::
 
     from glue import qglue
 
@@ -55,9 +56,8 @@ any subsets you have defined).
 
 .. note::
 
-   Terminology reminder: In Glue, :class:`~glue.core.data.Data` sets are collections of one or more :`~glue.core.data.Component` objects.
-   Components in a dataset are bascially arrays of the same shape. For more information, see the :ref:`Data API
-   Tutorial <data_tutorial>`
+   Terminology reminder: In Glue, :class:`~glue.core.data.Data` sets are collections of one or more :class:`~glue.core.data.Component` objects.
+   Components in a dataset are bascially arrays of the same shape. For more information, see :ref:`data_tutorial`
 
 
 * ``qglue(xy=pandas_data)``:
@@ -120,6 +120,15 @@ so the reverse function is not provided). These links would enable the following
  #. Overplot histograms of the mass distribution of both datasets
  #. Define a region in a plot of mass vs area for data 2, and apply that filter to dataset 1
 
+Using qglue with the IPython Notebook
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can call :func:`~glue.qglue.qglue` from the IPython notebook normally. However, the default behavior is for Glue to block the execution of the
+nootbook while the UI is running. If you would like to be able to use the notebook and Glue at the same time, run this cell before starting glue::
+
+    %gui qt
+
+This must be executed in a separate cell, before starting Glue.
 
 Manual data construction
 ------------------------

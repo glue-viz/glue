@@ -39,6 +39,9 @@ Core Data API
 Utilities API
 =============
 
+.. automodapi:: glue.qglue
+   :no-inheritance-diagram:
+
 .. automodapi:: glue.core.simpleforms
    :no-inheritance-diagram:
 
