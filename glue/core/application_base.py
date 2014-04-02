@@ -1,16 +1,17 @@
 from functools import wraps
 import traceback
 
-from .hub import HubListener, Hub
 from .data_collection import DataCollection
 from .data_factories import load_data
-from .command import CommandStack
 from . import command
 from . import Data, Subset
-from .util import lookup_class, PropertySetMixin
+from .hub import HubListener
+from .util import PropertySetMixin
 from .edit_subset_mode import EditSubsetMode
 from .session import Session
 from ..config import settings
+
+__all__ = ['Application', 'ViewerBase']
 
 
 def catch_error(msg):
@@ -183,7 +184,7 @@ class Application(HubListener):
                 self.new_tab()
             for v in tab:
                 viewer = context.object(v)
-                w = self.add_widget(viewer, tab=i, hold_position=True)
+                self.add_widget(viewer, tab=i, hold_position=True)
         return self
 
 
@@ -220,7 +221,7 @@ class ViewerBase(HubListener, PropertySetMixin):
             self.add_data(layer)
         elif isinstance(layer, Subset):
             self.add_subset(layer)
-        #else: SubsetGroup
+        # else: SubsetGroup
 
     def add_data(self, data):
         """ Add a data instance to the viewer
@@ -228,7 +229,7 @@ class ViewerBase(HubListener, PropertySetMixin):
         This must be overridden by a subclass
 
         :param data: Data object to add
-        :type data: :class:`~glue.core.Data`
+        :type data: :class:`~glue.core.data.Data`
         """
         raise NotImplementedError
 
@@ -262,11 +263,11 @@ class ViewerBase(HubListener, PropertySetMixin):
         """ Reposition a viewer within the application.
 
         :param x: Offset of viewer's left edge from the left edge
-        of the parent window. Optional
+                  of the parent window. Optional
         :type x: int
 
         :param y: Offset of the viewer's top edge from the top edge
-        of the parent window. Optional
+                  of the parent window. Optional
         :type y: int
         """
         raise NotImplementedError()

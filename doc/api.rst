@@ -2,8 +2,8 @@
 API
 ===
 
-Core Data API
-=============
+Core Data
+=========
 
 .. automodapi:: glue.core.data
    :no-inheritance-diagram:
@@ -35,23 +35,37 @@ Core Data API
 .. automodapi:: glue.core.component_link
    :no-inheritance-diagram:
 
-QT Widgets API
+User Interface
 ==============
 
-.. automodapi:: glue.qt.widgets.histogram_widget
-   :no-inheritance-diagram:
+.. automodsumm:: glue.qt.widgets.image_widget
+    :toctree: api/
 
-.. automodapi:: glue.qt.widgets.scatter_widget
-   :no-inheritance-diagram:
+.. automodsumm:: glue.core.application_base
+    :toctree: api/
 
-.. automodapi:: glue.qt.widgets.image_widget
-   :no-inheritance-diagram:
+.. automodsumm:: glue.core.application_base
+    :toctree: api/
+
+.. automodsumm:: glue.qt.widgets.data_viewer
+    :toctree: api/
+
+.. automodsumm:: glue.qt.widgets.scatter_widget
+    :toctree: api/
+
+.. automodsumm:: glue.qt.widgets.histogram_widget
+    :toctree: api/
+
+.. automodsumm:: glue.qt.glue_application
+    :toctree: api/
+
+.. automodsumm:: glue.qglue
+    :toctree: api/
 
 
-Utilities API
-=============
-
-.. automodapi:: glue.qglue
+Utilities
+=========
+.. automodapi:: glue.config
    :no-inheritance-diagram:
 
 .. automodapi:: glue.core.simpleforms

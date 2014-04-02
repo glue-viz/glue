@@ -26,7 +26,12 @@ import os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.mathjax', 'sphinx.ext.viewcode', 'astropy.sphinx.ext.astropyautosummary', 'astropy.sphinx.ext.automodapi', 'astropy.sphinx.ext.numpydoc', 'astropy.sphinx.ext.automodsumm', 'sphinx.ext.intersphinx']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.coverage',
+              'sphinx.ext.mathjax', 'sphinx.ext.viewcode',
+              'astropy.sphinx.ext.astropyautosummary',
+              'astropy.sphinx.ext.automodapi',
+              'astropy.sphinx.ext.numpydoc',
+              'astropy.sphinx.ext.automodsumm', 'sphinx.ext.intersphinx']
 
 intersphinx_cache_limit = 10     # days to keep the cached inventories
 intersphinx_mapping = {
@@ -263,7 +268,11 @@ autoclass_content = 'both'
 
 nitpick_ignore = [('py:class', 'object'), ('py:class', 'str'),
                   ('py:class', 'list'), ('py:obj', 'numpy array'),
-                  ('py:obj', 'integer'), ('py:obj', 'Callable')]
+                  ('py:obj', 'integer'), ('py:obj', 'Callable'),
+                  ('py:class', 'PySide.QtGui.QMainWindow'),
+                  ('py:class', 'PySide.QtGui.QWidget'),
+                  ('py:obj', "str ('file' | 'directory' | 'label')"),
+                  ('py:obj', 'function(application)')]
 
 
 # coax Sphinx into treating descriptors as attributes

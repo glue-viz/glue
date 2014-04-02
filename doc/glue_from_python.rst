@@ -1,7 +1,7 @@
 .. _qglue:
 
-Driving Glue with Python
-========================
+Starting Glue with Python
+=========================
 
 In addition to using Glue as a standalone program, you can import glue
 as a library from Python. There are (at least) two good reasons to do this:

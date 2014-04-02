@@ -2,8 +2,10 @@
 Programmatically configuring plots
 ==================================
 
-Data Viewers are designed to be easily configured
-from python scripts. For example::
+Plots in Glue are designed to be easily configured
+with Python. As much as possible, plot settings are
+controled by simple properties on data viewer objects.
+For example::
 
     from glue.core import Data, DataCollection
     from glue.qt import GlueApplication
@@ -27,6 +29,10 @@ from python scripts. For example::
 
     # show the GUI
     ga.start()
+
+
+Plot Options
+------------
 
 Here are the settings associated with each data viewer:
 
@@ -74,3 +80,37 @@ Here are the settings associated with each data viewer:
     ~HistogramWidget.nbins
     ~HistogramWidget.xlog
     ~HistogramWidget.ylog
+
+
+Customizing Plots with Matplotlib
+---------------------------------
+
+If you want, you can directly manipulate the Matplotlib
+plot objects that underly Glue plots. This can be useful
+if you want to create static plots with custom annotation,
+styles, etc.
+
+From the GUI
+^^^^^^^^^^^^
+Open the IPython terminal window. The ``application.viewers`` variable
+is a list of lists of all the
+open plot windows. Each inner list contains the data viewers
+open on a single tab. Every viewer has an ``axes`` attribute,
+which points to a :class:`Matplotlib Axes <matplotlib.axes.Axes>`
+object::
+
+    plot = appliation.viewers[0][0]
+    ax = plot.axes
+    ax.set_title('Custom title')
+    ax.figure.canvas.draw()  # update the plot
+
+From a script
+^^^^^^^^^^^^^
+
+Save the current glue session via ``File->Save Session``. You can
+reload this session programmatically as follows::
+
+    from glue.qt import GlueApplication
+    app = GlueApplication.restore('output.glu', show=False)
+    plot = app.viewers[0][0]
+    ax = plot.axes
