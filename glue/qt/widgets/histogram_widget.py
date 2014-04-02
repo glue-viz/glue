@@ -1,21 +1,21 @@
 from functools import partial
 
-import numpy as np
-
 from ...external.qt import QtGui
 from ...external.qt.QtCore import Qt
 
 from ...core import message as msg
-from ...core import Data
 from ...clients.histogram_client import HistogramClient
 from ..widget_properties import (connect_int_spin, ButtonProperty,
-                                 FloatLineProperty, CurrentComboProperty,
+                                 FloatLineProperty,
                                  ValueProperty)
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import HRangeMode
 from .data_viewer import DataViewer
 from .mpl_widget import MplWidget, defer_draw
 from ..qtutil import pretty_number, load_ui
+
+__all__ = ['HistogramWidget']
+
 
 WARN_SLOW = 10000000
 
@@ -30,14 +30,15 @@ class HistogramWidget(DataViewer):
         'component xlog ylog normed cumulative autoscale xmin xmax nbins'.split(
         )
 
-    xmin = FloatLineProperty('ui.xmin')
-    xmax = FloatLineProperty('ui.xmax')
-    normed = ButtonProperty('ui.normalized_box')
-    autoscale = ButtonProperty('ui.autoscale_box')
-    cumulative = ButtonProperty('ui.cumulative_box')
-    nbins = ValueProperty('ui.binSpinBox')
-    xlog = ButtonProperty('ui.xlog_box')
-    ylog = ButtonProperty('ui.ylog_box')
+    xmin = FloatLineProperty('ui.xmin', 'Minimum value')
+    xmax = FloatLineProperty('ui.xmax', 'Maximum value')
+    normed = ButtonProperty('ui.normalized_box', 'Normalized?')
+    autoscale = ButtonProperty('ui.autoscale_box',
+                               'Autoscale view to histogram?')
+    cumulative = ButtonProperty('ui.cumulative_box', 'Cumulative?')
+    nbins = ValueProperty('ui.binSpinBox', 'Number of bins')
+    xlog = ButtonProperty('ui.xlog_box', 'Log-scale the x axis?')
+    ylog = ButtonProperty('ui.ylog_box', 'Log-scale the y axis?')
 
     def __init__(self, session, parent=None):
         super(HistogramWidget, self).__init__(session, parent)
@@ -126,8 +127,8 @@ class HistogramWidget(DataViewer):
         # use _hash(x) instead
         model = QtGui.QStandardItemModel()
         data_ids = set(_hash(d) for d in self._data)
-        self._component_hashes = {_hash(c): c for d in self._data
-                                  for c in d.components}
+        self._component_hashes = dict((_hash(c), c) for d in self._data
+                                      for c in d.components)
 
         for d in self._data:
             if d not in self._container:

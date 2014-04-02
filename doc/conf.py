@@ -264,3 +264,9 @@ autoclass_content = 'both'
 nitpick_ignore = [('py:class', 'object'), ('py:class', 'str'),
                   ('py:class', 'list'), ('py:obj', 'numpy array'),
                   ('py:obj', 'integer'), ('py:obj', 'Callable')]
+
+
+# coax Sphinx into treating descriptors as attributes
+# see https://bitbucket.org/birkenfeld/sphinx/issue/1254/#comment-7587063
+from glue.qt.widget_properties import WidgetProperty
+WidgetProperty.__get__ = lambda self, *args, **kwargs: self

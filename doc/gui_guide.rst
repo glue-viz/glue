@@ -1,5 +1,5 @@
-Application Guide
-=================
+User Interface Guide
+====================
 
 .. toctree::
    :maxdepth: 2

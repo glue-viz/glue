@@ -2,7 +2,6 @@
 API
 ===
 
-
 Core Data API
 =============
 
@@ -35,6 +34,19 @@ Core Data API
 
 .. automodapi:: glue.core.component_link
    :no-inheritance-diagram:
+
+QT Widgets API
+==============
+
+.. automodapi:: glue.qt.widgets.histogram_widget
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.qt.widgets.scatter_widget
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.qt.widgets.image_widget
+   :no-inheritance-diagram:
+
 
 Utilities API
 =============

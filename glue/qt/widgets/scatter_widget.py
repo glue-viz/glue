@@ -1,5 +1,3 @@
-from functools import partial
-
 from ...external.qt import QtGui
 from ...external.qt.QtCore import Qt
 from ... import core
@@ -8,7 +6,6 @@ from ...clients.scatter_client import ScatterClient
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import (RectangleMode, CircleMode,
                           PolyMode, HRangeMode, VRangeMode)
-from ...core.callback_property import add_callback
 
 from .data_viewer import DataViewer
 from .mpl_widget import MplWidget, defer_draw
@@ -16,27 +13,36 @@ from ..widget_properties import (ButtonProperty, FloatLineProperty,
                                  CurrentComboProperty,
                                  connect_bool_button, connect_float_edit)
 
-from ..qtutil import pretty_number, load_ui, cache_axes
+from ..qtutil import load_ui, cache_axes
+
+__all__ = ['ScatterWidget']
 
 WARN_SLOW = 1000000  # max number of points which render quickly
 
 
 class ScatterWidget(DataViewer):
+
+    """
+    An interactive scatter plot.
+    """
+
     LABEL = "Scatter Plot"
     _property_set = DataViewer._property_set + \
         'xlog ylog xflip yflip xmin xmax ymin ymax hidden xatt yatt'.split()
 
-    xlog = ButtonProperty('ui.xLogCheckBox')
-    ylog = ButtonProperty('ui.yLogCheckBox')
-    xflip = ButtonProperty('ui.xFlipCheckBox')
-    yflip = ButtonProperty('ui.yFlipCheckBox')
-    xmin = FloatLineProperty('ui.xmin')
-    xmax = FloatLineProperty('ui.xmax')
-    ymin = FloatLineProperty('ui.ymin')
-    ymax = FloatLineProperty('ui.ymax')
-    hidden = ButtonProperty('ui.hidden_attributes')
-    xatt = CurrentComboProperty('ui.xAxisComboBox')
-    yatt = CurrentComboProperty('ui.yAxisComboBox')
+    xlog = ButtonProperty('ui.xLogCheckBox', 'log scaling on x axis?')
+    ylog = ButtonProperty('ui.yLogCheckBox', 'log scaling on y axis?')
+    xflip = ButtonProperty('ui.xFlipCheckBox', 'invert the x axis?')
+    yflip = ButtonProperty('ui.yFlipCheckBox', 'invert the y axis?')
+    xmin = FloatLineProperty('ui.xmin', 'Lower x limit of plot')
+    xmax = FloatLineProperty('ui.xmax', 'Upper x limit of plot')
+    ymin = FloatLineProperty('ui.ymin', 'Lower y limit of plot')
+    ymax = FloatLineProperty('ui.ymax', 'Upper y limit of plot')
+    hidden = ButtonProperty('ui.hidden_attributes', 'Show hidden attributes')
+    xatt = CurrentComboProperty('ui.xAxisComboBox',
+                                'Attribute to plot on x axis')
+    yatt = CurrentComboProperty('ui.yAxisComboBox',
+                                'Attribute to plot on y axis')
 
     def __init__(self, session, parent=None):
         super(ScatterWidget, self).__init__(session, parent)
@@ -136,8 +142,7 @@ class ScatterWidget(DataViewer):
     def add_data(self, data):
         """Add a new data set to the widget
 
-        :rtype: bool
-        Returns True if the addition was expected, False otherwise
+        :returns: True if the addition was expected, False otherwise
         """
         if self.client.is_layer_present(data):
             return
@@ -167,8 +172,7 @@ class ScatterWidget(DataViewer):
     def add_subset(self, subset):
         """Add a subset to the widget
 
-        :rtype: bool:
-        Returns True if the addition was accepted, False otherwise
+        :returns: True if the addition was accepted, False otherwise
         """
         if self.client.is_layer_present(subset):
             return

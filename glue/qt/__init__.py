@@ -20,3 +20,5 @@ def teardown():
 _app = get_qapp()
 import atexit
 atexit.register(teardown)
+
+from .glue_application import GlueApplication
