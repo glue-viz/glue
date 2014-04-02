@@ -137,11 +137,6 @@ class TestData(object):
         self.data.broadcast()
         assert hub.broadcast.call_count == 1
 
-    def test_clone_subset(self):
-        sub1 = self.data.new_subset()
-        sub2 = self.data.create_subset_from_clone(sub1)
-        assert sub1.subset_state is sub2.subset_state
-
     def test_double_hub_add(self):
         hub = MagicMock(spec_set=Hub)
         hub2 = MagicMock(spec_set=Hub)

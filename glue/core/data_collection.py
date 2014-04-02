@@ -134,7 +134,7 @@ class DataCollection(HubListener):
 
     def set_links(self, links):
         """Override the links in the collection, and update data
-        objects as necessary
+        objects as necessary.
 
         :param links: The new links. An iterable of
             :class:`~glue.core.component_link.ComponentLink` instances
@@ -147,7 +147,8 @@ class DataCollection(HubListener):
             self._link_manager.update_data_components(d)
 
     def register_to_hub(self, hub):
-        """ Register managed data objects to a hub
+        """ Register managed data objects to a hub.
+
         :param hub: The hub to register with
         :type hub: :class:`~glue.core.hub.Hub`
         """
