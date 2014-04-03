@@ -42,6 +42,8 @@ before_install:
 - if [ $APP_TRIGGER ]; then export PATH=`gem environment | grep "EXECUTABLE DIRECTORY" | cut -d":" -f2 | cut -c 2-`:$PATH; fi
 - if [ $APP_TRIGGER ]; then which travis; fi
 - if [ $APP_TRIGGER ]; then echo y | travis; fi  # install shell completion tool
+- if [ $TRAVIS_BRANCH = master ]; then export S3_DIR=latest; else export S3_DIR=$TRAVIS_BRANCH; fi
+
 
 install:
 - conda install $CONDA_ARGS python=$TRAVIS_PYTHON_VERSION $CONDA_BASE
@@ -64,14 +66,14 @@ deploy:
   bucket: docs.glueviz.org
   skip_cleanup: true
   local-dir: _build/html
-  upload-dir: en/$TRAVIS_BRANCH
+  upload-dir: en/$S3_DIR
+
   access_key_id: AKIAI2ERWDHLW3W24X3A
   secret_access_key: $AWS_SECRET_KEY_ID
   on:
      branch:
        - master
        - staging
-       - doc
      condition:
        - "$TRAVIS_SECURE_ENV_VARS = true"
        - "$DOC_TRIGGER = 1"

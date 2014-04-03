@@ -14,6 +14,9 @@ from .component_link import ComponentLink
 from .data import ComponentID
 from ..external.aplpy import gal2fk5, fk52gal
 
+__all__ = ['LinkCollection', 'LinkSame', 'LinkTwoWay', 'MultiLink',
+           'LinkAligned', 'Galactic2Equatorial']
+
 __LINK_FUNCTIONS__ = []
 __LINK_HELPERS__ = []
 

@@ -24,6 +24,7 @@ from .message import (DataCollectionAddMessage,
                       DataCollectionDeleteMessage
                       )
 
+__all__ = ['GroupedSubset', 'SubsetGroup']
 
 class GroupedSubset(Subset):
 
