@@ -112,12 +112,14 @@ class Test3DExtractor(object):
     def test_extract_subset(self):
         sub = self.data.new_subset()
         sub.subset_state = self.data.id['x'] > .5
+        slc = (0, 'y', 'x')
+        mask = sub.to_mask()[0]
+        mask = mask.reshape(-1, mask.shape[0], mask.shape[1])
 
-        mask = sub.to_mask()
         expected = (self.x * mask).sum(axis=1).sum(axis=1)
         expected /= mask.sum(axis=1).sum(axis=1)
         _, actual = Extractor.subset_spectrum(sub, self.data.id['x'],
-                                              (0, 'x', 'y'), 0)
+                                              slc, 0)
         np.testing.assert_array_almost_equal(expected, actual)
 
 

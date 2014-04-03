@@ -93,8 +93,17 @@ class Extractor(object):
     @staticmethod
     def subset_spectrum(subset, attribute, slc, zaxis):
         """
-        Extract a spectrum from a subset, by averaging over
-        elements of the subset in each Z-plane
+        Extract a spectrum from a subset.
+
+        This makes a mask of the subset in the **current slice**,
+        and extracts a tube of this shape over all slices along ``zaxis``.
+        In other words, the variation of the subset along ``zaxis`` is ignored,
+        and only the interaction of the subset and the slice is relevant.
+
+        :param subset: A :class:`~glue.core.subset.Subset`
+        :param attribute: The :class:`~glue.core.data.ComponentID` to extract
+        :param slc: A tuple describing the slice
+        :param zaxis: Which axis to integrate over
         """
         data = subset.data
         x = Extractor.abcissa(data, zaxis)
@@ -103,13 +112,21 @@ class Extractor(object):
                 if s not in ['x', 'y'] else slice(None)
                 for s in slc]
 
-        result = 1. * x
+        mask = np.squeeze(subset.to_mask(view))
+        if slc.index('x') < slc.index('y'):
+            mask = mask.T
+
+        w = np.where(mask)
+        view[slc.index('x')] = w[1]
+        view[slc.index('y')] = w[0]
+
+        result = np.empty(x.size)
+
         # treat each channel separately, to reduce memory storage
         for i in xrange(data.shape[zaxis]):
             view[zaxis] = i
-            mask = subset.to_mask(view)
-            val = data[attribute, view] * mask
-            result[i] = 1. * np.nansum(val) / mask.sum()
+            val = data[attribute, view]
+            result[i] = np.nansum(val) / np.isfinite(val).sum()
 
         y = result
 
