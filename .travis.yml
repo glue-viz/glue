@@ -63,7 +63,7 @@ after_success:
 
 deploy:
   provider: s3
-  bucket: docs.glueviz.org
+  bucket: www.glueviz.org
   skip_cleanup: true
   local-dir: _build/html
   upload-dir: en/$S3_DIR
