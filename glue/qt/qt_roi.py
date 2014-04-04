@@ -63,8 +63,15 @@ class QtROI(object):
         p = QtGui.QPainter(canvas)
         facecolor = mpl_to_qt4_color(self.plot_opts['facecolor'],
                                      self.plot_opts['alpha'])
-        p.setPen(Qt.NoPen)
+        edgecolor = mpl_to_qt4_color(self.plot_opts['edgecolor'],
+                                     self.plot_opts['alpha'])
+
+        pen = QtGui.QPen(edgecolor)
+        pen.setWidth(self.plot_opts.get('edgewidth', 0))
+        p.setPen(pen)
+
         p.setBrush(QtGui.QBrush(facecolor))
+
         return p
 
 

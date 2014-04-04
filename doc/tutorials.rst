@@ -6,4 +6,5 @@ Tutorials and Recipes
 
    link_tutorial.rst
    custom_subsets.rst
+   spectrum.rst
    configuration.rst

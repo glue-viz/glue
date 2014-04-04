@@ -25,7 +25,15 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.mathjax', 'sphinx.ext.viewcode']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.mathjax', 'sphinx.ext.viewcode', 'astropy.sphinx.ext.automodapi','astropy.sphinx.ext.numpydoc', 'astropy.sphinx.ext.automodsumm', 'sphinx.ext.intersphinx']
+
+intersphinx_cache_limit = 10     # days to keep the cached inventories
+intersphinx_mapping = {
+    'sphinx': ('http://sphinx.pocoo.org',  None),
+    'python':('http://docs.python.org/2.7',None),
+    'matplotlib':('http://matplotlib.sourceforge.net', None),
+    'numpy':('http://docs.scipy.org/doc/numpy',None),
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

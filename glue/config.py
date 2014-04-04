@@ -274,6 +274,20 @@ class LinkHelperRegistry(Registry):
         return adder
 
 
+class ProfileFitterRegistry(Registry):
+    item = namedtuple('ProfileFitter', 'cls')
+
+    def add(self, cls):
+        """
+        Add colormap *cmap* with label *label*.
+        """
+        self.members.append(cls)
+
+    def default_members(self):
+        from .core.fitters import __FITTERS__
+        return list(__FITTERS__)
+
+
 qt_client = QtClientRegistry()
 data_factory = DataFactoryRegistry()
 link_function = LinkFunctionRegistry()
@@ -281,6 +295,7 @@ link_helper = LinkHelperRegistry()
 colormaps = ColormapRegistry()
 exporters = ExporterRegistry()
 settings = SettingRegistry()
+fit_plugin = ProfileFitterRegistry()
 
 
 def load_configuration(search_path=None):
@@ -298,7 +313,9 @@ def load_configuration(search_path=None):
     result = imp.new_module('config')
 
     for config_file in search_order:
+        dir = os.path.dirname(config_file)
         try:
+            sys.path.append(dir)
             config = imp.load_source('config', config_file)
             result = config
         except IOError:
@@ -306,6 +323,8 @@ def load_configuration(search_path=None):
         except Exception as e:
             raise Exception("Error loading config file %s:\n%s" %
                             (config_file, e))
+        finally:
+            sys.path.remove(dir)
 
     return result
 

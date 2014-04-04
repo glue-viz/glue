@@ -11,15 +11,14 @@ import numpy as np
 
 from ..external.axescache import AxesCache
 from ..external.qt import QtGui
-from ..external.qt.QtCore import Qt
+from ..external.qt.QtCore import Qt, QThread
 from ..external.qt.QtGui import (QColor, QInputDialog, QColorDialog,
                                  QListWidget, QTreeWidget, QPushButton,
                                  QMessageBox,
                                  QTabBar, QBitmap, QIcon, QPixmap, QImage,
-                                 QDialogButtonBox, QWidget,
-                                 QVBoxLayout, QHBoxLayout, QLabel, QGridLayout,
-                                 QRadioButton, QButtonGroup, QCheckBox,
-                                 QSizePolicy)
+                                 QWidget,
+                                 QLabel, QGridLayout,
+                                 QRadioButton, QButtonGroup, QCheckBox)
 
 from .decorators import set_cursor
 from .mime import PyMimeData, LAYERS_MIME_TYPE
@@ -45,6 +44,9 @@ def mpl_to_qt4_color(color, alpha=1.0):
 
     :rtype: QColor
     """
+    if color in [None, 'none', 'None']:
+        return QColor(0, 0, 0, 0)
+
     cc = ColorConverter()
     r, g, b = cc.to_rgb(color)
     alpha = max(0, min(255, int(256 * alpha)))
@@ -865,7 +867,7 @@ class ComponentIDCombo(QtGui.QComboBox, core.HubListener):
                 index = i
 
         self.blockSignals(False)
-        self.setCurrentIndex(i)
+        self.setCurrentIndex(index)
 
     def register_to_hub(self, hub):
         hub.subscribe(self,
@@ -933,3 +935,36 @@ def nonpartial(func, *args, **kwargs):
         return func(*args, **kwargs)
 
     return result
+
+
+class Worker(QThread):
+    result = Signal(object)
+    error = Signal(object)
+
+    def __init__(self, func, *args, **kwargs):
+        """
+        Execute a function call on a different QThread
+
+        :param func: The function object to call
+        :param args: arguments to pass to the function
+        :param kwargs: kwargs to pass to the function
+        """
+        super(Worker, self).__init__()
+        self.func = func
+        self.args = args
+        self.kwargs = kwargs
+
+    def run(self):
+        """
+        Invoke the function
+        Upon successful completion, the result signal will be fired
+        with the output of the function
+        If an exception occurs, the error signal will be fired with
+        the result form sys.exc_infno()
+        """
+        try:
+            result = self.func(*self.args, **self.kwargs)
+            self.result.emit(result)
+        except:
+            import sys
+            self.error.emit(sys.exc_info())

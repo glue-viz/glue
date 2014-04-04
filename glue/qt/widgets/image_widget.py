@@ -1,9 +1,7 @@
-from ...external.qt.QtGui import (QWidget, QAction,
+from ...external.qt.QtGui import (QWidget, QAction, QLabel, QCursor,
                                   QToolButton, QIcon, QMessageBox)
 
-from ...external.qt.QtCore import Qt
-
-import matplotlib.cm as cm
+from ...external.qt.QtCore import Qt, QRect
 
 from .data_viewer import DataViewer
 from ... import core
@@ -11,12 +9,14 @@ from ... import config
 
 from ...clients.image_client import ImageClient
 from ...clients.layer_artist import Pointer
+from ...core.callback_property import add_callback
 
 from .data_slice_widget import DataSlice
 
 from ..mouse_mode import (RectangleMode, CircleMode, PolyMode,
                           ContrastMode, ContourMode)
 from ..glue_toolbar import GlueToolbar
+from ..spectrum_tool import SpectrumTool
 from .mpl_widget import MplWidget, defer_draw
 
 
@@ -40,14 +40,16 @@ class ImageWidget(DataViewer):
     def __init__(self, session, parent=None):
         super(ImageWidget, self).__init__(session, parent)
         self.central_widget = MplWidget()
-        self.option_widget = QWidget()
+        self.label_widget = QLabel("", self.central_widget)
         self.setCentralWidget(self.central_widget)
-        self.ui = load_ui('imagewidget', self.option_widget)
+        self.ui = load_ui('imagewidget', None)
+        self.option_widget = self.ui
         self.ui.slice = DataSlice()
         self.ui.slice_layout.addWidget(self.ui.slice)
         self.client = ImageClient(self._data,
                                   self.central_widget.canvas.fig,
                                   artist_container=self._container)
+        self._spectrum_tool = SpectrumTool(self)
         self._tweak_geometry()
 
         self._create_actions()
@@ -112,8 +114,9 @@ class ImageWidget(DataViewer):
         poly = PolyMode(axes, roi_callback=apply_mode)
         contrast = ContrastMode(axes, move_callback=self._set_norm)
         contour = ContourMode(axes, release_callback=self._contour_roi)
+        spectrum = self._spectrum_tool.mouse_mode
         self._contrast = contrast
-        return [rect, circ, poly, contour, contrast]
+        return [rect, circ, poly, contour, contrast, spectrum]
 
     def _init_widgets(self):
         pass
@@ -252,6 +255,9 @@ class ImageWidget(DataViewer):
             lambda: self._toolbars[0].set_mode(self._contrast))
         ui.slice.slice_changed.connect(self._update_slice)
 
+        update_ui_slice = lambda val: setattr(ui.slice, 'slice', val)
+        add_callback(self.client, 'slice', update_ui_slice)
+
     def _update_slice(self):
         self.client.slice = self.ui.slice.slice
 
@@ -384,3 +390,20 @@ class ImageWidget(DataViewer):
 
         self.set_attribute_combo(self.client.display_data)
         self._update_data_combo()
+
+    def paintEvent(self, event):
+        super(ImageWidget, self).paintEvent(event)
+        pos = self.central_widget.canvas.mapFromGlobal(QCursor.pos())
+        x, y = pos.x(), self.central_widget.canvas.height() - pos.y()
+        self._update_intensity_label(x, y)
+
+    def _update_intensity_label(self, x, y):
+        x, y = self.client.axes.transData.inverted().transform([x, y])
+        value = self.client.point_details(x, y)['value']
+        lbl = '' if value is None else "data: %s" % value
+        self.label_widget.setText(lbl)
+
+        fm = self.label_widget.fontMetrics()
+        w, h = fm.width(lbl), fm.height()
+        g = QRect(20, self.central_widget.geometry().height() - h, w, h)
+        self.label_widget.setGeometry(g)

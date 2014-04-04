@@ -22,9 +22,9 @@ class SliceWidget(QWidget):
                  parent=None, aggregation=None):
         super(SliceWidget, self).__init__(parent)
         if aggregation is not None:
-            raise NotImplmentedError("Aggregation option not implemented")
+            raise NotImplemented("Aggregation option not implemented")
         if pix2world is not None:
-            raise NotImplmentedError("Pix2world option not implemented")
+            raise NotImplemented("Pix2world option not implemented")
 
         layout = QVBoxLayout()
         layout.setContentsMargins(3, 1, 3, 1)
@@ -49,6 +49,7 @@ class SliceWidget(QWidget):
         slider.setMinimum(lo)
         slider_lbl = QLabel()
         slider.setMaximum(hi)
+        slider.setValue((lo + hi) / 2)
         slider.valueChanged.connect(lambda x:
                                     self.slice_changed.emit(self.mode))
         slider.valueChanged.connect(lambda x: slider_lbl.setText(str(x)))
@@ -161,9 +162,9 @@ class DataSlice(QWidget):
 
     def _on_mode(self, index, mode_index):
         s = self.slice
-        new_mode = s[index]
 
         def isok(ss):
+            # valid slice description: 'x' and 'y' both appear
             c = Counter(ss)
             return c['x'] == 1 and c['y'] == 1
 

@@ -13,7 +13,7 @@ intensities are as follows:
   y = clip((x - bias) * contrast + 0.5, 0, 1)
 """
 
-#implementation details
+# implementation details
 # The relevant ds9 code is located at saotk/frame/colorscale.C and
 # saotk/colorbar/colorbar.C
 #
@@ -134,8 +134,8 @@ class DS9Normalize(Normalize, object):
                             (value, warpers.keys()))
         self._stretch = value
 
-    def update_clip(self, data, component):
-        vmin, vmax = fast_limits(data, component, self.clip_lo, self.clip_hi)
+    def update_clip(self, image):
+        vmin, vmax = fast_limits(image, self.clip_lo, self.clip_hi)
         self.vmin = vmin
         self.vmax = vmax
 

@@ -9,6 +9,8 @@ from ..core.data import Data
 from ..core.util import lookup_class
 from ..core.subset import Subset, RoiSubsetState
 from ..core.roi import PolygonalROI
+from ..core.callback_property import (
+    callback_property, CallbackProperty)
 from ..core.edit_subset_mode import EditSubsetMode
 
 from .viz_client import VizClient, init_mpl
@@ -29,6 +31,8 @@ def requires_data(func):
 
 
 class ImageClient(VizClient):
+    display_data = CallbackProperty(None)
+    display_attribute = CallbackProperty(None)
 
     def __init__(self, data, figure=None, axes=None, artist_container=None):
 
@@ -40,12 +44,11 @@ class ImageClient(VizClient):
         if self.artists is None:
             self.artists = LayerArtistContainer()
 
-        self.display_data = None
-        self.display_attribute = None
         self._slice = None
         self._view_window = None
         self._view = None
         self._image = None
+        self._override_image = None
 
         self._ax = axes
         self._ax.get_xaxis().set_ticks([])
@@ -60,12 +63,8 @@ class ImageClient(VizClient):
             data = self.display_data
             if data is None:
                 return fc(x, y)
-            pix = self._pixel_coords(x, y)
-            world = data.coords.pixel2world(*pix[::-1])
-            world = world[::-1]   # reverse for numpy convention
-            labels = ['%s=%s' % (data.get_world_component_id(i).label, w)
-                      for i, w in enumerate(world)]
-            return '         '.join(labels)
+            info = self.point_details(x, y)
+            return '         '.join(info['labels'])
 
         self._ax.format_coord = format_coord
 
@@ -75,7 +74,32 @@ class ImageClient(VizClient):
             # test code doesn't always use Glue's custom FigureCanvas
             self._ax.figure.canvas.homeButton.connect(self.check_update)
 
-    @property
+    def point_details(self, x, y):
+        data = self.display_data
+        pix = self._pixel_coords(x, y)
+        world = data.coords.pixel2world(*pix[::-1])
+        world = world[::-1]   # reverse for numpy convention
+        labels = ['%s=%s' % (data.get_world_component_id(i).label, w)
+                  for i, w in enumerate(world)]
+
+        view = []
+        for p, s in zip(pix, data.shape):
+            p = int(p)
+            if not (0 <= p < s):
+                value = None
+                break
+            view.append(slice(p, p + 1))
+        else:
+            if self._override_image is None:
+                value = self.display_data[self.display_attribute, view]
+            else:
+                value = self._override_image[int(y), int(x)]
+
+            value = value.ravel()[0]
+
+        return dict(pix=pix, world=world, labels=labels, value=value)
+
+    @callback_property
     def slice(self):
         """
         Returns a tuple describing the current slice through the data
@@ -104,9 +128,13 @@ class ImageClient(VizClient):
 
     @slice.setter
     def slice(self, value):
+        if self.slice == tuple(value):
+            return
+
         relim = value.index('x') != self._slice.index('x') or \
             value.index('y') != self._slice.index('y')
         self._slice = tuple(value)
+        self._clear_override()
         self._update_axis_labels()
         self._update_data_plot(relim=relim)
         self._update_subset_plots()
@@ -139,6 +167,24 @@ class ImageClient(VizClient):
     @property
     def image(self):
         return self._image
+
+    @requires_data
+    def override_image(self, image):
+        """Temporarily override the current slice view with another
+        image (i.e., an aggregate)
+        """
+        self._override_image = image
+        for a in self.artists[self.display_data]:
+            if isinstance(a, ImageLayerArtist):
+                a.override_image(image)
+        self._update_data_plot()
+        self._redraw()
+
+    def _clear_override(self):
+        self._override_image = None
+        for a in self.artists[self.display_data]:
+            if isinstance(a, ImageLayerArtist):
+                a.clear_override()
 
     @slice_ind.setter
     def slice_ind(self, value):
@@ -186,7 +232,6 @@ class ImageClient(VizClient):
 
     @requires_data
     def _update_axis_labels(self):
-        ori = self._slice_ori
         labels = _axis_labels(self.display_data, self.slice)
         self._ax.set_xlabel(labels[1])
         self._ax.set_ylabel(labels[0])

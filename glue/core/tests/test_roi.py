@@ -422,6 +422,25 @@ class TestRectangleMpl(TestMpl):
     def _roi_factory(self):
         return MplRectangularROI(self.axes)
 
+    def test_scrub(self):
+        roi = self._roi_factory()
+
+        event = DummyEvent(5, 5, inaxes=self.axes)
+        roi.start_selection(event)
+        event = DummyEvent(10, 10, inaxes=self.axes)
+        roi.update_selection(event)
+
+        #restart without finalize = scrub
+        roi.start_selection(DummyEvent(6, 6, inaxes=self.axes))
+        roi.update_selection(DummyEvent(7, 8, inaxes=self.axes))
+
+        print roi
+        print roi._roi
+        assert roi._roi.xmin == 6
+        assert roi._roi.xmax == 11
+        assert roi._roi.ymin == 7
+        assert roi._roi.ymax == 12
+
     def assert_roi_correct(self, x0, x1, y0, y1):
         corner = self.roi.roi().corner()
         height = self.roi.roi().height()

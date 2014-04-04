@@ -9,7 +9,7 @@ from matplotlib.cm import gray
 from ..core.exceptions import IncompatibleAttribute
 from ..core.util import color2rgb, PropertySetMixin, Pointer
 from ..core.subset import Subset
-from .util import view_cascade, get_extent
+from .util import view_cascade, get_extent, small_view, small_view_array
 from .ds9norm import DS9Normalize
 
 
@@ -162,6 +162,7 @@ class ImageLayerArtist(LayerArtist):
         super(ImageLayerArtist, self).__init__(layer, ax)
         self._norm = None
         self._cmap = gray
+        self._override_image = None
 
     @property
     def norm(self):
@@ -192,26 +193,52 @@ class ImageLayerArtist(LayerArtist):
             result.vmax = vals[.99 * vals.size]
         return result
 
+    def override_image(self, image):
+        """Temporarily show a different image"""
+        self._override_image = image
+
+    def clear_override(self):
+        self._override_image = None
+
+    def _extract_view(self, view, transpose):
+        if self._override_image is None:
+            result = self.layer[view]
+            if transpose:
+                result = result.T
+            return result
+        else:
+            v = [v for v in view if isinstance(v, slice)]
+            if transpose:
+                v = v[::-1]
+            result = self._override_image[v]
+            return result
+
+    def _update_clip(self, att):
+        if self._override_image is None:
+            data = small_view(self.layer, att)
+        else:
+            data = small_view_array(self._override_image)
+        self.norm.update_clip(data)
+
     def update(self, view, transpose=False):
         self.clear()
         views = view_cascade(self.layer, view)
         artists = []
 
-        lr0 = self.layer[views[0]]
+        lr0 = self._extract_view(views[0], transpose)
         self.norm = self.norm or self._default_norm(lr0)
         self.norm = self.norm or self._default_norm(lr0)
-        self.norm.update_clip(self.layer, view[0])
+        self._update_clip(views[0][0])
 
         for v in views:
-            image = self.layer[v]
+            image = self._extract_view(v, transpose)
             extent = get_extent(v, transpose)
-            if transpose:
-                image = image.T
             artists.append(self._axes.imshow(image, cmap=self.cmap,
                                              norm=self.norm,
                                              interpolation='nearest',
                                              origin='lower',
                                              extent=extent, zorder=0))
+            self._axes.set_aspect('equal', adjustable='datalim')
         self.artists = artists
         self._sync_style()
 
@@ -319,9 +346,9 @@ class RGBImageLayerArtist(ImageLayerArtist):
             self.gnorm = self.gnorm or self._default_norm(g)
             self.bnorm = self.bnorm or self._default_norm(b)
             if v is views[0]:
-                self.rnorm.update_clip(self.layer, self.r)
-                self.gnorm.update_clip(self.layer, self.g)
-                self.bnorm.update_clip(self.layer, self.b)
+                self.rnorm.update_clip(small_view(self.layer, self.r))
+                self.gnorm.update_clip(small_view(self.layer, self.g))
+                self.bnorm.update_clip(small_view(self.layer, self.b))
 
             image = np.dstack((self.rnorm(r),
                                self.gnorm(g),
@@ -338,6 +365,7 @@ class RGBImageLayerArtist(ImageLayerArtist):
                                              interpolation='nearest',
                                              origin='lower',
                                              extent=extent, zorder=0))
+            self._axes.set_aspect('equal', adjustable='datalim')
         self.artists = artists
         self._sync_style()
 
@@ -359,6 +387,9 @@ class SubsetImageLayerArtist(LayerArtist):
         # shortcut for empty subsets
         if not mask.any():
             return
+
+        if transpose:
+            mask = mask.T
 
         extent = get_extent(view, transpose)
         r, g, b = color2rgb(self.layer.style.color)

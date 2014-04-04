@@ -1,16 +1,18 @@
 import os
-
 import matplotlib
 from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
 from ..external.qt import QtCore, QtGui
 from ..external.qt.QtGui import QMenu
 from ..external.qt.QtCore import Qt, Signal
+from ..core.callback_property import add_callback
 from .qtutil import get_icon, nonpartial
 
 
 class GlueToolbar(NavigationToolbar2QT):
     pan_begin = Signal()
     pan_end = Signal()
+    mode_activated = Signal()
+    mode_deactivated = Signal()
 
     def __init__(self, canvas, frame, name=None):
         """ Create a new toolbar object
@@ -27,6 +29,7 @@ class GlueToolbar(NavigationToolbar2QT):
          The QT frame that the canvas is embedded within.
         """
         self.buttons = {}
+        self.__active = None
         self.basedir = None
         NavigationToolbar2QT.__init__(self, canvas, frame)
         if name is not None:
@@ -104,6 +107,21 @@ class GlueToolbar(NavigationToolbar2QT):
 
         #self.adj_window = None
 
+    @property
+    def _active(self):
+        return self.__active
+
+    @_active.setter
+    def _active(self, value):
+        if self.__active == value:
+            return
+
+        self.__active = value
+        if value not in [None, '']:
+            self.mode_activated.emit()
+        else:
+            self.mode_deactivated.emit()
+
     def home(self, *args):
         super(GlueToolbar, self).home(*args)
         self.canvas.homeButton.emit()
@@ -168,6 +186,14 @@ class GlueToolbar(NavigationToolbar2QT):
             menu.triggered.connect(nonpartial(enable))
 
         self.addAction(action)
+
+        # bind action status to mode.enabled
+        def toggle(state):
+            action.setVisible(state)
+            action.setEnabled(state)
+        add_callback(mode, 'enabled', toggle)
+
+        return action
 
     def set_mode(self, mode):
         if self._active != mode.mode_id:
