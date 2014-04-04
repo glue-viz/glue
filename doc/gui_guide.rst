@@ -1,5 +1,5 @@
-Tutorials and Recipes
-=====================
+User Interface Guide
+====================
 
 .. toctree::
    :maxdepth: 2

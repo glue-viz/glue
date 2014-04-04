@@ -4,13 +4,8 @@ Developer Guide
 ===============
 
 
-Overview of Architecture
-------------------------
+.. toctree::
+   :maxdepth: 2
 
-
-Creating a new Visualization Client
------------------------------------
-
-
-Creating Data Subclasses
-------------------------
+   architecture.rst
+   api.rst

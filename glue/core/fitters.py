@@ -1,24 +1,9 @@
 """
-Glue's fitting classes are designed to be easily subclassed for using
+Glue's fitting classes are designed to be easily subclassed for performing
 custom model fitting in Glue.
 
-A subclass of :class:`BaseFitter1D` must, at a minimum, override the
-fit and predict methods. In addition, a subclass can optionally add:
-
- * A label for the fit. This is highly recommended, and is used
-   when selecting between fitters.
-
- * A class-level list of param_names. These list the parameters
-   fit by a model that can be constrained (either by setting to a fixed
-   value or reticting to a given range). When such a list is present,
-   Glue provides a UI for setting these constraints)
-
- * An overridden plot and/or summarize method. These are used to
-   visualize the result of a model fit. Basic implementations already
-   exist for both methods
-
- * Zero or more class-level Option descriptors, to let users interactively
-   set the hyperparameters of a model
+See the guide on :ref:`writing custom fit plugins <fit_plugins>` for
+help with using custom fitting utilities in Glue.
 """
 
 import numpy as np
@@ -26,9 +11,26 @@ import numpy as np
 from .simpleforms import IntOption, Option
 
 
+__all__ = ['BaseFitter1D',
+           'PolynomialFitter',
+           'AstropyFitter1D',
+           'SimpleAstropyGaussianFitter',
+           'BasicGaussianFitter']
+
+
 class BaseFitter1D(object):
-    label = "Fitter"  # short name used to identify this Fit class in the UI
-    param_names = []  # list of parameter names that support restrictions
+
+    """
+    Base class for 1D fitters.
+
+    This abstract class must be overwritten.
+    """
+
+    label = "Fitter"
+    """A short label for the fit, used by the GUI"""
+
+    param_names = []
+    """list of parameter names that support restrictions"""
 
     def __init__(self, **params):
         self._constraints = {}
@@ -47,8 +49,8 @@ class BaseFitter1D(object):
         :param axes: The Matplotlib axes to add the fit to
         :param x: The values of X at which to visualize the model
 
-        :returns: A list of matplotlib artists. This is important: plots
-        will not be properly cleared if this isn't provided
+        :returns: A list of matplotlib artists. **This is important:**
+                  plots will not be properly cleared if this isn't provided
         """
         y = self.predict(fit_result, x)
         result = axes.plot(x, y, '#4daf4a',
@@ -62,6 +64,13 @@ class BaseFitter1D(object):
 
     @property
     def options(self):
+        """
+        A dictionary of the current setting of each model hyperparameter.
+
+        Hyperparameters are defined in subclasses by creating class-level
+        :mod:`Option <glue.core.simpleforms>` attributes. This attribute
+        dict maps ``{hyperparameter_name: current_value}``
+        """
         result = []
         for typ in type(self).mro():
             result.extend(k for k, v in typ.__dict__.items()
@@ -72,23 +81,22 @@ class BaseFitter1D(object):
         """
         Return a textual summary of the fit.
 
-        :param fit_result: The returh value from :meth:`fit`
-        :param x: The x values passed to fit
-        :returns: A string
+        :param fit_result: The return value from :meth:`fit`
+        :param x: The x values passed to :meth:`fit`
+        :returns: A description of the fit result
+        :rtype: str
         """
         return str(fit_result)
 
     @property
     def constraints(self):
         """
-        A dictionary of the constraints on each parameter in param_names.
-        Each value is a dictionary with 4 values:
-            - value:
-                The default value
-            - fixed:
-                True / False, indicating whether the parameter is fixed
-            - bounds:
-                [min, max] or None
+        A dict of the constraints on each parameter in :attr:`param_names`.
+        Each value is itself a dict with 3 items:
+
+        :key value: The default value
+        :key fixed: True / False, indicating whether the parameter is fixed
+        :key bounds: [min, max] or None, indicating lower/upper limits
         """
         result = {}
         for p in self.param_names:
@@ -103,9 +111,9 @@ class BaseFitter1D(object):
 
         :param parameter_name: name of the parameter to update
         :type parameter_name: str
-        :param value: Set the default value(optional)
-        :param limits: Set the limits to[min, max](optional)
-        :param fixed: Set whether the parameter is fixed(optional)
+        :param value: Set the default value (optional)
+        :param limits: Set the limits to[min, max] (optional)
+        :param fixed: Set whether the parameter is fixed (optional)
         """
         c = self._constraints.setdefault(parameter_name, {})
         if value is not None:
@@ -132,32 +140,20 @@ class BaseFitter1D(object):
         """
         Fit the model to data.
 
-        **This must be ovverriden by a subclass**
+        *This must be overriden by a subclass.*
 
-        :param x: The X - values of the data
-        :type x: numpy array
-        :param y: The Y - values of the data
-        :type y: numpy array
-        :param dy: The uncertainties(assumed to be 1sigma) on each datum
-        :type dy: numpy array, or None
-        :param constraints: A dictionary of constraints on model parameters.
-        Each value is itself a dictionary, with 4 keys:
-            - value:
-                The requested initial value for this parameter
-            - fixed:
-                if True, this parameter should be held fixed
-            - limits:
-                None, or [min, max], giving the allowed range
-                      for this parameter
-        **options:
-            A dict of {option name: option value} for each
-                   hyperparameter of this model
+        :param x: The x values of the data
+        :type x:  :class:`numpy.ndarray`
+        :param y: The y values of the data
+        :type y:  :class:`numpy.ndarray`
+        :param dy: 1 sigma uncertainties on each datum (optional)
+        :type dy: :class:`numpy.ndarray`
+        :param constraints: The current value of :attr:`constraints`
+        :param options: kwargs for model hyperparameters.
 
-        :returns: An object representing the fit. This is
-        passed to predict and summarize so, as long as these methods
-        know what to do with the result, there are no other restrictions
-        on what the return value should be.
+        :returns: An object representing the fit result.
         """
+
         raise NotImplementedError()
 
     def predict(self, fit_result, x):
@@ -168,10 +164,10 @@ class BaseFitter1D(object):
 
         :param fit_result: The result from the fit method
         :param x: Locations to evaluate model at
-        :type x: Numpy array
+        :type x: :class:`numpy.ndarray`
 
         :returns: model(x)
-        :rtype: numpy array
+        :rtype: :class:`numpy.ndarray`
         """
         raise NotImplementedError()
 
@@ -179,23 +175,24 @@ class BaseFitter1D(object):
 class AstropyFitter1D(BaseFitter1D):
 
     """
-    A generic class for wrapping astropy model classes in
-    Glue fitters.
+    A base class for wrapping :mod:`astropy.modeling`.
 
-    Subclasses must override:
+    Subclasses must override :attr:`model_cls` :attr:`fitting_cls`
+    to point to the desired Astropy :mod:`model <astropy.modeling>`
+    and :mod:`fitter <astropy.modeling.fitting>` classes.
 
-    - The model_cls class variable with an Astropy.modeling.model class
-    - The fitting_cls class variable with an Astropy.modeling.fitters class
-
-    In addition, they should override:
-    - The label with a better label
-    - The parameter_guesses method to generate initial guesses for
-      model parameters
+    In addition, they should override :attr:`label` with a better label,
+    and :meth:`parameter_guesses` to generate initial guesses
     """
 
-    model_cls = None  # class describing the model
-    fitting_cls = None  # class to fit the model
+    model_cls = None
+    """class describing the model"""
+
+    fitting_cls = None
+    """class to fit the model"""
+
     label = "Base Astropy Fitter"
+    """UI Label"""
 
     @property
     def param_names(self):
@@ -245,18 +242,18 @@ class AstropyFitter1D(BaseFitter1D):
 
     def parameter_guesses(self, x, y, dy):
         """
-        Provide initial guesses for each model parameter
+        Provide initial guesses for each model parameter.
 
         **The base implementation does nothing, and should be overridden**
 
         :param x: X - values of the data
-        :type x:  numpy array
+        :type x: :class:`numpy.ndarray`
         :param y: Y - values of the data
-        :type y:  numpy array
+        :type y: :class:`numpy.ndarray`
         :param dy: ncertainties on Y(assumed to be 1 sigma)
-        :type dy: numpy array
+        :type dy: :class:`numpy.ndarray`
 
-        :returns: A dict maping {parameter_name: value guess} for each
+        :returns: A dict maping ``{parameter_name: value guess}`` for each
                   parameter
         """
         return {}
@@ -274,10 +271,10 @@ def _gaussian_parameter_estimates(x, y, dy):
 class BasicGaussianFitter(BaseFitter1D):
 
     """
-    Fallback Gaussian fitter, for astropy < 0.3
+    Fallback Gaussian fitter, for astropy < 0.3.
 
-    If astropy.modeling exists, this class is replaced by
-    SimpleAstropyGaussianFitter
+    If :mod:`astropy.modeling` is installed, this class is replaced by
+    :class:`SimpleAstropyGaussianFitter`
     """
     label = "Gaussian"
 
@@ -330,6 +327,10 @@ try:
     from astropy.modeling import models, fitting
 
     class SimpleAstropyGaussianFitter(AstropyFitter1D):
+
+        """
+        Guassian fitter using astropy.modeling.
+        """
         model_cls = models.Gaussian1D
         fitting_cls = fitting.NonLinearLSQFitter
         label = "Gaussian"
@@ -343,10 +344,19 @@ except ImportError:
 
 
 class PolynomialFitter(BaseFitter1D):
+
+    """
+    A polynomial model.
+
+    The degree of the polynomial is specified by :attr:`degree`
+    """
     label = "Polynomial"
     degree = IntOption(min=0, max=5, default=3, label="Polynomial Degree")
 
     def fit(self, x, y, dy, constraints, degree=2):
+        """
+        Fit a ``degree``-th order polynomial to the data.
+        """
         w = self._sigma_to_weights(dy)
 
         return np.polyfit(x, y, degree, w=w)

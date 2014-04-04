@@ -11,7 +11,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import sys
+import os
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -25,15 +26,25 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.mathjax', 'sphinx.ext.viewcode', 'astropy.sphinx.ext.automodapi','astropy.sphinx.ext.numpydoc', 'astropy.sphinx.ext.automodsumm', 'sphinx.ext.intersphinx']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.coverage',
+              'sphinx.ext.mathjax', 'sphinx.ext.viewcode',
+              'astropy.sphinx.ext.astropyautosummary',
+              'astropy.sphinx.ext.automodapi',
+              'astropy.sphinx.ext.numpydoc',
+              'astropy.sphinx.ext.automodsumm', 'sphinx.ext.intersphinx']
 
 intersphinx_cache_limit = 10     # days to keep the cached inventories
 intersphinx_mapping = {
-    'sphinx': ('http://sphinx.pocoo.org',  None),
-    'python':('http://docs.python.org/2.7',None),
-    'matplotlib':('http://matplotlib.sourceforge.net', None),
-    'numpy':('http://docs.scipy.org/doc/numpy',None),
+    'sphinx': ('http://sphinx.pocoo.org', None),
+    'python': ('http://docs.python.org/2.7', None),
+    'matplotlib': ('http://matplotlib.sourceforge.net', None),
+    'numpy': ('http://docs.scipy.org/doc/numpy', None),
+    'astropy': ('http://docs.astropy.org/en/stable/', None),
 }
+
+numpydoc_show_class_members = False
+autosummary_generate = True
+automodapi_toctreedirnm = 'api'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -49,7 +60,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Glue'
-copyright = u'2012, Chris Beaumont, Thomas Robitaille, Michelle Borkin'
+copyright = u'2012-2014, Chris Beaumont, Thomas Robitaille, Michelle Borkin'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -72,7 +83,7 @@ release = '0.1'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', '_templates']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -99,15 +110,18 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#html_theme = 'sphinxdoc'
+try:  # use ReadTheDocs theme, if installed
+    import sphinx_rtd_theme
+    html_theme = 'sphinx_rtd_theme'
+    html_theme_path = [sphinx_rtd_theme.get_html_theme_path(), ]
+except ImportError:
+    pass
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #html_theme_options = {}
 
-# Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -178,21 +192,21 @@ htmlhelp_basename = 'Gluedoc'
 # -- Options for LaTeX output --------------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    #'papersize': 'letterpaper',
 
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    #'pointsize': '10pt',
 
-# Additional stuff for the LaTeX preamble.
-#'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    #'preamble': '',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Glue.tex', u'Glue Documentation',
-   u'Chris Beaumont, Thomas Robitaille, Michelle Borkin', 'manual'),
+    ('index', 'Glue.tex', u'Glue Documentation',
+     u'Chris Beaumont, Thomas Robitaille, Michelle Borkin', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -235,9 +249,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'Glue', u'Glue Documentation',
-   u'Chris Beaumont, Thomas Robitaille, Michelle Borkin', 'Glue', 'One line description of project.',
-   'Miscellaneous'),
+    ('index', 'Glue', u'Glue Documentation',
+     u'Chris Beaumont, Thomas Robitaille, Michelle Borkin', 'Glue', 'One line description of project.',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -251,3 +265,17 @@ texinfo_documents = [
 
 todo_include_todos = True
 autoclass_content = 'both'
+
+nitpick_ignore = [('py:class', 'object'), ('py:class', 'str'),
+                  ('py:class', 'list'), ('py:obj', 'numpy array'),
+                  ('py:obj', 'integer'), ('py:obj', 'Callable'),
+                  ('py:class', 'PySide.QtGui.QMainWindow'),
+                  ('py:class', 'PySide.QtGui.QWidget'),
+                  ('py:obj', "str ('file' | 'directory' | 'label')"),
+                  ('py:obj', 'function(application)')]
+
+
+# coax Sphinx into treating descriptors as attributes
+# see https://bitbucket.org/birkenfeld/sphinx/issue/1254/#comment-7587063
+from glue.qt.widget_properties import WidgetProperty
+WidgetProperty.__get__ = lambda self, *args, **kwargs: self

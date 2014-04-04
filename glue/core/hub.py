@@ -9,6 +9,7 @@ __all__ = ['Hub', 'HubListener']
 
 
 class Hub(object):
+
     """The hub manages communication between subscribers.
 
     Objects :func:`subscribe` to receive specific message types. When
@@ -65,8 +66,8 @@ class Hub(object):
         :param subscriber: The subscribing object
         :type subscriber: :class:`~glue.core.hub.HubListener`
 
-        :param message_class: The class of messages to subscribe to
-        :type message_class: message class type (not Instance)
+        :param message_class: A :class:`~glue.core.message.Message` class
+                              to subscribe to
 
         :param handler:
            An optional function of the form handler(message) that will
@@ -84,7 +85,7 @@ class Hub(object):
 
         Raises:
             InvalidMessage: If the input class isn't a
-            :class:`~glue.core.Message` class
+            :class:`~glue.core.message.Message` class
 
             InvalidSubscriber: If the input subscriber isn't a
             HubListener object.
@@ -150,16 +151,16 @@ class Hub(object):
         # self._subscriptions:
         # subscriber => { message type => (filter, handler)}
 
-        #loop over subscribed objects
+        # loop over subscribed objects
         for subscriber, subscriptions in self._subscriptions.items():
 
-            #subscriptions to message or its superclasses
+            # subscriptions to message or its superclasses
             messages = [msg for msg in subscriptions.keys() if
                         issubclass(type(message), msg)]
             if len(messages) == 0:
                 continue
 
-            #narrow to the most-specific message
+            # narrow to the most-specific message
             candidate = max(messages, key=_mro_count)
 
             test, handler = subscriptions[candidate]
@@ -197,6 +198,7 @@ class Hub(object):
 
 
 class HubListener(object):
+
     """
     The base class for any object that subscribes to hub messages.
     This interface defines a single method, notify, that receives

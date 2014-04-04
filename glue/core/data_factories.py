@@ -1,4 +1,7 @@
-""" Factory methods to build Data objects from files
+""" Factory methods to build Data objects from files"""
+
+"""
+Implementation notes:
 
 Each factory method conforms to the folowing structure, which
 helps the GUI Frontend easily load data:
@@ -18,7 +21,7 @@ whether it can handle a requested filename and keyword set
 6) Optionally, the function is registered to open a given extension by
 default by calling set_default_factory
 
-Putting this together, the simplest data factory code looks like this:
+Putting this together, the simplest data factory code looks like this::
 
     def dummy_factory(file_name):
         return glue.core.Data()
@@ -40,7 +43,7 @@ from ..external.astro import fits
 
 
 __all__ = ['load_data', 'gridded_data', 'casalike_cube',
-           'tabular_data', 'img_data']
+           'tabular_data', 'img_data', 'auto_data']
 __factories__ = []
 _default_factory = {}
 
@@ -94,12 +97,14 @@ def is_fits(filename):
 
 
 class LoadLog(object):
+
     """
     This class attaches some metadata to data created
     from load_data, so that the data can be re-constructed
     when loading saved state. It's only meant to be used
     within load_data
     """
+
     def __init__(self, path, factory, kwargs):
         self.path = os.path.abspath(path)
         self.factory = factory
@@ -140,16 +145,14 @@ class LoadLog(object):
 
 
 def load_data(path, factory=None, **kwargs):
-    """Use a factory to load a file and assign a label
+    """Use a factory to load a file and assign a label.
 
     This is the preferred interface for loading data into Glue,
     as it logs metadata about how data objects relate to files
-    on disk
+    on disk.
 
     :param path: Path to a file
-    :type path: str
-    :param factory: factory function to use. Defaults to auto_data
-    :type factory: function
+    :param factory: factory function to use. Defaults to :func:`auto_data`
 
     Extra keywords are passed through to factory functions
     """
@@ -217,9 +220,7 @@ def find_factory(filename, **kwargs):
 
 
 def auto_data(filename, *args, **kwargs):
-    """Attempt to automatically construct a data object,
-    by trying all known factory methods.
-    """
+    """Attempt to automatically construct a data object"""
     fac = find_factory(filename, **kwargs)
     if fac is None:
         raise KeyError("Don't know how to open file: %s" % filename)
@@ -232,9 +233,9 @@ __factories__.append(auto_data)
 
 def gridded_data(filename, format='auto', **kwargs):
     """
-    Construct an n-dimensional data object from `filename`. If the
+    Construct an n - dimensional data object from ``filename``. If the
     format cannot be determined from the extension, it can be
-    specified using the `format=` option. Valid formats are 'fits' and
+    specified using the ``format`` option. Valid formats are 'fits' and
     'hdf5'.
     """
     result = Data()
@@ -282,7 +283,7 @@ set_default_factory('hdf5', gridded_data)
 
 def casalike_cube(filename, **kwargs):
     """
-    This provides special support for 4D CASA-like cubes,
+    This provides special support for 4D CASA - like cubes,
     which have 2 spatial axes, a spectral axis, and a stokes axis
     in that order.
 
@@ -301,7 +302,7 @@ def casalike_cube(filename, **kwargs):
 def is_casalike(filename, **kwargs):
     """
     Check if a file is a CASA like cube,
-    with (P,P,V,Stokes) layout
+    with (P, P, V, Stokes) layout
     """
     if not is_fits(filename):
         return False

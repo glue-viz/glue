@@ -5,10 +5,6 @@ from ...external.qt.QtGui import (
 
 from ...external.qt.QtCore import Qt
 
-from ...core.hub import HubListener
-from ...core.data import Data
-from ...core.subset import Subset
-from ...core import command
 from ...core.application_base import ViewerBase
 from ..decorators import set_cursor
 
@@ -16,12 +12,14 @@ from ..layer_artist_model import QtLayerArtistContainer, LayerArtistView
 from .. import get_qapp
 from ..mime import LAYERS_MIME_TYPE, LAYER_MIME_TYPE
 
+__all__ = ['DataViewer']
+
 
 class DataViewer(QMainWindow, ViewerBase):
 
     """Base class for all Qt DataViewer widgets.
 
-    This defines a minimal interface, and implemlements the following:
+    This defines a minimal interface, and implemlements the following::
 
        * An automatic call to unregister on window close
        * Drag and drop support for adding data
@@ -101,7 +99,6 @@ class DataViewer(QMainWindow, ViewerBase):
 
     def move(self, x=None, y=None):
         x0, y0 = self.position
-        target = self._mdi_wrapper or self
         if x is None:
             x = x0
         if y is None:

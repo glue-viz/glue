@@ -1,3 +1,5 @@
+.. _spectrum:
+
 =================
 Spectrum Analysis
 =================
@@ -12,11 +14,19 @@ on an image viewer:
 
 Then, click-drag a box on the image. Glue will extract a spectrum by
 integrating over the dimensions of the box, for each slice of the cube.
-This spawns a new window, which you can interact with in a few ways.
+Likewise, you can also drag a subset onto the spectrum window, to extract
+a spectrum for the pixels in that subset.
+
+The spectrum is displayed in a new window, which you can interact with
+in a few ways.
 
 .. figure:: spectrum_window.png
    :align: center
    :width: 500px
+
+
+Interaction Modes
+=================
 
 Navigation
 ^^^^^^^^^^
@@ -35,7 +45,7 @@ defines the slices to collapse over, which you can edit by dragging the edges.
 
 Profile Fitting
 ^^^^^^^^^^^^^^^^
-By clicking on the fit tab, you can fit a model to the extracted spectrum.
+By clicking on the **fit** tab, you can fit a model to the extracted spectrum.
 Again, the two sided handle on the plot defines the range of data to fit.
 Clicking the fit button will add a best-fit model to the plot. The dropdown
 lets you choose which model to fit to the data.
@@ -45,8 +55,10 @@ on the settings button. For example, the (astropy-powered) Gaussian fitter
 allows you to fix certain parameters, or limit them to specific ranges.
 
 
+.. _fit_plugins:
+
 Custom fitting plugins
------------------------
+======================
 
 The profile fitting tool is designed to be easily extended, so that
 you can plug in your own model fitting code worrying about GUI code.
@@ -95,8 +107,8 @@ This code is enough to let us fit lines to data:
 
 .. note:: In order for Glue to find this code, we need to copy this file to the same directory as :ref:`config.py <configuration>` (``~/.glue`` by default), and add ``import line_fit_plugin`` to ``config.py``.
 
-Polygon fitter, with Options
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Polynomial fitter, with Options
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Generalizing the line fitter above to higher degree polynomials is trivial, since ``polyfit/polyval`` both handle this case. We might want to make the degree of the fit a user-settable
 parameter. We can do this by adding a UI :mod:`option <glue.core.simpleforms>`, and a few keywords to our class:
 

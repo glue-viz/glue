@@ -31,13 +31,18 @@ class WidgetProperty(object):
     which translate between widget states and python variables
     """
 
-    def __init__(self, att):
+    def __init__(self, att, docstring=''):
         """
         :param att: The location, within a class instance, of the widget
         to wrap around. If the widget is nested inside another variable,
         normal '.' syntax can be used (e.g. 'sub_window.button')
 
-        :type att: str"""
+        :type att: str
+        :param docstring: Optional short summary for the property.
+                          Used by sphinx. Should be 1 sentence or less.
+        :type docstring: str
+        """
+        self.__doc__ = docstring
         self._att = att.split('.')
 
     def __get__(self, instance, type=None):
@@ -79,7 +84,9 @@ class CurrentComboProperty(WidgetProperty):
 
 
 class TextProperty(WidgetProperty):
+
     """ Wrapper around the text() and setText() methods for QLabel etc"""
+
     def getter(self, widget):
         return widget.text()
 

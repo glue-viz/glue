@@ -1,6 +1,5 @@
 # pylint: disable=W0223
 import sys
-from functools import partial
 
 from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                                  QMenu, QMdiSubWindow, QAction, QMessageBox,
@@ -8,7 +7,7 @@ from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                                  QToolButton, QVBoxLayout, QWidget)
 from ..external.qt.QtCore import Qt, QSize, QSettings
 
-from ..core import command, Session
+from ..core import command
 from .. import env
 from ..qt import get_qapp
 from .decorators import set_cursor, messagebox_on_error
@@ -23,6 +22,8 @@ from .widgets.layer_tree_widget import PlotAction, LayerTreeWidget
 from .widgets.data_viewer import DataViewer
 from .widgets.settings_editor import SettingsEditor
 from .widgets.mpl_widget import defer_draw
+
+__all__ = ['GlueApplication']
 
 
 def _fix_ipython_pylab():
@@ -42,7 +43,7 @@ def _fix_ipython_pylab():
 
 class GlueApplication(Application, QMainWindow):
 
-    """ The main Glue window """
+    """ The main GUI application for the Qt frontend"""
 
     def __init__(self, data_collection=None, session=None):
         QMainWindow.__init__(self)
@@ -60,8 +61,8 @@ class GlueApplication(Application, QMainWindow):
         self.tab_widget.setTabsClosable(True)
 
         lwidget = self._ui.layerWidget
-        act = PlotAction(lwidget, self)
-        lwidget.layerTree.addAction(act)
+        a = PlotAction(lwidget, self)
+        lwidget.layerTree.addAction(a)
         lwidget.bind_selection_to_edit_subset()
 
         self._tweak_geometry()
@@ -102,6 +103,9 @@ class GlueApplication(Application, QMainWindow):
 
     @property
     def tab_count(self):
+        """
+        The number of open tabs
+        """
         return self._ui.tabWidget.count()
 
     @property
@@ -138,8 +142,7 @@ class GlueApplication(Application, QMainWindow):
                    hold_position=False):
         """ Add a widget to one of the tabs
 
-        :param new_widget: Widge to add
-        :type new_widget: QWidget
+        :param new_widget: new QWidget to add
 
         :param label: label for the new window. Optional
         :type label: str
@@ -167,6 +170,15 @@ class GlueApplication(Application, QMainWindow):
         return sub
 
     def set_setting(self, key, value):
+        """
+        Update a persistent setting in the application.
+
+        :param key: Name of a setting in the
+                    :attr:`Settings registry <glue.core.config.settings>`
+        :type key: str
+        :param value: New value for the setting
+        :type value: str
+        """
         super(GlueApplication, self).set_setting(key, value)
         settings = QSettings('glue-viz', 'glue')
         settings.setValue(key, value)
@@ -361,7 +373,6 @@ class GlueApplication(Application, QMainWindow):
         from glue.config import exporters
         if len(exporters) > 0:
             acts = []
-            name = 'Export Session'
             for e in exporters:
                 label, saver, checker, mode = e
                 a = act(label, self,
@@ -461,6 +472,15 @@ class GlueApplication(Application, QMainWindow):
 
     @staticmethod
     def restore(path, show=True):
+        """Reload a previously-saved session
+
+        :param path: Path to the file to load
+        :type path: str
+        :param show: If True (the default), immediately show the widget
+        :type show: bool
+
+        :returns: A new :class:`GlueApplication`
+        """
         from ..core.state import GlueUnSerializer
 
         with open(path) as infile:
@@ -472,6 +492,9 @@ class GlueApplication(Application, QMainWindow):
         return ga
 
     def has_terminal(self):
+        """
+        Returns True if the IPython terminal is present.
+        """
         return self._terminal is not None
 
     def _create_terminal(self):
@@ -534,6 +557,9 @@ class GlueApplication(Application, QMainWindow):
         self._terminal.widget().show()
 
     def start(self):
+        """
+        Show the GUI and start the application.
+        """
         self.show()
         self.raise_()  # bring window to front
         # at some point during all this, the MPL backend
@@ -568,6 +594,14 @@ class GlueApplication(Application, QMainWindow):
         event.accept()
 
     def report_error(self, message, detail):
+        """
+        Display an error in a modal
+
+        :param message: A short description of the error
+        :type message: str
+        :param detail: A longer description
+        :type detail: str
+        """
         qmb = QMessageBox(QMessageBox.Critical, "Error", message)
         qmb.setDetailedText(detail)
         qmb.resize(400, qmb.size().height())
@@ -582,6 +616,11 @@ class GlueApplication(Application, QMainWindow):
 
     @property
     def viewers(self):
+        """
+        A list of lists of open Data Viewers.
+
+        Each inner list contains the viewers open on a particular tab.
+        """
         result = []
         for t in range(self.tab_count):
             tab = self.tab(t)
@@ -595,4 +634,9 @@ class GlueApplication(Application, QMainWindow):
 
     @property
     def tab_names(self):
+        """
+        The name of each tab
+
+        A list of strings
+        """
         return [self.tab_bar.tabText(i) for i in range(self.tab_count)]

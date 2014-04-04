@@ -11,6 +11,7 @@ __all__ = ['Message', 'ErrorMessage', 'SubsetMessage', 'SubsetCreateMessage',
 
 
 class Message(object):
+
     """
     Base class for messages that the hub handles.
 
@@ -21,20 +22,15 @@ class Message(object):
     The message class family is hierarchical, and a client subscribing
     to a message class implicitly subscribes to all of its subclasses.
 
-    Attributes :
-
-    ----------
-    sender : The object which sent the message
-    tag : An optional string describing the message
+    :attr sender: The object which sent the message
+    :attr tag: An optional string describing the message
     """
+
     def __init__(self, sender, tag=None):
         """Create a new message
 
-        Parameters
-        ----------
-        sender : The object sending the message
-
-        tag : An optional string describing the message
+        :param sender: The object sending the message
+        :param tag: An optional string describing the message
         """
         self.sender = sender
         self.tag = tag
@@ -46,11 +42,13 @@ class Message(object):
 
 
 class ErrorMessage(Message):
+
     """ Used to send general purpose error messages """
     pass
 
 
 class SubsetMessage(Message):
+
     """
     A general message issued by a subset.
 
@@ -66,6 +64,7 @@ class SubsetMessage(Message):
 
 
 class SubsetCreateMessage(SubsetMessage):
+
     """
     A message that a subset issues when its state changes
     """
@@ -73,15 +72,15 @@ class SubsetCreateMessage(SubsetMessage):
 
 
 class SubsetUpdateMessage(SubsetMessage):
-    """
-    A message that a subset issues when its state changes
 
-    Attributes
-    -----------
-    attribute : string
-             An optional label of what attribute has changed
     """
+    A message that a subset issues when its state changes.
+    """
+
     def __init__(self, sender, attribute=None, tag=None):
+        """
+        :param attribute: An optional label of what attribute has changed
+        """
         SubsetMessage.__init__(self, sender, tag=tag)
         self.attribute = attribute
 
@@ -92,6 +91,7 @@ class SubsetUpdateMessage(SubsetMessage):
 
 
 class SubsetDeleteMessage(SubsetMessage):
+
     """
     A message that a subset issues when it is deleted
     """
@@ -99,9 +99,11 @@ class SubsetDeleteMessage(SubsetMessage):
 
 
 class DataMessage(Message):
+
     """
     The base class for messages that data objects issue
     """
+
     def __init__(self, sender, tag=None):
         from .data import Data
         if (not isinstance(sender, Data)):
@@ -112,6 +114,7 @@ class DataMessage(Message):
 
 
 class DataAddComponentMessage(DataMessage):
+
     def __init__(self, sender, component_id, tag=None):
         super(DataAddComponentMessage, self).__init__(sender, tag=tag)
         self.component_id = component_id
@@ -122,12 +125,14 @@ class ComponentsChangedMessage(DataMessage):
 
 
 class DataUpdateMessage(DataMessage):
+
     def __init__(self, sender, attribute, tag=None):
         super(DataUpdateMessage, self).__init__(sender, tag=tag)
         self.attribute = attribute
 
 
 class DataCollectionMessage(Message):
+
     def __init__(self, sender, tag=None):
         from .data_collection import DataCollection
         if (not isinstance(sender, DataCollection)):
@@ -145,12 +150,14 @@ class DataCollectionActiveDataChange(DataCollectionMessage):
 
 
 class DataCollectionAddMessage(DataCollectionMessage):
+
     def __init__(self, sender, data, tag=None):
         DataCollectionMessage.__init__(self, sender, tag=tag)
         self.data = data
 
 
 class DataCollectionDeleteMessage(DataCollectionMessage):
+
     def __init__(self, sender, data, tag=None):
         DataCollectionMessage.__init__(self, sender, tag=tag)
         self.data = data

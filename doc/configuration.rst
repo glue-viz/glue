@@ -30,8 +30,7 @@ Example Usage: Custom Link Functions
 
 As an example, let's create some translation functions which will
 allow us to link RA / Dec data to other data in Galactic
-latitude/longitude (see :ref:`tutorial_link` in the Getting Started
-Tutorial). The following four functions use the ``Kapetyn`` module to achieve the translation:
+latitude/longitude::
 
 .. literalinclude:: coord_convert.py
 

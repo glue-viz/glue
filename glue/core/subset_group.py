@@ -1,6 +1,6 @@
 """
-A :class:`~glue.core.subset_group.Subset Group` unites a group of
-:class:`~glue.core.Subset` instances together with a consistent state,
+A :class:`~glue.core.subset_group.SubsetGroup` unites a group of
+:class:`~glue.core.subset.Subset` instances together with a consistent state,
 label, and style.
 
 While subsets are internally associated with particular datasets, it's
@@ -24,8 +24,10 @@ from .message import (DataCollectionAddMessage,
                       DataCollectionDeleteMessage
                       )
 
+__all__ = ['GroupedSubset', 'SubsetGroup']
 
 class GroupedSubset(Subset):
+
     """
     A member of a SubsetGroup, whose internal representation
     is shared with other group members
@@ -76,6 +78,7 @@ class GroupedSubset(Subset):
 
 
 class SubsetGroup(HubListener):
+
     def __init__(self, color=RED, alpha=0.5, label=None, subset_state=None):
         """
         Create a new empty SubsetGroup
@@ -99,14 +102,15 @@ class SubsetGroup(HubListener):
 
     def register(self, data):
         """
-        Register to a :class:`~glue.core.DataCollection`
+        Register to a :class:`~glue.core.data_collection.DataCollection`
 
-        This is called automatically by DataCollection.new_subset_grouop
+        This is called automatically by
+        :meth:`glue.core.data_collection.DataCollection.new_subset_group`
         """
         self.register_to_hub(data.hub)
 
-        #add to self, then register, so fully populated by first
-        #broadcast
+        # add to self, then register, so fully populated by first
+        # broadcast
 
         for d in data:
             s = GroupedSubset(d, self)
@@ -150,7 +154,7 @@ class SubsetGroup(HubListener):
             s.sync_style(self.style)
 
     def broadcast(self, item):
-        #used by __setattr__ and VisualAttributes.__setattr__
+        # used by __setattr__ and VisualAttributes.__setattr__
         if isinstance(item, VisualAttributes):
             self._sync_style()
             return

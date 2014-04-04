@@ -13,33 +13,36 @@ __all__ = ['DataCollection']
 
 class DataCollection(HubListener):
 
-    """DataCollections manage sets of data. They have the following
-    responsibilities:
+    """The top-level object for interacting with datasets in Glue.
+
+    DataCollections have the following responsibilities:
 
        * Providing a way to retrieve and store data
        * Broadcasting messages when data are added or removed
-       * Keeping each managed data set's list of DerivedComponents up-to-date
+       * Keeping each managed data set's list of
+         :class:`~glue.core.data.DerivedComponent` instances up-to-date
        * Creating the hub that all other objects should use to communicate
-         with one another (stored in DataCollection.hub)
+         with one another (stored in ``self.hub``)
     """
 
-    def __init__(self, data=None, hub=None):
+    def __init__(self, data=None):
         """
-        :param data: glue.Data object, or list of such objects (optional)
-                      These objects will be auto-appended to the collection
+        :param data: :class:`~glue.core.data.Data` object, or list of such objects
         """
         super(DataCollection, self).__init__()
         self._link_manager = LinkManager()
         self._data = []
-        self._subset_groups = []
+
         self.hub = None
+
+        self._subset_groups = []
         self.register_to_hub(Hub())
         self.extend(as_list(data or []))
         self._sg_count = 0
 
     @property
     def data(self):
-        """ The data objects in the collection (Read Only) """
+        """ The :class:`~glue.core.data.Data` objects in the collection """
         return self._data
 
     def append(self, data):
@@ -68,7 +71,7 @@ class DataCollection(HubListener):
     def extend(self, data):
         """Add several new datasets to this collection
 
-        See :meth:`~DataCollection.append` for more information
+        See :meth:`append` for more information
 
         :param data: List of data objects to add
         """
@@ -107,17 +110,20 @@ class DataCollection(HubListener):
 
     @property
     def links(self):
+        """
+        Tuple of :class:`~glue.core.component_link.ComponentLink` objects.
+        """
         return tuple(self._link_manager.links)
 
     def add_link(self, links):
         """Add one or more links to the data collection.
+
         This will auto-update the components in each data set
 
-        :param links: The links to add
-        :type links: A scalar or list of
-                     :class:`~glue.core.component_link.ComponentLink`
-                     instances,
-                     or a :class:`~glue.core.link_helpers.LinkCollection`
+        :param links:
+           The links to add. A scalar or list of
+           :class:`~glue.core.component_link.ComponentLink`
+           instances, or a :class:`~glue.core.link_helpers.LinkCollection`
         """
         self._link_manager.add_link(links)
         for d in self._data:
@@ -128,12 +134,10 @@ class DataCollection(HubListener):
 
     def set_links(self, links):
         """Override the links in the collection, and update data
-        objects as necessary
+        objects as necessary.
 
-        :param links: The new links
-        :type links: An iterable of
-                     :class:`~glue.core.component_link.ComponentLInk`
-                     instances
+        :param links: The new links. An iterable of
+            :class:`~glue.core.component_link.ComponentLink` instances
         """
         self._link_manager.clear()
         for link in links:
@@ -143,7 +147,8 @@ class DataCollection(HubListener):
             self._link_manager.update_data_components(d)
 
     def register_to_hub(self, hub):
-        """ Register managed data objects to a hub
+        """ Register managed data objects to a hub.
+
         :param hub: The hub to register with
         :type hub: :class:`~glue.core.hub.Hub`
         """
@@ -197,7 +202,9 @@ class DataCollection(HubListener):
 
     @property
     def subset_groups(self):
-        """ View of current subset groups """
+        """
+        tuple of current :class:`Subset Groups <glue.core.subset_group.SubsetGroup>`
+        """
         return tuple(self._subset_groups)
 
     def __contains__(self, obj):

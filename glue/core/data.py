@@ -11,7 +11,6 @@ from .component_link import (ComponentLink, CoordinateComponentLink,
                              BinaryComponentLink)
 from .subset import Subset, InequalitySubsetState, SubsetState
 from .hub import Hub
-from .tree import Tree
 from .util import (split_component_view, view_shape,
                    coerce_numeric, check_sorted)
 from .message import (DataUpdateMessage,
@@ -20,8 +19,8 @@ from .message import (DataUpdateMessage,
 
 from .odict import OrderedDict
 
-__all__ = ['ComponentID', 'Component', 'DerivedComponent', 'Data',
-           'CoordinateComponent']
+__all__ = ['Data', 'ComponentID', 'Component', 'DerivedComponent',
+           'CategoricalComponent', 'CoordinateComponent']
 
 # access to ComponentIDs via .item[name]
 
@@ -41,11 +40,13 @@ class ComponentIDDict(object):
 
 class ComponentID(object):
 
-    """ References a Component object within a data object
+    """ References a :class:`Component` object within a :class:`Data` object.
 
-    Components are retrieved from data objects via ComponentIDs::
+    ComponentIDs behave as keys::
 
-       component = data.get_component(component_id)
+       component_id = data.id[name]
+       data[component_id] -> numpy array
+
     """
 
     def __init__(self, label, hidden=False):
@@ -56,22 +57,22 @@ class ComponentID(object):
 
     @property
     def label(self):
-        """ Return the label """
         return self._label
 
     @label.setter
     def label(self, value):
         """Change label.
 
-        WARNING: Label changes are not currently tracked by client
-        classes. Label's should only be changd before creating other
-        client objects
+        .. warning::
+            Label changes are not currently tracked by client
+            classes. Label's should only be changd before creating other
+            client objects
         """
         self._label = value
 
     @property
     def hidden(self):
-        """Whether to hide the component in lists"""
+        """Whether to hide the component by default"""
         return self._hidden
 
     def __str__(self):
@@ -135,7 +136,7 @@ class Component(object):
     def __init__(self, data, units=None):
         """
         :param data: The data to store
-        :type data: numpy array
+        :type data: :class:`numpy.ndarray`
 
         :param units: Optional unit label
         :type units: str
@@ -154,21 +155,22 @@ class Component(object):
 
     @property
     def hidden(self):
+        """Whether the Component is hidden by default"""
         return False
 
     @property
     def data(self):
-        """ Returns the data """
+        """ The underlying :class:`numpy.ndarray` """
         return self._data
 
     @property
     def shape(self):
-        """ Return the shape of the data """
+        """ Tuple of array dimensions """
         return self._data.shape
 
     @property
     def ndim(self):
-        """ Return the number of dimensions """
+        """ The number of dimensions """
         return len(self._data.shape)
 
     def __getitem__(self, key):
@@ -177,6 +179,9 @@ class Component(object):
 
     @property
     def numeric(self):
+        """
+        Whether or not the datatype is numeric
+        """
         return np.can_cast(self.data[0], np.complex)
 
     def __str__(self):
@@ -184,28 +189,6 @@ class Component(object):
 
     def jitter(self, method=None):
         raise NotImplementedError
-
-    @property
-    def creation_info(self):
-        """A 4-tuple describing how this component was created
-
-        :rtype: (callable, tuple, dict, indexers)
-        A 4-tuple of (factory, args, kwargs, indexers),
-        which communicates that this component's data
-        can be created via
-
-        bundle = factory(*args, **kwargs)
-        for i in indexers:
-            bundle = bundle[i]
-        component.data == bundle
-        """
-        from .data_factories import load_numpy_str
-        from cStringIO import StringIO
-        f = StringIO()
-        np.save(f, self.data)
-        f.seek(0)
-        data = f.read().encode('base64')
-        return load_numpy_str, (data,), {}, []
 
 
 class DerivedComponent(Component):
@@ -249,6 +232,12 @@ class DerivedComponent(Component):
 
 class CoordinateComponent(Component):
 
+    """
+    Components associated with pixel or world coordinates
+
+    The numerical values are computed on the fly.
+    """
+
     def __init__(self, data, axis, world=False):
         super(CoordinateComponent, self).__init__(None, None)
         self.world = world
@@ -273,10 +262,12 @@ class CoordinateComponent(Component):
 
     @property
     def shape(self):
+        """ Tuple of array dimensions. """
         return self._data.shape
 
     @property
     def ndim(self):
+        """ Number of dimensions """
         return len(self._data.shape)
 
     def __getitem__(self, key):
@@ -297,7 +288,16 @@ class CoordinateComponent(Component):
 
 class CategoricalComponent(Component):
 
+    """
+    Container for categorical data.
+    """
+
     def __init__(self, categorical_data, categories=None, jitter=None):
+        """
+        :param categorical_data: The underlying :class:`numpy.ndarray`
+        :param categories: List of unique values in the data
+        :jitter: Strategy for jittering the data
+        """
         super(CategoricalComponent, self).__init__(None, None)
         self._categorical_data = np.asarray(categorical_data, dtype=np.object)
         self._categorical_data.setflags(write=False)
@@ -353,12 +353,16 @@ class CategoricalComponent(Component):
         self._data.setflags(write=False)
 
     def jitter(self, method=None):
-        """ Jitter the data so the density of points can be easily seen in a
+        """
+        Jitter the data so the density of points can be easily seen in a
         scatter plot.
-        :param method: Currently only supports None and 'uniform'
-            None: No jittering is done (or any jittering is undone).
-            uniform: A unformly distributed random variable (-0.5, 0.5) is
-                     applied to each point.
+
+        :param method: None | 'uniform':
+
+        * None: No jittering is done (or any jittering is undone).
+        * uniform: A unformly distributed random variable (-0.5, 0.5)
+            is applied to each point.
+
         :return: None
         """
 
@@ -380,28 +384,41 @@ class CategoricalComponent(Component):
 
 class Data(object):
 
-    """Stores data and manages subsets.
+    """The basic data container in Glue.
 
     The data object stores data as a collection of
     :class:`~glue.core.data.Component` objects.  Each component stored in a
     dataset must have the same shape.
 
     Catalog data sets are stored such that each column is a distinct
-    1-dimensional ``Component``.
+    1-dimensional :class:`~glue.core.data.Component`.
 
-    There two ways to extract the actual numerical data stored in a
+    There are several ways to extract the actual numerical data stored in a
     :class:`~glue.core.data.Data` object::
 
-       data.get_component(component_id).data
-       data[component_id]
+       data = Data(x=[1, 2, 3], label='data')
+       xid = data.id['x']
 
-    These statements are equivalent. The second is provided since the
-    first is rather verbose
+       data[xid]
+       data.get_component(xid).data
+       data['x']  # if 'x' is a unique component name
+
+    Likewise, datasets support :ref:`fancy indexing <numpy:basics.indexing>`::
+
+        data[xid, 0:2]
+        data[xid, [True, False, True]]
+
+    See also: :ref:`data_tutorial`
     """
 
     def __init__(self, label="", **kwargs):
-        """:param label: label for data
-        :type label: str"""
+        """
+
+        :param label: label for data
+        :type label: str
+
+        Extra array-like keywords are extracted into components
+        """
         # Coordinate conversion object
         self.coords = Coordinates()
         self._shape = ()
@@ -414,6 +431,7 @@ class Data(object):
         self.id = ComponentIDDict(self)
 
         # Tree description of the data
+        # (Deprecated)
         self.tree = None
 
         # Subsets of the data
@@ -437,14 +455,23 @@ class Data(object):
 
     @property
     def subsets(self):
+        """
+        Tuple of subsets attached to this dataset
+        """
         return tuple(self._subsets)
 
     @property
     def ndim(self):
+        """
+        Dimensionality of the dataset
+        """
         return len(self.shape)
 
     @property
     def shape(self):
+        """
+        Tuple of array dimensions, like :attr:`numpy.ndarray.shape`
+        """
         return self._shape
 
     @property
@@ -461,6 +488,9 @@ class Data(object):
 
     @property
     def size(self):
+        """
+        Total number of elements in the dataset.
+        """
         return np.product(self.shape)
 
     def _check_can_add(self, component):
@@ -494,19 +524,19 @@ class Data(object):
         :param component: object to add
         :param label:
               The label. If this is a string,
-              a new ComponentID with this label will be
+              a new :class:`ComponentID` with this label will be
               created and associated with the Component
 
         :type component: :class:`~glue.core.data.Component` or
                          array-like
         :type label: :class:`str` or :class:`~glue.core.data.ComponentID`
 
-        *Raises*
+        :raises:
 
            TypeError, if label is invalid
            ValueError if the component has an incompatible shape
 
-        *Returns*
+        :returns:
 
            The ComponentID associated with the newly-added component
         """
@@ -548,14 +578,13 @@ class Data(object):
         return component_id
 
     def add_component_link(self, link, cid=None):
-        """ Shortcut method for generating a new DerivedComponent
+        """ Shortcut method for generating a new :class:`DerivedComponent`
         from a ComponentLink object, and adding it to a data set.
 
-        :param link: ComponentLink object
+        :param link: :class:`~glue.core.component_link.ComponentLink`
 
-        Returns:
-
-            The DerivedComponent that was added
+        :returns:
+            The :class:`DerivedComponent` that was added
         """
         if cid is not None:
             if isinstance(cid, basestring):
@@ -586,41 +615,51 @@ class Data(object):
 
     @property
     def components(self):
-        """ Returns a list of ComponentIDs for all components
-        (primary and derived) in the data"""
+        """ All :class:`ComponentIDs <ComponentID>` in the Data
+
+        :rtype: list
+        """
         return sorted(self._components.keys(), key=lambda x: x.label)
 
     @property
     def visible_components(self):
-        """ Returns a list of ComponentIDs for all components
-        (primary and derived) in the data"""
+        """ :class:`ComponentIDs <ComponentID>` for all non-hidden components.
+
+        :rtype: list
+        """
         return [cid for cid, comp in self._components.items()
                 if not cid.hidden and not comp.hidden]
 
     @property
     def primary_components(self):
-        """Returns a list of ComponentIDs with stored data (as opposed
-        to a :class:`~glue.core.data.DerivedComponent` )
+        """The ComponentIDs not associated with a :class:`DerivedComponent`
+
+        :rtype: list
         """
         return [c for c in self.component_ids() if
                 not isinstance(self._components[c], DerivedComponent)]
 
     @property
     def derived_components(self):
-        """A list of ComponentIDs for each
-        :class:`~glue.core.data.DerivedComponent` in the data.
+        """The ComponentIDs for each :class:`DerivedComponent`
 
-        (Read only)
+        :rtype: list
         """
         return [c for c in self.component_ids() if
                 isinstance(self._components[c], DerivedComponent)]
 
     @property
     def pixel_component_ids(self):
+        """
+        The :class:`ComponentIDs <ComponentID>` for each pixel coordinate.
+        """
         return self._pixel_component_ids
 
     @property
     def world_component_ids(self):
+        """
+        The :class:`ComponentIDs <ComponentID>` for each world coordinate.
+        """
         return self._world_component_ids
 
     def find_component_id(self, label):
@@ -628,8 +667,7 @@ class Data(object):
 
         :param label: string to search for
 
-        Returns:
-
+        :returns:
             The associated ComponentID if label is found and unique, else None
         """
         result = [cid for cid in self.component_ids() if
@@ -639,7 +677,7 @@ class Data(object):
 
     @property
     def coordinate_links(self):
-        """Return a list of the ComponentLinks that connect pixel and
+        """A list of the ComponentLinks that connect pixel and
         world. If no coordinate transformation object is present,
         return an empty list.
         """
@@ -679,27 +717,35 @@ class Data(object):
         return result
 
     def get_pixel_component_id(self, axis):
+        """Return the pixel :class:`ComponentID` associated with a given axis
+        """
         return self._pixel_component_ids[axis]
 
     def get_world_component_id(self, axis):
+        """Return the world :class:`ComponentID` associated with a given axis
+        """
         return self._world_component_ids[axis]
 
     def component_ids(self):
-        return self._components.keys()
+        """
+        Equivalent to :attr:`Data.components`
+        """
+        return list(self._components.keys())
 
     def new_subset(self, subset=None, color=None, label=None, **kwargs):
-        """ Create a new subset, and attach to self.
+        """
+        Create a new subset, and attach to self.
 
-        Note: The preferred way for creating subsets is
-        via DataCollection.new_subset_group. Manually-instantiated
-        subsets will probably *not* be represented properly by the UI
+        .. note:: The preferred way for creating subsets is via
+            :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
+            Manually-instantiated subsets will **not** be
+            represented properly by the UI
 
         :param subset: optional, reference subset or subset state.
-        If provided, the new subset will copy the logic of this subset.
+                       If provided, the new subset will copy the logic of
+                       this subset.
 
-        Returns:
-
-           The new subset object
+        :returns: The new subset object
         """
         nsub = len(self.subsets)
         color = color or COLORS[nsub % len(COLORS)]
@@ -714,16 +760,16 @@ class Data(object):
     def add_subset(self, subset):
         """Assign a pre-existing subset to this data object.
 
-        :param subset: A :class:`~glue.core.Subset` or
-        :class:`glue.core.subset.SubsetState` object
+        :param subset: A :class:`~glue.core.subset.Subset` or
+                       :class:`~glue.core.subset.SubsetState` object
 
-        if input is a SubsetState, it will be wrapped in a new Subset
-        automatically
+        If input is a :class:`~glue.core.subset.SubsetState`,
+        it will be wrapped in a new Subset automatically
 
-        NOTE:
-        The preferred way for creating subsets is
-        via DataCollection.new_subset_group. Manually-instantiated
-        subsets will probably *not* be represented properly by the UI
+        .. note:: The preferred way for creating subsets is via
+            :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
+            Manually-instantiated subsets will **not** be
+            represented properly by the UI
         """
         if subset in self.subsets:
             return  # prevents infinite recursion
@@ -756,29 +802,23 @@ class Data(object):
             raise TypeError("input is not a Hub object: %s" % type(hub))
         self.hub = hub
 
-    def read_tree(self, filename):
-        '''
-        Read a tree describing the data from a file
-        '''
-        self.tree = Tree(filename)
-
     def broadcast(self, attribute=None):
+        """
+        Send a :class:`~glue.core.message.DataUpdateMessage` to the hub
+
+        :param attribute: Name of an attribute that has changed
+        :type attribute: str
+        """
         if not self.hub:
             return
         msg = DataUpdateMessage(self, attribute=attribute)
         self.hub.broadcast(msg)
 
-    def create_subset_from_clone(self, subset, **kwargs):
-        result = Subset(self, **kwargs)
-        result.register()
-        result.subset_state = subset.subset_state
-        return result
-
     def update_id(self, old, new):
-        """Reassign a component to a different ComponentID
+        """Reassign a component to a different :class:`ComponentID`
 
-        :param old: :class:`~glue.core.data.ComponentID`. The old componentID
-        :param new: :class:`~glue.core.data.ComponentID`. The new componentID
+        :param old: The old :class:`ComponentID`.
+        :param new: The new :class:`ComponentID`.
         """
         changed = False
         if old in self._components:
@@ -829,6 +869,8 @@ class Data(object):
           The component to fetch data from
 
         :type key: :class:`~glue.core.data.ComponentID`
+
+        :returns: :class:`~numpy.ndarray`
         """
         key, view = split_component_view(key)
         if isinstance(key, basestring):

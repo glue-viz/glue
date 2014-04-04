@@ -3,19 +3,32 @@ import sys
 import imp
 import logging
 from collections import namedtuple
+"""
+Objects used to configure Glue at runtime.
+"""
+
+__all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
+           'ColormapRegistry', 'DataFactoryRegistry', 'QtClientRegistry',
+           'LinkFunctionRegistry', 'LinkHelperRegistry',
+           'ProfileFitterRegistry',
+           'qt_client', 'data_factory', 'link_function', 'link_helper',
+           'colormaps',
+           'exporters', 'settings', 'fit_plugin']
 
 
 class Registry(object):
 
-    """Registry instances are used by Glue to track objects
+    """Container to hold groups of objects or settings.
+
+    Registry instances are used by Glue to track objects
     used for various tasks like data linking, widget creation, etc.
     They have the following properties:
 
-    - A `members` property, which lists each item in the registry
-    - A `default_members` function, which can be overridden to lazily
-      initialize the members list
-    - A call interface, allowing the instance to be used as a decorator
-      for users to add new items to the registry in their config files
+        - A `members` property, which lists each item in the registry
+        - A `default_members` function, which can be overridden to lazily
+          initialize the members list
+        - A call interface, allowing the instance to be used as a decorator
+          for users to add new items to the registry in their config files
     """
 
     def __init__(self):
@@ -107,8 +120,9 @@ class ExporterRegistry(Registry):
         :type exporter: function(application, path)
 
         :param checker: function that checks if save is possible
-        :type exporter: function(application). Raises exception if
-                        export impossible
+        :type exporter: function(application)
+
+        ``exporter`` should raise an exception if export isn't possible.
 
         :param outmode: What kind of output is created?
         :type outmode: str ('file' | 'directory' | 'label')
@@ -148,23 +162,24 @@ class ColormapRegistry(Registry):
 class DataFactoryRegistry(Registry):
 
     """Stores data factories. Data factories take filenames as input,
-    and return :class:`~glue.core.Data` instances
+    and return :class:`~glue.core.data.Data` instances
 
     The members property returns a list of (function, label, identifier)
-    namedtuples.
+    namedtuples:
+
     - Function is the factory that creates the data object
     - label is a short human-readable description of the factory
-    - identifier is a function that takes (filename, **kwargs) as input
+    - identifier is a function that takes ``(filename, **kwargs)`` as input
       and returns True if the factory can open the file
 
-    New data factories can be registered via:
+    New data factories can be registered via::
 
-    @data_factory('label_name', identifier, default='txt')
-    def new_factory(file_name):
-        ...
+        @data_factory('label_name', identifier, default='txt')
+        def new_factory(file_name):
+            ...
 
     This has the additional side-effect of associating
-    this this factory with filenames ending in `txt` by default
+    this this factory with filenames ending in ``txt`` by default
     """
     item = namedtuple('DataFactory', 'function label identifier')
 
@@ -188,7 +203,7 @@ class QtClientRegistry(Registry):
 
     The members property is a list of Qt widget classes
 
-    New widgets can be registered via:
+    New widgets can be registered via::
 
         @qt_client
         class CustomWidget(QMainWindow):

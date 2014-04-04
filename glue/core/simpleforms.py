@@ -1,33 +1,45 @@
 """
 The descriptors in this module are meant to be added to classes, to
 specify simple user-settable forms. These classes are used to automatically
-cponstruct GUIs, without having to write GUI code in the form class itself.
+construct GUIs, without having to write GUI code in the form class itself.
 
-The :mod:`~glue.core.fitters` module uses these objects, for example.
+:class:`Option` objects are defined at the class-level. To instances of
+these classes, an :class:`Option` behaves like a normal instance attribute.
+
+See :ref:`fit_plugins` for example usage.
 """
 
 
 class Option(object):
 
     """
-    Base class for other options
+    Base class for other options.
 
     This shouldn't be used directly
     """
 
     def __init__(self, default, label):
+        """
+        :param default: The default value for this option.
+        :type default: object
+        :param label: A short label for this option, to use in the GUI
+        :type label: str
+        """
         self.label = label
+        """A UI label for the setting"""
         self.default = default
-        self.name = "__%s_%i" % (type(self), id(self))
+        """The default value"""
+
+        self._name = "__%s_%i" % (type(self), id(self))
 
     def __get__(self, instance, owner=None):
         if instance is None:
             return self
-        return getattr(instance, self.name, self.default)
+        return getattr(instance, self._name, self.default)
 
     def __set__(self, instance, value):
         value = self._validate(value)
-        setattr(instance, self.name, value)
+        setattr(instance, self._name, value)
 
     def _validate(self, value):
         return value

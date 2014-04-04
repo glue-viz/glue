@@ -26,15 +26,20 @@ from ..widget_properties import CurrentComboProperty, ButtonProperty
 
 WARN_THRESH = 10000000  # warn when contouring large images
 
+__all__ = ['ImageWidget']
+
 
 class ImageWidget(DataViewer):
     LABEL = "Image Viewer"
     _property_set = DataViewer._property_set + \
         'data attribute rgb_mode rgb_viz ratt gatt batt slice'.split()
 
-    attribute = CurrentComboProperty('ui.attributeComboBox')
-    data = CurrentComboProperty('ui.displayDataCombo')
-    rgb_mode = ButtonProperty('ui.rgb')
+    attribute = CurrentComboProperty('ui.attributeComboBox',
+                                     'Current attribute')
+    data = CurrentComboProperty('ui.displayDataCombo',
+                                'Current data')
+    rgb_mode = ButtonProperty('ui.rgb',
+                              'RGB Mode?')
     rgb_viz = Pointer('ui.rgb_options.rgb_visible')
 
     def __init__(self, session, parent=None):
