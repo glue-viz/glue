@@ -267,6 +267,22 @@ class RectangleMode(RoiMode):
         self.shortcut = 'R'
 
 
+class PathMode(ClickRoiMode):
+    def __init__(self, axes, **kwargs):
+        super(PathMode, self).__init__(axes, **kwargs)
+        self.icon = get_icon('glue_square')
+        self.mode_id = 'Slice'
+        self.action_text = 'Slice Extraction'
+        self.tool_tiop = 'Extract a slice through a cube'
+        self._roi_tool = qt_roi.QtPathROI(self._axes)
+        self.shortcut = 'P'
+
+        self._roi_tool.plot_opts.update(edgecolor='#de2d26',
+                                        facecolor=None,
+                                        edgewidth=2,
+                                        alpha=1.0)
+
+
 class CircleMode(RoiMode):
 
     """ Defines a Circular ROI, accessible via the roi() method"""
@@ -466,6 +482,8 @@ class SpectrumExtractorMode(PersistentRoiMode):
 
     def clear(self):
         self._roi_tool.reset()
+
+
 
 
 class ContourMode(MouseMode):

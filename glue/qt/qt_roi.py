@@ -75,6 +75,25 @@ class QtROI(object):
         return p
 
 
+class QtPathROI(QtROI, roi.MplPathROI):
+
+    def get_painter(self, canvas):
+        p = super(QtPathROI, self).get_painter(canvas)
+        p.setBrush(Qt.NoBrush)
+        return p
+
+    def draw_polygon(self, canvas, x, y):
+        x, y = self._transform(x, y)
+        poly = QtGui.QPolygon()
+        points = [QtCore.QPoint(xx, yy) for xx, yy in zip(x, y)]
+        for p in points:
+            poly.append(p)
+
+        p = self.get_painter(canvas)
+        p.drawPolyline(poly)
+        p.end()
+
+
 class QtRectangularROI(QtROI, roi.MplRectangularROI):
     def __init__(self, axes):
         roi.MplRectangularROI.__init__(self, axes)

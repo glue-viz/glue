@@ -69,19 +69,17 @@ class ModestImage(mi.AxesImage):
         ax = self.axes
         shp = self._full_res.shape
         x0, x1, sx, y0, y1, sy = extract_matched_slices(ax, shp)
-
         # have we already calculated what we need?
         if sx >= self._sx and sy >= self._sy and \
             x0 >= self._bounds[0] and x1 <= self._bounds[1] and \
                 y0 >= self._bounds[2] and y1 <= self._bounds[3]:
             return
-
         self._A = self._full_res[y0:y1:sy, x0:x1:sx]
         self._A = cbook.safe_masked_invalid(self._A)
-        x1 = x0 + self._A.shape[1] * sx
-        y1 = y0 + self._A.shape[0] * sy
-
-        self.set_extent([x0 - .5, x1 - .5, y0 - .5, y1 - .5])
+        if self.origin == 'upper':
+            self.set_extent([x0, x1, y1, y0])
+        else:
+            self.set_extent([x0, x1, y0, y1])
         self._sx = sx
         self._sy = sy
         self._bounds = (x0, x1, y0, y1)
@@ -188,13 +186,16 @@ def extract_matched_slices(ax, shape):
     xlim, ylim = ax.get_xlim(), ax.get_ylim()
     dx, dy = xlim[1] - xlim[0], ylim[1] - ylim[0]
 
-    y0 = int(max(0, ylim[0] - 5))
-    y1 = int(min(shape[0], ylim[1] + 5))
-    x0 = int(max(0, xlim[0] - 5))
-    x1 = int(min(shape[1], xlim[1] + 5))
+    def _clip(val, hi):
+        return int(max(min(val, hi), 0))
 
-    sy = int(max(1, min((y1 - y0) / 5., np.ceil(dy / ext[1]))))
-    sx = int(max(1, min((x1 - x0) / 5., np.ceil(dx / ext[0]))))
+    y0 = _clip(min(ylim) - 5, shape[0])
+    y1 = _clip(max(ylim) + 5, shape[0])
+    x0 = _clip(min(xlim) - 5, shape[1])
+    x1 = _clip(max(xlim) + 5, shape[1])
+
+    sy = int(max(1, min((y1 - y0) / 5., np.ceil(abs(dy / ext[1])))))
+    sx = int(max(1, min((x1 - x0) / 5., np.ceil(abs(dx / ext[0])))))
 
     return x0, x1, sx, y0, y1, sy
 

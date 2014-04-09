@@ -1,0 +1,40 @@
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                  -64 / number of bits per data pixel
+NAXIS   =                    3 / number of data axes
+NAXIS1  =                  308 / length of data axis 1
+NAXIS2  =                  205 / length of data axis 2
+NAXIS3  =                  201 / length of data axis 3
+EXTEND  =                    T / FITS dataset may contain extensions
+COMMENT   FITS (Flexible Image Transport System) format is defined in 'Astronomy
+COMMENT   and Astrophysics', volume 376, page 359; bibcode: 2001A&A...376..359H
+BUNIT   = 'K       '           / Units of the primary array
+DATE    = '2014-01-20T00:06:45'/ file creation date (YYYY-MM-DDThh:mm:ss UT)
+ORIGIN  = 'Starlink Project, U.K.'/ Origin of this FITS file
+BSCALE  =                  1.0 / True_value = BSCALE * FITS_value + BZERO
+BZERO   =                  0.0 / True_value = BSCALE * FITS_value + BZERO
+HDUCLAS1= 'NDF     '           / Starlink NDF (hierarchical n-dim format)
+HDUCLAS2= 'DATA    '           / Array component subclass
+HDSTYPE = 'NDF     '           / HDS data type of the component
+VELREF  = '257     '
+CTYPE1  = 'GLON-CAR'           / Type of co-ordinate on axis 1
+CTYPE2  = 'GLAT-CAR'           / Type of co-ordinate on axis 2
+CRVAL1  =            49.209553 / Value at ref. pixel on axis 1
+CRVAL2  =                  0.0 / Value at ref. pixel on axis 2
+CRPIX1  =                154.0 / Reference pixel on axis 1
+CRPIX2  =            168.51288 / Reference pixel on axis 2
+BMAJ    =             0.138888
+BMIN    =             0.138888
+CRPIX3  =                 99.0 / Reference pixel on axis 3
+CRVAL3  =              50000.0 / Value at ref. pixel on axis 3
+CTYPE3  = 'VELO-LSR'           / Type of co-ordinate on axis 3
+CUNIT3  = 'm/s     '           / Units for axis 3
+CDELT1  =      -0.004166666667 / Pixel size
+CDELT2  =       0.004166666667 / Pixel size
+CDELT3  =               1000.0 / Pixel size
+CROTA2  =                  0.0 / Axis rotation
+DATE-OBS= '2000-01-01T11:58:55.816'/ Date of observation
+RESTFREQ=      1.412861587E+10 / [Hz] Rest frequency
+COMMENT   1 blank line
+CHECKSUM= 'ZA5Gc239Z93Eb939'   / HDU checksum updated 2014-01-20T00:06:47
+DATASUM = '2907661862'         / data unit checksum updated 2014-01-20T00:06:47
+END

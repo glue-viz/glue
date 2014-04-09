@@ -1,5 +1,6 @@
 import numpy as np
-from matplotlib.patches import Polygon, Rectangle, Ellipse
+from matplotlib.patches import Polygon, Rectangle, Ellipse, PathPatch
+from matplotlib.patches import Path as mplPath
 from matplotlib.transforms import IdentityTransform, blended_transform_factory
 import copy
 
@@ -18,10 +19,10 @@ PATCH_COLOR = '#FFFF00'
 try:
     from matplotlib.nxutils import points_inside_poly
 except ImportError:  # nxutils removed in MPL v1.3
-    from matplotlib.path import Path
+    from matplotlib.path import Path as mplPath
 
     def points_inside_poly(xypts, xyvts):
-        p = Path(xyvts)
+        p = mplPath(xyvts)
         return p.contains_points(xypts)
 
 
@@ -333,12 +334,7 @@ class CircularROI(Roi):
         return cls(xc=rec['xc'], yc=rec['yc'], radius=rec['radius'])
 
 
-class PolygonalROI(Roi):
-
-    """
-    A class to define 2D polygonal regions-of-interest
-    """
-
+class VertexROIBase(Roi):
     def __init__(self, vx=None, vy=None):
         """
         :param vx: initial x vertices
@@ -346,49 +342,13 @@ class PolygonalROI(Roi):
         :param vy: initial y vertices
         :type vy: list
         """
-        super(PolygonalROI, self).__init__()
+        super(VertexROIBase, self).__init__()
         self.vx = vx
         self.vy = vy
         if self.vx is None:
             self.vx = []
         if self.vy is None:
             self.vy = []
-
-    def __str__(self):
-        result = 'Polygonal ROI ('
-        result += ','.join(['(%s, %s)' % (x, y)
-                            for x, y in zip(self.vx, self.vy)])
-        result += ')'
-        return result
-
-    def contains(self, x, y):
-        """
-        Test whether a set of (x,y) points falls within
-        the region of interest
-
-        :param x: A list of x points
-        :param y: A list of y points
-
-        *Returns*
-
-           A list of True/False values, for whether each (x,y)
-           point falls within the ROI
-
-        """
-        if not self.defined():
-            raise UndefinedROI
-        if not isinstance(x, np.ndarray):
-            x = np.asarray(x)
-        if not isinstance(y, np.ndarray):
-            y = np.asarray(y)
-
-        xypts = np.column_stack((x.flat, y.flat))
-        xyvts = np.column_stack((self.vx, self.vy))
-        result = points_inside_poly(xypts, xyvts)
-        good = np.isfinite(xypts).all(axis=1)
-        result[~good] = False
-        result.shape = x.shape
-        return result
 
     def add_point(self, x, y):
         """
@@ -451,6 +411,58 @@ class PolygonalROI(Roi):
     @classmethod
     def __setgluestate__(cls, rec, context):
         return cls(vx=rec['vx'], vy=rec['vy'])
+
+
+class PolygonalROI(VertexROIBase):
+
+    """
+    A class to define 2D polygonal regions-of-interest
+    """
+
+    def __str__(self):
+        result = 'Polygonal ROI ('
+        result += ','.join(['(%s, %s)' % (x, y)
+                            for x, y in zip(self.vx, self.vy)])
+        result += ')'
+        return result
+
+    def contains(self, x, y):
+        """
+        Test whether a set of (x,y) points falls within
+        the region of interest
+
+        :param x: A list of x points
+        :param y: A list of y points
+
+        *Returns*
+
+           A list of True/False values, for whether each (x,y)
+           point falls within the ROI
+
+        """
+        if not self.defined():
+            raise UndefinedROI
+        if not isinstance(x, np.ndarray):
+            x = np.asarray(x)
+        if not isinstance(y, np.ndarray):
+            y = np.asarray(y)
+
+        xypts = np.column_stack((x.flat, y.flat))
+        xyvts = np.column_stack((self.vx, self.vy))
+        result = points_inside_poly(xypts, xyvts)
+        good = np.isfinite(xypts).all(axis=1)
+        result[~good] = False
+        result.shape = x.shape
+        return result
+
+
+class Path(VertexROIBase):
+    def __str__(self):
+        result = 'Path ('
+        result += ','.join(['(%s, %s)' % (x, y)
+                            for x, y in zip(self.vx, self.vy)])
+        result += ')'
+        return result
 
 
 class AbstractMplRoi(object):  # pragma: no cover
@@ -835,7 +847,6 @@ class MplPolygonalROI(AbstractMplRoi):
                    the patch representing the ROI. These control
                    the visual properties of the ROI
     """
-
     def __init__(self, ax):
         """
         :param ax: A matplotlib Axes object to attach the graphical ROI to
@@ -843,12 +854,13 @@ class MplPolygonalROI(AbstractMplRoi):
         AbstractMplRoi.__init__(self, ax)
         self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
-        self._patch = Polygon(np.array(zip([0, 1], [0, 1])))
-        self._patch.set_zorder(100)
-        self._patch.set(**self.plot_opts)
+
         self._setup_patch()
 
     def _setup_patch(self):
+        self._patch = Polygon(np.array(zip([0, 1], [0, 1])))
+        self._patch.set_zorder(100)
+        self._patch.set(**self.plot_opts)
         self._ax.add_patch(self._patch)
         self._patch.set_visible(False)
         self._sync_patch()
@@ -890,4 +902,39 @@ class MplPolygonalROI(AbstractMplRoi):
     def finalize_selection(self, event):
         self._mid_selection = False
         self._patch.set_visible(False)
+        self._ax.figure.canvas.draw()
+
+
+class MplPathROI(MplPolygonalROI):
+
+    def roi_factory(self):
+        return Path()
+
+    def _setup_patch(self):
+        self._patch = None
+
+    def _sync_patch(self):
+        if self._patch is not None:
+            self._patch.remove()
+            self._patch = None
+
+        # Update geometry
+        if not self._roi.defined():
+            return
+        else:
+            x, y = self._roi.to_polygon()
+            p = MplPath(np.column_stack((x, y)))
+            self._patch = PatchPath(p)
+            self._patch.set_visible(True)
+
+        # Update appearance
+        self._patch.set(**self.plot_opts)
+
+        # Refresh
+        self._ax.figure.canvas.draw()
+
+    def finalize_selection(self, event):
+        self._mid_selection = False
+        if self._patch is not None:
+            self._patch.set_visible(False)
         self._ax.figure.canvas.draw()
