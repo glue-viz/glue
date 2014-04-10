@@ -290,8 +290,8 @@ class CoordinateComponent(Component):
     def __setgluestate__(cls, rec, context):
         return cls(None, rec['axis'], rec['world'])
 
-    def to_series(self, index=None, name=None):
-        raise NotImplementedError
+    #def to_series(self, index=None, name=None):
+    #    raise NotImplementedError
 
 
 class CategoricalComponent(Component):
@@ -926,6 +926,12 @@ class Data(object):
             return self._components[component_id]
         except KeyError:
             raise IncompatibleAttribute(component_id)
+
+    def to_dataframe(self, index=None):
+
+        h = lambda comp: self.get_component(comp).to_series(index=index)
+
+        return pd.DataFrame({comp.label: h(comp) for comp in self.components})
 
 
 def pixel_label(i, ndim):
