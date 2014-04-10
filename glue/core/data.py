@@ -2,6 +2,7 @@ import operator
 import logging
 
 import numpy as np
+import pandas as pd
 
 from .coordinates import Coordinates
 from .visual import VisualAttributes
@@ -190,6 +191,10 @@ class Component(object):
     def jitter(self, method=None):
         raise NotImplementedError
 
+    def to_series(self, index=None, name=None):
+
+        return pd.Series(self.data, index=index, name=name)
+
 
 class DerivedComponent(Component):
 
@@ -284,6 +289,9 @@ class CoordinateComponent(Component):
     @classmethod
     def __setgluestate__(cls, rec, context):
         return cls(None, rec['axis'], rec['world'])
+
+    def to_series(self, index=None, name=None):
+        raise NotImplementedError
 
 
 class CategoricalComponent(Component):
@@ -380,6 +388,12 @@ class CategoricalComponent(Component):
             self._data += rand_state.uniform(-0.5, 0.5, size=self._data.shape)
             self._is_jittered = True
             self._data.setflags(write=iswrite)
+
+    def to_series(self, index=None, name=None):
+
+        return pd.Series(self._categorical_data,
+                         index=index, name=name,
+                         dtype=np.object)
 
 
 class Data(object):
