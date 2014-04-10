@@ -43,6 +43,7 @@ class DataViewer(QMainWindow, ViewerBase):
         self._warn_close = True
         self.setContentsMargins(2, 2, 2, 2)
         self._mdi_wrapper = None  # QMdiSubWindow that self is embedded in
+        self.statusBar().setStyleSheet("QStatusBar{font-size:10px}")
 
     def remove_layer(self, layer):
         self._container.pop(layer)
