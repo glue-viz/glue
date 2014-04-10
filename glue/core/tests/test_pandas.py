@@ -15,6 +15,27 @@ from ... import core
 
 class TestPandasConversion(object):
 
+    def load_data(self):
+
+        d = Data(n=[4, 5, 6, 7])
+        cat_comp = CategoricalComponent(np.array(['a', 'b', 'c', 'd']))
+        d.add_component(cat_comp, 'c')
+        link = MagicMock()
+        link.compute.return_value = np.arange(4)
+        deriv_comp = DerivedComponent(d, link)
+        d.add_component(deriv_comp, 'd')
+        order = [comp.label for comp in d.components]
+
+        frame = pd.DataFrame({
+                                'n': [4, 5, 6, 7],
+                                'c': ['a', 'b', 'c', 'd'],
+                                'd': np.arange(4),
+                                'Pixel Axis 0': np.arange(4),
+                                'World 0': np.arange(4)
+                              })[order]
+
+        return d, frame
+
     def test_Component_conversion(self):
 
         comp = Component(np.arange(5))
@@ -41,27 +62,15 @@ class TestPandasConversion(object):
 
     def test_CoordinateComponent_conversion(self):
 
-        pass
-        #Chris, you'll have to put some basic testing logic here.
+        d = Data(x=[1, 2, 3])
+        series = pd.Series([0, 1, 2])
+        comp = d.get_component(d.get_pixel_component_id(0))
+        assert_series_equal(series, comp.to_series())
 
     def test_Data_conversion(self):
 
-        d = Data(n=[4, 5, 6, 7])
-        cat_comp = CategoricalComponent(np.array(['a', 'b', 'c', 'd']))
-        d.add_component(cat_comp, 'c')
-        link = MagicMock()
-        link.compute.return_value = np.arange(4)
-        deriv_comp = DerivedComponent(d, link)
-        d.add_component(deriv_comp, 'd')
-
-        frame = pd.DataFrame({
-                                'n': [4, 5, 6, 7],
-                                'c': ['a', 'b', 'c', 'd'],
-                                'd': np.arange(4),
-                                'Pixel Axis 0': np.arange(4),
-                                'World 0': np.arange(4)
-                              })
-
-        assert_frame_equal(d.to_dataframe(), frame)
+        data, frame = self.load_data()
+        assert_frame_equal(data.to_dataframe(), frame)
+        assert [comp.label for comp in data.components] == list(frame.columns)
 
 

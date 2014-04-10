@@ -930,8 +930,10 @@ class Data(object):
     def to_dataframe(self, index=None):
 
         h = lambda comp: self.get_component(comp).to_series(index=index)
+        order = [comp.label for comp in self.components]
+        df = pd.DataFrame({comp.label: h(comp) for comp in self.components})
 
-        return pd.DataFrame({comp.label: h(comp) for comp in self.components})
+        return df[order]
 
 
 def pixel_label(i, ndim):
