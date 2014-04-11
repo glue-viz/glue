@@ -4,8 +4,10 @@ import sys
 from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                                  QMenu, QMdiSubWindow, QAction, QMessageBox,
                                  QFileDialog, QInputDialog,
-                                 QToolButton, QVBoxLayout, QWidget)
-from ..external.qt.QtCore import Qt, QSize, QSettings
+                                 QToolButton, QVBoxLayout, QWidget, QPixmap,
+                                 QBrush, QPainter, QLabel, QHBoxLayout,
+                                 QTextEdit, QTextCursor, QPushButton)
+from ..external.qt.QtCore import Qt, QSize, QSettings, Signal
 
 from ..core import command
 from .. import env
@@ -39,6 +41,95 @@ def _fix_ipython_pylab():
     except ValueError:
         # if the shell is a normal terminal shell, we get here
         pass
+
+
+def status_pixmap(attention=False):
+    """
+    A small icon to grab attention
+
+    :param attention: If True, return attention-grabbing pixmap
+    """
+    color = Qt.red if attention else Qt.lightGray
+
+    pm = QPixmap(15, 15)
+    p = QPainter(pm)
+    b = QBrush(color)
+    p.fillRect(-1, -1, 20, 20, b)
+    return pm
+
+
+class ClickableLabel(QLabel):
+
+    """
+    A QLabel you can click on to generate events
+    """
+
+    clicked = Signal()
+
+    def mousePressEvent(self, event):
+        self.clicked.emit()
+
+
+class GlueLogger(QWidget):
+
+    """
+    A window to display error messages
+    """
+
+    def __init__(self, parent=None):
+        super(GlueLogger, self).__init__(parent)
+
+        self._text = QTextEdit()
+        self._text.setTextInteractionFlags(Qt.TextSelectableByMouse)
+
+        clear = QPushButton("Clear")
+        clear.clicked.connect(self._clear)
+
+        self.stderr = sys.stderr
+        sys.stderr = self
+
+        self._status = ClickableLabel()
+        self._status.clicked.connect(self._show)
+        self._status.setPixmap(status_pixmap())
+        self._status.setContentsMargins(0, 0, 0, 0)
+
+        l = QVBoxLayout()
+        h = QHBoxLayout()
+        l.setContentsMargins(2, 2, 2, 2)
+        l.setSpacing(2)
+        h.setContentsMargins(0, 0, 0, 0)
+
+        l.addWidget(self._text)
+        h.insertStretch(0)
+        h.addWidget(clear)
+        l.addLayout(h)
+
+        self.setLayout(l)
+
+    @property
+    def status_light(self):
+        return self._status
+
+    def write(self, message):
+        self.stderr.write(message)
+        self._text.moveCursor(QTextCursor.End)
+        self._text.insertPlainText(message)
+        self._status.setPixmap(status_pixmap(attention=True))
+
+    def flush(self):
+        pass
+
+    def _clear(self):
+        self._text.setText('')
+        self._status.setPixmap(status_pixmap(attention=False))
+
+    def _show(self):
+        self.show()
+        self.raise_()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            self.hide()
 
 
 class GlueApplication(Application, QMainWindow):
@@ -85,6 +176,14 @@ class GlueApplication(Application, QMainWindow):
         vb.addWidget(lw)
         self._ui.data_layers.setLayout(vb)
         self._ui.layerWidget = lw
+
+        # log window + status light
+        self._ui.log = GlueLogger()
+        self._ui.log.window().setWindowTitle("Console Log")
+        self._ui.log.resize(550, 550)
+        self.statusBar().addPermanentWidget(self._ui.log.status_light)
+        self.statusBar().setContentsMargins(2, 0, 20, 2)
+        self.statusBar().setSizeGripEnabled(False)
 
     def _tweak_geometry(self):
         """Maximize window"""

@@ -692,7 +692,7 @@ class SpectrumTool(object):
         rect = self.image_widget.frameGeometry()
         pos = rect.bottomLeft()
         self._mdi_wrapper.setGeometry(pos.x(), pos.y(),
-                                      rect.width(), rect.width() / 1.5)
+                                      rect.width(), 300)
 
     def show(self):
         if self.widget.isVisible():
