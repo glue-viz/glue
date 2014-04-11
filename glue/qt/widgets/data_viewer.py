@@ -174,16 +174,16 @@ class DataViewer(QMainWindow, ViewerBase):
         """
         for tb in self._toolbars:
             if self._tb_vis.get(tb, False):
-                tb.setVisible(True)
+                tb.setEnabled(True)
 
     def hide_toolbars(self):
-        """ Hide all the toolbars in the viewer.
+        """ Disable all the toolbars in the viewer.
 
         This action can be reversed by calling `show_toolbars()`
         """
         for tb in self._toolbars:
             self._tb_vis[tb] = self._tb_vis.get(tb, False) or tb.isVisible()
-            tb.setVisible(False)
+            tb.setEnabled(False)
 
     def set_focus(self, state):
         if state:

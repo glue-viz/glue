@@ -9,7 +9,7 @@ from ..external.qt.QtGui import (QMainWindow, QWidget,
                                  QAction, QTextEdit, QFont, QDialog,
                                  QDialogButtonBox, QLineEdit,
                                  QDoubleValidator, QCheckBox, QGridLayout,
-                                 QLabel)
+                                 QLabel, QMdiSubWindow)
 
 from ..clients.profile_viewer import ProfileViewer
 from .widgets.mpl_widget import MplWidget
@@ -516,10 +516,20 @@ class SpectrumTool(object):
         self._setup_ctxbar()
 
         self._connect()
+        self.image_widget.session.application.add_widget(self,
+                                                         label='Profile')
+
+    def mdi_wrap(self):
+        sub = QMdiSubWindow()
+        sub.setWidget(self.widget)
+        self.widget.destroyed.connect(sub.close)
+        sub.resize(self.widget.size())
+        self._mdi_wrapper = sub
+        return sub
+
 
     def _build_main_widget(self):
         self.widget = SpectrumMainWindow()
-        self.widget.setWindowFlags(Qt.Tool)
 
         w = QWidget()
         l = QHBoxLayout()
@@ -680,9 +690,9 @@ class SpectrumTool(object):
 
     def _move_below_image_widget(self):
         rect = self.image_widget.frameGeometry()
-        pos = self.image_widget.mapToGlobal(rect.bottomLeft())
-        self.widget.setGeometry(pos.x(), pos.y(),
-                                rect.width(), rect.width() / 1.5)
+        pos = rect.bottomLeft()
+        self._mdi_wrapper.setGeometry(pos.x(), pos.y(),
+                                      rect.width(), rect.width() / 1.5)
 
     def show(self):
         if self.widget.isVisible():

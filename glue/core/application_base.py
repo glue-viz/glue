@@ -253,6 +253,10 @@ class ViewerBase(HubListener, PropertySetMixin):
         cmd = command.ApplyROI(client=self.client, roi=roi)
         self._session.command_stack.do(cmd)
 
+    @property
+    def session(self):
+        return self._session
+
     def layer_view(self):
         raise NotImplementedError()
 
