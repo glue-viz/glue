@@ -99,7 +99,7 @@ open on a single tab. Every viewer has an ``axes`` attribute,
 which points to a :class:`Matplotlib Axes <matplotlib.axes.Axes>`
 object::
 
-    plot = appliation.viewers[0][0]
+    plot = application.viewers[0][0]
     ax = plot.axes
     ax.set_title('Custom title')
     ax.figure.canvas.draw()  # update the plot
