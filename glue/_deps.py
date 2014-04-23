@@ -92,12 +92,12 @@ required = (
     QtDep(),
     Dependency('numpy', 'Required', min_version='1.4'),
     Dependency('matplotlib', 'Required for plotting', min_version='1.1'),
+    Dependency('pandas', 'Adds support for Excel files and DataFrames', min_version='0.13.1'),
     Dependency('astropy', 'Used for FITS I/O, table reading, and WCS Parsing'))
 
 general = (
     Dependency('dill', 'Used when saving Glue sessions'),
     Dependency('scipy', 'Used for some image processing calculation'),
-    Dependency('pandas', 'Adds support for Excel files and DataFrames'),
     Dependency('skimage',
                'Used to read popular image formats (jpeg, png, etc.)',
                'scikit-image'))

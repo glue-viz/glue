@@ -191,9 +191,14 @@ class Component(object):
     def jitter(self, method=None):
         raise NotImplementedError
 
-    def to_series(self, index=None, name=None):
+    def to_series(self, **kwargs):
+        """ Convert into a pandas.Series object.
 
-        return pd.Series(self.data, index=index, name=name)
+        :param kwargs: All kwargs are passed to the Series constructor.
+        :return: pandas.Series
+        """
+
+        return pd.Series(self.data.ravel(), **kwargs)
 
 
 class DerivedComponent(Component):
@@ -289,9 +294,6 @@ class CoordinateComponent(Component):
     @classmethod
     def __setgluestate__(cls, rec, context):
         return cls(None, rec['axis'], rec['world'])
-
-    #def to_series(self, index=None, name=None):
-    #    raise NotImplementedError
 
 
 class CategoricalComponent(Component):
@@ -389,11 +391,17 @@ class CategoricalComponent(Component):
             self._is_jittered = True
             self._data.setflags(write=iswrite)
 
-    def to_series(self, index=None, name=None):
+    def to_series(self, **kwargs):
+        """ Convert into a pandas.Series object.
 
-        return pd.Series(self._categorical_data,
-                         index=index, name=name,
-                         dtype=np.object)
+        This will be converted as a dtype=np.object!
+
+        :param kwargs: All kwargs are passed to the Series constructor.
+        :return: pandas.Series
+        """
+
+        return pd.Series(self._categorical_data.ravel(),
+                         dtype=np.object, **kwargs)
 
 
 class Data(object):
@@ -928,11 +936,17 @@ class Data(object):
             raise IncompatibleAttribute(component_id)
 
     def to_dataframe(self, index=None):
+        """ Convert the Data object into a pandas.DataFrame object
+
+        :param index: Any 'index-like' object that can be passed to the
+        pandas.Series constructor
+
+        :return: pandas.DataFrame
+        """
 
         h = lambda comp: self.get_component(comp).to_series(index=index)
-        order = [comp.label for comp in self.components]
         df = pd.DataFrame({comp.label: h(comp) for comp in self.components})
-
+        order = [comp.label for comp in self.components]
         return df[order]
 
 
