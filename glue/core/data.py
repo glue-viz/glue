@@ -2,6 +2,7 @@ import operator
 import logging
 
 import numpy as np
+import pandas as pd
 
 from .coordinates import Coordinates
 from .visual import VisualAttributes
@@ -189,6 +190,15 @@ class Component(object):
 
     def jitter(self, method=None):
         raise NotImplementedError
+
+    def to_series(self, **kwargs):
+        """ Convert into a pandas.Series object.
+
+        :param kwargs: All kwargs are passed to the Series constructor.
+        :return: pandas.Series
+        """
+
+        return pd.Series(self.data.ravel(), **kwargs)
 
 
 class DerivedComponent(Component):
@@ -380,6 +390,18 @@ class CategoricalComponent(Component):
             self._data += rand_state.uniform(-0.5, 0.5, size=self._data.shape)
             self._is_jittered = True
             self._data.setflags(write=iswrite)
+
+    def to_series(self, **kwargs):
+        """ Convert into a pandas.Series object.
+
+        This will be converted as a dtype=np.object!
+
+        :param kwargs: All kwargs are passed to the Series constructor.
+        :return: pandas.Series
+        """
+
+        return pd.Series(self._categorical_data.ravel(),
+                         dtype=np.object, **kwargs)
 
 
 class Data(object):
@@ -912,6 +934,20 @@ class Data(object):
             return self._components[component_id]
         except KeyError:
             raise IncompatibleAttribute(component_id)
+
+    def to_dataframe(self, index=None):
+        """ Convert the Data object into a pandas.DataFrame object
+
+        :param index: Any 'index-like' object that can be passed to the
+        pandas.Series constructor
+
+        :return: pandas.DataFrame
+        """
+
+        h = lambda comp: self.get_component(comp).to_series(index=index)
+        df = pd.DataFrame({comp.label: h(comp) for comp in self.components})
+        order = [comp.label for comp in self.components]
+        return df[order]
 
 
 def pixel_label(i, ndim):
