@@ -26,22 +26,15 @@ env:
   - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=0.13.2
 
 before_install:
-- if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then wget http://repo.continuum.io/miniconda/Miniconda-2.0.0-Linux-x86_64.sh
-  -O miniconda.sh; else wget http://repo.continuum.io/miniconda/Miniconda3-2.0.0-Linux-x86_64.sh
-  -O miniconda.sh; fi
-- chmod +x miniconda.sh
-- ./miniconda.sh -b
-- export PATH=/home/travis/anaconda/bin:$PATH
+- source .setup_conda.sh $TRAVIS_PYTHON_VERSION
+# Deal with issue on Travis builders
 - sudo rm -rf /dev/shm
 - sudo ln -s /run/shm /dev/shm
+# Setup system for headless GUI handling
 - export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
-- if [ $APP_TRIGGER ]; then sudo apt-get install rubygems; fi
-- if [ $APP_TRIGGER ]; then rvmsudo gem install travis; fi
-- if [ $APP_TRIGGER ]; then gem environment; fi
-- if [ $APP_TRIGGER ]; then export PATH=`gem environment | grep "EXECUTABLE DIRECTORY" | cut -d":" -f2 | cut -c 2-`:$PATH; fi
-- if [ $APP_TRIGGER ]; then which travis; fi
-- if [ $APP_TRIGGER ]; then echo y | travis; fi  # install shell completion tool
+# setup tools to trigger mac buildbot
+- if [ $APP_TRIGGER ]; then source .setup_app_trigger.sh; fi
 - if [ $TRAVIS_BRANCH = master ]; then export S3_DIR=latest; else export S3_DIR=$TRAVIS_BRANCH; fi
 
 
@@ -59,7 +52,7 @@ script:
 
 after_success:
 - coveralls
-- if [ $APP_TRIGGER ]; then ./trigger_app_build.sh; fi
+- if [ $APP_TRIGGER ]; then ./.trigger_app_build.sh; fi
 
 deploy:
   provider: s3
