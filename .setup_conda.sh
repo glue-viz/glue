@@ -11,4 +11,6 @@ fi
 
 chmod +x miniconda.sh
 ./miniconda.sh -b
-export PATH=/home/travis/anaconda/bin:$PATH
+ls
+export PATH=/home/travis/anaconda/bin:/home/travis/miniconda/bin:home/travis/miniconda3/bin:$PATH
+which conda
