@@ -87,3 +87,11 @@ the path of this file to your function, and use the resulting Data
 object.
 
 For more examples of custom data loaders, see the `example repository <https://github.com/glue-viz/glue-data-loaders>`_.
+
+Custom Colormaps
+----------------
+You can add additional matplotlib colormaps to Glue's image viewer by adding the following code into ``config.py``::
+    
+    from glue.config import colormaps
+    from matplotlib.cm import Paired
+    colormaps.add('Paired', Paired)
