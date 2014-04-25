@@ -9,7 +9,7 @@ def extract_data_fits(filename, use_hdu='all'):
     from ..external.astro import fits
 
     # Read in all HDUs
-    hdulist = fits.open(filename, memmap=True)
+    hdulist = fits.open(filename, memmap=True, ignore_blank=True)
 
     # If only a subset are requested, extract those
     if use_hdu != 'all':
