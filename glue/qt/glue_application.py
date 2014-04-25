@@ -1,5 +1,6 @@
 # pylint: disable=W0223
 import sys
+import webbrowser
 
 from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                                  QMenu, QMdiSubWindow, QAction, QMessageBox,
@@ -24,8 +25,10 @@ from .widgets.layer_tree_widget import PlotAction, LayerTreeWidget
 from .widgets.data_viewer import DataViewer
 from .widgets.settings_editor import SettingsEditor
 from .widgets.mpl_widget import defer_draw
+from .feedback import submit_bug_report
 
 __all__ = ['GlueApplication']
+DOCS_URL = 'http://www.glue-viz.org'
 
 
 def _fix_ipython_pylab():
@@ -78,17 +81,20 @@ class GlueLogger(QWidget):
 
     def __init__(self, parent=None):
         super(GlueLogger, self).__init__(parent)
-
         self._text = QTextEdit()
         self._text.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
         clear = QPushButton("Clear")
         clear.clicked.connect(self._clear)
 
+        report = QPushButton("Send Bug Report")
+        report.clicked.connect(self._send_report)
+
         self.stderr = sys.stderr
         sys.stderr = self
 
         self._status = ClickableLabel()
+        self._status.setToolTip("View Errors and Warnings")
         self._status.clicked.connect(self._show)
         self._status.setPixmap(status_pixmap())
         self._status.setContentsMargins(0, 0, 0, 0)
@@ -101,6 +107,7 @@ class GlueLogger(QWidget):
 
         l.addWidget(self._text)
         h.insertStretch(0)
+        h.addWidget(report)
         h.addWidget(clear)
         l.addLayout(h)
 
@@ -108,26 +115,53 @@ class GlueLogger(QWidget):
 
     @property
     def status_light(self):
+        """
+        The icon representing the status of the log
+        """
         return self._status
 
     def write(self, message):
+        """
+        Interface for sys.excepthook
+        """
         self.stderr.write(message)
         self._text.moveCursor(QTextCursor.End)
         self._text.insertPlainText(message)
         self._status.setPixmap(status_pixmap(attention=True))
 
     def flush(self):
+        """
+        Interface for sys.excepthook
+        """
         pass
 
+    def _send_report(self):
+        """
+        Send the contents of the log as a bug report
+        """
+        text = self._text.document().toPlainText()
+        if submit_bug_report(text):
+            self._clear()
+
     def _clear(self):
+        """
+        Erase the log
+        """
         self._text.setText('')
         self._status.setPixmap(status_pixmap(attention=False))
+        self.close()
 
     def _show(self):
+        """
+        Show the log
+        """
         self.show()
         self.raise_()
 
     def keyPressEvent(self, event):
+        """
+        Hide window on escape key
+        """
         if event.key() == Qt.Key_Escape:
             self.hide()
 
@@ -422,8 +456,14 @@ class GlueApplication(Application, QMainWindow):
         mbar.addMenu(menu)
 
         # trigger inclusion of Mac Native "Help" tool
-        if sys.platform == 'darwin':
-            mbar.addMenu('Help')
+        menu = mbar.addMenu("Help")
+        a = QAction("Online Documentation", menu)
+        a.triggered.connect(nonpartial(webbrowser.open, DOCS_URL))
+        menu.addAction(a)
+
+        a = QAction("Send Feedback", menu)
+        a.triggered.connect(nonpartial(submit_bug_report))
+        menu.addAction(a)
 
     def _choose_load_data(self):
         for d in data_wizard():
