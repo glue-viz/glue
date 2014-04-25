@@ -527,7 +527,6 @@ class SpectrumTool(object):
         self._mdi_wrapper = sub
         return sub
 
-
     def _build_main_widget(self):
         self.widget = SpectrumMainWindow()
 

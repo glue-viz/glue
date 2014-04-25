@@ -2,6 +2,7 @@ import logging
 from functools import wraps
 
 import numpy as np
+from matplotlib.figure import Figure
 
 from .modest_image import extract_matched_slices
 from ..core.exceptions import IncompatibleAttribute
@@ -36,7 +37,12 @@ class ImageClient(VizClient):
 
     def __init__(self, data, figure=None, axes=None, artist_container=None):
 
-        figure, axes = init_mpl(figure, axes)
+        if axes is not None:
+            raise ValueError("ImageClient does not accept an axes")
+        figure = figure or Figure()
+
+        # XXX handle case where another WCS object is used
+        figure, axes = init_mpl(figure, axes, wcs=True)
 
         VizClient.__init__(self, data)
 
@@ -133,6 +139,7 @@ class ImageClient(VizClient):
 
         relim = value.index('x') != self._slice.index('x') or \
             value.index('y') != self._slice.index('y')
+
         self._slice = tuple(value)
         self._clear_override()
         self._update_axis_labels()
@@ -230,9 +237,16 @@ class ImageClient(VizClient):
         self._update_subset_plots()
         self._redraw()
 
+    def _update_wcs_axes(self, data, slc):
+        wcs = getattr(data.coords, 'wcs', None)
+
+        if wcs is not None:
+            self.axes.reset_wcs(wcs, slices=slc[::-1])
+
     @requires_data
     def _update_axis_labels(self):
         labels = _axis_labels(self.display_data, self.slice)
+        self._update_wcs_axes(self.display_data, self.slice)
         self._ax.set_xlabel(labels[1])
         self._ax.set_ylabel(labels[0])
 
