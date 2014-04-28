@@ -257,6 +257,10 @@ class ViewerBase(HubListener, PropertySetMixin):
     def session(self):
         return self._session
 
+    @property
+    def axes(self):
+        return self.client.axes
+
     def layer_view(self):
         raise NotImplementedError()
 
