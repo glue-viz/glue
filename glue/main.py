@@ -101,6 +101,8 @@ def die_on_error(msg):
 
                 qmb = QMessageBox(QMessageBox.Critical, "Error", m)
                 qmb.setDetailedText(detail)
+                qmb.show()
+                qmb.raise_()
                 qmb.exec_()
                 sys.exit(1)
         return wrapper
