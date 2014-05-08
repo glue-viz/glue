@@ -494,6 +494,7 @@ class StandaloneImageWidget(QMainWindow):
 
 def _build_slice(pts, data, attribute, slc):
     from ...external.pvextractor import extract_pv_slice, Path
+
     pth = Path(pts)
     cube = data[attribute]
     dims = list(range(data.ndim))

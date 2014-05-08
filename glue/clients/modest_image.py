@@ -153,8 +153,9 @@ def imshow(axes, X, cmap=None, norm=None, aspect=None,
     #    im.set_clim(vmin, vmax)
     if vmin is not None or vmax is not None:
         im.set_clim(vmin, vmax)
-    else:
+    elif norm is None:
         im.autoscale_None()
+
     im.set_url(url)
 
     # update ax.dataLim, and, if autoscaling, set viewLim
