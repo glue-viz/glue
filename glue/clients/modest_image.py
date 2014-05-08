@@ -77,9 +77,9 @@ class ModestImage(mi.AxesImage):
         self._A = self._full_res[y0:y1:sy, x0:x1:sx]
         self._A = cbook.safe_masked_invalid(self._A)
         if self.origin == 'upper':
-            self.set_extent([x0, x1, y1, y0])
+            self.set_extent([x0 - .5, x1 - .5, y1 - .5, y0 - .5])
         else:
-            self.set_extent([x0, x1, y0, y1])
+            self.set_extent([x0 - .5, x1 - .5, y0 - .5, y1 - .5])
         self._sx = sx
         self._sy = sy
         self._bounds = (x0, x1, y0, y1)
