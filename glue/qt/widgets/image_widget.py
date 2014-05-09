@@ -1,3 +1,5 @@
+import numpy as np
+
 from ...external.qt.QtGui import (QAction, QLabel, QCursor, QMainWindow,
                                   QToolButton, QIcon, QMessageBox,
                                   QMdiSubWindow)
@@ -66,6 +68,7 @@ class ImageWidget(DataViewer):
         self.set_data(0)
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
+        self._slice_widget = None
 
     def _tweak_geometry(self):
         self.central_widget.resize(600, 400)
@@ -115,8 +118,17 @@ class ImageWidget(DataViewer):
         vx, vy = roi.to_polygon()
         pts = [(x, y) for x, y in zip(vx, vy)]
         pv, x, y = _build_slice(pts, self.data, self.attribute, self.slice)
-        result = StandaloneImageWidget(pv, x, y)
-        self._session.application.add_widget(result, label='Custom Slice')
+        if self._slice_widget is None:
+            self._slice_widget = PVSliceWidget(pv, pts, self)
+            self._session.application.add_widget(self._slice_widget,
+                                                 label='Custom Slice')
+        else:
+            self._slice_widget.set_image(pv, pts)
+
+        result = self._slice_widget
+        result.axes.set_xlabel("Position Along Slice")
+        result.axes.set_ylabel(_slice_label(self.data, self.slice))
+
         result.show()
 
     def _init_widgets(self):
@@ -440,16 +452,37 @@ class StandaloneImageWidget(QMainWindow):
     but with the ability to adjust contrast and resample.
     """
 
-    def __init__(self, image, x=None, y=None, parent=None, **kwargs):
+    def __init__(self, image, parent=None, **kwargs):
         super(StandaloneImageWidget, self).__init__(parent)
         self.central_widget = MplWidget()
         self.setCentralWidget(self.central_widget)
+        self._setup_axes()
+
+        self._im = None
+        self._norm = DS9Normalize()
+
+        self.make_toolbar()
+        self.set_image(image, **kwargs)
+
+    def _setup_axes(self):
         self._axes = self.central_widget.canvas.fig.add_subplot(111)
         self._axes.set_aspect('equal', adjustable='datalim')
-        self.make_toolbar()
-        self._norm = DS9Normalize()
+
+    def set_image(self, image, **kwargs):
+        if self._im is not None:
+            self._im.remove()
+            self._im = None
+
+        kwargs.setdefault('origin', 'upper')
+
         self._im = imshow(self._axes, image,
                           norm=self._norm, cmap='gray', **kwargs)
+        self._im_array = image
+        self._redraw()
+
+    @property
+    def axes(self):
+        return self._axes
 
     def show(self):
         super(StandaloneImageWidget, self).show()
@@ -492,6 +525,63 @@ class StandaloneImageWidget(QMainWindow):
         return result
 
 
+class PVSliceWidget(StandaloneImageWidget):
+
+    def __init__(self, image, pts, image_widget):
+        self._parent = image_widget
+        super(PVSliceWidget, self).__init__(image, pts=pts)
+        conn = self.axes.figure.canvas.mpl_connect
+        self._down_id = conn('button_press_event', self._on_click)
+        self._move_id = conn('motion_notify_event', self._on_move)
+
+    def set_image(self, im, pts):
+        super(PVSliceWidget, self).set_image(im)
+        self._slc = self._parent.slice
+        self._pts = np.asarray(pts)
+
+    def _sync_slice(self, event):
+        s = list(self._slc)
+
+        # XXX breaks if display_data changes
+        _, _, z = self._pos_in_parent(event)
+        s[_slice_index(self._parent.data, s)] = z
+        self._parent.slice = tuple(s)
+
+    def _on_move(self, event):
+        if not event.inaxes or event.canvas.toolbar.mode != '':
+            return
+
+        if event.button:
+            self._sync_slice(event)
+
+        x, y, _ = self._pos_in_parent(event)
+        ax = self._parent.client.axes
+        m, = ax.plot([x], [y], 'o', ms=12, mfc='none', mec='red')
+        ax.figure.canvas.draw()
+        m.remove()
+
+    def _pos_in_parent(self, event):
+        ind = np.clip(event.xdata / self._im_array.shape[1], 0, 1)
+        abcissa = np.linspace(0, 1, len(self._pts))
+        x = np.interp(ind, abcissa, self._pts[:, 0])
+        y = np.interp(ind, abcissa, self._pts[:, 1])
+        z = event.ydata
+
+        return x, y, z
+
+    def _on_click(self, event):
+        if not event.dblclick or not event.inaxes or \
+                event.canvas.toolbar.mode != '':
+            return
+        self._sync_slice(event)
+
+
+def _slice_index(data, slc):
+    return max([i for i in range(len(slc))
+               if isinstance(slc[i], int)],
+               key=lambda x: data.shape[x])
+
+
 def _build_slice(pts, data, attribute, slc):
     from ...external.pvextractor import extract_pv_slice, Path
 
@@ -499,9 +589,7 @@ def _build_slice(pts, data, attribute, slc):
     cube = data[attribute]
     dims = list(range(data.ndim))
     s = slc
-    ind = max([i for i in range(len(s))
-               if isinstance(s[i], int)],
-              key=lambda x: data.shape[x])
+    ind = _slice_index(data, slc)
 
     def _put(x, ind, pos):
         x[ind], x[pos] = x[pos], x[ind]
@@ -515,3 +603,8 @@ def _build_slice(pts, data, attribute, slc):
     pv = extract_pv_slice(cube, pth, order=0).data
 
     return pv, range(pv.shape[1]), range(pv.shape[0])
+
+
+def _slice_label(data, slc):
+    idx = _slice_index(data, slc)
+    return data.get_world_component_id(idx).label
