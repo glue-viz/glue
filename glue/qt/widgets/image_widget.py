@@ -115,6 +115,9 @@ class ImageWidget(DataViewer):
         return [rect, circ, poly, contour, contrast, spectrum, path]
 
     def _extract_slice(self, roi):
+        """
+        Extract a PV-like slice, given a path traced on the widget
+        """
         vx, vy = roi.to_polygon()
         pts = [(x, y) for x, y in zip(vx, vy)]
         pv, x, y = _build_slice(pts, self.data, self.attribute, self.slice)
@@ -453,6 +456,12 @@ class StandaloneImageWidget(QMainWindow):
     """
 
     def __init__(self, image, parent=None, **kwargs):
+        """
+        :param image: Image to display (2D numpy array)
+        :param parent: Parent widget (optional)
+
+        :param kwargs: Extra keywords to pass to imshow
+        """
         super(StandaloneImageWidget, self).__init__(parent)
         self.central_widget = MplWidget()
         self.setCentralWidget(self.central_widget)
@@ -469,6 +478,9 @@ class StandaloneImageWidget(QMainWindow):
         self._axes.set_aspect('equal', adjustable='datalim')
 
     def set_image(self, image, **kwargs):
+        """
+        Update the image shown in the widget
+        """
         if self._im is not None:
             self._im.remove()
             self._im = None
@@ -482,6 +494,9 @@ class StandaloneImageWidget(QMainWindow):
 
     @property
     def axes(self):
+        """
+        The Matplolib axes object for this figure
+        """
         return self._axes
 
     def show(self):
@@ -496,6 +511,9 @@ class StandaloneImageWidget(QMainWindow):
         self._redraw()
 
     def mdi_wrap(self):
+        """
+        Embed this widget in a QMdiSubWindow
+        """
         sub = QMdiSubWindow()
         sub.setWidget(self)
         self.destroyed.connect(sub.close)
@@ -517,6 +535,9 @@ class StandaloneImageWidget(QMainWindow):
         self._redraw()
 
     def make_toolbar(self):
+        """
+        Setup the toolbar
+        """
         result = GlueToolbar(self.central_widget.canvas, self,
                              name='Image')
         result.add_mode(ContrastMode(self._axes, move_callback=self._set_norm))
@@ -526,6 +547,8 @@ class StandaloneImageWidget(QMainWindow):
 
 
 class PVSliceWidget(StandaloneImageWidget):
+
+    """ A standalone image widget with extra interactivity for PV slices """
 
     def __init__(self, image, pts, image_widget):
         self._parent = image_widget
@@ -582,12 +605,29 @@ class PVSliceWidget(StandaloneImageWidget):
 
 
 def _slice_index(data, slc):
+    """
+    The axis over which to extract PV slices
+    """
     return max([i for i in range(len(slc))
                if isinstance(slc[i], int)],
                key=lambda x: data.shape[x])
 
 
 def _build_slice(pts, data, attribute, slc):
+    """
+    Extract a PV-like slice from a cube
+
+    :param pts: A list of (x,y) tuples defining the path to extract
+    :param data: :class:`~glue.core.data.Data`
+    :param attribute: :claass:`~glue.core.data.Component`
+    :param slc: orientation of the image widget that `pts` are defined on
+
+    :returns: A 2D Numpy array, corresponding to a "PV ribbon" cutout
+              from the cube
+
+    :note: For >3D cubes, the "V-axis" of the PV slice is the longest
+           cube axis ignoring the x/y axes of `slc`
+    """
     from ...external.pvextractor import extract_pv_slice, Path
 
     pth = Path(pts)
@@ -611,5 +651,13 @@ def _build_slice(pts, data, attribute, slc):
 
 
 def _slice_label(data, slc):
+    """
+    Returns a formatted axis label corresponding to the slice dimension
+    in a PV slice
+
+    :param data: Data that slice is extracted from
+    :param slc: orientation in the image widget from which the PV slice
+                was defined
+    """
     idx = _slice_index(data, slc)
     return data.get_world_component_id(idx).label
