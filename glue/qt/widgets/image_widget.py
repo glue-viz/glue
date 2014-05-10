@@ -547,18 +547,23 @@ class PVSliceWidget(StandaloneImageWidget):
         s[_slice_index(self._parent.data, s)] = z
         self._parent.slice = tuple(s)
 
+    def _draw_crosshairs(self, event):
+        x, y, _ = self._pos_in_parent(event)
+        ax = self._parent.client.axes
+        m, = ax.plot([x], [y], '+', ms=12, mfc='none', mec='#00dd00',
+                     mew=2)
+        ax.figure.canvas.draw()
+        m.remove()
+
     def _on_move(self, event):
+        if not event.button:
+            return
+
         if not event.inaxes or event.canvas.toolbar.mode != '':
             return
 
-        if event.button:
-            self._sync_slice(event)
-
-        x, y, _ = self._pos_in_parent(event)
-        ax = self._parent.client.axes
-        m, = ax.plot([x], [y], 'o', ms=12, mfc='none', mec='red')
-        ax.figure.canvas.draw()
-        m.remove()
+        self._sync_slice(event)
+        self._draw_crosshairs(event)
 
     def _pos_in_parent(self, event):
         ind = np.clip(event.xdata / self._im_array.shape[1], 0, 1)
@@ -570,10 +575,10 @@ class PVSliceWidget(StandaloneImageWidget):
         return x, y, z
 
     def _on_click(self, event):
-        if not event.dblclick or not event.inaxes or \
-                event.canvas.toolbar.mode != '':
+        if not event.inaxes or event.canvas.toolbar.mode != '':
             return
         self._sync_slice(event)
+        self._draw_crosshairs(event)
 
 
 def _slice_index(data, slc):
