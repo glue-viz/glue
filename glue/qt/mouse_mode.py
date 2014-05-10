@@ -270,7 +270,7 @@ class RectangleMode(RoiMode):
 class PathMode(ClickRoiMode):
     def __init__(self, axes, **kwargs):
         super(PathMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_square')
+        self.icon = get_icon('glue_slice')
         self.mode_id = 'Slice'
         self.action_text = 'Slice Extraction'
         self.tool_tiop = 'Extract a slice through a cube'
