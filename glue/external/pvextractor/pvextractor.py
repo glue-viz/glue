@@ -10,8 +10,6 @@ from .utils.wcs_utils import get_spatial_scale, sanitize_wcs
 from .geometry import extract_slice
 from .utils.wcs_slicing import slice_wcs
 
-from spectral_cube import SpectralCube
-
 
 def extract_pv_slice(cube, path, wcs=None, spacing=1.0, order=3,
                      respect_nan=True):
@@ -58,9 +56,15 @@ def extract_pv_slice(cube, path, wcs=None, spacing=1.0, order=3,
     """
 
     if isinstance(cube, (six.string_types, ImageHDU, PrimaryHDU)):
-        cube = SpectralCube.read(cube)
+        try:
+            from spectral_cube import SpectralCube
+            cube = SpectralCube.read(cube)
+        except IOError:
+            raise IOError("spectral_cube package required for working "
+                          "with fits data. Install spectral_cube or "
+                          "use NumPy arrays")
 
-    if isinstance(cube, SpectralCube):
+    if _is_spectral_cube(cube):
         wcs = cube.wcs
         cube = cube.filled_data[...]
     else:
@@ -95,3 +99,11 @@ def extract_pv_slice(cube, path, wcs=None, spacing=1.0, order=3,
     # TODO: write path to BinTableHDU
 
     return PrimaryHDU(data=pv_slice, header=header)
+
+
+def _is_spectral_cube(obj):
+    try:
+        from spectral_cube import SpectralCube
+        return isinstance(obj, SpectralCube)
+    except IOError:
+        return False
