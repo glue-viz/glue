@@ -136,6 +136,7 @@ class RoiModeBase(MouseMode):
     the RoiMode object as the argument. Clients can use RoiMode.roi()
     to retrieve the new ROI, and take the appropriate action.
     """
+    persistent = False  # clear the shape when drawing completes?
 
     def __init__(self, axes, **kwargs):
         """
@@ -156,7 +157,8 @@ class RoiModeBase(MouseMode):
 
     def _finish_roi(self, event):
         """Called by subclasses when ROI is fully defined"""
-        self._roi_tool.finalize_selection(event)
+        if not self.persistent:
+            self._roi_tool.finalize_selection(event)
         if self._roi_callback is not None:
             self._roi_callback(self)
 
@@ -268,6 +270,7 @@ class RectangleMode(RoiMode):
 
 
 class PathMode(ClickRoiMode):
+    persistent = True
 
     def __init__(self, axes, **kwargs):
         super(PathMode, self).__init__(axes, **kwargs)
@@ -280,8 +283,8 @@ class PathMode(ClickRoiMode):
 
         self._roi_tool.plot_opts.update(edgecolor='#de2d26',
                                         facecolor=None,
-                                        edgewidth=2,
-                                        alpha=1.0)
+                                        edgewidth=3,
+                                        alpha=0.4)
 
 
 class CircleMode(RoiMode):
@@ -460,13 +463,14 @@ class ContrastMode(MouseMode):
         return result
 
 
-class SpectrumExtractorMode(PersistentRoiMode):
+class SpectrumExtractorMode(RoiMode):
 
     """
     Let's the user select a region in an image and,
     when connected to a SpectrumExtractorTool, uses this
     to display spectra extracted from that position
     """
+    persistent = True
 
     def __init__(self, axes, **kwargs):
         super(SpectrumExtractorMode, self).__init__(axes, **kwargs)

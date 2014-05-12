@@ -126,14 +126,13 @@ class ImageWidget(DataViewer):
         Extract a PV-like slice, given a path traced on the widget
         """
         vx, vy = roi.to_polygon()
-        pts = [(x, y) for x, y in zip(vx, vy)]
-        pv, x, y = _build_slice(pts, self.data, self.attribute, self.slice)
+        pv, x, y = _build_slice(vx, vy, self.data, self.attribute, self.slice)
         if self._slice_widget is None:
-            self._slice_widget = PVSliceWidget(pv, pts, self)
+            self._slice_widget = PVSliceWidget(pv, x, y, self)
             self._session.application.add_widget(self._slice_widget,
                                                  label='Custom Slice')
         else:
-            self._slice_widget.set_image(pv, pts)
+            self._slice_widget.set_image(pv, x, y)
 
         result = self._slice_widget
         result.axes.set_xlabel("Position Along Slice")
@@ -497,6 +496,8 @@ class StandaloneImageWidget(QMainWindow):
         self._im = imshow(self._axes, image,
                           norm=self._norm, cmap='gray', **kwargs)
         self._im_array = image
+        self._axes.set_xticks([])
+        self._axes.set_yticks([])
         self._redraw()
 
     @property
@@ -557,17 +558,18 @@ class PVSliceWidget(StandaloneImageWidget):
 
     """ A standalone image widget with extra interactivity for PV slices """
 
-    def __init__(self, image, pts, image_widget):
+    def __init__(self, image, x, y, image_widget):
         self._parent = image_widget
-        super(PVSliceWidget, self).__init__(image, pts=pts)
+        super(PVSliceWidget, self).__init__(image, x=x, y=y)
         conn = self.axes.figure.canvas.mpl_connect
         self._down_id = conn('button_press_event', self._on_click)
         self._move_id = conn('motion_notify_event', self._on_move)
 
-    def set_image(self, im, pts):
+    def set_image(self, im, x, y):
         super(PVSliceWidget, self).set_image(im)
         self._slc = self._parent.slice
-        self._pts = np.asarray(pts)
+        self._x = x
+        self._y = y
 
     def _sync_slice(self, event):
         s = list(self._slc)
@@ -580,7 +582,7 @@ class PVSliceWidget(StandaloneImageWidget):
     def _draw_crosshairs(self, event):
         x, y, _ = self._pos_in_parent(event)
         ax = self._parent.client.axes
-        m, = ax.plot([x], [y], '+', ms=12, mfc='none', mec='#00dd00',
+        m, = ax.plot([x], [y], '+', ms=12, mfc='none', mec='#de2d26',
                      mew=2, zorder=100)
         ax.figure.canvas.draw()
         m.remove()
@@ -596,10 +598,9 @@ class PVSliceWidget(StandaloneImageWidget):
         self._draw_crosshairs(event)
 
     def _pos_in_parent(self, event):
-        ind = np.clip(event.xdata / self._im_array.shape[1], 0, 1)
-        abcissa = np.linspace(0, 1, len(self._pts))
-        x = np.interp(ind, abcissa, self._pts[:, 0])
-        y = np.interp(ind, abcissa, self._pts[:, 1])
+        ind = np.clip(event.xdata, 0, self._im_array.shape[1] - 1)
+        x = self._x[ind]
+        y = self._y[ind]
         z = event.ydata
 
         return x, y, z
@@ -620,11 +621,12 @@ def _slice_index(data, slc):
                key=lambda x: data.shape[x])
 
 
-def _build_slice(pts, data, attribute, slc):
+def _build_slice(x, y, data, attribute, slc):
     """
     Extract a PV-like slice from a cube
 
-    :param pts: A list of (x,y) tuples defining the path to extract
+    :param x: An array of x values to extract (pixel units)
+    :param y: An array of y values to extract (pixel units)
     :param data: :class:`~glue.core.data.Data`
     :param attribute: :claass:`~glue.core.data.Component`
     :param slc: orientation of the image widget that `pts` are defined on
@@ -635,14 +637,15 @@ def _build_slice(pts, data, attribute, slc):
     :note: For >3D cubes, the "V-axis" of the PV slice is the longest
            cube axis ignoring the x/y axes of `slc`
     """
-    from ...external.pvextractor import extract_pv_slice, Path
+    from ...external.pvextractor import Path, extract_pv_slice
+    p = Path(list(zip(x, y)))
 
-    pth = Path(pts)
     cube = data[attribute]
     dims = list(range(data.ndim))
     s = slc
     ind = _slice_index(data, slc)
 
+    # transpose cube to (z, y, x, <whatever>)
     def _put(x, ind, pos):
         x[ind], x[pos] = x[pos], x[ind]
     _put(dims, ind, 0)
@@ -650,11 +653,16 @@ def _build_slice(pts, data, attribute, slc):
     _put(dims, s.index('x'), 2)
     cube = cube.transpose(dims)
 
+    # slice down from >3D to 3D if needed
     s = [slice(None)] * 3 + [slc[d] for d in dims[3:]]
     cube = cube[s]
-    pv = extract_pv_slice(cube, pth, order=0).data
 
-    return pv, range(pv.shape[1]), range(pv.shape[0])
+    # sample cube
+    spacing = 1  # pixel
+    x, y = [_x.astype(int) for _x in p.sample_points(spacing)]
+    result = extract_pv_slice(cube, p, order=0).data
+
+    return result, x, y
 
 
 def _slice_label(data, slc):

@@ -7,6 +7,7 @@ from .qtutil import mpl_to_qt4_color
 
 
 class QtROI(object):
+
     """
     A mixin class used to override the drawing methods used by
     the MPL ROIs in core.roi. Paints to the Widget directly,
@@ -80,6 +81,7 @@ class QtPathROI(QtROI, roi.MplPathROI):
     def get_painter(self, canvas):
         p = super(QtPathROI, self).get_painter(canvas)
         p.setBrush(Qt.NoBrush)
+        p.setRenderHint(p.HighQualityAntialiasing)
         return p
 
     def draw_polygon(self, canvas, x, y):
@@ -95,16 +97,19 @@ class QtPathROI(QtROI, roi.MplPathROI):
 
 
 class QtRectangularROI(QtROI, roi.MplRectangularROI):
+
     def __init__(self, axes):
         roi.MplRectangularROI.__init__(self, axes)
 
 
 class QtPolygonalROI(QtROI, roi.MplPolygonalROI):
+
     def __init__(self, axes):
         roi.MplPolygonalROI.__init__(self, axes)
 
 
 class QtXRangeROI(QtROI, roi.MplXRangeROI):
+
     def __init__(self, axes):
         roi.MplXRangeROI.__init__(self, axes)
 
@@ -118,6 +123,7 @@ class QtXRangeROI(QtROI, roi.MplXRangeROI):
 
 
 class QtYRangeROI(QtROI, roi.MplYRangeROI):
+
     def __init__(self, axes):
         roi.MplYRangeROI.__init__(self, axes)
 
@@ -131,6 +137,7 @@ class QtYRangeROI(QtROI, roi.MplYRangeROI):
 
 
 class QtCircularROI(QtROI, roi.MplCircularROI):
+
     def __init__(self, axes):
         roi.MplCircularROI.__init__(self, axes)
 
