@@ -111,6 +111,13 @@ class ImageWidget(DataViewer):
         spectrum = self._spectrum_tool.mouse_mode
         path = PathMode(axes, roi_callback=slice)
 
+        def toggle_3d_modes(data):
+            is3d = data.ndim > 2
+            path.enabled = is3d
+            spectrum.enabled = is3d
+
+        add_callback(self.client, 'display_data', toggle_3d_modes)
+
         self._contrast = contrast
         return [rect, circ, poly, contour, contrast, spectrum, path]
 
@@ -574,7 +581,7 @@ class PVSliceWidget(StandaloneImageWidget):
         x, y, _ = self._pos_in_parent(event)
         ax = self._parent.client.axes
         m, = ax.plot([x], [y], '+', ms=12, mfc='none', mec='#00dd00',
-                     mew=2)
+                     mew=2, zorder=100)
         ax.figure.canvas.draw()
         m.remove()
 

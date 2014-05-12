@@ -579,11 +579,6 @@ class SpectrumTool(object):
         # This will be added to the ImageWidget's toolbar
         mode = SpectrumExtractorMode(self.image_widget.client.axes,
                                      release_callback=self._update_profile)
-
-        def toggle_mode_enabled(data):
-            mode.enabled = (data.ndim > 2)
-
-        add_callback(self.client, 'display_data', toggle_mode_enabled)
         return mode
 
     def _setup_toolbar(self):
