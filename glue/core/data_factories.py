@@ -49,14 +49,20 @@ _default_factory = {}
 
 
 def _extension(path):
-    # split a path into an extension with possibly multipler periods
+    # extract the extension type from a path
     #  test.fits -> fits
-    #  test.fits.gz -> fits.gz
+    #  test.fits.gz -> fits.gz (special case)
+    #  a.b.c.fits -> fits
     _, path = os.path.split(path)
     if '.' not in path:
         return ''
-    ext = '.'.join(path.split('.')[1:])
-    return ext
+    stems = path.split('.')[1:]
+
+    # special case: test.fits.gz -> fits.gz
+    if len(stems) > 1 and any(x == stems[-1]
+                              for x in ['gz', 'gzip', 'bz', 'bz2']):
+        return '.'.join(stems[-2:])
+    return stems[-1]
 
 
 def has_extension(exts):

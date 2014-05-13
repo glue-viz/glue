@@ -18,6 +18,13 @@ def test_load_data():
     factory.assert_called_once_with('test.fits')
     assert d.label == 'test'
 
+def test_extension():
+    assert df._extension('test.fits') == 'fits'
+    assert df._extension('test.fits.gz') == 'fits.gz'
+    assert df._extension('test.fits.gzip') == 'fits.gzip'
+    assert df._extension('test.fits.bz') == 'fits.bz'
+    assert df._extension('test.fits.bz2') == 'fits.bz2'
+    assert df._extension('test.other.names.fits') == 'fits'
 
 def test_data_label():
     assert df.data_label('test.fits') == 'test'
