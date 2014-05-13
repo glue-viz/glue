@@ -134,13 +134,17 @@ def init_mpl(figure, axes, wcs=False):
             axes.figure is not figure:
         raise ValueError("Axes and figure are incompatible")
 
+    try:
+        from ..external.wcsaxes import WCSAxesSubplot
+    except ImportError:
+        WCSAxesSubplot = None
+
     if axes is not None:
         _ax = axes
         _figure = axes.figure
     else:
         _figure = figure or plt.figure()
-        if wcs:
-            from ..external.wcsaxes import WCSAxesSubplot
+        if wcs and WCSAxesSubplot is not None:
             _ax = WCSAxesSubplot(_figure, 111)
             _figure.add_axes(_ax)
         else:

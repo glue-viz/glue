@@ -60,13 +60,12 @@ class ImageClient(VizClient):
         self._figure = figure
         self._norm_cache = {}
 
-        # format axes
-        fc = self._ax.format_coord
-
+        # custom axes formatter
         def format_coord(x, y):
             data = self.display_data
             if data is None:
-                return fc(x, y)
+                # MPL default method
+                return type(self._ax).format_coord(self._ax, x, y)
             info = self.point_details(x, y)
             return '         '.join(info['labels'])
 
@@ -239,7 +238,7 @@ class ImageClient(VizClient):
     def _update_wcs_axes(self, data, slc):
         wcs = getattr(data.coords, 'wcs', None)
 
-        if wcs is not None:
+        if wcs is not None and hasattr(self.axes, 'reset_wcs'):
             self.axes.reset_wcs(wcs, slices=slc[::-1])
 
     @requires_data
