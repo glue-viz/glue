@@ -59,10 +59,10 @@ def extract_pv_slice(cube, path, wcs=None, spacing=1.0, order=3,
         try:
             from spectral_cube import SpectralCube
             cube = SpectralCube.read(cube)
-        except IOError:
-            raise IOError("spectral_cube package required for working "
-                          "with fits data. Install spectral_cube or "
-                          "use NumPy arrays")
+        except ImportError:
+            raise ImportError("spectral_cube package required for working "
+                              "with fits data. Install spectral_cube or "
+                              "use NumPy arrays")
 
     if _is_spectral_cube(cube):
         wcs = cube.wcs
