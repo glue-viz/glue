@@ -140,7 +140,7 @@ def init_mpl(figure, axes, wcs=False):
     else:
         _figure = figure or plt.figure()
         if wcs:
-            from wcsaxes import WCSAxesSubplot
+            from ..external.wcsaxes import WCSAxesSubplot
             _ax = WCSAxesSubplot(_figure, 111)
             _figure.add_axes(_ax)
         else:
