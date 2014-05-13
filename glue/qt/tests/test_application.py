@@ -13,7 +13,7 @@ except:
     ipy_version = '0.0'
 
 from ..glue_application import GlueApplication
-from ...external.qt.QtCore import QMimeData
+from ...external.qt.QtCore import QMimeData, QUrl
 from ..widgets.scatter_widget import ScatterWidget
 from ..widgets.image_widget import ImageWidget
 from ...core import Data
@@ -167,7 +167,7 @@ class TestGlueApplication(object):
 
     def test_drop_load_data(self):
         m = QMimeData()
-        m.setUrls(['test.fits'])
+        m.setUrls([QUrl('test.fits')])
         e = MagicMock()
         e.mimeData.return_value = m
         load = MagicMock()
