@@ -139,7 +139,9 @@ class DS9Normalize(Normalize, object):
         self.vmin = vmin
         self.vmax = vmax
 
-    def __call__(self, value):
+    def __call__(self, value, clip=False):
+        # XXX ignore clip
+
         self.autoscale_None(value)  # set vmin, vmax if unset
         inverted = self.vmax <= self.vmin
 
@@ -150,6 +152,8 @@ class DS9Normalize(Normalize, object):
 
         if inverted:
             result = np.subtract(1, result, out=result)
+
+        result = np.ma.MaskedArray(result, copy=False)
 
         return result
 

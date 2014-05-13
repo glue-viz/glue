@@ -224,7 +224,8 @@ def pick_item(items, labels, title="Pick an item", label="Pick an item",
     Returns the selected item, or None
     """
     choice, isok = QInputDialog.getItem(None, title, label,
-                                        labels, current=default)
+                                        labels, current=default,
+                                        editable=False)
     if isok:
         index = labels.index(str(choice))
         return items[index]

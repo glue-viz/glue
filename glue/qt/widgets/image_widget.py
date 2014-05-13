@@ -1,5 +1,8 @@
-from ...external.qt.QtGui import (QWidget, QAction, QLabel, QCursor,
-                                  QToolButton, QIcon, QMessageBox)
+import numpy as np
+
+from ...external.qt.QtGui import (QAction, QLabel, QCursor, QMainWindow,
+                                  QToolButton, QIcon, QMessageBox,
+                                  QMdiSubWindow)
 
 from ...external.qt.QtCore import Qt, QRect
 
@@ -8,17 +11,19 @@ from ... import core
 from ... import config
 
 from ...clients.image_client import ImageClient
+from ...clients.ds9norm import DS9Normalize
+from ...clients.modest_image import imshow
+
 from ...clients.layer_artist import Pointer
 from ...core.callback_property import add_callback
 
 from .data_slice_widget import DataSlice
 
 from ..mouse_mode import (RectangleMode, CircleMode, PolyMode,
-                          ContrastMode, ContourMode)
+                          ContrastMode, ContourMode, PathMode)
 from ..glue_toolbar import GlueToolbar
 from ..spectrum_tool import SpectrumTool
 from .mpl_widget import MplWidget, defer_draw
-
 
 from ..decorators import set_cursor
 from ..qtutil import cmap2pixmap, load_ui, get_icon, nonpartial
@@ -57,45 +62,26 @@ class ImageWidget(DataViewer):
         self._spectrum_tool = SpectrumTool(self)
         self._tweak_geometry()
 
-        self._create_actions()
         self.make_toolbar()
         self._connect()
         self._init_widgets()
         self.set_data(0)
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
+        self._slice_widget = None
 
     def _tweak_geometry(self):
         self.central_widget.resize(600, 400)
         self.resize(self.central_widget.size())
         self.ui.rgb_options.hide()
 
-    def _create_actions(self):
-        # pylint: disable=E1101
-        def act(name, cmap):
-            a = QAction(name, self)
-            a.triggered.connect(nonpartial(self.client.set_cmap, cmap))
-            pm = cmap2pixmap(cmap)
-            a.setIcon(QIcon(pm))
-            return a
-
-        self._cmaps = []
-        for label, cmap in config.colormaps:
-            self._cmaps.append(act(label, cmap))
-
     def make_toolbar(self):
         result = GlueToolbar(self.central_widget.canvas, self, name='Image')
         for mode in self._mouse_modes():
             result.add_mode(mode)
 
-        tb = QToolButton()
-        tb.setWhatsThis("Set color scale")
-        tb.setToolTip("Set color scale")
-        icon = get_icon('glue_rainbow')
-        tb.setIcon(icon)
-        tb.setPopupMode(QToolButton.InstantPopup)
-        tb.addActions(self._cmaps)
-        result.addWidget(tb)
+        cmap = _colormap_mode(self, self.client.set_cmap)
+        result.addWidget(cmap)
 
         # connect viewport update buttons to client commands to
         # allow resampling
@@ -114,14 +100,45 @@ class ImageWidget(DataViewer):
         def apply_mode(mode):
             self.apply_roi(mode.roi())
 
+        def slice(mode):
+            self._extract_slice(mode.roi())
+
         rect = RectangleMode(axes, roi_callback=apply_mode)
         circ = CircleMode(axes, roi_callback=apply_mode)
         poly = PolyMode(axes, roi_callback=apply_mode)
         contrast = ContrastMode(axes, move_callback=self._set_norm)
         contour = ContourMode(axes, release_callback=self._contour_roi)
         spectrum = self._spectrum_tool.mouse_mode
+        path = PathMode(axes, roi_callback=slice)
+
+        def toggle_3d_modes(data):
+            is3d = data.ndim > 2
+            path.enabled = is3d
+            spectrum.enabled = is3d
+
+        add_callback(self.client, 'display_data', toggle_3d_modes)
+
         self._contrast = contrast
-        return [rect, circ, poly, contour, contrast, spectrum]
+        return [rect, circ, poly, contour, contrast, spectrum, path]
+
+    def _extract_slice(self, roi):
+        """
+        Extract a PV-like slice, given a path traced on the widget
+        """
+        vx, vy = roi.to_polygon()
+        pv, x, y = _build_slice(vx, vy, self.data, self.attribute, self.slice)
+        if self._slice_widget is None:
+            self._slice_widget = PVSliceWidget(pv, x, y, self)
+            self._session.application.add_widget(self._slice_widget,
+                                                 label='Custom Slice')
+        else:
+            self._slice_widget.set_image(pv, x, y)
+
+        result = self._slice_widget
+        result.axes.set_xlabel("Position Along Slice")
+        result.axes.set_ylabel(_slice_label(self.data, self.slice))
+
+        result.show()
 
     def _init_widgets(self):
         pass
@@ -412,3 +429,250 @@ class ImageWidget(DataViewer):
         w, h = fm.width(lbl), fm.height()
         g = QRect(20, self.central_widget.geometry().height() - h, w, h)
         self.label_widget.setGeometry(g)
+
+
+def _colormap_mode(parent, on_trigger):
+
+    # actions for each colormap
+    acts = []
+    for label, cmap in config.colormaps:
+        a = QAction(label, parent)
+        a.triggered.connect(nonpartial(on_trigger, cmap))
+        pm = cmap2pixmap(cmap)
+        a.setIcon(QIcon(pm))
+        acts.append(a)
+
+    # Toolbar button
+    tb = QToolButton()
+    tb.setWhatsThis("Set color scale")
+    tb.setToolTip("Set color scale")
+    icon = get_icon('glue_rainbow')
+    tb.setIcon(icon)
+    tb.setPopupMode(QToolButton.InstantPopup)
+    tb.addActions(acts)
+
+    return tb
+
+
+class StandaloneImageWidget(QMainWindow):
+
+    """
+    A simplified image viewer, without any brushing or linking,
+    but with the ability to adjust contrast and resample.
+    """
+
+    def __init__(self, image, parent=None, **kwargs):
+        """
+        :param image: Image to display (2D numpy array)
+        :param parent: Parent widget (optional)
+
+        :param kwargs: Extra keywords to pass to imshow
+        """
+        super(StandaloneImageWidget, self).__init__(parent)
+        self.central_widget = MplWidget()
+        self.setCentralWidget(self.central_widget)
+        self._setup_axes()
+
+        self._im = None
+        self._norm = DS9Normalize()
+
+        self.make_toolbar()
+        self.set_image(image, **kwargs)
+
+    def _setup_axes(self):
+        self._axes = self.central_widget.canvas.fig.add_subplot(111)
+        self._axes.set_aspect('equal', adjustable='datalim')
+
+    def set_image(self, image, **kwargs):
+        """
+        Update the image shown in the widget
+        """
+        if self._im is not None:
+            self._im.remove()
+            self._im = None
+
+        kwargs.setdefault('origin', 'upper')
+
+        self._im = imshow(self._axes, image,
+                          norm=self._norm, cmap='gray', **kwargs)
+        self._im_array = image
+        self._axes.set_xticks([])
+        self._axes.set_yticks([])
+        self._redraw()
+
+    @property
+    def axes(self):
+        """
+        The Matplolib axes object for this figure
+        """
+        return self._axes
+
+    def show(self):
+        super(StandaloneImageWidget, self).show()
+        self._redraw()
+
+    def _redraw(self):
+        self.central_widget.canvas.draw()
+
+    def _set_cmap(self, cmap):
+        self._im.set_cmap(cmap)
+        self._redraw()
+
+    def mdi_wrap(self):
+        """
+        Embed this widget in a QMdiSubWindow
+        """
+        sub = QMdiSubWindow()
+        sub.setWidget(self)
+        self.destroyed.connect(sub.close)
+        sub.resize(self.size())
+        self._mdi_wrapper = sub
+
+        return sub
+
+    def _set_norm(self, mode):
+        """ Use the `ContrastMouseMode` to adjust the transfer function """
+        clip_lo, clip_hi = mode.get_clip_percentile()
+        stretch = mode.stretch
+        self._norm.clip_lo = clip_lo
+        self._norm.clip_hi = clip_hi
+        self._norm.stretch = stretch
+        self._norm.bias = mode.bias
+        self._norm.contrast = mode.contrast
+        self._im.set_norm(self._norm)
+        self._redraw()
+
+    def make_toolbar(self):
+        """
+        Setup the toolbar
+        """
+        result = GlueToolbar(self.central_widget.canvas, self,
+                             name='Image')
+        result.add_mode(ContrastMode(self._axes, move_callback=self._set_norm))
+        result.addWidget(_colormap_mode(self, self._set_cmap))
+        self.addToolBar(result)
+        return result
+
+
+class PVSliceWidget(StandaloneImageWidget):
+
+    """ A standalone image widget with extra interactivity for PV slices """
+
+    def __init__(self, image, x, y, image_widget):
+        self._parent = image_widget
+        super(PVSliceWidget, self).__init__(image, x=x, y=y)
+        conn = self.axes.figure.canvas.mpl_connect
+        self._down_id = conn('button_press_event', self._on_click)
+        self._move_id = conn('motion_notify_event', self._on_move)
+
+    def set_image(self, im, x, y):
+        super(PVSliceWidget, self).set_image(im)
+        self._slc = self._parent.slice
+        self._x = x
+        self._y = y
+
+    def _sync_slice(self, event):
+        s = list(self._slc)
+
+        # XXX breaks if display_data changes
+        _, _, z = self._pos_in_parent(event)
+        s[_slice_index(self._parent.data, s)] = z
+        self._parent.slice = tuple(s)
+
+    def _draw_crosshairs(self, event):
+        x, y, _ = self._pos_in_parent(event)
+        ax = self._parent.client.axes
+        m, = ax.plot([x], [y], '+', ms=12, mfc='none', mec='#de2d26',
+                     mew=2, zorder=100)
+        ax.figure.canvas.draw()
+        m.remove()
+
+    def _on_move(self, event):
+        if not event.button:
+            return
+
+        if not event.inaxes or event.canvas.toolbar.mode != '':
+            return
+
+        self._sync_slice(event)
+        self._draw_crosshairs(event)
+
+    def _pos_in_parent(self, event):
+        ind = np.clip(event.xdata, 0, self._im_array.shape[1] - 1)
+        x = self._x[ind]
+        y = self._y[ind]
+        z = event.ydata
+
+        return x, y, z
+
+    def _on_click(self, event):
+        if not event.inaxes or event.canvas.toolbar.mode != '':
+            return
+        self._sync_slice(event)
+        self._draw_crosshairs(event)
+
+
+def _slice_index(data, slc):
+    """
+    The axis over which to extract PV slices
+    """
+    return max([i for i in range(len(slc))
+               if isinstance(slc[i], int)],
+               key=lambda x: data.shape[x])
+
+
+def _build_slice(x, y, data, attribute, slc):
+    """
+    Extract a PV-like slice from a cube
+
+    :param x: An array of x values to extract (pixel units)
+    :param y: An array of y values to extract (pixel units)
+    :param data: :class:`~glue.core.data.Data`
+    :param attribute: :claass:`~glue.core.data.Component`
+    :param slc: orientation of the image widget that `pts` are defined on
+
+    :returns: A 2D Numpy array, corresponding to a "PV ribbon" cutout
+              from the cube
+
+    :note: For >3D cubes, the "V-axis" of the PV slice is the longest
+           cube axis ignoring the x/y axes of `slc`
+    """
+    from ...external.pvextractor import Path, extract_pv_slice
+    p = Path(list(zip(x, y)))
+
+    cube = data[attribute]
+    dims = list(range(data.ndim))
+    s = slc
+    ind = _slice_index(data, slc)
+
+    # transpose cube to (z, y, x, <whatever>)
+    def _put(x, ind, pos):
+        x[ind], x[pos] = x[pos], x[ind]
+    _put(dims, ind, 0)
+    _put(dims, s.index('y'), 1)
+    _put(dims, s.index('x'), 2)
+    cube = cube.transpose(dims)
+
+    # slice down from >3D to 3D if needed
+    s = [slice(None)] * 3 + [slc[d] for d in dims[3:]]
+    cube = cube[s]
+
+    # sample cube
+    spacing = 1  # pixel
+    x, y = [_x.astype(int) for _x in p.sample_points(spacing)]
+    result = extract_pv_slice(cube, p, order=0).data
+
+    return result, x, y
+
+
+def _slice_label(data, slc):
+    """
+    Returns a formatted axis label corresponding to the slice dimension
+    in a PV slice
+
+    :param data: Data that slice is extracted from
+    :param slc: orientation in the image widget from which the PV slice
+                was defined
+    """
+    idx = _slice_index(data, slc)
+    return data.get_world_component_id(idx).label
