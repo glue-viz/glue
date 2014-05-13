@@ -81,6 +81,9 @@ def fast_limits(data, plo, phi):
     shp = data.shape
     view = tuple([slice(None, None, max(s / 50, 1)) for s in shp])
     values = np.asarray(data)[view]
+    if ~np.isfinite(values).any():
+        return (0.0, 1.0)
+
     limits = (-np.inf, np.inf)
     lo = stats.scoreatpercentile(values.flat, plo, limit=limits)
     hi = stats.scoreatpercentile(values.flat, phi, limit=limits)

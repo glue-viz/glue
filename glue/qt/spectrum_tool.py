@@ -261,9 +261,11 @@ class CollapseContext(SpectrumContext):
     def _aggregate(self):
         func = self._combo.itemData(self._combo.currentIndex())
 
+        rng = list(self.grip.range)
+        rng[1] += 1
         rng = Extractor.world2pixel(self.data,
                                     self.profile_axis,
-                                    self.grip.range)
+                                    rng)
 
         agg = Aggregate(self.data, self.client.display_attribute,
                         self.main.profile_axis, self.client.slice, rng)
@@ -526,7 +528,6 @@ class SpectrumTool(object):
         sub.resize(self.widget.size())
         self._mdi_wrapper = sub
         return sub
-
 
     def _build_main_widget(self):
         self.widget = SpectrumMainWindow()
