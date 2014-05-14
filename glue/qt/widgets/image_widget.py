@@ -126,7 +126,7 @@ class ImageWidget(DataViewer):
         Extract a PV-like slice, given a path traced on the widget
         """
         vx, vy = roi.to_polygon()
-        pv, x, y = _build_slice(vx, vy, self.data, self.attribute, self.slice)
+        pv, x, y = _slice_from_path(vx, vy, self.data, self.attribute, self.slice)
         if self._slice_widget is None:
             self._slice_widget = PVSliceWidget(pv, x, y, self)
             self._session.application.add_widget(self._slice_widget,
@@ -431,15 +431,22 @@ class ImageWidget(DataViewer):
         self.label_widget.setGeometry(g)
 
 
+class ColormapAction(QAction):
+
+    def __init__(self, label, cmap, parent):
+        super(ColormapAction, self).__init__(label, parent)
+        self.cmap = cmap
+        pm = cmap2pixmap(cmap)
+        self.setIcon(QIcon(pm))
+
+
 def _colormap_mode(parent, on_trigger):
 
     # actions for each colormap
     acts = []
     for label, cmap in config.colormaps:
-        a = QAction(label, parent)
+        a = ColormapAction(label, cmap, parent)
         a.triggered.connect(nonpartial(on_trigger, cmap))
-        pm = cmap2pixmap(cmap)
-        a.setIcon(QIcon(pm))
         acts.append(a)
 
     # Toolbar button
@@ -549,7 +556,9 @@ class StandaloneImageWidget(QMainWindow):
         result = GlueToolbar(self.central_widget.canvas, self,
                              name='Image')
         result.add_mode(ContrastMode(self._axes, move_callback=self._set_norm))
-        result.addWidget(_colormap_mode(self, self._set_cmap))
+        cm = _colormap_mode(self, self._set_cmap)
+        result.addWidget(cm)
+        self._cmap_actions = cm.actions()
         self.addToolBar(result)
         return result
 
@@ -621,7 +630,7 @@ def _slice_index(data, slc):
                key=lambda x: data.shape[x])
 
 
-def _build_slice(x, y, data, attribute, slc):
+def _slice_from_path(x, y, data, attribute, slc):
     """
     Extract a PV-like slice from a cube
 
@@ -631,8 +640,11 @@ def _build_slice(x, y, data, attribute, slc):
     :param attribute: :claass:`~glue.core.data.Component`
     :param slc: orientation of the image widget that `pts` are defined on
 
-    :returns: A 2D Numpy array, corresponding to a "PV ribbon" cutout
-              from the cube
+    :returns: (slice, x, y)
+              slice is a 2D Numpy array, corresponding to a "PV ribbon"
+              cutout from the cube
+              x and y are the resampled points along which the
+              ribbon is extracted
 
     :note: For >3D cubes, the "V-axis" of the PV slice is the longest
            cube axis ignoring the x/y axes of `slc`
@@ -642,24 +654,27 @@ def _build_slice(x, y, data, attribute, slc):
 
     cube = data[attribute]
     dims = list(range(data.ndim))
-    s = slc
+    s = list(slc)
     ind = _slice_index(data, slc)
 
     # transpose cube to (z, y, x, <whatever>)
-    def _put(x, ind, pos):
-        x[ind], x[pos] = x[pos], x[ind]
-    _put(dims, ind, 0)
-    _put(dims, s.index('y'), 1)
-    _put(dims, s.index('x'), 2)
+    def _swap(x, s, i, j):
+        x[i], x[j] = x[j], x[i]
+        s[i], s[j] = s[j], s[i]
+
+    _swap(dims, s, ind, 0)
+    _swap(dims, s, s.index('y'), 1)
+    _swap(dims, s, s.index('x'), 2)
     cube = cube.transpose(dims)
 
     # slice down from >3D to 3D if needed
     s = [slice(None)] * 3 + [slc[d] for d in dims[3:]]
+    print dims, s
     cube = cube[s]
 
     # sample cube
     spacing = 1  # pixel
-    x, y = [_x.astype(int) for _x in p.sample_points(spacing)]
+    x, y = [np.round(_x).astype(int) for _x in p.sample_points(spacing)]
     result = extract_pv_slice(cube, p, order=0).data
 
     return result, x, y

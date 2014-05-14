@@ -1,6 +1,6 @@
 [report]
 
-omit = glue/*tests/*, glue/qt/ui/*, glue/core/odict.py, glue/core/glue_pickle.py
+omit = glue/*tests/*, glue/qt/ui/*, glue/core/odict.py, glue/core/glue_pickle.py, glue/external/*
 exclude_lines =
               pragma: no cover
               if __name__ == .__main__.:
