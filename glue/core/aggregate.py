@@ -16,7 +16,7 @@ class Aggregate(object):
         self.attribute = attribute
         self.zax = zax
         self.slc = slc
-        self.zlim = zlim
+        self.zlim = min(zlim), max(zlim)
 
     def _subslice(self):
         view = [slice(None, None) for _ in self.data.shape]

@@ -122,3 +122,12 @@ def test_nans_like_zeros(func):
     a1 = Aggregate(d, 'a', 0, (0, 'x', 'y'), (0, 3))
     a2 = Aggregate(d2, 'a', 0, (0, 'x', 'y'), (0, 3))
     np.testing.assert_array_equal(func(a1), func(a2))
+
+
+def test_reverse_limits():
+    a = np.random.random((3, 3, 3))
+    d = Data(a=a)
+
+    a = Aggregate(d, 'a', 0, (0, 'y', 'x'), (3, 0))
+    b = Aggregate(d, 'a', 0, (0, 'y', 'x'), (0, 3))
+    assert_allclose(a.sum(), b.sum())
