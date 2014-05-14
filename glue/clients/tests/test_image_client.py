@@ -393,7 +393,7 @@ def test_format_coord_2d():
     d.coords = DummyCoords()
 
     dc = core.DataCollection([d])
-    c = ImageClient(dc)
+    c = ImageClient(dc, figure=FIGURE)
     c.add_layer(d)
     ax = c.axes
 

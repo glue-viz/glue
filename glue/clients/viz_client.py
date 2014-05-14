@@ -3,6 +3,7 @@ from ..core.client import Client
 
 
 class VizClient(Client):
+
     """
     The VizClient class provides an interface (and minimal
     implementation) for a generic client that creates
@@ -128,17 +129,26 @@ class VizClient(Client):
         raise NotImplementedError()
 
 
-def init_mpl(figure, axes):
+def init_mpl(figure, axes, wcs=False):
     if axes is not None and figure is not None and \
             axes.figure is not figure:
         raise ValueError("Axes and figure are incompatible")
+
+    try:
+        from ..external.wcsaxes import WCSAxesSubplot
+    except ImportError:
+        WCSAxesSubplot = None
 
     if axes is not None:
         _ax = axes
         _figure = axes.figure
     else:
         _figure = figure or plt.figure()
-        _ax = _figure.add_subplot(1, 1, 1)
+        if wcs and WCSAxesSubplot is not None:
+            _ax = WCSAxesSubplot(_figure, 111)
+            _figure.add_axes(_ax)
+        else:
+            _ax = _figure.add_subplot(1, 1, 1)
     try:
         _figure.set_tight_layout(True)
     except AttributeError:  # matplotlib < 1.1
