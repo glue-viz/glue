@@ -105,5 +105,5 @@ def _is_spectral_cube(obj):
     try:
         from spectral_cube import SpectralCube
         return isinstance(obj, SpectralCube)
-    except IOError:
+    except ImportError:
         return False
