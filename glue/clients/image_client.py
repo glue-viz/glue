@@ -4,7 +4,7 @@ from functools import wraps
 import numpy as np
 from matplotlib.figure import Figure
 
-from .modest_image import extract_matched_slices
+from ..external.modest_image import extract_matched_slices
 from ..core.exceptions import IncompatibleAttribute
 from ..core.data import Data
 from ..core.util import lookup_class

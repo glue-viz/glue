@@ -12,7 +12,7 @@ from ... import config
 
 from ...clients.image_client import ImageClient
 from ...clients.ds9norm import DS9Normalize
-from ...clients.modest_image import imshow
+from ...external.modest_image import imshow
 
 from ...clients.layer_artist import Pointer
 from ...core.callback_property import add_callback
@@ -209,14 +209,6 @@ class ImageWidget(DataViewer):
         att = list(self.ui.rgb_options.attributes)
         att[2] = value
         self.ui.rgb_options.attributes = att
-
-    @property
-    def current_data(self):
-        if self.ui.displayDataCombo.count() == 0:
-            return
-
-        index = self.ui.displayDataCombo.currentIndex()
-        return self.ui.displayDataCombo.itemData(index)
 
     @defer_draw
     def set_data(self, index):
@@ -419,10 +411,14 @@ class ImageWidget(DataViewer):
         x, y = pos.x(), self.central_widget.canvas.height() - pos.y()
         self._update_intensity_label(x, y)
 
-    def _update_intensity_label(self, x, y):
+    def _intensity_label(self, x, y):
         x, y = self.client.axes.transData.inverted().transform([x, y])
         value = self.client.point_details(x, y)['value']
         lbl = '' if value is None else "data: %s" % value
+        return lbl
+
+    def _update_intensity_label(self, x, y):
+        lbl = self._intensity_label(x, y)
         self.label_widget.setText(lbl)
 
         fm = self.label_widget.fontMetrics()
