@@ -3,9 +3,9 @@ from __future__ import print_function
 import numpy as np
 
 from astropy import units as u
-from astropy.extern import six
 from astropy.io.fits import PrimaryHDU, ImageHDU, Header
 
+from . import six
 from .utils.wcs_utils import get_spatial_scale, sanitize_wcs
 from .geometry import extract_slice
 from .utils.wcs_slicing import slice_wcs
