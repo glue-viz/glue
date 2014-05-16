@@ -61,7 +61,6 @@ def small_view_array(data):
     return np.asarray(data)[view]
 
 
-@memoize
 def fast_limits(data, plo, phi):
     """Quickly estimate percentiles in an array,
     using a downsampled version
