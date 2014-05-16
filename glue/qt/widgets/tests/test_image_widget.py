@@ -127,7 +127,7 @@ class TestImageWidget(object):
         self.widget.add_data(self.im)
         att = self.widget.attribute
         intensity = self.im[att][1, 0]
-        x, y = self.widget.client.axes.transData.transform([0, 1])
+        x, y = self.widget.client.axes.transData.transform([0.5, 1.5])
         assert self.widget._intensity_label(x, y) == 'data: %s' % intensity
 
 
