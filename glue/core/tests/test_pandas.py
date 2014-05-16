@@ -5,7 +5,7 @@ import pytest
 import numpy as np
 import pandas as pd
 from pandas.util.testing import (assert_series_equal,
-                                    assert_frame_equal)
+                                 assert_frame_equal)
 
 from ..data import (Component, ComponentID, Data,
                     DerivedComponent, CoordinateComponent,
@@ -58,12 +58,12 @@ class TestPandasConversion(object):
         order = [comp.label for comp in d.components]
 
         frame = pd.DataFrame({
-                                'n': [4, 5, 6, 7],
-                                'c': ['a', 'b', 'c', 'd'],
-                                'd': np.arange(4),
-                                'Pixel Axis 0': np.arange(4),
-                                'World 0': np.arange(4)
-                              })
+            'n': [4, 5, 6, 7],
+            'c': ['a', 'b', 'c', 'd'],
+            'd': np.arange(4),
+            'Pixel Axis 0': np.arange(4),
+            'World 0': np.arange(4)
+        })
         out_frame = d.to_dataframe()
         assert_frame_equal(out_frame, frame)
         assert list(out_frame.columns) == order
@@ -75,5 +75,3 @@ class TestPandasConversion(object):
         series = pd.Series(a.ravel())
 
         assert_series_equal(series, comp.to_series())
-
-

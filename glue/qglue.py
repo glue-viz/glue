@@ -81,7 +81,7 @@ def _parse_data(data, label):
                 return prsr(data, label)
             except Exception as e:
                 raise ValueError("Invalid format for data '%s'\n\n%s" %
-                                (label, e))
+                                 (label, e))
 
     raise TypeError("Invalid data description: %s" % data)
 

@@ -240,8 +240,8 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
         self.data_collection = data_collection
         self.root = DataCollectionItem(data_collection)
         self._items = {}   # map hashes of Model pointers to model items
-                           # without this reference, PySide clobbers instance
-                           # data of model items
+        # without this reference, PySide clobbers instance
+        # data of model items
         self.register_to_hub(self.data_collection.hub)
         self.setSupportedDragActions(Qt.CopyAction)
 
@@ -508,7 +508,9 @@ class DataCollectionView(QTreeView):
 
 
 class LabeledDelegate(QStyledItemDelegate):
+
     """ Add placeholder text to default delegate """
+
     def setEditorData(self, editor, index):
         super(LabeledDelegate, self).setEditorData(editor, index)
         label = index.model().data(index, role=Qt.DisplayRole)
