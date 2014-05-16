@@ -56,7 +56,8 @@ class QtROI(object):
     def _transform(self, x, y):
         """ Convert points from MPL data coords to Qt Widget coords"""
         t = self._ax.transData
-        pts = t.transform(np.column_stack((x, y)))
+        xy = np.column_stack((x, y))
+        pts = t.transform(xy)
         pts[:, 1] = self.canvas.height() - pts[:, 1]
         return pts[:, 0], pts[:, 1]
 

@@ -215,7 +215,8 @@ class ImageLayerArtist(LayerArtist):
             return result
 
     def _update_clip(self, att):
-        key = (att, self._override_image, self.norm.clip_lo, self.norm.clip_hi)
+        key = (att, id(self._override_image),
+               self.norm.clip_lo, self.norm.clip_hi)
         if self._clip_cache == key:
             return
         self._clip_cache = key
