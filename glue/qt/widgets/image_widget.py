@@ -572,6 +572,9 @@ class PVSliceWidget(StandaloneImageWidget):
 
     def set_image(self, im, x, y):
         super(PVSliceWidget, self).set_image(im)
+        self._axes.set_aspect('auto')
+        self._axes.set_xlim(0, im.shape[1])
+        self._axes.set_ylim(0, im.shape[0])
         self._slc = self._parent.slice
         self._x = x
         self._y = y
@@ -665,7 +668,6 @@ def _slice_from_path(x, y, data, attribute, slc):
 
     # slice down from >3D to 3D if needed
     s = [slice(None)] * 3 + [slc[d] for d in dims[3:]]
-    print dims, s
     cube = cube[s]
 
     # sample cube

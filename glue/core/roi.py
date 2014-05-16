@@ -335,6 +335,7 @@ class CircularROI(Roi):
 
 
 class VertexROIBase(Roi):
+
     def __init__(self, vx=None, vy=None):
         """
         :param vx: initial x vertices
@@ -457,6 +458,7 @@ class PolygonalROI(VertexROIBase):
 
 
 class Path(VertexROIBase):
+
     def __str__(self):
         result = 'Path ('
         result += ','.join(['(%s, %s)' % (x, y)
@@ -847,6 +849,7 @@ class MplPolygonalROI(AbstractMplRoi):
                    the patch representing the ROI. These control
                    the visual properties of the ROI
     """
+
     def __init__(self, ax):
         """
         :param ax: A matplotlib Axes object to attach the graphical ROI to
