@@ -4,16 +4,25 @@ from astropy import coordinates
 from astropy import units as u
 import re
 
-csystems = {'galactic':coordinates.Galactic,
-            'fk5':coordinates.FK5,
-            'fk4':coordinates.FK4,
-            'icrs':coordinates.ICRS}
-cel_systems = ['fk5','fk4','icrs']
+try:
+    csystems = {'galactic': coordinates.Galactic,
+                'fk5': coordinates.FK5,
+                'fk4': coordinates.FK4,
+                'icrs': coordinates.ICRS}
+except AttributeError:  # astropy v0.2
+    csystems = {'galactic': coordinates.GalacticCoordinates,
+                'fk5': coordinates.FK5Coordinates,
+                'fk4': coordinates.FK4Coordinates,
+                'icrs': coordinates.ICRSCoordinates}
+
+cel_systems = ['fk5', 'fk4', 'icrs']
 # ecliptic, detector, etc. not supported (because I don't know what they mean)
 # (or with ecliptic, how to deal with them)
-all_systems = cel_systems+['galactic','image','physical']
+all_systems = cel_systems + ['galactic', 'image', 'physical']
+
 
 class SimpleRegion(object):
+
     def __init__(self, coord_list, coord_format, name):
         self.name = name
         self.coord_format = coord_format

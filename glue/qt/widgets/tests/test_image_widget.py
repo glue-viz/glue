@@ -117,6 +117,19 @@ class TestImageWidget(object):
         index = combo.currentIndex()
         assert self.widget.client.display_attribute is combo.itemData(index)
 
+    def test_paint(self):
+        # make sure paint Events don't trigger any errors
+        self.widget.add_data(self.im)
+        self.widget.show()
+        self.widget.close()
+
+    def test_intensity_label(self):
+        self.widget.add_data(self.im)
+        att = self.widget.attribute
+        intensity = self.im[att][1, 0]
+        x, y = self.widget.client.axes.transData.transform([0.5, 1.5])
+        assert self.widget._intensity_label(x, y) == 'data: %s' % intensity
+
 
 class TestStateSave(TestApplication):
 
