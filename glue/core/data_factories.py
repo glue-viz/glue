@@ -261,7 +261,7 @@ def gridded_data(filename, format='auto', **kwargs):
         raise Exception("Unkonwn format: %s" % format)
 
     for component_name in arrays:
-        comp = Component(arrays[component_name])
+        comp = Component.autotyped(arrays[component_name])
         result.add_component(comp, component_name)
     return result
 
@@ -392,7 +392,7 @@ def tabular_data(*args, **kwargs):
             except ValueError:  # assigning nan to integer dtype
                 c = c.filled(fill_value=-1)
 
-        nc = Component(np.asarray(c), units=u)
+        nc = Component.autotyped(c, units=u)
         result.add_component(nc, column_name)
 
     return result

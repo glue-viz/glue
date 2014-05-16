@@ -266,6 +266,9 @@ def coerce_numeric(arr):
     if np.issubdtype(arr.dtype, np.number):
         return arr
 
+    if np.issubdtype(arr.dtype, np.bool_):
+        return arr.astype(np.int)
+
     # a string dtype
     if np.issubdtype(arr.dtype, np.character):
         lens = np.char.str_len(arr)
