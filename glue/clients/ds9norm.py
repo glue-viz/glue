@@ -131,7 +131,7 @@ class DS9Normalize(Normalize, object):
     def stretch(self, value):
         if value not in warpers:
             raise ValueError("Invalid stretch: %s\n Valid options are: %s" %
-                            (value, warpers.keys()))
+                             (value, warpers.keys()))
         self._stretch = value
 
     def update_clip(self, image):

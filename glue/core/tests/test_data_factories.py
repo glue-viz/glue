@@ -18,6 +18,7 @@ def test_load_data():
     factory.assert_called_once_with('test.fits')
     assert d.label == 'test'
 
+
 def test_extension():
     assert df._extension('test.fits') == 'fits'
     assert df._extension('test.fits.gz') == 'fits.gz'
@@ -25,6 +26,7 @@ def test_extension():
     assert df._extension('test.fits.bz') == 'fits.bz'
     assert df._extension('test.fits.bz2') == 'fits.bz2'
     assert df._extension('test.other.names.fits') == 'fits'
+
 
 def test_data_label():
     assert df.data_label('test.fits') == 'test'
@@ -152,11 +154,11 @@ def test_dtype_float_on_categorical():
 
 
 def test_dtype_badtext():
-    data = '# a, b\nlabel1, 1 \n2, 2 \n3, 3'
+    data = '# a, b\nlabel1, 1 \n2, 2 \n3, 3\n4, 4\n5, 5\n6, 6'
     with make_file(data, '.csv') as fname:
         d = df.load_data(fname)
     assert d['a'].dtype == np.float
-    np.testing.assert_array_equal(d['a'], [np.nan, 2, 3])
+    np.testing.assert_array_equal(d['a'], [np.nan, 2, 3, 4, 5, 6])
 
 
 def test_dtype_missing_data_col2():
@@ -176,11 +178,11 @@ def test_dtype_missing_data_col1():
 
 
 def test_column_spaces():
-    data = '#a, b\nhere I go, 1\n2, 3'
+    data = '#a, b\nhere I go, 1\n2, 3\n3, 4\n5, 6\n7, 8'
     with make_file(data, '.csv') as fname:
         d = df.load_data(fname)
     assert d['a'].dtype == np.float
-    np.testing.assert_array_equal(d['a'], [np.nan, 2])
+    np.testing.assert_array_equal(d['a'], [np.nan, 2, 3, 5, 7])
 
 
 def test_casalike():

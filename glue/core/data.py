@@ -132,6 +132,12 @@ class Component(object):
     Data objects hold one or more components, accessed via
     ComponentIDs. All Components in a data set must have the same
     shape and number of dimensions
+
+    Note
+    ----
+    Instead of instantiating Components directly, consider using
+    :meth:`Component.autotyped`, which chooses a subclass most appropriate
+    for the data type.
     """
 
     def __init__(self, data, units=None):
@@ -199,6 +205,29 @@ class Component(object):
         """
 
         return pd.Series(self.data.ravel(), **kwargs)
+
+    @classmethod
+    def autotyped(cls, data, units=None):
+        """
+        Automatically choose between Component and CategoricalComponent,
+        based on the input data type.
+
+        :param data: The data to pack into a Component
+        :type data: Array-like
+        :param units: Optional units
+        :type units: str
+
+        :returns: A Component (or subclass)
+        """
+        data = np.asarray(data)
+        n = coerce_numeric(data)
+        thresh = 0.5
+        if np.isfinite(n).mean() > thresh:
+            return Component(n, units=units)
+        elif np.issubdtype(data.dtype, np.character):
+            return CategoricalComponent(data, units=units)
+
+        return Component(data, units=units)
 
 
 class DerivedComponent(Component):
@@ -302,13 +331,13 @@ class CategoricalComponent(Component):
     Container for categorical data.
     """
 
-    def __init__(self, categorical_data, categories=None, jitter=None):
+    def __init__(self, categorical_data, categories=None, jitter=None, units=None):
         """
         :param categorical_data: The underlying :class:`numpy.ndarray`
         :param categories: List of unique values in the data
         :jitter: Strategy for jittering the data
         """
-        super(CategoricalComponent, self).__init__(None, None)
+        super(CategoricalComponent, self).__init__(None, units)
         self._categorical_data = np.asarray(categorical_data, dtype=np.object)
         self._categorical_data.setflags(write=False)
 
@@ -472,8 +501,7 @@ class Data(object):
         self.edit_subset = None
 
         for lbl, data in kwargs.items():
-            c = Component(np.asarray(data))
-            self.add_component(c, lbl)
+            self.add_component(data, lbl)
 
     @property
     def subsets(self):
@@ -563,7 +591,7 @@ class Data(object):
            The ComponentID associated with the newly-added component
         """
         if not isinstance(component, Component):
-            component = Component(np.asarray(component))
+            component = Component.autotyped(component)
 
         if isinstance(component, DerivedComponent):
             component.set_parent(self)

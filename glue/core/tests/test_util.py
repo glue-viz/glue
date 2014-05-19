@@ -2,7 +2,7 @@
 import numpy as np
 
 from ..util import (file_format, point_contour, view_shape, facet_subsets,
-                    colorize_subsets)
+                    colorize_subsets, coerce_numeric)
 
 
 class TestRelim(object):
@@ -155,7 +155,6 @@ def test_colorize_subsets_clip():
 
 
 def test_coerce_numeric():
-    from ..util import coerce_numeric
 
     x = np.array(['1', '2', '3.14', '4'])
 

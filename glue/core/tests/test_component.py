@@ -1,11 +1,11 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import operator
 
 from mock import MagicMock
 import pytest
 import numpy as np
 
-from ..data import (Component, ComponentID,
+from ..data import (Component, ComponentID, Data,
                     DerivedComponent, CoordinateComponent,
                     CategoricalComponent)
 from ... import core
@@ -71,6 +71,24 @@ class TestCategoricalComponent(object):
     def setup_method(self, method):
         self.list_data = ['a', 'a', 'b', 'b']
         self.array_data = np.array(self.list_data)
+
+    def test_autodetection(self):
+        assert isinstance(Component.autotyped(self.array_data),
+                          CategoricalComponent)
+        assert isinstance(Component.autotyped(self.list_data),
+                          CategoricalComponent)
+
+        x = np.array([True, False, True, False])
+        assert not isinstance(Component.autotyped(x), CategoricalComponent)
+
+        x = np.array([1, 2, 3, 4])
+        assert not isinstance(Component.autotyped(x), CategoricalComponent)
+
+        x = np.array(['1', '2', '3', '4'])
+        assert not isinstance(Component.autotyped(x), CategoricalComponent)
+
+        d = Data(x=['a', 'b', 'c'])
+        assert isinstance(d.get_component('x'), CategoricalComponent)
 
     def test_accepts_numpy(self):
         cat_comp = CategoricalComponent(self.array_data)
@@ -160,6 +178,7 @@ class TestCoordinateComponent(object):
 
     def setup_method(self, method):
         class TestCoords(object):
+
             def pixel2world(self, *args):
                 return [a * (i + 1) for i, a in enumerate(args)]
 
@@ -209,7 +228,7 @@ def check_link(result, left, right):
     if isinstance(right, ComponentID):
         assert right in result.get_from_ids()
 
-#componentID overload
+# componentID overload
 COMPARE_OPS = (operator.gt, operator.ge, operator.lt, operator.le)
 NUMBER_OPS = (operator.add, operator.mul, operator.div, operator.sub)
 

@@ -26,6 +26,7 @@ from .message import (DataCollectionAddMessage,
 
 __all__ = ['GroupedSubset', 'SubsetGroup']
 
+
 class GroupedSubset(Subset):
 
     """
