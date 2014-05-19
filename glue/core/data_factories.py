@@ -35,7 +35,6 @@ import os
 import numpy as np
 
 from .data import Component, Data, CategoricalComponent
-from .tree import DendroMerge
 from .io import extract_data_fits, extract_data_hdf5
 from .util import file_format, as_list
 from .coordinates import coordinates_from_header, coordinates_from_wcs
@@ -454,48 +453,45 @@ set_default_factory('xls', panda_read_excel)
 set_default_factory('xlsx', panda_read_excel)
 
 
-def pandas_read_csv(path, **kwargs):
+def pandas_read_table(path, **kwargs):
     """ A factory for reading tabular data using pandas
     :param path: path/to/file
     :param kwargs: All kwargs are passed to pandas.read_csv
-    :return: core.data.Data object
+    :returns: :class:`glue.core.data.Data` object
     """
     import pandas as pd
 
-    indf = pd.read_csv(path, **kwargs)
-    return panda_process(indf)
+    # iterate over common delimiters to search for best option
+    delimiters = kwargs.pop('delimiter', [None] + list(',|\t '))
 
-pandas_read_csv.label = "Panda-Table"
-pandas_read_csv.identifier = has_extension('csv')
-__factories__.append(pandas_read_csv)
+    fallback = None
 
+    for d in delimiters:
+        try:
+            indf = pd.read_csv(path, delimiter=d, **kwargs)
 
-def data_dendro_cpp(file):
-    """
-    Construct a data object from a C++-generated dendrogram file
+            # ignore files parsed to empty dataframes
+            if len(indf) == 0:
+                continue
 
-    :param file: Name of a file to read
+            # only use files parsed to single-column dataframes
+            # if we don't find a better strategy
+            if len(indf.columns) < 2:
+                fallback = indf
+                continue
 
-    *Returns*
-    A glue data structure representing the file
-    """
+            return panda_process(indf)
 
-    data = extract_data_fits(file, use_hdu=[0, 1])
-    m = extract_data_fits(file, use_hdu=[2])
-    merge_list = m['CLUSTERS']
-    merge_list = merge_list[(merge_list.shape[0] + 1) / 2:]
+        except pd._parser.CParserError:
+            continue
 
-    im = data['INDEX_MAP']
-    val = data['PRIMARY']
+    if fallback is not None:
+        return panda_process(fallback)
+    raise IOError("Could not parse %s using pandas" % path)
 
-    result = gridded_data(file, use_hdu=['PRIMARY', 'INDEX_MAP'])
-    result.tree = DendroMerge(merge_list, index_map=im)
-    return result
-
-# XXX This doesn't belong in core. its too specific
-#data_dendro_cpp.label = "C++ Dendrogram"
-#data_dendro_cpp.identifier = has_extension('fits')
-#__factories__.append(data_dendro_cpp)
+pandas_read_table.label = "Pandas Table"
+pandas_read_table.identifier = has_extension('csv csv txt tsv tbl dat')
+__factories__.append(pandas_read_table)
 
 
 img_fmt = ['jpg', 'jpeg', 'bmp', 'png', 'tiff', 'tif']
