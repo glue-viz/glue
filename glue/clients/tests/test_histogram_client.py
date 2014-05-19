@@ -1,15 +1,13 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import pytest
 
 from mock import MagicMock
-import numpy as np
 
 from ..histogram_client import HistogramClient
 from ..layer_artist import HistogramLayerArtist
 
 from ...core.data_collection import DataCollection
 from ...core.exceptions import IncompatibleDataException
-from ...core.hub import Hub
 from ...core.data import Data, CategoricalComponent
 from ...core.subset import RangeSubsetState
 
@@ -26,7 +24,7 @@ class TestHistogramClient(object):
 
     def setup_method(self, method):
         self.data = Data(x=[0, 0, 0, 1, 2, 3, 3, 10, 20],
-                         y=[-1, -1, -1, -2, -2, -2, -3, -5, -10])
+                         y=[-1, -1, -1, -2, -2, -2, -3, -5, -7])
         self.subset = self.data.new_subset()
         self.collect = DataCollection(self.data)
         self.client = HistogramClient(self.collect, FIGURE)
@@ -49,7 +47,6 @@ class TestHistogramClient(object):
         yra = self.client.axes.get_ylim()
         datara = [99999, -99999]
         for a in self.client._artists:
-            y = a.y
             if a.y.size > 0:
                 datara[0] = min(datara[0], a.y.min())
                 datara[1] = max(datara[1], a.y.max())
@@ -70,7 +67,7 @@ class TestHistogramClient(object):
 
     def test_add_invalid_layer_raises(self):
         self.collect.remove(self.data)
-        with pytest.raises(IncompatibleDataException) as exc:
+        with pytest.raises(IncompatibleDataException):
             self.client.add_layer(self.data)
 
     def test_add_subset_auto_adds_data(self):
@@ -101,7 +98,7 @@ class TestHistogramClient(object):
     def test_data_removal_removes_subsets(self):
         self.client.add_layer(self.data)
         self.client.remove_layer(self.data)
-        s = self.data.new_subset()
+        self.data.new_subset()
         assert len(self.data.subsets) > 0
 
         for subset in self.data.subsets:
@@ -217,18 +214,25 @@ class TestHistogramClient(object):
 
     def test_apply_roi(self):
         self.client.add_layer(self.data)
+        self.client.set_component(self.data.id['y'])
+        # bins are -7...-1
+
         self.data.edit_subset = [self.data.subsets[0]]
+
         roi = MagicMock()
-        roi.to_polygon.return_value = [1, 2, 3], [2, 3, 4]
+        roi.to_polygon.return_value = [-5.1, -4.5, -3.2], [2, 3, 4]
 
         self.client.apply_roi(roi)
         state = self.data.subsets[0].subset_state
         assert isinstance(state, RangeSubsetState)
-        assert state.lo == 1
-        assert state.hi == 3
+
+        # range should expand to nearest bin edge
+        assert state.lo == -6
+        assert state.hi == -3
 
     def test_apply_roi_xlog(self):
         self.client.add_layer(self.data)
+        self.client.set_component(self.data.id['x'])
         self.data.edit_subset = [self.data.subsets[0]]
         self.client.xlog = True
         roi = MagicMock()
@@ -259,7 +263,7 @@ class TestHistogramClient(object):
         self.client.set_component(self.data.id['x'])
         assert self.client.xlimits == (0, 20)
         self.client.set_component(self.data.id['y'])
-        assert self.client.xlimits == (-10, -1)
+        assert self.client.xlimits == (-7, -1)
 
     def test_xlimit_single_set(self):
         self.client.add_layer(self.data)
@@ -314,7 +318,7 @@ class TestHistogramClient(object):
 class TestCategoricalHistogram(TestHistogramClient):
 
     def setup_method(self, method):
-        self.data = Data(y=[-1, -1, -1, -2, -2, -2, -3, -5, -10])
+        self.data = Data(y=[-1, -1, -1, -2, -2, -2, -3, -5, -7])
         self.data.add_component(CategoricalComponent(['a', 'a', 'a', 'b', 'c', 'd', 'd', 'e', 'f']), 'x')
         self.subset = self.data.new_subset()
         self.collect = DataCollection(self.data)
@@ -337,7 +341,7 @@ class TestCategoricalHistogram(TestHistogramClient):
         self.client.set_component(self.data.id['x'])
         assert self.client.xlimits == (-0.5, 5.5)
         self.client.set_component(self.data.id['y'])
-        assert self.client.xlimits == (-10, -1)
+        assert self.client.xlimits == (-7, -1)
 
     def test_change_default_bins(self):
         self.client.add_layer(self.data)
@@ -367,6 +371,7 @@ class TestCategoricalHistogram(TestHistogramClient):
 
 
 class TestCommunication(object):
+
     def setup_method(self, method):
         self.data = Data(x=[1, 2, 3, 2, 2, 3, 1])
         figure = MagicMock()
@@ -402,7 +407,6 @@ class TestCommunication(object):
 
     def test_add_subset_ignored_if_data_not_present(self):
         self.collect.append(self.data)
-        ct0 = self.draw_count()
         sub = self.data.new_subset()
         assert not (self.client.layer_present(sub))
 
@@ -479,55 +483,55 @@ class TestHistogramLayerArtist(object):
         self.artist.update()
         assert ct.call_count == 1
 
-        #lo
+        # lo
         self.artist.lo -= 1
         self.artist.update()
         self.artist.update()
         assert ct.call_count == 2
 
-        #hi
+        # hi
         self.artist.hi -= 1
         self.artist.update()
         self.artist.update()
         assert ct.call_count == 3
 
-        #nbins
+        # nbins
         self.artist.nbins += 1
         self.artist.update()
         self.artist.update()
         assert ct.call_count == 4
 
-        #xlog
+        # xlog
         self.artist.xlog ^= True
         self.artist.update()
         self.artist.update()
         assert ct.call_count == 5
 
-        #ylog -- no call
+        # ylog -- no call
         self.artist.ylog ^= True
         self.artist.update()
         self.artist.update()
         assert ct.call_count == 5
 
-        #cumulative -- no call
+        # cumulative -- no call
         self.artist.cumulative ^= True
         self.artist.update()
         self.artist.update()
         assert ct.call_count == 5
 
-        #normed -- no call
+        # normed -- no call
         self.artist.normed ^= True
         self.artist.update()
         self.artist.update()
         assert ct.call_count == 5
 
-        #subset style -- no call
+        # subset style -- no call
         self.artist.layer.style.color = '#00ff00'
         self.artist.update()
         self.artist.update()
         assert ct.call_count == 5
 
-        #subset state
+        # subset state
         self.artist.layer.subset_state = self.artist.layer.data.id['x'] > 10
         self.artist.update()
         self.artist.update()
@@ -540,55 +544,55 @@ class TestHistogramLayerArtist(object):
         self.artist.update()
         assert ct.call_count == 1
 
-        #lo
+        # lo
         self.artist.lo -= 1
         self.artist.update()
         self.artist.update()
         assert ct.call_count == 2
 
-        #hi
+        # hi
         self.artist.hi -= 1
         self.artist.update()
         self.artist.update()
         assert ct.call_count == 3
 
-        #nbins
+        # nbins
         self.artist.nbins += 1
         self.artist.update()
         self.artist.update()
         assert ct.call_count == 4
 
-        #xlog
+        # xlog
         self.artist.xlog ^= True
         self.artist.update()
         self.artist.update()
         assert ct.call_count == 5
 
-        #ylog
+        # ylog
         self.artist.ylog ^= True
         self.artist.update()
         self.artist.update()
         assert ct.call_count == 6
 
-        #cumulative
+        # cumulative
         self.artist.cumulative ^= True
         self.artist.update()
         self.artist.update()
         assert ct.call_count == 7
 
-        #normed
+        # normed
         self.artist.normed ^= True
         self.artist.update()
         self.artist.update()
         assert ct.call_count == 8
 
-        #subset state
+        # subset state
         self.artist.layer.subset_state = self.artist.layer.data.id['x'] > 10
         self.artist.update()
         self.artist.update()
         assert ct.call_count == 9
 
-        #subset style -- no call
+        # subset style -- no call
         self.artist.layer.style.color = '#00ff00'
         self.artist.update()
         self.artist.update()
