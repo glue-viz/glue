@@ -266,6 +266,10 @@ def coerce_numeric(arr):
     if np.issubdtype(arr.dtype, np.number):
         return arr
 
+    # a compound record array
+    if arr.dtype.names is not None:
+        return arr
+
     if np.issubdtype(arr.dtype, np.bool_):
         return arr.astype(np.int)
 
