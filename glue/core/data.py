@@ -943,6 +943,8 @@ class Data(object):
         else:
             result = comp.data
 
+        result = np.atleast_1d(result)
+        shp = shp or (1,)
         assert result.shape == shp, \
             "Component view returned bad shape: %s %s" % (result.shape, shp)
         return result

@@ -201,9 +201,9 @@ class TestData(object):
         compid = ComponentID('virtual')
         link = MagicMock(spec_set=ComponentLink)
         comp = DerivedComponent(self.data, link)
-        comp.data.shape = self.data.shape
-        self.data.add_component(comp, compid)
+        link.compute.return_value = np.zeros(self.data.shape)
 
+        self.data.add_component(comp, compid)
         result = self.data[compid]
         link.compute.assert_called_with(self.data)
 

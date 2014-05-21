@@ -4,7 +4,7 @@ import sys
 import numpy as np
 
 from .core import Data, DataCollection, ComponentLink
-from .core.link_helpers import MultiLink
+from .core.link_helpers import MultiLink, LinkTwoWay, identity
 from .core.data_factories import load_data, as_list
 
 __all__ = ['qglue']
@@ -47,7 +47,6 @@ def _parse_data_dict(data, label):
 
 
 def _parse_data_recarray(data, label):
-    print data.dtype.names
     return [Data(label=label, **{n: data[n] for n in data.dtype.names})]
 
 

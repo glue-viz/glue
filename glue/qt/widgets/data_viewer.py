@@ -206,3 +206,6 @@ class DataViewer(QMainWindow, ViewerBase):
             """
             self.setStyleSheet(css)
             self.hide_toolbars()
+
+    def __str__(self):
+        return self.LABEL
