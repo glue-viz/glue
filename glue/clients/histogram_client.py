@@ -66,6 +66,17 @@ class HistogramClient(Client):
             pass
 
     @property
+    def bins(self):
+        """ An array of bin edges for the histogram.
+
+        Returns None if no histogram has been computed yet.
+        """
+        for art in self._artists:
+            if not isinstance(art, HistogramLayerArtist):
+                continue
+            return art.x
+
+    @property
     def axes(self):
         return self._axes
 
@@ -301,9 +312,18 @@ class HistogramClient(Client):
         self.remove_layer(message.subset)
 
     def apply_roi(self, roi):
-        x, y = roi.to_polygon()
+        x, _ = roi.to_polygon()
         lo = min(x)
         hi = max(x)
+
+        # expand roi to match bin edges
+        bins = self.bins
+
+        if lo >= bins.min():
+            lo = bins[bins <= lo].max()
+        if hi <= bins.max():
+            hi = bins[bins >= hi].min()
+
         if self.xlog:
             lo = 10 ** lo
             hi = 10 ** hi
