@@ -28,7 +28,7 @@ class ScatterWidget(DataViewer):
 
     LABEL = "Scatter Plot"
     _property_set = DataViewer._property_set + \
-        'xlog ylog xflip yflip xmin xmax ymin ymax hidden xatt yatt'.split()
+        'xlog ylog xflip yflip hidden xatt yatt xmin xmax ymin ymax'.split()
 
     xlog = ButtonProperty('ui.xLogCheckBox', 'log scaling on x axis?')
     ylog = ButtonProperty('ui.yLogCheckBox', 'log scaling on y axis?')
