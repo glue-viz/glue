@@ -62,7 +62,6 @@ def _parse_data_dict(data, label):
 
 
 def _parse_data_recarray(data, label):
-    print(data.dtype.names)
     return [Data(label=label, **{n: data[n] for n in data.dtype.names})]
 
 

@@ -434,7 +434,55 @@ def _colormap_mode(parent, on_trigger):
     return tb
 
 
-class StandaloneImageWidget(QMainWindow):
+class StandalonePlotWindow(QMainWindow):
+
+    def __init__(self, parent=None):
+        super(StandalonePlotWindow, self).__init__(parent)
+        self.central_widget = MplWidget()
+        self.setCentralWidget(self.central_widget)
+        self._setup_axes()
+        self._make_toolbar()
+
+    def clear(self):
+        self._axes.clear()
+
+    def _setup_axes(self):
+        self._axes = self.central_widget.canvas.fig.add_subplot(111)
+
+    @property
+    def axes(self):
+        """
+        The Matplolib axes object for this figure
+        """
+        return self._axes
+
+    def show(self):
+        super(StandalonePlotWindow, self).show()
+        self.redraw()
+
+    def redraw(self):
+        self.central_widget.canvas.draw()
+
+    def mdi_wrap(self):
+        """
+        Embed this widget in a QMdiSubWindow
+        """
+        sub = QMdiSubWindow()
+        sub.setWidget(self)
+        self.destroyed.connect(sub.close)
+        sub.resize(self.size())
+        self._mdi_wrapper = sub
+
+        return sub
+
+    def _make_toolbar(self):
+        result = GlueToolbar(self.central_widget.canvas, self,
+                             name='plot')
+        self.addToolBar(result)
+        return result
+
+
+class StandaloneImageWidget(StandalonePlotWindow):
 
     """
     A simplified image viewer, without any brushing or linking,
@@ -484,37 +532,15 @@ class StandaloneImageWidget(QMainWindow):
         self._wcs = wcs
         self._axes.set_xticks([])
         self._axes.set_yticks([])
-        self._redraw()
+        self.redraw()
 
-    @property
-    def axes(self):
-        """
-        The Matplolib axes object for this figure
-        """
-        return self._axes
-
-    def show(self):
-        super(StandaloneImageWidget, self).show()
-        self._redraw()
-
-    def _redraw(self):
-        self.central_widget.canvas.draw()
+    def _setup_axes(self):
+        super(StandaloneImageWidget, self)._setup_axes()
+        self._axes.set_aspect('equal', adjustable='datalim')
 
     def _set_cmap(self, cmap):
         self._im.set_cmap(cmap)
-        self._redraw()
-
-    def mdi_wrap(self):
-        """
-        Embed this widget in a QMdiSubWindow
-        """
-        sub = QMdiSubWindow()
-        sub.setWidget(self)
-        self.destroyed.connect(sub.close)
-        sub.resize(self.size())
-        self._mdi_wrapper = sub
-
-        return sub
+        self.redraw()
 
     def closeEvent(self, event):
         self.window_closed.emit()
@@ -530,9 +556,9 @@ class StandaloneImageWidget(QMainWindow):
         self._norm.bias = mode.bias
         self._norm.contrast = mode.contrast
         self._im.set_norm(self._norm)
-        self._redraw()
+        self.redraw()
 
-    def make_toolbar(self):
+    def _make_toolbar(self):
         """
         Setup the toolbar
         """
