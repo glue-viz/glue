@@ -102,6 +102,14 @@ class TestSliceDescriptions(object):
 
         np.testing.assert_array_equal(expected, actual)
 
+    @pytest.mark.parametrize('func', Aggregate.all_operators())
+    def test_empty_slices(self, func):
+        d = Data(a=np.random.random((3, 4, 5)))
+        a = Aggregate(d, 'a', 0, (0, 'y', 'x'), (0, 0))
+        actual = func(a)
+        expected = np.zeros((4, 5)) * np.nan
+        np.testing.assert_array_equal(expected, actual)
+
 
 @pytest.mark.parametrize('func', Aggregate.all_operators())
 def test_transpose(func):

@@ -6,17 +6,61 @@ try:
 except ImportError:  # python3
     izip = zip
 
+from functools import wraps
+
 import numpy as np
+
+
+def check_empty(func):
+
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if self.empty_slice:
+            return np.zeros(self.shape) * np.nan
+        return func(self, *args, **kwargs)
+
+    return wrapper
 
 
 class Aggregate(object):
 
+    """
+    Collapse >=3D datasets into 2D images, using different
+    aggregation methods
+    """
+
     def __init__(self, data, attribute, zax, slc, zlim):
+        """
+        :param data: :class:`~glue.core.data.Data` object
+        :param attribute: :class:`~glue.core.data.ComponentID`
+        :param zax: integer. Which axis to collapse over
+        :param slc: tuple of integers, 'x', or 'y'. Describes the
+                    current 2D slice through the image. Used to
+                    define the orientation, as well as axis values
+                    for remaining dimensions of >3D cubes
+        :param zlim: tuple of [lo, hi), describing the limits
+                     of the slab to collapse over
+        """
         self.data = data
         self.attribute = attribute
         self.zax = zax
         self.slc = slc
         self.zlim = min(zlim), max(zlim)
+
+    @property
+    def shape(self):
+        """
+        The shape of the 2D aggregated array
+        """
+        s = self.data.shape
+        return s[self.slc.index('y')], s[self.slc.index('x')]
+
+    @property
+    def empty_slice(self):
+        """
+        True if the slice is empty
+        """
+        return self.zlim[0] == self.zlim[1]
 
     def _subslice(self):
         view = [slice(None, None) for _ in self.data.shape]
@@ -36,6 +80,7 @@ class Aggregate(object):
         return cube, ax_collapse
 
     def _iter_slice(self, attribute=None):
+        # iterate through the uncollapsed slab one plane at a time
         view, ax_collapse = self._subslice()
         att = attribute or self.attribute
 
@@ -56,6 +101,9 @@ class Aggregate(object):
         return cube
 
     def collapse_using(self, function):
+        """
+        Produce a collapsed image using a numpy aggregation function
+        """
         cube, ax = self._prepare_cube()
         result = function(cube, axis=ax)
         return self._finalize(result)
@@ -89,31 +137,48 @@ class Aggregate(object):
         ct = np.isfinite(cube).sum(axis)
         return 1. * s / ct
 
+    @check_empty
     def sum(self):
         return self.collapse_using(np.nansum)
 
+    @check_empty
     def mean(self):
         return self.collapse_using(self._mean)
 
+    @check_empty
     def max(self):
         return self.collapse_using(np.nanmax)
 
+    @check_empty
     def median(self):
         # NOTE: nans are treated as infinity in this case
         return self.collapse_using(np.median)
 
+    @check_empty
     def argmax(self):
+        """
+        Location of peak value, in world coords
+        """
         idx = self.collapse_using(np.nanargmax)
         return self._to_world(idx)
 
+    @check_empty
     def argmin(self):
+        """
+        Location of minimum value, in world coords
+        """
         idx = self.collapse_using(np.nanargmin)
         return self._to_world(idx)
 
+    @check_empty
     def mom1(self):
+        """
+        Intensity-weighted coordinate. Pixel units.
+        """
         # build up slice-by-slice, to avoid big temporary cubes
         loop = self._iter_slice_index()
         val, loc = next(loop)
+
         val = np.maximum(val, 0)
         w, result = val, loc * val
         for val, loc in loop:
@@ -122,9 +187,14 @@ class Aggregate(object):
             w += val
         return self._finalize(result / w)
 
+    @check_empty
     def mom2(self):
+        """
+        Intensity-weighted coordinate dispersion. Pixel units.
+        """
         loop = self._iter_slice_index()
         val, loc = next(loop)
+
         val = np.maximum(val, 0)
         w, x, x2 = val, val * loc, val * loc * loc
         for val, loc in loop:
