@@ -80,8 +80,10 @@ Data object with 1 attribute for each Stokes parameter.
 Something is broken, or confusing. What should I do?
 ----------------------------------------------------
 If you think you've found a bug in Glue, feel free to add
-an issue to the `GitHub issues page <https://github.com/glue-viz/glue/issues?state=open>`_. If you have general questions, send us an `email <mailto:glue.viz@gmail.com>`_.
+an issue to the `GitHub issues page <https://github.com/glue-viz/glue/issues?state=open>`_. If you have general questions, feel free to post a message to the `Glue mailing list <https://groups.google.com/forum/#!forum/glue-viz>`_, or send us an `email <mailto:glue.viz@gmail.com>`_ directly.
+
+You can also submit bug reports directly from Glue, by clicking ``Help->Send Feedback``. This also sends us some diagnostic information about your Glue installation.
 
 I have some other question...?
 ------------------------------
-Send us an `email <mailto:glue.viz@gmail.com>`_.
+Ask us a question on the `mailing list <https://groups.google.com/forum/#!forum/glue-viz>`_!
