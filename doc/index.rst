@@ -30,6 +30,7 @@ For more demos, check out the :ref:`videos <demo_videos>` page
    developer_guide.rst
    faq.rst
    videos.rst
+   help.rst
 
 Indices and tables
 ==================
