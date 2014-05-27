@@ -1,89 +1,32 @@
 import numpy as np
-from numpy.testing import assert_allclose
 from mock import MagicMock
-
-from ..image_widget import (_slice_from_path, _slice_label, _slice_index,
-                            StandaloneImageWidget, PVSliceWidget)
-from ....core import Data
+from ..image_widget import PVSliceWidget
 
 
-class TestSliceExtraction(object):
+def mock_image_widget():
+    result = MagicMock()
 
-    def setup_method(self, method):
-        self.x = np.random.random((2, 3, 4))
-        self.d = Data(x=self.x)
-
-    def test_constant_y(self):
-
-        slc = (0, 'y', 'x')
-        x = [-0.5, 3.5]
-        y = [0, 0]
-        s, _, _ = _slice_from_path(x, y, self.d, 'x', slc)
-        assert_allclose(s, self.x[:, 0, :])
-
-    def test_constant_x(self):
-
-        slc = (0, 'y', 'x')
-        y = [-0.5, 2.5]
-        x = [0, 0]
-        s, _, _ = _slice_from_path(x, y, self.d, 'x', slc)
-        assert_allclose(s, self.x[:, :, 0])
-
-    def test_transpose(self):
-        slc = (0, 'x', 'y')
-        y = [-0.5, 3.5]
-        x = [0, 0]
-        s, _, _ = _slice_from_path(x, y, self.d, 'x', slc)
-        assert_allclose(s, self.x[:, 0, :])
+    return result
 
 
-def test_slice_label():
-    d = Data(x=np.zeros((2, 3, 4)))
-    assert _slice_label(d, (0, 'y', 'x')) == 'World 0'
-    assert _slice_label(d, ('y', 0, 'x')) == 'World 1'
-    assert _slice_label(d, ('y', 'x', 0)) == 'World 2'
+class TestPV(object):
 
+    def test_home_signal(self):
+        # regression test
 
-def test_slice_index():
-    d = Data(x=np.zeros((2, 3, 4, 1)))
-    assert _slice_index(d, (0, 'y', 'x', 0)) == 0
-    assert _slice_index(d, (0, 'y', 0, 'x')) == 2
+        self.called = 0
 
+        def increment(*args):
+            self.called += 1
 
-class TestStandaloneImageWidget(object):
+        im = np.zeros((3, 4))
+        x = np.arange(4)
+        y = np.arange(3)
+        parent = mock_image_widget()
+        w = PVSliceWidget(im, x, y, parent)
+        w.central_widget.canvas.homeButton.connect(increment)
 
-    def setup_method(self, method):
-        im = np.random.random((3, 3))
-        self.w = StandaloneImageWidget(im)
+        tb = w.toolbar
+        tb.home()
 
-    def test_set_cmap(self):
-        act = self.w._cmap_actions[1]
-        act.trigger()
-        assert self.w._im.cmap is act.cmap
-
-    def tesT_double_set_image(self):
-        assert self.w._axes.images == 1
-        self.w.set_image(np.zeros((3, 3)))
-        assert len(self.w._axes.images) == 1
-
-
-class MockImageWidget(object):
-
-    def __init__(self, slice, data):
-        self.slice = slice
-        self.data = data
-        self.client = MagicMock()
-
-
-class TestPVSliceWidget(object):
-
-    def setup_method(self, method):
-
-        self.d = Data(x=np.zeros((2, 3, 4)))
-        self.slc = (0, 'y', 'x')
-        self.image = MockImageWidget(self.slc, self.d)
-        self.w = PVSliceWidget(np.zeros((3, 4)),
-                               [0, 1, 2, 3], [0, 1, 2], self.image)
-
-    def test_basic(self):
-        pass
+        assert self.called == 1

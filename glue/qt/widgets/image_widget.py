@@ -464,7 +464,7 @@ class StandalonePlotWindow(QMainWindow):
         self.central_widget = MplWidget()
         self.setCentralWidget(self.central_widget)
         self._setup_axes()
-        self._make_toolbar()
+        self.toolbar = self._make_toolbar()
 
     def clear(self):
         self._axes.clear()
@@ -520,8 +520,6 @@ class StandaloneImageWidget(StandalonePlotWindow):
         :param kwargs: Extra keywords to pass to imshow
         """
         super(StandaloneImageWidget, self).__init__(parent)
-        self.central_widget = MplWidget()
-        self.setCentralWidget(self.central_widget)
         self._setup_axes()
 
         self._im = None
