@@ -2,12 +2,11 @@ import logging
 from functools import wraps
 
 import numpy as np
-from matplotlib.figure import Figure
 
 from ..external.modest_image import extract_matched_slices
 from ..core.exceptions import IncompatibleAttribute
 from ..core.data import Data
-from ..core.util import lookup_class
+from ..core.util import lookup_class, defer
 from ..core.subset import Subset, RoiSubsetState
 from ..core.roi import PolygonalROI
 from ..core.callback_property import (
@@ -350,13 +349,14 @@ class ImageClient(VizClient):
 
         """
         logging.getLogger(__name__).debug("update subset single: %s", s)
-        self._update_scatter_layer(s)
 
         if s not in self.artists:
             return
 
         if s.data is not self.display_data:
             return
+
+        self._update_scatter_layer(s)
 
         view = self._build_view(matched=True)
         transpose = self.slice.index('x') < self.slice.index('y')
@@ -384,7 +384,8 @@ class ImageClient(VizClient):
         subset_state.yatt = y
         subset_state.roi = PolygonalROI(xroi, yroi)
         mode = EditSubsetMode()
-        mode.update(self.data, subset_state, focus_data=self.display_data)
+        with defer(self.axes.figure.canvas, 'draw'):
+            mode.update(self.data, subset_state, focus_data=self.display_data)
 
     def _remove_subset(self, message):
         self.delete_layer(message.sender)

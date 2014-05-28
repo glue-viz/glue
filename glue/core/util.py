@@ -1,4 +1,5 @@
 import logging
+from contextlib import contextmanager
 
 import numpy as np
 
@@ -393,3 +394,38 @@ class Pointer(object):
         v = self.key.split('.')
         attr = reduce(getattr, [instance] + v[:-1])
         setattr(attr, v[-1], value)
+
+
+@contextmanager
+def defer(instance, method):
+    """
+    Defer the calling of a method inside a context manager,
+    and then call it 0 or 1 times afterwards.
+
+    :param instance: The instance of the method to defer
+    :param method: The name of the method to defer
+    :type method: str
+
+    Within the context block, calls to the method will be
+    intercepted, logged, and skipped.
+
+    Upon exiting the context block, the method will be
+    invoked a single time, with the arguments of the
+    most recent invokation inside the context block.
+
+    If the method is never invoked in the context block,
+    it is not called when leaving that block.
+    """
+    history = []
+
+    def log(*a, **k):
+        history.append((a, k))
+
+    orig = getattr(instance, method)
+    setattr(instance, method, log)
+    try:
+        yield
+    finally:
+        setattr(instance, method, orig)
+        for a, k in history[-1:]:
+            orig(*a, **k)
