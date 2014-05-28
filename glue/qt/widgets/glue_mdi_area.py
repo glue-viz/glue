@@ -24,16 +24,6 @@ class GlueMdiArea(QtGui.QMdiArea):
         self.setBackground(QtGui.QBrush(QtGui.QColor(250, 250, 250)))
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self._show_help = False
-
-    @property
-    def show_help(self):
-        return self._show_help
-
-    @show_help.setter
-    def show_help(self, value):
-        self._show_help = value
-        self.repaint()
 
     def addSubWindow(self, sub):
         super(GlueMdiArea, self).addSubWindow(sub)
@@ -81,8 +71,6 @@ class GlueMdiArea(QtGui.QMdiArea):
 
     def paintEvent(self, event):
         super(GlueMdiArea, self).paintEvent(event)
-        if (not self.show_help):
-            return
 
         painter = QtGui.QPainter(self.viewport())
         painter.setPen(QtGui.QColor(210, 210, 210))

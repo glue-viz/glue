@@ -389,14 +389,6 @@ class GlueApplication(Application, QMainWindow):
         self.setAcceptDrops(True)
         self._ui.layerWidget.setup(self._data)
 
-        def sethelp(*args):
-            model = self._ui.layerWidget.layerTree.model()
-            self.current_tab.show_help = model.rowCount() > 0
-
-        model = self._ui.layerWidget.layerTree.model()
-        model.rowsInserted.connect(sethelp)
-        model.rowsRemoved.connect(sethelp)
-
         self.tab_widget.tabCloseRequested.connect(self.close_tab)
 
     def _create_menu(self):
