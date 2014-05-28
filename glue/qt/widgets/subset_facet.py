@@ -4,12 +4,18 @@ from matplotlib import cm
 
 
 from ..qtutil import pretty_number, cmap2pixmap, load_ui
-from ...core.util import colorize_subsets, facet_subsets
-from ..widget_properties import ButtonProperty
+from ...core.util import colorize_subsets, facet_subsets, Pointer
+from ..widget_properties import (ButtonProperty, FloatLineProperty,
+                                 ValueProperty)
 
 
 class SubsetFacet(object):
     log = ButtonProperty('ui.log')
+    vmin = FloatLineProperty('ui.min')
+    vmax = FloatLineProperty('ui.max')
+    steps = ValueProperty('ui.num')
+    data = Pointer('ui.component_selector.data')
+    component = Pointer('ui.component_selector.component')
 
     def __init__(self, collect, default=None, parent=None):
         """Create a new dialog for subset faceting
@@ -17,7 +23,7 @@ class SubsetFacet(object):
         :param collect: The :class:`~glue.core.DataCollection` to use
         :param default: The default dataset in the collection (optional)
         """
-        self.ui = load_ui('subset_facet', parent)
+        self.ui = load_ui('subset_facet', None)
         self.ui.setWindowTitle("Subset Facet")
         self._collect = collect
 
@@ -51,22 +57,19 @@ class SubsetFacet(object):
         return combo.itemData(index)
 
     def _apply(self):
-        lo, hi = self.ui.min.text(), self.ui.max.text()
         try:
-            lo, hi = float(lo), float(hi)
+            lo, hi = self.vmin, self.vmax
         except ValueError:
             return  # limits not set. Abort
         if not np.isfinite(lo) or not np.isfinite(hi):
             return
 
-        steps = self.ui.num.value()
-
-        data = self.ui.component_selector.data
-        cid = self.ui.component_selector.component
-
-        subsets = facet_subsets(self._collect, cid, lo=lo, hi=hi,
-                                steps=steps, log=self.log)
+        subsets = facet_subsets(self._collect, self.component, lo=lo, hi=hi,
+                                steps=self.steps, log=self.log)
         colorize_subsets(subsets, self.cmap)
+
+    def exec_(self):
+        return self.ui.exec_()
 
     @classmethod
     def facet(cls, collect, default=None, parent=None):
@@ -74,7 +77,7 @@ class SubsetFacet(object):
         The arguments are the same as __init__
         """
         self = cls(collect, parent=parent, default=default)
-        value = self.ui.exec_()
+        value = self.exec_()
 
         if value == QDialog.Accepted:
             self._apply()
