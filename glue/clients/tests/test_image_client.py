@@ -40,6 +40,7 @@ class TestImageClient(object):
         self.im.edit_subset = self.im.new_subset()
         self.cube.edit_subset = self.cube.new_subset()
         self.collect = core.data_collection.DataCollection()
+        FIGURE.canvas.draw.reset_mock()
 
     def create_client_with_image(self):
         client = ImageClient(self.collect, figure=FIGURE)
@@ -233,6 +234,23 @@ class TestImageClient(object):
         assert state.yatt is self.cube.get_pixel_component_id(0)
         assert roi2.to_polygon()[0] == roi.to_polygon()[0]
         assert roi2.to_polygon()[1] == roi.to_polygon()[1]
+
+    def test_apply_roi_draws_once(self):
+        client = self.create_client_with_image()
+        client.register_to_hub(self.collect.hub)
+
+        # add some more data
+        for _ in range(3):
+            self.collect.append(core.Data(x=[1, 2, 3], label='add'))
+        sg = self.collect.new_subset_group()
+        for d in self.collect:
+            d.edit_subset = sg
+
+        roi = core.roi.PolygonalROI(vx=[10, 20, 20, 10],
+                                    vy=[10, 10, 20, 20])
+        ct = FIGURE.canvas.draw.call_count
+        client.apply_roi(roi)
+        assert FIGURE.canvas.draw.call_count == ct + 1
 
     def test_update_subset_deletes_artist_on_error(self):
         client = self.create_client_with_image()
