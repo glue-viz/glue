@@ -433,8 +433,9 @@ class ScatterLayerArtist(LayerArtist):
 
     def update(self, view=None, transpose=False):
         self._check_subset_state_changed()
-        if self._changed:
-            if not self._recalc():
+
+        if self._changed:  # erase and make a new artist
+            if not self._recalc():  # no need to update style
                 return
             self._changed = False
 
