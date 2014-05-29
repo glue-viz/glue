@@ -128,11 +128,12 @@ class ImageWidget(DataViewer):
         vx, vy = roi.to_polygon()
         pv, x, y = _slice_from_path(vx, vy, self.data, self.attribute, self.slice)
         if self._slice_widget is None:
-            self._slice_widget = PVSliceWidget(pv, x, y, self)
+            self._slice_widget = PVSliceWidget(pv, x, y, self,
+                                               interpolation='nearest')
             self._session.application.add_widget(self._slice_widget,
                                                  label='Custom Slice')
         else:
-            self._slice_widget.set_image(pv, x, y)
+            self._slice_widget.set_image(pv, x, y, interpolation='nearest')
 
         result = self._slice_widget
         result.axes.set_xlabel("Position Along Slice")
@@ -563,15 +564,22 @@ class PVSliceWidget(StandaloneImageWidget):
 
     """ A standalone image widget with extra interactivity for PV slices """
 
-    def __init__(self, image, x, y, image_widget):
+    def __init__(self, image, x, y, image_widget, **kwargs):
+        """
+        :param image: 2D Numpy array representing the PV Slice
+        :param x: X coordinate for each horizontal position
+        :param y: Y coordinate for each horizontal position
+        :param image_widget: Parent widget this was extracted from
+        :param kwargs: Extra keywords are passed to imshow
+        """
         self._parent = image_widget
-        super(PVSliceWidget, self).__init__(image, x=x, y=y)
+        super(PVSliceWidget, self).__init__(image, x=x, y=y, **kwargs)
         conn = self.axes.figure.canvas.mpl_connect
         self._down_id = conn('button_press_event', self._on_click)
         self._move_id = conn('motion_notify_event', self._on_move)
 
-    def set_image(self, im, x, y):
-        super(PVSliceWidget, self).set_image(im)
+    def set_image(self, im, x, y, **kwargs):
+        super(PVSliceWidget, self).set_image(im, **kwargs)
         self._axes.set_aspect('auto')
         self._axes.set_xlim(0, im.shape[1])
         self._axes.set_ylim(0, im.shape[0])
