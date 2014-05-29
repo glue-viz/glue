@@ -38,6 +38,7 @@ slice extraction and spectrum extraction.
     <center>
     <iframe src="http://player.vimeo.com/video/96815794?badge=0"  width="500" height="275" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
     </center>
+    <br>
 
 This kind of slice extraction is especially useful for spectral cube analysis,
 since the extracted images are position-velocity diagrams. However, they can
@@ -47,8 +48,9 @@ an on-the-fly cross section of a brain tumor MRI:
 .. raw:: html
 
     <center>
-    <img src="http://i.imgur.com/T0venxY.png">
+    <img src="http://i.imgur.com/RqznLN5.png">
     </center>
+    <br>
 
-
+The script used to load this data into Glue can be found `here <https://gist.github.com/ChrisBeaumont/e97d4efdc9c472836214>`_.
 
