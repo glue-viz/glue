@@ -7,4 +7,5 @@ User Interface Guide
    link_tutorial.rst
    custom_subsets.rst
    spectrum.rst
+   slice.rst
    configuration.rst
