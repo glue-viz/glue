@@ -36,7 +36,7 @@ slice extraction and spectrum extraction.
 .. raw:: html
 
     <center>
-    <iframe src="http://player.vimeo.com/video/96815794?badge=0"  width="500" height="275" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
+    <iframe src="http://player.vimeo.com/video/96815794?badge=0"  width="500" height="333" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
     </center>
     <br>
 
