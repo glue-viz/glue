@@ -55,6 +55,10 @@ class Application(HubListener):
     def session(self):
         return self._session
 
+    @property
+    def data_collection(self):
+        return self.session.data_collection
+
     def new_data_viewer(self, viewer_class, data=None):
         """
         Create a new data viewer, add it to the UI,

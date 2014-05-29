@@ -92,6 +92,17 @@ class ComponentSelector(QWidget):
         item = self._ui.component_selector.currentItem()
         return self._ui.component_selector.get_data(item)
 
+    @component.setter
+    def component(self, component):
+        w = self._ui.component_selector
+        for i in range(w.count()):
+            item = w.item(i)
+            if w.get_data(item) is component:
+                w.setCurrentRow(i)
+                return
+        else:
+            raise ValueError("Component not found: %s" % component)
+
     @property
     def data(self):
         index = self._ui.data_selector.currentIndex()
