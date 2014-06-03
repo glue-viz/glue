@@ -4,7 +4,8 @@ import numpy as np
 
 from ...external.qt.QtGui import (QAction, QLabel, QCursor, QMainWindow,
                                   QToolButton, QToolBar, QIcon, QMessageBox,
-                                  QMdiSubWindow, QWidget, QVBoxLayout)
+                                  QActionGroup, QMdiSubWindow, QWidget,
+                                  QVBoxLayout)
 
 from ...external.qt.QtCore import Qt, QRect
 
@@ -136,9 +137,13 @@ class GingaWidget(DataViewer):
 
     def make_toolbar(self):
         result = QToolBar(parent=self)
-        for (mode_text, mode_cb) in self._mouse_modes():
+        agroup = QActionGroup(result)
+        agroup.setExclusive(True)
+        for (mode_text, mode_icon, mode_cb) in self._mouse_modes():
             # TODO: add icons similar to the Matplotlib toolbar
-            result.addAction(mode_text, mode_cb)
+            action = result.addAction(mode_icon, mode_text, mode_cb)
+            action.setCheckable(True)
+            action = agroup.addAction(action)
 
         #cmap = _colormap_mode(self, self.client.set_cmap)
         #result.addWidget(cmap)
@@ -146,9 +151,12 @@ class GingaWidget(DataViewer):
 
     def _mouse_modes(self):
         modes = []
-        modes.append(("Rectangle", lambda: self._set_roi_mode('rectangle')))
-        modes.append(("Circle", lambda: self._set_roi_mode('circle')))
-        modes.append(("Polygon", lambda: self._set_roi_mode('polygon')))
+        modes.append(("Rectangle", get_icon('glue_square'),
+                      lambda: self._set_roi_mode('rectangle')))
+        modes.append(("Circle", get_icon('glue_circle'),
+                      lambda: self._set_roi_mode('circle')))
+        modes.append(("Polygon", get_icon('glue_lasso'),
+                      lambda: self._set_roi_mode('polygon')))
         return modes
 
     def _set_roi_mode(self, name):
@@ -188,6 +196,8 @@ class GingaWidget(DataViewer):
         print "ROI is", roi
         try:
             self.apply_roi(roi)
+            # delete outline
+            self.canvas.deleteObjectByTag(self.roi_tag)
         except Exception as e:
             print "Error applying ROI: %s" % (str(e))
             (type, value, tb) = sys.exc_info()
