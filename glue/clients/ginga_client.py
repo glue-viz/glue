@@ -285,19 +285,22 @@ class GingaClient(VizClient):
                    a.layer.data is self.display_data:
                 if len(a.artists) > 0:
                     aimage = a.artists[0]
-                    limage.insert_layer(i, aimage, alpha=1.0)
+                    limage.insert_layer(i, aimage, alpha=1.0,
+                                        compose=False)
                     #i += 1
             elif isinstance(a, SubsetImageLayerArtist):
                 print "subset artists", a.artists
                 if len(a.artists) > 0:
                     cimage = a.artists[0]
                     print "cimage", cimage
-                    limage.insert_layer(i, cimage, alpha=0.5)
+                    limage.insert_layer(i, cimage, alpha=0.5,
+                                        compose=False)
                     #i += 1
                     print "cimage inserted"
 
+        limage.compose_layers()
         self._canvas.set_image(limage)
-        self._canvas.redraw()
+        #self._canvas.redraw()
 
     @requires_data
     def set_norm(self, **kwargs):
