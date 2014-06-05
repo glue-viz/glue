@@ -90,6 +90,9 @@ class TestCategoricalComponent(object):
         d = Data(x=['a', 'b', 'c'])
         assert isinstance(d.get_component('x'), CategoricalComponent)
 
+        d = Data(x=np.array(['a', 'b', 'c'], dtype=object))
+        assert isinstance(d.get_component('x'), CategoricalComponent)
+
     def test_accepts_numpy(self):
         cat_comp = CategoricalComponent(self.array_data)
         assert cat_comp._categorical_data.shape == (4,)

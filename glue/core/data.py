@@ -220,6 +220,10 @@ class Component(object):
         :returns: A Component (or subclass)
         """
         data = np.asarray(data)
+
+        if np.issubdtype(data.dtype, np.object_):
+            return CategoricalComponent(data, units=units)
+
         n = coerce_numeric(data)
         thresh = 0.5
         if np.isfinite(n).mean() > thresh:
