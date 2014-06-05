@@ -220,7 +220,11 @@ class DataCollection(HubListener):
         return len(self._data)
 
     def __str__(self):
-        result = "DataCollection (%i data sets)\n\t" % len(self)
+        if len(self) == 1:
+            result = "DataCollection (1 data set)\n\t"
+        else:
+            result = "DataCollection (%i data sets)\n\t" % len(self)
+
         result += '\n\t'.join("%3i: %s" % (i, d.label) for
                               i, d in enumerate(self))
         return result

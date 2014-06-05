@@ -2,23 +2,69 @@ import logging
 
 import numpy as np
 try:
-    import plotly
+    from plotly import plotly
 except ImportError:
     plotly = None
 
 from ..config import exporters, settings
 from ..qt.widgets import ScatterWidget, HistogramWidget
+from ..core.data import CategoricalComponent
+from ..core.layout import Rectangle, snap_to_grid
 
 
 SYM = {'o': 'circle', 's': 'square', '+': 'cross', '^': 'triangle-up',
        '*': 'cross'}
 
 
+def _data(layer, component):
+    """
+    Extract the data associated with a Component
+
+    For categorical components, extracts the categories and not
+    the remapped integers
+    """
+    result = layer[component]
+    comp = layer.data.get_component(component)
+    if isinstance(comp, CategoricalComponent):
+        result = comp._categories[result.astype(np.int)]
+    return result
+
+
 def _sanitize(*arrs):
     mask = np.ones(arrs[0].shape, dtype=np.bool)
     for a in arrs:
-        mask &= (~np.isnan(a))
+        try:
+            mask &= (~np.isnan(a))
+        except TypeError:  # non-numeric dtype
+            pass
+
     return tuple(a[mask].ravel() for a in arrs)
+
+
+def _position_plots(viewers, layout):
+    rs = [Rectangle(v.position[0], v.position[1],
+                    v.viewer_size[0], v.viewer_size[1])
+          for v in viewers]
+    right = max(r.x + r.w for r in rs)
+    top = max(r.y + r.h for r in rs)
+    for r in rs:
+        r.x = 1. * r.x / right
+        r.y = 1. - 1. * (r.y + r.h) / top
+        r.w = 1. * r.w / right
+        r.h = 1. * r.h / top
+
+    grid = snap_to_grid(rs, padding=0.05)
+    grid = dict((v, grid[r]) for v, r in zip(viewers, rs))
+
+    for i, plot in enumerate(viewers, 1):
+        g = grid[plot]
+        xdomain = [g.x, g.x + g.w]
+        ydomain = [g.y, g.y + g.h]
+        suffix = '' if i == 1 else str(i)
+
+        xax, yax = 'xaxis' + suffix, 'yaxis' + suffix
+        layout[xax].update(domain=xdomain, anchor=yax.replace('axis', ''))
+        layout[yax].update(domain=ydomain, anchor=xax.replace('axis', ''))
 
 
 def _stack_horizontal(layout):
@@ -57,7 +103,7 @@ def _grid_2x23(layout):
         layout[k].update(**v)
 
 
-def _axis(log=False, lo=0, hi=1, title=''):
+def _axis(log=False, lo=0, hi=1, title='', categorical=False):
     if log:
         if lo < 0:
             lo = 1e-3
@@ -66,9 +112,17 @@ def _axis(log=False, lo=0, hi=1, title=''):
         lo = np.log10(lo)
         hi = np.log10(hi)
 
-    return dict(type='log' if log else 'linear',
-                rangemode='normal',
-                range=[lo, hi], title=title)
+    result = dict(type='log' if log else 'linear',
+                  rangemode='normal',
+                  range=[lo, hi], title=title)
+
+    if categorical:
+        result.pop('type')
+        # about 10 categorical ticks per graph
+        result['autotick'] = False
+        result['dtick'] = max(int(hi - lo) / 10, 1)
+
+    return result
 
 
 def _fix_legend_duplicates(traces, layout):
@@ -96,15 +150,21 @@ def export_scatter(viewer):
     plotly-formatted data dictionaries"""
     traces = []
     xatt, yatt = viewer.xatt, viewer.yatt
+    xcat = ycat = False
+
     for layer in viewer.layers:
         if not layer.visible:
             continue
         l = layer.layer
+        xcat |= isinstance(l.data.get_component(xatt), CategoricalComponent)
+        ycat |= isinstance(l.data.get_component(yatt), CategoricalComponent)
+
         marker = dict(symbol=SYM.get(l.style.marker, 'circle'),
                       color=_color(l.style),
                       size=l.style.markersize)
 
-        x, y = _sanitize(l[xatt], l[yatt])
+        x, y = _sanitize(_data(l, xatt), _data(l, yatt))
+
         trace = dict(x=x, y=y,
                      type='scatter',
                      mode='markers',
@@ -114,9 +174,9 @@ def export_scatter(viewer):
         traces.append(trace)
 
     xaxis = _axis(log=viewer.xlog, lo=viewer.xmin, hi=viewer.xmax,
-                  title=viewer.xatt.label)
+                  title=viewer.xatt.label, categorical=xcat)
     yaxis = _axis(log=viewer.ylog, lo=viewer.ymin, hi=viewer.ymax,
-                  title=viewer.yatt.label)
+                  title=viewer.yatt.label, categorical=ycat)
 
     return traces, xaxis, yaxis
 
@@ -183,14 +243,10 @@ def build_plotly_call(app):
             ct += 1
             args.extend(p)
 
-    nplot = sum(len(tab) for tab in app.viewers)
-    if nplot == 2:
-        _stack_horizontal(layout)
-    if nplot > 2:
-        _grid_2x23(layout)
-
+    _position_plots([v for tab in app.viewers for v in tab], layout)
     _fix_legend_duplicates(args, layout)
-    return args, dict(layout=layout)
+
+    return [dict(data=args, layout=layout)], {}
 
 
 def can_save_plotly(application):
@@ -246,10 +302,9 @@ def save_plotly(application, label):
 
     logging.getLogger(__name__).debug(args, kwargs)
 
-    py = plotly.plotly(user, key=apikey)
-    py.plot(args, **kwargs)
-
+    plotly.sign_in(user, apikey)
+    plotly.plot(*args, **kwargs)
 
 exporters.add('Plotly', save_plotly, can_save_plotly, outmode='label')
-settings.add('PLOTLY_USER', '')
-settings.add('PLOTLY_APIKEY', '')
+settings.add('PLOTLY_USER', 'Glue')
+settings.add('PLOTLY_APIKEY', 't24aweai14')
