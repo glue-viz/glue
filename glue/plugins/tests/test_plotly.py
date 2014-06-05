@@ -35,18 +35,18 @@ class TestPlotly(object):
         v.yatt = d.id['x']
 
         args, kwargs = build_plotly_call(app)
+        data = args[0]['data'][0]
 
         expected = dict(type='scatter', mode='markers', name=d.label,
                         marker=dict(size=6, color='rgba(255, 0, 0, 0.4)',
                                     symbol='circle'))
         for k, v in expected.items():
-            assert args[0][k] == v
+            assert data[k] == v
 
-        np.testing.assert_array_equal(args[0]['x'], d['y'])
-        np.testing.assert_array_equal(args[0]['y'], d['x'])
+        np.testing.assert_array_equal(data['x'], d['y'])
+        np.testing.assert_array_equal(data['y'], d['x'])
 
-        assert 'layout' in kwargs
-        layout = kwargs['layout']
+        layout = args[0]['layout']
         assert layout['showlegend']
 
     def test_scatter_subset(self):
@@ -61,11 +61,12 @@ class TestPlotly(object):
         v.yatt = d.id['x']
 
         args, kwargs = build_plotly_call(app)
+        data = args[0]['data']
 
         # check that subset is on Top
-        assert len(args) == 2
-        assert args[0]['name'] == 'data'
-        assert args[1]['name'] == 'subset'
+        assert len(data) == 2
+        assert data[0]['name'] == 'data'
+        assert data[1]['name'] == 'subset'
 
     def test_axes(self):
         app = self.app
@@ -84,9 +85,11 @@ class TestPlotly(object):
                      range=[1, 2], title='y', zeroline=False)
         yaxis = dict(type='linear', rangemode='normal',
                      range=[2, 4], title='x', zeroline=False)
-        layout = kwargs['layout']
-        assert layout['xaxis'] == xaxis
-        assert layout['yaxis'] == yaxis
+        layout = args[0]['layout']
+        for k, v in layout['xaxis'].items():
+            assert xaxis.get(k, v) == v
+        for k, v in layout['yaxis'].items():
+            assert yaxis.get(k, v) == v
 
     def test_histogram(self):
         app = self.app
@@ -107,61 +110,7 @@ class TestPlotly(object):
                 color='rgba(0, 0, 0, 0.5)'
             ),
         )
+        data = args[0]['data']
         for k in expected:
-            assert expected[k] == args[0][k]
-        assert kwargs['layout']['barmode'] == 'overlay'
-
-    def test_2plot(self):
-        app = self.app
-        d = self.data
-        v = app.new_data_viewer(HistogramWidget, data=d)
-        v2 = app.new_data_viewer(ScatterWidget, data=d)
-
-        args, kwargs = build_plotly_call(app)
-
-        assert len(args) == 2
-        assert 'xaxis' not in args[0] and 'yaxis' not in args[0]
-        assert args[1]['xaxis'] == 'x2'
-        assert args[1]['yaxis'] == 'y2'
-
-        layout = kwargs['layout']
-        assert layout['xaxis']['domain'] == [0, .45]
-        assert layout['xaxis2']['domain'] == [.55, 1]
-        assert layout['yaxis2']['anchor'] == 'x2'
-
-    def test_can_multiplot(self):
-        # check that no errors are raised with 2-4 plots
-        app = self.app
-        d = self.data
-        for i in range(2, 5):
-            app.new_data_viewer(HistogramWidget, data=d)
-            args, kwargs = build_plotly_call(app)
-
-    def test_4plot(self):
-        app = self.app
-        d = self.data
-        v = [app.new_data_viewer(HistogramWidget, data=d) for _ in range(4)]
-
-        args, kwargs = build_plotly_call(app)
-
-        assert len(args) == 4
-        assert 'xaxis' not in args[0] and 'yaxis' not in args[0]
-        assert args[1]['xaxis'] == 'x2'
-        assert args[1]['yaxis'] == 'y2'
-        assert args[2]['xaxis'] == 'x3'
-        assert args[2]['yaxis'] == 'y3'
-        assert args[3]['xaxis'] == 'x4'
-        assert args[3]['yaxis'] == 'y4'
-
-        layout = kwargs['layout']
-        assert layout['xaxis']['domain'] == [0, .45]
-        assert layout['yaxis']['domain'] == [0, .45]
-        assert layout['xaxis2']['domain'] == [.55, 1]
-        assert layout['yaxis2']['domain'] == [0, 0.45]
-        assert layout['yaxis2']['anchor'] == 'x2'
-        assert layout['xaxis3']['domain'] == [0, 0.45]
-        assert layout['xaxis3']['anchor'] == 'y3'
-        assert layout['yaxis3']['domain'] == [0.55, 1]
-        assert layout['xaxis4']['anchor'] == 'y4'
-        assert layout['yaxis4']['domain'] == [0.55, 1]
-        assert layout['yaxis4']['anchor'] == 'x4'
+            assert expected[k] == data[0][k]
+        assert args[0]['layout']['barmode'] == 'overlay'
