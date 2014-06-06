@@ -309,6 +309,20 @@ class TestApplication(object):
         w.nbins = 7
         self.check_clone(app)
 
+    def test_subset_groups_remain_synced_after_restore(self):
+        # regrssion test for 352
+        d = core.Data(label='hist', x=[[1, 2], [2, 3]])
+        dc = core.DataCollection([d])
+        dc.new_subset_group()
+        app = GlueApplication(dc)
+
+        app2 = clone(app)
+        sg = app2.data_collection.subset_groups[0]
+        assert sg.style.parent is sg
+
+        sg.style.color = '#112233'
+        assert sg.subsets[0].style.color == '#112233'
+
 
 class TestVersioning(object):
 

@@ -1,9 +1,6 @@
-import logging
 from functools import partial
 
 import numpy as np
-from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
-from matplotlib.ticker import LogFormatterMathtext, ScalarFormatter, FuncFormatter
 
 from ..core.client import Client
 from ..core.data import Data, IncompatibleAttribute, ComponentID, CategoricalComponent
@@ -340,7 +337,7 @@ class ScatterClient(Client):
         if self.yatt is not None:
             update_ticks(self.axes, 'y',
                          list(self._get_data_components('y')),
-                         self.xlog)
+                         self.ylog)
 
     def _add_subset(self, message):
         subset = message.sender

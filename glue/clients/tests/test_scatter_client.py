@@ -412,6 +412,19 @@ class TestScatterClient(object):
         self.client.yatt = self.ids[0]
         self.assert_logs(True, True)
 
+    def test_log_ticks(self):
+        # regression test for 354
+        data = self.add_data_and_attributes()
+        self.assert_logs(False, False)
+
+        self.client.xlog = True
+
+        self.client.yatt = self.ids[0]
+
+        self.assert_logs(True, False)
+        assert not isinstance(self.client.axes.yaxis.get_major_locator(),
+                              LogLocator)
+
     def assert_logs(self, xlog, ylog):
         ax = self.client.axes
         assert ax.get_xscale() == ('log' if xlog else 'linear')

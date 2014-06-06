@@ -575,7 +575,9 @@ class Data(object):
     def add_component(self, component, label, hidden=False):
         """ Add a new component to this data set.
 
-        :param component: object to add
+        :param component: object to add. Can be a Component,
+                          array-like object, or ComponentLink
+
         :param label:
               The label. If this is a string,
               a new :class:`ComponentID` with this label will be
@@ -594,6 +596,11 @@ class Data(object):
 
            The ComponentID associated with the newly-added component
         """
+
+        if isinstance(component, ComponentLink):
+            print 'wrapping into derived'
+            component = DerivedComponent(self, component)
+
         if not isinstance(component, Component):
             component = Component.autotyped(component)
 
@@ -631,19 +638,21 @@ class Data(object):
 
         return component_id
 
-    def add_component_link(self, link, cid=None):
+    def add_component_link(self, link, label=None):
         """ Shortcut method for generating a new :class:`DerivedComponent`
         from a ComponentLink object, and adding it to a data set.
 
         :param link: :class:`~glue.core.component_link.ComponentLink`
+        :param label: The ComponentID or label to attach to.
+        :type label: :class:`~glue.core.data.ComponentID` or str
 
         :returns:
             The :class:`DerivedComponent` that was added
         """
-        if cid is not None:
-            if isinstance(cid, basestring):
-                cid = ComponentID(cid)
-            link.set_to_id(cid)
+        if label is not None:
+            if isinstance(label, basestring):
+                label = ComponentID(label)
+            link.set_to_id(label)
 
         if link.get_to_id() is None:
             raise TypeError("Cannot add component_link: "
