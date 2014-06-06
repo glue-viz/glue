@@ -19,6 +19,7 @@ def has_pandas():
 
 
 class TestQGlue(object):
+
     def setup_method(self, method):
         Registry().clear()
 
@@ -41,10 +42,10 @@ class TestQGlue(object):
         self.v = np.array(v)
 
     def check_setup(self, dc, expected):
-        #assert that the assembled data collection returned
-        #form qglue matches expected structure
+        # assert that the assembled data collection returned
+        # form qglue matches expected structure
 
-        #test for expected data, components
+        # test for expected data, components
         for data in dc:
             components = set(c.label for c in data.components)
             e = expected.pop(data.label)
@@ -66,6 +67,16 @@ class TestQGlue(object):
         with patch('glue.qt.glue_application.GlueApplication') as ga:
             dc = qglue(data1=self.xy)
             self.check_setup(dc, {'data1': ['x', 'y']})
+
+    def test_single_numpy(self):
+        with patch('glue.qt.glue_application.GlueApplication') as ga:
+            dc = qglue(data1=np.array([1, 2, 3]))
+            self.check_setup(dc, {'data1': ['data1']})
+
+    def test_single_list(self):
+        with patch('glue.qt.glue_application.GlueApplication') as ga:
+            dc = qglue(data1=[1, 2, 3])
+            self.check_setup(dc, {'data1': ['data1']})
 
     def test_single_dict(self):
         with patch('glue.qt.glue_application.GlueApplication') as ga:
@@ -143,8 +154,8 @@ class TestQGlue(object):
                      ('Data1.y', 'Data2.u')]
             dc = qglue(Data1=self.xy, Data2=self.dict_data,
                        links=links)
-        #currently, identity links rename the second link to first,
-        #so u/v disappear
+        # currently, identity links rename the second link to first,
+        # so u/v disappear
         for d in dc:
             if d.label == 'Data1':
                 np.testing.assert_array_equal(d['x'], self.x)
@@ -168,7 +179,7 @@ class TestQGlue(object):
 
     def test_bad_data_format(self):
         with pytest.raises(TypeError) as exc:
-            dc = qglue(d=np.array([1, 2, 3]))
+            dc = qglue(d=5)
         assert exc.value.args[0].startswith("Invalid data description")
 
     def test_malformed_data_dict(self):

@@ -6,6 +6,7 @@ import numpy as np
 from .core import Data, DataCollection, ComponentLink
 from .core.link_helpers import MultiLink
 from .core.data_factories import load_data, as_list
+from .core.odict import OrderedDict
 
 __all__ = ['qglue']
 
@@ -60,6 +61,10 @@ def _parse_data_glue_data(data, label):
     return [data]
 
 
+def _parse_data_numpy(data, label):
+    return [Data(**{label: data, 'label': label})]
+
+
 def _parse_data_path(path, label):
     data = load_data(path)
     for d in as_list(data):
@@ -67,11 +72,13 @@ def _parse_data_path(path, label):
     return as_list(data)
 
 
-_parsers = {}  # map base classes -> parser functions
-_parsers[dict] = _parse_data_dict
-_parsers[np.recarray] = _parse_data_recarray
+_parsers = OrderedDict()  # map base classes -> parser functions
 _parsers[Data] = _parse_data_glue_data
 _parsers[basestring] = _parse_data_path
+_parsers[dict] = _parse_data_dict
+_parsers[np.recarray] = _parse_data_recarray
+_parsers[np.ndarray] = _parse_data_numpy
+_parsers[list] = _parse_data_numpy
 
 
 def _parse_data(data, label):
@@ -145,8 +152,10 @@ def qglue(**kwargs):
     The kewyords label1, label2, ... can be named anything besides ``links``
 
     data1, data2, ... can be in many formats:
-      * A numpy rec array
       * A pandas data frame
+      * A path to a file
+      * A numpy array, or python list
+      * A numpy rec array
       * A dictionary of numpy arrays with the same shape
       * An astropy Table
 
