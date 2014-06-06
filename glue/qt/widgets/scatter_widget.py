@@ -13,7 +13,7 @@ from ..widget_properties import (ButtonProperty, FloatLineProperty,
                                  CurrentComboProperty,
                                  connect_bool_button, connect_float_edit)
 
-from ..qtutil import load_ui, cache_axes
+from ..qtutil import load_ui, cache_axes, nonpartial
 
 __all__ = ['ScatterWidget']
 
@@ -81,7 +81,7 @@ class ScatterWidget(DataViewer):
         ui.xAxisComboBox.currentIndexChanged.connect(self.update_xatt)
         ui.yAxisComboBox.currentIndexChanged.connect(self.update_yatt)
         ui.hidden_attributes.toggled.connect(lambda x: self._update_combos())
-        ui.swapAxes.clicked.connect(self.swap_axes)
+        ui.swapAxes.clicked.connect(nonpartial(self.swap_axes))
         ui.snapLimits.clicked.connect(cl.snap)
 
         connect_float_edit(cl, 'xmin', ui.xmin)
