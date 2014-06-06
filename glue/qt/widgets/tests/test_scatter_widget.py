@@ -1,4 +1,4 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 from distutils.version import LooseVersion  # pylint:disable=W0611
 
 import pytest
@@ -247,7 +247,7 @@ class TestScatterWidget(object):
         self.widget.client.axes.set_xlim((3, 4))
         self.widget.client.axes.set_ylim((5, 6))
 
-        #call MPL draw to force render, not Glue draw
+        # call MPL draw to force render, not Glue draw
         super(MplCanvas, self.widget.client.axes.figure.canvas).draw()
 
         assert float(self.widget.ui.xmin.text()) == 3
@@ -274,7 +274,7 @@ class TestScatterWidget(object):
 
         x, y = cl.xatt, cl.yatt
 
-        self.widget.swap_axes()
+        self.widget.ui.swapAxes.click()
         assert (cl.xlog, cl.xflip) == (False, False)
         assert (cl.ylog, cl.yflip) == (True, True)
         assert (cl.xatt, cl.yatt) == (y, x)
