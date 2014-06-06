@@ -575,7 +575,9 @@ class Data(object):
     def add_component(self, component, label, hidden=False):
         """ Add a new component to this data set.
 
-        :param component: object to add
+        :param component: object to add. Can be a Component,
+                          array-like object, or ComponentLink
+
         :param label:
               The label. If this is a string,
               a new :class:`ComponentID` with this label will be
@@ -594,6 +596,11 @@ class Data(object):
 
            The ComponentID associated with the newly-added component
         """
+
+        if isinstance(component, ComponentLink):
+            print 'wrapping into derived'
+            component = DerivedComponent(self, component)
+
         if not isinstance(component, Component):
             component = Component.autotyped(component)
 

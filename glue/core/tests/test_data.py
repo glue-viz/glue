@@ -414,3 +414,12 @@ def test_foreign_pixel_components_not_in_visible():
 
     assert d2.get_pixel_component_id(0) not in d1.visible_components
     np.testing.assert_array_equal(d1[d2.get_pixel_component_id(0)], [0])
+
+
+def test_add_binary_component():
+
+    d = Data(x=[1, 2, 3], y=[2, 3, 4])
+    z = d.id['x'] + d.id['y']
+    d.add_component(z, label='z')
+
+    np.testing.assert_array_equal(d['z'], [3, 5, 7])
