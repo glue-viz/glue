@@ -598,7 +598,6 @@ class Data(object):
         """
 
         if isinstance(component, ComponentLink):
-            print 'wrapping into derived'
             component = DerivedComponent(self, component)
 
         if not isinstance(component, Component):
