@@ -343,6 +343,23 @@ class TestImageClient(object):
         client._update_data_plot()
         assert self.scatter in client.artists
 
+    def test_scatter_sync(self):
+        """ Regression test for #360 """
+        client = self.create_client_with_image_and_scatter()
+        client.register_to_hub(self.collect.hub)
+        self.scatter.label = 'scatter'
+
+        sg = self.collect.new_subset_group()
+        subset = sg.subsets[-1]
+        assert subset.data is self.scatter
+
+        client.add_scatter_layer(subset)
+        art = client.artists[subset][0].artists
+
+        sg.subset_state = self.scatter.id['x'] > 2
+        client._update_subset_single(subset)
+        assert client.artists[subset][0].artists is not art
+
     def test_image_hide_persistent(self):
         """If image layer is disabled, it should stay disabled after update"""
         client = self.create_client_with_image()

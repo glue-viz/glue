@@ -353,10 +353,10 @@ class ImageClient(VizClient):
         if s not in self.artists:
             return
 
+        self._update_scatter_layer(s)
+
         if s.data is not self.display_data:
             return
-
-        self._update_scatter_layer(s)
 
         view = self._build_view(matched=True)
         transpose = self.slice.index('x') < self.slice.index('y')
@@ -502,9 +502,11 @@ class ImageClient(VizClient):
     @requires_data
     def _update_scatter_layer(self, layer):
         xatt, yatt = self._get_plot_attributes()
+        need_redraw = False
         for a in self.artists[layer]:
             if not isinstance(a, ScatterLayerArtist):
                 continue
+            need_redraw = True
             a.xatt = xatt
             a.yatt = yatt
             if self.is_3D:
@@ -517,7 +519,9 @@ class ImageClient(VizClient):
                 a.emphasis = None
             a.update()
             a.redraw()
-        self._redraw()
+
+        if need_redraw:
+            self._redraw()
 
     @requires_data
     def _get_plot_attributes(self):
