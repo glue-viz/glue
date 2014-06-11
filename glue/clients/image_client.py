@@ -310,7 +310,16 @@ class ImageClient(VizClient):
         return (att,) + tuple(slc)
 
     @requires_data
-    def _update_data_plot(self, relim=False):
+    def _numerical_data_changed(self, message):
+        data = message.sender
+        self._update_data_plot(force=True)
+        for s in data.subsets:
+            self._update_subset_single(s, force=True)
+
+        self._redraw()
+
+    @requires_data
+    def _update_data_plot(self, relim=False, force=False):
         """
         Re-sync the main image and its subsets
         """
@@ -330,14 +339,15 @@ class ImageClient(VizClient):
             else:
                 a.update(view, transpose)
         for a in self.artists[self.display_data]:
-            a.update(view, transpose=transpose)
+            meth = a.update if not force else a.force_update
+            meth(view, transpose=transpose)
 
     def relim(self):
         shp = _2d_shape(self.display_data.shape, self.slice)
         self._ax.set_xlim(0, shp[1])
         self._ax.set_ylim(0, shp[0])
 
-    def _update_subset_single(self, s, redraw=False):
+    def _update_subset_single(self, s, redraw=False, force=False):
         """
         Update the location and visual properties
         of each point in a single subset
@@ -361,7 +371,8 @@ class ImageClient(VizClient):
         view = self._build_view(matched=True)
         transpose = self.slice.index('x') < self.slice.index('y')
         for a in self.artists[s]:
-            a.update(view, transpose)
+            meth = a.update if not force else a.force_update
+            meth(view, transpose)
 
         if redraw:
             self._redraw()
@@ -500,7 +511,7 @@ class ImageClient(VizClient):
         return result
 
     @requires_data
-    def _update_scatter_layer(self, layer):
+    def _update_scatter_layer(self, layer, force=False):
         xatt, yatt = self._get_plot_attributes()
         need_redraw = False
         for a in self.artists[layer]:
@@ -517,7 +528,7 @@ class ImageClient(VizClient):
                 a.emphasis = subset
             else:
                 a.emphasis = None
-            a.update()
+            a.update() if not force else a.force_update()
             a.redraw()
 
         if need_redraw:

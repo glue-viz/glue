@@ -131,6 +131,10 @@ class DataUpdateMessage(DataMessage):
         self.attribute = attribute
 
 
+class NumericalDataChangedMessage(DataMessage):
+    pass
+
+
 class DataCollectionMessage(Message):
 
     def __init__(self, sender, tag=None):

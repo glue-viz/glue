@@ -112,6 +112,14 @@ class LayerArtist(PropertySetMixin):
         """Redraw this layer"""
         raise NotImplementedError()
 
+    def force_update(self, *args, **kwargs):
+        """
+        Force an update of the layer, overriding any
+        caching that the layer might do for speed
+        """
+        self._changed = True
+        return self.update(*args, **kwargs)
+
     def clear(self):
         """Clear the visulaization for this layer"""
         for artist in self.artists:

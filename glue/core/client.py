@@ -6,12 +6,14 @@ from .message import (DataUpdateMessage,
                       SubsetUpdateMessage,
                       SubsetCreateMessage,
                       SubsetDeleteMessage,
-                      DataCollectionDeleteMessage)
+                      DataCollectionDeleteMessage,
+                      NumericalDataChangedMessage)
 
 __all__ = ['Client', 'BasicClient']
 
 
 class Client(HubListener):
+
     """
     Base class for interaction / visualization modules
 
@@ -85,6 +87,10 @@ class Client(HubListener):
                       handler=self._update_data,
                       filter=has_data)
         hub.subscribe(self,
+                      NumericalDataChangedMessage,
+                      handler=self._numerical_data_changed,
+                      filter=has_data)
+        hub.subscribe(self,
                       DataCollectionDeleteMessage,
                       handler=self._remove_data,
                       filter=has_data_collection)
@@ -107,6 +113,9 @@ class Client(HubListener):
         raise NotImplementedError
 
     def apply_roi(self, roi):
+        raise NotImplementedError
+
+    def _numerical_data_changed(self, message):
         raise NotImplementedError
 
 

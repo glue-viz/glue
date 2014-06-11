@@ -2,7 +2,6 @@
 Class which embellishes the DataCollectionView with buttons and actions for
 editing the data collection
 """
-import operator
 
 from ...external.qt.QtGui import (QWidget, QMenu,
                                   QAction, QKeySequence, QFileDialog)

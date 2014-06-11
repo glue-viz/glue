@@ -31,6 +31,7 @@ Putting this together, the simplest data factory code looks like this::
     set_default_factory("foo", dummy_factory)
 """
 import os
+import warnings
 
 import numpy as np
 
@@ -39,7 +40,7 @@ from .io import extract_data_fits, extract_data_hdf5
 from .util import file_format, as_list
 from .coordinates import coordinates_from_header, coordinates_from_wcs
 from ..external.astro import fits
-
+from ..backends import get_backend
 
 __all__ = ['load_data', 'gridded_data', 'casalike_cube',
            'tabular_data', 'img_data', 'auto_data']
@@ -116,6 +117,7 @@ class LoadLog(object):
         self.kwargs = kwargs
         self.components = []
         self.data = []
+        self.watcher = FileWatcher(path, self.reload)
 
     def _log_component(self, component):
         self.components.append(component)
@@ -136,6 +138,31 @@ class LoadLog(object):
     def component(self, index):
         return self.components[index]
 
+    def reload(self):
+        """
+        Re-read files, and update data
+        """
+        try:
+            d = load_data(self.path, factory=self.factory, **self.kwargs)
+        except OSError as exc:
+            warnings.warn("Could not reload %s.\n%s" % (self.path, exc))
+            self.watcher.stop()
+            return
+
+        log = as_list(d)[0]._load_log
+
+        for dold, dnew in zip(self.data, as_list(d)):
+            if dold.shape != dnew.shape:
+                warnings.warn("Cannot refresh data -- data shape changed")
+                return
+
+            mapping = dict((c, log.component(self.id(c)).data)
+                           for c in dold._components.values()
+                           if c in self.components
+                           and type(c) == Component)
+            dold.coords = dnew.coords
+            dold.update_components(mapping)
+
     def __gluestate__(self, context):
         return dict(path=self.path,
                     factory=context.do(self.factory),
@@ -147,6 +174,33 @@ class LoadLog(object):
         kwargs = dict(*rec['kwargs'])
         d = load_data(rec['path'], factory=fac, **kwargs)
         return as_list(d)[0]._load_log
+
+
+class FileWatcher(object):
+
+    def __init__(self, path, callback, poll_interval=1000):
+        self.path = path
+        self.callback = callback
+        self.poll_interval = poll_interval
+        try:
+            self.stat_cache = os.stat(path).st_mtime
+        except OSError:
+            # file probably gone, no use watching
+            return
+
+        self.watcher = get_backend().Timer(poll_interval, self.check_for_changes)
+        self.watcher.start()
+
+    def check_for_changes(self):
+        try:
+            stat = os.stat(self.path).st_mtime
+        except OSError:
+            warnings.warn("Cannot access %s. Aborting watch." % self.path)
+            return
+
+        if stat != self.stat_cache:
+            self.stat_cache = stat
+            self.callback()
 
 
 def load_data(path, factory=None, **kwargs):
@@ -168,7 +222,7 @@ def load_data(path, factory=None, **kwargs):
     log = LoadLog(path, factory, kwargs)
     for item in as_list(d):
         item.label = lbl
-        log.log(item)
+        log.log(item)  # attaches log metadata to item
         for cid in item.primary_components:
             log.log(item.get_component(cid))
     return d
@@ -382,7 +436,7 @@ def tabular_data(*args, **kwargs):
     # Loop through columns and make component list
     for column_name in table.columns:
         c = table[column_name]
-        u = c.units
+        u = c.unit if hasattr(c, 'unit') else c.units
 
         if table.masked:
             # fill array for now

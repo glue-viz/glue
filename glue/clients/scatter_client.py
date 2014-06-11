@@ -312,6 +312,12 @@ class ScatterClient(Client):
         data = message.sender
         self._update_layer(data)
 
+    def _numerical_data_changed(self, message):
+        data = message.sender
+        self._update_layer(data, force=True)
+        for s in data.subsets:
+            self._update_layer(s, force=True)
+
     def _redraw(self):
         self.axes.figure.canvas.draw()
 
@@ -404,7 +410,7 @@ class ScatterClient(Client):
             layer = self.add_layer(props['layer'])
             layer.properties = props
 
-    def _update_layer(self, layer):
+    def _update_layer(self, layer, force=False):
         """ Update both the style and data for the requested layer"""
         if self.xatt is None or self.yatt is None:
             return
@@ -416,7 +422,7 @@ class ScatterClient(Client):
         for art in self.artists[layer]:
             art.xatt = self.xatt
             art.yatt = self.yatt
-            art.update()
+            art.force_update() if force else art.update()
         self._redraw()
 
     def _pull_properties(self):

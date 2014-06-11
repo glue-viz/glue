@@ -2,8 +2,10 @@ import pytest
 from mock import MagicMock
 import numpy as np
 
-import glue.core.data_factories as df
-from glue.core.data import CategoricalComponent
+from .. import data_factories as df
+from ..data import CategoricalComponent
+from ..hub import Hub, HubListener
+from ..message import NumericalDataChangedMessage
 from .util import make_file
 
 
@@ -209,3 +211,17 @@ def test_casalike():
 
 
 TEST_FITS_DATA = '\x1f\x8b\x08\x08\xac\xf6\x9bQ\x00\x03test.fits\x00\xed\xd0\xb1\n\xc20\x14\x85\xe1\xaa/r\xde@\x8a\xe2\xe6\xa0X!\xa0\xa5\xd0\x0c]\xa3m\xa1C\x13I\xe2\xd0\xb7\xb7b\xc5\xa1)\xe2\xe6p\xbe\xe5N\xf7\xe7rsq\xceN\t\xb0E\x80\xc4\x12W\xa3kc[\x07op\x142\x87\xf3J\x97\xca\x96\xa1\x05`/d&\x8apo\xb3\xee{\xcaZ\xd5\xa1T^\xc1w\xb7*\\\xf9Hw\x85\xc81q_\xdc\xf7\xf4\xbd\xbdT\x16\xa6~\x97\x9b\xb6\xd2\xae1\xdaM\xf7\xe2\x89\xde\xea\xdb5cI!\x93\xf40\xf9\xbf\xdf{\xcf\x18\x11\x11\x11\x11\xfd\xad\xe8e6\xcc\xf90\x17\x11\x11\x11\x11\x11\x11\x8d<\x00\x8d,\xdc\xe8\x80\x16\x00\x00'
+
+
+def test_data_reload():
+    data = '#a, b\n0, 1\n2, 3\n3, 4\n5, 6\n7, 8'
+    with make_file(data, '.csv') as fname:
+        d = df.load_data(fname)
+        coords_old = d.coords
+        with open(fname, 'w') as f2:
+            f2.write('#a, b\n0, 0\n0, 0\n0, 0\n0, 0\n0, 0')
+        d._load_log.reload()
+
+    np.testing.assert_array_equal(d['a'], [0, 0, 0, 0, 0])
+    np.testing.assert_array_equal(d['b'], [0, 0, 0, 0, 0])
+    assert d.coords is not coords_old
