@@ -332,7 +332,11 @@ try:
         Guassian fitter using astropy.modeling.
         """
         model_cls = models.Gaussian1D
-        fitting_cls = fitting.NonLinearLSQFitter
+        try:
+            fitting_cls = fitting.LevMarLSQFitter
+        except AttributeError:  # astropy v0.3
+            fitting_cls = fitting.NonLinearLSQFitter
+
         label = "Gaussian"
 
         parameter_guesses = staticmethod(_gaussian_parameter_estimates)
