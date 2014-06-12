@@ -125,7 +125,10 @@ class FacetAction(LayerAction):
 
     def _do_action(self):
         layers = self.selected_layers()
-        default = layers[0].data if len(layers) > 0 else None
+        try:
+            default = layers[0].data
+        except (AttributeError, TypeError):
+            default = None
         SubsetFacet.facet(self._layer_tree.data_collection,
                           parent=self._layer_tree, default=default)
 
