@@ -107,8 +107,11 @@ class LoadLog(object):
     """
     This class attaches some metadata to data created
     from load_data, so that the data can be re-constructed
-    when loading saved state. It's only meant to be used
-    within load_data
+    when loading saved state.
+
+    It also watches the path for changes, and auto-reloads the data
+
+    This is an internal class only meant to be used with load_data
     """
 
     def __init__(self, path, factory, kwargs):
@@ -178,7 +181,16 @@ class LoadLog(object):
 
 class FileWatcher(object):
 
+    """
+    Watch a path for modifications, and perform an action on change
+    """
+
     def __init__(self, path, callback, poll_interval=1000):
+        """
+        :param path: The path to watch, str
+        :param callback: A function to call when the path changes
+        :param poll_interval: Time to wait between checks, in ms
+        """
         self.path = path
         self.callback = callback
         self.poll_interval = poll_interval
@@ -195,7 +207,7 @@ class FileWatcher(object):
         try:
             stat = os.stat(self.path).st_mtime
         except OSError:
-            warnings.warn("Cannot access %s. Aborting watch." % self.path)
+            warnings.warn("Cannot access %s" % self.path)
             return
 
         if stat != self.stat_cache:
