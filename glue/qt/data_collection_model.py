@@ -290,7 +290,7 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
                 idx = self.subsets_index(
                     self.data_collection.subset_groups.index(grp))
                 row = list(self.data_collection).index(item.data)
-                idx = self.index(grow, idx)
+                idx = self.index(row, idx)
             else:
                 raise NotImplementedError(type(item))
             result.append(idx)

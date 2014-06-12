@@ -104,7 +104,9 @@ class PlotAction(LayerAction):
         self.app = app
 
     def _can_trigger(self):
-        return self.single_selection()
+        if not self.single_selection():
+            return False
+        return isinstance(self.selected_layers()[0], (core.Subset, core.Data))
 
     def _do_action(self):
         assert self._can_trigger()
