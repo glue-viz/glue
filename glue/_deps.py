@@ -65,6 +65,7 @@ class QtDep(Dependency):
         self.info = ('GUI Library (install at http://bit.ly/YfTFxj or '
                      'http://bit.ly/Zci3Di)')
         self.package = 'N/A'
+        self.failed = False
 
     @property
     def installed(self):

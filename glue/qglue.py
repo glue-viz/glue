@@ -1,12 +1,22 @@
+"""
+Utility function to load a variety of python objects into glue
+"""
+
+# Note: this is imported with Glue. We want
+# to minimize imports so that utilities like glue-deps
+# can run on systems with missing dependencies
+
 from contextlib import contextmanager
 import sys
 
 import numpy as np
 
-from .core import Data, DataCollection, ComponentLink
-from .core.link_helpers import MultiLink
-from .core.data_factories import load_data, as_list
-from .core.odict import OrderedDict
+try:
+    from .core import Data
+except ImportError:
+    # let qglue import, even though this won't work
+    # qglue will throw an ImportError
+    Data = None
 
 __all__ = ['qglue']
 
@@ -66,23 +76,25 @@ def _parse_data_numpy(data, label):
 
 
 def _parse_data_path(path, label):
+    from .core.data_factories import load_data, as_list
+
     data = load_data(path)
     for d in as_list(data):
         d.label = label
     return as_list(data)
 
-
-_parsers = OrderedDict()  # map base classes -> parser functions
-_parsers[Data] = _parse_data_glue_data
-_parsers[basestring] = _parse_data_path
-_parsers[dict] = _parse_data_dict
-_parsers[np.recarray] = _parse_data_recarray
-_parsers[np.ndarray] = _parse_data_numpy
-_parsers[list] = _parse_data_numpy
+# (base class, parser function)
+_parsers = [
+    (Data, _parse_data_glue_data),
+    (basestring, _parse_data_path),
+    (dict, _parse_data_dict),
+    (np.recarray, _parse_data_recarray),
+    (np.ndarray, _parse_data_numpy),
+    (list, _parse_data_numpy)]
 
 
 def _parse_data(data, label):
-    for typ, prsr in _parsers.items():
+    for typ, prsr in _parsers:
         if isinstance(data, typ):
             try:
                 return prsr(data, label)
@@ -94,18 +106,21 @@ def _parse_data(data, label):
 
 try:
     import pandas as pd
-    _parsers[pd.DataFrame] = _parse_data_dataframe
+    _parsers.append((pd.DataFrame, _parse_data_dataframe))
 except ImportError:
     pass
 
 try:
     from astropy.table import Table
-    _parsers[Table] = _parse_data_astropy_table
+    _parsers.append((Table, _parse_data_astropy_table))
 except ImportError:
     pass
 
 
 def _parse_links(dc, links):
+    from .core.link_helpers import MultiLink
+    from .core import ComponentLink
+
     data = {d.label: d for d in dc}
     result = []
 
@@ -181,6 +196,7 @@ def qglue(**kwargs):
 
     :returns: A :class:`~glue.core.data_collection.DataCollection` object
     """
+    from .core import DataCollection
     from glue.qt.glue_application import GlueApplication
 
     links = kwargs.pop('links', None)
