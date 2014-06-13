@@ -147,7 +147,7 @@ class LoadLog(object):
         """
         try:
             d = load_data(self.path, factory=self.factory, **self.kwargs)
-        except OSError as exc:
+        except (OSError, IOError) as exc:
             warnings.warn("Could not reload %s.\n%s" % (self.path, exc))
             self.watcher.stop()
             return
@@ -194,13 +194,20 @@ class FileWatcher(object):
         self.path = path
         self.callback = callback
         self.poll_interval = poll_interval
+        self.watcher = get_backend().Timer(poll_interval,
+                                           self.check_for_changes)
+
         try:
             self.stat_cache = os.stat(path).st_mtime
+            self.start()
         except OSError:
             # file probably gone, no use watching
-            return
+            self.stat_cache = None
 
-        self.watcher = get_backend().Timer(poll_interval, self.check_for_changes)
+    def stop(self):
+        self.watcher.stop()
+
+    def start(self):
         self.watcher.start()
 
     def check_for_changes(self):
