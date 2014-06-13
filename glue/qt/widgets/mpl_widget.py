@@ -19,12 +19,14 @@ from matplotlib.figure import Figure
 
 
 class DeferredMethod(object):
+
     """
     This class stubs out a method, and provides a
     callable interface that logs its calls. These
     can later be actually executed on the original (non-stubbed)
     method by calling executed_deferred_calls
     """
+
     def __init__(self, method):
         self.method = method
         self.calls = []  # avoid hashability issues with dict/set

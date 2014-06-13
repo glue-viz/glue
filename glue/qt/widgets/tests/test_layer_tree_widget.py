@@ -8,7 +8,7 @@ from mock import MagicMock, patch
 import pytest
 
 from ..layer_tree_widget import (LayerTreeWidget, Clipboard,
-                                 save_subset)
+                                 save_subset, PlotAction)
 
 from ....tests import example_data
 from .... import core
@@ -228,3 +228,18 @@ class TestLayerTree(object):
             d.getSaveFileName.return_value = ('', '')
             save_subset(subset)
         assert subset.write_mask.call_count == 0
+
+    def test_plot_action(self):
+        # regression test for #364
+
+        app = MagicMock()
+        pa = PlotAction(self.widget, app)
+
+        layer = self.add_layer()
+        grp = self.collect.new_subset_group()
+
+        self.select_layers(grp)
+        assert not pa.isEnabled()
+
+        self.select_layers(layer)
+        assert pa.isEnabled()
