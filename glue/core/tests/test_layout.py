@@ -1,3 +1,5 @@
+from itertools import combinations
+
 from ..layout import Rectangle, snap_to_grid
 
 
@@ -8,6 +10,12 @@ class TestSnap(object):
         result = snap_to_grid(input, **kwargs)
         for i, e in zip(input, expected):
             assert result[i] == e
+
+    def assert_nonoverlap(self, rects):
+        snapped = snap_to_grid(rects, padding=0.01).values()
+
+        for r1, r2 in combinations(snapped, 2):
+            assert not r1.overlaps(r2)
 
     def test_2x2(self):
 
@@ -59,3 +67,9 @@ class TestSnap(object):
               Rectangle(.6, .6, .3, .3)]
 
         self.check(rs, ex, padding=0.1)
+
+    def test_nonoverlap(self):
+        rs = [Rectangle(0, 0, .5, .9),
+              Rectangle(.01, 0, .5, .9)]
+
+        self.assert_nonoverlap(rs)
