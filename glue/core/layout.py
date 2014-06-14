@@ -3,6 +3,61 @@ This module provides some routines for performing layout
 calculations to organize rectangular windows in a larger canvas
 """
 from collections import Counter
+from operator import mul
+from itertools import permutations, chain
+
+# pre-specified layouts for 1-5 boxes
+layouts = {
+    1: (((0, 0, 1, 1),),),
+    2: (
+        ((0, 0, 1, .5), (0, .5, 1, .5)),
+        ((0, 0, .5, 1), (.5, 0, .5, 1)),
+    ),
+    3: (
+        ((0, .5, 1, .5), (0, 0, .5, .5), (.5, 0, .5, .5)),
+        ((0, 0, 1, .5), (0, .5, .5, .5), (.5, .5, .5, .5)),
+        ((0, 0, 1, .5), (0, .5, .5, .5), (.5, .5, .5, .5)),
+        ((0, 0, .5, .5), (0, .5, .5, .5), (.5, 0, .5, 1)),
+        ((0, 0, 1 / 3., 1), (1 / 3., 0, 1 / 3., 1), (2 / 3., 0, 2 / 3., 1)),
+        ((0, 0, 1, 1 / 3.), (0, 1 / 3., 1, 1 / 3.), (0, 2 / 3., 1, 1 / 3.)),
+    ),
+    4: (
+        ((0, 0, .5, .5), (.5, 0, .5, .5), (0, .5, .5, .5), (.5, .5, .5, .5)),
+        ((0, .5, 1, .5), (0, 0, 1 / 3., .5), (1 / 3., 0, 1 / 3., .5), (2 / 3., 0, 1 / 3., .5)),
+        ((0, 0, 1, .5), (0, .5, 1 / 3., .5), (1 / 3., .5, 1 / 3., .5), (2 / 3., .5, 1 / 3., .5)),
+        ((0, 0, .5, 1), (.5, 0, .5, 1 / 3.), (.5, 1 / 3., .5, 1 / 3.), (.5, 2 / 3., .5, 2 / 3.)),
+        ((.5, 0, .5, 1), (0, 0, .5, 1 / 3.), (0, 1 / 3., .5, 1 / 3.), (0, 2 / 3., .5, 2 / 3.)),
+    ),
+    5: (
+        ((0, .5, .5, .5), (.5, .5, .5, .5), (0, 0, 1 / 3., .5), (1 / 3., 0, 1 / 3., .5), (2 / 3., 0, 1 / 3., .5)),
+        ((0, 0, .5, .5), (.5, 0, .5, .5), (0, .5, 1 / 3., .5), (1 / 3., .5, 1 / 3., .5), (2 / 3., .5, 1 / 3., .5)),
+        ((0, 0, .5, .5), (0, .5, .5, .5), (.5, 0, .5, 1 / 3.), (.5, 1 / 3., .5, 1 / 3.), (.5, 2 / 3., .5, 1 / 3.)),
+        ((.5, 0, .5, .5), (.5, .5, .5, .5), (0, 0, .5, 1 / 3.), (0, 1 / 3., .5, 1 / 3.), (0, 2 / 3., .5, 1 / 3.)),
+    )
+}
+
+
+def _overlap(layout, rectangles):
+    layout = [Rectangle(*l) for l in layout]
+    return reduce(mul, (a.overlap_area(b)
+                  for a, b in zip(layout, rectangles)))
+
+
+def _choose_best_preset(mapping):
+    listing = list(mapping.items())
+    rectangles = [l[1] for l in listing]
+
+    nr = len(rectangles)
+
+    if nr not in layouts:
+        raise ValueError("No standard layouts for %i rectangles" % nr)
+    options = layouts[nr]
+    result = max(chain(*(permutations(o) for o in options)),
+                 key=lambda o: _overlap(o, rectangles))
+    result = [Rectangle(*r) for r in result]
+    result = dict((input, output) for (input, _), output in
+                  zip(listing, result))
+    return result
 
 
 class Rectangle(object):
@@ -57,6 +112,11 @@ class Rectangle(object):
                 (self.t - other.b) > tol and
                 (self.b - other.t) < -tol)
 
+    def overlap_area(self, other):
+        dw = max(min(self.r, other.r) - max(self.l, other.l), 0)
+        dh = max(min(self.t, other.t) - max(self.b, other.b), 0)
+        return dw * dh
+
     def pad(self, padding):
         self.x += padding
         self.w -= 2 * padding
@@ -95,7 +155,6 @@ def _unoverlap(rectangles, padding=0.0):
         r1 = rectangles[r1]
         for r2 in s[:i]:
             r2 = rectangles[r2]
-            print r1, r2, r1.overlaps(r2)
             if r1.overlaps(r2):
                 r1.x = r2.r + 2 * padding
 
@@ -123,6 +182,11 @@ def snap_to_grid(rectangles, padding=0.0):
     xs, ys = _snap_size(rectangles)
     for r in rectangles:
         result[r] = r.snap(xs, ys)
+    try:
+        result = _choose_best_preset(result)
+    except ValueError:
+        pass
+
     result = _unoverlap(result)
     result = _pad(result, padding)
     return result
