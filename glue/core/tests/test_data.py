@@ -7,7 +7,7 @@ from ..data import (ComponentID, Component, Data,
                     DerivedComponent, pixel_label, CategoricalComponent)
 from ..coordinates import Coordinates
 from ..subset import Subset, SubsetState
-from ..hub import Hub
+from ..hub import Hub, HubListener
 from ..exceptions import IncompatibleAttribute
 from ..component_link import ComponentLink
 from ..registry import Registry

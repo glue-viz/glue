@@ -226,7 +226,7 @@ class HistogramClient(Client):
             self.nbins = val
         return val
 
-    def _sync_layer(self, layer):
+    def _sync_layer(self, layer, force=False):
         for a in self._artists[layer]:
             a.lo, a.hi = self.xlimits
             a.nbins = self.nbins
@@ -235,12 +235,12 @@ class HistogramClient(Client):
             a.cumulative = self.cumulative
             a.normed = self.normed
             a.att = self._component
-            a.update()
+            a.update() if not force else a.force_update()
 
-    def sync_all(self):
+    def sync_all(self, force=False):
         layers = set(a.layer for a in self._artists)
         for l in layers:
-            self._sync_layer(l)
+            self._sync_layer(l, force=force)
 
         self._update_axis_labels()
 
@@ -292,6 +292,10 @@ class HistogramClient(Client):
 
         self._axes.set_xlim(lim)
         self._redraw()
+
+    def _numerical_data_changed(self, message):
+        data = message.sender
+        self.sync_all(force=True)
 
     def _update_data(self, message):
         self.sync_all()
@@ -358,6 +362,9 @@ class HistogramClient(Client):
         hub.subscribe(self,
                       msg.DataCollectionDeleteMessage,
                       handler=self._remove_data)
+        hub.subscribe(self,
+                      msg.NumericalDataChangedMessage,
+                      handler=self._numerical_data_changed)
 
     def restore_layers(self, layers, context):
         for layer in layers:

@@ -11,7 +11,7 @@ class SettingsEditor(object):
         w.setHorizontalHeaderLabels(["Setting", "Value"])
         for row, (key, value) in enumerate(app.settings):
             k = QTableWidgetItem(key)
-            v = QTableWidgetItem(value)
+            v = QTableWidgetItem(str(value))
             k.setFlags(k.flags() ^ (Qt.ItemIsEditable | Qt.ItemIsSelectable))
             w.setItem(row, 0, k)
             w.setItem(row, 1, v)
@@ -28,11 +28,13 @@ class SettingsEditor(object):
     def update_setting(self, row, column):
         key = self._widget.item(row, 0).text()
         value = self._widget.item(row, 1).text()
-        old = self.app.get_setting(key)
         try:
             self.app.set_setting(key, value)
         except ValueError:
-            self._widget.item(row, 1).setText(old)
+            pass
+
+        new_txt = str(self.app.get_setting(key))
+        self._widget.item(row, 1).setText(new_txt)
 
     @property
     def widget(self):

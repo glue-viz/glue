@@ -13,7 +13,7 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'ProfileFitterRegistry',
            'qt_client', 'data_factory', 'link_function', 'link_helper',
            'colormaps',
-           'exporters', 'settings', 'fit_plugin']
+           'exporters', 'settings', 'fit_plugin', 'auto_refresh']
 
 
 class Registry(object):
@@ -303,6 +303,20 @@ class ProfileFitterRegistry(Registry):
         return list(__FITTERS__)
 
 
+class BooleanSetting(object):
+
+    def __init__(self, default=True):
+        self.state = default
+
+    def __call__(self, state=None):
+        if state not in [None, True, False]:
+            raise ValueError("Invalid True/False setting: %s" % state)
+
+        if state is not None:
+            self.state = state
+
+        return self.state
+
 qt_client = QtClientRegistry()
 data_factory = DataFactoryRegistry()
 link_function = LinkFunctionRegistry()
@@ -311,6 +325,9 @@ colormaps = ColormapRegistry()
 exporters = ExporterRegistry()
 settings = SettingRegistry()
 fit_plugin = ProfileFitterRegistry()
+
+# watch loaded data files for changes?
+auto_refresh = BooleanSetting(False)
 
 
 def load_configuration(search_path=None):

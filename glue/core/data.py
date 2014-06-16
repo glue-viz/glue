@@ -15,7 +15,7 @@ from .hub import Hub
 from .util import (split_component_view, view_shape,
                    coerce_numeric, check_sorted)
 from .message import (DataUpdateMessage,
-                      DataAddComponentMessage,
+                      DataAddComponentMessage, NumericalDataChangedMessage,
                       SubsetCreateMessage, ComponentsChangedMessage)
 
 from .odict import OrderedDict
@@ -988,6 +988,34 @@ class Data(object):
         df = pd.DataFrame({comp.label: h(comp) for comp in self.components})
         order = [comp.label for comp in self.components]
         return df[order]
+
+    def update_components(self, mapping):
+        """
+        Change the numerical data associated with some of the Components
+        in this Data object.
+
+        All changes to component numerical data should use this method,
+        which broadcasts the state change to the appropriate places.
+
+        :param mapping: A dict mapping Components or ComponenIDs to arrays.
+
+        This method has the following restrictions:
+          - New compoments must have the same shape as old compoments
+          - Component subclasses cannot be updated.
+        """
+        for comp, data in mapping.items():
+            if isinstance(comp, ComponentID):
+                comp = self.get_component(comp)
+            data = np.asarray(data)
+            if data.shape != self.shape:
+                raise ValueError("Cannot change shape of data")
+
+            comp._data = data
+
+        # alert hub of the change
+        if self.hub is not None:
+            msg = NumericalDataChangedMessage(self)
+            self.hub.broadcast(msg)
 
 
 def pixel_label(i, ndim):
