@@ -24,3 +24,4 @@ The following pages discuss these concepts. You may want to start by reading the
    glue_from_python.rst
    data_viewer_options.rst
    customization.rst
+   liveupdate.rst

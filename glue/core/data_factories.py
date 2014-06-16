@@ -41,6 +41,7 @@ from .util import file_format, as_list
 from .coordinates import coordinates_from_header, coordinates_from_wcs
 from ..external.astro import fits
 from ..backends import get_backend
+from ..config import auto_refresh
 
 __all__ = ['load_data', 'gridded_data', 'casalike_cube',
            'tabular_data', 'img_data', 'auto_data']
@@ -120,7 +121,11 @@ class LoadLog(object):
         self.kwargs = kwargs
         self.components = []
         self.data = []
-        self.watcher = FileWatcher(path, self.reload)
+
+        if auto_refresh():
+            self.watcher = FileWatcher(path, self.reload)
+        else:
+            self.watcher = None
 
     def _log_component(self, component):
         self.components.append(component)
@@ -149,7 +154,8 @@ class LoadLog(object):
             d = load_data(self.path, factory=self.factory, **self.kwargs)
         except (OSError, IOError) as exc:
             warnings.warn("Could not reload %s.\n%s" % (self.path, exc))
-            self.watcher.stop()
+            if self.watcher is not None:
+                self.watcher.stop()
             return
 
         log = as_list(d)[0]._load_log
