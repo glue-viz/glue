@@ -12,6 +12,7 @@ from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
 from ..external.qt.QtCore import Qt, QSize, QSettings, Signal
 
 from ..core import command
+from ..core.layout import Rectangle, snap_to_grid
 from .. import env
 from ..qt import get_qapp
 from .decorators import set_cursor, messagebox_on_error
@@ -330,7 +331,26 @@ class GlueApplication(Application, QMainWindow):
 
     def gather_current_tab(self):
         """Arrange windows in current tab via tiling"""
-        self.current_tab.tileSubWindows()
+
+        # avoid using windows as dict key,
+        # hashability sometimes an issue with Qt
+        windows = [w for w in self.current_tab.subWindowList()
+                   if w.isVisible()]
+
+        if len(windows) > 5 or len(windows) == 0:
+            return self.do(QtGatherCommand(windows=windows))
+
+        parent = self.current_tab.viewport()
+        rs = _widgets_to_rects(windows, parent.geometry())
+
+        mapping = snap_to_grid(rs)
+
+        keys = list(mapping.keys())
+        rects = [mapping[key] for key in keys]
+        windows = [windows[rs.index(key)] for key in keys]
+
+        cmd = GatherCommand(windows=windows, rects=rects)
+        self.do(cmd)
 
     def _get_plot_dashboards(self, sub_window):
         if not isinstance(sub_window, QMdiSubWindow):
@@ -796,3 +816,62 @@ class GlueApplication(Application, QMainWindow):
         if result:
             result[0].label = str(w.merged_label.text())
             return result + [data]
+
+
+def _widgets_to_rects(widgets, bbox):
+    result = []
+    w, h = 1. * bbox.width(), 1. * bbox.height()
+    for widget in widgets:
+        g = widget.geometry()
+        result.append(Rectangle(g.left() / w,
+                                (h - g.bottom()) / h,
+                                g.width() / w,
+                                g.height() / h))
+
+    return result
+
+
+class GatherCommand(command.Command):
+
+    """
+    Reposition windows in a tab
+    """
+    kwargs = ['windows', 'rects']
+    label = 'tile windows'
+
+    def do(self, session):
+        self._old = []
+
+        tab = session.application.current_tab
+        viewport = tab.viewport()
+
+        # scroll to top to prevent scroll area growing as windows change
+        tab.verticalScrollBar().setValue(0)
+        tab.horizontalScrollBar().setValue(0)
+
+        for w, r in zip(self.windows, self.rects):
+            self._old.append(w.geometry())
+            r.update_qt_widget(w, viewport)
+
+    def undo(self, session):
+        for w, o in zip(self.windows, self._old):
+            w.setGeometry(o)
+
+
+class QtGatherCommand(GatherCommand):
+
+    """
+    Reposition windows using default Qt algorithm
+    """
+    kwargs = ['windows']
+
+    def do(self, session):
+        self._old = [w.geometry() for w in self.windows]
+
+        if len(self.windows) == 0:
+            return
+
+        area = self.windows[0].mdiArea()
+        area.verticalScrollBar().setValue(0)
+        area.horizontalScrollBar().setValue(0)
+        area.tileSubWindows()

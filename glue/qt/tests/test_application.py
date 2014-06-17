@@ -182,3 +182,21 @@ class TestGlueApplication(object):
         self.app.data_collection.append(Data(x=[1, 2, 3]))
         with patch('glue.qt.widgets.subset_facet.SubsetFacet.exec_'):
             act._do_action()
+
+    @pytest.mark.parametrize('nwindows', (2, 6))
+    def test_gather(self, nwindows):
+
+        for _ in range(nwindows):
+            self.app.new_data_viewer(ScatterWidget)
+
+        # force window gathering
+        for w in self.app.current_tab.subWindowList():
+            w.isVisible = lambda: True
+
+        # just check that nothing crashes
+        self.app._actions['gather'].trigger()
+        self.app.undo()
+
+    def test_gather_nowindows(self):
+        self.app._actions['gather'].trigger()
+        self.app.undo()

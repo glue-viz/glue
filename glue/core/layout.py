@@ -139,6 +139,28 @@ class Rectangle(object):
     def t(self):
         return self.y + self.h
 
+    def update_qt_widget(self, widget, parent):
+        """Use the current rectangle to reposition a Qt widget relative
+        to its parent.
+
+        :param widget: Qt widget to relayout
+        :param parent: parent of widget
+
+        Widget is resized, assuming current rectangle is in normalized
+        coordinates relatie to parent
+        """
+        g = widget.geometry()
+        w, h = parent.geometry().width(), parent.geometry().height()
+
+        # the order of sets is important here
+        # must set X/Y first, then width/height,
+        # because X/Y change w/h
+        g.setX(self.x * w)
+        g.setY((1 - self.y - self.h) * h)
+        g.setWidth(self.w * w)
+        g.setHeight(self.h * h)
+        widget.setGeometry(g)
+
 
 def _snap_size(rectangles):
     x = Counter([round(1 / r.w) for r in rectangles])
