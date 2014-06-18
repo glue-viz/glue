@@ -510,6 +510,7 @@ class Data(object):
         # map of Data -> (ComponentID, missing_value)
         # self[ComponentID] gives element location in flattened Data
         self._joins = {}
+        self._key_joins = {}
 
     @property
     def subsets(self):
@@ -601,6 +602,31 @@ class Data(object):
             raise ValueError("Invalid ComponentID: %s" % _input)
 
         self._joins[other] = (cid, missing)
+
+    def join_on_key(self, other, cid, cid_other):
+        """
+        Create an *element mapping* to another dataset, by
+        joining on values of ComponentIDs in both datasets
+
+        This join allows any subsets defined on `other` to be
+        propagated to self.
+
+        :param other: :class:`Data` to join with
+        :param cid: str or :class:`ComponentID` in this dataset to use as a key
+        :param cid_other: ComponentID in the other dataset to use as a key
+        """
+        _i1, _i2 = cid, cid_other
+        cid = self.find_component_id(cid)
+        cid_other = other.find_component_id(cid_other)
+        if cid is None:
+            raise ValueError("ComponentID not found in %s: %s" %
+                             (self.label, _i1))
+        if cid_other is None:
+            raise ValueError("ComponentID not found in %s: %s" %
+                             (other.label, _i2))
+
+        self._key_joins[other] = (cid, cid_other)
+        other._key_joins[self] = (cid_other, cid)
 
     def add_component(self, component, label, hidden=False):
         """ Add a new component to this data set.
