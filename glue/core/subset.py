@@ -519,6 +519,32 @@ class MaskSubsetState(SubsetState):
                    [context.object(c) for c in rec['cids']])
 
 
+class CategorySubsetState(SubsetState):
+
+    def __init__(self, attribute, values):
+        super(CategorySubsetState, self).__init__()
+        self._attribute = attribute
+        self._values = np.asarray(values).ravel()
+
+    @memoize
+    def to_mask(self, data, view=None):
+        vals = data[self._attribute, view]
+        result = np.in1d(vals.ravel(), self._values)
+        return result.reshape(vals.shape)
+
+    def copy(self):
+        return CategorySubsetState(self._attribute, self._values.copy())
+
+    def __gluestate__(self, context):
+        return dict(att=context.id(self._attribute),
+                    vals=context.do(self._values))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(context.object(rec['att']),
+                   context.object(rec['vals']))
+
+
 class ElementSubsetState(SubsetState):
 
     def __init__(self, indices=None):
