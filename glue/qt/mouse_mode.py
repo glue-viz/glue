@@ -359,6 +359,24 @@ class VRangeMode(RoiMode):
         self.shortcut = 'V'
 
 
+class PickMode(RoiMode):
+
+    """ Defines a PointROI. Defines single point selections """
+
+    def __init__(self, axes, **kwargs):
+        super(PickMode, self).__init__(axes, **kwargs)
+        self.icon = get_icon('glue_yrange_select')
+        self.mode_id = 'Pick'
+        self.action_text = 'Pick'
+        self.tool_tip = 'Select a single item'
+        self._roi_tool = roi.MplPickROI(self._axes)
+        self.shortcut = 'K'
+
+    def press(self, event):
+        super(PickMode, self).press(event)
+        self._drag = True
+
+
 class ContrastMode(MouseMode):
 
     """Uses right mouse button drags to set bias and contrast, ala DS9

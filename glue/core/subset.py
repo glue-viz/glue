@@ -6,6 +6,7 @@ from .decorators import memoize
 from .message import SubsetDeleteMessage, SubsetUpdateMessage
 from .registry import Registry
 from .util import split_component_view, view_shape
+from .exceptions import IncompatibleAttribute
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState',
@@ -129,7 +130,41 @@ class Subset(object):
            for the requested data set.
 
         """
-        return self.subset_state.to_index_list(self.data)
+        try:
+            return self.subset_state.to_index_list(self.data)
+        except IncompatibleAttribute as exc:
+            try:
+                return self._to_index_list_join()
+            except IncompatibleAttribute:
+                raise exc
+
+    def _to_index_list_join(self):
+        return np.where(self._to_mask_join(None).flat)[0]
+
+    def _to_mask_join(self, view):
+        """Conver the subset to a mask through an entity join
+           to another dataset. """
+        for other, (cid1, cid2) in self.data._key_joins.items():
+            if getattr(other, '_recursing', False):
+                continue
+
+            try:
+                self.data._recursing = True
+                s2 = Subset(other)
+                s2.subset_state = self.subset_state
+                key_right = s2.to_mask()
+            except IncompatibleAttribute:
+                continue
+            finally:
+                self.data._recursing = False
+
+            key_left = self.data[cid1, view]
+            result = np.in1d(key_left.ravel(),
+                             other[cid2, key_right])
+
+            return result.reshape(key_left.shape)
+
+        raise IncompatibleAttribute
 
     def to_mask(self, view=None):
         """
@@ -144,7 +179,13 @@ class Subset(object):
            defines whether each element belongs to the subset.
 
         """
-        return self.subset_state.to_mask(self.data, view)
+        try:
+            return self.subset_state.to_mask(self.data, view)
+        except IncompatibleAttribute as exc:
+            try:
+                return self._to_mask_join(view)
+            except IncompatibleAttribute:
+                raise exc
 
     def do_broadcast(self, value):
         """
@@ -416,6 +457,32 @@ class InvertState(CompositeSubsetState):
 
     def __str__(self):
         return "(~%s)" % self.state1
+
+
+class CategorySubsetState(SubsetState):
+
+    def __init__(self, attribute, values):
+        super(CategorySubsetState, self).__init__()
+        self._attribute = attribute
+        self._values = np.asarray(values).ravel()
+
+    @memoize
+    def to_mask(self, data, view=None):
+        vals = data[self._attribute, view]
+        result = np.in1d(vals.ravel(), self._values)
+        return result.reshape(vals.shape)
+
+    def copy(self):
+        return CategorySubsetState(self._attribute, self._values.copy())
+
+    def __gluestate__(self, context):
+        return dict(att=context.id(self._attribute),
+                    vals=context.do(self._values))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(context.object(rec['att']),
+                   context.object(rec['vals']))
 
 
 class ElementSubsetState(SubsetState):

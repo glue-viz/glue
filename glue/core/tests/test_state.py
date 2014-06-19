@@ -28,6 +28,10 @@ def doubler(x):
     return 2 * x
 
 
+class Dummy(object):
+    pass
+
+
 class Cloner(object):
 
     def __init__(self, obj):
@@ -328,39 +332,41 @@ class TestVersioning(object):
 
     def setup_method(self, method):
 
-        @saver(core.Data, version=3)
+        @saver(Dummy, version=1)
         def s(d, context):
             return dict(v=3)
 
-        @loader(core.Data, version=3)
+        @loader(Dummy, version=1)
         def l(d, context):
             return 3
 
-        @saver(core.Data, version=4)
+        @saver(Dummy, version=2)
         def s(d, context):
             return dict(v=4)
 
-        @loader(core.Data, version=4)
+        @loader(Dummy, version=2)
         def l(rec, context):
             return 4
 
     def teardown_method(self, method):
-        GlueSerializer.dispatch._data[core.Data].pop(3)
-        GlueSerializer.dispatch._data[core.Data].pop(4)
-        GlueUnSerializer.dispatch._data[core.Data].pop(3)
-        GlueUnSerializer.dispatch._data[core.Data].pop(4)
+        GlueSerializer.dispatch._data[Dummy].pop(1)
+        GlueSerializer.dispatch._data[Dummy].pop(2)
+        GlueUnSerializer.dispatch._data[Dummy].pop(1)
+        GlueUnSerializer.dispatch._data[Dummy].pop(2)
 
     def test_default_latest_save(self):
-        assert GlueSerializer(core.Data()).dumpo().values()[0]['v'] == 4
+        state = GlueSerializer(Dummy()).dumpo().values()[0]
+        assert state['v'] == 4
+        assert state['_protocol'] == 2
 
     def test_legacy_load(self):
-        data = json.dumps({'': {'_type': 'glue.core.Data',
-                                '_protocol': 3, 'v': 2}})
+        data = json.dumps({'': {'_type': 'glue.core.tests.test_state.Dummy',
+                                '_protocol': 1, 'v': 3}})
         assert GlueUnSerializer(data).object('') == 3
 
-    def test_default_latest_load(self):
-        data = json.dumps({'': {'_type': 'glue.core.Data'}})
-        assert GlueUnSerializer(data).object('') == 4
+    def test_default_legacy_load(self):
+        data = json.dumps({'': {'_type': 'glue.core.tests.test_state.Dummy'}})
+        assert GlueUnSerializer(data).object('') == 3
 
 
 class TestVersionedDict(object):

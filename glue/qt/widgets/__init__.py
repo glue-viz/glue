@@ -5,3 +5,6 @@ from .layer_tree_widget import LayerTreeWidget
 from .message_widget import MessageWidget
 from .mpl_widget import MplWidget
 from .scatter_widget import ScatterWidget
+from .dendro_widget import DendroWidget
+
+default_widgets = [ScatterWidget, HistogramWidget, ImageWidget, DendroWidget]

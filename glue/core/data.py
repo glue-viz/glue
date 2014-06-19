@@ -507,6 +507,11 @@ class Data(object):
         for lbl, data in kwargs.items():
             self.add_component(data, lbl)
 
+        # map of Data -> (ComponentID, missing_value)
+        # self[ComponentID] gives element location in flattened Data
+        self._joins = {}
+        self._key_joins = {}
+
     @property
     def subsets(self):
         """
@@ -571,6 +576,57 @@ class Data(object):
         """
         if component_id in self._components:
             self._components.pop(component_id)
+
+    def join_by_lookup(self, other, cid, missing=-1):
+        """
+        Define a 1-to-many mapping onto another dataset, via a lookup
+        component.
+
+        This specifies that self[cid] represents a set of (flattened)
+        element locations in `other`. After joining,
+        self[a] = other[a][self[cid]] if `a` is a component present
+        in another dataset but not this one.
+
+        :param other: :class:`Data` instance
+        :param cid: :class:`ComponentID` present in this data instance
+        :param missing: Value that corresponds to missing data in self[cid]
+        """
+        _input = cid
+        cid = self.find_component_id(cid)
+        for other_cid in other.components:
+            if other_cid in self.components:
+                raise ValueError("Cannot join data. Component conflict: %s" %
+                                 other_cid.label)
+
+        if cid is None:
+            raise ValueError("Invalid ComponentID: %s" % _input)
+
+        self._joins[other] = (cid, missing)
+
+    def join_on_key(self, other, cid, cid_other):
+        """
+        Create an *element mapping* to another dataset, by
+        joining on values of ComponentIDs in both datasets
+
+        This join allows any subsets defined on `other` to be
+        propagated to self.
+
+        :param other: :class:`Data` to join with
+        :param cid: str or :class:`ComponentID` in this dataset to use as a key
+        :param cid_other: ComponentID in the other dataset to use as a key
+        """
+        _i1, _i2 = cid, cid_other
+        cid = self.find_component_id(cid)
+        cid_other = other.find_component_id(cid_other)
+        if cid is None:
+            raise ValueError("ComponentID not found in %s: %s" %
+                             (self.label, _i1))
+        if cid_other is None:
+            raise ValueError("ComponentID not found in %s: %s" %
+                             (other.label, _i2))
+
+        self._key_joins[other] = (cid, cid_other)
+        other._key_joins[self] = (cid_other, cid)
 
     def add_component(self, component, label, hidden=False):
         """ Add a new component to this data set.
@@ -727,13 +783,18 @@ class Data(object):
     def find_component_id(self, label):
         """ Retrieve component_ids associated by label name.
 
-        :param label: string to search for
+        :param label: string to search for, or a ComponentID
 
         :returns:
-            The associated ComponentID if label is found and unique, else None
+            The associated ComponentID if unique match is found, else None
         """
-        result = [cid for cid in self.component_ids() if
-                  cid.label == label]
+        if isinstance(label, ComponentID):
+            result = [cid for cid in self.component_ids() if
+                      cid is label]
+        else:
+            result = [cid for cid in self.component_ids() if
+                      cid.label == label]
+
         if len(result) == 1:
             return result[0]
 
@@ -921,6 +982,32 @@ class Data(object):
                                  "to a different hub")
         object.__setattr__(self, name, value)
 
+    def _getitem_via_lookup(self, cid, view=None):
+        """
+        Fetch a ComponentID by searching through other datasets
+        joined by lookup table.
+
+        Raises IncompatibleAttribute if nothing is found
+        """
+
+        # prevent infinite loops
+        self._lookup_in_progress = True
+
+        for other, (lookup, missing) in self._joins.items():
+            if getattr(other, '_lookup_in_progress', False):
+                continue
+            try:
+                result = other[cid].ravel()
+                self._lookup_in_progress = False
+                inds = self[lookup, view]
+                result = result[inds]
+                return np.where(inds == missing, np.nan, result)
+            except IncompatibleAttribute:
+                pass
+
+        self._lookup_in_progress = False
+        raise IncompatibleAttribute(cid)
+
     def __getitem__(self, key):
         """ Shortcut syntax to access the numerical data in a component.
         Equivalent to:
@@ -939,7 +1026,7 @@ class Data(object):
             _k = key
             key = self.find_component_id(key)
             if key is None:
-                raise IncompatibleAttribute(_k)
+                return self._getitem_via_lookup(_k, view)
 
         if isinstance(key, ComponentLink):
             return key.compute(self, view)
@@ -947,7 +1034,7 @@ class Data(object):
         try:
             comp = self._components[key]
         except KeyError:
-            raise IncompatibleAttribute(key)
+            return self._getitem_via_lookup(key, view)
 
         shp = view_shape(self.shape, view)
         if view is not None:
