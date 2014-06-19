@@ -203,9 +203,9 @@ class ScatterWidget(DataViewer):
         super(ScatterWidget, self).register_to_hub(hub)
         self.client.register_to_hub(hub)
         hub.subscribe(self, core.message.DataUpdateMessage,
-                      lambda x: self._sync_labels())
+                      nonpartial(self._sync_labels))
         hub.subscribe(self, core.message.ComponentsChangedMessage,
-                      lambda x: self._update_combos())
+                      nonpartial(self._update_combos))
 
     def unregister(self, hub):
         hub.unsubscribe_all(self.client)
@@ -245,9 +245,6 @@ class ScatterWidget(DataViewer):
 
     def _sync_labels(self):
         self._update_window_title()
-
-    def __str__(self):
-        return "Scatter Widget"
 
     def options_widget(self):
         return self.option_widget

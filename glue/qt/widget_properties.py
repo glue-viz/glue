@@ -75,12 +75,8 @@ class CurrentComboProperty(WidgetProperty):
         """ Update the currently selected item to the one which stores value in
         its itemData
         """
-        for i in range(widget.count()):
-            if widget.itemData(i) == value:
-                widget.setCurrentIndex(i)
-                return
-        else:
-            raise ValueError("%s not found in combo box" % value)
+        idx = _find_combo_data(widget, value)
+        widget.setCurrentIndex(idx)
 
 
 class TextProperty(WidgetProperty):
@@ -143,6 +139,24 @@ def connect_bool_button(client, prop, widget):
     widget.toggled.connect(partial(setattr, client, prop))
 
 
+def connect_current_combo(client, prop, widget):
+    """
+    Connect widget.currentIndexChanged and client.prop
+
+    client.prop should be a callback property
+    """
+
+    def _push_combo(value):
+        idx = _find_combo_data(widget, value)
+        widget.setCurrentIndex(idx)
+
+    def _pull_combo(idx):
+        setattr(client, prop, widget.itemData(idx))
+
+    add_callback(client, prop, _push_combo)
+    widget.currentIndexChanged.connect(_pull_combo)
+
+
 def connect_float_edit(client, prop, widget):
     """ Connect widget.setText and client.prop
     Also pretty-print the number
@@ -176,3 +190,15 @@ def connect_int_spin(client, prop, widget):
     """
     add_callback(client, prop, widget.setValue)
     widget.valueChanged.connect(partial(setattr, client, prop))
+
+
+def _find_combo_data(widget, value):
+    """
+    Returns the index in a combo box where itemData == value
+
+    Raises a ValueError if data is not found
+    """
+    for i in range(widget.count()):
+        if widget.itemData(i) == value:
+            return i
+    raise ValueError("%s not found in combo box" % value)
