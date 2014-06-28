@@ -345,7 +345,7 @@ class GingaClient(VizClient):
         """
         Re-sync the main image and its subsets
         """
-
+        print "update data plot"
         if relim:
             self.relim()
 
@@ -385,6 +385,7 @@ class GingaClient(VizClient):
         The subset to refresh.
 
         """
+        print "update subset single"
         logging.getLogger(__name__).debug("update subset single: %s", s)
         self._update_scatter_layer(s)
 

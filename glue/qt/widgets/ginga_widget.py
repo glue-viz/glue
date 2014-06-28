@@ -197,7 +197,7 @@ class GingaWidget(DataViewer):
         try:
             self.apply_roi(roi)
             # delete outline
-            self.canvas.deleteObjectByTag(self.roi_tag)
+            #self.canvas.deleteObjectByTag(self.roi_tag)
         except Exception as e:
             print "Error applying ROI: %s" % (str(e))
             (type, value, tb) = sys.exc_info()
