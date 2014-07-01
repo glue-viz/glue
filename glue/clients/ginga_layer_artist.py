@@ -7,7 +7,7 @@ import logging
 import numpy as np
 from matplotlib.cm import gray
 
-from ginga import AstroImage, RGBImage, LayerImage
+from ginga import AstroImage, RGBImage
 
 from ..core.exceptions import IncompatibleAttribute
 from ..core.util import color2rgb, PropertySetMixin, Pointer
@@ -369,6 +369,7 @@ class RGBImageLayerArtist(ImageLayerArtist):
             if not self.layer_visible['blue']:
                 image[:, :, 2] *= 0
 
+            print "making RGB image"
             cimg = RGBImage.RGBImage(data_np=image)
             artists.append(cimg)
             
@@ -400,14 +401,14 @@ class SubsetImageLayerArtist(LayerArtist):
 
         extent = get_extent(view, transpose)
         r, g, b = color2rgb(self.layer.style.color)
-        #mask = np.dstack((r * mask, g * mask, b * mask, mask * .5))
-        mask = np.dstack((r * mask, g * mask, b * mask))
-        mask = (255 * mask).astype(np.uint8)
+        clr_img = np.dstack((r * mask, g * mask, b * mask, mask * .5))
+        #clr_img = np.dstack((r * mask, g * mask, b * mask))
+        clr_img = (255 * clr_img).astype(np.uint8)
 
         print "making cimg"
-        cimg = RGBImage.RGBImage(data_np=mask)
+        rgbimg = RGBImage.RGBImage(data_np=clr_img)
         print "made cimg"
-        self.artists = [cimg]
+        self.artists = [rgbimg]
 
 
 class ScatterLayerArtist(LayerArtist):
