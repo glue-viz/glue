@@ -172,24 +172,24 @@ class TestScatterClient(object):
         assert exc.value.args[0] == "Layer not in data collection"
 
     def test_valid_add(self):
-        layer = self.add_data()
+        self.add_data()
         assert self.client.is_layer_present(self.data[0])
 
     def test_axis_labels_sync_with_setters(self):
-        layer = self.add_data()
+        self.add_data()
         self.client.xatt = self.ids[1]
         assert self.client.axes.get_xlabel() == self.ids[1].label
         self.client.yatt = self.ids[0]
         assert self.client.axes.get_ylabel() == self.ids[0].label
 
     def test_setters_require_componentID(self):
-        layer = self.add_data()
+        self.add_data()
         with pytest.raises(TypeError):
             self.client.xatt = self.ids[1]._label
         self.client.xatt = self.ids[1]
 
     def test_logs(self):
-        layer = self.add_data()
+        self.add_data()
         self.client.xlog = True
         assert self.client.axes.get_xscale() == 'log'
 
@@ -203,7 +203,7 @@ class TestScatterClient(object):
         assert self.client.axes.get_yscale() == 'linear'
 
     def test_flips(self):
-        layer = self.add_data()
+        self.add_data()
 
         self.client.xflip = True
         self.assert_flips(True, False)
@@ -401,7 +401,7 @@ class TestScatterClient(object):
         assert self.is_first_in_front(subset, data)
 
     def test_log_sticky(self):
-        data = self.add_data_and_attributes()
+        self.add_data_and_attributes()
         self.assert_logs(False, False)
 
         self.client.xlog = True
@@ -414,7 +414,7 @@ class TestScatterClient(object):
 
     def test_log_ticks(self):
         # regression test for 354
-        data = self.add_data_and_attributes()
+        self.add_data_and_attributes()
         self.assert_logs(False, False)
 
         self.client.xlog = True
@@ -431,7 +431,7 @@ class TestScatterClient(object):
         assert ax.get_yscale() == ('log' if ylog else 'linear')
 
     def test_flip_sticky(self):
-        data = self.add_data_and_attributes()
+        self.add_data_and_attributes()
         self.client.xflip = True
         self.assert_flips(True, False)
         self.client.xatt = self.ids[1]
@@ -558,6 +558,23 @@ class TestScatterClient(object):
         ct1 = m.call_count
 
         assert ct1 == ct0
+
+    def test_range_rois_preserved(self):
+        data = self.add_data_and_attributes()
+        assert self.client.xatt is not self.client.yatt
+
+        roi = core.roi.XRangeROI()
+        roi.set_range(1, 2)
+        self.client.apply_roi(roi)
+        assert isinstance(data.edit_subset.subset_state,
+                          core.subset.RangeSubsetState)
+        assert data.edit_subset.subset_state.att == self.client.xatt
+
+        roi = core.roi.RectangularROI()
+        roi = core.roi.YRangeROI()
+        roi.set_range(1, 2)
+        self.client.apply_roi(roi)
+        assert data.edit_subset.subset_state.att == self.client.yatt
 
 
 class TestCategoricalScatterClient(TestScatterClient):

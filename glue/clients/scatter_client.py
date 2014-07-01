@@ -4,8 +4,8 @@ import numpy as np
 
 from ..core.client import Client
 from ..core.data import Data, IncompatibleAttribute, ComponentID, CategoricalComponent
-from ..core.subset import RoiSubsetState
-from ..core.roi import PolygonalROI
+from ..core.subset import RoiSubsetState, RangeSubsetState
+from ..core.roi import PolygonalROI, RangeROI
 from ..core.util import relim, lookup_class
 from ..core.edit_subset_mode import EditSubsetMode
 from .viz_client import init_mpl
@@ -250,11 +250,18 @@ class ScatterClient(Client):
     def apply_roi(self, roi):
         # every editable subset is updated
         # using specified ROI
-        subset_state = RoiSubsetState()
-        subset_state.xatt = self.xatt
-        subset_state.yatt = self.yatt
-        x, y = roi.to_polygon()
-        subset_state.roi = PolygonalROI(x, y)
+
+        if isinstance(roi, RangeROI):
+            lo, hi = roi.range()
+            att = self.xatt if roi.ori == 'x' else self.yatt
+            subset_state = RangeSubsetState(lo, hi, att)
+        else:
+            subset_state = RoiSubsetState()
+            subset_state.xatt = self.xatt
+            subset_state.yatt = self.yatt
+            x, y = roi.to_polygon()
+            subset_state.roi = PolygonalROI(x, y)
+
         mode = EditSubsetMode()
         visible = [d for d in self._data if self.is_visible(d)]
         focus = visible[0] if len(visible) > 0 else None
