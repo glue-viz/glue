@@ -1,12 +1,17 @@
+from distutils.version import LooseVersion
+
 import pytest
 from mock import MagicMock
 import numpy as np
+from numpy.testing import assert_allclose
+from astropy import __version__ as _astro_ver_
 
 from .. import data_factories as df
 from ..data import CategoricalComponent
-from ..hub import Hub, HubListener
-from ..message import NumericalDataChangedMessage
 from .util import make_file
+
+needs_astropy_03 = pytest.mark.skipif(LooseVersion(_astro_ver_) < LooseVersion('0.3'),
+                                      reason='Astropy >=0.3 feature')
 
 
 def test_load_data():
@@ -116,6 +121,21 @@ def test_csv_gz_factory():
         assert df.find_factory(fname) is df.tabular_data
 
     np.testing.assert_array_equal(d['x'], [1, 2, 3])
+
+
+@needs_astropy_03
+def test_sextractor_factory():
+    data = """#   1 NUMBER                 Running object number
+#   2 X_IMAGE                Object position along x                                    [pixel]
+#   3 Y_IMAGE                Object position along y                                    [pixel]
+   1 2988.249    2.297
+   2 2373.747    3.776
+   3 3747.026    4.388"""
+    with make_file(data, '.cat') as fname:
+        d = df.load_data(fname, factory=df.sextractor_factory)
+    assert_allclose(d['NUMBER'], [1, 2, 3])
+    assert_allclose(d['X_IMAGE'], [2988.249, 2373.747, 3747.026])
+    assert_allclose(d['Y_IMAGE'], [2.297, 3.776, 4.388])
 
 
 def test_excel_factory():

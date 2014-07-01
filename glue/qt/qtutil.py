@@ -157,12 +157,12 @@ class GlueDataDialog(object):
 
         :rtype: A list of constructed data objects
         """
-        from glue.core.data_factories import data_label
+        from glue.core.data_factories import data_label, load_data
         paths, fac = self._get_paths_and_factory()
         result = []
 
         for path in paths:
-            d = fac.function(path)
+            d = load_data(path, factory=fac.function)
             if not isinstance(d, list):
                 d.label = data_label(path)
                 d = [d]
