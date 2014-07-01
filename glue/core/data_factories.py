@@ -489,6 +489,33 @@ set_default_factory('tsv', tabular_data)
 set_default_factory('tbl', tabular_data)
 set_default_factory('dat', tabular_data)
 
+# Add explicit factories for the formats which astropy.table
+# can parse, but does not auto-identify
+
+
+def formatted_table_factory(format, label):
+    def factory(file, **kwargs):
+        kwargs['format'] = 'ascii.%s' % format
+        return tabular_data(file, **kwargs)
+
+    factory.label = label
+    factory.identifier = lambda *a, **k: False
+
+    # rename function to its variable reference below
+    # allows pickling to work
+    factory.__name__ = '%s_factory' % format
+
+    return factory
+
+sextractor_factory = formatted_table_factory('sextractor', 'SExtractor Catalog')
+cds_factory = formatted_table_factory('cds', 'CDS Catalog')
+daophot_factory = formatted_table_factory('daophot', 'DAOphot Catalog')
+ipac_factory = formatted_table_factory('ipac', 'IPAC Catalog')
+aastex_factory = formatted_table_factory('aastex', 'AASTeX Table')
+latex_factory = formatted_table_factory('latex', 'LaTeX Table')
+__factories__.extend([sextractor_factory, cds_factory, daophot_factory,
+                      ipac_factory, aastex_factory, latex_factory])
+
 
 def panda_process(indf):
     """
