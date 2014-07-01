@@ -1,11 +1,17 @@
+from distutils.version import LooseVersion
+
 import pytest
 from mock import MagicMock
 import numpy as np
 from numpy.testing import assert_allclose
+from astropy import __version__ as _astro_ver_
 
 from .. import data_factories as df
 from ..data import CategoricalComponent
 from .util import make_file
+
+needs_astropy_03 = pytest.mark.skipif(LooseVersion(_astro_ver_) < LooseVersion('0.3'),
+                                      reason='Astropy >=0.3 feature')
 
 
 def test_load_data():
@@ -117,6 +123,7 @@ def test_csv_gz_factory():
     np.testing.assert_array_equal(d['x'], [1, 2, 3])
 
 
+@needs_astropy_03
 def test_sextractor_factory():
     data = """#   1 NUMBER                 Running object number
 #   2 X_IMAGE                Object position along x                                    [pixel]
