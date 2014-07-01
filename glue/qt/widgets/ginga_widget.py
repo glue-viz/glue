@@ -58,7 +58,8 @@ class GingaWidget(DataViewer):
 
         self.canvas = ImageViewCanvas(self.logger, render='widget')
         # prevent widget from grabbing focus 
-        self.canvas.follow_focus = False
+        self.canvas.set_follow_focus(False)
+        self.canvas.enable_overlays(True)
         # enable interactive features
         bindings = self.canvas.get_bindings()
         bindings.enable_all(True)

@@ -2,7 +2,6 @@ import logging
 from functools import wraps
 
 import numpy as np
-from matplotlib.figure import Figure
 
 from ..external.modest_image import extract_matched_slices
 from ..core.exceptions import IncompatibleAttribute
@@ -21,7 +20,7 @@ from .ginga_layer_artist import (ScatterLayerArtist, LayerArtistContainer,
 
 from ginga.util import wcsmod
 wcsmod.use('astropy')
-from ginga import LayerImage, AstroImage
+from ginga.ImageViewCanvas import Image
 
 
 def requires_data(func):
@@ -273,10 +272,11 @@ class GingaClient(VizClient):
         """
         Re-render the screen
         """
-        klass = self.get_imageclass(AstroImage.AstroImage)
-        limage = klass()
-        # override wcs
-        limage.wcs = self._wcs
+        # Delete current overlays
+        tagpfx = '_ovr'
+        ## tags = self._canvas.getTagsByTagpfx(tagpfx)
+        ## self._canvas.deleteObjectsByTag(tags, redraw=False)
+        self._canvas.deleteAllObjects(redraw=False)
 
         i = 0
         for a in self.artists:
@@ -284,23 +284,25 @@ class GingaClient(VizClient):
             if isinstance(a, ImageLayerArtist) and \
                    a.layer.data is self.display_data:
                 if len(a.artists) > 0:
-                    aimage = a.artists[0]
-                    limage.insert_layer(i, aimage, alpha=1.0,
-                                        compose=False)
-                    #i += 1
+                    # TODO: can we avoid resetting the image in redraw()?
+                    self._canvas.set_image(a.artists[0],
+                                           redraw=False)
+
             elif isinstance(a, SubsetImageLayerArtist):
                 print "subset artists", a.artists
                 if len(a.artists) > 0:
-                    cimage = a.artists[0]
-                    print "cimage", cimage
-                    limage.insert_layer(i, cimage, alpha=0.5,
-                                        compose=False)
-                    #i += 1
-                    print "cimage inserted"
+                    rgbimage = a.artists[0]
+                    data = rgbimage.get_data()
+                    print "rgb image shape", data.shape
+                    cimage = Image(0, 0, rgbimage, alpha=0.5,
+                                   flipy=False)
+                    self._canvas.add(cimage, tagpfx='ovr',
+                                     redraw=False)
+                    print "cimage overlaid"
+            i += 1
+        print "total operations", i
 
-        limage.compose_layers()
-        self._canvas.set_image(limage)
-        #self._canvas.redraw()
+        self._canvas.redraw(whence=0.0)
 
     @requires_data
     def set_norm(self, **kwargs):
@@ -368,7 +370,6 @@ class GingaClient(VizClient):
             print "2) artist is", a
             a.update(view, transpose=transpose)
 
-        
     def relim(self):
         shp = _2d_shape(self.display_data.shape, self.slice)
         ## self._ax.set_xlim(0, shp[1])
