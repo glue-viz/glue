@@ -566,6 +566,10 @@ def pandas_read_table(path, **kwargs):
     :returns: :class:`glue.core.data.Data` object
     """
     import pandas as pd
+    try:
+        from pandas.parser import CParserError
+    except ImportError:
+        from pandas._parser import CParserError
 
     # iterate over common delimiters to search for best option
     delimiters = kwargs.pop('delimiter', [None] + list(',|\t '))
@@ -588,7 +592,7 @@ def pandas_read_table(path, **kwargs):
 
             return panda_process(indf)
 
-        except pd._parser.CParserError:
+        except CParserError:
             continue
 
     if fallback is not None:
