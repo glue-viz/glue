@@ -1,10 +1,11 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import numpy as np
+from numpy.testing import assert_array_equal
 from mock import MagicMock
 import pytest
 
 from ..data import Data, Component, ComponentID, DerivedComponent
-from ..hub import Hub, HubListener
+from ..hub import HubListener
 from ..data_collection import DataCollection
 from ..message import (Message, DataCollectionAddMessage,
                        DataCollectionDeleteMessage,
@@ -13,6 +14,7 @@ from ..component_link import ComponentLink
 
 
 class HubLog(HubListener):
+
     def __init__(self):
         self.messages = []
 
@@ -155,7 +157,6 @@ class TestDataCollection(object):
         assert link in self.dc._link_manager
 
     def test_coordinate_links_auto_added(self):
-        d = Data()
         id1 = ComponentID("id1")
         id2 = ComponentID("id2")
         link = ComponentLink([id1], id2)
@@ -165,8 +166,6 @@ class TestDataCollection(object):
 
     def test_add_links(self):
         """ links attribute behaves like an editable list """
-        d = Data()
-        comp = MagicMock(spec_set=Component)
         id1 = ComponentID("id1")
         id2 = ComponentID("id2")
         link = ComponentLink([id1], id2)
@@ -220,5 +219,92 @@ class TestDataCollection(object):
         assert duplicated_id not in d1.components
         assert duplicated_id not in d2.components
 
-        np.testing.assert_array_equal(d1[d1.id['x']], [1, 2, 3])
-        np.testing.assert_array_equal(d2[d1.id['x']], [2, 3, 4])
+        assert_array_equal(d1[d1.id['x']], [1, 2, 3])
+        assert_array_equal(d2[d1.id['x']], [2, 3, 4])
+
+    def test_merge(self):
+
+        x = Data(x=[1, 2, 3])
+        y = Data(y=[2, 3, 4])
+        dc = DataCollection([x, y])
+
+        dc.merge(x, y)
+
+        assert y not in dc
+        assert_array_equal(x['y'], [2, 3, 4])
+
+    def test_merge_discards_duplicate_pixel_components(self):
+        x = Data(x=[1, 2, 3])
+        y = Data(y=[2, 3, 4])
+        dc = DataCollection([x, y])
+        dc.merge(x, y)
+
+        assert y.pixel_component_ids[0] not in x.components
+
+    def test_merge_forbids_single_argument(self):
+        x = Data(x=[1, 2, 3])
+        y = Data(y=[2, 3, 4])
+        dc = DataCollection([x, y])
+        with pytest.raises(ValueError) as exc:
+            dc.merge(x)
+        assert exc.value.args[0] == 'merge requires 2 or more arguments'
+
+    def test_merge_requires_same_shapes(self):
+        x = Data(x=[1, 2, 3])
+        y = Data(y=[2, 3, 4, 5])
+        dc = DataCollection([x, y])
+        with pytest.raises(ValueError) as exc:
+            dc.merge(x, y)
+        assert exc.value.args[0] == 'All arguments must have the same shape'
+
+    def test_merge_disambiguates_components(self):
+        x = Data(x=[1, 2, 3])
+        old = set(x.components)
+        y = Data(x=[2, 3, 4])
+        dc = DataCollection([x, y])
+        dc.merge(x, y)
+
+        print(x.components)
+        new = list(set(x.components) - old)[0]
+
+        assert new.label != 'x'
+
+    def test_merge_multiargument(self):
+
+        dc = DataCollection([Data(x=[1, 2, 3]),
+                             Data(y=[2, 3, 4]),
+                             Data(z=[3, 4, 5])])
+
+        dc.merge(*list(dc))
+        assert len(dc) == 1
+        d = dc[0]
+        assert_array_equal(d['y'], [2, 3, 4])
+        assert_array_equal(d['z'], [3, 4, 5])
+
+    def test_merging_preserves_links_forwards(self):
+
+        a = Data(a=[1, 2, 3])
+        b = Data(b=[2, 3, 4])
+        c = Data(c=[3, 4, 5])
+
+        dc = DataCollection([a, b, c])
+        dc.add_link(ComponentLink([a.id['a']], b.id['b'], lambda x: x))
+        dc.add_link(ComponentLink([b.id['b']], c.id['c'], lambda x: x))
+
+        assert_array_equal(a['c'], [1, 2, 3])
+        dc.merge(a, b)
+        assert_array_equal(a['c'], [1, 2, 3])
+
+    def test_merging_preserves_links_backwards(self):
+
+        a = Data(a=[1, 2, 3])
+        b = Data(b=[2, 3, 4])
+        c = Data(c=[3, 4, 5])
+
+        dc = DataCollection([a, b, c])
+        dc.add_link(ComponentLink([c.id['c']], b.id['b'], lambda x: x))
+        dc.add_link(ComponentLink([b.id['b']], a.id['a'], lambda x: x))
+
+        assert_array_equal(c['a'], [3, 4, 5])
+        dc.merge(a, b)
+        assert_array_equal(c['a'], [3, 4, 5])

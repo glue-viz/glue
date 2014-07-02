@@ -7,7 +7,8 @@ from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                                  QFileDialog, QInputDialog,
                                  QToolButton, QVBoxLayout, QWidget, QPixmap,
                                  QBrush, QPainter, QLabel, QHBoxLayout,
-                                 QTextEdit, QTextCursor, QPushButton)
+                                 QTextEdit, QTextCursor, QPushButton,
+                                 QListWidgetItem)
 from ..external.qt.QtCore import Qt, QSize, QSettings, Signal
 
 from ..core import command
@@ -458,8 +459,7 @@ class GlueApplication(Application, QMainWindow):
         menu.addAction(a)
 
     def _choose_load_data(self):
-        for d in data_wizard():
-            self._data.append(d)
+        self.add_datasets(self.data_collection, data_wizard())
 
     def _create_actions(self):
         """ Create and connect actions, store in _actions dict """
@@ -771,3 +771,25 @@ class GlueApplication(Application, QMainWindow):
         A list of strings
         """
         return [self.tab_bar.tabText(i) for i in range(self.tab_count)]
+
+    @staticmethod
+    def _choose_merge(data, others):
+
+        w = load_ui('merge')
+        w.show()
+        w.raise_()
+
+        entries = [QListWidgetItem(other.label) for other in others]
+        for e in entries:
+            e.setCheckState(Qt.Checked)
+
+        for d, item in zip(others, entries):
+            w.choices.addItem(item)
+        if not w.exec_():
+            return None
+
+        result = [layer for layer, entry in zip(others, entries)
+                  if entry.checkState() == Qt.Checked]
+
+        if result:
+            return result + [data]

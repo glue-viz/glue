@@ -1,4 +1,4 @@
-from functools import wraps
+from functools import wraps, partial
 import traceback
 
 from .data_collection import DataCollection
@@ -6,7 +6,7 @@ from .data_factories import load_data
 from . import command
 from . import Data, Subset
 from .hub import HubListener
-from .util import PropertySetMixin
+from .util import PropertySetMixin, as_list
 from .edit_subset_mode import EditSubsetMode
 from .session import Session
 from ..config import settings
@@ -129,9 +129,7 @@ class Application(HubListener):
     @catch_error("Could not load data")
     def load_data(self, path):
         d = load_data(path)
-        if not isinstance(d, list):
-            d = [d]
-        self._data.extend(d)
+        self.add_datasets(self.data_collection, d)
 
     def report_error(self, message, detail):
         """ Report an error message to the user.
@@ -162,6 +160,49 @@ class Application(HubListener):
 
     def _update_undo_redo_enabled(self):
         raise NotImplementedError()
+
+    @classmethod
+    def add_datasets(cls, data_collection, datasets):
+        """
+        Utility method to interactively add datasets to a
+        data_collection
+
+        :param data_collection: :class:`~glue.core.data_collection.DataCollection`
+        :param datasets: one or more :class:`~glue.core.data.Data` instances
+
+        Adds datasets to the collection
+        """
+
+        datasets = as_list(datasets)
+        data_collection.extend(datasets)
+        map(partial(cls._suggest_mergers, data_collection), datasets)
+
+    @classmethod
+    def _suggest_mergers(cls, data_collection, data):
+        """
+        When loading a new dataset, check if any existing
+        data has the same shape. If so, offer to
+        merge the two datasets
+        """
+        shp = data.shape
+        other = [d for d in data_collection
+                 if d.shape == shp and d is not data]
+        if not other:
+            return
+
+        merges = cls._choose_merge(data, other)
+
+        if merges:
+            data_collection.merge(*merges)
+
+    @staticmethod
+    def _choose_merge(data, other):
+        """
+        Present an interface to the user for approving or rejecting
+        a proposed data merger. Returns a list of datasets from other
+        that the user has approved to merge with data
+        """
+        raise NotImplementedError
 
     @property
     def viewers(self):
