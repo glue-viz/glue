@@ -15,6 +15,7 @@ Since v1.0dev, IPython implements embeddable in-process terminal widgets.
 This functionality doesn't exist in v0.12 and v0.13 -- this module provides
 a fallback implmentation for older IPython versions
 """
+from __future__ import print_function
 
 import sys
 import atexit
@@ -24,6 +25,7 @@ from contextlib import contextmanager
 from ...external.qt import QtCore
 from ...external.qt.QtGui import QInputDialog, QMdiSubWindow
 from ...version import __version__
+from ...core.util import as_variable_name
 
 from zmq import ZMQError
 from zmq.eventloop.zmqstream import ZMQStream
@@ -157,14 +159,19 @@ class DragAndDropTerminal(RichIPythonWidget):
     def dropEvent(self, event):
         obj = event.mimeData().data('application/py_instance')
 
+        try:
+            lbl = obj[0].label
+        except (IndexError, AttributeError):
+            lbl = 'x'
+        lbl = as_variable_name(lbl)
         var, ok = QInputDialog.getText(self, "Choose a variable name",
-                                       "Choose a variable name", text="x")
+                                       "Choose a variable name", text=lbl)
         if ok:
             # unpack single-item lists for convenience
             if isinstance(obj, list) and len(obj) == 1:
                 obj = obj[0]
 
-            var = {str(var): obj}
+            var = {as_variable_name(str(var)): obj}
             self.update_namespace(var)
             event.accept()
         else:

@@ -2,7 +2,7 @@
 import numpy as np
 
 from ..util import (file_format, point_contour, view_shape, facet_subsets,
-                    colorize_subsets, coerce_numeric)
+                    colorize_subsets, coerce_numeric, as_variable_name)
 
 
 class TestRelim(object):
@@ -164,3 +164,18 @@ def test_coerce_numeric():
     x = np.array([1, 2, 3])
 
     assert x is coerce_numeric(x)
+
+
+def test_as_variable_name():
+    def check(input, expected):
+        assert as_variable_name(input) == expected
+
+    tests = [('x', 'x'),
+             ('x2', 'x2'),
+             ('2x', '_2x'),
+             ('x!', 'x_'),
+             ('x y z', 'x_y_z'),
+             ('_XY', '_XY')
+             ]
+    for input, expected in tests:
+        yield check, input, expected
