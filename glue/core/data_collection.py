@@ -6,7 +6,7 @@ from .visual import COLORS
 from .message import (DataCollectionAddMessage,
                       DataCollectionDeleteMessage,
                       DataAddComponentMessage)
-from .util import as_list
+from .util import as_list, disambiguate
 
 __all__ = ['DataCollection']
 
@@ -199,6 +199,54 @@ class DataCollection(HubListener):
         for s in subset_grp.subsets:
             s.delete()
         subset_grp.unregister(self.hub)
+
+    def merge(self, *data):
+        """
+        Merge two or more datasets into a single dataset.
+
+        This has the following effects:
+
+        All components from all datasets are added to the first argument
+        All datasets except the first argument are removed from the collection
+        Any component name conflicts are disambiguated
+        The pixel and world components apart from the first argument are discarded
+
+        :note: All arguments must have the same shape
+
+        :param data: One or more :class:`~glue.core.data.Data` instances.
+        :returns: self
+        """
+        if len(data) < 2:
+            raise ValueError("merge requires 2 or more arguments")
+        shp = data[0].shape
+        for d in data:
+            if d.shape != shp:
+                raise ValueError("All arguments must have the same shape")
+
+        master = data[0]
+        for d in data[1:]:
+            skip = d.pixel_component_ids + d.world_component_ids
+            for c in d.components:
+                if c in skip:
+                    continue
+
+                if c in master.components:  # already present (via a link)
+                    continue
+
+                taken = [_.label for _ in master.components]
+                lbl = c.label
+
+                # first-pass disambiguation, try component_data
+                # also special-case 'PRIMARY', rename to data label
+                if lbl in taken:
+                    lbl = d.label if lbl == 'PRIMARY' else '%s_%s' % (lbl, d.label)
+
+                lbl = disambiguate(lbl, taken)
+                c._label = lbl
+                master.add_component(d.get_component(c), c)
+            self.remove(d)
+
+        return self
 
     @property
     def subset_groups(self):

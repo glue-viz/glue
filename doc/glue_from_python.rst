@@ -82,7 +82,7 @@ any subsets you have defined).
 Linking data with ``qglue``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The :ref:`Data Linking <component_link>` tutorial discusses how Glue uses the
+The :ref:`Data Linking <linking>` tutorial discusses how Glue uses the
 concept of links to compare different datasets. From the GUI, links
 are defined using the :ref:`Link Manager <getting_started_link>`. It is
 also possible to define some of these links with ``qglue``.

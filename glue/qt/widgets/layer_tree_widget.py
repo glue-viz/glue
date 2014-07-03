@@ -305,6 +305,25 @@ class Inverter(LayerAction):
         subset.subset_state = core.subset.InvertState(subset.subset_state)
 
 
+class MergeAction(LayerAction):
+    _title = "Merge datasets"
+    _tooltip = "Merge the selected datasets into a single dataset"
+
+    def _can_trigger(self):
+        layers = self.selected_layers()
+        if len(layers) < 2:
+            return False
+
+        if not all(isinstance(l, core.Data) for l in layers):
+            return False
+
+        shp = layers[0].shape
+        return all(d.shape == shp for d in layers[1:])
+
+    def _do_action(self):
+        self.data_collection.merge(*self.selected_layers())
+
+
 class LayerCommunicator(QObject):
     layer_check_changed = Signal(object, bool)
 
@@ -419,6 +438,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
         self._actions['clear'] = ClearAction(self)
         self._actions['delete'] = DeleteAction(self)
         self._actions['facet'] = FacetAction(self)
+        self._actions['merge'] = MergeAction(self)
 
         # new component definer
         separator = QAction("sep", tree)
@@ -445,9 +465,10 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
     def _load_data(self):
         """ Interactively loads data from a data set. Adds
         as new layer """
+        from ..glue_application import GlueApplication
+
         layers = qtutil.data_wizard()
-        for layer in layers:
-            self.data_collection.append(layer)
+        GlueApplication.add_datasets(self.data_collection, layers)
 
     def __getitem__(self, key):
         raise NotImplementedError()

@@ -1,6 +1,7 @@
 import logging
 from contextlib import contextmanager
 import string
+from itertools import count
 
 import numpy as np
 
@@ -440,3 +441,22 @@ def as_variable_name(x):
     if result[0] in string.digits:
         result.insert(0, '_')
     return ''.join(result)
+
+
+def disambiguate(label, taken):
+    """If necessary, add a suffix to label to avoid name conflicts
+
+    :param label: desired label
+    :param taken: set of taken names
+
+    Returns label if it is not in the taken set. Otherwise, returns
+    label_NN where NN is the lowest integer such that label_NN not in taken.
+    """
+    if label not in taken:
+        return label
+    suffix = "_%2.2i"
+    label = str(label)
+    for i in count(1):
+        candidate = label + (suffix % i)
+        if candidate not in taken:
+            return candidate

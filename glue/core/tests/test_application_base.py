@@ -1,7 +1,3 @@
-import tempfile
-import os
-
-import numpy as np
 from mock import MagicMock
 
 from ..application_base import Application
@@ -32,5 +28,26 @@ class MockApplication(Application):
 
 
 class TestApplicationBase(object):
+
     def setup_method(self, method):
         self.app = MockApplication()
+
+    def test_suggest_mergers(self):
+        x = Data(x=[1, 2, 3])
+        y = Data(y=[1, 2, 3, 4])
+        z = Data(z=[1, 2, 3])
+
+        Application._choose_merge = MagicMock()
+        Application._choose_merge.return_value = [x]
+        self.app.data_collection.merge = MagicMock()
+
+        self.app.data_collection.append(x)
+        self.app.data_collection.append(y)
+
+        self.app.add_datasets(self.app.data_collection, z)
+
+        args = self.app._choose_merge.call_args[0]
+        assert args[0] == z
+        assert args[1] == [x]
+
+        assert self.app.data_collection.merge.call_count == 1
