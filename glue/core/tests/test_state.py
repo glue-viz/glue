@@ -82,7 +82,7 @@ def test_data_style():
 
 
 def test_data_factory():
-    with make_file(TEST_FITS_DATA, '.fits') as infile:
+    with make_file(TEST_FITS_DATA, '.fits', decompress=True) as infile:
         d = load_data(infile)
         d2 = clone(d)
 

@@ -233,7 +233,15 @@ class DataCollection(HubListener):
                 if c in master.components:  # already present (via a link)
                     continue
 
-                lbl = disambiguate(c.label, [_.label for _ in master.components])
+                taken = [_.label for _ in master.components]
+                lbl = c.label
+
+                # first-pass disambiguation, try component_data
+                # also special-case 'PRIMARY', rename to data label
+                if lbl in taken:
+                    lbl = d.label if lbl == 'PRIMARY' else '%s_%s' % (lbl, d.label)
+
+                lbl = disambiguate(lbl, taken)
                 c._label = lbl
                 master.add_component(d.get_component(c), c)
             self.remove(d)

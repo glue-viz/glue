@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>399</width>
+    <width>443</width>
     <height>410</height>
    </rect>
   </property>
@@ -32,6 +32,20 @@
    </item>
    <item>
     <widget class="QListWidget" name="choices"/>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Final label</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="merged_label"/>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">

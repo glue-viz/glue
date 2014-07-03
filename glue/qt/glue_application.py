@@ -779,6 +779,8 @@ class GlueApplication(Application, QMainWindow):
         w.show()
         w.raise_()
 
+        w.merged_label.setText(data.label)
+
         entries = [QListWidgetItem(other.label) for other in others]
         for e in entries:
             e.setCheckState(Qt.Checked)
@@ -792,4 +794,5 @@ class GlueApplication(Application, QMainWindow):
                   if entry.checkState() == Qt.Checked]
 
         if result:
+            result[0].label = str(w.merged_label.text())
             return result + [data]
