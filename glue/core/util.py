@@ -1,5 +1,6 @@
 import logging
 from contextlib import contextmanager
+import string
 
 import numpy as np
 
@@ -425,3 +426,17 @@ def defer(instance, method):
         setattr(instance, method, orig)
         for a, k in history[-1:]:
             orig(*a, **k)
+
+
+def as_variable_name(x):
+    """
+    Convert a string to a legal python variable name
+
+    :param x: A string to (possibly) rename
+    :returns: A legal python variable name
+    """
+    allowed = string.letters + string.digits + '_'
+    result = [letter if letter in allowed else '_' for letter in x or 'x']
+    if result[0] in string.digits:
+        result.insert(0, '_')
+    return ''.join(result)
