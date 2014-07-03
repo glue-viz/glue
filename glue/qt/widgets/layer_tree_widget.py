@@ -306,8 +306,8 @@ class Inverter(LayerAction):
 
 
 class MergeAction(LayerAction):
-    _title = "Merge"
-    _tooltip = "Merge into a single dataset"
+    _title = "Merge datasets"
+    _tooltip = "Merge the selected datasets into a single dataset"
 
     def _can_trigger(self):
         layers = self.selected_layers()

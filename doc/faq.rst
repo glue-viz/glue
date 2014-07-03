@@ -84,6 +84,10 @@ an issue to the `GitHub issues page <https://github.com/glue-viz/glue/issues?sta
 
 You can also submit bug reports directly from Glue, by clicking ``Help->Send Feedback``. This also sends us some diagnostic information about your Glue installation.
 
+How do I make a scatterplot of columns from two different catalogs?
+-------------------------------------------------------------------
+:ref:`Merge <merging>` the two datasets into a single object.
+
 I have some other question...?
 ------------------------------
 Ask us a question on the `mailing list <https://groups.google.com/forum/#!forum/glue-viz>`_!

@@ -1,4 +1,4 @@
-.. _component_link:
+.. _linking:
 
 How Data Linking Works
 ======================

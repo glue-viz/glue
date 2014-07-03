@@ -172,9 +172,11 @@ class TestLayerTree(object):
     def test_load_data(self):
         pth = 'glue.qt.widgets.layer_tree_widget.qtutil.data_wizard'
         with patch(pth) as wizard:
-            wizard.return_value = [self.data[0]]
+            d = core.Data(x=[1])
+            assert not self.layer_present(d)
+            wizard.return_value = [d]
             self.widget._load_data()
-            assert self.layer_present(self.data[0])
+            assert self.layer_present(d)
 
     def test_clear_subset_group(self):
         layer = self.add_layer()

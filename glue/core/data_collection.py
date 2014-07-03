@@ -213,7 +213,7 @@ class DataCollection(HubListener):
 
         :note: All arguments must have the same shape
 
-        :params data: One or more :class:`~glue.core.data.Data` instances.
+        :param data: One or more :class:`~glue.core.data.Data` instances.
         :returns: self
         """
         if len(data) < 2:
