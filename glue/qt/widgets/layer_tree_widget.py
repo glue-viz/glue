@@ -199,6 +199,19 @@ class LinkAction(LayerAction):
         LinkEditor.update_links(self.data_collection)
 
 
+class MaskifySubsetAction(LayerAction):
+    _title = "Transform subset to pixel mask"
+    _tooltip = "Transform a subset to a pixel mask"
+
+    def _can_trigger(self):
+        return self.single_selection() and \
+            isinstance(self.selected_layers()[0], core.Subset)
+
+    def _do_action(self):
+        s = self.selected_layers()[0]
+        s.subset_state = s.state_as_mask()
+
+
 class SaveAction(LayerAction):
     _title = "Save subset"
     _tooltip = "Save the mask for this subset to a file"
@@ -439,6 +452,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
         self._actions['delete'] = DeleteAction(self)
         self._actions['facet'] = FacetAction(self)
         self._actions['merge'] = MergeAction(self)
+        self._actions['maskify'] = MaskifySubsetAction(self)
 
         # new component definer
         separator = QAction("sep", tree)

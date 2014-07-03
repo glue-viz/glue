@@ -4,6 +4,7 @@ import numpy as np
 from .visual import VisualAttributes, RED
 from .decorators import memoize
 from .message import SubsetDeleteMessage, SubsetUpdateMessage
+from .exceptions import IncompatibleAttribute
 from .registry import Registry
 from .util import split_component_view, view_shape
 
@@ -284,9 +285,11 @@ class Subset(object):
         """
         Convert the current SubsetState to a MaskSubsetState
         """
-        m = self.to_mask()
+        try:
+            m = self.to_mask()
+        except IncompatibleAttribute:
+            m = np.zeros(self.data.shape, dtype=np.bool)
         cids = self.data.pixel_component_ids
-
         return MaskSubsetState(m, cids)
 
 
@@ -449,7 +452,7 @@ class MaskSubsetState(SubsetState):
             return self.mask[view].copy()
 
         # locate each element of data in the coordinate system of the mask
-        vals = [data[c, view] for c in self.cids]
+        vals = [data[c, view].astype(np.int) for c in self.cids]
         result = self.mask[vals]
 
         for v, n in zip(vals, data.shape):
