@@ -395,28 +395,28 @@ class GlueApplication(Application, QMainWindow):
     def _create_menu(self):
         mbar = self.menuBar()
         menu = QMenu(mbar)
-        menu.setTitle("File")
+        menu.setTitle("&File")
 
         menu.addAction(self._actions['data_new'])
         # menu.addAction(self._actions['data_save'])  # XXX add this
         menu.addAction(self._actions['session_restore'])
         menu.addAction(self._actions['session_save'])
         if 'session_export' in self._actions:
-            submenu = menu.addMenu("Export")
+            submenu = menu.addMenu("E&xport")
             for a in self._actions['session_export']:
                 submenu.addAction(a)
         menu.addSeparator()
-        menu.addAction("Edit Settings", self._edit_settings)
+        menu.addAction("Edit &Settings", self._edit_settings)
         mbar.addMenu(menu)
 
         menu = QMenu(mbar)
-        menu.setTitle("Edit ")
+        menu.setTitle("&Edit ")
         menu.addAction(self._actions['undo'])
         menu.addAction(self._actions['redo'])
         mbar.addMenu(menu)
 
         menu = QMenu(mbar)
-        menu.setTitle("Canvas")
+        menu.setTitle("&Canvas")
         menu.addAction(self._actions['tab_new'])
         menu.addAction(self._actions['viewer_new'])
         menu.addSeparator()
@@ -425,18 +425,18 @@ class GlueApplication(Application, QMainWindow):
         mbar.addMenu(menu)
 
         menu = QMenu(mbar)
-        menu.setTitle("Data Manager")
+        menu.setTitle("Data &Manager")
         menu.addActions(self._ui.layerWidget.actions())
 
         mbar.addMenu(menu)
 
         menu = QMenu(mbar)
-        menu.setTitle("Toolbars")
+        menu.setTitle("&Toolbars")
         tbar = EditSubsetModeToolBar()
         self._mode_toolbar = tbar
         self.addToolBar(tbar)
         tbar.hide()
-        a = QAction("Selection Mode Toolbar", menu)
+        a = QAction("Selection Mode &Toolbar", menu)
         a.setCheckable(True)
         a.toggled.connect(tbar.setVisible)
         try:
@@ -449,12 +449,12 @@ class GlueApplication(Application, QMainWindow):
         mbar.addMenu(menu)
 
         # trigger inclusion of Mac Native "Help" tool
-        menu = mbar.addMenu("Help")
-        a = QAction("Online Documentation", menu)
+        menu = mbar.addMenu("&Help")
+        a = QAction("&Online Documentation", menu)
         a.triggered.connect(nonpartial(webbrowser.open, DOCS_URL))
         menu.addAction(a)
 
-        a = QAction("Send Feedback", menu)
+        a = QAction("Send &Feedback", menu)
         a.triggered.connect(nonpartial(submit_bug_report))
         menu.addAction(a)
 
@@ -465,38 +465,38 @@ class GlueApplication(Application, QMainWindow):
         """ Create and connect actions, store in _actions dict """
         self._actions = {}
 
-        a = act("Open Data Set", self,
+        a = act("&Open Data Set", self,
                 tip="Open a new data set",
                 shortcut=QKeySequence.Open)
         a.triggered.connect(nonpartial(self._choose_load_data))
         self._actions['data_new'] = a
 
-        a = act("New Data Viewer", self,
+        a = act("&New Data Viewer", self,
                 tip="Open a new visualization window in the current tab",
                 shortcut=QKeySequence.New
                 )
         a.triggered.connect(nonpartial(self.choose_new_data_viewer))
         self._actions['viewer_new'] = a
 
-        a = act('New Tab', self,
+        a = act('New &Tab', self,
                 shortcut=QKeySequence.AddTab,
                 tip='Add a new tab')
         a.triggered.connect(nonpartial(self.new_tab))
         self._actions['tab_new'] = a
 
-        a = act('Rename Tab', self,
+        a = act('&Rename Tab', self,
                 shortcut="Ctrl+R",
                 tip='Set a new label for the current tab')
         a.triggered.connect(nonpartial(self.tab_bar.rename_tab))
         self._actions['tab_rename'] = a
 
-        a = act('Gather Windows', self,
+        a = act('&Gather Windows', self,
                 tip='Gather plot windows side-by-side',
                 shortcut='Ctrl+G')
         a.triggered.connect(nonpartial(self.gather_current_tab))
         self._actions['gather'] = a
 
-        a = act('Save Session', self,
+        a = act('&Save Session', self,
                 tip='Save the current session')
         a.triggered.connect(nonpartial(self._choose_save_session))
         self._actions['session_save'] = a
@@ -515,7 +515,7 @@ class GlueApplication(Application, QMainWindow):
 
             self._actions['session_export'] = acts
 
-        a = act('Open Session', self,
+        a = act('Open S&ession', self,
                 tip='Restore a saved session')
         a.triggered.connect(nonpartial(self._restore_session))
         self._actions['session_restore'] = a
