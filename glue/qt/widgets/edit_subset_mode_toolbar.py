@@ -28,7 +28,7 @@ class EditSubsetModeToolBar(QtGui.QToolBar):
         self._group.addAction(a)
         self.addAction(a)
         self._modes[mode] = a
-        label = name.split()[0].lower()
+        label = name.split()[0].lower().replace('&', '')
         self._modes[label] = mode
 
     def _add_actions(self):
