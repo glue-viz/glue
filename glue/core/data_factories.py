@@ -422,7 +422,7 @@ def _ascii_identifier_v03(origin, *args, **kwargs):
     return _ascii_identifier_v02(origin, args, kwargs)
 
 
-def tabular_data(*args, **kwargs):
+def astropy_tabular_data(*args, **kwargs):
     """
     Build a data set from a table. We restrict ourselves to tables
     with 1D columns.
@@ -474,6 +474,20 @@ def tabular_data(*args, **kwargs):
         result.add_component(nc, column_name)
 
     return result
+astropy_tabular_data.label = "Catalog (Astropy Parser)"
+astropy_tabular_data.identifier = has_extension('xml vot csv txt tsv tbl dat fits '
+                                                'xml.gz vot.gz csv.gz txt.gz tbl.bz '
+                                                'dat.gz fits.gz')
+
+
+def tabular_data(path, **kwargs):
+    for fac in [astropy_tabular_data, pandas_read_table]:
+        try:
+            return fac(path, **kwargs)
+        except:
+            pass
+    else:
+        raise IOError("Could not parse file: %s" % path)
 
 tabular_data.label = "Catalog"
 tabular_data.identifier = has_extension('xml vot csv txt tsv tbl dat fits '
@@ -488,6 +502,7 @@ set_default_factory('txt', tabular_data)
 set_default_factory('tsv', tabular_data)
 set_default_factory('tbl', tabular_data)
 set_default_factory('dat', tabular_data)
+__factories__.append(astropy_tabular_data)
 
 # Add explicit factories for the formats which astropy.table
 # can parse, but does not auto-identify
@@ -523,7 +538,6 @@ def panda_process(indf):
     categorical data input by letting pandas.read_csv infer the type
 
     """
-
     result = Data()
     for name, column in indf.iteritems():
         if (column.dtype == np.object) | (column.dtype == np.bool):
@@ -532,6 +546,9 @@ def panda_process(indf):
             c = CategoricalComponent(column.fillna(np.nan))
         else:
             c = Component(column.values)
+        if name.startswith('#'):
+            name = name[1:]
+        name = name.strip()
         result.add_component(c, name)
 
     return result
