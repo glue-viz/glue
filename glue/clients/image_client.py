@@ -78,6 +78,10 @@ class ImageClient(VizClient):
             self._ax.figure.canvas.homeButton.connect(self.check_update)
 
     def point_details(self, x, y):
+        if self.display_data is None:
+            return dict(labels=['x=%s' % x, 'y=%s' % y],
+                        pix=(x, y), world=(x, y), value=np.nan)
+
         data = self.display_data
         pix = self._pixel_coords(x, y)
         world = data.coords.pixel2world(*pix[::-1])

@@ -420,6 +420,13 @@ class TestImageClient(object):
         assert c._ax.get_xlim() == (2, 11)
         assert c._ax.get_ylim() == (4, 11)
 
+    def test_format_coord_works_without_data(self):
+        # regression test for 402
+        client = ImageClient(self.collect, figure=FIGURE)
+        expected = dict(labels=['x=3', 'y=5'],
+                        pix=(3, 5), world=(3, 5), value=np.nan)
+        assert client.point_details(3, 5) == expected
+
 
 def test_format_coord_2d():
     """Coordinate display is in world coordinates"""
