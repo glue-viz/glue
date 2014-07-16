@@ -369,6 +369,15 @@ class TestCategoricalHistogram(TestHistogramClient):
         """ log-scale doesn't make sense for categorical data"""
         pass
 
+    def test_nbin_override_persists_over_attribute_change(self):
+        # regression test for #398
+        self.collect.append(self.data)
+        self.client.add_layer(self.data)
+        self.client.set_component(self.data.id['x'])
+        self.client.nbins = 7
+        self.client.set_component(self.data.id['y'])
+        assert self.client.nbins == 7
+
 
 class TestCommunication(object):
 
