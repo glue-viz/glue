@@ -14,6 +14,7 @@ from .subset import Subset, InequalitySubsetState, SubsetState
 from .hub import Hub
 from .util import (split_component_view, view_shape,
                    coerce_numeric, check_sorted)
+from .decorators import clear_cache
 from .message import (DataUpdateMessage,
                       DataAddComponentMessage, NumericalDataChangedMessage,
                       SubsetCreateMessage, ComponentsChangedMessage)
@@ -227,7 +228,8 @@ class Component(object):
         n = coerce_numeric(data)
         thresh = 0.5
         try:
-            use_categorical = np.isfinite(n).mean() <= thresh
+            use_categorical = np.issubdtype(data.dtype, np.character) and \
+                np.isfinite(n).mean() <= thresh
         except TypeError:  # isfinite not supported. non-numeric dtype
             use_categorical = True
 
@@ -1019,6 +1021,9 @@ class Data(object):
         if self.hub is not None:
             msg = NumericalDataChangedMessage(self)
             self.hub.broadcast(msg)
+
+        for subset in self.subsets:
+            clear_cache(subset.subset_state.to_mask)
 
 
 def pixel_label(i, ndim):

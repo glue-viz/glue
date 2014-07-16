@@ -518,8 +518,9 @@ class SpectrumTool(object):
         self._setup_ctxbar()
 
         self._connect()
-        self.image_widget.session.application.add_widget(self,
-                                                         label='Profile')
+        w = self.image_widget.session.application.add_widget(self,
+                                                             label='Profile')
+        w.close()
 
     def mdi_wrap(self):
         sub = QMdiSubWindow()
