@@ -1,7 +1,9 @@
-from mock import MagicMock, patch
+from subprocess import check_call
+import sys
 
-from .._deps import Dependency
-from .. import _deps as dep
+from mock import patch
+
+from .._deps import Dependency, categories
 
 
 class TestDependency(object):
@@ -48,3 +50,37 @@ class TestDependency(object):
         d = Dependency('asdf', 'info')
         d.failed = True
         assert str(d) == "                asdf:\tFAILED (info)"
+
+
+def test_optional_dependency_not_imported():
+    """
+    Ensure that a GlueApplication instance can be created without
+    importing any non-required dependency
+    """
+    optional_deps = categories[1:]
+    deps = [dep.module for cateogry, deps in optional_deps for dep in deps]
+    deps.extend(['astropy'])
+
+    code = """
+class ImportDenier(object):
+    __forbidden = set(%s)
+
+    def find_module(self, mod_name, pth):
+        if pth:
+            return
+        if mod_name in self.__forbidden:
+            return self
+
+    def load_module(self, mod_name):
+        raise ImportError("Importing %%s" %% mod_name)
+
+import sys
+sys.meta_path.append(ImportDenier())
+
+from glue.qt import GlueApplication
+from glue.core import data_factories
+ga = GlueApplication()
+""" % deps
+
+    cmd = [sys.executable, '-c', code]
+    check_call(cmd)
