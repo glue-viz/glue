@@ -2,10 +2,8 @@
 from ....external.qt.QtGui import QMainWindow
 from ....external.qt.QtTest import QTest
 from ....external.qt.QtCore import Qt
-from ....external.qt.QtGui import QItemSelectionModel
 
 from mock import MagicMock, patch
-import pytest
 
 from ..layer_tree_widget import (LayerTreeWidget, Clipboard,
                                  save_subset, PlotAction)
@@ -107,6 +105,17 @@ class TestLayerTree(object):
         layer = self.add_layer()
         self.new_action.trigger()
         assert len(self.collect.subset_groups) == 1
+
+    def test_maskify_action(self):
+        d = core.Data(x=[1, 2, 3])
+        s = d.new_subset()
+
+        selected = MagicMock()
+        self.maskify_action.selected_layers = selected
+        selected.return_value = [s]
+
+        self.maskify_action.trigger()
+        assert isinstance(s.subset_state, core.subset.MaskSubsetState)
 
     def test_copy_paste_subset_action(self):
         layer = self.add_layer()

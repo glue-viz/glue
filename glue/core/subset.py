@@ -4,6 +4,7 @@ import numpy as np
 from .visual import VisualAttributes, RED
 from .decorators import memoize
 from .message import SubsetDeleteMessage, SubsetUpdateMessage
+from .exceptions import IncompatibleAttribute
 from .registry import Registry
 from .util import split_component_view, view_shape
 
@@ -280,6 +281,17 @@ class Subset(object):
         return (self.subset_state == other.subset_state and
                 self.style == other.style)
 
+    def state_as_mask(self):
+        """
+        Convert the current SubsetState to a MaskSubsetState
+        """
+        try:
+            m = self.to_mask()
+        except IncompatibleAttribute:
+            m = np.zeros(self.data.shape, dtype=np.bool)
+        cids = self.data.pixel_component_ids
+        return MaskSubsetState(m, cids)
+
 
 class SubsetState(object):
 
@@ -416,6 +428,46 @@ class InvertState(CompositeSubsetState):
 
     def __str__(self):
         return "(~%s)" % self.state1
+
+
+class MaskSubsetState(SubsetState):
+
+    """
+    A subset defined by boolean pixel mask
+    """
+
+    def __init__(self, mask, cids):
+        """
+        :param cids: List of ComponentIDs, defining the pixel coordinate space of the mask
+        :param mask: Boolean ndarray
+        """
+        self.cids = cids
+        self.mask = mask
+
+    def to_mask(self, data, view=None):
+        view = view or slice(None)
+
+        # shortcut for data on the same pixel grid
+        if data.pixel_component_ids == self.cids:
+            return self.mask[view].copy()
+
+        # locate each element of data in the coordinate system of the mask
+        vals = [data[c, view].astype(np.int) for c in self.cids]
+        result = self.mask[vals]
+
+        for v, n in zip(vals, data.shape):
+            result &= ((v >= 0) & (v < n))
+
+        return result
+
+    def __gluestate__(self, context):
+        return dict(cids=[context.id(c) for c in self.cids],
+                    mask=context.do(self.mask))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(context.object(rec['mask']),
+                   [context.object(c) for c in rec['cids']])
 
 
 class ElementSubsetState(SubsetState):

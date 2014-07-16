@@ -1,4 +1,4 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import tempfile
 import operator as op
 
@@ -6,7 +6,8 @@ import pytest
 import numpy as np
 from mock import MagicMock
 
-from ..data import Data, ComponentID, Component
+from .. import DataCollection, ComponentLink
+from ..data import Data, Component
 from ..subset import (Subset, SubsetState,
                       ElementSubsetState, RoiSubsetState, RangeSubsetState)
 from ..subset import OrState
@@ -15,6 +16,7 @@ from ..subset import XorState
 from ..subset import InvertState
 from ..message import SubsetDeleteMessage
 from ..registry import Registry
+from .test_state import clone
 
 
 class TestSubset(object):
@@ -165,6 +167,7 @@ def test_binary_subset_combination(x):
 
 
 class TestSubsetStateCombinations(object):
+
     def setup_method(self, method):
         self.data = None
 
@@ -193,7 +196,9 @@ class TestSubsetStateCombinations(object):
 
 
 class TestCompositeSubsetStates(object):
+
     class DummyState(SubsetState):
+
         def __init__(self, mask):
             self._mask = mask
 
@@ -345,6 +350,7 @@ class TestSubsetState(object):
 
 
 class TestCompositeSubsetStateCopy(object):
+
     def assert_composite_copy(self, cls):
         """Copying composite state should create new
         state with same type, with copies of sub states"""
@@ -371,6 +377,7 @@ class TestCompositeSubsetStateCopy(object):
 
 
 class DummySubsetState(SubsetState):
+
     def to_mask(self, data, view=None):
         result = np.ones(data.shape, dtype=bool)
         if view is not None:
@@ -405,12 +412,11 @@ class TestSubsetViews(object):
                                       self.c.data[::-1])
 
 
-#Test Fancy Indexing into the various subset states
+# Test Fancy Indexing into the various subset states
 
 
 def roifac(comp, cid):
     from ..roi import RectangularROI
-    from ..subset import RoiSubsetState
 
     result = RoiSubsetState()
     result.xatt = cid
@@ -422,7 +428,6 @@ def roifac(comp, cid):
 
 
 def rangefac(comp, cid):
-    from ..subset import RangeSubsetState
     return RangeSubsetState(.5, 2.5, att=cid)
 
 
@@ -507,6 +512,48 @@ def test_inequality_state_str():
     assert str((x < y) | (x < 2)) == '((x < y) | (x < 2))'
     assert str(~(x < y)) == '(~(x < y))'
     assert repr(x < 5) == ('<InequalitySubsetState: (x < 5)>')
+
+
+def test_to_mask_state():
+
+    d = Data(x=[1, 2, 3])
+    sub = d.new_subset()
+    sub.subset_state = d.id['x'] > 1
+    sub.subset_state = sub.state_as_mask()
+
+    np.testing.assert_array_equal(sub.to_mask(), [False, True, True])
+
+
+def test_to_mask_state_across_data():
+
+    d = Data(x=[1, 2, 3])
+    d2 = Data(x=[2, 3, 4])
+    dc = DataCollection([d, d2])
+
+    link = ComponentLink(d2.pixel_component_ids,
+                         d.pixel_component_ids[0],
+                         lambda x: x - 1)
+    dc.add_link(link)
+
+    sub = d.new_subset()
+    sub.subset_state = d.id['x'] > 1
+    sub.subset_state = sub.state_as_mask()
+
+    sub2 = d2.new_subset()
+    sub2.subset_state = sub.subset_state
+    np.testing.assert_array_equal(sub2.to_mask(), [False, False, True])
+
+
+def test_mask_clone():
+
+    d = Data(x=[1, 2, 3])
+    sub = d.new_subset()
+    sub.subset_state = d.id['x'] > 1
+    sub.subset_state = sub.state_as_mask()
+
+    d = clone(d)
+    sub = d.subsets[0]
+    np.testing.assert_array_equal(sub.to_mask(), [False, True, True])
 
 
 class TestAttributes(object):
