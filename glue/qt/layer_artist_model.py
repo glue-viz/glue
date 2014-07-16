@@ -7,7 +7,7 @@ LayerManagers.
 The LayerArtistView is a list widget that displays
 these layers, and provides GUI access to the model
 """
-#pylint: disable=I0011, W0613, R0913, R0904, W0611
+# pylint: disable=I0011, W0613, R0913, R0904, W0611
 from ..external.qt.QtGui import (QColor,
                                  QListView, QAbstractItemView, QAction,
                                  QPalette, QKeySequence)
@@ -24,6 +24,7 @@ from .widgets.style_dialog import StyleDialog
 
 
 class LayerArtistModel(QAbstractListModel):
+
     """A Qt model to manage a list of LayerArtists. Multiple
     views into this model should stay in sync, thanks to Qt.
 
@@ -32,6 +33,7 @@ class LayerArtistModel(QAbstractListModel):
     list in-place (so that the list managed by this model
     and the client are the same object)
     """
+
     def __init__(self, artists, parent=None):
         super(LayerArtistModel, self).__init__(parent)
         self.artists = artists
@@ -115,7 +117,7 @@ class LayerArtistModel(QAbstractListModel):
 
     def dropMimeData(self, data, action, row, column, index):
         data = data.data(PyMimeData.MIME_TYPE)
-        #list of a single artist. Move
+        # list of a single artist. Move
         if isinstance(data, list) and len(data) == 1 and \
                 isinstance(data[0], LayerArtist) and data[0] in self.artists:
             self.move_artist(data[0], row)
@@ -183,9 +185,11 @@ class LayerArtistModel(QAbstractListModel):
 
 
 class LayerArtistView(QListView):
+
     """A list view into an artist model. The zorder
     of each artist can be shuffled by dragging and dropping
     items. Right-clicking brings up a menu to edit style or delete"""
+
     def __init__(self, parent=None):
         super(LayerArtistView, self).__init__(parent)
         self.setDragEnabled(True)
@@ -271,8 +275,10 @@ class LayerArtistView(QListView):
 
 
 class QtLayerArtistContainer(LayerArtistContainer):
+
     """A subclass of LayerArtistContainer that dispatches to a
     LayerArtistModel"""
+
     def __init__(self):
         super(QtLayerArtistContainer, self).__init__()
         self.model = LayerArtistModel(self.artists)
@@ -290,6 +296,9 @@ class QtLayerArtistContainer(LayerArtistContainer):
             return
         self.model.removeRow(index)
         assert artist not in self.artists
+        if len(self) == 0:
+            for cb in self.callbacks:
+                cb()
 
     def __nonzero__(self):
         return True
