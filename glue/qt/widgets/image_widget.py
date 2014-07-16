@@ -112,6 +112,8 @@ class ImageWidget(DataViewer):
         path = PathMode(axes, roi_callback=slice)
 
         def toggle_3d_modes(data):
+            if data is None:
+                return
             is3d = data.ndim > 2
             path.enabled = is3d
             spectrum.enabled = is3d

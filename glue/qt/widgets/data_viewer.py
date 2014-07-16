@@ -45,6 +45,9 @@ class DataViewer(QMainWindow, ViewerBase):
         self._mdi_wrapper = None  # QMdiSubWindow that self is embedded in
         self.statusBar().setStyleSheet("QStatusBar{font-size:10px}")
 
+        # close window when last plot layer deleted
+        self._container.on_empty(lambda: self.close(warn=False))
+
     def remove_layer(self, layer):
         self._container.pop(layer)
 
