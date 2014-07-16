@@ -14,6 +14,7 @@ from .subset import Subset, InequalitySubsetState, SubsetState
 from .hub import Hub
 from .util import (split_component_view, view_shape,
                    coerce_numeric, check_sorted)
+from .decorators import clear_cache
 from .message import (DataUpdateMessage,
                       DataAddComponentMessage, NumericalDataChangedMessage,
                       SubsetCreateMessage, ComponentsChangedMessage)
@@ -1019,6 +1020,9 @@ class Data(object):
         if self.hub is not None:
             msg = NumericalDataChangedMessage(self)
             self.hub.broadcast(msg)
+
+        for subset in self.subsets:
+            clear_cache(subset.subset_state.to_mask)
 
 
 def pixel_label(i, ndim):

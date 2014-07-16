@@ -11,6 +11,7 @@ from ..hub import Hub, HubListener
 from ..exceptions import IncompatibleAttribute
 from ..component_link import ComponentLink
 from ..registry import Registry
+from ... import core
 
 
 class TestCoordinates(Coordinates):
@@ -324,6 +325,21 @@ class TestData(object):
             d['gender'][:] = 5
         assert 'read-only' in exc.value.args[0]
         assert not d['gender'].flags['WRITEABLE']
+
+    def test_update_clears_subset_cache(self):
+        from glue.core.roi import RectangularROI
+
+        d = Data(x=[1, 2, 3], y=[1, 2, 3])
+        s = d.new_subset()
+        state = core.subset.RoiSubsetState()
+        state.xatt = d.id['x']
+        state.yatt = d.id['y']
+        state.roi = RectangularROI(xmin=1.5, xmax=2.5, ymin=1.5, ymax=2.5)
+        s.subset_state = state
+
+        np.testing.assert_array_equal(s.to_mask(), [False, True, False])
+        d.update_components({d.id['x']: [10, 20, 30]})
+        np.testing.assert_array_equal(s.to_mask(), [False, False, False])
 
 
 def test_component_id_item_access():
