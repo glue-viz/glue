@@ -228,7 +228,8 @@ class Component(object):
         n = coerce_numeric(data)
         thresh = 0.5
         try:
-            use_categorical = np.isfinite(n).mean() <= thresh
+            use_categorical = np.issubdtype(data.dtype, np.character) and \
+                np.isfinite(n).mean() <= thresh
         except TypeError:  # isfinite not supported. non-numeric dtype
             use_categorical = True
 
