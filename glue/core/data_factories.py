@@ -39,7 +39,6 @@ from .data import Component, Data, CategoricalComponent
 from .io import extract_data_fits, extract_data_hdf5
 from .util import file_format, as_list
 from .coordinates import coordinates_from_header, coordinates_from_wcs
-from ..external.astro import fits
 from ..backends import get_backend
 from ..config import auto_refresh
 
@@ -52,7 +51,7 @@ _default_factory = {}
 def _extension(path):
     # extract the extension type from a path
     #  test.fits -> fits
-    #  test.fits.gz -> fits.gz (special case)
+    #  test.gz -> fits.gz (special case)
     #  a.b.c.fits -> fits
     _, path = os.path.split(path)
     if '.' not in path:
@@ -96,6 +95,7 @@ def is_hdf5(filename):
 
 
 def is_fits(filename):
+    from ..external.astro import fits
     try:
         with fits.open(filename):
             return True
@@ -330,6 +330,7 @@ def gridded_data(filename, format='auto', **kwargs):
 
     # Read in the data
     if is_fits(filename):
+        from ..external.astro import fits
         arrays = extract_data_fits(filename, **kwargs)
         header = fits.getheader(filename)
         result.coords = coordinates_from_header(header)
@@ -348,6 +349,7 @@ def is_gridded_data(filename, **kwargs):
     if is_hdf5(filename):
         return True
 
+    from ..external.astro import fits
     if is_fits(filename):
         with fits.open(filename) as hdulist:
             for hdu in hdulist:
@@ -373,6 +375,8 @@ def casalike_cube(filename, **kwargs):
 
     Each stokes cube is split out as a separate component
     """
+    from ..external.astro import fits
+
     result = Data()
     with fits.open(filename, **kwargs) as hdulist:
         array = hdulist[0].data
@@ -388,6 +392,8 @@ def is_casalike(filename, **kwargs):
     Check if a file is a CASA like cube,
     with (P, P, V, Stokes) layout
     """
+    from ..external.astro import fits
+
     if not is_fits(filename):
         return False
     with fits.open(filename) as hdulist:

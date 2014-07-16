@@ -1,8 +1,6 @@
 import json
 import os
 
-from astropy.table import Table, Column
-
 from ..config import exporters
 from ..qt.widgets import ScatterWidget, HistogramWidget
 from ..core import Subset
@@ -152,6 +150,8 @@ def make_data_file(data, subsets, path):
     """
     Create the data.csv file, given Data and tuple of subsets
     """
+    from astropy.table import Table, Column
+
     data_path = os.path.join(path, 'data.csv')
 
     t = Table([data[c] for c in data.components],
