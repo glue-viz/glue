@@ -276,8 +276,10 @@ class HistogramClient(Client):
         """
         if self._component is component:
             return
+        first_set = self._component == None
         self._component = component
-        self._auto_nbin()
+        if first_set:
+            self._auto_nbin()
         self.sync_all()
         self._relim()
 
