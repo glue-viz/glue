@@ -480,6 +480,14 @@ class LayerArtistContainer(object):
 
     def __init__(self):
         self.artists = []
+        self.callbacks = []
+
+    def on_empty(self, func):
+        """
+        Register a callback function that should be invoked when
+        this container is emptied
+        """
+        self.callbacks.append(func)
 
     def _duplicate(self, artist):
         for a in self.artists:
@@ -510,6 +518,10 @@ class LayerArtistContainer(object):
             artist.clear()
         except ValueError:
             pass
+
+        if len(self) == 0:
+            for cb in self.callbacks:
+                cb()
 
     def pop(self, layer):
         """Remove all artists associated with a layer"""
