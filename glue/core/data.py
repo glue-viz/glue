@@ -226,12 +226,15 @@ class Component(object):
 
         n = coerce_numeric(data)
         thresh = 0.5
-        if np.isfinite(n).mean() > thresh:
-            return Component(n, units=units)
-        elif np.issubdtype(data.dtype, np.character):
-            return CategoricalComponent(data, units=units)
+        try:
+            use_categorical = np.isfinite(n).mean() <= thresh
+        except TypeError:  # isfinite not supported. non-numeric dtype
+            use_categorical = True
 
-        return Component(data, units=units)
+        if use_categorical:
+            return CategoricalComponent(data, units=units)
+        else:
+            return Component(n, units=units)
 
 
 class DerivedComponent(Component):

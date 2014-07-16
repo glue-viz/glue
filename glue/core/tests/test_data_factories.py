@@ -106,7 +106,6 @@ def test_pandas_parse_delimiters(delim, suffix):
     with make_file(data, suffix) as fname:
         d = df.load_data(fname, factory=df.pandas_read_table)
 
-    print d
     np.testing.assert_array_equal(d['a'], [1])
     np.testing.assert_array_equal(d['b'], [2])
 

@@ -4,6 +4,7 @@ import string
 from itertools import count
 
 import numpy as np
+import pandas as pd
 
 
 def identity(x):
@@ -272,21 +273,8 @@ def coerce_numeric(arr):
     if np.issubdtype(arr.dtype, np.bool_):
         return arr.astype(np.int)
 
-    # a string dtype
-    if np.issubdtype(arr.dtype, np.character):
-        lens = np.char.str_len(arr)
-        lmax = lens.max()
-        nonnull = lens > 0
-        coerced = np.genfromtxt(arr, delimiter=lmax + 1)
-        has_missing = not nonnull.all()
-        dtype = np.float if has_missing else coerced.dtype
-        result = np.empty(arr.shape, dtype=dtype)
-        result[nonnull] = coerced
-        if has_missing:
-            result[~nonnull] = np.nan
-        return result
-
-    return np.genfromtxt(arr)
+    # a string dtype, or anything else
+    return pd.Series(arr).convert_objects(convert_numeric=True).values
 
 
 def check_sorted(array):
