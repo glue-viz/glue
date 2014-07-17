@@ -146,6 +146,7 @@ class ImageClient(VizClient):
         self._update_axis_labels()
         self._update_data_plot(relim=relim)
         self._update_subset_plots()
+        self._update_scatter_plots()
         self._redraw()
 
     @property
@@ -201,6 +202,7 @@ class ImageClient(VizClient):
             self.slice = slc
             self._update_data_plot()
             self._update_subset_plots()
+            self._update_scatter_plots()
             self._redraw()
         else:
             raise IndexError("Can only set slice_ind for 3D images")
@@ -236,6 +238,7 @@ class ImageClient(VizClient):
         self._update_axis_labels()
         self._update_data_plot(relim=True)
         self._update_subset_plots()
+        self._update_scatter_plots()
         self._redraw()
 
     def _update_wcs_axes(self, data, slc):
@@ -317,6 +320,8 @@ class ImageClient(VizClient):
     def _numerical_data_changed(self, message):
         data = message.sender
         self._update_data_plot(force=True)
+        self._update_scatter_layer(data)
+
         for s in data.subsets:
             self._update_subset_single(s, force=True)
 
@@ -514,10 +519,19 @@ class ImageClient(VizClient):
         self._update_scatter_layer(layer)
         return result
 
+    def _update_scatter_plots(self):
+        for layer in self.artists.layers:
+            self._update_scatter_layer(layer)
+
     @requires_data
     def _update_scatter_layer(self, layer, force=False):
+
+        if layer not in self.artists:
+            return
+
         xatt, yatt = self._get_plot_attributes()
         need_redraw = False
+
         for a in self.artists[layer]:
             if not isinstance(a, ScatterLayerArtist):
                 continue
