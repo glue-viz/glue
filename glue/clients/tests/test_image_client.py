@@ -36,7 +36,7 @@ class TestImageClient(object):
         self.im = example_data.test_image()
         self.cube = example_data.test_cube()
         self.cube4 = core.Data(x=np.ones((2, 3, 4, 5)))
-        self.scatter = core.Data(x=[1, 2, 3, 4], y=[4, 5, 6, 7])
+        self.scatter = core.Data(x=[1, 2, 3, 4], y=[4, 5, 6, 7], z=[0, 1, 2, 3])
         self.im.edit_subset = self.im.new_subset()
         self.cube.edit_subset = self.cube.new_subset()
         self.collect = core.data_collection.DataCollection()
@@ -52,6 +52,23 @@ class TestImageClient(object):
         client = ImageClient(self.collect, figure=FIGURE)
         self.collect.append(self.cube4)
         client.set_data(self.cube4)
+        return client
+
+    def create_client_with_cube_and_scatter(self):
+        from glue.core.link_helpers import LinkSame
+
+        client = self.create_client_with_cube()
+        self.collect.append(self.cube)
+
+        ix = self.cube.get_pixel_component_id(0)
+        iy = self.cube.get_pixel_component_id(1)
+        iz = self.cube.get_pixel_component_id(2)
+
+        self.collect.add_link(LinkSame(self.scatter.id['x'], ix))
+        self.collect.add_link(LinkSame(self.scatter.id['y'], iy))
+        self.collect.add_link(LinkSame(self.scatter.id['z'], iz))
+        client.add_scatter_layer(self.scatter)
+
         return client
 
     def create_client_with_image_and_scatter(self):
@@ -284,6 +301,14 @@ class TestImageClient(object):
         assert self.scatter in client.artists
         for a in client.artists[self.scatter]:
             assert a.visible
+
+    def test_data_scatter_emphasis_updates_on_slice_change(self):
+        # regression test for 367
+        client = self.create_client_with_cube_and_scatter()
+        layer = client.artists[self.scatter][0]
+        emph0 = layer.emphasis
+        client.slice = (2, 'y', 'x')
+        assert layer.emphasis is not emph0
 
     def test_check_update(self):
         client = self.create_client_with_image()
