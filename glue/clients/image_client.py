@@ -138,6 +138,9 @@ class ImageClient(VizClient):
         if self.slice == tuple(value):
             return
 
+        if value == tuple():
+            return
+
         relim = value.index('x') != self._slice.index('x') or \
             value.index('y') != self._slice.index('y')
 
