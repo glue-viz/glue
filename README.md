@@ -7,7 +7,7 @@ Glue
 Glue is a python project to link visualizations of scientific datasets
 across many files. Click on the image for a quick demo:
 
-[![Glue demo video](http://raw.githubusercontent.com/glue-viz/glue/master/doc/readme.gif)](http://vimeo.com/53378575)
+[![Glue demo](doc/readme.gif)](http://vimeo.com/53378575)
 
 Features
 --------
