@@ -483,10 +483,15 @@ class FitContext(SpectrumContext):
 class SpectrumMainWindow(QMainWindow):
 
     subset_dropped = Signal(object)
+    window_closed = Signal()
 
     def __init__(self, parent=None):
         super(SpectrumMainWindow, self).__init__(parent=parent)
         self.setAcceptDrops(True)
+
+    def closeEvent(self, event):
+        self.window_closed.emit()
+        return super(SpectrumMainWindow, self).closeEvent(event)
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasFormat(LAYERS_MIME_TYPE):
@@ -532,6 +537,7 @@ class SpectrumTool(object):
 
     def _build_main_widget(self):
         self.widget = SpectrumMainWindow()
+        self.widget.window_closed.connect(self.reset)
 
         w = QWidget()
         l = QHBoxLayout()

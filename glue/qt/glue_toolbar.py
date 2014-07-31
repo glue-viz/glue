@@ -218,6 +218,14 @@ class GlueToolbar(NavigationToolbar2QT):
                 'key_press_event', mode.key)
             self.mode = mode.action_text
             self.canvas.widgetlock(self)
+            mode.activate()
+
+            # allows grabbing of key events before clicking on plot
+            # XXX qt specific syntax here
+            try:
+                self.canvas.setFocus()
+            except AttributeError:
+                pass
         else:
             self.canvas.widgetlock.release(self)
 

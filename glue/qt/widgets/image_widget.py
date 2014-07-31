@@ -4,7 +4,7 @@ from ...external.qt.QtGui import (QAction, QLabel, QCursor, QMainWindow,
                                   QToolButton, QIcon, QMessageBox,
                                   QMdiSubWindow)
 
-from ...external.qt.QtCore import Qt, QRect
+from ...external.qt.QtCore import Qt, QRect, Signal
 
 from .data_viewer import DataViewer
 from ... import core
@@ -121,6 +121,7 @@ class ImageWidget(DataViewer):
         add_callback(self.client, 'display_data', toggle_3d_modes)
 
         self._contrast = contrast
+        self._path = path
         return [rect, circ, poly, contour, contrast, spectrum, path]
 
     def _extract_slice(self, roi):
@@ -134,6 +135,7 @@ class ImageWidget(DataViewer):
                                                interpolation='nearest')
             self._session.application.add_widget(self._slice_widget,
                                                  label='Custom Slice')
+            self._slice_widget.window_closed.connect(self._path.clear)
         else:
             self._slice_widget.set_image(pv, x, y, interpolation='nearest')
 
@@ -466,6 +468,7 @@ class StandaloneImageWidget(QMainWindow):
     A simplified image viewer, without any brushing or linking,
     but with the ability to adjust contrast and resample.
     """
+    window_closed = Signal()
 
     def __init__(self, image, parent=None, **kwargs):
         """
@@ -535,6 +538,10 @@ class StandaloneImageWidget(QMainWindow):
         self._mdi_wrapper = sub
 
         return sub
+
+    def closeEvent(self, event):
+        self.window_closed.emit()
+        return super(StandaloneImageWidget, self).closeEvent(event)
 
     def _set_norm(self, mode):
         """ Use the `ContrastMouseMode` to adjust the transfer function """
