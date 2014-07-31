@@ -36,3 +36,23 @@ Glue, data cleaning, and civic hacking (5 minutes)
  <center>
  <iframe src="http://player.vimeo.com/video/65789362?badge=0"  width="500" height="275" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
  </center>
+
+Glue, FBI Crime Data, and Plotly (5 minutes)
+--------------------------------------------
+
+.. raw:: html
+
+ <center>
+ <iframe src="http://player.vimeo.com/video/97436621" width="500" height="313" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe> <
+ </center>
+
+See also the `IPython notebook <http://nbviewer.ipython.org/github/ChrisBeaumont/crime/blob/master/glue_plotly_fbi.ipynb>`_ that accompanies this video.
+
+Extracting slices from cubes
+----------------------------
+
+.. raw:: html
+
+ <center>
+ <iframe src="http://player.vimeo.com/video/96815794" width="500" height="333" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+ </center>
