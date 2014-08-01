@@ -84,10 +84,9 @@ class ImageClient(VizClient):
 
         data = self.display_data
         pix = self._pixel_coords(x, y)
+        labels = self.coordinate_labels(pix)
         world = data.coords.pixel2world(*pix[::-1])
-        world = world[::-1]   # reverse for numpy convention
-        labels = ['%s=%s' % (data.get_world_component_id(i).label, w)
-                  for i, w in enumerate(world)]
+        world = world[::-1]  # reverse for numpy convention
 
         view = []
         for p, s in zip(pix, data.shape):
@@ -105,6 +104,28 @@ class ImageClient(VizClient):
             value = value.ravel()[0]
 
         return dict(pix=pix, world=world, labels=labels, value=value)
+
+    def coordinate_labels(self, pix):
+        """ Return human-readable labels for a position in pixel coords
+
+        :param pix: tuple of ints
+                    Pixel coordiante of point in the data
+
+        :returns: List of strings, one for each coordinate axis, of the
+                  form "axis_lable_name=world_coordinate_value
+
+        :note: pix describes a position in the *data*, not necessarily
+               the image display
+        """
+        data = self.display_data
+        if data is None:
+            return []
+
+        world = data.coords.pixel2world(*pix[::-1])
+        world = world[::-1]   # reverse for numpy convention
+        labels = ['%s=%s' % (data.get_world_component_id(i).label, w)
+                  for i, w in enumerate(world)]
+        return labels
 
     @callback_property
     def slice(self):
