@@ -73,6 +73,12 @@ class MouseMode(object):
         self._event_x, self._event_y = event.x, event.y
         self._event_xdata, self._event_ydata = event.xdata, event.ydata
 
+    def activate(self):
+        """
+        Fired when the toolbar button is activated
+        """
+        pass
+
     def press(self, event):
         """ Handles mouse presses
 
@@ -148,6 +154,9 @@ class RoiModeBase(MouseMode):
         super(RoiModeBase, self).__init__(axes, **kwargs)
         self._roi_tool = None
 
+    def activate(self):
+        self._roi_tool._sync_patch()
+
     def roi(self):
         """ The ROI defined by this mouse mode
 
@@ -161,6 +170,9 @@ class RoiModeBase(MouseMode):
             self._roi_tool.finalize_selection(event)
         if self._roi_callback is not None:
             self._roi_callback(self)
+
+    def clear(self):
+        self._roi_tool.reset()
 
 
 class RoiMode(RoiModeBase):
@@ -277,7 +289,9 @@ class PathMode(ClickRoiMode):
         self.icon = get_icon('glue_slice')
         self.mode_id = 'Slice'
         self.action_text = 'Slice Extraction'
-        self.tool_tip = 'Extract a slice from an arbitrary path'
+        self.tool_tip = ('Extract a slice from an arbitrary path\n'
+                         '  ENTER accepts the path\n'
+                         '  ESCAPE clears the path')
         self._roi_tool = qt_roi.QtPathROI(self._axes)
         self.shortcut = 'P'
 
@@ -310,7 +324,9 @@ class PolyMode(ClickRoiMode):
         self.icon = get_icon('glue_lasso')
         self.mode_id = 'Polygon'
         self.action_text = 'Polygonal ROI'
-        self.tool_tip = 'Lasso a region of interest'
+        self.tool_tip = ('Lasso a region of interest\n'
+                         '  ENTER accepts the path\n'
+                         '  ESCAPE clears the path')
         self._roi_tool = qt_roi.QtPolygonalROI(self._axes)
         self.shortcut = 'G'
 
@@ -484,9 +500,6 @@ class SpectrumExtractorMode(RoiMode):
                                         edgewidth=3,
                                         alpha=1.0)
         self.shortcut = 'S'
-
-    def clear(self):
-        self._roi_tool.reset()
 
 
 class ContourMode(MouseMode):
