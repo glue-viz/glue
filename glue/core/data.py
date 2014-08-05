@@ -898,9 +898,15 @@ class Data(object):
         :param old: The old :class:`ComponentID`.
         :param new: The new :class:`ComponentID`.
         """
+
+        # note: its problematic to remove an component
+        #      during updating, since plots may already
+        # be using it (issue #279). Instead,
+        #      we just mark it as hidden
+
         changed = False
         if old in self._components:
-            self._components[new] = self._components.pop(old)
+            self._components[new] = self._components[old]
             changed = True
         try:
             index = self._pixel_component_ids.index(old)
@@ -916,6 +922,7 @@ class Data(object):
             pass
 
         if changed and self.hub is not None:
+            old._hidden = True
             self.hub.broadcast(ComponentsChangedMessage(self))
 
     def __str__(self):
