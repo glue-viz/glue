@@ -31,8 +31,6 @@ For example, say you are working with a `Pandas <http://pandas.pydata.org/>`_ Da
     In [14]: qglue(xyz=df)
 
 This will send this data to Glue, label it ``xyz`` and start the UI.
-When you close the GUI, it will return the DataCollection (including
-any subsets you have defined).
 
 ``qglue`` accepts many data types as inputs. Let's see some examples::
 
@@ -158,3 +156,113 @@ run that script::
  glue startup_script.py
 
 Likewise, if you are using a pre-built application, you can right-click on a scipt and open the file with Glue.
+
+Interacting with Glue using Python
+==================================
+There are two ways to programmatically interact with an active Glue session. We outline eaach option below, and then describe some
+useful ways to interact with Glue using Python.
+
+The Glue-IPython terminal
+-------------------------
+
+Glue includes a button to open an IPython terminal window. This gives
+you programmatic access to Glue data. A number of variables are available
+by default (these are also listed when you open the terminal):
+
+  * ``dc`` / ``data_collection`` refer to the central :class:`~glue.core.
+    DataCollection` , which holds all of the datasets, subsets, and
+    data links
+
+  * ``hub`` is the communication :ref:`hub <hub>` object.
+
+  * ``application`` is the top level :class:`~glue.qt.glue_application.GlueApplication`, which has access to plot windows (among other things)
+
+Additionally, you can drage datasets and subsets into the terminal
+window, to easily assign them new variable names.
+
+.. note::
+
+    If you start Glue from a non-notebook IPython session, you will
+    encounter an error like ``Multiple incompatible subclass instances of IPKernelApp are being created``. The
+    solution to this is to start Glue from a non-IPython shell,
+    or from the notebook (see above).
+
+
+Notebook integration
+--------------------
+As described above, the IPython notebook can be configured so that
+Glue runs without blocking. When launched via :func:`qglue`,
+that function immediately returns a reference to the
+:class:`~glue.qt.glue_application.GlueApplication` object.
+
+Usage Examples
+--------------
+
+Adding new attributes to datasets
+.................................
+
+A common task is to combine two or more attributes in a dataset,
+and store the result as a new attribute to visualize. Let's use
+the catalog data from the :ref:`Getting Started <getting_started>` as an example.
+
+First, we need to grab the relevant dataset from the data collection.
+From the Glue-IPython window, we can do this simply by dragging the
+dataset onto the window. If we want to do this from what is
+returned by :func:`qglue`, it would look like this::
+
+    print app.data_collection  # look at each dataset
+    catalog = data_collection[2]  # or whichever entry it is
+
+To examine the attributes in this dataset::
+
+    In [1]: print catalog
+    Data Set: catalogNumber of dimensions: 1
+    Shape: 17771
+    Components:
+     0) ID
+     1) Pixel Axis 0
+     2) World 0
+     3) Jmag
+     4) Hmag
+     5) Ksmag
+     ...
+
+Datasets behave like dictionaries mapping component names to numpy arrays. So one way to define a new component is like this::
+
+    In [2]: j_minus_h = catalog['Jmag'] - catalog['Hmag']
+
+To add this back to the dataset::
+
+    In [3]: catalog['jmh'] = j_minus_h
+
+This new attribute is now available for visualizing in the GUI
+
+Adding lazy attributes
+......................
+
+In the procedure above, the `j_minus_h` array was precomputed.
+An alternative approach is to define a new attribute on the fly.
+While ``data[attribute_name]`` returns a numpy array, ``data.id[attribute_name]`` returns a lightweight proxy object that you can
+use to build simple arithmetic expressions::
+
+    In [4]: jmh_lazy = catalog.id['Jmag'] - catalog.id['Hmag']
+    In [5]: jmh_lazy
+    <BinaryComponentLink: (Jmag - Hmag)>
+    In [6]: catalog['jmh2'] = jmh_lazy
+
+This new component is computed as needed on the fly, and can
+be more memory efficient for particular applications.
+
+
+Defining new subsets
+....................
+You can define new subsets from Python. An example might look like::
+
+    state = catalog.id['j'] > catalog.id['h']
+    label = 'J > H'
+    sg = data_collection.new_subset_group(label, state)
+    sg.style.color = '#00ff00'
+
+This can be a powerful technique. For a demo of using sending
+Scikit-learn-identified clusters back into Glue as subsets, see `this
+notebook <http://nbviewer.ipython.org/github/ChrisBeaumont/crime/blob/master/glue_startup.ipynb>`_.

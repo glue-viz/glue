@@ -90,8 +90,7 @@ class SubsetGroup(HubListener):
         self.subsets = []
         if subset_state is None:
             subset_state = SubsetState()
-        else:
-            print 'using', subset_state
+
         self.subset_state = subset_state
         self.label = label
         self._style = None

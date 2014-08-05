@@ -5,7 +5,6 @@ from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
 from matplotlib.ticker import (LogFormatterMathtext, ScalarFormatter,
                                FuncFormatter)
 from ..core.data import CategoricalComponent
-from ..core.decorators import memoize
 
 
 def get_extent(view, transpose=False):
@@ -131,6 +130,7 @@ def visible_limits(artists, axis):
 
 def tick_linker(all_categories, pos, *args):
     try:
+        pos = np.round(pos)
         return all_categories[int(pos)]
     except IndexError:
         return ''

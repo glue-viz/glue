@@ -273,7 +273,7 @@ class TestImageClient(object):
         client = self.create_client_with_image()
         sub = self.im.edit_subset
 
-        bad_state = MagicMock()
+        bad_state = MagicMock(spec_set=core.subset.SubsetState)
         err = core.exceptions.IncompatibleAttribute("Can't make mask")
         bad_state.to_mask.side_effect = err
         bad_state.to_index_list.side_effect = err

@@ -1,5 +1,6 @@
 import operator
 import logging
+from types import NoneType
 
 import numpy as np
 import pandas as pd
@@ -82,6 +83,16 @@ class ComponentID(object):
 
     def __repr__(self):
         return str(self._label)
+
+    def __eq__(self, other):
+        if np.issubsctype(type(other), np.number):
+            return InequalitySubsetState(self, other, operator.eq)
+        return other is self
+
+    def __ne__(self, other):
+        if np.issubsctype(type(other), np.number):
+            return InequalitySubsetState(self, other, operator.ne)
+        return other is not self
 
     def __gt__(self, other):
         return InequalitySubsetState(self, other, operator.gt)
@@ -963,6 +974,12 @@ class Data(object):
         assert result.shape == shp, \
             "Component view returned bad shape: %s %s" % (result.shape, shp)
         return result
+
+    def __setitem__(self, key, value):
+        """
+        Wrapper for data.add_component()
+        """
+        self.add_component(value, key)
 
     def get_component(self, component_id):
         """Fetch the component corresponding to component_id.

@@ -586,6 +586,28 @@ class PVSliceWidget(StandaloneImageWidget):
         conn = self.axes.figure.canvas.mpl_connect
         self._down_id = conn('button_press_event', self._on_click)
         self._move_id = conn('motion_notify_event', self._on_move)
+        self.axes.format_coord = self._format_coord
+
+    def _format_coord(self, x, y):
+        """
+        Return a formatted location label for the taskbar
+
+        :param x: x pixel location in slice array
+        :param y: y pixel location in slice array
+        """
+        # xy -> xyz in image view
+        pix = self._pos_in_parent(xdata=x, ydata=y)
+
+        # xyz -> data pixel coords
+        # accounts for fact that image might be shown transpoed/rotated
+        s = list(self._slc)
+        idx = _slice_index(self._parent.data, self._slc)
+        s[s.index('x')] = pix[0]
+        s[s.index('y')] = pix[1]
+        s[idx] = pix[2]
+
+        labels = self._parent.client.coordinate_labels(s)
+        return '         '.join(labels)
 
     def set_image(self, im, x, y, **kwargs):
         super(PVSliceWidget, self).set_image(im, **kwargs)
@@ -622,11 +644,14 @@ class PVSliceWidget(StandaloneImageWidget):
         self._sync_slice(event)
         self._draw_crosshairs(event)
 
-    def _pos_in_parent(self, event):
-        ind = np.clip(event.xdata, 0, self._im_array.shape[1] - 1)
+    def _pos_in_parent(self, event=None, xdata=None, ydata=None):
+        if event is not None:
+            xdata = event.xdata
+            ydata = event.ydata
+        ind = np.clip(xdata, 0, self._im_array.shape[1] - 1)
         x = self._x[ind]
         y = self._y[ind]
-        z = event.ydata
+        z = ydata
 
         return x, y, z
 
