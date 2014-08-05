@@ -209,18 +209,19 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
         rng = np.linspace(lo, hi, steps + 1)
 
     states = []
+    labels = []
     for i in range(steps):
         if reverse:
             states.append((cid <= rng[i]) & (cid > rng[i + 1]))
-
+            labels.append('{0}<{1}<={2}'.format(rng[i + 1], cid, rng[i]))
         else:
             states.append((cid >= rng[i]) & (cid < rng[i + 1]))
+            labels.append('{0}<={1}<{2}'.format(rng[i], cid, rng[i + 1]))
 
     result = []
-    for i, s in enumerate(states, start=1):
-        result.append(data_collection.new_subset_group())
-        result[-1].subset_state = s
-        result[-1].label = "%s_%i" % (prefix, i)
+    for lbl, s in zip(labels, states):
+        sg = data_collection.new_subset_group(label=lbl, subset_state=s)
+        result.append(sg)
 
     return result
 
