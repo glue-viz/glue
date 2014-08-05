@@ -80,9 +80,9 @@ class Extractor(object):
         x = Extractor.abcissa(data, axis)
         if x.size > 1 and (x[1] < x[0]):
             x = x[::-1]
-            result = x.size - np.searchsorted(x, value) - 1
+            result = x.size - np.searchsorted(x, value) - 2
         else:
-            result = np.searchsorted(x, value)
+            result = np.searchsorted(x, value) - 1
         return np.clip(result, 0, x.size - 1)
 
     @staticmethod
@@ -191,14 +191,15 @@ class NavContext(SpectrumContext):
         def _set_client_from_grip(value):
             """Update client.slice given grip value"""
             slc = list(self.client.slice)
-
             # client.slice stored in pixel coords
             value = Extractor.world2pixel(
                 self.data,
                 self.profile_axis, value)
             slc[self.profile_axis] = value
 
-            self.client.slice = tuple(slc)
+            # prevent callback bouncing. Fixes #298
+            with ignore_callback(self.grip, 'value'):
+                self.client.slice = tuple(slc)
 
         def _set_grip_from_client(slc):
             """Update grip.value given client.slice"""
