@@ -177,9 +177,11 @@ class TestStateSave(TestApplication):
         app = GlueApplication(dc)
         w = app.new_data_viewer(ImageWidget, d)
         w.slice = ('x', 'y', 1)
+        assert w.slice == ('x', 'y', 1)
+
         c = self.check_clone(app)
         w2 = c.viewers[0][0]
-        assert w2.ui.slice.slice == ('x', 'y', 1)
+        assert w2.ui.slice.slice == w.slice
 
     def test_rgb_layer(self):
         d, w, app = self.d, self.w, self.app

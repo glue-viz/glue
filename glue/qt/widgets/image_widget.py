@@ -235,7 +235,7 @@ class ImageWidget(DataViewer):
 
     @slice.setter
     def slice(self, value):
-        self.ui.slice.slice = value
+        self.client.slice = value
 
     @defer_draw
     def set_attribute(self, index):

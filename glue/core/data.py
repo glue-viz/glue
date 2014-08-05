@@ -922,6 +922,9 @@ class Data(object):
             pass
 
         if changed and self.hub is not None:
+            # obfuscante name if needed
+            if new.label == old.label:
+                old._label = '_' + old._label
             old._hidden = True
             self.hub.broadcast(ComponentsChangedMessage(self))
 

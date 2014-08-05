@@ -135,7 +135,7 @@ def color2rgb(color):
 
 
 def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
-                  prefix=None, log=False):
+                  prefix='', log=False):
     """Create a series of subsets that partition the values of
     a particular attribute into several bins
 
@@ -159,7 +159,7 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
     :param steps: The number of subsets to create. Defaults to 5
     :type steps: int
 
-    :param prefix: If present, the new subsets will be labeled `prefix_1`, etc.
+    :param prefix: If present, the new subset labels will begin with `prefix`
     :type prefix: str
 
     :param log: If True, space divisions logarithmically. Default=False
@@ -201,7 +201,6 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
         if hi is None:
             hi = np.nanmax(vals)
 
-    prefix = prefix or cid.label
     reverse = lo > hi
     if log:
         rng = np.logspace(np.log10(lo), np.log10(hi), steps + 1)
@@ -213,10 +212,10 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
     for i in range(steps):
         if reverse:
             states.append((cid <= rng[i]) & (cid > rng[i + 1]))
-            labels.append('{0}<{1}<={2}'.format(rng[i + 1], cid, rng[i]))
+            labels.append(prefix + '{0}<{1}<={2}'.format(rng[i + 1], cid, rng[i]))
         else:
             states.append((cid >= rng[i]) & (cid < rng[i + 1]))
-            labels.append('{0}<={1}<{2}'.format(rng[i], cid, rng[i + 1]))
+            labels.append(prefix + '{0}<={1}<{2}'.format(rng[i], cid, rng[i + 1]))
 
     result = []
     for lbl, s in zip(labels, states):
