@@ -69,6 +69,11 @@ class TestData(object):
         cid2 = self.data.add_component(comp, cid)
         assert cid2 is cid
 
+    def test_add_component_via_setitem(self):
+        d = Data(x=[1, 2, 3])
+        d['y'] = d['x'] * 2
+        np.testing.assert_array_equal(d['y'], [2, 4, 6])
+
     def test_add_component_incompatible_shape(self):
         comp = MagicMock()
         comp.data.shape = (3, 2)

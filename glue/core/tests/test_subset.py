@@ -61,7 +61,7 @@ class TestSubset(object):
     def test_paste_returns_copy_of_state(self):
         s = Subset(self.data)
         state1 = MagicMock(spec=SubsetState)
-        state1_copy = MagicMock()
+        state1_copy = MagicMock(spec=SubsetState)
         state1.copy.return_value = state1_copy
         s.subset_state = state1
 
@@ -150,6 +150,23 @@ class TestSubset(object):
         s.to_index_list.return_value = []
         get = s['test']
         assert list(get) == []
+
+    def test_state_with_array(self):
+        d = Data(x=[1, 2, 3])
+        s = d.new_subset()
+        s.subset_state = np.array([True, False, False])
+        np.testing.assert_array_equal(s.to_mask(), [True, False, False])
+
+    def test_state_array_bad_shape(self):
+        d = Data(x=[1, 2, 3])
+        s = d.new_subset()
+        with pytest.raises(ValueError):
+            s.subset_state = np.array([True])
+
+    def test_state_bad_type(self):
+        s = Subset(None)
+        with pytest.raises(TypeError):
+            s.subset_state = 5
 
 target_states = ((op.and_, AndState),
                  (op.or_, OrState),

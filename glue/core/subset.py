@@ -15,7 +15,8 @@ __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
 OPSYM = {operator.ge: '>=', operator.gt: '>',
          operator.le: '<=', operator.lt: '<',
          operator.and_: '&', operator.or_: '|',
-         operator.xor: '^'}
+         operator.xor: '^', operator.eq: '==',
+         operator.ne: '!='}
 SYMOP = dict((v, k) for k, v in OPSYM.items())
 
 
@@ -66,6 +67,13 @@ class Subset(object):
 
     @subset_state.setter
     def subset_state(self, state):
+        if isinstance(state, np.ndarray):
+            if self.data.shape != state.shape:
+                raise ValueError("Shape of mask doesn't match shape of data")
+            cids = self.data.pixel_component_ids
+            state = MaskSubsetState(state, cids)
+        if not isinstance(state, SubsetState):
+            raise TypeError("State must be a SubsetState instance or array")
         self._subset_state = state
 
     @property
@@ -498,7 +506,8 @@ class InequalitySubsetState(SubsetState):
         super(InequalitySubsetState, self).__init__()
         from .data import ComponentID
         valid_ops = [operator.gt, operator.ge,
-                     operator.lt, operator.le]
+                     operator.lt, operator.le,
+                     operator.eq, operator.ne]
         if op not in valid_ops:
             raise TypeError("Invalid boolean operator: %s" % op)
         if not isinstance(left, ComponentID) and not \

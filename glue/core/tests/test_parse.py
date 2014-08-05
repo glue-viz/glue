@@ -165,23 +165,15 @@ class TestParsedComponentLink(object):
 class TestParsedSubsetState(object):
 
     def setup_method(self, method):
-        data = Data()
-        c1 = Component(np.array([2, 4, 6, 8]))
-        g = ComponentID('g')
-        data.add_component(c1, g)
+        data = Data(g=[2, 4, 6, 8])
 
         s1 = data.new_subset()
         s2 = data.new_subset()
 
-        state1 = MagicMock()
-        state1.to_mask.return_value = np.array([1, 1, 1, 0], dtype=bool)
-        state2 = MagicMock()
-        state2.to_mask.return_value = np.array([0, 1, 1, 1], dtype=bool)
+        s1.subset_state = np.array([1, 1, 1, 0], dtype=bool)
+        s2.subset_state = np.array([0, 1, 1, 1], dtype=bool)
 
-        s1.subset_state = state1
-        s2.subset_state = state2
-
-        self.refs = {'s1': s1, 's2': s2, 'g': g}
+        self.refs = {'s1': s1, 's2': s2, 'g': data.id['g']}
         self.data = data
 
     def test_two_subset(self):
@@ -202,7 +194,6 @@ class TestParsedSubsetState(object):
         s = self.data.new_subset()
         p = parse.ParsedCommand(cmd, self.refs)
         state = parse.ParsedSubsetState(p)
-
         s.subset_state = state
         result = s.to_mask()
         expected = np.array([0, 1, 0, 0], dtype=bool)

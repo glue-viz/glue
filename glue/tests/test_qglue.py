@@ -1,13 +1,14 @@
 import numpy as np
 from astropy.table import Table
 
-from mock import patch
+from mock import patch, MagicMock
 import pytest
 
 from .. import qglue
 from ..core.registry import Registry
 from ..core.exceptions import IncompatibleAttribute
 from ..core import Data
+from ..qt.glue_application import GlueApplication
 
 
 def has_pandas():
@@ -40,6 +41,11 @@ class TestQGlue(object):
         self.y = np.array(y)
         self.u = np.array(u)
         self.v = np.array(v)
+        self._start = GlueApplication.start
+        GlueApplication.start = MagicMock()
+
+    def teardown_method(self, method):
+        GlueApplication.start = self._start
 
     def check_setup(self, dc, expected):
         # assert that the assembled data collection returned
@@ -58,102 +64,89 @@ class TestQGlue(object):
         import pandas as pd
         pandas_data = pd.DataFrame(self.xy)
 
-        with patch('glue.qt.glue_application.GlueApplication') as ga:
-            dc = qglue(data1=pandas_data)
-            ga.assert_called_once_with(dc)
-            ga().start.assert_called_once_with()
+        app = qglue(data1=pandas_data)
+        app.start.assert_called_once_with()
 
     def test_single_pandas(self):
-        with patch('glue.qt.glue_application.GlueApplication') as ga:
-            dc = qglue(data1=self.xy)
-            self.check_setup(dc, {'data1': ['x', 'y']})
+        dc = qglue(data1=self.xy).data_collection
+        self.check_setup(dc, {'data1': ['x', 'y']})
 
     def test_single_numpy(self):
-        with patch('glue.qt.glue_application.GlueApplication') as ga:
-            dc = qglue(data1=np.array([1, 2, 3]))
-            self.check_setup(dc, {'data1': ['data1']})
+        dc = qglue(data1=np.array([1, 2, 3])).data_collection
+        self.check_setup(dc, {'data1': ['data1']})
 
     def test_single_list(self):
-        with patch('glue.qt.glue_application.GlueApplication') as ga:
-            dc = qglue(data1=[1, 2, 3])
-            self.check_setup(dc, {'data1': ['data1']})
+        dc = qglue(data1=[1, 2, 3]).data_collection
+        self.check_setup(dc, {'data1': ['data1']})
 
     def test_single_dict(self):
-        with patch('glue.qt.glue_application.GlueApplication') as ga:
-            dc = qglue(data2=self.dict_data)
-            self.check_setup(dc, {'data2': ['u', 'v']})
+        dc = qglue(data2=self.dict_data).data_collection
+        self.check_setup(dc, {'data2': ['u', 'v']})
 
     def test_recarray(self):
-        with patch('glue.qt.glue_application.GlueApplication') as ga:
-            dc = qglue(data3=self.recarray_data)
-            self.check_setup(dc, {'data3': ['a', 'b']})
+        dc = qglue(data3=self.recarray_data).data_collection
+        self.check_setup(dc, {'data3': ['a', 'b']})
 
     def test_astropy_table(self):
-        with patch('glue.qt.glue_application.GlueApplication') as ga:
-            dc = qglue(data4=self.astropy_table)
-            self.check_setup(dc, {'data4': ['x', 'y']})
+        dc = qglue(data4=self.astropy_table).data_collection
+        self.check_setup(dc, {'data4': ['x', 'y']})
 
     def test_multi_data(self):
-        with patch('glue.qt.glue_application.GlueApplication') as ga:
-            dc = qglue(data1=self.dict_data, data2=self.xy)
-            self.check_setup(dc, {'data1': ['u', 'v'],
-                                  'data2': ['x', 'y']})
+        dc = qglue(data1=self.dict_data, data2=self.xy).data_collection
+        self.check_setup(dc, {'data1': ['u', 'v'],
+                         'data2': ['x', 'y']})
 
     def test_glue_data(self):
         d = Data(x=[1, 2, 3])
-        with patch('glue.qt.glue_application.GlueApplication') as ga:
-            dc = qglue(x=d)
+        dc = qglue(x=d).data_collection
         assert d.label == 'x'
 
     def test_simple_link(self):
-        with patch('glue.qt.glue_application.GlueApplication') as ga:
-            using = lambda x: x * 2
-            links = [['data1.x', 'data2.u', using]]
-            dc = qglue(data1=self.xy, data2=self.dict_data,
-                       links=links)
+        using = lambda x: x * 2
+        links = [['data1.x', 'data2.u', using]]
+        dc = qglue(data1=self.xy, data2=self.dict_data,
+                   links=links).data_collection
 
-            links = [[['x'], 'u', using]]
-            self.check_setup(dc, {'data1': ['x', 'y'],
-                                  'data2': ['u', 'v']})
+        links = [[['x'], 'u', using]]
+        self.check_setup(dc, {'data1': ['x', 'y'],
+                         'data2': ['u', 'v']})
 
-            d = dc[0] if dc[0].label == 'data1' else dc[1]
-            np.testing.assert_array_equal(d['x'], self.x)
-            np.testing.assert_array_equal(d['u'], self.x * 2)
-            d = dc[0] if dc[0].label == 'data2' else dc[1]
-            with pytest.raises(IncompatibleAttribute) as exc:
-                d['x']
+        d = dc[0] if dc[0].label == 'data1' else dc[1]
+        np.testing.assert_array_equal(d['x'], self.x)
+        np.testing.assert_array_equal(d['u'], self.x * 2)
+        d = dc[0] if dc[0].label == 'data2' else dc[1]
+        with pytest.raises(IncompatibleAttribute) as exc:
+            d['x']
 
     def test_multi_link(self):
-        with patch('glue.qt.glue_application.GlueApplication') as ga:
-            forwards = lambda *args: (args[0] * 2, args[1] * 3)
-            backwards = lambda *args: (args[0] / 2, args[1] / 3)
+        forwards = lambda *args: (args[0] * 2, args[1] * 3)
+        backwards = lambda *args: (args[0] / 2, args[1] / 3)
 
-            links = [[['Data1.x', 'Data1.y'],
-                      ['Data2.u', 'Data2.v'], forwards, backwards]]
-            dc = qglue(Data1=self.xy, Data2=self.dict_data,
-                       links=links)
+        links = [[['Data1.x', 'Data1.y'],
+                ['Data2.u', 'Data2.v'], forwards, backwards]]
+        dc = qglue(Data1=self.xy, Data2=self.dict_data,
+                   links=links).data_collection
 
-            self.check_setup(dc, {'Data1': ['x', 'y'],
-                                  'Data2': ['u', 'v']})
+        self.check_setup(dc, {'Data1': ['x', 'y'],
+                         'Data2': ['u', 'v']})
 
-            for d in dc:
-                if d.label == 'Data1':
-                    np.testing.assert_array_equal(d['x'], self.x)
-                    np.testing.assert_array_equal(d['y'], self.y)
-                    np.testing.assert_array_equal(d['u'], self.x * 2)
-                    np.testing.assert_array_equal(d['v'], self.y * 3)
-                else:
-                    np.testing.assert_array_equal(d['x'], self.u / 2)
-                    np.testing.assert_array_equal(d['y'], self.v / 3)
-                    np.testing.assert_array_equal(d['u'], self.u)
-                    np.testing.assert_array_equal(d['v'], self.v)
+        for d in dc:
+            if d.label == 'Data1':
+                np.testing.assert_array_equal(d['x'], self.x)
+                np.testing.assert_array_equal(d['y'], self.y)
+                np.testing.assert_array_equal(d['u'], self.x * 2)
+                np.testing.assert_array_equal(d['v'], self.y * 3)
+            else:
+                np.testing.assert_array_equal(d['x'], self.u / 2)
+                np.testing.assert_array_equal(d['y'], self.v / 3)
+                np.testing.assert_array_equal(d['u'], self.u)
+                np.testing.assert_array_equal(d['v'], self.v)
 
     def test_implicit_identity_link(self):
-        with patch('glue.qt.glue_application.GlueApplication') as ga:
-            links = [('Data1.x', 'Data2.v'),
-                     ('Data1.y', 'Data2.u')]
-            dc = qglue(Data1=self.xy, Data2=self.dict_data,
-                       links=links)
+        links = [('Data1.x', 'Data2.v'),
+                 ('Data1.y', 'Data2.u')]
+        dc = qglue(Data1=self.xy, Data2=self.dict_data,
+                   links=links).data_collection
         # currently, identity links rename the second link to first,
         # so u/v disappear
         for d in dc:
@@ -169,20 +162,20 @@ class TestQGlue(object):
         links = [(['Data1.a'], ['Data2.b'], forwards)]
         with pytest.raises(ValueError) as exc:
             dc = qglue(Data1=self.xy, Data2=self.dict_data,
-                       links=links)
+                       links=links).data_collection
         assert exc.value.args[0] == "Invalid link (no component named Data1.a)"
 
     def test_bad_data_shape(self):
         with pytest.raises(ValueError) as exc:
-            dc = qglue(d=self.bad_data)
+            dc = qglue(d=self.bad_data).data_collection
         assert exc.value.args[0].startswith("Invalid format for data 'd'")
 
     def test_bad_data_format(self):
         with pytest.raises(TypeError) as exc:
-            dc = qglue(d=5)
+            dc = qglue(d=5).data_collection
         assert exc.value.args[0].startswith("Invalid data description")
 
     def test_malformed_data_dict(self):
         with pytest.raises(ValueError) as exc:
-            dc = qglue(d={'x': 'bad'})
+            dc = qglue(d={'x': 'bad'}).data_collection
         assert exc.value.args[0].startswith("Invalid format for data 'd'")

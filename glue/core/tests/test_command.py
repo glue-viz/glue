@@ -131,7 +131,7 @@ class TestCommandStack(object):
         client.apply_roi.assert_called_once_with(r)
 
         old_state = s.subset_state
-        s.subset_state = MagicMock()
+        s.subset_state = MagicMock(spec_set=core.subset.SubsetState)
 
         self.stack.undo()
         assert s.subset_state is old_state
