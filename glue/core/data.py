@@ -903,6 +903,8 @@ class Data(object):
         #      during updating, since plots may already
         # be using it (issue #279). Instead,
         #      we just mark it as hidden
+        if new is old:
+            return
 
         changed = False
         if old in self._components:
@@ -924,7 +926,7 @@ class Data(object):
         if changed and self.hub is not None:
             # obfuscante name if needed
             if new.label == old.label:
-                old._label = '_' + old._label
+                old.label = '_' + old.label
             old._hidden = True
             self.hub.broadcast(ComponentsChangedMessage(self))
 
