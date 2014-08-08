@@ -275,6 +275,7 @@ class ImageWidget(DataViewer):
         update_ui_slice = lambda val: setattr(ui.slice, 'slice', val)
         add_callback(self.client, 'slice', update_ui_slice)
 
+    @defer_draw
     def _update_slice(self):
         self.client.slice = self.ui.slice.slice
 

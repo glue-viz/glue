@@ -1,9 +1,11 @@
 import logging
-from functools import partial
+from functools import partial, wraps
+
 import numpy as np
 from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
 from matplotlib.ticker import (LogFormatterMathtext, ScalarFormatter,
                                FuncFormatter)
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 from ..core.data import CategoricalComponent
 
 
@@ -173,3 +175,55 @@ def update_ticks(axes, coord, components, is_log):
     else:
         axis.set_major_locator(AutoLocator())
         axis.set_major_formatter(ScalarFormatter())
+
+
+class DeferredMethod(object):
+
+    """
+    This class stubs out a method, and provides a
+    callable interface that logs its calls. These
+    can later be actually executed on the original (non-stubbed)
+    method by calling executed_deferred_calls
+    """
+
+    def __init__(self, method):
+        self.method = method
+        self.calls = []  # avoid hashability issues with dict/set
+
+    @property
+    def original_method(self):
+        return self.method
+
+    def __call__(self, instance, *a, **k):
+        if instance not in (c[0] for c in self.calls):
+            self.calls.append((instance, a, k))
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        return partial(self.__call__, instance)
+
+    def execute_deferred_calls(self):
+        for instance, args, kwargs in self.calls:
+            self.method(instance, *args, **kwargs)
+
+
+def defer_draw(func):
+    """
+    Decorator that globally defers all Agg canvas draws until
+    function exit.
+
+    If a Canvas instance's draw method is invoked multiple times,
+    it will only be called once after the wrapped function returns.
+    """
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            FigureCanvasAgg.draw = DeferredMethod(FigureCanvasAgg.draw)
+            result = func(*args, **kwargs)
+        finally:
+            FigureCanvasAgg.draw.execute_deferred_calls()
+            FigureCanvasAgg.draw = FigureCanvasAgg.draw.original_method
+        return result
+
+    return wrapper
