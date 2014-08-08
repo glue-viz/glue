@@ -20,12 +20,11 @@ from ...core.callback_property import add_callback
 from .data_slice_widget import DataSlice
 
 from ..mouse_mode import (RectangleMode, CircleMode, PolyMode,
-                          ContrastMode, ContourMode, PathMode)
+                          ContrastMode, PathMode)
 from ..glue_toolbar import GlueToolbar
 from ..spectrum_tool import SpectrumTool
 from .mpl_widget import MplWidget, defer_draw
 
-from ..decorators import set_cursor
 from ..qtutil import cmap2pixmap, load_ui, get_icon, nonpartial
 from ..widget_properties import CurrentComboProperty, ButtonProperty
 
@@ -107,7 +106,6 @@ class ImageWidget(DataViewer):
         circ = CircleMode(axes, roi_callback=apply_mode)
         poly = PolyMode(axes, roi_callback=apply_mode)
         contrast = ContrastMode(axes, move_callback=self._set_norm)
-        contour = ContourMode(axes, release_callback=self._contour_roi)
         spectrum = self._spectrum_tool.mouse_mode
         path = PathMode(axes, roi_callback=slice)
 
@@ -122,7 +120,7 @@ class ImageWidget(DataViewer):
 
         self._contrast = contrast
         self._path = path
-        return [rect, circ, poly, contour, contrast, spectrum, path]
+        return [rect, circ, poly, contrast, spectrum, path]
 
     def _extract_slice(self, roi):
         """
@@ -237,7 +235,7 @@ class ImageWidget(DataViewer):
 
     @slice.setter
     def slice(self, value):
-        self.ui.slice.slice = value
+        self.client.slice = value
 
     @defer_draw
     def set_attribute(self, index):
@@ -338,21 +336,6 @@ class ImageWidget(DataViewer):
                                     stretch=stretch,
                                     bias=mode.bias, contrast=mode.contrast)
 
-    @set_cursor(Qt.WaitCursor)
-    def _contour_roi(self, mode):
-        """ Callback for ContourMode. Set edit_subset as new ROI """
-        im = self.client.display_data
-        att = self.client.display_attribute
-
-        if im is None or att is None:
-            return
-        if im.size > WARN_THRESH and not self._confirm_large_image(im):
-            return
-
-        roi = mode.roi(im[att])
-        if roi:
-            self.apply_roi(roi)
-
     def _update_window_title(self):
         if self.client.display_data is None:
             title = ''
@@ -382,7 +365,7 @@ class ImageWidget(DataViewer):
         return "Image Widget"
 
     def _confirm_large_image(self, data):
-        """Ask user to confirm expensive contour operations
+        """Ask user to confirm expensive operations
 
         :rtype: bool. Whether the user wishes to continue
         """

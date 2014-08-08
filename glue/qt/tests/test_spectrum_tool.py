@@ -103,7 +103,7 @@ class Test3DExtractor(object):
 
     def test_world2pixel(self):
         # w2p(x) = x/2, 0 <= x <= 4
-        assert Extractor.world2pixel(self.data, 0, 2) == 1
+        assert Extractor.world2pixel(self.data, 0, 2.01) == 1
 
         # clips to boundary
         assert Extractor.world2pixel(self.data, 0, -1) == 0

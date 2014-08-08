@@ -103,14 +103,16 @@ class TestFacetSubsets(object):
         grps = facet_subsets(self.collect, self.data.id['x'])
         assert len(grps) == 5
 
-    def test_prefix(self):
-        grps = facet_subsets(self.collect, self.data.id['x'], prefix='test')
-        for i, s in enumerate(grps, start=1):
-            assert s.label == "test_%i" % i
-
+    def test_label(self):
         grps = facet_subsets(self.collect, self.data.id['x'])
+        lbls = ['1.0<=x<2.2', '2.2<=x<3.4', '3.4<=x<4.6', '4.6<=x<5.8',
+                '5.8<=x<7.0', None]
+        for s, lbl in zip(grps, lbls):
+            assert s.label == lbl
+
+        grps = facet_subsets(self.collect, self.data.id['x'], prefix='test_')
         for i, s in enumerate(grps, start=1):
-            assert s.label.startswith('x')
+            assert s.label.startswith('test_')
 
     def test_facet_reversed(self):
         grps = facet_subsets(self.collect, self.data.id['x'],

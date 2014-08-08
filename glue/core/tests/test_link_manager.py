@@ -1,4 +1,4 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import numpy as np
 
 from ..data import Data, Component
@@ -72,6 +72,7 @@ class TestAccessibleLinks(object):
 
 
 class TestDiscoverLinks(object):
+
     def setup_method(self, method):
         example_components(self)
 
@@ -108,6 +109,7 @@ class TestDiscoverLinks(object):
 
 
 class TestFindDependents(object):
+
     def setup_method(self, method):
         example_components(self)
 
@@ -165,12 +167,12 @@ class TestLinkManager(object):
         assert derived == expected
 
     def test_update_data_components_removes_correctly(self):
-        #add all but last link to manager
+        # add all but last link to manager
         example_components(self, add_derived=False)
         lm = LinkManager()
         map(lm.add_link, self.links[:-1])
 
-        #manually add last link as derived component
+        # manually add last link as derived component
         dc = DerivedComponent(self.data, self.links[-1])
         self.data.add_component(dc, dc.link.get_to_id())
         removed = set([dc.link.get_to_id()])
@@ -192,13 +194,13 @@ class TestLinkManager(object):
 
         dc = DataCollection([d1, d2])
 
-        #link world coordinates...
+        # link world coordinates...
         dc.add_link(LinkSame(
             d1.get_world_component_id(0), d2.get_world_component_id(0)))
         dc.add_link(LinkSame(
             d1.get_world_component_id(1), d2.get_world_component_id(1)))
 
-        #and then retrieve pixel coordinates
+        # and then retrieve pixel coordinates
         np.testing.assert_array_equal(
             d2[d1.get_pixel_component_id(0)], [[0, 0], [1, 1]])
         np.testing.assert_array_equal(
@@ -216,7 +218,7 @@ class TestLinkManager(object):
 
         dc = DataCollection([d1, d2])
         dc.add_link(LinkSame(d2.id['u'], d1.id['x']))
-        assert d1.find_component_id('x') is None
+        assert d1.find_component_id('x').hidden
 
         np.testing.assert_array_equal(d1['z'], [3, 5, 7])
 
@@ -232,6 +234,6 @@ class TestLinkManager(object):
 
         dc = DataCollection([d1, d2])
         dc.add_link(LinkSame(d2.id['u'], d1.id['x']))
-        assert d1.find_component_id('x') is None
+        assert d1.find_component_id('x').hidden
 
         np.testing.assert_array_equal(d1['z'], [8, 10, 12])
