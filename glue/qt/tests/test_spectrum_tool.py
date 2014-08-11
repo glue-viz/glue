@@ -47,7 +47,8 @@ class TestSpectrumTool(object):
 
     def test_reset_on_view_change(self):
         self.build_spectrum()
-
+        self.tool.widget = MagicMock()
+        self.tool.widget.isVisible.return_value = True
         self.tool.reset = MagicMock()
         self.image.client.slice = ('x', 1, 'y')
         assert self.tool.reset.call_count > 0
