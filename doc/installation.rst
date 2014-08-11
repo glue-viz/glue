@@ -5,6 +5,8 @@ Installing Glue
 
 There are several ways to install Glue on your computer. We recommend one of the first two options, which greatly simplify of the (sometimes tricky) task of installing QT, Matplotlib, and other libraries that Glue relies on.
 
+.. note :: Currently, Glue is only supported on Python 2.7. Python 3 support is in progress.
+
 
 Easiest Option (Recommended for Mac users)
 ------------------------------------------
