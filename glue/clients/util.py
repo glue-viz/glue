@@ -218,6 +218,11 @@ def defer_draw(func):
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
+
+        # don't recursively defer draws
+        if isinstance(FigureCanvasAgg.draw, DeferredMethod):
+            return func(*args, **kwargs)
+
         try:
             FigureCanvasAgg.draw = DeferredMethod(FigureCanvasAgg.draw)
             result = func(*args, **kwargs)
