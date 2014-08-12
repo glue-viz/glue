@@ -14,6 +14,7 @@ from ..core.callback_property import (
 from ..core.edit_subset_mode import EditSubsetMode
 
 from .viz_client import VizClient, init_mpl
+from .util import defer_draw
 from .layer_artist import (ScatterLayerArtist, LayerArtistContainer,
                            ImageLayerArtist, SubsetImageLayerArtist,
                            RGBImageLayerArtist)
@@ -155,6 +156,7 @@ class ImageClient(VizClient):
         return self._slice
 
     @slice.setter
+    @defer_draw
     def slice(self, value):
         if self.slice == tuple(value):
             return
@@ -220,6 +222,7 @@ class ImageClient(VizClient):
                 a.clear_override()
 
     @slice_ind.setter
+    @defer_draw
     def slice_ind(self, value):
         if self.is_3D:
             slc = [s if s in ['x', 'y'] else value for s in self.slice]
@@ -248,6 +251,7 @@ class ImageClient(VizClient):
             self._redraw()
             self._view_window = vw
 
+    @defer_draw
     def set_data(self, data, attribute=None):
         if not self.can_image_data(data):
             return
@@ -265,6 +269,7 @@ class ImageClient(VizClient):
         self._update_scatter_plots()
         self._redraw()
 
+    @defer_draw
     def _update_wcs_axes(self, data, slc):
         wcs = getattr(data.coords, 'wcs', None)
 
@@ -303,6 +308,7 @@ class ImageClient(VizClient):
         self._ax.figure.canvas.draw()
 
     @requires_data
+    @defer_draw
     def set_norm(self, **kwargs):
         for a in self.artists[self.display_data]:
             a.set_norm(**kwargs)
@@ -320,6 +326,7 @@ class ImageClient(VizClient):
         return a.norm
 
     @requires_data
+    @defer_draw
     def set_cmap(self, cmap):
         for a in self.artists[self.display_data]:
             a.cmap = cmap

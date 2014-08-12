@@ -275,6 +275,7 @@ class ImageWidget(DataViewer):
         update_ui_slice = lambda val: setattr(ui.slice, 'slice', val)
         add_callback(self.client, 'slice', update_ui_slice)
 
+    @defer_draw
     def _update_slice(self):
         self.client.slice = self.ui.slice.slice
 
@@ -601,14 +602,15 @@ class PVSliceWidget(StandaloneImageWidget):
         self._x = x
         self._y = y
 
+    @defer_draw
     def _sync_slice(self, event):
         s = list(self._slc)
-
         # XXX breaks if display_data changes
         _, _, z = self._pos_in_parent(event)
         s[_slice_index(self._parent.data, s)] = z
         self._parent.slice = tuple(s)
 
+    @defer_draw
     def _draw_crosshairs(self, event):
         x, y, _ = self._pos_in_parent(event)
         ax = self._parent.client.axes
@@ -617,6 +619,7 @@ class PVSliceWidget(StandaloneImageWidget):
         ax.figure.canvas.draw()
         m.remove()
 
+    @defer_draw
     def _on_move(self, event):
         if not event.button:
             return

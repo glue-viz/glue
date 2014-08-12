@@ -190,6 +190,9 @@ class NavContext(SpectrumContext):
     def _setup_grip(self):
         def _set_client_from_grip(value):
             """Update client.slice given grip value"""
+            if not self.main.enabled:
+                return
+
             slc = list(self.client.slice)
             # client.slice stored in pixel coords
             value = Extractor.world2pixel(
@@ -203,6 +206,9 @@ class NavContext(SpectrumContext):
 
         def _set_grip_from_client(slc):
             """Update grip.value given client.slice"""
+            if not self.main.enabled:
+                return
+
             # grip.value is stored in world coordinates
             val = slc[self.profile_axis]
             val = Extractor.pixel2world(self.data, self.profile_axis, val)
@@ -528,6 +534,11 @@ class SpectrumTool(object):
                                                              label='Profile')
         w.close()
 
+    @property
+    def enabled(self):
+        """Return whether the window is visible and active"""
+        return self.widget.isVisible()
+
     def mdi_wrap(self):
         sub = QMdiSubWindow()
         sub.setWidget(self.widget)
@@ -613,7 +624,7 @@ class SpectrumTool(object):
         If we change the orientation of the slice,
         reset and hide the profile viewer
         """
-        if self.profile_axis is None:
+        if self.profile_axis is None or not self.enabled:
             return
 
         if (slc_old.index('x') != slc_new.index('x') or

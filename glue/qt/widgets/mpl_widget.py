@@ -81,6 +81,7 @@ class MplCanvas(FigureCanvas):
     resize_end = Signal()
 
     def __init__(self):
+        self._draw_count = 0
         interactive = matplotlib.is_interactive()
         matplotlib.interactive(False)
         self.roi_callback = None
@@ -138,6 +139,10 @@ class MplCanvas(FigureCanvas):
             self.resize_begin.emit()
         self._resize_timer.start()
         super(MplCanvas, self).resizeEvent(event)
+
+    def draw(self, *args, **kwargs):
+        self._draw_count += 1
+        return super(MplCanvas, self).draw(*args, **kwargs)
 
 
 class MplWidget(QtGui.QWidget):
