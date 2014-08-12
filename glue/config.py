@@ -108,6 +108,7 @@ class ExporterRegistry(Registry):
     """
 
     def default_members(self):
+        import glue.plugins  # discover plugins
         return []
 
     def add(self, label, exporter, checker, outmode='file'):
@@ -212,10 +213,8 @@ class QtClientRegistry(Registry):
 
     def default_members(self):
         try:
-            from .qt.widgets.scatter_widget import ScatterWidget
-            from .qt.widgets.image_widget import ImageWidget
-            from .qt.widgets.histogram_widget import HistogramWidget
-            return [ScatterWidget, ImageWidget, HistogramWidget]
+            from .qt.widgets import default_widgets
+            return default_widgets
         except ImportError:
             logging.getLogger(__name__).warning(
                 "could not import glue.qt in ConfigObject")

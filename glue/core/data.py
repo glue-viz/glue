@@ -523,6 +523,8 @@ class Data(object):
         for lbl, data in kwargs.items():
             self.add_component(data, lbl)
 
+        self._key_joins = {}
+
     @property
     def subsets(self):
         """
@@ -587,6 +589,51 @@ class Data(object):
         """
         if component_id in self._components:
             self._components.pop(component_id)
+
+    def join_on_key(self, other, cid, cid_other):
+        """
+        Create an *element* mapping to another dataset, by
+        joining on values of ComponentIDs in both datasets.
+
+        This join allows any subsets defined on `other` to be
+        propagated to self.
+
+        :param other: :class:`Data` to join with
+        :param cid: str or :class:`ComponentID` in this dataset to use as a key
+        :param cid_other: ComponentID in the other dataset to use as a key
+
+        :example:
+
+        >>> d1 = Data(x=[1, 2, 3, 4, 5], k1=[0, 0, 1, 1, 2], label='d1')
+        >>> d2 = Data(y=[2, 4, 5, 8, 4], k2=[1, 3, 1, 2, 3], label='d2')
+        >>> d2.join_on_key(d1, 'k2', 'k1')
+
+        >>> s = d1.new_subset()
+        >>> s.subset_state = d1.id['x'] > 2
+        >>> s.to_mask()
+        array([False, False,  True,  True,  True], dtype=bool)
+
+        >>> s = d2.new_subset()
+        >>> s.subset_state = d1.id['x'] > 2
+        >>> s.to_mask()
+        array([ True, False,  True,  True, False], dtype=bool)
+
+        The subset state selects the last 3 items in d1. These have
+        key values k1 of 1 and 2. Thus, the selected items in d2
+        are the elements where k2 = 1 or 2.
+        """
+        _i1, _i2 = cid, cid_other
+        cid = self.find_component_id(cid)
+        cid_other = other.find_component_id(cid_other)
+        if cid is None:
+            raise ValueError("ComponentID not found in %s: %s" %
+                             (self.label, _i1))
+        if cid_other is None:
+            raise ValueError("ComponentID not found in %s: %s" %
+                             (other.label, _i2))
+
+        self._key_joins[other] = (cid, cid_other)
+        other._key_joins[self] = (cid_other, cid)
 
     def add_component(self, component, label, hidden=False):
         """ Add a new component to this data set.
@@ -743,13 +790,13 @@ class Data(object):
     def find_component_id(self, label):
         """ Retrieve component_ids associated by label name.
 
-        :param label: string to search for
+        :param label: ComponentID or string to search for
 
         :returns:
             The associated ComponentID if label is found and unique, else None
         """
         result = [cid for cid in self.component_ids() if
-                  cid.label == label]
+                  cid.label == label or cid is label]
         if len(result) == 1:
             return result[0]
 

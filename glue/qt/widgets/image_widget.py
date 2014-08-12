@@ -319,6 +319,7 @@ class ImageWidget(DataViewer):
                       filter=layer_present_filter)
 
     def unregister(self, hub):
+        super(ImageWidget, self).unregister(hub)
         for obj in [self, self.client]:
             hub.unsubscribe_all(obj)
 

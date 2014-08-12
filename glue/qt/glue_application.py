@@ -779,7 +779,8 @@ class GlueApplication(Application, QMainWindow):
         w.show()
         w.raise_()
 
-        w.merged_label.setText(data.label)
+        label = others[0].label if len(others) > 0 else data.label
+        w.merged_label.setText(label)
 
         entries = [QListWidgetItem(other.label) for other in others]
         for e in entries:

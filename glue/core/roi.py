@@ -83,6 +83,32 @@ class Roi(object):  # pragma: no cover
         return copy.copy(self)
 
 
+class PointROI(Roi):
+
+    def __init__(self, x=None, y=None):
+        self.x = x
+        self.y = y
+
+    def contains(self, x, y):
+        return False
+
+    def move_to(self, x, y):
+        self.x = x
+        self.y = y
+
+    def defined(self):
+        try:
+            return np.isfinite([self.x, self.y]).all()
+        except TypeError:
+            return False
+
+    def center(self):
+        return self.x, self.y
+
+    def reset(self):
+        self.x = self.y = None
+
+
 class RectangularROI(Roi):
 
     """
@@ -510,6 +536,30 @@ class AbstractMplRoi(object):  # pragma: no cover
 
     def _sync_patch(self):
         raise NotImplementedError()
+
+
+class MplPickROI(AbstractMplRoi):
+
+    def _draw(self):
+        pass
+
+    def _roi_factory(self):
+        return PointROI()
+
+    def start_selection(self, event):
+        self._roi.x = event.xdata
+        self._roi.y = event.ydata
+
+    def update_selection(self, event):
+        self._roi.x = event.xdata
+        self._roi.y = event.ydata
+
+    def finalize_selection(self, event):
+        self._roi.x = event.xdata
+        self._roi.y = event.ydata
+
+    def _sync_patch(self):
+        pass
 
 
 class MplRectangularROI(AbstractMplRoi):

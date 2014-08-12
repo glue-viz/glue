@@ -246,7 +246,8 @@ def load_data(path, factory=None, **kwargs):
 
     log = LoadLog(path, factory, kwargs)
     for item in as_list(d):
-        item.label = lbl
+        if item.label is '':
+            item.label = lbl
         log.log(item)  # attaches log metadata to item
         for cid in item.primary_components:
             log.log(item.get_component(cid))
@@ -694,3 +695,11 @@ for i in img_fmt:
 
 __factories__.append(img_data)
 __factories__.append(casalike_cube)
+
+try:
+    from .dendro_loader import load_dendro
+    __factories__.append(load_dendro)
+    load_dendro.label = 'Dendrogram'
+    load_dendro.identifier = has_extension('fits hdf5 h5')
+except ImportError:
+    pass

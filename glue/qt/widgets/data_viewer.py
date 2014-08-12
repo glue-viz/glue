@@ -25,6 +25,7 @@ class DataViewer(QMainWindow, ViewerBase):
        * Drag and drop support for adding data
     """
     _container_cls = QtLayerArtistContainer
+    LABEL = 'Override this'
 
     def __init__(self, session, parent=None):
         """
@@ -209,3 +210,12 @@ class DataViewer(QMainWindow, ViewerBase):
             """
             self.setStyleSheet(css)
             self.hide_toolbars()
+
+    def __str__(self):
+        return self.LABEL
+
+    def unregister(self, hub):
+        """
+        Override to perform cleanup operations when disconnecting from hub
+        """
+        pass
