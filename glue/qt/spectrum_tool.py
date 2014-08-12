@@ -445,6 +445,7 @@ class FitContext(SpectrumContext):
 
     def _connect(self):
         self.ui.fit_button.clicked.connect(nonpartial(self.fit))
+        self.ui.clear_button.clicked.connect(nonpartial(self.clear))
         self.ui.settings_button.clicked.connect(
             nonpartial(self._edit_model_options))
 
@@ -485,6 +486,11 @@ class FitContext(SpectrumContext):
 
     def _report_fit(self, report):
         self.ui.results_box.document().setPlainText(report)
+
+    def clear(self):
+        self.ui.results_box.document().setPlainText('')
+        self.main.profile.clear_fit()
+        self.canvas.draw()
 
 
 class SpectrumMainWindow(QMainWindow):
