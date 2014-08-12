@@ -24,6 +24,4 @@ _app = get_qapp()
 import atexit
 atexit.register(teardown)
 
-from .glue_application import GlueApplication
-
-from .. import plugins  # register plugin info
+#from .glue_application import GlueApplication

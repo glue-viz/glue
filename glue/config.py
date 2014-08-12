@@ -108,6 +108,7 @@ class ExporterRegistry(Registry):
     """
 
     def default_members(self):
+        import glue.plugins  # discover plugins
         return []
 
     def add(self, label, exporter, checker, outmode='file'):
