@@ -324,7 +324,7 @@ class ProfileViewer(object):
 
         Returns the created MPL artist
         """
-        self._clear_fit()
+        self.clear_fit()
         self._x = np.asarray(x).ravel()
         self._xatt = xatt
         self._y = np.asarray(y).ravel()
@@ -340,7 +340,7 @@ class ProfileViewer(object):
 
         return self._artist
 
-    def _clear_fit(self):
+    def clear_fit(self):
         for a in self._fit_artists:
             a.remove()
         self._fit_artists = []
@@ -416,7 +416,7 @@ class ProfileViewer(object):
         return result, x, y, dy
 
     def plot_fit(self, fitter, fit_result):
-        self._clear_fit()
+        self.clear_fit()
         x = self._x
         y = fitter.predict(fit_result, x)
         self._fit_artists = fitter.plot(fit_result, self.axes, x)
