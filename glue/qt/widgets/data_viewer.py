@@ -213,3 +213,9 @@ class DataViewer(QMainWindow, ViewerBase):
 
     def __str__(self):
         return self.LABEL
+
+    def unregister(self, hub):
+        """
+        Override to perform cleanup operations when disconnecting from hub
+        """
+        pass

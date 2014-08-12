@@ -228,6 +228,7 @@ class HistogramWidget(DataViewer):
                       handler=lambda x: self._update_attributes())
 
     def unregister(self, hub):
+        super(HistogramWidget, self).unregister(hub)
         self.client.unregister(hub)
         hub.unsubscribe_all(self)
 

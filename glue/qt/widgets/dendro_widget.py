@@ -128,6 +128,7 @@ class DendroWidget(DataViewer):
                       nonpartial(self._update_combos()))
 
     def unregister(self, hub):
+        super(DendroWidget, self).unregister(hub)
         hub.unsubscribe_all(self.client)
         hub.unsubscribe_all(self)
 
