@@ -355,7 +355,7 @@ class GlueUnSerializer(object):
 
     def _dispatch(self, rec):
         typ = _lookup(rec['_type'])
-        version = rec.get('_protocol')
+        version = rec.get('_protocol', 1)
 
         if hasattr(typ, '__setgluestate__'):
             return typ.__setgluestate__
@@ -572,6 +572,14 @@ def _save_data_2(data, context):
     return result
 
 
+@saver(Data, version=3)
+def _save_data_3(data, context):
+    result = _save_data_2(data, context)
+    result['joins'] = [(context.id(k), context.id(v[0]), v[1])
+                       for k, v in data._joins.items()]
+    return result
+
+
 @loader(Data)
 def _load_data(rec, context):
     label = rec['label']
@@ -609,10 +617,19 @@ def _load_data(rec, context):
 
 
 @loader(Data, version=2)
-def _load_datda_2(rec, context):
+def _load_data_2(rec, context):
     # adds style saving
     result = _load_data(rec, context)
     result.style = context.object(rec['style'])
+    return result
+
+
+@loader(Data, version=3)
+def _load_data_3(rec, context):
+    result = _load_data_2(rec, context)
+    for other, cid, value in rec['joins']:
+        result.join_by_lookup(context.object(other), context.object(cid),
+                              value)
     return result
 
 
