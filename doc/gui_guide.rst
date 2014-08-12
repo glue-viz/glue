@@ -9,4 +9,5 @@ User Interface Guide
    custom_subsets.rst
    spectrum.rst
    slice.rst
+   dendro.rst
    configuration.rst

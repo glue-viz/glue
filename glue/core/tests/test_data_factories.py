@@ -22,6 +22,9 @@ needs_astrodendro = pytest.mark.skipif(missing_astrodendro, reason='Astrodendro 
 
 def test_load_data():
     factory = MagicMock()
+    result = MagicMock()
+    result.label = ''
+    factory.return_value = result
     d = df.load_data('test.fits', factory)
     factory.assert_called_once_with('test.fits')
     assert d.label == 'test'

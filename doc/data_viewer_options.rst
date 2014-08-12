@@ -8,7 +8,7 @@ controled by simple properties on data viewer objects.
 For example::
 
     from glue.core import Data, DataCollection
-    from glue.qt import GlueApplication
+    from glue.qt.glue_application import GlueApplication
     from glue.qt.widgets import ScatterWidget
     import numpy as np
 
@@ -110,7 +110,7 @@ From a script
 Save the current glue session via ``File->Save Session``. You can
 reload this session programmatically as follows::
 
-    from glue.qt import GlueApplication
+    from glue.qt.glue_application import GlueApplication
     app = GlueApplication.restore('output.glu', show=False)
     plot = app.viewers[0][0]
     ax = plot.axes
