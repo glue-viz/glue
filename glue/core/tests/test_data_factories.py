@@ -3,8 +3,13 @@ from distutils.version import LooseVersion
 import pytest
 from mock import MagicMock
 import numpy as np
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_array_equal
 from astropy import __version__ as _astro_ver_
+try:
+    import astrodendro
+    missing_astrodendro = False
+except ImportError:
+    missing_astrodendro = True
 
 from .. import data_factories as df
 from ..data import CategoricalComponent
@@ -12,6 +17,7 @@ from .util import make_file
 
 needs_astropy_03 = pytest.mark.skipif(LooseVersion(_astro_ver_) < LooseVersion('0.3'),
                                       reason='Astropy >=0.3 feature')
+needs_astrodendro = pytest.mark.skipif(missing_astrodendro, reason='Astrodendro feature')
 
 
 def test_load_data():
@@ -43,14 +49,14 @@ def test_png_loader():
     with make_file(data, '.png') as fname:
         d = df.load_data(fname)
         assert df.find_factory(fname) is df.img_data
-    np.testing.assert_array_equal(d['PRIMARY'], [[3, 4], [1, 2]])
+    assert_array_equal(d['PRIMARY'], [[3, 4], [1, 2]])
 
 
 def test_fits_image_loader():
     with make_file(TEST_FITS_DATA, '.fits', decompress=True) as fname:
         d = df.load_data(fname)
         assert df.find_factory(fname) is df.gridded_data
-    np.testing.assert_array_equal(d['PRIMARY'], [1, 2, 3])
+    assert_array_equal(d['PRIMARY'], [1, 2, 3])
 
 
 def test_fits_uses_mmapping():
@@ -66,7 +72,7 @@ def test_hdf5_loader(suffix):
     with make_file(data, suffix, decompress=True) as fname:
         d = df.load_data(fname)
         assert df.find_factory(fname) is df.gridded_data
-    np.testing.assert_array_equal(d['/x'], [1, 2, 3])
+    assert_array_equal(d['/x'], [1, 2, 3])
 
 
 def test_fits_catalog_factory():
@@ -75,8 +81,8 @@ def test_fits_catalog_factory():
         d = df.load_data(fname)
         assert df.find_factory(fname) is df.tabular_data
 
-    np.testing.assert_array_equal(d['a'], [1])
-    np.testing.assert_array_equal(d['b'], [2])
+    assert_array_equal(d['a'], [1])
+    assert_array_equal(d['b'], [2])
 
 
 @pytest.mark.parametrize(('delim', 'suffix'),
@@ -91,8 +97,8 @@ def test_ascii_catalog_factory(delim, suffix):
         d = df.load_data(fname)
         assert df.find_factory(fname) is df.tabular_data
 
-    np.testing.assert_array_equal(d['a'], [1])
-    np.testing.assert_array_equal(d['b'], [2])
+    assert_array_equal(d['a'], [1])
+    assert_array_equal(d['b'], [2])
 
 
 @pytest.mark.parametrize(('delim', 'suffix'),
@@ -106,8 +112,8 @@ def test_pandas_parse_delimiters(delim, suffix):
     with make_file(data, suffix) as fname:
         d = df.load_data(fname, factory=df.pandas_read_table)
 
-    np.testing.assert_array_equal(d['a'], [1])
-    np.testing.assert_array_equal(d['b'], [2])
+    assert_array_equal(d['a'], [1])
+    assert_array_equal(d['b'], [2])
 
 
 def test_fits_gz_factory():
@@ -117,7 +123,7 @@ def test_fits_gz_factory():
         d = df.load_data(fname)
         assert df.find_factory(fname) is df.gridded_data
 
-    np.testing.assert_array_equal(d['PRIMARY'], [[0, 0], [0, 0]])
+    assert_array_equal(d['PRIMARY'], [[0, 0], [0, 0]])
 
 
 def test_csv_gz_factory():
@@ -126,7 +132,7 @@ def test_csv_gz_factory():
         d = df.load_data(fname)
         assert df.find_factory(fname) is df.tabular_data
 
-    np.testing.assert_array_equal(d['x'], [1, 2, 3])
+    assert_array_equal(d['x'], [1, 2, 3])
 
 
 @needs_astropy_03
@@ -149,8 +155,8 @@ def test_excel_factory():
     with make_file(data, '.xlsx', decompress=True) as fname:
         d = df.load_data(fname)
 
-    np.testing.assert_array_equal(d['x'], [1, 2, 3])
-    np.testing.assert_array_equal(d['y'], [2, 3, 4])
+    assert_array_equal(d['x'], [1, 2, 3])
+    assert_array_equal(d['y'], [2, 3, 4])
 
 
 def test_csv_pandas_factory():
@@ -206,7 +212,7 @@ def test_dtype_badtext():
     with make_file(data, '.csv') as fname:
         d = df.load_data(fname)
     assert d['a'].dtype == np.float
-    np.testing.assert_array_equal(d['a'], [np.nan, 2, 3, 4, 5, 6])
+    assert_array_equal(d['a'], [np.nan, 2, 3, 4, 5, 6])
 
 
 def test_dtype_missing_data_col2():
@@ -214,7 +220,7 @@ def test_dtype_missing_data_col2():
     with make_file(data, '.csv') as fname:
         d = df.load_data(fname)
     assert d['b'].dtype == np.float
-    np.testing.assert_array_equal(d['b'], [1, np.nan, 3])
+    assert_array_equal(d['b'], [1, np.nan, 3])
 
 
 def test_dtype_missing_data_col1():
@@ -222,7 +228,7 @@ def test_dtype_missing_data_col1():
     with make_file(data, '.csv') as fname:
         d = df.load_data(fname)
     assert d['a'].dtype == np.float
-    np.testing.assert_array_equal(d['a'], [1, np.nan, 3])
+    assert_array_equal(d['a'], [1, np.nan, 3])
 
 
 def test_column_spaces():
@@ -230,7 +236,7 @@ def test_column_spaces():
     with make_file(data, '.csv') as fname:
         d = df.load_data(fname)
     assert d['a'].dtype == np.float
-    np.testing.assert_array_equal(d['a'], [np.nan, 2, 3, 5, 7])
+    assert_array_equal(d['a'], [np.nan, 2, 3, 5, 7])
 
 
 def test_casalike():
@@ -258,8 +264,8 @@ def test_data_reload():
             f2.write('#a, b\n0, 0\n0, 0\n0, 0\n0, 0\n0, 0')
         d._load_log.reload()
 
-    np.testing.assert_array_equal(d['a'], [0, 0, 0, 0, 0])
-    np.testing.assert_array_equal(d['b'], [0, 0, 0, 0, 0])
+    assert_array_equal(d['a'], [0, 0, 0, 0, 0])
+    assert_array_equal(d['b'], [0, 0, 0, 0, 0])
     assert d.coords is not coords_old
 
 
@@ -271,7 +277,7 @@ def test_data_reload_no_file():
     # file no longer exists
     d._load_log.reload()
 
-    np.testing.assert_array_equal(d['a'], [0, 2, 3, 5, 7])
+    assert_array_equal(d['a'], [0, 2, 3, 5, 7])
 
 
 def test_data_reload_shape_change():
@@ -284,7 +290,7 @@ def test_data_reload_shape_change():
             f2.write('#a, b\n0, 0\n0, 0\n0, 0\n0, 0')
         d._load_log.reload()
 
-    np.testing.assert_array_equal(d['a'], [0, 2, 3, 5, 7])
+    assert_array_equal(d['a'], [0, 2, 3, 5, 7])
     assert d.coords is coords_old
 
 
@@ -312,3 +318,15 @@ def test_file_watch_os_error():
 
     fw.check_for_changes()
     assert cb.call_count == 0
+
+
+@needs_astrodendro
+def test_dendrogram_load():
+    data = """x\xda\xed\xda]K\xc2`\x18\xc6\xf1^\xbe\xc8}fA\xe4[X\x14\x1eX\x99<\x90S\xd8\x02O\x9f\xf2Q<\xd8&\xcf&\xe4\xb7\xcft\x82\xc9\xe6\x1be\x91\xff\xdf\xc9\xc5\xd8v\xc1vt\xeff\xaej\xb6\x9f\xeb"UI\xe1I^\xde\xc2\xa0\x17Z?\x928\x94\'\xe5\xb9\x12\xc5:\xe8j\xdb\x95T\xf7\xcak\xabNF\xdf\xcd\xa4O[\xab\xc7\xd2\xd5\xb1\x96x<4\xb2\x86S\xeb(W2\xfa\n\x93\xbe`\xe4\xbf\x1a+ao\xde<\xf0M\x10\r\xc2 J\xed\xabw\xbc\xba\xf3\x98\xf9\xbc[\x9b\x96\x01\x00\x00\xe0`|\x8e\x93\xaej9U\xc9\xa9f\xad1\x99\xa4%\xb7p:/\xca\xd7}#\xe6=\x9eM\xa5\xeb\xfaV\xcd\xcf\x95\xabo\x9e\x9f\x8b\xdb\xcf\xcf\xd3\xbebF_e\xfb\xf7\xd7~h\xbd8\xdeF\xf3\xfdP[\xed\x9b\xd8\xd8hE_cU\xdf\xd7\xe7\xed\xdbp4\x8c\x98\xef\x01\x00\x00\xf6\xeah\xe68\xc9\x93$O3\x8e\xe7\xd7\x01\x00\x00\x00\x07i\x9f\xfb\xe7r\x89\xfd3\xfbg\x00\x00\x80\x7f\xb1\x7fN\xdbA\x03\x00\x00\x00\xf8\xc5\xfd\xf3_\xff\xff\xb9t\xcd\xfe\x19\x00\x00\x00\x1b\xed\x9f\xcf\x96\xb2\x98\xe4m\x92\xe5$/\x93,d\xe4E\x92\xa5\x1d\xef?_:\xde\xf5\xfe;\xbe\x8c\x00\x00\x00\xf0\x13>\x00\x8e\xbe x"""
+    with make_file(data, 'fits', decompress=True) as fname:
+        dg, im = df.load_data(fname, factory=df.load_dendro)
+    assert_array_equal(im['intensity'], [1, 2, 3, 2, 3, 1])
+    assert_array_equal(im['structure'], [0, 0, 1, 0, 2, 0])
+    assert_array_equal(dg['parent'], [-1, 0, 0])
+    assert_array_equal(dg['height'], [3, 3, 3])
+    assert_array_equal(dg['peak'], [3, 3, 3])
