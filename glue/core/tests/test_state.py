@@ -324,43 +324,48 @@ class TestApplication(object):
         assert sg.subsets[0].style.color == '#112233'
 
 
+class DummyClass(object):
+    pass
+
+
 class TestVersioning(object):
 
     def setup_method(self, method):
 
-        @saver(core.Data, version=3)
+        @saver(DummyClass, version=1)
         def s(d, context):
             return dict(v=3)
 
-        @loader(core.Data, version=3)
+        @loader(DummyClass, version=1)
         def l(d, context):
             return 3
 
-        @saver(core.Data, version=4)
+        @saver(DummyClass, version=2)
         def s(d, context):
             return dict(v=4)
 
-        @loader(core.Data, version=4)
+        @loader(DummyClass, version=2)
         def l(rec, context):
             return 4
 
     def teardown_method(self, method):
-        GlueSerializer.dispatch._data[core.Data].pop(3)
-        GlueSerializer.dispatch._data[core.Data].pop(4)
-        GlueUnSerializer.dispatch._data[core.Data].pop(3)
-        GlueUnSerializer.dispatch._data[core.Data].pop(4)
+        GlueSerializer.dispatch._data[DummyClass].pop(1)
+        GlueSerializer.dispatch._data[DummyClass].pop(2)
+        GlueUnSerializer.dispatch._data[DummyClass].pop(1)
+        GlueUnSerializer.dispatch._data[DummyClass].pop(2)
 
     def test_default_latest_save(self):
-        assert GlueSerializer(core.Data()).dumpo().values()[0]['v'] == 4
+        assert GlueSerializer(DummyClass()).dumpo().values()[0]['v'] == 4
+        assert GlueSerializer(DummyClass()).dumpo().values()[0]['_protocol'] == 2
 
     def test_legacy_load(self):
-        data = json.dumps({'': {'_type': 'glue.core.Data',
-                                '_protocol': 3, 'v': 2}})
+        data = json.dumps({'': {'_type': 'glue.core.tests.test_state.DummyClass',
+                                '_protocol': 1, 'v': 2}})
         assert GlueUnSerializer(data).object('') == 3
 
-    def test_default_latest_load(self):
-        data = json.dumps({'': {'_type': 'glue.core.Data'}})
-        assert GlueUnSerializer(data).object('') == 4
+    def test_default_earliest_load(self):
+        data = json.dumps({'': {'_type': 'glue.core.tests.test_state.DummyClass'}})
+        assert GlueUnSerializer(data).object('') == 3
 
 
 class TestVersionedDict(object):

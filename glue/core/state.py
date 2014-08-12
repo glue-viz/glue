@@ -355,7 +355,7 @@ class GlueUnSerializer(object):
 
     def _dispatch(self, rec):
         typ = _lookup(rec['_type'])
-        version = rec.get('_protocol')
+        version = rec.get('_protocol', 1)
 
         if hasattr(typ, '__setgluestate__'):
             return typ.__setgluestate__
