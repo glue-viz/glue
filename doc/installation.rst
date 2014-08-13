@@ -25,7 +25,7 @@ Continuum Analytics. Anaconda includes all of Glue's main dependencies.
  * Download and install the `appropriate version of Anaconda
    <http://continuum.io/downloads.html>`_
 
- * On the command line, install Glue using pip: ``pythonw -m pip install https://github.com/glue-viz/glue/archive/master.zip``
+ * On the command line, install Glue using pip: ``pythonw -m pip install glueviz``
 
  * On the command line, install any additional Glue dependencies by running ``glue-deps install``. For more information on ``glue-deps``, see :ref:`below <glue-deps>`
 
@@ -50,7 +50,7 @@ is the basic strategy:
 
  * Install `Qt 4 <http://qt-project.org/downloads>`_ and either `PyQt4 <http://www.riverbankcomputing.com/software/pyqt/download>`_ or `PySide <http://qt-project.org/wiki/Get-PySide>`_. If at all possible, use the binary installers; building PyQt4 or PySide from source is tricky (this is a euphemism).
 
- * Install Glue using pip: ``pip install https://github.com/glue-viz/glue/archive/master.zip``. Alternatively, ``git clone`` the repository and install via ``python setup.py install``
+ * Install Glue using pip: ``pip install glueviz``. Alternatively, ``git clone`` the repository and install via ``python setup.py install``
 
  * Install Glue's remaining dependencies by running ``glue-deps install``. For more information on these dependencies see :ref:`below <glue-deps>`.
 
