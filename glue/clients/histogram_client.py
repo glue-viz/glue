@@ -220,8 +220,10 @@ class HistogramClient(Client):
         data = set(a.layer.data for a in self._artists)
         if len(data) == 0:
             return
-        dx = np.mean([d.size for d in data])
-        val = min(max(5, (dx / 1000) ** (1. / 3.) * 30), 100)
+        # dx = np.mean([d.size for d in data])
+        # val = min(max(5, (dx / 1000) ** (1. / 3.) * 30), 100)
+        # from http://www.fmrib.ox.ac.uk/analysis/techrep/tr00mj2/tr00mj2/node24.html
+        val = np.mean ([(np.max(d)-np.min(d))/(2*( np.percentile(d,75)-np.percentile(d,25) )*( d.size**(-1/3.) )) for d in data])
         if not calculate_only:
             self.nbins = val
         return val
