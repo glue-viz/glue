@@ -11,7 +11,7 @@ from ..clients.layer_artist import LayerArtist
 from ..clients.dendro_client import GenericMplClient
 from ..core import Data
 from ..core.edit_subset_mode import EditSubsetMode
-from ..core.util import nonpartial
+from ..core.util import nonpartial, as_list
 from .. import core
 
 from .widgets.data_viewer import DataViewer
@@ -114,10 +114,10 @@ class AutoLayerArtist(LayerArtist):
         else:
             artists = self.plot_subset(self._axes, **kwargs)
 
-        for a in artists:
+        for a in as_list(artists):
             a.set_zorder(self.zorder)
 
-        self.artists = artists
+        self.artists = as_list(artists)
 
 
 class AutoClient(GenericMplClient):

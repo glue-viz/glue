@@ -4,7 +4,7 @@ import numpy as np
 
 from ..core.client import Client
 from ..core import message as msg
-from ..core.data import Data
+from ..core.data import Data, CategoricalComponent
 from ..core.subset import RangeSubsetState
 from ..core.exceptions import IncompatibleDataException, IncompatibleAttribute
 from ..core.edit_subset_mode import EditSubsetMode
@@ -59,7 +59,7 @@ class HistogramClient(Client):
         self._artists = artist_container or LayerArtistContainer()
         self._axes = figure.add_subplot(111)
         self._component = None
-
+        self._saved_nbins = None
         self._xlim = {}
 
         try:
@@ -194,6 +194,7 @@ class HistogramClient(Client):
             bins = update_ticks(self.axes, 'x',
                                 components, False)
 
+            return
             if bins is not None:
                 prev_bins = self.nbins
                 auto_bins = self._auto_nbin(calculate_only=True)
@@ -224,6 +225,15 @@ class HistogramClient(Client):
             return
         dx = np.mean([d.size for d in data])
         val = min(max(5, (dx / 1000) ** (1. / 3.) * 30), 100)
+
+        c = list(self._get_data_components('x'))
+        if c:
+            c = c[0]
+            if isinstance(c, CategoricalComponent):
+                val = min(c._categories.size, 100)
+                if not calculate_only:
+                    self.xlimits = (-0.5, c._categories.size - 0.5)
+
         if not calculate_only:
             self.nbins = val
         return val
@@ -278,10 +288,35 @@ class HistogramClient(Client):
         """
         if self._component is component:
             return
-        first_set = self._component == None
+
+        iscat = lambda x: isinstance(x, CategoricalComponent)
+
+        def comp_obj():
+            # the current Component (not ComponentID) object
+            x = list(self._get_data_components('x'))
+            if x:
+                x = x[0]
+            return x
+
+        prev = comp_obj()
+        old = self.nbins
+
+        first_add = self._component is None
         self._component = component
-        if first_set:
+        cur = comp_obj()
+
+        if first_add or iscat(cur):
             self._auto_nbin()
+
+        # save old bins if switch from non-category to category
+        if prev and not iscat(prev) and iscat(cur):
+            self._saved_nbins = old
+
+        # restore old bins if switch from category to non-category
+        if iscat(prev) and cur and not iscat(cur) and self._saved_nbins is not None:
+            self.nbins = self._saved_nbins
+            self._saved_nbins = None
+
         self.sync_all()
         self._relim()
 
