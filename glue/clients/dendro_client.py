@@ -76,7 +76,11 @@ class GenericMplClient(Client):
         self._update_layer(layer)
 
         self.add_layer(layer.data)
-        map(self.add_layer, layer.data.subsets)
+        for s in layer.data.subsets:
+            self.add_layer(s)
+
+        if layer.data is layer:  # Added Data object. Relimit view
+            self.axes.autoscale_view(True, True, True)
 
         return result
 
@@ -99,7 +103,8 @@ class GenericMplClient(Client):
         """
 
     def _update_all(self):
-        map(self._update_layer, self.artists.layers)
+        for layer in self.artists.layers:
+            self._update_layer(layer)
 
     def __contains__(self, layer):
         return layer in self.artists

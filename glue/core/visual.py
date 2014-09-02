@@ -49,7 +49,7 @@ class VisualAttributes(object):
         self.linestyle = 'solid'
 
         self.marker = 'o'
-        self.markersize = 4
+        self.markersize = 3
 
         self.parent = parent
 
