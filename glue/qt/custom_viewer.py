@@ -7,6 +7,8 @@ and not UI or event processing logic.
 The end user typically interacts with this code via
 :func:`glue.custom_viewer`
 """
+from collections import namedtuple
+
 from ..clients.layer_artist import LayerArtist
 from ..clients.dendro_client import GenericMplClient
 from ..core import Data
@@ -20,7 +22,7 @@ from ..external.qt import QtGui
 from ..external.qt.QtCore import Qt
 from .widgets import MplWidget
 from .glue_toolbar import GlueToolbar
-from .mouse_mode import LassoMode, RectangleMode
+from .mouse_mode import PolyMode, RectangleMode
 
 CUSTOM_WIDGETS = []
 
@@ -159,6 +161,8 @@ class AutoWidget(DataViewer):
     update_settings = noop
     make_selector = noop
 
+    redraw_on_settings_change = True
+
     def __init__(self, session, parent=None):
         super(AutoWidget, self).__init__(session, parent)
         self.central_widget = MplWidget()
@@ -172,6 +176,10 @@ class AutoWidget(DataViewer):
         self.statusBar().setSizeGripEnabled(False)
         self._update_artists = []
 
+    @property
+    def selections_enabled(self):
+        return type(self).make_selector is not noop
+
     def options_widget(self):
         return self.option_widget
 
@@ -181,15 +189,19 @@ class AutoWidget(DataViewer):
     def build_ui(self):
         self._settings = {}
         result = QtGui.QWidget()
+
         layout = QtGui.QFormLayout()
+        layout.setFieldGrowthPolicy(layout.AllNonFixedFieldsGrow)
         result.setLayout(layout)
-        for k, v in type(self).ui.items():
+
+        for k in sorted(type(self).ui):
+            v = type(self).ui[k]
             w = FormElement.auto(v)
             w.container = self._container
             w.add_callback(self.settings_changed)
             self._settings[k] = w
             if w.ui is not None:
-                layout.addRow(k, w.ui)
+                layout.addRow(k.title(), w.ui)
 
         return result
 
@@ -201,6 +213,9 @@ class AutoWidget(DataViewer):
                 pass
         self._update_artists = self.update_settings(self.client.axes,
                                                     **self.settings())
+        if self.redraw_on_settings_change:
+            self.client._update_all()
+
         self.client._redraw()
 
     def make_toolbar(self):
@@ -211,13 +226,17 @@ class AutoWidget(DataViewer):
         return result
 
     def _mouse_modes(self):
+        if not self.selections_enabled:
+            return []
+
         axes = self.client.axes
 
         def apply_mode(mode):
             self.client.apply_roi(mode.roi())
 
+        # return []
         return [RectangleMode(axes, roi_callback=apply_mode),
-                LassoMode(axes, roi_callback=apply_mode)]
+                PolyMode(axes, roi_callback=apply_mode)]
 
     def add_data(self, data):
         """Add a new data set to the widget
@@ -309,15 +328,43 @@ class NumberElement(FormElement):
 
     def _build_ui(self):
         w = QtGui.QSlider()
-        w.setMinimum(self.params[0])
-        w.setMaximum(self.params[1])
-        w.setValue((self.params[0] + self.params[1]) / 2)
-        w.setOrientation(Qt.Horizontal)
+        w = LabeledSlider(self.params[0], self.params[1])
         w.valueChanged.connect(nonpartial(self.changed))
         return w
 
     def value(self, data=None):
         return self.ui.value()
+
+
+class LabeledSlider(QtGui.QWidget):
+
+    def __init__(self, min, max, default=None, parent=None):
+        super(LabeledSlider, self).__init__(parent)
+        self._slider = QtGui.QSlider()
+        self._slider.setMinimum(min)
+        self._slider.setMaximum(max)
+        if default is None:
+            default = (min + max) / 2
+        self._slider.setValue(default)
+        self._slider.setOrientation(Qt.Horizontal)
+
+        self._lbl = QtGui.QLabel(str(self._slider.value()))
+
+        self._l = QtGui.QHBoxLayout()
+        self._l.setContentsMargins(2, 2, 2, 2)
+        self._l.addWidget(self._slider)
+        self._l.addWidget(self._lbl)
+
+        self._slider.valueChanged.connect(lambda x: self._lbl.setText(str(x)))
+
+        self.setLayout(self._l)
+
+    @property
+    def valueChanged(self):
+        return self._slider.valueChanged
+
+    def value(self):
+        return self._slider.value()
 
 
 class BoolElement(FormElement):
@@ -336,6 +383,17 @@ class BoolElement(FormElement):
         return self.ui.isChecked()
 
 
+class AttributeInfo(namedtuple('AttributeInfo', 'id values')):
+
+    """
+    A tuple wrapping a Component of a dataset
+
+    :param id: The identifier for this attribute (ComponentID or string)
+    :param data: The numerical data (numpy array or None)
+    """
+    pass
+
+
 class FixedComponent(FormElement):
 
     @classmethod
@@ -349,8 +407,10 @@ class FixedComponent(FormElement):
         pass
 
     def value(self, data=None):
+        cid = self.params.split('(')[-1][:-1]
         if data is not None:
-            return data[self.params.split('(')[-1][:-1]]
+            return AttributeInfo(data.data.id[cid], data[cid])
+        return AttributeInfo(cid, None)
 
 
 class ComponenentElement(FormElement, core.hub.HubListener):
@@ -368,8 +428,8 @@ class ComponenentElement(FormElement, core.hub.HubListener):
     def value(self, data=None):
         cid = self._component
         if data is None or cid is None:
-            return cid
-        return data[cid]
+            return AttributeInfo(cid, None)
+        return AttributeInfo(cid, data.data[cid])
 
     def _update_components(self):
         combo = self.ui

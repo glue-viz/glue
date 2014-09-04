@@ -355,6 +355,7 @@ class GlueApplication(Application, QMainWindow):
         layout = self._ui.plot_layers.layout()
         if not layout:
             layout = QVBoxLayout()
+            layout.setContentsMargins(4, 4, 4, 4)
             self._ui.plot_layers.setLayout(layout)
         while layout.count():
             layout.takeAt(0).widget().hide()
@@ -363,6 +364,7 @@ class GlueApplication(Application, QMainWindow):
         layout = self._ui.plot_options.layout()
         if not layout:
             layout = QVBoxLayout()
+            layout.setContentsMargins(4, 4, 4, 4)
             self._ui.plot_options.setLayout(layout)
         while layout.count():
             layout.takeAt(0).widget().hide()
