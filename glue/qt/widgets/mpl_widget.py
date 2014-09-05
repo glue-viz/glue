@@ -117,8 +117,13 @@ class MplCanvas(FigureCanvas):
 
     def paintEvent(self, event):
         # draw the zoom rectangle more prominently
-        drawRect = self.drawRect
-        self.drawRect = False
+        try:
+            drawRect = self.drawRect
+            self.drawRect = False
+
+        except AttributeError:  # mpl  1.4
+            drawRect = self._drawRect
+            self._drawRect = None
 
         # super needs this
         if self.renderer is None:
@@ -126,9 +131,13 @@ class MplCanvas(FigureCanvas):
 
         super(MplCanvas, self).paintEvent(event)
         if drawRect:
+            try:
+                x, y, w, h = self.rect[0], self.rect[1], self.rect[2], self.rect[3]
+            except TypeError:  # mpl 1.4
+                x, y, w, h = drawRect
             p = QtGui.QPainter(self)
             p.setPen(QtGui.QPen(Qt.red, 2, Qt.DotLine))
-            p.drawRect(self.rect[0], self.rect[1], self.rect[2], self.rect[3])
+            p.drawRect(x, y, w, h)
             p.end()
 
         if self.roi_callback is not None:
