@@ -1,3 +1,4 @@
+import pytest
 from mock import MagicMock, patch
 from numpy.testing import assert_array_equal
 from matplotlib.axes import Axes
@@ -5,6 +6,12 @@ from matplotlib.axes import Axes
 from ... import custom_viewer
 from ...core import Data
 from ...core.tests.util import simple_session
+from ..custom_viewer import FormElement, NumberElement, ChoiceElement
+
+
+def _make_widget(viewer):
+    s = simple_session()
+    return viewer._widget_cls(s)
 
 
 class TestCustomViewer(object):
@@ -58,7 +65,7 @@ class TestCustomViewer(object):
         s = w.settings(self.data)
 
         assert s['a'] == 50
-        assert_array_equal(s['c'], [1, 2, 3])
+        assert_array_equal(s['c'].values, [1, 2, 3])
         assert s['d'] is True
         assert s['e'] is False
         assert s['f'] == 'a'
@@ -71,7 +78,7 @@ class TestCustomViewer(object):
         a, k = self.plot_data.call_args
         assert isinstance(a[0], Axes)
         assert set(k.keys()) == set(('a', 'b', 'c', 'd', 'e', 'f', 'g', 'style'))
-        assert_array_equal(k['c'], [1, 2, 3])
+        assert_array_equal(k['c'].values, [1, 2, 3])
 
     def test_plot_subset(self):
         w = self.build()
@@ -81,7 +88,7 @@ class TestCustomViewer(object):
 
         a, k = self.plot_subset.call_args
         assert set(k.keys()) == set(('a', 'b', 'c', 'd', 'e', 'f', 'g', 'style'))
-        assert_array_equal(k['c'], [3])
+        assert_array_equal(k['c'].values, [3])
 
     def test_make_selector(self):
         w = self.build()
@@ -90,7 +97,6 @@ class TestCustomViewer(object):
         w.client.apply_roi(roi)
 
         a, k = self.make_selector.call_args
-        print k
 
         assert a == (roi,)
         assert set(k.keys()) == set(('a', 'b', 'c', 'd', 'e', 'f', 'g'))
@@ -114,8 +120,7 @@ class TestCustomViewer(object):
         w = self.build()
         w.add_data(self.data)
 
-        print w._settings['b']._component
-        assert_array_equal(w.settings(self.data)['b'], [1, 2, 3])
+        assert_array_equal(w.settings(self.data)['b'].values, [1, 2, 3])
 
     def test_component_autoupdate(self):
 
@@ -125,3 +130,30 @@ class TestCustomViewer(object):
         assert w._settings['b'].ui.count() == 2
         self.data.add_component([10, 20, 30], label='c')
         assert w._settings['b'].ui.count() == 3
+
+
+class TestFormElements(object):
+
+    def test_number_default_value(self):
+        e = FormElement.auto((0, 100, 30))
+        assert e.value() == 30
+
+    def test_number_float(self):
+        e = FormElement.auto((0.0, 1.0, 0.3))
+        assert e.value() == 0.3
+
+    def test_number_list(self):
+        e = FormElement.auto([0, 10])
+        assert isinstance(e, NumberElement)
+
+    def test_choice_list(self):
+        e = FormElement.auto(['a', 'b'])
+        assert isinstance(e, ChoiceElement)
+
+    def test_choice_tuple(self):
+        e = FormElement.auto(('a', 'b'))
+        assert isinstance(e, ChoiceElement)
+
+    def test_unrecognized(self):
+        with pytest.raises(ValueError):
+            e = FormElement.auto(None)

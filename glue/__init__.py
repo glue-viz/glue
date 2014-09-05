@@ -77,6 +77,9 @@ def custom_viewer(name, **kwargs):
         while the optional third number specifies the initial value.
       * ``keyword=['a', 'b', 'c']`` creates a dropdown menu. The current
         selection is passed as a string to the viewer functions.
+      * ``keyword={'a':1, 'b':2} behaves similarly to the lists above,
+        but uses the keys as dropdown labels and values as the setting
+        passed to viewer functions.
       * ``keyword='att(foo)'`` doesn't create any widget, but passes
         in the attribute named ``foo`` to the viewer functions, as an
         :class:`~glue.qt.custom_viewer.AttributeInfo` object.

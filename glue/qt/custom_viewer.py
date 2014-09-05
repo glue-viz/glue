@@ -9,8 +9,7 @@ The end user typically interacts with this code via
 """
 from collections import namedtuple
 
-from ..clients.layer_artist import LayerArtist
-from ..clients.dendro_client import GenericMplClient
+from ..clients import LayerArtist, GenericMplClient
 from ..core import Data
 from ..core.edit_subset_mode import EditSubsetMode
 from ..core.util import nonpartial, as_list
@@ -26,9 +25,25 @@ from .mouse_mode import PolyMode, RectangleMode
 
 CUSTOM_WIDGETS = []
 
+try:
+    basestring
+except NameError:  # py 3
+    basestring = str
+
 
 def noop(*a, **k):
     return []
+
+
+class AttributeInfo(namedtuple('AttributeInfo', 'id values')):
+
+    """
+    A tuple wrapping a Component of a dataset
+
+    :param id: The identifier for this attribute (ComponentID or string)
+    :param data: The numerical data (numpy array or None)
+    """
+    pass
 
 
 class CustomViewerFactory(object):
@@ -38,6 +53,8 @@ class CustomViewerFactory(object):
 
     The public methods of this class are decorators, that
     wrap custom viewer methods.
+
+    See :func:`~glue.custom_viewer` for documentation.
     """
 
     def __init__(self, name, **kwargs):
@@ -49,10 +66,11 @@ class CustomViewerFactory(object):
         Extra kwargs are used to specify the User interface
         """
         lbl = name.replace(' ', '')
-        artist_cls = type('%sLayerArtist' % lbl, (AutoLayerArtist,), {})
-        client_cls = type('%sClient' % lbl, (AutoClient,), {'artist_cls': artist_cls})
+        artist_cls = type('%sLayerArtist' % lbl, (CustomArtistBase,), {})
+        client_cls = type('%sClient' % lbl, (CustomClientBase,),
+                          {'artist_cls': artist_cls})
         widget_dict = {'client_cls': client_cls, 'LABEL': name, 'ui': kwargs}
-        widget_cls = type('%sWidget' % lbl, (AutoWidget,), widget_dict)
+        widget_cls = type('%sWidget' % lbl, (CustomWidgetBase,), widget_dict)
         self._artist_cls = artist_cls
         self._client_cls = client_cls
         self._widget_cls = widget_cls
@@ -92,23 +110,42 @@ class CustomViewerFactory(object):
         drawn on the plot
         """
         self._client_cls.make_selector = staticmethod(func)
+        self._widget_cls.selections_enabled = True
         return func
 
 
-class AutoLayerArtist(LayerArtist):
+class CustomArtistBase(LayerArtist):
+
+    """
+    Base LayerArtist class for custom viewers
+    """
     plot_data = noop
     plot_subset = noop
 
     def __init__(self, layer, axes, settings):
-        super(AutoLayerArtist, self).__init__(layer, axes)
-        self.settings = settings
+        """
+        :param layer: Data or Subset object to draw
+        :param axes: Matplotlib axes to use
+        :param settings: dict of :class:`FormElement` instnaces
+                         representing UI state
+        """
+        super(CustomArtistBase, self).__init__(layer, axes)
+        self._settings = settings
+
+    @property
+    def settings(self):
+        """
+        Return a dict mapping UI keywords to current setting values
+        """
+        d = FormElement.dereference(self._settings, layer=self._layer)
+        d['style'] = self._layer.style
+        return d
 
     def update(self, view=None):
-
-        kwargs = dict(style=self._layer.style)
-        for k, v in self.settings.items():
-            kwargs[k] = v.value(self._layer)
-
+        """
+        Redraw the layer
+        """
+        kwargs = self.settings
         self.clear()
 
         if isinstance(self._layer, Data):
@@ -122,18 +159,32 @@ class AutoLayerArtist(LayerArtist):
         self.artists = as_list(artists)
 
 
-class AutoClient(GenericMplClient):
-    artist_cls = AutoLayerArtist
+class CustomClientBase(GenericMplClient):
+
+    """
+    Base class for custom clients
+    """
+
+    # the class of LayerArtist to use
+    artist_cls = None
+
+    # custom function invoked at end of __init__
     setup_func = noop
+
+    # custom function invoked to turn ROIs into SubsetStates
     make_selector = noop
 
     def __init__(self, *args, **kwargs):
-        self.settings = kwargs.pop('settings', {})
-        super(AutoClient, self).__init__(*args, **kwargs)
+        self._settings = kwargs.pop('settings', {})
+        super(CustomClientBase, self).__init__(*args, **kwargs)
         self.setup_func(self.axes)
 
     def new_layer_artist(self, layer):
-        return self.artist_cls(layer, self.axes, self.settings)
+        return self.artist_cls(layer, self.axes, self._settings)
+
+    @property
+    def settings(self):
+        return FormElement.dereference(self._settings)
 
     def apply_roi(self, roi):
         if len(self.artists) > 0:
@@ -143,8 +194,7 @@ class AutoClient(GenericMplClient):
         else:
             return
 
-        s = self.make_selector(roi,
-                               **FormElement.dereference(self.settings))
+        s = self.make_selector(roi, **self.settings)
         if s:
             EditSubsetMode().update(self.collect, s, focus_data=focus)
 
@@ -155,16 +205,22 @@ class AutoClient(GenericMplClient):
         self._redraw()
 
 
-class AutoWidget(DataViewer):
-    LABEL = 'Auto'
-    client_cls = AutoClient
-    update_settings = noop
-    make_selector = noop
+class CustomWidgetBase(DataViewer):
 
-    redraw_on_settings_change = True
+    """Base Qt widget class for custom viewers"""
+
+    # Widget name
+    LABEL = ''
+
+    client_cls = CustomClientBase  # client class
+    update_settings = noop  # custom function invoked when UI settings change
+    make_selector = noop  # custom function to convert ROIs to SubsetStates
+
+    redraw_on_settings_change = True  # redraw all layers when UI state changes?
+    selections_enabled = False  # allow user to draw ROIs?
 
     def __init__(self, session, parent=None):
-        super(AutoWidget, self).__init__(session, parent)
+        super(CustomWidgetBase, self).__init__(session, parent)
         self.central_widget = MplWidget()
         self.setCentralWidget(self.central_widget)
         self.option_widget = self.build_ui()
@@ -175,10 +231,6 @@ class AutoWidget(DataViewer):
         self.make_toolbar()
         self.statusBar().setSizeGripEnabled(False)
         self._update_artists = []
-
-    @property
-    def selections_enabled(self):
-        return type(self).make_selector is not noop
 
     def options_widget(self):
         return self.option_widget
@@ -206,6 +258,9 @@ class AutoWidget(DataViewer):
         return result
 
     def settings_changed(self):
+        """
+        Called when UI settings change
+        """
         for a in self._update_artists:
             try:
                 a.remove()
@@ -264,13 +319,13 @@ class AutoWidget(DataViewer):
             return True
 
     def register_to_hub(self, hub):
-        super(AutoWidget, self).register_to_hub(hub)
+        super(CustomWidgetBase, self).register_to_hub(hub)
         self.client.register_to_hub(hub)
         for w in self._settings.values():
             w.register_to_hub(hub)
 
     def unregister(self, hub):
-        super(AutoWidget, self).unregister(hub)
+        super(CustomWidgetBase, self).unregister(hub)
         hub.unsubscribe_all(self.client)
         hub.unsubscribe_all(self)
         for w in self._settings.values():
@@ -279,6 +334,14 @@ class AutoWidget(DataViewer):
 
 class FormElement(object):
 
+    """
+    Base class for user-defined settings in a custom widget.
+
+    Each form element has a value() and a widget. Subclasses
+    must override _build_ui, value, and recognizes. They
+    may override register_to_hub and add_data.
+    """
+
     def __init__(self, params):
         self.params = params
         self._callbacks = []
@@ -286,9 +349,21 @@ class FormElement(object):
         self.container = None  # layer container
 
     def _build_ui(self):
+        """
+        Build and return a widget to represent this setting.
+
+        The widget should automaticallhy call the changed()
+        method when it's state changes
+        """
         raise NotImplementedError()
 
-    def value(self, data=None):
+    def value(self, layer=None):
+        """
+        Extract the value of this element
+
+        :param layer: The Data or Subset object to use,
+                      if extracting numerical data
+        """
         raise NotImplementedError()
 
     def changed(self):
@@ -296,79 +371,163 @@ class FormElement(object):
             cb()
 
     def add_callback(self, cb):
+        """
+        Register a new callback function to be invoked
+        when the form state changes
+        """
         self._callbacks.append(cb)
 
     @classmethod
     def recognizes(cls, params):
+        """
+        Returns whether or not a shorthand "params" object
+        can be passed to __init__ to construct an element
+        """
         raise NotImplementedError
 
     @staticmethod
     def auto(params):
+        """
+        Construct the appropriate FormElement subclass,
+        given a shorthand object. For examle,
+        FormElement.auto((0., 1.)) returns a NumberElement
+        """
         for cls in FormElement.__subclasses__():
             if cls.recognizes(params):
                 return cls(params)
-        raise ValueError("Unrecognzied UI Component: %s" % params)
+        raise ValueError("Unrecognzied UI Component: %s" % (params,))
 
     @staticmethod
     def dereference(elements, layer=None):
+        """
+        Given a dict of elements, extract their current settings
+        into a dict
+
+        :param elements: dict mapping labels -> FormElements
+        :param layer: Subset or Data object as reference
+
+        :reteurns: dict mapping labels -> setting value
+        """
         return dict((k, v.value(layer)) for k, v in elements.items())
 
     def register_to_hub(self, hub):
+        """
+        Register the element to the hub
+        """
         pass
 
     def add_data(self, data):
+        """
+        Add data to the element
+        """
         pass
 
 
 class NumberElement(FormElement):
 
+    """
+    A form element representing a number
+
+    The shorthand is a tuple of 2 or 3 numbers:
+    (min, max) or (min, max default)::
+
+        e = FormElement.auto((0., 1.))
+    """
     @classmethod
     def recognizes(cls, params):
-        return isinstance(params, tuple)
+        try:
+            if len(params) not in [2, 3]:
+                return False
+            return all(isinstance(p, (int, float, long)) for p in params)
+        except TypeError:
+            return False
 
     def _build_ui(self):
         w = QtGui.QSlider()
-        w = LabeledSlider(self.params[0], self.params[1])
+        w = LabeledSlider(*self.params[:3])
         w.valueChanged.connect(nonpartial(self.changed))
         return w
 
-    def value(self, data=None):
+    def value(self, layer=None):
         return self.ui.value()
 
 
 class LabeledSlider(QtGui.QWidget):
 
+    """
+    A labeled slider widget, that handles floats and integers
+    """
+
     def __init__(self, min, max, default=None, parent=None):
+        """
+        :param min: Minimum slider value
+        :param max: Maximum slider value
+        :param default: Initial value
+        :param parent: Widget parent
+        """
         super(LabeledSlider, self).__init__(parent)
         self._slider = QtGui.QSlider()
-        self._slider.setMinimum(min)
-        self._slider.setMaximum(max)
-        if default is None:
-            default = (min + max) / 2
-        self._slider.setValue(default)
+        self._slider.setMinimum(0)
+        self._slider.setMaximum(100)
         self._slider.setOrientation(Qt.Horizontal)
 
-        self._lbl = QtGui.QLabel(str(self._slider.value()))
+        self._min = min
+        self._ptp = (max - min)
+        if default is None:
+            default = (min + max) / 2
+        self._isint = (isinstance(min, int) and
+                       isinstance(max, int) and
+                       isinstance(default, int))
 
+        self.set_value(default)
+
+        # setup layout
+        self._lbl = QtGui.QLabel(str(self.value()))
         self._l = QtGui.QHBoxLayout()
         self._l.setContentsMargins(2, 2, 2, 2)
         self._l.addWidget(self._slider)
         self._l.addWidget(self._lbl)
-
-        self._slider.valueChanged.connect(lambda x: self._lbl.setText(str(x)))
-
         self.setLayout(self._l)
+
+        # connect signals
+        self._slider.valueChanged.connect(lambda x: self._lbl.setText(str(self.value())))
 
     @property
     def valueChanged(self):
+        """
+        Pointer to valueChanged signal.
+        WARNING: the value emitted by this signal is unscaled,
+                 and shouldn't be used directly. Use .value() instead
+        """
         return self._slider.valueChanged
 
-    def value(self):
-        return self._slider.value()
+    def value(self, layer=None):
+        """
+        Return the numerical value of the slider
+        """
+        v = self._slider.value() / 100. * self._ptp + self._min
+        if self._isint:
+            v = int(v)
+        return v
+
+    def set_value(self, val):
+        """
+        Set the numerical value of the slider
+        """
+        v = (1. * (val - self._min)) / self._ptp * 100
+        v = min(max(int(v), 0), 100)
+        self._slider.setValue(v)
 
 
 class BoolElement(FormElement):
 
+    """
+    A checkbox representing a boolean setting
+
+    The shorthand notation is True or False::
+
+        e = FormElement.auto(False)
+    """
     @classmethod
     def recognizes(cls, params):
         return isinstance(params, bool)
@@ -379,22 +538,19 @@ class BoolElement(FormElement):
         w.toggled.connect(nonpartial(self.changed))
         return w
 
-    def value(self, data=None):
+    def value(self, layer=None):
         return self.ui.isChecked()
 
 
-class AttributeInfo(namedtuple('AttributeInfo', 'id values')):
-
-    """
-    A tuple wrapping a Component of a dataset
-
-    :param id: The identifier for this attribute (ComponentID or string)
-    :param data: The numerical data (numpy array or None)
-    """
-    pass
-
-
 class FixedComponent(FormElement):
+
+    """
+    An element for a Data Component. Does not have a widget
+
+    The shorthand notation is 'att(comp_name)'::
+
+        e = FormElement.auto('att(foo)')
+    """
 
     @classmethod
     def recognizes(cls, params):
@@ -406,14 +562,25 @@ class FixedComponent(FormElement):
     def _build_ui(self):
         pass
 
-    def value(self, data=None):
+    def value(self, layer=None):
+        """
+        Extract the component value as an AttributeInfo object
+        """
         cid = self.params.split('(')[-1][:-1]
-        if data is not None:
-            return AttributeInfo(data.data.id[cid], data[cid])
+        if layer is not None:
+            return AttributeInfo(layer.data.id[cid], layer[cid])
         return AttributeInfo(cid, None)
 
 
 class ComponenentElement(FormElement, core.hub.HubListener):
+
+    """
+    A dropdown selector to choose a component
+
+    The shorthand notation is 'att'::
+
+        e = FormElement.auto('att')
+    """
     _component = CurrentComboProperty('ui')
 
     @classmethod
@@ -425,11 +592,11 @@ class ComponenentElement(FormElement, core.hub.HubListener):
         result.currentIndexChanged.connect(nonpartial(self.changed))
         return result
 
-    def value(self, data=None):
+    def value(self, layer=None):
         cid = self._component
-        if data is None or cid is None:
+        if layer is None or cid is None:
             return AttributeInfo(cid, None)
-        return AttributeInfo(cid, data.data[cid])
+        return AttributeInfo(cid, layer.data[cid])
 
     def _update_components(self):
         combo = self.ui
@@ -461,9 +628,21 @@ class ComponenentElement(FormElement, core.hub.HubListener):
 
 class ChoiceElement(FormElement):
 
+    """
+    A dropdown selector to choose between a set of items
+
+    Shorthand notation is a sequence of strings or a dict::
+
+        e = FormElement.auto({'a':1, 'b':2})
+        e = FormElement.auto(['a', 'b', 'c'])
+    """
+
     @classmethod
     def recognizes(cls, params):
-        return isinstance(params, (list, dict))
+        try:
+            return all(isinstance(p, basestring) for p in params)
+        except TypeError:
+            return False
 
     def _build_ui(self):
         w = QtGui.QComboBox()
@@ -476,5 +655,5 @@ class ChoiceElement(FormElement):
         w.currentIndexChanged.connect(nonpartial(self.changed))
         return w
 
-    def value(self, data=None):
+    def value(self, layer=None):
         return self.params[self.ui.currentText()]

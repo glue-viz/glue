@@ -2,6 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import matplotlib.pyplot as plt
 from ..core.client import Client
+from ..core import Data
+from .layer_artist import LayerArtistContainer
 
 
 class VizClient(Client):
@@ -157,3 +159,114 @@ def init_mpl(figure, axes, wcs=False):
         pass
 
     return _figure, _ax
+
+
+class GenericMplClient(Client):
+
+    """
+    This client base class handles the logic of adding, removing,
+    and updating layers.
+
+    Subsets are auto-added and removed with datasets.
+    New subsets are auto-added iff the data has already been added
+    """
+
+    def __init__(self, data=None, figure=None, axes=None,
+                 artist_container=None):
+
+        super(GenericMplClient, self).__init__(data=data)
+        figure, self.axes = init_mpl(figure, axes)
+        self.artists = artist_container
+        if self.artists is None:
+            self.artists = LayerArtistContainer()
+
+        self._connect()
+
+    def _connect(self):
+        pass
+
+    @property
+    def collect(self):
+        # a better name
+        return self.data
+
+    def _redraw(self):
+        self.axes.figure.canvas.draw()
+
+    def new_layer_artist(self, layer):
+        raise NotImplementedError
+
+    def apply_roi(self, roi):
+        raise NotImplementedError
+
+    def _update_layer(self, layer):
+        raise NotImplementedError
+
+    def add_layer(self, layer):
+        """
+        Add a new Data or Subset layer to the plot.
+
+        Returns the created layer artist
+
+        :param layer: The layer to add
+        :type layer: :class:`~glue.core.Data` or :class:`~glue.core.Subset`
+        """
+        if layer.data not in self.collect:
+            return
+
+        if layer in self.artists:
+            return self.artists[layer][0]
+
+        result = self.new_layer_artist(layer)
+        self.artists.append(result)
+        self._update_layer(layer)
+
+        self.add_layer(layer.data)
+        for s in layer.data.subsets:
+            self.add_layer(s)
+
+        if layer.data is layer:  # Added Data object. Relimit view
+            self.axes.autoscale_view(True, True, True)
+
+        return result
+
+    def remove_layer(self, layer):
+        if layer not in self.artists:
+            return
+
+        self.artists.pop(layer)
+        if isinstance(layer, Data):
+            map(self.remove_layer, layer.subsets)
+
+        self._redraw()
+
+    def set_visible(self, layer, state):
+        """
+        Toggle a layer's visibility
+
+        :param layer: which layer to modify
+        :param state: True or False
+        """
+
+    def _update_all(self):
+        for layer in self.artists.layers:
+            self._update_layer(layer)
+
+    def __contains__(self, layer):
+        return layer in self.artists
+
+    # Hub message handling
+    def _add_subset(self, message):
+        self.add_layer(message.sender)
+
+    def _remove_subset(self, message):
+        self.remove_layer(message.sender)
+
+    def _update_subset(self, message):
+        self._update_layer(message.sender)
+
+    def _update_data(self, message):
+        self._update_layer(message.sender)
+
+    def _remove_data(self, message):
+        self.remove_layer(message.data)
