@@ -1,7 +1,11 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+
+from __future__ import absolute_import, division, print_function
+
 from distutils.version import LooseVersion
 import tempfile
 import os
+import sys
 
 import pytest
 from mock import patch, MagicMock
@@ -54,7 +58,11 @@ class TestGlueApplication(object):
     def test_choose_save_session_ioerror(self):
         """should show box on ioerror"""
         with patch('glue.qt.glue_application.QFileDialog') as fd:
-            with patch('__builtin__.open') as op:
+            if sys.version_info.major == 2:
+                mock_open = '__builtin__.open'
+            else:
+                mock_open = 'io.open'
+            with patch(mock_open) as op:
                 op.side_effect = IOError
                 fd.getSaveFileName.return_value = '/tmp/junk', '/tmp/junk'
                 with patch('glue.qt.glue_application.QMessageBox') as mb:
@@ -65,7 +73,6 @@ class TestGlueApplication(object):
     def test_terminal_present(self):
         """For good setups, terminal is available"""
         if not self.app.has_terminal():
-            import sys
             sys.stderr.write(self.app._terminal_exception)
             assert False
 

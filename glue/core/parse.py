@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import re
 
 from .data import ComponentID
@@ -107,7 +109,7 @@ def _validate(cmd, references):
         tag = match.group('tag')
         if tag not in references:
             raise TypeError("Tag %s not in reference mapping: %s" %
-                            (tag, references.keys()))
+                            (tag, list(references.keys())))
 
 
 class ParsedCommand(object):

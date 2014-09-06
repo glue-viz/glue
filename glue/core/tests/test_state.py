@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import numpy as np
 import json
 import pytest
@@ -13,6 +15,7 @@ from ...qt.widgets.histogram_widget import HistogramWidget
 from .util import make_file
 from ..data_factories import load_data
 from .test_data_factories import TEST_FITS_DATA
+from io import BytesIO
 
 
 def clone(object):
@@ -94,11 +97,10 @@ def test_save_numpy_scalar():
 
 
 def tests_data_factory_double():
-
-    from cStringIO import StringIO
+    # ensure double-cloning doesn't somehow lose lightweight references
     from astropy.io import fits
     d = np.random.normal(0, 1, (100, 100, 100))
-    s = StringIO()
+    s = BytesIO()
     fits.writeto(s, d)
 
     with make_file(s.getvalue(), '.fits') as infile:
@@ -355,8 +357,8 @@ class TestVersioning(object):
         GlueUnSerializer.dispatch._data[DummyClass].pop(2)
 
     def test_default_latest_save(self):
-        assert GlueSerializer(DummyClass()).dumpo().values()[0]['v'] == 4
-        assert GlueSerializer(DummyClass()).dumpo().values()[0]['_protocol'] == 2
+        assert list(GlueSerializer(DummyClass()).dumpo().values())[0]['v'] == 4
+        assert list(GlueSerializer(DummyClass()).dumpo().values())[0]['_protocol'] == 2
 
     def test_legacy_load(self):
         data = json.dumps({'': {'_type': 'glue.core.tests.test_state.DummyClass',

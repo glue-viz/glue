@@ -2,11 +2,6 @@
 from __future__ import print_function
 from setuptools import setup, Command, find_packages
 
-try:  # Python 3.x
-    from setuptools.command.build_py import build_py_2to3 as build_py
-except ImportError:  # Python 2.x
-    from setuptools.command.build_py import build_py
-
 import sys
 import subprocess
 
@@ -19,7 +14,7 @@ except (IOError, ImportError):
 
 # read __version__
 with open('glue/version.py') as infile:
-    exec(infile)
+    exec(infile.read())
 
 cmdclass = {}
 

@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from functools import partial
 
 import numpy as np
@@ -232,7 +234,7 @@ class ScatterClient(Client):
             self._yset = self.yatt is not None
 
         # update plots
-        map(self._update_layer, self.artists.layers)
+        list(map(self._update_layer, self.artists.layers))
 
         if coord == 'x' and snap:
             self._snap_xlim()

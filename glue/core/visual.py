@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 # Define acceptable line styles
 VALID_LINESTYLES = ['solid', 'dashed', 'dash-dot', 'dotted', 'none']
 

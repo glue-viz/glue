@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import numpy as np
 from matplotlib.patches import Polygon, Rectangle, Ellipse, PathPatch
 from matplotlib.patches import Path as mplPath
@@ -927,8 +929,8 @@ class MplPolygonalROI(AbstractMplRoi):
             self._patch.set_visible(False)
         else:
             x, y = self._roi.to_polygon()
-            self._patch.set_xy(zip(x + [x[0]],
-                                   y + [y[0]]))
+            self._patch.set_xy(list(zip(x + [x[0]],
+                                        y + [y[0]])))
             self._patch.set_visible(True)
 
         # Update appearance

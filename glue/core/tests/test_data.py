@@ -1,4 +1,7 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103,R0903,R0904
+
+from __future__ import absolute_import, division, print_function
+
 import pytest
 import numpy as np
 from mock import MagicMock
@@ -12,6 +15,7 @@ from ..exceptions import IncompatibleAttribute
 from ..component_link import ComponentLink
 from ..registry import Registry
 from ... import core
+from ...external import six
 
 
 class TestCoordinates(Coordinates):
@@ -79,7 +83,7 @@ class TestData(object):
         comp.data.shape = (3, 2)
         with pytest.raises(TypeError) as exc:
             self.data.add_component(comp("junk label"))
-        if isinstance(exc.value, basestring):  # python 2.6
+        if isinstance(exc.value, six.string_types):  # python 2.6
             assert exc.value == ("add_component() takes at least 3 "
                                  "arguments (2 given)")
         else:
@@ -160,9 +164,9 @@ class TestData(object):
         self.data.add_component(comp, compid)
 
         pricomps = self.data.primary_components
-        print self.comp_id, compid, pricomps
-        print self.comp_id in pricomps
-        print compid not in pricomps
+        print(self.comp_id, compid, pricomps)
+        print(self.comp_id in pricomps)
+        print(compid not in pricomps)
         assert self.comp_id in pricomps
         assert compid not in pricomps
 

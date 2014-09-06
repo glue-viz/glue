@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 def extract_data_fits(filename, use_hdu='all'):
     '''
     Extract non-tabular HDUs from a FITS file. If `use_hdu` is 'all', then
@@ -83,7 +85,7 @@ def extract_data_hdf5(filename, use_datasets='all'):
         datasets.pop(key)
 
     # Check that dimensions of all datasets are the same
-    reference_shape = datasets[datasets.keys()[0]].value.shape
+    reference_shape = datasets[list(datasets.keys())[0]].value.shape
     for key in datasets:
         if datasets[key].value.shape != reference_shape:
             raise Exception("Datasets are not all the same dimensions")

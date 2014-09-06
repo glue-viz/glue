@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from ...external.qt.QtGui import QWidget, QDrag
 from ...external.qt.QtCore import QMimeData, Qt
 from ...external.qt.QtTest import QTest
@@ -16,19 +18,19 @@ class TestWidget(QWidget):
         self.out_mime = out_mime
 
     def dragEnterEvent(self, event):
-        print 'drag enter'
+        print('drag enter')
         event.accept()
 
     def dropEvent(self, event):
-        print 'drop'
+        print('drop')
         self.last_mime = event.mimeData()
 
     def mousePressEvent(self, event):
-        print 'mouse event'
+        print('mouse event')
         drag = QDrag(self)
         drag.setMimeData(self.out_mime)
         drop_action = drag.exec_()
-        print drop_action
+        print(drop_action)
         event.accept()
 
 

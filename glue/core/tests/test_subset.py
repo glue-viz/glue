@@ -1,4 +1,7 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+
+from __future__ import absolute_import, division, print_function
+
 import tempfile
 import operator as op
 
@@ -497,7 +500,7 @@ facs = [roifac, rangefac, orfac, andfac, xorfac, invertfac,
 @pytest.mark.parametrize(('statefac', 'view'), [(f, v) for f in facs
                                                 for v in views])
 def test_mask_of_view_is_view_of_mask(statefac, view):
-    print statefac, view
+    print(statefac, view)
     d = Data()
     d.edit_subset = d.new_subset()
     c = Component(np.array([[1, 2], [3, 4]]))

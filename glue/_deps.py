@@ -3,6 +3,8 @@
 Guide users through installing Glue's dependencies
 """
 
+from __future__ import absolute_import, division, print_function
+
 # Unfortunately, we can't rely on setuptools' install_requires
 # keyword, because matplotlib doesn't properly install its dependencies
 from subprocess import check_call, CalledProcessError
@@ -79,12 +81,12 @@ class QtDep(Dependency):
             return False
 
     def install(self):
-        print ("*******************************\n"
-               "CANNOT AUTOMATICALLY INSTALL PyQt4 or PySide.\n"
-               "Install PyQt4 at http://bit.ly/YfTFxj, or\n"
-               "Install PySide at http://bit.ly/Zci3Di\n"
-               "*******************************\n"
-               )
+        print("*******************************\n"
+              "CANNOT AUTOMATICALLY INSTALL PyQt4 or PySide.\n"
+              "Install PyQt4 at http://bit.ly/YfTFxj, or\n"
+              "Install PySide at http://bit.ly/Zci3Di\n"
+              "*******************************\n"
+             )
 
 
 # Add any dependencies here
@@ -134,10 +136,10 @@ dependencies = {d.module: d for c in categories for d in c[1]}
 
 def show_status():
     for category, deps in categories:
-        print "%21s" % category.upper()
+        print("%21s" % category.upper())
         for dep in deps:
-            print dep
-        print '\n'
+            print(dep)
+        print('\n')
 
 
 def install_all():
@@ -191,7 +193,7 @@ def main(argv=None):
             sys.stderr.write("Unrecognized dependency: %s\n" % argv[2])
             sys.exit(1)
 
-        print dep.help()
+        print(dep.help())
         sys.exit(0)
 
     if argv[1] == 'list':

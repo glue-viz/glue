@@ -1,4 +1,7 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+
+from __future__ import absolute_import, division, print_function
+
 import numpy as np
 
 from ..util import (file_format, point_contour, view_shape, facet_subsets,
@@ -158,7 +161,7 @@ def test_colorize_subsets_clip():
 
 def test_coerce_numeric():
 
-    x = np.array(['1', '2', '3.14', '4'])
+    x = np.array(['1', '2', '3.14', '4'], dtype="S4")
 
     np.testing.assert_array_equal(coerce_numeric(x),
                                   [1, 2, 3.14, 4])

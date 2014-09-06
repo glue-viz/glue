@@ -1,4 +1,7 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+
+from __future__ import absolute_import, division, print_function
+
 from distutils.version import LooseVersion  # pylint:disable=W0611
 
 import pytest
@@ -193,29 +196,29 @@ class TestScatterWidget(object):
         c = self.widget.client
         ax = self.widget.client.axes
 
-        print w.xmin, w.xmax, w.ymin, w.ymax
-        print c.xmin, c.xmax, c.ymin, c.ymax
-        print ax.get_xlim(), ax.get_ylim()
+        print(w.xmin, w.xmax, w.ymin, w.ymax)
+        print(c.xmin, c.xmax, c.ymin, c.ymax)
+        print(ax.get_xlim(), ax.get_ylim())
 
         self.widget.xmax = 20
-        print w.xmin, w.xmax, w.ymin, w.ymax
-        print c.xmin, c.xmax, c.ymin, c.ymax
-        print ax.get_xlim(), ax.get_ylim()
+        print(w.xmin, w.xmax, w.ymin, w.ymax)
+        print(c.xmin, c.xmax, c.ymin, c.ymax)
+        print(ax.get_xlim(), ax.get_ylim())
 
         self.widget.xmin = 10
-        print w.xmin, w.xmax, w.ymin, w.ymax
-        print c.xmin, c.xmax, c.ymin, c.ymax
-        print ax.get_xlim(), ax.get_ylim()
+        print(w.xmin, w.xmax, w.ymin, w.ymax)
+        print(c.xmin, c.xmax, c.ymin, c.ymax)
+        print(ax.get_xlim(), ax.get_ylim())
 
         self.widget.ymax = 40
-        print w.xmin, w.xmax, w.ymin, w.ymax
-        print c.xmin, c.xmax, c.ymin, c.ymax
-        print ax.get_xlim(), ax.get_ylim()
+        print(w.xmin, w.xmax, w.ymin, w.ymax)
+        print(c.xmin, c.xmax, c.ymin, c.ymax)
+        print(ax.get_xlim(), ax.get_ylim())
 
         self.widget.ymin = 30
-        print w.xmin, w.xmax, w.ymin, w.ymax
-        print c.xmin, c.xmax, c.ymin, c.ymax
-        print ax.get_xlim(), ax.get_ylim()
+        print(w.xmin, w.xmax, w.ymin, w.ymax)
+        print(c.xmin, c.xmax, c.ymin, c.ymax)
+        print(ax.get_xlim(), ax.get_ylim())
 
         assert self.widget.client.axes.get_xlim() == (10, 20)
         assert self.widget.client.axes.get_ylim() == (30, 40)
@@ -292,7 +295,7 @@ class TestScatterWidget(object):
 
     def test_add_subset_preserves_plot_variables(self):
         l1 = self.add_layer_via_method(0)
-        print self.widget.client.layer_count
+        print(self.widget.client.layer_count)
 
         self.widget.ui.xAxisComboBox.setCurrentIndex(3)
         self.widget.ui.yAxisComboBox.setCurrentIndex(2)

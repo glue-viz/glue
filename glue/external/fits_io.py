@@ -29,7 +29,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
 import os
 import re
@@ -46,6 +46,7 @@ from astropy import units as u
 from astropy.io.fits import HDUList, TableHDU, BinTableHDU, GroupsHDU
 from astropy.io.fits.hdu.hdulist import fitsopen as fits_open
 
+from . import six
 
 # FITS file signature as per RFC 4047
 FITS_SIGNATURE = (b"\x53\x49\x4d\x50\x4c\x45\x20\x20\x3d\x20\x20\x20\x20\x20"
@@ -90,7 +91,7 @@ def is_fits(origin, args, kwargs):
     is_fits : bool
         Returns `True` if the given file is a FITS file.
     """
-    if isinstance(args[0], basestring):
+    if isinstance(args[0], six.string_types):
         if args[0].lower().endswith(('.fits', '.fits.gz', '.fit', '.fit.gz')):
             return True
         elif origin == 'read':
@@ -126,7 +127,7 @@ def read_table_fits(input, hdu=None):
         The HDU to read the table from.
     """
 
-    if isinstance(input, basestring):
+    if isinstance(input, six.string_types):
         input = fits_open(input)
         to_close = input
     else:
@@ -149,8 +150,8 @@ def read_table_fits(input, hdu=None):
                 if hdu is None:
                     warnings.warn("hdu= was not specified but multiple tables"
                                   " are present, reading in first available"
-                                  " table (hdu={0})".format(tables.keys()[0]))
-                    hdu = tables.keys()[0]
+                                  " table (hdu={0})".format(list(tables.keys())[0]))
+                    hdu = list(tables.keys())[0]
 
                 # hdu might not be an integer, so we first need to convert it
                 # to the correct HDU index
@@ -162,7 +163,7 @@ def read_table_fits(input, hdu=None):
                     raise ValueError("No table found in hdu={0}".format(hdu))
 
             elif len(tables) == 1:
-                table = tables[tables.keys()[0]]
+                table = tables[list(tables.keys())[0]]
             else:
                 raise ValueError("No table found")
 
@@ -251,7 +252,7 @@ def write_table_fits(input, output, overwrite=False):
     """
 
     # Check if output file already exists
-    if isinstance(output, basestring) and os.path.exists(output):
+    if isinstance(output, six.string_types) and os.path.exists(output):
         if overwrite:
             os.remove(output)
         else:

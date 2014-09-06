@@ -1,4 +1,7 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+
+from __future__ import absolute_import, division, print_function
+
 import operator
 
 from mock import MagicMock
@@ -233,7 +236,7 @@ def check_link(result, left, right):
 
 # componentID overload
 COMPARE_OPS = (operator.gt, operator.ge, operator.lt, operator.le)
-NUMBER_OPS = (operator.add, operator.mul, operator.div, operator.sub)
+NUMBER_OPS = (operator.add, operator.mul, operator.truediv, operator.sub)
 
 
 @pytest.mark.parametrize(('op'), COMPARE_OPS)

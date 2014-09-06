@@ -6,6 +6,8 @@ Utility function to load a variety of python objects into glue
 # to minimize imports so that utilities like glue-deps
 # can run on systems with missing dependencies
 
+from __future__ import absolute_import, division, print_function
+
 from contextlib import contextmanager
 import sys
 
@@ -17,6 +19,8 @@ except ImportError:
     # let qglue import, even though this won't work
     # qglue will throw an ImportError
     Data = None
+
+from .external import six
 
 __all__ = ['qglue']
 
@@ -58,7 +62,7 @@ def _parse_data_dict(data, label):
 
 
 def _parse_data_recarray(data, label):
-    print data.dtype.names
+    print(data.dtype.names)
     return [Data(label=label, **{n: data[n] for n in data.dtype.names})]
 
 
@@ -86,7 +90,7 @@ def _parse_data_path(path, label):
 # (base class, parser function)
 _parsers = [
     (Data, _parse_data_glue_data),
-    (basestring, _parse_data_path),
+    (six.string_types, _parse_data_path),
     (dict, _parse_data_dict),
     (np.recarray, _parse_data_recarray),
     (np.ndarray, _parse_data_numpy),
@@ -141,12 +145,12 @@ def _parse_links(dc, links):
             u2 = link[3]
 
         # component names -> component IDs
-        if isinstance(f, basestring):
+        if isinstance(f, six.string_types):
             f = [find_cid(f)]
         else:
             f = [find_cid(item) for item in f]
 
-        if isinstance(t, basestring):
+        if isinstance(t, six.string_types):
             t = find_cid(t)
             result.append(ComponentLink(f, t, u))
         else:

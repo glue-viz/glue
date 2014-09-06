@@ -1,4 +1,8 @@
+from __future__ import absolute_import, division, print_function
+
 import operator
+import numbers
+
 import numpy as np
 
 from .visual import VisualAttributes, RED
@@ -8,6 +12,7 @@ from .exceptions import IncompatibleAttribute
 from .registry import Registry
 from .util import split_component_view, view_shape
 from .exceptions import IncompatibleAttribute
+from ..external.six import PY3
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState',
@@ -51,6 +56,7 @@ class Subset(object):
         self.data = data
         self._subset_state = None
         self._label = None
+        self._style = None
         self._setup(color, alpha, label)
 
     def _setup(self, color, alpha, label):
@@ -341,6 +347,14 @@ class Subset(object):
         cids = self.data.pixel_component_ids
         return MaskSubsetState(m, cids)
 
+    # In Python 2 we need to do this explicitly
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    # In Python 3, if __eq__ is defined, then __hash__ has to be re-defined
+    if PY3:
+        __hash__ = object.__hash__
+
 
 class SubsetState(object):
 
@@ -578,13 +592,13 @@ class InequalitySubsetState(SubsetState):
         if op not in valid_ops:
             raise TypeError("Invalid boolean operator: %s" % op)
         if not isinstance(left, ComponentID) and not \
-                operator.isNumberType(left) and not \
-                isinstance(left, ComponentLink):
+               isinstance(left, numbers.Number) and not \
+               isinstance(left, ComponentLink):
             raise TypeError("Input must be ComponenID or NumberType: %s"
                             % type(left))
         if not isinstance(right, ComponentID) and not \
-                operator.isNumberType(right) and not \
-                isinstance(right, ComponentLink):
+               isinstance(right, numbers.Number) and not \
+               isinstance(right, ComponentLink):
             raise TypeError("Input must be ComponenID or NumberType: %s"
                             % type(right))
         self._left = left
@@ -607,11 +621,11 @@ class InequalitySubsetState(SubsetState):
     def to_mask(self, data, view=None):
         from .data import ComponentID
         left = self._left
-        if not operator.isNumberType(self._left):
+        if not isinstance(self._left, numbers.Number):
             left = data[self._left, view]
 
         right = self._right
-        if not operator.isNumberType(self._right):
+        if not isinstance(self._right, numbers.Number):
             right = data[self._right, view]
 
         return self._operator(left, right)

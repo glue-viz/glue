@@ -1,5 +1,5 @@
-from cPickle import dumps, loads
 import logging
+from ..external.six.moves.cPickle import dumps, loads
 
 try:
     from dill import dumps, loads

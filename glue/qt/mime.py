@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from ..external.qt.QtCore import QMimeData, QByteArray
 
 
@@ -29,7 +31,7 @@ class PyMimeData(QMimeData):
 
     def formats(self):
         return list(set(super(PyMimeData, self).formats() +
-                        self._instances.keys()))
+                        list(self._instances.keys())))
 
     def hasFormat(self, fmt):
         return fmt in self._instances or super(PyMimeData, self).hasFormat(fmt)
