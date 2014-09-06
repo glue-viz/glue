@@ -7,7 +7,10 @@ needs_modeling = pytest.mark.skipif("False", reason='')
 
 try:
     from astropy.modeling.models import Gaussian1D
-    from astropy.modeling.fitting import NonLinearLSQFitter
+    try:
+        from astropy.modeling.fitting import NonLinearLSQFitter
+    except ImportError:
+        from astropy.modeling.fitting import LevMarLSQFitter as NonLinearLSQFitter
     from ..fitters import SimpleAstropyGaussianFitter
 except ImportError:
     needs_modeling = pytest.mark.skipif("True",
