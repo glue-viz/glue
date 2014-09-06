@@ -246,8 +246,8 @@ def _glue_terminal_1(**kwargs):
 def redirect_output(session, pub_socket):
     """Prevent any of the widgets from permanently hijacking stdout or
     stderr"""
-    sys.stdout = OutStream(session, pub_socket, 'stdout')
-    sys.stderr = OutStream(session, pub_socket, 'stderr')
+    sys.stdout = OutStream(session, pub_socket, u'stdout')
+    sys.stderr = OutStream(session, pub_socket, u'stderr')
     try:
         yield
     finally:
