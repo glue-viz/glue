@@ -14,7 +14,7 @@ except (IOError, ImportError):
 
 # read __version__
 with open('glue/version.py') as infile:
-    exec(infile)
+    exec(infile.read())
 
 cmdclass = {}
 
