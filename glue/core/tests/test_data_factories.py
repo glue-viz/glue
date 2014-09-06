@@ -17,9 +17,9 @@ from .. import data_factories as df
 from ..data import CategoricalComponent
 from .util import make_file
 
-needs_astropy_03 = pytest.mark.skipif(LooseVersion(_astro_ver_) < LooseVersion('0.3'),
+needs_astropy_03 = pytest.mark.skipif(str(LooseVersion(_astro_ver_) < LooseVersion('0.3')),
                                       reason='Astropy >=0.3 feature')
-needs_astrodendro = pytest.mark.skipif(missing_astrodendro, reason='Astrodendro feature')
+needs_astrodendro = pytest.mark.skipif(str(missing_astrodendro), reason='Astrodendro feature')
 
 
 def test_load_data():
