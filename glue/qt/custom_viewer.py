@@ -17,18 +17,15 @@ from .. import core
 
 from .widgets.data_viewer import DataViewer
 from .widget_properties import CurrentComboProperty
+from ..external.six import string_types
 from ..external.qt import QtGui
 from ..external.qt.QtCore import Qt
 from .widgets import MplWidget
 from .glue_toolbar import GlueToolbar
 from .mouse_mode import PolyMode, RectangleMode
 
-CUSTOM_WIDGETS = []
 
-try:
-    basestring
-except NameError:  # py 3
-    basestring = str
+CUSTOM_WIDGETS = []
 
 
 def noop(*a, **k):
@@ -640,7 +637,7 @@ class ChoiceElement(FormElement):
     @classmethod
     def recognizes(cls, params):
         try:
-            return all(isinstance(p, basestring) for p in params)
+            return all(isinstance(p, string_types) for p in params)
         except TypeError:
             return False
 
