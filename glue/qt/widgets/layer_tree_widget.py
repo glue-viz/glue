@@ -5,7 +5,6 @@ editing the data collection
 
 from __future__ import absolute_import, division, print_function
 
-
 from ...external.qt.QtGui import (QWidget, QMenu,
                                   QAction, QKeySequence, QFileDialog)
 
@@ -505,7 +504,8 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
 
 def save_subset(subset):
     assert isinstance(subset, core.subset.Subset)
-    fname, fltr = QFileDialog.getSaveFileName(caption="Select an output name")
+    fname, fltr = QFileDialog.getSaveFileName(caption="Select an output name",
+                                              filter='FITS mask (*.fits);; Fits mask (*.fits)')
     fname = str(fname)
     if not fname:
         return
