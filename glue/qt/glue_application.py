@@ -565,11 +565,11 @@ class GlueApplication(Application, QMainWindow):
         """ Save the data collection and hub to file.
 
         Can be restored via restore_session
-
-        Note: Saving of client is not currently supported. Thus,
-        restoring this session will lose all current viz windows
         """
-        outfile, file_filter = QFileDialog.getSaveFileName(self)
+
+        # include file filter twice, so it shows up in Dialog
+        outfile, file_filter = QFileDialog.getSaveFileName(self,
+                                                           filter="Glue Sessions (*.glu);; GlueSessions(*.glu)")
         if not outfile:
             return
         self.save_session(outfile)
