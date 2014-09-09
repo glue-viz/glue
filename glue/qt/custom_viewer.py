@@ -243,6 +243,7 @@ class CustomWidgetBase(DataViewer):
         self.make_toolbar()
         self.statusBar().setSizeGripEnabled(False)
         self._update_artists = []
+        self.settings_changed()
 
     def options_widget(self):
         return self.option_widget

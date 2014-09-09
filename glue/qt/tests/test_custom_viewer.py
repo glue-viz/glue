@@ -108,9 +108,10 @@ class TestCustomViewer(object):
 
     def test_settings_change(self):
         w = self.build()
+        ct = self.update_settings.call_count
         w._settings['d'].ui.setChecked(False)
 
-        assert self.update_settings.call_count == 1
+        assert self.update_settings.call_count == ct + 1
 
         assert w.settings()['d'] is False
 
@@ -134,6 +135,10 @@ class TestCustomViewer(object):
         assert w._settings['b'].ui.count() == 2
         self.data.add_component([10, 20, 30], label='c')
         assert w._settings['b'].ui.count() == 3
+
+    def test_update_settings_called_on_init(self):
+        w = self.build()
+        assert self.update_settings.call_count == 1
 
 
 def test_state_save():
