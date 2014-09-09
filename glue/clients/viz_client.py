@@ -270,3 +270,11 @@ class GenericMplClient(Client):
 
     def _remove_data(self, message):
         self.remove_layer(message.data)
+
+    def restore_layers(self, layers, context):
+        """ Re-generate plot layers from a glue-serialized list"""
+        for l in layers:
+            l.pop('_type')
+            props = dict((k, context.object(v)) for k, v in l.items())
+            layer = self.add_layer(props['layer'])
+            layer.properties = props

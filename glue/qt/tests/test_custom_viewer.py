@@ -7,26 +7,30 @@ from ... import custom_viewer
 from ...core import Data
 from ...core.tests.util import simple_session
 from ..custom_viewer import FormElement, NumberElement, ChoiceElement
+from ..glue_application import GlueApplication
+from ...core.tests.test_state import check_clone_app
 
 
 def _make_widget(viewer):
     s = simple_session()
     return viewer._widget_cls(s)
 
+viewer = custom_viewer('Testing Custom Viewer',
+                       a=(0, 100),
+                       b='att',
+                       c='att(x)',
+                       d=True,
+                       e=False,
+                       f=['a', 'b', 'c'],
+                       g=dict(a=1, b=2, c=3),
+                       )
+
 
 class TestCustomViewer(object):
 
     def setup_class(self):
 
-        self.viewer = custom_viewer('Custom Viewer',
-                                    a=(0, 100),
-                                    b='att',
-                                    c='att(x)',
-                                    d=True,
-                                    e=False,
-                                    f=['a', 'b', 'c'],
-                                    g=dict(a=1, b=2, c=3),
-                                    )
+        self.viewer = viewer
 
         self.setup = self.viewer.setup(MagicMock())
         self.update_settings = self.viewer.update_settings(MagicMock())
@@ -130,6 +134,22 @@ class TestCustomViewer(object):
         assert w._settings['b'].ui.count() == 2
         self.data.add_component([10, 20, 30], label='c')
         assert w._settings['b'].ui.count() == 3
+
+
+def test_state_save():
+    app = GlueApplication()
+    w = app.new_data_viewer(viewer._widget_cls)
+    check_clone_app(app)
+
+
+def test_state_save_with_data_layers():
+    app = GlueApplication()
+    dc = app.data_collection
+    d = Data(x=[1, 2, 3], label='test')
+    dc.append(d)
+    w = app.new_data_viewer(viewer._widget_cls)
+    w.add_data(d)
+    check_clone_app(app)
 
 
 class TestFormElements(object):

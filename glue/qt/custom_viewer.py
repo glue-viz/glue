@@ -8,6 +8,7 @@ The end user typically interacts with this code via
 :func:`glue.custom_viewer`
 """
 from collections import namedtuple
+from inspect import getmodule
 
 from ..clients import LayerArtist, GenericMplClient
 from ..core import Data
@@ -16,7 +17,7 @@ from ..core.util import nonpartial, as_list
 from .. import core
 
 from .widgets.data_viewer import DataViewer
-from .widget_properties import CurrentComboProperty
+from . import widget_properties as wp
 from ..external.six import string_types
 from ..external.qt import QtGui
 from ..external.qt.QtCore import Qt
@@ -66,12 +67,23 @@ class CustomViewerFactory(object):
         artist_cls = type('%sLayerArtist' % lbl, (CustomArtistBase,), {})
         client_cls = type('%sClient' % lbl, (CustomClientBase,),
                           {'artist_cls': artist_cls})
-        widget_dict = {'client_cls': client_cls, 'LABEL': name, 'ui': kwargs}
+
+        props = CustomWidgetBase._property_set + kwargs.keys()
+        widget_dict = {'client_cls': client_cls, 'LABEL': name,
+                       'ui': kwargs, '_property_set': props}
+        widget_dict.update(**dict((k, FormDescriptor(k))
+                                  for k in kwargs))
+
         widget_cls = type('%sWidget' % lbl, (CustomWidgetBase,), widget_dict)
         self._artist_cls = artist_cls
         self._client_cls = client_cls
         self._widget_cls = widget_cls
         CUSTOM_WIDGETS.append(widget_cls)
+
+        # add new classes to module namespace
+        # needed for proper state saving/restoring
+        for cls in [artist_cls, client_cls, widget_cls]:
+            setattr(getmodule(self), cls.__name__, cls)
 
     def plot_subset(self, update_subset):
         """
@@ -205,7 +217,8 @@ class CustomClientBase(GenericMplClient):
 class CustomWidgetBase(DataViewer):
 
     """Base Qt widget class for custom viewers"""
-
+    _property_set = DataViewer._property_set + ['redraw_on_settings_change',
+                                                'selections_enabled']
     # Widget name
     LABEL = ''
 
@@ -215,6 +228,8 @@ class CustomWidgetBase(DataViewer):
 
     redraw_on_settings_change = True  # redraw all layers when UI state changes?
     selections_enabled = False  # allow user to draw ROIs?
+
+    ui = None  # dictionary that describes each UI element
 
     def __init__(self, session, parent=None):
         super(CustomWidgetBase, self).__init__(session, parent)
@@ -329,6 +344,18 @@ class CustomWidgetBase(DataViewer):
             hub.unsubscribe_all(w)
 
 
+class FormDescriptor(object):
+
+    def __init__(self, name):
+        self.name = name
+
+    def __get__(self, inst, owner=None):
+        return inst._settings[self.name].state
+
+    def __set__(self, inst, value):
+        inst._settings[self.name].state = value
+
+
 class FormElement(object):
 
     """
@@ -361,6 +388,14 @@ class FormElement(object):
         :param layer: The Data or Subset object to use,
                       if extracting numerical data
         """
+        raise NotImplementedError()
+
+    @property
+    def state(self):
+        raise NotImplementedError()
+
+    @state.setter
+    def state(self, value):
         raise NotImplementedError()
 
     def changed(self):
@@ -430,6 +465,8 @@ class NumberElement(FormElement):
 
         e = FormElement.auto((0., 1.))
     """
+    state = wp.ValueProperty('ui')
+
     @classmethod
     def recognizes(cls, params):
         try:
@@ -515,6 +552,8 @@ class LabeledSlider(QtGui.QWidget):
         v = min(max(int(v), 0), 100)
         self._slider.setValue(v)
 
+    setValue = set_value
+
 
 class BoolElement(FormElement):
 
@@ -525,6 +564,8 @@ class BoolElement(FormElement):
 
         e = FormElement.auto(False)
     """
+    state = wp.ButtonProperty('ui')
+
     @classmethod
     def recognizes(cls, params):
         return isinstance(params, bool)
@@ -568,6 +609,14 @@ class FixedComponent(FormElement):
             return AttributeInfo(layer.data.id[cid], layer[cid])
         return AttributeInfo(cid, None)
 
+    @property
+    def state(self):
+        return self.params
+
+    @state.setter
+    def state(self, value):
+        self.params = value
+
 
 class ComponenentElement(FormElement, core.hub.HubListener):
 
@@ -578,7 +627,18 @@ class ComponenentElement(FormElement, core.hub.HubListener):
 
         e = FormElement.auto('att')
     """
-    _component = CurrentComboProperty('ui')
+    _component = wp.CurrentComboProperty('ui')
+
+    @property
+    def state(self):
+        return self._component
+
+    @state.setter
+    def state(self, value):
+        self._update_components()
+        if value is None:
+            return
+        self._component = value
 
     @classmethod
     def recognizes(cls, params):
@@ -633,6 +693,7 @@ class ChoiceElement(FormElement):
         e = FormElement.auto({'a':1, 'b':2})
         e = FormElement.auto(['a', 'b', 'c'])
     """
+    state = wp.CurrentComboProperty('ui')
 
     @classmethod
     def recognizes(cls, params):

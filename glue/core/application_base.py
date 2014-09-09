@@ -396,6 +396,5 @@ class ViewerBase(HubListener, PropertySetMixin):
         prop = dict((k, context.object(v)) for
                     k, v in rec['properties'].items())
         result.restore_layers(rec['layers'], context)
-
         result.properties = prop
         return result

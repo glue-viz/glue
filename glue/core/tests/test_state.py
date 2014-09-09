@@ -6,6 +6,7 @@ import pytest
 
 from ..state import (GlueSerializer, GlueUnSerializer,
                      saver, loader, VersionedDict)
+from ...external import six
 
 from ... import core
 from ...qt.glue_application import GlueApplication
@@ -29,6 +30,26 @@ def clone(object):
 
 def doubler(x):
     return 2 * x
+
+
+def containers_equal(c1, c2):
+    """Check that two container-like items have the same contents,
+    ignoring differences relating to the type of container
+    """
+    if isinstance(c1, six.string_types):
+        return c1 == c2
+
+    try:
+        for a, b in zip(c1, c2):
+            if not containers_equal(a, b):
+                return False
+            if isinstance(c1, dict) and isinstance(c2, dict):
+                if not containers_equal(c1[a], c2[b]):
+                    return False
+    except TypeError:
+        pass
+
+    return True
 
 
 class Cloner(object):
@@ -198,52 +219,57 @@ def test_polygonal_roi():
     assert r2.vy == [0, 1, 0]
 
 
+def check_clone_app(app):
+    c = Cloner(app)
+    copy = c.us.object('__main__')
+
+    hub1 = app.session.hub
+    hub2 = copy.session.hub
+
+    assert len(hub1._subscriptions) == len(hub2._subscriptions)
+
+    # data collections are the same
+    for d1, d2 in zip(app.session.data_collection,
+                      copy.session.data_collection):
+        assert d1.label == d2.label
+        for cid1, cid2 in zip(d1.components, d2.components):
+            assert cid1.label == cid2.label
+
+            # order of components unspecified if label collisions
+            cid2 = c.get(cid1)
+            np.testing.assert_array_almost_equal(d1[cid1, 0:1],
+                                                 d2[cid2, 0:1], 3)
+
+    # same data viewers, in the same tabs
+    for tab1, tab2 in zip(app.viewers, copy.viewers):
+        assert len(tab1) == len(tab2)
+        for v1, v2 in zip(tab1, tab2):
+            assert type(v1) == type(v2)
+            # same window properties
+            assert v1.viewer_size == v2.viewer_size
+            assert v1.position == v2.position
+
+            # same viewer-level properties (axis label, scaling, etc)
+            assert set(v1.properties.keys()) == set(v2.properties.keys())
+            for k in v1.properties:
+                if hasattr(v1.properties[k], 'label'):
+                    assert v1.properties[k].label == v2.properties[k].label
+                else:
+                    assert v1.properties[k] == v2.properties[k] or \
+                        containers_equal(v1.properties[k], v2.properties[k])
+
+            assert len(v1.layers) == len(v2.layers)
+            for l1, l2 in zip(v1.layers, v2.layers):
+                assert l1.layer.label == l2.layer.label  # same data/subset
+                assert l1.layer.style == l2.layer.style
+
+    return copy
+
+
 class TestApplication(object):
 
     def check_clone(self, app):
-        c = Cloner(app)
-        copy = c.us.object('__main__')
-
-        hub1 = app.session.hub
-        hub2 = copy.session.hub
-
-        assert len(hub1._subscriptions) == len(hub2._subscriptions)
-
-        # data collections are the same
-        for d1, d2 in zip(app.session.data_collection,
-                          copy.session.data_collection):
-            assert d1.label == d2.label
-            for cid1, cid2 in zip(d1.components, d2.components):
-                assert cid1.label == cid2.label
-
-                # order of components unspecified if label collisions
-                cid2 = c.get(cid1)
-                np.testing.assert_array_almost_equal(d1[cid1, 0:1],
-                                                     d2[cid2, 0:1], 3)
-
-        # same data viewers, in the same tabs
-        for tab1, tab2 in zip(app.viewers, copy.viewers):
-            assert len(tab1) == len(tab2)
-            for v1, v2 in zip(tab1, tab2):
-                assert type(v1) == type(v2)
-                # same window properties
-                assert v1.viewer_size == v2.viewer_size
-                assert v1.position == v2.position
-
-                # same viewer-level properties (axis label, scaling, etc)
-                assert set(v1.properties.keys()) == set(v2.properties.keys())
-                for k in v1.properties:
-                    if hasattr(v1.properties[k], 'label'):
-                        assert v1.properties[k].label == v2.properties[k].label
-                    else:
-                        assert v1.properties[k] == v2.properties[k]
-
-                assert len(v1.layers) == len(v2.layers)
-                for l1, l2 in zip(v1.layers, v2.layers):
-                    assert l1.layer.label == l2.layer.label  # same data/subset
-                    assert l1.layer.style == l2.layer.style
-
-        return copy
+        return check_clone_app(app)
 
     def test_bare_application(self):
         app = GlueApplication()

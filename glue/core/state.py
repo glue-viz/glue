@@ -79,10 +79,10 @@ from io import BytesIO
 from base64 import b64encode, b64decode
 
 
-literals = tuple([type(None), float, int, bytes, bool, str, list, tuple])
+literals = tuple([type(None), float, int, bytes, bool, list, tuple])
 
 if six.PY2:
-    literals += (long, unicode)
+    literals += (long,)
 literals += (np.ScalarType,)
 
 _lookup = lookup_class
@@ -218,9 +218,12 @@ class GlueSerializer(object):
 
     def id(self, obj):
         """
-        Return a unique name for an object,
-        and add it to the ID registry if necessary
+        Return a unique name for an object, and add it to the ID registry
+        if necessary.
         """
+        if isinstance(obj, six.string_types):
+            return 'st__%s' % obj
+
         if isinstance(obj, literals):
             return obj
 
@@ -256,6 +259,9 @@ class GlueSerializer(object):
         Serialize an object, but do not add it to
         the ID registry
         """
+        if isinstance(obj, six.string_types):
+            return 'st__' + obj
+
         if isinstance(obj, literals):
             return obj
 
@@ -382,6 +388,9 @@ class GlueUnSerializer(object):
     @core.registry.disable
     def object(self, obj_id):
         if isinstance(obj_id, six.string_types):
+            if obj_id.startswith('st__'):  # a string literal
+                return obj_id[4:]
+
             if obj_id in self._objs:
                 return self._objs[obj_id]
 
@@ -422,6 +431,16 @@ class GlueUnSerializer(object):
 
 saver = GlueSerializer.serializes
 loader = GlueUnSerializer.unserializes
+
+
+@saver(dict)
+def _save_dict(state, context):
+    return dict(contents=json.dumps(state))
+
+
+@loader(dict)
+def _load_dict(rec, context):
+    return json.loads(rec['contents'])
 
 
 @saver(CompositeSubsetState)
@@ -681,7 +700,7 @@ def _load_derived_component(rec, context):
 
 @saver(ComponentLink)
 def _save_component_link(link, context):
-    frm = list(map(context.id, [context.id(f) for f in link.get_from_ids()]))
+    frm = list(map(context.id, link.get_from_ids()))
     to = list(map(context.id, [link.get_to_id()]))
     using = context.do(link.get_using())
     inverse = context.do(link.get_inverse())
@@ -702,7 +721,7 @@ def _load_component_link(rec, context):
 
 @saver(CoordinateComponentLink)
 def _save_coordinate_component_link(link, context):
-    frm = list(map(context.id, [context.id(f) for f in link._from_all]))
+    frm = list(map(context.id, link._from_all))
     to = list(map(context.id, [link.get_to_id()]))
     coords = context.id(link.coords)
     index = link.index
@@ -718,7 +737,6 @@ def _load_coordinate_component_link(rec, context):
     index = rec['index']
     pix2world = rec['pix2world']
     frm = list(map(context.object, rec['frm']))
-
     return CoordinateComponentLink(frm, to, coords, index, pix2world)
 
 
