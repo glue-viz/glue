@@ -75,6 +75,8 @@ def _dispatch_to_custom(method):
 
         # build the argument list
         layer = kwargs.pop('layer', None)
+        key = (layer, method)
+
         a, k, _, _ = getargspec(func)
         kwargs['self'] = self
 
@@ -85,7 +87,7 @@ def _dispatch_to_custom(method):
 
         # clear any MPL artists created on last call
         if self.remove_artists:
-            old = self._created_artists.get(method, set())
+            old = self._created_artists.get(key, set())
             remove_artists(old)
             current = all_artists(self.axes.figure)
 
@@ -94,7 +96,11 @@ def _dispatch_to_custom(method):
 
         if self.remove_artists:
             new = new_artists(self.axes.figure, current)
-            self._created_artists[method] = new
+            self._created_artists[key] = new
+            if new:
+                self.axes.figure.canvas.draw()
+        else:
+            self.axes.figure.canvas.draw()
 
         return result
 
