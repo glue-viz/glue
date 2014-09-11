@@ -5,8 +5,9 @@ from matplotlib.axes import Axes
 
 from ... import custom_viewer
 from ...core import Data
+from ...core.subset import SubsetState
 from ...core.tests.util import simple_session
-from ..custom_viewer import FormElement, NumberElement, ChoiceElement
+from ..custom_viewer import FormElement, NumberElement, ChoiceElement, CustomViewer
 from ..glue_application import GlueApplication
 from ...core.tests.test_state import check_clone_app
 
@@ -26,24 +27,68 @@ viewer = custom_viewer('Testing Custom Viewer',
                        )
 
 
+setup = MagicMock()
+settings_changed = MagicMock()
+plot_subset = MagicMock()
+plot_data = MagicMock()
+make_selector = MagicMock()
+
+
+@viewer.setup
+def _setup(axes):
+    setup(axes)
+
+
+@viewer.plot_data
+def _plot_data(axes, a, b, g):
+    plot_data(axes=axes, a=a, b=b, g=g)
+    return []
+
+
+@viewer.plot_subset
+def _plot_subset(b, c, d, e, f, style):
+    plot_subset(b=b, c=c, d=d, e=e, f=f, style=style)
+    return []
+
+
+@viewer.settings_changed
+def _settings_changed(state):
+    settings_changed(state=state)
+
+
+@viewer.make_selector
+def _make_selector(roi, c):
+    make_selector(roi=roi, c=c)
+    return SubsetState()
+
+
+class ViewerSubclass(CustomViewer):
+    a = (0, 100)
+    b = 'att'
+    c = 'att(x)'
+    d = True
+    e = False
+    f = ['a', 'b', 'c']
+    g = dict(a=1, b=2, c=3)
+
+    setup = _setup
+    plot_data = _plot_data
+    plot_subset = _plot_subset
+    settings_changed = _settings_changed
+    make_selector = _make_selector
+
+
 class TestCustomViewer(object):
 
     def setup_class(self):
-
         self.viewer = viewer
 
-        self.setup = self.viewer.setup(MagicMock())
-        self.update_settings = self.viewer.update_settings(MagicMock())
-        self.plot_subset = self.viewer.plot_subset(MagicMock())
-        self.plot_data = self.viewer.plot_data(MagicMock())
-        self.make_selector = self.viewer.make_selector(MagicMock())
-
     def setup_method(self, method):
-        self.setup.reset_mock()
-        self.update_settings.reset_mock()
-        self.plot_subset.reset_mock()
-        self.plot_data.reset_mock()
-        self.make_selector.reset_mock()
+        setup.reset_mock()
+        settings_changed.reset_mock()
+        plot_subset.reset_mock()
+        plot_data.reset_mock()
+        make_selector.reset_mock()
 
         self.data = Data(x=[1, 2, 3], y=[2, 3, 4])
         self.session = simple_session()
@@ -61,28 +106,19 @@ class TestCustomViewer(object):
         return w
 
     def test_setup_called_on_init(self):
+        ct = setup.call_count
         self.build()
-        assert self.setup.call_count == 1
-
-    def test_settings(self):
-        w = self.build()
-        s = w.settings(self.data)
-
-        assert s['a'] == 50
-        assert_array_equal(s['c'].values, [1, 2, 3])
-        assert s['d'] is True
-        assert s['e'] is False
-        assert s['f'] == 'a'
-        assert s['g'] == 1
+        assert setup.call_count == ct + 1
 
     def test_plot_data(self):
         w = self.build()
         w.add_data(self.data)
 
-        a, k = self.plot_data.call_args
-        assert isinstance(a[0], Axes)
-        assert set(k.keys()) == set(('a', 'b', 'c', 'd', 'e', 'f', 'g', 'style'))
-        assert_array_equal(k['c'].values, [1, 2, 3])
+        a, k = plot_data.call_args
+        assert isinstance(k['axes'], Axes)
+        assert set(k.keys()) == set(('axes', 'a', 'b', 'g'))
+        assert k['a'] == 50
+        assert k['g'] == 1
 
     def test_plot_subset(self):
         w = self.build()
@@ -90,30 +126,32 @@ class TestCustomViewer(object):
 
         self.dc.new_subset_group(subset_state=self.data.id['x'] > 2)
 
-        a, k = self.plot_subset.call_args
-        assert set(k.keys()) == set(('a', 'b', 'c', 'd', 'e', 'f', 'g', 'style'))
+        a, k = plot_subset.call_args
+        assert set(k.keys()) == set(('b', 'c', 'd', 'e', 'f', 'style'))
+
+        assert_array_equal(k['b'].values, [3])
         assert_array_equal(k['c'].values, [3])
+        assert k['d']
+        assert not k['e']
+        assert k['f'] == 'a'
 
     def test_make_selector(self):
         w = self.build()
         roi = MagicMock()
-        self.make_selector.return_value = self.data.id['x'] > 1
         w.client.apply_roi(roi)
 
-        a, k = self.make_selector.call_args
+        a, k = make_selector.call_args
 
-        assert a == (roi,)
-        assert set(k.keys()) == set(('a', 'b', 'c', 'd', 'e', 'f', 'g'))
-        assert k['d'] is True
+        assert set(k.keys()) == set(('roi', 'c'))
+        assert k['roi'] is roi
 
     def test_settings_change(self):
         w = self.build()
-        ct = self.update_settings.call_count
-        w._settings['d'].ui.setChecked(False)
-
-        assert self.update_settings.call_count == ct + 1
-
-        assert w.settings()['d'] is False
+        ct = settings_changed.call_count
+        w._coordinator._settings['d'].ui.setChecked(False)
+        assert settings_changed.call_count == ct + 1
+        a, k = settings_changed.call_args
+        assert 'state' in k
 
     def test_register(self):
         with patch('glue.qt.custom_viewer.FormElement.register_to_hub') as r:
@@ -125,20 +163,25 @@ class TestCustomViewer(object):
         w = self.build()
         w.add_data(self.data)
 
-        assert_array_equal(w.settings(self.data)['b'].values, [1, 2, 3])
+        assert_array_equal(w._coordinator._value('b', layer=self.data).values,
+                           [1, 2, 3])
 
     def test_component_autoupdate(self):
 
         w = self.build()
         w.add_data(self.data)
 
-        assert w._settings['b'].ui.count() == 2
+        assert w._coordinator._settings['b'].ui.count() == 2
         self.data.add_component([10, 20, 30], label='c')
-        assert w._settings['b'].ui.count() == 3
+        assert w._coordinator._settings['b'].ui.count() == 3
 
-    def test_update_settings_called_on_init(self):
+    def test_settings_changed_called_on_init(self):
         w = self.build()
-        assert self.update_settings.call_count == 1
+        assert settings_changed.call_count == 1
+
+    def test_selections_enabled(self):
+        w = self.build()
+        assert w._coordinator.selections_enabled
 
 
 def test_state_save():
@@ -155,6 +198,12 @@ def test_state_save_with_data_layers():
     w = app.new_data_viewer(viewer._widget_cls)
     w.add_data(d)
     check_clone_app(app)
+
+
+class TestCustomViewerSubclassForm(TestCustomViewer):
+
+    def setup_class(self):
+        self.viewer = ViewerSubclass
 
 
 class TestFormElements(object):

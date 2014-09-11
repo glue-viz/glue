@@ -30,7 +30,7 @@ def custom_viewer(name, **kwargs):
     :param name: The name of the new viewer
     :type name: str
 
-    Extra keywords are used to build widgets and pass data
+    Named arguments are used to build widgets and pass data
     to viewer functions. See ``specifying widgets`` below.
 
     Example::
@@ -43,22 +43,22 @@ def custom_viewer(name, **kwargs):
         ...
 
       @v.plot_data
-      def plot_data_func(axes, check=None, style=None):
+      def plot_data_func(axes, check, style):
           ''' Visualize a full dataset '''
           ...
 
       @v.plot_subset
-      def plot_subset_func(axes, check=None, style=None):
+      def plot_subset_func(axes, check, style):
           ''' Visualize a subset '''
           ...
 
       @v.update_settings
-      def update_settings_func(check=None):
+      def update_settings_func(check):
           ''' Respond to the user changing a widget setting '''
           ...
 
       @v.make_selector
-      def make_selector_func(roi, check=None):
+      def make_selector_func(roi):
           ''' Turn a roi into a subset state '''
           ...
 
@@ -111,8 +111,8 @@ def custom_viewer(name, **kwargs):
     """
 
     # delay Qt import until needed
-    from .qt.custom_viewer import CustomViewerFactory
-    return CustomViewerFactory(name, **kwargs)
+    from .qt.custom_viewer import CustomViewer
+    return CustomViewer.create_new_subclass(name, **kwargs)
 
 from .config import load_configuration
 env = load_configuration()

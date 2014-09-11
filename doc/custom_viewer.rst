@@ -56,35 +56,33 @@ histogram) are shown as points (notice that Tim Duncan's shots are concentrated 
    :align: center
 
 Let's look at what the code does. Line 5 creates a new custom viewer,
-and gives it the name ``Shot Plot``. It also specifies x and y kewords which we'll come back to shortly (spoiler: they tell Glue to
-pass data attributes named X and Y to ``show_hexbin``).
+and gives it the name ``Shot Plot``. It also specifies ``x`` and ``y`` keywords which we'll come back to shortly (spoiler: they tell Glue to
+pass data attributes named ``x`` and ``y`` to ``show_hexbin``).
 
 Line 11 defines a ``show_hexbin`` function, that visualizes a dataset
 as a heatmap. Furthermore, the decorator on line 10 registers this
-function as the ``plot_data`` function, responsible for visualizing a dataset as a whole. The inputs to ``plot_data`` are described more
-precisely in the :func:`~glue.custom_viewer` documentation, but briefly:
+function as the ``plot_data`` function, responsible for visualizing a dataset as a whole.
 
- - The first argument is always a Matplotlib axes object.
- - A style keyword argument is always supplied. We don't make use of it
-   here, but will below.
- - The X and Y keywords are passed to ``show_hexbin`` because the
-   `x` and `y` keywords were passed to :func:`~glue.custom_viewer` in Lines 6-7. They will contain the data (as arrays) corresponding
-   to the dataset attributes labeled 'x' and 'y'.
+Custom functions like ``show_hexbin`` can accept a variety of input
+arguments, depending on what they need to do. Glue looks at the names
+of the inputs to decide what data to pass along.  In the case of this
+function:
 
- The function body itself is pretty simple -- we extract numpy
- arrays from `x.values` and `y.values`, use them to
- build a hexbin plot in Matplotlib, and return the result.
+ - Arguments named ``axes`` contain the Matplolib Axes object to draw with
+ - ``x`` and ``y`` were provided as keywords to ``custom_viewer``. They
+   contain the data (as arrays) corresponding to the attributes labeled
+   ``x`` and ``y`` in the catalog
 
- .. warning:: Make sure you return all plot layers you create
-              in a plotting function!
+The function body itself is pretty simple -- we just use  the
+``x`` and ``y`` data to build a hexbin plot in Matplotlib.
 
 Lines 19-25 follow a similar structure to handle the visualization of subsets, by defining a ``plot_subset`` function. We make use of the
-style keyword, to make sure we choose colors, sizes, and
+``style`` keyword, to make sure we choose colors, sizes, and
 opacities that are consistent with the rest of Glue. The value passed
 to the style keyword is a :class:`~glue.core.visual.VisualAttributes`
 object.
 
-Custom data viewers give youn the control to visualize data how you
+Custom data viewers give you the control to visualize data how you
 want, while Glue handles all the tedious bookeeping associated with updating plots when selections, styles, or datasets change. Try it out!
 
 Still, this viewer is pretty limited. In particular, it's missing
@@ -147,14 +145,14 @@ This results in the following interface:
 
 Whenever the user changes the settings of these widgets, the
 drawing functions are re-called. Furthermore, the current
-setting of each widget is passed as a keyword to the plotting functions:
+setting of each widget is available to the plotting functions:
 
  * ``bins`` is set to an integer
  * ``hitrate`` is set to a boolean
  * ``color`` is set to ``'Reds'`` or ``'Purples'``
- * ``x``, ``y``, and ``hit`` are passed as :class:`~glue.qt.custom_viewer.AttributeInfo` objects.
+ * ``x``, ``y``, and ``hit`` are passed as :class:`~glue.qt.custom_viewer.AttributeInfo` objects (which are just numpy arrays with a special ``id`` attribute, useful when performing selection below).
 
-The plotting functions can use these keywords to draw the appropriate
+The plotting functions can use these variables to draw the appropriate
 plots -- in particular, the ``show_hexbin`` function chooses
 the binsize, color, and aggregation based on the widget settings.
 
@@ -175,3 +173,60 @@ With `this version <_static/bball_viewer_4.py>`_ of the code you can how draw sh
 
 .. figure:: bball_5.png
    :align: center
+
+Viewer Subclasses
+-----------------
+The shot chart example used decorators to define custom plot functions.
+However, if your used to writing classes you can also subclass
+:class:`~glue.qt.custom_viewer.CustomViewer` directly. The code is largely the
+same:
+
+.. literalinclude:: _static/bball_viewer_class.py
+   :linenos:
+
+
+Valid Function Arguments
+------------------------
+
+The following argument names are allowed as inputs to custom
+viewer functions:
+
+ - Any UI setting provided as a keyword to :func:`glue.custom_viewer`.
+   The value passed to the function will be the current setting of the
+   UI element.
+ - ``axes`` is the matplotlib Axes object to draw to
+ - ``roi`` is the :class:`glue.core.roi.ROI` object a user created --
+   it's only available in ``make_selection``.
+ - ``style`` is available to ``plot_data`` and ``plot_subset``. It is
+   the :class:`~glue.core.visual.VisualAttributes` associated with the
+   subset or dataset to draw
+ - ``state`` is a general purpose object that you can use to store
+   data with, in case you need to keep track of state in between
+   function calls.
+
+UI Elements
+-----------
+
+Simple user interfaces are created by specifying keywords to
+:func:`~glue.custom_viewer` or class-level variables to
+:class:`~glue.qt.custom_viewer.CustomViewer` subclasses. The type of
+widget, and the value passed to plot functions, depends on the value
+assigned to each variable. See :func:`~glue.custom_viewer` for
+information.
+
+Other Guidelines
+----------------
+
+ - Glue auto-assigns the z-order of data and subset layers to the values
+   [0, N_layers - 1]. If you have elements you want to plot in the
+   background, give them a negative z-order
+
+ - Glue tries to keep track of the plot layers that each custom function
+   creates, and auto-deletes old layers. This behavior can be disabled
+   by setting ``viewer.remove_artists=False``. Likewise,
+   ``plot_data`` and ``plot_subset`` can explicitly return a list
+   of newly-created artists. This might be more efficient if your
+   plot is very complicated
+ - By default, ``plot_data`` and ``plot_subset`` are called whenever
+   UI settings change. To disable this behavior, set
+   ``viewer.redraw_on_settings_change=False``

@@ -133,7 +133,7 @@ class VizClient(Client):
         raise NotImplementedError()
 
 
-def init_mpl(figure, axes, wcs=False):
+def init_mpl(figure, axes, wcs=False, axes_factory=None):
     if axes is not None and figure is not None and \
             axes.figure is not figure:
         raise ValueError("Axes and figure are incompatible")
@@ -152,7 +152,10 @@ def init_mpl(figure, axes, wcs=False):
             _ax = WCSAxesSubplot(_figure, 111)
             _figure.add_axes(_ax)
         else:
-            _ax = _figure.add_subplot(1, 1, 1)
+            if axes_factory is not None:
+                _ax = axes_factory(_figure)
+            else:
+                _ax = _figure.add_subplot(1, 1, 1)
     try:
         _figure.set_tight_layout(True)
     except AttributeError:  # matplotlib < 1.1
@@ -175,12 +178,16 @@ class GenericMplClient(Client):
                  artist_container=None):
 
         super(GenericMplClient, self).__init__(data=data)
-        figure, self.axes = init_mpl(figure, axes)
+        figure, self.axes = init_mpl(figure, axes,
+                                     axes_factory=self.create_axes)
         self.artists = artist_container
         if self.artists is None:
             self.artists = LayerArtistContainer()
 
         self._connect()
+
+    def create_axes(self, figure):
+        return figure.add_subplot(1, 1, 1)
 
     def _connect(self):
         pass
