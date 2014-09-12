@@ -216,6 +216,7 @@ information.
 
 Other Guidelines
 ----------------
+ - You can find other example data viewers at `<https://github.com/glue-viz/example_data_viewers>`_. Contributions to this repository are welcome!
 
  - Glue auto-assigns the z-order of data and subset layers to the values
    [0, N_layers - 1]. If you have elements you want to plot in the
@@ -226,7 +227,8 @@ Other Guidelines
    by setting ``viewer.remove_artists=False``. Likewise,
    ``plot_data`` and ``plot_subset`` can explicitly return a list
    of newly-created artists. This might be more efficient if your
-   plot is very complicated
+   plot is very complicated.
+
  - By default, ``plot_data`` and ``plot_subset`` are called whenever
    UI settings change. To disable this behavior, set
-   ``viewer.redraw_on_settings_change=False``
+   ``viewer.redraw_on_settings_change=False``.
