@@ -308,7 +308,7 @@ class CustomViewer(object):
             w.add_callback(callback)
             self._settings[k] = w
             if w.ui is not None:
-                layout.addRow(k.title(), w.ui)
+                layout.addRow(k.title().replace('_', ' '), w.ui)
 
         return result
 
@@ -411,7 +411,8 @@ class CustomArtist(LayerArtist):
 
         self.clear()
 
-        old = all_artists(self._axes.figure)
+        if self._coordinator.remove_artists:
+            old = all_artists(self._axes.figure)
 
         if isinstance(self._layer, Data):
             a = self._coordinator._plot_data(layer=self._layer)
@@ -421,9 +422,12 @@ class CustomArtist(LayerArtist):
         # if user explicitly returns the newly-created artists,
         # then use them. Otherwise, introspect to find the new artists
         if a is None:
-            self.artists = list(new_artists(self._axes.figure, old))
+            if self._coordinator.remove_artists:
+                self.artists = list(new_artists(self._axes.figure, old))
+            else:
+                self.artists = []
         else:
-            a = as_list(a)
+            self.artists = as_list(a)
 
         for a in self.artists:
             a.set_zorder(self.zorder)
@@ -433,6 +437,7 @@ class CustomClient(GenericMplClient):
 
     def __init__(self, *args, **kwargs):
         self._coordinator = kwargs.pop('coordinator')
+        kwargs.setdefault('axes_factory', self._coordinator.create_axes)
         super(CustomClient, self).__init__(*args, **kwargs)
 
         self._coordinator.axes = self.axes
