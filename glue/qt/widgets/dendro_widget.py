@@ -59,7 +59,7 @@ class DendroWidget(DataViewer):
                              name='Dendrogram')
         for mode in self._mouse_modes():
             result.add_mode(mode)
-            self.addToolBar(result)
+        self.addToolBar(result)
         return result
 
     def _mouse_modes(self):

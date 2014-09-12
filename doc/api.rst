@@ -62,6 +62,12 @@ User Interface
 .. automodsumm:: glue.qglue
     :toctree: api/
 
+.. automodapi:: glue.qt.custom_viewer
+   :no-inheritance-diagram:
+
+.. automodapi:: glue
+   :no-inheritance-diagram:
+
 
 Utilities
 =========

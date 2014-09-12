@@ -216,7 +216,8 @@ class QtClientRegistry(Registry):
     def default_members(self):
         try:
             from .qt.widgets import default_widgets
-            return default_widgets
+            from .qt.custom_viewer import CUSTOM_WIDGETS
+            return default_widgets + CUSTOM_WIDGETS
         except ImportError:
             logging.getLogger(__name__).warning(
                 "could not import glue.qt in ConfigObject")

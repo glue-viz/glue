@@ -27,6 +27,16 @@ class VisualAttributes(object):
 
     '''
     This class is used to define visual attributes for any kind of objects
+
+    The essential attributes of a VisualAttributes instance are:
+
+    :param color: A matplotlib color string
+    :param alpha: Opacity (0-1)
+    :param linewidth: The linewidth (float or int)
+    :param linestyle: The linestyle (``'solid' | 'dashed' | 'dash-dot' | 'dotted' | 'none'``)
+    :param marker: The matplotlib marker shape (``'o' | 's' | '^' | etc``)
+    :param markersize: The size of the marker (int)
+
     '''
 
     def __init__(self, parent=None, washout=False, color=GREY):
@@ -49,7 +59,7 @@ class VisualAttributes(object):
         self.linestyle = 'solid'
 
         self.marker = 'o'
-        self.markersize = 4
+        self.markersize = 3
 
         self.parent = parent
 
@@ -62,10 +72,16 @@ class VisualAttributes(object):
         return all(getattr(self, a) == getattr(other, a) for a in self._atts)
 
     def set(self, other):
+        """
+        Update this instance's properties based on another VisualAttributes instance.
+        """
         for att in self._atts:
             setattr(self, att, getattr(other, att))
 
     def copy(self, new_parent=None):
+        """
+        Create a new instance with the same visual properties
+        """
         result = VisualAttributes()
         result.set(self)
         if new_parent is not None:

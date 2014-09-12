@@ -468,3 +468,38 @@ def nonpartial(func, *args, **kwargs):
         return func(*args, **kwargs)
 
     return result
+
+
+def all_artists(fig):
+    """
+    Build a set of all Matplotlib artists in a Figure
+    """
+    return set(item
+               for axes in fig.axes
+               for container in [axes.collections, axes.patches, axes.lines,
+                                 axes.texts, axes.artists, axes.images]
+               for item in container)
+
+
+def new_artists(fig, old_artists):
+    """
+    Find the newly-added artists in a figure
+
+    :param fig: Matplotlib figure
+    :param old_artists: Return value from :func:all_artists
+    :returns: All artists added since all_artists was called
+    """
+    return all_artists(fig) - old_artists
+
+
+def remove_artists(artists):
+    """
+    Remove a collection of matplotlib artists from a scene
+
+    :param artists: Container of artists
+    """
+    for a in artists:
+        try:
+            a.remove()
+        except ValueError:  # already removed
+            pass
