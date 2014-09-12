@@ -47,7 +47,7 @@ install:
 
 script:
 - py.test $PYTEST_ARGS glue
-- if [ $DOC_TRIGGER ]; then cd doc && make html; fi
+- if [ $DOC_TRIGGER ]; then cd doc && make html && cd ../; fi
 
 after_success:
 - coveralls
@@ -57,7 +57,7 @@ deploy:
   provider: s3
   bucket: www.glueviz.org
   skip_cleanup: true
-  local-dir: _build/html
+  local-dir: doc/_build/html
   upload-dir: en/$S3_DIR
 
   access_key_id: AKIAI2ERWDHLW3W24X3A
