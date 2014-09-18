@@ -89,6 +89,10 @@ class SettingRegistry(Registry):
     def add(self, key, value, validator=str):
         self.members.append((key, value, validator))
 
+    def default_members(self):
+        import glue.plugins  # plugins will populate this registry
+        return []
+
 
 class ExporterRegistry(Registry):
 
