@@ -4,6 +4,7 @@ from ..qtutil import GlueActionButton, get_icon
 
 
 class Ui_LayerTree(object):
+
     def setupUi(self, LayerTree):
         font = QtGui.QFont()
         font.setPointSize(11)
@@ -42,7 +43,7 @@ class Ui_LayerTree(object):
         self.button_row.addWidget(self.layerAddButton)
         self.newSubsetButton = GlueActionButton(LayerTree)
         self.newSubsetButton.setIcon(get_icon('glue_subset'))
-        self.newSubsetButton.setIconSize(QtCore.QSize(19, 19))
+        self.newSubsetButton.setIconSize(QtCore.QSize(18, 18))
         self.newSubsetButton.setObjectName("newSubsetButton")
         self.button_row.addWidget(self.newSubsetButton)
         self.newSubsetButton.setFont(font)
@@ -50,6 +51,7 @@ class Ui_LayerTree(object):
         self.layerRemoveButton = QtGui.QPushButton(LayerTree)
         self.layerRemoveButton.setEnabled(False)
         self.layerRemoveButton.setIcon(get_icon('glue_delete'))
+        self.layerRemoveButton.setIconSize(QtCore.QSize(18, 18))
         self.layerRemoveButton.setObjectName("layerRemoveButton")
         self.layerRemoveButton.setFont(font)
         self.button_row.addWidget(self.layerRemoveButton)
@@ -58,6 +60,7 @@ class Ui_LayerTree(object):
         self.linkButton.setEnabled(True)
         self.linkButton.setIcon(get_icon('glue_link'))
         self.linkButton.setObjectName("linkButton")
+        self.linkButton.setIconSize(QtCore.QSize(18, 18))
         self.linkButton.setFont(font)
         self.button_row.addWidget(self.linkButton)
 
