@@ -160,13 +160,11 @@ Shot Chart Version 4: Selection
 -------------------------------
 One key feature still missing from this Shot Chart is the ability to
 select data by drawing on the plot. To do so, we need to write a
-``make_selector`` function that converts a user-drawn ROI into a subset
-object. This requires a little familiarity with Glue's own API for
-dealing with ROIs and subsets, but in many cases you can follow this
-basic pattern:
+``select`` function that computes whether a set of data points are
+contained in a user-drawn :class:`region of interest <glue.core.roi.Roi>`:
 
 .. literalinclude:: _static/bball_viewer_4.py
-   :lines: 18-26
+   :lines: 18-20
    :linenos:
 
 With `this version <_static/bball_viewer_4.py>`_ of the code you can how draw shapes on the plot to select data:

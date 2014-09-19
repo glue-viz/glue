@@ -15,15 +15,9 @@ bball = custom_viewer('Shot Plot',
                       hit='att(shot_made)')
 
 
-@bball.make_selector
-def make_selector(roi, x, y):
-
-    state = RoiSubsetState()
-    state.roi = roi
-    state.xatt = x.id
-    state.yatt = y.id
-
-    return state
+@bball.select
+def select(roi, x, y):
+    return roi.contains(x, y)
 
 
 @bball.plot_data
