@@ -57,7 +57,7 @@ class ComponentID(object):
     def __init__(self, label, hidden=False):
         """:param label: Name for the ID
            :type label: str"""
-        self._label = label
+        self._label = str(label)
         self._hidden = hidden
 
     @property
@@ -73,7 +73,7 @@ class ComponentID(object):
             classes. Label's should only be changd before creating other
             client objects
         """
-        self._label = value
+        self._label = str(value)
 
     @property
     def hidden(self):
@@ -684,10 +684,8 @@ class Data(object):
 
         if isinstance(label, ComponentID):
             component_id = label
-        elif isinstance(label, six.string_types):
-            component_id = ComponentID(label, hidden=hidden)
         else:
-            raise TypeError("label must be a ComponentID or string")
+            component_id = ComponentID(label, hidden=hidden)
 
         is_present = component_id in self._components
         self._components[component_id] = component
@@ -720,7 +718,7 @@ class Data(object):
             The :class:`DerivedComponent` that was added
         """
         if label is not None:
-            if isinstance(label, six.string_types):
+            if not isinstance(label, ComponentID):
                 label = ComponentID(label)
             link.set_to_id(label)
 

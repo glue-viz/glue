@@ -170,11 +170,6 @@ class TestData(object):
         assert self.comp_id in pricomps
         assert compid not in pricomps
 
-    def test_add_component_invalid_label(self):
-        with pytest.raises(TypeError) as exc:
-            self.data.add_component(self.comp, label=5)
-        assert exc.value.args[0] == "label must be a ComponentID or string"
-
     def test_add_component_invalid_component(self):
         comp = Component(np.array([1]))
         with pytest.raises(ValueError) as exc:
