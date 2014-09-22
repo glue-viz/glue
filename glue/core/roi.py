@@ -58,9 +58,24 @@ def pixel_to_data(ax, x, y):
 
 class Roi(object):  # pragma: no cover
 
+    """
+    A geometrical 2D region of interest.
+
+    Glue uses Roi's to represent user-drawn regions on plots. There
+    are many specific subtypes of Roi, but they all have a ``contains``
+    method to test whether a collection of 2D points lies inside the region.
+    """
+
     def contains(self, x, y):
-        """Return true/false for each x/y pair. Raises UndefinedROI
-        exception if not defined
+        """Return true/false for each x/y pair.
+
+        :param x: Array of X locations
+        :param y: Array of Y locations
+
+        :returns: A Boolean array, where each element is True
+                  if the corresponding (x,y) tuple is inside the Roi.
+
+        :raises: UndefinedROI exception if not defined
         """
         raise NotImplementedError()
 
@@ -82,6 +97,9 @@ class Roi(object):  # pragma: no cover
         raise NotImplementedError
 
     def copy(self):
+        """
+        Return a clone of the ROI
+        """
         return copy.copy(self)
 
 

@@ -7,9 +7,9 @@ from ... import custom_viewer
 from ...core import Data
 from ...core.subset import SubsetState
 from ...core.tests.util import simple_session
-from ..custom_viewer import FormElement, NumberElement, ChoiceElement, CustomViewer
+from ..custom_viewer import FormElement, NumberElement, ChoiceElement, CustomViewer, CustomSubsetState
 from ..glue_application import GlueApplication
-from ...core.tests.test_state import check_clone_app
+from ...core.tests.test_state import check_clone_app, clone
 
 
 def _make_widget(viewer):
@@ -163,7 +163,7 @@ class TestCustomViewer(object):
         w = self.build()
         w.add_data(self.data)
 
-        assert_array_equal(w._coordinator._value('b', layer=self.data).values,
+        assert_array_equal(w._coordinator.value('b', layer=self.data).values,
                            [1, 2, 3])
 
     def test_component_autoupdate(self):
@@ -198,6 +198,63 @@ def test_state_save_with_data_layers():
     w = app.new_data_viewer(viewer._widget_cls)
     w.add_data(d)
     check_clone_app(app)
+
+
+class TestCustomSelectMethod(object):
+
+    def setup_class(self):
+        self.viewer = custom_viewer('CustomSelectViewer',
+                                    x='att(x)', flip=False)
+
+        @self.viewer.select
+        def select(roi, x, flip):
+            if flip:
+                return x <= 1
+            return x > 1
+
+    def setup_method(self, method):
+        self.data = Data(x=[1, 2, 3], y=[2, 3, 4])
+        self.session = simple_session()
+        self.dc = self.session.data_collection
+        self.dc.append(self.data)
+
+    def build(self):
+        return self.viewer._widget_cls(self.session)
+
+    def test_state(self):
+        w = self.build()
+        v = w._coordinator
+        roi = MagicMock()
+        s = CustomSubsetState(type(v), roi, v.settings())
+
+        assert_array_equal(s.to_mask(self.data), [False, True, True])
+
+    def test_state_view(self):
+        w = self.build()
+        v = w._coordinator
+        roi = MagicMock()
+        s = CustomSubsetState(type(v), roi, v.settings())
+
+        assert_array_equal(s.to_mask(self.data, view=slice(None, None, 2)),
+                           [False, True])
+
+    def test_settings_frozen_at_creation(self):
+        w = self.build()
+        v = w._coordinator
+        roi = MagicMock()
+        s = CustomSubsetState(type(v), roi, v.settings())
+        w.flip = True
+        assert_array_equal(s.to_mask(self.data), [False, True, True])
+
+    def test_save_load(self):
+        w = self.build()
+        v = w._coordinator
+        roi = None
+        s = CustomSubsetState(type(v), roi, v.settings())
+
+        s2 = clone(s)
+
+        assert_array_equal(s2.to_mask(self.data), [False, True, True])
 
 
 class TestCustomViewerSubclassForm(TestCustomViewer):

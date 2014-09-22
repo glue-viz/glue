@@ -11,9 +11,11 @@ env:
   - PIP_ARGS=""
   - PYTEST_ARGS="--cov glue"
   - CONDA_BASE="pip numpy=1.8 scipy pyside cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.2 xlrd pillow pytest mock coverage"
-  - PIP_BASE="pytest-cov coveralls pyavm sphinx-rtd-theme astrodendro"
+  - PIP_BASE="pytest-cov coveralls pyavm sphinx-rtd-theme astrodendro awscli"
   - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
   - secure: "SU9BYH8d9eNigypG3lC83s0NY6Mq9AHGKXyEGeXDtz1npJIC1KHdzPMP1v1K3dzCgl1p6ReMXPjZMCENyfNkad/xvzTzGk0Nu/4BjihrUPV6+ratVeLpv0JLm8ikh8q+sZURkdtzUOlds+Hfn5ku4LdpT87tcKHY9TINAGA34ZM="
+  - AWS_ACCESS_KEY_ID: AKIAI2ERWDHLW3W24X3A
+  - AWS_SECRET_ACCESS_KEY: $AWS_SECRET_KEY_ID
 
   matrix:
   - MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=2 DOC_TRIGGER=1 APP_TRIGGER=1
@@ -47,26 +49,9 @@ install:
 
 script:
 - py.test $PYTEST_ARGS glue
-- if [ $DOC_TRIGGER ]; then cd doc && make html; fi
+- if [ $DOC_TRIGGER ]; then cd doc && make html && cd ../; fi
 
 after_success:
 - coveralls
 - if [ $APP_TRIGGER ]; then ./.trigger_app_build.sh; fi
-
-deploy:
-  provider: s3
-  bucket: www.glueviz.org
-  skip_cleanup: true
-  local-dir: _build/html
-  upload-dir: en/$S3_DIR
-
-  access_key_id: AKIAI2ERWDHLW3W24X3A
-  secret_access_key: $AWS_SECRET_KEY_ID
-  on:
-     branch:
-       - master
-       - staging
-       - stable
-     condition:
-       - "$TRAVIS_SECURE_ENV_VARS = true"
-       - "$DOC_TRIGGER = 1"
+- if [ $DOC_TRIGGER -a "$TRAVIS_SECURE_ENV_VARS = true" ]; then cd doc && make s3 && cd ../; fi

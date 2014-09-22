@@ -349,10 +349,10 @@ def layer_icon(layer):
     :rtype: QIcon
     """
     icon = POINT_ICONS.get(layer.style.marker, 'circle_point')
-
     bm = QBitmap(icon_path(icon))
     color = mpl_to_qt4_color(layer.style.color)
     pm = tint_pixmap(bm, color)
+    pm = pm.scaledToHeight(15, Qt.SmoothTransformation)
     return QIcon(pm)
 
 

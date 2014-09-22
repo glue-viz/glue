@@ -35,7 +35,7 @@ def custom_viewer(name, **kwargs):
 
     Example::
 
-      v = custom_viewer('My custom viewer', check=False)
+      v = custom_viewer('My custom viewer', check=False, x='att(x)')
 
       @v.setup
       def setup_func(axes):
@@ -57,10 +57,17 @@ def custom_viewer(name, **kwargs):
           ''' Respond to the user changing a widget setting '''
           ...
 
+      @v.select
+      def select(roi, x):
+        ''' Filter a dataset based on an roi. Return a boolean array '''
+        ...
+
+
       @v.make_selector
       def make_selector_func(roi):
           ''' Turn a roi into a subset state '''
           ...
+
 
     **Specifying Widgets**
 
@@ -92,22 +99,17 @@ def custom_viewer(name, **kwargs):
     Custom viewers can implement any of the following functions:
 
      * ``setup_func`` is called once, when the viewer is created.
-       It's only argument is a Matplotlib axes object.
      * ``plot_data`` is called to update the visualization of a
-       full dataset. It is passed an axes object as its first argument,
-       a :class:`~glue.core.visual.VisualAttributes` object as the
-       style keyword, and a keyword for each keyword defined in
-       ``custom_viewer``. It should return a list of the Matplotlib
-       artists created inside the function.
-     * ``plot_subset`` has the same structure as plot_data, but
-       is used to visualize data subsets.
+       full dataset.
+     * ``plot_subset`` is used to visualize data subsets.
      * ``update_settings`` is called whenever a user modifies
-       a widget setting. It's call signature is the same as
-       ``plot_data``.
-     * ``make_selector`` is called when a user selects a region
-       in the plot. It should return a :class:`~glue.core.subset.SubsetState`
-       object to represent the selection. Its inputs are an
-       :class:`~glue.core.roi.Roi` object, and the widget settings.
+       a widget setting.
+    * ``select`` specifies how user-drawn regions on the viewer
+       are used to filter data. It has access to an :class:`~glue.core.roi.Roi`
+       input, and returns a Boolean array testing whether each element
+       in a dataset is part of a subset.
+    * ``make_selector`` is an alternative to ``select``. Instead of returning
+        an array, ``make_selector`` returns a :class:`~glue.core.subset.SubsetState`
     """
 
     # delay Qt import until needed

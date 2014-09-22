@@ -11,13 +11,15 @@ from collections import namedtuple
 from inspect import getmodule, getargspec
 from functools import wraps
 from types import FunctionType, MethodType
+from copy import copy
 
 import numpy as np
 
 from ..clients import LayerArtist, GenericMplClient
 from ..core import Data
+from ..core.decorators import memoize
 from ..core.edit_subset_mode import EditSubsetMode
-from ..core.util import (nonpartial, as_list,
+from ..core.util import (nonpartial, as_list, lookup_class,
                          all_artists, new_artists, remove_artists)
 from .. import core
 
@@ -50,6 +52,13 @@ class AttributeInfo(np.ndarray):
         result.values = result
         return result
 
+    def __gluestate__(self, context):
+        return dict(cid=context.id(self.id))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls.make(context.object(rec['cid']), [])
+
 
 class ViewerState(object):
 
@@ -58,11 +67,78 @@ class ViewerState(object):
     """
     pass
 
+    def __gluestate__(self, context):
+        return dict(data=[(k, context.id(v)) for k, v in self.__dict__.items()])
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        result = cls()
+        rec = rec['data']
+        for k in rec:
+            setattr(result, k, context.object(rec[k]))
+        return result
+
+
+def call_custom_function(func, settings, **kwargs):
+    """
+    Call a custom function, extracting extra inputs from a settings oracle.
+
+    `func` is introspected to determine the names of inputs it takes,
+    and values with these names are extracted from the settings oracle
+    or keywords passed to this function. `func` is then invoked
+
+    The settings oracle must have a ``value`` method, with a signature
+    (setting_name, layer=None, view=None).
+
+    :param func: A function to call
+    :param settings: An object with a `value` method as described above
+    :param kwargs: Extra keywords to override inputs otherwise extracted from
+                   `settings`
+
+    *Example*
+
+    def a(x, y):
+        return x, y
+
+    call_custom_function(a, settings, y=3, layer=l, view=v) will return
+
+    a(settings.value('x', l, v), 3)
+    """
+
+    # build the argument list
+    # layer and view are special keywords
+    layer = kwargs.pop('layer', None)
+    view = kwargs.pop('view', None)
+
+    a, k, _, _ = getargspec(func)
+
+    if layer is None and 'style' in a:
+        raise RuntimError("Cannot use `style` in this function")
+
+    a = [kwargs.get(item) if item in kwargs
+         else layer.style if item == 'style'
+         else settings.value(item, layer, view)
+         for item in a]
+    k = k or {}
+
+    return func(*a, **k)
+
 
 def _dispatch_to_custom(method):
     """
-    Method factory to build the argumenet list for a custom
-    viewer function, and call it
+    Method factory to call to custom plot methods.
+
+    The function returned from this function passes the appropriate
+    input arguments, by introspecting the signature of the input.
+
+    Example:
+
+    cv = CustomViewer(...)
+    @cv.plot_data
+    def custom_plot_data(x, y):
+        ...
+
+    cv._plot_data() -> custom_plot_data(x, y)
     """
 
     def result(self, **kwargs):
@@ -73,26 +149,16 @@ def _dispatch_to_custom(method):
         except KeyError:
             return []
 
-        # build the argument list
-        layer = kwargs.pop('layer', None)
-        key = (layer, method)
-
-        a, k, _, _ = getargspec(func)
-        kwargs['self'] = self
-
-        a = [kwargs.get(item) if item in kwargs
-             else self._value(item, layer)
-             for item in a]
-        k = k or {}
-
         # clear any MPL artists created on last call
         if self.remove_artists:
+            layer = kwargs.get('layer', None)
+            key = (layer, method)
             old = self._created_artists.get(key, set())
             remove_artists(old)
             current = all_artists(self.axes.figure)
 
         # call method, keep track of newly-added artists
-        result = func(*a, **k)
+        result = call_custom_function(func, self, **kwargs)
 
         if self.remove_artists:
             new = new_artists(self.axes.figure, current)
@@ -101,8 +167,9 @@ def _dispatch_to_custom(method):
                 self.axes.figure.canvas.draw()
         else:
             self.axes.figure.canvas.draw()
-
         return result
+
+    return result
 
     result.__name__ = method
 
@@ -119,7 +186,7 @@ class CustomMeta(type):
     """
     def __new__(cls, name, bases, attrs):
         _overrideable = set(['setup', 'plot_subset', 'plot_data',
-                            'settings_changed', 'make_selector'])
+                            'settings_changed', 'make_selector', 'select'])
 
         if name == 'CustomViewer':
             return type.__new__(cls, name, bases, attrs)
@@ -147,6 +214,71 @@ class CustomMeta(type):
         return result
 
 
+class CustomSubsetState(core.subset.SubsetState):
+
+    """
+    A SubsetState subclass that uses a CustomViewer's "filter" function
+    """
+
+    def __init__(self, viewer_cls, roi, settings):
+        super(CustomSubsetState, self).__init__()
+        self._viewer_cls = viewer_cls
+        self._settings = settings
+        self._roi = roi
+
+    def to_mask(self, data, view=None):
+        return call_custom_function(self._viewer_cls._custom_functions['select'],
+                                    self._settings, layer=data,
+                                    roi=self._roi, view=view)
+
+    def copy(self):
+        return CustomSubsetState(self._viewer_cls, self._roi.copy(), copy(self._settings))
+
+    def __gluestate__(self, context):
+        result = {}
+        result['viewer_cls'] = self._viewer_cls.__name__
+        result['settings'] = context.do(self._settings)
+        result['roi'] = context.id(self._roi)
+        return result
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        viewer = getattr(getmodule(ViewerState), rec['viewer_cls'])
+        settings = context.object(rec['settings'])
+        roi = context.object(rec['roi'])
+        return cls(viewer, roi, settings)
+
+
+class FrozenSettings(object):
+
+    """
+    Encapsulates the current settings of a CustomViewer
+    """
+
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
+    def value(self, key, layer=None, view=None):
+        try:
+            result = self.kwargs[key]
+        except KeyError:
+            raise AttributeError(key)
+
+        if isinstance(result, AttributeInfo) and layer is not None:
+            cid = result.id
+            return AttributeInfo.make(cid, layer[cid, view])
+
+        return result
+
+    def __gluestate__(self, context):
+        return dict(data=[(k, context.do(v)) for k, v in self.kwargs.items()])
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        kwargs = dict((k, context.object(v)) for k, v in rec['data'])
+        return cls(**kwargs)
+
+
 class CustomViewer(object):
 
     """
@@ -155,7 +287,7 @@ class CustomViewer(object):
 
     Users can either subclass this class and override
     one or more custom methods listed below, or use the
-    :func:`glue.custom_viewer` function to decorate custom
+    :func:`glue.custom_viewer` function and decorate custom
     plot functions.
 
 
@@ -168,6 +300,7 @@ class CustomViewer(object):
      - :meth:`CustomViewer.plot_subset`
      - :meth:`CustomViewer.settings_changed`
      - :meth:`CustomViewer.make_selector`
+     - :meth:`CustomViewer.select`
 
     *Method Signatures*
 
@@ -225,13 +358,14 @@ class CustomViewer(object):
     def __init__(self, widget_instance):
         self.widget = widget_instance
         self.state = ViewerState()
+        self._settings = {}
 
         # tracks artists created by each custom function
         self._created_artists = {}
 
     @property
     def selections_enabled(self):
-        return 'make_selector' in self._custom_functions
+        return 'make_selector' in self._custom_functions or 'select' in self._custom_functions
 
     @classmethod
     def create_new_subclass(cls, name, **kwargs):
@@ -267,7 +401,7 @@ class CustomViewer(object):
 
         # add new classes to module namespace
         # needed for proper state saving/restoring
-        for cls in [widget_cls]:
+        for cls in [widget_cls, cls]:
             setattr(getmodule(ViewerState), cls.__name__, cls)
 
     @classmethod
@@ -293,8 +427,6 @@ class CustomViewer(object):
             hub.unsubscribe_all(w)
 
     def _build_ui(self, callback):
-        self._settings = {}
-
         result = QtGui.QWidget()
 
         layout = QtGui.QFormLayout()
@@ -312,20 +444,28 @@ class CustomViewer(object):
 
         return result
 
-    def _value(self, setting, layer=None):
-        if setting == 'style':
-            if layer is None:
-                raise RuntimeError("Style data not available: "
-                                   "not a data or subset-specific function")
-            return layer.style
+    def value(self, setting, layer=None, view=None):
+        """
+        Get the current state of a custom setting
 
+        Parameters
+        ----------
+        setting : str
+            The name of a setting
+        layer : Data or Subset or None
+            The relevant data layer to extract information from
+        view : Array view or None
+            The view into the data to restrict attention to
+        """
         try:
+            # request for, e.g., axes
             return getattr(self, setting)
         except AttributeError:
             pass
 
         try:
-            return self._settings[setting].value(layer)
+            # request for a FormElement setting
+            return self._settings[setting].value(layer, view)
         except KeyError:
             raise AttributeError(setting)
 
@@ -335,6 +475,42 @@ class CustomViewer(object):
         Override for custom axes
         """
         return figure.add_subplot(1, 1, 1)
+
+    def _build_subset_state(self, roi):
+
+        if 'make_selector' in self._custom_functions:
+            return self._make_selector(roi=roi)
+        if 'select' in self._custom_functions:
+            return CustomSubsetState(type(self), roi, self.settings())
+        raise RuntimeError("Selection not supported for this viewer.")
+
+    def __copy__(self):
+        """
+        Copying a CustomViewer freezes custom settings at their current value,
+        decoupling them from future changes to the main viewer
+        """
+        result = type(self)(self.widget)
+        result.state = copy(self.state)
+
+        # share public attributes
+        for k, v in self.__dict__.items():
+            if not k.startswith('_'):
+                result.__dict__[k] = v
+
+        # copy settings
+        for k in self._settings:
+            result._settings[k] = copy(self._settings[k])
+
+        return result
+
+    def settings(self):
+        """
+        Return a frozen copy of the current settings of the viewer
+        """
+        result = {'state': copy(self.state)}
+        for k in self._settings:
+            result[k] = self.value(k)
+        return FrozenSettings(**result)
 
     @classmethod
     def setup(cls, func):
@@ -365,6 +541,9 @@ class CustomViewer(object):
         """
         Custom method called to build a :class:`~glue.core.subset.SubsetState` from an ROI.
 
+        See :meth:`~CutsomViewer.select` for an alternative way to define selections,
+        by returning Boolean arrays instead of SubsetStates.
+
         Functions have access to the roi by accepting an ``roi``
         argument to this function
         """
@@ -379,11 +558,26 @@ class CustomViewer(object):
         cls._register_override_method('settings_changed', func)
         return func
 
+    @classmethod
+    def select(cls, func):
+        """
+        Custom method called to filter data using an ROI.
+
+        This is an alternative function to :meth:`~CustomViewer.make_selector`,
+        which returns a numpy boolean array instead of a SubsetState.
+
+        Functions have access to the roi by accepting an ``roi``
+        argument to this function
+        """
+        cls._register_override_method('select', func)
+        return func
+
     _setup = _dispatch_to_custom('setup')
     _plot_subset = _dispatch_to_custom('plot_subset')
     _plot_data = _dispatch_to_custom('plot_data')
     _make_selector = _dispatch_to_custom('make_selector')
     _settings_changed = _dispatch_to_custom('settings_changed')
+    _select = _dispatch_to_custom('select')
 
 
 class CustomArtist(LayerArtist):
@@ -454,7 +648,7 @@ class CustomClient(GenericMplClient):
         else:
             return
 
-        s = self._coordinator._make_selector(roi=roi)
+        s = self._coordinator._build_subset_state(roi=roi)
         if s:
             EditSubsetMode().update(self.collect, s, focus_data=focus)
 
@@ -602,7 +796,7 @@ class FormElement(object):
         """
         raise NotImplementedError()
 
-    def value(self, layer=None):
+    def value(self, layer=None, view=None):
         """
         Extract the value of this element
 
@@ -618,6 +812,11 @@ class FormElement(object):
     @state.setter
     def state(self, value):
         raise NotImplementedError()
+
+    def __copy__(self):
+        result = type(self)(self.params)
+        result.state = self.state
+        return result
 
     def changed(self):
         for cb in self._callbacks:
@@ -703,7 +902,7 @@ class NumberElement(FormElement):
         w.valueChanged.connect(nonpartial(self.changed))
         return w
 
-    def value(self, layer=None):
+    def value(self, layer=None, view=None):
         return self.ui.value()
 
 
@@ -756,7 +955,7 @@ class LabeledSlider(QtGui.QWidget):
         """
         return self._slider.valueChanged
 
-    def value(self, layer=None):
+    def value(self, layer=None, view=None):
         """
         Return the numerical value of the slider
         """
@@ -797,7 +996,7 @@ class BoolElement(FormElement):
         w.toggled.connect(nonpartial(self.changed))
         return w
 
-    def value(self, layer=None):
+    def value(self, layer=None, view=None):
         return self.ui.isChecked()
 
 
@@ -821,13 +1020,13 @@ class FixedComponent(FormElement):
     def _build_ui(self):
         pass
 
-    def value(self, layer=None):
+    def value(self, layer=None, view=None):
         """
         Extract the component value as an AttributeInfo object
         """
         cid = self.params.split('(')[-1][:-1]
         if layer is not None:
-            return AttributeInfo.make(layer.data.id[cid], layer[cid])
+            return AttributeInfo.make(layer.data.id[cid], layer[cid, view])
         return AttributeInfo.make(cid, [])
 
     @property
@@ -870,11 +1069,11 @@ class ComponenentElement(FormElement, core.hub.HubListener):
         result.currentIndexChanged.connect(nonpartial(self.changed))
         return result
 
-    def value(self, layer=None):
+    def value(self, layer=None, view=None):
         cid = self._component
         if layer is None or cid is None:
             return AttributeInfo.make(cid, [])
-        return AttributeInfo.make(cid, layer[cid])
+        return AttributeInfo.make(cid, layer[cid, view])
 
     def _update_components(self):
         combo = self.ui
@@ -934,5 +1133,5 @@ class ChoiceElement(FormElement):
         w.currentIndexChanged.connect(nonpartial(self.changed))
         return w
 
-    def value(self, layer=None):
+    def value(self, layer=None, view=None):
         return self.params[self.ui.currentText()]

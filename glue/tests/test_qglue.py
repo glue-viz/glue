@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 from astropy.table import Table
+import pandas as pd
 
 from mock import patch, MagicMock
 import pytest
@@ -11,14 +12,6 @@ from ..core.registry import Registry
 from ..core.exceptions import IncompatibleAttribute
 from ..core import Data
 from ..qt.glue_application import GlueApplication
-
-
-def has_pandas():
-    try:
-        import pandas
-        return True
-    except:
-        return False
 
 
 class TestQGlue(object):
@@ -61,9 +54,7 @@ class TestQGlue(object):
                 assert component in components
         assert len(expected) == 0
 
-    @pytest.mark.skipif("not has_pandas()")
     def test_qglue_starts_application(self):
-        import pandas as pd
         pandas_data = pd.DataFrame(self.xy)
 
         app = qglue(data1=pandas_data)
@@ -72,6 +63,10 @@ class TestQGlue(object):
     def test_single_pandas(self):
         dc = qglue(data1=self.xy).data_collection
         self.check_setup(dc, {'data1': ['x', 'y']})
+
+    def test_single_pandas_nonstring_column(self):
+        dc = qglue(data1=pd.DataFrame({1: [1, 2, 3]})).data_collection
+        self.check_setup(dc, {'data1': ['1']})
 
     def test_single_numpy(self):
         dc = qglue(data1=np.array([1, 2, 3])).data_collection

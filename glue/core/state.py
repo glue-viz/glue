@@ -289,9 +289,12 @@ class GlueSerializer(object):
         if hasattr(obj, '__gluestate__'):
             return type(obj).__gluestate__, 1
 
-        for typ in type(obj).mro():
-            if typ in self.dispatch:
-                return self.dispatch[typ]
+        try:
+            for typ in type(obj).mro():
+                if typ in self.dispatch:
+                    return self.dispatch[typ]
+        except TypeError:  # no mro
+            pass
 
         raise GlueSerializeError("Don't know how to serialize"
                                  " %r of type %s" % (obj, type(obj)))

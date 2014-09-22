@@ -202,7 +202,6 @@ class LayerArtistView(QListView):
         self.setSelectionMode(QAbstractItemView.SingleSelection)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
-        self.doubleClicked.connect(lambda x: self._edit_style())
         self.setEditTriggers(self.NoEditTriggers)
 
         self._set_palette()
