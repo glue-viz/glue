@@ -456,12 +456,19 @@ def astropy_tabular_data(*args, **kwargs):
         registry.register_identifier('ascii', Table, _ascii_identifier_v02,
                                      force=True)
     else:
-        registry.register_identifier('ascii', Table, _ascii_identifier_v03,
+        # Basically, we always want the plain ascii reader for now.
+        # But astropy will complain about ambiguous formats (or use another reader)
+        # unless we remove other registry identifiers and set up our own reader
+
+        nope = lambda *a, **k: False
+        registry.register_identifier('ascii.glue', Table, _ascii_identifier_v03,
                                      force=True)
-        # Clobber the identifier
-        # added in astropy/astropy/pull/1935
-        registry.register_identifier('ascii.csv', Table, lambda *a, **k: False,
-                                     force=True)
+        registry.register_identifier('ascii.csv', Table, nope, force=True)
+        registry.register_identifier('ascii.fast_csv', Table, nope, force=True)
+        registry.register_identifier('ascii', Table, nope, force=True)
+        registry.register_reader('ascii.glue', Table,
+                                 lambda path: Table.read(path, format='ascii'),
+                                 force=True)
 
     # Import FITS compatibility (for Astropy 0.2.x)
     from ..external import fits_io
