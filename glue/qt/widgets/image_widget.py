@@ -568,6 +568,7 @@ class PVSliceWidget(StandaloneImageWidget):
         :param image_widget: Parent widget this was extracted from
         :param kwargs: Extra keywords are passed to imshow
         """
+        self._crosshairs = None
         self._parent = image_widget
         super(PVSliceWidget, self).__init__(image, x=x, y=y, **kwargs)
         conn = self.axes.figure.canvas.mpl_connect
@@ -615,12 +616,15 @@ class PVSliceWidget(StandaloneImageWidget):
 
     @defer_draw
     def _draw_crosshairs(self, event):
+        if self._crosshairs is not None:
+            self._crosshairs.remove()
+
         x, y, _ = self._pos_in_parent(event)
         ax = self._parent.client.axes
-        m, = ax.plot([x], [y], '+', ms=12, mfc='none', mec='#de2d26',
-                     mew=2, zorder=100)
+        self._crosshairs, = ax.plot([x], [y], '+', ms=12,
+                                    mfc='none', mec='#de2d26',
+                                    mew=2, zorder=100)
         ax.figure.canvas.draw()
-        m.remove()
 
     @defer_draw
     def _on_move(self, event):
