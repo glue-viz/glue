@@ -495,6 +495,7 @@ class ImageClient(VizClient):
             layer = self.display_data
             v = self._view or self._build_view(matched=True)
             a = RGBImageLayerArtist(layer, self._ax, last_view=v)
+            a.r = a.g = a.b = self.display_attribute
 
             with self.artists.ignore_empty():
                 self.artists.pop(layer)

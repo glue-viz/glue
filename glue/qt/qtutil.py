@@ -597,6 +597,7 @@ class RGBEdit(QWidget):
         self._artist = value
         for cid in self.cid.values():
             cid.data = value.layer
+        self.update_layers()
 
     def update_layers(self):
         if self.artist is None:
