@@ -6,6 +6,7 @@ or dataset
 from __future__ import absolute_import, division, print_function
 
 import logging
+from contextlib import contextmanager
 
 import numpy as np
 from matplotlib.cm import gray
@@ -543,6 +544,7 @@ class LayerArtistContainer(object):
     def __init__(self):
         self.artists = []
         self.callbacks = []
+        self._ignore_callbacks = False
 
     def on_empty(self, func):
         """
@@ -581,7 +583,10 @@ class LayerArtistContainer(object):
         except ValueError:
             pass
 
-        if len(self) == 0:
+        self._notify_if_empty()
+
+    def _notify_if_empty(self):
+        if len(self) == 0 and not self._ignore_callbacks:
             for cb in self.callbacks:
                 cb()
 
@@ -596,6 +601,15 @@ class LayerArtistContainer(object):
     def layers(self):
         """A list of the unique layers in the container"""
         return list(set([a.layer for a in self.artists]))
+
+    @contextmanager
+    def ignore_empty(self):
+        """A context manager that temporarily disables calling callbacks if container is emptied"""
+        try:
+            self._ignore_callbacks = True
+            yield
+        finally:
+            self._ignore_callbacks = False
 
     def __len__(self):
         return len(self.artists)

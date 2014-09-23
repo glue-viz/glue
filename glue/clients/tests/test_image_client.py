@@ -426,6 +426,15 @@ class TestImageClient(object):
         assert isinstance(c.rgb_mode(False), ImageLayerArtist)
         assert c.rgb_mode() is None
 
+    def test_rgb_enabled_on_creation(self):
+        """
+        Artist show render when first created.
+        Regression test for #419
+        """
+        c = self.create_client_with_image()
+        artist = c.rgb_mode(True)
+        assert artist.enabled
+
     def test_transpose(self):
         c = self.create_client_with_image()
         shp = self.im.shape

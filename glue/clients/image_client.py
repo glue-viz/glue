@@ -495,17 +495,18 @@ class ImageClient(VizClient):
             layer = self.display_data
             v = self._view or self._build_view(matched=True)
             a = RGBImageLayerArtist(layer, self._ax, last_view=v)
+            a.r = a.g = a.b = self.display_attribute
 
-            for artist in self.artists.pop(layer):
-                artist.clear()
-            self.artists.append(a)
+            with self.artists.ignore_empty():
+                self.artists.pop(layer)
+                self.artists.append(a)
             result = a
         else:
-            for artist in list(self.artists):
-                if isinstance(artist, RGBImageLayerArtist):
-                    artist.clear()
-                self.artists.remove(artist)
-            result = self.add_layer(layer)
+            with self.artists.ignore_empty():
+                for artist in list(self.artists):
+                    if isinstance(artist, RGBImageLayerArtist):
+                        self.artists.remove(artist)
+                result = self.add_layer(layer)
 
         self._update_data_plot()
         self._redraw()

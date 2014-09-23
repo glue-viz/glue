@@ -26,6 +26,7 @@ from ..external.qt import QtGui
 from ..external.six.moves import reduce
 from ..core.callback_property import add_callback
 
+
 class WidgetProperty(object):
 
     """ Base class for widget properties

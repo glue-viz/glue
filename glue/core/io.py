@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+
 def extract_data_fits(filename, use_hdu='all'):
     '''
     Extract non-tabular HDUs from a FITS file. If `use_hdu` is 'all', then

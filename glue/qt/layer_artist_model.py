@@ -298,9 +298,8 @@ class QtLayerArtistContainer(LayerArtistContainer):
             return
         self.model.removeRow(index)
         assert artist not in self.artists
-        if len(self) == 0:
-            for cb in self.callbacks:
-                cb()
+
+        self._notify_if_empty()
 
     def __nonzero__(self):
         return True

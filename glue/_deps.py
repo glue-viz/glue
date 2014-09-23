@@ -86,7 +86,7 @@ class QtDep(Dependency):
               "Install PyQt4 at http://bit.ly/YfTFxj, or\n"
               "Install PySide at http://bit.ly/Zci3Di\n"
               "*******************************\n"
-             )
+              )
 
 
 # Add any dependencies here
@@ -95,7 +95,8 @@ required = (
     QtDep(),
     Dependency('numpy', 'Required', min_version='1.4'),
     Dependency('matplotlib', 'Required for plotting', min_version='1.1'),
-    Dependency('pandas', 'Adds support for Excel files and DataFrames', min_version='0.13.1'),
+    Dependency(
+        'pandas', 'Adds support for Excel files and DataFrames', min_version='0.13.1'),
     Dependency('astropy', 'Used for FITS I/O, table reading, and WCS Parsing'))
 
 general = (
