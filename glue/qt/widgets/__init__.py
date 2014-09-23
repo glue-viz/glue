@@ -10,7 +10,7 @@ from .dendro_widget import DendroWidget
 default_widgets = [ScatterWidget, HistogramWidget, ImageWidget]
 
 try:
-    from .qt.widgets.ginga_widget import GingaWidget
+    from .ginga_widget import GingaWidget
     default_widgets.append(GingaWidget)
 except ImportError:
     pass
