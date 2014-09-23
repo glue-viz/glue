@@ -91,7 +91,7 @@ class TestQGlue(object):
     def test_multi_data(self):
         dc = qglue(data1=self.dict_data, data2=self.xy).data_collection
         self.check_setup(dc, {'data1': ['u', 'v'],
-                         'data2': ['x', 'y']})
+                              'data2': ['x', 'y']})
 
     def test_glue_data(self):
         d = Data(x=[1, 2, 3])
@@ -106,7 +106,7 @@ class TestQGlue(object):
 
         links = [[['x'], 'u', using]]
         self.check_setup(dc, {'data1': ['x', 'y'],
-                         'data2': ['u', 'v']})
+                              'data2': ['u', 'v']})
 
         d = dc[0] if dc[0].label == 'data1' else dc[1]
         np.testing.assert_array_equal(d['x'], self.x)
@@ -120,12 +120,12 @@ class TestQGlue(object):
         backwards = lambda *args: (args[0] / 2, args[1] / 3)
 
         links = [[['Data1.x', 'Data1.y'],
-                ['Data2.u', 'Data2.v'], forwards, backwards]]
+                  ['Data2.u', 'Data2.v'], forwards, backwards]]
         dc = qglue(Data1=self.xy, Data2=self.dict_data,
                    links=links).data_collection
 
         self.check_setup(dc, {'Data1': ['x', 'y'],
-                         'Data2': ['u', 'v']})
+                              'Data2': ['u', 'v']})
 
         for d in dc:
             if d.label == 'Data1':
