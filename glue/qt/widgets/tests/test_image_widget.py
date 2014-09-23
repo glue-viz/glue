@@ -133,6 +133,16 @@ class TestImageWidget(object):
         x, y = self.widget.client.axes.transData.transform([0.5, 1.5])
         assert self.widget._intensity_label(x, y) == 'data: %s' % intensity
 
+    def test_enable_rgb_doesnt_close_viewer(self):
+        # regression test for #446
+        def fail():
+            assert False
+
+        self.widget.add_data(self.im)
+        self.widget._container.on_empty(fail)
+        self.widget.rgb_mode = True
+        self.widget.rgb_mode = False
+
 
 class TestStateSave(TestApplication):
 
