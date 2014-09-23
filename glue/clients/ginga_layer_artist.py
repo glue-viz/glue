@@ -2,6 +2,7 @@
 LayerArtist classes handle the visualization of an individual subset
 or dataset
 """
+import time
 import logging
 
 import numpy as np
@@ -242,10 +243,10 @@ class ImageLayerArtist(LayerArtist):
         ##     image = self._extract_view(v, transpose)
         ##     extent = get_extent(v, transpose)
                 
-        image = self._extract_view(view, transpose)
-        # TODO: need metadata
-        aimg = AstroImage.AstroImage(data_np=image)
-        artists.append(aimg)
+        ## data_np = self._extract_view(view, transpose)
+        ## # TODO: need metadata
+        ## aimg = AstroImage.AstroImage(data_np=data_np)
+        ## artists.append(aimg)
         self.artists = artists
         self._sync_style()
 
@@ -381,16 +382,21 @@ class SubsetImageLayerArtist(LayerArtist):
 
     def update(self, view, transpose=False):
         print "update subset image"
+        time_start = time.time()
         subset = self.layer
-        self.clear()
+        #self.clear()
         logging.debug("View into subset %s is %s", self.layer, view)
-
+        print ("View into subset %s is %s", self.layer, view)
+        id, ysl, xsl = view
+        
         try:
             mask = subset.to_mask(view[1:])
         except IncompatibleAttribute as exc:
             self.disable_invalid_attributes(*exc.args)
             return False
         logging.debug("View mask has shape %s", mask.shape)
+        time_split = time.time()
+        print "a) %.2f split time" % (time_split - time_start)
 
         # shortcut for empty subsets
         if not mask.any():
@@ -398,17 +404,48 @@ class SubsetImageLayerArtist(LayerArtist):
 
         if transpose:
             mask = mask.T
+        time_split = time.time()
+        print "b) %.2f split time" % (time_split - time_start)
 
-        extent = get_extent(view, transpose)
+        #extent = get_extent(view, transpose)
         r, g, b = color2rgb(self.layer.style.color)
-        clr_img = np.dstack((r * mask, g * mask, b * mask, mask * .5))
-        #clr_img = np.dstack((r * mask, g * mask, b * mask))
-        clr_img = (255 * clr_img).astype(np.uint8)
 
+        time_split = time.time()
+        print "c) %.2f split time" % (time_split - time_start)
+
+        cur_shape = (-1, -1)
+        if ((len(self.artists) == 1) and
+            isinstance(self.artists[0], RGBImage.RGBImage)):
+            cur_image = self.artists[0]
+            cur_shape = cur_image.get_data().shape
+        else:
+            self.clear()            
+            
+        if mask.shape[:2] == cur_shape[:2]:
+            # optimization to simply update the color overlay if it already
+            # exists and is the correct size
+            clr_img = self.artists[0].get_data()
+            clr_img[..., 3] = 127 * mask
+            print "alpha mask updated"
+            
+        else:
+            # create new color image overlay
+            ones = np.ones(mask.shape)
+            clr_img = np.dstack((r * ones, g * ones, b * ones, mask * .5))
+            clr_img = (255 * clr_img).astype(np.uint8)
+
+            rgbimg = RGBImage.RGBImage(data_np=clr_img)
+
+            # store graphing position in metadata
+            #rgbimg.set(x_pos=xsl.start, y_pos=ysl.start)
+            rgbimg.set(x_pos=0, y_pos=0)
+            
+            print "made cimg"
+            self.artists = [rgbimg]
+        
+        elapsed_time = time.time() - time_split
+        print "%.2f sec to make color image" % (elapsed_time)
         print "making cimg"
-        rgbimg = RGBImage.RGBImage(data_np=clr_img)
-        print "made cimg"
-        self.artists = [rgbimg]
 
 
 class ScatterLayerArtist(LayerArtist):

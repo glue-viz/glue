@@ -1,10 +1,12 @@
 import logging
+import time
 from functools import wraps
 
 import numpy as np
 
 from ..external.modest_image import extract_matched_slices
 from ..core.exceptions import IncompatibleAttribute
+from ..core.util import color2rgb
 from ..core.data import Data
 from ..core.util import lookup_class
 from ..core.subset import Subset, RoiSubsetState
@@ -21,6 +23,7 @@ from .ginga_layer_artist import (ScatterLayerArtist, LayerArtistContainer,
 from ginga.util import wcsmod
 wcsmod.use('astropy')
 from ginga.ImageViewCanvas import Image
+from ginga import AstroImage, RGBImage
 
 
 def requires_data(func):
@@ -64,14 +67,6 @@ class GingaClient(VizClient):
         self._wcs = None
         self._norm_cache = {}
 
-
-    def get_imageclass(self, imageclass):
-        # create a dynamic image class that has the LayerImage mixin
-        class klass(imageclass, LayerImage.LayerImage):
-            def __init__(self, *args, **kwdargs):
-                imageclass.__init__(self, *args, **kwdargs)
-                LayerImage.LayerImage.__init__(self)
-        return klass
 
     def point_details(self, x, y):
         data = self.display_data
@@ -234,18 +229,30 @@ class GingaClient(VizClient):
         wcs = getattr(data.coords, 'wcs', None)
 
         if wcs is not None:
-            logger = logging.getLogger(__name__)
-            self._wcs = wcsmod.AstropyWCS(logger)
-            self._wcs.wcs = wcs
-            # TODO: need to set this based on actual coordinates used
-            self._wcs.coordsys = 'fk5'
+            pass
+            # NOTE: because we are now loading the data in ginga_client,
+            # the below hack is not needed
+            ## print "updating WCS", wcs
+            ## # This is a hack to storing the WCS for the data
+            ## # back into the image which is held in the ginga viewer.
+            ## # The image is created in ginga_layer_artist, but at
+            ## # that time we don't have access to the metadata.
+            ## logger = logging.getLogger(__name__)
+            ## self._wcs = wcsmod.AstropyWCS(logger)
+            ## self._wcs.wcs = wcs
+            ## # TODO: need to set this based on actual coordinates used
+            ## self._wcs.coordsys = 'fk5'
+
+            ## image = self._canvas.get_image()
+            ## image.wcs = self._wcs
+            ## print "WCS updated"
         ## if wcs is not None and hasattr(self.axes, 'reset_wcs'):
         ##     self.axes.reset_wcs(wcs, slices=slc[::-1])
 
         
     @requires_data
     def _update_axis_labels(self):
-        labels = _axis_labels(self.display_data, self.slice)
+        ## labels = _axis_labels(self.display_data, self.slice)
         self._update_wcs_axes(self.display_data, self.slice)
         ## self._ax.set_xlabel(labels[1])
         ## self._ax.set_ylabel(labels[0])
@@ -272,6 +279,7 @@ class GingaClient(VizClient):
         """
         Re-render the screen
         """
+        print "client redraw"
         # Delete current overlays
         tagpfx = '_ovr'
         ## tags = self._canvas.getTagsByTagpfx(tagpfx)
@@ -285,16 +293,19 @@ class GingaClient(VizClient):
                    a.layer.data is self.display_data:
                 if len(a.artists) > 0:
                     # TODO: can we avoid resetting the image in redraw()?
-                    self._canvas.set_image(a.artists[0],
-                                           redraw=False)
+                    #self._canvas.set_image(a.artists[0],
+                    #                       redraw=False)
+                    pass
 
             elif isinstance(a, SubsetImageLayerArtist):
                 print "subset artists", a.artists
                 if len(a.artists) > 0:
                     rgbimage = a.artists[0]
+                    x_pos = rgbimage.get('x_pos', 0)
+                    y_pos = rgbimage.get('y_pos', 0)
                     data = rgbimage.get_data()
                     print "rgb image shape", data.shape
-                    cimage = Image(0, 0, rgbimage, alpha=0.5,
+                    cimage = Image(x_pos, y_pos, rgbimage, alpha=0.5,
                                    flipy=False)
                     self._canvas.add(cimage, tagpfx='ovr',
                                      redraw=False)
@@ -336,6 +347,12 @@ class GingaClient(VizClient):
         ##     v = extract_matched_slices(self._ax, shp_2d)
         ##     x = slice(v[0], v[1], v[2])
         ##     y = slice(v[3], v[4], v[5])
+        if matched:
+            #x0, y0, x1, y1 = self._canvas.get_datarect()
+            x0, x1, y0, y1 = 0, shp_2d[1]-1, 0, shp_2d[0]-1
+            sx, sy = 1, 1
+            x = slice(x0, x1, sx)
+            y = slice(y0, y1, sy)
 
         slc = list(self.slice)
         slc[slc.index('x')] = x
@@ -351,10 +368,20 @@ class GingaClient(VizClient):
         if relim:
             self.relim()
 
-        view = self._build_view(matched=True)
+        view = self._build_view(matched=False)
         # extract the actual pixel data
         self._image = self.display_data[view]
+        
+        aimg = AstroImage.AstroImage(data_np=self._image)
         #print "image is", self._image
+
+        # update WCS metadata
+        # TODO: need a friendly way to get the header or
+        #   astropy compatible WCS
+        hdr = self.display_data.coords._header
+        aimg.update_keywords(hdr)
+
+        self._canvas.set_image(aimg)
 
         transpose = self.slice.index('x') < self.slice.index('y')
 

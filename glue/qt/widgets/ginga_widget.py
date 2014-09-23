@@ -53,8 +53,8 @@ class GingaWidget(DataViewer):
         super(GingaWidget, self).__init__(session, parent)
 
         #logger = logging.getLogger(__name__)
-        #self.logger = log.get_logger(name='ginga', log_stderr=True)
-        self.logger = log.get_logger(name='ginga', null=True)
+        self.logger = log.get_logger(name='ginga', log_stderr=True)
+        #self.logger = log.get_logger(name='ginga', null=True)
 
         self.canvas = ImageViewCanvas(self.logger, render='widget')
         # prevent widget from grabbing focus 
@@ -67,13 +67,21 @@ class GingaWidget(DataViewer):
         self.canvas.set_callback('draw-event', self._apply_roi_cb)
         self.canvas.set_callback('draw-down', self._clear_roi_cb)
         self.canvas.enable_draw(False)
+        self.canvas.enable_autozoom('off')
+        self.canvas.set_zoom_algorithm('rate')
+        self.canvas.set_zoomrate(1.4)
+
+        bm = self.canvas.get_bindmap()
+        bm.add_callback('mode-set', self.mode_set_cb)
+        self.mode_w = None
+        self.mode_actns = {}
 
         # Create settings and set defaults
         settings = self.canvas.get_settings()
         self.settings = settings
         settings.getSetting('cuts').add_callback('set', self.cut_levels_cb)
-        settings.set(autozoom='override', autocuts='override',
-                     autocenter=True)
+        settings.set(autozoom='off', autocuts='override',
+                     autocenter='override')
 
         # make color bar, with color maps shared from ginga canvas
         self.colorbar = ColorBar.ColorBar(self.logger)
@@ -137,32 +145,56 @@ class GingaWidget(DataViewer):
         self.ui.rgb_options.hide()
 
     def make_toolbar(self):
-        result = QToolBar(parent=self)
-        agroup = QActionGroup(result)
+        tb = QToolBar(parent=self)
+        agroup = QActionGroup(tb)
         agroup.setExclusive(True)
         for (mode_text, mode_icon, mode_cb) in self._mouse_modes():
             # TODO: add icons similar to the Matplotlib toolbar
-            action = result.addAction(mode_icon, mode_text, mode_cb)
+            action = tb.addAction(mode_icon, mode_text)
             action.setCheckable(True)
-            action = agroup.addAction(action)
+            action.toggled.connect(mode_cb)
+            agroup.addAction(action)
+
+        action = tb.addAction("Pan")
+        self.mode_actns['pan'] = action
+        action.setCheckable(True)
+        action.toggled.connect(lambda tf: self.mode_cb('pan', tf))
+        agroup.addAction(action)
+        action = tb.addAction("Rotate")
+        self.mode_actns['rotate'] = action
+        action.setCheckable(True)
+        action.toggled.connect(lambda tf: self.mode_cb('rotate', tf))
+        agroup.addAction(action)
+        action = tb.addAction("Contrast")
+        self.mode_actns['contrast'] = action
+        action.setCheckable(True)
+        action.toggled.connect(lambda tf: self.mode_cb('contrast', tf))
+        agroup.addAction(action)
+        action = tb.addAction("Cuts")
+        self.mode_actns['cuts'] = action
+        action.setCheckable(True)
+        action.toggled.connect(lambda tf: self.mode_cb('cuts', tf))
+        agroup.addAction(action)
 
         #cmap = _colormap_mode(self, self.client.set_cmap)
-        #result.addWidget(cmap)
-        return result
+        #tb.addWidget(cmap)
+        return tb
 
     def _mouse_modes(self):
         modes = []
         modes.append(("Rectangle", get_icon('glue_square'),
-                      lambda: self._set_roi_mode('rectangle')))
+                      lambda tf: self._set_roi_mode('rectangle', tf)))
         modes.append(("Circle", get_icon('glue_circle'),
-                      lambda: self._set_roi_mode('circle')))
+                      lambda tf: self._set_roi_mode('circle', tf)))
         modes.append(("Polygon", get_icon('glue_lasso'),
-                      lambda: self._set_roi_mode('polygon')))
+                      lambda tf: self._set_roi_mode('polygon', tf)))
         return modes
 
-    def _set_roi_mode(self, name):
+    def _set_roi_mode(self, name, tf):
         self.canvas.enable_draw(True)
         self.canvas.set_drawtype(name, color='cyan', linestyle='dash')
+        bm = self.canvas.get_bindmap()
+        bm.set_modifier('draw', modtype='locked')
         print "ROI (%s) " % (name)
 
     def _clear_roi_cb(self, canvas, *args):
@@ -488,6 +520,23 @@ class GingaWidget(DataViewer):
             ra_txt, dec_txt, fits_x, fits_y, value)
         self.readout.set_text(text)
 
+    def mode_cb(self, modname, tf):
+        print("%s mode %s" % (modname, tf))
+        bm = self.canvas.get_bindmap()
+        if not tf:
+            bm.reset_modifier(self.canvas)
+            self.mode_w = None
+            return
+        bm.set_modifier(modname, modtype='locked')
+        self.mode_w = self.mode_actns[modname]
+        return True
+    
+    def mode_set_cb(self, bm, mode, mtype):
+        if not (mode in self.mode_actns) and self.mode_w:
+            self.mode_w.setChecked(False)
+            self.mode_w = None
+        return True
+    
 
 class ColormapAction(QAction):
 
