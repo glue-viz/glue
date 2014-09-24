@@ -428,7 +428,7 @@ def as_variable_name(x):
     :param x: A string to (possibly) rename
     :returns: A legal python variable name
     """
-    allowed = string.letters + string.digits + '_'
+    allowed = string.ascii_letters + string.digits + '_'
     result = [letter if letter in allowed else '_' for letter in x or 'x']
     if result[0] in string.digits:
         result.insert(0, '_')
