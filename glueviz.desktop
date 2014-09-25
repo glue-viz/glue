@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Glueviz
+Comment=Link visualizations of scientific datasets
+Exec=glue
+Categories=Education;Science;
