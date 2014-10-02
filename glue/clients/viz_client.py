@@ -244,7 +244,7 @@ class GenericMplClient(Client):
 
         self.artists.pop(layer)
         if isinstance(layer, Data):
-            map(self.remove_layer, layer.subsets)
+            list(map(self.remove_layer, layer.subsets))
 
         self._redraw()
 

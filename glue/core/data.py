@@ -91,6 +91,10 @@ class ComponentID(object):
             return InequalitySubsetState(self, other, operator.eq)
         return other is self
 
+    # In Python 3, if __eq__ is defined, then __hash__ has to be re-defined
+    if six.PY3:
+        __hash__ = object.__hash__
+
     def __ne__(self, other):
         if np.issubsctype(type(other), np.number):
             return InequalitySubsetState(self, other, operator.ne)
@@ -143,10 +147,6 @@ class ComponentID(object):
 
     def __rpow__(self, other):
         return BinaryComponentLink(other, self, operator.pow)
-
-    # In Python 3, if __eq__ is defined, then __hash__ has to be re-defined
-    if six.PY3:
-        __hash__ = object.__hash__
 
 
 class Component(object):

@@ -181,7 +181,7 @@ class SubsetGroup(HubListener):
         result.label = rec['label']
         result.style = context.object(rec['style'])
         result.style.parent = result
-        result.subsets = map(context.object, rec['subsets'])
+        result.subsets = list(map(context.object, rec['subsets']))
 
     def __and__(self, other):
         return self.subset_state & other.subset_state
