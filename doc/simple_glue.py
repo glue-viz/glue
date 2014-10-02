@@ -1,5 +1,5 @@
 from glue.core.message import DataMessage, SubsetMessage
-from glue.core import Hub, HubListener, Data, DataCollection
+from glue.core import HubListener, Data, DataCollection
 
 class MyClient(HubListener):
     def register_to_hub(self, hub):
@@ -15,15 +15,14 @@ class MyClient(HubListener):
 
 
 # create objects
-hub = Hub()
 client = MyClient()
 data = Data()
 subset = data.new_subset()
 data_collection = DataCollection()
 
 # connect them to each other
+hub = data_collection.hub
 data_collection.append(data)
-data_collection.register_to_hub(hub)
 client.register_to_hub(hub)
 
 # manually send a DataMessage. Relayed to MyClient
