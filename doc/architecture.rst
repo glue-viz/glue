@@ -18,7 +18,7 @@ each other. The central data objects in the Glue framework are:
 
 The typical lifecycle of these objects is as follows:
 
- * An empty DataCollection object is created, and connected to a Hub.
+ * An empty DataCollection object is created, and automatically connected to a Hub.
  * Data are added to the data collection
  * Several clients register to the hub, and subscribe to particular
    types of messages.
@@ -36,12 +36,12 @@ this process. However, for illustration purposes here is a simple
 example of manually setting up a Glue environment:
 
 .. literalinclude:: simple_glue.py
-   :emphasize-lines: 36, 41
+   :emphasize-lines: 35, 40
    :linenos:
 
 Notice two things about this example:
- * In line 36, editing the data object automatically sends a
+ * In line 35, editing the data object automatically sends a
    DataMessage to the hub. Most message generation is handled
    automatically
- * MyClient does not recieve the message broadcast In line 41. Clients
+ * MyClient does not recieve the message broadcast In line 40. Clients
    only receive messages they are subscribed to.
