@@ -1127,7 +1127,7 @@ class ChoiceElement(FormElement):
 
     def _build_ui(self):
         w = QtGui.QComboBox()
-        for p in self.params:
+        for p in sorted(self.params):
             w.addItem(p)
 
         if isinstance(self.params, list):
