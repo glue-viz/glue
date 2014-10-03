@@ -541,5 +541,5 @@ def row_lookup(data, categories):
 
     m = pd.merge(data, cats, left_on='data', right_on='categories')
     result = np.zeros(ndata, dtype=float) * np.nan
-    result[m.row] = m.cat_row
+    result[np.array(m.row)] = m.cat_row
     return result
