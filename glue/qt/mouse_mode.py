@@ -247,10 +247,12 @@ class ClickRoiMode(RoiModeBase):
     def __init__(self, axes, **kwargs):
         super(ClickRoiMode, self).__init__(axes, **kwargs)
         self._last_event = None
+        self._drawing = False
 
     def press(self, event):
-        if not self._roi_tool.active():
+        if not self._roi_tool.active() or not self._drawing:
             self._roi_tool.start_selection(event)
+            self._drawing = True
         else:
             self._roi_tool.update_selection(event)
         self._last_event = event
@@ -265,8 +267,10 @@ class ClickRoiMode(RoiModeBase):
     def key(self, event):
         if event.key == 'enter':
             self._finish_roi(self._last_event)
+            self._drawing = False
         elif event.key == 'escape':
             self._roi_tool.reset()
+            self._drawing = False
         super(ClickRoiMode, self).key(event)
 
 
