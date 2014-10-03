@@ -7,6 +7,9 @@ and not UI or event processing logic.
 The end user typically interacts with this code via
 :func:`glue.custom_viewer`
 """
+
+from __future__ import print_function, division
+
 from collections import namedtuple
 from inspect import getmodule, getargspec
 from functools import wraps
@@ -1115,6 +1118,8 @@ class ChoiceElement(FormElement):
 
     @classmethod
     def recognizes(cls, params):
+        if isinstance(params, six.string_types):
+            return False
         try:
             return all(isinstance(p, six.string_types) for p in params)
         except TypeError:

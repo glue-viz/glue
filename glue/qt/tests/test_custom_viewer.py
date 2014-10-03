@@ -3,6 +3,7 @@ from mock import MagicMock, patch
 from numpy.testing import assert_array_equal
 from matplotlib.axes import Axes
 
+from ...core.odict import OrderedDict
 from ... import custom_viewer
 from ...core import Data
 from ...core.subset import SubsetState
@@ -23,7 +24,7 @@ viewer = custom_viewer('Testing Custom Viewer',
                        d=True,
                        e=False,
                        f=['a', 'b', 'c'],
-                       g=dict(a=1, b=2, c=3),
+                       g=OrderedDict(a=1, b=2, c=3),
                        )
 
 
@@ -69,7 +70,7 @@ class ViewerSubclass(CustomViewer):
     d = True
     e = False
     f = ['a', 'b', 'c']
-    g = dict(a=1, b=2, c=3)
+    g = OrderedDict(a=1, b=2, c=3)
 
     setup = _setup
     plot_data = _plot_data
