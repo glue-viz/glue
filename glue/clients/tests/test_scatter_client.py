@@ -662,7 +662,7 @@ class TestCategoricalScatterClient(TestScatterClient):
         card_data = [str(num) for num in range(card)]
         data.add_component(core.Component(np.arange(card * 5)), 'y')
         data.add_component(
-            core.data.CategoricalComponent([card_data] * 5), 'xcat')
+            core.data.CategoricalComponent(np.repeat([card_data],5)), 'xcat')
         self.add_data(data)
         comp = data.find_component_id('xcat')
         timer_func = partial(self.client._set_xydata, 'x', comp)
