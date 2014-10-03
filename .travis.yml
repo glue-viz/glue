@@ -13,8 +13,6 @@ env:
   - PYTEST_ARGS="--cov glue"
   - CONDA_BASE="pip numpy=1.8 scipy cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.2 xlrd pillow pytest mock coverage"
   - PIP_BASE="pytest-cov coveralls pyavm sphinx-rtd-theme astrodendro awscli"
-  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then CONDA_QT="pyside"; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then CONDA_QT="pyqt"; fi
   - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
   - secure: "SU9BYH8d9eNigypG3lC83s0NY6Mq9AHGKXyEGeXDtz1npJIC1KHdzPMP1v1K3dzCgl1p6ReMXPjZMCENyfNkad/xvzTzGk0Nu/4BjihrUPV6+ratVeLpv0JLm8ikh8q+sZURkdtzUOlds+Hfn5ku4LdpT87tcKHY9TINAGA34ZM="
   - AWS_ACCESS_KEY_ID: AKIAI2ERWDHLW3W24X3A
@@ -53,7 +51,8 @@ before_install:
 
 install:
 - conda install $CONDA_ARGS python=$TRAVIS_PYTHON_VERSION $CONDA_BASE
-- conda install $CONDA_ARGS python=$TRAVIS_PYTHON_VERSION $CONDA_QT
+- if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then conda install $CONDA_ARGS python=$TRAVIS_PYTHON_VERSION pyside; fi
+- if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then conda install $CONDA_ARGS python=$TRAVIS_PYTHON_VERSION pyqt; fi
 - LC_ALL=C pip install $PIP_ARGS $PIP_BASE
 - if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy;
   else conda install $CONDA_ARGS astropy=$ASTRO_VER numpy=1.8; fi
