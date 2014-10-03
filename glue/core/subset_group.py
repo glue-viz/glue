@@ -23,6 +23,7 @@ from .visual import VisualAttributes, RED
 from .message import (DataCollectionAddMessage,
                       DataCollectionDeleteMessage
                       )
+from ..external import six
 
 __all__ = ['GroupedSubset', 'SubsetGroup']
 
@@ -64,6 +65,10 @@ class GroupedSubset(Subset):
 
     def __eq__(self, other):
         return other is self
+
+    # In Python 3, if __eq__ is defined, then __hash__ has to be re-defined
+    if six.PY3:
+        __hash__ = object.__hash__
 
     def __gluestate__(self, context):
         return dict(group=context.id(self.group),
@@ -171,7 +176,7 @@ class SubsetGroup(HubListener):
         return dict(label=self.label,
                     state=context.id(self.subset_state),
                     style=context.do(self.style),
-                    subsets=map(context.id, self.subsets))
+                    subsets=list(map(context.id, self.subsets)))
 
     @classmethod
     def __setgluestate__(cls, rec, context):

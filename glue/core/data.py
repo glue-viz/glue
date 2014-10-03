@@ -369,8 +369,20 @@ class CategoricalComponent(Component):
         :param categories: List of unique values in the data
         :jitter: Strategy for jittering the data
         """
+
         super(CategoricalComponent, self).__init__(None, units)
-        self._categorical_data = np.asarray(categorical_data, dtype=np.str)
+
+        # Assign categorical data, converting to strings. We force the copy
+        # because next we will be calling setflags and we don't want to call
+        # that on the original data.
+        self._categorical_data = np.array(categorical_data, dtype=np.str, copy=True)
+
+        # Check for invalid values that indicate no categories and change to ''
+        # to indicate no category.
+        invalid = np.array([x is np.nan or x is None for x in categorical_data])
+        self._categorical_data[invalid] = ''
+
+        # Disable changing of categories
         self._categorical_data.setflags(write=False)
 
         self._categories = categories
@@ -403,8 +415,9 @@ class CategoricalComponent(Component):
                 raise ValueError("Provided categories must be Sorted")
 
     def _update_data(self):
-        """ Converts the categorical data into the numeric representations
-        given self._categories
+        """
+        Converts the categorical data into the numeric representations given
+        self._categories
         """
         self._is_jittered = False
         # Complicated because of the case of items not in

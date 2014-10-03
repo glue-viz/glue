@@ -110,8 +110,7 @@ class TestCategoricalComponent(object):
         np.testing.assert_equal(cat_comp._data,
                                 np.array([0, 0, 1, 2, 3, 4]))
         np.testing.assert_equal(cat_comp._categories,
-                                np.asarray([np.nan, 'a', 'b', 'c', 'zanthia'],
-                                           dtype=np.object))
+                                np.asarray(['', 'a', 'b', 'c', 'zanthia']))
 
     def test_calculate_grouping(self):
         cat_comp = CategoricalComponent(self.array_data)
