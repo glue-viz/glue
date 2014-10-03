@@ -120,13 +120,6 @@ class DataItem(Item):
         return layer_icon(self.data)
 
 
-def PY2_LT(a, b):
-    if type(a) == type(b):
-        return a < b
-    else:
-        return id(type(a)) < id(type(b))
-
-
 class SubsetListItem(Item):
 
     def __init__(self, dc, parent):
@@ -138,7 +131,7 @@ class SubsetListItem(Item):
 
     @memoize
     def child(self, row):
-        if PY2_LT(row, self.dc.subset_groups):
+        if row < len(self.dc.subset_groups):
             return SubsetGroupItem(self.dc, row, self)
 
     @property
