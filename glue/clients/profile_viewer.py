@@ -277,7 +277,7 @@ class ProfileViewer(object):
         if ymask.size == 0:
             return
 
-        ylim = np.nan_to_num([np.nanmin(ymask), np.nanmax(ymask)])
+        ylim = np.nan_to_num(np.array([np.nanmin(ymask), np.nanmax(ymask)]))
         self.axes.set_ylim(ylim[0], ylim[1] + .05 * (ylim[1] - ylim[0]))
 
         if self._resid is None:
