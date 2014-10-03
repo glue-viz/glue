@@ -93,10 +93,6 @@ class TestCategoricalComponent(object):
         d = Data(x=['a', 'b', 'c'])
         assert isinstance(d.get_component('x'), CategoricalComponent)
 
-        with pytest.raises(TypeError) as exc:
-            d = Data(x=np.array(['a', 'b', 'c'], dtype=object))
-        assert exc.value.args[0] == "Numpy object type not supported"
-
     def test_accepts_numpy(self):
         cat_comp = CategoricalComponent(self.array_data)
         assert cat_comp._categorical_data.shape == (4,)
@@ -172,6 +168,14 @@ class TestCategoricalComponent(object):
         second_comp.jitter(method='uniform')
         delta = np.abs(cat_comp._data - second_comp._data).sum()
         assert delta == 0
+
+    def test_object_dtype(self):
+        d = np.array([1, 3, 3, 1, 'a', 'b', 'a'], dtype=object)
+        c = CategoricalComponent(d)
+
+        np.testing.assert_array_equal(c._categories,
+                                      np.array([1, 3, 'a', 'b'], dtype=object))
+        np.testing.assert_array_equal(c._data, [0, 1, 1, 0, 2, 3, 2])
 
     def test_valueerror_on_bad_jitter(self):
 
