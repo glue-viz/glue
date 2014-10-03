@@ -473,7 +473,19 @@ def astropy_tabular_data(*args, **kwargs):
     # Import FITS compatibility (for Astropy 0.2.x)
     from ..external import fits_io
 
-    table = Table.read(*args, **kwargs)
+    try:
+        table = Table.read(*args, **kwargs)
+    except:
+        # In Python 3, as of Astropy 0.4, if the format is not specified, the 
+        # automatic format identification will fail (astropy/astropy#3013). 
+        # This is only a problem for ASCII formats however, because it is due 
+        # to the fact that the file object in io.ascii does not rewind to the 
+        # start between guesses (due to a bug), so here we can explicitly try 
+        # the ASCII format if the format keyword was not already present.
+        if 'format' not in kwargs:
+            table = Table.read(*args, format='ascii.glue', **kwargs)
+        else:
+            raise
 
     # Loop through columns and make component list
     for column_name in table.columns:
