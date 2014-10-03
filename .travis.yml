@@ -1,6 +1,7 @@
 language: python
 python:
 - 2.7
+- 3.4
 
 notifications:
   email: false
@@ -18,12 +19,22 @@ env:
   - AWS_SECRET_ACCESS_KEY: $AWS_SECRET_KEY_ID
 
   matrix:
-  - MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=2 DOC_TRIGGER=1 APP_TRIGGER=1
   - MPL_VER=1.3 ASTRO_VER=0.4 IPYTHON_VER=2
   - MPL_VER=1.4 ASTRO_VER=0.3 IPYTHON_VER=2
   - MPL_VER=1.4 ASTRO_VER=dev IPYTHON_VER=2
-  - MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=1.1
-  - MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=0.13
+
+matrix:
+
+    include:
+
+        - python: 2.7
+          env: MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=2 DOC_TRIGGER=1 APP_TRIGGER=1
+
+        - python: 2.7
+          env: MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=1.1
+
+        - python: 2.7
+          env: MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=0.13
 
 before_install:
 - source .setup_conda.sh $TRAVIS_PYTHON_VERSION
@@ -48,7 +59,8 @@ install:
 - python setup.py install
 
 script:
-- py.test $PYTEST_ARGS glue
+- if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then py.test $PYTEST_ARGS glue; fi
+- if [[ $TRAVIS_PYTHON_VERSION == 3.4 ]]; then py.test $PYTEST_ARGS glue/clients glue/core glue/external glue/plugins glue/tests; fi
 - if [ $DOC_TRIGGER ]; then cd doc && make html && cd ../; fi
 
 after_success:
