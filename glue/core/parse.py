@@ -109,7 +109,7 @@ def _validate(cmd, references):
         tag = match.group('tag')
         if tag not in references:
             raise TypeError("Tag %s not in reference mapping: %s" %
-                            (tag, list(references.keys())))
+                            (tag, sorted(references.keys())))
 
 
 class ParsedCommand(object):
