@@ -660,8 +660,9 @@ def img_loader(file_name):
     :rtype: Numpy array
     """
     try:
+        from skimage import img_as_ubyte
         from skimage.io import imread
-        return np.asarray(imread(file_name))
+        return np.asarray(img_as_ubyte(imread(file_name)))
     except ImportError:
         pass
 
