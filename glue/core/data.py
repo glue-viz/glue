@@ -545,7 +545,7 @@ class Data(object):
 
         self.edit_subset = None
 
-        for lbl, data in kwargs.items():
+        for lbl, data in sorted(kwargs.items()):
             self.add_component(data, lbl)
 
         self._key_joins = {}
