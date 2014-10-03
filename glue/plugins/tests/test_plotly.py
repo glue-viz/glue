@@ -69,15 +69,20 @@ class TestPlotly(object):
         assert data[1]['name'] == 'subset'
 
     def test_axes(self):
+
         app = self.app
+
         v = app.new_data_viewer(ScatterWidget, data=self.data)
+
         v.xlog = True
         v.xmin = 10
         v.xmax = 100
+        v.xatt = self.data.id['x']
 
         v.ylog = False
         v.ymin = 2
         v.ymax = 4
+        v.yatt = self.data.id['y']
 
         args, kwargs = build_plotly_call(app)
 
