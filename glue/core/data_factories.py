@@ -572,7 +572,7 @@ def panda_process(indf):
         if (column.dtype == np.object) | (column.dtype == np.bool):
             # pandas has a 'special' nan implementation and this doesn't
             # play well with np.unique
-            c = CategoricalComponent(column.fillna(np.nan))
+            c = CategoricalComponent(column.fillna(''))
         else:
             c = Component(column.values)
         if name.startswith('#'):

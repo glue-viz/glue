@@ -372,15 +372,20 @@ class CategoricalComponent(Component):
 
         super(CategoricalComponent, self).__init__(None, units)
 
+        # Check that categorical data is of uniform type
+        if isinstance(categorical_data, np.ndarray):
+            if categorical_data.dtype.kind == "O":
+                raise TypeError("Numpy object type not supported")
+        else:
+            common_type = type(categorical_data[0])
+            for item in categorical_data:
+                if not (isinstance(item, common_type)):
+                    raise TypeError("Items in categorical data should all be the same type")
+
         # Assign categorical data, converting to strings. We force the copy
         # because next we will be calling setflags and we don't want to call
         # that on the original data.
-        self._categorical_data = np.array(categorical_data, dtype=np.str, copy=True)
-
-        # Check for invalid values that indicate no categories and change to ''
-        # to indicate no category.
-        invalid = np.array([x is np.nan or x is None for x in categorical_data])
-        self._categorical_data[invalid] = ''
+        self._categorical_data = np.array(categorical_data, copy=True, dtype=str)
 
         # Disable changing of categories
         self._categorical_data.setflags(write=False)

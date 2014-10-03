@@ -154,7 +154,7 @@ class Hub(object):
         # subscriber => { message type => (filter, handler)}
 
         # loop over subscribed objects
-        for subscriber, subscriptions in self._subscriptions.items():
+        for subscriber, subscriptions in list(self._subscriptions.items()):
 
             # subscriptions to message or its superclasses
             messages = [msg for msg in subscriptions.keys() if

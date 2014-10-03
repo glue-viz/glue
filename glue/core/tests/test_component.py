@@ -93,8 +93,9 @@ class TestCategoricalComponent(object):
         d = Data(x=['a', 'b', 'c'])
         assert isinstance(d.get_component('x'), CategoricalComponent)
 
-        d = Data(x=np.array(['a', 'b', 'c'], dtype=object))
-        assert isinstance(d.get_component('x'), CategoricalComponent)
+        with pytest.raises(TypeError) as exc:
+            d = Data(x=np.array(['a', 'b', 'c'], dtype=object))
+        assert exc.value.args[0] == "Numpy object type not supported"
 
     def test_accepts_numpy(self):
         cat_comp = CategoricalComponent(self.array_data)
@@ -106,7 +107,7 @@ class TestCategoricalComponent(object):
         np.testing.assert_equal(cat_comp._categorical_data, self.array_data)
 
     def test_multi_nans(self):
-        cat_comp = CategoricalComponent([np.nan, np.nan, 'a', 'b', 'c', 'zanthia'])
+        cat_comp = CategoricalComponent(['', '', 'a', 'b', 'c', 'zanthia'])
         np.testing.assert_equal(cat_comp._data,
                                 np.array([0, 0, 1, 2, 3, 4]))
         np.testing.assert_equal(cat_comp._categories,
