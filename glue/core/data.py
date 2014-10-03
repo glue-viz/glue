@@ -15,7 +15,7 @@ from .component_link import (ComponentLink, CoordinateComponentLink,
 from .subset import Subset, InequalitySubsetState, SubsetState
 from .hub import Hub
 from .util import (split_component_view, view_shape,
-                   coerce_numeric, check_sorted)
+                   coerce_numeric, check_sorted, unique, row_lookup)
 from .decorators import clear_cache
 from .message import (DataUpdateMessage,
                       DataAddComponentMessage, NumericalDataChangedMessage,
@@ -90,6 +90,10 @@ class ComponentID(object):
         if np.issubsctype(type(other), np.number):
             return InequalitySubsetState(self, other, operator.eq)
         return other is self
+
+    # In Python 3, if __eq__ is defined, then __hash__ has to be re-defined
+    if six.PY3:
+        __hash__ = object.__hash__
 
     def __ne__(self, other):
         if np.issubsctype(type(other), np.number):
@@ -365,8 +369,14 @@ class CategoricalComponent(Component):
         :param categories: List of unique values in the data
         :jitter: Strategy for jittering the data
         """
+
         super(CategoricalComponent, self).__init__(None, units)
-        self._categorical_data = np.asarray(categorical_data, dtype=np.object)
+
+        self._categorical_data = np.asarray(categorical_data)
+        if self._categorical_data.ndim > 1:
+            raise ValueError("Categorical Data must be 1-dimensional")
+
+        # Disable changing of categories
         self._categorical_data.setflags(write=False)
 
         self._categories = categories
@@ -385,8 +395,7 @@ class CategoricalComponent(Component):
         :return: None
         """
         if categories is None:
-            categories, inv = np.unique(self._categorical_data,
-                                        return_inverse=True)
+            categories, inv = unique(self._categorical_data)
             self._categories = categories
             self._data = inv.astype(np.float)
             self._data.setflags(write=False)
@@ -399,23 +408,13 @@ class CategoricalComponent(Component):
                 raise ValueError("Provided categories must be Sorted")
 
     def _update_data(self):
-        """ Converts the categorical data into the numeric representations
-        given self._categories
+        """
+        Converts the categorical data into the numeric representations given
+        self._categories
         """
         self._is_jittered = False
-        # Complicated because of the case of items not in
-        # self._categories may be on either side of the sorted list
-        left = np.searchsorted(self._categories,
-                               self._categorical_data,
-                               side='left')
-        right = np.searchsorted(self._categories,
-                                self._categorical_data,
-                                side='right')
-        self._data = left.astype(float)
-        self._data[(left == 0) & (right == 0)] = np.nan
-        self._data[left == len(self._categories)] = np.nan
 
-        self._data[self._data == len(self._categories)] = np.nan
+        self._data = row_lookup(self._categorical_data, self._categories)
         self.jitter(method=self._jitter_method)
         self._data.setflags(write=False)
 
@@ -528,7 +527,7 @@ class Data(object):
 
         self.edit_subset = None
 
-        for lbl, data in kwargs.items():
+        for lbl, data in sorted(kwargs.items()):
             self.add_component(data, lbl)
 
         self._key_joins = {}

@@ -1,6 +1,7 @@
 language: python
 python:
 - 2.7
+- 3.4
 
 notifications:
   email: false
@@ -10,7 +11,7 @@ env:
   - CONDA_ARGS="--yes"
   - PIP_ARGS=""
   - PYTEST_ARGS="--cov glue"
-  - CONDA_BASE="pip numpy=1.8 scipy pyside cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.2 xlrd pillow pytest mock coverage"
+  - CONDA_BASE="pip numpy=1.8 scipy cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.2 xlrd pillow pytest mock coverage"
   - PIP_BASE="pytest-cov coveralls pyavm sphinx-rtd-theme astrodendro awscli"
   - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
   - secure: "SU9BYH8d9eNigypG3lC83s0NY6Mq9AHGKXyEGeXDtz1npJIC1KHdzPMP1v1K3dzCgl1p6ReMXPjZMCENyfNkad/xvzTzGk0Nu/4BjihrUPV6+ratVeLpv0JLm8ikh8q+sZURkdtzUOlds+Hfn5ku4LdpT87tcKHY9TINAGA34ZM="
@@ -18,12 +19,22 @@ env:
   - AWS_SECRET_ACCESS_KEY: $AWS_SECRET_KEY_ID
 
   matrix:
-  - MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=2 DOC_TRIGGER=1 APP_TRIGGER=1
   - MPL_VER=1.3 ASTRO_VER=0.4 IPYTHON_VER=2
   - MPL_VER=1.4 ASTRO_VER=0.3 IPYTHON_VER=2
   - MPL_VER=1.4 ASTRO_VER=dev IPYTHON_VER=2
-  - MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=1.1
-  - MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=0.13
+
+matrix:
+
+    include:
+
+        - python: 2.7
+          env: MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=2 DOC_TRIGGER=1 APP_TRIGGER=1
+
+        - python: 2.7
+          env: MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=1.1
+
+        - python: 2.7
+          env: MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=0.13
 
 before_install:
 - source .setup_conda.sh $TRAVIS_PYTHON_VERSION
@@ -40,6 +51,8 @@ before_install:
 
 install:
 - conda install $CONDA_ARGS python=$TRAVIS_PYTHON_VERSION $CONDA_BASE
+- if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then conda install $CONDA_ARGS python=$TRAVIS_PYTHON_VERSION pyside; fi
+- if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then conda install $CONDA_ARGS python=$TRAVIS_PYTHON_VERSION pyqt; fi
 - LC_ALL=C pip install $PIP_ARGS $PIP_BASE
 - if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy;
   else conda install $CONDA_ARGS astropy=$ASTRO_VER numpy=1.8; fi
@@ -48,7 +61,8 @@ install:
 - python setup.py install
 
 script:
-- py.test $PYTEST_ARGS glue
+- if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then py.test $PYTEST_ARGS glue; fi
+- if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then py.test $PYTEST_ARGS glue/clients glue/core glue/external glue/plugins glue/tests; fi
 - if [ $DOC_TRIGGER ]; then cd doc && make html && cd ../; fi
 
 after_success:

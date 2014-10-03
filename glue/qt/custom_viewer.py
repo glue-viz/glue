@@ -25,7 +25,7 @@ from .. import core
 
 from .widgets.data_viewer import DataViewer
 from . import widget_properties as wp
-from ..external.six import string_types
+from ..external import six
 from ..external.qt import QtGui
 from ..external.qt.QtCore import Qt
 from .widgets import MplWidget
@@ -193,7 +193,7 @@ class CustomMeta(type):
 
         # Build UI Form
         ui = {}
-        for key, value in attrs.items():
+        for key, value in list(attrs.items()):
             if key.startswith('_') or key in CustomViewer.__dict__:
                 continue
 
@@ -385,7 +385,7 @@ class CustomViewer(object):
         """
         Build the DataViewer subclass for this viewer
         """
-        props = CustomWidgetBase._property_set + cls.ui.keys()
+        props = CustomWidgetBase._property_set + list(cls.ui.keys())
         widget_dict = {'LABEL': cls.name,
                        'ui': cls.ui,
                        'coordinator_cls': cls,
@@ -1118,7 +1118,7 @@ class ChoiceElement(FormElement):
     @classmethod
     def recognizes(cls, params):
         try:
-            return all(isinstance(p, string_types) for p in params)
+            return all(isinstance(p, six.string_types) for p in params)
         except TypeError:
             return False
 

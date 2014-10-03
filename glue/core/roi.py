@@ -931,7 +931,7 @@ class MplPolygonalROI(AbstractMplRoi):
         self._setup_patch()
 
     def _setup_patch(self):
-        self._patch = Polygon(np.array(zip([0, 1], [0, 1])))
+        self._patch = Polygon(np.array(list(zip([0, 1], [0, 1]))))
         self._patch.set_zorder(100)
         self._patch.set(**self.plot_opts)
         self._ax.add_patch(self._patch)

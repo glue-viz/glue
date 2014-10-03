@@ -165,7 +165,7 @@ def make_data_file(data, subsets, path):
         c = Column(data=subset.to_mask().astype('i'), name='selection_%i' % i)
         t.add_column(c)
 
-    t.write(data_path, format='ascii', delimiter=b',')
+    t.write(data_path, format='ascii', delimiter=',')
 
 
 def save_d3po(application, path):
