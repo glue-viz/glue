@@ -58,14 +58,13 @@ class TestGlueApplication(object):
             self.app._choose_save_session()
             assert self.app.save_session.call_count == 0
 
-    @pytest.mark.xfail("PY3")
     def test_choose_save_session_ioerror(self):
         """should show box on ioerror"""
         with patch('glue.qt.glue_application.QFileDialog') as fd:
             if sys.version_info.major == 2:
                 mock_open = '__builtin__.open'
             else:
-                mock_open = 'io.open'
+                mock_open = 'builtins.open'
             with patch(mock_open) as op:
                 op.side_effect = IOError
                 fd.getSaveFileName.return_value = '/tmp/junk', '/tmp/junk'
