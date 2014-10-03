@@ -15,7 +15,7 @@ from .component_link import (ComponentLink, CoordinateComponentLink,
 from .subset import Subset, InequalitySubsetState, SubsetState
 from .hub import Hub
 from .util import (split_component_view, view_shape,
-                   coerce_numeric, check_sorted)
+                   coerce_numeric, check_sorted, unique, row_lookup)
 from .decorators import clear_cache
 from .message import (DataUpdateMessage,
                       DataAddComponentMessage, NumericalDataChangedMessage,
@@ -372,20 +372,9 @@ class CategoricalComponent(Component):
 
         super(CategoricalComponent, self).__init__(None, units)
 
-        # Check that categorical data is of uniform type
-        if isinstance(categorical_data, np.ndarray):
-            if categorical_data.dtype.kind == "O":
-                raise TypeError("Numpy object type not supported")
-        else:
-            common_type = type(categorical_data[0])
-            for item in categorical_data:
-                if not (isinstance(item, common_type)):
-                    raise TypeError("Items in categorical data should all be the same type")
-
-        # Assign categorical data, converting to strings. We force the copy
-        # because next we will be calling setflags and we don't want to call
-        # that on the original data.
-        self._categorical_data = np.array(categorical_data, copy=True, dtype=str)
+        self._categorical_data = np.asarray(categorical_data)
+        if self._categorical_data.ndim > 1:
+            raise ValueError("Categorical Data must be 1-dimensional")
 
         # Disable changing of categories
         self._categorical_data.setflags(write=False)
@@ -406,8 +395,7 @@ class CategoricalComponent(Component):
         :return: None
         """
         if categories is None:
-            categories, inv = np.unique(self._categorical_data,
-                                        return_inverse=True)
+            categories, inv = unique(self._categorical_data)
             self._categories = categories
             self._data = inv.astype(np.float)
             self._data.setflags(write=False)
@@ -425,19 +413,8 @@ class CategoricalComponent(Component):
         self._categories
         """
         self._is_jittered = False
-        # Complicated because of the case of items not in
-        # self._categories may be on either side of the sorted list
-        left = np.searchsorted(self._categories,
-                               self._categorical_data,
-                               side='left')
-        right = np.searchsorted(self._categories,
-                                self._categorical_data,
-                                side='right')
-        self._data = left.astype(float)
-        self._data[(left == 0) & (right == 0)] = np.nan
-        self._data[left == len(self._categories)] = np.nan
 
-        self._data[self._data == len(self._categories)] = np.nan
+        self._data = row_lookup(self._categorical_data, self._categories)
         self.jitter(method=self._jitter_method)
         self._data.setflags(write=False)
 
