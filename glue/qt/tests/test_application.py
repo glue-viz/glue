@@ -4,6 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 from distutils.version import LooseVersion
 import tempfile
+import io
 import os
 import sys
 
@@ -21,6 +22,8 @@ from ...external.qt.QtCore import QMimeData, QUrl
 from ..widgets.scatter_widget import ScatterWidget
 from ..widgets.image_widget import ImageWidget
 from ...core import Data
+
+from ...external.six import PY3
 
 
 def tab_count(app):
@@ -55,6 +58,7 @@ class TestGlueApplication(object):
             self.app._choose_save_session()
             assert self.app.save_session.call_count == 0
 
+    @pytest.mark.xfail("PY3")
     def test_choose_save_session_ioerror(self):
         """should show box on ioerror"""
         with patch('glue.qt.glue_application.QFileDialog') as fd:
