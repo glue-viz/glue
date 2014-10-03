@@ -177,7 +177,7 @@ class Application(HubListener):
 
         datasets = as_list(datasets)
         data_collection.extend(datasets)
-        map(partial(cls._suggest_mergers, data_collection), datasets)
+        list(map(partial(cls._suggest_mergers, data_collection), datasets))
 
     @classmethod
     def _suggest_mergers(cls, data_collection, data):

@@ -211,7 +211,7 @@ def _dendro_children(parent):
         if p < 0:
             continue
         children[p].append(i)
-    return map(np.asarray, children)
+    return list(map(np.asarray, children))
 
 
 def _iter_sorted(children, parent, key):

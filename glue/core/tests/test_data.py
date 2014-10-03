@@ -86,6 +86,9 @@ class TestData(object):
         if isinstance(exc.value, six.string_types):  # python 2.6
             assert exc.value == ("add_component() takes at least 3 "
                                  "arguments (2 given)")
+        elif six.PY3:
+            assert exc.value.args[0] == ("add_component() missing 1 required "
+                                         "positional argument: 'label'")
         else:
             assert exc.value.args[0] == ("add_component() takes at least 3 "
                                          "arguments (2 given)")

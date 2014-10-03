@@ -503,3 +503,43 @@ def remove_artists(artists):
             a.remove()
         except ValueError:  # already removed
             pass
+
+
+def unique(array):
+    """
+    Return the unique elements of the array U, as well as
+    the index array I such that U[I] == array
+
+    :param array: The array to use
+    :returns: U, I
+    :rtype: tuple of arrays
+    """
+    # numpy.unique doesn't handle mixed-types on python3,
+    # so we use pandas
+    U, I = pd.factorize(array, sort=True)
+    return I, U
+
+
+def row_lookup(data, categories):
+    """
+    Lookup which row in categories each data item is equal to
+
+    :param data: array-like
+    :param categories: array-like of unique values
+
+    :returns: Float array.
+              If result[i] is finite, then data[i] = categoreis[result[i]]
+              Otherwise, data[i] is not in the categories list
+    """
+
+    # np.searchsorted doesn't work on mixed types in Python3
+
+    ndata, ncat = len(data), len(categories)
+    data = pd.DataFrame({'data': data, 'row': np.arange(ndata)})
+    cats = pd.DataFrame({'categories': categories,
+                         'cat_row': np.arange(ncat)})
+
+    m = pd.merge(data, cats, left_on='data', right_on='categories')
+    result = np.zeros(ndata, dtype=float) * np.nan
+    result[np.array(m.row)] = m.cat_row
+    return result

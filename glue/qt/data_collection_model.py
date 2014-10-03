@@ -131,7 +131,7 @@ class SubsetListItem(Item):
 
     @memoize
     def child(self, row):
-        if row < self.dc.subset_groups:
+        if row < len(self.dc.subset_groups):
             return SubsetGroupItem(self.dc, row, self)
 
     @property
