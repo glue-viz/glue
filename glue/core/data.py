@@ -370,7 +370,7 @@ class CategoricalComponent(Component):
         :jitter: Strategy for jittering the data
         """
         super(CategoricalComponent, self).__init__(None, units)
-        self._categorical_data = np.asarray(categorical_data, dtype=np.object)
+        self._categorical_data = np.asarray(categorical_data, dtype=np.str)
         self._categorical_data.setflags(write=False)
 
         self._categories = categories
