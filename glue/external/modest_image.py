@@ -72,9 +72,10 @@ class ModestImage(mi.AxesImage):
         shp = self._full_res.shape
         x0, x1, sx, y0, y1, sy = extract_matched_slices(ax, shp)
         # have we already calculated what we need?
-        if sx >= self._sx and sy >= self._sy and \
-            x0 >= self._bounds[0] and x1 <= self._bounds[1] and \
-                y0 >= self._bounds[2] and y1 <= self._bounds[3]:
+        if (self._sx is not None and self._sy is not None and
+                sx >= self._sx and sy >= self._sy and
+                x0 >= self._bounds[0] and x1 <= self._bounds[1] and
+                y0 >= self._bounds[2] and y1 <= self._bounds[3]):
             return
         self._A = self._full_res[y0:y1:sy, x0:x1:sx]
         self._A = cbook.safe_masked_invalid(self._A)
