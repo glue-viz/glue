@@ -457,7 +457,7 @@ class StandaloneImageWidget(QMainWindow):
     """
     window_closed = Signal()
 
-    def __init__(self, image, parent=None, **kwargs):
+    def __init__(self, image=None, parent=None, **kwargs):
         """
         :param image: Image to display (2D numpy array)
         :param parent: Parent widget (optional)
@@ -473,7 +473,9 @@ class StandaloneImageWidget(QMainWindow):
         self._norm = DS9Normalize()
 
         self.make_toolbar()
-        self.set_image(image, **kwargs)
+
+        if image is not None:
+            self.set_image(image, **kwargs)
 
     def _setup_axes(self):
         self._axes = self.central_widget.canvas.fig.add_subplot(111)
@@ -560,7 +562,7 @@ class PVSliceWidget(StandaloneImageWidget):
 
     """ A standalone image widget with extra interactivity for PV slices """
 
-    def __init__(self, image, x, y, image_widget, **kwargs):
+    def __init__(self, image=None, x=None, y=None, image_widget=None, **kwargs):
         """
         :param image: 2D Numpy array representing the PV Slice
         :param x: X coordinate for each horizontal position
@@ -570,7 +572,9 @@ class PVSliceWidget(StandaloneImageWidget):
         """
         self._crosshairs = None
         self._parent = image_widget
-        super(PVSliceWidget, self).__init__(image, x=x, y=y, **kwargs)
+        self._x = None
+        self._y = None
+        super(PVSliceWidget, self).__init__(image=image, x=x, y=y, **kwargs)
         conn = self.axes.figure.canvas.mpl_connect
         self._down_id = conn('button_press_event', self._on_click)
         self._move_id = conn('motion_notify_event', self._on_move)
@@ -583,6 +587,10 @@ class PVSliceWidget(StandaloneImageWidget):
         :param x: x pixel location in slice array
         :param y: y pixel location in slice array
         """
+
+        if self._x is None or self._y is None:
+            return ''
+
         # xy -> xyz in image view
         pix = self._pos_in_parent(xdata=x, ydata=y)
 
