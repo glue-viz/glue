@@ -16,19 +16,30 @@ class GlueToolbar(NavigationToolbar2QT):
     mode_activated = Signal()
     mode_deactivated = Signal()
 
-    def __init__(self, canvas, frame, name=None):
-        """ Create a new toolbar object
+    def __init__(self, canvas, frame, name=None,
+                 icon_size=25, icon_spacing=1, minimum_height=None):
+        """
+        Create a new toolbar object
 
         Parameters
         ----------
         data_collection : DataCollection instance
-         The data collection that this toolbar is meant to edit.
-         The toolbar looks to this collection for the available subsets
-         to manipulate.
+            The data collection that this toolbar is meant to edit.
+            The toolbar looks to this collection for the available subsets
+            to manipulate.
         canvas : Maptloblib canvas instance
-         The drawing canvas to interact with
+            The drawing canvas to interact with
         frame : QWidget
-         The QT frame that the canvas is embedded within.
+            The QT frame that the canvas is embedded within.
+        name : str, optional
+            The name of the toolbar
+        icon_size : int, optional
+            The size of the icons.
+        icon_spacing : int, optional
+            The horizontal spacing between the icons.
+        minimum_height : int, optional
+            The minimum height of the toolbar. If not specified, the toolbar
+            height will be adjusted to the height of thre icons.
         """
         self.buttons = {}
         self.__active = None
@@ -36,8 +47,12 @@ class GlueToolbar(NavigationToolbar2QT):
         NavigationToolbar2QT.__init__(self, canvas, frame)
         if name is not None:
             self.setWindowTitle(name)
-        self.setIconSize(QtCore.QSize(25, 25))
-        self.layout().setSpacing(1)
+
+        self.setIconSize(QtCore.QSize(icon_size, icon_size))
+        self.layout().setSpacing(icon_spacing)
+        if minimum_height is not None:
+            self.setMinimumHeight(minimum_height)
+
         self.setFocusPolicy(Qt.StrongFocus)
         self._idKey = None
 
