@@ -7,6 +7,9 @@ and not UI or event processing logic.
 The end user typically interacts with this code via
 :func:`glue.custom_viewer`
 """
+
+from __future__ import print_function, division
+
 from collections import namedtuple
 from inspect import getmodule, getargspec
 from functools import wraps
@@ -31,7 +34,6 @@ from ..external.qt.QtCore import Qt
 from .widgets import MplWidget
 from .glue_toolbar import GlueToolbar
 from .mouse_mode import PolyMode, RectangleMode
-
 
 CUSTOM_WIDGETS = []
 
@@ -279,6 +281,7 @@ class FrozenSettings(object):
         return cls(**kwargs)
 
 
+@six.add_metaclass(CustomMeta)
 class CustomViewer(object):
 
     """
@@ -345,8 +348,6 @@ class CustomViewer(object):
 
     The order of arguments can be listed in any order.
     """
-
-    __metaclass__ = CustomMeta
 
     redraw_on_settings_change = True  #: redraw all layers when UI state changes?
     remove_artists = True             #: auto-delete artists?
@@ -892,7 +893,7 @@ class NumberElement(FormElement):
         try:
             if len(params) not in [2, 3]:
                 return False
-            return all(isinstance(p, (int, float, long)) for p in params)
+            return all(isinstance(p, six.integer_types + (float,)) for p in params)
         except TypeError:
             return False
 
@@ -1117,6 +1118,8 @@ class ChoiceElement(FormElement):
 
     @classmethod
     def recognizes(cls, params):
+        if isinstance(params, six.string_types):
+            return False
         try:
             return all(isinstance(p, six.string_types) for p in params)
         except TypeError:
@@ -1124,7 +1127,7 @@ class ChoiceElement(FormElement):
 
     def _build_ui(self):
         w = QtGui.QComboBox()
-        for p in self.params:
+        for p in sorted(self.params):
             w.addItem(p)
 
         if isinstance(self.params, list):
