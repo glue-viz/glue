@@ -12,6 +12,8 @@ from ...glue_application import GlueApplication
 
 from . import simple_session
 
+from ....tests.helpers import requires_scipy
+
 import os
 os.environ['GLUE_TESTING'] = 'True'
 
@@ -75,6 +77,7 @@ class TestImageWidget(object):
         self.collect[0].label = 'Changed'
         self.assert_title_correct()
 
+    @requires_scipy
     def test_window_title_updates_on_component_change(self):
         self.connect_to_hub()
         self.widget.add_data(self.collect[0])
@@ -96,6 +99,7 @@ class TestImageWidget(object):
         w = ImageWidget(self.session)
         assert self.im not in w.client.artists
 
+    @requires_scipy
     def test_selection_switched_on_add(self):
         w = ImageWidget(self.session)
         assert self.im not in w.client.artists
@@ -144,6 +148,7 @@ class TestImageWidget(object):
         self.widget.rgb_mode = False
 
 
+@requires_scipy
 class TestStateSave(TestApplication):
 
     def setup_method(self, method):
