@@ -1,10 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
-from ..terminal import glue_terminal
-
 from mock import MagicMock, patch
 
+from ....tests.helpers import requires_ipython_gt_011, IPYTHON_GT_011_INSTALLED
 
+if IPYTHON_GT_011_INSTALLED:
+    from ..terminal import glue_terminal
+
+
+@requires_ipython_gt_011
 class TestTerminal(object):
     def test_mpl_non_interactive(self):
         """IPython v0.12 sometimes turns on mpl interactive. Ensure

@@ -91,3 +91,15 @@ else:
     del plotly
 
 requires_plotly = pytest.mark.skipif(str(not PLOTLY_INSTALLED), reason='Requires plotly')
+
+
+try:
+    import IPython
+    assert LooseVersion(IPython.__version__) <= LooseVersion('0.11')
+    IPYTHON_GT_011_INSTALLED = True
+except:
+    IPYTHON_GT_011_INSTALLED = False
+else:
+    del IPython
+
+requires_ipython_gt_011 = pytest.mark.skipif(str(not IPYTHON_GT_011_INSTALLED), reason='Requires IPython > 0.11')
