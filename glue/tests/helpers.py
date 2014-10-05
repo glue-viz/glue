@@ -81,3 +81,13 @@ else:
     
 requires_xlrd = pytest.mark.skipif(str(not XLRD_INSTALLED), reason='Requires xlrd')
     
+    
+try:
+    import plotly
+    PLOTLY_INSTALLED = True
+except ImportError:
+    PLOTLY_INSTALLED = False
+else:
+    del plotly
+
+requires_plotly = pytest.mark.skipif(str(not PLOTLY_INSTALLED), reason='Requires plotly')

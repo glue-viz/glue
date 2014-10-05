@@ -6,15 +6,6 @@ from ...qt.glue_application import GlueApplication
 from ...qt.widgets import ScatterWidget, ImageWidget, HistogramWidget
 from ..export_plotly import build_plotly_call
 
-try:
-    import plotly
-    PLOTLY_INSTALLED = True
-except ImportError:
-    PLOTLY_INSTALLED = False
-
-
-pytest.mark.skipif('not PLOTLY_INSTALLED')
-
 
 class TestPlotly(object):
 
