@@ -1,14 +1,17 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
-from astropy.io import fits
 
 from .. import Data, DataCollection
 from ..coordinates import coordinates_from_header
 from ..link_helpers import LinkSame
 from .util import make_file
 
+from ...tests.helpers import requires_astropy
 
+
+
+@requires_astropy
 def test_wcs_3d_to_2d():
     """ For a "normal" XYV cube, linking XY world should be
     enough to propagate XY pixel
@@ -38,6 +41,7 @@ def test_wcs_3d_to_2d():
     np.testing.assert_array_almost_equal(d2[py], d2[py2])
 
 
+@requires_astropy
 def test_link_velocity():
     """ For a normal PPV cube, linking velocity world should be
     enough to get pixel V"""
@@ -61,6 +65,7 @@ def test_link_velocity():
     np.testing.assert_array_almost_equal(d2[pz], d2[pz2])
 
 
+@requires_astropy
 class TestDependentAxes(object):
 
     def test_base(self):

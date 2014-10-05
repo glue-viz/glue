@@ -13,7 +13,10 @@ from ..coordinates import (coordinates_from_header,
                            Coordinates,
                            header_from_string)
 
+from ...tests.helpers import requires_astropy
 
+
+@requires_astropy
 class TestWcsCoordinates(object):
 
     def default_header(self):
@@ -165,6 +168,7 @@ class TestCoordinatesFromHeader(object):
             coord = coordinates_from_header(hdr)
             wcs.assert_called_once_with(hdr)
 
+    @requires_astropy
     def test_nod(self):
         hdr = 0
         with patch('glue.core.coordinates.Coordinates') as wcs:
@@ -234,6 +238,7 @@ CDELT3  =        66.4236100000 /
 """
 
 
+@requires_astropy
 def test_coords_preserve_shape_2d():
     coord = coordinates_from_header(header_from_string(HDR_2D_VALID))
     x = np.zeros(12)
@@ -264,6 +269,7 @@ def test_coords_preserve_shape_2d():
         assert r.shape == x.shape
 
 
+@requires_astropy
 def test_coords_preserve_shape_3d():
     coord = coordinates_from_header(header_from_string(HDR_3D_VALID_NOWCS))
     x = np.zeros(12)

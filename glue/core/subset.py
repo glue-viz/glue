@@ -276,7 +276,7 @@ class Subset(object):
             from ..external.astro import fits
             mask = fits.open(file_name)[0].data
         except ImportError:
-            raise ImportError("Cannot write mask -- requires astropy")
+            raise ImportError("Cannot read mask -- requires astropy")
         except IOError:
             raise IOError("Could not read %s (not a fits file?)" % file_name)
         ind = np.where(mask.flat)[0]

@@ -5,22 +5,22 @@ import numpy as np
 
 needs_modeling = pytest.mark.skipif("False", reason='')
 
-try:
+
+from ..fitters import (PolynomialFitter, IntOption,
+                       BasicGaussianFitter)
+
+from ...tests.helpers import requires_scipy, requires_astropy_ge_03, ASTROPY_GE_03_INSTALLED
+
+if ASTROPY_GE_03_INSTALLED:
     from astropy.modeling.models import Gaussian1D
     try:
         from astropy.modeling.fitting import NonLinearLSQFitter
     except ImportError:
         from astropy.modeling.fitting import LevMarLSQFitter as NonLinearLSQFitter
     from ..fitters import SimpleAstropyGaussianFitter
-except ImportError:
-    needs_modeling = pytest.mark.skipif("True",
-                                        reason='Requires astropy >= v0.3')
-
-from ..fitters import (PolynomialFitter, IntOption,
-                       BasicGaussianFitter)
 
 
-@needs_modeling
+@requires_astropy_ge_03
 class TestAstropyFitter(object):
 
     def test_fit(self):
@@ -136,7 +136,7 @@ class TestOptions(object):
         assert p.fit.call_args[1]['degree'] == 4
 
 
-@needs_modeling
+@requires_astropy_ge_03
 class TestFitWrapper(object):
 
     def setup_method(self, method):
@@ -165,7 +165,7 @@ class TestFitWrapper(object):
         np.testing.assert_array_equal(y, self.y)
 
 
-@needs_modeling
+@requires_astropy_ge_03
 class TestSetConstraints(object):
 
     def test(self):
@@ -179,6 +179,14 @@ class TestSetConstraints(object):
         }
 
 
+try:
+    import scipy
+    SCIPY_INSTALLED = True
+except:
+    SCIPY_INSTALLED = False
+
+
+@requires_scipy
 class TestBasicGaussianFitter(object):
 
     def test(self):
