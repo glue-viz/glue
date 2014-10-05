@@ -97,7 +97,7 @@ requires_plotly = pytest.mark.skipif(str(not PLOTLY_INSTALLED), reason='Requires
 
 try:
     import IPython
-    assert LooseVersion(IPython.__version__) <= LooseVersion('0.11')
+    assert LooseVersion(IPython.__version__) > LooseVersion('0.11')
     IPYTHON_GT_011_INSTALLED = True
 except:
     IPYTHON_GT_011_INSTALLED = False
