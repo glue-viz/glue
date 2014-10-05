@@ -10,7 +10,7 @@ env:
   global:
   - CONDA_ARGS="--yes"
   - PIP_ARGS=""
-  - PYTEST_ARGS="--cov glue"
+  - PYTEST_ARGS="--cov glue --no-optional-skip"
   - CONDA_BASE="pip numpy=1.8 scipy cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.2 xlrd pillow pytest mock coverage"
   - PIP_BASE="pytest-cov coveralls pyavm sphinx-rtd-theme astrodendro awscli"
   - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
@@ -26,6 +26,18 @@ env:
 matrix:
 
     include:
+
+        # The following configuration tests that glue functions with minimal
+        # dependencies. The --no-deps is to prevent scipy from getting
+        # installed as a pandas dependency.
+        - python: 2.7
+          env:
+            - PYTEST_ARGS="--cov glue"
+            - CONDA_BASE="pip setuptools numpy=1.8 pandas mock --no-deps"
+            - IPYTHON_VER=None
+            - ASTRO_VER=None
+            - MPL_VER=1.4
+            - PIP_BASE="pytest-cov coveralls"
 
         - python: 2.7
           env: MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=2 DOC_TRIGGER=1 APP_TRIGGER=1
@@ -54,10 +66,10 @@ install:
 - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then conda install $CONDA_ARGS python=$TRAVIS_PYTHON_VERSION pyside; fi
 - if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then conda install $CONDA_ARGS python=$TRAVIS_PYTHON_VERSION pyqt; fi
 - LC_ALL=C pip install $PIP_ARGS $PIP_BASE
-- if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy;
-  else conda install $CONDA_ARGS astropy=$ASTRO_VER numpy=1.8; fi
-- conda install $CONDA_ARGS IPython=$IPYTHON_VER
-- conda install $CONDA_ARGS matplotlib=$MPL_VER numpy=1.8
+- if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy; fi
+- if [[ $ASTRO_VER != dev && $ASTRO_VER != None ]]; then conda install $CONDA_ARGS numpy=1.8 astropy=$ASTRO_VER; fi
+- if [[ $IPYTHON_VER != None ]]; then conda install $CONDA_ARGS IPython=$IPYTHON_VER; fi
+- if [[ $MPL_VER != None ]]; then conda install $CONDA_ARGS numpy=1.8 matplotlib=$MPL_VER; fi
 - python setup.py install
 
 script:
