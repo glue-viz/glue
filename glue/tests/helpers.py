@@ -14,6 +14,7 @@ else:
 
 requires_astropy = pytest.mark.skipif(str(not ASTROPY_INSTALLED), reason='Requires Astropy')
 
+
 try:
     import astropy
     assert LooseVersion(astropy.__version__) >= LooseVersion('0.3')
@@ -24,6 +25,7 @@ else:
     del astropy
 
 requires_astropy_ge_03 = pytest.mark.skipif(str(not ASTROPY_GE_03_INSTALLED), reason='Requires Astropy >= 0.3')
+
 
 try:
     import astrodendro
