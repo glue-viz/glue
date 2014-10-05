@@ -152,7 +152,8 @@ class GlueDataDialog(object):
         result = self._fd.exec_()
         if result == QtGui.QDialog.Rejected:
             return [], None
-        path = list(map(str, self.paths()))  # cast out of unicode
+        #path = list(map(str, self.paths()))  # cast out of unicode
+        path = list(self.paths())
         factory = self.factory()
         return path, factory
 
