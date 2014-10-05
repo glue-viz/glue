@@ -10,7 +10,7 @@ from .util import make_file
 from ...tests.helpers import requires_astropy, ASTROPY_INSTALLED
 
 if ASTROPY_INSTALLED:
-    from ..astropy.io import fits
+    from astropy.io import fits
 
 
 @requires_astropy
