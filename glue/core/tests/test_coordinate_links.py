@@ -7,8 +7,10 @@ from ..coordinates import coordinates_from_header
 from ..link_helpers import LinkSame
 from .util import make_file
 
-from ...tests.helpers import requires_astropy
+from ...tests.helpers import requires_astropy, ASTROPY_INSTALLED
 
+if ASTROPY_INSTALLED:
+    from ..astropy.io import fits
 
 
 @requires_astropy
