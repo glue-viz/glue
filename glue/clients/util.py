@@ -67,7 +67,7 @@ def small_view_array(data):
 def _scoreatpercentile(values, percentile, limit=None):
     # Avoid using the scipy version since it is available in Numpy
     if limit is not None:
-        values = (values >= limit[0]) & (values <= limit[1])
+        values = values[(values >= limit[0]) & (values <= limit[1])]
     return np.percentile(values, percentile)
 
 
