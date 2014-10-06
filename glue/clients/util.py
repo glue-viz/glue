@@ -64,6 +64,13 @@ def small_view_array(data):
     return np.asarray(data)[view]
 
 
+def _scoreatpercentile(values, percentile, limit=None):
+    # Avoid using the scipy version since it is available in Numpy
+    if limit is not None:
+        values = values[(values >= limit[0]) & (values <= limit[1])]
+    return np.percentile(values, percentile)
+
+
 def fast_limits(data, plo, phi):
     """Quickly estimate percentiles in an array,
     using a downsampled version
@@ -75,10 +82,6 @@ def fast_limits(data, plo, phi):
     :rtype: Tuple of floats. Approximate values of each percentile in
             data[component]
     """
-    try:
-        from scipy import stats
-    except ImportError:
-        raise ImportError("Scale clipping requires SciPy")
 
     shp = data.shape
     view = tuple([slice(None, None, max(s / 50, 1)) for s in shp])
@@ -87,8 +90,8 @@ def fast_limits(data, plo, phi):
         return (0.0, 1.0)
 
     limits = (-np.inf, np.inf)
-    lo = stats.scoreatpercentile(values.flat, plo, limit=limits)
-    hi = stats.scoreatpercentile(values.flat, phi, limit=limits)
+    lo = _scoreatpercentile(values.flat, plo, limit=limits)
+    hi = _scoreatpercentile(values.flat, phi, limit=limits)
     return lo, hi
 
 
