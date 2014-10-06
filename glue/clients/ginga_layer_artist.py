@@ -242,7 +242,7 @@ class ImageLayerArtist(LayerArtist):
         ## for v in views:
         ##     image = self._extract_view(v, transpose)
         ##     extent = get_extent(v, transpose)
-                
+
         ## data_np = self._extract_view(view, transpose)
         ## # TODO: need metadata
         ## aimg = AstroImage.AstroImage(data_np=data_np)
@@ -373,7 +373,7 @@ class RGBImageLayerArtist(ImageLayerArtist):
             print "making RGB image"
             cimg = RGBImage.RGBImage(data_np=image)
             artists.append(cimg)
-            
+
         self.artists = artists
         self._sync_style()
 
@@ -388,7 +388,7 @@ class SubsetImageLayerArtist(LayerArtist):
         logging.debug("View into subset %s is %s", self.layer, view)
         print ("View into subset %s is %s", self.layer, view)
         id, ysl, xsl = view
-        
+
         try:
             mask = subset.to_mask(view[1:])
         except IncompatibleAttribute as exc:
@@ -419,15 +419,15 @@ class SubsetImageLayerArtist(LayerArtist):
             cur_image = self.artists[0]
             cur_shape = cur_image.get_data().shape
         else:
-            self.clear()            
-            
+            self.clear()
+
         if mask.shape[:2] == cur_shape[:2]:
             # optimization to simply update the color overlay if it already
             # exists and is the correct size
             clr_img = self.artists[0].get_data()
             clr_img[..., 3] = 127 * mask
             print "alpha mask updated"
-            
+
         else:
             # create new color image overlay
             ones = np.ones(mask.shape)
@@ -439,10 +439,10 @@ class SubsetImageLayerArtist(LayerArtist):
             # store graphing position in metadata
             #rgbimg.set(x_pos=xsl.start, y_pos=ysl.start)
             rgbimg.set(x_pos=0, y_pos=0)
-            
+
             print "made cimg"
             self.artists = [rgbimg]
-        
+
         elapsed_time = time.time() - time_split
         print "%.2f sec to make color image" % (elapsed_time)
         print "making cimg"
