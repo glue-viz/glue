@@ -1,15 +1,20 @@
+# Licensed under a 3-clause BSD style license - see LICENSE.rst
 from matplotlib.axes import Axes, subplot_class_factory
 from matplotlib.transforms import Affine2D, Bbox, Transform
+from matplotlib.patches import Patch
 
 from astropy.wcs import WCS
+# from astropy.coordinates import frame_transform_graph
 
 from .transforms import (WCSPixel2WorldTransform, WCSWorld2PixelTransform,
                          CoordinateTransform)
 from .coordinates_map import CoordinatesMap
-from .utils import get_coordinate_system
-from .coordinate_range import find_coordinate_range
+from .utils import get_coordinate_frame, get_coord_meta
+from .frame import RectangularFrame
 
 __all__ = ['WCSAxes', 'WCSAxesSubplot']
+
+VISUAL_PROPERTIES = ['facecolor', 'edgecolor', 'linewidth', 'alpha', 'linestyle']
 
 IDENTITY = WCS(naxis=2)
 IDENTITY.wcs.ctype = ["X", "Y"]
@@ -20,20 +25,24 @@ IDENTITY.wcs.cdelt = [1., 1.]
 
 class WCSAxes(Axes):
 
-    def __init__(self, fig, rect, wcs=IDENTITY, transData=None, slices=None,
+    def __init__(self, fig, rect, wcs=None, transform=None, coord_meta=None,
+                 transData=None, slices=None, frame_class=RectangularFrame,
                  **kwargs):
 
         super(WCSAxes, self).__init__(fig, rect, **kwargs)
         self._bboxes = []
-        self._slices = 'x', 'y'
 
-        self.reset_wcs(wcs, slices=slices)
-        self._hide_parent_artists()
+        self.frame_class = frame_class
 
         if not (transData is None):
             # User wants to override the transform for the final
             # data->pixel mapping
             self.transData = transData
+
+        self.reset_wcs(wcs=wcs, slices=slices, transform=transform, coord_meta=coord_meta)
+        self._hide_parent_artists()
+
+        self.patch = self.coords.frame.patch
 
     def _hide_parent_artists(self):
         # Turn off spines and current axes
@@ -43,45 +52,54 @@ class WCSAxes(Axes):
         self.xaxis.set_visible(False)
         self.yaxis.set_visible(False)
 
-    def reset_wcs(self, wcs, slices=None):
+    def reset_wcs(self, wcs=None, slices=None, transform=None, coord_meta=None):
         """
         Reset the current Axes, to use a new WCS object.
         """
 
         # Here determine all the coordinate axes that should be shown.
-        if wcs is None:
-            wcs = IDENTITY
+        if wcs is None and transform is None:
+            self.wcs = IDENTITY
+        else:
+            self.wcs = wcs
 
-        self.wcs = wcs
-        self.coords = CoordinatesMap(self, self.wcs, slice=slices)
+        # If we are making a new WCS, we need to preserve the path object since
+        # it may already be used by objects that have been plotted, and we need
+        # to continue updating it. CoordinatesMap will create a new frame
+        # instance, but we can tell that instance to keep using the old path.
+        if hasattr(self, 'coords'):
+            previous_frame_path = self.coords.frame._path
+        else:
+            previous_frame_path = None
+
+        self.coords = CoordinatesMap(self, wcs=self.wcs, slice=slices,
+                                     transform=transform, coord_meta=coord_meta,
+                                     frame_class=self.frame_class,
+                                     previous_frame_path=previous_frame_path)
 
         self._all_coords = [self.coords]
 
         if slices is None:
             slices = ('x', 'y')
-        self._slices = slices
 
-        # Common default settings
-        for coord_index in range(len(slices)):
-            if slices[coord_index] == 'x':
-                self.coords[coord_index].set_axislabel_position('b')
-                self.coords[coord_index].set_ticklabel_position('b')
-            elif slices[coord_index] == 'y':
-                self.coords[coord_index].set_axislabel_position('l')
-                self.coords[coord_index].set_ticklabel_position('l')
-            else:
-                self.coords[coord_index].set_axislabel_position('')
-                self.coords[coord_index].set_ticklabel_position('')
-                self.coords[coord_index].set_ticks_position('')
-
-    def get_coord_range(self, transform):
-        xmin, xmax = self.get_xlim()
-        ymin, ymax = self.get_ylim()
-        return find_coordinate_range(transform,
-                                     [xmin, xmax, ymin, ymax],
-                                     [coord.coord_type for coord in self.coords])
+        # Common default settings for Rectangular Frame
+        if self.frame_class is RectangularFrame:
+            for coord_index in range(len(slices)):
+                if slices[coord_index] == 'x':
+                    self.coords[coord_index].set_axislabel_position('b')
+                    self.coords[coord_index].set_ticklabel_position('b')
+                elif slices[coord_index] == 'y':
+                    self.coords[coord_index].set_axislabel_position('l')
+                    self.coords[coord_index].set_ticklabel_position('l')
+                else:
+                    self.coords[coord_index].set_axislabel_position('')
+                    self.coords[coord_index].set_ticklabel_position('')
+                    self.coords[coord_index].set_ticks_position('')
 
     def draw(self, renderer, inframe=False):
+
+        # We need to make sure that that frame path is up to date
+        self.coords.frame._update_patch_path()
 
         super(WCSAxes, self).draw(renderer, inframe)
 
@@ -89,41 +107,49 @@ class WCSAxes(Axes):
         # each coordinate axis. For now, just assume it covers the whole sky.
 
         self._bboxes = []
+        self._ticklabels_bbox = []
+        visible_ticks = []
 
         for coords in self._all_coords:
 
             coords.frame.update()
             for coord in coords:
-                coord._draw(renderer, bboxes=self._bboxes)
+                coord._draw(renderer, bboxes=self._bboxes,
+                            ticklabels_bbox=self._ticklabels_bbox)
+                visible_ticks.extend(coord.ticklabels.get_visible_axes())
 
         for coords in self._all_coords:
 
             for coord in coords:
-                coord._draw_axislabels(renderer, bboxes=self._bboxes)
+                coord._draw_axislabels(renderer, bboxes=self._bboxes,
+                                       ticklabels_bbox=self._ticklabels_bbox,
+                                       visible_ticks=visible_ticks)
 
         self.coords.frame.draw(renderer)
 
     def set_xlabel(self, label):
-        self.coords[self._slices.index('x')].set_axislabel(label)
+        self.coords[0].set_axislabel(label)
 
     def set_ylabel(self, label):
-        self.coords[self._slices.index('y')].set_axislabel(label)
+        self.coords[1].set_axislabel(label)
 
     def get_xlabel(self):
-        return self.coords[self._slices.index('x')].get_axislabel()
+        return self.coords[0].get_axislabel()
 
     def get_ylabel(self):
-        return self.coords[self._slices.index('y')].get_axislabel()
+        return self.coords[1].get_axislabel()
 
-    def get_coords_overlay(self, frame, equinox=None, obstime=None):
+    def get_coords_overlay(self, frame, equinox=None, obstime=None, coord_meta=None):
 
         # Here we can't use get_transform because that deals with
         # pixel-to-pixel transformations when passing a WCS object.
         if isinstance(frame, WCS):
-            coords = CoordinatesMap(self, frame)
+            coords = CoordinatesMap(self, frame, frame_class=self.frame_class)
         else:
+            if coord_meta is None:
+                coord_meta = get_coord_meta(frame)
             transform = self._get_transform_no_transdata(frame, equinox=equinox, obstime=obstime)
-            coords = CoordinatesMap(self, self.wcs, transform=transform)
+            coords = CoordinatesMap(self, transform=transform, coord_meta=coord_meta, frame_class=self.frame_class)
 
         self._all_coords.append(coords)
 
@@ -177,8 +203,8 @@ class WCSAxes(Axes):
 
         if isinstance(frame, WCS):
 
-            coord_in = get_coordinate_system(self.wcs)
-            coord_out = get_coordinate_system(frame)
+            coord_in = get_coordinate_frame(self.wcs)
+            coord_out = get_coordinate_frame(frame)
 
             if coord_in == coord_out:
 
@@ -188,7 +214,7 @@ class WCSAxes(Axes):
             else:
 
                 return (WCSPixel2WorldTransform(self.wcs)
-                        + CoordinateTransform(coord_in, coord_out)
+                        + CoordinateTransform(self.wcs, frame)
                         + WCSWorld2PixelTransform(frame))
 
         elif frame == 'pixel':
@@ -203,37 +229,19 @@ class WCSAxes(Axes):
 
         else:
 
-            from astropy.coordinates import FK5, Galactic
-
             pixel2world = WCSPixel2WorldTransform(self.wcs)
 
             if frame == 'world':
 
                 return pixel2world
 
-            elif frame == 'fk5':
-
-                coord_class = get_coordinate_system(self.wcs)
-
-                if coord_class is FK5:
-                    return pixel2world
-                else:
-                    return (pixel2world
-                            + CoordinateTransform(coord_class, FK5))
-
-            elif frame == 'galactic':
-
-                coord_class = get_coordinate_system(self.wcs)
-
-                if coord_class is Galactic:
-                    return pixel2world
-                else:
-                    return (pixel2world
-                            + CoordinateTransform(coord_class, Galactic))
-
             else:
+                coordinate_transform = CoordinateTransform(self.wcs, frame)
 
-                raise NotImplemented("frame {0} not implemented".format(frame))
+                if coordinate_transform.same_frames:
+                    return pixel2world
+                else:
+                    return pixel2world + CoordinateTransform(self.wcs, frame)
 
     def get_tightbbox(self, renderer):
 

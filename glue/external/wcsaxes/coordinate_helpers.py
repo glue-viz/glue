@@ -1,13 +1,17 @@
+# Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
 This file defines the classes used to represent a 'coordinate', which includes
 axes, ticks, tick labels, and grid lines.
 """
 
 import numpy as np
+from astropy import units as u
+from astropy.extern import six
 
 from matplotlib.ticker import Formatter
 from matplotlib.transforms import Affine2D, ScaledTranslation
 from matplotlib.patches import PathPatch
+from matplotlib import rcParams
 
 from .formatter_locator import AngleFormatterLocator, ScalarFormatterLocator
 from .ticks import Ticks
@@ -16,7 +20,6 @@ from .axislabels import AxisLabels
 from .grid_paths import get_lon_lat_path, get_gridline_path
 from . import settings
 
-from . import six
 
 __all__ = ['CoordinateHelper']
 
@@ -27,30 +30,18 @@ def wrap_angle_at(values, coord_wrap):
 
 class CoordinateHelper(object):
 
-    def __init__(self, parent_axes=None, transform=None, coord_index=None,
-                 coord_type='scalar', coord_wrap=None, frame=None):
+    def __init__(self, parent_axes=None, parent_map=None, transform=None, coord_index=None,
+                 coord_type='scalar',coord_unit=None, coord_wrap=None, frame=None):
 
         # Keep a reference to the parent axes and the transform
         self.parent_axes = parent_axes
+        self.parent_map = parent_map
         self.transform = transform
         self.coord_index = coord_index
-        self.coord_type = coord_type
+        self.coord_unit = coord_unit
         self.frame = frame
 
-        if coord_type == 'longitude' and coord_wrap is None:
-            self.coord_wrap = 360
-        elif coord_type != 'longitude' and coord_wrap is not None:
-            raise NotImplementedError('coord_wrap is not yet supported for non-longitude coordinates')
-        else:
-            self.coord_wrap = coord_wrap
-
-        # Initialize tick formatter/locator
-        if coord_type == 'scalar':
-            self._formatter_locator = ScalarFormatterLocator()
-        elif coord_type in ['longitude', 'latitude']:
-            self._formatter_locator = AngleFormatterLocator()
-        else:
-            raise ValueError("coord_type should be one of 'scalar', 'longitude', or 'latitude'")
+        self.set_coord_type(coord_type, coord_wrap)
 
         # Initialize ticks
         self.dpi_transform = Affine2D()
@@ -58,8 +49,11 @@ class CoordinateHelper(object):
         self.ticks = Ticks(transform=parent_axes.transData + self.offset_transform)
 
         # Initialize tick labels
-        self.ticklabels = TickLabels(transform=None,  # display coordinates
+        self.ticklabels = TickLabels(self.frame,
+                                     transform=None,  # display coordinates
                                      figure=parent_axes.get_figure())
+        self.ticks.display_minor_ticks(False)
+        self.minor_frequency = 5
 
         # Initialize axis labels
         self.axislabels = AxisLabels(self.frame,
@@ -68,8 +62,28 @@ class CoordinateHelper(object):
 
         # Initialize container for the grid lines
         self.grid_lines = []
+
+        # Initialize grid style. Take defaults from matplotlib.rcParams.
+        # Based on matplotlib.axis.YTick._get_gridline.
+        #
+        # Matplotlib's gridlines use Line2D, but ours use PathPatch.
+        # Patches take a slightly different format of linestyle argument.
+        lines_to_patches_linestyle = {
+            '-': 'solid',
+            '--': 'dashed',
+            '-.': 'dashdot',
+            ':': 'dotted',
+            'none': 'none',
+            'None': 'none',
+            ' ': 'none',
+            '': 'none'
+        }
         self.grid_lines_kwargs = {'visible':False,
                                   'facecolor':'none',
+                                  'edgecolor': rcParams['grid.color'],
+                                  'linestyle': lines_to_patches_linestyle[rcParams['grid.linestyle']],
+                                  'linewidth': rcParams['grid.linewidth'],
+                                  'alpha': rcParams.get('grid.alpha', 1.0),
                                   'transform':self.parent_axes.transData}
 
     def grid(self, draw_grid=True, grid_type='lines', **kwargs):
@@ -109,6 +123,35 @@ class CoordinateHelper(object):
         else:
             self.grid_lines_kwargs['visible'] = True
 
+    def set_coord_type(self, coord_type, coord_wrap=None):
+        """
+        Set the coordinate type for the axis.
+
+        Parameters
+        ----------
+        coord_type : str
+            One of 'longitude', 'latitude' or 'scalar'
+        coord_wrap : float, optional
+            The value to wrap at for angular coordinates
+        """
+
+        self.coord_type = coord_type
+
+        if coord_type == 'longitude' and coord_wrap is None:
+            self.coord_wrap = 360
+        elif coord_type != 'longitude' and coord_wrap is not None:
+            raise NotImplementedError('coord_wrap is not yet supported for non-longitude coordinates')
+        else:
+            self.coord_wrap = coord_wrap
+
+        # Initialize tick formatter/locator
+        if coord_type == 'scalar':
+            self._formatter_locator = ScalarFormatterLocator(unit=self.coord_unit)
+        elif coord_type in ['longitude', 'latitude']:
+            self._formatter_locator = AngleFormatterLocator()
+        else:
+            raise ValueError("coord_type should be one of 'scalar', 'longitude', or 'latitude'")
+
     def set_major_formatter(self, formatter):
         """
         Set the formatter to use for the major tick labels.
@@ -126,8 +169,37 @@ class CoordinateHelper(object):
             raise TypeError("formatter should be a string or a Formatter "
                             "instance")
 
+    def set_separator(self, separator):
+        """
+        Set the separator to use for the angle major tick labels.
+
+        Parameters
+        ----------
+        separator : The separator between numbers in sexagesimal
+        representation. Can be either a string or a tuple.
+        """
+        if not (self._formatter_locator.__class__ == AngleFormatterLocator):
+            raise TypeError("Separator can only be specified for angle coordinates")
+        if isinstance(separator, six.string_types) or isinstance(separator, tuple):
+            self._formatter_locator.sep = separator
+        else:
+            raise TypeError("separator should be a string or a tuple")
+
+    def set_format_unit(self, unit):
+        """
+        Set the unit for the major tick labels.
+
+        Parameters
+        ----------
+        unit : class:`~astropy.units.Unit`
+            The unit to which the tick labels should be converted to.
+        """
+        if (not issubclass(unit.__class__, u.UnitBase)):
+            raise TypeError("unit should be an astropy UnitBase subclass")
+        self._formatter_locator.format_unit = unit
+
     def set_ticks(self, values=None, spacing=None, number=None, size=None,
-                  color=None, alpha=None):
+                  width=None, color=None, alpha=None, exclude_overlapping=False):
         """
         Set the location and properties of the ticks.
 
@@ -146,6 +218,8 @@ class CoordinateHelper(object):
             The length of the ticks in points
         color : str or tuple
             A valid Matplotlib color for the ticks
+        exclude_overlapping : bool, optional
+            Whether to exclude tick labels that overlap over each other.
         """
 
         if sum([values is None, spacing is None, number is None]) < 2:
@@ -162,11 +236,16 @@ class CoordinateHelper(object):
         if size is not None:
             self.ticks.set_ticksize(size)
 
+        if width is not None:
+            self.ticks.set_linewidth(width)
+
         if color is not None:
             self.ticks.set_color(color)
 
         if alpha is not None:
             self.ticks.set_alpha(alpha)
+
+        self.ticklabels.set_exclude_overlapping(exclude_overlapping)
 
     def set_ticks_position(self, position):
         """
@@ -209,7 +288,7 @@ class CoordinateHelper(object):
         """
         self.ticklabels.set_visible_axes(position)
 
-    def set_axislabel(self, text, **kwargs):
+    def set_axislabel(self, text, minpad=1, **kwargs):
         """
         Set the text and optionally visual properties for the axis label.
 
@@ -217,24 +296,16 @@ class CoordinateHelper(object):
         ----------
         text : str
             The axis label text.
+        minpad : float, optional
+            The padding for the label in terms of axis label font size.
         kwargs
             Keywords are passed to :class:`matplotlib.text.Text`. These
             can include keywords to set the ``color``, ``size``, ``weight``, and
             other text properties.
         """
         self.axislabels.set_text(text)
+        self.axislabels.set_minpad(minpad)
         self.axislabels.set(**kwargs)
-
-    def get_axislabel(self):
-        """
-        Get the text for the axis label
-
-        Returns
-        -------
-        label : str
-            The axis label
-        """
-        return self.axislabels.get_text()
 
     def set_axislabel_position(self, position):
         """
@@ -258,14 +329,15 @@ class CoordinateHelper(object):
     def formatter(self):
         return self._formatter_locator.formatter
 
-    def _draw(self, renderer, bboxes):
+    def _draw(self, renderer, bboxes, ticklabels_bbox):
 
         renderer.open_group('coordinate_axis')
 
         self._update_ticks(renderer)
 
         self.ticks.draw(renderer)
-        self.ticklabels.draw(renderer, bboxes=bboxes)
+        self.ticklabels.draw(renderer, bboxes=bboxes,
+                             ticklabels_bbox=ticklabels_bbox)
 
         if self.grid_lines_kwargs['visible']:
 
@@ -276,24 +348,27 @@ class CoordinateHelper(object):
 
             if self._grid_type == 'lines':
 
+                frame_patch = self.frame.patch
                 for path in self.grid_lines:
                     p = PathPatch(path, **self.grid_lines_kwargs)
-                    p.set_clip_path(self.frame.path, Affine2D())
+                    p.set_clip_path(frame_patch)
                     p.draw(renderer)
 
             else:
 
-                for line in self.grid.collections:
+                for line in self._grid.collections:
                     line.set(**self.grid_lines_kwargs)
                     line.draw(renderer)
 
         renderer.close_group('coordinate_axis')
 
-    def _draw_axislabels(self, renderer, bboxes):
+    def _draw_axislabels(self, renderer, bboxes, ticklabels_bbox, visible_ticks):
 
         renderer.open_group('axis labels')
 
-        self.axislabels.draw(renderer, bboxes=bboxes)
+        self.axislabels.draw(renderer, bboxes=bboxes,
+                             ticklabels_bbox_list=ticklabels_bbox,
+                             visible_ticks=visible_ticks)
 
         renderer.close_group('axis labels')
 
@@ -307,10 +382,12 @@ class CoordinateHelper(object):
         # to determine the rotations.
 
         # Find the range of coordinates in all directions
-        coord_range = self.parent_axes.get_coord_range(self.transform)
+        coord_range = self.parent_map.get_coord_range()
 
         # First find the ticks we want to show
         tick_world_coordinates, spacing = self._formatter_locator.locator(*coord_range[self.coord_index])
+        if self.ticks.get_display_minor_ticks():
+            minor_ticks_w_coordinates = self._formatter_locator.minor_locator(spacing, self.get_minor_frequency(), *coord_range[self.coord_index])
 
         # We want to allow non-standard rectangular frames, so we just rely on
         # the parent axes to tell us what the bounding frame is.
@@ -318,8 +395,14 @@ class CoordinateHelper(object):
 
         self.ticks.clear()
         self.ticklabels.clear()
-        lblinfo = []
-        lbl_world = []
+        self.lblinfo = []
+        self.lbl_world = []
+        # Look up parent axes' transform from data to figure coordinates.
+        #
+        # See:
+        # http://matplotlib.org/users/transforms_tutorial.html#the-transformation-pipeline
+        transData = self.parent_axes.transData
+        invertedTransLimits = transData.inverted()
 
         for axis, spine in six.iteritems(frame):
 
@@ -329,13 +412,18 @@ class CoordinateHelper(object):
             pixel0 = spine.data
             world0 = spine.world[:,self.coord_index]
             world0 = self.transform.transform(pixel0)[:,self.coord_index]
+            axes0 = transData.transform(pixel0)
 
-            pixel1 = pixel0.copy()
-            pixel1[:,0] += 1
+            # Advance 2 pixels in figure coordinates
+            pixel1 = axes0.copy()
+            pixel1[:,0] += 2.0
+            pixel1 = invertedTransLimits.transform(pixel1)
             world1 = self.transform.transform(pixel1)[:,self.coord_index]
 
-            pixel2 = pixel0.copy()
-            pixel2[:,1] += 1 if self.frame.origin == 'lower' else -1
+            # Advance 2 pixels in figure coordinates
+            pixel2 = axes0.copy()
+            pixel2[:,1] += 2.0 if self.frame.origin == 'lower' else -2.0
+            pixel2 = invertedTransLimits.transform(pixel2)
             world2 = self.transform.transform(pixel2)[:,self.coord_index]
 
             dx = (world1 - world0)
@@ -372,14 +460,35 @@ class CoordinateHelper(object):
             # since the above can produce pairs such as 359 to 361 or 0.5 to
             # 1.5, both of which would match a tick at 0.75. Otherwise we just
             # check the ticks determined above.
+            self._compute_ticks(tick_world_coordinates, spine, axis, w1, w2, tick_angle)
+
+            if self.ticks.get_display_minor_ticks():
+                self._compute_ticks(minor_ticks_w_coordinates, spine, axis, w1,
+                                    w2, tick_angle, ticks='minor')
+
+        # format tick labels, add to scene
+        text = self._formatter_locator.formatter(self.lbl_world * tick_world_coordinates.unit, spacing=spacing)
+        for kwargs, txt in zip(self.lblinfo, text):
+            self.ticklabels.add(text=txt, **kwargs)
+
+    def _compute_ticks(self, tick_world_coordinates, spine, axis, w1, w2, tick_angle, ticks='major'):
+            tick_world_coordinates_values = tick_world_coordinates.value
             if self.coord_type == 'longitude':
-                tick_world_coordinates = np.hstack([tick_world_coordinates,
-                                                    tick_world_coordinates + 360.])
+                tick_world_coordinates_values = np.hstack([tick_world_coordinates_values,
+                                                    tick_world_coordinates_values + 360])
 
-            for t in tick_world_coordinates:
+            for t in tick_world_coordinates_values:
 
-                # Find steps where a tick is present
-                intersections = np.nonzero(((t - w1) * (t - w2)) < 0)[0]
+                # Find steps where a tick is present. We have to check
+                # separately for the case where the tick falls exactly on the
+                # frame points, otherwise we'll get two matches, one for w1 and
+                # one for w2.
+                intersections = np.hstack([np.nonzero((t - w1) == 0)[0],
+                                           np.nonzero(((t - w1) * (t - w2)) < 0)[0]])
+
+                # But we also need to check for intersection with the last w2
+                if t - w2[-1] == 0:
+                    intersections = np.append(intersections, len(w2) - 1)
 
                 # Loop over ticks, and find exact pixel coordinates by linear
                 # interpolation
@@ -387,43 +496,75 @@ class CoordinateHelper(object):
 
                     imax = imin + 1
 
-                    frac = (t - w1[imin]) / (w2[imin] - w1[imin])
-                    x_data_i = spine.data[imin, 0] + frac * (spine.data[imax, 0] - spine.data[imin, 0])
-                    y_data_i = spine.data[imin, 1] + frac * (spine.data[imax, 1] - spine.data[imin, 1])
-                    x_pix_i = spine.pixel[imin, 0] + frac * (spine.pixel[imax, 0] - spine.pixel[imin, 0])
-                    y_pix_i = spine.pixel[imin, 1] + frac * (spine.pixel[imax, 1] - spine.pixel[imin, 1])
-                    delta_angle = tick_angle[imax] - tick_angle[imin]
-                    if delta_angle > 180.:
-                        delta_angle -= 360.
-                    elif delta_angle < -180.:
-                        delta_angle += 360.
-                    angle_i = tick_angle[imin] + frac * delta_angle
+                    if np.allclose(w1[imin], w2[imin], rtol=1.e-13, atol=1.e-13):
+                        continue  # tick is exactly aligned with frame
+                    else:
+                        frac = (t - w1[imin]) / (w2[imin] - w1[imin])
+                        x_data_i = spine.data[imin, 0] + frac * (spine.data[imax, 0] - spine.data[imin, 0])
+                        y_data_i = spine.data[imin, 1] + frac * (spine.data[imax, 1] - spine.data[imin, 1])
+                        x_pix_i = spine.pixel[imin, 0] + frac * (spine.pixel[imax, 0] - spine.pixel[imin, 0])
+                        y_pix_i = spine.pixel[imin, 1] + frac * (spine.pixel[imax, 1] - spine.pixel[imin, 1])
+                        delta_angle = tick_angle[imax] - tick_angle[imin]
+                        if delta_angle > 180.:
+                            delta_angle -= 360.
+                        elif delta_angle < -180.:
+                            delta_angle += 360.
+                        angle_i = tick_angle[imin] + frac * delta_angle
 
                     if self.coord_type == 'longitude':
                         world = wrap_angle_at(t, self.coord_wrap)
                     else:
                         world = t
 
-                    self.ticks.add(axis=axis,
-                                   pixel=(x_data_i, y_data_i),
-                                   world=world,
-                                   angle=angle_i,
-                                   axis_displacement=imin + frac)
+                    if ticks == 'major':
 
-                    # store information to pass to ticklabels.add
-                    # it's faster to format many ticklabels at once outside
-                    # of the loop
-                    lblinfo.append(dict(axis=axis,
-                                   pixel=(x_pix_i, y_pix_i),
-                                   world=world,
-                                   angle=spine.normal_angle[imin],
-                                   axis_displacement=imin + frac))
-                    lbl_world.append(world)
+                        self.ticks.add(axis=axis,
+                                       pixel=(x_data_i, y_data_i),
+                                       world=world,
+                                       angle=angle_i,
+                                       axis_displacement=imin + frac)
 
-        # format tick labels, add to scene
-        text = self._formatter_locator.formatter(lbl_world, spacing=spacing)
-        for kwargs, txt in zip(lblinfo, text):
-            self.ticklabels.add(text=txt, **kwargs)
+                        # store information to pass to ticklabels.add
+                        # it's faster to format many ticklabels at once outside
+                        # of the loop
+                        self.lblinfo.append(dict(axis=axis,
+                                                 pixel=(x_pix_i, y_pix_i),
+                                                 world=world,
+                                                 angle=spine.normal_angle[imin],
+                                                 axis_displacement=imin + frac))
+                        self.lbl_world.append(world)
+
+                    else:
+                        self.ticks.add_minor(minor_axis=axis,
+                                             minor_pixel=(x_data_i, y_data_i),
+                                             minor_world=world,
+                                             minor_angle=angle_i,
+                                             minor_axis_displacement=imin + frac)
+
+    def display_minor_ticks(self, display_minor_ticks):
+        """
+        Display minor ticks for this coordinate.
+
+        Parameters
+        ----------
+        display_minor_ticks : bool
+            Whether or not to display minor ticks.
+        """
+        self.ticks.display_minor_ticks(display_minor_ticks)
+
+    def get_minor_frequency(self):
+        return self.minor_frequency
+
+    def set_minor_frequency(self, frequency):
+        """
+        Set the frequency of minor ticks per major ticks.
+
+        Parameters
+        ----------
+        frequency : int
+            The number of minor ticks per major ticks.
+        """
+        self.minor_frequency = frequency
 
     def _update_grid_lines(self):
 
@@ -435,47 +576,72 @@ class CoordinateHelper(object):
         # the value in the slice). Here we basically assume that if the WCS
         # had a third axis, it has been abstracted away in the transformation.
 
-        coord_range = self.parent_axes.get_coord_range(self.transform)
+        coord_range = self.parent_map.get_coord_range()
 
         tick_world_coordinates, spacing = self._formatter_locator.locator(*coord_range[self.coord_index])
+        tick_world_coordinates_values = tick_world_coordinates.value
+
+        n_coord = len(tick_world_coordinates_values)
+        n_samples = settings.GRID_SAMPLES
+
+        xy_world = np.zeros((n_samples * n_coord, 2))
 
         self.grid_lines = []
-        for w in tick_world_coordinates:
+        for iw, w in enumerate(tick_world_coordinates_values):
+            subset = slice(iw * n_samples, (iw + 1) * n_samples)
             if self.coord_index == 0:
-                x_world = np.repeat(w, 1000)
-                y_world = np.linspace(coord_range[1][0], coord_range[1][1], 1000)
+                xy_world[subset, 0] = np.repeat(w, n_samples)
+                xy_world[subset, 1] = np.linspace(coord_range[1][0], coord_range[1][1], n_samples)
             else:
-                x_world = np.linspace(coord_range[0][0], coord_range[0][1], 1000)
-                y_world = np.repeat(w, 1000)
-            xy_world = np.vstack([x_world, y_world]).transpose()
-            self.grid_lines.append(self._get_gridline(xy_world))
+                xy_world[subset, 0] = np.linspace(coord_range[0][0], coord_range[0][1], n_samples)
+                xy_world[subset, 1] = np.repeat(w, n_samples)
 
-    def _get_gridline(self, xy_world):
+        # We now convert all the world coordinates to pixel coordinates in a
+        # single go rather than doing this in the gridline to path conversion
+        # to fully benefit from vectorized coordinate transformations.
+
+        # Transform line to pixel coordinates
+        pixel = self.transform.inverted().transform(xy_world)
+
+        # Create round-tripped values for checking
+        xy_world_round = self.transform.transform(pixel)
+
+        for iw in range(n_coord):
+            subset = slice(iw * n_samples, (iw + 1) * n_samples)
+            self.grid_lines.append(self._get_gridline(xy_world[subset], pixel[subset], xy_world_round[subset]))
+
+    def _get_gridline(self, xy_world, pixel, xy_world_round):
         if self.coord_type == 'scalar':
-            return get_gridline_path(self.parent_axes, self.transform, xy_world)
+            return get_gridline_path(xy_world, pixel)
         else:
-            return get_lon_lat_path(self.parent_axes, self.transform, xy_world)
+            return get_lon_lat_path(xy_world, pixel, xy_world_round)
 
     def _update_grid_contour(self):
+
+        if hasattr(self, '_grid'):
+            for line in self._grid.collections:
+                line.remove()
 
         xmin, xmax = self.parent_axes.get_xlim()
         ymin, ymax = self.parent_axes.get_ylim()
 
         X, Y, field = self.transform.get_coord_slices(xmin, xmax, ymin, ymax, 200, 200)
 
-        coord_range = self.parent_axes.get_coord_range(self.transform)
+        coord_range = self.parent_map.get_coord_range()
 
         tick_world_coordinates, spacing = self._formatter_locator.locator(*coord_range[self.coord_index])
 
         field = field[self.coord_index]
 
-        if self.coord_type == 'longitude':
+        # tick_world_coordinates is a Quantities array and we only needs its values
+        tick_world_coordinates_values = tick_world_coordinates.value
 
+        if self.coord_type == 'longitude':
             # Find biggest gap in tick_world_coordinates and wrap in  middle
             # For now just assume spacing is equal, so any mid-point will do
-            mid = 0.5 * (tick_world_coordinates[0] + tick_world_coordinates[1])
+            mid = 0.5 * (tick_world_coordinates_values[0] + tick_world_coordinates_values[1])
             field = wrap_angle_at(field, mid)
-            tick_world_coordinates = wrap_angle_at(tick_world_coordinates, mid)
+            tick_world_coordinates_values = wrap_angle_at(tick_world_coordinates_values, mid)
 
             # Replace wraps by NaN
             reset = (np.abs(np.diff(field[:,:-1], axis=0)) > 180) | (np.abs(np.diff(field[:-1,:], axis=1)) > 180)
@@ -484,4 +650,4 @@ class CoordinateHelper(object):
             field[:-1,1:][reset] = np.nan
             field[1:,1:][reset] = np.nan
 
-        self.grid = self.parent_axes.contour(X, Y, field.transpose(), levels=tick_world_coordinates)
+        self._grid = self.parent_axes.contour(X, Y, field.transpose(), levels=tick_world_coordinates_values)
