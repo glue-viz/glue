@@ -9,7 +9,7 @@ from ...external.qt.QtCore import Qt, QRect, Signal
 from .data_viewer import DataViewer
 from ... import core
 
-from ...clients.image_client import ImageClient
+from ...clients.image_client import MplImageClient
 from ...clients.ds9norm import DS9Normalize
 from ...external.modest_image import imshow
 

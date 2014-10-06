@@ -11,7 +11,7 @@ from ...tests import example_data
 from ... import core
 from ...core.exceptions import IncompatibleAttribute
 from ..layer_artist import RGBImageLayerArtist, ImageLayerArtist
-from ..image_client import ImageClient
+from ..image_client import MplImageClient
 
 from .util import renderless_figure
 
@@ -33,7 +33,7 @@ class TrueState(core.subset.SubsetState):
         return data
 
 
-class TestImageClient(object):
+class TestMplImageClient(object):
 
     def setup_method(self, method):
         self.im = example_data.test_image()
@@ -45,14 +45,14 @@ class TestImageClient(object):
         self.collect = core.data_collection.DataCollection()
         FIGURE.canvas.draw.reset_mock()
 
-    def create_client_with_image(self):
-        client = ImageClient(self.collect, figure=FIGURE)
+    def create_client_with_image(self, figure=FIGURE):
+        client = MplImageClient(self.collect, figure=figure)
         self.collect.append(self.im)
         client.set_data(self.im)
         return client
 
     def create_client_with_hypercube(self):
-        client = ImageClient(self.collect, figure=FIGURE)
+        client = MplImageClient(self.collect, figure=FIGURE)
         self.collect.append(self.cube4)
         client.set_data(self.cube4)
         return client
@@ -90,23 +90,23 @@ class TestImageClient(object):
         return client
 
     def create_client_with_cube(self):
-        client = ImageClient(self.collect, figure=FIGURE)
+        client = MplImageClient(self.collect, figure=FIGURE)
         self.collect.append(self.cube)
         client.set_data(self.cube)
         return client
 
     def test_empty_creation(self):
-        client = ImageClient(self.collect, figure=FIGURE)
+        client = MplImageClient(self.collect, figure=FIGURE)
         assert client.display_data is None
 
     def test_nonempty_creation(self):
         self.collect.append(self.im)
-        client = ImageClient(self.collect, figure=FIGURE)
+        client = MplImageClient(self.collect, figure=FIGURE)
         assert client.display_data is None
         assert not self.im in client.artists
 
     def test_invalid_add(self):
-        client = ImageClient(self.collect, figure=FIGURE)
+        client = MplImageClient(self.collect, figure=FIGURE)
         with pytest.raises(TypeError) as exc:
             client.add_layer(self.cube)
         assert exc.value.args[0] == ("Data not managed by client's "
@@ -124,7 +124,7 @@ class TestImageClient(object):
         assert exc.value.args[0] == "Can only set slice_ind for 3D images"
 
     def test_slice_disabled_for_no_data(self):
-        client = ImageClient(self.collect, figure=FIGURE)
+        client = MplImageClient(self.collect, figure=FIGURE)
         assert client.slice_ind is None
         with pytest.raises(IndexError) as exc:
             client.slice_ind = 10
@@ -137,14 +137,14 @@ class TestImageClient(object):
         assert client.slice_ind == 5
 
     def test_add_subset_via_method(self):
-        client = ImageClient(self.collect, figure=FIGURE)
+        client = MplImageClient(self.collect, figure=FIGURE)
         self.collect.append(self.im)
         s = self.im.new_subset()
         client.add_layer(s)
         assert s in client.artists
 
     def test_remove_data(self):
-        client = ImageClient(self.collect, figure=FIGURE)
+        client = MplImageClient(self.collect, figure=FIGURE)
         self.collect.append(self.im)
         s = self.im.new_subset()
         client.add_layer(self.im)
@@ -256,21 +256,7 @@ class TestImageClient(object):
         assert roi2.to_polygon()[1] == roi.to_polygon()[1]
 
     def test_apply_roi_draws_once(self):
-        client = self.create_client_with_image()
-        client.register_to_hub(self.collect.hub)
-
-        # add some more data
-        for _ in range(3):
-            self.collect.append(core.Data(x=[1, 2, 3], label='add'))
-        sg = self.collect.new_subset_group()
-        for d in self.collect:
-            d.edit_subset = sg
-
-        roi = core.roi.PolygonalROI(vx=[10, 20, 20, 10],
-                                    vy=[10, 10, 20, 20])
-        ct = FIGURE.canvas.draw.call_count
-        client.apply_roi(roi)
-        assert FIGURE.canvas.draw.call_count == ct + 1
+        assert MplImageClient.apply_roi._is_deferred
 
     def test_update_subset_deletes_artist_on_error(self):
         client = self.create_client_with_image()
@@ -459,7 +445,7 @@ class TestImageClient(object):
 
     def test_format_coord_works_without_data(self):
         # regression test for 402
-        client = ImageClient(self.collect, figure=FIGURE)
+        client = MplImageClient(self.collect, figure=FIGURE)
         expected = dict(labels=['x=3', 'y=5'],
                         pix=(3, 5), world=(3, 5), value=np.nan)
         assert client.point_details(3, 5) == expected
@@ -472,7 +458,7 @@ def test_format_coord_2d():
     d.coords = DummyCoords()
 
     dc = core.DataCollection([d])
-    c = ImageClient(dc, figure=FIGURE)
+    c = MplImageClient(dc, figure=FIGURE)
     c.add_layer(d)
     ax = c.axes
 
@@ -493,7 +479,7 @@ def test_format_coord_3d():
     d.coords = DummyCoords()
 
     dc = core.DataCollection([d])
-    c = ImageClient(dc)
+    c = MplImageClient(dc)
     c.add_layer(d)
     ax = c.axes
 
