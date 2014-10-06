@@ -1,107 +1,47 @@
 # Define decorators that can be used for pytest tests
 
 import pytest
+
 from distutils.version import LooseVersion
 
 
-try:
-    import astropy
-    ASTROPY_INSTALLED = True
-except:
-    ASTROPY_INSTALLED = False
-else:
-    del astropy
-
-requires_astropy = pytest.mark.skipif(str(not ASTROPY_INSTALLED), reason='Requires Astropy')
-
-
-try:
-    import astropy
-    assert LooseVersion(astropy.__version__) >= LooseVersion('0.3')
-    ASTROPY_GE_03_INSTALLED = True
-except:
-    ASTROPY_GE_03_INSTALLED = False
-else:
-    del astropy
-
-requires_astropy_ge_03 = pytest.mark.skipif(str(not ASTROPY_GE_03_INSTALLED), reason='Requires Astropy >= 0.3')
+def make_skipper(module, label=None, version=None):
+    label = label or module
+    try:
+        mod = __import__(module)
+        if version:
+            assert LooseVersion(mod.__version__) >= LooseVersion(version)
+        installed = True
+    except ImportError:
+        installed = False
+    return installed, pytest.mark.skipif(str(not installed), reason='Requires %s' % label)
 
 
-try:
-    import astrodendro
-    ASTRODENDRO_INSTALLED = True
-except ImportError:
-    ASTRODENDRO_INSTALLED = False
-else:
-    del astrodendro
+ASTROPY_INSTALLED, requires_astropy = make_skipper('astropy',
+                                                   label='Astropy')
 
-requires_astrodendro = pytest.mark.skipif(str(not ASTRODENDRO_INSTALLED), reason='Requires astrodendro')
+ASTROPY_GE_03_INSTALLED, requires_astropy_ge_03 = make_skipper('astropy',
+                                                               label='Astropy >= 0.3',
+                                                               version='0.3')
 
+ASTRODENDRO_INSTALLED, requires_astrodendro = make_skipper('astrodendro')
 
-try:
-    import scipy
-    SCIPY_INSTALLED = True
-except ImportError:
-    SCIPY_INSTALLED = False
-else:
-    del scipy
+SCIPY_INSTALLED, requires_scipy = make_skipper('scipy',
+                                               label='SciPy')
 
-requires_scipy = pytest.mark.skipif(str(not SCIPY_INSTALLED), reason='Requires SciPy')
+PIL_INSTALLED, requires_pil = make_skipper('pil', label='PIL')
 
+SKIMAGE_INSTALLED, requires_skimage = make_skipper('skimage',
+                                                   label='scikit-image')
 
-try:
-    import PIL
-    PIL_INSTALLED = True
-except ImportError:
-    PIL_INSTALLED = False
-else:
-    del PIL
+XLRD_INSTALLED, requires_xlrd = make_skipper('xlrd')
 
-requires_pil = pytest.mark.skipif(str(not PIL_INSTALLED), reason='Requires PIL')
+PLOTLY_INSTALLED, requires_plotly = make_skipper('plotly')
+
+IPYTHON_GE_012_INSTALLED, requires_ipython_ge_012 = make_skipper('IPython',
+                                                                 label='IPython >= 0.12',
+                                                                 version='0.12')
 
 
-try:
-    import skimage
-    SKIMAGE_INSTALLED = True
-except ImportError:
-    SKIMAGE_INSTALLED = False
-else:
-    del skimage
-
-requires_skimage = pytest.mark.skipif(str(not SKIMAGE_INSTALLED), reason='Requires scikit-image')
-
-requires_pil_or_skimage = pytest.mark.skipif(str(not SKIMAGE_INSTALLED and not PIL_INSTALLED), reason='Requires PIL or scikit-image')
-
-
-try:
-    import xlrd
-    XLRD_INSTALLED = True
-except ImportError:
-    XLRD_INSTALLED = False
-else:
-    del xlrd
-    
-requires_xlrd = pytest.mark.skipif(str(not XLRD_INSTALLED), reason='Requires xlrd')
-    
-    
-try:
-    import plotly
-    PLOTLY_INSTALLED = True
-except ImportError:
-    PLOTLY_INSTALLED = False
-else:
-    del plotly
-
-requires_plotly = pytest.mark.skipif(str(not PLOTLY_INSTALLED), reason='Requires plotly')
-
-
-try:
-    import IPython
-    assert LooseVersion(IPython.__version__) > LooseVersion('0.11')
-    IPYTHON_GT_011_INSTALLED = True
-except:
-    IPYTHON_GT_011_INSTALLED = False
-else:
-    del IPython
-
-requires_ipython_gt_011 = pytest.mark.skipif(str(not IPYTHON_GT_011_INSTALLED), reason='Requires IPython > 0.11')
+requires_pil_or_skimage = pytest.mark.skipif(str(not SKIMAGE_INSTALLED and not PIL_INSTALLED),
+                                             reason='Requires PIL or scikit-image')

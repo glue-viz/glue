@@ -25,7 +25,7 @@ from ...core import Data
 
 from ...external.six import PY3
 
-from ...tests.helpers import requires_ipython_gt_011
+from ...tests.helpers import requires_ipython_ge_012
 
 
 
@@ -75,7 +75,7 @@ class TestGlueApplication(object):
                     self.app._choose_save_session()
                     assert mb.call_count == 1
 
-    @requires_ipython_gt_011
+    @requires_ipython_ge_012
     def test_terminal_present(self):
         """For good setups, terminal is available"""
         if not self.app.has_terminal():
@@ -109,7 +109,7 @@ class TestGlueApplication(object):
         except:
             return False
 
-    @requires_ipython_gt_011
+    @requires_ipython_ge_012
     def test_toggle_terminal(self):
         term = MagicMock()
         self.app._terminal = term
