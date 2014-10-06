@@ -5,12 +5,8 @@ import numpy as np
 
 from ..core.exceptions import IncompatibleAttribute
 from ..core.util import color2rgb
-from ..core.data import Data
-from ..core.util import lookup_class, Pointer
-from ..core.subset import Subset, RoiSubsetState
-from ..core.roi import PolygonalROI
+from ..core.util import Pointer
 from ..core.callback_property import (CallbackProperty)
-from ..core.edit_subset_mode import EditSubsetMode
 
 from .image_client import ImageClient
 from .layer_artist import LayerArtist
@@ -73,7 +69,7 @@ class GingaImageLayer(GingaLayerArtist):
     def __init__(self, layer, canvas):
         super(GingaImageLayer, self).__init__(layer, canvas)
         self._override_image = None
-        self.norm = None # XXX unused by Ginga, cleanup
+        self.norm = None  # XXX unused by Ginga, cleanup
 
     def set_norm(self, **kwargs):
         pass
@@ -107,6 +103,7 @@ class GingaImageLayer(GingaLayerArtist):
 
         hdr = self._layer.coords._header
         aimg.update_keywords(hdr)
+
 
 class GingaSubsetImageLayer(GingaLayerArtist):
 
@@ -150,9 +147,6 @@ class GingaSubsetImageLayer(GingaLayerArtist):
         time_split = time.time()
         print "c) %.2f split time" % (time_split - time_start)
 
-
-        cur_shape = (-1, -1)
-
         if self._img and self._img.get_data().shape[:2] == mask.shape[:2]:
             # optimization to simply update the color overlay if it already
             # exists and is the correct size
@@ -174,7 +168,7 @@ class GingaSubsetImageLayer(GingaLayerArtist):
         return self._img
 
     def update(self, view, transpose=False):
-        im = self._compute_img(view ,transpose)
+        im = self._compute_img(view, transpose)
         if not im:
             return
         print im.get_data()
