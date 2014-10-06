@@ -3,4 +3,5 @@ Type=Application
 Name=Glueviz
 Comment=Link visualizations of scientific datasets
 Exec=glue
+Icon=glueviz
 Categories=Education;Science;
