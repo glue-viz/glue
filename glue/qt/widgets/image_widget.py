@@ -54,7 +54,7 @@ class ImageWidget(DataViewer):
         self.option_widget = self.ui
         self.ui.slice = DataSlice()
         self.ui.slice_layout.addWidget(self.ui.slice)
-        self.client = ImageClient(self._data,
+        self.client = MplImageClient(self._data,
                                   self.central_widget.canvas.fig,
                                   artist_container=self._container)
 
