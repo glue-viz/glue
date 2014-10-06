@@ -31,7 +31,6 @@ WARN_THRESH = 10000000  # warn when contouring large images
 __all__ = ['ImageWidget']
 
 
-
 class ImageWidget(DataViewer):
     LABEL = "Image Viewer"
     _property_set = DataViewer._property_set + \
@@ -55,11 +54,9 @@ class ImageWidget(DataViewer):
         self.ui.slice = DataSlice()
         self.ui.slice_layout.addWidget(self.ui.slice)
         self.client = MplImageClient(self._data,
-                                  self.central_widget.canvas.fig,
-                                  artist_container=self._container)
-
+                                     self.central_widget.canvas.fig,
+                                     artist_container=self._container)
         self._setup_tools()
-
         self._tweak_geometry()
 
         self.make_toolbar()

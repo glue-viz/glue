@@ -425,10 +425,10 @@ class TestMplImageClient(object):
         c = self.create_client_with_image()
         shp = self.im.shape
         c.slice = 'x', 'y'
-        assert c._ax.get_xlim() == (0, shp[0])
-        assert c._ax.get_ylim() == (0, shp[1])
-        assert c._ax.get_xlabel() == 'World 0'
-        assert c._ax.get_ylabel() == 'World 1'
+        assert c.axes.get_xlim() == (0, shp[0])
+        assert c.axes.get_ylim() == (0, shp[1])
+        assert c.axes.get_xlabel() == 'World 0'
+        assert c.axes.get_ylabel() == 'World 1'
 
     def test_4d(self):
         c = self.create_client_with_hypercube()
@@ -437,11 +437,11 @@ class TestMplImageClient(object):
     def test_slice_move_retains_zoom(self):
         # regression test for #224
         c = self.create_client_with_cube()
-        c._ax.set_xlim(2, 11)
-        c._ax.set_ylim(4, 11)
+        c.axes.set_xlim(2, 11)
+        c.axes.set_ylim(4, 11)
         c.slice = 1, 'y', 'x'
-        assert c._ax.get_xlim() == (2, 11)
-        assert c._ax.get_ylim() == (4, 11)
+        assert c.axes.get_xlim() == (2, 11)
+        assert c.axes.get_ylim() == (4, 11)
 
     def test_format_coord_works_without_data(self):
         # regression test for 402

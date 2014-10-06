@@ -673,9 +673,9 @@ class MplImageClient(ImageClient):
 
     def _setup_mpl(self, figure, axes):
         figure, axes = init_mpl(figure, axes, wcs=True)
-        self._ax = axes
-        self._ax.get_xaxis().set_ticks([])
-        self._ax.get_yaxis().set_ticks([])
+        self._axes = axes
+        self._axes.get_xaxis().set_ticks([])
+        self._axes.get_yaxis().set_ticks([])
         self._figure = figure
 
         # custom axes formatter
@@ -683,22 +683,22 @@ class MplImageClient(ImageClient):
             data = self.display_data
             if data is None:
                 # MPL default method
-                return type(self._ax).format_coord(self._ax, x, y)
+                return type(self._axes).format_coord(self._axes, x, y)
             info = self.point_details(x, y)
             return '         '.join(info['labels'])
 
-        self._ax.format_coord = format_coord
+        self._axes.format_coord = format_coord
 
-        self._cid = self._ax.figure.canvas.mpl_connect('button_release_event',
-                                                       self.check_update)
+        self._cid = self._axes.figure.canvas.mpl_connect('button_release_event',
+                                                         self.check_update)
 
-        if hasattr(self._ax.figure.canvas, 'homeButton'):
+        if hasattr(self._axes.figure.canvas, 'homeButton'):
             # test code doesn't always use Glue's custom FigureCanvas
-            self._ax.figure.canvas.homeButton.connect(self.check_update)
+            self._axes.figure.canvas.homeButton.connect(self.check_update)
 
     @property
     def axes(self):
-        return self._ax
+        return self._axes
 
     def check_update(self, *args):
         """
@@ -706,7 +706,7 @@ class MplImageClient(ImageClient):
         such that the images should be resampled
         """
         logging.getLogger(__name__).debug("check update")
-        vw = _view_window(self._ax)
+        vw = _view_window(self._axes)
         if vw != self._view_window:
             logging.getLogger(__name__).debug("updating")
             self._update_data_plot()
@@ -718,8 +718,8 @@ class MplImageClient(ImageClient):
     def _update_axis_labels(self):
         labels = _axis_labels(self.display_data, self.slice)
         self._update_wcs_axes(self.display_data, self.slice)
-        self._ax.set_xlabel(labels[1])
-        self._ax.set_ylabel(labels[0])
+        self._axes.set_xlabel(labels[1])
+        self._axes.set_ylabel(labels[0])
 
     @defer_draw
     def _update_wcs_axes(self, data, slc):
@@ -729,26 +729,26 @@ class MplImageClient(ImageClient):
             self.axes.reset_wcs(wcs, slices=slc[::-1])
 
     def _redraw(self):
-        self._ax.figure.canvas.draw()
+        self._axes.figure.canvas.draw()
 
     def relim(self):
         shp = _2d_shape(self.display_data.shape, self.slice)
-        self._ax.set_xlim(0, shp[1])
-        self._ax.set_ylim(0, shp[0])
+        self._axes.set_xlim(0, shp[1])
+        self._axes.set_ylim(0, shp[0])
 
     def _new_rgb_layer(self, layer):
         v = self._view or self._build_view()
-        a = RGBImageLayerArtist(layer, self._ax, last_view=v)
+        a = RGBImageLayerArtist(layer, self._axes, last_view=v)
         return a
 
     def _new_image_layer(self, layer):
-        return ImageLayerArtist(layer, self._ax)
+        return ImageLayerArtist(layer, self._axes)
 
     def _new_subset_image_layer(self, layer):
-        return SubsetImageLayerArtist(layer, self._ax)
+        return SubsetImageLayerArtist(layer, self._axes)
 
     def _new_scatter_layer(self, layer):
-        return ScatterLayerArtist(layer, self._ax)
+        return ScatterLayerArtist(layer, self._axes)
 
     def _build_view(self):
 
@@ -756,7 +756,7 @@ class MplImageClient(ImageClient):
         shp = self.display_data.shape
 
         shp_2d = _2d_shape(shp, self.slice)
-        v = extract_matched_slices(self._ax, shp_2d)
+        v = extract_matched_slices(self._axes, shp_2d)
         x = slice(v[0], v[1], v[2])
         y = slice(v[3], v[4], v[5])
 
