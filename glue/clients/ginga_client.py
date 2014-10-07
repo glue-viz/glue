@@ -56,9 +56,12 @@ class GingaLayerArtist(LayerArtist):
     def __init__(self, layer, canvas):
         super(GingaLayerArtist, self).__init__(layer, canvas)
         self._canvas = canvas
+        self._visible = True
 
     def redraw(self):
-        pass
+        #pass
+        print "ginga layer artist redraw"
+        self._canvas.redraw()
 
     def _sync_style(self):
         pass
@@ -76,7 +79,7 @@ class GingaImageLayer(GingaLayerArtist):
 
     def override_image(self, image):
         """Temporarily show a different image"""
-        raise NotImplementedError()
+        #raise NotImplementedError()
         self._override_image = image
 
     def clear_override(self):
@@ -95,9 +98,15 @@ class GingaImageLayer(GingaLayerArtist):
 
         self.clear()
 
-        data = self._layer[view]
-        if transpose:
-            data = data.T
+        # TODO: check visibility
+
+        if self._override_image != None:
+            data = self.override_image
+        else:
+            data = self._layer[view]
+            if transpose:
+                data = data.T
+
         aimg = AstroImage.AstroImage(data_np=data)
         self._canvas.set_image(aimg)
 
@@ -110,10 +119,28 @@ class GingaSubsetImageLayer(GingaLayerArtist):
     def __init__(self, layer, canvas):
         super(GingaSubsetImageLayer, self).__init__(layer, canvas)
         self._img = None
+        self._cimg = None
+        self._tag = "layer%s" % (str(layer.label))
+        self._visible = True
 
+    @property
+    def visible(self):
+        return self._visible
+    
+    @visible.setter
+    def visible(self, value):
+        self._visible = value
+        print "subset visibility=%s" % (str(value))
+        if not value:
+            self.clear()
+        elif self._cimg:
+            self._canvas.add(self._cimg, tag=self._tag, redraw=True)
+            
     def clear(self):
-        #XXX how to do this???
-        pass
+        try:
+            self._canvas.deleteObjectsByTag([self._tag], redraw=True)
+        except:
+            pass
 
     def _compute_img(self, view, transpose=False):
         print "update subset image"
@@ -168,13 +195,23 @@ class GingaSubsetImageLayer(GingaLayerArtist):
         return self._img
 
     def update(self, view, transpose=False):
+        print("updating subset layer")
+        # remove previously added image
+        try:
+            self._canvas.deleteObjectsByTag([self._tag], redraw=False)
+        except:
+            pass
+
         im = self._compute_img(view, transpose)
         if not im:
             return
-        print im.get_data()
-
+        #print im.get_data()
+        # lower z-order in the back
+        # TODO: check for z-order
+        
         x_pos = y_pos = 0
-        cimage = Image(x_pos, y_pos, im, alpha=0.5,
-                       flipy=False)
-        self._canvas.add(cimage, tagpfx='ovr',
-                         redraw=False)
+        self._cimg = Image(x_pos, y_pos, im, alpha=0.5,
+                           flipy=False)
+        if self._visible:
+            self._canvas.add(self._cimg, tag=self._tag, redraw=True)
+

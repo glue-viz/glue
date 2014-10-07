@@ -184,6 +184,7 @@ class GingaWidget(ImageWidgetBase):
         self.roi_tag = tag
         obj = self.canvas.getObjectByTag(self.roi_tag)
         roi = self.ginga_graphic_to_roi(obj)
+        self.canvas.deleteObject(obj, redraw=False)
         print "ROI is", roi
         try:
             self.apply_roi(roi)
