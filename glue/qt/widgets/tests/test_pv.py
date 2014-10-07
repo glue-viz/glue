@@ -18,7 +18,7 @@ class TestSliceExtraction(object):
         slc = (0, 'y', 'x')
         x = [-0.5, 3.5]
         y = [0, 0]
-        s, _, _ = _slice_from_path(x, y, self.d, 'x', slc)
+        s, _ = _slice_from_path(x, y, self.d, 'x', slc)
         assert_allclose(s, self.x[:, 0, :])
 
     def test_constant_x(self):
@@ -26,14 +26,14 @@ class TestSliceExtraction(object):
         slc = (0, 'y', 'x')
         y = [-0.5, 2.5]
         x = [0, 0]
-        s, _, _ = _slice_from_path(x, y, self.d, 'x', slc)
+        s, _ = _slice_from_path(x, y, self.d, 'x', slc)
         assert_allclose(s, self.x[:, :, 0])
 
     def test_transpose(self):
         slc = (0, 'x', 'y')
         y = [-0.5, 3.5]
         x = [0, 0]
-        s, _, _ = _slice_from_path(x, y, self.d, 'x', slc)
+        s, _ = _slice_from_path(x, y, self.d, 'x', slc)
         assert_allclose(s, self.x[:, 0, :])
 
 
@@ -72,6 +72,7 @@ class MockImageWidget(object):
     def __init__(self, slice, data):
         self.slice = slice
         self.data = data
+        self.wcs = None
         self.client = MagicMock()
 
 
@@ -82,8 +83,7 @@ class TestPVSliceWidget(object):
         self.d = Data(x=np.zeros((2, 3, 4)))
         self.slc = (0, 'y', 'x')
         self.image = MockImageWidget(self.slc, self.d)
-        self.w = PVSliceWidget(np.zeros((3, 4)),
-                               [0, 1, 2, 3], [0, 1, 2], self.image)
+        self.w = PVSliceWidget(image=np.zeros((3, 4)), wcs=None, image_widget=self.image)
 
     def test_basic(self):
         pass
