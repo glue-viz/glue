@@ -48,6 +48,9 @@ class GingaClient(ImageClient):
     def _update_axis_labels(self):
         pass
 
+    def set_cmap(self, cmap):
+        self._canvas.set_cmap(cmap)
+
 
 class GingaLayerArtist(LayerArtist):
     zorder = Pointer('_zorder')

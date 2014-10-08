@@ -1,17 +1,20 @@
 import logging
 import sys, traceback
+import os.path
 import numpy as np
 
 from ...external.qt.QtGui import (QAction, QLabel, QCursor, QMainWindow,
                                   QToolButton, QToolBar, QIcon, QMessageBox,
                                   QActionGroup, QMdiSubWindow, QWidget,
-                                  QVBoxLayout)
+                                  QVBoxLayout, QColor, QImage, QPixmap)
 
-from ...external.qt.QtCore import Qt, QRect
+from ...external.qt.QtCore import Qt, QRect, QSize
 
 from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
 from ginga.qtw import Readout, ColorBar
 from ginga.misc import log
+from ginga import cmap as ginga_cmap
+#ginga_cmap.add_matplotlib_cmaps()
 
 from .data_viewer import DataViewer
 from ... import core
@@ -32,6 +35,8 @@ from ..decorators import set_cursor
 from ..qtutil import cmap2pixmap, load_ui, get_icon, nonpartial
 from ..widget_properties import CurrentComboProperty, ButtonProperty
 
+ginga_home = os.path.split(sys.modules['ginga'].__file__)[0]
+ginga_icon_dir = os.path.join(ginga_home, 'icons')
 
 __all__ = ['GingaWidget']
 
@@ -146,6 +151,10 @@ class GingaWidget(DataViewer):
 
     def make_toolbar(self):
         tb = QToolBar(parent=self)
+        tb.setIconSize(QSize(25, 25))
+        tb.layout().setSpacing(1)
+        tb.setFocusPolicy(Qt.StrongFocus)
+
         agroup = QActionGroup(tb)
         agroup.setExclusive(True)
         for (mode_text, mode_icon, mode_cb) in self._mouse_modes():
@@ -155,29 +164,37 @@ class GingaWidget(DataViewer):
             action.toggled.connect(mode_cb)
             agroup.addAction(action)
 
-        action = tb.addAction("Pan")
+        action = tb.addAction(get_icon('glue_move'), "Pan")
         self.mode_actns['pan'] = action
         action.setCheckable(True)
         action.toggled.connect(lambda tf: self.mode_cb('pan', tf))
         agroup.addAction(action)
-        action = tb.addAction("Rotate")
+        icon = QIcon(os.path.join(ginga_icon_dir, 'hand_48.png'))
+        action = tb.addAction(icon, "Free Pan")
+        self.mode_actns['freepan'] = action
+        action.setCheckable(True)
+        action.toggled.connect(lambda tf: self.mode_cb('freepan', tf))
+        agroup.addAction(action)
+        icon = QIcon(os.path.join(ginga_icon_dir, 'rotate_48.png'))
+        action = tb.addAction(icon, "Rotate")
         self.mode_actns['rotate'] = action
         action.setCheckable(True)
         action.toggled.connect(lambda tf: self.mode_cb('rotate', tf))
         agroup.addAction(action)
-        action = tb.addAction("Contrast")
+        action = tb.addAction(get_icon('glue_contrast'), "Contrast")
         self.mode_actns['contrast'] = action
         action.setCheckable(True)
         action.toggled.connect(lambda tf: self.mode_cb('contrast', tf))
         agroup.addAction(action)
-        action = tb.addAction("Cuts")
+        icon = QIcon(os.path.join(ginga_icon_dir, 'cuts_48.png'))
+        action = tb.addAction(icon, "Cuts")
         self.mode_actns['cuts'] = action
         action.setCheckable(True)
         action.toggled.connect(lambda tf: self.mode_cb('cuts', tf))
         agroup.addAction(action)
 
-        #cmap = _colormap_mode(self, self.client.set_cmap)
-        #tb.addWidget(cmap)
+        cmap_w = _colormap_mode(self, self.client.set_cmap)
+        tb.addWidget(cmap_w)
         return tb
 
     def _mouse_modes(self):
@@ -226,12 +243,11 @@ class GingaWidget(DataViewer):
         self.roi_tag = tag
         obj = self.canvas.getObjectByTag(self.roi_tag)
         roi = self.ginga_graphic_to_roi(obj)
+        # delete outline
         self.canvas.deleteObject(obj, redraw=False)
         print "ROI is", roi
         try:
             self.apply_roi(roi)
-            # delete outline
-            #self.canvas.deleteObjectByTag(self.roi_tag)
         except Exception as e:
             print "Error applying ROI: %s" % (str(e))
             (type, value, tb) = sys.exc_info()
@@ -488,7 +504,7 @@ class GingaWidget(DataViewer):
         ## x, y = pos.x(), self.central_widget.height() - pos.y()
         ## self._update_intensity_label(x, y)
 
-    def motion_readout(self, canvas, button, data_x, data_y):
+    def motion_readout1(self, canvas, button, data_x, data_y):
 
         # Get the value under the data coordinates
         try:
@@ -521,19 +537,61 @@ class GingaWidget(DataViewer):
             ra_txt, dec_txt, fits_x, fits_y, value)
         self.readout.set_text(text)
 
+    def motion_readout(self, canvas, button, data_x, data_y):
+        """This method is called when the user moves the mouse around the Ginga
+        canvas.
+        """
+
+        d = self.client.point_details(data_x, data_y)
+
+        # Get the value under the data coordinates
+        try:
+            #value = fitsimage.get_data(data_x, data_y)
+            # We report the value across the pixel, even though the coords
+            # change halfway across the pixel
+            value = canvas.get_data(int(data_x+0.5), int(data_y+0.5))
+
+        except Exception:
+            value = None
+
+        x_lbl, y_lbl = d['labels'][0], d['labels'][1]
+        #x_txt, y_txt = d['world'][0], d['world'][1]
+        
+        text = "%s  %s  X=%.2f  Y=%.2f  Value=%s" % (
+            x_lbl, y_lbl, data_x, data_y, value)
+        self.readout.set_text(text)
+        
+
     def mode_cb(self, modname, tf):
-        print("%s mode %s" % (modname, tf))
+        """This method is called when a toggle button in the toolbar is pressed
+        selecting one of the modes.
+        """
+        #print("%s mode %s" % (modname, tf))
         bm = self.canvas.get_bindmap()
         if not tf:
             bm.reset_modifier(self.canvas)
-            self.mode_w = None
             return
         bm.set_modifier(modname, modtype='locked')
-        self.mode_w = self.mode_actns[modname]
         return True
     
-    def mode_set_cb(self, bm, mode, mtype):
-        if not (mode in self.mode_actns) and self.mode_w:
+    def mode_set_cb(self, bm, modname, mtype):
+        """This method is called when a mode is selected in the viewer widget.
+        NOTE: it may be called when mode_cb() is not called (for example, when
+        a keypress initiates a mode); however, the converse is not true: calling
+        mode_cb() will always result in this method also being called as a result.
+
+        This logic is to insure that the toggle buttons are left in a sane state
+        that reflects the current mode, however it was initiated.
+        """
+        #print("mode set %s" % (modname))
+        if modname in self.mode_actns:
+            if self.mode_w and (self.mode_w != self.mode_actns[modname]):
+                self.mode_w.setChecked(False)
+            self.mode_w = self.mode_actns[modname]
+            self.mode_w.setChecked(True)
+        elif self.mode_w:
+            # keystroke turned on a mode for which we have no GUI button
+            # and a GUI button is selected--unselect it
             self.mode_w.setChecked(False)
             self.mode_w = None
         return True
@@ -552,7 +610,9 @@ def _colormap_mode(parent, on_trigger):
 
     # actions for each colormap
     acts = []
-    for label, cmap in config.colormaps:
+    #for label, cmap in config.colormaps:
+    for label in ginga_cmap.get_names():
+        cmap = ginga_cmap.get_cmap(label)
         a = ColormapAction(label, cmap, parent)
         a.triggered.connect(nonpartial(on_trigger, cmap))
         acts.append(a)
@@ -807,3 +867,26 @@ def _slice_label(data, slc):
     """
     idx = _slice_index(data, slc)
     return data.get_world_component_id(idx).label
+
+def cmap2pixmap(cmap, steps=50):
+    """Convert a Ginga colormap into a QPixmap
+
+    :param cmap: The colormap to use
+    :type cmap: Ginga colormap instance (e.g. ginga.cmap.get_cmap('gray'))
+    :param steps: The number of color steps in the output. Default=50
+    :type steps: int
+
+    :rtype: QPixmap
+    """
+    inds = np.linspace(0, 1, steps)
+    n = len(cmap.clst) - 1
+    tups = [ cmap.clst[int(x*n)] for x in inds ]
+    rgbas = [QColor(int(r * 255), int(g * 255),
+                    int(b * 255), 255).rgba() for r, g, b in tups]
+    im = QImage(steps, 1, QImage.Format_Indexed8)
+    im.setColorTable(rgbas)
+    for i in range(steps):
+        im.setPixel(i, 0, i)
+    im = im.scaled(128, 32)
+    pm = QPixmap.fromImage(im)
+    return pm
