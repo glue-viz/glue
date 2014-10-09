@@ -129,15 +129,15 @@ class ImageWidget(DataViewer):
         Extract a PV-like slice, given a path traced on the widget
         """
         vx, vy = roi.to_polygon()
-        pv, x, y = _slice_from_path(vx, vy, self.data, self.attribute, self.slice)
+        pv_slice, wcs = _slice_from_path(vx, vy, self.data, self.attribute, self.slice)
         if self._slice_widget is None:
-            self._slice_widget = PVSliceWidget(pv, x, y, self,
+            self._slice_widget = PVSliceWidget(image=pv_slice, wcs=wcs, image_widget=self,
                                                interpolation='nearest')
             self._session.application.add_widget(self._slice_widget,
                                                  label='Custom Slice')
             self._slice_widget.window_closed.connect(self._path.clear)
         else:
-            self._slice_widget.set_image(pv, x, y, interpolation='nearest')
+            self._slice_widget.set_image(image=pv_slice, wcs=wcs, interpolation='nearest')
 
         result = self._slice_widget
         result.axes.set_xlabel("Position Along Slice")
@@ -457,7 +457,7 @@ class StandaloneImageWidget(QMainWindow):
     """
     window_closed = Signal()
 
-    def __init__(self, image, parent=None, **kwargs):
+    def __init__(self, image=None, wcs=None, parent=None, **kwargs):
         """
         :param image: Image to display (2D numpy array)
         :param parent: Parent widget (optional)
@@ -473,13 +473,16 @@ class StandaloneImageWidget(QMainWindow):
         self._norm = DS9Normalize()
 
         self.make_toolbar()
-        self.set_image(image, **kwargs)
+
+        if image is not None:
+            self.set_image(image=image, wcs=wcs, **kwargs)
 
     def _setup_axes(self):
-        self._axes = self.central_widget.canvas.fig.add_subplot(111)
+        from ...clients.viz_client import init_mpl
+        _, self._axes = init_mpl(self.central_widget.canvas.fig, axes=None, wcs=True)
         self._axes.set_aspect('equal', adjustable='datalim')
 
-    def set_image(self, image, **kwargs):
+    def set_image(self, image=None, wcs=None, **kwargs):
         """
         Update the image shown in the widget
         """
@@ -489,9 +492,11 @@ class StandaloneImageWidget(QMainWindow):
 
         kwargs.setdefault('origin', 'upper')
 
-        self._im = imshow(self._axes, image,
-                          norm=self._norm, cmap='gray', **kwargs)
+        if wcs is not None:
+            self._axes.reset_wcs(wcs)
+        self._im = imshow(self._axes, image, norm=self._norm, cmap='gray', **kwargs)
         self._im_array = image
+        self._wcs = wcs
         self._axes.set_xticks([])
         self._axes.set_yticks([])
         self._redraw()
@@ -560,17 +565,16 @@ class PVSliceWidget(StandaloneImageWidget):
 
     """ A standalone image widget with extra interactivity for PV slices """
 
-    def __init__(self, image, x, y, image_widget, **kwargs):
+    def __init__(self, image=None, wcs=None, image_widget=None, **kwargs):
         """
         :param image: 2D Numpy array representing the PV Slice
-        :param x: X coordinate for each horizontal position
-        :param y: Y coordinate for each horizontal position
+        :param wcs: WCS for the PV slice
         :param image_widget: Parent widget this was extracted from
         :param kwargs: Extra keywords are passed to imshow
         """
         self._crosshairs = None
         self._parent = image_widget
-        super(PVSliceWidget, self).__init__(image, x=x, y=y, **kwargs)
+        super(PVSliceWidget, self).__init__(image=image, wcs=wcs, **kwargs)
         conn = self.axes.figure.canvas.mpl_connect
         self._down_id = conn('button_press_event', self._on_click)
         self._move_id = conn('motion_notify_event', self._on_move)
@@ -583,6 +587,7 @@ class PVSliceWidget(StandaloneImageWidget):
         :param x: x pixel location in slice array
         :param y: y pixel location in slice array
         """
+
         # xy -> xyz in image view
         pix = self._pos_in_parent(xdata=x, ydata=y)
 
@@ -597,14 +602,12 @@ class PVSliceWidget(StandaloneImageWidget):
         labels = self._parent.client.coordinate_labels(s)
         return '         '.join(labels)
 
-    def set_image(self, im, x, y, **kwargs):
-        super(PVSliceWidget, self).set_image(im, **kwargs)
+    def set_image(self, image=None, wcs=None, **kwargs):
+        super(PVSliceWidget, self).set_image(image=image, wcs=wcs, **kwargs)
         self._axes.set_aspect('auto')
-        self._axes.set_xlim(0, im.shape[1])
-        self._axes.set_ylim(0, im.shape[0])
+        self._axes.set_xlim(-0.5, image.shape[1]-0.5)
+        self._axes.set_ylim(-0.5, image.shape[0]-0.5)
         self._slc = self._parent.slice
-        self._x = x
-        self._y = y
 
     @defer_draw
     def _sync_slice(self, event):
@@ -641,12 +644,7 @@ class PVSliceWidget(StandaloneImageWidget):
         if event is not None:
             xdata = event.xdata
             ydata = event.ydata
-        ind = np.clip(xdata, 0, self._im_array.shape[1] - 1)
-        x = self._x[ind]
-        y = self._y[ind]
-        z = ydata
-
-        return x, y, z
+        return xdata, ydata, ydata
 
     def _on_click(self, event):
         if not event.inaxes or event.canvas.toolbar.mode != '':
@@ -691,6 +689,8 @@ def _slice_from_path(x, y, data, attribute, slc):
     s = list(slc)
     ind = _slice_index(data, slc)
 
+    cube_wcs = getattr(data.coords, 'wcs', None)
+
     # transpose cube to (z, y, x, <whatever>)
     def _swap(x, s, i, j):
         x[i], x[j] = x[j], x[i]
@@ -708,9 +708,13 @@ def _slice_from_path(x, y, data, attribute, slc):
     # sample cube
     spacing = 1  # pixel
     x, y = [np.round(_x).astype(int) for _x in p.sample_points(spacing)]
-    result = extract_pv_slice(cube, p, order=0).data
+    result = extract_pv_slice(cube, path=p, wcs=cube_wcs, order=0)
 
-    return result, x, y
+    from astropy.wcs import WCS
+    data = result.data
+    wcs = WCS(result.header)
+
+    return data, wcs
 
 
 def _slice_label(data, slc):
