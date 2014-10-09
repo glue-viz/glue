@@ -565,11 +565,10 @@ class PVSliceWidget(StandaloneImageWidget):
 
     """ A standalone image widget with extra interactivity for PV slices """
 
-    def __init__(self, image=None, x=None, y=None, wcs=None, image_widget=None, **kwargs):
+    def __init__(self, image=None, wcs=None, image_widget=None, **kwargs):
         """
         :param image: 2D Numpy array representing the PV Slice
-        :param x: X coordinate for each horizontal position
-        :param y: Y coordinate for each horizontal position
+        :param wcs: WCS for the PV slice
         :param image_widget: Parent widget this was extracted from
         :param kwargs: Extra keywords are passed to imshow
         """
