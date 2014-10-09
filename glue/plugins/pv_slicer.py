@@ -15,33 +15,34 @@ class PVSlicerTool(object):
         return [self._path]
 
     def _slice(self, mode):
-        _extract_pv_slice(self._path, self.widget, mode.roi())
+        self._extract_pv_slice(self._path, self.widget, mode.roi())
 
     def _display_data_hook(self, data):
         if data is not None:
             self._path.enabled = data.ndim > 2
 
 
-def _extract_pv_slice(path, widget, roi):
-    """
-    Extract a PV-like slice, given a path traced on the widget
-    """
-    vx, vy = roi.to_polygon()
-    pv_slice, wcs = _slice_from_path(vx, vy, widget.data, widget.attribute, widget.slice)
-    if widget._slice_widget is None:
-        widget._slice_widget = PVSliceWidget(image=pv_slice, wcs=wcs, image_widget=widget,
-                                           interpolation='nearest')
-        widget._session.application.add_widget(widget._slice_widget,
-                                             label='Custom Slice')
-        widget._slice_widget.window_closed.connect(path.clear)
-    else:
-        widget._slice_widget.set_image(image=pv_slice, wcs=wcs, interpolation='nearest')
+    def _extract_pv_slice(self, path, widget, roi):
+        """
+        Extract a PV-like slice, given a path traced on the widget
+        """
+        vx, vy = roi.to_polygon()
+        pv_slice, wcs = _slice_from_path(vx, vy, widget.data, widget.attribute, widget.slice)
+        print("HERE", self._slice_widget)
+        if self._slice_widget is None:
+            self._slice_widget = PVSliceWidget(image=pv_slice, wcs=wcs, image_widget=widget,
+                                               interpolation='nearest')
+            widget._session.application.add_widget(self._slice_widget,
+                                                 label='Custom Slice')
+            self._slice_widget.window_closed.connect(path.clear)
+        else:
+            self._slice_widget.set_image(image=pv_slice, wcs=wcs, interpolation='nearest')
 
-    result = widget._slice_widget
-    result.axes.set_xlabel("Position Along Slice")
-    result.axes.set_ylabel(_slice_label(widget.data, widget.slice))
+        result = self._slice_widget
+        result.axes.set_xlabel("Position Along Slice")
+        result.axes.set_ylabel(_slice_label(widget.data, widget.slice))
 
-    result.show()
+        result.show()
 
 
 class PVSliceWidget(StandaloneImageWidget):
