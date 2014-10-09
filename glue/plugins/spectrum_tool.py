@@ -12,18 +12,18 @@ from ..external.qt.QtGui import (QMainWindow, QWidget,
                                  QLabel, QMdiSubWindow)
 
 from ..clients.profile_viewer import ProfileViewer
-from .widgets.mpl_widget import MplWidget
-from .mouse_mode import SpectrumExtractorMode
+from ..qt.widgets.mpl_widget import MplWidget
+from ..qt.mouse_mode import SpectrumExtractorMode
 from ..core.callback_property import add_callback, ignore_callback
 from ..core.util import Pointer
 from ..core import Subset
 from ..core.exceptions import IncompatibleAttribute
-from .glue_toolbar import GlueToolbar
-from .qtutil import load_ui, nonpartial, Worker
-from .widget_properties import CurrentComboProperty
+from ..qt.glue_toolbar import GlueToolbar
+from ..qt.qtutil import load_ui, nonpartial, Worker
+from ..qt.widget_properties import CurrentComboProperty
 from ..core.aggregate import Aggregate
-from .mime import LAYERS_MIME_TYPE
-from .simpleforms import build_form_item
+from ..qt.mime import LAYERS_MIME_TYPE
+from ..qt.simpleforms import build_form_item
 from ..config import fit_plugin
 from ..external.six.moves import range as xrange
 
@@ -725,3 +725,10 @@ class SpectrumTool(object):
 
     def hide(self):
         self.widget.close()
+
+    def _get_modes(self, axes):
+        return [self.mouse_mode]
+
+    def _display_data_hook(self, data):
+        if data is not None:
+            self.mouse_mode.enabled = data.ndim > 2
