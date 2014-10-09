@@ -2,9 +2,11 @@ import numpy as np
 from numpy.testing import assert_allclose
 from mock import MagicMock
 
-from ..image_widget import (_slice_from_path, _slice_label, _slice_index,
-                            StandaloneImageWidget, PVSliceWidget)
-from ....core import Data
+from ..pv_slicer import _slice_from_path, _slice_label, _slice_index, PVSliceWidget
+
+from ...qt.widgets.image_widget import StandaloneImageWidget
+
+from ...core import Data
 
 from ....tests.helpers import requires_astropy
 
