@@ -1,5 +1,8 @@
+# Licensed under a 3-clause BSD style license - see LICENSE.rst
 import numpy as np
+
 from astropy import units as u
+from astropy.extern import six
 
 # Modified from axis_artist, supports astropy.units
 
@@ -90,7 +93,27 @@ def select_step_scalar(dv):
     return 10. ** (base + steps[imin])
 
 
-def get_coordinate_system(wcs):
+FRAME_IDENTIFIERS = []
+
+def register_frame_identifier(func):
+    """
+    Register a function that can identify frames from WCS objects.
+
+    This should be a function that takes an :class:`~astropy.wcs.WCS` object
+    and returns an `astropy.coordinates`-compatible frame class, or `None` if
+    no match was found.
+    """
+    FRAME_IDENTIFIERS.append(func)
+
+
+def reset_frame_identifiers():
+    """
+    Remove any registered frame identifiers.
+    """
+    global FRAME_IDENTIFIERS
+    FRAME_IDENTIFIERS = []
+
+def get_coordinate_frame(wcs):
     """
     Given a WCS object for a pair of spherical coordinates, return the
     corresponding astropy coordinate class.
@@ -106,9 +129,46 @@ def get_coordinate_system(wcs):
     elif xcoord == 'GLON' and ycoord == 'GLAT':
         coordinate_class = Galactic
     else:
-        raise ValueError("System not supported (yet): {0}/{1}".format(xcoord, ycoord))
+        coordinate_class = None
+        for ident in FRAME_IDENTIFIERS:
+            coordinate_class = ident(wcs)
+            if coordinate_class is not None:
+                break
+        if coordinate_class is None:
+            raise ValueError("Frame not supported: {0}/{1}".format(wcs.wcs.ctype[0],
+                                                                   wcs.wcs.ctype[1]))
 
     return coordinate_class
+
+
+def get_coord_meta(frame):
+
+    coord_meta = {}
+    coord_meta['type'] = ('longitude', 'latitude')
+    coord_meta['wrap'] = (None, None)
+    coord_meta['unit'] = (u.deg, u.deg)
+
+    try:
+
+        from astropy.coordinates import frame_transform_graph
+
+        if isinstance(frame, six.string_types):
+            frame = frame_transform_graph.lookup_name(frame)
+
+        names = list(frame().representation_component_names.keys())
+        coord_meta['name'] = names[:2]
+
+    except ImportError:
+
+        if isinstance(frame, six.string_types):
+            if frame in ('fk4', 'fk5', 'icrs'):
+                coord_meta['name'] = ('ra', 'dec')
+            elif frame == 'galactic':
+                coord_meta['name'] = ('l', 'b')
+            else:
+                raise ValueError("Unknown frame: {0}".format(frame))
+
+    return coord_meta
 
 
 def coord_type_from_ctype(ctype):
@@ -116,9 +176,11 @@ def coord_type_from_ctype(ctype):
     Determine whether a particular WCS ctype corresponds to an angle or scalar
     coordinate.
     """
-    if ctype[:4] in ['RA--', 'HPLN'] or ctype[1:4] == 'LON':
-        return 'longitude'
+    if ctype[:4] in ['RA--'] or ctype[1:4] == 'LON':
+        return 'longitude', None
+    elif ctype[:4] in ['HPLN']:
+        return 'longitude', 180.
     elif ctype[:4] in ['DEC-', 'HPLT'] or ctype[1:4] == 'LAT':
-        return 'latitude'
+        return 'latitude', None
     else:
-        return 'scalar'
+        return 'scalar', None

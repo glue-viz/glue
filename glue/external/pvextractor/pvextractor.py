@@ -3,11 +3,12 @@ from __future__ import print_function
 import numpy as np
 
 from astropy import units as u
+from astropy.extern import six
 from astropy.io.fits import PrimaryHDU, ImageHDU, Header
 
-from . import six
 from .utils.wcs_utils import get_spatial_scale, sanitize_wcs
 from .geometry import extract_slice
+from .geometry import path as paths
 from .utils.wcs_slicing import slice_wcs
 
 
@@ -29,7 +30,7 @@ def extract_pv_slice(cube, path, wcs=None, spacing=1.0, order=3,
         :class:`~numpy.ndarray` instance, the WCS information can optionally
         be specified with the ``wcs`` parameter. If a string, it should be
         the name of a file containing a spectral cube.
-    path : `Path`
+    path : `Path` or list of 2-tuples
         The path along which to define the position-velocity slice. The path
         can contain coordinates defined in pixel or world coordinates.
     wcs : :class:`~astropy.wcs.WCS`, optional
@@ -51,8 +52,8 @@ def extract_pv_slice(cube, path, wcs=None, spacing=1.0, order=3,
 
     Returns
     -------
-    slice : `numpy.ndarray`
-        The position-velocity slice
+    slice : `PrimaryHDU`
+        The position-velocity slice, as a FITS HDU object
     """
 
     if isinstance(cube, (six.string_types, ImageHDU, PrimaryHDU)):
@@ -66,9 +67,9 @@ def extract_pv_slice(cube, path, wcs=None, spacing=1.0, order=3,
 
     if _is_spectral_cube(cube):
         wcs = cube.wcs
-        cube = cube.filled_data[...]
-    else:
-        wcs = None
+        # The fits HEADER will preserve the UNIT, but pvextractor does not care
+        # what the flux units are
+        cube = cube.filled_data[...].value
 
     if wcs is not None:
         wcs = sanitize_wcs(wcs)
@@ -88,7 +89,12 @@ def extract_pv_slice(cube, path, wcs=None, spacing=1.0, order=3,
             pixel_spacing = spacing
             world_spacing = None
 
-    pv_slice = extract_slice(cube, path, wcs=wcs, spacing=pixel_spacing, order=order, respect_nan=respect_nan)
+    # Allow path to be passed in as list of 2-tuples
+    if not isinstance(path, paths.Path):
+        path = paths.Path(path)
+
+    pv_slice = extract_slice(cube, path, wcs=wcs, spacing=pixel_spacing,
+                             order=order, respect_nan=respect_nan)
 
     # Generate output header
     if wcs is None:
