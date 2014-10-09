@@ -59,14 +59,9 @@ class ImageWidget(DataViewer):
                                   self.central_widget.canvas.fig,
                                   artist_container=self._container)
 
-        from ...plugins.pv_slicer import PVSlicerTool
-        from ...plugins.spectrum_tool import SpectrumTool
-
-        DEFAULT_TOOLS = [PVSlicerTool, SpectrumTool]
-
         # Initialize plug-in tools
         self._tools = []
-        for tool in DEFAULT_TOOLS:
+        for tool in config.tool_registry:
             self._tools.append(tool(self))
 
         self._tweak_geometry()

@@ -309,6 +309,14 @@ class ProfileFitterRegistry(Registry):
         return list(__FITTERS__)
 
 
+class ToolRegistry(Registry):
+
+    def default_members(self):
+        from .plugins.pv_slicer import PVSlicerTool
+        from .plugins.spectrum_tool import SpectrumTool
+        return [SpectrumTool, PVSlicerTool]
+
+
 class BooleanSetting(object):
 
     def __init__(self, default=True):
@@ -331,6 +339,7 @@ colormaps = ColormapRegistry()
 exporters = ExporterRegistry()
 settings = SettingRegistry()
 fit_plugin = ProfileFitterRegistry()
+tool_registry = ToolRegistry()
 
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)
