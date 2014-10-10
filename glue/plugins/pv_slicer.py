@@ -21,14 +21,12 @@ class PVSlicerTool(object):
         if data is not None:
             self._path.enabled = data.ndim > 2
 
-
     def _extract_pv_slice(self, path, widget, roi):
         """
         Extract a PV-like slice, given a path traced on the widget
         """
         vx, vy = roi.to_polygon()
         pv_slice, wcs = _slice_from_path(vx, vy, widget.data, widget.attribute, widget.slice)
-        print("HERE", self._slice_widget)
         if self._slice_widget is None:
             self._slice_widget = PVSliceWidget(image=pv_slice, wcs=wcs, image_widget=widget,
                                                interpolation='nearest')
