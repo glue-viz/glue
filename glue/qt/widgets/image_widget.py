@@ -8,7 +8,6 @@ from ...external.qt.QtCore import Qt, QRect, Signal
 
 from .data_viewer import DataViewer
 from ... import core
-from ... import config
 
 from ...clients.image_client import ImageClient
 from ...clients.ds9norm import DS9Normalize
@@ -59,10 +58,7 @@ class ImageWidget(DataViewer):
                                   self.central_widget.canvas.fig,
                                   artist_container=self._container)
 
-        # Initialize plug-in tools
-        self._tools = []
-        for tool in config.tool_registry:
-            self._tools.append(tool(self))
+        self._setup_tools()
 
         self._tweak_geometry()
 
@@ -73,6 +69,12 @@ class ImageWidget(DataViewer):
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
         self._slice_widget = None
+
+    def _setup_tools(self):
+        from ... import config
+        self._tools = []
+        for tool in config.tool_registry.get_tools(self.__class__):
+            self._tools.append(tool(self))
 
     def _tweak_geometry(self):
         self.central_widget.resize(600, 400)
@@ -404,6 +406,8 @@ class ColormapAction(QAction):
 
 
 def _colormap_mode(parent, on_trigger):
+
+    from ... import config
 
     # actions for each colormap
     acts = []

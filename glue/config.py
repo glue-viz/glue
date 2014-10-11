@@ -312,10 +312,34 @@ class ProfileFitterRegistry(Registry):
 class ToolRegistry(Registry):
 
     def default_members(self):
+
         from .plugins.pv_slicer import PVSlicerTool
         from .plugins.spectrum_tool import SpectrumTool
-        return [SpectrumTool, PVSlicerTool]
+        from .qt.widgets.image_widget import ImageWidget
 
+        return [(SpectrumTool, ImageWidget), (PVSlicerTool, ImageWidget)]
+
+    def add(self, tool_cls, restrict_to=None):
+        """
+        Add a tool class to the registry, optionally specifying which widget
+        class it should apply to (``restrict_to``). if ``restrict_to`` is set
+        to `None`, the tool applies to all classes.
+        """
+        self.members.append((tool_cls, widget_cls))
+
+    def get_tools(self, requested_widget_cls, allow_subclass=True):
+
+        tools = []
+        for (tool_cls, widget_cls) in self.members:
+
+            if widget_cls is None or widget_cls is requested_widget_cls:
+                tools.append(tool_cls)
+
+            if allow_subclass:
+                if issubclass(requested_widget_cls, widget_cls):
+                    tools.append(tool_cls)
+
+        return tools
 
 class BooleanSetting(object):
 
