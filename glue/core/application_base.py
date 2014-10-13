@@ -51,7 +51,6 @@ class Application(HubListener):
         self._settings = {}
         for key, value, validator in settings:
             self._settings[key] = [value, validator]
-        self._load_settings()
 
     @property
     def session(self):
@@ -124,9 +123,6 @@ class Application(HubListener):
         """Iterate over settings"""
         for key, (value, _) in self._settings.items():
             yield key, value
-
-    def _load_settings(self, path=None):
-        raise NotImplementedError()
 
     @catch_error("Could not load data")
     def load_data(self, path):
