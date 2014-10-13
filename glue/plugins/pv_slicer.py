@@ -9,36 +9,34 @@ class PVSlicerTool(object):
 
     def __init__(self, widget=None):
         self.widget = widget
+        self._slice_widget = None
 
     def _get_modes(self, axes):
-        self._path = PathMode(axes, roi_callback=self._slice)
+        self._path = PathMode(axes, roi_callback=self._extract_pv_slice)
         return [self._path]
-
-    def _slice(self, mode):
-        self._extract_pv_slice(self._path, self.widget, mode.roi())
 
     def _display_data_hook(self, data):
         if data is not None:
             self._path.enabled = data.ndim > 2
 
-    def _extract_pv_slice(self, path, widget, roi):
+    def _extract_pv_slice(self, mode):
         """
         Extract a PV-like slice, given a path traced on the widget
         """
-        vx, vy = roi.to_polygon()
-        pv_slice, wcs = _slice_from_path(vx, vy, widget.data, widget.attribute, widget.slice)
+        vx, vy = mode.roi().to_polygon()
+        pv_slice, wcs = _slice_from_path(vx, vy, self.widget.data, self.widget.attribute, self.widget.slice)
         if self._slice_widget is None:
-            self._slice_widget = PVSliceWidget(image=pv_slice, wcs=wcs, image_widget=widget,
+            self._slice_widget = PVSliceWidget(image=pv_slice, wcs=wcs, image_widget=self.widget,
                                                interpolation='nearest')
-            widget._session.application.add_widget(self._slice_widget,
+            self.widget._session.application.add_widget(self._slice_widget,
                                                  label='Custom Slice')
-            self._slice_widget.window_closed.connect(path.clear)
+            self._slice_widget.window_closed.connect(self._path.clear)
         else:
             self._slice_widget.set_image(image=pv_slice, wcs=wcs, interpolation='nearest')
 
         result = self._slice_widget
         result.axes.set_xlabel("Position Along Slice")
-        result.axes.set_ylabel(_slice_label(widget.data, widget.slice))
+        result.axes.set_ylabel(_slice_label(self.widget.data, self.widget.slice))
 
         result.show()
 
