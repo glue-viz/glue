@@ -334,8 +334,7 @@ class ToolRegistry(Registry):
 
             if widget_cls is None or widget_cls is requested_widget_cls:
                 tools.append(tool_cls)
-
-            if allow_subclass:
+            elif allow_subclass:
                 if issubclass(requested_widget_cls, widget_cls):
                     tools.append(tool_cls)
 
