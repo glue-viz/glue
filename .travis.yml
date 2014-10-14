@@ -66,6 +66,7 @@ deploy:
      branch:
        - master
        - staging
+       - stable
      condition:
        - "$TRAVIS_SECURE_ENV_VARS = true"
        - "$DOC_TRIGGER = 1"
