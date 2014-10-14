@@ -8,7 +8,7 @@ from ...qt.widgets.image_widget import StandaloneImageWidget
 
 from ...core import Data
 
-from ....tests.helpers import requires_astropy
+from ...tests.helpers import requires_astropy
 
 
 @requires_astropy
