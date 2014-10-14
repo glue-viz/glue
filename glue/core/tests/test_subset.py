@@ -21,6 +21,8 @@ from ..message import SubsetDeleteMessage
 from ..registry import Registry
 from .test_state import clone
 
+from ...tests.helpers import requires_astropy
+
 
 class TestSubset(object):
 
@@ -304,6 +306,7 @@ class TestSubsetIo(object):
         inds = np.array([1, 2, 3])
         self.subset.subset_state = ElementSubsetState(indices=inds)
 
+    @requires_astropy
     def test_write(self):
         fobj, tmp = tempfile.mkstemp()
 
@@ -316,6 +319,7 @@ class TestSubsetIo(object):
                              [0, 0, 0, 0]], dtype=np.int16)
         np.testing.assert_array_equal(data, expected)
 
+    @requires_astropy
     def test_read(self):
         fobj, tmp = tempfile.mkstemp()
 
@@ -326,6 +330,7 @@ class TestSubsetIo(object):
         mask2 = sub2.to_mask()
         np.testing.assert_array_equal(mask1, mask2)
 
+    @requires_astropy
     def test_read_error(self):
         with pytest.raises(IOError) as exc:
             self.subset.read_mask('file_does_not_exist')

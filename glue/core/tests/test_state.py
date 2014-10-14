@@ -18,6 +18,8 @@ from ..data_factories import load_data
 from .test_data_factories import TEST_FITS_DATA
 from io import BytesIO
 
+from ...tests.helpers import requires_astropy
+
 
 def clone(object):
     gs = GlueSerializer(object)
@@ -105,6 +107,7 @@ def test_data_style():
     assert d2.style.color == 'blue'
 
 
+@requires_astropy
 def test_data_factory():
     with make_file(TEST_FITS_DATA, '.fits', decompress=True) as infile:
         d = load_data(infile)
@@ -117,6 +120,7 @@ def test_save_numpy_scalar():
     assert clone(np.float32(5)) == 5
 
 
+@requires_astropy
 def tests_data_factory_double():
     # ensure double-cloning doesn't somehow lose lightweight references
     from astropy.io import fits

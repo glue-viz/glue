@@ -6,7 +6,10 @@ from ..image_widget import (_slice_from_path, _slice_label, _slice_index,
                             StandaloneImageWidget, PVSliceWidget)
 from ....core import Data
 
+from ....tests.helpers import requires_astropy
 
+
+@requires_astropy
 class TestSliceExtraction(object):
 
     def setup_method(self, method):

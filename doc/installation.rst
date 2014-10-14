@@ -59,14 +59,31 @@ Dependencies
 ^^^^^^^^^^^^
 .. _glue-deps:
 
-Glue has a few essential dependencies (like PyQT4 or PySide and
-numpy), and several recommended dependencies to support various I/O
-and optional functionality. Glue includes a command line utility
-``glue-deps`` to manage these dependencies.
+Glue has the following required dependencies:
 
-Calling ``glue-deps list`` displays all of Glue's required and optional dependencies, along with whether or not each library is already installed on your system. For missing dependencies, the program also provides a brief description of how it is used within Glue.
+* Python 2.6, 2.7, or 3.3 and higher
+* `Numpy <http://www.numpy.org>`_
+* `Matplotlib <http://www.matplotlib.org>`_
+* `Pandas <http://pandas.pydata.org/>`_
+* Either `PyQt4 <http://www.riverbankcomputing.com/software/pyqt/intro>`_ or `PySide <http://qt-project.org/wiki/PySide>`_
 
-Calling ``glue-deps install`` attempts to ``pip install`` all missing libraries. You can install single libraries or categories of libraries by providing additional arguments to ``glue-deps install``.
+And the following optional dependencies are also highly recommended:
+
+* `SciPy <http://www.scipy.org>`_
+* `Astropy <http://www.astropy.org>`_
+
+In addition to these, there are several other optional dependencies to suport
+various I/O and other optional functionality. Glue includes a command line
+utility ``glue-deps`` to manage dependencies:
+
+* Calling ``glue-deps list`` displays all of Glue's required and optional
+  dependencies, along with whether or not each library is already installed on
+  your system. For missing dependencies, the program also provides a brief
+  description of how it is used within Glue.
+
+* Calling ``glue-deps install`` attempts to ``pip install`` all missing
+  libraries. You can install single libraries or categories of libraries by
+  providing additional arguments to ``glue-deps install``.
 
 Tips for Ubuntu
 ^^^^^^^^^^^^^^^

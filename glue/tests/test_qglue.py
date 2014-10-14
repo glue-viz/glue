@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
-from astropy.table import Table
 import pandas as pd
 
 from mock import patch, MagicMock
@@ -13,10 +12,16 @@ from ..core.exceptions import IncompatibleAttribute
 from ..core import Data
 from ..qt.glue_application import GlueApplication
 
+from .helpers import requires_astropy
 
+
+@requires_astropy
 class TestQGlue(object):
 
     def setup_method(self, method):
+
+        from astropy.table import Table
+
         Registry().clear()
 
         x = [1, 2, 3]

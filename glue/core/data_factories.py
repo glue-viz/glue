@@ -570,14 +570,22 @@ def panda_process(indf):
     result = Data()
     for name, column in indf.iteritems():
         if (column.dtype == np.object) | (column.dtype == np.bool):
-            # pandas has a 'special' nan implementation and this doesn't
-            # play well with np.unique
-            c = CategoricalComponent(column.fillna(''))
+            # try to salvage numerical data
+            coerced = column.convert_objects(convert_numeric=True)
+            if (coerced.dtype != column.dtype) and coerced.isnull().mean() < 0.4:
+                c = Component(coerced.values)
+            else:
+                # pandas has a 'special' nan implementation and this doesn't
+                # play well with np.unique
+                c = CategoricalComponent(column.fillna(''))
         else:
             c = Component(column.values)
-        if name.startswith('#'):
-            name = name[1:]
+
+        # strip off leading #
         name = name.strip()
+        if name.startswith('#'):
+            name = name[1:].strip()
+
         result.add_component(c, name)
 
     return result

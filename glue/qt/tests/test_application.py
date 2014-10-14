@@ -25,6 +25,9 @@ from ...core import Data
 
 from ...external.six import PY3
 
+from ...tests.helpers import requires_ipython_ge_012
+
+
 
 def tab_count(app):
     return app.tab_bar.count()
@@ -72,7 +75,7 @@ class TestGlueApplication(object):
                     self.app._choose_save_session()
                     assert mb.call_count == 1
 
-    @pytest.mark.xfail("LooseVersion(ipy_version) <= LooseVersion('0.11')")
+    @requires_ipython_ge_012
     def test_terminal_present(self):
         """For good setups, terminal is available"""
         if not self.app.has_terminal():
@@ -106,7 +109,7 @@ class TestGlueApplication(object):
         except:
             return False
 
-    @pytest.mark.xfail("LooseVersion(ipy_version) <= LooseVersion('0.11')")
+    @requires_ipython_ge_012
     def test_toggle_terminal(self):
         term = MagicMock()
         self.app._terminal = term
