@@ -62,6 +62,11 @@ def _make_selector(roi, c):
     make_selector(roi=roi, c=c)
     return SubsetState()
 
+def test_custom_classes_dont_share_methods():
+    """Regression test for #479"""
+    a = custom_viewer('a')
+    b = custom_viewer('b')
+    assert a._custom_functions is not b._custom_functions
 
 class ViewerSubclass(CustomViewer):
     a = (0, 100)

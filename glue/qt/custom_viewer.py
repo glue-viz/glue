@@ -378,6 +378,7 @@ class CustomViewer(object):
         """
         kwargs = kwargs.copy()
         kwargs['name'] = name
+        kwargs['_custom_functions'] = {}
         name = name.replace(' ', '')
         return CustomMeta(name, (CustomViewer,), kwargs)
 
