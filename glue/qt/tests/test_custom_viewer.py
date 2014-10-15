@@ -77,11 +77,23 @@ class ViewerSubclass(CustomViewer):
     f = ['a', 'b', 'c']
     g = OrderedDict(a=1, b=2, c=3)
 
-    setup = _setup
-    plot_data = _plot_data
-    plot_subset = _plot_subset
-    settings_changed = _settings_changed
-    make_selector = _make_selector
+    def setup(self, axes):
+        setup(axes)
+
+    def plot_data(self, axes, a, b, g):
+        plot_data(axes=axes, a=a, b=b, g=g)
+        return []
+
+    def plot_subset(self, b, c, d, e, f, style):
+        plot_subset(b=b, c=c, d=d, e=e, f=f, style=style)
+        return []
+
+    def _settings_changed(self, state):
+        settings_changed(state=state)
+
+    def _make_selector(self, roi, c):
+        make_selector(roi=roi, c=c)
+        return SubsetState()
 
 
 class TestCustomViewer(object):
