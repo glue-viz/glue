@@ -61,10 +61,12 @@ Internally, Glue accomlishes this magic as follows:
  `FormElement`s are created for each attribute in (1). They build the widget
   and have a method of extracting the current value of the widget
 
- Instead of calling methods like CustomViewer.plot_data directly,
- internal glue code calls CustomViewer._plot_data. These methods
- handle all the logic in (2) -- they introspect the user-defined functions,
- and call them with the appropriate arguments
+ Functions like `plot_data` that are designed to be overriden by users
+ are defined as custom descriptors -- when called at the class level,
+ they become decorators that wrap and register the user-defined function.
+ When called at the instance level, they become dispatch functions which
+ deal with the logic in (2). The metaclass deals with registering
+ UDFs when they are overridden in a subclass.
 """
 
 from inspect import getmodule, getargspec
