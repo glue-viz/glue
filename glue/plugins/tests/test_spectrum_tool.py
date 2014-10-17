@@ -5,9 +5,9 @@ from mock import MagicMock
 from ...core.tests.util import simple_session
 from ...core import Data, Coordinates
 from ...core.roi import RectangularROI
-from ..widgets import ImageWidget
+from ...qt.widgets import ImageWidget
 
-from ..spectrum_tool import Extractor, ConstraintsWidget, FitSettingsWidget
+from ..spectrum_tool import Extractor, ConstraintsWidget, FitSettingsWidget, SpectrumTool
 from ...core.fitters import PolynomialFitter
 
 needs_modeling = lambda x: x
@@ -37,7 +37,12 @@ class TestSpectrumTool(object):
         self.image.add_data(d)
         self.image.data = d
         self.image.attribute = d.id['x']
-        self.tool = self.image._spectrum_tool
+        for tool in self.image._tools:
+            if isinstance(tool, SpectrumTool):
+                self.tool = tool
+                break
+        else:
+            raise Exception("SpectrumTool not found")
         self.tool.show = lambda *args: None
 
     def build_spectrum(self):
