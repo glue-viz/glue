@@ -78,22 +78,19 @@ class ViewerSubclass(CustomViewer):
     g = OrderedDict(a=1, b=2, c=3)
 
     def setup(self, axes):
-        setup(axes)
+        return setup(axes)
 
     def plot_data(self, axes, a, b, g):
-        plot_data(axes=axes, a=a, b=b, g=g)
-        return []
+        return plot_data(axes=axes, a=a, b=b, g=g)
 
     def plot_subset(self, b, c, d, e, f, style):
-        plot_subset(b=b, c=c, d=d, e=e, f=f, style=style)
-        return []
+        return plot_subset(b=b, c=c, d=d, e=e, f=f, style=style)
 
-    def _settings_changed(self, state):
-        settings_changed(state=state)
+    def settings_changed(self, state):
+        return settings_changed(state=state)
 
-    def _make_selector(self, roi, c):
-        make_selector(roi=roi, c=c)
-        return SubsetState()
+    def make_selector(self, roi, c):
+        return make_selector(roi=roi, c=c)
 
 
 class TestCustomViewer(object):
@@ -127,6 +124,13 @@ class TestCustomViewer(object):
         ct = setup.call_count
         self.build()
         assert setup.call_count == ct + 1
+
+    def test_separate_widgets_have_separate_state(self):
+        w1 = self.build()
+        w2 = self.build()
+
+        assert w1._coordinator is not w2._coordinator
+        assert w1._coordinator.state is not w2._coordinator.state
 
     def test_plot_data(self):
         w = self.build()

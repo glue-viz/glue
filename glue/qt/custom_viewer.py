@@ -10,9 +10,61 @@ The end user typically interacts with this code via
 
 from __future__ import print_function, division
 
-from collections import namedtuple
+
+"""
+Implementation notes:
+
+Here's a high-level summary of how this code works right now:
+
+The user creates a custom viewer using either of the following
+syntaxes:
+
+
+from glue import custom_viewer
+my_viewer = custom_viewer('my viewer', checked=True, x='att', ...)
+@my_viewer.plot_data
+def plot_data(x, checked, axes):
+    if checked:
+        axes.plot(x)
+    ...
+
+or
+
+from glue.qt.custom_viewer import CustomViewer
+class MyViewer(CustomViewer):
+
+    checked = True
+    x = 'att'
+
+    def plot_data(self, x, checked, self):
+        if checked:
+            axes.plot(x)
+
+This code has two "magic" features:
+
+1. Attributes like 'checked' and 'x', passed as kwargs to custom_viewer
+   or set as class-level attributes in the subclass, are turned
+   into widgets based on their value
+
+2. Functions like plot_data can take these settings as input (as well
+   as some general purpose arguments like axes). Glue takes care of
+   passing the proper arguments to these functions by introspecting
+   their call signature. Furthermore, it extracts the current
+   value of each setting (ie checked is set to True or False depending
+   on what if the box is checked).
+
+Internally, Glue accomlishes this magic as follows:
+
+ `FormElement`s are created for each attribute in (1). They build the widget
+  and have a method of extracting the current value of the widget
+
+ Instead of calling methods like CustomViewer.plot_data directly,
+ internal glue code calls CustomViewer._plot_data. These methods
+ handle all the logic in (2) -- they introspect the user-defined functions,
+ and call them with the appropriate arguments
+"""
+
 from inspect import getmodule, getargspec
-from functools import wraps
 from types import FunctionType, MethodType
 from copy import copy
 
@@ -20,9 +72,8 @@ import numpy as np
 
 from ..clients import LayerArtist, GenericMplClient
 from ..core import Data
-from ..core.decorators import memoize
 from ..core.edit_subset_mode import EditSubsetMode
-from ..core.util import (nonpartial, as_list, lookup_class,
+from ..core.util import (nonpartial, as_list,
                          all_artists, new_artists, remove_artists)
 from .. import core
 
@@ -83,14 +134,18 @@ class ViewerState(object):
 
 def call_custom_function(func, settings, **kwargs):
     """
-    Call a custom function, extracting extra inputs from a settings oracle.
+    Call a custom user-defined function with the proper arguments.
+
+    The kwargs dictionary and settings oracle are used to extract the
+    arguments that func expects to see.
 
     `func` is introspected to determine the names of inputs it takes,
     and values with these names are extracted from the settings oracle
     or keywords passed to this function. `func` is then invoked
 
     The settings oracle must have a ``value`` method, with a signature
-    (setting_name, layer=None, view=None).
+    (setting_name, layer=None, view=None). It must also have a
+    setting_names method that returns a list of valid settings names.
 
     :param func: A function to call
     :param settings: An object with a `value` method as described above
@@ -115,76 +170,47 @@ def call_custom_function(func, settings, **kwargs):
     a, k, _, _ = getargspec(func)
 
     if layer is None and 'style' in a:
-        raise RuntimError("Cannot use `style` in this function")
+        raise RuntimeError("Cannot use `style` in this function")
 
-    a = [kwargs.get(item) if item in kwargs
-         else layer.style if item == 'style'
-         else settings.value(item, layer, view)
-         for item in a]
+    try:
+        # get the current values of each input to the UDF
+        a = [kwargs.get(item) if item in kwargs      # look in kwargs first
+             else layer.style if item == 'style'     # style is special
+             else settings.value(item, layer, view)  # look in settings oracle
+             for item in a]
+    except AttributeError as exc:
+        # the UDF expects an argument that we don't know how to provide
+        # try to give a helpful error message
+        missing = exc.args[0]
+        setting_list = "\n -".join(settings.setting_names())
+        special_list = "\n -".join(list(kwargs.keys()) + ['layer', 'view', 'style'])
+        raise AttributeError("This custom viewer is trying to use an "
+                             "unrecognized variable named %s\n. Valid "
+                             "variable names are\n\n"
+                             "Custom settings:\n -%s\n"
+                             "Special names:\n -%s\n" % (missing,
+                                                         setting_list,
+                                                         special_list))
     k = k or {}
 
     return func(*a, **k)
 
 
-def _dispatch_to_custom(method):
-    """
-    Method factory to call to custom plot methods.
-
-    The function returned from this function passes the appropriate
-    input arguments, by introspecting the signature of the input.
-
-    Example:
-
-    cv = CustomViewer(...)
-    @cv.plot_data
-    def custom_plot_data(x, y):
-        ...
-
-    cv._plot_data() -> custom_plot_data(x, y)
-    """
-
-    def result(self, **kwargs):
-
-        # get the custom function
-        try:
-            func = self._custom_functions[method]
-        except KeyError:
-            return []
-
-        # clear any MPL artists created on last call
-        if self.remove_artists:
-            layer = kwargs.get('layer', None)
-            key = (layer, method)
-            old = self._created_artists.get(key, set())
-            remove_artists(old)
-            current = all_artists(self.axes.figure)
-
-        # call method, keep track of newly-added artists
-        result = call_custom_function(func, self, **kwargs)
-
-        if self.remove_artists:
-            new = new_artists(self.axes.figure, current)
-            self._created_artists[key] = new
-            if new:
-                self.axes.figure.canvas.draw()
-        else:
-            self.axes.figure.canvas.draw()
-        return result
-
-    return result
-
-    result.__name__ = method
-
-    return result
-
-
 class CustomMeta(type):
 
     """
-    Metaclass to construct custom viewers
+    Metaclass to construct CustomViewer and subclasses
 
-    The main purpose is to detect UI form fields, and to
-    build the custom widget subclass
+    The metaclass does two things when constructing new
+    classes:
+
+    - it finds the class-level attributes that describe
+      ui elements (eg `checked=False`). It bundles these
+      into a `ui` dict attribute, later used to construct
+      the FormElements and widgets to represent each setting
+    - It creates the qt DataViewer widget class associated with this class.
+    - It looks for overridden user-defined methods like `plot_subset`,
+      and registers them for later use.
     """
     def __new__(cls, name, bases, attrs):
         _overrideable = set(['setup', 'plot_subset', 'plot_data',
@@ -353,7 +379,11 @@ class CustomViewer(object):
     remove_artists = True             #: auto-delete artists?
     name = ''                         #: Label to give this widget in the GUI
 
+    # hold user descriptions of desired FormElements to create
     ui = {}
+
+    # map, e.g., 'plot_data' -> user defined function
+    # subclasses must override this dict!
     _custom_functions = {}
 
     def __init__(self, widget_instance):
@@ -378,6 +408,7 @@ class CustomViewer(object):
         """
         kwargs = kwargs.copy()
         kwargs['name'] = name
+        # each subclass needs its own dict
         kwargs['_custom_functions'] = {}
         name = name.replace(' ', '')
         return CustomMeta(name, (CustomViewer,), kwargs)
@@ -446,6 +477,9 @@ class CustomViewer(object):
 
         return result
 
+    def setting_names(self):
+        return list(self._settings.keys())
+
     def value(self, setting, layer=None, view=None):
         """
         Get the current state of a custom setting
@@ -459,12 +493,6 @@ class CustomViewer(object):
         view : Array view or None
             The view into the data to restrict attention to
         """
-        try:
-            # request for, e.g., axes
-            return getattr(self, setting)
-        except AttributeError:
-            pass
-
         try:
             # request for a FormElement setting
             return self._settings[setting].value(layer, view)
@@ -513,6 +541,18 @@ class CustomViewer(object):
         for k in self._settings:
             result[k] = self.value(k)
         return FrozenSettings(**result)
+
+    """
+    These are the functions the user can override.
+
+    Glue code doesn't call these functions directly. Instead,
+    it calls the underscore form (_setup instead of setup),
+    which dispatches to the UDF
+
+    A user can either use these functions as decorators
+    to register custom implementations, or override them
+    in a subclass.
+    """
 
     @classmethod
     def setup(cls, func):
@@ -574,12 +614,84 @@ class CustomViewer(object):
         cls._register_override_method('select', func)
         return func
 
-    _setup = _dispatch_to_custom('setup')
-    _plot_subset = _dispatch_to_custom('plot_subset')
-    _plot_data = _dispatch_to_custom('plot_data')
-    _make_selector = _dispatch_to_custom('make_selector')
-    _settings_changed = _dispatch_to_custom('settings_changed')
-    _select = _dispatch_to_custom('select')
+    """
+    End of UDF list.
+    """
+
+    def _call_udf(self, method_name, **kwargs):
+        """
+        Call a user-defined function stored in the _custom_functions dict
+
+        Parameters
+        ----------
+        method_name : str
+           The name of the user-defined method to setup a dispatch for
+        **kwargs : dict
+           Custom settings to pass to the UDF if they are requested by name
+           as input arguments
+
+        Returns
+        -------
+        The result of the UDF
+
+        Notes
+        -----
+        This function builds the necessary arguments to the
+        user-defined function. It also attempts to monitor
+        the state of the matplotlib plot, removing stale
+        artists and re-rendering the cavnas as needed.
+        """
+
+        # get the custom function
+        try:
+            func = self._custom_functions[method_name]
+        except KeyError:
+            return []
+
+        # clear any MPL artists created on last call
+        if self.remove_artists:
+            layer = kwargs.get('layer', None)
+            key = (layer, method_name)
+            old = self._created_artists.get(key, set())
+            remove_artists(old)
+            current = all_artists(self.axes.figure)
+
+        # add some extra information that the user might want
+        kwargs.setdefault('self', self)
+        kwargs.setdefault('axes', self.axes)
+        kwargs.setdefault('figure', self.axes.figure)
+        kwargs.setdefault('state', self.state)
+
+        # call method, keep track of newly-added artists
+        result = call_custom_function(func, self, **kwargs)
+
+        if self.remove_artists:
+            new = new_artists(self.axes.figure, current)
+            self._created_artists[key] = new
+            if new:
+                self.axes.figure.canvas.draw()
+        else:
+            self.axes.figure.canvas.draw()
+
+        return result
+
+    def _setup(self, **kwargs):
+        return self._call_udf('setup', **kwargs)
+
+    def _plot_subset(self, **kwargs):
+        return self._call_udf('plot_subset', **kwargs)
+
+    def _plot_data(self, **kwargs):
+        return self._call_udf('plot_data', **kwargs)
+
+    def _make_selector(self, **kwargs):
+        return self._call_udf('make_selector', **kwargs)
+
+    def _settings_changed(self, **kwargs):
+        return self._call_udf('settings_changed', **kwargs)
+
+    def _select(self, **kwargs):
+        return self._call_udf('select', **kwargs)
 
 
 class CustomArtist(LayerArtist):
@@ -929,11 +1041,12 @@ class LabeledSlider(QtGui.QWidget):
 
         self._min = min
         self._ptp = (max - min)
-        if default is None:
-            default = (min + max) / 2
         self._isint = (isinstance(min, int) and
                        isinstance(max, int) and
-                       isinstance(default, int))
+                       isinstance(default, (int, type(None))))
+
+        if default is None:
+            default = (min + max) / 2
 
         self.set_value(default)
 
