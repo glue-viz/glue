@@ -143,14 +143,28 @@ class UserDefinedFunction(object):
     """
     Descriptor to specify a UserDefinedFunction.
 
-    Users can register custom functions by
-    wrapping a function with a UserDefinedFunction descriptor
-    defined in CustomViewer, or by subclassing and overriding
-    the method directly.
-
-    This decorator (along with the CustomViewer metaclass)
-    handles providing the dual decorator+override syntax,
-    and also helps dispatch UDF calls to the proper implementation
+    Defined in CustomViewer like this:
+    
+    class CustomViewer(object):
+        ...
+        plot_data = UserDefinedFunction('plot_data')
+        
+    The descriptor gives CustomViewer.plot_data a dual functionality.
+    When accessed at the class level, it behaves as a decorator to 
+    register new UDFs:
+    
+    cv = custom_viewer(...)
+    @cv.plot_data  # becomes a decorator
+    def plot_data_implementation(...):
+        ...
+        
+    When accessed at the instance level, it becomes a dispatch function
+    that calls `plot_data_implementation` with the proper arguments
+    
+    Alternatively, plot_data_implementation can be specified by
+    explicitly overriding plot_data in a subclass. A metaclass
+    takes care of registering the UDF in that case, so you
+    can define plot_data as a normal (non-decorator, non-descriptor) method.
     """
     def __init__(self, name):
         self.name = name
