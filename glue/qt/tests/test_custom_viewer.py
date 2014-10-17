@@ -33,7 +33,7 @@ settings_changed = MagicMock()
 plot_subset = MagicMock()
 plot_data = MagicMock()
 make_selector = MagicMock()
-
+make_selector().copy().to_mask.return_value = slice(None)
 
 @viewer.setup
 def _setup(axes):
@@ -77,11 +77,20 @@ class ViewerSubclass(CustomViewer):
     f = ['a', 'b', 'c']
     g = OrderedDict(a=1, b=2, c=3)
 
-    setup = _setup
-    plot_data = _plot_data
-    plot_subset = _plot_subset
-    settings_changed = _settings_changed
-    make_selector = _make_selector
+    def setup(self, axes):
+        return setup(axes)
+
+    def plot_data(self, axes, a, b, g):
+        return plot_data(axes=axes, a=a, b=b, g=g)
+
+    def plot_subset(self, b, c, d, e, f, style):
+        return plot_subset(b=b, c=c, d=d, e=e, f=f, style=style)
+
+    def settings_changed(self, state):
+        return settings_changed(state=state)
+
+    def make_selector(self, roi, c):
+        return make_selector(roi=roi, c=c)
 
 
 class TestCustomViewer(object):
@@ -115,6 +124,13 @@ class TestCustomViewer(object):
         ct = setup.call_count
         self.build()
         assert setup.call_count == ct + 1
+
+    def test_separate_widgets_have_separate_state(self):
+        w1 = self.build()
+        w2 = self.build()
+
+        assert w1._coordinator is not w2._coordinator
+        assert w1._coordinator.state is not w2._coordinator.state
 
     def test_plot_data(self):
         w = self.build()
