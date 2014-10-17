@@ -53,6 +53,9 @@ This code has two "magic" features:
    value of each setting (ie checked is set to True or False depending
    on what if the box is checked).
 
+The intention of all of this magic is to let a user write "simple" functions
+to draw custom plots, without having to use Glue or Qt logic directly.
+
 Internally, Glue accomlishes this magic as follows:
 
  `FormElement`s are created for each attribute in (1). They build the widget
@@ -131,72 +134,116 @@ class ViewerState(object):
             setattr(result, k, context.object(rec[k]))
         return result
 
+from functools import partial
 
-def call_custom_function(func, settings, **kwargs):
+
+class UserDefinedFunction(object):
     """
-    Call a custom user-defined function with the proper arguments.
+    Descriptor to specify a UserDefinedFunction.
 
-    The kwargs dictionary and settings oracle are used to extract the
-    arguments that func expects to see.
+    Users can register custom functions by
+    wrapping a function with a UserDefinedFunction descriptor
+    defined in CustomViewer, or by subclassing and overriding
+    the method directly.
 
-    `func` is introspected to determine the names of inputs it takes,
-    and values with these names are extracted from the settings oracle
-    or keywords passed to this function. `func` is then invoked
+    This decorator (along with the CustomViewer metaclass)
+    handles providing the dual decorator+override syntax,
+    and also helps dispatch UDF calls to the proper implementation
+    """
+    def __init__(self, name):
+        self.name = name
 
-    The settings oracle must have a ``value`` method, with a signature
-    (setting_name, layer=None, view=None). It must also have a
-    setting_names method that returns a list of valid settings names.
+    def __get__(self, instance, cls=None):
+        if instance is None:
+            # accessed from class level, return a decorator
+            # to wrap a custom UDF
+            return partial(cls._register_override_method, self.name)
 
-    :param func: A function to call
-    :param settings: An object with a `value` method as described above
-    :param kwargs: Extra keywords to override inputs otherwise extracted from
-                   `settings`
+        # method called at instance level,
+        # return a dispatcher to the UDF
+        return partial(instance._call_udf, self.name)
+
+
+
+def introspect_and_call(func, settings):
+    """
+    Introspect a function for its arguments, extract values for those
+    arguments from a settings oracle, and call the function
+
+    Parameters
+    ----------
+    func : function
+       A function to call. It should not define any keywords
+    settings : SettingsOracle
+       An oracle to extract values for the arguments func expects
+
+    Returns
+    -------
+    The result of calling func with the proper arguments
 
     *Example*
 
     def a(x, y):
         return x, y
 
-    call_custom_function(a, settings, y=3, layer=l, view=v) will return
+    introspect_and_call(a, settings) will return
 
-    a(settings.value('x', l, v), 3)
+    a(settings('x'), settings('y'))
     """
-
-    # build the argument list
-    # layer and view are special keywords
-    layer = kwargs.pop('layer', None)
-    view = kwargs.pop('view', None)
-
     a, k, _, _ = getargspec(func)
-
-    if layer is None and 'style' in a:
-        raise RuntimeError("Cannot use `style` in this function")
 
     try:
         # get the current values of each input to the UDF
-        a = [kwargs.get(item) if item in kwargs      # look in kwargs first
-             else layer.style if item == 'style'     # style is special
-             else settings.value(item, layer, view)  # look in settings oracle
-             for item in a]
+        a = [settings(item) for item in a]
     except AttributeError as exc:
         # the UDF expects an argument that we don't know how to provide
         # try to give a helpful error message
         missing = exc.args[0]
         setting_list = "\n -".join(settings.setting_names())
-        special_list = "\n -".join(list(kwargs.keys()) + ['layer', 'view', 'style'])
         raise AttributeError("This custom viewer is trying to use an "
                              "unrecognized variable named %s\n. Valid "
-                             "variable names are\n\n"
-                             "Custom settings:\n -%s\n"
-                             "Special names:\n -%s\n" % (missing,
-                                                         setting_list,
-                                                         special_list))
+                             "variable names are\n -%s" %
+                             (missing, setting_list))
     k = k or {}
 
     return func(*a, **k)
 
 
-class CustomMeta(type):
+class SettingsOracleInterface(object):
+    def __call__(self, key):
+        raise NotImplementedError()
+
+    def setting_names(self):
+        return NotImplementedError()
+
+
+class SettingsOracle(SettingsOracleInterface):
+
+    def __init__(self, settings, **override):
+        self.settings = settings  # dict-like, items have a value() method
+        self.override = override  # look for settings here first
+
+        # layer and view are special keywords
+        self.layer = override.pop('layer', None)
+        self.view = override.pop('view', None)
+
+    def __call__(self, key):
+        try:
+            if key == 'self':
+                return self.override['_self']
+            if key in self.override:
+                return self.override[key]
+            if key == 'style':
+                return self.layer.style
+            return self.settings[key].value(self.layer, self.view)
+        except (KeyError, AttributeError):
+            raise AttributeError(key)
+
+    def setting_names(self):
+        return list(set(list(self.settings.keys()) + ['style']))
+
+
+class CustomViewerMeta(type):
 
     """
     Metaclass to construct CustomViewer and subclasses
@@ -213,9 +260,8 @@ class CustomMeta(type):
       and registers them for later use.
     """
     def __new__(cls, name, bases, attrs):
-        _overrideable = set(['setup', 'plot_subset', 'plot_data',
-                            'settings_changed', 'make_selector', 'select'])
 
+        # don't muck with the base class
         if name == 'CustomViewer':
             return type.__new__(cls, name, bases, attrs)
 
@@ -231,13 +277,26 @@ class CustomMeta(type):
         attrs['ui'] = ui
         attrs.setdefault('name', name)
 
-        result = type.__new__(cls, name, bases, attrs)
-        result._build_widget_subclass()
+        # collect the UDFs
+        udfs = {}
 
-        # find and register custom viewer methods
-        for name, value in attrs.items():
-            if name in _overrideable:
-                result._register_override_method(name, value)
+        for nm, value in list(attrs.items()):
+            dscr = CustomViewer.__dict__.get(nm, None)
+
+            if isinstance(dscr, UserDefinedFunction):
+                # remove them as class method
+                # register them below instead
+                udfs[nm] = attrs.pop(nm)
+
+        result = type.__new__(cls, name, bases, attrs)
+
+        # now wrap the custom UDFs using the descriptors
+        for k, v in udfs.items():
+            # register UDF by mimicing the decorator syntax
+            udf_decorator = getattr(result, k)
+            udf_decorator(v)
+
+        result._build_widget_subclass()
 
         return result
 
@@ -245,7 +304,7 @@ class CustomMeta(type):
 class CustomSubsetState(core.subset.SubsetState):
 
     """
-    A SubsetState subclass that uses a CustomViewer's "filter" function
+    A SubsetState subclass that uses a CustomViewer's "select" function
     """
 
     def __init__(self, viewer_cls, roi, settings):
@@ -255,9 +314,10 @@ class CustomSubsetState(core.subset.SubsetState):
         self._roi = roi
 
     def to_mask(self, data, view=None):
-        return call_custom_function(self._viewer_cls._custom_functions['select'],
-                                    self._settings, layer=data,
-                                    roi=self._roi, view=view)
+        settings = SettingsOracle(self._settings,
+                                  layer=data, roi=self._roi, view=view)
+        return introspect_and_call(self._viewer_cls._custom_functions['select'],
+                                   settings)
 
     def copy(self):
         return CustomSubsetState(self._viewer_cls, self._roi.copy(), copy(self._settings))
@@ -298,6 +358,18 @@ class FrozenSettings(object):
 
         return result
 
+    def __getitem__(self, key):
+
+        class o(object):
+            @staticmethod
+            def value(layer=None, view=None):
+                return self.value(key, layer, view)
+
+        return o
+
+    def keys(self):
+        return self.kwargs.keys()
+
     def __gluestate__(self, context):
         return dict(data=[(k, context.do(v)) for k, v in self.kwargs.items()])
 
@@ -307,7 +379,7 @@ class FrozenSettings(object):
         return cls(**kwargs)
 
 
-@six.add_metaclass(CustomMeta)
+@six.add_metaclass(CustomViewerMeta)
 class CustomViewer(object):
 
     """
@@ -411,7 +483,7 @@ class CustomViewer(object):
         # each subclass needs its own dict
         kwargs['_custom_functions'] = {}
         name = name.replace(' ', '')
-        return CustomMeta(name, (CustomViewer,), kwargs)
+        return CustomViewerMeta(name, (CustomViewer,), kwargs)
 
     @classmethod
     def _build_widget_subclass(cls):
@@ -434,8 +506,12 @@ class CustomViewer(object):
 
         # add new classes to module namespace
         # needed for proper state saving/restoring
-        for cls in [widget_cls, cls]:
-            setattr(getmodule(ViewerState), cls.__name__, cls)
+        for c in [widget_cls, cls]:
+            w = getattr(getmodule(ViewerState), c.__name__, None)
+            if w is not None:
+                raise RuntimeError("Duplicate custom viewer detected %s" % c)
+
+            setattr(getmodule(ViewerState), c.__name__, c)
 
     @classmethod
     def _register_override_method(cls, name, func):
@@ -477,27 +553,8 @@ class CustomViewer(object):
 
         return result
 
-    def setting_names(self):
-        return list(self._settings.keys())
-
-    def value(self, setting, layer=None, view=None):
-        """
-        Get the current state of a custom setting
-
-        Parameters
-        ----------
-        setting : str
-            The name of a setting
-        layer : Data or Subset or None
-            The relevant data layer to extract information from
-        view : Array view or None
-            The view into the data to restrict attention to
-        """
-        try:
-            # request for a FormElement setting
-            return self._settings[setting].value(layer, view)
-        except KeyError:
-            raise AttributeError(setting)
+    def value(self, key, layer=None, view=None):
+        return SettingsOracle(self._settings, layer=layer, view=view)(key)
 
     def create_axes(self, figure):
         """
@@ -509,7 +566,7 @@ class CustomViewer(object):
     def _build_subset_state(self, roi):
 
         if 'make_selector' in self._custom_functions:
-            return self._make_selector(roi=roi)
+            return self.make_selector(roi=roi)
         if 'select' in self._custom_functions:
             return CustomSubsetState(type(self), roi, self.settings())
         raise RuntimeError("Selection not supported for this viewer.")
@@ -542,77 +599,52 @@ class CustomViewer(object):
             result[k] = self.value(k)
         return FrozenSettings(**result)
 
+    # List of user-defined functions.
+    # Users can either use these as decorators to
+    # wrap custom functions, or override them in subclasses.
+
+    setup = UserDefinedFunction('setup')
     """
-    These are the functions the user can override.
-
-    Glue code doesn't call these functions directly. Instead,
-    it calls the underscore form (_setup instead of setup),
-    which dispatches to the UDF
-
-    A user can either use these functions as decorators
-    to register custom implementations, or override them
-    in a subclass.
+    Custom method called when plot is created
     """
 
-    @classmethod
-    def setup(cls, func):
-        """
-        Custom method called when plot is created
-        """
-        cls._register_override_method('setup', func)
-        return func
+    plot_subset = UserDefinedFunction('plot_subset')
+    """
+    Custom method called to show a subset
+    """
 
-    @classmethod
-    def plot_subset(cls, func):
-        """
-        Custom method called to show a subset
-        """
-        cls._register_override_method('plot_subset', func)
-        return func
 
-    @classmethod
-    def plot_data(cls, func):
-        """
-        Custom method called to show a dataset
-        """
-        cls._register_override_method('plot_data', func)
-        return func
+    plot_data = UserDefinedFunction('plot_data')
+    """
+    Custom method called to show a dataset
+    """
 
-    @classmethod
-    def make_selector(cls, func):
-        """
-        Custom method called to build a :class:`~glue.core.subset.SubsetState` from an ROI.
+    make_selector = UserDefinedFunction('make_selector')
+    """
+    Custom method called to build a :class:`~glue.core.subset.SubsetState` from an ROI.
 
-        See :meth:`~CutsomViewer.select` for an alternative way to define selections,
-        by returning Boolean arrays instead of SubsetStates.
+    See :meth:`~CutsomViewer.select` for an alternative way to define selections,
+    by returning Boolean arrays instead of SubsetStates.
 
-        Functions have access to the roi by accepting an ``roi``
-        argument to this function
-        """
-        cls._register_override_method('make_selector', func)
-        return func
+    Functions have access to the roi by accepting an ``roi``
+    argument to this function
+    """
 
-    @classmethod
-    def settings_changed(cls, func):
-        """
-        Custom method called when UI settings change.
-        """
-        cls._register_override_method('settings_changed', func)
-        return func
+    settings_changed = UserDefinedFunction('settings_changed')
+    """
+    Custom method called when UI settings change.
+    """
 
-    @classmethod
-    def select(cls, func):
-        """
-        Custom method called to filter data using an ROI.
+    select = UserDefinedFunction('select')
+    """
+    Custom method called to filter data using an ROI.
 
-        This is an alternative function to :meth:`~CustomViewer.make_selector`,
-        which returns a numpy boolean array instead of a SubsetState.
+    This is an alternative function to :meth:`~CustomViewer.make_selector`,
+    which returns a numpy boolean array instead of a SubsetState.
 
-        Functions have access to the roi by accepting an ``roi``
-        argument to this function
-        """
-        cls._register_override_method('select', func)
-        return func
+    Functions have access to the roi by accepting an ``roi``
+    argument to this function
+    """
 
     """
     End of UDF list.
@@ -657,13 +689,14 @@ class CustomViewer(object):
             current = all_artists(self.axes.figure)
 
         # add some extra information that the user might want
-        kwargs.setdefault('self', self)
+        kwargs.setdefault('_self', self)
         kwargs.setdefault('axes', self.axes)
         kwargs.setdefault('figure', self.axes.figure)
         kwargs.setdefault('state', self.state)
 
         # call method, keep track of newly-added artists
-        result = call_custom_function(func, self, **kwargs)
+        settings = SettingsOracle(self._settings, **kwargs)
+        result = introspect_and_call(func, settings)
 
         if self.remove_artists:
             new = new_artists(self.axes.figure, current)
@@ -674,24 +707,6 @@ class CustomViewer(object):
             self.axes.figure.canvas.draw()
 
         return result
-
-    def _setup(self, **kwargs):
-        return self._call_udf('setup', **kwargs)
-
-    def _plot_subset(self, **kwargs):
-        return self._call_udf('plot_subset', **kwargs)
-
-    def _plot_data(self, **kwargs):
-        return self._call_udf('plot_data', **kwargs)
-
-    def _make_selector(self, **kwargs):
-        return self._call_udf('make_selector', **kwargs)
-
-    def _settings_changed(self, **kwargs):
-        return self._call_udf('settings_changed', **kwargs)
-
-    def _select(self, **kwargs):
-        return self._call_udf('select', **kwargs)
 
 
 class CustomArtist(LayerArtist):
@@ -723,9 +738,9 @@ class CustomArtist(LayerArtist):
             old = all_artists(self._axes.figure)
 
         if isinstance(self._layer, Data):
-            a = self._coordinator._plot_data(layer=self._layer)
+            a = self._coordinator.plot_data(layer=self._layer)
         else:
-            a = self._coordinator._plot_subset(layer=self._layer)
+            a = self._coordinator.plot_subset(layer=self._layer)
 
         # if user explicitly returns the newly-created artists,
         # then use them. Otherwise, introspect to find the new artists
@@ -749,7 +764,7 @@ class CustomClient(GenericMplClient):
         super(CustomClient, self).__init__(*args, **kwargs)
 
         self._coordinator.axes = self.axes
-        self._coordinator._setup()
+        self._coordinator.setup()
 
     def new_layer_artist(self, layer):
         return CustomArtist(layer, self.axes, self._coordinator)
@@ -816,7 +831,7 @@ class CustomWidgetBase(DataViewer):
             self.client._update_all()
 
         self.client._redraw()
-        self._coordinator._settings_changed()
+        self._coordinator.settings_changed()
 
     def make_toolbar(self):
         result = GlueToolbar(self.central_widget.canvas, self, name=self.LABEL)
