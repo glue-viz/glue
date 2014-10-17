@@ -36,7 +36,7 @@ class MyViewer(CustomViewer):
     checked = True
     x = 'att'
 
-    def plot_data(self, x, checked, self):
+    def plot_data(self, x, checked, axes):
         if checked:
             axes.plot(x)
 
