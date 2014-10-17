@@ -33,7 +33,7 @@ settings_changed = MagicMock()
 plot_subset = MagicMock()
 plot_data = MagicMock()
 make_selector = MagicMock()
-
+make_selector().copy().to_mask.return_value = slice(None)
 
 @viewer.setup
 def _setup(axes):
