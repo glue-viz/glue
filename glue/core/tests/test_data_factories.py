@@ -8,7 +8,7 @@ import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
 
 from .. import data_factories as df
-from ..data import CategoricalComponent
+from ..data import CategoricalComponent, Data
 from .util import make_file
 
 from ...tests.helpers import (requires_astropy, requires_astropy_ge_03,
@@ -16,11 +16,9 @@ from ...tests.helpers import (requires_astropy, requires_astropy_ge_03,
                               requires_astrodendro)
 
 
-
-def test_load_data():
+def test_load_data_auto_assigns_label():
     factory = MagicMock()
-    result = MagicMock()
-    result.label = ''
+    result = Data(x=[1, 2, 3], label='')
     factory.return_value = result
     d = df.load_data('test.fits', factory)
     factory.assert_called_once_with('test.fits')
