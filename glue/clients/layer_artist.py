@@ -150,9 +150,13 @@ class LayerArtist(PropertySetMixin):
     def _sync_style(self):
         style = self.layer.style
         for artist in self.artists:
-            edgecolor = style.color if style.marker == '+' else 'none'
+            edgecolor = style.color
+            # due to a bug in MPL 1.4.1, we can't disable the edge
+            # without making the whole point disappear. So we make the
+            # edge very thin instead
+            mew = 3 if style.marker == '+' else 0.01
             artist.set_markeredgecolor(edgecolor)
-            artist.set_markeredgewidth(3)
+            artist.set_markeredgewidth(mew)
             artist.set_markerfacecolor(style.color)
             artist.set_marker(style.marker)
             artist.set_markersize(style.markersize)
@@ -448,9 +452,9 @@ class DendroLayerArtist(LayerArtist):
             x, y = self.layout
             blank = np.zeros(ids.size) * np.nan
             x = np.column_stack([x[ids], x[ids + 1],
-                                x[ids + 2], blank]).ravel()
+                                 x[ids + 2], blank]).ravel()
             y = np.column_stack([y[ids], y[ids + 1],
-                                y[ids + 2], blank]).ravel()
+                                 y[ids + 2], blank]).ravel()
         except IncompatibleAttribute as exc:
             self.disable_invalid_attributes(*exc.args)
             return False
