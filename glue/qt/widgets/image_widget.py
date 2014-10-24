@@ -31,7 +31,8 @@ WARN_THRESH = 10000000  # warn when contouring large images
 __all__ = ['ImageWidget']
 
 
-class ImageWidget(DataViewer):
+class ImageWidgetBase(DataViewer):
+
     LABEL = "Image Viewer"
     _property_set = DataViewer._property_set + \
         'data attribute rgb_mode rgb_viz ratt gatt batt slice'.split()
@@ -45,27 +46,37 @@ class ImageWidget(DataViewer):
     rgb_viz = Pointer('ui.rgb_options.rgb_visible')
 
     def __init__(self, session, parent=None):
-        super(ImageWidget, self).__init__(session, parent)
-        self.central_widget = MplWidget()
+        super(ImageWidgetBase, self).__init__(session, parent)
+        self.central_widget = self.make_central_widget()
         self.label_widget = QLabel("", self.central_widget)
         self.setCentralWidget(self.central_widget)
         self.ui = load_ui('imagewidget', None)
         self.option_widget = self.ui
         self.ui.slice = DataSlice()
         self.ui.slice_layout.addWidget(self.ui.slice)
-        self.client = MplImageClient(self._data,
-                                     self.central_widget.canvas.fig,
-                                     artist_container=self._container)
+        self.client = self.make_client()
+
         self._setup_tools()
         self._tweak_geometry()
 
-        self.make_toolbar()
+        tb = self.make_toolbar()
+        self.addToolBar(tb)
+
         self._connect()
         self._init_widgets()
         self.set_data(0)
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
         self._slice_widget = None
+
+    def make_client(self):
+        raise NotImplementedError()
+
+    def make_central_widget(self):
+        raise NotImplementedError()
+
+    def make_toolbar(self):
+        raise NotImplementedError()
 
     def _setup_tools(self):
         from ... import config
@@ -77,47 +88,6 @@ class ImageWidget(DataViewer):
         self.central_widget.resize(600, 400)
         self.resize(self.central_widget.size())
         self.ui.rgb_options.hide()
-
-    def make_toolbar(self):
-        result = GlueToolbar(self.central_widget.canvas, self, name='Image')
-        for mode in self._mouse_modes():
-            result.add_mode(mode)
-
-        cmap = _colormap_mode(self, self.client.set_cmap)
-        result.addWidget(cmap)
-
-        # connect viewport update buttons to client commands to
-        # allow resampling
-        cl = self.client
-        result.buttons['HOME'].triggered.connect(nonpartial(cl.check_update))
-        result.buttons['FORWARD'].triggered.connect(nonpartial(
-            cl.check_update))
-        result.buttons['BACK'].triggered.connect(nonpartial(cl.check_update))
-
-        self.addToolBar(result)
-        return result
-
-    def _mouse_modes(self):
-
-        axes = self.client.axes
-
-        def apply_mode(mode):
-            self.apply_roi(mode.roi())
-
-        rect = RectangleMode(axes, roi_callback=apply_mode)
-        circ = CircleMode(axes, roi_callback=apply_mode)
-        poly = PolyMode(axes, roi_callback=apply_mode)
-        contrast = ContrastMode(axes, move_callback=self._set_norm)
-
-        self._contrast = contrast
-
-        # Get modes from tools
-        tool_modes = []
-        for tool in self._tools:
-            tool_modes += tool._get_modes(axes)
-            add_callback(self.client, 'display_data', tool._display_data_hook)
-
-        return [rect, circ, poly, contrast] + tool_modes
 
     def _init_widgets(self):
         pass
@@ -271,7 +241,7 @@ class ImageWidget(DataViewer):
                 self.ui.rgb_options.artist = rgb
 
     def register_to_hub(self, hub):
-        super(ImageWidget, self).register_to_hub(hub)
+        super(ImageWidgetBase, self).register_to_hub(hub)
         self.client.register_to_hub(hub)
 
         dc_filt = lambda x: x.sender is self.client._data
@@ -295,7 +265,7 @@ class ImageWidget(DataViewer):
                       filter=layer_present_filter)
 
     def unregister(self, hub):
-        super(ImageWidget, self).unregister(hub)
+        super(ImageWidgetBase, self).unregister(hub)
         for obj in [self, self.client]:
             hub.unsubscribe_all(obj)
 
@@ -370,6 +340,61 @@ class ImageWidget(DataViewer):
 
         self.set_attribute_combo(self.client.display_data)
         self._update_data_combo()
+
+
+class ImageWidget(ImageWidgetBase):
+
+    """
+    A matplotlib-based image widget
+    """
+
+    def make_client(self):
+        return MplImageClient(self._data,
+                              self.central_widget.canvas.fig,
+                              artist_container=self._container)
+
+    def make_central_widget(self):
+        return MplWidget()
+
+    def make_toolbar(self):
+        result = GlueToolbar(self.central_widget.canvas, self, name='Image')
+        for mode in self._mouse_modes():
+            result.add_mode(mode)
+
+        cmap = _colormap_mode(self, self.client.set_cmap)
+        result.addWidget(cmap)
+
+        # connect viewport update buttons to client commands to
+        # allow resampling
+        cl = self.client
+        result.buttons['HOME'].triggered.connect(nonpartial(cl.check_update))
+        result.buttons['FORWARD'].triggered.connect(nonpartial(
+            cl.check_update))
+        result.buttons['BACK'].triggered.connect(nonpartial(cl.check_update))
+
+        return result
+
+    def _mouse_modes(self):
+
+        axes = self.client.axes
+
+        def apply_mode(mode):
+            self.apply_roi(mode.roi())
+
+        rect = RectangleMode(axes, roi_callback=apply_mode)
+        circ = CircleMode(axes, roi_callback=apply_mode)
+        poly = PolyMode(axes, roi_callback=apply_mode)
+        contrast = ContrastMode(axes, move_callback=self._set_norm)
+
+        self._contrast = contrast
+
+        # Get modes from tools
+        tool_modes = []
+        for tool in self._tools:
+            tool_modes += tool._get_modes(axes)
+            add_callback(self.client, 'display_data', tool._display_data_hook)
+
+        return [rect, circ, poly, contrast] + tool_modes
 
     def paintEvent(self, event):
         super(ImageWidget, self).paintEvent(event)
@@ -533,5 +558,4 @@ class StandaloneImageWidget(QMainWindow):
         cm = _colormap_mode(self, self._set_cmap)
         result.addWidget(cm)
         self._cmap_actions = cm.actions()
-        self.addToolBar(result)
         return result

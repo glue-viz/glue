@@ -1,65 +1,44 @@
-import logging
-import sys, traceback
+import sys
+import traceback
 import numpy as np
 
-from ...external.qt.QtGui import (QAction, QLabel, QCursor, QMainWindow,
-                                  QToolButton, QToolBar, QIcon, QMessageBox,
+from ...external.qt.QtGui import (QAction, QMainWindow,
+                                  QToolButton, QToolBar, QIcon,
                                   QActionGroup, QMdiSubWindow, QWidget,
                                   QVBoxLayout)
-
-from ...external.qt.QtCore import Qt, QRect
 
 from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
 from ginga.qtw import Readout, ColorBar
 from ginga.misc import log
 
-from .data_viewer import DataViewer
-from ... import core
+from .image_widget import ImageWidgetBase
 from ... import config
 
 from ...clients.ginga_client import GingaClient
-from ...external.modest_image import imshow
 
-from ...clients.layer_artist import Pointer
-from ...core.callback_property import add_callback
 from ...core import roi as roimod
 
-from .data_slice_widget import DataSlice
-
-from .mpl_widget import defer_draw
-
-from ..decorators import set_cursor
-from ..qtutil import cmap2pixmap, load_ui, get_icon, nonpartial
-from ..widget_properties import CurrentComboProperty, ButtonProperty
+from ..qtutil import cmap2pixmap, get_icon, nonpartial
 
 
 __all__ = ['GingaWidget']
 
 
-class GingaWidget(DataViewer):
-    LABEL = "Ginga Viewer"
-    _property_set = DataViewer._property_set + \
-        'data attribute rgb_mode rgb_viz ratt gatt batt slice'.split()
+class GingaWidget(ImageWidgetBase):
 
-    attribute = CurrentComboProperty('ui.attributeComboBox',
-                                     'Current attribute')
-    data = CurrentComboProperty('ui.displayDataCombo',
-                                'Current data')
-    rgb_mode = ButtonProperty('ui.rgb',
-                              'RGB Mode?')
-    rgb_viz = Pointer('ui.rgb_options.rgb_visible')
+    LABEL = "Ginga Viewer"
 
     def __init__(self, session, parent=None):
-        super(GingaWidget, self).__init__(session, parent)
+        self.canvas = ImageViewCanvas(self.logger, render='widget')
 
         #logger = logging.getLogger(__name__)
         self.logger = log.get_logger(name='ginga', log_stderr=True)
         #self.logger = log.get_logger(name='ginga', null=True)
 
-        self.canvas = ImageViewCanvas(self.logger, render='widget')
-        # prevent widget from grabbing focus 
+        # prevent widget from grabbing focus
         self.canvas.set_follow_focus(False)
         self.canvas.enable_overlays(True)
+
         # enable interactive features
         bindings = self.canvas.get_bindings()
         bindings.enable_all(True)
@@ -91,10 +70,15 @@ class GingaWidget(DataViewer):
 
         # make coordinates/value readout
         self.readout = Readout.Readout(-1, -1)
-
         self.roi_tag = None
 
-        # pack it all together in a bundle
+        super(GingaWidget, self).__init__(session, parent)
+
+    def make_client(self):
+        return GingaClient(self._data, self.canvas, self._container)
+
+    def make_central_widget(self):
+
         topw = QWidget()
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -103,28 +87,7 @@ class GingaWidget(DataViewer):
         layout.addWidget(self.colorbar, stretch=0)
         layout.addWidget(self.readout.get_widget(), stretch=0)
         topw.setLayout(layout)
-
-        self.central_widget = topw
-        self.setCentralWidget(self.central_widget)
-        self.ui = load_ui('imagewidget', None)
-        self.option_widget = self.ui
-        self.ui.slice = DataSlice()
-        self.ui.slice_layout.addWidget(self.ui.slice)
-        self.client = GingaClient(self._data,
-                                  self.canvas,      # no mpl here (yet)
-                                  artist_container=self._container)
-        self._tweak_geometry()
-
-        toolbar = self.make_toolbar()
-        self.addToolBar(toolbar)
-        self._connect()
-        self._init_widgets()
-        self.set_data(0)
-
-        stbar = self.statusBar()
-        stbar.setSizeGripEnabled(True)
-        self.setFocusPolicy(Qt.StrongFocus)
-        self._slice_widget = None
+        return topw
 
     def match_colorbar(self, canvas, colorbar):
         rgbmap = canvas.get_rgbmap()
@@ -138,11 +101,6 @@ class GingaWidget(DataViewer):
     def cut_levels_cb(self, setting, tup):
         (loval, hival) = tup
         self.colorbar.set_range(loval, hival)
-
-    def _tweak_geometry(self):
-        self.central_widget.resize(600, 400)
-        self.resize(self.central_widget.size())
-        self.ui.rgb_options.hide()
 
     def make_toolbar(self):
         tb = QToolBar(parent=self)
@@ -177,7 +135,7 @@ class GingaWidget(DataViewer):
         agroup.addAction(action)
 
         #cmap = _colormap_mode(self, self.client.set_cmap)
-        #tb.addWidget(cmap)
+        # tb.addWidget(cmap)
         return tb
 
     def _mouse_modes(self):
@@ -221,7 +179,7 @@ class GingaWidget(DataViewer):
                 obj.kind))
 
         return roi
-        
+
     def _apply_roi_cb(self, canvas, tag):
         self.roi_tag = tag
         obj = self.canvas.getObjectByTag(self.roi_tag)
@@ -230,262 +188,14 @@ class GingaWidget(DataViewer):
         try:
             self.apply_roi(roi)
             # delete outline
-            #self.canvas.deleteObjectByTag(self.roi_tag)
+            # self.canvas.deleteObjectByTag(self.roi_tag)
         except Exception as e:
             print "Error applying ROI: %s" % (str(e))
             (type, value, tb) = sys.exc_info()
             print "Traceback:\n%s" % ("".join(traceback.format_tb(tb)))
-           
-        
-    def _extract_slice(self, roi):
-        """
-        Extract a PV-like slice, given a path traced on the widget
-        """
-        vx, vy = roi.to_polygon()
-        pv, x, y = _slice_from_path(vx, vy, self.data, self.attribute, self.slice)
-        if self._slice_widget is None:
-            self._slice_widget = PVSliceWidget(pv, x, y, self)
-            self._session.application.add_widget(self._slice_widget,
-                                                 label='Custom Slice')
-        else:
-            self._slice_widget.set_image(pv, x, y)
-
-        result = self._slice_widget
-        result.axes.set_xlabel("Position Along Slice")
-        result.axes.set_ylabel(_slice_label(self.data, self.slice))
-
-        result.show()
 
     def _init_widgets(self):
         pass
-
-    @defer_draw
-    def add_data(self, data):
-        """Private method to ingest new data into widget"""
-        self.client.add_layer(data)
-        self.add_data_to_combo(data)
-        self.set_data(self._data_index(data))
-        return True
-
-    @defer_draw
-    def add_subset(self, subset):
-        self.client.add_scatter_layer(subset)
-        assert subset in self.client.artists
-
-    def _data_index(self, data):
-        combo = self.ui.displayDataCombo
-
-        for i in range(combo.count()):
-            if combo.itemData(i) is data:
-                return i
-
-        return None
-
-    def add_data_to_combo(self, data):
-        """ Add a data object to the combo box, if not already present
-        """
-        if not self.client.can_image_data(data):
-            return
-        combo = self.ui.displayDataCombo
-        label = data.label
-        pos = combo.findText(label)
-        if pos == -1:
-            combo.addItem(label, userData=data)
-        assert combo.findText(label) >= 0
-
-    @property
-    def ratt(self):
-        """ComponentID assigned to R channel in RGB Mode"""
-        return self.ui.rgb_options.attributes[0]
-
-    @ratt.setter
-    def ratt(self, value):
-        att = list(self.ui.rgb_options.attributes)
-        att[0] = value
-        self.ui.rgb_options.attributes = att
-
-    @property
-    def gatt(self):
-        """ComponentID assigned to G channel in RGB Mode"""
-        return self.ui.rgb_options.attributes[1]
-
-    @gatt.setter
-    def gatt(self, value):
-        att = list(self.ui.rgb_options.attributes)
-        att[1] = value
-        self.ui.rgb_options.attributes = att
-
-    @property
-    def batt(self):
-        """ComponentID assigned to B channel in RGB Mode"""
-        return self.ui.rgb_options.attributes[2]
-
-    @batt.setter
-    def batt(self, value):
-        att = list(self.ui.rgb_options.attributes)
-        att[2] = value
-        self.ui.rgb_options.attributes = att
-
-    @defer_draw
-    def set_data(self, index):
-        if index is None:
-            return
-
-        if self.ui.displayDataCombo.count() == 0:
-            return
-
-        data = self.ui.displayDataCombo.itemData(index)
-        self.ui.slice.set_data(data)
-        self.client.set_data(data)
-        self.client.slice = self.ui.slice.slice
-        self.ui.displayDataCombo.setCurrentIndex(index)
-        self.set_attribute_combo(data)
-        self._update_window_title()
-
-    @property
-    def slice(self):
-        return self.client.slice
-
-    @slice.setter
-    def slice(self, value):
-        self.ui.slice.slice = value
-
-    @defer_draw
-    def set_attribute(self, index):
-        combo = self.ui.attributeComboBox
-        component_id = combo.itemData(index)
-        self.client.set_attribute(component_id)
-        self.ui.attributeComboBox.setCurrentIndex(index)
-        self._update_window_title()
-
-    def set_attribute_combo(self, data):
-        """ Update attribute combo box to reflect components in data"""
-        combo = self.ui.attributeComboBox
-        combo.blockSignals(True)
-        combo.clear()
-        fields = data.visible_components
-        index = 0
-        for i, f in enumerate(fields):
-            combo.addItem(f.label, userData=f)
-            if f == self.client.display_attribute:
-                index = i
-        combo.blockSignals(False)
-        combo.setCurrentIndex(index)
-        self.set_attribute(index)
-
-    def _connect(self):
-        ui = self.ui
-
-        ui.displayDataCombo.currentIndexChanged.connect(self.set_data)
-        ui.attributeComboBox.currentIndexChanged.connect(self.set_attribute)
-
-        ui.monochrome.toggled.connect(self._update_rgb_console)
-        ui.rgb_options.colors_changed.connect(self._update_window_title)
-        ui.rgb_options.current_changed.connect(
-            lambda: self._toolbars[0].set_mode(self._contrast))
-        ui.slice.slice_changed.connect(self._update_slice)
-
-        update_ui_slice = lambda val: setattr(ui.slice, 'slice', val)
-        add_callback(self.client, 'slice', update_ui_slice)
-
-    def _update_slice(self):
-        self.client.slice = self.ui.slice.slice
-
-    @defer_draw
-    def _update_rgb_console(self, is_monochrome):
-        if is_monochrome:
-            self.ui.rgb_options.hide()
-            self.ui.mono_att_label.show()
-            self.ui.attributeComboBox.show()
-            self.client.rgb_mode(False)
-        else:
-            self.ui.mono_att_label.hide()
-            self.ui.attributeComboBox.hide()
-            self.ui.rgb_options.show()
-            rgb = self.client.rgb_mode(True)
-            if rgb is not None:
-                self.ui.rgb_options.artist = rgb
-
-    def register_to_hub(self, hub):
-        super(GingaWidget, self).register_to_hub(hub)
-        self.client.register_to_hub(hub)
-
-        dc_filt = lambda x: x.sender is self.client._data
-        layer_present_filter = lambda x: x.data in self.client.artists
-
-        hub.subscribe(self,
-                      core.message.DataCollectionAddMessage,
-                      handler=lambda x: self.add_data_to_combo(x.data),
-                      filter=dc_filt)
-        hub.subscribe(self,
-                      core.message.DataCollectionDeleteMessage,
-                      handler=lambda x: self.remove_data_from_combo(x.data),
-                      filter=dc_filt)
-        hub.subscribe(self,
-                      core.message.DataUpdateMessage,
-                      handler=lambda x: self._sync_data_labels()
-                      )
-        hub.subscribe(self,
-                      core.message.ComponentsChangedMessage,
-                      handler=lambda x: self.set_attribute_combo(x.data),
-                      filter=layer_present_filter)
-
-    def unregister(self, hub):
-        for obj in [self, self.client]:
-            hub.unsubscribe_all(obj)
-
-    def remove_data_from_combo(self, data):
-        """ Remvoe a data object from the combo box, if present """
-        combo = self.ui.displayDataCombo
-        pos = combo.findText(data.label)
-        if pos >= 0:
-            combo.removeItem(pos)
-
-    def _update_window_title(self):
-        if self.client.display_data is None:
-            title = ''
-        else:
-            data = self.client.display_data.label
-            a = self.client.rgb_mode()
-            if a is None:  # monochrome mode
-                title = "%s - %s" % (self.client.display_data.label,
-                                     self.client.display_attribute.label)
-            else:
-                r = a.r.label if a.r is not None else ''
-                g = a.g.label if a.g is not None else ''
-                b = a.b.label if a.b is not None else ''
-                title = "%s Red = %s  Green = %s  Blue = %s" % (data, r, g, b)
-        self.setWindowTitle(title)
-
-    def _update_data_combo(self):
-        combo = self.ui.displayDataCombo
-        for i in range(combo.count()):
-            combo.setItemText(i, combo.itemData(i).label)
-
-    def _sync_data_labels(self):
-        self._update_window_title()
-        self._update_data_combo()
-
-    def __str__(self):
-        return "Ginga Widget"
-
-    def options_widget(self):
-        return self.option_widget
-
-    @defer_draw
-    def restore_layers(self, rec, context):
-        self.client.restore_layers(rec, context)
-        for artist in self.layers:
-            self.add_data_to_combo(artist.layer.data)
-
-        self.set_attribute_combo(self.client.display_data)
-        self._update_data_combo()
-
-    def paintEvent(self, event):
-        super(GingaWidget, self).paintEvent(event)
-        ## pos = self.central_widget.mapFromGlobal(QCursor.pos())
-        ## x, y = pos.x(), self.central_widget.height() - pos.y()
-        ## self._update_intensity_label(x, y)
 
     def motion_readout(self, canvas, button, data_x, data_y):
 
@@ -494,7 +204,7 @@ class GingaWidget(DataViewer):
             #value = fitsimage.get_data(data_x, data_y)
             # We report the value across the pixel, even though the coords
             # change halfway across the pixel
-            value = canvas.get_data(int(data_x+0.5), int(data_y+0.5))
+            value = canvas.get_data(int(data_x + 0.5), int(data_y + 0.5))
 
         except Exception:
             value = None
@@ -505,7 +215,7 @@ class GingaWidget(DataViewer):
         try:
             # NOTE: image function operates on DATA space coords
             image = canvas.get_image()
-            if image == None:
+            if image is None:
                 # No image loaded
                 return
             ra_txt, dec_txt = image.pixtoradec(fits_x, fits_y,
@@ -513,7 +223,7 @@ class GingaWidget(DataViewer):
         except Exception as e:
             self.logger.warn("Bad coordinate conversion: %s" % (
                 str(e)))
-            ra_txt  = 'BAD WCS'
+            ra_txt = 'BAD WCS'
             dec_txt = 'BAD WCS'
 
         text = "RA: %s  DEC: %s  X: %.2f  Y: %.2f  Value: %s" % (
@@ -530,13 +240,13 @@ class GingaWidget(DataViewer):
         bm.set_modifier(modname, modtype='locked')
         self.mode_w = self.mode_actns[modname]
         return True
-    
+
     def mode_set_cb(self, bm, mode, mtype):
         if not (mode in self.mode_actns) and self.mode_w:
             self.mode_w.setChecked(False)
             self.mode_w = None
         return True
-    
+
 
 class ColormapAction(QAction):
 
@@ -593,7 +303,7 @@ class StandaloneGingaWidget(QMainWindow):
 
         self._im = None
 
-        #self.make_toolbar()
+        # self.make_toolbar()
         self.set_image(image, **kwargs)
 
     def _setup_axes(self):
@@ -612,11 +322,11 @@ class StandaloneGingaWidget(QMainWindow):
 
         ## kwargs.setdefault('origin', 'upper')
 
-        ## self._im = imshow(self._axes, image,
-        ##                   norm=self._norm, cmap='gray', **kwargs)
+        # self._im = imshow(self._axes, image,
+        # norm=self._norm, cmap='gray', **kwargs)
         ## self._im_array = image
-        ## self._axes.set_xticks([])
-        ## self._axes.set_yticks([])
+        # self._axes.set_xticks([])
+        # self._axes.set_yticks([])
         self._redraw()
 
     @property
@@ -634,7 +344,7 @@ class StandaloneGingaWidget(QMainWindow):
         self.canvas.redraw()
 
     def _set_cmap(self, cmap):
-        #self._im.set_cmap(cmap)
+        # self._im.set_cmap(cmap)
         self._redraw()
 
     def mdi_wrap(self):
@@ -650,30 +360,8 @@ class StandaloneGingaWidget(QMainWindow):
         return sub
 
     def _set_norm(self, mode):
-        """ Use the `ContrastMouseMode` to adjust the transfer function """
-        clip_lo, clip_hi = mode.get_clip_percentile()
-        stretch = mode.stretch
-        ## self._norm.clip_lo = clip_lo
-        ## self._norm.clip_hi = clip_hi
-        ## self._norm.stretch = stretch
-        ## self._norm.bias = mode.bias
-        ## self._norm.contrast = mode.contrast
-        ## self._im.set_norm(self._norm)
-        print "loval, hival = %f,%f" % (clip_lo, clip_hi)
-        self._redraw()
-
-    def make_toolbar(self):
-        """
-        Setup the toolbar
-        """
-        result = GlueToolbar(self.central_widget.canvas, self,
-                             name='Image')
-        result.add_mode(ContrastMode(self._axes, move_callback=self._set_norm))
-        cm = _colormap_mode(self, self._set_cmap)
-        result.addWidget(cm)
-        self._cmap_actions = cm.actions()
-        self.addToolBar(result)
-        return result
+        # ginga takes care of this by itself
+        pass
 
 
 class PVSliceWidget(StandaloneGingaWidget):
@@ -742,7 +430,7 @@ def _slice_index(data, slc):
     The axis over which to extract PV slices
     """
     return max([i for i in range(len(slc))
-               if isinstance(slc[i], int)],
+                if isinstance(slc[i], int)],
                key=lambda x: data.shape[x])
 
 
