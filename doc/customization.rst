@@ -9,7 +9,7 @@ with configuration files and plugins.
 Configuration Files
 -------------------
 
-Each time Glue starts, it looks for an executes a configuration file. This is a normal python script into which users can define or import new functions to link data, plug in their own visualization modules, set up logging, etc.
+Each time Glue starts, it looks for and executes a configuration file. This is a normal python script into which users can define or import new functions to link data, plug in their own visualization modules, set up logging, etc.
 
 The glue configuration file is called ``config.py``. Glue looks for this file in the following locations, in order:
 
