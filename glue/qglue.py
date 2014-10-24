@@ -195,7 +195,7 @@ def qglue(**kwargs):
         def kg2lb(kg):
             return kg * 2.2
 
-        links = [(['balls.kg'], ['cones.lbs'], lb2kg, kb2lb)]
+        links = [(['balls.kg'], ['cones.lbs'], lb2kg, kg2lb)]
         qglue(balls=balls, cones=cones, links=links)
 
     :returns: A :class:`~glue.qt.glue_application.GlueApplication` object
