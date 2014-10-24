@@ -243,17 +243,35 @@ def load_data(path, factory=None, **kwargs):
 
     Extra keywords are passed through to factory functions
     """
+    from ..qglue import parse_data
+
+    def as_data_objects(ds, lbl):
+        # pack other container types like astropy tables
+        # into glue data objects
+        for d in ds:
+            if isinstance(d, Data):
+                yield d
+                continue
+            for item in parse_data(d, lbl):
+                yield item
+
     factory = factory or auto_data
-    d = factory(path, **kwargs)
     lbl = data_label(path)
 
+    d = as_list(factory(path, **kwargs))
+    d = list(as_data_objects(d, lbl))
     log = LoadLog(path, factory, kwargs)
-    for item in as_list(d):
+    for item in d:
         if item.label is '':
             item.label = lbl
         log.log(item)  # attaches log metadata to item
         for cid in item.primary_components:
             log.log(item.get_component(cid))
+
+    if len(d) == 1:
+        # unpack single-length lists for user convenience
+        return d[0]
+
     return d
 
 
@@ -476,11 +494,11 @@ def astropy_tabular_data(*args, **kwargs):
     try:
         table = Table.read(*args, **kwargs)
     except:
-        # In Python 3, as of Astropy 0.4, if the format is not specified, the 
-        # automatic format identification will fail (astropy/astropy#3013). 
-        # This is only a problem for ASCII formats however, because it is due 
-        # to the fact that the file object in io.ascii does not rewind to the 
-        # start between guesses (due to a bug), so here we can explicitly try 
+        # In Python 3, as of Astropy 0.4, if the format is not specified, the
+        # automatic format identification will fail (astropy/astropy#3013).
+        # This is only a problem for ASCII formats however, because it is due
+        # to the fact that the file object in io.ascii does not rewind to the
+        # start between guesses (due to a bug), so here we can explicitly try
         # the ASCII format if the format keyword was not already present.
         if 'format' not in kwargs:
             table = Table.read(*args, format='ascii.glue', **kwargs)
