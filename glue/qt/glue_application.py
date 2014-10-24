@@ -199,7 +199,6 @@ class GlueApplication(Application, QMainWindow):
         self._create_menu()
         self._connect()
         self.new_tab()
-        self._create_terminal()
         self._update_plot_dashboard(None)
 
         self._load_settings()
@@ -633,11 +632,15 @@ class GlueApplication(Application, QMainWindow):
         """
         Returns True if the IPython terminal is present.
         """
+        self._create_terminal()  # ensure terminal is setup
         return self._terminal is not None
 
     def _create_terminal(self):
-        assert self._terminal is None, \
-            "should only call _create_terminal once"
+        if self._terminal is not None:  # already set up
+            return
+
+        if hasattr(self, '_terminal_exception'):  # already failed to set up
+            return
 
         self._terminal_button = QToolButton(self._ui)
         self._terminal_button.setToolTip("Toggle IPython Prompt")
@@ -698,6 +701,7 @@ class GlueApplication(Application, QMainWindow):
         """
         Show the GUI and start the application.
         """
+        self._create_terminal()
         self.show()
         self.raise_()  # bring window to front
         # at some point during all this, the MPL backend
