@@ -159,7 +159,7 @@ You can save a Glue session for later work via the ``File->Save Session`` menu. 
 **Exporting the plots**
 Glue can export certain kinds of plot combinations to other formats and web services.
 
-`Plot.ly <http://plot.ly>`_ is a cloud-based plot service whose features in clude the ability to tweak plot features (colors, annotations, etc.) through a GUI, and to easily share plots via web URLs. If your Glue session contains four or fewer scatter plots and/or histograms, these can be exported to a plotly page.
+`Plot.ly <http://plot.ly>`_ is a cloud-based plot service whose features include the ability to tweak plot features (colors, annotations, etc.) through a GUI, and to easily share plots via web URLs. If your Glue session contains four or fewer scatter plots and/or histograms, these can be exported to a plotly page.
 
 To do this, first sign up for a plotly account, and enter your user name and API key under ``File->Edit Settings``. Then, select ``File->Export->Plotly``. This will create a new plot, and open a browser window showing you the plot.
 
