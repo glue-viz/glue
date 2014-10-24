@@ -132,7 +132,7 @@ class DendroClient(GenericMplClient):
             return
 
         super(DendroClient, self).add_layer(layer)
-        self.display_data = layer.data
+        self.display_data = self.display_data or layer.data
         self._default_attributes()
 
     def _update_layer(self, layer):
@@ -144,6 +144,11 @@ class DendroClient(GenericMplClient):
             artist.update()
 
         self._redraw()
+
+    def remove_layer(self, layer):
+        super(DendroClient, self).remove_layer(layer)
+        if layer is self.display_data:
+            self.display_data = None
 
     @property
     def _parents(self):
