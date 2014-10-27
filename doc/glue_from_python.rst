@@ -159,7 +159,7 @@ Likewise, if you are using a pre-built application, you can right-click on a sci
 
 Interacting with Glue using Python
 ==================================
-There are two ways to programmatically interact with an active Glue session. We outline eaach option below, and then describe some
+There are two ways to programmatically interact with an active Glue session. We outline each option below, and then describe some
 useful ways to interact with Glue using Python.
 
 The Glue-IPython terminal
