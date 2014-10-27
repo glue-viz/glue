@@ -4,7 +4,7 @@ Programmatically configuring plots
 
 Plots in Glue are designed to be easily configured
 with Python. As much as possible, plot settings are
-controled by simple properties on data viewer objects.
+controlled by simple properties on data viewer objects.
 For example::
 
     from glue.core import Data, DataCollection
