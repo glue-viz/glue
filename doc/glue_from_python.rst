@@ -110,8 +110,8 @@ Here's an example::
    qglue(data1=data1, data2=data2, links=[link1, link2])
 
 The first link converts between the masses in two different data sets,
-recorded in different units. The seonc link is a 1-way link that computes
-an the area of items in dataset 1, based on their width and height (there is
+recorded in different units. The second link is a 1-way link that computes
+the area of items in dataset 1, based on their width and height (there is
 no way to compute the width and height from the area measurements in dataset 2,
 so the reverse function is not provided). These links would enable the following interaction, for example:
 
