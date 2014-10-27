@@ -1,5 +1,6 @@
 import logging
-import sys, traceback
+import sys
+import traceback
 import os.path
 import numpy as np
 
@@ -14,7 +15,7 @@ from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
 from ginga.qtw import Readout, ColorBar
 from ginga.misc import log
 from ginga import cmap as ginga_cmap
-#ginga_cmap.add_matplotlib_cmaps()
+# ginga_cmap.add_matplotlib_cmaps()
 
 from .image_widget import ImageWidgetBase
 from ... import config
@@ -41,11 +42,12 @@ class GingaWidget(ImageWidgetBase):
     LABEL = "Ginga Viewer"
 
     def __init__(self, session, parent=None):
-        self.canvas = ImageViewCanvas(self.logger, render='widget')
 
         #logger = logging.getLogger(__name__)
         self.logger = log.get_logger(name='ginga', log_stderr=True)
         #self.logger = log.get_logger(name='ginga', null=True)
+
+        self.canvas = ImageViewCanvas(self.logger, render='widget')
 
         # prevent widget from grabbing focus
         self.canvas.set_follow_focus(False)
@@ -266,18 +268,17 @@ class GingaWidget(ImageWidgetBase):
             #value = fitsimage.get_data(data_x, data_y)
             # We report the value across the pixel, even though the coords
             # change halfway across the pixel
-            value = canvas.get_data(int(data_x+0.5), int(data_y+0.5))
+            value = canvas.get_data(int(data_x + 0.5), int(data_y + 0.5))
 
         except Exception:
             value = None
 
         x_lbl, y_lbl = d['labels'][0], d['labels'][1]
         #x_txt, y_txt = d['world'][0], d['world'][1]
-        
+
         text = "%s  %s  X=%.2f  Y=%.2f  Value=%s" % (
             x_lbl, y_lbl, data_x, data_y, value)
         self.readout.set_text(text)
-        
 
     def mode_cb(self, modname, tf):
         """This method is called when a toggle button in the toolbar is pressed
@@ -290,7 +291,7 @@ class GingaWidget(ImageWidgetBase):
             return
         bm.set_modifier(modname, modtype='locked')
         return True
-    
+
     def mode_set_cb(self, bm, modname, mtype):
         """This method is called when a mode is selected in the viewer widget.
         NOTE: it may be called when mode_cb() is not called (for example, when
@@ -327,7 +328,7 @@ def _colormap_mode(parent, on_trigger):
 
     # actions for each colormap
     acts = []
-    #for label, cmap in config.colormaps:
+    # for label, cmap in config.colormaps:
     for label in ginga_cmap.get_names():
         cmap = ginga_cmap.get_cmap(label)
         a = ColormapAction(label, cmap, parent)
@@ -563,6 +564,7 @@ def _slice_label(data, slc):
     idx = _slice_index(data, slc)
     return data.get_world_component_id(idx).label
 
+
 def cmap2pixmap(cmap, steps=50):
     """Convert a Ginga colormap into a QPixmap
 
@@ -575,7 +577,7 @@ def cmap2pixmap(cmap, steps=50):
     """
     inds = np.linspace(0, 1, steps)
     n = len(cmap.clst) - 1
-    tups = [ cmap.clst[int(x*n)] for x in inds ]
+    tups = [cmap.clst[int(x * n)] for x in inds]
     rgbas = [QColor(int(r * 255), int(g * 255),
                     int(b * 255), 255).rgba() for r, g, b in tups]
     im = QImage(steps, 1, QImage.Format_Indexed8)

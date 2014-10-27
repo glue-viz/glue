@@ -53,6 +53,17 @@ class ImageWidgetBase(DataViewer):
 
     def __init__(self, session, parent=None):
         super(ImageWidgetBase, self).__init__(session, parent)
+        self._setup_widgets()
+        self.client = self.make_client()
+
+        self._setup_tools()
+
+        tb = self.make_toolbar()
+        self.addToolBar(tb)
+
+        self._connect()
+
+    def _setup_widgets(self):
         self.central_widget = self.make_central_widget()
         self.label_widget = QLabel("", self.central_widget)
         self.setCentralWidget(self.central_widget)
@@ -60,16 +71,7 @@ class ImageWidgetBase(DataViewer):
         self.option_widget = self.ui
         self.ui.slice = DataSlice()
         self.ui.slice_layout.addWidget(self.ui.slice)
-        self.client = self.make_client()
-
-        self._setup_tools()
         self._tweak_geometry()
-
-        tb = self.make_toolbar()
-        self.addToolBar(tb)
-
-        self._connect()
-        self._slice_widget = None
 
     def make_client(self):
         """ Instantiate and return an ImageClient subclass """
