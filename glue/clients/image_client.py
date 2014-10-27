@@ -476,6 +476,7 @@ class ImageClient(VizClient):
             self.artists.append(result)
             for s in layer.subsets:
                 self.add_layer(s)
+            self.set_data(layer)
         elif isinstance(layer, Subset):
             result = self._new_subset_image_layer(layer)
             self.artists.append(result)
@@ -656,7 +657,6 @@ class ImageClient(VizClient):
         Reset view window to the default pan/zoom setting.
         """
         pass
-
 
 
 class MplImageClient(ImageClient):
