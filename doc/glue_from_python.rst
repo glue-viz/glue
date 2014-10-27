@@ -177,7 +177,7 @@ by default (these are also listed when you open the terminal):
 
   * ``application`` is the top level :class:`~glue.qt.glue_application.GlueApplication`, which has access to plot windows (among other things)
 
-Additionally, you can drage datasets and subsets into the terminal
+Additionally, you can drag datasets and subsets into the terminal
 window, to easily assign them new variable names.
 
 .. note::
