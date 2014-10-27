@@ -1,7 +1,7 @@
 Watching data for changes
 =========================
 
-An new, experimental feature enables Glue to monitor the
+A new, experimental feature enables Glue to monitor the
 data files you've loaded for changes, and to auto-refresh
 plots when needed. This can be useful if your data update periodically,
 or if your data are produced by an analysis pipeline whose parameters you
