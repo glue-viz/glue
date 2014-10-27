@@ -122,7 +122,7 @@ Using qglue with the IPython Notebook
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can call :func:`~glue.qglue.qglue` from the IPython notebook normally. However, the default behavior is for Glue to block the execution of the
-nootbook while the UI is running. If you would like to be able to use the notebook and Glue at the same time, run this cell before starting glue::
+notebook while the UI is running. If you would like to be able to use the notebook and Glue at the same time, run this cell before starting glue::
 
     %gui qt
 
