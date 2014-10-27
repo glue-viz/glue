@@ -170,7 +170,7 @@ you programmatic access to Glue data. A number of variables are available
 by default (these are also listed when you open the terminal):
 
   * ``dc`` / ``data_collection`` refer to the central :class:`~glue.core.
-    DataCollection` , which holds all of the datasets, subsets, and
+    DataCollection`, which holds all of the datasets, subsets, and
     data links
 
   * ``hub`` is the communication :ref:`hub <hub>` object.
