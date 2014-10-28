@@ -144,6 +144,10 @@ class GingaImageLayer(GingaLayerArtist):
         except:
             pass
 
+    @property
+    def enabled(self):
+        return self._aimg is not None
+
     def update(self, view, transpose=False):
         """
         to fix:
@@ -183,10 +187,19 @@ class GingaSubsetImageLayer(GingaLayerArtist):
         self._cimg = None
         self._tag = "layer%s" % (str(layer.label))
         self._visible = True
+        self._enabled = True
+
+    @property
+    def enabled(self):
+        return self._cimg is not None
 
     @property
     def visible(self):
         return self._visible
+
+    @property
+    def enabled(self):
+        return self._enabled
 
     @visible.setter
     def visible(self, value):
@@ -248,13 +261,13 @@ class GingaSubsetImageLayer(GingaLayerArtist):
 
     def update(self, view, transpose=False):
         # remove previously added image
-        try:
-            self._canvas.deleteObjectsByTag([self._tag], redraw=False)
-        except:
-            pass
+        self.clear()
+        self._enabled = True
 
         im = self._compute_img(view, transpose)
         if not im:
+            self._enabled = False
+            self.redraw()
             return
         # lower z-order in the back
         # TODO: check for z-order
