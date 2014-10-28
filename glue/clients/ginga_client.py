@@ -60,12 +60,12 @@ class GingaClient(ImageClient):
         ## v = extract_matched_slices(self._ax, shp_2d)
         ## x = slice(v[0], v[1], v[2])
         ## y = slice(v[3], v[4], v[5])
-        x0, x1, y0, y1 = 0, shp_2d[1]-1, 0, shp_2d[0]-1
+        x0, x1, y0, y1 = 0, shp_2d[1] - 1, 0, shp_2d[0] - 1
         # TODO: try and generate lower resolution view (which combines
         # masks faster in to_mask()) and then upres it in ginga
         #x0, y0, x1, y1 = self._canvas.get_datarect()
         x0, y0 = max(0, x0), max(0, y0)
-        x1, y1 = min(x1, shp_2d[1]-1), min(y1, shp_2d[0]-1)
+        x1, y1 = min(x1, shp_2d[1] - 1), min(y1, shp_2d[0] - 1)
         sx, sy = 1, 1
         x = slice(x0, x1, sx)
         y = slice(y0, y1, sy)
@@ -88,12 +88,14 @@ class GingaLayerArtist(LayerArtist):
     visible = Pointer('_visible')
 
     def __init__(self, layer, canvas):
+        # Note: a bit ugly here, canvas gets assigned to self._axes
+        #       by superclass. This doesn't actually do anything harmful
+        #       right now, but it's a hack.
         super(GingaLayerArtist, self).__init__(layer, canvas)
         self._canvas = canvas
         self._visible = True
 
     def redraw(self):
-        #print "ginga layer artist redraw"
         self._canvas.redraw()
 
     def _sync_style(self):
@@ -113,7 +115,7 @@ class GingaImageLayer(GingaLayerArtist):
     @property
     def visible(self):
         return self._visible
-    
+
     @visible.setter
     def visible(self, value):
         self._visible = value
@@ -122,7 +124,7 @@ class GingaImageLayer(GingaLayerArtist):
         elif self._aimg:
             #self._canvas.add(self._nimg, tag=self._tag, redraw=True)
             self._canvas.set_image(self._aimg)
-            
+
     def set_norm(self, **kwargs):
         # NOP for ginga
         pass
@@ -173,6 +175,7 @@ class GingaImageLayer(GingaLayerArtist):
             #self._canvas.add(self._nimg, tag=self._tag, redraw=True)
             self._canvas.set_image(self._aimg)
 
+
 class GingaSubsetImageLayer(GingaLayerArtist):
 
     def __init__(self, layer, canvas):
@@ -185,7 +188,7 @@ class GingaSubsetImageLayer(GingaLayerArtist):
     @property
     def visible(self):
         return self._visible
-    
+
     @visible.setter
     def visible(self, value):
         self._visible = value
@@ -193,7 +196,7 @@ class GingaSubsetImageLayer(GingaLayerArtist):
             self.clear()
         elif self._cimg:
             self._canvas.add(self._cimg, tag=self._tag, redraw=True)
-            
+
     def clear(self):
         try:
             self._canvas.deleteObjectsByTag([self._tag], redraw=True)
@@ -201,12 +204,10 @@ class GingaSubsetImageLayer(GingaLayerArtist):
             pass
 
     def _compute_img(self, view, transpose=False):
-        #print "update subset image"
         time_start = time.time()
         subset = self.layer
-        #self.clear()
+        # self.clear()
         logging.debug("View into subset %s is %s", self.layer, view)
-        #print ("View into subset %s is %s", self.layer, view)
         id, ysl, xsl = view
 
         try:
@@ -216,7 +217,6 @@ class GingaSubsetImageLayer(GingaLayerArtist):
             return False
         logging.debug("View mask has shape %s", mask.shape)
         time_split = time.time()
-        #print "a) %.2f split time" % (time_split - time_start)
 
         # shortcut for empty subsets
         if not mask.any():
@@ -225,12 +225,10 @@ class GingaSubsetImageLayer(GingaLayerArtist):
         if transpose:
             mask = mask.T
         time_split = time.time()
-        #print "b) %.2f split time" % (time_split - time_start)
 
         r, g, b = color2rgb(self.layer.style.color)
 
         time_split = time.time()
-        #print "c) %.2f split time" % (time_split - time_start)
 
         if self._img and self._img.get_data().shape[:2] == mask.shape[:2]:
             # optimization to simply update the color overlay if it already
@@ -249,7 +247,6 @@ class GingaSubsetImageLayer(GingaLayerArtist):
         self._img = rgbimg
 
         elapsed_time = time.time() - time_split
-        #print "%.2f sec to make color image" % (elapsed_time)
         return self._img
 
     def update(self, view, transpose=False):
@@ -262,14 +259,12 @@ class GingaSubsetImageLayer(GingaLayerArtist):
         im = self._compute_img(view, transpose)
         if not im:
             return
-        #print im.get_data()
         # lower z-order in the back
         # TODO: check for z-order
-        
+
         x_pos = y_pos = 0
         # TODO: how should we decide the alpha?
         self._cimg = Image(x_pos, y_pos, im, alpha=0.5,
                            flipy=False)
         if self._visible:
             self._canvas.add(self._cimg, tag=self._tag, redraw=True)
-
