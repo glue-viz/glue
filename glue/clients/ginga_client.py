@@ -1,5 +1,4 @@
 import logging
-import time
 
 import numpy as np
 
@@ -156,7 +155,7 @@ class GingaImageLayer(GingaLayerArtist):
 
         # TODO: check visibility
 
-        if self._override_image != None:
+        if self._override_image is not None:
             data = self.override_image
         else:
             data = self._layer[view]
@@ -204,10 +203,9 @@ class GingaSubsetImageLayer(GingaLayerArtist):
             pass
 
     def _compute_img(self, view, transpose=False):
-        time_start = time.time()
         subset = self.layer
         # self.clear()
-        logging.debug("View into subset %s is %s", self.layer, view)
+        logging.getLogger(__name__).debug("View into subset %s is %s", self.layer, view)
         id, ysl, xsl = view
 
         try:
@@ -215,8 +213,7 @@ class GingaSubsetImageLayer(GingaLayerArtist):
         except IncompatibleAttribute as exc:
             self.disable_invalid_attributes(*exc.args)
             return False
-        logging.debug("View mask has shape %s", mask.shape)
-        time_split = time.time()
+        logging.getLogger(__name__).debug("View mask has shape %s", mask.shape)
 
         # shortcut for empty subsets
         if not mask.any():
@@ -224,17 +221,18 @@ class GingaSubsetImageLayer(GingaLayerArtist):
 
         if transpose:
             mask = mask.T
-        time_split = time.time()
 
         r, g, b = color2rgb(self.layer.style.color)
-
-        time_split = time.time()
 
         if self._img and self._img.get_data().shape[:2] == mask.shape[:2]:
             # optimization to simply update the color overlay if it already
             # exists and is the correct size
             data = self._img.get_data()
             data[..., 3] = 127 * mask
+            data[..., 0] = 255 * r
+            data[..., 1] = 255 * g
+            data[..., 2] = 255 * b
+
             return self._img
 
         # create new color image overlay
@@ -246,7 +244,6 @@ class GingaSubsetImageLayer(GingaLayerArtist):
 
         self._img = rgbimg
 
-        elapsed_time = time.time() - time_split
         return self._img
 
     def update(self, view, transpose=False):
