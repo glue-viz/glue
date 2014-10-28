@@ -13,7 +13,7 @@ from .layer_artist import LayerArtist
 
 from ginga.util import wcsmod
 wcsmod.use('astropy')
-from ginga.ImageViewCanvas import Image
+from ginga.ImageViewCanvas import Image, NormImage
 from ginga import AstroImage, RGBImage
 
 
@@ -51,6 +51,37 @@ class GingaClient(ImageClient):
     def set_cmap(self, cmap):
         self._canvas.set_cmap(cmap)
 
+    def _build_view(self):
+
+        att = self.display_attribute
+        shp = self.display_data.shape
+
+        shp_2d = _2d_shape(shp, self.slice)
+        ## v = extract_matched_slices(self._ax, shp_2d)
+        ## x = slice(v[0], v[1], v[2])
+        ## y = slice(v[3], v[4], v[5])
+        x0, x1, y0, y1 = 0, shp_2d[1]-1, 0, shp_2d[0]-1
+        # TODO: try and generate lower resolution view (which combines
+        # masks faster in to_mask()) and then upres it in ginga
+        #x0, y0, x1, y1 = self._canvas.get_datarect()
+        x0, y0 = max(0, x0), max(0, y0)
+        x1, y1 = min(x1, shp_2d[1]-1), min(y1, shp_2d[0]-1)
+        sx, sy = 1, 1
+        x = slice(x0, x1, sx)
+        y = slice(y0, y1, sy)
+
+        slc = list(self.slice)
+        slc[slc.index('x')] = x
+        slc[slc.index('y')] = y
+        return (att,) + tuple(slc)
+
+
+def _2d_shape(shape, slc):
+    """Return the shape of the 2D slice through a 2 or 3D image
+    """
+    # - numpy ordering here
+    return shape[slc.index('y')], shape[slc.index('x')]
+
 
 class GingaLayerArtist(LayerArtist):
     zorder = Pointer('_zorder')
@@ -62,8 +93,7 @@ class GingaLayerArtist(LayerArtist):
         self._visible = True
 
     def redraw(self):
-        #pass
-        print "ginga layer artist redraw"
+        #print "ginga layer artist redraw"
         self._canvas.redraw()
 
     def _sync_style(self):
@@ -76,8 +106,25 @@ class GingaImageLayer(GingaLayerArtist):
         super(GingaImageLayer, self).__init__(layer, canvas)
         self._override_image = None
         self.norm = None  # XXX unused by Ginga, cleanup
+        self._tag = "layer%s" % (str(layer.label))
+        self._img = None
+        self._aimg = None
 
+    @property
+    def visible(self):
+        return self._visible
+    
+    @visible.setter
+    def visible(self, value):
+        self._visible = value
+        if not value:
+            self.clear()
+        elif self._aimg:
+            #self._canvas.add(self._nimg, tag=self._tag, redraw=True)
+            self._canvas.set_image(self._aimg)
+            
     def set_norm(self, **kwargs):
+        # NOP for ginga
         pass
 
     def override_image(self, image):
@@ -89,8 +136,12 @@ class GingaImageLayer(GingaLayerArtist):
         self._override_image = None
 
     def clear(self):
-        # how to clear image in ginga?
-        pass
+        # remove previously added image
+        try:
+            #self._canvas.deleteObjectsByTag([self._tag], redraw=False)
+            self._canvas.deleteObjectsByTag(['_image'], redraw=False)
+        except:
+            pass
 
     def update(self, view, transpose=False):
         """
@@ -110,12 +161,17 @@ class GingaImageLayer(GingaLayerArtist):
             if transpose:
                 data = data.T
 
-        aimg = AstroImage.AstroImage(data_np=data)
-        self._canvas.set_image(aimg)
+        self._aimg = AstroImage.AstroImage(data_np=data)
 
         hdr = self._layer.coords._header
-        aimg.update_keywords(hdr)
+        self._aimg.update_keywords(hdr)
 
+        x_pos = y_pos = 0
+        # TODO: how should we decide the alpha?
+        #self._nimg = NormImage(x_pos, y_pos, self._aimg, alpha=1.0)
+        if self._visible:
+            #self._canvas.add(self._nimg, tag=self._tag, redraw=True)
+            self._canvas.set_image(self._aimg)
 
 class GingaSubsetImageLayer(GingaLayerArtist):
 
@@ -133,7 +189,6 @@ class GingaSubsetImageLayer(GingaLayerArtist):
     @visible.setter
     def visible(self, value):
         self._visible = value
-        print "subset visibility=%s" % (str(value))
         if not value:
             self.clear()
         elif self._cimg:
@@ -146,12 +201,12 @@ class GingaSubsetImageLayer(GingaLayerArtist):
             pass
 
     def _compute_img(self, view, transpose=False):
-        print "update subset image"
+        #print "update subset image"
         time_start = time.time()
         subset = self.layer
         #self.clear()
         logging.debug("View into subset %s is %s", self.layer, view)
-        print ("View into subset %s is %s", self.layer, view)
+        #print ("View into subset %s is %s", self.layer, view)
         id, ysl, xsl = view
 
         try:
@@ -161,7 +216,7 @@ class GingaSubsetImageLayer(GingaLayerArtist):
             return False
         logging.debug("View mask has shape %s", mask.shape)
         time_split = time.time()
-        print "a) %.2f split time" % (time_split - time_start)
+        #print "a) %.2f split time" % (time_split - time_start)
 
         # shortcut for empty subsets
         if not mask.any():
@@ -170,12 +225,12 @@ class GingaSubsetImageLayer(GingaLayerArtist):
         if transpose:
             mask = mask.T
         time_split = time.time()
-        print "b) %.2f split time" % (time_split - time_start)
+        #print "b) %.2f split time" % (time_split - time_start)
 
         r, g, b = color2rgb(self.layer.style.color)
 
         time_split = time.time()
-        print "c) %.2f split time" % (time_split - time_start)
+        #print "c) %.2f split time" % (time_split - time_start)
 
         if self._img and self._img.get_data().shape[:2] == mask.shape[:2]:
             # optimization to simply update the color overlay if it already
@@ -194,11 +249,10 @@ class GingaSubsetImageLayer(GingaLayerArtist):
         self._img = rgbimg
 
         elapsed_time = time.time() - time_split
-        print "%.2f sec to make color image" % (elapsed_time)
+        #print "%.2f sec to make color image" % (elapsed_time)
         return self._img
 
     def update(self, view, transpose=False):
-        print("updating subset layer")
         # remove previously added image
         try:
             self._canvas.deleteObjectsByTag([self._tag], redraw=False)
@@ -213,6 +267,7 @@ class GingaSubsetImageLayer(GingaLayerArtist):
         # TODO: check for z-order
         
         x_pos = y_pos = 0
+        # TODO: how should we decide the alpha?
         self._cimg = Image(x_pos, y_pos, im, alpha=0.5,
                            flipy=False)
         if self._visible:

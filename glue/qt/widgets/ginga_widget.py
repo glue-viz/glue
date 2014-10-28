@@ -31,6 +31,7 @@ from ..decorators import set_cursor
 from ..qtutil import cmap2pixmap, load_ui, get_icon, nonpartial
 from ..widget_properties import CurrentComboProperty, ButtonProperty
 
+# Find out location of ginga module so we can some of its icons
 ginga_home = os.path.split(sys.modules['ginga'].__file__)[0]
 ginga_icon_dir = os.path.join(ginga_home, 'icons')
 
@@ -179,10 +180,8 @@ class GingaWidget(ImageWidgetBase):
         self.canvas.set_drawtype(name, color='cyan', linestyle='dash')
         bm = self.canvas.get_bindmap()
         bm.set_modifier('draw', modtype='locked')
-        print "ROI (%s) " % (name)
 
     def _clear_roi_cb(self, canvas, *args):
-        print "roi cleared"
         try:
             self.canvas.deleteObjectByTag(self.roi_tag)
         except:
@@ -212,11 +211,9 @@ class GingaWidget(ImageWidgetBase):
         roi = self.ginga_graphic_to_roi(obj)
         # delete outline
         self.canvas.deleteObject(obj, redraw=False)
-        print "ROI is", roi
         try:
             self.apply_roi(roi)
         except Exception as e:
-            print "Error applying ROI: %s" % (str(e))
             (type, value, tb) = sys.exc_info()
             print "Traceback:\n%s" % ("".join(traceback.format_tb(tb)))
 
@@ -284,7 +281,6 @@ class GingaWidget(ImageWidgetBase):
         """This method is called when a toggle button in the toolbar is pressed
         selecting one of the modes.
         """
-        #print("%s mode %s" % (modname, tf))
         bm = self.canvas.get_bindmap()
         if not tf:
             bm.reset_modifier(self.canvas)
@@ -301,7 +297,6 @@ class GingaWidget(ImageWidgetBase):
         This logic is to insure that the toggle buttons are left in a sane state
         that reflects the current mode, however it was initiated.
         """
-        #print("mode set %s" % (modname))
         if modname in self.mode_actns:
             if self.mode_w and (self.mode_w != self.mode_actns[modname]):
                 self.mode_w.setChecked(False)
@@ -384,7 +379,6 @@ class StandaloneGingaWidget(QMainWindow):
         """
         Update the image shown in the widget
         """
-        print "image is", image
         if self._im is not None:
             self._im.remove()
             self._im = None
