@@ -110,8 +110,8 @@ Here's an example::
    qglue(data1=data1, data2=data2, links=[link1, link2])
 
 The first link converts between the masses in two different data sets,
-recorded in different units. The seonc link is a 1-way link that computes
-an the area of items in dataset 1, based on their width and height (there is
+recorded in different units. The second link is a 1-way link that computes
+the area of items in dataset 1, based on their width and height (there is
 no way to compute the width and height from the area measurements in dataset 2,
 so the reverse function is not provided). These links would enable the following interaction, for example:
 
@@ -122,7 +122,7 @@ Using qglue with the IPython Notebook
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can call :func:`~glue.qglue.qglue` from the IPython notebook normally. However, the default behavior is for Glue to block the execution of the
-nootbook while the UI is running. If you would like to be able to use the notebook and Glue at the same time, run this cell before starting glue::
+notebook while the UI is running. If you would like to be able to use the notebook and Glue at the same time, run this cell before starting glue::
 
     %gui qt
 
@@ -159,7 +159,7 @@ Likewise, if you are using a pre-built application, you can right-click on a sci
 
 Interacting with Glue using Python
 ==================================
-There are two ways to programmatically interact with an active Glue session. We outline eaach option below, and then describe some
+There are two ways to programmatically interact with an active Glue session. We outline each option below, and then describe some
 useful ways to interact with Glue using Python.
 
 The Glue-IPython terminal
@@ -170,14 +170,14 @@ you programmatic access to Glue data. A number of variables are available
 by default (these are also listed when you open the terminal):
 
   * ``dc`` / ``data_collection`` refer to the central :class:`~glue.core.
-    DataCollection` , which holds all of the datasets, subsets, and
+    DataCollection`, which holds all of the datasets, subsets, and
     data links
 
   * ``hub`` is the communication :ref:`hub <hub>` object.
 
   * ``application`` is the top level :class:`~glue.qt.glue_application.GlueApplication`, which has access to plot windows (among other things)
 
-Additionally, you can drage datasets and subsets into the terminal
+Additionally, you can drag datasets and subsets into the terminal
 window, to easily assign them new variable names.
 
 .. note::
