@@ -186,8 +186,6 @@ class ImageWidgetBase(DataViewer):
 
         ui.monochrome.toggled.connect(self._update_rgb_console)
         ui.rgb_options.colors_changed.connect(self._update_window_title)
-        ui.rgb_options.current_changed.connect(
-            lambda: self._toolbars[0].set_mode(self._contrast))
 
         # sync client and widget slices
         ui.slice.slice_changed.connect(lambda: setattr(self, 'slice', self.ui.slice.slice))
@@ -398,6 +396,10 @@ class ImageWidget(ImageWidgetBase):
         w, h = fm.width(lbl), fm.height()
         g = QRect(20, self.central_widget.geometry().height() - h, w, h)
         self.label_widget.setGeometry(g)
+
+    def _connect(self):
+        super(ImageWidget, self)._connect()
+        self.ui.rgb_options.current_changed.connect(lambda: self._toolbars[0].set_mode(self._contrast))
 
 
 class ColormapAction(QAction):

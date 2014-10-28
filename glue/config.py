@@ -342,6 +342,7 @@ class ToolRegistry(Registry):
 
         return tools
 
+
 class BooleanSetting(object):
 
     def __init__(self, default=True):
@@ -393,8 +394,7 @@ def load_configuration(search_path=None):
         except IOError:
             pass
         except Exception as e:
-            raise Exception("Error loading config file %s:\n%s" %
-                            (config_file, e))
+            raise type(e), "Error loading config file %s:\n%s" % (config_file, e), sys.exc_info()[2]
         finally:
             sys.path.remove(dir)
 

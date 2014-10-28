@@ -19,7 +19,9 @@ from .viz_client import VizClient, init_mpl
 from .util import defer_draw
 from .layer_artist import (ScatterLayerArtist, LayerArtistContainer,
                            ImageLayerArtist, SubsetImageLayerArtist,
-                           RGBImageLayerArtist)
+                           RGBImageLayerArtist,
+                           ImageLayerBase, RGBImageLayerBase,
+                           SubsetImageLayerBase, ScatterLayerBase)
 
 
 def requires_data(func):
@@ -422,7 +424,7 @@ class ImageClient(VizClient):
         If None, check if RGB mode is enabled
 
         :rtype: LayerArtist or None
-          If RGB mode is enabled, returns an RGBImageLayerArtist
+          If RGB mode is enabled, returns an RGBImageLayerBase
           If enable=False, return the new ImageLayerArtist
         """
         # XXX need to better handle case where two RGBImageLayerArtists
@@ -430,7 +432,7 @@ class ImageClient(VizClient):
 
         if enable is None:
             for a in self.artists:
-                if isinstance(a, RGBImageLayerArtist):
+                if isinstance(a, RGBImageLayerBase):
                     return a
             return None
 
@@ -439,6 +441,9 @@ class ImageClient(VizClient):
         if enable:
             layer = self.display_data
             a = self._new_rgb_layer(layer)
+            if a is None:
+                return
+
             a.r = a.g = a.b = self.display_attribute
 
             with self.artists.ignore_empty():
@@ -448,7 +453,7 @@ class ImageClient(VizClient):
         else:
             with self.artists.ignore_empty():
                 for artist in list(self.artists):
-                    if isinstance(artist, RGBImageLayerArtist):
+                    if isinstance(artist, RGBImageLayerBase):
                         self.artists.remove(artist)
                 result = self.add_layer(layer)
 
@@ -586,7 +591,7 @@ class ImageClient(VizClient):
                 if isinstance(l, Data):
                     self.set_data(l)
                 l = self.add_layer(l)
-            elif c == RGBImageLayerArtist:
+            elif c == RGBImageLayerBase:
                 r = props.pop('r')
                 g = props.pop('g')
                 b = props.pop('b')
@@ -603,7 +608,7 @@ class ImageClient(VizClient):
     # subclasses should override the following methods as appropriate
     def _new_rgb_layer(self, layer):
         """
-        Construct and return an RGBImageLayerArtist for the given layer
+        Construct and return an RGBImageLayerBase for the given layer
 
         Parameters
         ----------

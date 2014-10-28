@@ -7,9 +7,11 @@ from __future__ import absolute_import, division, print_function
 
 import logging
 from contextlib import contextmanager
+from abc import ABCMeta, abstractproperty, abstractmethod
 
 import numpy as np
 from matplotlib.cm import gray
+from ..external import six
 from ..core.exceptions import IncompatibleAttribute
 from ..core.util import color2rgb, PropertySetMixin, Pointer
 from ..core.subset import Subset
@@ -37,6 +39,86 @@ class ChangedTrigger(object):
         self._vals[inst] = value
         if changed:
             inst._changed = True
+
+"""
+Base-class interfaces for layer artists
+
+Clients which restrict themselves to this API will
+ensure cross-compatibility with different subclasses
+"""
+
+
+@six.add_metaclass(ABCMeta)
+class ScatterLayerBase(object):
+    xatt = abstractproperty()
+    yatt = abstractproperty()
+
+    @abstractmethod
+    def get_data(self):
+        pass
+
+
+@six.add_metaclass(ABCMeta)
+class RGBImageLayerBase(object):
+    r = abstractproperty()
+    g = abstractproperty()
+    b = abstractproperty()
+    rnorm = abstractproperty()
+    gnorm = abstractproperty()
+    bnorm = abstractproperty()
+    contrast_layer = abstractproperty()
+    layer_visible = abstractproperty()
+
+    @property
+    def color_visible(self):
+        return [self.layer_visible['red'], self.layer_visible['green'],
+                self.layer_visible['blue']]
+
+    @color_visible.setter
+    def color_visible(self, value):
+        self.layer_visible['red'] = value[0]
+        self.layer_visible['green'] = value[1]
+        self.layer_visible['blue'] = value[2]
+
+
+@six.add_metaclass(ABCMeta)
+class HistogramLayerBase(object):
+    lo = abstractproperty()
+    hi = abstractproperty()
+    nbins = abstractproperty()
+    xlog = abstractproperty()
+
+    @abstractmethod
+    def get_data(self):
+        pass
+
+
+@six.add_metaclass(ABCMeta)
+class ImageLayerBase(object):
+
+    norm = abstractproperty()
+    cmap = abstractproperty()
+
+    @abstractmethod
+    def set_norm(self, **kwargs):
+        pass
+
+    @abstractmethod
+    def clear_norm():
+        pass
+
+    @abstractmethod
+    def override_image(self, image):
+        pass
+
+    @abstractmethod
+    def clear_override(self):
+        pass
+
+
+@six.add_metaclass(ABCMeta)
+class SubsetImageLayerBase(object):
+    pass
 
 
 class LayerArtist(PropertySetMixin):
@@ -175,7 +257,7 @@ class LayerArtist(PropertySetMixin):
     __repr__ = __str__
 
 
-class ImageLayerArtist(LayerArtist):
+class ImageLayerArtist(LayerArtist, ImageLayerBase):
     _property_set = LayerArtist._property_set + ['norm']
 
     def __init__(self, layer, ax):
@@ -302,7 +384,7 @@ class ImageLayerArtist(LayerArtist):
             artist.set_visible(self.visible and self.enabled)
 
 
-class RGBImageLayerArtist(ImageLayerArtist):
+class RGBImageLayerArtist(ImageLayerArtist, RGBImageLayerBase):
     _property_set = ImageLayerArtist._property_set + \
         ['r', 'g', 'b', 'rnorm', 'gnorm', 'bnorm', 'color_visible']
 
@@ -312,6 +394,11 @@ class RGBImageLayerArtist(ImageLayerArtist):
     rnorm = Pointer('_rnorm')
     gnorm = Pointer('_gnorm')
     bnorm = Pointer('_bnorm')
+
+    # dummy class-level variables will be masked
+    # at instance level, needed for ABC to be happy
+    layer_visible = None
+    contrast_layer = None
 
     def __init__(self, layer, ax, last_view=None):
         super(RGBImageLayerArtist, self).__init__(layer, ax)
@@ -330,17 +417,6 @@ class RGBImageLayerArtist(ImageLayerArtist):
         if self.contrast_layer == 'blue':
             self.norm = self.bnorm
             self.bnorm = spr(*args, **kwargs)
-
-    @property
-    def color_visible(self):
-        return [self.layer_visible['red'], self.layer_visible['green'],
-                self.layer_visible['blue']]
-
-    @color_visible.setter
-    def color_visible(self, value):
-        self.layer_visible['red'] = value[0]
-        self.layer_visible['green'] = value[1]
-        self.layer_visible['blue'] = value[2]
 
     def update(self, view=None, transpose=False):
         self.clear()
@@ -397,7 +473,7 @@ class RGBImageLayerArtist(ImageLayerArtist):
         self._sync_style()
 
 
-class SubsetImageLayerArtist(LayerArtist):
+class SubsetImageLayerArtist(LayerArtist, SubsetImageLayerBase):
 
     def update(self, view, transpose=False):
         subset = self.layer
@@ -483,7 +559,7 @@ class DendroLayerArtist(LayerArtist):
             artist.set_linewidth(lw)
 
 
-class ScatterLayerArtist(LayerArtist):
+class ScatterLayerArtist(LayerArtist, ScatterLayerBase):
     xatt = ChangedTrigger()
     yatt = ChangedTrigger()
     _property_set = LayerArtist._property_set + ['xatt', 'yatt']
@@ -632,7 +708,7 @@ class LayerArtistContainer(object):
         return [a for a in self.artists if a.layer is layer]
 
 
-class HistogramLayerArtist(LayerArtist):
+class HistogramLayerArtist(LayerArtist, HistogramLayerBase):
     _property_set = LayerArtist._property_set + 'lo hi nbins xlog'.split()
 
     lo = ChangedTrigger(0)
@@ -650,9 +726,6 @@ class HistogramLayerArtist(LayerArtist):
         self._y = np.array([])
 
         self._scale_state = None
-
-    def has_patches(self):
-        return len(self.artists) > 0
 
     def get_data(self):
         return self.x, self.y

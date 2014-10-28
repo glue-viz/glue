@@ -8,7 +8,8 @@ from ..core.util import Pointer
 from ..core.callback_property import (CallbackProperty)
 
 from .image_client import ImageClient
-from .layer_artist import LayerArtist
+from .layer_artist import (ChangedTrigger, LayerArtist, RGBImageLayerBase,
+                           ImageLayerBase, SubsetImageLayerBase)
 
 from ginga.util import wcsmod
 wcsmod.use('astropy')
@@ -33,7 +34,7 @@ class GingaClient(ImageClient):
         self._wcs = None
 
     def _new_rgb_layer(self, layer):
-        pass
+        return RGBGingaImageLayer(layer, self._canvas)
 
     def _new_subset_image_layer(self, layer):
         return GingaSubsetImageLayer(layer, self._canvas)
@@ -101,12 +102,15 @@ class GingaLayerArtist(LayerArtist):
         pass
 
 
-class GingaImageLayer(GingaLayerArtist):
+class GingaImageLayer(GingaLayerArtist, ImageLayerBase):
+
+    # unused by Ginga
+    cmap = None
+    norm = None
 
     def __init__(self, layer, canvas):
         super(GingaImageLayer, self).__init__(layer, canvas)
         self._override_image = None
-        self.norm = None  # XXX unused by Ginga, cleanup
         self._tag = "layer%s" % (str(layer.label))
         self._img = None
         self._aimg = None
@@ -128,9 +132,12 @@ class GingaImageLayer(GingaLayerArtist):
         # NOP for ginga
         pass
 
+    def clear_norm(self):
+        # NOP for ginga
+        pass
+
     def override_image(self, image):
         """Temporarily show a different image"""
-        #raise NotImplementedError()
         self._override_image = image
 
     def clear_override(self):
@@ -179,7 +186,7 @@ class GingaImageLayer(GingaLayerArtist):
             self._canvas.set_image(self._aimg)
 
 
-class GingaSubsetImageLayer(GingaLayerArtist):
+class GingaSubsetImageLayer(GingaLayerArtist, SubsetImageLayerBase):
 
     def __init__(self, layer, canvas):
         super(GingaSubsetImageLayer, self).__init__(layer, canvas)
@@ -278,3 +285,46 @@ class GingaSubsetImageLayer(GingaLayerArtist):
                            flipy=False)
         if self._visible:
             self._canvas.add(self._cimg, tag=self._tag, redraw=True)
+
+
+class RGBGingaImageLayer(GingaLayerArtist, RGBImageLayerBase):
+    # XXX TODO: How to indpendently control stretch/transfer function for
+    #           RGB channels?
+    r = ChangedTrigger(None)
+    g = ChangedTrigger(None)
+    b = ChangedTrigger(None)
+
+    rnorm = gnorm = bnorm = None
+
+    contrast_layer = Pointer('_contrast_layer')
+    layer_visible = Pointer('_layer_visible')
+
+    def __init__(self, layer, canvas, last_view=None):
+        super(RGBGingaImageLayer, self).__init__(layer, canvas)
+        self.contrast_layer = 'green'
+        self.layer_visible = dict(red=True, green=True, blue=True)
+        self._aimg = None
+
+    def update(self, view=None, transpose=None):
+        self.clear()
+
+        rgb = []
+        shp = self.layer.shape
+        for att, ch in zip([self.r, self.g, self.b], ['red', 'green', 'blue']):
+            if att is None or not self.layer_visible[ch]:
+                rgb.append(np.zeros(shp))
+                continue
+
+            data = self.layer[att]
+            rgb.append(data)
+
+        self._aimg = AstroImage.AstroImage(data_np=np.dstack(rgb))
+        hdr = self._layer.coords._header
+        self._aimg.update_keywords(hdr)
+
+        x_pos = y_pos = 0
+        # TODO: how should we decide the alpha?
+        #self._nimg = NormImage(x_pos, y_pos, self._aimg, alpha=1.0)
+        if self._visible:
+            #self._canvas.add(self._nimg, tag=self._tag, redraw=True)
+            self._canvas.set_image(self._aimg)
