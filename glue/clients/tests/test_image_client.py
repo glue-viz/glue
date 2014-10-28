@@ -463,6 +463,7 @@ def test_format_coord_2d():
     ax = c.axes
 
     # no data set. Use default
+    c.display_data = None
     xy = ax.format_coord(1, 2)
     assert xy == 'x=1            y=2           '
 
@@ -484,6 +485,7 @@ def test_format_coord_3d():
     ax = c.axes
 
     # no data set. Use default
+    c.display_data = None
     xy = ax.format_coord(1, 2)
     assert xy == 'x=1            y=2           '
 
