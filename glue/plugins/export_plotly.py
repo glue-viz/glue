@@ -292,7 +292,7 @@ def save_plotly(application, label):
     This is currently restricted to 1-4 scatterplots or histograms
 
     :param application: Glue application to save
-    :param path: Label for the exported plot
+    :param label: Label for the exported plot
     """
     user = application.get_setting('PLOTLY_USER')
     apikey = application.get_setting('PLOTLY_APIKEY')
