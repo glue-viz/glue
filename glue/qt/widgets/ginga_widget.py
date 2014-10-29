@@ -44,9 +44,9 @@ class GingaWidget(ImageWidgetBase):
 
     def __init__(self, session, parent=None):
 
-        #logger = logging.getLogger(__name__)
+        # logger = logging.getLogger(__name__)
         self.logger = log.get_logger(name='ginga', log_stderr=True)
-        #self.logger = log.get_logger(name='ginga', null=True)
+        # self.logger = log.get_logger(name='ginga', null=True)
 
         self.canvas = ImageViewCanvas(self.logger, render='widget')
 
@@ -221,39 +221,6 @@ class GingaWidget(ImageWidgetBase):
         pass
 
     def motion_readout(self, canvas, button, data_x, data_y):
-
-        # Get the value under the data coordinates
-        try:
-            #value = fitsimage.get_data(data_x, data_y)
-            # We report the value across the pixel, even though the coords
-            # change halfway across the pixel
-            value = canvas.get_data(int(data_x + 0.5), int(data_y + 0.5))
-
-        except Exception:
-            value = None
-
-        fits_x, fits_y = data_x + 1, data_y + 1
-
-        # Calculate WCS RA
-        try:
-            # NOTE: image function operates on DATA space coords
-            image = canvas.get_image()
-            if image is None:
-                # No image loaded
-                return
-            ra_txt, dec_txt = image.pixtoradec(fits_x, fits_y,
-                                               format='str', coords='fits')
-        except Exception as e:
-            self.logger.warn("Bad coordinate conversion: %s" % (
-                str(e)))
-            ra_txt = 'BAD WCS'
-            dec_txt = 'BAD WCS'
-
-        text = "RA: %s  DEC: %s  X: %.2f  Y: %.2f  Value: %s" % (
-            ra_txt, dec_txt, fits_x, fits_y, value)
-        self.readout.set_text(text)
-
-    def motion_readout(self, canvas, button, data_x, data_y):
         """This method is called when the user moves the mouse around the Ginga
         canvas.
         """
@@ -262,7 +229,7 @@ class GingaWidget(ImageWidgetBase):
 
         # Get the value under the data coordinates
         try:
-            #value = fitsimage.get_data(data_x, data_y)
+            # value = fitsimage.get_data(data_x, data_y)
             # We report the value across the pixel, even though the coords
             # change halfway across the pixel
             value = canvas.get_data(int(data_x + 0.5), int(data_y + 0.5))
@@ -271,7 +238,7 @@ class GingaWidget(ImageWidgetBase):
             value = None
 
         x_lbl, y_lbl = d['labels'][0], d['labels'][1]
-        #x_txt, y_txt = d['world'][0], d['world'][1]
+        # x_txt, y_txt = d['world'][0], d['world'][1]
 
         text = "%s  %s  X=%.2f  Y=%.2f  Value=%s" % (
             x_lbl, y_lbl, data_x, data_y, value)

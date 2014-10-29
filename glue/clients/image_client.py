@@ -663,6 +663,12 @@ class ImageClient(VizClient):
         """
         pass
 
+    def show_crosshairs(self, x, y):
+        pass
+
+    def clear_crosshairs(self):
+        pass
+
 
 class MplImageClient(ImageClient):
 

@@ -5,21 +5,19 @@ import numpy as np
 from ..core.exceptions import IncompatibleAttribute
 from ..core.util import color2rgb
 from ..core.util import Pointer
-from ..core.callback_property import (CallbackProperty)
 
 from .image_client import ImageClient
+from .ds9norm import DS9Normalize
 from .layer_artist import (ChangedTrigger, LayerArtist, RGBImageLayerBase,
                            ImageLayerBase, SubsetImageLayerBase)
 
 from ginga.util import wcsmod
 wcsmod.use('astropy')
-from ginga.ImageViewCanvas import Image, NormImage
+from ginga.ImageViewCanvas import Image
 from ginga import AstroImage, RGBImage
 
 
 class GingaClient(ImageClient):
-    display_data = CallbackProperty(None)
-    display_attribute = CallbackProperty(None)
 
     def __init__(self, data, canvas=None, artist_container=None):
         super(GingaClient, self).__init__(data, artist_container)
@@ -50,37 +48,6 @@ class GingaClient(ImageClient):
 
     def set_cmap(self, cmap):
         self._canvas.set_cmap(cmap)
-
-    def _build_view(self):
-
-        att = self.display_attribute
-        shp = self.display_data.shape
-
-        shp_2d = _2d_shape(shp, self.slice)
-        ## v = extract_matched_slices(self._ax, shp_2d)
-        ## x = slice(v[0], v[1], v[2])
-        ## y = slice(v[3], v[4], v[5])
-        x0, x1, y0, y1 = 0, shp_2d[1] - 1, 0, shp_2d[0] - 1
-        # TODO: try and generate lower resolution view (which combines
-        # masks faster in to_mask()) and then upres it in ginga
-        #x0, y0, x1, y1 = self._canvas.get_datarect()
-        x0, y0 = max(0, x0), max(0, y0)
-        x1, y1 = min(x1, shp_2d[1] - 1), min(y1, shp_2d[0] - 1)
-        sx, sy = 1, 1
-        x = slice(x0, x1, sx)
-        y = slice(y0, y1, sy)
-
-        slc = list(self.slice)
-        slc[slc.index('x')] = x
-        slc[slc.index('y')] = y
-        return (att,) + tuple(slc)
-
-
-def _2d_shape(shape, slc):
-    """Return the shape of the 2D slice through a 2 or 3D image
-    """
-    # - numpy ordering here
-    return shape[slc.index('y')], shape[slc.index('x')]
 
 
 class GingaLayerArtist(LayerArtist):
@@ -179,10 +146,7 @@ class GingaImageLayer(GingaLayerArtist, ImageLayerBase):
         self._aimg.update_keywords(hdr)
 
         x_pos = y_pos = 0
-        # TODO: how should we decide the alpha?
-        #self._nimg = NormImage(x_pos, y_pos, self._aimg, alpha=1.0)
         if self._visible:
-            #self._canvas.add(self._nimg, tag=self._tag, redraw=True)
             self._canvas.set_image(self._aimg)
 
 
@@ -195,10 +159,6 @@ class GingaSubsetImageLayer(GingaLayerArtist, SubsetImageLayerBase):
         self._tag = "layer%s" % (str(layer.label))
         self._visible = True
         self._enabled = True
-
-    @property
-    def enabled(self):
-        return self._cimg is not None
 
     @property
     def visible(self):
@@ -224,9 +184,7 @@ class GingaSubsetImageLayer(GingaLayerArtist, SubsetImageLayerBase):
 
     def _compute_img(self, view, transpose=False):
         subset = self.layer
-        # self.clear()
         logging.getLogger(__name__).debug("View into subset %s is %s", self.layer, view)
-        id, ysl, xsl = view
 
         try:
             mask = subset.to_mask(view[1:])
@@ -288,8 +246,6 @@ class GingaSubsetImageLayer(GingaLayerArtist, SubsetImageLayerBase):
 
 
 class RGBGingaImageLayer(GingaLayerArtist, RGBImageLayerBase):
-    # XXX TODO: How to indpendently control stretch/transfer function for
-    #           RGB channels?
     r = ChangedTrigger(None)
     g = ChangedTrigger(None)
     b = ChangedTrigger(None)
@@ -305,26 +261,43 @@ class RGBGingaImageLayer(GingaLayerArtist, RGBImageLayerBase):
         self.layer_visible = dict(red=True, green=True, blue=True)
         self._aimg = None
 
+    @property
+    def norm(self):
+        return getattr(self, self.contrast_layer[0] + 'norm')
+
+    @norm.setter
+    def norm(self, value):
+        setattr(self, self.contrast_layer[0] + 'norm', value)
+
+    def set_norm(self, **kwargs):
+        norm = self.norm or DS9Normalize()
+
+        for k, v in kwargs:
+            setattr(norm, k, v)
+
+        self.norm = norm
+
     def update(self, view=None, transpose=None):
         self.clear()
 
         rgb = []
         shp = self.layer.shape
-        for att, ch in zip([self.r, self.g, self.b], ['red', 'green', 'blue']):
+        for att, norm, ch in zip([self.r, self.g, self.b],
+                                 [self.rnorm, self.gnorm, self.bnorm],
+                                 ['red', 'green', 'blue']):
             if att is None or not self.layer_visible[ch]:
                 rgb.append(np.zeros(shp))
                 continue
 
             data = self.layer[att]
+            norm = norm or DS9Normalize()
+            data = norm(data)
+
             rgb.append(data)
 
         self._aimg = AstroImage.AstroImage(data_np=np.dstack(rgb))
         hdr = self._layer.coords._header
         self._aimg.update_keywords(hdr)
 
-        x_pos = y_pos = 0
-        # TODO: how should we decide the alpha?
-        #self._nimg = NormImage(x_pos, y_pos, self._aimg, alpha=1.0)
         if self._visible:
-            #self._canvas.add(self._nimg, tag=self._tag, redraw=True)
             self._canvas.set_image(self._aimg)
