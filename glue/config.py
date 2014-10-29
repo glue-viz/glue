@@ -327,7 +327,7 @@ class ToolRegistry(Registry):
         class it should apply to (``restrict_to``). if ``restrict_to`` is set
         to `None`, the tool applies to all classes.
         """
-        self.members.append((tool_cls, widget_cls))
+        self.members.append((tool_cls, restrict_to))
 
     def get_tools(self, requested_widget_cls, allow_subclass=True):
 

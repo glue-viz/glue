@@ -542,4 +542,5 @@ class StandaloneImageWidget(QMainWindow):
         cm = _colormap_mode(self, self._set_cmap)
         result.addWidget(cm)
         self._cmap_actions = cm.actions()
+        self.addToolBar(result)
         return result

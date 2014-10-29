@@ -1,15 +1,13 @@
-import logging
 import sys
-import traceback
 import os.path
 import numpy as np
 
-from ...external.qt.QtGui import (QAction, QMainWindow,
+from ...external.qt.QtGui import (QAction,
                                   QToolButton, QToolBar, QIcon,
-                                  QActionGroup, QMdiSubWindow, QWidget,
+                                  QActionGroup, QWidget,
                                   QVBoxLayout, QColor, QImage, QPixmap)
 
-from ...external.qt.QtCore import Qt, QRect, QSize
+from ...external.qt.QtCore import Qt, QSize
 
 from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
 from ginga.qtw import Readout, ColorBar
@@ -18,13 +16,15 @@ from ginga import cmap as ginga_cmap
 # ginga_cmap.add_matplotlib_cmaps()
 
 from .image_widget import ImageWidgetBase
-from ... import config
 
 from ...clients.ginga_client import GingaClient
 
 from ...core import roi as roimod
+from ...core.callback_property import add_callback
 
-from ..qtutil import cmap2pixmap, get_icon, nonpartial
+from ..qtutil import get_icon, nonpartial
+from ...plugins.pv_slicer import PVSlicerTool
+from ...config import tool_registry
 
 
 from ..decorators import set_cursor
@@ -173,10 +173,17 @@ class GingaWidget(ImageWidgetBase):
                       lambda tf: self._set_roi_mode('circle', tf)))
         modes.append(("Polygon", get_icon('glue_lasso'),
                       lambda tf: self._set_roi_mode('polygon', tf)))
+
+        for tool in self._tools:
+            modes += tool._get_modes(self.canvas)
+            add_callback(self.client, 'display_data', tool._display_data_hook)
+
         return modes
 
     def _set_roi_mode(self, name, tf):
         self.canvas.enable_draw(True)
+        # XXX need better way of setting draw contexts
+        self.canvas.draw_context = self
         self.canvas.set_drawtype(name, color='cyan', linestyle='dash')
         bm = self.canvas.get_bindmap()
         bm.set_modifier('draw', modtype='locked')
@@ -206,6 +213,8 @@ class GingaWidget(ImageWidgetBase):
         return roi
 
     def _apply_roi_cb(self, canvas, tag):
+        if self.canvas.draw_context is not self:
+            return
         self.roi_tag = tag
         obj = self.canvas.getObjectByTag(self.roi_tag)
         roi = self.ginga_graphic_to_roi(obj)
@@ -309,221 +318,49 @@ def _colormap_mode(parent, on_trigger):
     return tb
 
 
-class StandaloneGingaWidget(QMainWindow):
+class GingaPVSlicer(PVSlicerTool):
 
-    """
-    A simplified image viewer, without any brushing or linking,
-    but with the ability to adjust contrast and resample.
-    """
+    def __init__(self, widget=None):
+        super(GingaPVSlicer, self).__init__(widget)
+        self.canvas = widget.canvas
+        self._shape_tag = None
 
-    def __init__(self, image, parent=None, **kwargs):
-        """
-        :param image: Image to display (2D numpy array)
-        :param parent: Parent widget (optional)
+        self.canvas.set_callback('draw-event', self._extract_callback)
+        self.canvas.set_callback('draw-down', self._clear_shape_cb)
 
-        :param kwargs: Extra keywords to pass to imshow
-        """
-        super(StandaloneGingaWidget, self).__init__(parent)
+    def _get_modes(self, canvas):
+        return [("PV Slice", get_icon("glue_slice"), self._set_path_mode)]
 
-        #logger = logging.getLogger(__name__)
-        logger = log.get_logger(name='ginga', log_stderr=True)
-        self.canvas = ImageViewCanvas(logger)
-        self.central_widget = self.canvas.get_widget()
-        self.setCentralWidget(self.central_widget)
-        self._setup_axes()
-
-        self._im = None
-
-        # self.make_toolbar()
-        self.set_image(image, **kwargs)
-
-    def _setup_axes(self):
-        ## self._axes = self.central_widget.canvas.fig.add_subplot(111)
-        ## self._axes.set_aspect('equal', adjustable='datalim')
+    def _display_data_hook(self, data):
+        # XXX need access to mode here
         pass
 
-    def set_image(self, image, **kwargs):
-        """
-        Update the image shown in the widget
-        """
-        if self._im is not None:
-            self._im.remove()
-            self._im = None
+    def _set_path_mode(self, enable):
+        self.canvas.enable_draw(True)
+        self.canvas.draw_context = self
 
-        ## kwargs.setdefault('origin', 'upper')
+        self.canvas.set_drawtype('polygon', color='cyan', linestyle='dash')
+        bm = self.canvas.get_bindmap()
+        bm.set_modifier('draw', modtype='locked')
 
-        # self._im = imshow(self._axes, image,
-        # norm=self._norm, cmap='gray', **kwargs)
-        ## self._im_array = image
-        # self._axes.set_xticks([])
-        # self._axes.set_yticks([])
-        self._redraw()
+    def _clear_shape_cb(self, *args):
+        try:
+            self.canvas.deleteObjectByTag(self._shape_tag)
+        except:
+            pass
 
-    @property
-    def axes(self):
-        """
-        The Matplolib axes object for this figure
-        """
-        return self._axes
+    _clear_path = _clear_shape_cb
 
-    def show(self):
-        super(StandaloneGingaWidget, self).show()
-        self._redraw()
-
-    def _redraw(self):
-        self.canvas.redraw()
-
-    def _set_cmap(self, cmap):
-        # self._im.set_cmap(cmap)
-        self._redraw()
-
-    def mdi_wrap(self):
-        """
-        Embed this widget in a QMdiSubWindow
-        """
-        sub = QMdiSubWindow()
-        sub.setWidget(self)
-        self.destroyed.connect(sub.close)
-        sub.resize(self.size())
-        self._mdi_wrapper = sub
-
-        return sub
-
-    def _set_norm(self, mode):
-        # ginga takes care of this by itself
-        pass
-
-
-class PVSliceWidget(StandaloneGingaWidget):
-
-    """ A standalone image widget with extra interactivity for PV slices """
-
-    def __init__(self, image, x, y, image_widget):
-        self._parent = image_widget
-        super(PVSliceWidget, self).__init__(image, x=x, y=y)
-        conn = self.axes.figure.canvas.mpl_connect
-        self._down_id = conn('button_press_event', self._on_click)
-        self._move_id = conn('motion_notify_event', self._on_move)
-
-    def set_image(self, im, x, y):
-        super(PVSliceWidget, self).set_image(im)
-        self._axes.set_aspect('auto')
-        self._axes.set_xlim(0, im.shape[1])
-        self._axes.set_ylim(0, im.shape[0])
-        self._slc = self._parent.slice
-        self._x = x
-        self._y = y
-
-    def _sync_slice(self, event):
-        s = list(self._slc)
-
-        # XXX breaks if display_data changes
-        _, _, z = self._pos_in_parent(event)
-        s[_slice_index(self._parent.data, s)] = z
-        self._parent.slice = tuple(s)
-
-    def _draw_crosshairs(self, event):
-        x, y, _ = self._pos_in_parent(event)
-        ax = self._parent.client.axes
-        m, = ax.plot([x], [y], '+', ms=12, mfc='none', mec='#de2d26',
-                     mew=2, zorder=100)
-        ax.figure.canvas.draw()
-        m.remove()
-
-    def _on_move(self, event):
-        if not event.button:
+    def _extract_callback(self, canvas, tag):
+        if self.canvas.draw_context is not self:
             return
 
-        if not event.inaxes or event.canvas.toolbar.mode != '':
-            return
+        self._shape_tag = tag
+        obj = self.canvas.getObjectByTag(tag)
+        vx, vy = zip(*obj.points)
+        return self._build_from_vertices(vx, vy)
 
-        self._sync_slice(event)
-        self._draw_crosshairs(event)
-
-    def _pos_in_parent(self, event):
-        ind = np.clip(event.xdata, 0, self._im_array.shape[1] - 1)
-        x = self._x[ind]
-        y = self._y[ind]
-        z = event.ydata
-
-        return x, y, z
-
-    def _on_click(self, event):
-        if not event.inaxes or event.canvas.toolbar.mode != '':
-            return
-        self._sync_slice(event)
-        self._draw_crosshairs(event)
-
-
-def _slice_index(data, slc):
-    """
-    The axis over which to extract PV slices
-    """
-    return max([i for i in range(len(slc))
-                if isinstance(slc[i], int)],
-               key=lambda x: data.shape[x])
-
-
-def _slice_from_path(x, y, data, attribute, slc):
-    """
-    Extract a PV-like slice from a cube
-
-    :param x: An array of x values to extract (pixel units)
-    :param y: An array of y values to extract (pixel units)
-    :param data: :class:`~glue.core.data.Data`
-    :param attribute: :claass:`~glue.core.data.Component`
-    :param slc: orientation of the image widget that `pts` are defined on
-
-    :returns: (slice, x, y)
-              slice is a 2D Numpy array, corresponding to a "PV ribbon"
-              cutout from the cube
-              x and y are the resampled points along which the
-              ribbon is extracted
-
-    :note: For >3D cubes, the "V-axis" of the PV slice is the longest
-           cube axis ignoring the x/y axes of `slc`
-    """
-    from ...external.pvextractor import Path, extract_pv_slice
-    p = Path(list(zip(x, y)))
-
-    cube = data[attribute]
-    dims = list(range(data.ndim))
-    s = list(slc)
-    ind = _slice_index(data, slc)
-
-    # transpose cube to (z, y, x, <whatever>)
-    def _swap(x, s, i, j):
-        x[i], x[j] = x[j], x[i]
-        s[i], s[j] = s[j], s[i]
-
-    _swap(dims, s, ind, 0)
-    _swap(dims, s, s.index('y'), 1)
-    _swap(dims, s, s.index('x'), 2)
-    cube = cube.transpose(dims)
-
-    # slice down from >3D to 3D if needed
-    s = [slice(None)] * 3 + [slc[d] for d in dims[3:]]
-    cube = cube[s]
-
-    # sample cube
-    spacing = 1  # pixel
-    x, y = [np.round(_x).astype(int) for _x in p.sample_points(spacing)]
-    result = extract_pv_slice(cube, p, order=0).data
-
-    return result, x, y
-
-
-def _slice_label(data, slc):
-    """
-    Returns a formatted axis label corresponding to the slice dimension
-    in a PV slice
-
-    :param data: Data that slice is extracted from
-    :param slc: orientation in the image widget from which the PV slice
-                was defined
-    """
-    idx = _slice_index(data, slc)
-    return data.get_world_component_id(idx).label
+tool_registry.add(GingaPVSlicer, GingaWidget)
 
 
 def cmap2pixmap(cmap, steps=50):

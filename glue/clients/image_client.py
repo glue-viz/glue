@@ -682,6 +682,9 @@ class MplImageClient(ImageClient):
         # description of field of view and center of image
         self._view_window = None
 
+        # artist for a crosshair
+        self._crosshairs = None
+
     def _setup_mpl(self, figure, axes):
         figure, axes = init_mpl(figure, axes, wcs=True)
         self._axes = axes
@@ -775,6 +778,20 @@ class MplImageClient(ImageClient):
         slc[slc.index('x')] = x
         slc[slc.index('y')] = y
         return (att,) + tuple(slc)
+
+    def show_crosshairs(self, x, y):
+        if self._crosshairs is not None:
+            self._crosshairs.remove()
+
+        self._crosshairs, = self._axes.plot([x], [y], '+', ms=12,
+                                            mfc='none', mec='#d32d26',
+                                            mew=2, zorder=100)
+        self._redraw()
+
+    def clear_crosshairs(self):
+        if self._crosshairs is not None:
+            self._crosshairs.remove()
+            self._crosshairs = None
 
 
 def _2d_shape(shape, slc):
