@@ -88,8 +88,8 @@ class ImageWidgetBase(DataViewer):
 
     @staticmethod
     def _get_default_tools():
-        from ...plugins.pv_slicer import PVSlicerTool
-        from ...plugins.spectrum_tool import SpectrumTool
+        from ...plugins.tools.pv_slicer import PVSlicerTool
+        from ...plugins.tools.spectrum_tool import SpectrumTool
         return [PVSlicerTool, SpectrumTool]
 
     def _setup_tools(self):
