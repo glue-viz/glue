@@ -251,7 +251,13 @@ class QtToolRegistry(Registry):
     def default_members(self):
         defaults = {}
         for viewer in qt_client.members:
-            defaults[viewer] = viewer._get_default_tools()
+            try:
+                defaults[viewer] = viewer._get_default_tools()
+            except AttributeError:
+                logging.getLogger(__name__).warning(
+                    "could not get default tools for {0}".format(viewer.__name__))
+                defaults[viewer] = []
+
         return defaults
 
     def add(self, tool_cls, widget_cls=None):

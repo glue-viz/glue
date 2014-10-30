@@ -3,8 +3,8 @@ import logging
 
 import numpy as np
 
-from ..external.qt.QtCore import Qt, Signal
-from ..external.qt.QtGui import (QMainWindow, QWidget,
+from ...external.qt.QtCore import Qt, Signal
+from ...external.qt.QtGui import (QMainWindow, QWidget,
                                  QHBoxLayout, QTabWidget,
                                  QComboBox, QFormLayout, QPushButton,
                                  QAction, QTextEdit, QFont, QDialog,
@@ -12,23 +12,24 @@ from ..external.qt.QtGui import (QMainWindow, QWidget,
                                  QDoubleValidator, QCheckBox, QGridLayout,
                                  QLabel, QFileDialog)
 
-from ..clients.profile_viewer import ProfileViewer
-from ..qt.widgets.mpl_widget import MplWidget
-from ..qt.mouse_mode import SpectrumExtractorMode
-from ..core.callback_property import add_callback, ignore_callback
-from ..core.util import Pointer
-from ..core import Subset
-from ..core.exceptions import IncompatibleAttribute
-from ..qt.glue_toolbar import GlueToolbar
-from ..qt.qtutil import load_ui, nonpartial, Worker
-from ..qt.widget_properties import CurrentComboProperty
-from ..core.aggregate import Aggregate
-from ..qt.mime import LAYERS_MIME_TYPE
-from ..qt.simpleforms import build_form_item
-from ..config import fit_plugin
-from ..external.six.moves import range as xrange
-from ..qt.widgets.glue_mdi_area import GlueMdiSubWindow
-from ..qt.decorators import messagebox_on_error
+
+from ...clients.profile_viewer import ProfileViewer
+from ...qt.widgets.mpl_widget import MplWidget
+from ...qt.mouse_mode import SpectrumExtractorMode
+from ...core.callback_property import add_callback, ignore_callback
+from ...core.util import Pointer
+from ...core import Subset
+from ...core.exceptions import IncompatibleAttribute
+from ...qt.glue_toolbar import GlueToolbar
+from ...qt.qtutil import load_ui, nonpartial, Worker
+from ...qt.widget_properties import CurrentComboProperty
+from ...core.aggregate import Aggregate
+from ...qt.mime import LAYERS_MIME_TYPE
+from ...qt.simpleforms import build_form_item
+from ...config import fit_plugin
+from ...external.six.moves import range as xrange
+from ...qt.widgets.glue_mdi_area import GlueMdiSubWindow
+from ...qt.decorators import messagebox_on_error
 
 
 class Extractor(object):
