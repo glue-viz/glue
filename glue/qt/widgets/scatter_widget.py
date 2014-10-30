@@ -67,6 +67,10 @@ class ScatterWidget(DataViewer):
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
 
+    @staticmethod
+    def _get_default_tools():
+        return []
+
     def _tweak_geometry(self):
         self.central_widget.resize(600, 400)
         self.resize(self.central_widget.size())

@@ -86,13 +86,19 @@ class ImageWidgetBase(DataViewer):
         """ Create and return the toolbar for this widget """
         raise NotImplementedError()
 
+    @staticmethod
+    def _get_default_tools():
+        from ...plugins.pv_slicer import PVSlicerTool
+        from ...plugins.spectrum_tool import SpectrumTool
+        return [PVSlicerTool, SpectrumTool]
+
     def _setup_tools(self):
         """
         Set up additional tools for this widget
         """
         from ... import config
         self._tools = []
-        for tool in config.tool_registry.get_tools(self.__class__):
+        for tool in config.tool_registry.members[self.__class__]:
             self._tools.append(tool(self))
 
     def _tweak_geometry(self):
