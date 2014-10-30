@@ -24,15 +24,15 @@ class PVSlicerTool(object):
         Extract a PV-like slice, given a path traced on the widget
         """
         vx, vy = mode.roi().to_polygon()
-        pv_slice, xw, yw, wcs = _slice_from_path(vx, vy, self.widget.data, self.widget.attribute, self.widget.slice)
+        pv_slice, x, y, wcs = _slice_from_path(vx, vy, self.widget.data, self.widget.attribute, self.widget.slice)
         if self._slice_widget is None:
             self._slice_widget = PVSliceWidget(image=pv_slice, wcs=wcs, image_widget=self.widget,
-                                               xw=xw, yw=yw, interpolation='nearest')
+                                               x=x, y=y, interpolation='nearest')
             self.widget._session.application.add_widget(self._slice_widget,
                                                  label='Custom Slice')
             self._slice_widget.window_closed.connect(self._path.clear)
         else:
-            self._slice_widget.set_image(image=pv_slice, wcs=wcs, xw=xw, yw=yw, interpolation='nearest')
+            self._slice_widget.set_image(image=pv_slice, wcs=wcs, x=x, y=y, interpolation='nearest')
 
         result = self._slice_widget
         result.axes.set_xlabel("Position Along Slice")
@@ -46,13 +46,13 @@ class PVSliceWidget(StandaloneImageWidget):
     """ A standalone image widget with extra interactivity for PV slices """
 
     def __init__(self, image=None, wcs=None, image_widget=None,
-                 xw=None, yw=None, **kwargs):
+                 x=None, y=None, **kwargs):
         """
         :param image: 2D Numpy array representing the PV Slice
         :param wcs: WCS for the PV slice
         :param image_widget: Parent widget this was extracted from
-        :param xw: first world coordinate of image along slice
-        :param yw: second world coordinate of image along slice
+        :param x: first world coordinate of image along slice
+        :param y: second world coordinate of image along slice
         :param kwargs: Extra keywords are passed to imshow
         """
         self._crosshairs = None
@@ -62,8 +62,8 @@ class PVSliceWidget(StandaloneImageWidget):
         self._down_id = conn('button_press_event', self._on_click)
         self._move_id = conn('motion_notify_event', self._on_move)
         self.axes.format_coord = self._format_coord
-        self._xw = xw
-        self._yw = yw
+        self._x = x
+        self._y = y
 
     def _format_coord(self, x, y):
         """
@@ -87,14 +87,14 @@ class PVSliceWidget(StandaloneImageWidget):
         labels = self._parent.client.coordinate_labels(s)
         return '         '.join(labels)
 
-    def set_image(self, image=None, wcs=None, xw=None, yw=None, **kwargs):
+    def set_image(self, image=None, wcs=None, x=None, y=None, **kwargs):
         super(PVSliceWidget, self).set_image(image=image, wcs=wcs, **kwargs)
         self._axes.set_aspect('auto')
         self._axes.set_xlim(-0.5, image.shape[1]-0.5)
         self._axes.set_ylim(-0.5, image.shape[0]-0.5)
         self._slc = self._parent.slice
-        self._xw = xw
-        self._yw = yw
+        self._x = x
+        self._y = y
 
     @defer_draw
     def _sync_slice(self, event):
@@ -136,9 +136,9 @@ class PVSliceWidget(StandaloneImageWidget):
         # Find position slice where cursor is
         ind = np.clip(xdata, 0, self._im_array.shape[1] - 1)
 
-        # Find world coordinate in input image for this slice
-        x = self._xw[ind]
-        y = self._yw[ind]
+        # Find pixel coordinate in input image for this slice
+        x = self._x[ind]
+        y = self._y[ind]
 
         # The 3-rd coordinate in the input WCS is simply the second
         # coordinate in the PV slice.
@@ -198,14 +198,14 @@ def _slice_from_path(x, y, data, attribute, slc):
 
     # sample cube
     spacing = 1  # pixel
-    xw, yw = [np.round(_x).astype(int) for _x in p.sample_points(spacing)]
+    x, y = [np.round(_x).astype(int) for _x in p.sample_points(spacing)]
     result = extract_pv_slice(cube, path=p, wcs=cube_wcs, order=0)
 
     from astropy.wcs import WCS
     data = result.data
     wcs = WCS(result.header)
 
-    return data, xw, yw, wcs
+    return data, x, y, wcs
 
 
 def _slice_index(data, slc):
