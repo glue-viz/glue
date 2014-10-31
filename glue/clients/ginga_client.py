@@ -1,10 +1,10 @@
 import logging
+from time import time
 
 import numpy as np
 
 from ..core.exceptions import IncompatibleAttribute
-from ..core.util import color2rgb
-from ..core.util import Pointer
+from ..core.util import Pointer, view_shape, stack_view, split_component_view, color2rgb
 
 from .image_client import ImageClient
 from .ds9norm import DS9Normalize
@@ -14,7 +14,7 @@ from .layer_artist import (ChangedTrigger, LayerArtist, RGBImageLayerBase,
 from ginga.util import wcsmod
 wcsmod.use('astropy')
 from ginga.ImageViewCanvas import Image
-from ginga import AstroImage, RGBImage
+from ginga import AstroImage, BaseImage
 
 
 class GingaClient(ImageClient):
@@ -78,9 +78,10 @@ class GingaImageLayer(GingaLayerArtist, ImageLayerBase):
     def __init__(self, layer, canvas):
         super(GingaImageLayer, self).__init__(layer, canvas)
         self._override_image = None
-        self._tag = "layer%s" % (str(layer.label))
+        self._tag = "layer%s_%s" % (layer.label, time())
         self._img = None
         self._aimg = None
+        self._enabled = True
 
     @property
     def visible(self):
@@ -88,11 +89,13 @@ class GingaImageLayer(GingaLayerArtist, ImageLayerBase):
 
     @visible.setter
     def visible(self, value):
+        if self._visible == value:
+            return
+
         self._visible = value
         if not value:
             self.clear()
         elif self._aimg:
-            #self._canvas.add(self._nimg, tag=self._tag, redraw=True)
             self._canvas.set_image(self._aimg)
 
     def set_norm(self, **kwargs):
@@ -113,14 +116,13 @@ class GingaImageLayer(GingaLayerArtist, ImageLayerBase):
     def clear(self):
         # remove previously added image
         try:
-            #self._canvas.deleteObjectsByTag([self._tag], redraw=False)
             self._canvas.deleteObjectsByTag(['_image'], redraw=False)
         except:
             pass
 
     @property
     def enabled(self):
-        return self._aimg is not None
+        return self._enabled
 
     def update(self, view, transpose=False):
         """
@@ -128,26 +130,115 @@ class GingaImageLayer(GingaLayerArtist, ImageLayerBase):
         view is downsampled/cropped. Let ginga do this
         check if we can skip this depending on attribute, data
         """
+        if not self.visible:
+            return
 
-        self.clear()
+        comp, view = split_component_view(view)
 
-        # TODO: check visibility
-
-        if self._override_image is not None:
-            data = self.override_image
-        else:
-            data = self._layer[view]
-            if transpose:
-                data = data.T
-
-        self._aimg = AstroImage.AstroImage(data_np=data)
-
-        hdr = self._layer.coords._header
-        self._aimg.update_keywords(hdr)
-
-        x_pos = y_pos = 0
-        if self._visible:
+        if self._aimg is None:
+            self._aimg = DataImage(self.layer, comp, view, transpose)
             self._canvas.set_image(self._aimg)
+
+        self._aimg.data = self.layer
+        self._aimg.component = comp
+        self._aimg.view = view
+        self._aimg.transpose = transpose
+        self._aimg.override_image = self.override_image
+
+        self.redraw()
+
+
+def forbidden(*args):
+    raise ValueError("Forbidden")
+
+
+class DataImage(AstroImage.AstroImage):
+    get_data = _get_data = copy_data = set_data = get_array = transfer = forbidden
+
+    def __init__(self, data, component, view, transpose=False,
+                 override_image=None, **kwargs):
+        self.transpose = transpose
+        self.view = view
+        self.data = data
+        self.component = component
+        self.override_image = None
+        super(DataImage, self).__init__(**kwargs)
+
+    @property
+    def shape(self):
+        result = view_shape(self.data.shape, self.view)
+        if self.transpose:
+            result = result[::-1]
+        return result
+
+    def _get_fast_data(self):
+        return self._slice((slice(None, None, 10), slice(None, None, 10)))
+
+    def _slice(self, view):
+        """
+        Extract a view from the 2D image.
+        """
+        # Combining multiple views: First a 2D slice into an ND array, then
+        # the requested view from this slice
+
+        if self.transpose:
+            views = [self.view, 'transpose', view]
+        else:
+            views = [self.view, view]
+        view = stack_view(self.data.shape, *views)
+        return self.data[self.component, view]
+
+
+class SubsetImage(BaseImage.BaseImage):
+    get_data = _get_data = copy_data = set_data = get_array = transfer = forbidden
+
+    def __init__(self, subset, view, color=(0, 1, 0), transpose=False, **kwargs):
+        super(SubsetImage, self).__init__(**kwargs)
+        self.subset = subset
+        self.view = view
+        self.transpose = transpose
+        self.color = color
+        self.order = 'RGBA'
+
+    @property
+    def shape(self):
+        result = view_shape(self.subset.data.shape, self.view)
+        if self.transpose:
+            result = result[::-1]
+        return tuple(list(result) + [4])  # 4th dim is RGBA channels
+
+    def _rgb_from_mask(self, mask):
+
+        r, g, b = self.color
+        ones = mask * 0 + 255
+        alpha = mask * 127
+        result = np.dstack((ones * r, ones * g, ones * b, alpha)).astype(np.uint8)
+        return result
+
+    def _get_fast_data(self):
+        return self._slice((slice(None, None, 10), slice(None, None, 10)))
+
+    def _slice(self, view):
+        """
+        Extract a view from the 2D image.
+        """
+        # Combining multiple views: First a 2D slice into an ND array, then
+        # the requested view from this slice
+
+        if self.transpose:
+            views = [self.view, 'transpose', view]
+        else:
+            views = [self.view, view]
+        view = stack_view(self.subset.data.shape, *views)
+
+        mask = self.subset.to_mask(view)
+        return self._rgb_from_mask(mask)
+
+    def _set_minmax(self):
+        self.minval = 0
+        self.maxval = 256
+        self.minval_noinf = self.minval
+        self.maxval_noinf = self.maxval
 
 
 class GingaSubsetImageLayer(GingaLayerArtist, SubsetImageLayerBase):
@@ -156,7 +247,7 @@ class GingaSubsetImageLayer(GingaLayerArtist, SubsetImageLayerBase):
         super(GingaSubsetImageLayer, self).__init__(layer, canvas)
         self._img = None
         self._cimg = None
-        self._tag = "layer%s" % (str(layer.label))
+        self._tag = "layer%s_%s" % (layer.label, time())
         self._visible = True
         self._enabled = True
 
@@ -170,6 +261,9 @@ class GingaSubsetImageLayer(GingaLayerArtist, SubsetImageLayerBase):
 
     @visible.setter
     def visible(self, value):
+        if value is self._visible:
+            return
+
         self._visible = value
         if not value:
             self.clear()
@@ -182,67 +276,43 @@ class GingaSubsetImageLayer(GingaLayerArtist, SubsetImageLayerBase):
         except:
             pass
 
-    def _compute_img(self, view, transpose=False):
+    def _update_ginga_models(self, view, transpose=False):
         subset = self.layer
         logging.getLogger(__name__).debug("View into subset %s is %s", self.layer, view)
 
-        try:
-            mask = subset.to_mask(view[1:])
-        except IncompatibleAttribute as exc:
-            self.disable_invalid_attributes(*exc.args)
-            return False
-        logging.getLogger(__name__).debug("View mask has shape %s", mask.shape)
-
-        # shortcut for empty subsets
-        if not mask.any():
-            return None
-
-        if transpose:
-            mask = mask.T
-
+        _, view = split_component_view(view)  # discard ComponentID
         r, g, b = color2rgb(self.layer.style.color)
 
-        if self._img and self._img.get_data().shape[:2] == mask.shape[:2]:
-            # optimization to simply update the color overlay if it already
-            # exists and is the correct size
-            data = self._img.get_data()
-            data[..., 3] = 127 * mask
-            data[..., 0] = 255 * r
-            data[..., 1] = 255 * g
-            data[..., 2] = 255 * b
+        if self._img is None:
+            self._img = SubsetImage(subset, view)
+        if self._cimg is None:
+            self._cimg = Image(0, 0, self._img, alpha=0.5, flipy=False)
 
-            return self._img
+        self._img.view = view
+        self._img.color = (r, g, b)
+        self._img.transpose = transpose
 
-        # create new color image overlay
-        ones = np.ones(mask.shape)
-        clr_img = np.dstack((r * ones, g * ones, b * ones, mask * .5))
-        clr_img = (255 * clr_img).astype(np.uint8)
+        return True
 
-        rgbimg = RGBImage.RGBImage(data_np=clr_img)
-
-        self._img = rgbimg
-
-        return self._img
+    def _check_enabled(self):
+        self._enabled = True
+        try:
+            view = tuple(0 for _ in self.layer.data.shape)
+            self.layer.to_mask(view)
+        except IncompatibleAttribute as exc:
+            self._enabled = False
+            self.disable_invalid_attributes(*exc.args)
 
     def update(self, view, transpose=False):
-        # remove previously added image
         self.clear()
-        self._enabled = True
 
-        im = self._compute_img(view, transpose)
-        if not im:
-            self._enabled = False
-            self.redraw()
-            return
-        # lower z-order in the back
-        # TODO: check for z-order
+        self._check_enabled()
+        self._update_ginga_models(view, transpose)
 
-        x_pos = y_pos = 0
-        # TODO: how should we decide the alpha?
-        self._cimg = Image(x_pos, y_pos, im, alpha=0.5,
-                           flipy=False)
-        if self._visible:
-            self._canvas.add(self._cimg, tag=self._tag, redraw=True)
+        if self._enabled and self._visible:
+            self._canvas.add(self._cimg, tag=self._tag, redraw=False)
+
+        self.redraw()
 
 
 class RGBGingaImageLayer(GingaLayerArtist, RGBImageLayerBase):

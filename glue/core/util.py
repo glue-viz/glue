@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 from ..external.six.moves import reduce
+from ..external.six import string_types
 
 
 def identity(x):
@@ -129,7 +130,21 @@ def view_shape(shape, view):
     shp = tuple(slice(0, s, 1) for s in shape)
     xy = np.broadcast_arrays(*np.ogrid[shp])
     assert xy[0].shape == shape
+
     return xy[0][view].shape
+
+
+def stack_view(shape, *views):
+    shp = tuple(slice(0, s, 1) for s in shape)
+    result = np.broadcast_arrays(*np.ogrid[shp])
+    for v in views:
+        if isinstance(v, string_types) and v == 'transpose':
+            result = [r.T for r in result]
+            continue
+
+        result = [r[v] for r in result]
+
+    return tuple(result)
 
 
 def color2rgb(color):

@@ -46,7 +46,7 @@ class GingaWidget(ImageWidgetBase):
 
         # logger = logging.getLogger(__name__)
         self.logger = log.get_logger(name='ginga', log_stderr=True)
-        # self.logger = log.get_logger(name='ginga', null=True)
+        #self.logger = log.get_logger(name='ginga', null=True)
 
         self.canvas = ImageViewCanvas(self.logger, render='widget')
 
