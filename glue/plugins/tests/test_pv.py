@@ -23,7 +23,7 @@ class TestSliceExtraction(object):
         slc = (0, 'y', 'x')
         x = [-0.5, 3.5]
         y = [0, 0]
-        s, _ = _slice_from_path(x, y, self.d, 'x', slc)
+        s = _slice_from_path(x, y, self.d, 'x', slc)[0]
         assert_allclose(s, self.x[:, 0, :])
 
     def test_constant_x(self):
@@ -31,14 +31,14 @@ class TestSliceExtraction(object):
         slc = (0, 'y', 'x')
         y = [-0.5, 2.5]
         x = [0, 0]
-        s, _ = _slice_from_path(x, y, self.d, 'x', slc)
+        s = _slice_from_path(x, y, self.d, 'x', slc)[0]
         assert_allclose(s, self.x[:, :, 0])
 
     def test_transpose(self):
         slc = (0, 'x', 'y')
         y = [-0.5, 3.5]
         x = [0, 0]
-        s, _ = _slice_from_path(x, y, self.d, 'x', slc)
+        s = _slice_from_path(x, y, self.d, 'x', slc)[0]
         assert_allclose(s, self.x[:, 0, :])
 
 
