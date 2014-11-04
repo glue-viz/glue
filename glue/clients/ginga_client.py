@@ -32,6 +32,7 @@ class GingaClient(ImageClient):
 
         self._canvas = canvas
         self._wcs = None
+        self._crosshair_id = '_crosshair'
 
     def _new_rgb_layer(self, layer):
         return RGBGingaImageLayer(layer, self._canvas)
@@ -50,6 +51,17 @@ class GingaClient(ImageClient):
 
     def set_cmap(self, cmap):
         self._canvas.set_cmap(cmap)
+
+    def show_crosshairs(self, x, y):
+        self.clear_crosshairs()
+        c = self._canvas.viewer.getDrawClass('circle')(x, y, 6, color='red')
+        self._canvas.add(c, tag=self._crosshair_id, redraw=True)
+
+    def clear_crosshairs(self):
+        try:
+            self._canvas.deleteObjectsByTag([self._crosshair_id], redraw=False)
+        except:
+            pass
 
 
 class GingaLayerArtist(LayerArtistBase):
@@ -211,18 +223,24 @@ class GingaSubsetImageLayer(GingaLayerArtist, SubsetImageLayerBase):
             self._enabled = False
             self.disable_invalid_attributes(*exc.args)
 
+    def _ensure_added(self):
+        """ Add artist to canvas if needed """
+        try:
+            self._canvas.getObjectByTag(self._tag)
+        except KeyError:
+            self._canvas.add(self._cimg, tag=self._tag, redraw=False)
+
     def update(self, view, transpose=False):
-        self.clear()
 
         self._check_enabled()
         self._update_ginga_models(view, transpose)
 
-        # XXX can skip remove/re-add
-        # use getObjectByTag(self, tag) to check if layer is present
         if self._enabled and self._visible:
-            self._canvas.add(self._cimg, tag=self._tag, redraw=False)
+            self._ensure_added()
+        else:
+            self.clear()
 
-        self.redraw(whence=2)
+        self.redraw(whence=0)
 
 
 class RGBGingaImageLayer(GingaLayerArtist, RGBImageLayerBase):

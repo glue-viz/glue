@@ -313,8 +313,8 @@ class GingaTool(object):
     label = None
     icon = None
     shape = 'polygon'
-    color = 'cyan'
-    linestyle = 'dash'
+    color = 'red'
+    linestyle = 'solid'
 
     def __init__(self, canvas):
         self.parent_canvas = canvas
@@ -350,6 +350,7 @@ class GingaTool(object):
 class GingaPVSlicer(GingaTool, PVSlicerTool):
     label = 'PV Slicer'
     icon = 'glue_slice'
+    shape = 'path'
 
     def __init__(self, widget=None):
         GingaTool.__init__(self, widget.canvas)
