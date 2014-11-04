@@ -24,6 +24,7 @@ from ...core.callback_property import add_callback
 
 from ..qtutil import get_icon, nonpartial
 from ...plugins.pv_slicer import PVSlicerTool
+from ...plugins.spectrum_tool import SpectrumTool
 from ...config import tool_registry
 
 
@@ -194,30 +195,12 @@ class GingaWidget(ImageWidgetBase):
         except:
             pass
 
-    def ginga_graphic_to_roi(self, obj):
-        if obj.kind == 'rectangle':
-            roi = roimod.RectangularROI(xmin=obj.x1, xmax=obj.x2,
-                                        ymin=obj.y1, ymax=obj.y2)
-        elif obj.kind == 'circle':
-            roi = roimod.CircularROI(xc=obj.x, yc=obj.y,
-                                     radius=obj.radius)
-        elif obj.kind == 'polygon':
-            vx = map(lambda xy: xy[0], obj.points)
-            vy = map(lambda xy: xy[1], obj.points)
-            roi = roimod.PolygonalROI(vx=vx, vy=vy)
-
-        else:
-            raise Exception("Don't know how to convert shape '%s' to a ROI" % (
-                obj.kind))
-
-        return roi
-
     def _apply_roi_cb(self, canvas, tag):
         if self.canvas.draw_context is not self:
             return
         self.roi_tag = tag
         obj = self.canvas.getObjectByTag(self.roi_tag)
-        roi = self.ginga_graphic_to_roi(obj)
+        roi = ginga_graphic_to_roi(obj)
         # delete outline
         self.canvas.deleteObject(obj, redraw=False)
         try:
@@ -318,49 +301,109 @@ def _colormap_mode(parent, on_trigger):
     return tb
 
 
-class GingaPVSlicer(PVSlicerTool):
+def ginga_graphic_to_roi(obj):
+    if obj.kind == 'rectangle':
+        roi = roimod.RectangularROI(xmin=obj.x1, xmax=obj.x2,
+                                    ymin=obj.y1, ymax=obj.y2)
+    elif obj.kind == 'circle':
+        roi = roimod.CircularROI(xc=obj.x, yc=obj.y,
+                                 radius=obj.radius)
+    elif obj.kind == 'polygon':
+        vx = map(lambda xy: xy[0], obj.points)
+        vy = map(lambda xy: xy[1], obj.points)
+        roi = roimod.PolygonalROI(vx=vx, vy=vy)
 
-    def __init__(self, widget=None):
-        super(GingaPVSlicer, self).__init__(widget)
-        self.canvas = widget.canvas
+    else:
+        raise Exception("Don't know how to convert shape '%s' to a ROI" % (
+            obj.kind))
+
+    return roi
+
+
+class GingaTool(object):
+    label = None
+    icon = None
+    shape = 'polygon'
+    color = 'cyan'
+    linestyle = 'dash'
+
+    def __init__(self, canvas):
+        self.parent_canvas = canvas
         self._shape_tag = None
 
-        self.canvas.set_callback('draw-event', self._extract_callback)
-        self.canvas.set_callback('draw-down', self._clear_shape_cb)
+        self.parent_canvas.set_callback('draw-event', self._extract_callback)
+        self.parent_canvas.set_callback('draw-down', self._clear_shape_cb)
 
     def _get_modes(self, canvas):
-        return [("PV Slice", get_icon("glue_slice"), self._set_path_mode)]
+        return [(self.label, get_icon(self.icon), self._set_path_mode)]
 
     def _display_data_hook(self, data):
         # XXX need access to mode here
         pass
 
     def _set_path_mode(self, enable):
-        self.canvas.enable_draw(True)
-        self.canvas.draw_context = self
+        self.parent_canvas.enable_draw(True)
+        self.parent_canvas.draw_context = self
 
-        self.canvas.set_drawtype('polygon', color='cyan', linestyle='dash')
-        bm = self.canvas.get_bindmap()
+        self.parent_canvas.set_drawtype(self.shape, color=self.color, linestyle=self.linestyle)
+        bm = self.parent_canvas.get_bindmap()
         bm.set_modifier('draw', modtype='locked')
 
     def _clear_shape_cb(self, *args):
         try:
-            self.canvas.deleteObjectByTag(self._shape_tag)
+            self.parent_canvas.deleteObjectByTag(self._shape_tag)
         except:
             pass
 
     _clear_path = _clear_shape_cb
 
+
+class GingaPVSlicer(GingaTool, PVSlicerTool):
+    label = 'PV Slicer'
+    icon = 'glue_slice'
+
+    def __init__(self, widget=None):
+        GingaTool.__init__(self, widget.canvas)
+        PVSlicerTool.__init__(self, widget)
+
     def _extract_callback(self, canvas, tag):
-        if self.canvas.draw_context is not self:
+        if self.parent_canvas.draw_context is not self:
             return
 
         self._shape_tag = tag
-        obj = self.canvas.getObjectByTag(tag)
+        obj = self.parent_canvas.getObjectByTag(tag)
         vx, vy = zip(*obj.points)
         return self._build_from_vertices(vx, vy)
 
+
+class GingaSpectrumTool(GingaTool, SpectrumTool):
+    label = 'Spectrum'
+    icon = 'glue_spectrum'
+    shape = 'rectangle'
+
+    def __init__(self, widget=None):
+        GingaTool.__init__(self, widget.canvas)
+        SpectrumTool.__init__(self, widget)
+
+    def _extract_callback(self, canvas, tag):
+        if self.parent_canvas.draw_context is not self:
+            return
+
+        self._shape_tag = tag
+        obj = self.parent_canvas.getObjectByTag(tag)
+        roi = ginga_graphic_to_roi(obj)
+        return self._update_from_roi(roi)
+
+    def _setup_mouse_mode(self):
+        # XXX fix this ugliness
+        class Dummy:
+
+            def clear(self):
+                pass
+        return Dummy()
+
 tool_registry.add(GingaPVSlicer, GingaWidget)
+tool_registry.add(GingaSpectrumTool, GingaWidget)
 
 
 def cmap2pixmap(cmap, steps=50):

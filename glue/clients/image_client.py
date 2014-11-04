@@ -194,7 +194,7 @@ class ImageClient(VizClient):
         """
         self._override_image = image
         for a in self.artists[self.display_data]:
-            if isinstance(a, ImageLayerArtist):
+            if isinstance(a, ImageLayerBase):
                 a.override_image(image)
         self._update_data_plot()
         self._redraw()
@@ -202,7 +202,7 @@ class ImageClient(VizClient):
     def _clear_override(self):
         self._override_image = None
         for a in self.artists[self.display_data]:
-            if isinstance(a, ImageLayerArtist):
+            if isinstance(a, ImageLayerBase):
                 a.clear_override()
 
     @slice_ind.setter
@@ -327,7 +327,7 @@ class ImageClient(VizClient):
 
         self._view = view
         for a in list(self.artists):
-            if (not isinstance(a, ScatterLayerArtist)) and \
+            if (not isinstance(a, ScatterLayerBase)) and \
                     a.layer.data is not self.display_data:
                 self.artists.remove(a)
             else:
@@ -517,7 +517,7 @@ class ImageClient(VizClient):
         need_redraw = False
 
         for a in self.artists[layer]:
-            if not isinstance(a, ScatterLayerArtist):
+            if not isinstance(a, ScatterLayerBase):
                 continue
             need_redraw = True
             a.xatt = xatt
@@ -585,9 +585,9 @@ class ImageClient(VizClient):
             props = dict((k, v if k == 'stretch' else context.object(v))
                          for k, v in layer.items())
             l = props['layer']
-            if c == ScatterLayerArtist:
+            if c == ScatterLayerBase:
                 l = self.add_scatter_layer(l)
-            elif c == ImageLayerArtist or c == SubsetImageLayerArtist:
+            elif c == ImageLayerBase or c == SubsetImageLayerBase:
                 if isinstance(l, Data):
                     self.set_data(l)
                 l = self.add_layer(l)
