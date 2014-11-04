@@ -27,11 +27,6 @@ from ...plugins.pv_slicer import PVSlicerTool
 from ...plugins.spectrum_tool import SpectrumTool
 from ...config import tool_registry
 
-
-from ..decorators import set_cursor
-from ..qtutil import cmap2pixmap, load_ui, get_icon, nonpartial
-from ..widget_properties import CurrentComboProperty, ButtonProperty
-
 # Find out location of ginga module so we can some of its icons
 ginga_home = os.path.split(sys.modules['ginga'].__file__)[0]
 ginga_icon_dir = os.path.join(ginga_home, 'icons')
@@ -45,9 +40,7 @@ class GingaWidget(ImageWidgetBase):
 
     def __init__(self, session, parent=None):
 
-        # logger = logging.getLogger(__name__)
         self.logger = log.get_logger(name='ginga', log_stderr=True)
-        #self.logger = log.get_logger(name='ginga', null=True)
 
         self.canvas = ImageViewCanvas(self.logger, render='widget')
 
@@ -203,11 +196,7 @@ class GingaWidget(ImageWidgetBase):
         roi = ginga_graphic_to_roi(obj)
         # delete outline
         self.canvas.deleteObject(obj, redraw=False)
-        try:
-            self.apply_roi(roi)
-        except Exception as e:
-            (type, value, tb) = sys.exc_info()
-            print "Traceback:\n%s" % ("".join(traceback.format_tb(tb)))
+        self.apply_roi(roi)
 
     def _init_widgets(self):
         pass

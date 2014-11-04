@@ -31,7 +31,7 @@ class PVSlicerTool(object):
     def _build_from_vertices(self, vx, vy):
         pv_slice, x, y, wcs = _slice_from_path(vx, vy, self.widget.data, self.widget.attribute, self.widget.slice)
         if self._slice_widget is None:
-            self._slice_widget = PVSliceWidget(image=pv_slice, wcs=wcs, image_widget=self.widget,
+            self._slice_widget = PVSliceWidget(image=pv_slice, wcs=wcs, image_client=self.widget.client,
                                                x=x, y=y, interpolation='nearest')
             self.widget._session.application.add_widget(self._slice_widget,
                                                         label='Custom Slice')
