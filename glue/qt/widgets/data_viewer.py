@@ -65,7 +65,6 @@ class DataViewer(QMainWindow, ViewerBase):
 
     def dropEvent(self, event):
         """ Add layers to the viewer if contained in mime data """
-
         if event.mimeData().hasFormat(LAYER_MIME_TYPE):
             self.request_add_layer(event.mimeData().data(LAYER_MIME_TYPE))
 

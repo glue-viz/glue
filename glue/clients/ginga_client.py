@@ -9,7 +9,7 @@ from ..core.util import Pointer, view_shape, stack_view, split_component_view, c
 from .image_client import ImageClient
 from .ds9norm import DS9Normalize
 from .layer_artist import (ChangedTrigger, LayerArtistBase, RGBImageLayerBase,
-                           ImageLayerBase, SubsetImageLayerBase)
+                           ImageLayerBase, SubsetImageLayerBase, ScatterLayerBase)
 
 from ginga.util import wcsmod
 from ginga.misc import Bunch
@@ -44,7 +44,8 @@ class GingaClient(ImageClient):
         return GingaImageLayer(layer, self._canvas)
 
     def _new_scatter_layer(self, layer):
-        pass
+        return  # XXX not ready yet
+        return GingaScatterLayer(layer, self._canvas)
 
     def _update_axis_labels(self):
         pass
@@ -118,7 +119,6 @@ class GingaImageLayer(GingaLayerArtist, ImageLayerBase):
 
     def override_image(self, image):
         """Temporarily show a different image"""
-        print 'set override image'
         self._override_image = image
 
     def clear_override(self):
@@ -162,7 +162,6 @@ class GingaSubsetImageLayer(GingaLayerArtist, SubsetImageLayerBase):
         self._img = None
         self._cimg = None
         self._tag = "layer%s_%s" % (layer.label, time())
-        self._visible = True
         self._enabled = True
 
     @property
@@ -200,9 +199,8 @@ class GingaSubsetImageLayer(GingaLayerArtist, SubsetImageLayerBase):
         if self._img is None:
             self._img = SubsetImage(subset, view)
         if self._cimg is None:
-            # XXX for some reason we need to wrap inside Image, or ginga
-            #     complains about missing methods. Check to se
-            #     if there's a better way
+            # SubsetImages can't be added to canvases directly. Need
+            # to wrap into Image
             self._cimg = Image(0, 0, self._img, alpha=0.5, flipy=False)
 
         self._img.view = view
@@ -222,6 +220,7 @@ class GingaSubsetImageLayer(GingaLayerArtist, SubsetImageLayerBase):
         except IncompatibleAttribute as exc:
             self._enabled = False
             self.disable_invalid_attributes(*exc.args)
+        return self._enabled
 
     def _ensure_added(self):
         """ Add artist to canvas if needed """
@@ -241,6 +240,73 @@ class GingaSubsetImageLayer(GingaLayerArtist, SubsetImageLayerBase):
             self.clear()
 
         self.redraw(whence=0)
+
+
+class GingaScatterLayer(GingaLayerArtist, ScatterLayerBase):
+    xatt = ChangedTrigger()
+    yatt = ChangedTrigger()
+
+    def __init__(self, layer, canvas):
+        super(GingaScatterLayer, self).__init__(layer, canvas)
+        self._tags = []
+
+    def get_data(self):
+        return np.column_stack((self.layer[self.xatt].ravel(), self.layer[self.yatt].ravel()))
+
+    @property
+    def visible(self):
+        return self._visible
+
+    @visible.setter
+    def visible(self, value):
+        if value is self._visible:
+            return
+        self._visible = value
+        if not value:
+            self.clear()
+        elif self._tags:
+            self._ensure_added()
+        self.redraw()
+
+    def clear(self):
+        try:
+            self._canvas.deleteObjectsByTag(self._tags, redraw=True)
+            self._tags = []
+        except:
+            pass
+
+    def _recalc(self):
+        try:
+            data = self.get_data()
+        except IncompatibleAttribute as exc:
+            self.disable_invalid_attributes(*exc.args)
+            return False
+
+        c = self._canvas.getDrawClass('circle')
+        for x, y in data:
+            self._tags.append(self._canvas.add(c(x, y, 3, fill=True)))
+
+    def _ensure_added(self):
+        pass
+
+    def update(self, view=None):
+        if self.xatt is None or self.yatt is None:
+            return
+
+        self._check_subset_state_changed()
+        if not self._changed:
+            return
+        self._changed = False
+
+        if not self._recalc():
+            return
+
+        if self.enabled and self.visible:
+            self._ensure_added()
+        else:
+            self.clear()
+
+        self.redraw()
 
 
 class RGBGingaImageLayer(GingaLayerArtist, RGBImageLayerBase):
