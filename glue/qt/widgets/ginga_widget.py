@@ -198,8 +198,12 @@ class GingaWidget(ImageWidgetBase):
         self.canvas.deleteObject(obj, redraw=False)
         self.apply_roi(roi)
 
-    def _init_widgets(self):
-        pass
+    def _tweak_geometry(self):
+        super(GingaWidget, self)._tweak_geometry()
+
+        # rgb mode not supported yet, so hide option
+        self.ui.monochrome.hide()
+        self.ui.rgb.hide()
 
     def motion_readout(self, canvas, button, data_x, data_y):
         """This method is called when the user moves the mouse around the Ginga
