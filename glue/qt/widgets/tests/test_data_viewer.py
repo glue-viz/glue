@@ -17,7 +17,7 @@ from mock import MagicMock, patch
 
 all_widgets = pytest.mark.parametrize(('widget'),
                                       [HistogramWidget, ScatterWidget,
-                                      ImageWidget, DendroWidget])
+                                       ImageWidget, DendroWidget])
 
 
 def setup_function(func):
