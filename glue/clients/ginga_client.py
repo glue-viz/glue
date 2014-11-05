@@ -35,7 +35,7 @@ class GingaClient(ImageClient):
         self._crosshair_id = '_crosshair'
 
     def _new_rgb_layer(self, layer):
-        return RGBGingaImageLayer(layer, self._canvas)
+        raise NotImplementedError()
 
     def _new_subset_image_layer(self, layer):
         return GingaSubsetImageLayer(layer, self._canvas)
@@ -44,8 +44,7 @@ class GingaClient(ImageClient):
         return GingaImageLayer(layer, self._canvas)
 
     def _new_scatter_layer(self, layer):
-        return  # XXX not ready yet
-        return GingaScatterLayer(layer, self._canvas)
+        raise NotImplementedError()
 
     def _update_axis_labels(self):
         pass
@@ -76,9 +75,6 @@ class GingaLayerArtist(LayerArtistBase):
 
     def redraw(self, whence=0):
         self._canvas.redraw(whence=whence)
-
-    def _sync_style(self):
-        pass
 
 
 class GingaImageLayer(GingaLayerArtist, ImageLayerBase):
@@ -240,131 +236,6 @@ class GingaSubsetImageLayer(GingaLayerArtist, SubsetImageLayerBase):
             self.clear()
 
         self.redraw(whence=0)
-
-
-class GingaScatterLayer(GingaLayerArtist, ScatterLayerBase):
-    xatt = ChangedTrigger()
-    yatt = ChangedTrigger()
-
-    def __init__(self, layer, canvas):
-        super(GingaScatterLayer, self).__init__(layer, canvas)
-        self._tags = []
-
-    def get_data(self):
-        return np.column_stack((self.layer[self.xatt].ravel(), self.layer[self.yatt].ravel()))
-
-    @property
-    def visible(self):
-        return self._visible
-
-    @visible.setter
-    def visible(self, value):
-        if value is self._visible:
-            return
-        self._visible = value
-        if not value:
-            self.clear()
-        elif self._tags:
-            self._ensure_added()
-        self.redraw()
-
-    def clear(self):
-        try:
-            self._canvas.deleteObjectsByTag(self._tags, redraw=True)
-            self._tags = []
-        except:
-            pass
-
-    def _recalc(self):
-        try:
-            data = self.get_data()
-        except IncompatibleAttribute as exc:
-            self.disable_invalid_attributes(*exc.args)
-            return False
-
-        c = self._canvas.getDrawClass('circle')
-        for x, y in data:
-            self._tags.append(self._canvas.add(c(x, y, 3, fill=True)))
-
-    def _ensure_added(self):
-        pass
-
-    def update(self, view=None):
-        if self.xatt is None or self.yatt is None:
-            return
-
-        self._check_subset_state_changed()
-        if not self._changed:
-            return
-        self._changed = False
-
-        if not self._recalc():
-            return
-
-        if self.enabled and self.visible:
-            self._ensure_added()
-        else:
-            self.clear()
-
-        self.redraw()
-
-
-class RGBGingaImageLayer(GingaLayerArtist, RGBImageLayerBase):
-    r = ChangedTrigger(None)
-    g = ChangedTrigger(None)
-    b = ChangedTrigger(None)
-
-    rnorm = gnorm = bnorm = None
-
-    contrast_layer = Pointer('_contrast_layer')
-    layer_visible = Pointer('_layer_visible')
-
-    def __init__(self, layer, canvas, last_view=None):
-        super(RGBGingaImageLayer, self).__init__(layer, canvas)
-        self.contrast_layer = 'green'
-        self.layer_visible = dict(red=True, green=True, blue=True)
-        self._aimg = None
-
-    @property
-    def norm(self):
-        return getattr(self, self.contrast_layer[0] + 'norm')
-
-    @norm.setter
-    def norm(self, value):
-        setattr(self, self.contrast_layer[0] + 'norm', value)
-
-    def set_norm(self, **kwargs):
-        norm = self.norm or DS9Normalize()
-
-        for k, v in kwargs:
-            setattr(norm, k, v)
-
-        self.norm = norm
-
-    def update(self, view=None, transpose=None):
-        self.clear()
-
-        rgb = []
-        shp = self.layer.shape
-        for att, norm, ch in zip([self.r, self.g, self.b],
-                                 [self.rnorm, self.gnorm, self.bnorm],
-                                 ['red', 'green', 'blue']):
-            if att is None or not self.layer_visible[ch]:
-                rgb.append(np.zeros(shp))
-                continue
-
-            data = self.layer[att]
-            norm = norm or DS9Normalize()
-            data = norm(data)
-
-            rgb.append(data)
-
-        self._aimg = AstroImage.AstroImage(data_np=np.dstack(rgb))
-        hdr = self._layer.coords._header
-        self._aimg.update_keywords(hdr)
-
-        if self._visible:
-            self._canvas.set_image(self._aimg)
 
 
 def forbidden(*args):

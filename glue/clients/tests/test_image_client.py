@@ -323,6 +323,24 @@ class _TestImageClientBase(object):
                         pix=(3, 5), world=(3, 5), value=np.nan)
         assert client.point_details(3, 5) == expected
 
+    def test_visibility_toggles(self):
+
+        c = self.create_client_with_image()
+        s = self.im.edit_subset
+        c.add_layer(s)
+
+        c.set_visible(self.im, False)
+        assert not c.is_visible(self.im)
+        assert c.is_visible(s)
+
+        c.set_visible(self.im, True)
+        assert c.is_visible(self.im)
+        assert c.is_visible(s)
+
+        c.set_visible(s, False)
+        assert c.is_visible(self.im)
+        assert not c.is_visible(s)
+
 
 class TestMplImageClient(_TestImageClientBase):
 
