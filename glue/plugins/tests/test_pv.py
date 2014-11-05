@@ -88,7 +88,7 @@ class TestPVSliceWidget(object):
         self.d = Data(x=np.zeros((2, 3, 4)))
         self.slc = (0, 'y', 'x')
         self.image = MockImageWidget(self.slc, self.d)
-        self.w = PVSliceWidget(image=np.zeros((3, 4)), wcs=None, image_widget=self.image)
+        self.w = PVSliceWidget(image=np.zeros((3, 4)), wcs=None, image_client=self.image.client)
 
     def test_basic(self):
         pass

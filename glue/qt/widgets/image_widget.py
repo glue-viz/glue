@@ -246,7 +246,7 @@ class ImageWidgetBase(DataViewer):
             hub.unsubscribe_all(obj)
 
     def remove_data_from_combo(self, data):
-        """ Remvoe a data object from the combo box, if present """
+        """ Remove a data object from the combo box, if present """
         combo = self.ui.displayDataCombo
         pos = combo.findText(data.label)
         if pos >= 0:

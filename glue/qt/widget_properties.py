@@ -151,7 +151,10 @@ def connect_current_combo(client, prop, widget):
     """
 
     def _push_combo(value):
-        idx = _find_combo_data(widget, value)
+        try:
+            idx = _find_combo_data(widget, value)
+        except ValueError:  # not found. Punt instead of failing
+            return
         widget.setCurrentIndex(idx)
 
     def _pull_combo(idx):

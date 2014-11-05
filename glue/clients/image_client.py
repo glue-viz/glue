@@ -396,12 +396,15 @@ class ImageClient(VizClient):
         for a in self.artists.pop(layer):
             a.clear()
 
-        if layer is self.display_data:
-            self.display_data = None
-
         if isinstance(layer, Data):
             for subset in layer.subsets:
                 self.delete_layer(subset)
+
+        if layer is self.display_data:
+            if len(self.artists) > 0:
+                self.display_data = self.artists.layers[0].data
+            else:
+                self.display_data = None
 
         self._redraw()
 
@@ -585,13 +588,9 @@ class ImageClient(VizClient):
             props = dict((k, v if k == 'stretch' else context.object(v))
                          for k, v in layer.items())
             l = props['layer']
-            if c == ScatterLayerBase:
+            if issubclass(c, ScatterLayerBase):
                 l = self.add_scatter_layer(l)
-            elif c == ImageLayerBase or c == SubsetImageLayerBase:
-                if isinstance(l, Data):
-                    self.set_data(l)
-                l = self.add_layer(l)
-            elif c == RGBImageLayerBase:
+            elif issubclass(c, RGBImageLayerBase):
                 r = props.pop('r')
                 g = props.pop('g')
                 b = props.pop('b')
@@ -601,6 +600,10 @@ class ImageClient(VizClient):
                 l.r = r
                 l.g = g
                 l.b = b
+            elif issubclass(c, (ImageLayerBase, SubsetImageLayerBase)):
+                if isinstance(l, Data):
+                    self.set_data(l)
+                l = self.add_layer(l)
             else:
                 raise ValueError("Cannot restore layer of type %s" % l)
             l.properties = props
