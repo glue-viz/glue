@@ -5,12 +5,18 @@ from numpy.testing import assert_allclose, assert_array_equal
 from ...core import Data
 
 from .test_image_client import _TestImageClientBase
-from ..ginga_client import GingaClient, SubsetImage, BaseImage
 
-from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
-from ginga.misc import log
+try:
+    from ..ginga_client import GingaClient, SubsetImage, BaseImage
+    from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
+    from ginga.misc import log
+except ImportError:
+    pass
+
+from ...tests.helpers import requires_ginga
 
 
+@requires_ginga
 class TestGingaClient(_TestImageClientBase):
 
     def new_client(self, dc=None, canvas=None):
@@ -33,6 +39,7 @@ class TestGingaClient(_TestImageClientBase):
     test_scatter_layer_does_not_set_display_data = skip
 
 
+@requires_ginga
 class TestSubsetImage(object):
 
     def setup_method(self, method):

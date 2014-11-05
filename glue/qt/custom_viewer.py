@@ -105,9 +105,10 @@ class AttributeInfo(np.ndarray):
 
     @classmethod
     def make(cls, id, values):
-        result = np.asarray(values).view(AttributeInfo)
+        values = np.asarray(values)
+        result = values.view(AttributeInfo)
         result.id = id
-        result.values = result
+        result.values = values
         return result
 
     def __gluestate__(self, context):
@@ -140,32 +141,34 @@ from functools import partial
 
 
 class UserDefinedFunction(object):
+
     """
     Descriptor to specify a UserDefinedFunction.
 
     Defined in CustomViewer like this:
-    
+
     class CustomViewer(object):
         ...
         plot_data = UserDefinedFunction('plot_data')
-        
+
     The descriptor gives CustomViewer.plot_data a dual functionality.
-    When accessed at the class level, it behaves as a decorator to 
+    When accessed at the class level, it behaves as a decorator to
     register new UDFs:
-    
+
     cv = custom_viewer(...)
     @cv.plot_data  # becomes a decorator
     def plot_data_implementation(...):
         ...
-        
+
     When accessed at the instance level, it becomes a dispatch function
     that calls `plot_data_implementation` with the proper arguments
-    
+
     Alternatively, plot_data_implementation can be specified by
     explicitly overriding plot_data in a subclass. A metaclass
     takes care of registering the UDF in that case, so you
     can define plot_data as a normal (non-decorator, non-descriptor) method.
     """
+
     def __init__(self, name):
         self.name = name
 
@@ -178,7 +181,6 @@ class UserDefinedFunction(object):
         # method called at instance level,
         # return a dispatcher to the UDF
         return partial(instance._call_udf, self.name)
-
 
 
 def introspect_and_call(func, settings):
@@ -226,6 +228,7 @@ def introspect_and_call(func, settings):
 
 
 class SettingsOracleInterface(object):
+
     def __call__(self, key):
         raise NotImplementedError()
 
@@ -377,6 +380,7 @@ class FrozenSettings(object):
     def __getitem__(self, key):
 
         class o(object):
+
             @staticmethod
             def value(layer=None, view=None):
                 return self.value(key, layer, view)
@@ -628,7 +632,6 @@ class CustomViewer(object):
     """
     Custom method called to show a subset
     """
-
 
     plot_data = UserDefinedFunction('plot_data')
     """
