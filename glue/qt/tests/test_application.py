@@ -28,7 +28,6 @@ from ...external.six import PY3
 from ...tests.helpers import requires_ipython_ge_012
 
 
-
 def tab_count(app):
     return app.tab_bar.count()
 
@@ -37,6 +36,7 @@ class TestGlueApplication(object):
 
     def setup_method(self, method):
         self.app = GlueApplication()
+        self.app._create_terminal()
 
     def teardown_method(self, method):
         self.app.close()
@@ -89,6 +89,7 @@ class TestGlueApplication(object):
         with patch('glue.qt.widgets.terminal.glue_terminal') as terminal:
             terminal.side_effect = Exception("disabled")
             app = GlueApplication()
+            app._create_terminal()
             return app
 
     def test_functional_without_terminal(self):
