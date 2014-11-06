@@ -327,7 +327,7 @@ class ToolRegistry(Registry):
         class it should apply to (``restrict_to``). if ``restrict_to`` is set
         to `None`, the tool applies to all classes.
         """
-        self.members.append((tool_cls, widget_cls))
+        self.members.append((tool_cls, restrict_to))
 
     def get_tools(self, requested_widget_cls, allow_subclass=True):
 
@@ -341,6 +341,7 @@ class ToolRegistry(Registry):
                     tools.append(tool_cls)
 
         return tools
+
 
 class BooleanSetting(object):
 
@@ -393,8 +394,7 @@ def load_configuration(search_path=None):
         except IOError:
             pass
         except Exception as e:
-            raise Exception("Error loading config file %s:\n%s" %
-                            (config_file, e))
+            raise type(e)("Error loading config file %s:\n%s" % (config_file, e), sys.exc_info()[2])
         finally:
             sys.path.remove(dir)
 

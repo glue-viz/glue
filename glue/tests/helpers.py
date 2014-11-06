@@ -12,7 +12,7 @@ def make_skipper(module, label=None, version=None):
         if version:
             assert LooseVersion(mod.__version__) >= LooseVersion(version)
         installed = True
-    except ImportError:
+    except (ImportError, AssertionError):
         installed = False
     return installed, pytest.mark.skipif(str(not installed), reason='Requires %s' % label)
 
@@ -45,3 +45,5 @@ IPYTHON_GE_012_INSTALLED, requires_ipython_ge_012 = make_skipper('IPython',
 
 requires_pil_or_skimage = pytest.mark.skipif(str(not SKIMAGE_INSTALLED and not PIL_INSTALLED),
                                              reason='Requires PIL or scikit-image')
+
+GINGA_INSTALLED, requires_ginga = make_skipper('ginga')

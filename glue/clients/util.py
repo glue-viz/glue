@@ -236,4 +236,5 @@ def defer_draw(func):
             FigureCanvasAgg.draw = FigureCanvasAgg.draw.original_method
         return result
 
+    wrapper._is_deferred = True
     return wrapper

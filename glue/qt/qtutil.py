@@ -152,7 +152,7 @@ class GlueDataDialog(object):
         result = self._fd.exec_()
         if result == QtGui.QDialog.Rejected:
             return [], None
-        #path = list(map(str, self.paths()))  # cast out of unicode
+        # path = list(map(str, self.paths()))  # cast out of unicode
         path = list(self.paths())
         factory = self.factory()
         return path, factory
@@ -960,3 +960,49 @@ class Worker(QThread):
         except:
             import sys
             self.error.emit(sys.exc_info())
+
+
+def update_combobox(combo, labeldata):
+    """
+    Redefine the items in a combobox
+
+    Parameters
+    ----------
+    widget : QComboBox
+       The widget to update
+    labeldata : sequence if N (label, data) tuples
+       The combobox will contain N items with the appropriate
+       labels, and data set as the userData
+
+    Returns
+    -------
+    combo : QComboBox
+        The updated input
+
+    Notes
+    -----
+    If the current userData in the combo box matches
+    any of labeldata, that selection will be retained.
+    Otherwise, the first item will be selected.
+
+    Signals are disabled while the combo box is updated
+
+    combo is modified inplace
+    """
+    combo.blockSignals(True)
+    idx = combo.currentIndex()
+    if idx > 0:
+        current = combo.itemData(idx)
+    else:
+        current = None
+
+    combo.clear()
+    index = 0
+    for i, (label, data) in enumerate(labeldata):
+        combo.addItem(label, userData=data)
+        if data is current:
+            index = i
+    combo.blockSignals(False)
+    combo.setCurrentIndex(index)
+
+    return combo

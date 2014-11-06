@@ -1,21 +1,29 @@
 """
 LayerArtist classes handle the visualization of an individual subset
-or dataset
+or dataset.
+
+Visualization clients in Glue typically combose visualizations by stacking
+visualizations of several datasets and subsets on top of each other. They
+do this by creating and managing a collection of LayerArtists, one for
+each Data or Subset to view.
+
+LayerArtists contain the bulk of the logic for actually rendering things
 """
 
 from __future__ import absolute_import, division, print_function
 
 import logging
 from contextlib import contextmanager
+from abc import ABCMeta, abstractproperty, abstractmethod
 
 import numpy as np
 from matplotlib.cm import gray
+from ..external import six
 from ..core.exceptions import IncompatibleAttribute
 from ..core.util import color2rgb, PropertySetMixin, Pointer
 from ..core.subset import Subset
 from .util import view_cascade, get_extent, small_view, small_view_array
 from .ds9norm import DS9Normalize
-from ..external.six.moves import reduce
 
 
 class ChangedTrigger(object):
@@ -39,32 +47,68 @@ class ChangedTrigger(object):
             inst._changed = True
 
 
-class LayerArtist(PropertySetMixin):
+@six.add_metaclass(ABCMeta)
+class LayerArtistBase(PropertySetMixin):
     _property_set = ['zorder', 'visible', 'layer']
 
-    def __init__(self, layer, axes):
+    # the order of this layer in the visualizations. High-zorder
+    # layers are drawn on top of low-zorder layers.
+    # Subclasses should refresh plots when this property changes
+    zorder = Pointer('_zorder')
+
+    # whether this layer should be rendered.
+    # Subclasses should refresh plots when this property changes
+    visible = Pointer('_visible')
+
+    # whether this layer is capable of being rendered
+    # Subclasses should refresh plots when this property changes
+    enabled = Pointer('_enabled')
+
+    def __init__(self, layer):
         """Create a new LayerArtist
 
         :param layer: Data or subset to draw
         :type layer: :class:`~glue.core.data.Data` or `glue.core.subset.Subset`
         """
-        self._layer = layer
-        self._axes = axes
         self._visible = True
-
         self._zorder = 0
-        self.view = None
-        self.artists = []
+        self._enabled = True
+        self._layer = layer
 
-        self._changed = True
-        self._state = None  # cache of subset state, if relevant
-        self._disabled_reason = ''
+        self.view = None      # cache of last view, if relevant
+        self._state = None    # cache of subset state, if relevant
+        self._changed = True  # hint at whether underlying data has changed since last render
+
+        self._disabled_reason = ''  # A string explaining why this layer is disabled.
 
     def disable(self, reason):
+        """
+        Disable the layer for a particular reason.
+
+        Layers should only be disabled when drawing is impossible,
+        e.g. because a subset cannot be applied to a dataset.
+
+        Parameters
+        ----------
+        reason : str
+           A short explanation for why the layer can't be drawn.
+           Used by the UI
+        """
         self._disabled_reason = reason
+        self._enabled = False
         self.clear()
 
     def disable_invalid_attributes(self, *attributes):
+        """
+        Disable a layer because visualization depends on knowing a set
+        of ComponentIDs that cannot be derived from a dataset or subset
+
+        Automatically generates a disabled message.
+
+        Parameters
+        ----------
+        attributes : sequence of ComponentIDs
+        """
         if len(attributes) == 0:
             self.disable('')
 
@@ -77,65 +121,60 @@ class LayerArtist(PropertySetMixin):
 
     @property
     def disabled_message(self):
+        """
+        Returns why a layer is disabled
+        """
         if self.enabled:
             return ''
         return "Cannot visualize this layer\n%s" % self._disabled_reason
 
-    def redraw(self):
-        self._axes.figure.canvas.draw()
-
     @property
     def layer(self):
+        """
+        The Data or Subset visualized in this layer
+        """
         return self._layer
 
     @layer.setter
     def layer(self, value):
         self._layer = value
 
-    @property
-    def zorder(self):
-        return self._zorder
+    @abstractmethod
+    def redraw(self):
+        """
+        Re-render the plot
+        """
+        raise NotImplementedError()
 
-    @zorder.setter
-    def zorder(self, value):
-        for artist in self.artists:
-            artist.set_zorder(value)
-        self._zorder = value
-
-    @property
-    def visible(self):
-        return self._visible
-
-    @visible.setter
-    def visible(self, value):
-        self._visible = value
-        for a in self.artists:
-            a.set_visible(value)
-
-    @property
-    def enabled(self):
-        return len(self.artists) > 0
-
+    @abstractmethod
     def update(self, view=None):
-        """Redraw this layer"""
+        """
+        Sync the visual appearance of the layer, and redraw
+
+        Subclasses may skip the update if the _changed attribute
+        is set to False.
+
+        Parameters
+        ----------
+        view : (ComponentID, numpy_style view) or None
+            A hint about what sub-view into the data is relevant.
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def clear(self):
+        """Clear the visulaization for this layer"""
         raise NotImplementedError()
 
     def force_update(self, *args, **kwargs):
         """
+        Sets the _changed flag to true, and calls update.
+
         Force an update of the layer, overriding any
-        caching that the layer might do for speed
+        caching that might be going on for speed
         """
         self._changed = True
         return self.update(*args, **kwargs)
-
-    def clear(self):
-        """Clear the visulaization for this layer"""
-        for artist in self.artists:
-            try:
-                artist.remove()
-            except ValueError:  # already removed
-                pass
-        self.artists = []
 
     def _check_subset_state_changed(self):
         """Checks to see if layer is a subset and, if so,
@@ -146,6 +185,153 @@ class LayerArtist(PropertySetMixin):
         if state is not self._state:
             self._changed = True
             self._state = state
+
+    def __str__(self):
+        return "%s for %s" % (self.__class__.__name__, self.layer.label)
+
+    def __gluestate__(self, context):
+        # note, this doesn't yet have a restore method. Will rely on client
+        return dict((k, context.id(v)) for k, v in self.properties.items())
+
+    __repr__ = __str__
+
+
+"""
+Base-class mixin interfaces for different visualizations.
+"""
+
+
+@six.add_metaclass(ABCMeta)
+class ScatterLayerBase(object):
+
+    # which ComponentID to assign to X axis
+    xatt = abstractproperty()
+
+    # which ComponentID to assign to Y axis
+    yatt = abstractproperty()
+
+    @abstractmethod
+    def get_data(self):
+        """
+        Return the scatterpoint data as an (N, 2) array
+        """
+        pass
+
+
+@six.add_metaclass(ABCMeta)
+class RGBImageLayerBase(object):
+
+    r = abstractproperty()               # ComponentID for red channel
+    g = abstractproperty()               # ComponentID for green channel
+    b = abstractproperty()               # ComponentID for blue channel
+    rnorm = abstractproperty()           # Normalize instance for red channel
+    gnorm = abstractproperty()           # Normalize instance for green channel
+    bnorm = abstractproperty()  # Normalize instance for blue channel
+    contrast_layer = abstractproperty()  # 'red' | 'green' | 'blue'. Which norm to adjust during set_norm
+    layer_visible = abstractproperty()   # dict (str->bool). Whether to show 'red', 'green', 'blue' layers
+
+    @property
+    def color_visible(self):
+        """
+        Return layer visibility as a list of [red_visible, green_visible, blue_visible]
+        """
+        return [self.layer_visible['red'], self.layer_visible['green'],
+                self.layer_visible['blue']]
+
+    @color_visible.setter
+    def color_visible(self, value):
+        self.layer_visible['red'] = value[0]
+        self.layer_visible['green'] = value[1]
+        self.layer_visible['blue'] = value[2]
+
+
+@six.add_metaclass(ABCMeta)
+class HistogramLayerBase(object):
+    lo = abstractproperty()     # lo-cutoff for bin counting
+    hi = abstractproperty()     # hi-cutoff for bin counting
+    nbins = abstractproperty()  # number of bins
+    xlog = abstractproperty()   # whether to space bins logarithmically
+
+    @abstractmethod
+    def get_data(self):
+        """
+        Return array of bin counts
+        """
+        pass
+
+
+@six.add_metaclass(ABCMeta)
+class ImageLayerBase(object):
+
+    norm = abstractproperty()  # Normalization instance to scale intensities
+    cmap = abstractproperty()  # colormap
+
+    @abstractmethod
+    def set_norm(self, **kwargs):
+        """
+        Adjust the normalization instance parameters.
+        See :class:`glue.clients.ds9norm.DS9Normalize attributes for valid
+        kwargs for this function
+        """
+        pass
+
+    @abstractmethod
+    def clear_norm():
+        """
+        Reset the norm to the default
+        """
+        pass
+
+    @abstractmethod
+    def override_image(self, image):
+        """
+        Temporarily display another image instead of a view into the data
+
+        The new image has the same shape as the view into the data
+        """
+        pass
+
+    @abstractmethod
+    def clear_override(self):
+        """
+        Remove the override image, and display the data again
+        """
+        pass
+
+
+@six.add_metaclass(ABCMeta)
+class SubsetImageLayerBase(object):
+    pass
+
+
+"""
+Matplotlib-specific implementations follow
+"""
+
+
+class LayerArtist(LayerArtistBase):
+
+    """
+    MPL-specific layer artist base class, that uses an Axes object
+    """
+
+    def __init__(self, layer, axes):
+        super(LayerArtist, self).__init__(layer)
+        self._axes = axes
+        self.artists = []
+
+    def redraw(self):
+        self._axes.figure.canvas.draw()
+
+    @property
+    def visible(self):
+        return self._visible
+
+    @visible.setter
+    def visible(self, value):
+        self._visible = value
+        for a in self.artists:
+            a.set_visible(value)
 
     def _sync_style(self):
         style = self.layer.style
@@ -165,17 +351,30 @@ class LayerArtist(PropertySetMixin):
             artist.set_zorder(self.zorder)
             artist.set_visible(self.visible and self.enabled)
 
-    def __str__(self):
-        return "%s for %s" % (self.__class__.__name__, self.layer.label)
+    @property
+    def zorder(self):
+        return self._zorder
 
-    def __gluestate__(self, context):
-        # note, this doesn't yet have a restore method. Will rely on client
-        return dict((k, context.id(v)) for k, v in self.properties.items())
+    @zorder.setter
+    def zorder(self, value):
+        for artist in self.artists:
+            artist.set_zorder(value)
+        self._zorder = value
 
-    __repr__ = __str__
+    @property
+    def enabled(self):
+        return len(self.artists) > 0
+
+    def clear(self):
+        for artist in self.artists:
+            try:
+                artist.remove()
+            except ValueError:  # already removed
+                pass
+        self.artists = []
 
 
-class ImageLayerArtist(LayerArtist):
+class ImageLayerArtist(LayerArtist, ImageLayerBase):
     _property_set = LayerArtist._property_set + ['norm']
 
     def __init__(self, layer, ax):
@@ -302,7 +501,7 @@ class ImageLayerArtist(LayerArtist):
             artist.set_visible(self.visible and self.enabled)
 
 
-class RGBImageLayerArtist(ImageLayerArtist):
+class RGBImageLayerArtist(ImageLayerArtist, RGBImageLayerBase):
     _property_set = ImageLayerArtist._property_set + \
         ['r', 'g', 'b', 'rnorm', 'gnorm', 'bnorm', 'color_visible']
 
@@ -312,6 +511,11 @@ class RGBImageLayerArtist(ImageLayerArtist):
     rnorm = Pointer('_rnorm')
     gnorm = Pointer('_gnorm')
     bnorm = Pointer('_bnorm')
+
+    # dummy class-level variables will be masked
+    # at instance level, needed for ABC to be happy
+    layer_visible = None
+    contrast_layer = None
 
     def __init__(self, layer, ax, last_view=None):
         super(RGBImageLayerArtist, self).__init__(layer, ax)
@@ -330,17 +534,6 @@ class RGBImageLayerArtist(ImageLayerArtist):
         if self.contrast_layer == 'blue':
             self.norm = self.bnorm
             self.bnorm = spr(*args, **kwargs)
-
-    @property
-    def color_visible(self):
-        return [self.layer_visible['red'], self.layer_visible['green'],
-                self.layer_visible['blue']]
-
-    @color_visible.setter
-    def color_visible(self, value):
-        self.layer_visible['red'] = value[0]
-        self.layer_visible['green'] = value[1]
-        self.layer_visible['blue'] = value[2]
 
     def update(self, view=None, transpose=False):
         self.clear()
@@ -397,7 +590,7 @@ class RGBImageLayerArtist(ImageLayerArtist):
         self._sync_style()
 
 
-class SubsetImageLayerArtist(LayerArtist):
+class SubsetImageLayerArtist(LayerArtist, SubsetImageLayerBase):
 
     def update(self, view, transpose=False):
         subset = self.layer
@@ -483,7 +676,7 @@ class DendroLayerArtist(LayerArtist):
             artist.set_linewidth(lw)
 
 
-class ScatterLayerArtist(LayerArtist):
+class ScatterLayerArtist(LayerArtist, ScatterLayerBase):
     xatt = ChangedTrigger()
     yatt = ChangedTrigger()
     _property_set = LayerArtist._property_set + ['xatt', 'yatt']
@@ -632,7 +825,7 @@ class LayerArtistContainer(object):
         return [a for a in self.artists if a.layer is layer]
 
 
-class HistogramLayerArtist(LayerArtist):
+class HistogramLayerArtist(LayerArtist, HistogramLayerBase):
     _property_set = LayerArtist._property_set + 'lo hi nbins xlog'.split()
 
     lo = ChangedTrigger(0)
@@ -650,9 +843,6 @@ class HistogramLayerArtist(LayerArtist):
         self._y = np.array([])
 
         self._scale_state = None
-
-    def has_patches(self):
-        return len(self.artists) > 0
 
     def get_data(self):
         return self.x, self.y

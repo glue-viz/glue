@@ -144,24 +144,24 @@ def init_mpl(figure, axes, wcs=False, axes_factory=None):
         WCSAxesSubplot = None
 
     if axes is not None:
-        _ax = axes
+        _axes = axes
         _figure = axes.figure
     else:
         _figure = figure or plt.figure()
         if wcs and WCSAxesSubplot is not None:
-            _ax = WCSAxesSubplot(_figure, 111)
-            _figure.add_axes(_ax)
+            _axes = WCSAxesSubplot(_figure, 111)
+            _figure.add_axes(_axes)
         else:
             if axes_factory is not None:
-                _ax = axes_factory(_figure)
+                _axes = axes_factory(_figure)
             else:
-                _ax = _figure.add_subplot(1, 1, 1)
+                _axes = _figure.add_subplot(1, 1, 1)
     try:
         _figure.set_tight_layout(True)
     except AttributeError:  # matplotlib < 1.1
         pass
 
-    return _figure, _ax
+    return _figure, _axes
 
 
 class GenericMplClient(Client):

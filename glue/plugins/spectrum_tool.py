@@ -636,7 +636,7 @@ class SpectrumTool(object):
             return
 
         if (slc_old.index('x') != slc_new.index('x') or
-           slc_old.index('y') != slc_new.index('y')):
+                slc_old.index('y') != slc_new.index('y')):
             self.reset()
 
     def reset(self):
@@ -672,11 +672,10 @@ class SpectrumTool(object):
 
         self._set_profile(x, y)
 
-    def _update_profile(self, *args):
+    def _update_from_roi(self, roi):
         data = self.data
         att = self.client.display_attribute
         slc = self.client.slice
-        roi = self.mouse_mode.roi()
 
         if data is None or att is None:
             return
@@ -685,6 +684,10 @@ class SpectrumTool(object):
 
         x, y = Extractor.spectrum(data, att, roi, slc, zax)
         self._set_profile(x, y)
+
+    def _update_profile(self, *args):
+        roi = self.mouse_mode.roi()
+        return self._update_from_roi(roi)
 
     def _set_profile(self, x, y):
         data = self.data

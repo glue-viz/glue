@@ -19,7 +19,9 @@ from .viz_client import VizClient, init_mpl
 from .util import defer_draw
 from .layer_artist import (ScatterLayerArtist, LayerArtistContainer,
                            ImageLayerArtist, SubsetImageLayerArtist,
-                           RGBImageLayerArtist)
+                           RGBImageLayerArtist,
+                           ImageLayerBase, RGBImageLayerBase,
+                           SubsetImageLayerBase, ScatterLayerBase)
 
 
 def requires_data(func):
@@ -37,12 +39,7 @@ class ImageClient(VizClient):
     display_data = CallbackProperty(None)
     display_attribute = CallbackProperty(None)
 
-    def __init__(self, data, figure=None, axes=None, artist_container=None):
-
-        if axes is not None:
-            raise ValueError("ImageClient does not accept an axes")
-
-        figure, axes = init_mpl(figure, axes, wcs=True)
+    def __init__(self, data, artist_container=None):
 
         VizClient.__init__(self, data)
 
@@ -50,35 +47,24 @@ class ImageClient(VizClient):
         if self.artists is None:
             self.artists = LayerArtistContainer()
 
+        # slice through ND cube
+        # ('y', 'x', 2)
+        # means current data slice is [:, :, 2], and axis=0 is vertical on plot
         self._slice = None
-        self._view_window = None
+
+        # how to extract a downsampled/cropped 2D image to plot
+        # (ComponentID, slice, slice, ...)
         self._view = None
+
+        # cropped/downsampled image
+        # self._image == self.display_data[self._view]
         self._image = None
+
+        # if this is set, render this instead of self._image
         self._override_image = None
 
-        self._ax = axes
-        self._ax.get_xaxis().set_ticks([])
-        self._ax.get_yaxis().set_ticks([])
-        self._figure = figure
+        # maps attributes -> normalization settings
         self._norm_cache = {}
-
-        # custom axes formatter
-        def format_coord(x, y):
-            data = self.display_data
-            if data is None:
-                # MPL default method
-                return type(self._ax).format_coord(self._ax, x, y)
-            info = self.point_details(x, y)
-            return '         '.join(info['labels'])
-
-        self._ax.format_coord = format_coord
-
-        self._cid = self._ax.figure.canvas.mpl_connect('button_release_event',
-                                                       self.check_update)
-
-        if hasattr(self._ax.figure.canvas, 'homeButton'):
-            # test code doesn't always use Glue's custom FigureCanvas
-            self._ax.figure.canvas.homeButton.connect(self.check_update)
 
     def point_details(self, x, y):
         if self.display_data is None:
@@ -178,10 +164,6 @@ class ImageClient(VizClient):
         self._redraw()
 
     @property
-    def axes(self):
-        return self._ax
-
-    @property
     def is_3D(self):
         """
         Returns True if the display data has 3 dimensions """
@@ -212,7 +194,7 @@ class ImageClient(VizClient):
         """
         self._override_image = image
         for a in self.artists[self.display_data]:
-            if isinstance(a, ImageLayerArtist):
+            if isinstance(a, ImageLayerBase):
                 a.override_image(image)
         self._update_data_plot()
         self._redraw()
@@ -220,7 +202,7 @@ class ImageClient(VizClient):
     def _clear_override(self):
         self._override_image = None
         for a in self.artists[self.display_data]:
-            if isinstance(a, ImageLayerArtist):
+            if isinstance(a, ImageLayerBase):
                 a.clear_override()
 
     @slice_ind.setter
@@ -243,16 +225,6 @@ class ImageClient(VizClient):
         if data not in self.artists:
             self.add_layer(data)
 
-    def check_update(self, *args):
-        logging.getLogger(__name__).debug("check update")
-        vw = _view_window(self._ax)
-        if vw != self._view_window:
-            logging.getLogger(__name__).debug("updating")
-            self._update_data_plot()
-            self._update_subset_plots()
-            self._redraw()
-            self._view_window = vw
-
     @defer_draw
     def set_data(self, data, attribute=None):
         if not self.can_image_data(data):
@@ -270,20 +242,6 @@ class ImageClient(VizClient):
         self._update_subset_plots()
         self._update_scatter_plots()
         self._redraw()
-
-    @defer_draw
-    def _update_wcs_axes(self, data, slc):
-        wcs = getattr(data.coords, 'wcs', None)
-
-        if wcs is not None and hasattr(self.axes, 'reset_wcs'):
-            self.axes.reset_wcs(wcs, slices=slc[::-1])
-
-    @requires_data
-    def _update_axis_labels(self):
-        labels = _axis_labels(self.display_data, self.slice)
-        self._update_wcs_axes(self.display_data, self.slice)
-        self._ax.set_xlabel(labels[1])
-        self._ax.set_ylabel(labels[0])
 
     def set_attribute(self, attribute):
         if not self.display_data or \
@@ -307,7 +265,7 @@ class ImageClient(VizClient):
         """
         Re-render the screen
         """
-        self._ax.figure.canvas.draw()
+        pass
 
     @requires_data
     @defer_draw
@@ -334,16 +292,10 @@ class ImageClient(VizClient):
             a.cmap = cmap
             a.redraw()
 
-    def _build_view(self, matched=False):
+    def _build_view(self):
         att = self.display_attribute
         shp = self.display_data.shape
-        shp_2d = _2d_shape(shp, self.slice)
         x, y = np.s_[:], np.s_[:]
-        if matched:
-            v = extract_matched_slices(self._ax, shp_2d)
-            x = slice(v[0], v[1], v[2])
-            y = slice(v[3], v[4], v[5])
-
         slc = list(self.slice)
         slc[slc.index('x')] = x
         slc[slc.index('y')] = y
@@ -369,13 +321,13 @@ class ImageClient(VizClient):
         if relim:
             self.relim()
 
-        view = self._build_view(matched=True)
+        view = self._build_view()
         self._image = self.display_data[view]
         transpose = self.slice.index('x') < self.slice.index('y')
 
         self._view = view
         for a in list(self.artists):
-            if (not isinstance(a, ScatterLayerArtist)) and \
+            if (not isinstance(a, ScatterLayerBase)) and \
                     a.layer.data is not self.display_data:
                 self.artists.remove(a)
             else:
@@ -383,11 +335,6 @@ class ImageClient(VizClient):
         for a in self.artists[self.display_data]:
             meth = a.update if not force else a.force_update
             meth(view, transpose=transpose)
-
-    def relim(self):
-        shp = _2d_shape(self.display_data.shape, self.slice)
-        self._ax.set_xlim(0, shp[1])
-        self._ax.set_ylim(0, shp[0])
 
     def _update_subset_single(self, s, redraw=False, force=False):
         """
@@ -410,7 +357,7 @@ class ImageClient(VizClient):
         if s.data is not self.display_data:
             return
 
-        view = self._build_view(matched=True)
+        view = self._build_view()
         transpose = self.slice.index('x') < self.slice.index('y')
         for a in self.artists[s]:
             meth = a.update if not force else a.force_update
@@ -428,6 +375,7 @@ class ImageClient(VizClient):
                 return i
 
     @requires_data
+    @defer_draw
     def apply_roi(self, roi):
 
         subset_state = RoiSubsetState()
@@ -437,8 +385,7 @@ class ImageClient(VizClient):
         subset_state.yatt = y
         subset_state.roi = PolygonalROI(xroi, yroi)
         mode = EditSubsetMode()
-        with defer(self.axes.figure.canvas, 'draw'):
-            mode.update(self.data, subset_state, focus_data=self.display_data)
+        mode.update(self.data, subset_state, focus_data=self.display_data)
 
     def _remove_subset(self, message):
         self.delete_layer(message.sender)
@@ -449,12 +396,15 @@ class ImageClient(VizClient):
         for a in self.artists.pop(layer):
             a.clear()
 
-        if layer is self.display_data:
-            self.display_data = None
-
         if isinstance(layer, Data):
             for subset in layer.subsets:
                 self.delete_layer(subset)
+
+        if layer is self.display_data:
+            if len(self.artists) > 0:
+                self.display_data = self.artists.layers[0].data
+            else:
+                self.display_data = None
 
         self._redraw()
 
@@ -477,7 +427,7 @@ class ImageClient(VizClient):
         If None, check if RGB mode is enabled
 
         :rtype: LayerArtist or None
-          If RGB mode is enabled, returns an RGBImageLayerArtist
+          If RGB mode is enabled, returns an RGBImageLayerBase
           If enable=False, return the new ImageLayerArtist
         """
         # XXX need to better handle case where two RGBImageLayerArtists
@@ -485,7 +435,7 @@ class ImageClient(VizClient):
 
         if enable is None:
             for a in self.artists:
-                if isinstance(a, RGBImageLayerArtist):
+                if isinstance(a, RGBImageLayerBase):
                     return a
             return None
 
@@ -493,8 +443,10 @@ class ImageClient(VizClient):
         layer = self.display_data
         if enable:
             layer = self.display_data
-            v = self._view or self._build_view(matched=True)
-            a = RGBImageLayerArtist(layer, self._ax, last_view=v)
+            a = self._new_rgb_layer(layer)
+            if a is None:
+                return
+
             a.r = a.g = a.b = self.display_attribute
 
             with self.artists.ignore_empty():
@@ -504,7 +456,7 @@ class ImageClient(VizClient):
         else:
             with self.artists.ignore_empty():
                 for artist in list(self.artists):
-                    if isinstance(artist, RGBImageLayerArtist):
+                    if isinstance(artist, RGBImageLayerBase):
                         self.artists.remove(artist)
                 result = self.add_layer(layer)
 
@@ -528,12 +480,13 @@ class ImageClient(VizClient):
             return
 
         if isinstance(layer, Data):
-            result = ImageLayerArtist(layer, self._ax)
+            result = self._new_image_layer(layer)
             self.artists.append(result)
             for s in layer.subsets:
                 self.add_layer(s)
+            self.set_data(layer)
         elif isinstance(layer, Subset):
-            result = SubsetImageLayerArtist(layer, self._ax)
+            result = self._new_subset_image_layer(layer)
             self.artists.append(result)
             self._update_subset_single(layer)
         else:
@@ -548,7 +501,7 @@ class ImageClient(VizClient):
             logging.getLogger(__name__).debug('Layer already present')
             return
 
-        result = ScatterLayerArtist(layer, self._ax)
+        result = self._new_scatter_layer(layer)
         self.artists.append(result)
         self._update_scatter_layer(layer)
         return result
@@ -567,7 +520,7 @@ class ImageClient(VizClient):
         need_redraw = False
 
         for a in self.artists[layer]:
-            if not isinstance(a, ScatterLayerArtist):
+            if not isinstance(a, ScatterLayerBase):
                 continue
             need_redraw = True
             a.xatt = xatt
@@ -635,13 +588,9 @@ class ImageClient(VizClient):
             props = dict((k, v if k == 'stretch' else context.object(v))
                          for k, v in layer.items())
             l = props['layer']
-            if c == ScatterLayerArtist:
+            if issubclass(c, ScatterLayerBase):
                 l = self.add_scatter_layer(l)
-            elif c == ImageLayerArtist or c == SubsetImageLayerArtist:
-                if isinstance(l, Data):
-                    self.set_data(l)
-                l = self.add_layer(l)
-            elif c == RGBImageLayerArtist:
+            elif issubclass(c, RGBImageLayerBase):
                 r = props.pop('r')
                 g = props.pop('g')
                 b = props.pop('b')
@@ -651,9 +600,201 @@ class ImageClient(VizClient):
                 l.r = r
                 l.g = g
                 l.b = b
+            elif issubclass(c, (ImageLayerBase, SubsetImageLayerBase)):
+                if isinstance(l, Data):
+                    self.set_data(l)
+                l = self.add_layer(l)
             else:
                 raise ValueError("Cannot restore layer of type %s" % l)
             l.properties = props
+
+    # subclasses should override the following methods as appropriate
+    def _new_rgb_layer(self, layer):
+        """
+        Construct and return an RGBImageLayerBase for the given layer
+
+        Parameters
+        ----------
+        layer : Data or Subset instance
+           Which object to visualize
+        """
+        raise NotImplementedError()
+
+    def _new_subset_image_layer(self, layer):
+        """
+        Construct and return a SubsetImageLayerArtist for the given layer
+
+        Parameters
+        ----------
+        layer : Data or Subset instance
+           Which object to visualize
+        """
+        raise NotImplementedError()
+
+    def _new_image_layer(self, layer):
+        """
+        Construct and return an ImageLayerArtist for the given layer
+
+        Parameters
+        ----------
+        layer : Data or Subset instance
+           Which object to visualize
+        """
+        raise NotImplementedError()
+
+    def _new_scatter_layer(self, layer):
+        """
+        Construct and return a ScatterLayerArtist for the given layer
+
+        Parameters
+        ----------
+        layer : Data or Subset instance
+           Which object to visualize
+        """
+        raise NotImplementedError()
+
+    def _update_axis_labels(self):
+        """
+        Sync the displays for labels on X/Y axes, because
+        the data or slice has changed
+        """
+        raise NotImplementedError()
+
+    def relim(self):
+        """
+        Reset view window to the default pan/zoom setting.
+        """
+        pass
+
+    def show_crosshairs(self, x, y):
+        pass
+
+    def clear_crosshairs(self):
+        pass
+
+
+class MplImageClient(ImageClient):
+
+    def __init__(self, data, figure=None, axes=None, artist_container=None):
+        super(MplImageClient, self).__init__(data, artist_container)
+
+        if axes is not None:
+            raise ValueError("ImageClient does not accept an axes")
+        self._setup_mpl(figure, axes)
+
+        # description of field of view and center of image
+        self._view_window = None
+
+        # artist for a crosshair
+        self._crosshairs = None
+
+    def _setup_mpl(self, figure, axes):
+        figure, axes = init_mpl(figure, axes, wcs=True)
+        self._axes = axes
+        self._axes.get_xaxis().set_ticks([])
+        self._axes.get_yaxis().set_ticks([])
+        self._figure = figure
+
+        # custom axes formatter
+        def format_coord(x, y):
+            data = self.display_data
+            if data is None:
+                # MPL default method
+                return type(self._axes).format_coord(self._axes, x, y)
+            info = self.point_details(x, y)
+            return '         '.join(info['labels'])
+
+        self._axes.format_coord = format_coord
+
+        self._cid = self._axes.figure.canvas.mpl_connect('button_release_event',
+                                                         self.check_update)
+
+        if hasattr(self._axes.figure.canvas, 'homeButton'):
+            # test code doesn't always use Glue's custom FigureCanvas
+            self._axes.figure.canvas.homeButton.connect(self.check_update)
+
+    @property
+    def axes(self):
+        return self._axes
+
+    def check_update(self, *args):
+        """
+        For the MPL client, see if the view window has changed enough
+        such that the images should be resampled
+        """
+        logging.getLogger(__name__).debug("check update")
+        vw = _view_window(self._axes)
+        if vw != self._view_window:
+            logging.getLogger(__name__).debug("updating")
+            self._update_data_plot()
+            self._update_subset_plots()
+            self._redraw()
+            self._view_window = vw
+
+    @requires_data
+    def _update_axis_labels(self):
+        labels = _axis_labels(self.display_data, self.slice)
+        self._update_wcs_axes(self.display_data, self.slice)
+        self._axes.set_xlabel(labels[1])
+        self._axes.set_ylabel(labels[0])
+
+    @defer_draw
+    def _update_wcs_axes(self, data, slc):
+        wcs = getattr(data.coords, 'wcs', None)
+
+        if wcs is not None and hasattr(self.axes, 'reset_wcs'):
+            self.axes.reset_wcs(wcs, slices=slc[::-1])
+
+    def _redraw(self):
+        self._axes.figure.canvas.draw()
+
+    def relim(self):
+        shp = _2d_shape(self.display_data.shape, self.slice)
+        self._axes.set_xlim(0, shp[1])
+        self._axes.set_ylim(0, shp[0])
+
+    def _new_rgb_layer(self, layer):
+        v = self._view or self._build_view()
+        a = RGBImageLayerArtist(layer, self._axes, last_view=v)
+        return a
+
+    def _new_image_layer(self, layer):
+        return ImageLayerArtist(layer, self._axes)
+
+    def _new_subset_image_layer(self, layer):
+        return SubsetImageLayerArtist(layer, self._axes)
+
+    def _new_scatter_layer(self, layer):
+        return ScatterLayerArtist(layer, self._axes)
+
+    def _build_view(self):
+
+        att = self.display_attribute
+        shp = self.display_data.shape
+
+        shp_2d = _2d_shape(shp, self.slice)
+        v = extract_matched_slices(self._axes, shp_2d)
+        x = slice(v[0], v[1], v[2])
+        y = slice(v[3], v[4], v[5])
+
+        slc = list(self.slice)
+        slc[slc.index('x')] = x
+        slc[slc.index('y')] = y
+        return (att,) + tuple(slc)
+
+    def show_crosshairs(self, x, y):
+        if self._crosshairs is not None:
+            self._crosshairs.remove()
+
+        self._crosshairs, = self._axes.plot([x], [y], '+', ms=12,
+                                            mfc='none', mec='#d32d26',
+                                            mew=2, zorder=100)
+        self._redraw()
+
+    def clear_crosshairs(self):
+        if self._crosshairs is not None:
+            self._crosshairs.remove()
+            self._crosshairs = None
 
 
 def _2d_shape(shape, slc):
