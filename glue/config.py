@@ -394,7 +394,7 @@ def load_configuration(search_path=None):
         except IOError:
             pass
         except Exception as e:
-            raise type(e), "Error loading config file %s:\n%s" % (config_file, e), sys.exc_info()[2]
+            raise type(e)("Error loading config file %s:\n%s" % (config_file, e), sys.exc_info()[2])
         finally:
             sys.path.remove(dir)
 

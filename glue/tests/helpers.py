@@ -12,7 +12,7 @@ def make_skipper(module, label=None, version=None):
         if version:
             assert LooseVersion(mod.__version__) >= LooseVersion(version)
         installed = True
-    except ImportError:
+    except (ImportError, AssertionError):
         installed = False
     return installed, pytest.mark.skipif(str(not installed), reason='Requires %s' % label)
 

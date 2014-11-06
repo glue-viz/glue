@@ -1,3 +1,5 @@
+from __future__ import print_function, division
+
 import logging
 from time import time
 
@@ -7,9 +9,8 @@ from ..core.exceptions import IncompatibleAttribute
 from ..core.util import Pointer, view_shape, stack_view, split_component_view, color2rgb
 
 from .image_client import ImageClient
-from .ds9norm import DS9Normalize
-from .layer_artist import (ChangedTrigger, LayerArtistBase, RGBImageLayerBase,
-                           ImageLayerBase, SubsetImageLayerBase, ScatterLayerBase)
+from .layer_artist import (LayerArtistBase,
+                           ImageLayerBase, SubsetImageLayerBase)
 
 from ginga.util import wcsmod
 from ginga.misc import Bunch
@@ -382,9 +383,10 @@ class SubsetImage(BaseImage.BaseImage):
         self.maxval_noinf = self.maxval
 
     def get_scaled_cutout_wdht(self, x1, y1, x2, y2, new_wd, new_ht):
-
+        doit = getattr(self, '_doit', False)
+        self._doit = not doit
         # default implementation if downsampling
-        if new_wd <= (x2 - x1 + 1) or new_ht <= (y2 - y1 + 1):
+        if doit or new_wd <= (x2 - x1 + 1) or new_ht <= (y2 - y1 + 1):
             return super(SubsetImage, self).get_scaled_cutout_wdht(x1, y1, x2, y2, new_wd, new_ht)
 
         # if upsampling, prevent extra to_mask() computation
