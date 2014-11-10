@@ -8,7 +8,7 @@ from ... import custom_viewer
 from ...core import Data
 from ...core.subset import SubsetState
 from ...core.tests.util import simple_session
-from ..custom_viewer import FormElement, NumberElement, ChoiceElement, CustomViewer, CustomSubsetState
+from ..custom_viewer import FormElement, NumberElement, ChoiceElement, CustomViewer, CustomSubsetState, AttributeInfo
 from ..glue_application import GlueApplication
 from ...core.tests.test_state import check_clone_app, clone
 
@@ -34,6 +34,7 @@ plot_subset = MagicMock()
 plot_data = MagicMock()
 make_selector = MagicMock()
 make_selector().copy().to_mask.return_value = slice(None)
+
 
 @viewer.setup
 def _setup(axes):
@@ -62,11 +63,13 @@ def _make_selector(roi, c):
     make_selector(roi=roi, c=c)
     return SubsetState()
 
+
 def test_custom_classes_dont_share_methods():
     """Regression test for #479"""
     a = custom_viewer('a')
     b = custom_viewer('b')
     assert a._custom_functions is not b._custom_functions
+
 
 class ViewerSubclass(CustomViewer):
     a = (0, 100)
@@ -310,3 +313,31 @@ class TestFormElements(object):
     def test_unrecognized(self):
         with pytest.raises(ValueError):
             e = FormElement.auto(None)
+
+
+class TestAttributeInfo(object):
+
+    def setup_method(self, method):
+        d = Data(x=[1, 2, 3, 4, 5], c=['a', 'b', 'a', 'a', 'b'], label='test')
+        s = d.new_subset()
+        s.subset_state = d.id['x'] > 2
+        self.d = d
+        self.s = s
+
+    def test_numerical(self):
+        v = AttributeInfo.from_layer(self.d, self.d.id['x'])
+        assert_array_equal(v, [1, 2, 3, 4, 5])
+        assert v.id == self.d.id['x']
+        assert v.categories is None
+
+    def test_categorical(self):
+        v = AttributeInfo.from_layer(self.d, self.d.id['c'])
+        assert_array_equal(v, [0, 1, 0, 0, 1])
+        assert v.id == self.d.id['c']
+        assert_array_equal(v.categories, ['a', 'b'])
+
+    def test_subset(self):
+        v = AttributeInfo.from_layer(self.s, self.d.id['x'])
+        assert_array_equal(v, [3, 4, 5])
+        assert v.id == self.d.id['x']
+        assert v.categories is None

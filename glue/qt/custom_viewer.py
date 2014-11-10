@@ -99,17 +99,43 @@ class AttributeInfo(np.ndarray):
     """
     An array subclass wrapping a Component of a dataset
 
-    This is an array, with an extra ``id`` attribute containing the
-    ComponentID or string name of the Component.
+    It is an array with the following additional attributes:
+
+    * ``id``  contains the ComponentID or string name of the Component
+    * ``categories`` is an array or None. For categorical Components,
+      contains the distinct categories which are integer-encoded
+      in the AttributeInfo
     """
 
     @classmethod
-    def make(cls, id, values):
+    def make(cls, id, values, categories=None):
         values = np.asarray(values)
         result = values.view(AttributeInfo)
         result.id = id
         result.values = values
+        result.categories = categories
         return result
+
+    @classmethod
+    def from_layer(cls, layer, cid, view=None):
+        """
+        Build an AttributeInfo out of a subset or dataset
+
+        Parameters
+        ----------
+        layer : Data or Subset
+            The data to use
+        cid : ComponentID
+            The ComponentID to use
+        view : numpy-style view (optional)
+            What slice into the data to use
+        """
+        values = layer[cid, view]
+        comp = layer.data.get_component(cid)
+        categories = None
+        if isinstance(comp, core.data.CategoricalComponent):
+            categories = comp._categories
+        return cls.make(cid, values, categories)
 
     def __gluestate__(self, context):
         return dict(cid=context.id(self.id))
@@ -373,7 +399,7 @@ class FrozenSettings(object):
 
         if isinstance(result, AttributeInfo) and layer is not None:
             cid = result.id
-            return AttributeInfo.make(cid, layer[cid, view])
+            return AttributeInfo.from_layer(layer, cid, view)
 
         return result
 
@@ -1175,7 +1201,8 @@ class FixedComponent(FormElement):
         """
         cid = self.params.split('(')[-1][:-1]
         if layer is not None:
-            return AttributeInfo.make(layer.data.id[cid], layer[cid, view])
+            cid = layer.data.id[cid]
+            return AttributeInfo.from_layer(layer, cid, view)
         return AttributeInfo.make(cid, [])
 
     @property
@@ -1222,7 +1249,7 @@ class ComponenentElement(FormElement, core.hub.HubListener):
         cid = self._component
         if layer is None or cid is None:
             return AttributeInfo.make(cid, [])
-        return AttributeInfo.make(cid, layer[cid, view])
+        return AttributeInfo.from_layer(layer, cid, view)
 
     def _update_components(self):
         combo = self.ui
