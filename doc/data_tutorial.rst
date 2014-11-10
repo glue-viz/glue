@@ -105,4 +105,4 @@ Note that this syntax gives you the numpy array, and not the Component object it
     In [8]: component = data.get_component(primary_id)  #component object
     In [9]: component.data   # numpy array
 
-.. note:: The bracket syntax will not work if component labels are not unique. In this case, you must first retrieve the component object as shown above.
+.. note:: The item access syntax (square brackets) will not work if component labels are not unique. In this case, you must first retrieve the wanted ComponentID (In[6]) and use it to get the component object (In[8]).
