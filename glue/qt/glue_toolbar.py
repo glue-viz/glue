@@ -21,10 +21,6 @@ class GlueToolbar(NavigationToolbar2QT):
 
         Parameters
         ----------
-        data_collection : DataCollection instance
-         The data collection that this toolbar is meant to edit.
-         The toolbar looks to this collection for the available subsets
-         to manipulate.
         canvas : Maptloblib canvas instance
          The drawing canvas to interact with
         frame : QWidget
