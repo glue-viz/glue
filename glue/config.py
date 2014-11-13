@@ -369,6 +369,7 @@ tool_registry = ToolRegistry()
 
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)
+enable_contracts = BooleanSetting(False)
 
 
 def load_configuration(search_path=None):

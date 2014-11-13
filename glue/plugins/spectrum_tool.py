@@ -136,6 +136,10 @@ class Extractor(object):
 
 
 class SpectrumContext(object):
+
+    """
+    Base class for different interaction contexts
+    """
     client = Pointer('main.client')
     data = Pointer('main.data')
     profile_axis = Pointer('main.profile_axis')
@@ -154,12 +158,23 @@ class SpectrumContext(object):
         self._connect()
 
     def _setup_grip(self):
+        """ Create a :class:`~glue.clients.profile_viewer.Grip` object
+            to interact with the plot. Assign to self.grip
+        """
         raise NotImplementedError()
 
     def _setup_widget(self):
+        """
+        Create a context-specific widget
+        """
+        # this is the widget that is displayed to the right of the
+        # spectrum
         raise NotImplementedError()
 
     def _connect(self):
+        """
+        Attach event handlers
+        """
         pass
 
     def set_enabled(self, enabled):
@@ -188,6 +203,11 @@ class SpectrumContext(object):
 
 
 class NavContext(SpectrumContext):
+
+    """
+    Mode to set the 2D slice in the parent image widget by dragging
+    a handle in the spectrum
+    """
 
     def _setup_grip(self):
         def _set_client_from_grip(value):
@@ -241,6 +261,12 @@ class NavContext(SpectrumContext):
 
 class CollapseContext(SpectrumContext):
 
+    """
+    Mode to collapse a section of a cube into a 2D image.
+
+    Supports several aggregations: mean, median, max, mom1, mom2
+    """
+
     def _setup_grip(self):
         self.grip = self.main.profile.new_range_grip()
 
@@ -285,7 +311,20 @@ class CollapseContext(SpectrumContext):
 
 class ConstraintsWidget(QWidget):
 
+    """
+    A widget to display and tweak the constraints of a :class:`~glue.core.fitters.BaseFitter1D`
+    """
+
     def __init__(self, constraints, parent=None):
+        """
+        Parameters
+        ----------
+        constraints : dict
+            The `contstraints` property of a :class:`~glue.core.fitters.BaseFitter1D`
+            object
+        parent : QWidget (optional)
+            The parent of this widget
+        """
         super(ConstraintsWidget, self).__init__(parent)
         self.constraints = constraints
 
@@ -354,6 +393,7 @@ class ConstraintsWidget(QWidget):
                 self.layout.addWidget(widget, i, j)
 
     def settings(self, name):
+        """ Return the constraints for a single model parameter """
         row = self._widgets[name]
         name, value, fixed, limited, lo, hi = row
         value = float(value.text()) if value.text() else None
@@ -366,6 +406,9 @@ class ConstraintsWidget(QWidget):
         return dict(value=value, fixed=fixed, limits=limits)
 
     def update_constraints(self, fitter):
+        """ Update the constraints in a :class:`~glue.core.fitters.BaseFitter1D`
+            based on the settings in this widget
+        """
         for name in self._widgets:
             s = self.settings(name)
             fitter.set_constraint(name, **s)
@@ -420,6 +463,13 @@ class FitSettingsWidget(QDialog):
 
 
 class FitContext(SpectrumContext):
+
+    """
+    Mode to fit a range of a spectrum with a model fitter.
+
+    Fitters are taken from user-defined fit plugins, or
+    :class:`~glue.core.fitters.BaseFitter1D` subclasses
+    """
     error = CurrentComboProperty('ui.uncertainty_combo')
     fitter = CurrentComboProperty('ui.profile_combo')
 
@@ -497,6 +547,12 @@ class FitContext(SpectrumContext):
 
 class SpectrumMainWindow(QMainWindow):
 
+    """
+    The main window that the spectrum viewer is embedded in.
+
+    Defines two signals to trigger when a subset is dropped into the window,
+    and when the window is closed.
+    """
     subset_dropped = Signal(object)
     window_closed = Signal()
 
@@ -521,6 +577,17 @@ class SpectrumMainWindow(QMainWindow):
 
 
 class SpectrumTool(object):
+
+    """
+    Main widget for interacting with spectra extracted from an image.
+
+    Provides different contexts for interacting with the spectrum:
+
+    *navigation context* lets the user set the slice in the parent image
+                         by dragging a bar on the spectrum
+    *fit context* lets the user fit models to a portion of the spectrum
+    *collapse context* lets the users collapse a section of a cube to a 2D image
+    """
 
     def __init__(self, image_widget):
         self._relim_requested = True

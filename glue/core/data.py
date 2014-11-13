@@ -6,6 +6,7 @@ import logging
 import numpy as np
 import pandas as pd
 
+from .contracts import contract
 from .coordinates import Coordinates
 from .visual import VisualAttributes
 from .visual import COLORS
@@ -580,6 +581,7 @@ class Data(object):
                 return True
             return component.shape == self.shape
 
+    @contract(cid=ComponentID, returns=np.dtype)
     def dtype(self, cid):
         """Lookup the dtype for the data associated with a ComponentID"""
 
@@ -932,12 +934,13 @@ class Data(object):
             raise TypeError("input is not a Hub object: %s" % type(hub))
         self.hub = hub
 
+    @contract
     def broadcast(self, attribute=None):
         """
         Send a :class:`~glue.core.message.DataUpdateMessage` to the hub
 
         :param attribute: Name of an attribute that has changed
-        :type attribute: str
+        :type attribute: *
         """
         if not self.hub:
             return
