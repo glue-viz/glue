@@ -189,8 +189,14 @@ class DendroClient(GenericMplClient):
         Return an array of all substructure indices of a given index.
         The input is included in the output.
 
-        :param idx: The structure to extract. Int
-        :returns: array
+        Parameters
+        ----------
+        idx : int
+            The structure to extract.
+
+        Returns
+        -------
+        array
         """
         children = self._children
         result = []
