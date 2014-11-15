@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, print_function
 import sys
 import optparse
 import logging
+import click
 
 from glue import __version__
 
@@ -61,7 +62,7 @@ def parse(argv):
     return parser.parse_args(argv)
 
 
-def verify(parser, argv):
+def verify(script, restore, test, config, args):
     """ Check for input errors
 
     :param parser: OptionParser instance
@@ -71,17 +72,12 @@ def verify(parser, argv):
     *Returns*
     An error message, or None
     """
-    opts, args = parser.parse_args(argv)
     err_msg = None
 
-    if opts.script and opts.restore:
+    if script and restore:
         err_msg = "Cannot specify -g with -x"
-    elif opts.script and opts.config:
+    elif script and config:
         err_msg = "Cannot specify -c with -x"
-    elif opts.script and len(args) != 1:
-        err_msg = "Must provide a script\n"
-    elif opts.restore and len(args) != 1:
-        err_msg = "Must provide a .glu file\n"
 
     return err_msg
 
@@ -204,16 +200,30 @@ def get_splash():
     return splash
 
 
-def main(argv=sys.argv):
+@click.command()
+@click.option('-x', '--execute', 'script', type=click.Path(exists=True),
+              metavar='<FILE>', help='Execute <FILE> as a python script')
+@click.option('-g', 'restore', type=click.Path(exists=True),
+              metavar='<FILE>', help="Restore glue session from FILE")
+@click.option('-t', '--test', 'test', default=False, help="Run test suite")
+@click.option('-c', '--config', 'config', type=click.Path(exists=True),
+              metavar='<CONFIG>', help='Use <CONFIG> as configuration file')
+@click.argument('args', nargs=-1)
+def main(script, restore, test, config, args):
     logging.getLogger(__name__).info("Input arguments: %s", sys.argv)
 
-    opt, args = parse(argv[1:])
-    if opt.test:
+    err_msg = verify(script, restore, test, config, args)
+    if err_msg:
+        sys.stderr.write('\n%s\n' % err_msg)
+        # parser.print_help()
+        sys.exit(1)
+
+    if test:
         return run_tests()
-    elif opt.restore:
-        start_glue(gluefile=args[0], config=opt.config)
-    elif opt.script:
-        execute_script(args[0])
+    elif restore:
+        start_glue(gluefile=restore, config=config)
+    elif script:
+        execute_script(script)
     else:
         has_file = len(args) == 1
         has_files = len(args) > 1
@@ -222,12 +232,12 @@ def main(argv=sys.argv):
         if has_py:
             execute_script(args[0])
         elif has_glu:
-            start_glue(gluefile=args[0], config=opt.config)
+            start_glue(gluefile=args[0], config=config)
         elif has_file or has_files:
-            start_glue(datafiles=args, config=opt.config)
+            start_glue(datafiles=args, config=config)
         else:
-            start_glue(config=opt.config)
+            start_glue(config=config)
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))  # prama: no cover
+    sys.exit(main())  # prama: no cover
