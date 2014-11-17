@@ -121,6 +121,8 @@ class HistogramWidget(DataViewer):
         """Repopulate the combo box that selects the quantity to plot"""
         combo = self.ui.attributeCombo
         component = self.component
+        new = self.client.component or component
+
         combo.blockSignals(True)
         combo.clear()
 
@@ -132,6 +134,7 @@ class HistogramWidget(DataViewer):
         self._component_hashes = dict((_hash(c), c) for d in self._data
                                       for c in d.components)
 
+        found = False
         for d in self._data:
             if d not in self._container:
                 continue
@@ -143,6 +146,8 @@ class HistogramWidget(DataViewer):
             for c in d.visible_components:
                 if not d.get_component(c).numeric:
                     continue
+                if c is new:
+                    found = True
                 item = QtGui.QStandardItem(c.label)
                 item.setData(_hash(c), role=Qt.UserRole)
                 model.appendRow(item)
@@ -155,8 +160,8 @@ class HistogramWidget(DataViewer):
 
         combo.blockSignals(False)
 
-        if component is not None:
-            self.component = component
+        if found:
+            self.component = new
         else:
             combo.setCurrentIndex(2)  # skip first data + separator
         self._set_attribute_from_combo()

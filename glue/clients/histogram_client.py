@@ -277,6 +277,10 @@ class HistogramClient(Client):
     def component(self):
         return self._component
 
+    @component.setter
+    def component(self, value):
+        self.set_component(value)
+
     def set_component(self, component):
         """
         Redefine which component gets plotted
@@ -335,6 +339,10 @@ class HistogramClient(Client):
     def _numerical_data_changed(self, message):
         data = message.sender
         self.sync_all(force=True)
+
+    def _on_component_replaced(self, msg):
+        if self.component is msg.old:
+            self.set_component(msg.new)
 
     def _update_data(self, message):
         self.sync_all()
@@ -404,6 +412,9 @@ class HistogramClient(Client):
         hub.subscribe(self,
                       msg.NumericalDataChangedMessage,
                       handler=self._numerical_data_changed)
+        hub.subscribe(self,
+                      msg.ComponentReplacedMessage,
+                      handler=self._on_component_replaced)
 
     def restore_layers(self, layers, context):
         for layer in layers:

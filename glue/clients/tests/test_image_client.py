@@ -341,6 +341,19 @@ class _TestImageClientBase(object):
         assert c.is_visible(self.im)
         assert not c.is_visible(s)
 
+    def test_component_replaced(self):
+        # Regression test for #508
+        c = self.create_client_with_image()
+
+        d = c.display_data
+        a = c.display_attribute
+        test = core.ComponentID('test')
+
+        c.register_to_hub(d.hub)
+        d.update_id(a, test)
+
+        assert c.display_attribute is test
+
 
 class TestMplImageClient(_TestImageClientBase):
 

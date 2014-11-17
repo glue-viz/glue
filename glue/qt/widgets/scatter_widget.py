@@ -115,10 +115,18 @@ class ScatterWidget(DataViewer):
     @defer_draw
     def _update_combos(self):
         """ Update contents of combo boxes """
+
+        # have to be careful here, since client and/or widget
+        # are potentially out of sync
+
         layer_ids = []
 
-        # look at all plottable components of datasets we are plotting,
-        # + hidden values if requested
+        # show hidden attributes if needed
+        if ((self.client.xatt and self.client.xatt.hidden) or
+                (self.client.yatt and self.client.yatt.hidden)):
+            self.hidden = True
+
+        # determine which components to put in combos
         for l in self.client.data:
             if not self.client.is_layer_present(l):
                 continue
@@ -127,18 +135,31 @@ class ScatterWidget(DataViewer):
                 if lid not in layer_ids:
                     layer_ids.append(lid)
 
-        for combo, att in zip([self.ui.xAxisComboBox, self.ui.yAxisComboBox],
-                              [self.xatt, self.yatt]):
+        oldx = self.xatt
+        oldy = self.yatt
+        newx = self.client.xatt or oldx
+        newy = self.client.yatt or oldy
+
+        for combo, target in zip([self.ui.xAxisComboBox, self.ui.yAxisComboBox],
+                                 [newx, newy]):
             combo.blockSignals(True)
             combo.clear()
 
+            if not layer_ids:  # empty component list
+                continue
+
+            # populate
             for lid in layer_ids:
                 combo.addItem(lid.label, userData=lid)
-            try:
-                combo.setCurrentIndex(layer_ids.index(att))
-            except ValueError:
-                combo.setCurrentIndex(0)
+
+            idx = layer_ids.index(target) if target in layer_ids else 0
+            combo.setCurrentIndex(idx)
+
             combo.blockSignals(False)
+
+        # ensure client and widget synced
+        self.client.xatt = self.xatt
+        self.client.lyatt = self.yatt
 
     @defer_draw
     def add_data(self, data):
@@ -208,6 +229,13 @@ class ScatterWidget(DataViewer):
                       nonpartial(self._sync_labels))
         hub.subscribe(self, core.message.ComponentsChangedMessage,
                       nonpartial(self._update_combos))
+        hub.subscribe(self, core.message.ComponentReplacedMessage,
+                      self._on_component_replace)
+
+    def _on_component_replace(self, msg):
+        # let client update its state first
+        self.client._on_component_replace(msg)
+        self._update_combos()
 
     def unregister(self, hub):
         super(ScatterWidget, self).unregister(hub)

@@ -20,7 +20,8 @@ from .util import (split_component_view, view_shape,
 from .decorators import clear_cache
 from .message import (DataUpdateMessage,
                       DataAddComponentMessage, NumericalDataChangedMessage,
-                      SubsetCreateMessage, ComponentsChangedMessage)
+                      SubsetCreateMessage, ComponentsChangedMessage,
+                      ComponentReplacedMessage)
 
 from .odict import OrderedDict
 from ..external import six
@@ -954,10 +955,6 @@ class Data(object):
         :param new: The new :class:`ComponentID`.
         """
 
-        # note: its problematic to remove an component
-        #      during updating, since plots may already
-        # be using it (issue #279). Instead,
-        #      we just mark it as hidden
         if new is old:
             return
 
@@ -979,11 +976,14 @@ class Data(object):
             pass
 
         if changed and self.hub is not None:
-            # obfuscante name if needed
-            if new.label == old.label:
-                old.label = '_' + old.label
-            old._hidden = True
-            self.hub.broadcast(ComponentsChangedMessage(self))
+            # promote hidden status
+            new._hidden = new.hidden and old.hidden
+
+            # remove old component and broadcast the change
+            # see #508 for discussion of this
+            self._components.pop(old)
+            msg = ComponentReplacedMessage(self, old, new)
+            self.hub.broadcast(msg)
 
     def __str__(self):
         s = "Data Set: %s" % self.label
