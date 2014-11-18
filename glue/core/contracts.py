@@ -16,14 +16,47 @@ is provided for compatibility
 Glue code should only import contract through this module,
 and never directly from the contracts package.
 """
+import re
+
+from numpy import ndarray
+
 from ..config import enable_contracts
+from ..external.six import string_types
 
 
 def _build_custom_contracts():
     """
     Define some custom contracts if PyContracts is found
     """
-    pass
+    from contracts import new_contract
+
+    @new_contract
+    def cid_like(value):
+        """
+        Value is a ComponentID or a string
+        """
+        from . import ComponentID
+        return isinstance(value, (ComponentID, string_types))
+
+    @new_contract
+    def component_like(value):
+        from . import Component, ComponentLink
+        return isinstance(value, (Component, ComponentLink,
+                                  ndarray, list))
+
+    @new_contract
+    def array_like(value):
+        return isinstance(value, (ndarray, list))
+
+    @new_contract
+    def color(value):
+        return isinstance(value, string_types) and \
+            re.match('#[0-9A-F]{6}', value) is not None
+
+    @new_contract
+    def inst(value, *types):
+        return isinstance(value, types)
+
 
 try:
     from contracts import contract

@@ -122,12 +122,8 @@ class TestData(object):
 
     def test_register(self):
         hub = MagicMock(spec_set=Hub)
-        not_hub = MagicMock()
         self.data.register_to_hub(hub)
         assert hub is self.data.hub
-        with pytest.raises(TypeError) as exc:
-            self.data.register_to_hub(not_hub)
-        assert exc.value.args[0].startswith("input is not a Hub object")
 
     def test_component_order(self):
         """Components should be returned in the order they were specified"""
