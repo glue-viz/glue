@@ -510,10 +510,6 @@ class Data(object):
 
         self.id = ComponentIDDict(self)
 
-        # Tree description of the data
-        # (Deprecated)
-        self.tree = None
-
         # Subsets of the data
         self._subsets = []
 
@@ -804,6 +800,7 @@ class Data(object):
         """
         return self._world_component_ids
 
+    @contract(label='cid_like', returns='inst($ComponentID)|None')
     def find_component_id(self, label):
         """ Retrieve component_ids associated by label name.
 
@@ -870,6 +867,7 @@ class Data(object):
         """
         return self._world_component_ids[axis]
 
+    @contract(returns='list(inst($ComponentID))')
     def component_ids(self):
         """
         Equivalent to :attr:`Data.components`
@@ -952,7 +950,8 @@ class Data(object):
             raise TypeError("input is not a Hub object: %s" % type(hub))
         self.hub = hub
 
-    def broadcast(self, attribute=None):
+    @contract(attribute='string')
+    def broadcast(self, attribute):
         """
         Send a :class:`~glue.core.message.DataUpdateMessage` to the hub
 

@@ -139,11 +139,11 @@ class TestData(object):
         hub = MagicMock(spec_set=Hub)
 
         # make sure broadcasting with no hub is ok
-        self.data.broadcast()
+        self.data.broadcast('testing')
 
         # make sure broadcast with hub gets relayed
         self.data.register_to_hub(hub)
-        self.data.broadcast()
+        self.data.broadcast('testing')
         assert hub.broadcast.call_count == 1
 
     def test_double_hub_add(self):
@@ -217,7 +217,7 @@ class TestData(object):
         assert self.data.find_component_id('does not exist') is None
 
     def test_add_subset(self):
-        s = Subset(None)
+        s = Subset(Data())
         self.data.add_subset(s)
         assert s in self.data.subsets
 

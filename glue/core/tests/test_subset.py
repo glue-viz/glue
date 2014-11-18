@@ -27,13 +27,15 @@ from ...tests.helpers import requires_astropy
 class TestSubset(object):
 
     def setup_method(self, method):
-        self.data = MagicMock()
+        self.data = MagicMock(spec=Data)
+        self.data.hub = MagicMock()
         self.data.label = "data"
         Registry().clear()
 
     def test_subset_mask_wraps_state(self):
         s = Subset(self.data)
-        state = MagicMock(spec=SubsetState)
+        state = MagicMock(spec_set=SubsetState)
+        state.to_mask.return_value = np.array([True])
         s.subset_state = state
         s.to_mask()
         state.to_mask.assert_called_once_with(self.data, None)
@@ -41,6 +43,7 @@ class TestSubset(object):
     def test_subset_index_wraps_state(self):
         s = Subset(self.data)
         state = MagicMock(spec=SubsetState)
+        state.to_index_list.return_value = np.array([1, 2, 3])
         s.subset_state = state
         s.to_index_list()
         state.to_index_list.assert_called_once_with(self.data)
@@ -135,14 +138,14 @@ class TestSubset(object):
     def test_broadcast_ignore(self):
         """subset doesn't broadcast until do_broadcast(True)"""
         s = Subset(self.data)
-        s.broadcast()
+        s.broadcast('style')
         assert s.data.hub.broadcast.call_count == 0
 
     def test_broadcast_processed(self):
         """subset broadcasts after do_broadcast(True)"""
         s = Subset(self.data)
         s.do_broadcast(True)
-        s.broadcast()
+        s.broadcast('style')
         assert s.data.hub.broadcast.call_count == 1
 
     def test_del(self):
@@ -169,7 +172,7 @@ class TestSubset(object):
             s.subset_state = np.array([True])
 
     def test_state_bad_type(self):
-        s = Subset(None)
+        s = Subset(Data())
         with pytest.raises(TypeError):
             s.subset_state = 5
 
@@ -233,7 +236,7 @@ class TestCompositeSubsetStates(object):
     def setup_method(self, method):
         self.sub1 = self.DummyState(np.array([1, 1, 0, 0], dtype='bool'))
         self.sub2 = self.DummyState(np.array([1, 0, 1, 0], dtype='bool'))
-        self.data = None
+        self.data = Data(x=[1, 2, 3, 4])
 
     def test_or(self):
         s3 = OrState(self.sub1, self.sub2)
@@ -300,7 +303,7 @@ class TestElementSubsetState(object):
 class TestSubsetIo(object):
 
     def setup_method(self, method):
-        self.data = MagicMock()
+        self.data = MagicMock(spec=Data)
         self.data.shape = (4, 4)
         self.subset = Subset(self.data)
         inds = np.array([1, 2, 3])
@@ -351,7 +354,7 @@ class TestSubsetState(object):
     def mask_check(self, mask, answer):
         self.state.to_mask = MagicMock()
         self.state.to_mask.return_value = mask
-        np.testing.assert_array_equal(self.state.to_index_list(None), answer)
+        np.testing.assert_array_equal(self.state.to_index_list(Data()), answer)
 
     def test_to_index_list_1d(self):
         mask = np.array([False, True])

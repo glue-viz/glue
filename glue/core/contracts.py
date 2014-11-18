@@ -18,7 +18,7 @@ and never directly from the contracts package.
 """
 import re
 
-from numpy import ndarray
+from numpy import ndarray, s_
 
 from ..config import enable_contracts
 from ..external.six import string_types
@@ -50,13 +50,40 @@ def _build_custom_contracts():
 
     @new_contract
     def color(value):
-        return isinstance(value, string_types) and \
-            re.match('#[0-9A-F]{6}', value) is not None
+        """
+        A valid matplotlib color
+        """
+        from matplotlib.colors import colorConverter
+        try:
+            colorConverter.to_rgba(value)
+        except ValueError:
+            return False
 
     @new_contract
     def inst(value, *types):
         return isinstance(value, types)
 
+    @new_contract
+    def data_view(value):
+        from glue.core import ComponentID
+
+        if value is None:
+            return
+        if isinstance(value, ComponentID):
+            return
+        try:
+            if not isinstance(value[0], ComponentID):
+                return False
+            s_[value[1:]]
+        except:
+            return False
+
+    @new_contract
+    def array_view(value):
+        try:
+            s_[value]
+        except:
+            return False
 
 try:
     from contracts import contract

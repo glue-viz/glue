@@ -13,6 +13,7 @@ from .registry import Registry
 from .util import split_component_view, view_shape
 from .exceptions import IncompatibleAttribute
 from ..external.six import PY3
+from .contracts import contract
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState',
@@ -40,11 +41,12 @@ class Subset(object):
     :param data:
         The dataset that this subset describes
     :type data: :class:`~glue.core.data.Data`
-
-    :param style: VisualAttributes instance
-        Describes visual attributes of the subset
     """
 
+    @contract(data='isinstance(Data)|None',
+              color='color',
+              alpha=float,
+              label='string|None')
     def __init__(self, data, color=RED, alpha=0.5, label=None):
         """ Create a new subset object.
 
@@ -59,6 +61,7 @@ class Subset(object):
         self._style = None
         self._setup(color, alpha, label)
 
+    @contract(color='color', alpha='float', label='string|None')
     def _setup(self, color, alpha, label):
         self.color = color
         self.label = label  # trigger disambiguation
@@ -88,6 +91,7 @@ class Subset(object):
         return self._style
 
     @style.setter
+    @contract(value=VisualAttributes)
     def style(self, value):
         value.parent = self
         self._style = value
@@ -123,6 +127,7 @@ class Subset(object):
         self.data.add_subset(self)
         self.do_broadcast(True)
 
+    @contract(returns='array[N]')
     def to_index_list(self):
         """
         Convert the current subset to a list of indices. These index
@@ -181,6 +186,7 @@ class Subset(object):
 
         raise IncompatibleAttribute
 
+    @contract(view='array_view', returns='array')
     def to_mask(self, view=None):
         """
         Convert the current subset to a mask.
@@ -202,6 +208,7 @@ class Subset(object):
             except IncompatibleAttribute:
                 raise exc
 
+    @contract(value=bool)
     def do_broadcast(self, value):
         """
         Set whether state changes to the subset are relayed to a hub.
@@ -215,7 +222,8 @@ class Subset(object):
         """
         object.__setattr__(self, '_broadcasting', value)
 
-    def broadcast(self, attribute=None):
+    @contract(attribute='string')
+    def broadcast(self, attribute):
         """
         Explicitly broadcast a SubsetUpdateMessage to the hub
 
@@ -252,6 +260,7 @@ class Subset(object):
 
         Registry().unregister(self, group=self.data)
 
+    @contract(file_name='string')
     def write_mask(self, file_name, format="fits"):
         """ Write a subset mask out to file
 
@@ -271,6 +280,7 @@ class Subset(object):
         else:
             raise AttributeError("format not supported: %s" % format)
 
+    @contract(file_name='string')
     def read_mask(self, file_name):
         try:
             from ..external.astro import fits
@@ -300,6 +310,7 @@ class Subset(object):
         ma = self.to_mask(v)
         return self.data[view][ma]
 
+    @contract(other_subset='isinstance(Subset)')
     def paste(self, other_subset):
         """paste subset state from other_subset onto self """
         state = other_subset.subset_state.copy()
@@ -317,15 +328,19 @@ class Subset(object):
     def __repr__(self):
         return self.__str__()
 
+    @contract(other='isinstance(Subset)', returns='isinstance(Subset)')
     def __or__(self, other):
         return _combine([self, other], operator.or_)
 
+    @contract(other='isinstance(Subset)', returns='isinstance(Subset)')
     def __and__(self, other):
         return _combine([self, other], operator.and_)
 
+    @contract(returns='isinstance(Subset)')
     def __invert__(self):
         return _combine([self], operator.invert)
 
+    @contract(other='isinstance(Subset)', returns='isinstance(Subset)')
     def __xor__(self, other):
         return _combine([self, other], operator.xor)
 
@@ -369,25 +384,35 @@ class SubsetState(object):
     def subset_state(self):  # convenience method, mimic interface of Subset
         return self
 
+    @contract(data='isinstance(Data)')
     def to_index_list(self, data):
         return np.where(self.to_mask(data).flat)[0]
 
+    @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
         shp = view_shape(data.shape, view)
         return np.zeros(shp, dtype=bool)
 
+    @contract(returns='isinstance(SubsetState)')
     def copy(self):
         return SubsetState()
 
+    @contract(other_state='isinstance(SubsetState)',
+              returns='isinstance(SubsetState)')
     def __or__(self, other_state):
         return OrState(self, other_state)
 
+    @contract(other_state='isinstance(SubsetState)',
+              returns='isinstance(SubsetState)')
     def __and__(self, other_state):
         return AndState(self, other_state)
 
+    @contract(returns='isinstance(SubsetState)')
     def __invert__(self):
         return InvertState(self)
 
+    @contract(other_state='isinstance(SubsetState)',
+              returns='isinstance(SubsetState)')
     def __xor__(self, other_state):
         return XorState(self, other_state)
 
@@ -405,6 +430,7 @@ class RoiSubsetState(SubsetState):
         return (self.xatt, self.yatt)
 
     @memoize
+    @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
         x = data[self.xatt, view]
         y = data[self.yatt, view]
@@ -432,6 +458,7 @@ class RangeSubsetState(SubsetState):
     def attributes(self):
         return (self.att,)
 
+    @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
         x = data[self.att, view]
         result = (x >= self.lo) & (x <= self.hi)
@@ -462,6 +489,7 @@ class CompositeSubsetState(SubsetState):
         return tuple(sorted(set(att)))
 
     @memoize
+    @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
         return self.op(self.state1.to_mask(data, view),
                        self.state2.to_mask(data, view))
@@ -486,6 +514,7 @@ class XorState(CompositeSubsetState):
 class InvertState(CompositeSubsetState):
 
     @memoize
+    @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
         return ~self.state1.to_mask(data, view)
 
@@ -592,13 +621,13 @@ class InequalitySubsetState(SubsetState):
         if op not in valid_ops:
             raise TypeError("Invalid boolean operator: %s" % op)
         if not isinstance(left, ComponentID) and not \
-            isinstance(left, numbers.Number) and not \
-            isinstance(left, ComponentLink):
+                isinstance(left, numbers.Number) and not \
+                isinstance(left, ComponentLink):
             raise TypeError("Input must be ComponenID or NumberType: %s"
                             % type(left))
         if not isinstance(right, ComponentID) and not \
-            isinstance(right, numbers.Number) and not \
-            isinstance(right, ComponentLink):
+                isinstance(right, numbers.Number) and not \
+                isinstance(right, ComponentLink):
             raise TypeError("Input must be ComponenID or NumberType: %s"
                             % type(right))
         self._left = left
@@ -641,6 +670,7 @@ class InequalitySubsetState(SubsetState):
         return '<%s: %s>' % (self.__class__.__name__, self)
 
 
+@contract(subsets='list(isinstance(Subset))', returns=Subset)
 def _combine(subsets, operator):
     state = operator(*[s.subset_state for s in subsets])
     result = Subset(None)
