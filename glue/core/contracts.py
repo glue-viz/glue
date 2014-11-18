@@ -85,8 +85,12 @@ def _build_custom_contracts():
         except:
             return False
 
+    @new_contract
+    def callable(value):
+        return hasattr(value, '__call__')
+
 try:
-    from contracts import contract
+    from contracts import contract, ContractsMeta
 
     if not enable_contracts():
         from contracts import disable_all
@@ -102,3 +106,5 @@ except ImportError:
             return args[0]
         else:   # called as @contract(x='int', ...)
             return lambda func: func
+
+    ContractsMeta = type

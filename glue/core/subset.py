@@ -11,7 +11,6 @@ from .message import SubsetDeleteMessage, SubsetUpdateMessage
 from .exceptions import IncompatibleAttribute
 from .registry import Registry
 from .util import split_component_view, view_shape
-from .exceptions import IncompatibleAttribute
 from ..external.six import PY3
 from .contracts import contract
 
