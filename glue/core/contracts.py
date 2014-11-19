@@ -16,9 +16,9 @@ is provided for compatibility
 Glue code should only import contract through this module,
 and never directly from the contracts package.
 """
-import re
 
 from numpy import ndarray, s_
+from pandas import Series
 
 from ..config import enable_contracts
 from ..external.six import string_types
@@ -42,7 +42,7 @@ def _build_custom_contracts():
     def component_like(value):
         from . import Component, ComponentLink
         return isinstance(value, (Component, ComponentLink,
-                                  ndarray, list))
+                                  ndarray, list, Series))
 
     @new_contract
     def array_like(value):
