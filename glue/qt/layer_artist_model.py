@@ -21,7 +21,7 @@ from ..external.qt.QtCore import (Qt, QAbstractListModel, QModelIndex,
 from .qtutil import (layer_artist_icon, nonpartial)
 
 from .mime import PyMimeData, LAYERS_MIME_TYPE
-from ..clients.layer_artist import LayerArtist, LayerArtistContainer
+from ..clients.layer_artist import LayerArtistBase, LayerArtistContainer
 
 from .widgets.style_dialog import StyleDialog
 
@@ -122,7 +122,8 @@ class LayerArtistModel(QAbstractListModel):
         data = data.data(PyMimeData.MIME_TYPE)
         # list of a single artist. Move
         if isinstance(data, list) and len(data) == 1 and \
-                isinstance(data[0], LayerArtist) and data[0] in self.artists:
+                isinstance(data[0], LayerArtistBase) and \
+                data[0] in self.artists:
             self.move_artist(data[0], row)
             return True
 

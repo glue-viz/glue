@@ -16,7 +16,6 @@ from ginga.util import wcsmod
 from ginga.misc import Bunch
 
 wcsmod.use('astropy')
-from ginga.ImageViewCanvas import Image
 from ginga import AstroImage, BaseImage
 
 
@@ -55,7 +54,8 @@ class GingaClient(ImageClient):
 
     def show_crosshairs(self, x, y):
         self.clear_crosshairs()
-        c = self._canvas.viewer.getDrawClass('circle')(x, y, 6, color='red')
+        c = self._canvas.viewer.getDrawClass('point')(x, y, 6, color='red',
+                                                      style='plus')
         self._canvas.add(c, tag=self._crosshair_id, redraw=True)
 
     def clear_crosshairs(self):
@@ -66,6 +66,7 @@ class GingaClient(ImageClient):
 
 
 class GingaLayerArtist(LayerArtistBase):
+
     zorder = Pointer('_zorder')
     visible = Pointer('_visible')
 
@@ -105,6 +106,20 @@ class GingaImageLayer(GingaLayerArtist, ImageLayerBase):
             self.clear()
         elif self._img:
             self._canvas.set_image(self._img)
+
+    @property
+    def zorder(self):
+        return self._zorder
+
+    @zorder.setter
+    def zorder(self, value):
+        self._zorder = value
+        try:
+            canvas_img = self._canvas.getObjectByTag('_image')
+            canvas_img.set_zorder(value)
+        except KeyError:
+            # object does not yet exist on canvas
+            pass
 
     def set_norm(self, **kwargs):
         # NOP for ginga
@@ -180,6 +195,20 @@ class GingaSubsetImageLayer(GingaLayerArtist, SubsetImageLayerBase):
         elif self._cimg:
             self._canvas.add(self._cimg, tag=self._tag, redraw=True)
 
+    @property
+    def zorder(self):
+        return self._zorder
+
+    @zorder.setter
+    def zorder(self, value):
+        self._zorder = value
+        try:
+            canvas_img = self._canvas.getObjectByTag(self._tag)
+            canvas_img.set_zorder(value)
+        except KeyError:
+            # object does not yet exist on canvas
+            pass
+
     def clear(self):
         try:
             self._canvas.deleteObjectsByTag([self._tag], redraw=True)
@@ -197,7 +226,8 @@ class GingaSubsetImageLayer(GingaLayerArtist, SubsetImageLayerBase):
             self._img = SubsetImage(subset, view)
         if self._cimg is None:
             # SubsetImages can't be added to canvases directly. Need
-            # to wrap into Image
+            # to wrap into a ginga canvas type.
+            Image = self._canvas.getDrawClass('image')
             self._cimg = Image(0, 0, self._img, alpha=0.5, flipy=False)
 
         self._img.view = view
