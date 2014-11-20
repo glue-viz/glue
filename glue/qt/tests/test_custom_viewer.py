@@ -2,6 +2,7 @@ import pytest
 from mock import MagicMock, patch
 from numpy.testing import assert_array_equal
 from matplotlib.axes import Axes
+import numpy as np
 
 from ...core.odict import OrderedDict
 from ... import custom_viewer
@@ -33,7 +34,7 @@ settings_changed = MagicMock()
 plot_subset = MagicMock()
 plot_data = MagicMock()
 make_selector = MagicMock()
-make_selector().copy().to_mask.return_value = slice(None)
+make_selector().copy().to_mask.return_value = np.array([False])
 
 
 @viewer.setup

@@ -36,6 +36,7 @@ class TestSubset(object):
         s = Subset(self.data)
         state = MagicMock(spec_set=SubsetState)
         state.to_mask.return_value = np.array([True])
+        assert state.to_mask.call_count == 0
         s.subset_state = state
         s.to_mask()
         state.to_mask.assert_called_once_with(self.data, None)
