@@ -32,7 +32,7 @@ class TestDataCollection(object):
 
     def setup_method(self, method):
         self.dc = DataCollection()
-        self.data = MagicMock()
+        self.data = MagicMock(spec_set=Data)
         self.hub = self.dc.hub
         self.log = HubLog()
         self.log.register_to_hub(self.hub)
@@ -219,7 +219,7 @@ class TestDataCollection(object):
 
         assert d1.id['x'] is d2.id['x']
         assert d1.id['x'] is not duplicated_id
-        assert duplicated_id.hidden
+        assert duplicated_id not in d2.components
 
         assert_array_equal(d1[d1.id['x']], [1, 2, 3])
         assert_array_equal(d2[d1.id['x']], [2, 3, 4])

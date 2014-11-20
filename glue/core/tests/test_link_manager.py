@@ -221,7 +221,6 @@ class TestLinkManager(object):
 
         dc = DataCollection([d1, d2])
         dc.add_link(LinkSame(d2.id['u'], d1.id['x']))
-        assert d1.find_component_id('x').hidden
 
         np.testing.assert_array_equal(d1['z'], [3, 5, 7])
 
@@ -237,6 +236,5 @@ class TestLinkManager(object):
 
         dc = DataCollection([d1, d2])
         dc.add_link(LinkSame(d2.id['u'], d1.id['x']))
-        assert d1.find_component_id('x').hidden
 
         np.testing.assert_array_equal(d1['z'], [8, 10, 12])

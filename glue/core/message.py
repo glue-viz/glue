@@ -127,6 +127,14 @@ class ComponentsChangedMessage(DataMessage):
     pass
 
 
+class ComponentReplacedMessage(ComponentsChangedMessage):
+
+    def __init__(self, sender, old_component, new_component, tag=None):
+        super(ComponentReplacedMessage, self).__init__(sender, old_component)
+        self.old = old_component
+        self.new = new_component
+
+
 class DataUpdateMessage(DataMessage):
 
     def __init__(self, sender, attribute, tag=None):

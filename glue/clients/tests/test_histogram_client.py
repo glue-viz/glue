@@ -11,7 +11,7 @@ from ..layer_artist import HistogramLayerArtist
 
 from ...core.data_collection import DataCollection
 from ...core.exceptions import IncompatibleDataException
-from ...core.data import Data, CategoricalComponent
+from ...core.data import Data, CategoricalComponent, ComponentID
 from ...core.subset import RangeSubsetState
 
 from .util import renderless_figure
@@ -316,6 +316,16 @@ class TestHistogramClient(object):
             assert a.get_data()[0].size > 0
             a.clear()
             assert a.get_data()[0].size == 0
+
+    def test_component_replaced(self):
+        # regression test for 508
+        self.client.register_to_hub(self.collect.hub)
+        self.client.add_layer(self.data)
+        self.client.component = self.data.components[0]
+
+        test = ComponentID('test')
+        self.data.update_id(self.client.component, test)
+        assert self.client.component is test
 
 
 class TestCategoricalHistogram(TestHistogramClient):

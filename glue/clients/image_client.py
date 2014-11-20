@@ -8,9 +8,10 @@ import numpy as np
 from ..external.modest_image import extract_matched_slices
 from ..core.exceptions import IncompatibleAttribute
 from ..core.data import Data
-from ..core.util import lookup_class, defer
+from ..core.util import lookup_class
 from ..core.subset import Subset, RoiSubsetState
 from ..core.roi import PolygonalROI
+from ..core.message import ComponentReplacedMessage
 from ..core.callback_property import (
     callback_property, CallbackProperty)
 from ..core.edit_subset_mode import EditSubsetMode
@@ -607,6 +608,16 @@ class ImageClient(VizClient):
             else:
                 raise ValueError("Cannot restore layer of type %s" % l)
             l.properties = props
+
+    def _on_component_replace(self, msg):
+        if self.display_attribute is msg.old:
+            self.display_attribute = msg.new
+
+    def register_to_hub(self, hub):
+        super(ImageClient, self).register_to_hub(hub)
+        hub.subscribe(self,
+                      ComponentReplacedMessage,
+                      self._on_component_replace)
 
     # subclasses should override the following methods as appropriate
     def _new_rgb_layer(self, layer):

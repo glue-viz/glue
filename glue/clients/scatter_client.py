@@ -10,6 +10,7 @@ from ..core.subset import RoiSubsetState, RangeSubsetState
 from ..core.roi import PolygonalROI, RangeROI
 from ..core.util import relim, lookup_class
 from ..core.edit_subset_mode import EditSubsetMode
+from ..core.message import ComponentReplacedMessage
 from .viz_client import init_mpl
 from .layer_artist import ScatterLayerArtist, LayerArtistContainer
 from .util import visible_limits, update_ticks
@@ -454,3 +455,16 @@ class ScatterClient(Client):
             self.ymax = max(ylim)
             self.yflip = yflip
             self.ylog = (ysc == 'log')
+
+    def _on_component_replace(self, msg):
+        old = msg.old
+        new = msg.new
+
+        if self.xatt is old:
+            self.xatt = new
+        if self.yatt is old:
+            self.yatt = new
+
+    def register_to_hub(self, hub):
+        super(ScatterClient, self).register_to_hub(hub)
+        hub.subscribe(self, ComponentReplacedMessage, self._on_component_replace)

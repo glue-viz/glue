@@ -18,7 +18,7 @@ from ..external.qt.QtGui import (QColor,
 from ..external.qt.QtCore import (Qt, QAbstractListModel, QModelIndex,
                                   QSize, QTimer)
 
-from .qtutil import (layer_artist_icon, nonpartial)
+from .qtutil import (layer_artist_icon, nonpartial, PythonListModel)
 
 from .mime import PyMimeData, LAYERS_MIME_TYPE
 from ..clients.layer_artist import LayerArtistBase, LayerArtistContainer
@@ -26,7 +26,7 @@ from ..clients.layer_artist import LayerArtistBase, LayerArtistContainer
 from .widgets.style_dialog import StyleDialog
 
 
-class LayerArtistModel(QAbstractListModel):
+class LayerArtistModel(PythonListModel):
 
     """A Qt model to manage a list of LayerArtists. Multiple
     views into this model should stay in sync, thanks to Qt.
@@ -38,25 +38,13 @@ class LayerArtistModel(QAbstractListModel):
     """
 
     def __init__(self, artists, parent=None):
-        super(LayerArtistModel, self).__init__(parent)
+        super(LayerArtistModel, self).__init__(artists, parent)
         self.artists = artists
-
-    def rowCount(self, parent=None):
-        """Number of rows"""
-        return len(self.artists)
-
-    def headerData(self, section, orientation, role):
-        """Column labels"""
-        if role != Qt.DisplayRole:
-            return None
-        return "%i" % section
 
     def data(self, index, role):
         """Retrieve data at each index"""
         if not index.isValid():
             return None
-        if role == Qt.DisplayRole or role == Qt.EditRole:
-            return self.row_label(index.row())
         if role == Qt.DecorationRole:
             art = self.artists[index.row()]
             result = layer_artist_icon(art)
@@ -69,6 +57,8 @@ class LayerArtistModel(QAbstractListModel):
             art = self.artists[index.row()]
             if not art.enabled:
                 return art.disabled_message
+
+        return super(LayerArtistModel, self).data(index, role)
 
     def flags(self, index):
         result = super(LayerArtistModel, self).flags(index)
@@ -93,16 +83,10 @@ class LayerArtistModel(QAbstractListModel):
         self.dataChanged.emit(index, index)
         return True
 
-    def removeRow(self, row, parent=None):
-        if row < 0 or row >= len(self.artists):
-            return False
-
-        self.beginRemoveRows(QModelIndex(), row, row)
+    def _remove_row(self, row):
         art = self.artists.pop(row)
         art.clear()
         art.redraw()
-        self.endRemoveRows()
-        return True
 
     def mimeTypes(self):
         return [PyMimeData.MIME_TYPE, LAYERS_MIME_TYPE]
