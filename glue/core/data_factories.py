@@ -44,6 +44,7 @@ from .coordinates import coordinates_from_header, coordinates_from_wcs
 from ..backends import get_backend
 from ..config import auto_refresh
 from ..external import six
+from .contracts import contract
 
 __all__ = ['load_data', 'gridded_data', 'casalike_cube',
            'tabular_data', 'img_data', 'auto_data']
@@ -231,6 +232,8 @@ class FileWatcher(object):
             self.callback()
 
 
+@contract(path='string', factory='callable|None',
+          returns='inst($Data)|list(inst($Data))')
 def load_data(path, factory=None, **kwargs):
     """Use a factory to load a file and assign a label.
 
@@ -283,6 +286,7 @@ def data_label(path):
     return name
 
 
+@contract(extension='string', factory='callable')
 def set_default_factory(extension, factory):
     """Register an extension that should be handled by a factory by default
 
@@ -293,6 +297,7 @@ def set_default_factory(extension, factory):
         _default_factory[ex] = factory
 
 
+@contract(extension='string', returns='callable|None')
 def get_default_factory(extension):
     """Return the default factory function to read a given file extension.
 
@@ -306,6 +311,7 @@ def get_default_factory(extension):
         return None
 
 
+@contract(filename='string')
 def find_factory(filename, **kwargs):
     from ..config import data_factory
 
@@ -325,6 +331,7 @@ def find_factory(filename, **kwargs):
             return func
 
 
+@contract(filename='string')
 def auto_data(filename, *args, **kwargs):
     """Attempt to automatically construct a data object"""
     fac = find_factory(filename, **kwargs)

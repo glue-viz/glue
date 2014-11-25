@@ -48,7 +48,7 @@ def _parse_data_dataframe(data, label):
     label = label or 'Data'
     result = Data(label=label)
     for c in data.columns:
-        result.add_component(data[c], c)
+        result.add_component(data[c], str(c))
     return [result]
 
 
@@ -77,6 +77,7 @@ def _parse_data_glue_data(data, label):
 
 def _parse_data_numpy(data, label):
     return [Data(**{label: data, 'label': label})]
+
 
 def _parse_data_path(path, label):
     from .core.data_factories import load_data, as_list
