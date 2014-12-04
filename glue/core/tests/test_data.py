@@ -122,12 +122,8 @@ class TestData(object):
 
     def test_register(self):
         hub = MagicMock(spec_set=Hub)
-        not_hub = MagicMock()
         self.data.register_to_hub(hub)
         assert hub is self.data.hub
-        with pytest.raises(TypeError) as exc:
-            self.data.register_to_hub(not_hub)
-        assert exc.value.args[0].startswith("input is not a Hub object")
 
     def test_component_order(self):
         """Components should be returned in the order they were specified"""
@@ -143,11 +139,11 @@ class TestData(object):
         hub = MagicMock(spec_set=Hub)
 
         # make sure broadcasting with no hub is ok
-        self.data.broadcast()
+        self.data.broadcast('testing')
 
         # make sure broadcast with hub gets relayed
         self.data.register_to_hub(hub)
-        self.data.broadcast()
+        self.data.broadcast('testing')
         assert hub.broadcast.call_count == 1
 
     def test_double_hub_add(self):
@@ -221,7 +217,7 @@ class TestData(object):
         assert self.data.find_component_id('does not exist') is None
 
     def test_add_subset(self):
-        s = Subset(None)
+        s = Subset(Data())
         self.data.add_subset(s)
         assert s in self.data.subsets
 

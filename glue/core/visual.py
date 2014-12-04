@@ -119,4 +119,4 @@ class VisualAttributes(object):
         if (changed and hasattr(self, 'parent') and
             hasattr(self.parent, 'broadcast') and
                 attribute != 'parent'):
-            self.parent.broadcast(self)
+            self.parent.broadcast('style')

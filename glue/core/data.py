@@ -510,10 +510,6 @@ class Data(object):
 
         self.id = ComponentIDDict(self)
 
-        # Tree description of the data
-        # (Deprecated)
-        self.tree = None
-
         # Subsets of the data
         self._subsets = []
 
@@ -574,6 +570,7 @@ class Data(object):
         """
         return np.product(self.shape)
 
+    @contract(component=Component)
     def _check_can_add(self, component):
         if isinstance(component, DerivedComponent):
             return component._data is self
@@ -591,6 +588,7 @@ class Data(object):
         arr = self[cid, ind]
         return arr.dtype
 
+    @contract(component_id=ComponentID)
     def remove_component(self, component_id):
         """ Remove a component from a data set
 
@@ -600,6 +598,9 @@ class Data(object):
         if component_id in self._components:
             self._components.pop(component_id)
 
+    @contract(other='isinstance(Data)',
+              cid='cid_like',
+              cid_other='cid_like')
     def join_on_key(self, other, cid, cid_other):
         """
         Create an *element* mapping to another dataset, by
@@ -645,6 +646,7 @@ class Data(object):
         self._key_joins[other] = (cid, cid_other)
         other._key_joins[self] = (cid_other, cid)
 
+    @contract(component='component_like', label='cid_like')
     def add_component(self, component, label, hidden=False):
         """ Add a new component to this data set.
 
@@ -708,6 +710,9 @@ class Data(object):
 
         return component_id
 
+    @contract(link=ComponentLink,
+              label='cid_like|None',
+              returns=DerivedComponent)
     def add_component_link(self, link, label=None):
         """ Shortcut method for generating a new :class:`DerivedComponent`
         from a ComponentLink object, and adding it to a data set.
@@ -795,6 +800,7 @@ class Data(object):
         """
         return self._world_component_ids
 
+    @contract(label='cid_like', returns='inst($ComponentID)|None')
     def find_component_id(self, label):
         """ Retrieve component_ids associated by label name.
 
@@ -849,22 +855,29 @@ class Data(object):
         self._coordinate_links = result
         return result
 
+    @contract(axis=int, returns=ComponentID)
     def get_pixel_component_id(self, axis):
         """Return the pixel :class:`ComponentID` associated with a given axis
         """
         return self._pixel_component_ids[axis]
 
+    @contract(axis=int, returns=ComponentID)
     def get_world_component_id(self, axis):
         """Return the world :class:`ComponentID` associated with a given axis
         """
         return self._world_component_ids[axis]
 
+    @contract(returns='list(inst($ComponentID))')
     def component_ids(self):
         """
         Equivalent to :attr:`Data.components`
         """
         return list(self._components.keys())
 
+    @contract(subset='isinstance(Subset)|None',
+              color='color|None',
+              label='string|None',
+              returns=Subset)
     def new_subset(self, subset=None, color=None, label=None, **kwargs):
         """
         Create a new subset, and attach to self.
@@ -890,6 +903,7 @@ class Data(object):
         self.add_subset(new_subset)
         return new_subset
 
+    @contract(subset='inst($Subset, $SubsetState)')
     def add_subset(self, subset):
         """Assign a pre-existing subset to this data object.
 
@@ -925,6 +939,7 @@ class Data(object):
 
         subset.do_broadcast(True)
 
+    @contract(hub=Hub)
     def register_to_hub(self, hub):
         """ Connect to a hub.
 
@@ -935,19 +950,20 @@ class Data(object):
             raise TypeError("input is not a Hub object: %s" % type(hub))
         self.hub = hub
 
-    @contract
-    def broadcast(self, attribute=None):
+    @contract(attribute='string')
+    def broadcast(self, attribute):
         """
         Send a :class:`~glue.core.message.DataUpdateMessage` to the hub
 
         :param attribute: Name of an attribute that has changed
-        :type attribute: *
+        :type attribute: string|None
         """
         if not self.hub:
             return
         msg = DataUpdateMessage(self, attribute=attribute)
         self.hub.broadcast(msg)
 
+    @contract(old=ComponentID, new=ComponentID)
     def update_id(self, old, new):
         """Reassign a component to a different :class:`ComponentID`
 
@@ -1048,6 +1064,7 @@ class Data(object):
         """
         self.add_component(value, key)
 
+    @contract(component_id='cid_like|None', returns=Component)
     def get_component(self, component_id):
         """Fetch the component corresponding to component_id.
 
@@ -1078,6 +1095,7 @@ class Data(object):
         order = [comp.label for comp in self.components]
         return df[order]
 
+    @contract(mapping="dict(inst($Component, $ComponentID):array_like)")
     def update_components(self, mapping):
         """
         Change the numerical data associated with some of the Components
@@ -1110,6 +1128,7 @@ class Data(object):
             clear_cache(subset.subset_state.to_mask)
 
 
+@contract(i=int, ndim=int)
 def pixel_label(i, ndim):
     if ndim == 2:
         return ['y', 'x'][i]

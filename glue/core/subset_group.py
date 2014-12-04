@@ -23,6 +23,7 @@ from .visual import VisualAttributes, RED
 from .message import (DataCollectionAddMessage,
                       DataCollectionDeleteMessage
                       )
+from .contracts import contract
 from ..external import six
 
 __all__ = ['GroupedSubset', 'SubsetGroup']
@@ -158,9 +159,10 @@ class SubsetGroup(HubListener):
         for s in self.subsets:
             s.sync_style(self.style)
 
+    @contract(item='string')
     def broadcast(self, item):
         # used by __setattr__ and VisualAttributes.__setattr__
-        if isinstance(item, VisualAttributes):
+        if item == 'style':
             self._sync_style()
             return
 

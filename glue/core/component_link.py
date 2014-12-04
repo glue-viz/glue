@@ -8,6 +8,8 @@ import numpy as np
 
 from .util import join_component_view
 from .subset import InequalitySubsetState
+from .contracts import contract, ContractsMeta
+from ..external.six import add_metaclass
 
 __all__ = ['ComponentLink', 'BinaryComponentLink']
 
@@ -20,6 +22,7 @@ OPSYM = {operator.add: '+', operator.sub: '-',
          operator.pow: '**'}
 
 
+@add_metaclass(ContractsMeta)
 class ComponentLink(object):
 
     """ ComponentLinks represent transformation logic between ComponentIDs
@@ -42,6 +45,8 @@ class ComponentLink(object):
        d['minute'] # array([ 60, 120, 180])
     """
 
+    @contract(using='callable|None',
+              inverse='callable|None')
     def __init__(self, comp_from, comp_to, using=None, inverse=None):
         """
         :param comp_from: The input ComponentIDs
@@ -95,6 +100,7 @@ class ComponentLink(object):
                 raise TypeError("comp_from must have only 1 element, "
                                 "or a 'using' function must be provided")
 
+    @contract(data='isinstance(Data)', view='array_view')
     def compute(self, data, view=None):
         """For a given data set, compute the component comp_to given
         the data associated with each comp_from and the ``using``
@@ -128,6 +134,7 @@ class ComponentLink(object):
         """ The list of input ComponentIDs """
         return self._from
 
+    @contract(old='isinstance(ComponentID)', new='isinstance(ComponentID)')
     def replace_ids(self, old, new):
         """Replace all references to an old ComponentID with references
         to new
@@ -141,6 +148,7 @@ class ComponentLink(object):
         if self._to is old:
             self._to = new
 
+    @contract(_from='list(isinstance(ComponentID))')
     def set_from_ids(self, _from):
         if len(_from) != len(self._from):
             raise ValueError("New ID list has the wrong length.")
@@ -172,57 +180,78 @@ class ComponentLink(object):
     def __repr__(self):
         return str(self)
 
+    @contract(other='isinstance(ComponentID)|component_like|float|int')
     def __add__(self, other):
         return BinaryComponentLink(self, other, operator.add)
 
+    @contract(other='isinstance(ComponentID)|component_like|float|int')
     def __radd__(self, other):
         return BinaryComponentLink(other, self, operator.add)
 
+    @contract(other='isinstance(ComponentID)|component_like|float|int')
     def __sub__(self, other):
         return BinaryComponentLink(self, other, operator.sub)
 
+    @contract(other='isinstance(ComponentID)|component_like|float|int')
     def __rsub__(self, other):
         return BinaryComponentLink(other, self, operator.sub)
 
+    @contract(other='isinstance(ComponentID)|component_like|float|int')
     def __mul__(self, other):
         return BinaryComponentLink(self, other, operator.mul)
 
+    @contract(other='isinstance(ComponentID)|component_like|float|int')
     def __rmul__(self, other):
         return BinaryComponentLink(other, self, operator.mul)
 
+    @contract(other='isinstance(ComponentID)|component_like|float|int')
     def __div__(self, other):
         return BinaryComponentLink(self, other, operator.div)
 
+    @contract(other='isinstance(ComponentID)|component_like|float|int')
     def __rdiv__(self, other):
         return BinaryComponentLink(other, self, operator.div)
 
+    @contract(other='isinstance(ComponentID)|component_like|float|int')
     def __truediv__(self, other):
         return BinaryComponentLink(self, other, operator.truediv)
 
+    @contract(other='isinstance(ComponentID)|component_like|float|int')
     def __rtruediv__(self, other):
         return BinaryComponentLink(other, self, operator.truediv)
 
+    @contract(other='isinstance(ComponentID)|component_like|float|int')
     def __pow__(self, other):
         return BinaryComponentLink(self, other, operator.pow)
 
+    @contract(other='isinstance(ComponentID)|component_like|float|int')
     def __rpow__(self, other):
         return BinaryComponentLink(other, self, operator.pow)
 
+    @contract(other='isinstance(ComponentID)|component_like|float|int')
     def __lt__(self, other):
         return InequalitySubsetState(self, other, operator.lt)
 
+    @contract(other='isinstance(ComponentID)|component_like|float|int')
     def __le__(self, other):
         return InequalitySubsetState(self, other, operator.le)
 
+    @contract(other='isinstance(ComponentID)|component_like|float|int')
     def __gt__(self, other):
         return InequalitySubsetState(self, other, operator.gt)
 
+    @contract(other='isinstance(ComponentID)|component_like|float|int')
     def __ge__(self, other):
         return InequalitySubsetState(self, other, operator.ge)
 
 
 class CoordinateComponentLink(ComponentLink):
 
+    @contract(comp_from='list(isinstance(ComponentID))',
+              comp_to='isinstance(ComponentID)',
+              coords='isinstance(Coordinates)',
+              index=int,
+              pixel2world=bool)
     def __init__(self, comp_from, comp_to, coords, index, pixel2world=True):
         self.coords = coords
         self.index = index
