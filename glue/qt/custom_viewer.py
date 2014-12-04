@@ -461,6 +461,8 @@ class CustomViewer(object):
       - ``state`` will contain a general-purpose object to store other data
       - ``style`` contains the :class:`~glue.core.visual.VisualAttributes` describing
         a subset or dataset. Only available for ``plot_data`` and `plot_subset``
+      - ``subset`` will contain the relevant :class:`~glue.core.subset.Subset` object.
+         Only available for ``plot_subset``
 
 
     *Defining the UI*
@@ -785,7 +787,7 @@ class CustomArtist(LayerArtist):
         if isinstance(self._layer, Data):
             a = self._coordinator.plot_data(layer=self._layer)
         else:
-            a = self._coordinator.plot_subset(layer=self._layer)
+            a = self._coordinator.plot_subset(layer=self._layer, subset=self._layer)
 
         # if user explicitly returns the newly-created artists,
         # then use them. Otherwise, introspect to find the new artists
