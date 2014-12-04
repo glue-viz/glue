@@ -6,14 +6,16 @@ from .message_widget import MessageWidget
 from .mpl_widget import MplWidget
 from .scatter_widget import ScatterWidget
 from .dendro_widget import DendroWidget
+from .table_widget import TableWidget
 
-default_widgets = [ScatterWidget, HistogramWidget, ImageWidget]
+default_widgets = [ScatterWidget, HistogramWidget, ImageWidget, TableWidget]
 
 try:
     from .ginga_widget import GingaWidget
     default_widgets.append(GingaWidget)
 except ImportError:
     pass
+
 
 def enable_dendrograms():
     if DendroWidget not in default_widgets:
