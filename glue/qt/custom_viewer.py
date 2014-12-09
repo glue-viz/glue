@@ -280,12 +280,14 @@ class SettingsOracle(SettingsOracleInterface):
                 return self.override[key]
             if key == 'style':
                 return self.layer.style
+            if key == 'layer':
+                return self.layer
             return self.settings[key].value(self.layer, self.view)
         except (KeyError, AttributeError):
             raise AttributeError(key)
 
     def setting_names(self):
-        return list(set(list(self.settings.keys()) + ['style']))
+        return list(set(list(self.settings.keys()) + ['style', 'layer']))
 
 
 class CustomViewerMeta(type):
