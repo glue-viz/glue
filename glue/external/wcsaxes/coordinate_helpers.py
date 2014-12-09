@@ -31,7 +31,7 @@ def wrap_angle_at(values, coord_wrap):
 class CoordinateHelper(object):
 
     def __init__(self, parent_axes=None, parent_map=None, transform=None, coord_index=None,
-                 coord_type='scalar',coord_unit=None, coord_wrap=None, frame=None):
+                 coord_type='scalar', coord_unit=None, coord_wrap=None, frame=None):
 
         # Keep a reference to the parent axes and the transform
         self.parent_axes = parent_axes
@@ -78,13 +78,13 @@ class CoordinateHelper(object):
             ' ': 'none',
             '': 'none'
         }
-        self.grid_lines_kwargs = {'visible':False,
-                                  'facecolor':'none',
+        self.grid_lines_kwargs = {'visible': False,
+                                  'facecolor': 'none',
                                   'edgecolor': rcParams['grid.color'],
                                   'linestyle': lines_to_patches_linestyle[rcParams['grid.linestyle']],
                                   'linewidth': rcParams['grid.linewidth'],
                                   'alpha': rcParams.get('grid.alpha', 1.0),
-                                  'transform':self.parent_axes.transData}
+                                  'transform': self.parent_axes.transData}
 
     def grid(self, draw_grid=True, grid_type='lines', **kwargs):
         """
@@ -168,6 +168,21 @@ class CoordinateHelper(object):
         else:
             raise TypeError("formatter should be a string or a Formatter "
                             "instance")
+
+    def format_coord(self, value):
+        """
+        Given the value of a coordinate, will format it according to the
+        format of the formatter_locator.
+        """
+        fl = self._formatter_locator
+        if isinstance(fl, AngleFormatterLocator):
+            if self.coord_type == 'longitude':
+                value = wrap_angle_at(value, self.coord_wrap)
+            value = value * u.degree
+            value = value.to(fl._unit).value
+        spacing = self._fl_spacing
+        string = fl.formatter(values=[value] * fl._unit, spacing=spacing)
+        return string[0]
 
     def set_separator(self, separator):
         """
@@ -365,7 +380,7 @@ class CoordinateHelper(object):
                     p.set_clip_path(frame_patch)
                     p.draw(renderer)
 
-            else:
+            elif self._grid is not None:
 
                 for line in self._grid.collections:
                     line.set(**self.grid_lines_kwargs)
@@ -396,9 +411,9 @@ class CoordinateHelper(object):
         coord_range = self.parent_map.get_coord_range()
 
         # First find the ticks we want to show
-        tick_world_coordinates, spacing = self._formatter_locator.locator(*coord_range[self.coord_index])
+        tick_world_coordinates, self._fl_spacing = self.locator(*coord_range[self.coord_index])
         if self.ticks.get_display_minor_ticks():
-            minor_ticks_w_coordinates = self._formatter_locator.minor_locator(spacing, self.get_minor_frequency(), *coord_range[self.coord_index])
+            minor_ticks_w_coordinates = self._formatter_locator.minor_locator(self._fl_spacing, self.get_minor_frequency(), *coord_range[self.coord_index])
 
         # We want to allow non-standard rectangular frames, so we just rely on
         # the parent axes to tell us what the bounding frame is.
@@ -421,21 +436,21 @@ class CoordinateHelper(object):
             # the normal angle in display coordinates.
 
             pixel0 = spine.data
-            world0 = spine.world[:,self.coord_index]
-            world0 = self.transform.transform(pixel0)[:,self.coord_index]
+            world0 = spine.world[:, self.coord_index]
+            world0 = self.transform.transform(pixel0)[:, self.coord_index]
             axes0 = transData.transform(pixel0)
 
             # Advance 2 pixels in figure coordinates
             pixel1 = axes0.copy()
-            pixel1[:,0] += 2.0
+            pixel1[:, 0] += 2.0
             pixel1 = invertedTransLimits.transform(pixel1)
-            world1 = self.transform.transform(pixel1)[:,self.coord_index]
+            world1 = self.transform.transform(pixel1)[:, self.coord_index]
 
             # Advance 2 pixels in figure coordinates
             pixel2 = axes0.copy()
-            pixel2[:,1] += 2.0 if self.frame.origin == 'lower' else -2.0
+            pixel2[:, 1] += 2.0 if self.frame.origin == 'lower' else -2.0
             pixel2 = invertedTransLimits.transform(pixel2)
-            world2 = self.transform.transform(pixel2)[:,self.coord_index]
+            world2 = self.transform.transform(pixel2)[:, self.coord_index]
 
             dx = (world1 - world0)
             dy = (world2 - world0)
@@ -453,7 +468,7 @@ class CoordinateHelper(object):
 
             normal_angle_full = np.hstack([spine.normal_angle, spine.normal_angle[-1]])
             reset = (((normal_angle_full - tick_angle) % 360 > 90.) &
-                    ((tick_angle - normal_angle_full) % 360 > 90.))
+                     ((tick_angle - normal_angle_full) % 360 > 90.))
             tick_angle[reset] -= 180.
 
             # We find for each interval the starting and ending coordinate,
@@ -478,79 +493,79 @@ class CoordinateHelper(object):
                                     w2, tick_angle, ticks='minor')
 
         # format tick labels, add to scene
-        text = self._formatter_locator.formatter(self.lbl_world * tick_world_coordinates.unit, spacing=spacing)
+        text = self.formatter(self.lbl_world * tick_world_coordinates.unit, spacing=self._fl_spacing)
         for kwargs, txt in zip(self.lblinfo, text):
             self.ticklabels.add(text=txt, **kwargs)
 
     def _compute_ticks(self, tick_world_coordinates, spine, axis, w1, w2, tick_angle, ticks='major'):
-            tick_world_coordinates_values = tick_world_coordinates.value
-            if self.coord_type == 'longitude':
-                tick_world_coordinates_values = np.hstack([tick_world_coordinates_values,
-                                                    tick_world_coordinates_values + 360])
+        tick_world_coordinates_values = tick_world_coordinates.value
+        if self.coord_type == 'longitude':
+            tick_world_coordinates_values = np.hstack([tick_world_coordinates_values,
+                                                       tick_world_coordinates_values + 360])
 
-            for t in tick_world_coordinates_values:
+        for t in tick_world_coordinates_values:
 
-                # Find steps where a tick is present. We have to check
-                # separately for the case where the tick falls exactly on the
-                # frame points, otherwise we'll get two matches, one for w1 and
-                # one for w2.
-                intersections = np.hstack([np.nonzero((t - w1) == 0)[0],
-                                           np.nonzero(((t - w1) * (t - w2)) < 0)[0]])
+            # Find steps where a tick is present. We have to check
+            # separately for the case where the tick falls exactly on the
+            # frame points, otherwise we'll get two matches, one for w1 and
+            # one for w2.
+            intersections = np.hstack([np.nonzero((t - w1) == 0)[0],
+                                       np.nonzero(((t - w1) * (t - w2)) < 0)[0]])
 
-                # But we also need to check for intersection with the last w2
-                if t - w2[-1] == 0:
-                    intersections = np.append(intersections, len(w2) - 1)
+            # But we also need to check for intersection with the last w2
+            if t - w2[-1] == 0:
+                intersections = np.append(intersections, len(w2) - 1)
 
-                # Loop over ticks, and find exact pixel coordinates by linear
-                # interpolation
-                for imin in intersections:
+            # Loop over ticks, and find exact pixel coordinates by linear
+            # interpolation
+            for imin in intersections:
 
-                    imax = imin + 1
+                imax = imin + 1
 
-                    if np.allclose(w1[imin], w2[imin], rtol=1.e-13, atol=1.e-13):
-                        continue  # tick is exactly aligned with frame
-                    else:
-                        frac = (t - w1[imin]) / (w2[imin] - w1[imin])
-                        x_data_i = spine.data[imin, 0] + frac * (spine.data[imax, 0] - spine.data[imin, 0])
-                        y_data_i = spine.data[imin, 1] + frac * (spine.data[imax, 1] - spine.data[imin, 1])
-                        x_pix_i = spine.pixel[imin, 0] + frac * (spine.pixel[imax, 0] - spine.pixel[imin, 0])
-                        y_pix_i = spine.pixel[imin, 1] + frac * (spine.pixel[imax, 1] - spine.pixel[imin, 1])
-                        delta_angle = tick_angle[imax] - tick_angle[imin]
-                        if delta_angle > 180.:
-                            delta_angle -= 360.
-                        elif delta_angle < -180.:
-                            delta_angle += 360.
-                        angle_i = tick_angle[imin] + frac * delta_angle
+                if np.allclose(w1[imin], w2[imin], rtol=1.e-13, atol=1.e-13):
+                    continue  # tick is exactly aligned with frame
+                else:
+                    frac = (t - w1[imin]) / (w2[imin] - w1[imin])
+                    x_data_i = spine.data[imin, 0] + frac * (spine.data[imax, 0] - spine.data[imin, 0])
+                    y_data_i = spine.data[imin, 1] + frac * (spine.data[imax, 1] - spine.data[imin, 1])
+                    x_pix_i = spine.pixel[imin, 0] + frac * (spine.pixel[imax, 0] - spine.pixel[imin, 0])
+                    y_pix_i = spine.pixel[imin, 1] + frac * (spine.pixel[imax, 1] - spine.pixel[imin, 1])
+                    delta_angle = tick_angle[imax] - tick_angle[imin]
+                    if delta_angle > 180.:
+                        delta_angle -= 360.
+                    elif delta_angle < -180.:
+                        delta_angle += 360.
+                    angle_i = tick_angle[imin] + frac * delta_angle
 
-                    if self.coord_type == 'longitude':
-                        world = wrap_angle_at(t, self.coord_wrap)
-                    else:
-                        world = t
+                if self.coord_type == 'longitude':
+                    world = wrap_angle_at(t, self.coord_wrap)
+                else:
+                    world = t
 
-                    if ticks == 'major':
+                if ticks == 'major':
 
-                        self.ticks.add(axis=axis,
-                                       pixel=(x_data_i, y_data_i),
-                                       world=world,
-                                       angle=angle_i,
-                                       axis_displacement=imin + frac)
+                    self.ticks.add(axis=axis,
+                                   pixel=(x_data_i, y_data_i),
+                                   world=world,
+                                   angle=angle_i,
+                                   axis_displacement=imin + frac)
 
-                        # store information to pass to ticklabels.add
-                        # it's faster to format many ticklabels at once outside
-                        # of the loop
-                        self.lblinfo.append(dict(axis=axis,
-                                                 pixel=(x_pix_i, y_pix_i),
-                                                 world=world,
-                                                 angle=spine.normal_angle[imin],
-                                                 axis_displacement=imin + frac))
-                        self.lbl_world.append(world)
+                    # store information to pass to ticklabels.add
+                    # it's faster to format many ticklabels at once outside
+                    # of the loop
+                    self.lblinfo.append(dict(axis=axis,
+                                             pixel=(x_pix_i, y_pix_i),
+                                             world=world,
+                                             angle=spine.normal_angle[imin],
+                                             axis_displacement=imin + frac))
+                    self.lbl_world.append(world)
 
-                    else:
-                        self.ticks.add_minor(minor_axis=axis,
-                                             minor_pixel=(x_data_i, y_data_i),
-                                             minor_world=world,
-                                             minor_angle=angle_i,
-                                             minor_axis_displacement=imin + frac)
+                else:
+                    self.ticks.add_minor(minor_axis=axis,
+                                         minor_pixel=(x_data_i, y_data_i),
+                                         minor_world=world,
+                                         minor_angle=angle_i,
+                                         minor_axis_displacement=imin + frac)
 
     def display_minor_ticks(self, display_minor_ticks):
         """
@@ -589,7 +604,7 @@ class CoordinateHelper(object):
 
         coord_range = self.parent_map.get_coord_range()
 
-        tick_world_coordinates, spacing = self._formatter_locator.locator(*coord_range[self.coord_index])
+        tick_world_coordinates, spacing = self.locator(*coord_range[self.coord_index])
         tick_world_coordinates_values = tick_world_coordinates.value
 
         n_coord = len(tick_world_coordinates_values)
@@ -640,7 +655,7 @@ class CoordinateHelper(object):
 
         coord_range = self.parent_map.get_coord_range()
 
-        tick_world_coordinates, spacing = self._formatter_locator.locator(*coord_range[self.coord_index])
+        tick_world_coordinates, spacing = self.locator(*coord_range[self.coord_index])
 
         field = field[self.coord_index]
 
@@ -648,17 +663,21 @@ class CoordinateHelper(object):
         tick_world_coordinates_values = tick_world_coordinates.value
 
         if self.coord_type == 'longitude':
-            # Find biggest gap in tick_world_coordinates and wrap in  middle
+
+            # Find biggest gap in tick_world_coordinates and wrap in middle
             # For now just assume spacing is equal, so any mid-point will do
             mid = 0.5 * (tick_world_coordinates_values[0] + tick_world_coordinates_values[1])
             field = wrap_angle_at(field, mid)
             tick_world_coordinates_values = wrap_angle_at(tick_world_coordinates_values, mid)
 
             # Replace wraps by NaN
-            reset = (np.abs(np.diff(field[:,:-1], axis=0)) > 180) | (np.abs(np.diff(field[:-1,:], axis=1)) > 180)
-            field[:-1,:-1][reset] = np.nan
-            field[1:,:-1][reset] = np.nan
-            field[:-1,1:][reset] = np.nan
-            field[1:,1:][reset] = np.nan
+            reset = (np.abs(np.diff(field[:, :-1], axis=0)) > 180) | (np.abs(np.diff(field[:-1, :], axis=1)) > 180)
+            field[:-1, :-1][reset] = np.nan
+            field[1:, :-1][reset] = np.nan
+            field[:-1, 1:][reset] = np.nan
+            field[1:, 1:][reset] = np.nan
 
-        self._grid = self.parent_axes.contour(X, Y, field.transpose(), levels=tick_world_coordinates_values)
+        if len(tick_world_coordinates_values) > 0:
+            self._grid = self.parent_axes.contour(X, Y, field.transpose(), levels=tick_world_coordinates_values)
+        else:
+            self._grid = None
