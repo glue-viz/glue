@@ -701,12 +701,25 @@ class GlueApplication(Application, QMainWindow):
         self._terminal.show()
         self._terminal.widget().show()
 
-    def start(self):
+    def start(self, size=None, position=None):
         """
         Show the GUI and start the application.
+
+        Parameters
+        ----------
+        size : (int, int) Optional
+            The default width/height of the application.
+            If not provided, uses the full screen
+        position : (int, int) Optional
+            The default position of the application
         """
         self._create_terminal()
         self.show()
+        if size is not None:
+            self.resize(*size)
+        if position is not None:
+            self.move(*position)
+
         self.raise_()  # bring window to front
         # at some point during all this, the MPL backend
         # switches. This call restores things, so
