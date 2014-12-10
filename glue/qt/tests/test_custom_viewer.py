@@ -34,6 +34,8 @@ settings_changed = MagicMock()
 plot_subset = MagicMock()
 plot_data = MagicMock()
 make_selector = MagicMock()
+make_selector.return_value = MagicMock(spec=SubsetState)
+make_selector().copy.return_value = MagicMock(spec=SubsetState)
 make_selector().copy().to_mask.return_value = np.array([False])
 
 
