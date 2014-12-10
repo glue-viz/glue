@@ -38,7 +38,7 @@ before_install:
 
 install:
 - conda install $CONDA_ARGS python=$TRAVIS_PYTHON_VERSION $CONDA_BASE
-- LC_ALL=C pip install $PIP_ARGS $PIP_BASE
+- echo `LC_ALL=C pip install $PIP_ARGS $PIP_BASE`
 - if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy;
   else conda install $CONDA_ARGS astropy=$ASTRO_VER numpy=1.8; fi
 - conda install $CONDA_ARGS IPython=$IPYTHON_VER
