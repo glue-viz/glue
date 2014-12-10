@@ -152,6 +152,7 @@ class DataViewer(QMainWindow, ViewerBase):
         if self._hub is not None:
             self.unregister(self._hub)
         super(DataViewer, self).closeEvent(event)
+        event.accept()
 
     def _confirm_close(self):
         """Ask for close confirmation

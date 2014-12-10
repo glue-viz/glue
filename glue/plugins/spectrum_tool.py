@@ -609,6 +609,12 @@ class SpectrumTool(object):
                                                              label='Profile')
         w.close()
 
+    def close(self):
+        if hasattr(self, '_mdi_wrapper'):
+            self._mdi_wrapper.close()
+        else:
+            self.widget.close()
+
     @property
     def enabled(self):
         """Return whether the window is visible and active"""

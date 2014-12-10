@@ -45,6 +45,11 @@ class PVSlicerTool(object):
 
         result.show()
 
+    def close(self):
+        # close the tool widget
+        if self._slice_widget:
+            self._slice_widget.close()
+
 
 class PVSliceWidget(StandaloneImageWidget):
 

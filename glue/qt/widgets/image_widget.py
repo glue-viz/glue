@@ -321,6 +321,13 @@ class ImageWidgetBase(DataViewer):
 
         self._sync_data_combo_labels()
 
+    def closeEvent(self, event):
+        # close window and all plugins
+        super(ImageWidgetBase, self).closeEvent(event)
+        if event.isAccepted():
+            for t in self._tools:
+                t.close()
+
 
 class ImageWidget(ImageWidgetBase):
 
@@ -511,6 +518,7 @@ class StandaloneImageWidget(QMainWindow):
         sub = QMdiSubWindow()
         sub.setWidget(self)
         self.destroyed.connect(sub.close)
+        self.window_closed.connect(sub.close)
         sub.resize(self.size())
         self._mdi_wrapper = sub
 
