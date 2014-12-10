@@ -70,4 +70,4 @@ def test_close_on_last_layer_remove(widget):
         w.add_data(d2)
         dc.remove(d)
         dc.remove(d2)
-    assert close.call_count == 1
+    assert close.call_count >= 1
