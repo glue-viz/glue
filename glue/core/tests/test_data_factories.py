@@ -181,7 +181,7 @@ def test_csv_pandas_factory():
     assert isinstance(d.get_component(cat_comp), CategoricalComponent)
     correct_cats = np.unique(np.asarray(['some', 'categorical',
                                          'data', 'here',
-                                         np.nan, np.nan, np.nan],
+                                         ''],
                                         dtype=np.object))
     np.testing.assert_equal(d.get_component(cat_comp)._categories,
                             correct_cats)
