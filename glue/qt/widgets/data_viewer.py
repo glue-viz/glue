@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from ...external.qt.QtGui import (
-    QMainWindow, QMessageBox, QWidget, QMdiSubWindow)
+    QMainWindow, QMessageBox, QWidget)
 
 from ...external.qt.QtCore import Qt
 
@@ -13,6 +13,7 @@ from ..decorators import set_cursor
 from ..layer_artist_model import QtLayerArtistContainer, LayerArtistView
 from .. import get_qapp
 from ..mime import LAYERS_MIME_TYPE, LAYER_MIME_TYPE
+from .glue_mdi_area import GlueMdiSubWindow
 
 __all__ = ['DataViewer']
 
@@ -45,7 +46,7 @@ class DataViewer(QMainWindow, ViewerBase):
         self._toolbars = []
         self._warn_close = True
         self.setContentsMargins(2, 2, 2, 2)
-        self._mdi_wrapper = None  # QMdiSubWindow that self is embedded in
+        self._mdi_wrapper = None  # GlueMdiSubWindow that self is embedded in
         self.statusBar().setStyleSheet("QStatusBar{font-size:10px}")
 
         # close window when last plot layer deleted
@@ -88,8 +89,8 @@ class DataViewer(QMainWindow, ViewerBase):
         self._warn_close = True
 
     def mdi_wrap(self):
-        """Wrap this object in a QMdiSubWindow"""
-        sub = QMdiSubWindow()
+        """Wrap this object in a GlueMdiSubWindow"""
+        sub = GlueMdiSubWindow()
         sub.setWidget(self)
         self.destroyed.connect(sub.close)
         sub.resize(self.size())

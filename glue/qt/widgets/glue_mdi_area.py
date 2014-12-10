@@ -1,19 +1,21 @@
 from __future__ import absolute_import, division, print_function
 
 from ...external.qt import QtGui
-from ...external.qt.QtCore import Qt
+from ...external.qt.QtCore import Qt, Signal
 
 from ... import core
 from ..mime import LAYER_MIME_TYPE, LAYERS_MIME_TYPE
 
 
 class GlueMdiArea(QtGui.QMdiArea):
+
     """Glue's MdiArea implementation.
 
     Drop events with :class:`~glue.core.Data` objects in
     :class:`~glue.qt.mime.PyMimeData` load these objects into new
     data viewers
     """
+
     def __init__(self, application, parent=None):
         """
         :param application: The Glue application to which this is attached
@@ -83,3 +85,11 @@ class GlueMdiArea(QtGui.QMdiArea):
         rect = self.contentsRect()
         painter.drawText(rect, Qt.AlignHCenter | Qt.AlignVCenter,
                          "Drag Data To Plot")
+
+
+class GlueMdiSubWindow(QtGui.QMdiSubWindow):
+    closed = Signal()
+
+    def closeEvent(self, event):
+        super(GlueMdiSubWindow, self).closeEvent(event)
+        self.closed.emit()

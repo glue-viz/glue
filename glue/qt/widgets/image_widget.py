@@ -1,8 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
 from ...external.qt.QtGui import (QAction, QLabel, QCursor, QMainWindow,
-                                  QToolButton, QIcon, QMessageBox,
-                                  QMdiSubWindow)
+                                  QToolButton, QIcon, QMessageBox
+                                  )
 
 from ...external.qt.QtCore import Qt, QRect, Signal
 
@@ -25,6 +25,7 @@ from .mpl_widget import MplWidget, defer_draw
 
 from ..qtutil import cmap2pixmap, load_ui, get_icon, nonpartial, update_combobox
 from ..widget_properties import CurrentComboProperty, ButtonProperty, connect_current_combo
+from .glue_mdi_area import GlueMdiSubWindow
 
 WARN_THRESH = 10000000  # warn when contouring large images
 
@@ -513,9 +514,9 @@ class StandaloneImageWidget(QMainWindow):
 
     def mdi_wrap(self):
         """
-        Embed this widget in a QMdiSubWindow
+        Embed this widget in a GlueMdiSubWindow
         """
-        sub = QMdiSubWindow()
+        sub = GlueMdiSubWindow()
         sub.setWidget(self)
         self.destroyed.connect(sub.close)
         self.window_closed.connect(sub.close)
