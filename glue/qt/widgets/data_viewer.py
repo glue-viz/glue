@@ -103,7 +103,24 @@ class DataViewer(QMainWindow, ViewerBase):
         pos = target.pos()
         return pos.x(), pos.y()
 
+    @position.setter
+    def position(self, xy):
+        x, y = xy
+        self.move(x, y)
+
     def move(self, x=None, y=None):
+        """
+        Move the viewer to a new XY pixel location
+
+        You can also set the position attribute to a new tuple directly.
+
+        Parameters
+        ----------
+        x : int (optional)
+           New x position
+        y : int (optional)
+           New y position
+        """
         x0, y0 = self.position
         if x is None:
             x = x0
