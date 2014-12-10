@@ -188,7 +188,7 @@ class ScatterWidget(DataViewer):
             else:
                 self.ui.yAxisComboBox.setCurrentIndex(0)
 
-        self._update_window_title()
+        self.update_window_title()
         return True
 
     @defer_draw
@@ -219,7 +219,7 @@ class ScatterWidget(DataViewer):
             else:
                 self.ui.yAxisComboBox.setCurrentIndex(0)
 
-        self._update_window_title()
+        self.update_window_title()
         return True
 
     def register_to_hub(self, hub):
@@ -268,14 +268,15 @@ class ScatterWidget(DataViewer):
         component_id = self.yatt
         self.client.yatt = component_id
 
-    def _update_window_title(self):
+    @property
+    def window_title(self):
         data = self.client.data
         label = ', '.join([d.label for d in data if
                            self.client.is_visible(d)])
-        self.setWindowTitle(label)
+        return label
 
     def _sync_labels(self):
-        self._update_window_title()
+        self.update_window_title()
 
     def options_widget(self):
         return self.option_widget

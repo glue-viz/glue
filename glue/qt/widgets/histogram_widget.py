@@ -189,7 +189,7 @@ class HistogramWidget(DataViewer):
     @defer_draw
     def _set_attribute_from_combo(self, *args):
         self.client.set_component(self.component)
-        self._update_window_title()
+        self.update_window_title()
 
     @defer_draw
     def add_data(self, data):
@@ -239,16 +239,17 @@ class HistogramWidget(DataViewer):
         self.client.unregister(hub)
         hub.unsubscribe_all(self)
 
-    def _update_window_title(self):
+    @property
+    def window_title(self):
         c = self.client.component
         if c is not None:
             label = str(c.label)
         else:
             label = 'Histogram'
-        self.setWindowTitle(label)
+        return label
 
     def _update_labels(self):
-        self._update_window_title()
+        self.update_window_title()
         self._update_attributes()
 
     def __str__(self):

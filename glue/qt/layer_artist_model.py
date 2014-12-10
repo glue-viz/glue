@@ -269,12 +269,16 @@ class QtLayerArtistContainer(LayerArtistContainer):
     def __init__(self):
         super(QtLayerArtistContainer, self).__init__()
         self.model = LayerArtistModel(self.artists)
+        self.model.rowsInserted.connect(self._notify)
+        self.model.rowsRemoved.connect(self._notify)
+        self.model.modelReset.connect(self._notify)
 
     def append(self, artist):
         self._check_duplicate(artist)
         self.model.add_artist(0, artist)
         artist.zorder = max(a.zorder for a in self.artists) + 1
         assert self.artists[0] is artist
+        self._notify()
 
     def remove(self, artist):
         try:
@@ -284,7 +288,7 @@ class QtLayerArtistContainer(LayerArtistContainer):
         self.model.removeRow(index)
         assert artist not in self.artists
 
-        self._notify_if_empty()
+        self._notify()
 
     def __nonzero__(self):
         return True

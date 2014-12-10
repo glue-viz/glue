@@ -740,7 +740,8 @@ class LayerArtistContainer(object):
 
     def __init__(self):
         self.artists = []
-        self.callbacks = []
+        self.empty_callbacks = []
+        self.change_callbacks = []
         self._ignore_callbacks = False
 
     def on_empty(self, func):
@@ -748,7 +749,14 @@ class LayerArtistContainer(object):
         Register a callback function that should be invoked when
         this container is emptied
         """
-        self.callbacks.append(func)
+        self.empty_callbacks.append(func)
+
+    def on_changed(self, func):
+        """
+        Register a callback function that should be invoked when
+        this container's elements change
+        """
+        self.change_callbacks.append(func)
 
     def _duplicate(self, artist):
         for a in self.artists:
@@ -767,6 +775,7 @@ class LayerArtistContainer(object):
         self._check_duplicate(artist)
         self.artists.append(artist)
         artist.zorder = max(a.zorder for a in self.artists) + 1
+        self._notify()
 
     def remove(self, artist):
         """Remove a LayerArtist from this collection
@@ -780,11 +789,17 @@ class LayerArtistContainer(object):
         except ValueError:
             pass
 
-        self._notify_if_empty()
+        self._notify()
 
-    def _notify_if_empty(self):
-        if len(self) == 0 and not self._ignore_callbacks:
-            for cb in self.callbacks:
+    def _notify(self):
+        if self._ignore_callbacks:
+            return
+
+        for cb in self.change_callbacks:
+            cb()
+
+        if len(self) == 0:
+            for cb in self.empty_callbacks:
                 cb()
 
     def pop(self, layer):

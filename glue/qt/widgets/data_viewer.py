@@ -51,6 +51,7 @@ class DataViewer(QMainWindow, ViewerBase):
 
         # close window when last plot layer deleted
         self._container.on_empty(lambda: self.close(warn=False))
+        self._container.on_changed(self.update_window_title)
 
     def remove_layer(self, layer):
         self._container.pop(layer)
@@ -239,3 +240,10 @@ class DataViewer(QMainWindow, ViewerBase):
         Override to perform cleanup operations when disconnecting from hub
         """
         pass
+
+    @property
+    def window_title(self):
+        return str(self)
+
+    def update_window_title(self):
+        self.setWindowTitle(self.window_title)

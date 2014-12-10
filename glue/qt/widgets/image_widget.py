@@ -186,7 +186,7 @@ class ImageWidgetBase(DataViewer):
         ui = self.ui
 
         ui.monochrome.toggled.connect(self._update_rgb_console)
-        ui.rgb_options.colors_changed.connect(self._update_window_title)
+        ui.rgb_options.colors_changed.connect(self.update_window_title)
 
         # sync client and widget slices
         ui.slice.slice_changed.connect(lambda: setattr(self, 'slice', self.ui.slice.slice))
@@ -195,8 +195,8 @@ class ImageWidgetBase(DataViewer):
         add_callback(self.client, 'display_data', self.ui.slice.set_data)
 
         # sync window title to data/attribute
-        add_callback(self.client, 'display_data', nonpartial(self._update_window_title))
-        add_callback(self.client, 'display_attribute', nonpartial(self._update_window_title))
+        add_callback(self.client, 'display_data', nonpartial(self.update_window_title))
+        add_callback(self.client, 'display_attribute', nonpartial(self.update_window_title))
 
         # sync data/attribute combos with client properties
         connect_current_combo(self.client, 'display_data', self.ui.displayDataCombo)
@@ -261,7 +261,8 @@ class ImageWidgetBase(DataViewer):
                                     stretch=stretch,
                                     bias=mode.bias, contrast=mode.contrast)
 
-    def _update_window_title(self):
+    @property
+    def window_title(self):
         if self.client.display_data is None or self.client.display_attribute is None:
             title = ''
         else:
@@ -276,7 +277,7 @@ class ImageWidgetBase(DataViewer):
                 b = a.b.label if a.b is not None else ''
                 title = "%s Red = %s  Green = %s  Blue = %s" % (data, r, g, b)
 
-        self.setWindowTitle(title)
+        return title
 
     def _sync_data_combo_labels(self):
         combo = self.ui.displayDataCombo
@@ -284,7 +285,7 @@ class ImageWidgetBase(DataViewer):
             combo.setItemText(i, combo.itemData(i).label)
 
     def _sync_data_labels(self):
-        self._update_window_title()
+        self.update_window_title()
         self._sync_data_combo_labels()
 
     def __str__(self):
