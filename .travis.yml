@@ -47,7 +47,7 @@ install:
 
 script:
 - py.test $PYTEST_ARGS glue
-- if [ $DOC_TRIGGER ]; then cd doc && make html; fi
+- if [ $DOC_TRIGGER ]; then cd doc && make html && cd ..; fi
 
 after_success:
 - coveralls
@@ -67,6 +67,8 @@ deploy:
        - master
        - staging
        - stable
+       - v0.3.0
+       - v0.3.1
      condition:
        - "$TRAVIS_SECURE_ENV_VARS = true"
        - "$DOC_TRIGGER = 1"
