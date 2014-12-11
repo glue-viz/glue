@@ -201,7 +201,11 @@ def _slice_from_path(x, y, data, attribute, slc):
     # sample cube
     spacing = 1  # pixel
     x, y = [np.round(_x).astype(int) for _x in p.sample_points(spacing)]
-    result = extract_pv_slice(cube, path=p, wcs=cube_wcs, order=0)
+
+    try:
+        result = extract_pv_slice(cube, path=p, wcs=cube_wcs, order=0)
+    except:  # sometimes pvextractor complains due to wcs. Try to recover
+        result = extract_pv_slice(cube, path=p, wcs=None, order=0)
 
     from astropy.wcs import WCS
     data = result.data
