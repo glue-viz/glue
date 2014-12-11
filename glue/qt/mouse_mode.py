@@ -19,13 +19,13 @@ The basic usage pattern is thus:
 
 from __future__ import absolute_import, division, print_function
 
-from ..external.qt.QtGui import QAction
+from ..external.qt.QtGui import QAction, QDoubleValidator
 
 from ..core import util
 from ..core import roi
 from ..core.callback_property import CallbackProperty
 from . import get_qapp
-from .qtutil import get_icon, nonpartial
+from .qtutil import get_icon, nonpartial, load_ui
 from . import qt_roi
 
 
@@ -425,6 +425,8 @@ class ContrastMode(MouseMode):
         self._percent_lo = 1.
         self._percent_hi = 99.
         self.stretch = 'linear'
+        self._vmin = None
+        self._vmax = None
 
     def set_clip_percentile(self, lo, hi):
         """Percentiles at which to clip the data at black/white"""
@@ -432,9 +434,52 @@ class ContrastMode(MouseMode):
             return
         self._percent_lo = lo
         self._percent_hi = hi
+        self._vmin = None
+        self._vmax = None
 
     def get_clip_percentile(self):
-        return self._percent_lo, self._percent_hi
+        if self._vmin is None and self._vmax is None:
+            return self._percent_lo, self._percent_hi
+        return None, None
+
+    def get_vmin_vmax(self):
+        if self._percent_lo is None or self._percent_hi is None:
+            return self._vmin, self._vmax
+        return None, None
+
+    def set_vmin_vmax(self, vmin, vmax):
+        if vmin == self._vmin and vmax == self._vmax:
+            return
+        self._percent_hi = self._percent_lo = None
+        self._vmin = vmin
+        self._vmax = vmax
+
+    def choose_vmin_vmax(self):
+        dialog = load_ui('contrastlimits', None)
+        v = QDoubleValidator()
+        dialog.vmin.setValidator(v)
+        dialog.vmax.setValidator(v)
+
+        vmin, vmax = self.get_vmin_vmax()
+        if vmin is not None:
+            dialog.vmin.setText(str(vmin))
+        if vmax is not None:
+            dialog.vmax.setText(str(vmax))
+
+        def _apply():
+            try:
+                vmin = float(dialog.vmin.text())
+                vmax = float(dialog.vmax.text())
+                self.set_vmin_vmax(vmin, vmax)
+                if self._move_callback is not None:
+                    self._move_callback(self)
+            except ValueError:
+                pass
+
+        bb = dialog.buttonBox
+        bb.button(bb.Apply).clicked.connect(_apply)
+        dialog.accepted.connect(_apply)
+        dialog.show()
 
     def move(self, event):
         """ MoveEvent. Update bias and contrast on Right Mouse button drag """
@@ -469,6 +514,10 @@ class ContrastMode(MouseMode):
         a.triggered.connect(nonpartial(self.set_clip_percentile, 10, 90))
         result.append(a)
 
+        rng = QAction("Set range...", None)
+        rng.triggered.connect(nonpartial(self.choose_vmin_vmax))
+        result.append(rng)
+
         a = QAction("", None)
         a.setSeparator(True)
         result.append(a)
@@ -498,6 +547,8 @@ class ContrastMode(MouseMode):
         result.append(a)
 
         for r in result:
+            if r is rng:
+                continue
             if self._move_callback is not None:
                 r.triggered.connect(nonpartial(self._move_callback, self))
 

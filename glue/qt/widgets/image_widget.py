@@ -255,10 +255,14 @@ class ImageWidgetBase(DataViewer):
 
     def _set_norm(self, mode):
         """ Use the `ContrastMouseMode` to adjust the transfer function """
+
+        # at least one of the clip/vmin pairs will be None
         clip_lo, clip_hi = mode.get_clip_percentile()
+        vmin, vmax = mode.get_vmin_vmax()
         stretch = mode.stretch
         return self.client.set_norm(clip_lo=clip_lo, clip_hi=clip_hi,
                                     stretch=stretch,
+                                    vmin=vmin, vmax=vmax,
                                     bias=mode.bias, contrast=mode.contrast)
 
     @property
@@ -533,12 +537,15 @@ class StandaloneImageWidget(QMainWindow):
     def _set_norm(self, mode):
         """ Use the `ContrastMouseMode` to adjust the transfer function """
         clip_lo, clip_hi = mode.get_clip_percentile()
+        vmin, vmax = mode.get_vmin_vmax()
         stretch = mode.stretch
         self._norm.clip_lo = clip_lo
         self._norm.clip_hi = clip_hi
         self._norm.stretch = stretch
         self._norm.bias = mode.bias
         self._norm.contrast = mode.contrast
+        self._norm.vmin = vmin
+        self._norm.vmax = vmax
         self._im.set_norm(self._norm)
         self._redraw()
 
