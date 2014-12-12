@@ -263,6 +263,24 @@ class LinkFunctionRegistry(Registry):
         return adder
 
 
+class SingleSubsetLayerActionRegistry(Registry):
+
+    """ Stores custom menu actions available when user selects a single
+        subset in the data collection view
+
+        This members property is a list of (label, tooltip, callback)
+        tuples. callback is a function that takes a Subset and DataCollection
+        as input
+    """
+    item = namedtuple('SingleSubsetLayerAction', 'label tooltip callback icon')
+
+    def default_members(self):
+        return []
+
+    def __call__(self, label, callback, tooltip=None, icon=None):
+        self.add(self.item(label, callback, tooltip, icon))
+
+
 class LinkHelperRegistry(Registry):
 
     """Stores helper objects that compute many ComponentLinks at once
@@ -366,6 +384,7 @@ exporters = ExporterRegistry()
 settings = SettingRegistry()
 fit_plugin = ProfileFitterRegistry()
 tool_registry = ToolRegistry()
+single_subset_action = SingleSubsetLayerActionRegistry()
 
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)
