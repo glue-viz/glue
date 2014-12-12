@@ -86,7 +86,7 @@ class WCSCoordinates(Coordinates):
         # if distorted, all bets are off
         try:
             if any([self._wcs.sip, self._wcs.det2im1, self._wcs.det2im2]):
-                return tuple(range(ndim))
+                return tuple(range(self._wcs.naxis))
         except AttributeError:
             pass
 
