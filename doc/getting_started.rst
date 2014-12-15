@@ -2,7 +2,7 @@
 
 Getting started
 ***************
-This page walks through Glue's basic GUI features, using data from the W5 star forming region as an example. You can download the data files for this tutorial `here <_static/w5.tgz>`_
+TEST This page walks through Glue's basic GUI features, using data from the W5 star forming region as an example. You can download the data files for this tutorial `here <_static/w5.tgz>`_
 
 After :ref:`installing <installation>` Glue, open the program by either double clicking on the icon (if using a pre-built application) or from the command line::
 
