@@ -840,7 +840,7 @@ def _view_window(ax):
     return values should be compared with == to determine if the
     window has been panned/zoomed
     """
-    ext = ax.transAxes.transform([1, 1]) - ax.transAxes.transform([0, 0])
+    ext = (ax.transAxes.transform([(1, 1)]) - ax.transAxes.transform([(0, 0)]))[0]
     xlim, ylim = ax.get_xlim(), ax.get_ylim()
     result = xlim[0], ylim[0], xlim[1], ylim[1], ext[0], ext[1]
     logging.getLogger(__name__).debug("view window: %s", result)

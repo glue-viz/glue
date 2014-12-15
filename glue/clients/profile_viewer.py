@@ -465,7 +465,7 @@ class ProfileViewer(object):
     @property
     def _center(self):
         """Return the data coordinates of the axes center, as (x, y)"""
-        xy = self.axes.transAxes.transform([.5, .5])
+        xy = self.axes.transAxes.transform([(.5, .5)])
         xy = self.axes.transData.inverted().transform(xy)
         return tuple(xy.ravel())
 
