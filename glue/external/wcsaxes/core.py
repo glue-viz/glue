@@ -1,16 +1,17 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+
 from matplotlib.axes import Axes, subplot_class_factory
 from matplotlib.transforms import Affine2D, Bbox, Transform
-from matplotlib.patches import Patch
 
 from astropy.wcs import WCS
-# from astropy.coordinates import frame_transform_graph
 
 from .transforms import (WCSPixel2WorldTransform, WCSWorld2PixelTransform,
                          CoordinateTransform)
 from .coordinates_map import CoordinatesMap
-from .utils import get_coordinate_frame, get_coord_meta
+from .utils import get_coord_meta
+from .wcs_utils import wcs_to_celestial_frame
 from .frame import RectangularFrame
+import numpy as np
 
 __all__ = ['WCSAxes', 'WCSAxesSubplot']
 
@@ -41,8 +42,39 @@ class WCSAxes(Axes):
 
         self.reset_wcs(wcs=wcs, slices=slices, transform=transform, coord_meta=coord_meta)
         self._hide_parent_artists()
-
+        self.format_coord = self._display_world_coords
+        self._display_coords_index = 0
+        fig.canvas.mpl_connect('key_press_event', self._set_cursor_prefs)
         self.patch = self.coords.frame.patch
+
+    def _display_world_coords(self, x, y):
+
+        if self._display_coords_index == -1:
+            return "%s %s (pixel)" % (x, y)
+
+        pixel = np.array([x, y])
+
+        coords = self._all_coords[self._display_coords_index]
+
+        world = coords._transform.transform(np.array([pixel]))[0]
+
+        xw = coords[self._x_index].format_coord(world[self._x_index])
+        yw = coords[self._y_index].format_coord(world[self._y_index])
+
+        if self._display_coords_index == 0:
+            system = "world"
+        else:
+            system = "world, overlay {0}".format(self._display_coords_index)
+
+        coord_string = "%s %s (%s)" % (xw, yw, system)
+
+        return coord_string
+
+    def _set_cursor_prefs(self, event, **kwargs):
+        if event.key == 'w':
+            self._display_coords_index += 1
+            if self._display_coords_index + 1 > len(self._all_coords):
+                self._display_coords_index = -1
 
     def _hide_parent_artists(self):
         # Turn off spines and current axes
@@ -80,15 +112,21 @@ class WCSAxes(Axes):
         self._all_coords = [self.coords]
 
         if slices is None:
-            slices = ('x', 'y')
+            self.slices = ('x', 'y')
+            self._x_index = 0
+            self._y_index = 1
+        else:
+            self.slices = slices
+            self._x_index = self.slices.index('x')
+            self._y_index = self.slices.index('y')
 
         # Common default settings for Rectangular Frame
         if self.frame_class is RectangularFrame:
-            for coord_index in range(len(slices)):
-                if slices[coord_index] == 'x':
+            for coord_index in range(len(self.slices)):
+                if self.slices[coord_index] == 'x':
                     self.coords[coord_index].set_axislabel_position('b')
                     self.coords[coord_index].set_ticklabel_position('b')
-                elif slices[coord_index] == 'y':
+                elif self.slices[coord_index] == 'y':
                     self.coords[coord_index].set_axislabel_position('l')
                     self.coords[coord_index].set_ticklabel_position('l')
                 else:
@@ -128,16 +166,16 @@ class WCSAxes(Axes):
         self.coords.frame.draw(renderer)
 
     def set_xlabel(self, label):
-        self.coords[0].set_axislabel(label)
+        self.coords[self._x_index].set_axislabel(label)
 
     def set_ylabel(self, label):
-        self.coords[1].set_axislabel(label)
+        self.coords[self._y_index].set_axislabel(label)
 
     def get_xlabel(self):
-        return self.coords[0].get_axislabel()
+        return self.coords[self._x_index].get_axislabel()
 
     def get_ylabel(self):
-        return self.coords[1].get_axislabel()
+        return self.coords[self._y_index].get_axislabel()
 
     def get_coords_overlay(self, frame, equinox=None, obstime=None, coord_meta=None):
 
@@ -158,6 +196,8 @@ class WCSAxes(Axes):
         coords[1].set_axislabel_position('r')
         coords[0].set_ticklabel_position('t')
         coords[1].set_ticklabel_position('r')
+
+        self.overlay_coords = coords
 
         return coords
 
@@ -203,8 +243,8 @@ class WCSAxes(Axes):
 
         if isinstance(frame, WCS):
 
-            coord_in = get_coordinate_frame(self.wcs)
-            coord_out = get_coordinate_frame(frame)
+            coord_in = wcs_to_celestial_frame(self.wcs)
+            coord_out = wcs_to_celestial_frame(frame)
 
             if coord_in == coord_out:
 
@@ -271,5 +311,10 @@ class WCSAxes(Axes):
         if draw_grid:
             self.coords.grid(draw_grid=draw_grid, **kwargs)
 
+# In the following, we put the generated subplot class in a temporary class and
+# we then inherit it - if we don't do this, the generated class appears to
+# belong in matplotlib, not in WCSAxes, from the API's point of view.
 
-WCSAxesSubplot = subplot_class_factory(WCSAxes)
+
+class WCSAxesSubplot(subplot_class_factory(WCSAxes)):
+    pass

@@ -259,13 +259,13 @@ class AngleFormatterLocator(BaseFormatterLocator):
                         from .utils import select_step_hour
                         spacing_deg = select_step_hour(dv).to(u.degree).value
 
-
             # We now find the interval values as multiples of the spacing and
             # generate the tick positions from this.
             values = self._locate_values(value_min, value_max, spacing_deg)
             return values * spacing_deg * u.degree, spacing_deg * u.degree
 
     def formatter(self, values, spacing):
+
         if not isinstance(values, u.Quantity) and values is not None:
             raise TypeError("values should be a Quantities array")
 
@@ -283,7 +283,7 @@ class AngleFormatterLocator(BaseFormatterLocator):
                     precision = 0
                 else:
                     fields = 3
-                    precision = -int(np.floor(np.log10(spacing.value)))
+                    precision = -int(np.floor(np.log10(spacing)))
                 decimal = False
                 unit = u.degree
             else:
@@ -393,7 +393,6 @@ class ScalarFormatterLocator(BaseFormatterLocator):
         elif not value.startswith('%'):
             raise ValueError("Invalid format: {0}".format(value))
 
-
     @property
     def base_spacing(self):
         return self._unit / (10. ** self._precision)
@@ -404,7 +403,6 @@ class ScalarFormatterLocator(BaseFormatterLocator):
 
             # values were manually specified
             return self.values, 1.1 * self._unit
-
         else:
 
             if self.spacing is not None:

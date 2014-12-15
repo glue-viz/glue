@@ -8,3 +8,4 @@ if LooseVersion(__version__) < LooseVersion('0.3'):
 from .core import *
 from .coordinate_helpers import CoordinateHelper
 from .coordinates_map import CoordinatesMap
+from .wcs_wrapper import WCS

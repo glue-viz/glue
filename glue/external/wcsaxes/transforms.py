@@ -12,7 +12,7 @@ from matplotlib.transforms import Transform
 from astropy import units as u
 from astropy.wcs import WCS
 from astropy.extern import six
-from .utils import get_coordinate_frame
+from .wcs_utils import wcs_to_celestial_frame
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -45,11 +45,11 @@ class CurvedTransform(Transform):
 
     @abc.abstractmethod
     def transform(self, input):
-        raise NotImplemented("")
+        raise NotImplementedError("")
 
     @abc.abstractmethod
     def inverted(self):
-        raise NotImplemented("")
+        raise NotImplementedError("")
 
 
 class WCSWorld2PixelTransform(CurvedTransform):
@@ -90,8 +90,7 @@ class WCSWorld2PixelTransform(CurvedTransform):
         if self.slice is None:
             return pixel
         else:
-            return pixel[:,(self.x_index, self.y_index)]
-
+            return pixel[:, (self.x_index, self.y_index)]
 
     transform_non_affine = transform
 
@@ -125,7 +124,7 @@ class WCSPixel2WorldTransform(CurvedTransform):
         Y, X = np.meshgrid(y, x)
         pixel = np.array([X.ravel(), Y.ravel()]).transpose()
         world = self.transform(pixel)
-        return X, Y, [world[:,i].reshape(nx, ny).transpose() for i in range(self.wcs.wcs.naxis)]
+        return X, Y, [world[:, i].reshape(nx, ny).transpose() for i in range(self.wcs.wcs.naxis)]
 
     def transform(self, pixel):
         """
@@ -170,9 +169,9 @@ class WCSPixel2WorldTransform(CurvedTransform):
 
 
 try:
-    
-    from astropy.coordinates import SkyCoord
-    from astropy.coordinates import frame_transform_graph
+
+    from astropy.coordinates import (SkyCoord, frame_transform_graph,
+                                     SphericalRepresentation, UnitSphericalRepresentation)
 
     class CoordinateTransform(CurvedTransform):
         def __init__(self, input_system, output_system):
@@ -181,14 +180,14 @@ try:
             self._output_system_name = output_system
 
             if isinstance(self._input_system_name, WCS):
-                self.input_system = get_coordinate_frame(self._input_system_name)
+                self.input_system = wcs_to_celestial_frame(self._input_system_name)
             elif isinstance(self._input_system_name, six.string_types):
                 self.input_system = frame_transform_graph.lookup_name(self._input_system_name)
                 if self.input_system is None:
                     raise ValueError("Frame {0} not found".format(self._input_system_name))
 
             if isinstance(self._output_system_name, WCS):
-                self.output_system = get_coordinate_frame(self._output_system_name)
+                self.output_system = wcs_to_celestial_frame(self._output_system_name)
             elif isinstance(self._output_system_name, six.string_types):
                 self.output_system = frame_transform_graph.lookup_name(self._output_system_name)
                 if self.output_system is None:
@@ -216,11 +215,26 @@ try:
 
             x_in, y_in = input_coords[:, 0], input_coords[:, 1]
 
-            c_in = SkyCoord(x_in, y_in, unit=(u.deg, u.deg), frame=self.input_system)
+            try:
+                c_in = SkyCoord(x_in, y_in, unit=(u.deg, u.deg),
+                                frame=self.input_system)
+            except: # Astropy < 1.0
+                c_in = SkyCoord(x_in, y_in, unit=(u.deg, u.deg),
+                                frame=self.input_system.name,
+                                **dict((key, getattr(self.input_system, key))
+                                       for key in self.input_system.get_frame_attr_names().keys()))
 
             c_out = c_in.transform_to(self.output_system)
 
-            return np.concatenate((c_out.spherical.lon.deg[:, np.newaxis], c_out.spherical.lat.deg[:, np.newaxis]), 1)
+            if (c_out.representation is SphericalRepresentation or
+                    c_out.representation is UnitSphericalRepresentation):
+                lon = c_out.data.lon.deg
+                lat = c_out.data.lat.deg
+            else:
+                lon = c_out.spherical.lon.deg
+                lat = c_out.spherical.lat.deg
+
+            return np.concatenate((lon[:, np.newaxis], lat[:, np.newaxis]), axis=1)
 
         transform_non_affine = transform
 
@@ -241,24 +255,24 @@ except ImportError:
             self._output_system_name = output_system
 
             if isinstance(self._input_system_name, WCS):
-                self.input_system = get_coordinate_frame(self._input_system_name)
+                self.input_system = wcs_to_celestial_frame(self._input_system_name)
             elif isinstance(self._input_system_name, six.string_types):
                 if self._input_system_name == 'fk5':
                     self.input_system = FK5
                 elif self._input_system_name == 'galactic':
                     self.input_system = Galactic
                 else:
-                    raise NotImplemented("frame {0} not implemented".format(self._input_system_name))
+                    raise NotImplementedError("frame {0} not implemented".format(self._input_system_name))
 
             if isinstance(self._output_system_name, WCS):
-                self.output_system = get_coordinate_frame(self._output_system_name)
+                self.output_system = wcs_to_celestial_frame(self._output_system_name)
             elif isinstance(self._output_system_name, six.string_types):
                 if self._output_system_name == 'fk5':
                     self.output_system = FK5
                 elif self._output_system_name == 'galactic':
                     self.output_system = Galactic
                 else:
-                    raise NotImplemented("frame {0} not implemented".format(self._output_system_name))
+                    raise NotImplementedError("frame {0} not implemented".format(self._output_system_name))
 
             if self.output_system == self.input_system:
                 self.same_frames = True
