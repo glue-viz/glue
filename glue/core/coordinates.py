@@ -197,8 +197,13 @@ def coordinates_from_header(header):
     """
     try:
         return WCSCoordinates(header)
-    except (AttributeError, TypeError, AssertionError) as e:
-        print(e)
+    except Exception as e:
+        logging.getLogger(__name__).warn("\n\n*******************************\n"
+                                         "Encounted an error during WCS parsing. "
+                                         "Discarding world coordinates! "
+                                         "\n%s\n"
+                                         "*******************************\n\n" % e
+                                         )
     return Coordinates()
 
 

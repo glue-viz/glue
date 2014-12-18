@@ -20,7 +20,7 @@ imports. Glue looks for a file called ``config.py`` in the following locations:
 
 To obtain a fresh ``config.py`` file to edit, run the command line program::
 
-   glueconfig
+   glue-config
 
 Which will create a new file at ``~/.glue/config.py``
 

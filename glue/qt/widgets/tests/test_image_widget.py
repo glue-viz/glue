@@ -3,6 +3,7 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
+from mock import MagicMock
 
 from ..image_widget import ImageWidget
 
@@ -120,6 +121,17 @@ class _TestImageWidgetBase(object):
     def _data_combo_labels(self):
         combo = self.widget.ui.displayDataCombo
         return [combo.itemText(i) for i in range(combo.count())]
+
+    def test_plugins_closed_when_viewer_closed(self):
+        # Regression test for #518
+        self.widget.add_data(self.im)
+
+        tool = self.widget._tools[0]
+        tool.close = MagicMock()
+
+        self.widget.close()
+
+        assert tool.close.call_count == 1
 
 
 class TestImageWidget(_TestImageWidgetBase):

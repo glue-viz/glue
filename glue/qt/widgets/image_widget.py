@@ -1,8 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
 from ...external.qt.QtGui import (QAction, QLabel, QCursor, QMainWindow,
-                                  QToolButton, QIcon, QMessageBox,
-                                  QMdiSubWindow)
+                                  QToolButton, QIcon, QMessageBox
+                                  )
 
 from ...external.qt.QtCore import Qt, QRect, Signal
 
@@ -25,6 +25,7 @@ from .mpl_widget import MplWidget, defer_draw
 
 from ..qtutil import cmap2pixmap, load_ui, get_icon, nonpartial, update_combobox
 from ..widget_properties import CurrentComboProperty, ButtonProperty, connect_current_combo
+from .glue_mdi_area import GlueMdiSubWindow
 
 WARN_THRESH = 10000000  # warn when contouring large images
 
@@ -185,7 +186,7 @@ class ImageWidgetBase(DataViewer):
         ui = self.ui
 
         ui.monochrome.toggled.connect(self._update_rgb_console)
-        ui.rgb_options.colors_changed.connect(self._update_window_title)
+        ui.rgb_options.colors_changed.connect(self.update_window_title)
 
         # sync client and widget slices
         ui.slice.slice_changed.connect(lambda: setattr(self, 'slice', self.ui.slice.slice))
@@ -194,8 +195,8 @@ class ImageWidgetBase(DataViewer):
         add_callback(self.client, 'display_data', self.ui.slice.set_data)
 
         # sync window title to data/attribute
-        add_callback(self.client, 'display_data', nonpartial(self._update_window_title))
-        add_callback(self.client, 'display_attribute', nonpartial(self._update_window_title))
+        add_callback(self.client, 'display_data', nonpartial(self.update_window_title))
+        add_callback(self.client, 'display_attribute', nonpartial(self.update_window_title))
 
         # sync data/attribute combos with client properties
         connect_current_combo(self.client, 'display_data', self.ui.displayDataCombo)
@@ -254,13 +255,18 @@ class ImageWidgetBase(DataViewer):
 
     def _set_norm(self, mode):
         """ Use the `ContrastMouseMode` to adjust the transfer function """
+
+        # at least one of the clip/vmin pairs will be None
         clip_lo, clip_hi = mode.get_clip_percentile()
+        vmin, vmax = mode.get_vmin_vmax()
         stretch = mode.stretch
         return self.client.set_norm(clip_lo=clip_lo, clip_hi=clip_hi,
                                     stretch=stretch,
+                                    vmin=vmin, vmax=vmax,
                                     bias=mode.bias, contrast=mode.contrast)
 
-    def _update_window_title(self):
+    @property
+    def window_title(self):
         if self.client.display_data is None or self.client.display_attribute is None:
             title = ''
         else:
@@ -275,7 +281,7 @@ class ImageWidgetBase(DataViewer):
                 b = a.b.label if a.b is not None else ''
                 title = "%s Red = %s  Green = %s  Blue = %s" % (data, r, g, b)
 
-        self.setWindowTitle(title)
+        return title
 
     def _sync_data_combo_labels(self):
         combo = self.ui.displayDataCombo
@@ -283,7 +289,7 @@ class ImageWidgetBase(DataViewer):
             combo.setItemText(i, combo.itemData(i).label)
 
     def _sync_data_labels(self):
-        self._update_window_title()
+        self.update_window_title()
         self._sync_data_combo_labels()
 
     def __str__(self):
@@ -320,6 +326,13 @@ class ImageWidgetBase(DataViewer):
             self.set_attribute_combo(self.client.display_data)
 
         self._sync_data_combo_labels()
+
+    def closeEvent(self, event):
+        # close window and all plugins
+        super(ImageWidgetBase, self).closeEvent(event)
+        if event.isAccepted():
+            for t in self._tools:
+                t.close()
 
 
 class ImageWidget(ImageWidgetBase):
@@ -506,11 +519,12 @@ class StandaloneImageWidget(QMainWindow):
 
     def mdi_wrap(self):
         """
-        Embed this widget in a QMdiSubWindow
+        Embed this widget in a GlueMdiSubWindow
         """
-        sub = QMdiSubWindow()
+        sub = GlueMdiSubWindow()
         sub.setWidget(self)
         self.destroyed.connect(sub.close)
+        self.window_closed.connect(sub.close)
         sub.resize(self.size())
         self._mdi_wrapper = sub
 
@@ -523,12 +537,15 @@ class StandaloneImageWidget(QMainWindow):
     def _set_norm(self, mode):
         """ Use the `ContrastMouseMode` to adjust the transfer function """
         clip_lo, clip_hi = mode.get_clip_percentile()
+        vmin, vmax = mode.get_vmin_vmax()
         stretch = mode.stretch
         self._norm.clip_lo = clip_lo
         self._norm.clip_hi = clip_hi
         self._norm.stretch = stretch
         self._norm.bias = mode.bias
         self._norm.contrast = mode.contrast
+        self._norm.vmin = vmin
+        self._norm.vmax = vmax
         self._im.set_norm(self._norm)
         self._redraw()
 

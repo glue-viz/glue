@@ -91,7 +91,24 @@ For more examples of custom data loaders, see the `example repository <https://g
 Custom Colormaps
 ----------------
 You can add additional matplotlib colormaps to Glue's image viewer by adding the following code into ``config.py``::
-    
+
     from glue.config import colormaps
     from matplotlib.cm import Paired
     colormaps.add('Paired', Paired)
+
+Custom Subset Actions
+---------------------
+You can add menu items to run custom functions on subsets.
+Use the following pattern in ``config..py``::
+
+    from glue.config import single_subset_action
+
+    def callback(subset, data_collection):
+        print "Called with %s, %s" % (subset, data_collection)
+
+    single_subset_action('Menu title', callback)
+
+This menu item is available by right clicking on a subset
+when a single subset is selected in the Data Collection window. Note
+that you must select the subset specific to a particular Data set,
+and not the parent Subset Group.

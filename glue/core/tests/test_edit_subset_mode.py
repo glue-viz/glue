@@ -1,4 +1,4 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 
 from __future__ import absolute_import, division, print_function
 
@@ -15,6 +15,7 @@ from ..data_collection import DataCollection
 
 
 class TestEditSubsetMode(object):
+
     def setup_method(self, method):
         data = Data()
         comp = Component(np.array([1, 2, 3]))
@@ -94,15 +95,7 @@ class TestEditSubsetMode(object):
         assert self.data.edit_subset.subset_state is not self.state2
 
 
-def test_invlid_update_args():
-    """First argument of update must be a Data or Data Collection"""
-    mode = EditSubsetMode()
-    mode.mode = ReplaceMode
-    with pytest.raises(TypeError) as exc:
-        mode.update(None, SubsetState())
-    assert exc.value.args[0].startswith('input must be a Data')
-
-#Tests for multiselection logic
+# Tests for multiselection logic
 combs = list(itertools.product([True, False], [True, False],
                                [True, False], [True, False]))
 

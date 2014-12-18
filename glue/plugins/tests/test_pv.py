@@ -66,8 +66,8 @@ class TestStandaloneImageWidget(object):
         act.trigger()
         assert self.w._im.cmap is act.cmap
 
-    def tesT_double_set_image(self):
-        assert self.w._axes.images == 1
+    def test_double_set_image(self):
+        assert len(self.w._axes.images) == 1
         self.w.set_image(np.zeros((3, 3)))
         assert len(self.w._axes.images) == 1
 

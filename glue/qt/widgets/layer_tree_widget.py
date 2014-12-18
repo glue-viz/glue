@@ -23,6 +23,7 @@ from .custom_component_widget import CustomComponentWidget
 from ..actions import act as _act
 from ...core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode
 from .subset_facet import SubsetFacet
+from ...config import single_subset_action
 
 
 @core.decorators.singleton
@@ -340,6 +341,36 @@ class MergeAction(LayerAction):
         self.data_collection.merge(*self.selected_layers())
 
 
+class UserAction(LayerAction):
+
+    def __init__(self, layer_tree_widget, callback, **kwargs):
+        self._title = kwargs.get('name', 'User Action')
+        self._tooltip = kwargs.get('tooltip', None)
+        self._icon = kwargs.get('icon', None)
+        self._callback = callback
+        super(UserAction, self).__init__(layer_tree_widget)
+
+
+class SingleSubsetUserAction(UserAction):
+
+    """
+    User-defined callback functions to expose
+    when single subsets are selected.
+
+    Users register new actions via the :member:`glue.config.single_subset_action`
+    member
+
+    Callback functions are passed the subset and data collection
+    """
+
+    def _can_trigger(self):
+        return self.single_selection_subset()
+
+    def _do_action(self):
+        subset, = self.selected_layers()
+        return self._callback(subset, self.data_collection)
+
+
 class LayerCommunicator(QObject):
     layer_check_changed = Signal(object, bool)
 
@@ -467,6 +498,13 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
         tree.addAction(a)
         a.triggered.connect(nonpartial(self._create_component))
         self._actions['new_component'] = a
+
+        # user-defined layer actions
+        for name, callback, tooltip, icon in single_subset_action:
+            self._actions[name] = SingleSubsetUserAction(self, callback,
+                                                         name=name,
+                                                         tooltip=tooltip,
+                                                         icon=icon)
 
         # right click pulls up menu
         tree.setContextMenuPolicy(Qt.ActionsContextMenu)

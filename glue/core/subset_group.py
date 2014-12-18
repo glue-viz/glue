@@ -106,6 +106,7 @@ class SubsetGroup(HubListener):
         self.style.color = color
         self.style.alpha = alpha
 
+    @contract(data='isinstance(DataCollection)')
     def register(self, data):
         """
         Register to a :class:`~glue.core.data_collection.DataCollection`
@@ -131,11 +132,13 @@ class SubsetGroup(HubListener):
         self.subset_state = state
 
     def _add_data(self, data):
+        # add a new data object to group
         s = GroupedSubset(data, self)
         data.add_subset(s)
         self.subsets.append(s)
 
     def _remove_data(self, data):
+        # remove a data object from group
         for s in list(self.subsets):
             if s.data is data:
                 self.subsets.remove(s)

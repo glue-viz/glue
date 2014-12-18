@@ -6,7 +6,7 @@ import sys
 import webbrowser
 
 from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
-                                 QMenu, QMdiSubWindow, QAction, QMessageBox,
+                                 QMenu, QAction, QMessageBox,
                                  QFileDialog, QInputDialog,
                                  QToolButton, QVBoxLayout, QWidget, QPixmap,
                                  QBrush, QPainter, QLabel, QHBoxLayout,
@@ -23,7 +23,7 @@ from ..core.application_base import Application
 from .actions import act
 from .qtutil import (pick_class, data_wizard,
                      GlueTabBar, load_ui, get_icon, nonpartial)
-from .widgets.glue_mdi_area import GlueMdiArea
+from .widgets.glue_mdi_area import GlueMdiArea, GlueMdiSubWindow
 from .widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from .widgets.layer_tree_widget import PlotAction, LayerTreeWidget
 from .widgets.data_viewer import DataViewer
@@ -293,11 +293,13 @@ class GlueApplication(Application, QMainWindow):
                               of new_widget
         :type hold_position: bool
 
-        :rtype: QMdiSubWindow. The window that this widget is wrapped in
+        :rtype: The window that this widget is wrapped in
         """
         page = self.tab(tab)
         pos = getattr(new_widget, 'position', None)
         sub = new_widget.mdi_wrap()
+
+        sub.closed.connect(self._clear_dashboard)
 
         if label:
             sub.setWindowTitle(label)
@@ -337,7 +339,7 @@ class GlueApplication(Application, QMainWindow):
         self.current_tab.tileSubWindows()
 
     def _get_plot_dashboards(self, sub_window):
-        if not isinstance(sub_window, QMdiSubWindow):
+        if not isinstance(sub_window, GlueMdiSubWindow):
             return QWidget(), QWidget(), ""
 
         widget = sub_window.widget()
@@ -346,29 +348,31 @@ class GlueApplication(Application, QMainWindow):
 
         return widget.layer_view(), widget.options_widget(), str(widget)
 
+    def _clear_dashboard(self):
+
+        for widget, title in [(self._ui.plot_layers, "Plot Layers"),
+                              (self._ui.plot_options, "Plot Options")]:
+            layout = widget.layout()
+            if layout is None:
+                layout = QVBoxLayout()
+                layout.setContentsMargins(4, 4, 4, 4)
+                widget.setLayout(layout)
+            while layout.count():
+                layout.takeAt(0).widget().hide()
+            widget.setTitle(title)
+
     def _update_plot_dashboard(self, sub_window):
+        self._clear_dashboard()
+
         if sub_window is None:
             return
 
-        layer_view, options_widget, title = \
-            self._get_plot_dashboards(sub_window)
+        layer_view, options_widget, title = self._get_plot_dashboards(sub_window)
 
         layout = self._ui.plot_layers.layout()
-        if not layout:
-            layout = QVBoxLayout()
-            layout.setContentsMargins(4, 4, 4, 4)
-            self._ui.plot_layers.setLayout(layout)
-        while layout.count():
-            layout.takeAt(0).widget().hide()
         layout.addWidget(layer_view)
 
         layout = self._ui.plot_options.layout()
-        if not layout:
-            layout = QVBoxLayout()
-            layout.setContentsMargins(4, 4, 4, 4)
-            self._ui.plot_options.setLayout(layout)
-        while layout.count():
-            layout.takeAt(0).widget().hide()
         layout.addWidget(options_widget)
 
         layer_view.show()
@@ -697,12 +701,25 @@ class GlueApplication(Application, QMainWindow):
         self._terminal.show()
         self._terminal.widget().show()
 
-    def start(self):
+    def start(self, size=None, position=None):
         """
         Show the GUI and start the application.
+
+        Parameters
+        ----------
+        size : (int, int) Optional
+            The default width/height of the application.
+            If not provided, uses the full screen
+        position : (int, int) Optional
+            The default position of the application
         """
         self._create_terminal()
         self.show()
+        if size is not None:
+            self.resize(*size)
+        if position is not None:
+            self.move(*position)
+
         self.raise_()  # bring window to front
         # at some point during all this, the MPL backend
         # switches. This call restores things, so

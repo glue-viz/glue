@@ -5,7 +5,7 @@
    share the same mode. This is enforced by making the base
    EditSubsetMode object a singleton.
 """
-#pylint: disable=I0011, R0903
+# pylint: disable=I0011, R0903
 
 from __future__ import absolute_import, division, print_function
 
@@ -15,11 +15,14 @@ from .decorators import singleton
 from .data import Data
 from .data_collection import DataCollection
 from .util import as_list
+from .contracts import contract
 
 
 @singleton
 class EditSubsetMode(object):
+
     """ Implements how new SubsetStates modify the edit_subset state """
+
     def __init__(self):
         self.mode = ReplaceMode
         self.data_collection = None
@@ -50,6 +53,9 @@ class EditSubsetMode(object):
         for s in as_list(subs):
             self.mode(s, new_state)
 
+    @contract(d='inst($DataCollection, $Data)',
+              new_state='isinstance(SubsetState)',
+              focus_data='inst($Data)|None')
     def update(self, d, new_state, focus_data=None):
         """ Apply a new subset state to editable subsets within a
         :class:`~glue.core.data.Data` or

@@ -9,7 +9,7 @@ from ..external.qt.QtGui import (QMainWindow, QWidget,
                                  QAction, QTextEdit, QFont, QDialog,
                                  QDialogButtonBox, QLineEdit,
                                  QDoubleValidator, QCheckBox, QGridLayout,
-                                 QLabel, QMdiSubWindow)
+                                 QLabel)
 
 from ..clients.profile_viewer import ProfileViewer
 from ..qt.widgets.mpl_widget import MplWidget
@@ -26,6 +26,7 @@ from ..qt.mime import LAYERS_MIME_TYPE
 from ..qt.simpleforms import build_form_item
 from ..config import fit_plugin
 from ..external.six.moves import range as xrange
+from ..qt.widgets.glue_mdi_area import GlueMdiSubWindow
 
 
 class Extractor(object):
@@ -609,13 +610,19 @@ class SpectrumTool(object):
                                                              label='Profile')
         w.close()
 
+    def close(self):
+        if hasattr(self, '_mdi_wrapper'):
+            self._mdi_wrapper.close()
+        else:
+            self.widget.close()
+
     @property
     def enabled(self):
         """Return whether the window is visible and active"""
         return self.widget.isVisible()
 
     def mdi_wrap(self):
-        sub = QMdiSubWindow()
+        sub = GlueMdiSubWindow()
         sub.setWidget(self.widget)
         self.widget.destroyed.connect(sub.close)
         sub.resize(self.widget.size())
