@@ -1,4 +1,5 @@
 import traceback
+import logging
 
 import numpy as np
 
@@ -9,7 +10,7 @@ from ..external.qt.QtGui import (QMainWindow, QWidget,
                                  QAction, QTextEdit, QFont, QDialog,
                                  QDialogButtonBox, QLineEdit,
                                  QDoubleValidator, QCheckBox, QGridLayout,
-                                 QLabel)
+                                 QLabel, QFileDialog)
 
 from ..clients.profile_viewer import ProfileViewer
 from ..qt.widgets.mpl_widget import MplWidget
@@ -27,6 +28,7 @@ from ..qt.simpleforms import build_form_item
 from ..config import fit_plugin
 from ..external.six.moves import range as xrange
 from ..qt.widgets.glue_mdi_area import GlueMdiSubWindow
+from ..qt.decorators import messagebox_on_error
 
 
 class Extractor(object):
@@ -284,18 +286,36 @@ class CollapseContext(SpectrumContext):
         combo.addItem("Linewidth", userData=Aggregate.mom2)
 
         run = QPushButton("Collapse")
+        save = QPushButton("Save as FITS file")
+
+        buttons = QHBoxLayout()
+        buttons.addWidget(run)
+        buttons.addWidget(save)
+
+        self._save = save
         self._run = run
 
         l.addRow("", combo)
-        l.addRow("", run)
+        l.addRow("", buttons)
+
         self.widget = w
         self._combo = combo
+        self._agg = None
 
     def _connect(self):
         self._run.clicked.connect(nonpartial(self._aggregate))
+        self._save.clicked.connect(nonpartial(self._choose_save))
+
+    @property
+    def aggregator(self):
+        return self._combo.itemData(self._combo.currentIndex())
+
+    @property
+    def aggregator_label(self):
+        return self._combo.currentText()
 
     def _aggregate(self):
-        func = self._combo.itemData(self._combo.currentIndex())
+        func = self.aggregator
 
         rng = list(self.grip.range)
         rng[1] += 1
@@ -307,7 +327,53 @@ class CollapseContext(SpectrumContext):
                         self.main.profile_axis, self.client.slice, rng)
 
         im = func(agg)
+        self._agg = im
         self.client.override_image(im)
+
+    @messagebox_on_error("Failed to export projection")
+    def _choose_save(self):
+
+        out, _ = QFileDialog.getSaveFileName(filter='FITS Files (*.fits)')
+        if out is None:
+            return
+
+        self.save_to(out)
+
+    def save_to(self, pth):
+        """
+        Write the projection to a file
+
+        Parameters
+        ----------
+        pth : str
+           Path to write to
+        """
+        from astropy.io import fits
+
+        data = self.client.display_data
+        if data is None:
+            raise RuntimeError("Cannot save projection -- no data to visualize")
+
+        self._aggregate()
+
+        # try to project wcs to 2D
+        wcs = getattr(data.coords, 'wcs', None)
+        if wcs:
+            try:
+                wcs = drop_axis(wcs, self.main.profile_axis)
+                header = wcs.to_header(True)
+            except Exception as e:
+                msg = "Could not extract 2D wcs for this data: %s" % e
+                logging.getLogger(__name__).warn(msg)
+                header = fits.Header()
+
+        lo, hi = self.grip.range
+        history = ('Created by Glue. %s projection over channels %i-%i of axis %i. Slice=%s' %
+                   (self.aggregator_label, lo, hi, self.main.profile_axis, self.client.slice))
+
+        header.add_history(history)
+
+        fits.writeto(pth, self._agg, header, clobber=True)
 
 
 class ConstraintsWidget(QWidget):
@@ -809,3 +875,68 @@ class SpectrumTool(object):
     def _display_data_hook(self, data):
         if data is not None:
             self.mouse_mode.enabled = data.ndim > 2
+
+
+# WCS utilities taken from spectral_cube project
+def reindex_wcs(wcs, inds):
+    """
+    Re-index a WCS given indices.  The number of axes may be reduced.
+
+    Parameters
+    ----------
+    wcs: astropy.wcs.WCS
+        The WCS to be manipulated
+    inds: np.array(dtype='int')
+        The indices of the array to keep in the output.
+        e.g. swapaxes: [0,2,1,3]
+        dropaxes: [0,1,3]
+    """
+    from astropy.wcs import WCS
+    wcs_parameters_to_preserve = ['cel_offset', 'dateavg', 'dateobs', 'equinox',
+                                  'latpole', 'lonpole', 'mjdavg', 'mjdobs', 'name',
+                                  'obsgeo', 'phi0', 'radesys', 'restfrq',
+                                  'restwav', 'specsys', 'ssysobs', 'ssyssrc',
+                                  'theta0', 'velangl', 'velosys', 'zsource']
+
+    if not isinstance(inds, np.ndarray):
+        raise TypeError("Indices must be an ndarray")
+
+    if inds.dtype.kind != 'i':
+        raise TypeError('Indices must be integers')
+
+    outwcs = WCS(naxis=len(inds))
+    for par in wcs_parameters_to_preserve:
+        setattr(outwcs.wcs, par, getattr(wcs.wcs, par))
+
+    cdelt = wcs.wcs.get_cdelt()
+    pc = wcs.wcs.get_pc()
+
+    outwcs.wcs.crpix = wcs.wcs.crpix[inds]
+    outwcs.wcs.cdelt = cdelt[inds]
+    outwcs.wcs.crval = wcs.wcs.crval[inds]
+    outwcs.wcs.cunit = [wcs.wcs.cunit[i] for i in inds]
+    outwcs.wcs.ctype = [wcs.wcs.ctype[i] for i in inds]
+    outwcs.wcs.cname = [wcs.wcs.cname[i] for i in inds]
+    outwcs.wcs.pc = pc[inds[:, None], inds[None, :]]
+
+    return outwcs
+
+
+def drop_axis(wcs, dropax):
+    """
+    Drop the ax on axis dropax
+
+    Remove an axis from the WCS
+    Parameters
+    ----------
+    wcs: astropy.wcs.WCS
+        The WCS with naxis to be chopped to naxis-1
+    dropax: int
+        The index of the WCS to drop, counting from 0 (i.e., python convention,
+        not FITS convention)
+    """
+    inds = list(range(wcs.wcs.naxis))
+    inds.pop(dropax)
+    inds = np.array(inds)
+
+    return reindex_wcs(wcs, inds)
