@@ -360,7 +360,7 @@ class CollapseContext(SpectrumContext):
         wcs = getattr(data.coords, 'wcs', None)
         if wcs:
             try:
-                wcs = drop_axis(wcs, self.main.profile_axis)
+                wcs = drop_axis(wcs, data.ndim - 1 - self.main.profile_axis)
                 header = wcs.to_header(True)
             except Exception as e:
                 msg = "Could not extract 2D wcs for this data: %s" % e
