@@ -699,3 +699,102 @@ class TestCategoricalScatterClient(TestScatterClient):
     def test_logs(self):
         """ Log-based tests don't make sense here."""
         pass
+
+'''
+class TestDateScatterClient(TestScatterClient):
+    def setup_method(self, method):
+        self.data = example_data.test_date_data()
+        self.ids = [self.data[0].find_component_id('dates1'),
+                    self.data[0].find_component_id('y1'),
+                    self.data[1].find_component_id('dates2'),
+                    self.data[1].find_component_id('y2')]
+        self.roi_limits = (np.datetime64('2007-01-01'), 2.5, np.datetime64('2011-01-01'), 6.5)
+        self.roi_points = (np.array(['2010-12-14']), np.array([2]))
+        self.collect = core.data_collection.DataCollection()
+        self.hub = self.collect.hub
+        FIGURE.clf()
+        axes = FIGURE.add_subplot(111)
+        self.client = ScatterClient(self.collect, axes=axes)
+        self.connect()
+
+    def test_axis_labels_sync_with_setters(self):
+        self.add_data()
+        self.client.xatt = self.ids[0]
+        assert self.client.axes.get_xlabel() == self.ids[0].label
+        self.client.yatt = self.ids[1]
+        assert self.client.axes.get_ylabel() == self.ids[1].label
+
+
+    def test_get_category_tick(self):
+        self.add_data()
+        self.client.xatt = self.ids[0]
+        self.client.yatt = self.ids[0]
+        axes = self.client.axes
+        xformat = axes.xaxis.get_major_formatter()
+        yformat = axes.yaxis.get_major_formatter()
+        xlabels = [xformat.format_data(pos) for pos in range(2)]
+        ylabels = [yformat.format_data(pos) for pos in range(2)]
+        assert xlabels == ['a', 'b']
+        assert ylabels == ['a', 'b']
+
+    def test_jitter_with_setter_change(self):
+        grab_data = lambda client: client.data[0][client.xatt].copy()
+        layer = self.add_data()
+        self.client.xatt = self.ids[0]
+        self.client.yatt = self.ids[1]
+        orig_data = grab_data(self.client)
+        self.client.jitter = None
+        np.testing.assert_equal(orig_data, grab_data(self.client))
+        self.client.jitter = 'uniform'
+        delta = np.abs(orig_data - grab_data(self.client))
+        assert np.all((delta > 0) & (delta < 1))
+        self.client.jitter = None
+        np.testing.assert_equal(orig_data, grab_data(self.client))
+    def test_ticks_go_back_after_changing(self):
+        """ If you change to a categorical axis and then change back
+        to a numeric, the axis ticks should fix themselves properly.
+        """
+        data = core.Data()
+        data.add_component(core.Component(np.arange(100)), 'y')
+        data.add_component(
+            core.data.CategoricalComponent(['a'] * 50 + ['b'] * 50), 'xcat')
+        data.add_component(core.Component(2 * np.arange(100)), 'xcont')
+        self.add_data(data=data)
+        self.client.yatt = data.find_component_id('y')
+        self.client.xatt = data.find_component_id('xcat')
+        self.check_ticks(self.client.axes.xaxis, False, True)
+        self.check_ticks(self.client.axes.yaxis, False, False)
+        self.client.xatt = data.find_component_id('xcont')
+        self.check_ticks(self.client.axes.yaxis, False, False)
+        self.check_ticks(self.client.axes.xaxis, False, False)
+    def test_high_cardinatility_timing(self):
+        card = 50000
+        data = core.Data()
+        card_data = [str(num) for num in range(card)]
+        data.add_component(core.Component(np.arange(card * 5)), 'y')
+        data.add_component(
+            core.data.CategoricalComponent(np.repeat([card_data], 5)), 'xcat')
+        self.add_data(data)
+        comp = data.find_component_id('xcat')
+        timer_func = partial(self.client._set_xydata, 'x', comp)
+        timer = timeit(timer_func, number=1)
+        assert timer < 3  # this is set for Travis speed
+    # REMOVED TESTS
+    def test_invalid_plot(self):
+        """ This fails because the axis ticks shouldn't reset after
+        invalid plot. Current testing logic can't cope with this."""
+        pass
+    def test_redraw_called_on_invalid_plot(self):
+        """ This fails because the axis ticks shouldn't reset after
+        invalid plot. Current testing logic can't cope with this."""
+        pass
+    def test_xlog_relimits_if_negative(self):
+        """ Log-based tests don't make sense here."""
+        pass
+    def test_log_sticky(self):
+        """ Log-based tests don't make sense here."""
+        pass
+    def test_logs(self):
+        """ Log-based tests don't make sense here."""
+        pass
+'''

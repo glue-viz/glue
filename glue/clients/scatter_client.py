@@ -407,6 +407,19 @@ class ScatterClient(Client):
                 pass
         return False
 
+    def _check_if_date(self, attribute):
+        """ A function to check if an attribute has date formatted information.
+        :param attribute: core.Data.ComponentID
+        :return: True iff Data is Date
+        """
+        for data in self._data:
+            try:
+                if data.get_component(attribute).datetime:
+                    return True
+            except IncompatibleAttribute:
+                pass
+        return False
+
     def _update_subset(self, message):
         self._update_layer(message.sender)
 

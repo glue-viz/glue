@@ -4,6 +4,7 @@ import operator
 import logging
 
 import numpy as np
+import datetime
 import pandas as pd
 
 from .contracts import contract
@@ -216,6 +217,15 @@ class Component(object):
         Whether or not the datatype is numeric
         """
         return np.can_cast(self.data[0], np.complex)
+
+    @property
+    def datetime(self):
+        """
+        Whether or not the datatype is date
+        """
+        dt64 = isinstance(self.data.dtype, np.datetime64) or 'datetime64' in str(self.data.dtype)
+        dt = isinstance(self.data.dtype, datetime.date)
+        return dt64 or dt
 
     def __str__(self):
         return "Component with shape %s" % shape_to_string(self.shape)

@@ -3,6 +3,9 @@ from __future__ import absolute_import, division, print_function
 from functools import partial
 
 import numpy as np
+import pandas as pd
+import matplotlib.dates as mdate
+import datetime
 from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
 from matplotlib.ticker import (LogFormatterMathtext, ScalarFormatter,
                                FuncFormatter)
@@ -57,13 +60,22 @@ def visible_limits(artists, axis):
     if data.size == 0:
         return
 
-    data = data[np.isfinite(data)]
-    if data.size == 0:
-        return
+    print(type(data[0]))
+    if isinstance(data[0], np.datetime64) or isinstance(data[0], datetime.date):
+        data = pd.to_datetime(data)
+        dt = data[pd.notnull(data)]
+        if len(dt) == 0:
+            return
+        lo, hi = mdate.date2num(min(data)), mdate.date2num(max(data))
 
-    lo, hi = np.nanmin(data), np.nanmax(data)
-    if not np.isfinite(lo):
-        return
+    else:
+        data = data[np.isfinite(data)]
+        if data.size == 0:
+            return
+
+        lo, hi = np.nanmin(data), np.nanmax(data)
+        if not np.isfinite(lo):
+            return
 
     return lo, hi
 
