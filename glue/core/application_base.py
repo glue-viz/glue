@@ -90,8 +90,9 @@ class Application(HubListener):
         """
         from .state import GlueSerializer
         gs = GlueSerializer(self)
+        state = gs.dumps(indent=2)
         with open(path, 'w') as out:
-            gs.dump(out, indent=2)
+            out.write(state)
 
     def new_tab(self):
         raise NotImplementedError()

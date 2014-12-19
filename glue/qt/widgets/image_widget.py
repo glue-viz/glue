@@ -495,8 +495,6 @@ class StandaloneImageWidget(QMainWindow):
         self._im = imshow(self._axes, image, norm=self._norm, cmap='gray', **kwargs)
         self._im_array = image
         self._wcs = wcs
-        self._axes.set_xticks([])
-        self._axes.set_yticks([])
         self._redraw()
 
     @property
