@@ -4,8 +4,24 @@ from __future__ import print_function
 from setuptools import setup, Command, find_packages
 from setuptools.command.test import test as TestCommand
 
+import os
 import sys
 import subprocess
+
+VERSION = "0.5.0.dev"
+
+# Generate version.py
+
+if VERSION.endswith('.dev'):
+    command = 'git rev-list --max-count=1 --abbrev-commit HEAD'
+    try:
+        commit_hash = subprocess.check_output(command, shell=True)
+        VERSION += "-" + commit_hash.decode('ascii').strip()
+    except Exception:
+        pass
+
+with open(os.path.join('glue', 'version.py'), 'w') as f:
+    f.write("__version__ = \"{version}\"".format(version=VERSION))
 
 try:
     import pypandoc

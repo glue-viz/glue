@@ -121,5 +121,7 @@ env = load_configuration()
 
 from .qglue import qglue
 
-
-from .version import __version__
+try:
+    from .version import __version__
+except ImportError:
+    __version__ = "unknown"
