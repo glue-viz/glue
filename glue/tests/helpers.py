@@ -24,6 +24,10 @@ ASTROPY_GE_03_INSTALLED, requires_astropy_ge_03 = make_skipper('astropy',
                                                                label='Astropy >= 0.3',
                                                                version='0.3')
 
+ASTROPY_GE_04_INSTALLED, requires_astropy_ge_04 = make_skipper('astropy',
+                                                               label='Astropy >= 0.4',
+                                                               version='0.4')
+
 ASTRODENDRO_INSTALLED, requires_astrodendro = make_skipper('astrodendro')
 
 SCIPY_INSTALLED, requires_scipy = make_skipper('scipy',
