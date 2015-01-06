@@ -132,7 +132,7 @@ categories = (('required', required),
               ('testing', testing),
               ('export', export))
 
-dependencies = {d.module: d for c in categories for d in c[1]}
+dependencies = dict((d.module, d) for c in categories for d in c[1])
 
 
 def show_status():
