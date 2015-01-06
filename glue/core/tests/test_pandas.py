@@ -42,13 +42,13 @@ class TestPandasConversion(object):
     def test_CoordinateComponent_conversion(self):
 
         d = Data(x=[1, 2, 3])
-        series = pd.Series([0, 1, 2])
+        series = pd.Series(np.array([0, 1, 2], dtype=np.int))
         comp = d.get_component(d.get_pixel_component_id(0))
         assert_series_equal(series, comp.to_series())
 
     def test_Data_conversion(self):
 
-        d = Data(n=[4, 5, 6, 7])
+        d = Data(n=np.array([4, 5, 6, 7], dtype=np.int64))
         cat_comp = CategoricalComponent(np.array(['a', 'b', 'c', 'd']))
         d.add_component(cat_comp, 'c')
         link = MagicMock()
