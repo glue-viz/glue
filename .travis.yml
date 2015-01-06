@@ -37,7 +37,7 @@ matrix:
         - python: 2.7
           env:
             - PYTEST_ARGS="--cov glue"
-            - CONDA_BASE="pip setuptools numpy=1.8 pandas mock --no-deps"
+            - CONDA_BASE="pip setuptools numpy=$NUMPY_VER pandas mock --no-deps"
             - IPYTHON_VER=None
             - ASTRO_VER=None
             - MPL_VER=1.4
@@ -81,9 +81,9 @@ install:
 - LC_ALL=C pip install $PIP_ARGS $PIP_BASE
 - if [[ $GINGA ]]; then pip install $PIP_ARGS https://github.com/glue-viz/ginga/archive/master.zip; fi
 - if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy; fi
-- if [[ $ASTRO_VER != dev && $ASTRO_VER != None ]]; then conda install $CONDA_ARGS numpy=1.8 astropy=$ASTRO_VER; fi
+- if [[ $ASTRO_VER != dev && $ASTRO_VER != None ]]; then conda install $CONDA_ARGS numpy=$NUMPY_VER astropy=$ASTRO_VER; fi
 - if [[ $IPYTHON_VER == latest ]]; then conda install $CONDA_ARGS IPython; fi
-- if [[ $MPL_VER != None ]]; then conda install $CONDA_ARGS numpy=1.8 matplotlib=$MPL_VER; fi
+- if [[ $MPL_VER != None ]]; then conda install $CONDA_ARGS numpy=$NUMPY_VER matplotlib=$MPL_VER; fi
 - python setup.py install
 
 script:
