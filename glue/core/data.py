@@ -15,7 +15,7 @@ from .component_link import (ComponentLink, CoordinateComponentLink,
                              BinaryComponentLink)
 from .subset import Subset, InequalitySubsetState, SubsetState
 from .hub import Hub
-from .util import (split_component_view, view_shape,
+from .util import (split_component_view, view_shape, shape_to_string,
                    coerce_numeric, check_sorted, unique, row_lookup)
 from .decorators import clear_cache
 from .message import (DataUpdateMessage,
@@ -218,7 +218,7 @@ class Component(object):
         return np.can_cast(self.data[0], np.complex)
 
     def __str__(self):
-        return "Component with shape %s" % (self.shape,)
+        return "Component with shape %s" % shape_to_string(self.shape)
 
     def jitter(self, method=None):
         raise NotImplementedError

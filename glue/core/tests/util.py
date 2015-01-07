@@ -28,7 +28,10 @@ def make_file(contents, suffix, decompress=False):
             outfile.write(contents)
         yield fname
     finally:
-        os.unlink(fname)
+        try:
+            os.unlink(fname)
+        except WindowsError:  # on Windows the unlink can fail
+            pass
 
 
 @contextmanager

@@ -12,6 +12,15 @@ from ..external.six.moves import reduce
 from ..external.six import string_types
 
 
+def shape_to_string(shape):
+    """
+    On Windows, shape tuples use long ints which results in formatted shapes
+    such as (2L, 3L). This function ensures that the shape is always formatted
+    without the Ls.
+    """
+    return "({0})".format(", ".join(str(int(item)) for item in shape))
+
+
 def identity(x):
     return x
 
