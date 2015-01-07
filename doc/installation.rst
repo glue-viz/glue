@@ -3,17 +3,17 @@
 Installing Glue
 ===============
 
-There are several ways to install Glue on your computer. We recommend one of the first two options, which greatly simplify of the (sometimes tricky) task of installing QT, Matplotlib, and other libraries that Glue relies on.
+There are several ways to install Glue on your computer. We recommend one of
+the first two options, which greatly simplify of the (sometimes tricky) task of
+installing Qt, Matplotlib, and other libraries that Glue relies on.
 
-.. note :: Currently, Glue is only supported on Python 2.7. Python 3 support is in progress.
-
+.. note :: Glue support with Python 3 is currently experimental.
 
 Easiest Option (Recommended for Mac users)
 ------------------------------------------
 
 Mac users with OS X >= 10.7 can download Glue as a `standalone program
 <http://mac.glueviz.org>`_.
-
 
 Easy Option (Recommended for Windows, Unix users)
 -------------------------------------------------
@@ -31,7 +31,7 @@ Continuum Analytics. Anaconda includes all of Glue's main dependencies.
 
 The `Enthought Python Distribution <https://www.enthought.com/products/epd/>`_ also includes all non-trivial dependencies. The installation instructions are the same.
 
-.. note :: Anaconda installs it's own version of Python
+.. note :: Anaconda installs its own version of Python
 
 .. _pythonw_note:
 .. note :: The nonstandard pip invocation (``pythonw -m pip``) is needed on some OSes with Anaconda, because programs which create graphical windows must be invoked using ``pythonw`` instead of ``python``.
@@ -71,6 +71,7 @@ And the following optional dependencies are also highly recommended:
 
 * `SciPy <http://www.scipy.org>`_
 * `Astropy <http://www.astropy.org>`_
+* `h5py <http://www.h5py.org>`_ (if using HDF5 files)
 
 In addition to these, there are several other optional dependencies to suport
 various I/O and other optional functionality. Glue includes a command line
@@ -124,4 +125,7 @@ that should be in your path. Running ``glue`` from the command line will
 start the program. Glue accepts a variety of command-line
 arguments. See ``glue --help`` for examples.
 
-.. note:: On Windows, installation creates an executable ``glue.exe`` file within the python script directory (e.g., ``C:\Python27\Scripts``). Windows users can create a desktop shortcut for this file, and run Glue by double clicking on the icon.
+.. note:: On Windows, installation creates an executable ``glue.exe`` file 
+          within the python script directory (e.g., ``C:\Python27\Scripts``).
+          Windows users can create a desktop shortcut for this file, and run
+          Glue by double clicking on the icon.
