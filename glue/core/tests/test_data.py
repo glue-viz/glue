@@ -38,13 +38,7 @@ class TestData(object):
         self.comp_id = self.data.add_component(comp, 'Test Component')
 
     def test_2d_component_print(self):
-        try:
-            assert str(self.comp) == 'Component with shape (2, 3)'
-        except AssertionError as e:  # Windows
-            try:
-                assert str(self.comp) == 'Component with shape (2L, 3L)'
-            except AssertionError:
-                raise e
+        assert str(self.comp) == 'Component with shape (2, 3)'
 
     def test_shape_empty(self):
         d = Data()
