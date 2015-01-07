@@ -339,7 +339,7 @@ class PropertySetMixin(object):
     @property
     def properties(self):
         """ A dict mapping property names to values """
-        return {p: getattr(self, p) for p in self._property_set}
+        return dict((p, getattr(self, p)) for p in self._property_set)
 
     @properties.setter
     def properties(self, value):

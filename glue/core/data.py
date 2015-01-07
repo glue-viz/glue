@@ -434,7 +434,7 @@ class CategoricalComponent(Component):
         :return: None
         """
 
-        if method not in {'uniform', None}:
+        if method not in set(['uniform', None]):
             raise ValueError('%s jitter not supported' % method)
         self._jitter_method = method
         seed = 1234567890
@@ -1091,7 +1091,7 @@ class Data(object):
         """
 
         h = lambda comp: self.get_component(comp).to_series(index=index)
-        df = pd.DataFrame({comp.label: h(comp) for comp in self.components})
+        df = pd.DataFrame(dict((comp.label, h(comp)) for comp in self.components))
         order = [comp.label for comp in self.components]
         return df[order]
 

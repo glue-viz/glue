@@ -316,7 +316,10 @@ class TestData(object):
         d = Data(x=[1, 2, 3])
         with pytest.raises(ValueError) as exc:
             d['x'][:] = 5
-        assert 'read-only' in exc.value.args[0]
+        try:
+            assert 'read-only' in exc.value.args[0]
+        except AttributeError:  # COMPAT: Python 2.6
+            assert 'read-only' in exc.value
         assert not d['x'].flags['WRITEABLE']
 
     def test_categorical_immutable(self):
@@ -326,7 +329,10 @@ class TestData(object):
 
         with pytest.raises(ValueError) as exc:
             d['gender'][:] = 5
-        assert 'read-only' in exc.value.args[0]
+        try:
+            assert 'read-only' in exc.value.args[0]
+        except AttributeError:  # COMPAT: Python 2.6
+            assert 'read-only' in exc.value
         assert not d['gender'].flags['WRITEABLE']
 
     def test_update_clears_subset_cache(self):

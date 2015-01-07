@@ -1,5 +1,5 @@
 from functools import partial
-from collections import Counter
+from ...compat.collections import Counter
 
 from ...external.qt.QtGui import (QWidget, QSlider, QLabel, QComboBox,
                                   QHBoxLayout, QVBoxLayout)

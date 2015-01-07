@@ -64,7 +64,7 @@ class TestGlueApplication(object):
     def test_choose_save_session_ioerror(self):
         """should show box on ioerror"""
         with patch('glue.qt.glue_application.QFileDialog') as fd:
-            if sys.version_info.major == 2:
+            if sys.version_info[0] == 2:
                 mock_open = '__builtin__.open'
             else:
                 mock_open = 'builtins.open'

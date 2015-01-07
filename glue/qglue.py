@@ -63,11 +63,13 @@ def _parse_data_dict(data, label):
 
 def _parse_data_recarray(data, label):
     print(data.dtype.names)
-    return [Data(label=label, **{n: data[n] for n in data.dtype.names})]
+    kwargs = dict((n, data[n]) for n in data.dtype.names)
+    return [Data(label=label, **kwargs)]
 
 
 def _parse_data_astropy_table(data, label):
-    return [Data(label=label, **{c: data[c] for c in data.columns})]
+    kwargs = dict((c, data[c]) for c in data.columns)
+    return [Data(label=label, **kwargs)]
 
 
 def _parse_data_glue_data(data, label):
@@ -125,7 +127,7 @@ def _parse_links(dc, links):
     from .core.link_helpers import MultiLink
     from .core import ComponentLink
 
-    data = {d.label: d for d in dc}
+    data = dict((d.label, d) for d in dc)
     result = []
 
     def find_cid(s):

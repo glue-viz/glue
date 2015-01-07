@@ -2,7 +2,7 @@
 This module provides some routines for performing layout
 calculations to organize rectangular windows in a larger canvas
 """
-from collections import Counter
+from ..compat.collections import Counter
 from ..external import six
 
 class Rectangle(object):
