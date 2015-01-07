@@ -17,6 +17,7 @@ from contextlib import contextmanager
 from abc import ABCMeta, abstractproperty, abstractmethod
 
 import numpy as np
+
 from matplotlib.cm import gray
 from ..external import six
 from ..core.exceptions import IncompatibleAttribute
@@ -703,6 +704,7 @@ class ScatterLayerArtist(LayerArtist, ScatterLayerBase):
             return False
 
         self.artists = self._axes.plot(x, y)
+
         return True
 
     def update(self, view=None, transpose=False):
