@@ -101,6 +101,7 @@ required = (
 
 general = (
     Dependency('dill', 'Used when saving Glue sessions'),
+    Dependency('h5py', 'Used to support HDF5 files'),
     Dependency('scipy', 'Used for some image processing calculation'),
     Dependency('skimage',
                'Used to read popular image formats (jpeg, png, etc.)',
