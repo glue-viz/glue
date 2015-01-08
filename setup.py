@@ -8,20 +8,25 @@ import os
 import sys
 import subprocess
 
-VERSION = "0.5.0.dev"
-
 # Generate version.py
 
-if VERSION.endswith('.dev'):
+with open('glue/version.py') as infile:
+    exec(infile.read())
+
+# If the version is not stable, we can add a git hash to the __version__
+if '.dev' in __version__:
     command = 'git rev-list --max-count=1 --abbrev-commit HEAD'
     try:
-        commit_hash = subprocess.check_output(command, shell=True)
-        VERSION += "-" + commit_hash.decode('ascii').strip()
+        commit_hash = subprocess.check_output(command, shell=True).decode('ascii').strip()
     except Exception:
         pass
 
-with open(os.path.join('glue', 'version.py'), 'w') as f:
-    f.write("__version__ = \"{version}\"".format(version=VERSION))
+# We write the git hash so that it gets frozen if installed
+with open(os.path.join('glue', '_githash.py'), 'w') as f:
+    f.write("__githash__ = \"{githash}\"".format(githash=commit_hash))
+    
+# We modify __version__ here too for commands such as egg_info
+__version__ += commit_hash
 
 try:
     import pypandoc
@@ -29,10 +34,6 @@ try:
 except (IOError, ImportError):
     with open('README.md') as infile:
         LONG_DESCRIPTION=infile.read()
-
-# read __version__
-with open('glue/version.py') as infile:
-    exec(infile.read())
 
 cmdclass = {}
 
