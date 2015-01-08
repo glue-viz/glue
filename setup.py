@@ -20,13 +20,14 @@ if '.dev' in __version__:
         commit_hash = subprocess.check_output(command, shell=True).decode('ascii').strip()
     except Exception:
         pass
+    else:
 
-# We write the git hash so that it gets frozen if installed
-with open(os.path.join('glue', '_githash.py'), 'w') as f:
-    f.write("__githash__ = \"{githash}\"".format(githash=commit_hash))
-    
-# We modify __version__ here too for commands such as egg_info
-__version__ += commit_hash
+        # We write the git hash so that it gets frozen if installed
+        with open(os.path.join('glue', '_githash.py'), 'w') as f:
+            f.write("__githash__ = \"{githash}\"".format(githash=commit_hash))
+
+        # We modify __version__ here too for commands such as egg_info
+        __version__ += commit_hash
 
 try:
     import pypandoc
