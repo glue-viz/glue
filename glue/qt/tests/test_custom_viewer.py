@@ -4,7 +4,7 @@ from numpy.testing import assert_array_equal
 from matplotlib.axes import Axes
 import numpy as np
 
-from ...core.odict import OrderedDict
+from ...compat.odict import OrderedDict
 from ... import custom_viewer
 from ...core import Data
 from ...core.subset import SubsetState

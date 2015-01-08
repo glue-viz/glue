@@ -23,7 +23,7 @@ from .message import (DataUpdateMessage,
                       SubsetCreateMessage, ComponentsChangedMessage,
                       ComponentReplacedMessage)
 
-from .odict import OrderedDict
+from ..compat.odict import OrderedDict
 from ..external import six
 
 __all__ = ['Data', 'ComponentID', 'Component', 'DerivedComponent',
