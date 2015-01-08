@@ -5,6 +5,8 @@ Guide users through installing Glue's dependencies
 
 from __future__ import absolute_import, division, print_function
 
+import os
+
 # Unfortunately, we can't rely on setuptools' install_requires
 # keyword, because matplotlib doesn't properly install its dependencies
 from subprocess import check_call, CalledProcessError
@@ -29,6 +31,14 @@ class Dependency(object):
         except ImportError:
             return False
 
+    @property
+    def version(self):
+        try:
+            module = __import__(self.module)
+            return module.__version__
+        except (ImportError, AttributeError):
+            return 'unknown'
+
     def install(self):
         if self.installed:
             return
@@ -52,7 +62,7 @@ PIP package name:
 
     def __str__(self):
         if self.installed:
-            status = 'INSTALLED'
+            status = 'INSTALLED (%s)' % self.version
         elif self.failed:
             status = 'FAILED (%s)' % self.info
         else:
@@ -136,12 +146,18 @@ categories = (('required', required),
 dependencies = dict((d.module, d) for c in categories for d in c[1])
 
 
-def show_status():
+def get_status():
+    s = ""
     for category, deps in categories:
-        print("%21s" % category.upper())
+        s += "%21s" % category.upper() + os.linesep
         for dep in deps:
-            print(dep)
-        print('\n')
+            s += str(dep) + os.linesep
+        s += os.linesep
+    return s
+    
+
+def show_status():
+    print(get_status())
 
 
 def install_all():
