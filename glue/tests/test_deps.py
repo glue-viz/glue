@@ -42,7 +42,7 @@ class TestDependency(object):
 
     def test_installed_str(self):
         d = Dependency('math', 'info')
-        assert str(d) == "                math:\tINSTALLED"
+        assert str(d) == "                math:\tINSTALLED (unknown version)"
 
     def test_noinstalled_str(self):
         d = Dependency('asdf', 'info')

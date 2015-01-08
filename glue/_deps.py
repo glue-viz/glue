@@ -37,7 +37,7 @@ class Dependency(object):
             module = __import__(self.module)
             return module.__version__
         except (ImportError, AttributeError):
-            return 'unknown'
+            return 'unknown version'
 
     def install(self):
         if self.installed:
