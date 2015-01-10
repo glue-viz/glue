@@ -2,6 +2,7 @@
 [![Build Status](https://travis-ci.org/glue-viz/glue.png)](https://travis-ci.org/glue-viz/glue?branch=master)
 [![Build status](https://ci.appveyor.com/api/projects/status/elhwol929gwg1unv/branch/master?svg=true)](https://ci.appveyor.com/project/astrofrog/glue/branch/master)
 [![Coverage Status](https://coveralls.io/repos/glue-viz/glue/badge.png)](https://coveralls.io/r/glue-viz/glue)
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.13866.svg)](http://dx.doi.org/10.5281/zenodo.13866)
 
 Glue
 ====
