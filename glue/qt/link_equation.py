@@ -8,7 +8,7 @@ from ..external.qt.QtGui import (QWidget, QHBoxLayout, QVBoxLayout,
 from ..external.qt.QtGui import QSpacerItem, QSizePolicy
 
 from .. import core
-from ..core.odict import OrderedDict
+from ..compat.collections import OrderedDict
 from .qtutil import load_ui, is_pyside
 
 
