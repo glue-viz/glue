@@ -32,4 +32,4 @@ Please report problems to glueviz@gmail.com, or [open an issue](https://github.c
 
 License
 -------
-Glue is licensed under the [MIT License](https://github.com/glue-viz/glue/blob/master/LICENSE)
+Glue is licensed under the [BSD License](https://github.com/glue-viz/glue/blob/master/LICENSE)
