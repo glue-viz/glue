@@ -495,9 +495,6 @@ def astropy_tabular_data(*args, **kwargs):
                                  lambda path: Table.read(path, format='ascii'),
                                  force=True)
 
-    # Import FITS compatibility (for Astropy 0.2.x)
-    from ..external import fits_io
-
     try:
         table = Table.read(*args, **kwargs)
     except:
