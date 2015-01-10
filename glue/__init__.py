@@ -123,3 +123,12 @@ from .qglue import qglue
 
 
 from .version import __version__
+
+def test(no_optional_skip=False):
+    import os
+    from pytest import main
+    root = os.path.abspath(os.path.dirname(__file__))
+    args = [root]
+    if no_optional_skip:
+        args.append('--no-optional-skip')
+    main(args=args)
