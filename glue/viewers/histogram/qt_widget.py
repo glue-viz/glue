@@ -1,23 +1,25 @@
 from __future__ import absolute_import, division, print_function
 
+import os
 from functools import partial
 
 from ...external.qt import QtGui
 from ...external.qt.QtCore import Qt
 
 from ...core import message as msg
-from ...clients.histogram_client import HistogramClient
-from ..widget_properties import (connect_int_spin, ButtonProperty,
+from .client import HistogramClient
+from ...qt.widget_properties import (connect_int_spin, ButtonProperty,
                                  FloatLineProperty,
                                  ValueProperty)
-from ..glue_toolbar import GlueToolbar
-from ..mouse_mode import HRangeMode
-from .data_viewer import DataViewer
-from .mpl_widget import MplWidget, defer_draw
-from ..qtutil import pretty_number, load_ui
+from ...qt.glue_toolbar import GlueToolbar
+from ...qt.mouse_mode import HRangeMode
+from ...qt.widgets.data_viewer import DataViewer
+from ...qt.widgets.mpl_widget import MplWidget, defer_draw
+from ...qt.qtutil import pretty_number, load_ui
 
 __all__ = ['HistogramWidget']
 
+ROOT = os.path.dirname(os.path.abspath(__file__))
 
 WARN_SLOW = 10000000
 
@@ -48,7 +50,7 @@ class HistogramWidget(DataViewer):
         self.central_widget = MplWidget()
         self.setCentralWidget(self.central_widget)
         self.option_widget = QtGui.QWidget()
-        self.ui = load_ui('histogramwidget', self.option_widget)
+        self.ui = load_ui(os.path.join(ROOT, 'histogram.ui'), self.option_widget, in_global_ui=False)
         self._tweak_geometry()
         self.client = HistogramClient(self._data,
                                       self.central_widget.canvas.fig,

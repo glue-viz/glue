@@ -4,8 +4,8 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from . import simple_session
-from ..histogram_widget import HistogramWidget, _hash
+from ....qt.widgets.tests import simple_session
+from ..qt_widget import HistogramWidget, _hash
 from .... import core
 
 

@@ -5,13 +5,13 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 from mock import MagicMock
 
-from ..image_widget import ImageWidget
+from ..qt_widget import ImageWidget
 
 from .... import core
 from ....core.tests.test_state import TestApplication
-from ...glue_application import GlueApplication
+from ....qt.glue_application import GlueApplication
 
-from . import simple_session
+from ....qt.widgets.tests import simple_session
 
 import os
 os.environ['GLUE_TESTING'] = 'True'

@@ -1,33 +1,38 @@
 from __future__ import absolute_import, division, print_function
 
+import os
+
 from ...external.qt.QtGui import (QAction, QLabel, QCursor, QMainWindow,
                                   QToolButton, QIcon, QMessageBox
                                   )
 
 from ...external.qt.QtCore import Qt, QRect, Signal
 
-from .data_viewer import DataViewer
+from ...qt.widgets.data_viewer import DataViewer
 from ... import core
 
-from ...clients.image_client import MplImageClient
+from .client import MplImageClient
+
 from ...clients.ds9norm import DS9Normalize
 from ...external.modest_image import imshow
 
 from ...clients.layer_artist import Pointer
 from ...core.callback_property import add_callback, delay_callback
 
-from .data_slice_widget import DataSlice
+from ...qt.widgets.data_slice_widget import DataSlice
 
-from ..mouse_mode import (RectangleMode, CircleMode, PolyMode,
+from ...qt.mouse_mode import (RectangleMode, CircleMode, PolyMode,
                           ContrastMode)
-from ..glue_toolbar import GlueToolbar
-from .mpl_widget import MplWidget, defer_draw
+from ...qt.glue_toolbar import GlueToolbar
+from ...qt.widgets.mpl_widget import MplWidget, defer_draw
 
-from ..qtutil import cmap2pixmap, load_ui, get_icon, nonpartial, update_combobox
-from ..widget_properties import CurrentComboProperty, ButtonProperty, connect_current_combo
-from .glue_mdi_area import GlueMdiSubWindow
+from ...qt.qtutil import cmap2pixmap, load_ui, get_icon, nonpartial, update_combobox
+from ...qt.widget_properties import CurrentComboProperty, ButtonProperty, connect_current_combo
+from ...qt.widgets.glue_mdi_area import GlueMdiSubWindow
 
 WARN_THRESH = 10000000  # warn when contouring large images
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
 
 __all__ = ['ImageWidget']
 
@@ -68,7 +73,7 @@ class ImageWidgetBase(DataViewer):
         self.central_widget = self.make_central_widget()
         self.label_widget = QLabel("", self.central_widget)
         self.setCentralWidget(self.central_widget)
-        self.ui = load_ui('imagewidget', None)
+        self.ui = load_ui(os.path.join(ROOT, 'image.ui'), None, in_global_ui=False)
         self.option_widget = self.ui
         self.ui.slice = DataSlice()
         self.ui.slice_layout.addWidget(self.ui.slice)

@@ -1,8 +1,8 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import pytest
 
-from . import simple_session
-from ..dendro_widget import DendroWidget
+from ....qt.widgets.tests import simple_session
+from ..qt_widget import DendroWidget
 from .... import core
 
 

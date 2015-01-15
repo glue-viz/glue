@@ -725,7 +725,7 @@ def _load_ui_pyqt4(path, parent):
     return loadUi(path, parent)
 
 
-def load_ui(name, parent=None):
+def load_ui(name, parent=None, in_global_ui=True):
     """
     Load a UI file, given it's name
 
@@ -742,7 +742,10 @@ def load_ui(name, parent=None):
     w : QWidget
       The new widget
     """
-    path = ui_path(name)
+    if in_global_ui:
+        path = ui_path(name)
+    else:
+        path = name
     if is_pyside():
         return _load_ui_pyside(path, parent)
     return _load_ui_pyqt4(path, parent)

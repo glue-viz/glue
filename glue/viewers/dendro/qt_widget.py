@@ -1,15 +1,20 @@
+import os
+
 from ... import core
 from ...external.qt import QtGui
 
-from .data_viewer import DataViewer
-from ..widget_properties import (ButtonProperty, CurrentComboProperty,
+from ...qt.widgets.data_viewer import DataViewer
+from ...qt.widget_properties import (ButtonProperty, CurrentComboProperty,
                                  connect_bool_button, connect_current_combo)
-from ...clients.dendro_client import DendroClient
-from .mpl_widget import MplWidget, defer_draw
-from ..glue_toolbar import GlueToolbar
+from ...qt.widgets.mpl_widget import MplWidget, defer_draw
+from ...qt.glue_toolbar import GlueToolbar
 
-from ..qtutil import load_ui, nonpartial
-from ..mouse_mode import PickMode
+from ...qt.qtutil import load_ui, nonpartial
+from ...qt.mouse_mode import PickMode
+
+from .client import DendroClient
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
 
 
 class DendroWidget(DataViewer):
@@ -35,7 +40,7 @@ class DendroWidget(DataViewer):
         self.option_widget = QtGui.QWidget()
         self.setCentralWidget(self.central_widget)
 
-        self.ui = load_ui('dendrowidget', self.option_widget)
+        self.ui = load_ui(os.path.join(ROOT, 'dendro.ui'), self.option_widget, in_global_ui=False)
         self.client = DendroClient(self._data,
                                    self.central_widget.canvas.fig,
                                    artist_container=self._container)

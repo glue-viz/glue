@@ -7,10 +7,12 @@ from distutils.version import LooseVersion  # pylint:disable=W0611
 import pytest
 from mock import patch
 
-from ..scatter_widget import ScatterWidget
-from ..mpl_widget import MplCanvas
+from ..qt_widget import ScatterWidget
+
+from ....qt.widgets.mpl_widget import MplCanvas
+from ....qt.widgets.tests import simple_session
+
 from .... import core
-from . import simple_session
 
 from matplotlib import __version__ as mpl_version  # pylint:disable=W0611
 

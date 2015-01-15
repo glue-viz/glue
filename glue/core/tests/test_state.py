@@ -10,9 +10,11 @@ from ...external import six
 
 from ... import core
 from ...qt.glue_application import GlueApplication
-from ...qt.widgets.scatter_widget import ScatterWidget
-from ...qt.widgets.image_widget import ImageWidget
-from ...qt.widgets.histogram_widget import HistogramWidget
+
+from ...viewers.scatter.qt_widget import ScatterWidget
+from ...viewers.image.qt_widget import ImageWidget
+from ...viewers.histogram.qt_widget import HistogramWidget
+
 from .util import make_file
 from ..data_factories import load_data
 from .test_data_factories import TEST_FITS_DATA

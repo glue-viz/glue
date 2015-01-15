@@ -3,12 +3,12 @@ import numpy as np
 from numpy.testing import assert_array_equal
 from mock import MagicMock
 
-from ..dendro_client import DendroClient
-from .util import renderless_figure
+from ..client import DendroClient
+from ....clients.tests.util import renderless_figure
 
-from ...core import Data, Subset, DataCollection, Hub
-from ...core.roi import PointROI
-from ...core.edit_subset_mode import EditSubsetMode
+from ....core import Data, Subset, DataCollection, Hub
+from ....core.roi import PointROI
+from ....core.edit_subset_mode import EditSubsetMode
 
 # share matplotlib instance, and disable rendering, for speed
 FIGURE = renderless_figure()

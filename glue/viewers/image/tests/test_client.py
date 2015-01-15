@@ -7,13 +7,14 @@ import pytest
 from mock import MagicMock
 import numpy as np
 
-from ...tests import example_data
-from ... import core
-from ...core.exceptions import IncompatibleAttribute
-from ..layer_artist import RGBImageLayerArtist, ImageLayerArtist
-from ..image_client import MplImageClient
+from ....tests import example_data
+from .... import core
+from ....core.exceptions import IncompatibleAttribute
+from ....clients.layer_artist import RGBImageLayerArtist, ImageLayerArtist
+from ....clients.tests.util import renderless_figure
 
-from .util import renderless_figure
+from ..client import MplImageClient
+
 
 FIGURE = renderless_figure()
 

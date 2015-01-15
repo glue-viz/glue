@@ -19,8 +19,8 @@ except:
 
 from ..glue_application import GlueApplication
 from ...external.qt.QtCore import QMimeData, QUrl
-from ..widgets.scatter_widget import ScatterWidget
-from ..widgets.image_widget import ImageWidget
+from ...viewers.scatter.qt_widget import ScatterWidget
+from ...viewers.image.qt_widget import ImageWidget
 from ...core import Data
 
 from ...external.six import PY3

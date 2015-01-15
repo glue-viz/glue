@@ -6,15 +6,15 @@ import pytest
 
 from mock import MagicMock
 
-from ..histogram_client import HistogramClient
-from ..layer_artist import HistogramLayerArtist
+from ..client import HistogramClient
+from ....clients.layer_artist import HistogramLayerArtist
 
-from ...core.data_collection import DataCollection
-from ...core.exceptions import IncompatibleDataException
-from ...core.data import Data, CategoricalComponent, ComponentID
-from ...core.subset import RangeSubsetState
+from ....core.data_collection import DataCollection
+from ....core.exceptions import IncompatibleDataException
+from ....core.data import Data, CategoricalComponent, ComponentID
+from ....core.subset import RangeSubsetState
 
-from .util import renderless_figure
+from ....clients.tests.util import renderless_figure
 
 FIGURE = renderless_figure()
 

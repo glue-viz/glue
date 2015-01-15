@@ -11,12 +11,12 @@ from mock import MagicMock
 from timeit import timeit
 from functools import partial
 
-from ...tests import example_data
-from ... import core
-from ...core.data import ComponentID
-from ...core.edit_subset_mode import EditSubsetMode
-from ..scatter_client import ScatterClient
-from .util import renderless_figure
+from ....tests import example_data
+from .... import core
+from ....core.data import ComponentID
+from ....core.edit_subset_mode import EditSubsetMode
+from ..client import ScatterClient
+from ....clients.tests.util import renderless_figure
 
 # share matplotlib instance, and disable rendering, for speed
 FIGURE = renderless_figure()

@@ -4,10 +4,10 @@ from __future__ import absolute_import, division, print_function
 
 from ....core import Data, DataCollection
 from ..data_viewer import DataViewer
-from ..histogram_widget import HistogramWidget
-from ..scatter_widget import ScatterWidget
-from ..image_widget import ImageWidget
-from ..dendro_widget import DendroWidget
+from ....viewers.histogram.qt_widget import HistogramWidget
+from ....viewers.scatter.qt_widget import ScatterWidget
+from ....viewers.image.qt_widget import ImageWidget
+from ....viewers.dendro.qt_widget import DendroWidget
 from ...glue_application import GlueApplication
 
 from . import simple_session

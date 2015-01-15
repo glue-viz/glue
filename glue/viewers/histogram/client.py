@@ -2,16 +2,16 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from ..core.client import Client
-from ..core import message as msg
-from ..core.data import Data, CategoricalComponent
-from ..core.subset import RangeSubsetState
-from ..core.exceptions import IncompatibleDataException, IncompatibleAttribute
-from ..core.edit_subset_mode import EditSubsetMode
-from .layer_artist import HistogramLayerArtist, LayerArtistContainer
-from .util import update_ticks, visible_limits
-from ..core.callback_property import CallbackProperty, add_callback
-from ..utils import lookup_class
+from ...core.client import Client
+from ...core import message as msg
+from ...core.data import Data, CategoricalComponent
+from ...core.subset import RangeSubsetState
+from ...core.exceptions import IncompatibleDataException, IncompatibleAttribute
+from ...core.edit_subset_mode import EditSubsetMode
+from ...clients.layer_artist import HistogramLayerArtist, LayerArtistContainer
+from ...clients.util import visible_limits, update_ticks
+from ...core.callback_property import CallbackProperty, add_callback
+from ...utils import lookup_class
 
 
 class UpdateProperty(CallbackProperty):

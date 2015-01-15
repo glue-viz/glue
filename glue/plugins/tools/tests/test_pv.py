@@ -4,7 +4,7 @@ from mock import MagicMock
 
 from ..pv_slicer import _slice_from_path, _slice_label, _slice_index, PVSliceWidget
 
-from ....qt.widgets.image_widget import StandaloneImageWidget
+from ....viewers.image.qt_widget import StandaloneImageWidget
 
 from ....core import Data
 

@@ -1,21 +1,25 @@
 from __future__ import absolute_import, division, print_function
 
+import os
+
 from ...external.qt import QtGui
 from ...external.qt.QtCore import Qt
 from ... import core
 
-from ...clients.scatter_client import ScatterClient
-from ..glue_toolbar import GlueToolbar
-from ..mouse_mode import (RectangleMode, CircleMode,
+from .client import ScatterClient
+from ...qt.glue_toolbar import GlueToolbar
+from ...qt.mouse_mode import (RectangleMode, CircleMode,
                           PolyMode, HRangeMode, VRangeMode)
 
-from .data_viewer import DataViewer
-from .mpl_widget import MplWidget, defer_draw
-from ..widget_properties import (ButtonProperty, FloatLineProperty,
+from ...qt.widgets.data_viewer import DataViewer
+from ...qt.widgets.mpl_widget import MplWidget, defer_draw
+from ...qt.widget_properties import (ButtonProperty, FloatLineProperty,
                                  CurrentComboProperty,
                                  connect_bool_button, connect_float_edit)
 
-from ..qtutil import load_ui, cache_axes, nonpartial
+from ...qt.qtutil import load_ui, cache_axes, nonpartial
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
 
 __all__ = ['ScatterWidget']
 
@@ -53,7 +57,7 @@ class ScatterWidget(DataViewer):
 
         self.setCentralWidget(self.central_widget)
 
-        self.ui = load_ui('scatterwidget', self.option_widget)
+        self.ui = load_ui(os.path.join(ROOT, 'scatter.ui'), self.option_widget, in_global_ui=False)
         self._tweak_geometry()
 
         self.client = ScatterClient(self._data,
