@@ -9,7 +9,7 @@ from ..state import (GlueSerializer, GlueUnSerializer,
 from ...external import six
 
 from ... import core
-from ...qt.glue_application import GlueApplication
+from ...app.glue_application import GlueApplication
 
 from ...viewers.scatter.qt_widget import ScatterWidget
 from ...viewers.image.qt_widget import ImageWidget

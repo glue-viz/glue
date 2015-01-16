@@ -17,14 +17,14 @@ from ginga.misc import log
 from ginga import cmap as ginga_cmap
 # ginga_cmap.add_matplotlib_cmaps()
 
-from .image_widget import ImageWidgetBase
+from ..image.qt_widget import ImageWidgetBase
 
-from ...clients.ginga_client import GingaClient
+from .client import GingaClient
 
 from ...core import roi as roimod
 from ...core.callback_property import add_callback
 
-from ..qtutil import get_icon, nonpartial
+from ...qt.qtutil import get_icon, nonpartial
 from ...plugins.tools.pv_slicer import PVSlicerTool
 from ...plugins.tools.spectrum_tool import SpectrumTool
 from ...config import tool_registry

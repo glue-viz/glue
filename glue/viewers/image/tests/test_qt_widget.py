@@ -9,7 +9,7 @@ from ..qt_widget import ImageWidget
 
 from .... import core
 from ....core.tests.test_state import TestApplication
-from ....qt.glue_application import GlueApplication
+from ....app.glue_application import GlueApplication
 
 from ....qt.widgets.tests import simple_session
 

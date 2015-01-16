@@ -520,7 +520,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
     def _load_data(self):
         """ Interactively loads data from a data set. Adds
         as new layer """
-        from ..glue_application import GlueApplication
+        from ...app.glue_application import GlueApplication
 
         layers = qtutil.data_wizard()
         GlueApplication.add_datasets(self.data_collection, layers)

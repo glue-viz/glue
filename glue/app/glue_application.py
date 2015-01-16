@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
 import sys
 import webbrowser
 
@@ -15,21 +16,23 @@ from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
 from ..external.qt.QtCore import Qt, QSize, QSettings, Signal
 
 from ..core import command
-from .. import env
-from ..qt import get_qapp
-from .decorators import set_cursor, messagebox_on_error
 from ..core.application_base import Application
 
-from .actions import act
-from .qtutil import (pick_class, data_wizard,
-                     GlueTabBar, load_ui, get_icon, nonpartial)
-from .widgets.glue_mdi_area import GlueMdiArea, GlueMdiSubWindow
-from .widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
-from .widgets.layer_tree_widget import PlotAction, LayerTreeWidget
-from .widgets.data_viewer import DataViewer
-from .widgets.settings_editor import SettingsEditor
-from .widgets.mpl_widget import defer_draw
-from .feedback import submit_bug_report
+from .. import env
+from ..qt import get_qapp
+from ..qt.decorators import set_cursor, messagebox_on_error
+from ..qt.actions import act
+from ..qt.qtutil import (pick_class, data_wizard,
+                         GlueTabBar, load_ui, get_icon, nonpartial)
+from ..qt.widgets.glue_mdi_area import GlueMdiArea, GlueMdiSubWindow
+from ..qt.widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
+from ..qt.widgets.layer_tree_widget import PlotAction, LayerTreeWidget
+from ..qt.widgets.data_viewer import DataViewer
+from ..qt.widgets.settings_editor import SettingsEditor
+from ..qt.widgets.mpl_widget import defer_draw
+from ..qt.feedback import submit_bug_report
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
 
 __all__ = ['GlueApplication']
 DOCS_URL = 'http://www.glue-viz.org'
@@ -204,7 +207,7 @@ class GlueApplication(Application, QMainWindow):
         self._load_settings()
 
     def _setup_ui(self):
-        self._ui = load_ui('glue_application', None)
+        self._ui = load_ui(os.path.join(ROOT, 'glue_application.ui'), None, in_global_ui=False)
         self.setCentralWidget(self._ui)
         self._ui.tabWidget.setTabBar(GlueTabBar())
 
@@ -549,7 +552,8 @@ class GlueApplication(Application, QMainWindow):
         """
 
         from ..config import qt_client
-        from .widgets import ScatterWidget, ImageWidget
+        from ..viewers.scatter.qt_widget import ScatterWidget
+        from ..viewers.image.qt_widget import ImageWidget
 
         if data and data.ndim == 1 and ScatterWidget in qt_client.members:
             default = qt_client.members.index(ScatterWidget)
@@ -655,7 +659,7 @@ class GlueApplication(Application, QMainWindow):
         self._ui.layerWidget.button_row.addWidget(self._terminal_button)
 
         try:
-            from .widgets.terminal import glue_terminal
+            from ..qt.widgets.terminal import glue_terminal
             widget = glue_terminal(data_collection=self._data,
                                    dc=self._data,
                                    hub=self._hub,

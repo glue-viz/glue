@@ -48,7 +48,7 @@ class TestGlueApplication(object):
 
     def test_save_session(self):
         self.app.save_session = MagicMock()
-        with patch('glue.qt.glue_application.QFileDialog') as fd:
+        with patch('glue.app.glue_application.QFileDialog') as fd:
             fd.getSaveFileName.return_value = '/tmp/junk', 'jnk'
             self.app._choose_save_session()
             self.app.save_session.assert_called_once_with('/tmp/junk')
@@ -56,14 +56,14 @@ class TestGlueApplication(object):
     def test_save_session_cancel(self):
         """shouldnt try to save file if no file name provided"""
         self.app.save_session = MagicMock()
-        with patch('glue.qt.glue_application.QFileDialog') as fd:
+        with patch('glue.app.glue_application.QFileDialog') as fd:
             fd.getSaveFileName.return_value = '', 'jnk'
             self.app._choose_save_session()
             assert self.app.save_session.call_count == 0
 
     def test_choose_save_session_ioerror(self):
         """should show box on ioerror"""
-        with patch('glue.qt.glue_application.QFileDialog') as fd:
+        with patch('glue.app.glue_application.QFileDialog') as fd:
             if sys.version_info[0] == 2:
                 mock_open = '__builtin__.open'
             else:
@@ -71,7 +71,7 @@ class TestGlueApplication(object):
             with patch(mock_open) as op:
                 op.side_effect = IOError
                 fd.getSaveFileName.return_value = '/tmp/junk', '/tmp/junk'
-                with patch('glue.qt.glue_application.QMessageBox') as mb:
+                with patch('glue.app.glue_application.QMessageBox') as mb:
                     self.app._choose_save_session()
                     assert mb.call_count == 1
 
@@ -99,7 +99,7 @@ class TestGlueApplication(object):
     def test_messagebox_on_disabled_terminal(self):
         """Clicking on the terminal toggle button raises messagebox on error"""
         app = self.app_without_terminal()
-        with patch('glue.qt.glue_application.QMessageBox') as qmb:
+        with patch('glue.app.glue_application.QMessageBox') as qmb:
             app._terminal_button.click()
             assert qmb.call_count == 1
 
@@ -134,7 +134,7 @@ class TestGlueApplication(object):
         assert self.app.tab_widget.count() == 1
 
     def test_new_data_viewer_cancel(self):
-        with patch('glue.qt.glue_application.pick_class') as pc:
+        with patch('glue.app.glue_application.pick_class') as pc:
             pc.return_value = None
 
             ct = len(self.app.current_tab.subWindowList())
@@ -143,7 +143,7 @@ class TestGlueApplication(object):
             assert len(self.app.current_tab.subWindowList()) == ct
 
     def test_new_data_viewer(self):
-        with patch('glue.qt.glue_application.pick_class') as pc:
+        with patch('glue.app.glue_application.pick_class') as pc:
 
             pc.return_value = ScatterWidget
 
@@ -165,7 +165,7 @@ class TestGlueApplication(object):
     def test_new_data_defaults(self):
         from ...config import qt_client
 
-        with patch('glue.qt.glue_application.pick_class') as pc:
+        with patch('glue.app.glue_application.pick_class') as pc:
             pc.return_value = None
 
             d2 = Data(x=np.array([[1, 2, 3], [4, 5, 6]]))

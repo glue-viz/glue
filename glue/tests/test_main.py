@@ -108,7 +108,7 @@ def test_start(glue, config, data):
     with patch('glue.main.restore_session') as rs:
         with patch('glue.config.load_configuration') as lc:
             with patch('glue.main.load_data_files') as ldf:
-                with patch('glue.qt.glue_application.GlueApplication') as ga:
+                with patch('glue.app.glue_application.GlueApplication') as ga:
                     with patch('glue.external.qt.QtGui') as qt:
 
                         rs.return_value = ga

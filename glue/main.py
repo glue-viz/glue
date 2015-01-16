@@ -115,7 +115,7 @@ def die_on_error(msg):
 @die_on_error("Error restoring Glue session")
 def restore_session(gluefile):
     """Load a .glu file and return a DataCollection, Hub tuple"""
-    from glue.qt.glue_application import GlueApplication
+    from glue.app.glue_application import GlueApplication
     return GlueApplication.restore(gluefile)
 
 
@@ -149,7 +149,7 @@ def start_glue(gluefile=None, config=None, datafiles=None):
     :type datafiles: list of str
     """
     import glue
-    from glue.qt.glue_application import GlueApplication
+    from glue.app.glue_application import GlueApplication
 
     datafiles = datafiles or []
 

@@ -79,7 +79,7 @@ class ImportDenier(object):
 import sys
 sys.meta_path.append(ImportDenier())
 
-from glue.qt.glue_application import GlueApplication
+from glue.app.glue_application import GlueApplication
 from glue.core import data_factories
 ga = GlueApplication()
 """ % deps

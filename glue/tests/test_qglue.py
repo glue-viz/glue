@@ -10,7 +10,7 @@ from .. import qglue
 from ..core.registry import Registry
 from ..core.exceptions import IncompatibleAttribute
 from ..core import Data
-from ..qt.glue_application import GlueApplication
+from ..app.glue_application import GlueApplication
 
 from .helpers import requires_astropy
 
