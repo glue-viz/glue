@@ -742,16 +742,13 @@ def load_ui(name, parent=None, in_global_ui=True):
     w : QWidget
       The new widget
     """
-    if in_global_ui:
-        path = ui_path(name)
-    else:
-        path = name
+    path = ui_path(name, in_global_ui=in_global_ui)
     if is_pyside():
         return _load_ui_pyside(path, parent)
     return _load_ui_pyqt4(path, parent)
 
 
-def ui_path(ui_name):
+def ui_path(ui_name, in_global_ui=True):
     """Return the absolute path to a .ui file
 
     Parameters
@@ -765,17 +762,20 @@ def ui_path(ui_name):
     path : str
       Path of a file
     """
+
     if not ui_name.endswith('.ui'):
         ui_name = ui_name + '.ui'
 
-    try:
-        result = pkg_resources.resource_filename('glue.qt.ui', ui_name)
-        return result
-    except NotImplementedError:
-        # workaround for mac app
-        result = os.path.dirname(ui.__file__)
-        return os.path.join(result.replace('site-packages.zip', 'glue'),
-                            ui_name)
+    if in_global_ui:
+        ui_name = os.path.join(os.path.join(os.path.dirname(__file__), 'ui', ui_name))
+
+    if os.path.exists(ui_name):
+        return ui_name
+    else:
+        if 'site-packages.zip' in ui_name:
+            return ui_name.replace('site-packages.zip', 'glue')
+        else:
+            raise IOError("Could not file ui file: {0}".format(ui_name))
 
 
 def icon_path(icon_name):
