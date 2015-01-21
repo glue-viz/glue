@@ -128,6 +128,8 @@ def test(no_optional_skip=False):
     import os
     from pytest import main
     root = os.path.abspath(os.path.dirname(__file__))
+    if 'site-packages.zip' in root:
+        root = root.replace('site-packages.zip', 'glue')
     args = [root]
     if no_optional_skip:
         args.append('--no-optional-skip')
