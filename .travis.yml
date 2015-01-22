@@ -9,8 +9,8 @@ notifications:
 
 env:
   matrix:
-    - PYTHON_VERSION=27 MPL_VER=1.4 ASTRO_VER=0.4
-    - PYTHON_VERSION=34 MPL_VER=1.4 ASTRO_VER=0.4
+    - PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=0.4
+    - PYTHON_VERSION=3.4 MPL_VER=1.4 ASTRO_VER=0.4
   global:
     - CONDA_ARGS="--yes"
     - PIP_ARGS=""
@@ -31,19 +31,19 @@ matrix:
         # Python 2.6
         - os: linux
           env:
-            - PYTHON_VERSION=26 MPL_VER=1.4 ASTRO_VER=0.4
+            - PYTHON_VERSION=2.6 MPL_VER=1.4 ASTRO_VER=0.4
         
         # Astropy dev
         - os: linux
           env:
-            - PYTHON_VERSION=27 MPL_VER=1.4 ASTROPY_VER=dev
+            - PYTHON_VERSION=2.7 MPL_VER=1.4 ASTROPY_VER=dev
 
         # The following configuration tests that glue functions with minimal
         # dependencies. The --no-deps is to prevent scipy from getting
         # installed as a pandas dependency.
         - os: linux
           env:
-            - PYTHON_VERSION=27
+            - PYTHON_VERSION=2.7
             - PYTEST_ARGS="--cov glue"
             - CONDA_BASE="pip setuptools numpy=$NUMPY_VER pandas mock --no-deps"
             - IPYTHON_VER=None
@@ -53,7 +53,7 @@ matrix:
 
         - os: linux
           env:
-            - PYTHON_VERSION=27
+            - PYTHON_VERSION=2.7
             - MPL_VER=1.4
             - ASTRO_VER=0.4
             - DOC_TRIGGER=1 
@@ -64,13 +64,13 @@ matrix:
         # Test with older package versions:
 
         - os: linux
-          env: PYTHON_VERSION=27 MPL_VER=1.3 ASTRO_VER=0.3 NUMPY_VER=1.8
+          env: PYTHON_VERSION=2.7 MPL_VER=1.3 ASTRO_VER=0.3 NUMPY_VER=1.8
 
         - os: linux
-          env: PYTHON_VERSION=27 MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=1.1
+          env: PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=1.1
 
         - os: linux
-          env: PYTHON_VERSION=27 MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=0.13
+          env: PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=0.13
 
 
 before_install:
