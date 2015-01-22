@@ -36,7 +36,7 @@ matrix:
         # Astropy dev
         - os: linux
           env:
-            - PYTHON_VERSION=2.7 MPL_VER=1.4 ASTROPY_VER=dev
+            - PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=dev
 
         # The following configuration tests that glue functions with minimal
         # dependencies. The --no-deps is to prevent scipy from getting
