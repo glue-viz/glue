@@ -74,38 +74,46 @@ matrix:
 
 
 before_install:
-- source .setup_conda.sh $PYTHON_VERSION
-# Deal with issue on Travis builders
-- sudo rm -rf /dev/shm
-- sudo ln -s /run/shm /dev/shm
-# Setup system for headless GUI handling
-- export DISPLAY=:99.0
-- sh -e /etc/init.d/xvfb start
-# setup tools to trigger mac buildbot
-- if [ $APP_TRIGGER ]; then source .setup_app_trigger.sh; fi
-- if [ $TRAVIS_BRANCH = master ]; then export S3_DIR=latest; else export S3_DIR=$TRAVIS_BRANCH; fi
+  
+  # Install conda
+  - source continuous-integration/travis/install_conda_$TRAVIS_OS_NAME.sh
+
+  # Deal with issue on Travis builders
+  - if [[ $TRAVIS_OS_NAME == linux ]]; then sudo rm -rf /dev/shm; sudo ln -s /run/shm /dev/shm; fi
+
+  # Setup system for headless GUI handling
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+
+  # setup tools to trigger mac buildbot
+  - if [ $APP_TRIGGER ]; then source .setup_app_trigger.sh; fi
+  - if [ $TRAVIS_BRANCH = master ]; then export S3_DIR=latest; else export S3_DIR=$TRAVIS_BRANCH; fi
 
 
 install:
-- if [[ $PYTHON_VERSION == 2.6 && $IPYTHON_VER == 2 ]]; then export IPYTHON_VER=1; fi
-- conda create --yes -n test python=$PYTHON_VERSION
-- source activate test
-- conda install $CONDA_ARGS $CONDA_BASE
-- if [[ $PYTHON_VERSION == 2* ]]; then conda install $CONDA_ARGS python=$PYTHON_VERSION pyside; fi
-- if [[ $PYTHON_VERSION == 3* ]]; then conda install $CONDA_ARGS python=$PYTHON_VERSION pyqt; fi
-- LC_ALL=C pip install $PIP_ARGS $PIP_BASE
-- if [[ $GINGA ]]; then pip install $PIP_ARGS https://github.com/glue-viz/ginga/archive/master.zip; fi
-- if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy; fi
-- if [[ $ASTRO_VER != dev && $ASTRO_VER != None ]]; then conda install $CONDA_ARGS numpy=$NUMPY_VER astropy=$ASTRO_VER; fi
-- if [[ $IPYTHON_VER != None ]]; then conda install $CONDA_ARGS IPython=$IPYTHON_VER; fi
-- if [[ $MPL_VER != None ]]; then conda install $CONDA_ARGS numpy=$NUMPY_VER matplotlib=$MPL_VER; fi
-- python setup.py install
+
+  - if [[ $PYTHON_VERSION == 2.6 && $IPYTHON_VER == 2 ]]; then export IPYTHON_VER=1; fi
+
+  - conda create --yes -n test python=$PYTHON_VERSION
+  - source activate test
+  - conda install $CONDA_ARGS $CONDA_BASE
+  - if [[ $PYTHON_VERSION == 2* ]]; then conda install $CONDA_ARGS python=$PYTHON_VERSION pyside; fi
+  - if [[ $PYTHON_VERSION == 3* ]]; then conda install $CONDA_ARGS python=$PYTHON_VERSION pyqt; fi
+
+  - LC_ALL=C pip install $PIP_ARGS $PIP_BASE
+  - if [[ $GINGA ]]; then pip install $PIP_ARGS https://github.com/glue-viz/ginga/archive/master.zip; fi
+  - if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy; fi
+  - if [[ $ASTRO_VER != dev && $ASTRO_VER != None ]]; then conda install $CONDA_ARGS numpy=$NUMPY_VER astropy=$ASTRO_VER; fi
+  - if [[ $IPYTHON_VER != None ]]; then conda install $CONDA_ARGS IPython=$IPYTHON_VER; fi
+  - if [[ $MPL_VER != None ]]; then conda install $CONDA_ARGS numpy=$NUMPY_VER matplotlib=$MPL_VER; fi
+
+  - python setup.py install
 
 script:
-- py.test $PYTEST_ARGS glue
-- if [ $DOC_TRIGGER ]; then cd doc && make html && cd ../; fi
+  - py.test $PYTEST_ARGS glue
+  - if [ $DOC_TRIGGER ]; then cd doc && make html && cd ../; fi
 
 after_success:
-- coveralls
-- if [ $APP_TRIGGER ]; then ./.trigger_app_build.sh; fi
-- if [ $DOC_TRIGGER -a "$TRAVIS_SECURE_ENV_VARS = true" ]; then cd doc && make s3 && cd ../; fi
+  - coveralls
+  - if [ $APP_TRIGGER ]; then ./.trigger_app_build.sh; fi
+  - if [ $DOC_TRIGGER -a "$TRAVIS_SECURE_ENV_VARS = true" ]; then cd doc && make s3 && cd ../; fi
