@@ -2,17 +2,17 @@ import pytest
 import numpy as np
 from mock import MagicMock
 
-from ...core.tests.util import simple_session
-from ...core import Data, Coordinates
-from ...core.roi import RectangularROI
-from ...qt.widgets import ImageWidget
+from ....core.tests.util import simple_session
+from ....core import Data, Coordinates
+from ....core.roi import RectangularROI
+from ....qt.widgets import ImageWidget
 
 from ..spectrum_tool import Extractor, ConstraintsWidget, FitSettingsWidget, SpectrumTool
-from ...core.fitters import PolynomialFitter
+from ....core.fitters import PolynomialFitter
 
 needs_modeling = lambda x: x
 try:
-    from ...core.fitters import SimpleAstropyGaussianFitter
+    from ....core.fitters import SimpleAstropyGaussianFitter
 except ImportError:
     needs_modeling = pytest.mark.skipif(True, reason='Needs astropy >= 0.3')
 

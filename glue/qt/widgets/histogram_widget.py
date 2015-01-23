@@ -59,6 +59,10 @@ class HistogramWidget(DataViewer):
         # maps _hash(componentID) -> componentID
         self._component_hashes = {}
 
+    @staticmethod
+    def _get_default_tools():
+        return []
+
     def _init_limits(self):
         validator = QtGui.QDoubleValidator(None)
         validator.setDecimals(7)

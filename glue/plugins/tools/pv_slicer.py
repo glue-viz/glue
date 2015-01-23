@@ -1,7 +1,7 @@
 import numpy as np
-from ..qt.mouse_mode import PathMode
-from ..qt.widgets.image_widget import StandaloneImageWidget
-from ..qt.widgets.mpl_widget import defer_draw
+from ...qt.mouse_mode import PathMode
+from ...qt.widgets.image_widget import StandaloneImageWidget
+from ...qt.widgets.mpl_widget import defer_draw
 
 
 class PVSlicerTool(object):
@@ -174,7 +174,7 @@ def _slice_from_path(x, y, data, attribute, slc):
     :note: For >3D cubes, the "V-axis" of the PV slice is the longest
            cube axis ignoring the x/y axes of `slc`
     """
-    from ..external.pvextractor import Path, extract_pv_slice
+    from ...external.pvextractor import Path, extract_pv_slice
     p = Path(list(zip(x, y)))
 
     cube = data[attribute]

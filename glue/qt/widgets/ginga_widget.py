@@ -25,8 +25,8 @@ from ...core import roi as roimod
 from ...core.callback_property import add_callback
 
 from ..qtutil import get_icon, nonpartial
-from ...plugins.pv_slicer import PVSlicerTool
-from ...plugins.spectrum_tool import SpectrumTool
+from ...plugins.tools.pv_slicer import PVSlicerTool
+from ...plugins.tools.spectrum_tool import SpectrumTool
 from ...config import tool_registry
 
 # Find out location of ginga module so we can some of its icons
@@ -84,6 +84,10 @@ class GingaWidget(ImageWidgetBase):
         self.roi_tag = None
 
         super(GingaWidget, self).__init__(session, parent)
+
+    @staticmethod
+    def _get_default_tools():
+        return []
 
     def make_client(self):
         return GingaClient(self._data, self.canvas, self._container)

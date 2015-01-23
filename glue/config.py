@@ -230,6 +230,48 @@ class QtClientRegistry(Registry):
             return []
 
 
+class QtToolRegistry(Registry):
+
+    def __init__(self):
+        self._members = {}
+        self._loaded = False
+
+    @property
+    def members(self):
+        if not self._loaded:
+            defaults = self.default_members()
+            for key in defaults:
+                if key in self._members:
+                    self._members[key].extend(defaults[key])
+                else:
+                    self._members[key] = defaults[key]
+            self._loaded = True
+        return self._members
+
+    def default_members(self):
+        defaults = {}
+        for viewer in qt_client.members:
+            try:
+                defaults[viewer] = viewer._get_default_tools()
+            except AttributeError:
+                logging.getLogger(__name__).warning(
+                    "could not get default tools for {0}".format(viewer.__name__))
+                defaults[viewer] = []
+
+        return defaults
+
+    def add(self, tool_cls, widget_cls=None):
+        """
+        Add a tool class to the registry, optionally specifying which widget
+        class it should apply to (``widget_cls``). if ``widget_cls`` is set
+        to `None`, the tool applies to all classes.
+        """
+        if widget_cls in self.members:
+            self.members[widget_cls].append(tool_cls)
+        else:
+            self.members[widget_cls] = [tool_cls]
+
+
 class LinkFunctionRegistry(Registry):
 
     """Stores functions to convert between quantities
@@ -329,38 +371,6 @@ class ProfileFitterRegistry(Registry):
         return list(__FITTERS__)
 
 
-class ToolRegistry(Registry):
-
-    def default_members(self):
-
-        from .plugins.pv_slicer import PVSlicerTool
-        from .plugins.spectrum_tool import SpectrumTool
-        from .qt.widgets.image_widget import ImageWidget
-
-        return [(SpectrumTool, ImageWidget), (PVSlicerTool, ImageWidget)]
-
-    def add(self, tool_cls, restrict_to=None):
-        """
-        Add a tool class to the registry, optionally specifying which widget
-        class it should apply to (``restrict_to``). if ``restrict_to`` is set
-        to `None`, the tool applies to all classes.
-        """
-        self.members.append((tool_cls, restrict_to))
-
-    def get_tools(self, requested_widget_cls, allow_subclass=True):
-
-        tools = []
-        for (tool_cls, widget_cls) in self.members:
-
-            if widget_cls is None or widget_cls is requested_widget_cls:
-                tools.append(tool_cls)
-            elif allow_subclass:
-                if issubclass(requested_widget_cls, widget_cls):
-                    tools.append(tool_cls)
-
-        return tools
-
-
 class BooleanSetting(object):
 
     def __init__(self, default=True):
@@ -376,6 +386,7 @@ class BooleanSetting(object):
         return self.state
 
 qt_client = QtClientRegistry()
+tool_registry = QtToolRegistry()
 data_factory = DataFactoryRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
@@ -383,7 +394,6 @@ colormaps = ColormapRegistry()
 exporters = ExporterRegistry()
 settings = SettingRegistry()
 fit_plugin = ProfileFitterRegistry()
-tool_registry = ToolRegistry()
 single_subset_action = SingleSubsetLayerActionRegistry()
 
 # watch loaded data files for changes?

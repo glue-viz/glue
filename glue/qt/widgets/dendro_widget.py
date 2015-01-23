@@ -45,6 +45,10 @@ class DendroWidget(DataViewer):
         self.make_toolbar()
         self.statusBar().setSizeGripEnabled(False)
 
+    @staticmethod
+    def _get_default_tools():
+        return []
+
     def _connect(self):
         ui = self.ui
         cl = self.client
