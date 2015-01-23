@@ -82,8 +82,7 @@ before_install:
   - if [[ $TRAVIS_OS_NAME == linux ]]; then sudo rm -rf /dev/shm; sudo ln -s /run/shm /dev/shm; fi
 
   # Setup system for headless GUI handling
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
+  - if [[ $TRAVIS_OS_NAME == linux ]]; then export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start; fi
 
   # setup tools to trigger mac buildbot
   - if [ $APP_TRIGGER ]; then source .setup_app_trigger.sh; fi
