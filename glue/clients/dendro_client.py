@@ -5,8 +5,8 @@ import numpy as np
 
 from ..core.data import IncompatibleAttribute
 from ..core.callback_property import CallbackProperty, add_callback, delay_callback
-from ..core.util import nonpartial
 from ..core.roi import PointROI
+from ..utils import nonpartial
 
 from .layer_artist import DendroLayerArtist
 from ..core.subset import CategorySubsetState

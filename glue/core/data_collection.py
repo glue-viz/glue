@@ -8,7 +8,8 @@ from .visual import COLORS
 from .message import (DataCollectionAddMessage,
                       DataCollectionDeleteMessage,
                       DataAddComponentMessage)
-from .util import as_list, disambiguate
+from .util import disambiguate
+from ..utils import as_list
 
 __all__ = ['DataCollection']
 

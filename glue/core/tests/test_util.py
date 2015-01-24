@@ -2,14 +2,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pytest
 import numpy as np
 
-from ..util import (file_format, point_contour, view_shape, facet_subsets,
-                    colorize_subsets, coerce_numeric, as_variable_name, stack_view)
-
-from ...tests.helpers import requires_scipy
-from ...external.six import string_types
+from ..util import file_format, facet_subsets, colorize_subsets
 
 
 class TestRelim(object):
@@ -37,31 +32,6 @@ class TestFileFormat(object):
     def test_nodot(self):
         fmt = file_format('test')
         assert fmt == ''
-
-
-@requires_scipy
-class TestPointContour(object):
-
-    def test(self):
-        data = np.array([[0, 0, 0, 0],
-                         [0, 2, 3, 0],
-                         [0, 4, 2, 0],
-                         [0, 0, 0, 0]])
-        xy = point_contour(2, 2, data)
-        x = np.array([2., 2. + 1. / 3., 2., 2., 1, .5, 1, 1, 2])
-        y = np.array([2. / 3., 1., 2., 2., 2.5, 2., 1., 1., 2. / 3])
-
-        np.testing.assert_array_almost_equal(xy[:, 0], x)
-        np.testing.assert_array_almost_equal(xy[:, 1], y)
-
-
-def test_view_shape():
-    assert view_shape((10, 10), np.s_[:]) == (10, 10)
-    assert view_shape((10, 10, 10), np.s_[:]) == (10, 10, 10)
-    assert view_shape((10, 10), np.s_[:, 1]) == (10,)
-    assert view_shape((10, 10), np.s_[2:3, 2:3]) == (1, 1)
-    assert view_shape((10, 10), None) == (10, 10)
-    assert view_shape((10, 10), ([1, 2, 3], [2, 3, 4])) == (3,)
 
 
 class TestFacetSubsets(object):
@@ -164,52 +134,4 @@ def test_colorize_subsets_clip():
     assert grps[1].style.color == '#ffffff'
 
 
-def test_coerce_numeric():
 
-    x = np.array(['1', '2', '3.14', '4'], dtype=str)
-
-    np.testing.assert_array_equal(coerce_numeric(x),
-                                  [1, 2, 3.14, 4])
-
-    x = np.array([1, 2, 3])
-
-    assert x is coerce_numeric(x)
-
-
-def test_as_variable_name():
-    def check(input, expected):
-        assert as_variable_name(input) == expected
-
-    tests = [('x', 'x'),
-             ('x2', 'x2'),
-             ('2x', '_2x'),
-             ('x!', 'x_'),
-             ('x y z', 'x_y_z'),
-             ('_XY', '_XY')
-             ]
-    for input, expected in tests:
-        yield check, input, expected
-
-
-@pytest.mark.parametrize(('shape', 'views'),
-                         [
-                             [(5, 5), (np.s_[0:3],)],
-                             [(5, 4), (np.s_[0:3],)],
-                             [(5, 4), ((3, 2),)],
-                             [(5, 4), (np.s_[0:4], np.s_[:, 0:2])],
-                             [(5, 4), (np.s_[0:3, 0:2], 'transpose', (0, 0))],
-                             [(10, 20), (np.random.random((10, 20)) > 0.1, 3)],
-                             [(5, 7), ('transpose', (3, 2))],
-])
-def test_stack_view(shape, views):
-    x = np.random.random(shape)
-    exp = x
-    for v in views:
-        if isinstance(v, string_types) and v == 'transpose':
-            exp = exp.T
-        else:
-            exp = exp[v]
-
-    actual = x[stack_view(shape, *views)]
-
-    np.testing.assert_array_equal(exp, actual)

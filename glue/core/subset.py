@@ -10,7 +10,8 @@ from .decorators import memoize
 from .message import SubsetDeleteMessage, SubsetUpdateMessage
 from .exceptions import IncompatibleAttribute
 from .registry import Registry
-from .util import split_component_view, view_shape
+from .util import split_component_view
+from ..utils import view_shape
 from ..external.six import PY3
 from .contracts import contract
 

@@ -30,7 +30,8 @@ from ..external.qt.QtCore import Signal
 from .. import core
 from . import ui, icons
 
-nonpartial = core.util.nonpartial
+# We import nonpartial here for convenience
+from ..utils import nonpartial
 
 
 def mpl_to_qt4_color(color, alpha=1.0):

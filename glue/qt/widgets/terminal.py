@@ -27,7 +27,7 @@ from contextlib import contextmanager
 from ...external.qt import QtCore
 from ...external.qt.QtGui import QInputDialog
 from ...version import __version__
-from ...core.util import as_variable_name
+from ...utils import as_variable_name
 from .glue_mdi_area import GlueMdiSubWindow
 
 from zmq import ZMQError

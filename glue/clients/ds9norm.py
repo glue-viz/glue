@@ -25,7 +25,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 from matplotlib.colors import Normalize
 
-from .util import fast_limits
+from ..utils import fast_limits
 
 
 def norm(x, vmin, vmax):
