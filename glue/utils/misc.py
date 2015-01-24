@@ -4,7 +4,7 @@ import string
 from functools import partial
 
 __all__ = ['DeferredMethod', 'nonpartial', 'lookup_class', 'as_variable_name',
-           'as_list']
+           'as_list', 'file_format']
 
 
 class DeferredMethod(object):
@@ -91,3 +91,13 @@ def as_list(x):
     if isinstance(x, list):
         return x
     return [x]
+
+
+def file_format(filename):
+    if filename.find('.') == -1:
+        return ''
+    if filename.lower().endswith('.gz'):
+        result = filename.lower().rsplit('.', 2)[1]
+    else:
+        result = filename.lower().rsplit('.', 1)[1]
+    return result

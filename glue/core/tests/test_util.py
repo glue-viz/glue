@@ -4,34 +4,10 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from ..util import file_format, facet_subsets, colorize_subsets
-
+from ..util import facet_subsets, colorize_subsets
 
 class TestRelim(object):
     pass
-
-
-class TestFileFormat(object):
-
-    def test_gz(self):
-        fmt = file_format('test.tar.gz')
-        assert fmt == 'tar'
-
-    def test_normal(self):
-        fmt = file_format('test.data')
-        assert fmt == 'data'
-
-    def test_underscores(self):
-        fmt = file_format('test_file.fits_file')
-        assert fmt == 'fits_file'
-
-    def test_multidot(self):
-        fmt = file_format('test.a.b.c')
-        assert fmt == 'c'
-
-    def test_nodot(self):
-        fmt = file_format('test')
-        assert fmt == ''
 
 
 class TestFacetSubsets(object):

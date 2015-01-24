@@ -29,16 +29,6 @@ def relim(lo, hi, log=False):
     return (x - .02 * delta, y + .02 * delta)
 
 
-def file_format(filename):
-    if filename.find('.') == -1:
-        return ''
-    if filename.lower().endswith('.gz'):
-        result = filename.lower().rsplit('.', 2)[1]
-    else:
-        result = filename.lower().rsplit('.', 1)[1]
-    return result
-
-
 def split_component_view(arg):
     """Split the input to data or subset.__getitem__ into its pieces.
 
