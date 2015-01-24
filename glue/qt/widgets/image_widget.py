@@ -402,7 +402,7 @@ class ImageWidget(ImageWidgetBase):
         self._update_intensity_label(x, y)
 
     def _intensity_label(self, x, y):
-        x, y = self.client.axes.transData.inverted().transform([x, y])
+        x, y = self.client.axes.transData.inverted().transform([(x, y)])[0]
         value = self.client.point_details(x, y)['value']
         lbl = '' if value is None else "data: %s" % value
         return lbl
