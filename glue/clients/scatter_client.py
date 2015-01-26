@@ -11,10 +11,10 @@ from ..core.roi import PolygonalROI, RangeROI
 from ..core.util import relim
 from ..core.edit_subset_mode import EditSubsetMode
 from ..core.message import ComponentReplacedMessage
-from ..utils import lookup_class, visible_limits
+from ..utils import lookup_class
 from .viz_client import init_mpl
 from .layer_artist import ScatterLayerArtist, LayerArtistContainer
-from .util import update_ticks
+from .util import update_ticks, visible_limits
 from ..core.callback_property import (CallbackProperty, add_callback,
                                       delay_callback)
 

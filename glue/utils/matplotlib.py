@@ -10,7 +10,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 from .misc import DeferredMethod
 
 __all__ = ['all_artists', 'new_artists', 'remove_artists', 'get_extent',
-           'view_cascade', 'fast_limits', 'visible_limits', 'defer_draw',
+           'view_cascade', 'fast_limits', 'defer_draw',
            'color2rgb', 'point_contour']
 
 
@@ -71,7 +71,7 @@ def view_cascade(data, view):
 
     # choose stride length that roughly samples entire image
     # at roughly the same pixel count
-    step = max(shp[i - 1] * v.step / max(v.stop - v.start, 1)
+    step = max(shp[i - 1] * v.step // max(v.stop - v.start, 1)
                for i, v in enumerate(view) if isinstance(v, slice))
     step = max(step, 1)
 
@@ -111,46 +111,6 @@ def fast_limits(data, plo, phi):
     limits = (-np.inf, np.inf)
     lo = _scoreatpercentile(values.flat, plo, limit=limits)
     hi = _scoreatpercentile(values.flat, phi, limit=limits)
-    return lo, hi
-
-
-def visible_limits(artists, axis):
-    """Determines the data limits for the data in a set of artists
-
-    Ignores non-visible artists
-
-    Assumes each artist as a get_data method wich returns a tuple of x,y
-
-    :param artists: An iterable collection of artists
-    :param axis: Which axis to compute. 0=xaxis, 1=yaxis
-
-    :rtype: A tuple of min, max for the requested axis, or None if
-            no data present
-    """
-    data = []
-    for art in artists:
-        if not art.visible:
-            continue
-        xy = art.get_data()
-        assert isinstance(xy, tuple)
-        val = xy[axis]
-        if val.size > 0:
-            data.append(xy[axis])
-
-    if len(data) == 0:
-        return
-    data = np.hstack(data)
-    if data.size == 0:
-        return
-
-    data = data[np.isfinite(data)]
-    if data.size == 0:
-        return
-
-    lo, hi = np.nanmin(data), np.nanmax(data)
-    if not np.isfinite(lo):
-        return
-
     return lo, hi
 
 

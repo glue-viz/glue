@@ -7,8 +7,8 @@ from ..array import view_shape, coerce_numeric, stack_view, unique, shape_to_str
 
 
 @pytest.mark.parametrize(('before', 'ref_after', 'ref_indices'),
-                         (([2.2,5,4,4,2,8.3,2.2], [2, 2.2, 4, 5, 8.3], [1,3,2,2,0,4,1]),
-                          ([2.2,5,np.nan,2,8.3,2.2], [2, 2.2, 5, 8.3], [1,2,-1,0,3,1])))
+                         (([2.2, 5, 4, 4, 2, 8.3, 2.2], [2, 2.2, 4, 5, 8.3], [1, 3, 2, 2, 0, 4, 1]),
+                          ([2.2, 5, np.nan, 2, 8.3, 2.2], [2, 2.2, 5, 8.3], [1, 2, -1, 0, 3, 1])))
 def test_unique(before, ref_after, ref_indices):
     after, indices = unique(before)
     np.testing.assert_array_equal(after, ref_after)
@@ -16,14 +16,13 @@ def test_unique(before, ref_after, ref_indices):
 
 
 def test_shape_to_string():
-    assert shape_to_string((1,4,3)) == "(1, 4, 3)"
+    assert shape_to_string((1, 4, 3)) == "(1, 4, 3)"
 
 
 @pytest.mark.skipif("not PY2")
 def test_shape_to_string_long():
     # Shape includes long ints on Windows
-    assert shape_to_string((long(1),long(4),long(3))) == "(1, 4, 3)"
-
+    assert shape_to_string((long(1), long(4), long(3))) == "(1, 4, 3)"
 
 
 def test_view_shape():
@@ -44,9 +43,8 @@ def test_coerce_numeric():
     x = np.array([1, 2, 3])
     assert coerce_numeric(x) is x
 
-    x = np.array([0,1,1,0], dtype=bool)
-    np.testing.assert_array_equal(coerce_numeric(x), np.array([0,1,1,0], dtype=np.int))
-    
+    x = np.array([0, 1, 1, 0], dtype=bool)
+    np.testing.assert_array_equal(coerce_numeric(x), np.array([0, 1, 1, 0], dtype=np.int))
 
 
 @pytest.mark.parametrize(('shape', 'views'),
@@ -74,6 +72,6 @@ def test_stack_view(shape, views):
 
 
 @pytest.mark.parametrize(('array', 'is_sorted'),
-                         (([1,3,4,3], False), ([1,2,np.nan,3], True), ([1,3,4,4.1], True)))
+                         (([1, 3, 4, 3], False), ([1, 2, np.nan, 3], True), ([1, 3, 4, 4.1], True)))
 def test_check_sorted(array, is_sorted):
     assert check_sorted(array) is is_sorted
