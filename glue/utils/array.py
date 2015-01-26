@@ -92,4 +92,5 @@ def check_sorted(array):
     # this ignores NANs, and does the right thing if nans
     # are concentrated at beginning or end of array
     # otherwise, it will miss things at nan/finite boundaries
+    array = np.asarray(array)
     return not (array[:-1] > array[1:]).any()
