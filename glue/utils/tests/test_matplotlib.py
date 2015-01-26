@@ -1,3 +1,5 @@
+import pytest
+
 import numpy as np
 from numpy.testing import assert_allclose
 import matplotlib.pyplot as plt
@@ -5,7 +7,9 @@ from matplotlib.patches import Circle
 
 from ...tests.helpers import requires_scipy
 
-from ..matplotlib import point_contour, fast_limits, all_artists, new_artists, remove_artists, view_cascade, get_extent
+from ..matplotlib import (point_contour, fast_limits, all_artists, new_artists,
+                          remove_artists, view_cascade, get_extent, color2rgb,
+                          defer_draw)
 
 
 @requires_scipy
@@ -73,3 +77,20 @@ def test_view_cascade():
     v2, view = view_cascade(data, (3, slice(0, 5, 1)))
     assert v2 == ((3, slice(0, 100, 20)))
     assert view == (3, slice(0, 5, 1))
+
+
+def test_defer_draw():
+
+    @defer_draw
+    def draw_figure():
+        fig = plt.figure()
+        ax = fig.add_subplot(1, 1, 1)
+        ax.plot([1, 2, 3], [4, 5, 6])
+
+    draw_figure()
+
+
+@pytest.mark.parametrize(('color', 'rgb'),
+                         (('red', (1, 0, 0)), ('green', (0, 0.5020, 0)), ('orange', (1., 0.6470, 0.))))
+def test_color2rgb(color, rgb):
+    assert_allclose(color2rgb(color), rgb, atol=0.001)
