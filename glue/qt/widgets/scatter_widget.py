@@ -12,10 +12,13 @@ from ..mouse_mode import (RectangleMode, CircleMode,
 from .data_viewer import DataViewer
 from .mpl_widget import MplWidget, defer_draw
 from ..widget_properties import (ButtonProperty, FloatLineProperty,
-                                 CurrentComboProperty,
-                                 connect_bool_button, connect_float_edit)
+                                 CurrentComboProperty, DateLineProperty,
+                                 connect_bool_button, connect_float_edit,
+                                 connect_date_edit)
 
 from ..qtutil import load_ui, cache_axes, nonpartial
+
+from matplotlib.dates import num2date
 
 __all__ = ['ScatterWidget']
 
@@ -30,21 +33,24 @@ class ScatterWidget(DataViewer):
 
     LABEL = "Scatter Plot"
     _property_set = DataViewer._property_set + \
-        'xlog ylog xflip yflip hidden xatt yatt xmin xmax ymin ymax'.split()
+        'xlog ylog xflip yflip hidden xatt yatt xmin xmax ymin ymax group'.split()
 
     xlog = ButtonProperty('ui.xLogCheckBox', 'log scaling on x axis?')
     ylog = ButtonProperty('ui.yLogCheckBox', 'log scaling on y axis?')
     xflip = ButtonProperty('ui.xFlipCheckBox', 'invert the x axis?')
     yflip = ButtonProperty('ui.yFlipCheckBox', 'invert the y axis?')
-    xmin = FloatLineProperty('ui.xmin', 'Lower x limit of plot')
-    xmax = FloatLineProperty('ui.xmax', 'Upper x limit of plot')
-    ymin = FloatLineProperty('ui.ymin', 'Lower y limit of plot')
-    ymax = FloatLineProperty('ui.ymax', 'Upper y limit of plot')
+    xmin = DateLineProperty('ui.xmin', 'Lower x limit of plot')
+    xmax = DateLineProperty('ui.xmax', 'Upper x limit of plot')
+    ymin = DateLineProperty('ui.ymin', 'Lower y limit of plot')
+    ymax = DateLineProperty('ui.ymax', 'Upper y limit of plot')
     hidden = ButtonProperty('ui.hidden_attributes', 'Show hidden attributes')
     xatt = CurrentComboProperty('ui.xAxisComboBox',
                                 'Attribute to plot on x axis')
     yatt = CurrentComboProperty('ui.yAxisComboBox',
                                 'Attribute to plot on y axis')
+    group = CurrentComboProperty('ui.groupComboBox',
+                                 'Attribute to group time series')
+
 
     def __init__(self, session, parent=None):
         super(ScatterWidget, self).__init__(session, parent)
@@ -86,14 +92,15 @@ class ScatterWidget(DataViewer):
 
         ui.xAxisComboBox.currentIndexChanged.connect(self.update_xatt)
         ui.yAxisComboBox.currentIndexChanged.connect(self.update_yatt)
+        ui.groupComboBox.currentIndexChanged.connect(self.update_group)
         ui.hidden_attributes.toggled.connect(lambda x: self._update_combos())
         ui.swapAxes.clicked.connect(nonpartial(self.swap_axes))
         ui.snapLimits.clicked.connect(cl.snap)
 
-        connect_float_edit(cl, 'xmin', ui.xmin)
-        connect_float_edit(cl, 'xmax', ui.xmax)
-        connect_float_edit(cl, 'ymin', ui.ymin)
-        connect_float_edit(cl, 'ymax', ui.ymax)
+        connect_date_edit(cl, 'xmin', ui.xmin)
+        connect_date_edit(cl, 'xmax', ui.xmax)
+        connect_date_edit(cl, 'ymin', ui.ymin)
+        connect_date_edit(cl, 'ymax', ui.ymax)
 
     def make_toolbar(self):
         result = GlueToolbar(self.central_widget.canvas, self,
@@ -127,7 +134,8 @@ class ScatterWidget(DataViewer):
 
         # show hidden attributes if needed
         if ((self.client.xatt and self.client.xatt.hidden) or
-                (self.client.yatt and self.client.yatt.hidden)):
+                (self.client.yatt and self.client.yatt.hidden) or
+                (self.client.group and self.client.group.hidden)):
             self.hidden = True
 
         # determine which components to put in combos
@@ -141,11 +149,13 @@ class ScatterWidget(DataViewer):
 
         oldx = self.xatt
         oldy = self.yatt
+        oldg = self.group
         newx = self.client.xatt or oldx
         newy = self.client.yatt or oldy
+        newg = self.client.group or oldg
 
-        for combo, target in zip([self.ui.xAxisComboBox, self.ui.yAxisComboBox],
-                                 [newx, newy]):
+        for combo, target in zip([self.ui.xAxisComboBox, self.ui.yAxisComboBox, self.ui.groupComboBox],
+                                 [newx, newy, newg]):
             combo.blockSignals(True)
             combo.clear()
 
@@ -163,7 +173,15 @@ class ScatterWidget(DataViewer):
 
         # ensure client and widget synced
         self.client.xatt = self.xatt
-        self.client.lyatt = self.yatt
+        self.client.yatt = self.yatt
+        self.client.group = self.group
+        # print(self.xatt)
+        # print(self.yatt)
+
+        # print(self.yatt)
+        # print(self._data[0].get_component(self._data[0].find_component_id(self.yatt)))
+        # print(self._data[0].get_component(self._data[0].find_component_id(self.yatt)).data)
+        # print(self._data[0].get_component(self._data[0].find_component_id(self.yatt)).datetime)
 
     @defer_draw
     def add_data(self, data):
@@ -279,6 +297,11 @@ class ScatterWidget(DataViewer):
                            self.client.is_visible(d)])
         return label
 
+    @defer_draw
+    def update_group(self, index):
+        component_id = self.group
+        self.client.group = component_id
+
     def _sync_labels(self):
         self.update_window_title()
 
@@ -292,3 +315,4 @@ class ScatterWidget(DataViewer):
         # manually force client attributes to sync
         self.update_xatt(None)
         self.update_yatt(None)
+        self.update_group(None)

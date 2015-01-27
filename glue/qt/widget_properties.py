@@ -25,6 +25,8 @@ from .qtutil import pretty_number
 from ..external.qt import QtGui
 from ..external.six.moves import reduce
 from ..core.callback_property import add_callback
+from matplotlib.dates import num2date, date2num
+import datetime as dt
 
 
 class WidgetProperty(object):
@@ -123,6 +125,38 @@ class FloatLineProperty(WidgetProperty):
         widget.editingFinished.emit()
 
 
+class DateLineProperty(WidgetProperty):
+
+    """Wrapper around the text state for QLineEdit widgets.
+
+    Assumes that the text is a date in MM-DD-YYYY
+    """
+
+    def getter(self, widget):
+        try:
+            txt = widget.text()
+            print(txt)
+            if str.isdigit(txt):
+                return float(txt)
+            else:
+                [m, d, y] = txt.split('-')
+                return date2num(dt.date(y, m, d))
+
+        except ValueError:
+            return date2num(dt.date(1970, 1, 1))
+
+    def setter(self, widget, value):
+        txt = widget.text()
+        print(txt)
+        if str.isdigit(txt):
+            widget.setText(pretty_number(value))
+        else:
+            d = num2date(value)
+            widget.setText(str(d.month) + '-' + str(d.day) + '-' + str(d.year))
+
+        widget.editingFinished.emit()
+
+
 class ValueProperty(WidgetProperty):
 
     """Wrapper around value() and setValue() intspin boxes"""
@@ -151,6 +185,7 @@ def connect_current_combo(client, prop, widget):
     """
 
     def _push_combo(value):
+        print(value)
         try:
             idx = _find_combo_data(widget, value)
         except ValueError:  # not found. Punt instead of failing
@@ -187,6 +222,49 @@ def connect_float_edit(client, prop, widget):
     add_callback(client, prop, update_widget)
     widget.editingFinished.connect(update_prop)
     update_widget(getattr(client, prop))
+
+
+def connect_date_edit(client, prop, widget):
+    """ Connect widget.setText and client.prop
+    Also pretty-print the number
+
+    client.prop should be a callback property
+    """
+    v = QtGui.QDoubleValidator(None)
+    v.setDecimals(4)
+    widget.setValidator(v)
+
+    def update_prop():
+        txt = widget.text()
+
+        if (client._check_if_date(client.xatt) and prop[0] == 'x') or \
+                (client._check_if_date(client.yatt) and prop[0] == 'y'):
+            [m, d, y] = txt.split('-')
+            try:
+                setattr(client, prop, date2num(dt.date(y, m, d)))
+            except ValueError:
+                setattr(client, prop, date2num(dt.date(1970, 1, 1)))
+        else:
+            try:
+                setattr(client, prop, float(txt))
+            except ValueError:
+                setattr(client, prop, 0)
+
+    def update_widget(val):
+        print((client._check_if_date(client.xatt) and prop[0] == 'x') or (client._check_if_date(client.yatt) and prop[0] == 'y'))
+        if (client._check_if_date(client.xatt) and prop[0] == 'x') or \
+                (client._check_if_date(client.yatt) and prop[0] == 'y'):
+            try:
+                d = num2date(val)
+            except ValueError:
+                d = dt.date(1970, 1, 1)
+            widget.setText(str(d.month) + '-' + str(d.day) + '-' + str(d.year))
+        else:
+            widget.setText(pretty_number(val))
+
+        add_callback(client, prop, update_widget)
+        widget.editingFinished.connect(update_prop)
+        update_widget(getattr(client, prop))
 
 
 def connect_int_spin(client, prop, widget):

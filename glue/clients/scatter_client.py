@@ -35,6 +35,7 @@ class ScatterClient(Client):
     xflip = CallbackProperty(False)
     xatt = CallbackProperty()
     yatt = CallbackProperty()
+    group = CallbackProperty()
     jitter = CallbackProperty()
 
     def __init__(self, data=None, figure=None, axes=None,
@@ -60,6 +61,7 @@ class ScatterClient(Client):
         self._layer_updated = False  # debugging
         self._xset = False
         self._yset = False
+        self._gset = False
         self.axes = axes
 
         self._connect()
@@ -94,6 +96,7 @@ class ScatterClient(Client):
         add_callback(self, 'ymax', self._set_limits)
         add_callback(self, 'xatt', partial(self._set_xydata, 'x'))
         add_callback(self, 'yatt', partial(self._set_xydata, 'y'))
+        add_callback(self, 'group', partial(self._set_xydata, 'group'))
         add_callback(self, 'jitter', self._jitter)
         self.axes.figure.canvas.mpl_connect('draw_event',
                                             lambda x: self._pull_properties())
@@ -220,7 +223,7 @@ class ScatterClient(Client):
            If True, will rescale x/y axes to fit the data
         :type snap: bool
         """
-        if coord not in ('x', 'y'):
+        if coord not in ('x', 'y', 'group'):
             raise TypeError("coord must be one of x,y")
         if not isinstance(attribute, ComponentID):
             raise TypeError("attribute must be a ComponentID")
@@ -234,6 +237,9 @@ class ScatterClient(Client):
             new_add = not self._yset
             self.yatt = attribute
             self._yset = self.yatt is not None
+        elif coord == 'group':
+            self.group = attribute
+            self._gset = self.group is not None
 
         # update plots
         list(map(self._update_layer, self.artists.layers))
