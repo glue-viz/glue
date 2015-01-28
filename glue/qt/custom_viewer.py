@@ -78,8 +78,7 @@ import numpy as np
 from ..clients import LayerArtist, GenericMplClient
 from ..core import Data
 from ..core.edit_subset_mode import EditSubsetMode
-from ..core.util import (nonpartial, as_list,
-                         all_artists, new_artists, remove_artists)
+from ..utils import nonpartial, as_list, all_artists, new_artists, remove_artists
 from .. import core
 
 from .widgets.data_viewer import DataViewer

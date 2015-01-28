@@ -69,7 +69,7 @@ from .data import (Data, Component, ComponentID, DerivedComponent,
                    CoordinateComponent)
 from . import (VisualAttributes, ComponentLink, DataCollection)
 from .component_link import CoordinateComponentLink
-from .util import lookup_class
+from ..utils import lookup_class
 from .roi import Roi
 from . import glue_pickle as gp
 from .. import core

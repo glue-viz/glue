@@ -20,9 +20,10 @@ import numpy as np
 from matplotlib.cm import gray
 from ..external import six
 from ..core.exceptions import IncompatibleAttribute
-from ..core.util import color2rgb, PropertySetMixin, Pointer
+from ..core.util import PropertySetMixin, Pointer
 from ..core.subset import Subset
-from .util import view_cascade, get_extent, small_view, small_view_array
+from .util import small_view, small_view_array
+from ..utils import view_cascade, get_extent, color2rgb
 from .ds9norm import DS9Normalize
 
 

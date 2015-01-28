@@ -1,48 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
-import logging
-from functools import partial, wraps
+from functools import partial
 
 import numpy as np
 from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
 from matplotlib.ticker import (LogFormatterMathtext, ScalarFormatter,
                                FuncFormatter)
-from matplotlib.backends.backend_agg import FigureCanvasAgg
 from ..core.data import CategoricalComponent
-
-
-def get_extent(view, transpose=False):
-    sy, sx = [s for s in view if isinstance(s, slice)]
-    if transpose:
-        return (sy.start, sy.stop, sx.start, sx.stop)
-    return (sx.start, sx.stop, sy.start, sy.stop)
-
-
-def view_cascade(data, view):
-    """ Return a set of views progressively zoomed out of input at roughly
-    constant pixel count
-
-    :param data: Data object to view
-    :param view: Original view into data
-
-    :rtype: tuple of views
-    """
-    shp = data.shape
-    v2 = list(view)
-    logging.debug("image shape: %s, view: %s", shp, view)
-
-    # choose stride length that roughly samples entire image
-    # at roughly the same pixel count
-    step = max(shp[i - 1] * v.step / max(v.stop - v.start, 1)
-               for i, v in enumerate(view) if isinstance(v, slice))
-    step = max(step, 1)
-
-    for i, v in enumerate(v2):
-        if not(isinstance(v, slice)):
-            continue
-        v2[i] = slice(0, shp[i - 1], step)
-
-    return tuple(v2), view
 
 
 def small_view(data, attribute):
@@ -62,37 +26,6 @@ def small_view_array(data):
     shp = data.shape
     view = tuple([slice(None, None, max(s / 50, 1)) for s in shp])
     return np.asarray(data)[view]
-
-
-def _scoreatpercentile(values, percentile, limit=None):
-    # Avoid using the scipy version since it is available in Numpy
-    if limit is not None:
-        values = values[(values >= limit[0]) & (values <= limit[1])]
-    return np.percentile(values, percentile)
-
-
-def fast_limits(data, plo, phi):
-    """Quickly estimate percentiles in an array,
-    using a downsampled version
-
-    :param data: array-like
-    :param plo: Lo percentile
-    :param phi: High percentile
-
-    :rtype: Tuple of floats. Approximate values of each percentile in
-            data[component]
-    """
-
-    shp = data.shape
-    view = tuple([slice(None, None, max(s / 50, 1)) for s in shp])
-    values = np.asarray(data)[view]
-    if ~np.isfinite(values).any():
-        return (0.0, 1.0)
-
-    limits = (-np.inf, np.inf)
-    lo = _scoreatpercentile(values.flat, plo, limit=limits)
-    hi = _scoreatpercentile(values.flat, phi, limit=limits)
-    return lo, hi
 
 
 def visible_limits(artists, axis):
@@ -180,61 +113,3 @@ def update_ticks(axes, coord, components, is_log):
     else:
         axis.set_major_locator(AutoLocator())
         axis.set_major_formatter(ScalarFormatter())
-
-
-class DeferredMethod(object):
-
-    """
-    This class stubs out a method, and provides a
-    callable interface that logs its calls. These
-    can later be actually executed on the original (non-stubbed)
-    method by calling executed_deferred_calls
-    """
-
-    def __init__(self, method):
-        self.method = method
-        self.calls = []  # avoid hashability issues with dict/set
-
-    @property
-    def original_method(self):
-        return self.method
-
-    def __call__(self, instance, *a, **k):
-        if instance not in (c[0] for c in self.calls):
-            self.calls.append((instance, a, k))
-
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-        return partial(self.__call__, instance)
-
-    def execute_deferred_calls(self):
-        for instance, args, kwargs in self.calls:
-            self.method(instance, *args, **kwargs)
-
-
-def defer_draw(func):
-    """
-    Decorator that globally defers all Agg canvas draws until
-    function exit.
-
-    If a Canvas instance's draw method is invoked multiple times,
-    it will only be called once after the wrapped function returns.
-    """
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-
-        # don't recursively defer draws
-        if isinstance(FigureCanvasAgg.draw, DeferredMethod):
-            return func(*args, **kwargs)
-
-        try:
-            FigureCanvasAgg.draw = DeferredMethod(FigureCanvasAgg.draw)
-            result = func(*args, **kwargs)
-        finally:
-            FigureCanvasAgg.draw.execute_deferred_calls()
-            FigureCanvasAgg.draw = FigureCanvasAgg.draw.original_method
-        return result
-
-    wrapper._is_deferred = True
-    return wrapper

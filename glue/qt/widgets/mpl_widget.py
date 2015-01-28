@@ -20,36 +20,7 @@ except ImportError:  # mpl >= 1.4
 import matplotlib
 from matplotlib.figure import Figure
 
-
-class DeferredMethod(object):
-
-    """
-    This class stubs out a method, and provides a
-    callable interface that logs its calls. These
-    can later be actually executed on the original (non-stubbed)
-    method by calling executed_deferred_calls
-    """
-
-    def __init__(self, method):
-        self.method = method
-        self.calls = []  # avoid hashability issues with dict/set
-
-    @property
-    def original_method(self):
-        return self.method
-
-    def __call__(self, instance, *a, **k):
-        if instance not in (c[0] for c in self.calls):
-            self.calls.append((instance, a, k))
-
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-        return partial(self.__call__, instance)
-
-    def execute_deferred_calls(self):
-        for instance, args, kwargs in self.calls:
-            self.method(instance, *args, **kwargs)
+from ...utils import DeferredMethod
 
 
 def defer_draw(func):

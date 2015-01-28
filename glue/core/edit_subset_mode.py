@@ -14,7 +14,7 @@ import logging
 from .decorators import singleton
 from .data import Data
 from .data_collection import DataCollection
-from .util import as_list
+from ..utils import as_list
 from .contracts import contract
 
 

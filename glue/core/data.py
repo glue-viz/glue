@@ -15,8 +15,8 @@ from .component_link import (ComponentLink, CoordinateComponentLink,
                              BinaryComponentLink)
 from .subset import Subset, InequalitySubsetState, SubsetState
 from .hub import Hub
-from .util import (split_component_view, view_shape, shape_to_string,
-                   coerce_numeric, check_sorted, unique, row_lookup)
+from .util import split_component_view, row_lookup
+from ..utils import unique, shape_to_string, view_shape, coerce_numeric, check_sorted
 from .decorators import clear_cache
 from .message import (DataUpdateMessage,
                       DataAddComponentMessage, NumericalDataChangedMessage,

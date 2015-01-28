@@ -8,7 +8,8 @@ from .data_factories import load_data
 from . import command
 from . import Data, Subset
 from .hub import HubListener
-from .util import PropertySetMixin, as_list
+from .util import PropertySetMixin
+from ..utils import as_list
 from .edit_subset_mode import EditSubsetMode
 from .session import Session
 from ..config import settings

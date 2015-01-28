@@ -6,7 +6,8 @@ from time import time
 import numpy as np
 
 from ..core.exceptions import IncompatibleAttribute
-from ..core.util import Pointer, view_shape, stack_view, split_component_view, color2rgb
+from ..core.util import Pointer, split_component_view
+from ..utils import view_shape, stack_view, color2rgb
 
 from .image_client import ImageClient
 from .layer_artist import (LayerArtistBase,

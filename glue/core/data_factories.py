@@ -39,7 +39,7 @@ import numpy as np
 
 from .data import Component, Data, CategoricalComponent
 from .io import extract_data_fits, extract_data_hdf5
-from .util import file_format, as_list
+from ..utils import as_list, file_format
 from .coordinates import coordinates_from_header, coordinates_from_wcs
 from ..backends import get_backend
 from ..config import auto_refresh

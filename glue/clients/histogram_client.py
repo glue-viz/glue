@@ -9,9 +9,9 @@ from ..core.subset import RangeSubsetState
 from ..core.exceptions import IncompatibleDataException, IncompatibleAttribute
 from ..core.edit_subset_mode import EditSubsetMode
 from .layer_artist import HistogramLayerArtist, LayerArtistContainer
-from .util import visible_limits, update_ticks
+from .util import update_ticks, visible_limits
 from ..core.callback_property import CallbackProperty, add_callback
-from ..core.util import lookup_class
+from ..utils import lookup_class
 
 
 class UpdateProperty(CallbackProperty):
