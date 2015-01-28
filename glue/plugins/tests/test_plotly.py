@@ -2,8 +2,10 @@ import pytest
 import numpy as np
 
 from ...core import Data, DataCollection
-from ...qt.glue_application import GlueApplication
-from ...qt.widgets import ScatterWidget, ImageWidget, HistogramWidget
+from ...app.glue_application import GlueApplication
+from ...viewers.image.qt_widget import ImageWidget
+from ...viewers.scatter.qt_widget import ScatterWidget
+from ...viewers.histogram.qt_widget import HistogramWidget
 from ..export_plotly import build_plotly_call
 
 

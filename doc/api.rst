@@ -38,9 +38,6 @@ Core Data
 User Interface
 ==============
 
-.. automodsumm:: glue.qt.widgets.image_widget
-    :toctree: api/
-
 .. automodsumm:: glue.core.application_base
     :toctree: api/
 
@@ -50,13 +47,16 @@ User Interface
 .. automodsumm:: glue.qt.widgets.data_viewer
     :toctree: api/
 
-.. automodsumm:: glue.qt.widgets.scatter_widget
+.. automodsumm:: glue.viewers.image.qt_widget
     :toctree: api/
 
-.. automodsumm:: glue.qt.widgets.histogram_widget
+.. automodsumm:: glue.viewers.scatter.qt_widget
     :toctree: api/
 
-.. automodsumm:: glue.qt.glue_application
+.. automodsumm:: glue.viewers.histogram.qt_widget
+    :toctree: api/
+
+.. automodsumm:: glue.app.glue_application
     :toctree: api/
 
 .. automodsumm:: glue.qglue

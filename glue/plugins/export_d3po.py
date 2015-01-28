@@ -4,7 +4,6 @@ import json
 import os
 
 from ..config import exporters
-from ..qt.widgets import ScatterWidget, HistogramWidget
 from ..core import Subset
 
 
@@ -49,6 +48,10 @@ def save_plot_base(plot, index):
 
 
 def save_plot(plot, index):
+
+    from ..viewers.scatter.qt_widget import ScatterWidget
+    from ..viewers.histogram.qt_widget import HistogramWidget
+
     dispatch = {ScatterWidget: save_scatter,
                 HistogramWidget: save_histogram}
     typ = type(plot)
@@ -128,6 +131,10 @@ def can_save_d3po(application):
 
     Raises an exception if not
     """
+
+    from ..viewers.scatter.qt_widget import ScatterWidget
+    from ..viewers.histogram.qt_widget import HistogramWidget
+
     dc = application.session.data_collection
 
     if len(dc) != 1:

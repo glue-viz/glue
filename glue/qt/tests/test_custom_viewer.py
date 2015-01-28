@@ -10,7 +10,6 @@ from ...core import Data
 from ...core.subset import SubsetState
 from ...core.tests.util import simple_session
 from ..custom_viewer import FormElement, NumberElement, ChoiceElement, CustomViewer, CustomSubsetState, AttributeInfo
-from ..glue_application import GlueApplication
 from ...core.tests.test_state import check_clone_app, clone
 
 
@@ -213,12 +212,14 @@ class TestCustomViewer(object):
 
 
 def test_state_save():
+    from ...app.glue_application import GlueApplication
     app = GlueApplication()
     w = app.new_data_viewer(viewer._widget_cls)
     check_clone_app(app)
 
 
 def test_state_save_with_data_layers():
+    from ...app.glue_application import GlueApplication
     app = GlueApplication()
     dc = app.data_collection
     d = Data(x=[1, 2, 3], label='test')

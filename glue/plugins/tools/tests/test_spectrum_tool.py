@@ -5,7 +5,7 @@ from mock import MagicMock
 from ....core.tests.util import simple_session
 from ....core import Data, Coordinates
 from ....core.roi import RectangularROI
-from ....qt.widgets import ImageWidget
+from ....viewers.image.qt_widget import ImageWidget
 
 from ..spectrum_tool import Extractor, ConstraintsWidget, FitSettingsWidget, SpectrumTool
 from ....core.fitters import PolynomialFitter

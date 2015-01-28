@@ -1,6 +1,6 @@
 import numpy as np
 from ...qt.mouse_mode import PathMode
-from ...qt.widgets.image_widget import StandaloneImageWidget
+from ...viewers.image.qt_widget import StandaloneImageWidget
 from ...qt.widgets.mpl_widget import defer_draw
 
 

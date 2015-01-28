@@ -4,11 +4,10 @@ from __future__ import absolute_import, division, print_function
 
 from ....core import Data, DataCollection
 from ..data_viewer import DataViewer
-from ..histogram_widget import HistogramWidget
-from ..scatter_widget import ScatterWidget
-from ..image_widget import ImageWidget
-from ..dendro_widget import DendroWidget
-from ...glue_application import GlueApplication
+from ....viewers.histogram.qt_widget import HistogramWidget
+from ....viewers.scatter.qt_widget import ScatterWidget
+from ....viewers.image.qt_widget import ImageWidget
+from ....viewers.dendro.qt_widget import DendroWidget
 
 from . import simple_session
 
@@ -39,6 +38,7 @@ def test_unregister_on_close(widget):
 
 @all_widgets
 def test_single_draw_call_on_create(widget):
+    from ....app.glue_application import GlueApplication
     d = Data(x=[[1, 2], [3, 4]])
     dc = DataCollection([d])
     app = GlueApplication(dc)
@@ -59,6 +59,9 @@ def test_single_draw_call_on_create(widget):
 
 @all_widgets
 def test_close_on_last_layer_remove(widget):
+
+    from ....app.glue_application import GlueApplication
+
     # regression test for 391
 
     d = Data(x=[[1, 2], [3, 4]])
