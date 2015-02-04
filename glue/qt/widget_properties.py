@@ -21,12 +21,13 @@ from __future__ import absolute_import, division, print_function
 
 from functools import partial
 
-from .qtutil import pretty_number
-from ..external.qt import QtGui
+from .qtutil import pretty_number, pretty_date
+from ..external.qt import QtGui, QtCore
 from ..external.six.moves import reduce
 from ..core.callback_property import add_callback
-from matplotlib.dates import num2date, date2num
+from matplotlib.dates import date2num
 import datetime as dt
+import re
 
 
 class WidgetProperty(object):
@@ -133,27 +134,33 @@ class DateLineProperty(WidgetProperty):
     """
 
     def getter(self, widget):
-        try:
-            txt = widget.text()
-            print(txt)
-            if str.isdigit(txt):
-                return float(txt)
-            else:
-                [m, d, y] = txt.split('-')
-                return date2num(dt.date(y, m, d))
+        txt = widget.text()
+        flds = re.split('[\s/:]', txt)
 
-        except ValueError:
-            return date2num(dt.date(1970, 1, 1))
+        if len(flds) is 1:
+            try:
+                return float(flds[0])
+            except ValueError:
+                return 0
+        else:
+            try:
+                [mo, d, y] = flds[:3]
+                rest = [0, 0, 0, 0]  # hours, minutes, seconds, microseconds
+                i = 3
+                while i < len(flds) and str.isdigit(str(flds[i])):
+                    rest[i - 3] = int(flds[i])
+                    i += 1
+                if i < len(flds):
+                    p = flds[i]
+                    if p in ['PM pm']:
+                        rest[0] += 12
+                [h, m, s, ms] = rest[:]
+                return float(date2num(dt.datetime(int(y), int(mo), int(d), h, m, s, ms)))
+            except ValueError:
+                return float(date2num(dt.date(1970, 1, 1)))
 
     def setter(self, widget, value):
-        txt = widget.text()
-        print(txt)
-        if str.isdigit(txt):
-            widget.setText(pretty_number(value))
-        else:
-            d = num2date(value)
-            widget.setText(str(d.month) + '-' + str(d.day) + '-' + str(d.year))
-
+        widget.setText(pretty_number(value))
         widget.editingFinished.emit()
 
 
@@ -230,41 +237,50 @@ def connect_date_edit(client, prop, widget):
 
     client.prop should be a callback property
     """
-    v = QtGui.QDoubleValidator(None)
-    v.setDecimals(4)
+    v = QtGui.QRegExpValidator(None)
+    rx = QtCore.QRegExp('((((0?\d)|1[0-2])?/((0?\d)|[12]\d|3[01])?/\d{0,4})' +
+                        '((\s((0?\d)|1\d|2[0-4])?(:((0?\d)|[1-5]\d)?' +
+                        '(:((0?\d)|[1-5]\d)(:(\d{1,6}|1000000)?)?)?)?((\s([aApP][mM])$)|$))|$)' +
+                        ')|([\-\+]?\d+(\.\d{1,3})?($|(e[\-\+]?\d{1,3})?$))')
+    v.setRegExp(rx)
     widget.setValidator(v)
 
     def update_prop():
         txt = widget.text()
+        flds = re.split('[\s/:]', txt)
 
-        if (client._check_if_date(client.xatt) and prop[0] == 'x') or \
-                (client._check_if_date(client.yatt) and prop[0] == 'y'):
-            [m, d, y] = txt.split('-')
+        if len(flds) is 1:
             try:
-                setattr(client, prop, date2num(dt.date(y, m, d)))
-            except ValueError:
-                setattr(client, prop, date2num(dt.date(1970, 1, 1)))
-        else:
-            try:
-                setattr(client, prop, float(txt))
+                setattr(client, prop, float(flds[0]))
             except ValueError:
                 setattr(client, prop, 0)
+        else:
+            try:
+                [mo, d, y] = flds[:3]
+                rest = [0, 0, 0, 0]  # hours, minutes, seconds, microseconds
+                i = 3
+                while i < len(flds) and str.isdigit(str(flds[i])):
+                    rest[i - 3] = int(flds[i])
+                    i += 1
+
+                if str(flds[-1]) in ['PM', 'pm'] and rest[0] < 12:
+                        rest[0] += 12
+                [h, m, s, ms] = rest[:]
+                setattr(client, prop, float(date2num(dt.datetime(int(y), int(mo), int(d), h, m, s, ms))))
+            except ValueError:
+                setattr(client, prop, float(date2num(dt.date(1970, 1, 1))))
 
     def update_widget(val):
-        print((client._check_if_date(client.xatt) and prop[0] == 'x') or (client._check_if_date(client.yatt) and prop[0] == 'y'))
+
         if (client._check_if_date(client.xatt) and prop[0] == 'x') or \
                 (client._check_if_date(client.yatt) and prop[0] == 'y'):
-            try:
-                d = num2date(val)
-            except ValueError:
-                d = dt.date(1970, 1, 1)
-            widget.setText(str(d.month) + '-' + str(d.day) + '-' + str(d.year))
+            widget.setText(pretty_date(val))
         else:
             widget.setText(pretty_number(val))
 
-        add_callback(client, prop, update_widget)
-        widget.editingFinished.connect(update_prop)
-        update_widget(getattr(client, prop))
+    add_callback(client, prop, update_widget)
+    widget.editingFinished.connect(update_prop)
+    update_widget(getattr(client, prop))
 
 
 def connect_int_spin(client, prop, widget):

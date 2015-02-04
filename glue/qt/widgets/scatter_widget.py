@@ -175,13 +175,6 @@ class ScatterWidget(DataViewer):
         self.client.xatt = self.xatt
         self.client.yatt = self.yatt
         self.client.group = self.group
-        # print(self.xatt)
-        # print(self.yatt)
-
-        # print(self.yatt)
-        # print(self._data[0].get_component(self._data[0].find_component_id(self.yatt)))
-        # print(self._data[0].get_component(self._data[0].find_component_id(self.yatt)).data)
-        # print(self._data[0].get_component(self._data[0].find_component_id(self.yatt)).datetime)
 
     @defer_draw
     def add_data(self, data):
