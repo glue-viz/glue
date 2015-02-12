@@ -6,7 +6,7 @@ import numpy as np
 from matplotlib.dates import num2date
 
 from ..core.client import Client
-from ..core.data import Data, IncompatibleAttribute, ComponentID, CategoricalComponent
+from ..core.data import Data, IncompatibleAttribute, Component, ComponentID, CategoricalComponent
 from ..core.subset import RoiSubsetState, RangeSubsetState
 from ..core.roi import PolygonalROI, RangeROI
 from ..core.util import relim
@@ -35,7 +35,7 @@ class ScatterClient(Client):
     xflip = CallbackProperty(False)
     xatt = CallbackProperty()
     yatt = CallbackProperty()
-    group = CallbackProperty()
+    gatt = CallbackProperty()
     jitter = CallbackProperty()
 
     def __init__(self, data=None, figure=None, axes=None,
@@ -96,7 +96,7 @@ class ScatterClient(Client):
         add_callback(self, 'ymax', self._set_limits)
         add_callback(self, 'xatt', partial(self._set_xydata, 'x'))
         add_callback(self, 'yatt', partial(self._set_xydata, 'y'))
-        add_callback(self, 'group', partial(self._set_xydata, 'group'))
+        add_callback(self, 'gatt', partial(self._set_xydata, 'g'))
         add_callback(self, 'jitter', self._jitter)
         self.axes.figure.canvas.mpl_connect('draw_event',
                                             lambda x: self._pull_properties())
@@ -122,6 +122,19 @@ class ScatterClient(Client):
         comp = data.components if show_hidden else data.visible_components
         return [c for c in comp if
                 data.get_component(c).numeric or data.get_component(c).datetime]
+
+    def groupable_attributes(self, layer, show_hidden=False):
+        data = layer.data
+        if not data.find_component_id('None'):
+            l = data._shape[0]
+            none_comp = Component(np.array(range(0, l)), units='None')
+            data.add_component(none_comp, 'None', hidden=False)
+        comp = data.components if show_hidden else data.visible_components
+        groups = [comp[-1]]
+        for c in comp:
+            if data.get_component(c).group:
+                groups.append(c)
+        return groups
 
     def add_layer(self, layer):
         """ Adds a new visual layer to a client, to display either a dataset
@@ -223,8 +236,8 @@ class ScatterClient(Client):
            If True, will rescale x/y axes to fit the data
         :type snap: bool
         """
-        if coord not in ('x', 'y', 'group'):
-            raise TypeError("coord must be one of x,y")
+        if coord not in ('x', 'y', 'g'):
+            raise TypeError("coord must be one of x, y, g")
         if not isinstance(attribute, ComponentID):
             raise TypeError("attribute must be a ComponentID")
 
@@ -237,9 +250,9 @@ class ScatterClient(Client):
             new_add = not self._yset
             self.yatt = attribute
             self._yset = self.yatt is not None
-        elif coord == 'group':
-            self.group = attribute
-            self._gset = self.group is not None
+        elif coord == 'g':
+            self.gatt = attribute
+            self._gset = self.gatt is not None
 
         # update plots
         list(map(self._update_layer, self.artists.layers))
@@ -364,8 +377,6 @@ class ScatterClient(Client):
     def _update_axis_labels(self, *args):
         self.axes.set_xlabel(self.xatt)
         self.axes.set_ylabel(self.yatt)
-        for a in args:
-            print(a)
         if self.xatt is not None:
             update_ticks(self.axes, 'x',
                          list(self._get_data_components('x')),
@@ -466,6 +477,7 @@ class ScatterClient(Client):
         for art in self.artists[layer]:
             art.xatt = self.xatt
             art.yatt = self.yatt
+            art.gatt = self.gatt
             art.force_update() if force else art.update()
         self._redraw()
 
@@ -498,6 +510,8 @@ class ScatterClient(Client):
             self.xatt = new
         if self.yatt is old:
             self.yatt = new
+        if self.gatt is old:
+            self.gatt = new
 
     def register_to_hub(self, hub):
         super(ScatterClient, self).register_to_hub(hub)

@@ -227,6 +227,15 @@ class Component(object):
         dt = isinstance(self.data.dtype, datetime.date)
         return dt64 or dt
 
+    @property
+    def group(self):
+        """
+        Whether or not the datatype can be considered a grouping identifier
+        """
+        elems = len(self.data[:])
+        groups = len(np.unique(self.data[:]))
+        return (elems / groups) > 2 and groups < 1001
+
     def __str__(self):
         return "Component with shape %s" % shape_to_string(self.shape)
 

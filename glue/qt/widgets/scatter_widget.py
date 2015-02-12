@@ -33,7 +33,7 @@ class ScatterWidget(DataViewer):
 
     LABEL = "Scatter Plot"
     _property_set = DataViewer._property_set + \
-        'xlog ylog xflip yflip hidden xatt yatt xmin xmax ymin ymax group'.split()
+        'xlog ylog xflip yflip hidden xatt yatt xmin xmax ymin ymax gatt'.split()
 
     xlog = ButtonProperty('ui.xLogCheckBox', 'log scaling on x axis?')
     ylog = ButtonProperty('ui.yLogCheckBox', 'log scaling on y axis?')
@@ -48,7 +48,7 @@ class ScatterWidget(DataViewer):
                                 'Attribute to plot on x axis')
     yatt = CurrentComboProperty('ui.yAxisComboBox',
                                 'Attribute to plot on y axis')
-    group = CurrentComboProperty('ui.groupComboBox',
+    gatt = CurrentComboProperty('ui.groupComboBox',
                                  'Attribute to group time series')
 
 
@@ -92,7 +92,7 @@ class ScatterWidget(DataViewer):
 
         ui.xAxisComboBox.currentIndexChanged.connect(self.update_xatt)
         ui.yAxisComboBox.currentIndexChanged.connect(self.update_yatt)
-        ui.groupComboBox.currentIndexChanged.connect(self.update_group)
+        ui.groupComboBox.currentIndexChanged.connect(self.update_gatt)
         ui.hidden_attributes.toggled.connect(lambda x: self._update_combos())
         ui.swapAxes.clicked.connect(nonpartial(self.swap_axes))
         ui.snapLimits.clicked.connect(cl.snap)
@@ -131,11 +131,12 @@ class ScatterWidget(DataViewer):
         # are potentially out of sync
 
         layer_ids = []
+        glayer_ids = []
 
         # show hidden attributes if needed
         if ((self.client.xatt and self.client.xatt.hidden) or
                 (self.client.yatt and self.client.yatt.hidden) or
-                (self.client.group and self.client.group.hidden)):
+                (self.client.gatt and self.client.gatt.hidden)):
             self.hidden = True
 
         # determine which components to put in combos
@@ -146,16 +147,20 @@ class ScatterWidget(DataViewer):
                     l, show_hidden=self.hidden):
                 if lid not in layer_ids:
                     layer_ids.append(lid)
+            for glid in self.client.groupable_attributes(
+                    l, show_hidden=self.hidden):
+                if glid not in glayer_ids:
+                    glayer_ids.append(glid)
 
         oldx = self.xatt
         oldy = self.yatt
-        oldg = self.group
+        oldg = self.gatt
         newx = self.client.xatt or oldx
         newy = self.client.yatt or oldy
-        newg = self.client.group or oldg
+        newg = self.client.gatt or oldg
 
-        for combo, target in zip([self.ui.xAxisComboBox, self.ui.yAxisComboBox, self.ui.groupComboBox],
-                                 [newx, newy, newg]):
+        for combo, target in zip([self.ui.xAxisComboBox, self.ui.yAxisComboBox],
+                                 [newx, newy]):
             combo.blockSignals(True)
             combo.clear()
 
@@ -171,10 +176,27 @@ class ScatterWidget(DataViewer):
 
             combo.blockSignals(False)
 
+        for combo, target in zip([self.ui.groupComboBox], [newg]):
+
+            combo.blockSignals(True)
+            combo.clear()
+
+            if not glayer_ids:  # empty component list
+                continue
+
+            # populate
+            for glid in glayer_ids:
+                combo.addItem(glid.label, userData=glid)
+
+            idx = glayer_ids.index(target) if target in glayer_ids else 0
+            combo.setCurrentIndex(idx)
+
+            combo.blockSignals(False)
+
         # ensure client and widget synced
         self.client.xatt = self.xatt
         self.client.yatt = self.yatt
-        self.client.group = self.group
+        self.client.gatt = self.gatt
 
     @defer_draw
     def add_data(self, data):
@@ -291,9 +313,9 @@ class ScatterWidget(DataViewer):
         return label
 
     @defer_draw
-    def update_group(self, index):
-        component_id = self.group
-        self.client.group = component_id
+    def update_gatt(self, index):
+        component_id = self.gatt
+        self.client.gatt = component_id
 
     def _sync_labels(self):
         self.update_window_title()
@@ -308,4 +330,4 @@ class ScatterWidget(DataViewer):
         # manually force client attributes to sync
         self.update_xatt(None)
         self.update_yatt(None)
-        self.update_group(None)
+        self.update_gatt(None)

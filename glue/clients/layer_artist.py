@@ -17,14 +17,13 @@ from contextlib import contextmanager
 from abc import ABCMeta, abstractproperty, abstractmethod
 
 import numpy as np
-
 from matplotlib.cm import gray
 from ..external import six
 from ..core.exceptions import IncompatibleAttribute
 from ..core.util import PropertySetMixin, Pointer
 from ..core.subset import Subset
-from .util import small_view, small_view_array
 from ..utils import view_cascade, get_extent, color2rgb
+from .util import view_cascade, get_extent, small_view, small_view_array, get_colors
 from .ds9norm import DS9Normalize
 
 
@@ -217,6 +216,8 @@ class ScatterLayerBase(object):
     # which ComponentID to assign to Y axis
     yatt = abstractproperty()
 
+    gatt = abstractproperty()
+
     @abstractmethod
     def get_data(self):
         """
@@ -353,7 +354,7 @@ class LayerArtist(LayerArtistBase):
             artist.set_markerfacecolor(style.color)
             artist.set_marker(style.marker)
             artist.set_markersize(style.markersize)
-            artist.set_linestyle('None')
+            # artist.set_linestyle('None')
             artist.set_alpha(style.alpha)
             artist.set_zorder(self.zorder)
             artist.set_visible(self.visible and self.enabled)
@@ -686,7 +687,8 @@ class DendroLayerArtist(LayerArtist):
 class ScatterLayerArtist(LayerArtist, ScatterLayerBase):
     xatt = ChangedTrigger()
     yatt = ChangedTrigger()
-    _property_set = LayerArtist._property_set + ['xatt', 'yatt']
+    gatt = ChangedTrigger()
+    _property_set = LayerArtist._property_set + ['xatt', 'yatt', 'gatt']
 
     def __init__(self, layer, ax):
         super(ScatterLayerArtist, self).__init__(layer, ax)
@@ -694,16 +696,28 @@ class ScatterLayerArtist(LayerArtist, ScatterLayerBase):
 
     def _recalc(self):
         self.clear()
+
         assert len(self.artists) == 0
 
         try:
             x = self.layer[self.xatt].ravel()
             y = self.layer[self.yatt].ravel()
+            g = self.layer[self.gatt].ravel()
         except IncompatibleAttribute as exc:
             self.disable_invalid_attributes(*exc.args)
             return False
+        self.artists = self._axes.plot(x, y, 'k.')
 
-        self.artists = self._axes.plot(x, y)
+        gu = np.unique(g)
+        colors = get_colors(len(gu))
+
+        if len(gu) is not len(g):
+            for elem, c in zip(gu, colors):
+                xg = x[g == elem]
+                yg = y[g == elem]
+                i = np.argsort(xg)
+                art = self._axes.plot(xg[i], yg[i], '.-', color=c)
+                self.artists.extend(art)
 
         return True
 

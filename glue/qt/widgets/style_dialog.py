@@ -63,6 +63,11 @@ class StyleDialog(QDialog):
         color = mpl_to_qt4_color(color, alpha=self.layer.style.alpha)
         self.set_color(color)
 
+        self.linewidth_widget = QSpinBox()
+        self.linewidth_widget.setMinimum(1)
+        self.linewidth_widget.setMaximum(10)
+        self.linewidth_widget.setValue(self.layer.style.linewidth)
+
         self.okcancel = QDialogButtonBox(QDialogButtonBox.Ok |
                                          QDialogButtonBox.Cancel)
 
@@ -71,6 +76,7 @@ class StyleDialog(QDialog):
         self.layout.addRow("Symbol", self.symbol_widget)
         self.layout.addRow("Color", self.color_widget)
         self.layout.addRow("Size", self.size_widget)
+        self.layout.addRow("Line", self.linewidth_widget)
 
         self.layout.addWidget(self.okcancel)
 
@@ -109,6 +115,9 @@ class StyleDialog(QDialog):
     def symbol(self):
         return self._symbols[self.symbol_widget.currentIndex()]
 
+    def linewidth(self):
+        return self.linewidth_widget.value()
+
     def update_style(self):
         if self._edit_label:
             self.layer.label = self.label()
@@ -116,6 +125,7 @@ class StyleDialog(QDialog):
         self.layer.style.alpha = self.color().alpha() / 255.
         self.layer.style.marker = self.symbol()
         self.layer.style.markersize = self.size()
+        self.layer.style.linewidth = self.linewidth()
 
     @classmethod
     def edit_style(cls, layer):
@@ -155,4 +165,5 @@ if __name__ == "__main__":
     print('color: ', d.style.color)
     print('marker: ', d.style.marker)
     print('marker size: ', d.style.markersize)
+    print('line width: ', d.style.linewidth)
     print('alpha ', d.style.alpha)

@@ -340,7 +340,7 @@
       <item>
        <widget class="QLabel" name="group">
         <property name="text">
-         <string>Group Time Series by:</string>
+         <string>Group by:</string>
         </property>
        </widget>
       </item>z
