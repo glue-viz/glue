@@ -426,6 +426,14 @@ class GlueApplication(Application, QMainWindow):
         mbar.addMenu(menu)
 
         menu = QMenu(mbar)
+        menu.setTitle("&View ")
+
+        a = QAction("&Console Log", menu)
+        a.triggered.connect(self._ui.log._show)
+        menu.addAction(a)
+        mbar.addMenu(menu)
+
+        menu = QMenu(mbar)
         menu.setTitle("&Canvas")
         menu.addAction(self._actions['tab_new'])
         menu.addAction(self._actions['viewer_new'])
