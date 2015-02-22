@@ -199,7 +199,7 @@ Usage Examples
 --------------
 
 Adding new attributes to datasets
-.................................
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A common task is to combine two or more attributes in a dataset,
 and store the result as a new attribute to visualize. Let's use
@@ -238,7 +238,7 @@ To add this back to the dataset::
 This new attribute is now available for visualizing in the GUI
 
 Adding lazy attributes
-......................
+^^^^^^^^^^^^^^^^^^^^^^
 
 In the procedure above, the `j_minus_h` array was precomputed.
 An alternative approach is to define a new attribute on the fly.
@@ -255,7 +255,8 @@ be more memory efficient for particular applications.
 
 
 Defining new subsets
-....................
+^^^^^^^^^^^^^^^^^^^^
+
 You can define new subsets from Python. An example might look like::
 
     state = catalog.id['j'] > catalog.id['h']

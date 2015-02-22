@@ -65,7 +65,7 @@ Glue has the following required dependencies:
 * `Numpy <http://www.numpy.org>`_
 * `Matplotlib <http://www.matplotlib.org>`_
 * `Pandas <http://pandas.pydata.org/>`_
-* Either `PyQt4 <http://www.riverbankcomputing.com/software/pyqt/intro>`_ or `PySide <http://qt-project.org/wiki/PySide>`_
+* Either `PyQt4`_ or `PySide`_
 
 And the following optional dependencies are also highly recommended:
 

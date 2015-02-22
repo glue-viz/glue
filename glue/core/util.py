@@ -12,6 +12,10 @@ from ..external.six.moves import reduce
 from ..external.six import string_types
 
 
+__all__ = ["identity", "relim", "split_component_view", "join_component_view",
+           "facet_subsets", "colorize_subsets", "defer", "disambiguate",
+           "row_lookup", "PropertySetMixin", "CallbackMixin", "Pointer"]
+
 def identity(x):
     return x
 

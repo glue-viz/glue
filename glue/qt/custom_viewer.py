@@ -92,6 +92,14 @@ from .mouse_mode import PolyMode, RectangleMode
 
 CUSTOM_WIDGETS = []
 
+__all__ = ["AttributeInfo", "ViewerState", "UserDefinedFunction",
+           "CustomViewer", "SettingsOracleInterface", "SettingsOracle",
+           "CustomViewerMeta", "CustomSubsetState", "FrozenSettings",
+           "CustomViewer", "CustomArtist", "CustomClient", "CustomWidgetBase",
+           "FormDescriptor", "FormElement", "NumberElement", "LabeledSlider",
+           "BoolElement", "FixedComponent", "ComponenentElement",
+           "ChoiceElement"]
+
 
 class AttributeInfo(np.ndarray):
 

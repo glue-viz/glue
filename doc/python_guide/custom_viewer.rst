@@ -101,7 +101,7 @@ is created. That's a good place to draw court markings:
 .. literalinclude:: scripts/bball_viewer_2.py
    :linenos:
 
-This version adds a new ``draw_court `` function at Line 30. Here's the result:
+This version adds a new ``draw_court`` function at Line 30. Here's the result:
 
 .. figure:: images/bball_3.png
    :align: center
@@ -119,7 +119,7 @@ set up this functionality. Keywords serve two purposes: they define
 new widgets to interact with the viewer, and they define keywords to pass
 onto drawing functions like ``plot_data``.
 
-For example, consider `this version <scripts/bball_viewer_3.py>`_ of the Shot Plot code:
+For example, consider `this version <scripts/bball_viewer_3.py>`__ of the Shot Plot code:
 
 .. literalinclude:: scripts/bball_viewer_3.py
    :linenos:
@@ -167,7 +167,7 @@ contained in a user-drawn :class:`region of interest <glue.core.roi.Roi>`:
    :lines: 18-20
    :linenos:
 
-With `this version <scripts/bball_viewer_4.py>`_ of the code you can how draw shapes on the plot to select data:
+With `this version <scripts/bball_viewer_4.py>`__ of the code you can how draw shapes on the plot to select data:
 
 .. figure:: images/bball_5.png
    :align: center

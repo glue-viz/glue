@@ -276,7 +276,9 @@ nitpick_ignore = [('py:class', 'object'), ('py:class', 'str'),
                   ('py:class', 'PySide.QtGui.QMainWindow'),
                   ('py:class', 'PySide.QtGui.QWidget'),
                   ('py:obj', "str ('file' | 'directory' | 'label')"),
-                  ('py:obj', 'function(application)')]
+                  ('py:obj', 'function(application)'),
+                  ('py:class', 'builtins.object'),
+                  ('py:class', 'builtins.list')]
 
 
 # coax Sphinx into treating descriptors as attributes
