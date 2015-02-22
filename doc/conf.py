@@ -21,6 +21,9 @@
 # If your documentation needs a minimal Sphinx version, state it here.
 #needs_sphinx = '1.0'
 
+# The following ensures that astropy-helpers is downloaded from PyPI and
+# installed locally in this directory, since it is needed for the Sphinx
+# extensions.
 from setuptools import Distribution
 Distribution({'setup_requires': 'astropy-helpers'})
 
