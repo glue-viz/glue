@@ -27,7 +27,7 @@ For more demos, check out the :ref:`videos <demo_videos>` page
    getting_started.rst
    gui_guide.rst
    python_guide.rst
-   developer_guide.rst
+   developer_guide/index.rst
    faq.rst
    videos.rst
    help.rst
