@@ -32,7 +32,7 @@ For example, say you are working with a `Pandas <http://pandas.pydata.org/>`_ Da
 
 This will send this data to Glue, label it ``xyz`` and start the UI.
 
-``qglue`` accepts many data types as inputs. Let's see some examples::
+:func:`~glue.qglue.qglue` accepts many data types as inputs. Let's see some examples::
 
     import numpy as np
     import pandas as pd
@@ -169,9 +169,9 @@ Glue includes a button to open an IPython terminal window. This gives
 you programmatic access to Glue data. A number of variables are available
 by default (these are also listed when you open the terminal):
 
-  * ``dc`` / ``data_collection`` refer to the central :class:`~glue.core.
-    DataCollection`, which holds all of the datasets, subsets, and
-    data links
+  * ``dc`` / ``data_collection`` refer to the central
+    :class:`~glue.core.data_collection.DataCollection`, which holds all of the
+    datasets, subsets, and data links
 
   * ``hub`` is the communication :ref:`hub <hub>` object.
 
@@ -191,7 +191,7 @@ window, to easily assign them new variable names.
 Notebook integration
 --------------------
 As described above, the IPython notebook can be configured so that
-Glue runs without blocking. When launched via :func:`qglue`,
+Glue runs without blocking. When launched via :func:`~glue.qglue.qglue`,
 that function immediately returns a reference to the
 :class:`~glue.qt.glue_application.GlueApplication` object.
 
@@ -208,7 +208,7 @@ the catalog data from the :ref:`Getting Started <getting_started>` as an example
 First, we need to grab the relevant dataset from the data collection.
 From the Glue-IPython window, we can do this simply by dragging the
 dataset onto the window. If we want to do this from what is
-returned by :func:`qglue`, it would look like this::
+returned by :func:`~glue.qglue.qglue`, it would look like this::
 
     print app.data_collection  # look at each dataset
     catalog = data_collection[2]  # or whichever entry it is

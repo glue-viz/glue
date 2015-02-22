@@ -98,7 +98,7 @@ class DataSlice(QWidget):
 
     def __init__(self, data=None, parent=None):
         """
-        :param data: :class:`~glue.core.Data` instance, or None
+        :param data: :class:`~glue.core.data.Data` instance, or None
         """
         super(DataSlice, self).__init__(parent)
         self._slices = []
@@ -132,7 +132,7 @@ class DataSlice(QWidget):
         """
         Change datasets
 
-        :parm data: :class:`~glue.core.Data` instance
+        :parm data: :class:`~glue.core.data.Data` instance
         """
 
         # remove old widgets

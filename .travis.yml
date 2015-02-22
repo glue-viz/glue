@@ -110,7 +110,9 @@ install:
 
 script:
   - py.test $PYTEST_ARGS glue
-  - if [ $DOC_TRIGGER ]; then cd doc && make html && cd ../; fi
+  # In the following command, the test -s ensures that warnings are not emitted
+  # by the docs build.
+  - if [ $DOC_TRIGGER ]; then cd doc && make html 2> warnings.log && test -s warnings.log && cd ../; fi
 
 after_success:
   - coveralls

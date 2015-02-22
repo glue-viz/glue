@@ -314,10 +314,10 @@ class ProfileViewer(object):
         :type y: array-like
 
         :param xatt: ComponentID associated with X axis
-        :type xatt: :class:`~glue.core.data.CompoenntID`
+        :type xatt: :class:`~glue.core.data.ComponentID`
 
         :param yatt: ComponentID associated with Y axis
-        :type yatt: :class:`~glue.core.data.CompoenntID`
+        :type yatt: :class:`~glue.core.data.ComponentID`
 
         Extra kwargs are passed to matplotlib.plot, to
         customize plotting

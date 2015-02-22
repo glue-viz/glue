@@ -193,7 +193,7 @@ viewer functions:
    The value passed to the function will be the current setting of the
    UI element.
  - ``axes`` is the matplotlib Axes object to draw to
- - ``roi`` is the :class:`glue.core.roi.ROI` object a user created --
+ - ``roi`` is the :class:`glue.core.roi.Roi` object a user created --
    it's only available in ``make_selection``.
  - ``style`` is available to ``plot_data`` and ``plot_subset``. It is
    the :class:`~glue.core.visual.VisualAttributes` associated with the

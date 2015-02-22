@@ -87,7 +87,7 @@ release = '0.4.0'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build', '_templates']
+exclude_patterns = ['_build', '_templates', '.eggs']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -278,7 +278,21 @@ nitpick_ignore = [('py:class', 'object'), ('py:class', 'str'),
                   ('py:obj', "str ('file' | 'directory' | 'label')"),
                   ('py:obj', 'function(application)'),
                   ('py:class', 'builtins.object'),
-                  ('py:class', 'builtins.list')]
+                  ('py:class', 'builtins.list'),
+                  ('py:class', 'builtins.type'),
+                  ('py:class', 'glue.clients.layer_artist.HistogramLayerBase'),
+                  ('py:class', 'glue.clients.layer_artist.ScatterLayerBase'),
+                  ('py:class', 'glue.clients.layer_artist.ImageLayerBase'),
+                  ('py:class', 'glue.clients.layer_artist.RGBImageLayerBase'),
+                  ('py:class', 'glue.qt.widgets.image_widget.ImageWidgetBase'),
+                  ('py:class', 'PyQt4.QtGui.QMainWindow'),
+                  ('py:class', 'PyQt4.QtGui.QWidget'),
+                  # TODO: the next four should be fixable
+                  ('py:obj', 'glue.qt.widgets.image_widget.ImageWidget.data'),
+                  ('py:obj', 'glue.qt.widgets.image_widget.ImageWidget.attribute'),
+                  ('py:obj', 'glue.qt.widgets.image_widget.ImageWidget.rgb_mode'),
+                  ('py:obj', 'glue.qt.widgets.image_widget.ImageWidget.slice')
+              ]
 
 
 # coax Sphinx into treating descriptors as attributes

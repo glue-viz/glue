@@ -27,6 +27,11 @@ from ..utils import view_cascade, get_extent, color2rgb
 from .ds9norm import DS9Normalize
 
 
+__all__ = ['LayerArtistBase', 'LayerArtist', 'DendroLayerArtist',
+           'HistogramLayerArtist', 'ScatterLayerArtist',
+           'LayerArtistContainer', 'RGBImageLayerArtist', 'ImageLayerArtist']
+
+
 class ChangedTrigger(object):
 
     """Sets an instance's _changed attribute to True on update"""

@@ -178,20 +178,20 @@ class UserDefinedFunction(object):
     """
     Descriptor to specify a UserDefinedFunction.
 
-    Defined in CustomViewer like this:
+    Defined in CustomViewer like this::
 
-    class CustomViewer(object):
-        ...
-        plot_data = UserDefinedFunction('plot_data')
+        class CustomViewer(object):
+            ...
+            plot_data = UserDefinedFunction('plot_data')
 
     The descriptor gives CustomViewer.plot_data a dual functionality.
     When accessed at the class level, it behaves as a decorator to
-    register new UDFs:
+    register new UDFs::
 
-    cv = custom_viewer(...)
-    @cv.plot_data  # becomes a decorator
-    def plot_data_implementation(...):
-        ...
+        cv = custom_viewer(...)
+        @cv.plot_data  # becomes a decorator
+        def plot_data_implementation(...):
+            ...
 
     When accessed at the instance level, it becomes a dispatch function
     that calls `plot_data_implementation` with the proper arguments
@@ -679,7 +679,7 @@ class CustomViewer(object):
     """
     Custom method called to build a :class:`~glue.core.subset.SubsetState` from an ROI.
 
-    See :meth:`~CutsomViewer.select` for an alternative way to define selections,
+    See :meth:`~CustomViewer.select` for an alternative way to define selections,
     by returning Boolean arrays instead of SubsetStates.
 
     Functions have access to the roi by accepting an ``roi``
@@ -1136,8 +1136,9 @@ class LabeledSlider(QtGui.QWidget):
     def valueChanged(self):
         """
         Pointer to valueChanged signal.
-        WARNING: the value emitted by this signal is unscaled,
-                 and shouldn't be used directly. Use .value() instead
+        
+        .. warning:: the value emitted by this signal is unscaled,
+                     and shouldn't be used directly. Use .value() instead
         """
         return self._slider.valueChanged
 

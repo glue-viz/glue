@@ -313,8 +313,7 @@ class GlueApplication(Application, QMainWindow):
         """
         Update a persistent setting in the application.
 
-        :param key: Name of a setting in the
-                    :attr:`Settings registry <glue.core.config.settings>`
+        :param key: Name of a setting in the ``settings`` registry
         :type key: str
         :param value: New value for the setting
         :type value: str

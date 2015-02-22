@@ -5,6 +5,8 @@ from ..core.client import Client
 from ..core import Data
 from .layer_artist import LayerArtistContainer
 
+__all__ = ['VizClient', 'GenericMplClient']
+
 
 class VizClient(Client):
 
@@ -26,7 +28,7 @@ class VizClient(Client):
     VizClient provides a public refresh() method that calls all of
     these methods.
 
-    Attributes:
+    Attributes
     ----------
 
     options: A dictionary of global plot options, to be handled by
@@ -217,7 +219,7 @@ class GenericMplClient(Client):
         Returns the created layer artist
 
         :param layer: The layer to add
-        :type layer: :class:`~glue.core.Data` or :class:`~glue.core.Subset`
+        :type layer: :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
         """
         if layer.data not in self.collect:
             return
