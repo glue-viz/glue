@@ -25,7 +25,7 @@
 # installed locally in this directory, since it is needed for the Sphinx
 # extensions.
 from setuptools import Distribution
-Distribution({'setup_requires': 'astropy-helpers'})
+Distribution({'setup_requires': 'astropy_helpers'})
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
