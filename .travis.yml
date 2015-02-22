@@ -110,9 +110,12 @@ install:
 
 script:
   - py.test $PYTEST_ARGS glue
+  - if [ $DOC_TRIGGER ]; then cd doc && make html 2> warnings_orig.log && grep -v PEP440 warnings_orig.log > warnings.log && cd ../ ; fi
+
   # In the following command, the test -s ensures that warnings are not emitted
   # by the docs build.
-  - if [ $DOC_TRIGGER ]; then cd doc && make html 2> warnings.log && test ! -s warnings.log && cat warnings.log && cd ../; fi
+  - if [ $DOC_TRIGGER ]; then cat doc/warnings.log; fi
+  - if [ $DOC_TRIGGER ]; then test ! -s doc/warnings.log; fi
 
 after_success:
   - coveralls
