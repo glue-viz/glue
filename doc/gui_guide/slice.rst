@@ -9,20 +9,20 @@ When visualizing image cubes, Glue's image viewer extracts axis-parallel slices
 through the data. You can also extract slices from *arbitrary* paths through
 the data, using the slice tool in the image viewer:
 
-.. figure:: glue_slice.png
+.. figure:: images/glue_slice.png
    :align: center
    :width: 50px
 
 Activate this mode and click (or click+drag) a path on an image:
 
-.. figure:: galaxy_slice.png
+.. figure:: images/galaxy_slice.png
    :align: center
    :width: 400px
 
 Hitting escape will reset the path. Hitting enter will extract this
 slice from the original cube, and display it in a new window:
 
-.. figure:: galaxy_slice_extracted.png
+.. figure:: images/galaxy_slice_extracted.png
    :align: center
    :width: 400px
 

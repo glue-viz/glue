@@ -9,7 +9,7 @@ the W5 Point Source catalog from the :ref:`tutorial <getting_started>`.
 We are using the example data for this tutorial. We also define a few
 subsets to play with. Our setup looks like this.
 
-.. image:: subset_01.png
+.. image:: images/subset_01.png
    :width: 60%
 
 Click the terminal button next to the link data button to open the terminal window.
@@ -32,7 +32,7 @@ To find the intersection of the two subsets we have already defined
 
 The resulting intersection is shown in blue here:
 
-.. image:: subset_02.png
+.. image:: images/subset_02.png
    :width: 60%
 
 The boolean operators ``&``, ``^``, ``|``, and ``~`` act on subsets to
@@ -46,5 +46,5 @@ You can also build subsets out of inequality constraints on component IDs::
 
 This selects objects with H band magnitudes between 10 and 15:
 
-.. image:: subset_03.png
+.. image:: images/subset_03.png
    :width: 60%

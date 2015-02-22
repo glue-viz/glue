@@ -25,7 +25,7 @@ For more demos, check out the :ref:`videos <demo_videos>` page
 
    installation.rst
    getting_started.rst
-   gui_guide.rst
+   gui_guide/index.rst
    python_guide.rst
    developer_guide/index.rst
    faq.rst
