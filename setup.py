@@ -15,19 +15,27 @@ with open('glue/version.py') as infile:
 
 # If the version is not stable, we can add a git hash to the __version__
 if '.dev' in __version__:
-    command = 'git rev-list --max-count=1 --abbrev-commit HEAD'
+
+    # Find hash for __githash__ and dev number for __version__ (can't use hash
+    # as per PEP440)
+
+    command_hash = 'git rev-list --max-count=1 --abbrev-commit HEAD'
+    command_number = 'git rev-list --count HEAD'
+
     try:
         commit_hash = subprocess.check_output(command, shell=True).decode('ascii').strip()
+        commit_number = subprocess.check_output(command, shell=True).decode('ascii').strip()
     except Exception:
         pass
     else:
 
-        # We write the git hash so that it gets frozen if installed
+        # We write the git hash and value so that they gets frozen if installed
         with open(os.path.join('glue', '_githash.py'), 'w') as f:
-            f.write("__githash__ = \"{githash}\"".format(githash=commit_hash))
+            f.write("__githash__ = \"{githash}\"\n".format(githash=commit_hash))
+            f.write("__dev_value__ = \"{dev_value}\"\n".format(dev_value=commit_number))
 
         # We modify __version__ here too for commands such as egg_info
-        __version__ += commit_hash
+        __version__ += commit_number
 
 try:
     import pypandoc
