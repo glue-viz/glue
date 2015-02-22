@@ -11,9 +11,6 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
-import os
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -24,14 +21,21 @@ import os
 # If your documentation needs a minimal Sphinx version, state it here.
 #needs_sphinx = '1.0'
 
+# The following ensures that astropy-helpers is downloaded from PyPI and
+# installed locally in this directory, since it is needed for the Sphinx
+# extensions.
+from setuptools import Distribution
+Distribution({'setup_requires': 'astropy-helpers'})
+
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.coverage',
               'sphinx.ext.mathjax', 'sphinx.ext.viewcode',
-              'astropy.sphinx.ext.astropyautosummary',
-              'astropy.sphinx.ext.automodapi',
-              'astropy.sphinx.ext.numpydoc',
-              'astropy.sphinx.ext.automodsumm', 'sphinx.ext.intersphinx']
+              'astropy_helpers.sphinx.ext.astropyautosummary',
+              'astropy_helpers.sphinx.ext.automodapi',
+              'astropy_helpers.sphinx.ext.numpydoc',
+              'astropy_helpers.sphinx.ext.automodsumm',
+              'sphinx.ext.intersphinx']
 
 intersphinx_cache_limit = 10     # days to keep the cached inventories
 intersphinx_mapping = {
