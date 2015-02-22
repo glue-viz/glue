@@ -12,7 +12,7 @@ To enable this feature, add the following line to your :ref:`config.py <configur
     from glue.config import auto_refresh
     auto_refresh(True)
 
-.. figure:: liveupdate.gif
+.. figure:: images/liveupdate.gif
    :align: center
 
 .. note:: This currently only works if file updates do not change the shape of

@@ -1,7 +1,7 @@
 Building Custom Data Viewers
 ============================
 
-.. figure:: bball_3.png
+.. figure:: images/bball_3.png
    :align: center
 
 Glue's standard data viewers (scatter plots, images, histograms) are
@@ -38,7 +38,7 @@ Shot Chart Version 1: Heatmap and plot
 Our first attempt at a shot chart will draw the heatmap of all shots,
 and overplot shot subsets as points. Here's the code:
 
-.. literalinclude:: _static/bball_viewer_1.py
+.. literalinclude:: scripts/bball_viewer_1.py
    :linenos:
 
 Before looking at the code itself, let's look at how it's used. If you
@@ -46,13 +46,13 @@ include or import this code in your :ref:`config.py <configuration>` file, Glue 
 Open `this shot catalog <https://raw.githubusercontent.com/ChrisBeaumont/basketball/master/shots.csv>`_, and create a new
 shot chart with it. You'll get something that looks like this:
 
-.. figure:: bball_1.png
+.. figure:: images/bball_1.png
    :align: center
 
 Furthermore, subsets that we define (e.g., by selecting regions of a
 histogram) are shown as points (notice that Tim Duncan's shots are concentrated closer to the hoop).
 
-.. figure:: bball_2.png
+.. figure:: images/bball_2.png
    :align: center
 
 Let's look at what the code does. Line 5 creates a new custom viewer,
@@ -98,12 +98,12 @@ Just as you can register data and subset plot functions, you can also
 register a setup function that gets called a single time, when the viewer
 is created. That's a good place to draw court markings:
 
-.. literalinclude:: _static/bball_viewer_2.py
+.. literalinclude:: scripts/bball_viewer_2.py
    :linenos:
 
 This version adds a new ``draw_court `` function at Line 30. Here's the result:
 
-.. figure:: bball_3.png
+.. figure:: images/bball_3.png
    :align: center
 
 Shot Chart Version 3: Widgets
@@ -119,9 +119,9 @@ set up this functionality. Keywords serve two purposes: they define
 new widgets to interact with the viewer, and they define keywords to pass
 onto drawing functions like ``plot_data``.
 
-For example, consider `this version <_static/bball_viewer_3.py>`_ of the Shot Plot code:
+For example, consider `this version <scripts/bball_viewer_3.py>`_ of the Shot Plot code:
 
-.. literalinclude:: _static/bball_viewer_3.py
+.. literalinclude:: scripts/bball_viewer_3.py
    :linenos:
 
 This code passes 4 new keywords to :func:`~glue.custom_viewer`:
@@ -140,7 +140,7 @@ This code passes 4 new keywords to :func:`~glue.custom_viewer`:
 
 This results in the following interface:
 
-.. figure:: bball_4.png
+.. figure:: images/bball_4.png
    :align: center
 
 Whenever the user changes the settings of these widgets, the
@@ -163,13 +163,13 @@ select data by drawing on the plot. To do so, we need to write a
 ``select`` function that computes whether a set of data points are
 contained in a user-drawn :class:`region of interest <glue.core.roi.Roi>`:
 
-.. literalinclude:: _static/bball_viewer_4.py
+.. literalinclude:: scripts/bball_viewer_4.py
    :lines: 18-20
    :linenos:
 
-With `this version <_static/bball_viewer_4.py>`_ of the code you can how draw shapes on the plot to select data:
+With `this version <scripts/bball_viewer_4.py>`_ of the code you can how draw shapes on the plot to select data:
 
-.. figure:: bball_5.png
+.. figure:: images/bball_5.png
    :align: center
 
 Viewer Subclasses
@@ -179,7 +179,7 @@ However, if your used to writing classes you can also subclass
 :class:`~glue.qt.custom_viewer.CustomViewer` directly. The code is largely the
 same:
 
-.. literalinclude:: _static/bball_viewer_class.py
+.. literalinclude:: scripts/bball_viewer_class.py
    :linenos:
 
 

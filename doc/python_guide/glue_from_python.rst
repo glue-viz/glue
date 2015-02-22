@@ -135,7 +135,7 @@ build data objects using the general Glue data API.
 
 Here's a simple script to load data and pass it to Glue:
 
-.. literalinclude:: w5.py
+.. literalinclude:: scripts/w5.py
 
 Some remarks:
  * :func:`~glue.core.data_factories.load_data` constructs Glue Data objects from files. It uses the file extension as a hint for file type
