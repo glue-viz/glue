@@ -17,7 +17,7 @@ env:
     - PYTEST_ARGS="--cov glue"
     - NUMPY_VER=1.9
     - IPYTHON_VER=2
-    - CONDA_BASE="pip numpy=$NUMPY_VER scipy cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.2 xlrd pillow pytest mock coverage pyyaml requests"
+    - CONDA_BASE="pip numpy=$NUMPY_VER scipy cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.3 xlrd pillow pytest mock coverage pyyaml requests"
     - PIP_BASE="pytest-cov coveralls pyavm sphinx-rtd-theme astrodendro awscli"
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
     - secure: "SU9BYH8d9eNigypG3lC83s0NY6Mq9AHGKXyEGeXDtz1npJIC1KHdzPMP1v1K3dzCgl1p6ReMXPjZMCENyfNkad/xvzTzGk0Nu/4BjihrUPV6+ratVeLpv0JLm8ikh8q+sZURkdtzUOlds+Hfn5ku4LdpT87tcKHY9TINAGA34ZM="
