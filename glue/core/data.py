@@ -159,8 +159,8 @@ class Component(object):
     ComponentIDs. All Components in a data set must have the same
     shape and number of dimensions
 
-    Note
-    ----
+    Notes
+    -----
     Instead of instantiating Components directly, consider using
     :meth:`Component.autotyped`, which chooses a subclass most appropriate
     for the data type.
@@ -238,8 +238,7 @@ class Component(object):
         Automatically choose between Component and CategoricalComponent,
         based on the input data type.
 
-        :param data: The data to pack into a Component
-        :type data: Array-like
+        :param data: The data to pack into a Component (array-like)
         :param units: Optional units
         :type units: str
 
@@ -955,8 +954,8 @@ class Data(object):
         """
         Send a :class:`~glue.core.message.DataUpdateMessage` to the hub
 
-        :param attribute: Name of an attribute that has changed
-        :type attribute: string|None
+        :param attribute: Name of an attribute that has changed (or None)
+        :type attribute: string
         """
         if not self.hub:
             return
@@ -1084,8 +1083,7 @@ class Data(object):
     def to_dataframe(self, index=None):
         """ Convert the Data object into a pandas.DataFrame object
 
-        :param index: Any 'index-like' object that can be passed to the
-        pandas.Series constructor
+        :param index: Any 'index-like' object that can be passed to the pandas.Series constructor
 
         :return: pandas.DataFrame
         """

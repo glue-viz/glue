@@ -9,7 +9,7 @@ you have the option of extracting and analyzing spectra (or, more generally,
 integrated 1D profiles). To extract a spectrum, click the profile button
 on an image viewer:
 
-.. figure:: spectrum_button.png
+.. figure:: images/spectrum_button.png
    :align: center
 
 Then, click-drag a box on the image. Glue will extract a spectrum by
@@ -20,7 +20,7 @@ a spectrum for the pixels in that subset.
 The spectrum is displayed in a new window, which you can interact with
 in a few ways.
 
-.. figure:: spectrum_window.png
+.. figure:: images/spectrum_window.png
    :align: center
    :width: 500px
 
@@ -101,7 +101,7 @@ values at each X location. We use :func:`numpy.polyval` to do this
 
 This code is enough to let us fit lines to data:
 
-.. figure:: line_screenshot.png
+.. figure:: images/line_screenshot.png
    :align: center
    :width: 500
 
@@ -122,7 +122,7 @@ the fit method takes a keyword named degree, and uses this to fit a
 polynomial of order ``degree`` (e.g., degree=2 corresponds to a parabola).
 This extra information allows Glue to add a widget to the settings window:
 
-.. figure:: poly_screenshot.png
+.. figure:: images/poly_screenshot.png
    :align: center
    :width: 500
 
@@ -179,6 +179,6 @@ Example: Gaussian fitting with Emcee
 The :download:`emcee plugin example <emcee_plugin.py>` combines many
 of these ideas.
 
-.. figure:: emcee_screenshot.png
+.. figure:: images/emcee_screenshot.png
    :align: center
    :width: 400

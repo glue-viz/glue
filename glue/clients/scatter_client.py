@@ -41,7 +41,7 @@ class ScatterClient(Client):
         """
         Create a new ScatterClient object
 
-        :param data: :class:`~glue.core.DataCollection` to use
+        :param data: :class:`~glue.core.data.DataCollection` to use
 
         :param figure:
            Which matplotlib figure instance to draw to. One will be created if
@@ -127,7 +127,7 @@ class ScatterClient(Client):
         Returns the created layer artist
 
         :param layer: the layer to add
-        :type layer: :class:`~glue.core.Data` or :class:`~glue.core.Subset`
+        :type layer: :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
         """
         if layer.data not in self.data:
             raise TypeError("Layer not in data collection")
@@ -191,7 +191,7 @@ class ScatterClient(Client):
         """ Toggle a layer's visibility
 
         :param layer: which layer to modify
-        :type layer: class:`~glue.core.Data` or :class:`~glue.coret.Subset`
+        :type layer: class:`~glue.core.data.Data` or :class:`~glue.coret.Subset`
 
         :param state: True to show. false to hide
         :type state: boolean

@@ -32,7 +32,7 @@ from the W5 image used in the :ref:`tutorial <getting_started>`::
 Next, load this file into Glue, choosing "Denrdogram" as a file type.
 You can now visualize the W5 dendrogram alongside its image:
 
-.. figure:: dendro.png
+.. figure:: images/dendro.png
    :align: center
    :width: 400px
 

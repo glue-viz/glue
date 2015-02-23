@@ -7,7 +7,7 @@ Working with Data
 If you are writing Python code that uses Glue, you will probably want work
 with data. The hierarchy of data objects in Glue looks like this:
 
-.. image:: glue_hierarchy.png
+.. image:: images/glue_hierarchy.png
    :width: 300
    :alt: Glue Hierarchy
 

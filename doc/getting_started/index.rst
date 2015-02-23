@@ -9,7 +9,7 @@ After :ref:`installing <installation>` Glue, open the program by either double c
     glue
 
 
-.. figure:: main_window.png
+.. figure:: images/main_window.png
    :align: center
    :width: 500px
 
@@ -30,7 +30,7 @@ Plotting Data
 =============
 After opening ``w5.fits``, a new entry will appear in the data manger:
 
-.. figure:: data_open.png
+.. figure:: images/data_open.png
    :align: center
    :width: 500px
 
@@ -40,7 +40,7 @@ Defining Subsets
 ================
 Work in glue revolves around "drilling down" into interesting subsets within data. Each visualization type (image, scatterplot, …) provides different ways for defining these subsets. In particular, the image window provides 4 options:
 
- .. figure:: image_selectors.png
+ .. figure:: images/image_selectors.png
 
 * Rectangular selection: When active, a click+drag defines rectangular regions of interest.
 * Circular selection: Defines circles.
@@ -49,7 +49,7 @@ Work in glue revolves around "drilling down" into interesting subsets within dat
 
 We can highlight the west arm of W5 using the rectangle selector:
 
- .. figure:: w5_west.png
+ .. figure:: images/w5_west.png
     :align: center
     :width: 500px
 
@@ -63,7 +63,7 @@ We can redefine this subset by dragging a new rectangle in the image. Alternatel
 
 You can edit the properties of a visualization layer (color, name, etc.) By double-clicking on the entry in the visualization dashboard.
 
-  .. figure:: layer_options.png
+  .. figure:: images/layer_options.png
      :align: center
      :width: 200px
 
@@ -73,7 +73,7 @@ Refining Subsets and Linked Views
 =================================
 Visualizations are linked in Glue -- that is, we can plot this data in many different ways, to better understand the properties of each subset. To see this, click and drag the ``W5`` entry into the visualization area a second time, and make a histogram. Edit the settings in the histogram visualization dashboard to produce something similar to this:
 
- .. figure:: histogram.png
+ .. figure:: images/histogram.png
     :align: center
     :width: 500px
 
@@ -81,12 +81,12 @@ This shows the distribution of intensities for the image as a whole (gray), and 
 
 Perhaps we wish to remove faint pixels from our selection. To do this, we first enable the selection mode toolbar via ``Toolbars->Selection Mode Toolbar``, and then pick the last mode (``Remove From Selection`` mode).:
 
- .. figure:: modes.png
+ .. figure:: images/modes.png
     :align: center
 
 When this mode is active, new regions defined by the mouse are subtracted from the selected subsets. Thus, I can highlight the region between x=450-500 in the histogram to remove this region from the data.
 
-.. figure:: subset_refine.png
+.. figure:: images/subset_refine.png
    :align: center
    :width: 500px
 
@@ -100,13 +100,13 @@ Glue is designed so that visualization and drilldown can span multiple datasets.
 
 Open ``w5_psc.vot`` -- a catalog of *Spitzer*-identified point sources towards this region. You will see a new entry in the data manager.
 
-.. figure:: psc_layer.png
+.. figure:: images/psc_layer.png
    :align: center
    :width: 400px
 
 At this point, you can visualize and drilldown into this catalog. However, Glue doesn't know enough to intercompare the catalog and image. To do that, we must ``Link`` these two data entries. Click on the ``Link Data`` button in the data manager. This brings up a new window, showing all the pieces of information within each dataset:
 
-.. figure:: link_editor.png
+.. figure:: images/link_editor.png
    :align: center
    :width: 400px
 
@@ -119,7 +119,7 @@ After these connections are defined, subsets that are defined via spatial constr
 
 First, make a scatter plot of the point source catalog. Then, delete the West Arm subset (by highlighting it and clicking the ``X`` button). Then, highlight a new region in the image. You should see this selection applied to both plots:
 
-.. figure:: link_subset_1.png
+.. figure:: images/link_subset_1.png
    :align: center
    :width: 500px
 
@@ -127,7 +127,7 @@ You can also overplot the catalog rows on top of the image. To do this, click th
 selection applied to the image itself by unchecking the `East arm
 (w5)` entry in the plot layer window.
 
-.. figure:: link_subset_2.png
+.. figure:: images/link_subset_2.png
    :align: center
    :width: 500px
 

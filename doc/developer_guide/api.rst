@@ -39,28 +39,28 @@ User Interface
 ==============
 
 .. automodsumm:: glue.qt.widgets.image_widget
-    :toctree: api/
+    :toctree: ../api/
 
 .. automodsumm:: glue.core.application_base
-    :toctree: api/
+    :toctree: ../api/
 
 .. automodsumm:: glue.core.application_base
-    :toctree: api/
+    :toctree: ../api/
 
 .. automodsumm:: glue.qt.widgets.data_viewer
-    :toctree: api/
+    :toctree: ../api/
 
 .. automodsumm:: glue.qt.widgets.scatter_widget
-    :toctree: api/
+    :toctree: ../api/
 
 .. automodsumm:: glue.qt.widgets.histogram_widget
-    :toctree: api/
+    :toctree: ../api/
 
 .. automodsumm:: glue.qt.glue_application
-    :toctree: api/
+    :toctree: ../api/
 
 .. automodsumm:: glue.qglue
-    :toctree: api/
+    :toctree: ../api/
 
 .. automodapi:: glue.qt.custom_viewer
    :no-inheritance-diagram:
@@ -68,9 +68,19 @@ User Interface
 .. automodapi:: glue
    :no-inheritance-diagram:
 
+Clients
+=======
+
+.. automodapi:: glue.clients.layer_artist
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.clients.viz_client
+   :no-inheritance-diagram:
+
 
 Utilities
 =========
+
 .. automodapi:: glue.config
    :no-inheritance-diagram:
 

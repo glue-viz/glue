@@ -17,7 +17,7 @@ env:
     - PYTEST_ARGS="--cov glue"
     - NUMPY_VER=1.9
     - IPYTHON_VER=2
-    - CONDA_BASE="pip numpy=$NUMPY_VER scipy cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.2 xlrd pillow pytest mock coverage pyyaml requests"
+    - CONDA_BASE="pip numpy=$NUMPY_VER scipy cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.3 xlrd pillow pytest mock coverage pyyaml requests"
     - PIP_BASE="pytest-cov coveralls pyavm sphinx-rtd-theme astrodendro awscli"
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
     - secure: "SU9BYH8d9eNigypG3lC83s0NY6Mq9AHGKXyEGeXDtz1npJIC1KHdzPMP1v1K3dzCgl1p6ReMXPjZMCENyfNkad/xvzTzGk0Nu/4BjihrUPV6+ratVeLpv0JLm8ikh8q+sZURkdtzUOlds+Hfn5ku4LdpT87tcKHY9TINAGA34ZM="
@@ -45,7 +45,7 @@ matrix:
           env:
             - PYTHON_VERSION=2.7
             - PYTEST_ARGS="--cov glue"
-            - CONDA_BASE="pip setuptools numpy=$NUMPY_VER pandas mock --no-deps"
+            - CONDA_BASE="pip setuptools=7.0 numpy=$NUMPY_VER pandas mock --no-deps"
             - IPYTHON_VER=None
             - ASTRO_VER=None
             - MPL_VER=1.4
@@ -106,11 +106,21 @@ install:
   - if [[ $IPYTHON_VER != None ]]; then conda install $CONDA_ARGS IPython=$IPYTHON_VER; fi
   - if [[ $MPL_VER != None ]]; then conda install $CONDA_ARGS numpy=$NUMPY_VER matplotlib=$MPL_VER; fi
 
+  # For now we also install astropy_helpers because setup_requires has a bug
+  # that means it generates PEP440 warnings for the astropy_helpers version
+  # number.
+  - if [ $DOC_TRIGGER ]; then pip install astropy-helpers; fi
+
   - python setup.py install
 
 script:
   - py.test $PYTEST_ARGS glue
-  - if [ $DOC_TRIGGER ]; then cd doc && make html && cd ../; fi
+  - if [ $DOC_TRIGGER ]; then cd doc && make html 2> warnings.log && cd ../ ; fi
+
+  # In the following command, the test -s ensures that warnings are not emitted
+  # by the docs build.
+  - if [ $DOC_TRIGGER ]; then cat doc/warnings.log; fi
+  - if [ $DOC_TRIGGER ]; then test ! -s doc/warnings.log; fi
 
 after_success:
   - coveralls

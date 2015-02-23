@@ -1,5 +1,7 @@
 # Set up configuration variables
 
+__all__ = ['custom_viewer', 'qglue', 'test']
+
 try:
     from sip import setapi
 except ImportError:
@@ -84,7 +86,7 @@ def custom_viewer(name, **kwargs):
         while the optional third number specifies the initial value.
       * ``keyword=['a', 'b', 'c']`` creates a dropdown menu. The current
         selection is passed as a string to the viewer functions.
-      * ``keyword={'a':1, 'b':2} behaves similarly to the lists above,
+      * ``keyword={'a':1, 'b':2}`` behaves similarly to the lists above,
         but uses the keys as dropdown labels and values as the setting
         passed to viewer functions.
       * ``keyword='att(foo)'`` doesn't create any widget, but passes
@@ -104,11 +106,11 @@ def custom_viewer(name, **kwargs):
      * ``plot_subset`` is used to visualize data subsets.
      * ``update_settings`` is called whenever a user modifies
        a widget setting.
-    * ``select`` specifies how user-drawn regions on the viewer
+     * ``select`` specifies how user-drawn regions on the viewer
        are used to filter data. It has access to an :class:`~glue.core.roi.Roi`
        input, and returns a Boolean array testing whether each element
        in a dataset is part of a subset.
-    * ``make_selector`` is an alternative to ``select``. Instead of returning
+     * ``make_selector`` is an alternative to ``select``. Instead of returning
         an array, ``make_selector`` returns a :class:`~glue.core.subset.SubsetState`
     """
 

@@ -25,7 +25,7 @@
 # installed locally in this directory, since it is needed for the Sphinx
 # extensions.
 from setuptools import Distribution
-Distribution({'setup_requires': 'astropy-helpers'})
+Distribution({'setup_requires': 'astropy_helpers'})
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -36,6 +36,12 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.coverage',
               'astropy_helpers.sphinx.ext.numpydoc',
               'astropy_helpers.sphinx.ext.automodsumm',
               'sphinx.ext.intersphinx']
+
+# Add the redirect.py plugin which is in this directory
+import os
+import sys
+sys.path.insert(0, os.path.abspath('.'))
+extensions.append('redirect')
 
 intersphinx_cache_limit = 10     # days to keep the cached inventories
 intersphinx_mapping = {
@@ -87,7 +93,7 @@ release = '0.4.0'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build', '_templates']
+exclude_patterns = ['_build', '_templates', '.eggs']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -276,7 +282,23 @@ nitpick_ignore = [('py:class', 'object'), ('py:class', 'str'),
                   ('py:class', 'PySide.QtGui.QMainWindow'),
                   ('py:class', 'PySide.QtGui.QWidget'),
                   ('py:obj', "str ('file' | 'directory' | 'label')"),
-                  ('py:obj', 'function(application)')]
+                  ('py:obj', 'function(application)'),
+                  ('py:class', 'builtins.object'),
+                  ('py:class', 'builtins.list'),
+                  ('py:class', 'builtins.type'),
+                  ('py:class', 'glue.clients.layer_artist.HistogramLayerBase'),
+                  ('py:class', 'glue.clients.layer_artist.ScatterLayerBase'),
+                  ('py:class', 'glue.clients.layer_artist.ImageLayerBase'),
+                  ('py:class', 'glue.clients.layer_artist.RGBImageLayerBase'),
+                  ('py:class', 'glue.qt.widgets.image_widget.ImageWidgetBase'),
+                  ('py:class', 'PyQt4.QtGui.QMainWindow'),
+                  ('py:class', 'PyQt4.QtGui.QWidget'),
+                  # TODO: the next four should be fixable
+                  ('py:obj', 'glue.qt.widgets.image_widget.ImageWidget.data'),
+                  ('py:obj', 'glue.qt.widgets.image_widget.ImageWidget.attribute'),
+                  ('py:obj', 'glue.qt.widgets.image_widget.ImageWidget.rgb_mode'),
+                  ('py:obj', 'glue.qt.widgets.image_widget.ImageWidget.slice')
+              ]
 
 
 # coax Sphinx into treating descriptors as attributes

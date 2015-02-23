@@ -41,7 +41,7 @@ The :ref:`Data Linking Editor <getting_started_link>` let's users
 define data links from the GUI.
 
 
-.. image:: link_dialog.png
+.. image:: images/link_dialog.png
    :width: 400
 
 The simplest link occurs when two datasets define the same quantity in
@@ -52,14 +52,14 @@ spatial information (RA and Dec are essentially latitude and longitude
 coordinates on the sky). To link these quantities, we highlight the
 equivalent quantities, and click "Glue".
 
-.. image:: link_dialog_2.png
+.. image:: images/link_dialog_2.png
    :width: 400
 
 In the more general case, one quantity can be computed from one or more others,
 but is not identical to another quantity. The ``advanced`` tab let's us
 specify how to use a translation function to derive one quantity from others:
 
-.. image:: link_dialog_3.png
+.. image:: images/link_dialog_3.png
    :width: 400
 
 Here, a ``boxes`` dataset reports the linear dimensions of some boxes, and a crates dataset reports the volume of crates. The box volumes can be intercompared with the crate volumes by multiplying the box width, height, and depth.

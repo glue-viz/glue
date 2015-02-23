@@ -23,7 +23,7 @@ Adding Custom Link Functions
 
 From the :ref:`Link Data Dialog <getting_started_link>`, you inform Glue how to convert between quantities among different data sets. You do this by selecting a translation function, and specifying which data attributes should be treated as inputs and outputs. You can use the configuration file to specify custom translation functions. Here's how:
 
-.. literalinclude:: config_link_example.py
+.. literalinclude:: scripts/config_link_example.py
 
 Some remarks about this code:
  #. ``link_function`` is used as a `decorator <http://stackoverflow.com/questions/739654/understanding-python-decorators/1594484#1594484>`_. The decorator adds the function to Glue's list of link functions
@@ -32,7 +32,7 @@ Some remarks about this code:
 
 With this code in your configuration file, the ``deg_to_rad`` function is available in the ``Link Data`` dialog:
 
-.. figure:: custom_link.png
+.. figure:: images/custom_link.png
    :align: center
    :width: 200px
 
@@ -78,7 +78,7 @@ Let's look at this line-by-line:
 If you put this in your ``config.py`` file, you will see a new
 file type when loading data:
 
-  .. figure:: custom_data.png
+  .. figure:: images/custom_data.png
      :align: center
      :width: 50%
 

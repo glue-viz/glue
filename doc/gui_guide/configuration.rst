@@ -32,7 +32,7 @@ As an example, let's create some translation functions which will
 allow us to link RA / Dec data to other data in Galactic
 latitude/longitude::
 
-.. literalinclude:: coord_convert.py
+.. literalinclude:: scripts/coord_convert.py
 
 Next, I copy this code into my `~/.glue/config.py` file (or install it
 on my system as a module and import the module form
@@ -43,6 +43,6 @@ on my system as a module and import the module form
 When linking attributes with the Link Editor, any function in ``link_functions`` can be used
 to link attributes.
 
-.. image:: link_functions.png
+.. image:: images/link_functions.png
 
 
