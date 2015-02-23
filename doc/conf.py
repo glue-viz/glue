@@ -37,6 +37,12 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.coverage',
               'astropy_helpers.sphinx.ext.automodsumm',
               'sphinx.ext.intersphinx']
 
+# Add the redirect.py plugin which is in this directory
+import os
+import sys
+sys.path.insert(0, os.path.abspath('.'))
+extensions.append('redirect')
+
 intersphinx_cache_limit = 10     # days to keep the cached inventories
 intersphinx_mapping = {
     'sphinx': ('http://sphinx.pocoo.org', None),
