@@ -153,5 +153,5 @@ doctest:
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
 s3:
-	aws s3 sync _build/html s3://www.glueviz.org/en/`git symbolic-ref -q --short HEAD`
-	aws s3 sync _build/html s3://docs.glueviz.org/en/latest
+	aws s3 sync _build/html s3://www.glueviz.org/en/$TRAVIS_BRANCH
+	aws s3 sync _build/html s3://www.glueviz.org/en/latest
