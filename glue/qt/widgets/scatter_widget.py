@@ -18,7 +18,6 @@ from ..widget_properties import (ButtonProperty, FloatLineProperty,
 
 from ..qtutil import load_ui, cache_axes, nonpartial
 
-from matplotlib.dates import num2date
 
 __all__ = ['ScatterWidget']
 

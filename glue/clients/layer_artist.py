@@ -13,6 +13,8 @@ LayerArtists contain the bulk of the logic for actually rendering things
 from __future__ import absolute_import, division, print_function
 
 import logging
+import numpy as np
+from pandas import DataFrame, groupby
 from contextlib import contextmanager
 from abc import ABCMeta, abstractproperty, abstractmethod
 
@@ -708,16 +710,12 @@ class ScatterLayerArtist(LayerArtist, ScatterLayerBase):
             return False
         self.artists = self._axes.plot(x, y, 'k.')
 
-        gu = np.unique(g)
-        colors = get_colors(len(gu))
-
-        if len(gu) is not len(g):
-            for elem, c in zip(gu, colors):
-                xg = x[g == elem]
-                yg = y[g == elem]
-                i = np.argsort(xg)
-                art = self._axes.plot(xg[i], yg[i], '.-', color=c)
-                self.artists.extend(art)
+        df = DataFrame({'g': g, 'x': x, 'y': y})
+        groups = df.groupby('g')
+        colors = get_colors(len(groups))
+        for grp, c in zip(groups, colors):
+            art = self._axes.plot(grp[1]['x'], grp[1]['y'], '.-', color=c)
+            self.artists.extend(art)
 
         return True
 

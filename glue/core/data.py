@@ -2,9 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import operator
 import logging
-
 import numpy as np
-import datetime
 import pandas as pd
 
 from .contracts import contract
@@ -223,9 +221,7 @@ class Component(object):
         """
         Whether or not the datatype is date
         """
-        dt64 = isinstance(self.data.dtype, np.datetime64) or 'datetime64' in str(self.data.dtype)
-        dt = isinstance(self.data.dtype, datetime.date)
-        return dt64 or dt
+        return isinstance(self.data.dtype, np.datetime64) or 'datetime64' in str(self.data.dtype)
 
     @property
     def group(self):

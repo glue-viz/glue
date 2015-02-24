@@ -20,14 +20,14 @@ Example Use::
 from __future__ import absolute_import, division, print_function
 
 from functools import partial
+from matplotlib.dates import date2num
+import datetime as dt
+import re
 
 from .qtutil import pretty_number, pretty_date
 from ..external.qt import QtGui, QtCore
 from ..external.six.moves import reduce
 from ..core.callback_property import add_callback
-from matplotlib.dates import date2num
-import datetime as dt
-import re
 
 
 class WidgetProperty(object):
@@ -192,7 +192,6 @@ def connect_current_combo(client, prop, widget):
     """
 
     def _push_combo(value):
-        print(value)
         try:
             idx = _find_combo_data(widget, value)
         except ValueError:  # not found. Punt instead of failing
@@ -262,7 +261,6 @@ def connect_date_edit(client, prop, widget):
                 while i < len(flds) and str.isdigit(str(flds[i])):
                     rest[i - 3] = int(flds[i])
                     i += 1
-
                 if str(flds[-1]) in ['PM', 'pm'] and rest[0] < 12:
                         rest[0] += 12
                 [h, m, s, ms] = rest[:]

@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 from functools import partial
-
 import numpy as np
 from matplotlib.dates import num2date
 

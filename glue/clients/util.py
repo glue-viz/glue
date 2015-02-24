@@ -1,17 +1,16 @@
 from __future__ import absolute_import, division, print_function
 
-from functools import partial
-
 import numpy as np
 import pandas as pd
-from matplotlib.dates import date2num, AutoDateLocator, AutoDateFormatter
 import datetime
+from functools import partial
+from colorsys import hls_to_rgb
+
+from matplotlib.dates import date2num, AutoDateLocator, AutoDateFormatter
 from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
 from matplotlib.ticker import (LogFormatterMathtext, ScalarFormatter,
                                FuncFormatter)
 from ..core.data import CategoricalComponent
-from colorsys import hls_to_rgb
-
 
 def small_view(data, attribute):
     """
@@ -61,9 +60,8 @@ def visible_limits(artists, axis):
     if data.size == 0:
         return
 
-    if isinstance(data[0], np.datetime64) \
-            or 'datetime64' in str(type(data[0])) \
-            or isinstance(data[0], datetime.date):
+    if isinstance(data[0], (np.datetime64, datetime.date)) \
+            or 'datetime64' in str(type(data[0])):
         data = pd.to_datetime(data)
         dt = data[pd.notnull(data)]
         if len(dt) == 0:

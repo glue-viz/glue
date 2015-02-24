@@ -5,9 +5,7 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 import numpy as np
-import pandas as pd
 from matplotlib.dates import date2num, AutoDateLocator, AutoDateFormatter
-
 from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
 from matplotlib.ticker import LogFormatterMathtext, ScalarFormatter, FuncFormatter
 from mock import MagicMock
