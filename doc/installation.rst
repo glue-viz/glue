@@ -36,7 +36,9 @@ The `Enthought Python Distribution <https://www.enthought.com/products/epd/>`_ a
 .. _pythonw_note:
 .. note :: The nonstandard pip invocation (``pythonw -m pip``) is needed on some OSes with Anaconda, because programs which create graphical windows must be invoked using ``pythonw`` instead of ``python``.
 
-.. warning :: There is currently a `known issue <https://github.com/ContinuumIO/anaconda-issues/issues/63>`_ with running Anaconda's Qt on Kubuntu. `One workaround <http://stackoverflow.com/questions/21212851/anaconda-spyder-qt-library-error-on-launch/21232872#21232872>`_ is to copy the System Qt libraries from ``/usr/lib/x86_64-linux-gnu/libQt*`` to the ``lib`` directory in Anaconda.
+.. warning :: There is currently a known issue when running Anaconda's Qt on 
+              certain Linux distributions (including Kubuntu). See
+              `Issue with PyQt4 from conda`_ for more details.
 
 Building from Source (For the Brave)
 ------------------------------------
@@ -133,8 +135,8 @@ arguments. See ``glue --help`` for examples.
 Known issues
 ------------
 
-Issues with PyQt4 from conda
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Issue with PyQt4 from conda
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 On certain Linux installations, when using Anaconda/conda to manage the Python
 installation you are using for glue, you may run into the following error when
