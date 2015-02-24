@@ -125,4 +125,4 @@ script:
 after_success:
   - coveralls
   - if [ $APP_TRIGGER ]; then ./.trigger_app_build.sh; fi
-  - if [ $DOC_TRIGGER && $TRAVIS_SECURE_ENV_VARS == true && $TRAVIS_BRANCH == master and $TRAVIS_PULL_REQUEST == false ]; then cd doc && make s3 && cd ../; fi
+  - if [[ $DOC_TRIGGER && $TRAVIS_SECURE_ENV_VARS == true && $TRAVIS_BRANCH == master && $TRAVIS_PULL_REQUEST == false ]]; then cd doc && make s3 && cd ../; fi
