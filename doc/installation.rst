@@ -129,3 +129,26 @@ arguments. See ``glue --help`` for examples.
           within the python script directory (e.g., ``C:\Python27\Scripts``).
           Windows users can create a desktop shortcut for this file, and run
           Glue by double clicking on the icon.
+
+Known issues
+------------
+
+Issues with PyQt4 from conda
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+On certain Linux installations, when using Anaconda/conda to manage the Python
+installation you are using for glue, you may run into the following error when
+launching glue::
+
+    ImportError: /usr/lib/libkdecore.so.5: undefined symbol: _ZNK7QSslKey9algorithmEv
+
+This is due to a known issue with Anaconda where the system installation of Qt
+is used instead of the version shipped with Anaconda (see `this issue
+<https://github.com/glue-viz/glue/issues/562>`_ if you are interested in a
+discussion of the issue). A simple workaround is to force glue to use PySide
+insead of PyQt4::
+
+    conda install pyside
+    export QT_API=pyside
+
+after which glue will use PySide when started.
