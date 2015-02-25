@@ -123,6 +123,15 @@ script:
   - if [ $DOC_TRIGGER ]; then test ! -s doc/warnings.log; fi
 
 after_success:
+
+  # Coverage testing
   - coveralls
+
+  # Trigger the building of the MacOS X app in the Travis-MacGlue repo
   - if [ $APP_TRIGGER ]; then ./.trigger_app_build.sh; fi
-  - if [[ $DOC_TRIGGER && $TRAVIS_SECURE_ENV_VARS == true && $TRAVIS_BRANCH == master && $TRAVIS_PULL_REQUEST == false ]]; then cd doc && make s3 && cd ../; fi
+
+  # For any branch (but not pull requests), upload the docs to s3
+  - if [[ $DOC_TRIGGER && $TRAVIS_SECURE_ENV_VARS == true && $TRAVIS_PULL_REQUEST == false ]]; then cd doc && make s3 && cd ../; fi
+
+  # For the master branch, also upload the docs to the 'latest' URL
+  - if [[ $DOC_TRIGGER && $TRAVIS_SECURE_ENV_VARS == true && $TRAVIS_BRANCH == master && $TRAVIS_PULL_REQUEST == false ]]; then cd doc && make s3latest && cd ../; fi

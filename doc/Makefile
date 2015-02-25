@@ -152,6 +152,9 @@ doctest:
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) $(BUILDDIR)/doctest
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
+
 s3:
-	aws s3 sync _build/html s3://www.glueviz.org/en/$TRAVIS_BRANCH
+	aws s3 sync _build/html s3://www.glueviz.org/en/$(TRAVIS_BRANCH)
+
+s3latest:
 	aws s3 sync _build/html s3://www.glueviz.org/en/latest
