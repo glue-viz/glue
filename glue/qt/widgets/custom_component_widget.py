@@ -1,11 +1,16 @@
 from __future__ import absolute_import, division, print_function
 
-from ...external.qt.QtGui import QDialog
+import re
+
+from ...external.qt.QtGui import QDialog, QCompleter
+from ...external.qt import QtCore
 
 from ... import core
 from ...core import parse
 
 from ..qtutil import load_ui
+
+from .completion_widget import CompletionTextEdit
 
 
 def disambiguate(label, labels):
@@ -33,7 +38,14 @@ def disambiguate(label, labels):
 class CustomComponentWidget(object):
     """ Dialog to add derived components to data via parsed commands """
     def __init__(self, collection, parent=None):
+
         self.ui = load_ui('custom_component_widget', parent)
+
+        self.ui.expression = CompletionTextEdit()
+        self.ui.verticalLayout_3.addWidget(self.ui.expression)
+        self.ui.expression.setAlignment(QtCore.Qt.AlignCenter)
+        self.ui.expression.setObjectName("expression")
+
         self._labels = {}
         self._data = {}
         self._collection = collection
@@ -41,6 +53,9 @@ class CustomComponentWidget(object):
         self._gather_data()
         self._init_widgets()
         self._connect()
+
+        completer = QCompleter(list(self._labels.keys()))
+        self.ui.expression.setCompleter(completer)
 
     def _connect(self):
         cl = self.ui.component_list
@@ -98,11 +113,10 @@ class CustomComponentWidget(object):
 
     def _add_to_expression(self, item):
         """ Add a component list item to the expression editor """
-        addition = ' {%s} ' % item.text()
+        addition = '%s' % item.text()
         expression = self.ui.expression
-        pos = expression.cursorPosition()
-        text = str(expression.displayText())
-        expression.setText(text[:pos] + addition + text[pos:])
+        cursor = expression.textCursor()
+        cursor.insertHtml(" <font color='blue'><b>" + addition + "</b></font> ")
 
     @staticmethod
     def create_component(collection):
