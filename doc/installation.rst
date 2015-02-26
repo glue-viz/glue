@@ -22,19 +22,31 @@ We recommend using the `Anaconda
 <http://continuum.io/downloads.html>`_ Python distribution from
 Continuum Analytics. Anaconda includes all of Glue's main dependencies.
 
- * Download and install the `appropriate version of Anaconda
-   <http://continuum.io/downloads.html>`_
+First, download and install the `appropriate version of Anaconda
+<http://continuum.io/downloads.html>`_ for your operating system. Then, you can try and install glue using::
 
- * On the command line, install Glue using pip: ``pythonw -m pip install glueviz``
+    conda install -c https://conda.binstar.org/glueviz glueviz
+    
+If for any reason this fails, you can also try and install glue using pip::
 
- * On the command line, install any additional Glue dependencies by running ``glue-deps install``. For more information on ``glue-deps``, see :ref:`below <glue-deps>`
+    pythonw -m pip install glueviz
 
-The `Enthought Python Distribution <https://www.enthought.com/products/epd/>`_ also includes all non-trivial dependencies. The installation instructions are the same.
+You can then install any additional Glue dependencies by running::
+
+    glue-deps install
+    
+on the command line. For more information on ``glue-deps``, see :ref:`below <glue-deps>`
+
+The `Enthought Python Distribution <https://www.enthought.com/products/epd/>`_
+also includes all non-trivial dependencies. The installation instructions are
+the same (though the ``conda install`` command will not work).
 
 .. note :: Anaconda installs its own version of Python
 
 .. _pythonw_note:
-.. note :: The nonstandard pip invocation (``pythonw -m pip``) is needed on some OSes with Anaconda, because programs which create graphical windows must be invoked using ``pythonw`` instead of ``python``.
+.. note :: The nonstandard pip invocation (``pythonw -m pip``) is needed on 
+           some OSes with Anaconda, because programs which create graphical
+           swindows must be invoked using ``pythonw`` instead of ``python``.
 
 .. warning :: There is currently a known issue when running Anaconda's Qt on 
               certain Linux distributions (including Kubuntu). See
