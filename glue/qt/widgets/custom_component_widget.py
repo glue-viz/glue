@@ -63,9 +63,9 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
         def format_components(m):
             component = m.group(0)
             if component in self.word_list:
-                return "<font color='blue'><b><u>" + component + "</u></b></font> "
+                return "<font color='#5cb85c'><b>" + component + "</b></font> "
             else:
-                return "<font color='red'><b>" + component + "</b></font> "
+                return "<font color='#d9534f'><b>" + component + "</b></font> "
 
         html = re.sub(pattern, format_components, text)
 
