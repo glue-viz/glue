@@ -98,6 +98,13 @@ class CustomComponentWidget(object):
         self.ui.verticalLayout_3.addWidget(self.ui.expression)
         self.ui.expression.setAlignment(QtCore.Qt.AlignCenter)
         self.ui.expression.setObjectName("expression")
+        self.ui.expression.setToolTip("Define a new component. You can either "
+                                      "type out the full name of a component\n"
+                                      "with the data:component syntax, or "
+                                      "start typing and press TAB to use "
+                                      "tab-completion.\n Blue-colored "
+                                      "components are valid, while "
+                                      "Red-colored components are invalid.")
 
         self._labels = {}
         self._data = {}
@@ -215,6 +222,8 @@ class CustomComponentWidget(object):
                     if link:
                         widget._add_link_to_targets(link)
                     break
+            else:
+                break
 
 def main():
     from glue.core.data import Data
