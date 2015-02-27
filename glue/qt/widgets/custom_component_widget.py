@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import re
 
-from ...external.qt.QtGui import QDialog
+from ...external.qt.QtGui import QDialog, QMessageBox
 from ...external.qt import QtCore
 
 from ... import core
@@ -170,6 +170,13 @@ class CustomComponentWidget(object):
         link = parse.ParsedComponentLink(new_id, pc)
         return link
 
+    @property
+    def _number_targets(self):
+        """
+        How many targets are selected
+        """
+        return len(self.ui.data_list.selectedItems())
+
     def _add_link_to_targets(self, link):
         """ Add a link to all the selected data """
         for target in self._selected_data():
@@ -191,12 +198,23 @@ class CustomComponentWidget(object):
         """
         # pylint: disable=W0212
         widget = CustomComponentWidget(collection)
-        widget.ui.show()
-        if widget.ui.exec_() == QDialog.Accepted:
-            link = widget._create_link()
-            if link:
-                widget._add_link_to_targets(link)
-
+        while True:
+            widget.ui.show()
+            if widget.ui.exec_() == QDialog.Accepted:
+                if len(str(widget.ui.expression.toPlainText())) == 0:
+                    QMessageBox.critical(widget.ui, "Error", "No expression set",
+                                         buttons=QMessageBox.Ok)                    
+                elif widget._number_targets == 0:
+                    QMessageBox.critical(widget.ui, "Error", "Please specify the target dataset(s)",
+                                         buttons=QMessageBox.Ok)
+                elif len(widget.ui.new_label.text()) == 0:
+                    QMessageBox.critical(widget.ui, "Error", "Please specify the new component name",
+                                         buttons=QMessageBox.Ok)
+                else:
+                    link = widget._create_link()
+                    if link:
+                        widget._add_link_to_targets(link)
+                    break
 
 def main():
     from glue.core.data import Data
