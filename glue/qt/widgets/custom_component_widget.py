@@ -56,7 +56,7 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
         # recognized components because they contain a ":" which is not valid
         # Python syntax (except if one considers lambda functions, but we can
         # probably ignore that here)
-        text = self.toPlainText()
+        text = str(self.toPlainText())
 
         # If there are no : in the text we don't need to do anything
         if not ":" in text:
@@ -154,7 +154,16 @@ class CustomComponentWidget(object):
         -------
         A new component link
         """
-        expression = str(self.ui.expression.text())
+
+        expression = str(self.ui.expression.toPlainText())
+
+        # To maintain backward compatibility with previous versions of glue,
+        # we add curly brackets around the components in the expression.
+        pattern = '[^\\s]*:[^\\s]*'
+        def add_curly(m):
+            return "{" + m.group(0) + "}"
+        expression = re.sub(pattern, add_curly, expression)
+
         pc = parse.ParsedCommand(expression, self._labels)
         label = str(self.ui.new_label.text()) or 'new component'
         new_id = core.data.ComponentID(label)
