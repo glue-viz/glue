@@ -187,7 +187,7 @@ class CustomComponentWidget(object):
 
     def _add_to_expression(self, item):
         """ Add a component list item to the expression editor """
-        addition = '%s' % item.text()
+        addition = '%s ' % item.text()
         expression = self.ui.expression
         expression.insertPlainText(addition)
 
