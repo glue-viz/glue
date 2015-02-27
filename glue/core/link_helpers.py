@@ -18,6 +18,8 @@ from .data import ComponentID
 from ..external.aplpy import gal2fk5, fk52gal
 from ..external import six
 
+import numpy as np
+
 __all__ = ['LinkCollection', 'LinkSame', 'LinkTwoWay', 'MultiLink',
            'LinkAligned', 'Galactic2Equatorial']
 
@@ -160,6 +162,25 @@ class LinkAligned(LinkCollection):
                                      data[i + 1].get_pixel_component_id(j)))
 
 
+# Coordinate transforms (requires Astropy>)
+
+
+def fk52gal(lon, lat):
+    from astropy import units as u
+    from astropy.coordinates import FK5, Galactic
+    c = FK5(lon * u.deg, lat * u.deg)
+    g = c.transform_to(Galactic)
+    return g.l.degree, g.b.degree
+
+
+def gal2fk5(lon, lat):
+    from astropy import units as u
+    from astropy.coordinates import FK5, Galactic
+    g = Galactic(lon * u.deg, lat * u.deg)
+    c = g.transform_to(FK5)
+    return c.ra.degree, c.dec.degree
+
+
 class Galactic2Equatorial(MultiLink):
 
     """
@@ -184,19 +205,25 @@ class Galactic2Equatorial(MultiLink):
 
 
 def radec2glon(ra, dec):
-    """Compute galactic longitude from right ascension and declination"""
+    """
+    Compute galactic longitude from right ascension and declination.
+    """
     return fk52gal(ra, dec)[0]
 radec2glon.output_args = ['l']
 
 
 def radec2glat(ra, dec):
-    """Compute galactic latitude from right ascension and declination"""
+    """
+    Compute galactic latitude from right ascension and declination.
+    """
     return fk52gal(ra, dec)[1]
 radec2glat.output_args = ['b']
 
 
 def lb2ra(lon, lat):
-    """Compute right ascension from galactic longitude and latitude"""
+    """
+    Compute right ascension from galactic longitude and latitude.
+    """
     return gal2fk5(lon, lat)[0]
 lb2ra.output_args = ['ra']
 
