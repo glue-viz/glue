@@ -11,25 +11,6 @@ from ...external.qt import QtGui, QtCore
 
 __all__ = ["CompletionTextEdit"]
 
-try:  # Python 2
-
-    QString = QtCore.QString
-
-except AttributeError:  # Python 3
-
-    class QString(str):
-        def isEmpty(self):
-            return len(self) > 0
-        def length(self):
-            return len(self)
-        def contains(self, sub):
-            return sub in self
-        def right(self, n):
-            try:
-                return self[-n:]
-            except IndexError:
-                return self
-
 
 class CompletionTextEdit(QtGui.QTextEdit):
 
@@ -105,13 +86,11 @@ class CompletionTextEdit(QtGui.QTextEdit):
             QtGui.QTextEdit.keyPressEvent(self, event)
             return
 
-        eow = QString("~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-=")
+        eow = "~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-="
 
         completionPrefix = self.text_under_cursor()
 
-        if (not isShortcut and (QString(event.text()).isEmpty() or
-                QString(completionPrefix).length() < 3 or
-                eow.contains(QString(event.text()).right(1)))):
+        if not isShortcut and (len(event.text()) == 0 or event.text()[-1:] in eow):
             self.completer.popup().hide()
             return
 
