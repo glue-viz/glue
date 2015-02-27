@@ -54,7 +54,6 @@ class CompletionTextEdit(QtGui.QTextEdit):
 
         self.insertPlainText(completion)
 
-
     def text_under_cursor(self):
         tc = self.textCursor()
         tc.select(QtGui.QTextCursor.WordUnderCursor)
@@ -81,27 +80,26 @@ class CompletionTextEdit(QtGui.QTextEdit):
                 return
 
         # Check if TAB has been pressed
-        isShortcut = event.key() == QtCore.Qt.Key_Tab
+        is_shortcut = event.key() == QtCore.Qt.Key_Tab
 
-        if (not self.completer or not isShortcut):
+        if not self.completer or not is_shortcut:
             QtGui.QTextEdit.keyPressEvent(self, event)
             return
 
         eow = "~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-="
 
-        completionPrefix = self.text_under_cursor()
+        completion_prefix = self.text_under_cursor()
 
-        if not isShortcut and (len(event.text()) == 0 or event.text()[-1:] in eow):
+        if not is_shortcut and (len(event.text()) == 0 or event.text()[-1:] in eow):
             self.completer.popup().hide()
             return
 
-        if (completionPrefix != self.completer.completionPrefix()):
-            self.completer.setCompletionPrefix(completionPrefix)
+        if (completion_prefix != self.completer.completionPrefix()):
+            self.completer.setCompletionPrefix(completion_prefix)
             popup = self.completer.popup()
-            popup.setCurrentIndex(
-                self.completer.completionModel().index(0,0))
+            popup.setCurrentIndex(self.completer.completionModel().index(0,0))
 
         cr = self.cursorRect()
-        cr.setWidth(self.completer.popup().sizeHintForColumn(0)
-            + self.completer.popup().verticalScrollBar().sizeHint().width())
+        cr.setWidth(self.completer.popup().sizeHintForColumn(0) +
+                    self.completer.popup().verticalScrollBar().sizeHint().width())
         self.completer.complete(cr)
