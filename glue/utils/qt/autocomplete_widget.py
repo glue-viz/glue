@@ -35,11 +35,12 @@ class CompletionTextEdit(QtGui.QTextEdit):
         if not completer:
             return
 
-        completer.setWidget(self)
-        completer.setCompletionMode(QtGui.QCompleter.PopupCompletion)
-        completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.completer = completer
-        self.connect(self.completer, QtCore.SIGNAL("activated(const QString&)"), self.insert_completion)
+
+        self.completer.setWidget(self)
+        self.completer.setCompletionMode(QtGui.QCompleter.PopupCompletion)
+        self.completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.completer.activated.connect(self.insert_completion)
 
     def insert_completion(self, completion):
 
