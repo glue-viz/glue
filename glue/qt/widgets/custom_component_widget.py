@@ -1,16 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
-import re
-
 from ...external.qt.QtGui import QDialog, QCompleter
 from ...external.qt import QtCore
 
 from ... import core
 from ...core import parse
+from ...utils.qt.completion_widget import CompletionTextEdit
 
 from ..qtutil import load_ui
 
-from .completion_widget import CompletionTextEdit
 
 
 def disambiguate(label, labels):
