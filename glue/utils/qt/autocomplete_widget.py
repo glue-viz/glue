@@ -64,18 +64,18 @@ class CompletionTextEdit(QtGui.QTextEdit):
 
     def focusInEvent(self, event):
         if self.completer:
-            self.completer.setWidget(self);
+            self.completer.setWidget(self)
         QtGui.QTextEdit.focusInEvent(self, event)
 
     def keyPressEvent(self, event):
 
         if self.completer and self.completer.popup().isVisible():
             if event.key() in (
-            QtCore.Qt.Key_Enter,
-            QtCore.Qt.Key_Return,
-            QtCore.Qt.Key_Escape,
-            QtCore.Qt.Key_Tab,
-            QtCore.Qt.Key_Backtab):
+                    QtCore.Qt.Key_Enter,
+                    QtCore.Qt.Key_Return,
+                    QtCore.Qt.Key_Escape,
+                    QtCore.Qt.Key_Tab,
+                    QtCore.Qt.Key_Backtab):
                 event.ignore()
                 return
 
@@ -97,7 +97,7 @@ class CompletionTextEdit(QtGui.QTextEdit):
         if (completion_prefix != self.completer.completionPrefix()):
             self.completer.setCompletionPrefix(completion_prefix)
             popup = self.completer.popup()
-            popup.setCurrentIndex(self.completer.completionModel().index(0,0))
+            popup.setCurrentIndex(self.completer.completionModel().index(0, 0))
 
         cr = self.cursorRect()
         cr.setWidth(self.completer.popup().sizeHintForColumn(0) +
