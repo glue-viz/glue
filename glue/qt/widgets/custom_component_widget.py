@@ -35,10 +35,6 @@ def disambiguate(label, labels):
     return label + ('_%i' % suffix)
 
 
-def _wrap_component_name(name):
-    return " <font color='blue'><b><u>" + name + "</u></b></font> "
-
-
 class ColorizedCompletionTextEdit(CompletionTextEdit):
 
     def insertPlainText(self, *args):
