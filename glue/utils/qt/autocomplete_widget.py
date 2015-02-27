@@ -9,6 +9,8 @@
 from ...external.qt import QtGui, QtCore
 
 
+__all__ = ["CompletionTextEdit"]
+
 try:  # Python 2
 
     QString = QtCore.QString
@@ -32,12 +34,21 @@ except AttributeError:  # Python 3
 class CompletionTextEdit(QtGui.QTextEdit):
 
     def __init__(self, parent=None):
+
         super(CompletionTextEdit, self).__init__(parent)
+
         self.setMinimumWidth(400)
         self.completer = None
+        self.word_list = None
+
         self.moveCursor(QtGui.QTextCursor.End)
 
-    def setCompleter(self, completer):
+    def set_word_list(self, word_list):
+        self.word_list = word_list
+        self.set_completer(QtGui.QCompleter(word_list))
+
+    def set_completer(self, completer):
+
         if self.completer:
             self.disconnect(self.completer, 0, self, 0)
         if not completer:
@@ -47,20 +58,28 @@ class CompletionTextEdit(QtGui.QTextEdit):
         completer.setCompletionMode(QtGui.QCompleter.PopupCompletion)
         completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.completer = completer
-        self.connect(self.completer,
-            QtCore.SIGNAL("activated(const QString&)"), self.insertCompletion)
+        self.connect(self.completer, QtCore.SIGNAL("activated(const QString&)"), self.insert_completion)
 
-    def insertCompletion(self, completion):
+    def insert_completion(self, completion):
+
         tc = self.textCursor()
         tc.select(QtGui.QTextCursor.WordUnderCursor)
         tc.deleteChar()
-        tc.insertHtml(' <font color="blue"><b>' + completion + '</b></font> ')
+
+        completion = completion + " "
+
         self.setTextCursor(tc)
 
-    def textUnderCursor(self):
+        self.insertPlainText(completion)
+
+
+    def text_under_cursor(self):
         tc = self.textCursor()
         tc.select(QtGui.QTextCursor.WordUnderCursor)
         return tc.selectedText()
+
+    # The following methods override methods in QTextEdit and should not be
+    # renamed.
 
     def focusInEvent(self, event):
         if self.completer:
@@ -68,6 +87,7 @@ class CompletionTextEdit(QtGui.QTextEdit):
         QtGui.QTextEdit.focusInEvent(self, event)
 
     def keyPressEvent(self, event):
+
         if self.completer and self.completer.popup().isVisible():
             if event.key() in (
             QtCore.Qt.Key_Enter,
@@ -87,7 +107,7 @@ class CompletionTextEdit(QtGui.QTextEdit):
 
         eow = QString("~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-=")
 
-        completionPrefix = self.textUnderCursor()
+        completionPrefix = self.text_under_cursor()
 
         if (not isShortcut and (QString(event.text()).isEmpty() or
                 QString(completionPrefix).length() < 3 or

@@ -1,11 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
-from ...external.qt.QtGui import QDialog, QCompleter
+import re
+
+from ...external.qt.QtGui import QDialog
 from ...external.qt import QtCore
 
 from ... import core
 from ...core import parse
-from ...utils.qt.completion_widget import CompletionTextEdit
+from ...utils.qt import CompletionTextEdit
 
 from ..qtutil import load_ui
 
@@ -33,13 +35,66 @@ def disambiguate(label, labels):
     return label + ('_%i' % suffix)
 
 
+def _wrap_component_name(name):
+    return " <font color='blue'><b><u>" + name + "</u></b></font> "
+
+
+class ColorizedCompletionTextEdit(CompletionTextEdit):
+
+    def insertPlainText(self, *args):
+        super(ColorizedCompletionTextEdit, self).insertPlainText(*args)
+        self.reformat_text()
+
+    def keyReleaseEvent(self, event):
+        super(ColorizedCompletionTextEdit, self).keyReleaseEvent(event)
+        self.reformat_text()
+
+    def reformat_text(self):
+
+        # Here every time a key is released, we re-colorize the expression.
+        # We show valid components in blue, and invalid ones in red. We
+        # recognized components because they contain a ":" which is not valid
+        # Python syntax (except if one considers lambda functions, but we can
+        # probably ignore that here)
+        text = self.toPlainText()
+
+        # If there are no : in the text we don't need to do anything
+        if not ":" in text:
+            return
+
+        pattern = '[^\\s]*:[^\\s]*'
+
+        def format_components(m):
+            component = m.group(0)
+            if component in self.word_list:
+                return "<font color='blue'><b><u>" + component + "</u></b></font> "
+            else:
+                return "<font color='red'><b>" + component + "</b></font> "
+
+        html = re.sub(pattern, format_components, text)
+
+        tc = self.textCursor()
+        pos = tc.position()
+
+        self.setHtml(html)
+
+        tc.setPosition(pos)
+        self.setTextCursor(tc)
+
+
 class CustomComponentWidget(object):
-    """ Dialog to add derived components to data via parsed commands """
+    """
+    Dialog to add derived components to data via parsed commands.
+    """
+
     def __init__(self, collection, parent=None):
 
+        # Load in ui file to set up widget
         self.ui = load_ui('custom_component_widget', parent)
 
-        self.ui.expression = CompletionTextEdit()
+        # In the ui file we do not create the text field for the expression
+        # because we want to use a custom widget that supports auto-complete.
+        self.ui.expression = ColorizedCompletionTextEdit()
         self.ui.verticalLayout_3.addWidget(self.ui.expression)
         self.ui.expression.setAlignment(QtCore.Qt.AlignCenter)
         self.ui.expression.setObjectName("expression")
@@ -52,8 +107,10 @@ class CustomComponentWidget(object):
         self._init_widgets()
         self._connect()
 
-        completer = QCompleter(list(self._labels.keys()))
-        self.ui.expression.setCompleter(completer)
+        # Set up auto-completion. While the auto-complete window is open, we
+        # cannot add/remove datasets or other components, so we can populate
+        # the auto_completer straight off.
+        self.ui.expression.set_word_list(list(self._labels.keys()))
 
     def _connect(self):
         cl = self.ui.component_list
@@ -73,7 +130,7 @@ class CustomComponentWidget(object):
             for c in data.components:
                 if c in comps:
                     continue
-                label = "%s  (%s)" % (c, data.label)
+                label = "%s:%s" % (data.label, c)
                 label = disambiguate(label, self._labels)
                 self._labels[label] = c
                 comps.add(c)
@@ -113,8 +170,7 @@ class CustomComponentWidget(object):
         """ Add a component list item to the expression editor """
         addition = '%s' % item.text()
         expression = self.ui.expression
-        cursor = expression.textCursor()
-        cursor.insertHtml(" <font color='blue'><b>" + addition + "</b></font> ")
+        expression.insertPlainText(addition)
 
     @staticmethod
     def create_component(collection):
