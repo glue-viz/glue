@@ -15,7 +15,6 @@ from __future__ import absolute_import, division, print_function
 
 from .component_link import ComponentLink
 from .data import ComponentID
-from ..external.aplpy import gal2fk5, fk52gal
 from ..external import six
 
 import numpy as np

@@ -9,8 +9,8 @@ from .. import link_helpers as lh
 from ..link_helpers import (LinkTwoWay, MultiLink, Galactic2Equatorial,
                             lb2ra, lb2dec, radec2glon, radec2glat,
                             LinkSame, LinkAligned)
+from ..link_helpers import fk52gal, gal2fk5
 from ...core import ComponentID, ComponentLink, Data, Component, DataCollection
-from ...external.aplpy import fk52gal, gal2fk5
 
 R, D, L, B = (ComponentID('ra'), ComponentID('dec'),
               ComponentID('lon'), ComponentID('lat'))
