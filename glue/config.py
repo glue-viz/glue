@@ -462,3 +462,15 @@ def _default_search_order():
         search_order.append(os.environ['GLUERC'])
     search_order.append(os.path.expanduser('~/.glue/config.py'))
     return search_order[::-1]
+
+
+def load_plugins():
+    """
+    Load built-in plugins
+    """
+
+    # To load plugins, we simply import them. We don't actually do anything
+    # with the ``plugins`` module, but importing it for force all plugin code
+    # to run and register any necessary things.
+
+    from . import plugins

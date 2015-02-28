@@ -23,3 +23,5 @@ def load_plugin(plugin):
         module.setup()
     else:
         raise AttributeError("Plugin {0} should define 'setup' function".format(plugin))
+
+from . import coordinate_helpers

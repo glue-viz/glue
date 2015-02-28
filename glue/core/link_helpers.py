@@ -1,4 +1,5 @@
-""" This module provides several classes and LinkCollection classes to
+"""
+This module provides several classes and LinkCollection classes to
 assist in linking data.
 
 The functions in this class (and stored in the __LINK_FUNCTIONS__
@@ -20,7 +21,7 @@ from ..external import six
 import numpy as np
 
 __all__ = ['LinkCollection', 'LinkSame', 'LinkTwoWay', 'MultiLink',
-           'LinkAligned', 'Galactic2Equatorial']
+           'LinkAligned']
 
 __LINK_FUNCTIONS__ = []
 __LINK_HELPERS__ = []
@@ -104,7 +105,6 @@ class LinkTwoWay(LinkCollection):
 
 
 class MultiLink(LinkCollection):
-
     """
     Compute all the ComponentLinks to link groups of ComponentIDs
 
@@ -161,76 +161,3 @@ class LinkAligned(LinkCollection):
                                      data[i + 1].get_pixel_component_id(j)))
 
 
-# Coordinate transforms (requires Astropy>)
-
-
-def fk52gal(lon, lat):
-    from astropy import units as u
-    from astropy.coordinates import FK5, Galactic
-    c = FK5(lon * u.deg, lat * u.deg)
-    g = c.transform_to(Galactic)
-    return g.l.degree, g.b.degree
-
-
-def gal2fk5(lon, lat):
-    from astropy import units as u
-    from astropy.coordinates import FK5, Galactic
-    g = Galactic(lon * u.deg, lat * u.deg)
-    c = g.transform_to(FK5)
-    return c.ra.degree, c.dec.degree
-
-
-class Galactic2Equatorial(MultiLink):
-
-    """
-    Instantiate a ComponentList with four ComponentLinks that map galactic
-    and equatorial coordinates
-
-    :param l: ComponentID for galactic longitude
-    :param b: ComponentID for galactic latitude
-    :param ra: ComponentID for J2000 Right Ascension
-    :param dec: ComponentID for J2000 Declination
-
-    Returns a :class:`LinkCollection` object which links
-    these ComponentIDs
-    """
-
-    # attributes used by the Gui
-    info_text = """Link Galactic and Equatorial coordinates"""
-    input_args = ['l', 'b', 'ra', 'dec']
-
-    def __init__(self, l, b, ra, dec):
-        MultiLink.__init__(self, [ra, dec], [l, b], fk52gal, gal2fk5)
-
-
-def radec2glon(ra, dec):
-    """
-    Compute galactic longitude from right ascension and declination.
-    """
-    return fk52gal(ra, dec)[0]
-radec2glon.output_args = ['l']
-
-
-def radec2glat(ra, dec):
-    """
-    Compute galactic latitude from right ascension and declination.
-    """
-    return fk52gal(ra, dec)[1]
-radec2glat.output_args = ['b']
-
-
-def lb2ra(lon, lat):
-    """
-    Compute right ascension from galactic longitude and latitude.
-    """
-    return gal2fk5(lon, lat)[0]
-lb2ra.output_args = ['ra']
-
-
-def lb2dec(lon, lat):
-    """Compute declination from galactic longitude and latitude"""
-    return gal2fk5(lon, lat)[1]
-lb2dec.output_args = ['dec']
-
-__LINK_FUNCTIONS__.extend([radec2glon, radec2glat, lb2ra, lb2dec])
-__LINK_HELPERS__.append(Galactic2Equatorial)
