@@ -6,9 +6,10 @@ from ....tests.helpers import ASTROPY_GE_04_INSTALLED
 if not ASTROPY_GE_04_INSTALLED:
     pytest.skip()
 
-from ..link_helpers import Galactic2Equatorial, lb2ra, lb2dec, radec2glon, radec2glat, fk52gal, gal2fk5
 from ....core.tests.test_link_helpers import check_link, check_using
 from ....core import ComponentLink, ComponentID
+
+from ..deprecated import Galactic2Equatorial, lb2ra, lb2dec, radec2glon, radec2glat, fk52gal, gal2fk5
 
 R, D, L, B = (ComponentID('ra'), ComponentID('dec'),
               ComponentID('lon'), ComponentID('lat'))

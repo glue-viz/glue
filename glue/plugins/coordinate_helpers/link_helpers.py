@@ -7,69 +7,77 @@ from ...config import link_function, link_helper
 from ...core.link_helpers import MultiLink
 
 from astropy import units as u
-from astropy.coordinates import FK5, Galactic
+from astropy.coordinates import ICRS, FK5, FK4, Galactic
+
+__all__ = ["BaseCelestialMultiLink", "Galactic_to_FK5", "FK4_to_FK5",
+           "ICRS_to_FK5", "Galactic_to_FK4", "ICRS_to_FK4",
+           "ICRS_to_Galactic"]
 
 
-def fk52gal(lon, lat):
-    c = FK5(lon * u.deg, lat * u.deg)
-    g = c.transform_to(Galactic)
-    return g.l.degree, g.b.degree
+class BaseCelestialMultiLink(MultiLink):
+
+    display = None
+    frame_in = None
+    frame_out = None
+
+    def __init__(self, in_lon, in_lat, out_lon, out_lat):
+        MultiLink.__init__(self, [in_lon, in_lat],
+                                 [out_lon, out_lat],
+                                 self._forward, self._backward)
+
+    def _forward(self, in_lon, in_lat):
+        c = self.frame_in(in_lon * u.deg, in_lat * u.deg)
+        out = c.transform_to(self.frame_out)
+        return out.spherical.lon.degree, out.spherical.lat.degree
+
+    def _backward(self, in_lon, in_lat):
+        c = self.frame_out(in_lon * u.deg, in_lat * u.deg)
+        out = c.transform_to(self.frame_in)
+        return out.spherical.lon.degree, out.spherical.lat.degree
 
 
-def gal2fk5(lon, lat):
-    g = Galactic(lon * u.deg, lat * u.deg)
-    c = g.transform_to(FK5)
-    return c.ra.degree, c.dec.degree
+@link_helper('Link Galactic and FK5 (J2000) Equatorial coordinates',
+             input_labels=['l', 'b', 'ra (fk5)', 'dec (fk5)'])
+class Galactic_to_FK5(BaseCelestialMultiLink):
+    display = "Galactic <-> FK5 (J2000)"
+    frame_in = Galactic
+    frame_out = FK5
 
 
-@link_helper('Link Galactic and Equatorial coordinates',
-             input_labels=['l', 'b', 'ra', 'dec'])
-class Galactic2Equatorial(MultiLink):
-
-    """
-    Instantiate a ComponentList with four ComponentLinks that map galactic
-    and equatorial coordinates
-
-    :param l: ComponentID for galactic longitude
-    :param b: ComponentID for galactic latitude
-    :param ra: ComponentID for J2000 Right Ascension
-    :param dec: ComponentID for J2000 Declination
-
-    Returns a :class:`LinkCollection` object which links
-    these ComponentIDs
-    """
-
-    def __init__(self, l, b, ra, dec):
-        MultiLink.__init__(self, [ra, dec], [l, b], fk52gal, gal2fk5)
+@link_helper('Link FK4 (B1950) and FK5 (J2000) Equatorial coordinates',
+             input_labels=['ra (fk4)', 'dec (fk4)', 'ra (fk5)', 'dec (fk5)'])
+class FK4_to_FK5(BaseCelestialMultiLink):
+    display = "Celestial Coordinates: FK4 (B1950) <-> FK5 (J2000)"
+    frame_in = FK4
+    frame_out = FK5
 
 
-@link_function(info="", output_labels=['l'])
-def radec2glon(ra, dec):
-    """
-    Compute galactic longitude from right ascension and declination.
-    """
-    return fk52gal(ra, dec)[0]
+@link_helper('Link ICRS and FK5 (J2000) Equatorial coordinates',
+             input_labels=['ra (icrs)', 'dec (icrs)', 'ra (fk5)', 'dec (fk5)'])
+class ICRS_to_FK5(BaseCelestialMultiLink):
+    display = "Celestial Coordinates: ICRS <-> FK5 (J2000)"
+    frame_in = ICRS
+    frame_out = FK5
+
+@link_helper('Link Galactic and FK4 (B1950) Equatorial coordinates',
+             input_labels=['l', 'b', 'ra (fk4)', 'dec (fk4)'])
+class Galactic_to_FK4(BaseCelestialMultiLink):
+    display = "Celestial Coordinates: Galactic <-> FK4 (B1950)"
+    frame_in = Galactic
+    frame_out = FK4
 
 
-@link_function(info="", output_labels=['b'])
-def radec2glat(ra, dec):
-    """
-    Compute galactic latitude from right ascension and declination.
-    """
-    return fk52gal(ra, dec)[1]
+@link_helper('Link ICRS and FK4 (B1950) Equatorial coordinates',
+             input_labels=['ra (icrs)', 'dec (icrs)', 'ra (fk4)', 'dec (fk4)'])
+class ICRS_to_FK4(BaseCelestialMultiLink):
+    display = "Celestial Coordinates: ICRS <-> FK4 (B1950)"
+    frame_in = ICRS
+    frame_out = FK4
 
 
-@link_function(info="", output_labels=['ra'])
-def lb2ra(lon, lat):
-    """
-    Compute right ascension from galactic longitude and latitude.
-    """
-    return gal2fk5(lon, lat)[0]
-
-
-@link_function(info="", output_labels=['dec'])
-def lb2dec(lon, lat):
-    """
-    Compute declination from galactic longitude and latitude.
-    """
-    return gal2fk5(lon, lat)[1]
+@link_helper('Link ICRS and Galactic coordinates',
+             input_labels=['ra (icrs)', 'dec (icrs)', 'l', 'b'])
+class ICRS_to_Galactic(BaseCelestialMultiLink):
+    display = "Celestial Coordinates: ICRS <-> Galactic"
+    frame_in = ICRS
+    frame_out = Galactic
