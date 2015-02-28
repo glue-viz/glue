@@ -39,7 +39,7 @@ class BaseCelestialMultiLink(MultiLink):
 @link_helper('Link Galactic and FK5 (J2000) Equatorial coordinates',
              input_labels=['l', 'b', 'ra (fk5)', 'dec (fk5)'])
 class Galactic_to_FK5(BaseCelestialMultiLink):
-    display = "Galactic <-> FK5 (J2000)"
+    display = "Celestial Coordinates: Galactic <-> FK5 (J2000)"
     frame_in = Galactic
     frame_out = FK5
 
