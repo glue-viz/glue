@@ -52,7 +52,7 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
         # recognized components because they contain a ":" which is not valid
         # Python syntax (except if one considers lambda functions, but we can
         # probably ignore that here)
-        text = str(self.toPlainText())
+        text = self.toPlainText()
 
         # If there are no : in the text we don't need to do anything
         if not ":" in text:
@@ -63,9 +63,9 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
         def format_components(m):
             component = m.group(0)
             if component in self.word_list:
-                return "<font color='#5cb85c'><b>" + component + "</b></font> "
+                return "<font color='#0072B2'><b>" + component + "</b></font> "
             else:
-                return "<font color='#d9534f'><b>" + component + "</b></font> "
+                return "<font color='#D55E00'><b>" + component + "</b></font> "
 
         html = re.sub(pattern, format_components, text)
 
@@ -74,8 +74,15 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
 
         self.setHtml(html)
 
+        # Sometimes the HTML gets rid of double spaces so we have to make
+        # sure the position isn't greater than the text length.
+        text = self.toPlainText()
+        pos = min(pos, len(text))
+
         tc.setPosition(pos)
         self.setTextCursor(tc)
+        self.setAlignment(QtCore.Qt.AlignCenter)
+
 
 
 class CustomComponentWidget(object):
@@ -206,7 +213,7 @@ class CustomComponentWidget(object):
             if widget.ui.exec_() == QDialog.Accepted:
                 if len(str(widget.ui.expression.toPlainText())) == 0:
                     QMessageBox.critical(widget.ui, "Error", "No expression set",
-                                         buttons=QMessageBox.Ok)                    
+                                         buttons=QMessageBox.Ok)
                 elif widget._number_targets == 0:
                     QMessageBox.critical(widget.ui, "Error", "Please specify the target dataset(s)",
                                          buttons=QMessageBox.Ok)
