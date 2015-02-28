@@ -165,6 +165,11 @@ class LinkAligned(LinkCollection):
 # conversions. This is needed because glue saved sessions will refer to the
 # functions at this location. We can only remove this if we are ok with
 # breaking compatibility with glue session files at some point.
-from ..plugins.coordinate_helpers.deprecated import (Galactic2Equatorial,
-                                                     radec2glon, radec2glat,
-                                                     lb2ra, lb2dec)
+try:
+    import astropy
+except:
+    pass
+else:
+    from ..plugins.coordinate_helpers.deprecated import (Galactic2Equatorial,
+                                                         radec2glon, radec2glat,
+                                                         lb2ra, lb2dec)
