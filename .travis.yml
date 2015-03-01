@@ -9,8 +9,8 @@ notifications:
 
 env:
   matrix:
-    - PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=0.4
-    - PYTHON_VERSION=3.4 MPL_VER=1.4 ASTRO_VER=0.4
+    - PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=1.0
+    - PYTHON_VERSION=3.4 MPL_VER=1.4 ASTRO_VER=1.0
   global:
     - CONDA_ARGS="--yes"
     - PIP_ARGS=""
@@ -55,7 +55,7 @@ matrix:
           env:
             - PYTHON_VERSION=2.7
             - MPL_VER=1.4
-            - ASTRO_VER=0.4
+            - ASTRO_VER=1.0
             - DOC_TRIGGER=1 
             - APP_TRIGGER=1 
             - GINGA=1
