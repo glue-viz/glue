@@ -222,9 +222,17 @@ class QtClientRegistry(Registry):
     def default_members(self):
         try:
             from .qt.widgets import default_widgets
+            # NOTE: necessary because somehow default_widgets does not
+            # include ginga even though the same import statement as
+            # below is done in .qt.widgets.__init__.py
+            try:
+                from .qt.widgets.ginga_widget import GingaWidget
+                default_widgets.append(GingaWidget)
+            except ImportError as e:
+                pass
             from .qt.custom_viewer import CUSTOM_WIDGETS
             return default_widgets + CUSTOM_WIDGETS
-        except ImportError:
+        except ImportError as e:
             logging.getLogger(__name__).warning(
                 "could not import glue.qt in ConfigObject")
             return []
