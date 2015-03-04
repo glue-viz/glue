@@ -31,7 +31,7 @@ class StyleDialog(QDialog):
         self.setWindowTitle("Style Editor")
         self.layer = layer
         self._edit_label = edit_label
-        self._symbols = POINT_ICONS.keys()
+        self._symbols = list(POINT_ICONS.keys())
 
         self._setup_widgets()
         self._connect()
