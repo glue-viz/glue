@@ -118,8 +118,22 @@ class ImageWidgetBase(DataViewer):
         # need to delay callbacks, otherwise might
         # try to set combo boxes to nonexisting items
         with delay_callback(self.client, 'display_data', 'display_attribute'):
+
+            # If there is not already any image data set, we can't add 1-D
+            # datasets (tables/catalogs) to the image widget yet.
+            if data.data.ndim == 1 and self.client.display_data is None:
+                QMessageBox.information(self.window(), "Note",
+                                        "Cannot create image viewer from a 1-D "
+                                        "dataset. You will need to first "
+                                        "create an image viewer using data "
+                                        "with 2 or more dimensions, after "
+                                        "which you will be able to overlay 1-D "
+                                        "data as a scatter plot.",
+                                        buttons=QMessageBox.Ok)
+                return
+
             r = self.client.add_layer(data)
-            if r is not None:
+            if r is not None and self.client.display_data is not None:
                 self.add_data_to_combo(data)
                 self.set_attribute_combo(self.client.display_data)
 
