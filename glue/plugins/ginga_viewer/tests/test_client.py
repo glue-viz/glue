@@ -1,6 +1,11 @@
 from __future__ import print_function, division
 
 import pytest
+from ....tests.helpers import GINGA_INSTALLED
+
+if not GINGA_INSTALLED:
+    pytest.skip()
+
 import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
 
@@ -13,10 +18,7 @@ from ....clients.tests.test_image_client import _TestImageClientBase
 
 from ..client import GingaClient, SubsetImage, BaseImage
 
-from ....tests.helpers import requires_ginga
 
-
-@requires_ginga
 class TestGingaClient(_TestImageClientBase):
 
     def new_client(self, dc=None, canvas=None):
@@ -39,7 +41,6 @@ class TestGingaClient(_TestImageClientBase):
     test_scatter_layer_does_not_set_display_data = skip
 
 
-@requires_ginga
 class TestSubsetImage(object):
 
     def setup_method(self, method):
