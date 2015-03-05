@@ -1,12 +1,9 @@
 from __future__ import print_function, division
 
-from .test_image_widget import _TestImageWidgetBase
+from ....qt.widgets.tests.test_image_widget import _TestImageWidgetBase
 from ....tests.helpers import requires_ginga
 
-try:
-    from ..ginga_widget import GingaWidget
-except ImportError:
-    GingaWidget = None
+from ..qt_widget import GingaWidget
 
 
 @requires_ginga
