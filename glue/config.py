@@ -222,14 +222,6 @@ class QtClientRegistry(Registry):
     def default_members(self):
         try:
             from .qt.widgets import default_widgets
-            # NOTE: necessary because somehow default_widgets does not
-            # include ginga even though the same import statement as
-            # below is done in .qt.widgets.__init__.py
-            try:
-                from .qt.widgets.ginga_widget import GingaWidget
-                default_widgets.append(GingaWidget)
-            except ImportError as e:
-                pass
             from .qt.custom_viewer import CUSTOM_WIDGETS
             return default_widgets + CUSTOM_WIDGETS
         except ImportError as e:
@@ -453,3 +445,15 @@ def _default_search_order():
         search_order.append(os.environ['GLUERC'])
     search_order.append(os.path.expanduser('~/.glue/config.py'))
     return search_order[::-1]
+
+
+def load_plugins():
+    """
+    Load built-in plugins
+    """
+
+    # To load plugins, we simply import them. We don't actually do anything
+    # with the ``plugins`` module, but importing it for force all plugin code
+    # to run and register any necessary things.
+
+    from . import plugins
