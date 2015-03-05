@@ -6,6 +6,7 @@ User Interface Guide
 
    link_tutorial.rst
    merging
+   components.rst
    custom_subsets.rst
    spectrum.rst
    slice.rst
