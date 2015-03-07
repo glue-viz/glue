@@ -23,14 +23,14 @@ class BaseCelestialMultiLink(MultiLink):
     def __init__(self, in_lon, in_lat, out_lon, out_lat):
         MultiLink.__init__(self, [in_lon, in_lat],
                                  [out_lon, out_lat],
-                                 self._forward, self._backward)
+                                 self.forward, self.backward)
 
-    def _forward(self, in_lon, in_lat):
+    def forward(self, in_lon, in_lat):
         c = self.frame_in(in_lon * u.deg, in_lat * u.deg)
         out = c.transform_to(self.frame_out)
         return out.spherical.lon.degree, out.spherical.lat.degree
 
-    def _backward(self, in_lon, in_lat):
+    def backward(self, in_lon, in_lat):
         c = self.frame_out(in_lon * u.deg, in_lat * u.deg)
         out = c.transform_to(self.frame_in)
         return out.spherical.lon.degree, out.spherical.lat.degree

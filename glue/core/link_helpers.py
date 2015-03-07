@@ -46,10 +46,10 @@ __LINK_FUNCTIONS__.append(lengths_to_volume)
 
 class PartialResult(object):
 
-    def __init__(self, func, index):
+    def __init__(self, func, index, name_prefix=""):
         self.func = func
         self.index = index
-        self.__name__ = '%s_%i' % (func.__name__, index + 1)
+        self.__name__ = '%s%s_%i' % (name_prefix, func.__name__, index + 1)
 
     def __call__(self, *args, **kwargs):
         return self.func(*args, **kwargs)[self.index]
@@ -132,12 +132,12 @@ class MultiLink(LinkCollection):
 
         if forwards is not None:
             for i, r in enumerate(cids_right):
-                func = PartialResult(forwards, i)
+                func = PartialResult(forwards, i, name_prefix=self.__class__.__name__ + ".")
                 self.append(ComponentLink(cids_left, r, func))
 
         if backwards is not None:
             for i, l in enumerate(cids_left):
-                func = PartialResult(backwards, i)
+                func = PartialResult(backwards, i, name_prefix=self.__class__.__name__ + ".")
                 self.append(ComponentLink(cids_right, l, func))
 
 
