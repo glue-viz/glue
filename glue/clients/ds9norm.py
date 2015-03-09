@@ -45,13 +45,14 @@ def cscale(x, bias, contrast):
     Parameters
     ----------
     x : array
-      Values between 0 and 1
+        Values between 0 and 1
     bias : float
     contrast : float
 
     Returns
     -------
-    The input x, scaled inplace
+    array
+        The input x, scaled inplace
     """
     x = np.subtract(x, bias, out=x)
     x = np.multiply(x, contrast, out=x)

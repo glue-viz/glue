@@ -97,14 +97,19 @@ class ImageClient(VizClient):
     def coordinate_labels(self, pix):
         """ Return human-readable labels for a position in pixel coords
 
-        :param pix: tuple of ints
-                    Pixel coordiante of point in the data
+        Parameters
+        ----------
+        pix : tuple of int
+            Pixel coordiante of point in the data
 
-        :returns: List of strings, one for each coordinate axis, of the
-                  form "axis_lable_name=world_coordinate_value
+        Returns
+        -------
+        list of str
+            One string for each coordinate axis, of the form
+            "axis_lable_name=world_coordinate_value"
 
-        :note: pix describes a position in the *data*, not necessarily
-               the image display
+        .. note:: pix describes a position in the *data*, not necessarily the
+        image display
         """
         data = self.display_data
         if data is None:
@@ -341,11 +346,10 @@ class ImageClient(VizClient):
         Update the location and visual properties
         of each point in a single subset
 
-        Parameters:
+        Parameters
         ----------
-        s: A subset instance
-        The subset to refresh.
-
+        s: Subset
+            The subset to refresh.
         """
         logging.getLogger(__name__).debug("update subset single: %s", s)
 
@@ -422,13 +426,17 @@ class ImageClient(VizClient):
     def rgb_mode(self, enable=None):
         """ Query whether RGB mode is enabled, or toggle RGB mode
 
-        :param enable: bool, or None
-        If True or False, explicitly enable/disable RGB mode.
-        If None, check if RGB mode is enabled
+        Parameters
+        ----------
+        enable : bool or None
+            If True or False, explicitly enable/disable RGB mode.
+            If None, check if RGB mode is enabled
 
-        :rtype: LayerArtist or None
-          If RGB mode is enabled, returns an RGBImageLayerBase
-          If enable=False, return the new ImageLayerArtist
+        Returns
+        -------
+        LayerArtist or None
+            If RGB mode is enabled, returns an RGBImageLayerBase
+            If enable=False, return the new ImageLayerArtist
         """
         # XXX need to better handle case where two RGBImageLayerArtists
         #    are created
@@ -546,17 +554,18 @@ class ImageClient(VizClient):
         return ids[x], ids[y]
 
     def _pixel_coords(self, x, y):
-        """From a slice coordinate (x,y), return the full (possibly
+        """ From a slice coordinate (x,y), return the full (possibly
         >2D) numpy index into the full data
 
-        *Note*
-        The inputs to this function are the reverse of numpy convention
-        (horizontal axis first, then vertical)
+        .. note:: The inputs to this function are the reverse of numpy
+        convention (horizontal axis first, then vertical)
 
 
-        *Returns*
-        Either (x,y) or (x,y,z)
-        """
+        Returns
+        -------
+        tuple of int
+            Either (x,y) or (x,y,z)
+        """ # TODO: Numpydoc is really bad at specifying such things
         result = list(self.slice)
         result[result.index('x')] = x
         result[result.index('y')] = y
@@ -625,8 +634,8 @@ class ImageClient(VizClient):
 
         Parameters
         ----------
-        layer : Data or Subset instance
-           Which object to visualize
+        layer : Data or Subset
+            Which object to visualize
         """
         raise NotImplementedError()
 
@@ -636,8 +645,8 @@ class ImageClient(VizClient):
 
         Parameters
         ----------
-        layer : Data or Subset instance
-           Which object to visualize
+        layer : Data or Subset
+            Which object to visualize
         """
         raise NotImplementedError()
 
@@ -647,8 +656,8 @@ class ImageClient(VizClient):
 
         Parameters
         ----------
-        layer : Data or Subset instance
-           Which object to visualize
+        layer : Data or Subset
+            Which object to visualize
         """
         raise NotImplementedError()
 
@@ -658,8 +667,8 @@ class ImageClient(VizClient):
 
         Parameters
         ----------
-        layer : Data or Subset instance
-           Which object to visualize
+        layer : Data or Subset
+            Which object to visualize
         """
         raise NotImplementedError()
 
@@ -819,9 +828,13 @@ def _slice_axis(shape, slc):
     Return a 2-tuple of which axes in a dataset lie along the
     x and y axes of the image
 
-    :param shape: Shape of original data. tuple of ints
-    :param slc: Slice through the data, tuple of ints, 'x', and 'y'
-    """
+    Parameters
+    ----------
+    shape : tuple of int
+        Shape of original data.
+    slc : tuple of int
+        Slice through the data, 'x', and 'y'
+    """ # TODO: Did I get the slc type right?
     return slc.index('x'), slc.index('y')
 
 
@@ -849,8 +862,11 @@ def _view_window(ax):
 def _default_component(data):
     """Choose a default ComponentID to display for data
 
-    Returns PRIMARY if present
-    """
+    Returns
+    -------
+    ComponentID
+        PRIMARY if present
+    """ # TODO: Not sure about the return type
     cid = data.find_component_id('PRIMARY')
     if cid is not None:
         return cid

@@ -294,7 +294,7 @@ class DataImage(AstroImage.AstroImage):
             The view into the data to image. Must produce a 2D array
         transpose : bool
             Whether to transpose the view
-        override_image : numpy array (optional)
+        override_image : numpy array, optional
             Whether to show override_image instead of the view into the data.
             The override image must have the same shape as the 2D view into
             the data.

@@ -71,7 +71,10 @@ class HistogramClient(Client):
     def bins(self):
         """ An array of bin edges for the histogram.
 
-        Returns None if no histogram has been computed yet.
+        Returns
+        -------
+        array or None
+            None if no histogram has been computed yet.
         """
         for art in self._artists:
             if not isinstance(art, HistogramLayerArtist):
@@ -282,8 +285,7 @@ class HistogramClient(Client):
         self.set_component(value)
 
     def set_component(self, component):
-        """
-        Redefine which component gets plotted
+        """ Redefine which component gets plotted
 
         Parameters
         ----------
