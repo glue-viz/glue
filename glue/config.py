@@ -445,12 +445,3 @@ def _default_search_order():
         search_order.append(os.environ['GLUERC'])
     search_order.append(os.path.expanduser('~/.glue/config.py'))
     return search_order[::-1]
-
-
-def load_all_plugins():
-    """
-    Load built-in plugins
-    """
-
-    from .plugins.ginga_viewer import load_ginga_viewer_plugin
-    load_ginga_viewer_plugin()

@@ -180,7 +180,7 @@ class GlueApplication(Application, QMainWindow):
                              session=session)
 
         # Load all plugins
-        from ..config import load_all_plugins
+        from ..plugins import load_all_plugins
         load_all_plugins()
 
         self.app = get_qapp()
