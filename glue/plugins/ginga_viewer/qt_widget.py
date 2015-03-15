@@ -5,9 +5,9 @@ import os.path
 import numpy as np
 
 from ...external.qt.QtGui import (QAction,
-                                   QToolButton, QToolBar, QIcon,
-                                   QActionGroup, QWidget,
-                                   QVBoxLayout, QColor, QImage, QPixmap)
+                                  QToolButton, QToolBar, QIcon,
+                                  QActionGroup, QWidget,
+                                  QVBoxLayout, QColor, QImage, QPixmap)
 
 from ...external.qt.QtCore import Qt, QSize
 
