@@ -452,8 +452,5 @@ def load_all_plugins():
     Load built-in plugins
     """
 
-    # To load plugins, we simply import them. We don't actually do anything
-    # with the ``plugins`` module, but importing it for force all plugin code
-    # to run and register any necessary things.
-
-    from . import plugins
+    from .plugins.ginga_viewer import load_ginga_viewer_plugin
+    load_ginga_viewer_plugin()

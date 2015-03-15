@@ -4,7 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 import optparse
-import logging
+from .logger import logger
 
 from glue import __version__
 
@@ -51,6 +51,8 @@ def parse(argv):
     parser.add_option('-c', '--config', type='string', dest='config',
                       metavar='CONFIG',
                       help='use CONFIG as configuration file')
+    parser.add_option('-v', '--verbose', action='store_true',
+                      help="Increase the vebosity level", default=False)
 
     err_msg = verify(parser, argv)
     if err_msg:
@@ -205,9 +207,14 @@ def get_splash():
 
 
 def main(argv=sys.argv):
-    logging.getLogger(__name__).info("Input arguments: %s", sys.argv)
 
     opt, args = parse(argv[1:])
+
+    if opt.verbose:
+        logger.setLevel("INFO")
+
+    logger.info("Input arguments: %s", sys.argv)
+
     if opt.test:
         return run_tests()
     elif opt.restore:
