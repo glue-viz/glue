@@ -447,7 +447,7 @@ def _default_search_order():
     return search_order[::-1]
 
 
-def load_plugins():
+def load_all_plugins():
     """
     Load built-in plugins
     """
