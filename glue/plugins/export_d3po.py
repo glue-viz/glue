@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function
 import json
 import os
 
-from ..config import exporters
 from ..qt.widgets import ScatterWidget, HistogramWidget
 from ..core import Subset
 
@@ -247,7 +246,11 @@ def launch(path):
     webbrowser.open('http://0.0.0.0:%i' % PORT)
 
 
-exporters.add('D3PO', save_d3po, can_save_d3po, outmode='directory')
+def load_plugin():
+    from ..logger import logger
+    from ..config import exporters
+    exporters.add('D3PO', save_d3po, can_save_d3po, outmode='directory')
+    logger.info("Loaded d3po exporter plugin")
 
 
 HTML = """

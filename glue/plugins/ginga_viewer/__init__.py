@@ -1,4 +1,4 @@
-def load_ginga_viewer_plugin():
+def load_plugin():
     from ...logger import logger
     try:
         from .qt_widget import GingaWidget
