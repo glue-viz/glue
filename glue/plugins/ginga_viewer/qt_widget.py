@@ -17,16 +17,18 @@ from ginga.misc import log
 from ginga import cmap as ginga_cmap
 # ginga_cmap.add_matplotlib_cmaps()
 
-from .image_widget import ImageWidgetBase
+from ...qt.widgets.image_widget import ImageWidgetBase
 
-from ...clients.ginga_client import GingaClient
+from .client import GingaClient
 
 from ...core import roi as roimod
 from ...core.callback_property import add_callback
 
-from ..qtutil import get_icon, nonpartial
-from ...plugins.tools.pv_slicer import PVSlicerTool
-from ...plugins.tools.spectrum_tool import SpectrumTool
+from ...qt.qtutil import get_icon, nonpartial
+
+from ..tools.pv_slicer import PVSlicerTool
+from ..tools.spectrum_tool import SpectrumTool
+
 from ...config import tool_registry
 
 # Find out location of ginga module so we can some of its icons

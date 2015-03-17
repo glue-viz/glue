@@ -1,28 +1,28 @@
 from __future__ import print_function, division
 
 import pytest
+from ....tests.helpers import GINGA_INSTALLED
+
+if not GINGA_INSTALLED:
+    pytest.skip()
+
 import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
 
-from ...core import Data
+from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
+from ginga.misc import log
 
-from .test_image_client import _TestImageClientBase
+from ....core import Data
 
-try:
-    from ..ginga_client import GingaClient, SubsetImage, BaseImage
-    from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
-    from ginga.misc import log
-except ImportError:
-    pass
+from ....clients.tests.test_image_client import _TestImageClientBase
 
-from ...tests.helpers import requires_ginga
+from ..client import GingaClient, SubsetImage, BaseImage
 
 
-@requires_ginga
 class TestGingaClient(_TestImageClientBase):
 
     def new_client(self, dc=None, canvas=None):
-        from ...qt import get_qapp
+        from ....qt import get_qapp
         get_qapp()
         dc = dc or self.collect
         l = log.get_logger(name='ginga', log_stderr=True)
@@ -41,7 +41,6 @@ class TestGingaClient(_TestImageClientBase):
     test_scatter_layer_does_not_set_display_data = skip
 
 
-@requires_ginga
 class TestSubsetImage(object):
 
     def setup_method(self, method):
