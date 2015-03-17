@@ -35,6 +35,7 @@ class Registry(object):
 
     def __init__(self):
         self._members = []
+        self._plugins = []
         self._loaded = False
 
     @property
@@ -42,6 +43,7 @@ class Registry(object):
         """ A list of the members in the registry.
         The return value is a list. The contents of the list
         are specified in each subclass"""
+        self._load_plugins()
         if not self._loaded:
             self._members = self.default_members() + self._members
             self._loaded = True
@@ -56,6 +58,18 @@ class Registry(object):
     def add(self, value):
         """ Add a new item to the registry """
         self._members.append(value)
+
+    def add_plugin(self, value):
+        """
+        Add a plugin that will populate this registry
+        """
+        self._plugins.append(value)
+
+    def _load_plugins(self):
+        from .plugins import load_plugin
+        while self._plugins:
+            plugin = self._plugins.pop()
+            load_plugin(plugin)
 
     def __iter__(self):
         return iter(self.members)

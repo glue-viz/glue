@@ -3,10 +3,14 @@ from . import export_plotly
 from . import ginga_viewer
 
 
-def load_all_plugins():
-    """
-    Load built-in plugins
-    """
+def register_plugins():
+    from ..config import qt_client
+    qt_client.register_plugin('glue.plugins.ginga_viewer')
+    
 
-    from .ginga_viewer import load_ginga_viewer_plugin
-    load_ginga_viewer_plugin()
+def load_plugin(plugin):
+    """
+    Load plugin referred to by name 'plugin'
+    """
+    # TODO: load plugin here
+    print("LOADING", plugin)
