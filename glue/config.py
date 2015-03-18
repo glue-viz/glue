@@ -34,7 +34,7 @@ class Registry(object):
 
     def __init__(self):
         self._members = []
-        self._plugins = []
+        self._lazy_members = []
         self._loaded = False
 
     @property
@@ -42,7 +42,7 @@ class Registry(object):
         """ A list of the members in the registry.
         The return value is a list. The contents of the list
         are specified in each subclass"""
-        self._load_plugins()
+        self._load_lazy_members()
         if not self._loaded:
             self._members = self.default_members() + self._members
             self._loaded = True
@@ -64,12 +64,12 @@ class Registry(object):
         """
         Add a reference to a plugin which will be loaded when needed.
         """
-        self._plugins.append(value)
+        self._lazy_members.append(value)
 
-    def _load_plugins(self):
+    def _load_lazy_members(self):
         from .plugins import load_plugin
-        while self._plugins:
-            plugin = self._plugins.pop()
+        while self._lazy_members:
+            plugin = self._lazy_members.pop()
             load_plugin(plugin)
 
     def __iter__(self):
