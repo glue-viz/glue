@@ -11,11 +11,10 @@ Objects used to configure Glue at runtime.
 
 __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'ColormapRegistry', 'DataFactoryRegistry', 'QtClientRegistry',
-           'LinkFunctionRegistry', 'LinkHelperRegistry',
-           'ProfileFitterRegistry',
+           'LinkFunctionRegistry', 'LinkHelperRegistry', 'QtToolRegistry',
+           'SingleSubsetLayerActionRegistry', 'ProfileFitterRegistry',
            'qt_client', 'data_factory', 'link_function', 'link_helper',
-           'colormaps',
-           'exporters', 'settings', 'fit_plugin', 'auto_refresh']
+           'colormaps', 'exporters', 'settings', 'fit_plugin', 'auto_refresh']
 
 
 class Registry(object):
