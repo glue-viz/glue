@@ -56,12 +56,14 @@ class Registry(object):
         return []
 
     def add(self, value):
-        """ Add a new item to the registry """
+        """
+        Add a new item to the registry.
+        """
         self._members.append(value)
 
-    def add_plugin(self, value):
+    def lazy_add(self, value):
         """
-        Add a plugin that will populate this registry
+        Add a reference to a plugin which will be loaded when needed.
         """
         self._plugins.append(value)
 

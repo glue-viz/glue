@@ -5,9 +5,9 @@ from . import ginga_viewer
 
 def register_plugins():
     from ..config import qt_client, exporters
-    qt_client.add_plugin('glue.plugins.ginga_viewer')
-    exporters.add_plugin('glue.plugins.export_d3po')
-    exporters.add_plugin('glue.plugins.export_plotly')
+    qt_client.lazy_add('glue.plugins.ginga_viewer')
+    exporters.lazy_add('glue.plugins.export_d3po')
+    exporters.lazy_add('glue.plugins.export_plotly')
     
 
 def load_plugin(plugin):
@@ -16,4 +16,7 @@ def load_plugin(plugin):
     """
     import importlib
     module = importlib.import_module(plugin)
-    module.load_plugin()
+    if hasattr(module, 'setup'):
+        module.setup()
+    else:
+        raise AttributeError("Plugin {0} should define 'setup' function".format(plugin))

@@ -1,4 +1,4 @@
-def load_plugin():
+def setup():
     from ...logger import logger
     try:
         from .qt_widget import GingaWidget

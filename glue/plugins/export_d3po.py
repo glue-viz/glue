@@ -246,7 +246,7 @@ def launch(path):
     webbrowser.open('http://0.0.0.0:%i' % PORT)
 
 
-def load_plugin():
+def setup():
     from ..logger import logger
     from ..config import exporters
     exporters.add('D3PO', save_d3po, can_save_d3po, outmode='directory')
