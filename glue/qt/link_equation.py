@@ -199,7 +199,10 @@ class LinkEquation(QWidget):
 
     @function.setter
     def function(self, val):
-        name = val[0].__name__
+        if hasattr(val[0], 'display') and val[0].display is not None:
+            name = val[0].display
+        else:
+            name = val[0].__name__
         pos = self._ui.function.findText(name)
         if pos < 0:
             raise KeyError("No function or helper found %s" % [val])
