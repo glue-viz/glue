@@ -6,6 +6,8 @@ def register_plugins():
     qt_client.lazy_add('glue.plugins.ginga_viewer')
     exporters.lazy_add('glue.plugins.export_d3po')
     exporters.lazy_add('glue.plugins.export_plotly')
+    exporters.lazy_add('glue.plugins.tools.pv_slicer')
+    exporters.lazy_add('glue.plugins.tools.spectrum_tool')
 
 
 def load_plugin(plugin):
@@ -16,7 +18,7 @@ def load_plugin(plugin):
     # import importlib
     # module = importlib.import_module(plugin)
     __import__(plugin)
-    return sys.modules[plugin]
+    module = sys.modules[plugin]
     if hasattr(module, 'setup'):
         module.setup()
     else:

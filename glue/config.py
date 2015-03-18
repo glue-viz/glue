@@ -249,10 +249,12 @@ class QtToolRegistry(Registry):
 
     def __init__(self):
         self._members = {}
+        self._lazy_members = []
         self._loaded = False
 
     @property
     def members(self):
+        self._load_lazy_members()
         if not self._loaded:
             defaults = self.default_members()
             for key in defaults:
