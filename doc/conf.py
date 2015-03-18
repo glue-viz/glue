@@ -301,6 +301,15 @@ nitpick_ignore = [('py:class', 'object'), ('py:class', 'str'),
               ]
 
 
+# Currently, astropy-helpers sets the Matplotlib backend explicitly. However,
+# since matplotlib is imported during the glue import below, the
+# astropy-helpers call to matplotlib.use emits a warning which causes the
+# Sphinx Travis build to fail. Therefore, we pre-emptively impor
+# astropy-helpers here. This can be removed in future once astropy-helpers no
+# longer sets the backend explicitly (this is a workaround itself for a
+# matplotlib issue).
+import astropy_helpers
+
 # coax Sphinx into treating descriptors as attributes
 # see https://bitbucket.org/birkenfeld/sphinx/issue/1254/#comment-7587063
 from glue.qt.widget_properties import WidgetProperty
