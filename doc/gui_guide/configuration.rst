@@ -24,7 +24,6 @@ To obtain a fresh ``config.py`` file to edit, run the command line program::
 
 Which will create a new file at ``~/.glue/config.py``
 
-
 Example Usage: Custom Link Functions
 ------------------------------------
 

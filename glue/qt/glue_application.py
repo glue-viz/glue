@@ -179,10 +179,6 @@ class GlueApplication(Application, QMainWindow):
         Application.__init__(self, data_collection=data_collection,
                              session=session)
 
-        # Load all plugins
-        from ..plugins import load_all_plugins
-        load_all_plugins()
-
         self.app = get_qapp()
 
         self.setWindowIcon(self.app.windowIcon())

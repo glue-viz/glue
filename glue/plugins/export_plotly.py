@@ -6,7 +6,6 @@ try:
 except ImportError:
     plotly = None
 
-from ..config import exporters, settings
 from ..qt.widgets import ScatterWidget, HistogramWidget
 from ..core.data import CategoricalComponent
 from ..core.layout import Rectangle, snap_to_grid
@@ -305,6 +304,10 @@ def save_plotly(application, label):
     plotly.sign_in(user, apikey)
     plotly.plot(*args, **kwargs)
 
-exporters.add('Plotly', save_plotly, can_save_plotly, outmode='label')
-settings.add('PLOTLY_USER', 'Glue')
-settings.add('PLOTLY_APIKEY', 't24aweai14')
+def setup():
+    from ..logger import logger
+    from ..config import exporters, settings
+    exporters.add('Plotly', save_plotly, can_save_plotly, outmode='label')
+    settings.add('PLOTLY_USER', 'Glue')
+    settings.add('PLOTLY_APIKEY', 't24aweai14')
+    logger.info("Loaded plotly exporter plugin")

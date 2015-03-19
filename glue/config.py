@@ -11,11 +11,10 @@ Objects used to configure Glue at runtime.
 
 __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'ColormapRegistry', 'DataFactoryRegistry', 'QtClientRegistry',
-           'LinkFunctionRegistry', 'LinkHelperRegistry',
-           'ProfileFitterRegistry',
+           'LinkFunctionRegistry', 'LinkHelperRegistry', 'QtToolRegistry',
+           'SingleSubsetLayerActionRegistry', 'ProfileFitterRegistry',
            'qt_client', 'data_factory', 'link_function', 'link_helper',
-           'colormaps',
-           'exporters', 'settings', 'fit_plugin', 'auto_refresh']
+           'colormaps', 'exporters', 'settings', 'fit_plugin', 'auto_refresh']
 
 
 class Registry(object):
@@ -35,6 +34,7 @@ class Registry(object):
 
     def __init__(self):
         self._members = []
+        self._lazy_members = []
         self._loaded = False
 
     @property
@@ -42,6 +42,7 @@ class Registry(object):
         """ A list of the members in the registry.
         The return value is a list. The contents of the list
         are specified in each subclass"""
+        self._load_lazy_members()
         if not self._loaded:
             self._members = self.default_members() + self._members
             self._loaded = True
@@ -54,8 +55,22 @@ class Registry(object):
         return []
 
     def add(self, value):
-        """ Add a new item to the registry """
+        """
+        Add a new item to the registry.
+        """
         self._members.append(value)
+
+    def lazy_add(self, value):
+        """
+        Add a reference to a plugin which will be loaded when needed.
+        """
+        self._lazy_members.append(value)
+
+    def _load_lazy_members(self):
+        from .plugins import load_plugin
+        while self._lazy_members:
+            plugin = self._lazy_members.pop()
+            load_plugin(plugin)
 
     def __iter__(self):
         return iter(self.members)
@@ -234,10 +249,12 @@ class QtToolRegistry(Registry):
 
     def __init__(self):
         self._members = {}
+        self._lazy_members = []
         self._loaded = False
 
     @property
     def members(self):
+        self._load_lazy_members()
         if not self._loaded:
             defaults = self.default_members()
             for key in defaults:
