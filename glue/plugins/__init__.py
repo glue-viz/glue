@@ -2,12 +2,12 @@ import sys
 
 
 def register_plugins():
-    from ..config import qt_client, exporters
+    from ..config import qt_client, exporters, tool_registry
     qt_client.lazy_add('glue.plugins.ginga_viewer')
     exporters.lazy_add('glue.plugins.export_d3po')
     exporters.lazy_add('glue.plugins.export_plotly')
-    exporters.lazy_add('glue.plugins.tools.pv_slicer')
-    exporters.lazy_add('glue.plugins.tools.spectrum_tool')
+    tool_registry.lazy_add('glue.plugins.tools.pv_slicer')
+    tool_registry.lazy_add('glue.plugins.tools.spectrum_tool')
 
 
 def load_plugin(plugin):
