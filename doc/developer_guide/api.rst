@@ -98,6 +98,3 @@ Utilities
 
 .. automodapi:: glue.core.visual
    :no-inheritance-diagram:
-
-.. automodapi:: glue.external.aplpy
-   :no-inheritance-diagram:
