@@ -406,9 +406,8 @@ class GlueApplication(Application, QMainWindow):
         menu = QMenu(mbar)
         menu.setTitle("&File")
 
-        menu.addAction(self._actions['data_new'])
         if 'data_importers' in self._actions:
-            submenu = menu.addMenu("I&mport")
+            submenu = menu.addMenu("I&mport data")
             for a in self._actions['data_importers']:
                 submenu.addAction(a)
         # menu.addAction(self._actions['data_save'])  # XXX add this
@@ -495,12 +494,6 @@ class GlueApplication(Application, QMainWindow):
         """ Create and connect actions, store in _actions dict """
         self._actions = {}
 
-        a = act("&Open Data Set", self,
-                tip="Open a new data set",
-                shortcut=QKeySequence.Open)
-        a.triggered.connect(nonpartial(self._choose_load_data))
-        self._actions['data_new'] = a
-
         a = act("&New Data Viewer", self,
                 tip="Open a new visualization window in the current tab",
                 shortcut=QKeySequence.New
@@ -537,7 +530,7 @@ class GlueApplication(Application, QMainWindow):
             acts = []
 
             # Add default file loader (later we can add this to the registry)
-            a = act("Load from file", self, tip="Load from file")
+            a = act("Load from file", self, tip="Load from file", shortcut=QKeySequence.Open)
             a.triggered.connect(nonpartial(self._choose_load_data,
                                            data_wizard))
             acts.append(a)
