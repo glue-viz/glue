@@ -62,7 +62,6 @@ def _parse_data_dict(data, label):
 
 
 def _parse_data_recarray(data, label):
-    print(data.dtype.names)
     kwargs = dict((n, data[n]) for n in data.dtype.names)
     return [Data(label=label, **kwargs)]
 
@@ -88,6 +87,26 @@ def _parse_data_path(path, label):
     for d in as_list(data):
         d.label = label
     return as_list(data)
+
+
+def _parse_data_hdulist(data, label):
+    """
+    Parse all HDUs in an HDUList into a data object, and build coords.
+    Assumes all extensions have the same shape
+    """
+    from .core.io import filter_hdulist_by_shape
+    from .core.coordinates import coordinates_from_header
+
+    result = Data(label=label)
+
+    hdulist = filter_hdulist_by_shape(data)
+    header = hdulist[0].header
+
+    result.coords = coordinates_from_header(header)
+    for hdu in hdulist:
+        result.add_component(hdu.data, label=hdu.name)
+
+    return [result]
 
 # (base class, parser function)
 _parsers = [
@@ -118,7 +137,10 @@ except ImportError:
 
 try:
     from astropy.table import Table
+    from astropy.io.fits import HDUList
     _parsers.append((Table, _parse_data_astropy_table))
+    # Put HDUList parser before list parser
+    _parsers = [(HDUList, _parse_data_hdulist)] + _parsers
 except ImportError:
     pass
 
