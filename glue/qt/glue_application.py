@@ -524,7 +524,7 @@ class GlueApplication(Application, QMainWindow):
         a.triggered.connect(nonpartial(self._choose_save_session))
         self._actions['session_save'] = a
 
-        from glue.config import importers
+        from glue.config import importer
 
         acts = []
 
@@ -534,7 +534,7 @@ class GlueApplication(Application, QMainWindow):
                                        data_wizard))
         acts.append(a)
 
-        for i in importers:
+        for i in importer:
             label, data_importer = i
             a = act(label, self, tip=label)
             a.triggered.connect(nonpartial(self._choose_load_data,
