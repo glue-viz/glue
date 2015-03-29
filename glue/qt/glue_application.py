@@ -525,24 +525,23 @@ class GlueApplication(Application, QMainWindow):
         self._actions['session_save'] = a
 
         from glue.config import importers
-        if len(importers) > 0:
 
-            acts = []
+        acts = []
 
-            # Add default file loader (later we can add this to the registry)
-            a = act("Load from file", self, tip="Load from file", shortcut=QKeySequence.Open)
+        # Add default file loader (later we can add this to the registry)
+        a = act("Load from file", self, tip="Load from file", shortcut=QKeySequence.Open)
+        a.triggered.connect(nonpartial(self._choose_load_data,
+                                       data_wizard))
+        acts.append(a)
+
+        for i in importers:
+            label, data_importer = i
+            a = act(label, self, tip=label)
             a.triggered.connect(nonpartial(self._choose_load_data,
-                                           data_wizard))
+                                           data_importer))
             acts.append(a)
 
-            for i in importers:
-                label, data_importer = i
-                a = act(label, self, tip=label)
-                a.triggered.connect(nonpartial(self._choose_load_data,
-                                               data_importer))
-                acts.append(a)
-
-            self._actions['data_importers'] = acts
+        self._actions['data_importers'] = acts
 
 
         from glue.config import exporters
