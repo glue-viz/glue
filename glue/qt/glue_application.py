@@ -406,6 +406,7 @@ class GlueApplication(Application, QMainWindow):
         menu = QMenu(mbar)
         menu.setTitle("&File")
 
+        menu.addAction(self._actions['data_new'])
         if 'data_importers' in self._actions:
             submenu = menu.addMenu("I&mport data")
             for a in self._actions['data_importers']:
@@ -524,12 +525,21 @@ class GlueApplication(Application, QMainWindow):
         a.triggered.connect(nonpartial(self._choose_save_session))
         self._actions['session_save'] = a
 
+        # Add file loader as first item in File menu for convenience. We then
+        # also add it again below in the Import menu for consistency.
+        a = act("&Open Data Set", self, tip="Open a new data set",
+                shortcut=QKeySequence.Open)
+        a.triggered.connect(nonpartial(self._choose_load_data,
+                                       data_wizard))
+        self._actions['data_new'] = a
+
+        # We now populate the "Import data" menu
         from glue.config import importer
 
         acts = []
 
         # Add default file loader (later we can add this to the registry)
-        a = act("Load from file", self, tip="Load from file", shortcut=QKeySequence.Open)
+        a = act("Import from file", self, tip="Import from file")
         a.triggered.connect(nonpartial(self._choose_load_data,
                                        data_wizard))
         acts.append(a)
@@ -542,7 +552,6 @@ class GlueApplication(Application, QMainWindow):
             acts.append(a)
 
         self._actions['data_importers'] = acts
-
 
         from glue.config import exporters
         if len(exporters) > 0:
