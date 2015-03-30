@@ -113,6 +113,31 @@ this file to your function, and use the resulting Data object.
 For more examples of custom data loaders, see the `example repository
 <https://github.com/glue-viz/glue-data-loaders>`_.
 
+Custom importers
+----------------
+
+The `Custom Data Loaders`_ described above allow Glue to recognize more file
+formats than originally implemented, but it is also possible to write entire
+new ways of importing data, including new GUI dialogs. An example would be a
+dialog that allows the user to query and download online data.
+
+Currently, an importer should be defined as a function that returns a list of
+:class:`~glue.core.data.Data` objects. In future we may relax this latter
+requirement and allow existing tools in Glue to interpret the data.
+
+An importer can be defined using the ``@importer`` decorator::
+
+    from glue.config import importer
+    from glue.core import Data
+
+    @importer("Import from custom source")
+    def my_importer():
+        # Main code here
+        return [Data(...), Data(...)]
+
+The label in the ``@importer`` decorator is the text that will appear in the
+``Import`` menu in Glue.
+
 Custom Colormaps
 ----------------
 

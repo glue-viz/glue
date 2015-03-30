@@ -14,7 +14,7 @@ from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                                  QListWidgetItem)
 from ..external.qt.QtCore import Qt, QSize, QSettings, Signal
 
-from ..core import command
+from ..core import command, Data
 from .. import env
 from ..qt import get_qapp
 from .decorators import set_cursor, messagebox_on_error
@@ -407,6 +407,10 @@ class GlueApplication(Application, QMainWindow):
         menu.setTitle("&File")
 
         menu.addAction(self._actions['data_new'])
+        if 'data_importers' in self._actions:
+            submenu = menu.addMenu("I&mport data")
+            for a in self._actions['data_importers']:
+                submenu.addAction(a)
         # menu.addAction(self._actions['data_save'])  # XXX add this
         menu.addAction(self._actions['session_restore'])
         menu.addAction(self._actions['session_save'])
@@ -475,18 +479,21 @@ class GlueApplication(Application, QMainWindow):
         a.triggered.connect(nonpartial(submit_bug_report))
         menu.addAction(a)
 
-    def _choose_load_data(self):
-        self.add_datasets(self.data_collection, data_wizard())
+    def _choose_load_data(self, data_importer=None):
+        if data_importer is None:
+            self.add_datasets(self.data_collection, data_wizard())
+        else:
+            data = data_importer()
+            if not isinstance(data, list):
+                raise TypeError("Data loader should return list of Data objects")
+            for item in data:
+                if not isinstance(item, Data):
+                    raise TypeError("Data loader should return list of Data objects")
+            self.add_datasets(self.data_collection, data)
 
     def _create_actions(self):
         """ Create and connect actions, store in _actions dict """
         self._actions = {}
-
-        a = act("&Open Data Set", self,
-                tip="Open a new data set",
-                shortcut=QKeySequence.Open)
-        a.triggered.connect(nonpartial(self._choose_load_data))
-        self._actions['data_new'] = a
 
         a = act("&New Data Viewer", self,
                 tip="Open a new visualization window in the current tab",
@@ -517,6 +524,34 @@ class GlueApplication(Application, QMainWindow):
                 tip='Save the current session')
         a.triggered.connect(nonpartial(self._choose_save_session))
         self._actions['session_save'] = a
+
+        # Add file loader as first item in File menu for convenience. We then
+        # also add it again below in the Import menu for consistency.
+        a = act("&Open Data Set", self, tip="Open a new data set",
+                shortcut=QKeySequence.Open)
+        a.triggered.connect(nonpartial(self._choose_load_data,
+                                       data_wizard))
+        self._actions['data_new'] = a
+
+        # We now populate the "Import data" menu
+        from glue.config import importer
+
+        acts = []
+
+        # Add default file loader (later we can add this to the registry)
+        a = act("Import from file", self, tip="Import from file")
+        a.triggered.connect(nonpartial(self._choose_load_data,
+                                       data_wizard))
+        acts.append(a)
+
+        for i in importer:
+            label, data_importer = i
+            a = act(label, self, tip=label)
+            a.triggered.connect(nonpartial(self._choose_load_data,
+                                           data_importer))
+            acts.append(a)
+
+        self._actions['data_importers'] = acts
 
         from glue.config import exporters
         if len(exporters) > 0:

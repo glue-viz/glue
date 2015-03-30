@@ -14,7 +14,8 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'LinkFunctionRegistry', 'LinkHelperRegistry', 'QtToolRegistry',
            'SingleSubsetLayerActionRegistry', 'ProfileFitterRegistry',
            'qt_client', 'data_factory', 'link_function', 'link_helper',
-           'colormaps', 'exporters', 'settings', 'fit_plugin', 'auto_refresh']
+           'colormaps', 'exporters', 'settings', 'fit_plugin',
+           'auto_refresh', 'importer']
 
 
 class Registry(object):
@@ -107,6 +108,36 @@ class SettingRegistry(Registry):
     def default_members(self):
         import glue.plugins  # plugins will populate this registry
         return []
+
+
+class DataImportRegistry(Registry):
+    """
+    Stores functions which can import data.
+
+    The members property is a list of importers, each represented as a
+    ``(label, load_function)`` tuple. The ``load_function`` should take no
+    arguments and return a list of :class:`~glue.core.data.Data` objects.
+    """
+
+    def default_members(self):
+        return []
+
+    def add(self, label, importer):
+        """
+        Add a new importer
+        :param label: Short label for the importer
+        :type label: str
+
+        :param importer: importer function
+        :type importer: function()
+        """
+        self.members.append((label, importer))
+
+    def __call__(self, label):
+        def adder(func):
+            self.add(label, func)
+            return func
+        return adder
 
 
 class ExporterRegistry(Registry):
@@ -408,6 +439,7 @@ data_factory = DataFactoryRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
 colormaps = ColormapRegistry()
+importer = DataImportRegistry()
 exporters = ExporterRegistry()
 settings = SettingRegistry()
 fit_plugin = ProfileFitterRegistry()
