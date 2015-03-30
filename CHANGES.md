@@ -1,6 +1,19 @@
 Changelog
 =========
 
+v0.5 (Unreleased)
+-----------------
+
+* Support for 'lazy-loading' plugins which means their import is deferred until they are needed
+* Support for connecting custom importers
+* ``qglue`` now correctly interprets HDUList objects 
+* Internal improvements to organization of domain-specific code (such as the Astronomy coordinate conversions and ginga data viewer)
+* Improved interface for adding new components, with syntax highlighting and tab-completion
+* Improved error/warning messages and miscellaneous bug fixes
+* The error console log is now availble through the View menu
+* Fixed compatibility with Python 2.6
+* Python 3.x support is now stable
+
 v0.4 (Released December 22, 2015)
 ---------------------------------
 
