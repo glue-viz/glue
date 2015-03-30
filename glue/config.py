@@ -116,7 +116,7 @@ class DataImportRegistry(Registry):
 
     The members property is a list of importers, each represented as a
     ``(label, load_function)`` tuple. The ``load_function`` should take no
-    arguments and return a :class:`~glue.core.data.Data` object.
+    arguments and return a list of :class:`~glue.core.data.Data` objects.
     """
 
     def default_members(self):
