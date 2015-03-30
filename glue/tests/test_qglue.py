@@ -21,6 +21,7 @@ class TestQGlue(object):
     def setup_method(self, method):
 
         from astropy.table import Table
+        from astropy.io.fits import HDUList, ImageHDU
 
         Registry().clear()
 
@@ -36,6 +37,7 @@ class TestQGlue(object):
                                           dtype=[(str('a'), int), (str('b'), int)])
         self.astropy_table = Table({'x': x, 'y': y})
         self.bad_data = {'x': x, 'u': u}
+        self.hdulist = HDUList([ImageHDU(x, name='PRIMARY')])
 
         self.x = np.array(x)
         self.y = np.array(y)
@@ -97,6 +99,10 @@ class TestQGlue(object):
         dc = qglue(data1=self.dict_data, data2=self.xy).data_collection
         self.check_setup(dc, {'data1': ['u', 'v'],
                               'data2': ['x', 'y']})
+
+    def test_hdulist(self):
+        dc = qglue(data1=self.hdulist).data_collection
+        self.check_setup(dc, {'data1': ['PRIMARY']})
 
     def test_glue_data(self):
         d = Data(x=[1, 2, 3])
