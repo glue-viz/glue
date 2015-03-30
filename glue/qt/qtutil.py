@@ -725,9 +725,12 @@ def _load_ui_pyqt4(path, parent):
     return loadUi(path, parent)
 
 
-def load_ui(name, parent=None):
+def load_ui(path, parent=None):
     """
-    Load a UI file, given it's name
+    Load a UI file, given its name.
+
+    This will first check if `path` exists, and if not it will assume it is the
+    name of a ui file to search for in the global glue ui directory.
 
     Parameters
     ----------
@@ -742,14 +745,19 @@ def load_ui(name, parent=None):
     w : QWidget
       The new widget
     """
-    path = ui_path(name)
+
+    if not os.path.exists(path):
+        path = global_ui_path(path)
+
     if is_pyside():
         return _load_ui_pyside(path, parent)
-    return _load_ui_pyqt4(path, parent)
+    else:
+        return _load_ui_pyqt4(path, parent)
 
 
-def ui_path(ui_name):
-    """Return the absolute path to a .ui file
+def global_ui_path(ui_name):
+    """
+    Return the absolute path to a .ui file bundled with glue.
 
     Parameters
     ----------
