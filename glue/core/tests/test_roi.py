@@ -348,9 +348,7 @@ class TestCategorical(object):
 
     def test_defined(self):
 
-        assert not self.roi.defined()
-        nroi = CategoricalRoi(orientation='x',
-                              categories=['a', 'b', 'c'])
+        nroi = CategoricalRoi(categories=['a', 'b', 'c'])
         assert nroi.defined()
         nroi.reset()
         assert not nroi.defined()
@@ -367,7 +365,6 @@ class TestCategorical(object):
 
         comp = CategoricalComponent(np.array(['a', 'b', 'c']))
         self.roi.update_categories(CategoricalComponent(np.array(['a', 'b'])))
-        self.roi.orientation = 'x'
         contained = self.roi.contains(comp, None)
         np.testing.assert_array_equal(contained,
                                       np.array([True, True, False]))

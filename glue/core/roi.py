@@ -1106,12 +1106,8 @@ class MplPathROI(MplPolygonalROI):
 
 class CategoricalRoi(Roi):
 
-    def __init__(self, orientation=None, categories=None):
+    def __init__(self, categories=None):
         self.categories = np.unique(categories)
-        if orientation not in ['x', 'y', None]:
-            raise TypeError("Orientation must be one of 'x', 'y'")
-
-        self.orientation = orientation
 
     def _categorical_helper(self, indata):
         """
@@ -1131,11 +1127,7 @@ class CategoricalRoi(Roi):
 
     def contains(self, x, y):
 
-        if self.orientation == 'x':
-            check = self._categorical_helper(x)
-        else:
-            check = self._categorical_helper(y)
-
+        check = self._categorical_helper(x)
         index = np.minimum(np.searchsorted(self.categories, check),
                            len(self.categories)-1)
         return self.categories[index] == check
@@ -1146,10 +1138,7 @@ class CategoricalRoi(Roi):
 
     def defined(self):
         """ Returns True if the ROI is defined """
-        return self.categories is not None and \
-            self.orientation is not None
+        return self.categories is not None
 
     def reset(self):
-
-        self.orientation = None
         self.categories = None

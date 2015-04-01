@@ -446,6 +446,33 @@ class RoiSubsetState(SubsetState):
         return result
 
 
+class CategoricalRoiSubsetState(SubsetState):
+
+    def __init__(self, att=None, roi=None):
+        super(CategoricalRoiSubsetState, self).__init__()
+        self.att = att
+        self.roi = roi
+
+    @property
+    def attributes(self):
+        return self.att,
+
+    @memoize
+    @contract(data='isinstance(Data)', view='array_view')
+    def to_mask(self, data, view=None):
+        x = data[self.att, view]
+        result = self.roi.contains(x, None)
+        assert x.shape == result.shape
+        return result
+
+    def copy(self):
+        result = CategoricalRoiSubsetState()
+        result.att = self.att
+        result.roi = self.roi
+        return result
+
+
+
 class RangeSubsetState(SubsetState):
 
     def __init__(self, lo, hi, att=None):
