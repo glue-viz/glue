@@ -1,42 +1,22 @@
 from __future__ import print_function, division
-
-import sys
 import os.path
-import numpy as np
-
-from ...external.qt.QtGui import (QAction,
-                                  QToolButton, QToolBar, QIcon,
-                                  QActionGroup, QWidget,
-                                  QVBoxLayout, QColor, QImage, QPixmap)
-
-from ...external.qt.QtCore import Qt, QSize
 
 from ...qt.widgets.scatter_widget import ScatterWidget
-from ...qt.widgets.data_viewer import DataViewer
-from ...qt.widgets.mpl_widget import MplWidget, defer_draw
+from ...qt.widgets.mpl_widget import defer_draw
 from ...qt.widget_properties import (ButtonProperty, FloatLineProperty,
                                  CurrentComboProperty,
                                  connect_bool_button, connect_float_edit)
+
+from ...qt.qtutil import nonpartial, load_ui
 from .client import ScatterGroupClient
-
-from ...core import roi as roimod
-from ...core.callback_property import add_callback
-
-from ...qt.qtutil import get_icon, nonpartial, load_ui, cache_axes
-
-from ..tools.pv_slicer import PVSlicerTool
-from ..tools.spectrum_tool import SpectrumTool
-
-from ...config import tool_registry
 
 __all__ = ['ScatterGroupWidget']
 
 
-class ScatterGroupWidget(ScatterWidget, DataViewer):
+class ScatterGroupWidget(ScatterWidget):
 
     LABEL = "Scatter Group Plot"
-    _property_set = DataViewer._property_set + \
-        'xlog ylog xflip yflip hidden xatt yatt xmin xmax ymin ymax gatt'.split()
+    _property_set = ScatterWidget._property_set + ['gatt']
 
     xlog = ButtonProperty('ui.xLogCheckBox', 'log scaling on x axis?')
     ylog = ButtonProperty('ui.yLogCheckBox', 'log scaling on y axis?')
@@ -54,26 +34,13 @@ class ScatterGroupWidget(ScatterWidget, DataViewer):
     gatt = CurrentComboProperty('ui.groupComboBox',
                                 'Attribute to group time series')
 
-    def __init__(self, session, parent=None):
-        super(ScatterGroupWidget, self).__init__(session, parent)
-        self.central_widget = MplWidget()
-        self.option_widget = QWidget()
+    def _load_ui(self):
+        self.ui = load_ui(os.path.join(os.path.dirname(__file__), 'scattergroupwidget.ui'), self.option_widget)
 
-        self.setCentralWidget(self.central_widget)
-
-        self.ui = load_ui('scattergroupwidget')
-        self._tweak_geometry()
-
+    def _setup_client(self):
         self.client = ScatterGroupClient(self._data,
                                          self.central_widget.canvas.fig,
                                          artist_container=self._container)
-
-        self._connect()
-        self.unique_fields = set()
-        tb = self.make_toolbar()
-        cache_axes(self.client.axes, tb)
-        self.statusBar().setSizeGripEnabled(False)
-        self.setFocusPolicy(Qt.StrongFocus)
 
     def _connect(self):
          ui = self.ui

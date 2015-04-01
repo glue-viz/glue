@@ -5,52 +5,32 @@ from pandas import DataFrame
 import numpy as np
 
 from ...external import six
-from ...utils import coerce_numeric
-from ...core.client import Client
-from ...core.exceptions import IncompatibleAttribute
-from ...core.data import Data, IncompatibleAttribute, ComponentID, CategoricalComponent, Component
-from ...core.callback_property import (CallbackProperty, add_callback,
-                                      delay_callback)
+from ...utils import coerce_numeric, lookup_class
+from ...core.data import IncompatibleAttribute, ComponentID, Component
+from ...core.callback_property import (CallbackProperty, add_callback)
 
-from ...clients.viz_client import init_mpl
 from .util import get_colors
 from ...clients.scatter_client import ScatterClient
-from ...clients.layer_artist import (LayerArtist, ChangedTrigger,
-                                    ScatterLayerArtist, LayerArtistContainer)
+from ...clients.layer_artist import (ChangedTrigger, ScatterLayerArtist)
 
 
 class ScatterGroupClient(ScatterClient):
 
+    """
+    A client class that uses matplotlib to visualize tables as scatter plots.
+    """
+    xmin = CallbackProperty(0)
+    xmax = CallbackProperty(1)
+    ymin = CallbackProperty(0)
+    ymax = CallbackProperty(1)
+    ylog = CallbackProperty(False)
+    xlog = CallbackProperty(False)
+    yflip = CallbackProperty(False)
+    xflip = CallbackProperty(False)
+    xatt = CallbackProperty()
+    yatt = CallbackProperty()
     gatt = CallbackProperty()
-
-    def __init__(self, data=None, figure=None, axes=None,
-                 artist_container=None):
-        """
-        Create a new ScatterClient object
-
-        :param data: :class:`~glue.core.data.DataCollection` to use
-
-        :param figure:
-           Which matplotlib figure instance to draw to. One will be created if
-           not provided
-
-        :param axes:
-           Which matplotlib axes instance to use. Will be created if necessary
-        """
-        Client.__init__(self, data=data)
-        figure, axes = init_mpl(figure, axes)
-        self.artists = artist_container
-        if self.artists is None:
-            self.artists = LayerArtistContainer()
-
-        self._layer_updated = False  # debugging
-        self._xset = False
-        self._yset = False
-        self._gset = False
-        self.axes = axes
-
-        self._connect()
-        self._set_limits()
+    jitter = CallbackProperty()
 
     def _connect(self):
         add_callback(self, 'xlog', self._set_xlog)
@@ -86,6 +66,27 @@ class ScatterGroupClient(ScatterClient):
             if data.get_component(c).group:
                 groups.append(c)
         return groups
+
+    def add_layer(self, layer):
+        """ Adds a new visual layer to a client, to display either a dataset
+        or a subset. Updates both the client data structure and the
+        plot.
+
+        Returns the created layer artist
+
+        :param layer: the layer to add
+        :type layer: :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
+        """
+        if layer.data not in self.data:
+            raise TypeError("Layer not in data collection")
+        if layer in self.artists:
+            return self.artists[layer][0]
+
+        result = ScatterGroupLayerArtist(layer, self.axes)
+        self.artists.append(result)
+        self._update_layer(layer)
+        self._ensure_subsets_added(layer)
+        return result
 
     def _set_xydata(self, coord, attribute, snap=True):
         """ Redefine which components get assigned to the x/y axes
@@ -134,6 +135,17 @@ class ScatterGroupClient(ScatterClient):
         self._pull_properties()
         self._redraw()
 
+    def restore_layers(self, layers, context):
+        """ Re-generate a list of plot layers from a glue-serialized list"""
+        for l in layers:
+            cls = lookup_class(l.pop('_type'))
+            if cls != ScatterGroupLayerArtist:
+                raise ValueError("Scatter client cannot restore layer of type "
+                                 "%s" % cls)
+            props = dict((k, context.object(v)) for k, v in l.items())
+            layer = self.add_layer(props['layer'])
+            layer.properties = props
+
     def _update_layer(self, layer, force=False):
         """ Update both the style and data for the requested layer"""
         if self.xatt is None or self.yatt is None:
@@ -181,8 +193,12 @@ class ScatterGroupLayerBase(object):
         """
         pass
 
+class ScatterGroupLayerArtist(ScatterLayerArtist, ScatterGroupLayerBase):
 
-class ScatterGroupLayerArtist(LayerArtist):
+    xatt = ChangedTrigger()
+    yatt = ChangedTrigger()
+    gatt = ChangedTrigger()
+    _property_set = ScatterLayerArtist._property_set + ['gatt']
 
     def _sync_style(self):
         style = self.layer.style
@@ -194,16 +210,9 @@ class ScatterGroupLayerArtist(LayerArtist):
             artist.set_markerfacecolor(style.color)
             artist.set_marker(style.marker)
             artist.set_markersize(style.markersize)
-            #artist.set_linestyle('None')  # otherwise no group lines are seen
             artist.set_alpha(style.alpha)
             artist.set_zorder(self.zorder)
             artist.set_visible(self.visible and self.enabled)
-
-
-class ScatterGroupLayer(ScatterGroupLayerArtist, ScatterGroupLayerBase):
-
-    gatt = ChangedTrigger()
-    _property_set = ScatterGroupLayerArtist._property_set + ['xatt', 'yatt', 'gatt']
 
     def _recalc(self):
         self.clear()
