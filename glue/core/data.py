@@ -217,6 +217,13 @@ class Component(object):
         """
         return np.can_cast(self.data[0], np.complex)
 
+    @property
+    def categorical(self):
+        """
+        Whether or not the datatype is categorical
+        """
+        return False
+
     def __str__(self):
         return "Component with shape %s" % shape_to_string(self.shape)
 
@@ -388,6 +395,10 @@ class CategoricalComponent(Component):
             self._update_categories()
         else:
             self._update_data()
+
+    @property
+    def categorical(self):
+        return True
 
     def _update_categories(self, categories=None):
         """

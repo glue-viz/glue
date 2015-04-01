@@ -7,10 +7,10 @@ import pytest
 import numpy as np
 from numpy.testing import assert_almost_equal
 from matplotlib.figure import Figure
+from glue.core.data import CategoricalComponent
 from mock import MagicMock
 
-from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI,
-                   PointROI, MplPickROI,
+from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI, CategoricalRoi,
                    MplCircularROI, MplRectangularROI, MplPolygonalROI,
                    XRangeROI, MplXRangeROI, YRangeROI, MplYRangeROI)
 
@@ -339,6 +339,39 @@ class TestPolygon(object):
     def test_str(self):
         """ __str__ returns a string """
         assert type(str(self.roi)) == str
+
+
+class TestCategorical(object):
+
+    def setup_method(self, method):
+        self.roi = CategoricalRoi()
+
+    def test_defined(self):
+
+        assert not self.roi.defined()
+        nroi = CategoricalRoi(orientation='x',
+                              categories=['a', 'b', 'c'])
+        assert nroi.defined()
+        nroi.reset()
+        assert not nroi.defined()
+
+    def test_loads_from_components(self):
+
+        comp = CategoricalComponent(np.array(['a', 'a', 'b']))
+        self.roi.update_categories(comp)
+
+        np.testing.assert_array_equal(self.roi.categories,
+                                      np.array(['a', 'b']))
+
+    def test_applies_components(self):
+
+        comp = CategoricalComponent(np.array(['a', 'b', 'c']))
+        self.roi.update_categories(CategoricalComponent(np.array(['a', 'b'])))
+        self.roi.orientation = 'x'
+        contained = self.roi.contains(comp, None)
+        np.testing.assert_array_equal(contained,
+                                      np.array([True, True, False]))
+
 
     def test_move(self):
         """Move polygon"""

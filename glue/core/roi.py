@@ -1102,3 +1102,54 @@ class MplPathROI(MplPolygonalROI):
         if self._patch is not None:
             self._patch.set_visible(False)
         self._axes.figure.canvas.draw()
+
+
+class CategoricalRoi(Roi):
+
+    def __init__(self, orientation=None, categories=None):
+        self.categories = np.unique(categories)
+        if orientation not in ['x', 'y', None]:
+            raise TypeError("Orientation must be one of 'x', 'y'")
+
+        self.orientation = orientation
+
+    def _categorical_helper(self, indata):
+        """
+        A helper function to do the rigamaroll of getting categorical data.
+
+        :param indata: Any type of input data
+        :return: The best guess at the categorical data associated with indata
+        """
+
+        try:
+            if indata.categorical:
+                return indata._categorical_data
+            else:
+                return indata[:]
+        except AttributeError:
+            return np.asarray(indata)
+
+    def contains(self, x, y):
+
+        if self.orientation == 'x':
+            check = self._categorical_helper(x)
+        else:
+            check = self._categorical_helper(y)
+
+        index = np.minimum(np.searchsorted(self.categories, check),
+                           len(self.categories)-1)
+        return self.categories[index] == check
+
+    def update_categories(self, categories):
+
+        self.categories = np.unique(self._categorical_helper(categories))
+
+    def defined(self):
+        """ Returns True if the ROI is defined """
+        return self.categories is not None and \
+            self.orientation is not None
+
+    def reset(self):
+
+        self.orientation = None
+        self.categories = None
