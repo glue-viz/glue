@@ -256,30 +256,22 @@ class ScatterClient(Client):
         """
 
         if isinstance(roi, RectangularROI):
-
-            lo, hi = roi.xmin, roi.xmax
-            xcomp = list(self._get_data_components('x'))
-            if xcomp:
-                if self._check_categorical(self.xatt):
-                    x_subset = CategoricalRoiSubsetState.from_range(xcomp[0], self.xatt, lo, hi)
+            subsets = []
+            axes = [('x', roi.xmin, roi.xmax),
+                    ('y', roi.ymin, roi.ymax)]
+            for coord, lo, hi in axes:
+                comp = list(self._get_data_components(coord))
+                if comp:
+                    if comp[0].categorical:
+                        subset = CategoricalRoiSubsetState.from_range(comp[0], self.xatt, lo, hi)
+                    else:
+                        subset = RangeSubsetState(lo, hi, self.xatt)
                 else:
-                    x_subset = RangeSubsetState(lo, hi, self.xatt)
-            else:
-                x_subset = None
-
-            lo, hi = roi.ymin, roi.ymax
-            ycomp = list(self._get_data_components('y'))
-            if ycomp:
-                if self._check_categorical(self.yatt):
-                    y_subset = CategoricalRoiSubsetState.from_range(ycomp[0], self.yatt, lo, hi)
-                else:
-                    y_subset = RangeSubsetState(lo, hi, self.yatt)
-            else:
-                y_subset = None
+                    subset = None
+                subsets.append(subset)
         else:
             raise AssertionError
-
-        return AndState(x_subset, y_subset)
+        return AndState(*subsets)
 
     def apply_roi(self, roi):
         # every editable subset is updated
