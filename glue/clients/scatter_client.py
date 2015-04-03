@@ -258,18 +258,24 @@ class ScatterClient(Client):
         if isinstance(roi, RectangularROI):
 
             lo, hi = roi.xmin, roi.xmax
-            xcomp = self._get_data_components('x').next()
-            if self._check_categorical(self.xatt):
-                x_subset = CategoricalRoiSubsetState.from_range(xcomp, self.xatt, lo, hi)
+            xcomp = list(self._get_data_components('x'))
+            if xcomp:
+                if self._check_categorical(self.xatt):
+                    x_subset = CategoricalRoiSubsetState.from_range(xcomp[0], self.xatt, lo, hi)
+                else:
+                    x_subset = RangeSubsetState(lo, hi, self.xatt)
             else:
-                x_subset = RangeSubsetState(lo, hi, self.xatt)
+                x_subset = None
 
             lo, hi = roi.ymin, roi.ymax
-            ycomp = self._get_data_components('y').next()
-            if self._check_categorical(self.yatt):
-                y_subset = CategoricalRoiSubsetState.from_range(ycomp, self.yatt, lo, hi)
+            ycomp = list(self._get_data_components('y'))
+            if ycomp:
+                if self._check_categorical(self.yatt):
+                    y_subset = CategoricalRoiSubsetState.from_range(ycomp[0], self.yatt, lo, hi)
+                else:
+                    y_subset = RangeSubsetState(lo, hi, self.yatt)
             else:
-                y_subset = RangeSubsetState(lo, hi, self.yatt)
+                y_subset = None
         else:
             raise AssertionError
 
@@ -283,8 +289,11 @@ class ScatterClient(Client):
             lo, hi = roi.range()
             att = self.xatt if roi.ori == 'x' else self.yatt
             if self._check_categorical(att):
-                comp = self._get_data_components(roi.ori).next()
-                subset_state = CategoricalRoiSubsetState.from_range(comp, att, lo, hi)
+                comp = list(self._get_data_components(roi.ori))
+                if comp:
+                    subset_state = CategoricalRoiSubsetState.from_range(comp[0], att, lo, hi)
+                else:
+                    subset_state = None
             else:
                 subset_state = RangeSubsetState(lo, hi, att)
         else:

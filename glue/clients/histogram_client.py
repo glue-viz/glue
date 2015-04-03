@@ -379,17 +379,19 @@ class HistogramClient(Client):
             lo = 10 ** lo
             hi = 10 ** hi
 
-        comp = self._get_data_components('x').next()
-        if comp.categorical:
-            state = CategoricalRoiSubsetState.from_range(comp, self.component,
-                                                         lo, hi)
-        else:
-            state = RangeSubsetState(lo, hi)
-            state.att = self.component
-        mode = EditSubsetMode()
-        visible = [d for d in self.data if self.is_layer_visible(d)]
-        focus = visible[0] if len(visible) > 0 else None
-        mode.update(self.data, state, focus_data=focus)
+        comp = list(self._get_data_components('x'))
+        if comp:
+            comp = comp[0]
+            if comp.categorical:
+                state = CategoricalRoiSubsetState.from_range(comp, self.component,
+                                                             lo, hi)
+            else:
+                state = RangeSubsetState(lo, hi)
+                state.att = self.component
+            mode = EditSubsetMode()
+            visible = [d for d in self.data if self.is_layer_visible(d)]
+            focus = visible[0] if len(visible) > 0 else None
+            mode.update(self.data, state, focus_data=focus)
 
     def register_to_hub(self, hub):
         dfilter = lambda x: x.sender.data in self._artists
