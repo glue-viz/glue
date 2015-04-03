@@ -369,6 +369,14 @@ class TestCategorical(object):
         np.testing.assert_array_equal(contained,
                                       np.array([True, True, False]))
 
+    def test_from_range(self):
+
+        comp = CategoricalComponent(np.array(list('abcdefghijklmnopqrstuvwxyz')*2))
+
+        roi = CategoricalRoi.from_range(comp, 6, 10)
+        np.testing.assert_array_equal(roi.categories,
+                                      np.array(list('ghij')))
+
 
     def test_move(self):
         """Move polygon"""

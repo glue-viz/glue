@@ -1142,3 +1142,19 @@ class CategoricalRoi(Roi):
 
     def reset(self):
         self.categories = None
+
+    @staticmethod
+    def from_range(cat_comp, lo, hi):
+        """
+        Utility function to help contruct the Roi from a range.
+
+        :param cat_comp: Anything understood by ._categorical_helper ... array, list or component
+        :param lo: lower bound of the range
+        :param hi: upper bound of the range
+        :return: CategoricalRoi object
+        """
+
+        roi = CategoricalRoi()
+        cat_data = cat_comp._categories
+        roi.update_categories(cat_data[np.floor(lo):np.ceil(hi)])
+        return roi
