@@ -15,7 +15,7 @@ from ...clients.layer_artist import (ChangedTrigger, ScatterLayerArtist)
 
 
 @six.add_metaclass(ABCMeta)
-class ScatterGroupLayerBase(object):
+class LineLayerBase(object):
     xatt = abstractproperty()
     yatt = abstractproperty()
     gatt = abstractproperty()
@@ -25,7 +25,7 @@ class ScatterGroupLayerBase(object):
         pass
 
 
-class ScatterGroupLayerArtist(ScatterLayerArtist, ScatterGroupLayerBase):
+class LineLayerArtist(ScatterLayerArtist, LineLayerBase):
 
     gatt = ChangedTrigger()
     _property_set = ScatterLayerArtist._property_set + ['gatt']
@@ -63,18 +63,19 @@ class ScatterGroupLayerArtist(ScatterLayerArtist, ScatterGroupLayerBase):
         if len(groups) < len(x):
             colors = get_colors(len(groups))
             for grp, c in zip(groups, colors):
-                art = self._axes.plot(grp[1]['x'], grp[1]['y'], '.-', color=c)
+                art = self._axes.plot(grp[1]['x'], grp[1]['y'],
+                                      '.-', color=c)
                 self.artists.extend(art)
         return True
 
 
-class ScatterGroupClient(ScatterClient):
+class LineClient(ScatterClient):
     gatt = CallbackProperty()
-    layer_artist_class = ScatterGroupLayerArtist
+    layer_artist_class = LineLayerArtist
 
     def _connect(self):
         add_callback(self, 'gatt', partial(self._set_xydata, 'g'))
-        super(ScatterGroupClient, self)._connect()
+        super(LineClient, self)._connect()
 
     def groupable_attributes(self, layer, show_hidden=False):
         data = layer.data
@@ -108,19 +109,19 @@ class ScatterGroupClient(ScatterClient):
             self._pull_properties()
             self._redraw()
         else:
-            super(ScatterGroupClient, self)._set_xydata(coord, attribute, snap)
+            super(LineClient, self)._set_xydata(coord, attribute, snap)
 
     def _update_layer(self, layer, force=False):
         """ Update both the style and data for the requested layer"""
         for art in self.artists[layer]:
             art.gatt = self.gatt
-        super(ScatterGroupClient, self)._update_layer(layer, force)
+        super(LineClient, self)._update_layer(layer, force)
 
     def _on_component_replace(self, msg):
         old = msg.old
         new = msg.new
         if self.gatt is old:
             self.gatt = new
-        super(ScatterGroupClient, self)._on_component_replace(msg)
+        super(LineClient, self)._on_component_replace(msg)
 
 

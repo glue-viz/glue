@@ -6,34 +6,36 @@ from ...qt.widgets.mpl_widget import defer_draw
 from ...qt.widget_properties import CurrentComboProperty
 
 from ...qt.qtutil import load_ui
-from .client import ScatterGroupClient
+from .client import LineClient
 
-__all__ = ['ScatterGroupWidget']
+__all__ = ['LineWidget']
 
 
-class ScatterGroupWidget(ScatterWidget):
+class LineWidget(ScatterWidget):
 
-    LABEL = "Scatter Group Plot"
+    LABEL = "Line Graph"
     _property_set = ScatterWidget._property_set + ['gatt']
     gatt = CurrentComboProperty('ui.groupComboBox',
-                                'Attribute to group time series')
+                                'Attribute to group information by')
 
     def _load_ui(self):
-        self.ui = load_ui(os.path.join(os.path.dirname(__file__), 'scattergroupwidget.ui'), self.option_widget)
+        self.ui = load_ui(os.path.join(
+            os.path.dirname(__file__), 'linewidget.ui'),
+            self.option_widget)
 
     def _setup_client(self):
-        self.client = ScatterGroupClient(self._data,
-                                         self.central_widget.canvas.fig,
-                                         artist_container=self._container)
+        self.client = LineClient(self._data,
+                                 self.central_widget.canvas.fig,
+                                 artist_container=self._container)
 
     def _connect(self):
         ui = self.ui
         ui.groupComboBox.currentIndexChanged.connect(self.update_gatt)
-        super(ScatterGroupWidget, self)._connect()
+        super(LineWidget, self)._connect()
 
     @defer_draw
     def _update_combos(self):
-        super(ScatterGroupWidget, self)._update_combos()
+        super(LineWidget, self)._update_combos()
         glayer_ids = []
         if (self.client.gatt and self.client.gatt.hidden):
             self.hidden = True
@@ -66,5 +68,5 @@ class ScatterGroupWidget(ScatterWidget):
 
     @defer_draw
     def restore_layers(self, rec, context):
-        super(ScatterGroupWidget, self).restore_layers(rec, context)
+        super(LineWidget, self).restore_layers(rec, context)
         self.update_gatt(None)
