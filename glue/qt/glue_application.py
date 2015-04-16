@@ -43,10 +43,15 @@ def _fix_ipython_pylab():
     shell = get_ipython()
     if shell is None:
         return
+
+    from IPython.core.error import UsageError
+
     try:
         shell.enable_pylab('inline', import_all=True)
     except ValueError:
         # if the shell is a normal terminal shell, we get here
+        pass
+    except UsageError:
         pass
 
 
