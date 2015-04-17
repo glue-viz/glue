@@ -221,7 +221,7 @@
          </sizepolicy>
         </property>
         <property name="toolTip">
-         <string>Select a field to group data by. (ex. ID)</string>
+         <string>Select a field to group data by (ex. ID)</string>
         </property>
         <property name="sizeAdjustPolicy">
          <enum>QComboBox::AdjustToMinimumContentsLength</enum>

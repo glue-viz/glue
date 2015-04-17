@@ -42,7 +42,7 @@ class LineWidget(ScatterWidget):
         for l in self.client.data:
             if not self.client.is_layer_present(l):
                 continue
-            for glid in self.client.groupable_attributes(
+            for glid in self.client.grouping_attributes(
                     l, show_hidden=self.hidden):
                 if glid not in glayer_ids:
                     glayer_ids.append(glid)

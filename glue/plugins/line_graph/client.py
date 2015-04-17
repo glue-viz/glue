@@ -14,14 +14,26 @@ from ...clients.scatter_client import ScatterClient
 from ...clients.layer_artist import (ChangedTrigger, ScatterLayerArtist)
 
 
+__all__ = ['LineLayerBase', 'LineLayerArtist', 'LineClient']
+
+
 @six.add_metaclass(ABCMeta)
 class LineLayerBase(object):
+
+    # Which ComponentID to assign to the X axis
     xatt = abstractproperty()
+
+    # Which ComponentID to assign to the Y axis
     yatt = abstractproperty()
+
+    # The ComponentID by which X and Y should be grouped
     gatt = abstractproperty()
 
     @abstractmethod
     def get_data(self):
+        """
+        Return data as an (N, 2) array of x & y
+        """
         pass
 
 
@@ -40,6 +52,7 @@ class LineLayerArtist(ScatterLayerArtist, LineLayerBase):
             artist.set_markerfacecolor(style.color)
             artist.set_marker(style.marker)
             artist.set_markersize(style.markersize)
+            # artist.set_linestyle('None')
             artist.set_alpha(style.alpha)
             artist.set_zorder(self.zorder)
             artist.set_visible(self.visible and self.enabled)
@@ -77,7 +90,7 @@ class LineClient(ScatterClient):
         add_callback(self, 'gatt', partial(self._set_xydata, 'g'))
         super(LineClient, self)._connect()
 
-    def groupable_attributes(self, layer, show_hidden=False):
+    def grouping_attributes(self, layer, show_hidden=False):
         data = layer.data
         l = data._shape[0]
         if not data.find_component_id('None'):
