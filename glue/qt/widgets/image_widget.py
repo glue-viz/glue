@@ -52,8 +52,8 @@ class ImageWidgetBase(DataViewer):
                               'RGB Mode?')
     rgb_viz = Pointer('ui.rgb_options.rgb_visible')
 
-    def __init__(self, session, parent=None):
-        super(ImageWidgetBase, self).__init__(session, parent)
+    def __init__(self, session=None, parent=None):
+        super(ImageWidgetBase, self).__init__(session=session, parent=parent)
         self._setup_widgets()
         self.client = self.make_client()
 

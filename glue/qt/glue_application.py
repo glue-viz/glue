@@ -26,7 +26,7 @@ from .qtutil import (pick_class, data_wizard,
 from .widgets.glue_mdi_area import GlueMdiArea, GlueMdiSubWindow
 from .widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from .widgets.layer_tree_widget import PlotAction, LayerTreeWidget
-from .widgets.data_viewer import DataViewer
+from .widgets.data_viewer import DataViewer, DataViewerMixin
 from .widgets.settings_editor import SettingsEditor
 from .widgets.mpl_widget import defer_draw
 from .feedback import submit_bug_report
@@ -347,7 +347,7 @@ class GlueApplication(Application, QMainWindow):
             return QWidget(), QWidget(), ""
 
         widget = sub_window.widget()
-        if not isinstance(widget, DataViewer):
+        if not isinstance(widget, (DataViewerMixin, DataViewer)):
             return QWidget(), QWidget(), ""
 
         return widget.layer_view(), widget.options_widget(), str(widget)

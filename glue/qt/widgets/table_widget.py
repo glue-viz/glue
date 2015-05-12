@@ -48,8 +48,8 @@ class DataTableModel(QAbstractTableModel):
 
 
 class TableWidget(DataViewer):
-    def __init__(self, session, parent=None):
-        super(TableWidget, self).__init__(session, parent)
+    def __init__(self, session=None, parent=None):
+        super(TableWidget, self).__init__(session=session, parent=parent)
         self.widget = QTableView()
         self.setCentralWidget(self.widget)
 

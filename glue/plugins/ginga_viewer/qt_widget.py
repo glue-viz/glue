@@ -42,7 +42,7 @@ class GingaWidget(ImageWidgetBase):
 
     LABEL = "Ginga Viewer"
 
-    def __init__(self, session, parent=None):
+    def __init__(self, session=None, parent=None):
 
         self.logger = log.get_logger(name='ginga', log_stderr=True)
 
@@ -85,7 +85,7 @@ class GingaWidget(ImageWidgetBase):
         self.readout = Readout.Readout(-1, -1)
         self.roi_tag = None
 
-        super(GingaWidget, self).__init__(session, parent)
+        super(GingaWidget, self).__init__(session=session, parent=parent)
 
     @staticmethod
     def _get_default_tools():

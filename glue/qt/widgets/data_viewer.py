@@ -15,26 +15,28 @@ from .. import get_qapp
 from ..mime import LAYERS_MIME_TYPE, LAYER_MIME_TYPE
 from .glue_mdi_area import GlueMdiSubWindow
 
-__all__ = ['DataViewer']
+__all__ = ['DataViewer', 'DataViewerMixin']
 
 
-class DataViewer(QMainWindow, ViewerBase):
+class DataViewerMixin(ViewerBase):
+    """
+    Mix-in class for all Qt DataViewer widgets.
 
-    """Base class for all Qt DataViewer widgets.
-
-    This defines a minimal interface, and implemlements the following::
+    This defines a minimal interface, and implements the following::
 
        * An automatic call to unregister on window close
        * Drag and drop support for adding data
     """
+
     _container_cls = QtLayerArtistContainer
     LABEL = 'Override this'
 
-    def __init__(self, session, parent=None):
+
+
+    def __init__(self, session=None):
         """
         :type session: :class:`~glue.core.Session`
         """
-        QMainWindow.__init__(self, parent)
         ViewerBase.__init__(self, session)
         self.setWindowIcon(get_qapp().windowIcon())
         self._view = LayerArtistView()
@@ -42,16 +44,18 @@ class DataViewer(QMainWindow, ViewerBase):
         self._tb_vis = {}  # store whether toolbars are enabled
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.setAcceptDrops(True)
-        self.setAnimated(False)
         self._toolbars = []
         self._warn_close = True
         self.setContentsMargins(2, 2, 2, 2)
         self._mdi_wrapper = None  # GlueMdiSubWindow that self is embedded in
-        self.statusBar().setStyleSheet("QStatusBar{font-size:10px}")
 
         # close window when last plot layer deleted
         self._container.on_empty(lambda: self.close(warn=False))
         self._container.on_changed(self.update_window_title)
+
+        if isinstance(self, QMainWindow):
+            self.setAnimated(False)
+            self.statusBar().setStyleSheet("QStatusBar{font-size:10px}")
 
     def remove_layer(self, layer):
         self._container.pop(layer)
@@ -86,7 +90,7 @@ class DataViewer(QMainWindow, ViewerBase):
 
     def close(self, warn=True):
         self._warn_close = warn
-        super(DataViewer, self).close()
+        super(DataViewerMixin, self).close()
         self._warn_close = True
 
     def mdi_wrap(self):
@@ -153,7 +157,7 @@ class DataViewer(QMainWindow, ViewerBase):
 
         if self._hub is not None:
             self.unregister(self._hub)
-        super(DataViewer, self).closeEvent(event)
+        super(DataViewerMixin, self).closeEvent(event)
         event.accept()
 
     def _confirm_close(self):
@@ -189,7 +193,7 @@ class DataViewer(QMainWindow, ViewerBase):
         return QWidget()
 
     def addToolBar(self, tb):
-        super(DataViewer, self).addToolBar(tb)
+        super(DataViewerMixin, self).addToolBar(tb)
         self._toolbars.append(tb)
         self._tb_vis[tb] = True
 
@@ -247,3 +251,17 @@ class DataViewer(QMainWindow, ViewerBase):
 
     def update_window_title(self):
         self.setWindowTitle(self.window_title)
+
+
+class DataViewer(DataViewerMixin, QMainWindow):
+    """
+    Base class for all Qt DataViewer widgets.
+
+    This defines a minimal interface, and implements the following::
+
+       * An automatic call to unregister on window close
+       * Drag and drop support for adding data
+    """
+    def __init__(self, session=None, parent=None):
+        QMainWindow.__init__(self, parent=parent)
+        DataViewerMixin.__init__(self, session=session)

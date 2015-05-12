@@ -46,8 +46,8 @@ class ScatterWidget(DataViewer):
     yatt = CurrentComboProperty('ui.yAxisComboBox',
                                 'Attribute to plot on y axis')
 
-    def __init__(self, session, parent=None):
-        super(ScatterWidget, self).__init__(session, parent)
+    def __init__(self, session=None, parent=None):
+        super(ScatterWidget, self).__init__(session=session, parent=parent)
         self.central_widget = MplWidget()
         self.option_widget = QtGui.QWidget()
 

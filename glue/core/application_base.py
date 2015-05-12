@@ -69,7 +69,7 @@ class Application(HubListener):
         if viewer_class is None:
             return
 
-        c = viewer_class(self._session)
+        c = viewer_class(session=self._session)
         c.register_to_hub(self._session.hub)
 
         if data and not c.add_data(data):
@@ -385,7 +385,7 @@ class ViewerBase(HubListener, PropertySetMixin):
     @classmethod
     def __setgluestate__(cls, rec, context):
         session = context.object(rec['session'])
-        result = cls(session)
+        result = cls(session=session)
         result.register_to_hub(session.hub)
         result.viewer_size = rec['size']
         x, y = rec['pos']

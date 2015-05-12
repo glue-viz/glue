@@ -28,8 +28,8 @@ class DendroWidget(DataViewer):
     parent = CurrentComboProperty('ui.parentCombo', 'parent attribute')
     order = CurrentComboProperty('ui.orderCombo', 'layout sorter attribute')
 
-    def __init__(self, session, parent=None):
-        super(DendroWidget, self).__init__(session, parent)
+    def __init__(self, session=None, parent=None):
+        super(DendroWidget, self).__init__(session=session, parent=parent)
 
         self.central_widget = MplWidget()
         self.option_widget = QtGui.QWidget()
