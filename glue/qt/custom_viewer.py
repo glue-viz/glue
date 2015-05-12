@@ -853,8 +853,8 @@ class CustomWidgetBase(DataViewer):
 
     coordinator_cls = None
 
-    def __init__(self, session, parent=None):
-        super(CustomWidgetBase, self).__init__(session, parent)
+    def __init__(self, session=None, parent=None):
+        super(CustomWidgetBase, self).__init__(session=session, parent=parent)
         self.central_widget = MplWidget()
         self.setCentralWidget(self.central_widget)
 

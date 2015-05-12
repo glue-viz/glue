@@ -30,7 +30,7 @@ class DataViewer(QMainWindow, ViewerBase):
     _container_cls = QtLayerArtistContainer
     LABEL = 'Override this'
 
-    def __init__(self, session, parent=None):
+    def __init__(self, session=None, parent=None):
         """
         :type session: :class:`~glue.core.Session`
         """

@@ -42,8 +42,8 @@ class HistogramWidget(DataViewer):
     xlog = ButtonProperty('ui.xlog_box', 'Log-scale the x axis?')
     ylog = ButtonProperty('ui.ylog_box', 'Log-scale the y axis?')
 
-    def __init__(self, session, parent=None):
-        super(HistogramWidget, self).__init__(session, parent)
+    def __init__(self, session=None, parent=None):
+        super(HistogramWidget, self).__init__(session=session, parent=parent)
 
         self.central_widget = MplWidget()
         self.setCentralWidget(self.central_widget)
