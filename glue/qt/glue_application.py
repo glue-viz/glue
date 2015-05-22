@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
 import sys
 import webbrowser
 
@@ -274,11 +275,30 @@ class GlueApplication(Application, QMainWindow):
 
     def close_tab(self, index):
         """ Close a tab window and all associated data viewers """
+
         # do not delete the last tab
         if self.tab_widget.count() == 1:
             return
+
+        if not os.environ.get('GLUE_TESTING'):
+            buttons = QMessageBox.Ok | QMessageBox.Cancel
+            dialog = QMessageBox.warning(self, "Confirm Close",
+                                         "Are you sure you want to close this tab? "
+                                         "This will close all data viewers in the tab.",
+                                         buttons=buttons,
+                                         defaultButton=QMessageBox.Cancel)
+            if not dialog == QMessageBox.Ok:
+                return
+
         w = self.tab_widget.widget(index)
+
+        for window in w.subWindowList():
+            widget = window.widget()
+            if isinstance(widget, DataViewer):
+                widget.close(warn=False)
+
         w.close()
+
         self.tab_widget.removeTab(index)
 
     def add_widget(self, new_widget, label=None, tab=None,
