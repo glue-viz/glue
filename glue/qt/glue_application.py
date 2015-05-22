@@ -417,6 +417,7 @@ class GlueApplication(Application, QMainWindow):
             for a in self._actions['data_importers']:
                 submenu.addAction(a)
         # menu.addAction(self._actions['data_save'])  # XXX add this
+        menu.addAction(self._actions['session_reset'])
         menu.addAction(self._actions['session_restore'])
         menu.addAction(self._actions['session_save'])
         if 'session_export' in self._actions:
@@ -577,6 +578,11 @@ class GlueApplication(Application, QMainWindow):
         a.triggered.connect(nonpartial(self._restore_session))
         self._actions['session_restore'] = a
 
+        a = act('Reset S&ession', self,
+                tip='Reset session to clean state')
+        a.triggered.connect(nonpartial(self._reset_session))
+        self._actions['session_reset'] = a
+
         a = act("Undo", self,
                 tip='Undo last action',
                 shortcut=QKeySequence.Undo)
@@ -654,8 +660,29 @@ class GlueApplication(Application, QMainWindow):
         if not file_name:
             return
 
-        ga = self.restore(file_name, show=True)
+        ga = self.restore(file_name)
         self.close()
+        return ga
+
+    def _reset_session(self, show=True):
+        """
+        Reset session to clean state.
+        """
+
+        if not os.environ.get('GLUE_TESTING'):
+            buttons = QMessageBox.Ok | QMessageBox.Cancel
+            dialog = QMessageBox.warning(self, "Confirm Close",
+                                         "Are you sure you want to reset the session? "
+                                         "This will close all datasets, subsets, and data viewers",
+                                         buttons=buttons,
+                                         defaultButton=QMessageBox.Cancel)
+            if not dialog == QMessageBox.Ok:
+                return
+
+        ga = GlueApplication()
+        ga.show()
+        self.close()
+
         return ga
 
     @staticmethod
