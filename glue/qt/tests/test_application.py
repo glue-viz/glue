@@ -124,14 +124,27 @@ class TestGlueApplication(object):
         assert term.hide.call_count == 1
 
     def test_close_tab(self):
+
         assert self.app.tab_widget.count() == 1
+        assert self.app.tab_bar.tabText(0) == 'Tab 1'
+
         self.app.new_tab()
         assert self.app.tab_widget.count() == 2
+        assert self.app.tab_bar.tabText(0) == 'Tab 1'
+        assert self.app.tab_bar.tabText(1) == 'Tab 2'
+
         self.app.close_tab(0)
         assert self.app.tab_widget.count() == 1
+        assert self.app.tab_bar.tabText(0) == 'Tab 2'
+
         # do not delete last tab
         self.app.close_tab(0)
         assert self.app.tab_widget.count() == 1
+
+        # check that counter always goes up
+        self.app.new_tab()
+        assert self.app.tab_bar.tabText(0) == 'Tab 2'
+        assert self.app.tab_bar.tabText(1) == 'Tab 3'
 
     def test_new_data_viewer_cancel(self):
         with patch('glue.qt.glue_application.pick_class') as pc:
