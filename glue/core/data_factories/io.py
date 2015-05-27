@@ -21,19 +21,22 @@ def filter_hdulist_by_shape(hdulist, use_hdu='all'):
     if use_hdu != 'all':
         hdulist = [hdulist[hdu] for hdu in use_hdu]
 
-    # Now only keep HDUs that are not tables
+    # Now only keep HDUs that are not tables or empty.
+    valid_hdus = []
     for hdu in hdulist:
-        if not isinstance(hdu, fits.PrimaryHDU) and \
-                not isinstance(hdu, fits.ImageHDU):
-            hdulist.remove(hdu)
+        if (isinstance(hdu, fits.PrimaryHDU) or \
+            isinstance(hdu, fits.ImageHDU)) and \
+            hdu.data is not None:
+            valid_hdus.append(hdu)
 
     # Check that dimensions of all HDU are the same
-    reference_shape = hdulist[0].data.shape
-    for hdu in hdulist:
+    # Allow for HDU's that have no data.
+    reference_shape = valid_hdus[0].data.shape
+    for hdu in valid_hdus:
         if hdu.data.shape != reference_shape:
             raise Exception("HDUs are not all the same dimensions")
 
-    return hdulist
+    return valid_hdus
 
 
 def extract_data_fits(filename, use_hdu='all'):
