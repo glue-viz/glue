@@ -145,8 +145,8 @@ class MenubarPluginRegistry(Registry):
     Stores menubar plugins.
 
     The members property is a list of menubar plugins, each represented as a
-    ``(label, function)`` tuple. The ``function`` should take two item which
-    are a reference to the session and to the data collection.
+    ``(label, function)`` tuple. The ``function`` should take two items which
+    are a reference to the session and to the data collection respectively.
     """
 
     def default_members(self):
