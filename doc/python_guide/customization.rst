@@ -138,6 +138,27 @@ An importer can be defined using the ``@importer`` decorator::
 The label in the ``@importer`` decorator is the text that will appear in the
 ``Import`` menu in Glue.
 
+Custom menubar tools
+--------------------
+
+In some cases, it might be desirable to add tools to Glue that can operate on
+any aspects of the data or subsets, and can be accessed from the menubar. To
+do this, you can define a function that takes two arguments (the session
+object, and the data collection object), and decorate it with the
+``@menubar_plugin`` decorator, giving it the label that will appear in the
+**Tools** menubar::
+
+    from glue.config import menubar_plugin
+
+    @menubar_plugin("Do something")
+    def my_plugin(session, data_collection):
+        # do anything here
+        return
+
+The function can do anything, such as launch a QWidget, or anything else
+(such as a web browser, etc.), and does not need to return anything (instead
+it can operate by directly modifying the data collection or subsets).
+
 Custom Colormaps
 ----------------
 
