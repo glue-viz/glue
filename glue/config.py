@@ -140,6 +140,36 @@ class DataImportRegistry(Registry):
         return adder
 
 
+class MenubarPluginRegistry(Registry):
+    """
+    Stores menubar plugins.
+
+    The members property is a list of menubar plugins, each represented as a
+    ``(label, function)`` tuple. The ``function`` should take two item which
+    are a reference to the session and to the data collection.
+    """
+
+    def default_members(self):
+        return []
+
+    def add(self, label, function):
+        """
+        Add a new menubar plugin
+        :param label: Short label for the plugin
+        :type label: str
+
+        :param function: function
+        :type function: function()
+        """
+        self.members.append((label, function))
+
+    def __call__(self, label):
+        def adder(func):
+            self.add(label, func)
+            return func
+        return adder
+
+
 class ExporterRegistry(Registry):
 
     """Stores functions which can export an applocation to an output file
@@ -444,6 +474,7 @@ exporters = ExporterRegistry()
 settings = SettingRegistry()
 fit_plugin = ProfileFitterRegistry()
 single_subset_action = SingleSubsetLayerActionRegistry()
+menubar_plugin = MenubarPluginRegistry()
 
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)
