@@ -474,6 +474,15 @@ class GlueApplication(Application, QMainWindow):
         menu.addActions(tbar.actions())
         mbar.addMenu(menu)
 
+        menu = QMenu(mbar)
+        menu.setTitle("&Tools")
+
+        if 'plugins' in self._actions:
+            for plugin in self._actions['plugins']:
+                menu.addAction(plugin)
+
+        mbar.addMenu(menu)
+
         # trigger inclusion of Mac Native "Help" tool
         menu = mbar.addMenu("&Help")
         a = QAction("&Online Documentation", menu)
@@ -590,6 +599,17 @@ class GlueApplication(Application, QMainWindow):
         a.triggered.connect(nonpartial(self.redo))
         a.setEnabled(False)
         self._actions['redo'] = a
+
+        # Create actions for menubar plugins
+        from glue.config import menubar_plugin
+        acts = []
+        for label, function in menubar_plugin:
+            a = act(label, self, tip=label)
+            a.triggered.connect(nonpartial(function,
+                                           self.session,
+                                           self.data_collection))
+            acts.append(a)
+        self._actions['plugins'] = acts
 
     def choose_new_data_viewer(self, data=None):
         """ Create a new visualization window in the current tab
