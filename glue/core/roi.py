@@ -832,6 +832,7 @@ class MplCircularROI(AbstractMplRoi):
 
         self._xi = None
         self._yi = None
+        self._scrubbing = False
         self._setup_patch()
 
     def _setup_patch(self):
@@ -869,10 +870,19 @@ class MplCircularROI(AbstractMplRoi):
             return
 
         xy = data_to_pixel(self._axes, [event.xdata], [event.ydata])
-        self._roi.set_center(xy[0, 0], xy[0, 1])
-        self._roi.set_radius(0.)
-        self._xi = xy[0, 0]
-        self._yi = xy[0, 1]
+        xi = xy[0, 0]
+        yi = xy[0, 1]
+
+        if self._roi.defined() and \
+           self._roi.contains(xi, yi):
+            self._scrubbing = True
+        else:
+            self._scrubbing = False
+            self._roi.set_center(xi, yi)
+            self._roi.set_radius(0.)
+            self._xi = xi
+            self._yi = yi
+
         self._mid_selection = True
         self._sync_patch()
 
@@ -881,9 +891,16 @@ class MplCircularROI(AbstractMplRoi):
             return
 
         xy = data_to_pixel(self._axes, [event.xdata], [event.ydata])
-        dx = xy[0, 0] - self._xi
-        dy = xy[0, 1] - self._yi
-        self._roi.set_radius(np.hypot(dx, dy))
+        xi = xy[0, 0]
+        yi = xy[0, 1]
+
+        if self._scrubbing:
+            self._roi.set_center(xi, yi)
+        else:
+            dx = xy[0, 0] - self._xi
+            dy = xy[0, 1] - self._yi
+            self._roi.set_radius(np.hypot(dx, dy))
+
         self._sync_patch()
 
     def roi(self):
