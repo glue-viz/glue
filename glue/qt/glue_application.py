@@ -194,6 +194,11 @@ class GlueApplication(Application, QMainWindow):
         self.tab_widget.setMovable(True)
         self.tab_widget.setTabsClosable(True)
 
+        # The following is a counter that never goes down, even if tabs are
+        # deleted (this is by design, to avoid having two tabs called the
+        # same if a tab is removed then a new one added again)
+        self._total_tab_count = 0
+
         lwidget = self._ui.layerWidget
         a = PlotAction(lwidget, self)
         lwidget.layerTree.addAction(a)
@@ -268,7 +273,8 @@ class GlueApplication(Application, QMainWindow):
         widget = GlueMdiArea(self)
         widget.setLayout(layout)
         tab = self.tab_widget
-        tab.addTab(widget, str("Tab %i" % (tab.count() + 1)))
+        self._total_tab_count += 1
+        tab.addTab(widget, str("Tab %i" % self._total_tab_count))
         tab.setCurrentWidget(widget)
         widget.subWindowActivated.connect(self._update_plot_dashboard)
 
