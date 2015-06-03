@@ -502,6 +502,10 @@ class PolygonalROI(VertexROIBase):
         result.shape = x.shape
         return result
 
+    def move_to(self, xdelta, ydelta):
+        self.vx = map(lambda x: x + xdelta, self.vx)
+        self.vy = map(lambda y: y + ydelta, self.vy)
+
 
 class Path(VertexROIBase):
 
@@ -659,6 +663,7 @@ class MplRectangularROI(AbstractMplRoi):
         self._sync_patch()
 
     def finalize_selection(self, event):
+        self._scrubbing = False
         self._mid_selection = False
         self._patch.set_visible(False)
         self._draw()
@@ -919,6 +924,7 @@ class MplCircularROI(AbstractMplRoi):
         return result
 
     def finalize_selection(self, event):
+        self._scrubbing = False
         self._mid_selection = False
         self._patch.set_visible(False)
         self._axes.figure.canvas.draw()
@@ -942,6 +948,7 @@ class MplPolygonalROI(AbstractMplRoi):
         :param axes: A matplotlib Axes object to attach the graphical ROI to
         """
         AbstractMplRoi.__init__(self, axes)
+        self._scrubbing = False
         self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
 
@@ -978,18 +985,35 @@ class MplPolygonalROI(AbstractMplRoi):
         if event.inaxes != self._axes:
             return
 
-        self._roi.reset()
-        self._roi.add_point(event.xdata, event.ydata)
+        if self._roi.defined() and \
+           self._roi.contains(event.xdata, event.ydata):
+            self._scrubbing = True
+            self._cx = event.xdata
+            self._cy = event.ydata
+        else:
+            self._scrubbing = False
+            self._roi.reset()
+            self._roi.add_point(event.xdata, event.ydata)
+
         self._mid_selection = True
         self._sync_patch()
 
     def update_selection(self, event):
         if not self._mid_selection or event.inaxes != self._axes:
             return
-        self._roi.add_point(event.xdata, event.ydata)
+
+        if self._scrubbing:
+            self._roi.move_to(event.xdata - self._cx,
+                              event.ydata - self._cy)
+            self._cx = event.xdata
+            self._cy = event.ydata
+        else:
+            self._roi.add_point(event.xdata, event.ydata)
+
         self._sync_patch()
 
     def finalize_selection(self, event):
+        self._scrubbing = False
         self._mid_selection = False
         self._patch.set_visible(False)
         self._axes.figure.canvas.draw()
