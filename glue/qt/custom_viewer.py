@@ -246,15 +246,15 @@ def introspect_and_call(func, settings):
     try:
         # get the current values of each input to the UDF
         a = [settings(item) for item in a]
-    except AttributeError as exc:
+    except MissingSettingError as exc:
         # the UDF expects an argument that we don't know how to provide
         # try to give a helpful error message
         missing = exc.args[0]
         setting_list = "\n -".join(settings.setting_names())
-        raise AttributeError("This custom viewer is trying to use an "
-                             "unrecognized variable named %s\n. Valid "
-                             "variable names are\n -%s" %
-                             (missing, setting_list))
+        raise MissingSettingError("This custom viewer is trying to use an "
+                                  "unrecognized variable named %s\n. Valid "
+                                  "variable names are\n -%s" %
+                                  (missing, setting_list))
     k = k or {}
 
     return func(*a, **k)
@@ -268,6 +268,8 @@ class SettingsOracleInterface(object):
     def setting_names(self):
         return NotImplementedError()
 
+class MissingSettingError(KeyError):
+    pass
 
 class SettingsOracle(SettingsOracleInterface):
 
@@ -280,18 +282,18 @@ class SettingsOracle(SettingsOracleInterface):
         self.view = override.pop('view', None)
 
     def __call__(self, key):
-        try:
-            if key == 'self':
-                return self.override['_self']
-            if key in self.override:
-                return self.override[key]
-            if key == 'style':
-                return self.layer.style
-            if key == 'layer':
-                return self.layer
-            return self.settings[key].value(self.layer, self.view)
-        except (KeyError, AttributeError):
-            raise AttributeError(key)
+        if key == 'self':
+            return self.override['_self']
+        if key in self.override:
+            return self.override[key]
+        if key == 'style':
+            return self.layer.style
+        if key == 'layer':
+            return self.layer
+        if key not in self.settings:
+            raise MissingSettingError(key)
+
+        return self.settings[key].value(self.layer, self.view)
 
     def setting_names(self):
         return list(set(list(self.settings.keys()) + ['style', 'layer']))
@@ -421,6 +423,9 @@ class FrozenSettings(object):
                 return self.value(key, layer, view)
 
         return o
+
+    def __contains__(self, item):
+        return item in self.kwargs
 
     def keys(self):
         return self.kwargs.keys()
@@ -1082,13 +1087,103 @@ class NumberElement(FormElement):
             return False
 
     def _build_ui(self):
-        w = QtGui.QSlider()
         w = LabeledSlider(*self.params[:3])
         w.valueChanged.connect(nonpartial(self.changed))
         return w
 
     def value(self, layer=None, view=None):
         return self.ui.value()
+
+
+class TextBoxElement(FormElement):
+    """
+    A form element representing a generic textbox
+
+    The shorthand is any string starting with an _.::
+
+        e = FormElement.auto("_default")
+
+    Everything after the underscore is taken as the default value.
+    """
+    state = wp.ValueProperty('ui')
+
+    def _build_ui(self):
+        self._widget = GenericTextBox()
+        self._widget.textChanged.connect(nonpartial(self.changed))
+        self.set_value(self.params[1:])
+        return self._widget
+
+    def value(self, layer=None, view=None):
+        return self._widget.text()
+
+    def set_value(self, val):
+        self._widget.setText(str(val))
+
+    @classmethod
+    def recognizes(cls, params):
+        try:
+            if isinstance(params, str) & params.startswith('_'):
+                return True
+        except AttributeError:
+            return None
+
+
+class FloatElement(FormElement):
+    """
+    A form element representing a generic number box.
+
+    The shorthand is any number::
+
+        e = FormElement.auto(2)
+
+    The number itself is taken as the default value.
+    """
+    state = wp.ValueProperty('ui')
+
+    def _build_ui(self):
+        self._widget = GenericTextBox()
+        self._widget.textChanged.connect(nonpartial(self.changed))
+        self.set_value(self.params)
+        return self._widget
+
+    def value(self, layer=None, view=None):
+        try:
+            return float(self._widget.text())
+        except ValueError:
+            return None
+
+    def set_value(self, val):
+        self._widget.setText(str(val))
+
+    @classmethod
+    def recognizes(cls, params):
+        return isinstance(params, (int, float)) and not isinstance(params, bool)
+
+class GenericTextBox(QtGui.QWidget):
+
+    def __init__(self):
+        super(GenericTextBox, self).__init__()
+        self._textbox = QtGui.QLineEdit()
+
+    @property
+    def valueChanged(self):
+        return self._textbox.textChanged
+
+    @property
+    def textChanged(self):
+        return self._textbox.textChanged
+
+    def value(self, layer=None, view=None):
+        return self._textbox.text()
+
+    def text(self):
+        return self._textbox.text()
+
+    def set_value(self, text):
+        self._textbox.setText(text)
+
+    setText = set_value
+    setValue = set_value
 
 
 class LabeledSlider(QtGui.QWidget):
