@@ -12,7 +12,8 @@ from ...core.tests.util import simple_session
 from ..custom_viewer import FormElement, NumberElement, \
     ChoiceElement, CustomViewer, \
     CustomSubsetState, AttributeInfo, \
-    FloatElement, TextBoxElement, SettingsOracle, MissingSettingError
+    FloatElement, TextBoxElement, SettingsOracle, \
+    MissingSettingError, FrozenSettings
 from ..glue_application import GlueApplication
 from ...core.tests.test_state import check_clone_app, clone
 
@@ -331,6 +332,16 @@ class TestFormElements(object):
         assert isinstance(e, TextBoxElement)
         assert e.value() == 'str'
 
+    def test_recognizes_subsubclasses(self):
+
+        class SubClassFormElement(TextBoxElement):
+            @classmethod
+            def recognizes(cls, params):
+                return params == 'specific_class'
+
+        e = FormElement.auto('specific_class')
+        assert isinstance(e, SubClassFormElement)
+
     def test_unrecognized(self):
         with pytest.raises(ValueError):
             e = FormElement.auto(None)
@@ -363,20 +374,66 @@ class TestAttributeInfo(object):
         assert v.id == self.d.id['x']
         assert v.categories is None
 
-def test_oracle_raises_original_error():
-    class BadFormElement(TextBoxElement):
+    def test_has_component(self):
 
-        def value(self, layer=None, view=None):
-            raise AttributeError('Inner Error')
-
-    oracle = SettingsOracle({'bad_form': BadFormElement('str("text")')})
-
-    try:
-        oracle('bad_form')
-    except AttributeError as err:
-        assert 'Inner Error' in err.args
-
-    with pytest.raises(MissingSettingError):
-        oracle('missing')
+        v = AttributeInfo.from_layer(self.s, self.d.id['x'])
+        comp = self.s.data.get_component(self.d.id['x'])
+        assert v._component == comp
 
 
+
+class TestSettingsOracle(object):
+
+
+
+    def test_oracle_raises_original_error(self):
+        class BadFormElement(TextBoxElement):
+
+            def value(self, layer=None, view=None):
+                raise AttributeError('Inner Error')
+
+        oracle = SettingsOracle({'bad_form': BadFormElement('str("text")')})
+
+        try:
+            oracle('bad_form')
+            assert False
+        except AttributeError as err:
+            assert 'Inner Error' in err.args
+
+    def test_oracle_raises_missing(self):
+        oracle = SettingsOracle({'Form': TextBoxElement('_text')})
+        with pytest.raises(MissingSettingError):
+            oracle('missing')
+
+    def test_frozen_oracle_raises_missing(self):
+
+        oracle = FrozenSettings()
+        with pytest.raises(MissingSettingError):
+            oracle.value('missing')
+
+
+    def test_load_reserved_words(self):
+
+        _self = MagicMock()
+        layer = MagicMock()
+        style = layer.style
+        extra = MagicMock()
+        oracle = SettingsOracle({}, _self=_self,
+                                    layer=layer,
+                                    extra=extra)
+        assert oracle('self') == _self
+        assert oracle('layer') == layer
+        assert oracle('style') == style
+        assert oracle('extra') == extra
+
+
+    def test_setting_names(self):
+
+        oracle = SettingsOracle({'Form': TextBoxElement('_text')})
+        assert sorted(oracle.setting_names()) == sorted(['style', 'layer', 'Form'])
+
+
+    def test_raises_if_overlapping_reserved_words(self):
+
+        with pytest.raises(AssertionError):
+            oracle = SettingsOracle({'self': TextBoxElement('_text')})
