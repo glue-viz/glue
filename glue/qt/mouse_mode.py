@@ -273,6 +273,12 @@ class ClickRoiMode(RoiModeBase):
             self._drawing = False
         super(ClickRoiMode, self).key(event)
 
+    def release(self, event):
+        if getattr(self._roi_tool, '_scrubbing', False):
+            self._finish_roi(event)
+            self._start_event = None
+            super(ClickRoiMode, self).release(event)
+
 
 class RectangleMode(RoiMode):
 
