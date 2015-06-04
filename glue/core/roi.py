@@ -881,6 +881,9 @@ class MplCircularROI(AbstractMplRoi):
         if self._roi.defined() and \
            self._roi.contains(xi, yi):
             self._scrubbing = True
+            (xc, yc) = self._roi.get_center()
+            self._dx = xc - xi
+            self._dy = yc - yi
         else:
             self._scrubbing = False
             self._roi.set_center(xi, yi)
@@ -900,7 +903,7 @@ class MplCircularROI(AbstractMplRoi):
         yi = xy[0, 1]
 
         if self._scrubbing:
-            self._roi.set_center(xi, yi)
+            self._roi.set_center(xi + self._dx, yi + self._dy)
         else:
             dx = xy[0, 0] - self._xi
             dy = xy[0, 1] - self._yi
