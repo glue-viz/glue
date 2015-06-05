@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+from functools import wraps
+
 import numpy as np
 from matplotlib.patches import Polygon, Rectangle, Ellipse, PathPatch
 from matplotlib.patches import Path as mplPath
@@ -250,8 +252,16 @@ class RangeROI(Roi):
     def range(self):
         return self.min, self.max
 
+    def center(self):
+        return (self.min + self.max) / 2
+
     def set_range(self, lo, hi):
         self.min, self.max = lo, hi
+
+    def move_to(self, center):
+        delta = center - self.center()
+        self.min += delta
+        self.max += delta
 
     def contains(self, x, y):
         if not self.defined():
@@ -530,7 +540,9 @@ class AbstractMplRoi(object):  # pragma: no cover
 
         self._axes = axes
         self._roi = self._roi_factory()
+        self._previous_roi = None
         self._mid_selection = False
+        self._scrubbing = False
 
     def _draw(self):
         self._axes.figure.canvas.draw()
@@ -541,9 +553,11 @@ class AbstractMplRoi(object):  # pragma: no cover
     def roi(self):
         return self._roi.copy()
 
-    def reset(self):
-        self._roi.reset()
+    def reset(self, include_roi=True):
         self._mid_selection = False
+        self._scrubbing = False
+        if include_roi:
+            self._roi.reset()
         self._sync_patch()
 
     def active(self):
@@ -558,8 +572,17 @@ class AbstractMplRoi(object):  # pragma: no cover
     def finalize_selection(self, event):
         raise NotImplementedError()
 
+    def abort_selection(self, event):
+        raise NotImplementedError()
+
     def _sync_patch(self):
         raise NotImplementedError()
+
+    def _roi_store(self):
+        self._previous_roi = self._roi.copy()
+
+    def _roi_restore(self):
+        self._roi = self._previous_roi
 
 
 class MplPickROI(AbstractMplRoi):
@@ -610,7 +633,6 @@ class MplRectangularROI(AbstractMplRoi):
 
         self._xi = None
         self._yi = None
-        self._scrubbing = False
 
         self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
@@ -632,11 +654,12 @@ class MplRectangularROI(AbstractMplRoi):
         if event.inaxes != self._axes:
             return
 
+        self._roi_store()
         self._xi = event.xdata
         self._yi = event.ydata
 
         if self._roi.defined() and \
-                self._roi.contains(event.xdata, event.ydata):
+           self._roi.contains(event.xdata, event.ydata):
             self._scrubbing = True
             self._cx, self._cy = self._roi.center()
         else:
@@ -667,6 +690,10 @@ class MplRectangularROI(AbstractMplRoi):
         self._mid_selection = False
         self._patch.set_visible(False)
         self._draw()
+
+    def abort_selection(self, event):
+        self._roi_restore()
+        self.reset(include_roi=False)
 
     def _sync_patch(self):
         if self._roi.defined():
@@ -717,23 +744,39 @@ class MplXRangeROI(AbstractMplRoi):
         if event.inaxes != self._axes:
             return
 
-        self._roi.reset()
-        self._roi.set_range(event.xdata, event.xdata)
-        self._xi = event.xdata
-        self._mid_selection = True
-        self._sync_patch()
+        self._roi_store()
+
+        if self._roi.defined() and \
+           self._roi.contains(event.xdata, event.xdata):
+            self._scrubbing = True
+            self._dx = event.xdata - self._roi.center()
+        else:
+            self.reset()
+            self._roi.set_range(event.xdata, event.xdata)
+            self._xi = event.xdata
+            self._mid_selection = True
+            self._sync_patch()
 
     def update_selection(self, event):
         if not self._mid_selection or event.inaxes != self._axes:
             return
-        self._roi.set_range(min(event.xdata, self._xi),
-                            max(event.xdata, self._xi))
+
+        if self._scrubbing:
+            self._roi.move_to(event.xdata + self._dx)
+        else:
+            self._roi.set_range(min(event.xdata, self._xi),
+                                max(event.xdata, self._xi))
         self._sync_patch()
 
     def finalize_selection(self, event):
+        self._scrubbing = False
         self._mid_selection = False
         self._patch.set_visible(False)
         self._draw()
+
+    def abort_selection(self, event):
+        self._roi_restore()
+        self.reset(include_roi=False)
 
     def _sync_patch(self):
         if self._roi.defined():
@@ -779,23 +822,39 @@ class MplYRangeROI(AbstractMplRoi):
         if event.inaxes != self._axes:
             return
 
-        self._roi.reset()
-        self._roi.set_range(event.ydata, event.ydata)
-        self._xi = event.ydata
-        self._mid_selection = True
-        self._sync_patch()
+        self._roi_store()
+
+        if self._roi.defined() and \
+           self._roi.contains(event.ydata, event.ydata):
+            self._scrubbing = True
+            self._dy = event.ydata - self._roi.center()
+        else:
+            self.reset()
+            self._roi.set_range(event.ydata, event.ydata)
+            self._xi = event.ydata
+            self._mid_selection = True
+            self._sync_patch()
 
     def update_selection(self, event):
         if not self._mid_selection or event.inaxes != self._axes:
             return
-        self._roi.set_range(min(event.ydata, self._xi),
-                            max(event.ydata, self._xi))
+
+        if self._scrubbing:
+            self._roi.move_to(event.ydata + self._dy)
+        else:
+            self._roi.set_range(min(event.ydata, self._xi),
+                                max(event.ydata, self._xi))
         self._sync_patch()
 
     def finalize_selection(self, event):
+        self._scrubbing = False
         self._mid_selection = False
         self._patch.set_visible(False)
         self._draw()
+
+    def abort_selection(self, event):
+        self._roi_restore()
+        self.reset(include_roi=False)
 
     def _sync_patch(self):
         if self._roi.defined():
@@ -837,7 +896,6 @@ class MplCircularROI(AbstractMplRoi):
 
         self._xi = None
         self._yi = None
-        self._scrubbing = False
         self._setup_patch()
 
     def _setup_patch(self):
@@ -874,6 +932,7 @@ class MplCircularROI(AbstractMplRoi):
         if event.inaxes != self._axes:
             return
 
+        self._roi_store()
         xy = data_to_pixel(self._axes, [event.xdata], [event.ydata])
         xi = xy[0, 0]
         yi = xy[0, 1]
@@ -932,6 +991,10 @@ class MplCircularROI(AbstractMplRoi):
         self._patch.set_visible(False)
         self._axes.figure.canvas.draw()
 
+    def abort_selection(self, event):
+        self._roi_restore()
+        self.reset(include_roi=False)
+
 
 class MplPolygonalROI(AbstractMplRoi):
 
@@ -951,7 +1014,6 @@ class MplPolygonalROI(AbstractMplRoi):
         :param axes: A matplotlib Axes object to attach the graphical ROI to
         """
         AbstractMplRoi.__init__(self, axes)
-        self._scrubbing = False
         self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
 
@@ -988,6 +1050,7 @@ class MplPolygonalROI(AbstractMplRoi):
         if event.inaxes != self._axes:
             return
 
+        self._roi_store()
         if self._roi.defined() and \
            self._roi.contains(event.xdata, event.ydata):
             self._scrubbing = True
@@ -1020,6 +1083,10 @@ class MplPolygonalROI(AbstractMplRoi):
         self._mid_selection = False
         self._patch.set_visible(False)
         self._axes.figure.canvas.draw()
+
+    def abort_selection(self, event):
+        self._roi_restore()
+        self.reset(include_roi=False)
 
 
 class MplPathROI(MplPolygonalROI):
