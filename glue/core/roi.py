@@ -663,8 +663,7 @@ class MplRectangularROI(AbstractMplRoi):
             self._scrubbing = True
             self._cx, self._cy = self._roi.center()
         else:
-            self._scrubbing = False
-            self._roi.reset()
+            self.reset()
             self._roi.update_limits(event.xdata, event.ydata,
                                     event.xdata, event.ydata)
 
@@ -754,8 +753,8 @@ class MplXRangeROI(AbstractMplRoi):
             self.reset()
             self._roi.set_range(event.xdata, event.xdata)
             self._xi = event.xdata
-            self._mid_selection = True
-            self._sync_patch()
+        self._mid_selection = True
+        self._sync_patch()
 
     def update_selection(self, event):
         if not self._mid_selection or event.inaxes != self._axes:
@@ -832,8 +831,8 @@ class MplYRangeROI(AbstractMplRoi):
             self.reset()
             self._roi.set_range(event.ydata, event.ydata)
             self._xi = event.ydata
-            self._mid_selection = True
-            self._sync_patch()
+        self._mid_selection = True
+        self._sync_patch()
 
     def update_selection(self, event):
         if not self._mid_selection or event.inaxes != self._axes:
@@ -944,7 +943,7 @@ class MplCircularROI(AbstractMplRoi):
             self._dx = xc - xi
             self._dy = yc - yi
         else:
-            self._scrubbing = False
+            self.reset()
             self._roi.set_center(xi, yi)
             self._roi.set_radius(0.)
             self._xi = xi
@@ -1057,8 +1056,7 @@ class MplPolygonalROI(AbstractMplRoi):
             self._cx = event.xdata
             self._cy = event.ydata
         else:
-            self._scrubbing = False
-            self._roi.reset()
+            self.reset()
             self._roi.add_point(event.xdata, event.ydata)
 
         self._mid_selection = True

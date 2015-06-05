@@ -383,13 +383,13 @@ class TestMpl(object):
         assert self.axes.figure.canvas.draw.call_count == 1
         event = DummyEvent(5, 5, inaxes=self.axes)
         self.roi.start_selection(event)
-        assert self.axes.figure.canvas.draw.call_count == 2
-        self.roi.update_selection(event)
         assert self.axes.figure.canvas.draw.call_count == 3
         self.roi.update_selection(event)
         assert self.axes.figure.canvas.draw.call_count == 4
-        self.roi.finalize_selection(event)
+        self.roi.update_selection(event)
         assert self.axes.figure.canvas.draw.call_count == 5
+        self.roi.finalize_selection(event)
+        assert self.axes.figure.canvas.draw.call_count == 6
 
     def test_patch_shown_on_start(self):
         assert not self.roi._patch.get_visible()
