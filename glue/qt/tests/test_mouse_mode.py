@@ -170,7 +170,7 @@ class TestClickRoiMode(TestMouseMode):
         self.mode.press(e)
         self.mode.key(e2)
         self.mode.press(e)
-        assert self.mode._roi_tool.reset.call_count == 1
+        assert self.mode._roi_tool.abort_selection.call_count == 1
         assert self.mode._roi_tool.start_selection.call_count == 2
 
 
