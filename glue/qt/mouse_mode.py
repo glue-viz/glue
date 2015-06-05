@@ -222,6 +222,13 @@ class RoiMode(RoiModeBase):
 
         super(RoiMode, self).release(event)
 
+    def key(self, event):
+        if event.key == 'escape':
+            self._roi_tool.abort_selection(event)
+            self._drag = False
+            self._drawing = False
+            self._start_event  = None
+        super(RoiMode, self).key(event)
 
 class PersistentRoiMode(RoiMode):
 
@@ -269,7 +276,7 @@ class ClickRoiMode(RoiModeBase):
             self._finish_roi(self._last_event)
             self._drawing = False
         elif event.key == 'escape':
-            self._roi_tool.reset()
+            self._roi_tool.abort_selection(event)
             self._drawing = False
         super(ClickRoiMode, self).key(event)
 
