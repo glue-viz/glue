@@ -1173,9 +1173,13 @@ class FloatElement(FormElement):
 
 class GenericTextBox(QtGui.QWidget):
 
-    def __init__(self):
-        super(GenericTextBox, self).__init__()
+    def __init__(self, parent=None):
+        super(GenericTextBox, self).__init__(parent)
+        self._l = QtGui.QHBoxLayout()
         self._textbox = QtGui.QLineEdit()
+        self._l.setContentsMargins(2, 2, 2, 2)
+        self._l.addWidget(self._textbox)
+        self.setLayout(self._l)
 
     @property
     def valueChanged(self):
@@ -1371,6 +1375,14 @@ class ComponenentElement(FormElement, core.hub.HubListener):
         return AttributeInfo.from_layer(layer, cid, view)
 
     def _list_components(self):
+        """
+        Determine which components to list.
+
+
+        This can be overridden by subclassing to limit which components are
+        visible to the user.
+
+        """
         comps = list(set([c for l in self.container.layers
                           for c in l.data.components if not c._hidden]))
         comps = sorted(comps, key=lambda x: x.label)
