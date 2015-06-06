@@ -1,72 +1,137 @@
-language: python
-python:
-- 2.7
+language: c
+
+os:
+    - linux
+    - osx
 
 notifications:
   email: false
 
 env:
-  global:
-  - CONDA_ARGS="--yes"
-  - PIP_ARGS="--upgrade --use-mirrors"
-  - PYTEST_ARGS="--cov glue"
-  - CONDA_BASE="pip numpy=1.7 scipy=0.12 pyside cython h5py pygments pyzmq scikit-image pandas=0.12 sphinx xlrd"
-  - PIP_BASE="mock pytest pytest-cov coveralls pyavm pillow sphinx-rtd-theme"
-  - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
-  - secure: "SU9BYH8d9eNigypG3lC83s0NY6Mq9AHGKXyEGeXDtz1npJIC1KHdzPMP1v1K3dzCgl1p6ReMXPjZMCENyfNkad/xvzTzGk0Nu/4BjihrUPV6+ratVeLpv0JLm8ikh8q+sZURkdtzUOlds+Hfn5ku4LdpT87tcKHY9TINAGA34ZM="
-
   matrix:
-  - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0 DOC_TRIGGER=1
-  - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0 APP_TRIGGER=1
-  - MPL_VER=1.2.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0
-  - MPL_VER=1.1.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.1.0
-  - MPL_VER=1.3.1 ASTRO_VER=0.2.5 IPYTHON_VER=1.1.0
-  - MPL_VER=1.3.1 ASTRO_VER=dev IPYTHON_VER=1.1.0
-  - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=1.0.0
-  - MPL_VER=1.3.1 ASTRO_VER=0.3.0 IPYTHON_VER=0.13.2
+    - PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=1.0
+    - PYTHON_VERSION=3.4 MPL_VER=1.4 ASTRO_VER=1.0
+  global:
+    - CONDA_ARGS="--yes"
+    - PIP_ARGS=""
+    - PYTEST_ARGS="--cov glue"
+    - NUMPY_VER=1.9
+    - IPYTHON_VER=2
+    - CONDA_BASE="pip numpy=$NUMPY_VER scipy cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.3 xlrd pillow pytest mock coverage pyyaml requests sphinx_rtd_theme"
+    - PIP_BASE="pytest-cov coveralls pyavm astrodendro awscli"
+    - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
+    - secure: "SU9BYH8d9eNigypG3lC83s0NY6Mq9AHGKXyEGeXDtz1npJIC1KHdzPMP1v1K3dzCgl1p6ReMXPjZMCENyfNkad/xvzTzGk0Nu/4BjihrUPV6+ratVeLpv0JLm8ikh8q+sZURkdtzUOlds+Hfn5ku4LdpT87tcKHY9TINAGA34ZM="
+    - AWS_ACCESS_KEY_ID: AKIAI2ERWDHLW3W24X3A
+    - AWS_SECRET_ACCESS_KEY: $AWS_SECRET_KEY_ID
+
+matrix:
+
+    include:
+      
+        # Python 2.6
+        - os: linux
+          env:
+            - PYTHON_VERSION=2.6 MPL_VER=1.4 ASTRO_VER=0.4
+        
+        # Astropy dev
+        - os: linux
+          env:
+            - PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=dev
+
+        # The following configuration tests that glue functions with minimal
+        # dependencies. The --no-deps is to prevent scipy from getting
+        # installed as a pandas dependency.
+        - os: linux
+          env:
+            - PYTHON_VERSION=2.7
+            - PYTEST_ARGS="--cov glue"
+            - CONDA_BASE="pip setuptools=7.0 numpy=$NUMPY_VER pandas mock --no-deps"
+            - IPYTHON_VER=None
+            - ASTRO_VER=None
+            - MPL_VER=1.4
+            - PIP_BASE="pytest-cov coveralls"
+
+        - os: linux
+          env:
+            - PYTHON_VERSION=2.7
+            - MPL_VER=1.4
+            - ASTRO_VER=1.0
+            - DOC_TRIGGER=1 
+            - APP_TRIGGER=1 
+            - GINGA=1
+            - PYTEST_ARGS="--cov glue --no-optional-skip"
+
+        # Test with older package versions:
+
+        - os: linux
+          env: PYTHON_VERSION=2.7 MPL_VER=1.3 ASTRO_VER=0.3 NUMPY_VER=1.8
+
+        - os: linux
+          env: PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=1.1
+
+        - os: linux
+          env: PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=0.13
+
 
 before_install:
-- source .setup_conda.sh $TRAVIS_PYTHON_VERSION
-# Deal with issue on Travis builders
-- sudo rm -rf /dev/shm
-- sudo ln -s /run/shm /dev/shm
-# Setup system for headless GUI handling
-- export DISPLAY=:99.0
-- sh -e /etc/init.d/xvfb start
-# setup tools to trigger mac buildbot
-- if [ $APP_TRIGGER ]; then source .setup_app_trigger.sh; fi
-- if [ $TRAVIS_BRANCH = master ]; then export S3_DIR=latest; else export S3_DIR=$TRAVIS_BRANCH; fi
+  
+  # Install conda
+  - source continuous-integration/travis/install_conda_$TRAVIS_OS_NAME.sh
+
+  # Deal with issue on Travis builders
+  - if [[ $TRAVIS_OS_NAME == linux ]]; then sudo rm -rf /dev/shm; sudo ln -s /run/shm /dev/shm; fi
+
+  # Setup system for headless GUI handling
+  - if [[ $TRAVIS_OS_NAME == linux ]]; then export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start; fi
+
+  # setup tools to trigger mac buildbot
+  - if [ $APP_TRIGGER ]; then source .setup_app_trigger.sh; fi
+  - if [ $TRAVIS_BRANCH = master ]; then export S3_DIR=latest; else export S3_DIR=$TRAVIS_BRANCH; fi
 
 
 install:
-- conda install $CONDA_ARGS python=$TRAVIS_PYTHON_VERSION $CONDA_BASE
-- pip install $PIP_ARGS $PIP_BASE
-- if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy;
-  else conda install $CONDA_ARGS astropy=$ASTRO_VER numpy=1.7; fi
-- conda install $CONDA_ARGS IPython==$IPYTHON_VER
-- conda install $CONDA_ARGS matplotlib==$MPL_VER
-- python setup.py install
+
+  - if [[ $PYTHON_VERSION == 2.6 && $IPYTHON_VER == 2 ]]; then export IPYTHON_VER=1; fi
+
+  - conda create --yes -n test python=$PYTHON_VERSION
+  - source activate test
+  - conda install $CONDA_ARGS $CONDA_BASE
+  - if [[ $PYTHON_VERSION == 2* ]]; then conda install $CONDA_ARGS python=$PYTHON_VERSION pyside; fi
+  - if [[ $PYTHON_VERSION == 3* ]]; then conda install $CONDA_ARGS python=$PYTHON_VERSION pyqt; fi
+
+  - LC_ALL=C pip install $PIP_ARGS $PIP_BASE
+  - if [[ $GINGA ]]; then pip install $PIP_ARGS https://github.com/glue-viz/ginga/archive/master.zip; fi
+  - if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy; fi
+  - if [[ $ASTRO_VER != dev && $ASTRO_VER != None ]]; then conda install $CONDA_ARGS numpy=$NUMPY_VER astropy=$ASTRO_VER; fi
+  - if [[ $IPYTHON_VER != None ]]; then conda install $CONDA_ARGS IPython=$IPYTHON_VER; fi
+  - if [[ $MPL_VER != None ]]; then conda install $CONDA_ARGS numpy=$NUMPY_VER matplotlib=$MPL_VER; fi
+
+  # For now we also install astropy_helpers because setup_requires has a bug
+  # that means it generates PEP440 warnings for the astropy_helpers version
+  # number.
+  - if [ $DOC_TRIGGER ]; then pip install astropy-helpers; fi
+
+  - python setup.py install
 
 script:
-- if [ $DOC_TRIGGER ]; then cd doc && make html; else py.test $PYTEST_ARGS glue; fi
+  - py.test $PYTEST_ARGS glue
+  - if [ $DOC_TRIGGER ]; then cd doc && make html 2> warnings.log && cd ../ ; fi
+
+  # In the following command, the test -s ensures that warnings are not emitted
+  # by the docs build.
+  - if [ $DOC_TRIGGER ]; then cat doc/warnings.log; fi
+  - if [ $DOC_TRIGGER ]; then test ! -s doc/warnings.log; fi
 
 after_success:
-- coveralls
-- if [ $APP_TRIGGER ]; then ./.trigger_app_build.sh; fi
 
-deploy:
-  provider: s3
-  bucket: www.glueviz.org
-  skip_cleanup: true
-  local-dir: _build/html
-  upload-dir: en/$S3_DIR
+  # Coverage testing
+  - coveralls
 
-  access_key_id: AKIAI2ERWDHLW3W24X3A
-  secret_access_key: $AWS_SECRET_KEY_ID
-  on:
-     branch:
-       - master
-       - staging
-     condition:
-       - "$TRAVIS_SECURE_ENV_VARS = true"
-       - "$DOC_TRIGGER = 1"
+  # Trigger the building of the MacOS X app in the Travis-MacGlue repo
+  - if [ $APP_TRIGGER ]; then ./.trigger_app_build.sh; fi
+
+  # For any branch (but not pull requests), upload the docs to s3
+  - if [[ $DOC_TRIGGER && $TRAVIS_SECURE_ENV_VARS == true && $TRAVIS_PULL_REQUEST == false ]]; then cd doc && make s3 && cd ../; fi
+
+  # For the master branch, also upload the docs to the 'latest' URL
+  - if [[ $DOC_TRIGGER && $TRAVIS_SECURE_ENV_VARS == true && $TRAVIS_BRANCH == master && $TRAVIS_PULL_REQUEST == false ]]; then cd doc && make s3latest && cd ../; fi

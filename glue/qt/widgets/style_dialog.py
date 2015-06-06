@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from ..qtutil import (mpl_to_qt4_color, symbol_icon, POINT_ICONS,
                       qt4_to_mpl_color)
 
@@ -29,7 +31,7 @@ class StyleDialog(QDialog):
         self.setWindowTitle("Style Editor")
         self.layer = layer
         self._edit_label = edit_label
-        self._symbols = POINT_ICONS.keys()
+        self._symbols = list(POINT_ICONS.keys())
 
         self._setup_widgets()
         self._connect()
@@ -148,9 +150,9 @@ if __name__ == "__main__":
     d = Data(label='data label', x=[1, 2, 3, 4])
     StyleDialog.edit_style(d)
 
-    print "New layer properties"
-    print d.label
-    print 'color: ', d.style.color
-    print 'marker: ', d.style.marker
-    print 'marker size: ', d.style.markersize
-    print 'alpha ', d.style.alpha
+    print("New layer properties")
+    print(d.label)
+    print('color: ', d.style.color)
+    print('marker: ', d.style.marker)
+    print('marker size: ', d.style.markersize)
+    print('alpha ', d.style.alpha)

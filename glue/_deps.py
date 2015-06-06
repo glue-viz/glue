@@ -3,6 +3,10 @@
 Guide users through installing Glue's dependencies
 """
 
+from __future__ import absolute_import, division, print_function
+
+import os
+
 # Unfortunately, we can't rely on setuptools' install_requires
 # keyword, because matplotlib doesn't properly install its dependencies
 from subprocess import check_call, CalledProcessError
@@ -27,6 +31,14 @@ class Dependency(object):
         except ImportError:
             return False
 
+    @property
+    def version(self):
+        try:
+            module = __import__(self.module)
+            return module.__version__
+        except (ImportError, AttributeError):
+            return 'unknown version'
+
     def install(self):
         if self.installed:
             return
@@ -50,7 +62,7 @@ PIP package name:
 
     def __str__(self):
         if self.installed:
-            status = 'INSTALLED'
+            status = 'INSTALLED (%s)' % self.version
         elif self.failed:
             status = 'FAILED (%s)' % self.info
         else:
@@ -79,12 +91,12 @@ class QtDep(Dependency):
             return False
 
     def install(self):
-        print ("*******************************\n"
-               "CANNOT AUTOMATICALLY INSTALL PyQt4 or PySide.\n"
-               "Install PyQt4 at http://bit.ly/YfTFxj, or\n"
-               "Install PySide at http://bit.ly/Zci3Di\n"
-               "*******************************\n"
-               )
+        print("*******************************\n"
+              "CANNOT AUTOMATICALLY INSTALL PyQt4 or PySide.\n"
+              "Install PyQt4 at http://bit.ly/YfTFxj, or\n"
+              "Install PySide at http://bit.ly/Zci3Di\n"
+              "*******************************\n"
+              )
 
 
 # Add any dependencies here
@@ -93,11 +105,13 @@ required = (
     QtDep(),
     Dependency('numpy', 'Required', min_version='1.4'),
     Dependency('matplotlib', 'Required for plotting', min_version='1.1'),
-    Dependency('pandas', 'Adds support for Excel files and DataFrames', min_version='0.13.1'),
+    Dependency(
+        'pandas', 'Adds support for Excel files and DataFrames', min_version='0.13.1'),
     Dependency('astropy', 'Used for FITS I/O, table reading, and WCS Parsing'))
 
 general = (
     Dependency('dill', 'Used when saving Glue sessions'),
+    Dependency('h5py', 'Used to support HDF5 files'),
     Dependency('scipy', 'Used for some image processing calculation'),
     Dependency('skimage',
                'Used to read popular image formats (jpeg, png, etc.)',
@@ -129,15 +143,21 @@ categories = (('required', required),
               ('testing', testing),
               ('export', export))
 
-dependencies = {d.module: d for c in categories for d in c[1]}
+dependencies = dict((d.module, d) for c in categories for d in c[1])
 
+
+def get_status():
+    s = ""
+    for category, deps in categories:
+        s += "%21s" % category.upper() + os.linesep
+        for dep in deps:
+            s += str(dep) + os.linesep
+        s += os.linesep
+    return s
+    
 
 def show_status():
-    for category, deps in categories:
-        print "%21s" % category.upper()
-        for dep in deps:
-            print dep
-        print '\n'
+    print(get_status())
 
 
 def install_all():
@@ -191,7 +211,7 @@ def main(argv=None):
             sys.stderr.write("Unrecognized dependency: %s\n" % argv[2])
             sys.exit(1)
 
-        print dep.help()
+        print(dep.help())
         sys.exit(0)
 
     if argv[1] == 'list':

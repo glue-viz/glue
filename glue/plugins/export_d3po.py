@@ -1,9 +1,8 @@
+from __future__ import absolute_import, division, print_function
+
 import json
 import os
 
-from astropy.table import Table, Column
-
-from ..config import exporters
 from ..qt.widgets import ScatterWidget, HistogramWidget
 from ..core import Subset
 
@@ -37,7 +36,7 @@ def save_page(page, page_number, label, subset):
     result['histogramStyle'] = result['markerStyle']
 
     # save each plot
-    result['plots'] = map(save_plot, page, range(len(page)))
+    result['plots'] = list(map(save_plot, page, range(len(page))))
 
     return result
 
@@ -152,6 +151,8 @@ def make_data_file(data, subsets, path):
     """
     Create the data.csv file, given Data and tuple of subsets
     """
+    from astropy.table import Table, Column
+
     data_path = os.path.join(path, 'data.csv')
 
     t = Table([data[c] for c in data.components],
@@ -194,10 +195,10 @@ def save_d3po(application, path):
     result = {}
     result['filename'] = 'data.csv'  # XXX don't think this is needed?
     result['title'] = "Glue export of %s" % data.label
-    result['states'] = map(save_page, application.viewers,
-                           range(len(viewers)),
-                           application.tab_names,
-                           subsets)
+    result['states'] = list(map(save_page, application.viewers,
+                                range(len(viewers)),
+                                application.tab_names,
+                                subsets))
 
     state_path = os.path.join(path, 'states.json')
     with open(state_path, 'w') as outfile:
@@ -236,7 +237,7 @@ def launch(path):
         except error:  # port already taken
             pass
 
-    print 'Serving D3PO on port 0.0.0.0:%i' % PORT
+    print('Serving D3PO on port 0.0.0.0:%i' % PORT)
     server.server_activate()
 
     thread = Thread(target=server.serve_forever)
@@ -245,7 +246,11 @@ def launch(path):
     webbrowser.open('http://0.0.0.0:%i' % PORT)
 
 
-exporters.add('D3PO', save_d3po, can_save_d3po, outmode='directory')
+def setup():
+    from ..logger import logger
+    from ..config import exporters
+    exporters.add('D3PO', save_d3po, can_save_d3po, outmode='directory')
+    logger.info("Loaded d3po exporter plugin")
 
 
 HTML = """

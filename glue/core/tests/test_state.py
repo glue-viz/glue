@@ -1,9 +1,12 @@
+from __future__ import absolute_import, division, print_function
+
 import numpy as np
 import json
 import pytest
 
 from ..state import (GlueSerializer, GlueUnSerializer,
                      saver, loader, VersionedDict)
+from ...external import six
 
 from ... import core
 from ...qt.glue_application import GlueApplication
@@ -13,6 +16,9 @@ from ...qt.widgets.histogram_widget import HistogramWidget
 from .util import make_file
 from ..data_factories import load_data
 from .test_data_factories import TEST_FITS_DATA
+from io import BytesIO
+
+from ...tests.helpers import requires_astropy
 
 
 def clone(object):
@@ -26,6 +32,26 @@ def clone(object):
 
 def doubler(x):
     return 2 * x
+
+
+def containers_equal(c1, c2):
+    """Check that two container-like items have the same contents,
+    ignoring differences relating to the type of container
+    """
+    if isinstance(c1, six.string_types):
+        return c1 == c2
+
+    try:
+        for a, b in zip(c1, c2):
+            if not containers_equal(a, b):
+                return False
+            if isinstance(c1, dict) and isinstance(c2, dict):
+                if not containers_equal(c1[a], c2[b]):
+                    return False
+    except TypeError:
+        pass
+
+    return True
 
 
 class Cloner(object):
@@ -81,6 +107,7 @@ def test_data_style():
     assert d2.style.color == 'blue'
 
 
+@requires_astropy
 def test_data_factory():
     with make_file(TEST_FITS_DATA, '.fits', decompress=True) as infile:
         d = load_data(infile)
@@ -93,12 +120,12 @@ def test_save_numpy_scalar():
     assert clone(np.float32(5)) == 5
 
 
+@requires_astropy
 def tests_data_factory_double():
-
-    from cStringIO import StringIO
+    # ensure double-cloning doesn't somehow lose lightweight references
     from astropy.io import fits
     d = np.random.normal(0, 1, (100, 100, 100))
-    s = StringIO()
+    s = BytesIO()
     fits.writeto(s, d)
 
     with make_file(s.getvalue(), '.fits') as infile:
@@ -196,52 +223,57 @@ def test_polygonal_roi():
     assert r2.vy == [0, 1, 0]
 
 
+def check_clone_app(app):
+    c = Cloner(app)
+    copy = c.us.object('__main__')
+
+    hub1 = app.session.hub
+    hub2 = copy.session.hub
+
+    assert len(hub1._subscriptions) == len(hub2._subscriptions)
+
+    # data collections are the same
+    for d1, d2 in zip(app.session.data_collection,
+                      copy.session.data_collection):
+        assert d1.label == d2.label
+        for cid1, cid2 in zip(d1.components, d2.components):
+            assert cid1.label == cid2.label
+
+            # order of components unspecified if label collisions
+            cid2 = c.get(cid1)
+            np.testing.assert_array_almost_equal(d1[cid1, 0:1],
+                                                 d2[cid2, 0:1], 3)
+
+    # same data viewers, in the same tabs
+    for tab1, tab2 in zip(app.viewers, copy.viewers):
+        assert len(tab1) == len(tab2)
+        for v1, v2 in zip(tab1, tab2):
+            assert type(v1) == type(v2)
+            # same window properties
+            assert v1.viewer_size == v2.viewer_size
+            assert v1.position == v2.position
+
+            # same viewer-level properties (axis label, scaling, etc)
+            assert set(v1.properties.keys()) == set(v2.properties.keys())
+            for k in v1.properties:
+                if hasattr(v1.properties[k], 'label'):
+                    assert v1.properties[k].label == v2.properties[k].label
+                else:
+                    assert v1.properties[k] == v2.properties[k] or \
+                        containers_equal(v1.properties[k], v2.properties[k])
+
+            assert len(v1.layers) == len(v2.layers)
+            for l1, l2 in zip(v1.layers, v2.layers):
+                assert l1.layer.label == l2.layer.label  # same data/subset
+                assert l1.layer.style == l2.layer.style
+
+    return copy
+
+
 class TestApplication(object):
 
     def check_clone(self, app):
-        c = Cloner(app)
-        copy = c.us.object('__main__')
-
-        hub1 = app.session.hub
-        hub2 = copy.session.hub
-
-        assert len(hub1._subscriptions) == len(hub2._subscriptions)
-
-        # data collections are the same
-        for d1, d2 in zip(app.session.data_collection,
-                          copy.session.data_collection):
-            assert d1.label == d2.label
-            for cid1, cid2 in zip(d1.components, d2.components):
-                assert cid1.label == cid2.label
-
-                # order of components unspecified if label collisions
-                cid2 = c.get(cid1)
-                np.testing.assert_array_almost_equal(d1[cid1, 0:1],
-                                                     d2[cid2, 0:1], 3)
-
-        # same data viewers, in the same tabs
-        for tab1, tab2 in zip(app.viewers, copy.viewers):
-            assert len(tab1) == len(tab2)
-            for v1, v2 in zip(tab1, tab2):
-                assert type(v1) == type(v2)
-                # same window properties
-                assert v1.viewer_size == v2.viewer_size
-                assert v1.position == v2.position
-
-                # same viewer-level properties (axis label, scaling, etc)
-                assert set(v1.properties.keys()) == set(v2.properties.keys())
-                for k in v1.properties:
-                    if hasattr(v1.properties[k], 'label'):
-                        assert v1.properties[k].label == v2.properties[k].label
-                    else:
-                        assert v1.properties[k] == v2.properties[k]
-
-                assert len(v1.layers) == len(v2.layers)
-                for l1, l2 in zip(v1.layers, v2.layers):
-                    assert l1.layer.label == l2.layer.label  # same data/subset
-                    assert l1.layer.style == l2.layer.style
-
-        return copy
+        return check_clone_app(app)
 
     def test_bare_application(self):
         app = GlueApplication()
@@ -324,43 +356,48 @@ class TestApplication(object):
         assert sg.subsets[0].style.color == '#112233'
 
 
+class DummyClass(object):
+    pass
+
+
 class TestVersioning(object):
 
     def setup_method(self, method):
 
-        @saver(core.Data, version=3)
+        @saver(DummyClass, version=1)
         def s(d, context):
             return dict(v=3)
 
-        @loader(core.Data, version=3)
+        @loader(DummyClass, version=1)
         def l(d, context):
             return 3
 
-        @saver(core.Data, version=4)
+        @saver(DummyClass, version=2)
         def s(d, context):
             return dict(v=4)
 
-        @loader(core.Data, version=4)
+        @loader(DummyClass, version=2)
         def l(rec, context):
             return 4
 
     def teardown_method(self, method):
-        GlueSerializer.dispatch._data[core.Data].pop(3)
-        GlueSerializer.dispatch._data[core.Data].pop(4)
-        GlueUnSerializer.dispatch._data[core.Data].pop(3)
-        GlueUnSerializer.dispatch._data[core.Data].pop(4)
+        GlueSerializer.dispatch._data[DummyClass].pop(1)
+        GlueSerializer.dispatch._data[DummyClass].pop(2)
+        GlueUnSerializer.dispatch._data[DummyClass].pop(1)
+        GlueUnSerializer.dispatch._data[DummyClass].pop(2)
 
     def test_default_latest_save(self):
-        assert GlueSerializer(core.Data()).dumpo().values()[0]['v'] == 4
+        assert list(GlueSerializer(DummyClass()).dumpo().values())[0]['v'] == 4
+        assert list(GlueSerializer(DummyClass()).dumpo().values())[0]['_protocol'] == 2
 
     def test_legacy_load(self):
-        data = json.dumps({'': {'_type': 'glue.core.Data',
-                                '_protocol': 3, 'v': 2}})
+        data = json.dumps({'': {'_type': 'glue.core.tests.test_state.DummyClass',
+                                '_protocol': 1, 'v': 2}})
         assert GlueUnSerializer(data).object('') == 3
 
-    def test_default_latest_load(self):
-        data = json.dumps({'': {'_type': 'glue.core.Data'}})
-        assert GlueUnSerializer(data).object('') == 4
+    def test_default_earliest_load(self):
+        data = json.dumps({'': {'_type': 'glue.core.tests.test_state.DummyClass'}})
+        assert GlueUnSerializer(data).object('') == 3
 
 
 class TestVersionedDict(object):

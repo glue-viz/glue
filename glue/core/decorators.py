@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from functools import wraps
 
 __all__ = ['memoize', 'singleton', 'memoize_attr_check']
@@ -23,7 +25,19 @@ def memoize(func):
         except TypeError:  # unhashable input
             return func(*args, **kwargs)
 
+    wrapper.__memoize_cache = memo
     return wrapper
+
+
+def clear_cache(func):
+    """
+    Clear the cache of a function that has potentially been
+    decorated by memoize. Safely ignores non-decorated functions
+    """
+    try:
+        func.__memoize_cache.clear()
+    except AttributeError:
+        pass
 
 
 def memoize_attr_check(attr):
@@ -34,7 +48,7 @@ def memoize_attr_check(attr):
     """
 
     def decorator(func):
-        #must return a decorator function
+        # must return a decorator function
 
         @wraps(func)
         def result(*args, **kwargs):

@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from functools import partial
 
 from ...external.qt import QtGui
@@ -56,6 +58,10 @@ class HistogramWidget(DataViewer):
         self._connect()
         # maps _hash(componentID) -> componentID
         self._component_hashes = {}
+
+    @staticmethod
+    def _get_default_tools():
+        return []
 
     def _init_limits(self):
         validator = QtGui.QDoubleValidator(None)
@@ -119,6 +125,8 @@ class HistogramWidget(DataViewer):
         """Repopulate the combo box that selects the quantity to plot"""
         combo = self.ui.attributeCombo
         component = self.component
+        new = self.client.component or component
+
         combo.blockSignals(True)
         combo.clear()
 
@@ -130,6 +138,7 @@ class HistogramWidget(DataViewer):
         self._component_hashes = dict((_hash(c), c) for d in self._data
                                       for c in d.components)
 
+        found = False
         for d in self._data:
             if d not in self._container:
                 continue
@@ -141,6 +150,8 @@ class HistogramWidget(DataViewer):
             for c in d.visible_components:
                 if not d.get_component(c).numeric:
                     continue
+                if c is new:
+                    found = True
                 item = QtGui.QStandardItem(c.label)
                 item.setData(_hash(c), role=Qt.UserRole)
                 model.appendRow(item)
@@ -153,8 +164,8 @@ class HistogramWidget(DataViewer):
 
         combo.blockSignals(False)
 
-        if component is not None:
-            self.component = component
+        if found:
+            self.component = new
         else:
             combo.setCurrentIndex(2)  # skip first data + separator
         self._set_attribute_from_combo()
@@ -182,7 +193,7 @@ class HistogramWidget(DataViewer):
     @defer_draw
     def _set_attribute_from_combo(self, *args):
         self.client.set_component(self.component)
-        self._update_window_title()
+        self.update_window_title()
 
     @defer_draw
     def add_data(self, data):
@@ -228,19 +239,21 @@ class HistogramWidget(DataViewer):
                       handler=lambda x: self._update_attributes())
 
     def unregister(self, hub):
+        super(HistogramWidget, self).unregister(hub)
         self.client.unregister(hub)
         hub.unsubscribe_all(self)
 
-    def _update_window_title(self):
+    @property
+    def window_title(self):
         c = self.client.component
         if c is not None:
             label = str(c.label)
         else:
             label = 'Histogram'
-        self.setWindowTitle(label)
+        return label
 
     def _update_labels(self):
-        self._update_window_title()
+        self.update_window_title()
         self._update_attributes()
 
     def __str__(self):

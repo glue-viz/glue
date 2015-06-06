@@ -1,9 +1,12 @@
+from __future__ import absolute_import, division, print_function
+
 import operator
 import logging
 
 import numpy as np
 import pandas as pd
 
+from .contracts import contract
 from .coordinates import Coordinates
 from .visual import VisualAttributes
 from .visual import COLORS
@@ -12,13 +15,16 @@ from .component_link import (ComponentLink, CoordinateComponentLink,
                              BinaryComponentLink)
 from .subset import Subset, InequalitySubsetState, SubsetState
 from .hub import Hub
-from .util import (split_component_view, view_shape,
-                   coerce_numeric, check_sorted)
+from .util import split_component_view, row_lookup
+from ..utils import unique, shape_to_string, view_shape, coerce_numeric, check_sorted
+from .decorators import clear_cache
 from .message import (DataUpdateMessage,
                       DataAddComponentMessage, NumericalDataChangedMessage,
-                      SubsetCreateMessage, ComponentsChangedMessage)
+                      SubsetCreateMessage, ComponentsChangedMessage,
+                      ComponentReplacedMessage)
 
-from .odict import OrderedDict
+from ..compat.collections import OrderedDict
+from ..external import six
 
 __all__ = ['Data', 'ComponentID', 'Component', 'DerivedComponent',
            'CategoricalComponent', 'CoordinateComponent']
@@ -53,7 +59,7 @@ class ComponentID(object):
     def __init__(self, label, hidden=False):
         """:param label: Name for the ID
            :type label: str"""
-        self._label = label
+        self._label = str(label)
         self._hidden = hidden
 
     @property
@@ -69,7 +75,7 @@ class ComponentID(object):
             classes. Label's should only be changd before creating other
             client objects
         """
-        self._label = value
+        self._label = str(value)
 
     @property
     def hidden(self):
@@ -81,6 +87,20 @@ class ComponentID(object):
 
     def __repr__(self):
         return str(self._label)
+
+    def __eq__(self, other):
+        if np.issubsctype(type(other), np.number):
+            return InequalitySubsetState(self, other, operator.eq)
+        return other is self
+
+    # In Python 3, if __eq__ is defined, then __hash__ has to be re-defined
+    if six.PY3:
+        __hash__ = object.__hash__
+
+    def __ne__(self, other):
+        if np.issubsctype(type(other), np.number):
+            return InequalitySubsetState(self, other, operator.ne)
+        return other is not self
 
     def __gt__(self, other):
         return InequalitySubsetState(self, other, operator.gt)
@@ -118,6 +138,12 @@ class ComponentID(object):
     def __rdiv__(self, other):
         return BinaryComponentLink(other, self, operator.div)
 
+    def __truediv__(self, other):
+        return BinaryComponentLink(self, other, operator.truediv)
+
+    def __rtruediv__(self, other):
+        return BinaryComponentLink(other, self, operator.truediv)
+
     def __pow__(self, other):
         return BinaryComponentLink(self, other, operator.pow)
 
@@ -133,8 +159,8 @@ class Component(object):
     ComponentIDs. All Components in a data set must have the same
     shape and number of dimensions
 
-    Note
-    ----
+    Notes
+    -----
     Instead of instantiating Components directly, consider using
     :meth:`Component.autotyped`, which chooses a subclass most appropriate
     for the data type.
@@ -192,7 +218,7 @@ class Component(object):
         return np.can_cast(self.data[0], np.complex)
 
     def __str__(self):
-        return "Component with shape %s" % (self.shape,)
+        return "Component with shape %s" % shape_to_string(self.shape)
 
     def jitter(self, method=None):
         raise NotImplementedError
@@ -212,8 +238,7 @@ class Component(object):
         Automatically choose between Component and CategoricalComponent,
         based on the input data type.
 
-        :param data: The data to pack into a Component
-        :type data: Array-like
+        :param data: The data to pack into a Component (array-like)
         :param units: Optional units
         :type units: str
 
@@ -226,12 +251,16 @@ class Component(object):
 
         n = coerce_numeric(data)
         thresh = 0.5
-        if np.isfinite(n).mean() > thresh:
-            return Component(n, units=units)
-        elif np.issubdtype(data.dtype, np.character):
-            return CategoricalComponent(data, units=units)
+        try:
+            use_categorical = np.issubdtype(data.dtype, np.character) and \
+                np.isfinite(n).mean() <= thresh
+        except TypeError:  # isfinite not supported. non-numeric dtype
+            use_categorical = True
 
-        return Component(data, units=units)
+        if use_categorical:
+            return CategoricalComponent(data, units=units)
+        else:
+            return Component(n, units=units)
 
 
 class DerivedComponent(Component):
@@ -341,8 +370,14 @@ class CategoricalComponent(Component):
         :param categories: List of unique values in the data
         :jitter: Strategy for jittering the data
         """
+
         super(CategoricalComponent, self).__init__(None, units)
-        self._categorical_data = np.asarray(categorical_data, dtype=np.object)
+
+        self._categorical_data = np.asarray(categorical_data)
+        if self._categorical_data.ndim > 1:
+            raise ValueError("Categorical Data must be 1-dimensional")
+
+        # Disable changing of categories
         self._categorical_data.setflags(write=False)
 
         self._categories = categories
@@ -361,8 +396,7 @@ class CategoricalComponent(Component):
         :return: None
         """
         if categories is None:
-            categories, inv = np.unique(self._categorical_data,
-                                        return_inverse=True)
+            categories, inv = unique(self._categorical_data)
             self._categories = categories
             self._data = inv.astype(np.float)
             self._data.setflags(write=False)
@@ -375,23 +409,13 @@ class CategoricalComponent(Component):
                 raise ValueError("Provided categories must be Sorted")
 
     def _update_data(self):
-        """ Converts the categorical data into the numeric representations
-        given self._categories
+        """
+        Converts the categorical data into the numeric representations given
+        self._categories
         """
         self._is_jittered = False
-        # Complicated because of the case of items not in
-        # self._categories may be on either side of the sorted list
-        left = np.searchsorted(self._categories,
-                               self._categorical_data,
-                               side='left')
-        right = np.searchsorted(self._categories,
-                                self._categorical_data,
-                                side='right')
-        self._data = left.astype(float)
-        self._data[(left == 0) & (right == 0)] = np.nan
-        self._data[left == len(self._categories)] = np.nan
 
-        self._data[self._data == len(self._categories)] = np.nan
+        self._data = row_lookup(self._categorical_data, self._categories)
         self.jitter(method=self._jitter_method)
         self._data.setflags(write=False)
 
@@ -409,7 +433,7 @@ class CategoricalComponent(Component):
         :return: None
         """
 
-        if method not in {'uniform', None}:
+        if method not in set(['uniform', None]):
             raise ValueError('%s jitter not supported' % method)
         self._jitter_method = method
         seed = 1234567890
@@ -485,10 +509,6 @@ class Data(object):
 
         self.id = ComponentIDDict(self)
 
-        # Tree description of the data
-        # (Deprecated)
-        self.tree = None
-
         # Subsets of the data
         self._subsets = []
 
@@ -504,8 +524,10 @@ class Data(object):
 
         self.edit_subset = None
 
-        for lbl, data in kwargs.items():
+        for lbl, data in sorted(kwargs.items()):
             self.add_component(data, lbl)
+
+        self._key_joins = {}
 
     @property
     def subsets(self):
@@ -547,6 +569,7 @@ class Data(object):
         """
         return np.product(self.shape)
 
+    @contract(component=Component)
     def _check_can_add(self, component):
         if isinstance(component, DerivedComponent):
             return component._data is self
@@ -555,6 +578,7 @@ class Data(object):
                 return True
             return component.shape == self.shape
 
+    @contract(cid=ComponentID, returns=np.dtype)
     def dtype(self, cid):
         """Lookup the dtype for the data associated with a ComponentID"""
 
@@ -563,6 +587,7 @@ class Data(object):
         arr = self[cid, ind]
         return arr.dtype
 
+    @contract(component_id=ComponentID)
     def remove_component(self, component_id):
         """ Remove a component from a data set
 
@@ -572,6 +597,55 @@ class Data(object):
         if component_id in self._components:
             self._components.pop(component_id)
 
+    @contract(other='isinstance(Data)',
+              cid='cid_like',
+              cid_other='cid_like')
+    def join_on_key(self, other, cid, cid_other):
+        """
+        Create an *element* mapping to another dataset, by
+        joining on values of ComponentIDs in both datasets.
+
+        This join allows any subsets defined on `other` to be
+        propagated to self.
+
+        :param other: :class:`Data` to join with
+        :param cid: str or :class:`ComponentID` in this dataset to use as a key
+        :param cid_other: ComponentID in the other dataset to use as a key
+
+        :example:
+
+        >>> d1 = Data(x=[1, 2, 3, 4, 5], k1=[0, 0, 1, 1, 2], label='d1')
+        >>> d2 = Data(y=[2, 4, 5, 8, 4], k2=[1, 3, 1, 2, 3], label='d2')
+        >>> d2.join_on_key(d1, 'k2', 'k1')
+
+        >>> s = d1.new_subset()
+        >>> s.subset_state = d1.id['x'] > 2
+        >>> s.to_mask()
+        array([False, False,  True,  True,  True], dtype=bool)
+
+        >>> s = d2.new_subset()
+        >>> s.subset_state = d1.id['x'] > 2
+        >>> s.to_mask()
+        array([ True, False,  True,  True, False], dtype=bool)
+
+        The subset state selects the last 3 items in d1. These have
+        key values k1 of 1 and 2. Thus, the selected items in d2
+        are the elements where k2 = 1 or 2.
+        """
+        _i1, _i2 = cid, cid_other
+        cid = self.find_component_id(cid)
+        cid_other = other.find_component_id(cid_other)
+        if cid is None:
+            raise ValueError("ComponentID not found in %s: %s" %
+                             (self.label, _i1))
+        if cid_other is None:
+            raise ValueError("ComponentID not found in %s: %s" %
+                             (other.label, _i2))
+
+        self._key_joins[other] = (cid, cid_other)
+        other._key_joins[self] = (cid_other, cid)
+
+    @contract(component='component_like', label='cid_like')
     def add_component(self, component, label, hidden=False):
         """ Add a new component to this data set.
 
@@ -613,10 +687,8 @@ class Data(object):
 
         if isinstance(label, ComponentID):
             component_id = label
-        elif isinstance(label, basestring):
-            component_id = ComponentID(label, hidden=hidden)
         else:
-            raise TypeError("label must be a ComponentID or string")
+            component_id = ComponentID(label, hidden=hidden)
 
         is_present = component_id in self._components
         self._components[component_id] = component
@@ -637,6 +709,9 @@ class Data(object):
 
         return component_id
 
+    @contract(link=ComponentLink,
+              label='cid_like|None',
+              returns=DerivedComponent)
     def add_component_link(self, link, label=None):
         """ Shortcut method for generating a new :class:`DerivedComponent`
         from a ComponentLink object, and adding it to a data set.
@@ -649,7 +724,7 @@ class Data(object):
             The :class:`DerivedComponent` that was added
         """
         if label is not None:
-            if isinstance(label, basestring):
+            if not isinstance(label, ComponentID):
                 label = ComponentID(label)
             link.set_to_id(label)
 
@@ -724,16 +799,17 @@ class Data(object):
         """
         return self._world_component_ids
 
+    @contract(label='cid_like', returns='inst($ComponentID)|None')
     def find_component_id(self, label):
         """ Retrieve component_ids associated by label name.
 
-        :param label: string to search for
+        :param label: ComponentID or string to search for
 
         :returns:
             The associated ComponentID if label is found and unique, else None
         """
         result = [cid for cid in self.component_ids() if
-                  cid.label == label]
+                  cid.label == label or cid is label]
         if len(result) == 1:
             return result[0]
 
@@ -778,22 +854,29 @@ class Data(object):
         self._coordinate_links = result
         return result
 
+    @contract(axis=int, returns=ComponentID)
     def get_pixel_component_id(self, axis):
         """Return the pixel :class:`ComponentID` associated with a given axis
         """
         return self._pixel_component_ids[axis]
 
+    @contract(axis=int, returns=ComponentID)
     def get_world_component_id(self, axis):
         """Return the world :class:`ComponentID` associated with a given axis
         """
         return self._world_component_ids[axis]
 
+    @contract(returns='list(inst($ComponentID))')
     def component_ids(self):
         """
         Equivalent to :attr:`Data.components`
         """
         return list(self._components.keys())
 
+    @contract(subset='isinstance(Subset)|None',
+              color='color|None',
+              label='string|None',
+              returns=Subset)
     def new_subset(self, subset=None, color=None, label=None, **kwargs):
         """
         Create a new subset, and attach to self.
@@ -819,6 +902,7 @@ class Data(object):
         self.add_subset(new_subset)
         return new_subset
 
+    @contract(subset='inst($Subset, $SubsetState)')
     def add_subset(self, subset):
         """Assign a pre-existing subset to this data object.
 
@@ -854,6 +938,7 @@ class Data(object):
 
         subset.do_broadcast(True)
 
+    @contract(hub=Hub)
     def register_to_hub(self, hub):
         """ Connect to a hub.
 
@@ -864,27 +949,33 @@ class Data(object):
             raise TypeError("input is not a Hub object: %s" % type(hub))
         self.hub = hub
 
-    def broadcast(self, attribute=None):
+    @contract(attribute='string')
+    def broadcast(self, attribute):
         """
         Send a :class:`~glue.core.message.DataUpdateMessage` to the hub
 
-        :param attribute: Name of an attribute that has changed
-        :type attribute: str
+        :param attribute: Name of an attribute that has changed (or None)
+        :type attribute: string
         """
         if not self.hub:
             return
         msg = DataUpdateMessage(self, attribute=attribute)
         self.hub.broadcast(msg)
 
+    @contract(old=ComponentID, new=ComponentID)
     def update_id(self, old, new):
         """Reassign a component to a different :class:`ComponentID`
 
         :param old: The old :class:`ComponentID`.
         :param new: The new :class:`ComponentID`.
         """
+
+        if new is old:
+            return
+
         changed = False
         if old in self._components:
-            self._components[new] = self._components.pop(old)
+            self._components[new] = self._components[old]
             changed = True
         try:
             index = self._pixel_component_ids.index(old)
@@ -900,7 +991,14 @@ class Data(object):
             pass
 
         if changed and self.hub is not None:
-            self.hub.broadcast(ComponentsChangedMessage(self))
+            # promote hidden status
+            new._hidden = new.hidden and old.hidden
+
+            # remove old component and broadcast the change
+            # see #508 for discussion of this
+            self._components.pop(old)
+            msg = ComponentReplacedMessage(self, old, new)
+            self.hub.broadcast(msg)
 
     def __str__(self):
         s = "Data Set: %s" % self.label
@@ -935,7 +1033,7 @@ class Data(object):
         :returns: :class:`~numpy.ndarray`
         """
         key, view = split_component_view(key)
-        if isinstance(key, basestring):
+        if isinstance(key, six.string_types):
             _k = key
             key = self.find_component_id(key)
             if key is None:
@@ -959,6 +1057,13 @@ class Data(object):
             "Component view returned bad shape: %s %s" % (result.shape, shp)
         return result
 
+    def __setitem__(self, key, value):
+        """
+        Wrapper for data.add_component()
+        """
+        self.add_component(value, key)
+
+    @contract(component_id='cid_like|None', returns=Component)
     def get_component(self, component_id):
         """Fetch the component corresponding to component_id.
 
@@ -967,7 +1072,7 @@ class Data(object):
         if component_id is None:
             raise IncompatibleAttribute()
 
-        if isinstance(component_id, basestring):
+        if isinstance(component_id, six.string_types):
             component_id = self.id[component_id]
 
         try:
@@ -978,17 +1083,17 @@ class Data(object):
     def to_dataframe(self, index=None):
         """ Convert the Data object into a pandas.DataFrame object
 
-        :param index: Any 'index-like' object that can be passed to the
-        pandas.Series constructor
+        :param index: Any 'index-like' object that can be passed to the pandas.Series constructor
 
         :return: pandas.DataFrame
         """
 
         h = lambda comp: self.get_component(comp).to_series(index=index)
-        df = pd.DataFrame({comp.label: h(comp) for comp in self.components})
+        df = pd.DataFrame(dict((comp.label, h(comp)) for comp in self.components))
         order = [comp.label for comp in self.components]
         return df[order]
 
+    @contract(mapping="dict(inst($Component, $ComponentID):array_like)")
     def update_components(self, mapping):
         """
         Change the numerical data associated with some of the Components
@@ -1017,7 +1122,11 @@ class Data(object):
             msg = NumericalDataChangedMessage(self)
             self.hub.broadcast(msg)
 
+        for subset in self.subsets:
+            clear_cache(subset.subset_state.to_mask)
 
+
+@contract(i=int, ndim=int)
 def pixel_label(i, ndim):
     if ndim == 2:
         return ['y', 'x'][i]

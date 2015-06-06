@@ -1,5 +1,8 @@
+# Licensed under a 3-clause BSD style license - see LICENSE.rst
 import numpy as np
+
 from astropy import units as u
+from astropy.extern import six
 
 # Modified from axis_artist, supports astropy.units
 
@@ -90,25 +93,34 @@ def select_step_scalar(dv):
     return 10. ** (base + steps[imin])
 
 
-def get_coordinate_system(wcs):
-    """
-    Given a WCS object for a pair of spherical coordinates, return the
-    corresponding astropy coordinate class.
-    """
+def get_coord_meta(frame):
 
-    xcoord = wcs.wcs.ctype[0][0:4]
-    ycoord = wcs.wcs.ctype[1][0:4]
+    coord_meta = {}
+    coord_meta['type'] = ('longitude', 'latitude')
+    coord_meta['wrap'] = (None, None)
+    coord_meta['unit'] = (u.deg, u.deg)
 
-    from astropy.coordinates import FK5, Galactic
+    try:
 
-    if xcoord == 'RA--' and ycoord == 'DEC-':
-        coordinate_class = FK5
-    elif xcoord == 'GLON' and ycoord == 'GLAT':
-        coordinate_class = Galactic
-    else:
-        raise ValueError("System not supported (yet): {0}/{1}".format(xcoord, ycoord))
+        from astropy.coordinates import frame_transform_graph
 
-    return coordinate_class
+        if isinstance(frame, six.string_types):
+            frame = frame_transform_graph.lookup_name(frame)
+
+        names = list(frame().representation_component_names.keys())
+        coord_meta['name'] = names[:2]
+
+    except ImportError:
+
+        if isinstance(frame, six.string_types):
+            if frame in ('fk4', 'fk5', 'icrs'):
+                coord_meta['name'] = ('ra', 'dec')
+            elif frame == 'galactic':
+                coord_meta['name'] = ('l', 'b')
+            else:
+                raise ValueError("Unknown frame: {0}".format(frame))
+
+    return coord_meta
 
 
 def coord_type_from_ctype(ctype):
@@ -116,9 +128,11 @@ def coord_type_from_ctype(ctype):
     Determine whether a particular WCS ctype corresponds to an angle or scalar
     coordinate.
     """
-    if ctype[:4] in ['RA--', 'HPLN'] or ctype[1:4] == 'LON':
-        return 'longitude'
+    if ctype[:4] in ['RA--'] or ctype[1:4] == 'LON':
+        return 'longitude', None
+    elif ctype[:4] in ['HPLN']:
+        return 'longitude', 180.
     elif ctype[:4] in ['DEC-', 'HPLT'] or ctype[1:4] == 'LAT':
-        return 'latitude'
+        return 'latitude', None
     else:
-        return 'scalar'
+        return 'scalar', None

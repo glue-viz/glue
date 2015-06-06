@@ -1,10 +1,18 @@
+from __future__ import absolute_import, division, print_function
+
 from ...external.qt.QtCore import Qt
 
 from mock import MagicMock
 
 from ..layer_artist_model import LayerArtistModel, LayerArtistView
-from ...clients.layer_artist import LayerArtist
+from ...clients.layer_artist import LayerArtist as _LayerArtist
 from ...core import Data
+
+
+class LayerArtist(_LayerArtist):
+
+    def update(self, view=None):
+        pass
 
 
 def setup_model(num):

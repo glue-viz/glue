@@ -1,14 +1,15 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
-from mock import MagicMock, patch
-import numpy as np
-from numpy.testing import assert_almost_equal
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+
+from __future__ import absolute_import, division, print_function
+
+from mock import MagicMock
 
 from ..mouse_mode import (MouseMode, RectangleMode, CircleMode, PolyMode,
-                          ContrastMode, ContourMode, contour_to_roi, LassoMode,
-                          ClickRoiMode)
+                          ContrastMode, LassoMode)
 
 
 class Event(object):
+
     def __init__(self, x, y, button=3, key='a'):
         self.x = x
         self.y = y
@@ -47,7 +48,7 @@ class TestMouseMode(object):
         assert self.move.call_count == 0
         assert self.release.call_count == 0
 
-    #def test_log_null_event(self):
+    # def test_log_null_event(self):
     #    """ Should exit quietly if event is None """
     #    self.mode._log_position(None)
 
@@ -123,7 +124,7 @@ class TestRoiMode(TestMouseMode):
         self.mode._roi_tool.finalize_selection.assert_called_once_with(e2)
 
     def test_roi(self):
-        r = self.mode.roi()
+        self.mode.roi()
         self.mode._roi_tool.roi.assert_called_once_with()
 
 
@@ -174,26 +175,31 @@ class TestClickRoiMode(TestMouseMode):
 
 
 class TestRectangleMode(TestRoiMode):
+
     def mode_factory(self):
         return RectangleMode
 
 
 class TestCircleMode(TestRoiMode):
+
     def mode_factory(self):
         return CircleMode
 
 
 class TestLassoMode(TestRoiMode):
+
     def mode_factory(self):
         return LassoMode
 
 
 class TestPolyMode(TestClickRoiMode):
+
     def mode_factory(self):
         return PolyMode
 
 
 class TestContrastMode(TestMouseMode):
+
     def mode_factory(self):
         return ContrastMode
 
@@ -203,40 +209,6 @@ class TestContrastMode(TestMouseMode):
         count = self.mode._axes.figure.canvas.get_width_height.call_count
         assert count == 0
 
-
-class TestContourMode(TestMouseMode):
-
-    def mode_factory(self):
-        return ContourMode
-
-    def test_roi_before_event(self):
-        data = MagicMock()
-        roi = self.mode.roi(data)
-        assert roi is None
-
-    def test_roi(self):
-        with patch('glue.qt.mouse_mode.contour_to_roi') as cntr:
-            data = MagicMock()
-            e = Event(1, 2)
-            self.mode.press(e)
-            self.mode.roi(data)
-            cntr.assert_called_once_with(1, 2, data)
-
-
-class TestContourToRoi(object):
-
-    def test_roi(self):
-        with patch('glue.core.util.point_contour') as point_contour:
-            point_contour.return_value = np.array([[1, 2], [2, 3]])
-            p = contour_to_roi(1, 2, None)
-            np.testing.assert_array_almost_equal(p.vx, [1, 2])
-            np.testing.assert_array_almost_equal(p.vy, [2, 3])
-
-    def test_roi_null_result(self):
-        with patch('glue.core.util.point_contour') as point_contour:
-            point_contour.return_value = None
-            p = contour_to_roi(1, 2, None)
-            assert p is None
 
 del TestRoiMode  # prevents test discovery from running abstract test
 del TestClickRoiMode

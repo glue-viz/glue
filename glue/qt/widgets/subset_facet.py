@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from ...external.qt.QtGui import (QDialog, QDoubleValidator, QIcon)
 import numpy as np
 from matplotlib import cm
@@ -20,7 +22,7 @@ class SubsetFacet(object):
     def __init__(self, collect, default=None, parent=None):
         """Create a new dialog for subset faceting
 
-        :param collect: The :class:`~glue.core.DataCollection` to use
+        :param collect: The :class:`~glue.core.data_collection.DataCollection` to use
         :param default: The default dataset in the collection (optional)
         """
         self.ui = load_ui('subset_facet', None)

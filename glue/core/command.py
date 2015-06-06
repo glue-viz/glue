@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from abc import ABCMeta, abstractmethod
 import logging
 
@@ -204,7 +206,7 @@ class NewDataViewer(Command):
 
     :param viewer: The class of viewer to create
     :param data: The data object to initialize the viewer with, or None
-    :type date: :class:`~glue.core.Data` or None
+    :type date: :class:`~glue.core.data.Data` or None
     """
     kwargs = ['viewer', 'data']
     label = 'new data viewer'
@@ -222,7 +224,7 @@ class AddLayer(Command):
     """Add a new layer to a viewer
 
     :param layer: The layer to add
-    :type layer: :class:`~glue.core.Data` or :class:`~glue.core.Subset`
+    :type layer: :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
     :param viewer: The viewer to add the layer to
     """
     kwargs = ['layer', 'viewer']

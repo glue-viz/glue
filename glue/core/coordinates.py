@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import logging
 
 import numpy as np
@@ -84,7 +86,7 @@ class WCSCoordinates(Coordinates):
         # if distorted, all bets are off
         try:
             if any([self._wcs.sip, self._wcs.det2im1, self._wcs.det2im2]):
-                return tuple(range(ndim))
+                return tuple(range(self._wcs.naxis))
         except AttributeError:
             pass
 
@@ -195,9 +197,13 @@ def coordinates_from_header(header):
     """
     try:
         return WCSCoordinates(header)
-    except (AttributeError, TypeError, AssertionError) as e:
-        print e
-        pass
+    except Exception as e:
+        logging.getLogger(__name__).warn("\n\n*******************************\n"
+                                         "Encounted an error during WCS parsing. "
+                                         "Discarding world coordinates! "
+                                         "\n%s\n"
+                                         "*******************************\n\n" % e
+                                         )
     return Coordinates()
 
 
@@ -221,8 +227,7 @@ def coordinates_from_wcs(wcs):
     try:
         return WCSCoordinates(hdr, wcs)
     except (AttributeError, TypeError) as e:
-        print e
-        pass
+        print(e)
     return Coordinates()
 
 

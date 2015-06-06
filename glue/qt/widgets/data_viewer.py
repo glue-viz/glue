@@ -1,7 +1,9 @@
+from __future__ import absolute_import, division, print_function
+
 import os
 
 from ...external.qt.QtGui import (
-    QMainWindow, QMessageBox, QWidget, QMdiSubWindow)
+    QMainWindow, QMessageBox, QWidget)
 
 from ...external.qt.QtCore import Qt
 
@@ -11,6 +13,7 @@ from ..decorators import set_cursor
 from ..layer_artist_model import QtLayerArtistContainer, LayerArtistView
 from .. import get_qapp
 from ..mime import LAYERS_MIME_TYPE, LAYER_MIME_TYPE
+from .glue_mdi_area import GlueMdiSubWindow
 
 __all__ = ['DataViewer']
 
@@ -25,6 +28,7 @@ class DataViewer(QMainWindow, ViewerBase):
        * Drag and drop support for adding data
     """
     _container_cls = QtLayerArtistContainer
+    LABEL = 'Override this'
 
     def __init__(self, session, parent=None):
         """
@@ -42,8 +46,12 @@ class DataViewer(QMainWindow, ViewerBase):
         self._toolbars = []
         self._warn_close = True
         self.setContentsMargins(2, 2, 2, 2)
-        self._mdi_wrapper = None  # QMdiSubWindow that self is embedded in
+        self._mdi_wrapper = None  # GlueMdiSubWindow that self is embedded in
         self.statusBar().setStyleSheet("QStatusBar{font-size:10px}")
+
+        # close window when last plot layer deleted
+        self._container.on_empty(lambda: self.close(warn=False))
+        self._container.on_changed(self.update_window_title)
 
     def remove_layer(self, layer):
         self._container.pop(layer)
@@ -59,7 +67,6 @@ class DataViewer(QMainWindow, ViewerBase):
 
     def dropEvent(self, event):
         """ Add layers to the viewer if contained in mime data """
-
         if event.mimeData().hasFormat(LAYER_MIME_TYPE):
             self.request_add_layer(event.mimeData().data(LAYER_MIME_TYPE))
 
@@ -83,8 +90,8 @@ class DataViewer(QMainWindow, ViewerBase):
         self._warn_close = True
 
     def mdi_wrap(self):
-        """Wrap this object in a QMdiSubWindow"""
-        sub = QMdiSubWindow()
+        """Wrap this object in a GlueMdiSubWindow"""
+        sub = GlueMdiSubWindow()
         sub.setWidget(self)
         self.destroyed.connect(sub.close)
         sub.resize(self.size())
@@ -98,7 +105,24 @@ class DataViewer(QMainWindow, ViewerBase):
         pos = target.pos()
         return pos.x(), pos.y()
 
+    @position.setter
+    def position(self, xy):
+        x, y = xy
+        self.move(x, y)
+
     def move(self, x=None, y=None):
+        """
+        Move the viewer to a new XY pixel location
+
+        You can also set the position attribute to a new tuple directly.
+
+        Parameters
+        ----------
+        x : int (optional)
+           New x position
+        y : int (optional)
+           New y position
+        """
         x0, y0 = self.position
         if x is None:
             x = x0
@@ -130,6 +154,7 @@ class DataViewer(QMainWindow, ViewerBase):
         if self._hub is not None:
             self.unregister(self._hub)
         super(DataViewer, self).closeEvent(event)
+        event.accept()
 
     def _confirm_close(self):
         """Ask for close confirmation
@@ -206,3 +231,19 @@ class DataViewer(QMainWindow, ViewerBase):
             """
             self.setStyleSheet(css)
             self.hide_toolbars()
+
+    def __str__(self):
+        return self.LABEL
+
+    def unregister(self, hub):
+        """
+        Override to perform cleanup operations when disconnecting from hub
+        """
+        pass
+
+    @property
+    def window_title(self):
+        return str(self)
+
+    def update_window_title(self):
+        self.setWindowTitle(self.window_title)

@@ -56,7 +56,7 @@ If you encounter an error like this::
 
 set the ``QT_API`` environment variable to either ``pyqt`` or ``pyside``, depending on which version of Qt you have installed::
 
-    QT_API=pyside notebook --gui qt
+    QT_API=pyside ipython notebook --gui qt
 
 
 Does Glue Understand CASA Cubes?

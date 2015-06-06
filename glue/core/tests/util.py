@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import tempfile
 from contextlib import contextmanager
 import os
@@ -22,11 +24,14 @@ def make_file(contents, suffix, decompress=False):
 
     try:
         _, fname = tempfile.mkstemp(suffix=suffix)
-        with open(fname, 'wb') as infile:
-            infile.write(contents)
+        with open(fname, 'wb') as outfile:
+            outfile.write(contents)
         yield fname
     finally:
-        os.unlink(fname)
+        try:
+            os.unlink(fname)
+        except WindowsError:  # on Windows the unlink can fail
+            pass
 
 
 @contextmanager
@@ -35,7 +40,7 @@ def simple_catalog():
 
     :param suffix: File suffix. string
     """
-    with make_file('#a, b\n1, 2\n3, 4', '.csv') as result:
+    with make_file(b'#a, b\n1, 2\n3, 4', '.csv') as result:
         yield result
 
 

@@ -1,7 +1,10 @@
+from __future__ import absolute_import, division, print_function
+
 from mock import MagicMock
 
 from ..application_base import Application
 from .. import Data
+from ...external.six.moves import cPickle as pickle
 
 
 class MockApplication(Application):

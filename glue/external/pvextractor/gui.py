@@ -68,11 +68,12 @@ class MovableSliceBox(object):
             path = Path(zip(self.box.x, self.box.y))
             path.width = self.box.width
 
-            for poly in path.sample_polygons(1):
-                self.box.axes.draw_artist(Polygon(zip(poly.x, poly.y),
-                                          ec='green', fc='none',
+            patches = path.to_patches(1, ec='green', fc='none',
                                           transform=self.box.axes.transData,
-                                          clip_on=True, clip_box=self.box.axes.bbox))
+                                          clip_on=True, clip_box=self.box.axes.bbox)
+
+            for patch in patches:
+                self.box.axes.draw_artist(patch)
 
     def on_press(self, event):
 
@@ -177,45 +178,6 @@ class MovableSliceBox(object):
         self.box.figure.canvas.mpl_disconnect(self.cidmotion)
 
 
-class SliceBox(LineCollection):
-
-    def __init__(self, x0=None, y0=None, x1=None, y1=None, width=None, **kwargs):
-
-        super(SliceBox, self).__init__([], **kwargs)
-
-        self.x0 = x0
-        self.y0 = y0
-        self.x1 = x1
-        self.y1 = y1
-        self.width = width
-
-        self._update_segments()
-
-    def _update_segments(self):
-
-        if self.x0 is None:
-            return
-
-        # Find angle of normal to line
-        theta = np.arctan2(self.y1 - self.y0, self.x1 - self.x0) + np.pi / 2.
-
-        # Find displacement vectors
-        dx = np.cos(theta) * self.width / 2.
-        dy = np.sin(theta) * self.width / 2.
-
-        # Find central line
-        line = [(self.x0, self.y0), (self.x1, self.y1)]
-
-        # Find bounding rectangle
-        rect = [(self.x0 + dx, self.y0 + dy), (self.x0 - dx, self.y0 - dy),
-                (self.x1 - dx, self.y1 - dy), (self.x1 + dx, self.y1 + dy),
-                (self.x0 + dx, self.y0 + dy)]
-
-        self.set_segments((line, rect))
-        self.set_linestyles(('solid', 'dashed'))
-        self.set_linewidths((2, 1))
-
-
 class SliceCurve(LineCollection):
 
     def __init__(self, x=[], y=[], width=None, **kwargs):
@@ -242,11 +204,9 @@ class SliceCurve(LineCollection):
         rect = zip(np.hstack([x1,x2[::-1], x1[0]]),
                    np.hstack([y1,y2[::-1], y1[0]]))
 
-        self.set_segments((line, rect))
+        self.set_segments((list(line), list(rect)))
         self.set_linestyles(('solid', 'dashed'))
         self.set_linewidths((2, 1))
-
-
 
 
 class PVSlicer(object):
@@ -279,9 +239,10 @@ class PVSlicer(object):
         if clim is None:
             warnings.warn("clim not defined and will be determined from the data")
             # To work with large arrays, sub-sample the data
-            n1 = self.array.shape[0] / 10
-            n2 = self.array.shape[1] / 10
-            n3 = self.array.shape[2] / 10
+            # (but don't do it for small arrays)
+            n1 = max(self.array.shape[0] / 10, 1)
+            n2 = max(self.array.shape[1] / 10, 1)
+            n3 = max(self.array.shape[2] / 10, 1)
             sub_array = self.array[::n1,::n2,::n3]
             cmin = np.min(sub_array[~np.isnan(sub_array) & ~np.isinf(sub_array)])
             cmax = np.max(sub_array[~np.isnan(sub_array) & ~np.isinf(sub_array)])
@@ -334,10 +295,25 @@ class PVSlicer(object):
         self.save_button_ax = self.fig.add_axes([0.65, 0.90, 0.20, 0.05])
         self.save_button = Button(self.save_button_ax, 'Save slice to FITS')
         self.save_button.on_clicked(self.save_fits)
+        self.file_status_text = self.fig.text(0.75, 0.875, "", ha='center', va='center')
+        self.set_file_status(None)
 
+        self.set_file_status(None)
         self.pv_slice = None
 
         self.cidpress = self.fig.canvas.mpl_connect('button_press_event', self.click)
+
+    def set_file_status(self, status, filename=None):
+        if status == 'instructions':
+            self.file_status_text.set_text('Please enter filename in terminal')
+            self.file_status_text.set_color('red')
+        elif status == 'saved':
+            self.file_status_text.set_text('File successfully saved to {0}'.format(filename))
+            self.file_status_text.set_color('green')
+        else:
+            self.file_status_text.set_text('')
+            self.file_status_text.set_color('black')
+        self.fig.canvas.draw()
 
     def click(self, event):
 
@@ -348,21 +324,22 @@ class PVSlicer(object):
 
     def save_fits(self, *args, **kwargs):
 
-        if self.backend == 'Qt4Agg':
-            from matplotlib.backends.backend_qt4 import _getSaveFileName
-            plot_name = _getSaveFileName(self.fig.canvas.manager.window, "Choose filename",
-                                         os.path.dirname(os.path.abspath(self.filename)), "", None)
-            plot_name = str(plot_name)
-        else:
-            print("Enter filename: ", end='')
+        self.set_file_status('instructions')
+
+        print("Enter filename: ", end='')
+        try:
             plot_name = raw_input()
+        except NameError:
+            plot_name = input()
 
         if self.pv_slice is None:
             return
 
         from astropy.io import fits
-        fits.writeto(plot_name, self.pv_slice, clobber=True)
+        self.pv_slice.writeto(plot_name, clobber=True)
         print("Saved file to: ", plot_name)
+
+        self.set_file_status('saved', filename=plot_name)
 
     def update_pv_slice(self, box):
 
@@ -372,13 +349,13 @@ class PVSlicer(object):
         self.pv_slice = extract_pv_slice(self.array, path)
 
         self.ax2.cla()
-        self.ax2.imshow(self.pv_slice, origin='lower', aspect='auto', interpolation='nearest')
+        self.ax2.imshow(self.pv_slice.data, origin='lower', aspect='auto', interpolation='nearest')
 
         self.fig.canvas.draw()
 
-    def show(self):
+    def show(self, block=True):
         import matplotlib.pyplot as plt
-        plt.show()
+        plt.show(block=block)
 
     def update_slice(self, pos=None):
 

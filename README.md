@@ -1,5 +1,8 @@
 
-[![Build Status](https://travis-ci.org/glue-viz/glue.png)](https://travis-ci.org/glue-viz/glue?branch=master) [![Coverage Status](https://coveralls.io/repos/glue-viz/glue/badge.png)](https://coveralls.io/r/glue-viz/glue)
+[![Build Status](https://travis-ci.org/glue-viz/glue.png)](https://travis-ci.org/glue-viz/glue?branch=master)
+[![Build status](https://ci.appveyor.com/api/projects/status/elhwol929gwg1unv/branch/master?svg=true)](https://ci.appveyor.com/project/astrofrog/glue/branch/master)
+[![Coverage Status](https://coveralls.io/repos/glue-viz/glue/badge.png)](https://coveralls.io/r/glue-viz/glue)
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.13866.svg)](http://dx.doi.org/10.5281/zenodo.13866)
 
 Glue
 ====
@@ -7,7 +10,7 @@ Glue
 Glue is a python project to link visualizations of scientific datasets
 across many files. Click on the image for a quick demo:
 
-[![Glue demo video](http://b.vimeocdn.com//ts//368//632//368632852_640.jpg)](http://vimeo.com/53378575)
+[![Glue demo](doc/readme.gif)](http://vimeo.com/53378575)
 
 Features
 --------
@@ -29,4 +32,4 @@ Please report problems to glueviz@gmail.com, or [open an issue](https://github.c
 
 License
 -------
-Glue is licensed under the [MIT License](https://github.com/glue-viz/glue/blob/master/LICENSE)
+Glue is licensed under the [BSD License](https://github.com/glue-viz/glue/blob/master/LICENSE)

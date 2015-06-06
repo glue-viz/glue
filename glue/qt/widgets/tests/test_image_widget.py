@@ -1,5 +1,9 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+
+from __future__ import absolute_import, division, print_function
+
 import numpy as np
+from mock import MagicMock
 
 from ..image_widget import ImageWidget
 
@@ -13,7 +17,8 @@ import os
 os.environ['GLUE_TESTING'] = 'True'
 
 
-class TestImageWidget(object):
+class _TestImageWidgetBase(object):
+    widget_cls = None
 
     def setup_method(self, method):
         self.session = simple_session()
@@ -26,14 +31,14 @@ class TestImageWidget(object):
         self.cube = core.Data(label='cube',
                               x=[[[1, 2], [3, 4]], [[1, 2], [3, 4]]],
                               y=[[[1, 2], [3, 4]], [[1, 2], [3, 4]]])
-        self.widget = ImageWidget(self.session)
+        self.widget = self.widget_cls(self.session)
         self.connect_to_hub()
         self.collect.append(self.im)
         self.collect.append(self.cube)
 
     def assert_title_correct(self):
-        expected = "%s - %s" % (self.widget.client.display_data.label,
-                                self.widget.client.display_attribute.label)
+        expected = "%s - %s" % (self.widget.data.label,
+                                self.widget.attribute.label)
         assert self.widget.windowTitle() == expected
 
     def connect_to_hub(self):
@@ -85,16 +90,12 @@ class TestImageWidget(object):
         data_labels = self._data_combo_labels()
         assert self.collect[0].label in data_labels
 
-    def _data_combo_labels(self):
-        combo = self.widget.ui.displayDataCombo
-        return [combo.itemText(i) for i in range(combo.count())]
-
     def test_data_not_added_on_init(self):
         w = ImageWidget(self.session)
         assert self.im not in w.client.artists
 
     def test_selection_switched_on_add(self):
-        w = ImageWidget(self.session)
+        w = self.widget_cls(self.session)
         assert self.im not in w.client.artists
         w.add_data(self.im)
         assert self.im in w.client.artists
@@ -117,18 +118,47 @@ class TestImageWidget(object):
         index = combo.currentIndex()
         assert self.widget.client.display_attribute is combo.itemData(index)
 
+    def _data_combo_labels(self):
+        combo = self.widget.ui.displayDataCombo
+        return [combo.itemText(i) for i in range(combo.count())]
+
+    def test_plugins_closed_when_viewer_closed(self):
+        # Regression test for #518
+        self.widget.add_data(self.im)
+
+        tool = self.widget._tools[0]
+        tool.close = MagicMock()
+
+        self.widget.close()
+
+        assert tool.close.call_count == 1
+
+
+class TestImageWidget(_TestImageWidgetBase):
+    widget_cls = ImageWidget
+
+    def test_intensity_label(self):
+        self.widget.add_data(self.im)
+        att = self.widget.attribute
+        intensity = self.im[att][1, 0]
+        x, y = self.widget.client.axes.transData.transform([(0.5, 1.5)])[0]
+        assert self.widget._intensity_label(x, y) == 'data: %s' % intensity
+
     def test_paint(self):
         # make sure paint Events don't trigger any errors
         self.widget.add_data(self.im)
         self.widget.show()
         self.widget.close()
 
-    def test_intensity_label(self):
+    def test_enable_rgb_doesnt_close_viewer(self):
+        # regression test for #446
+        def fail():
+            assert False
+
         self.widget.add_data(self.im)
-        att = self.widget.attribute
-        intensity = self.im[att][1, 0]
-        x, y = self.widget.client.axes.transData.transform([0.5, 1.5])
-        assert self.widget._intensity_label(x, y) == 'data: %s' % intensity
+        self.widget._container.on_empty(fail)
+        self.widget.rgb_mode = True
+        self.widget.rgb_mode = False
 
 
 class TestStateSave(TestApplication):
@@ -177,9 +207,11 @@ class TestStateSave(TestApplication):
         app = GlueApplication(dc)
         w = app.new_data_viewer(ImageWidget, d)
         w.slice = ('x', 'y', 1)
+        assert w.slice == ('x', 'y', 1)
+
         c = self.check_clone(app)
         w2 = c.viewers[0][0]
-        assert w2.ui.slice.slice == ('x', 'y', 1)
+        assert w2.ui.slice.slice == w.slice
 
     def test_rgb_layer(self):
         d, w, app = self.d, self.w, self.app

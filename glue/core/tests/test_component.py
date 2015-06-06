@@ -1,4 +1,7 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+
+from __future__ import absolute_import, division, print_function
+
 import operator
 
 from mock import MagicMock
@@ -90,9 +93,6 @@ class TestCategoricalComponent(object):
         d = Data(x=['a', 'b', 'c'])
         assert isinstance(d.get_component('x'), CategoricalComponent)
 
-        d = Data(x=np.array(['a', 'b', 'c'], dtype=object))
-        assert isinstance(d.get_component('x'), CategoricalComponent)
-
     def test_accepts_numpy(self):
         cat_comp = CategoricalComponent(self.array_data)
         assert cat_comp._categorical_data.shape == (4,)
@@ -103,12 +103,11 @@ class TestCategoricalComponent(object):
         np.testing.assert_equal(cat_comp._categorical_data, self.array_data)
 
     def test_multi_nans(self):
-        cat_comp = CategoricalComponent([np.nan, np.nan, 'a', 'b', 'c', 'zanthia'])
+        cat_comp = CategoricalComponent(['', '', 'a', 'b', 'c', 'zanthia'])
         np.testing.assert_equal(cat_comp._data,
                                 np.array([0, 0, 1, 2, 3, 4]))
         np.testing.assert_equal(cat_comp._categories,
-                                np.asarray([np.nan, 'a', 'b', 'c', 'zanthia'],
-                                           dtype=np.object))
+                                np.asarray(['', 'a', 'b', 'c', 'zanthia']))
 
     def test_calculate_grouping(self):
         cat_comp = CategoricalComponent(self.array_data)
@@ -169,6 +168,14 @@ class TestCategoricalComponent(object):
         second_comp.jitter(method='uniform')
         delta = np.abs(cat_comp._data - second_comp._data).sum()
         assert delta == 0
+
+    def test_object_dtype(self):
+        d = np.array([1, 3, 3, 1, 'a', 'b', 'a'], dtype=object)
+        c = CategoricalComponent(d)
+
+        np.testing.assert_array_equal(c._categories,
+                                      np.array([1, 3, 'a', 'b'], dtype=object))
+        np.testing.assert_array_equal(c._data, [0, 1, 1, 0, 2, 3, 2])
 
     def test_valueerror_on_bad_jitter(self):
 
@@ -233,7 +240,7 @@ def check_link(result, left, right):
 
 # componentID overload
 COMPARE_OPS = (operator.gt, operator.ge, operator.lt, operator.le)
-NUMBER_OPS = (operator.add, operator.mul, operator.div, operator.sub)
+NUMBER_OPS = (operator.add, operator.mul, operator.truediv, operator.sub)
 
 
 @pytest.mark.parametrize(('op'), COMPARE_OPS)

@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from . import DataCollection, CommandStack
 
 
@@ -13,3 +15,7 @@ class Session(object):
         self.hub = self.data_collection.hub
         self.command_stack = command_stack or CommandStack()
         self.command_stack.session = self
+
+        # set the global data_collection for subset updates
+        from .edit_subset_mode import EditSubsetMode
+        EditSubsetMode().data_collection = self.data_collection

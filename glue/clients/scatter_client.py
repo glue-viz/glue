@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from functools import partial
 
 import numpy as np
@@ -6,11 +8,13 @@ from ..core.client import Client
 from ..core.data import Data, IncompatibleAttribute, ComponentID, CategoricalComponent
 from ..core.subset import RoiSubsetState, RangeSubsetState
 from ..core.roi import PolygonalROI, RangeROI
-from ..core.util import relim, lookup_class
+from ..core.util import relim
 from ..core.edit_subset_mode import EditSubsetMode
+from ..core.message import ComponentReplacedMessage
+from ..utils import lookup_class
 from .viz_client import init_mpl
 from .layer_artist import ScatterLayerArtist, LayerArtistContainer
-from .util import visible_limits, update_ticks
+from .util import update_ticks, visible_limits
 from ..core.callback_property import (CallbackProperty, add_callback,
                                       delay_callback)
 
@@ -37,7 +41,7 @@ class ScatterClient(Client):
         """
         Create a new ScatterClient object
 
-        :param data: :class:`~glue.core.DataCollection` to use
+        :param data: :class:`~glue.core.data.DataCollection` to use
 
         :param figure:
            Which matplotlib figure instance to draw to. One will be created if
@@ -123,7 +127,7 @@ class ScatterClient(Client):
         Returns the created layer artist
 
         :param layer: the layer to add
-        :type layer: :class:`~glue.core.Data` or :class:`~glue.core.Subset`
+        :type layer: :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
         """
         if layer.data not in self.data:
             raise TypeError("Layer not in data collection")
@@ -187,7 +191,7 @@ class ScatterClient(Client):
         """ Toggle a layer's visibility
 
         :param layer: which layer to modify
-        :type layer: class:`~glue.core.Data` or :class:`~glue.coret.Subset`
+        :type layer: class:`~glue.core.data.Data` or :class:`~glue.coret.Subset`
 
         :param state: True to show. false to hide
         :type state: boolean
@@ -232,7 +236,7 @@ class ScatterClient(Client):
             self._yset = self.yatt is not None
 
         # update plots
-        map(self._update_layer, self.artists.layers)
+        list(map(self._update_layer, self.artists.layers))
 
         if coord == 'x' and snap:
             self._snap_xlim()
@@ -452,3 +456,16 @@ class ScatterClient(Client):
             self.ymax = max(ylim)
             self.yflip = yflip
             self.ylog = (ysc == 'log')
+
+    def _on_component_replace(self, msg):
+        old = msg.old
+        new = msg.new
+
+        if self.xatt is old:
+            self.xatt = new
+        if self.yatt is old:
+            self.yatt = new
+
+    def register_to_hub(self, hub):
+        super(ScatterClient, self).register_to_hub(hub)
+        hub.subscribe(self, ComponentReplacedMessage, self._on_component_replace)

@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from ...external.qt import QtGui
 from ...external.qt.QtCore import Qt
 from ... import core
@@ -65,6 +67,10 @@ class ScatterWidget(DataViewer):
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
 
+    @staticmethod
+    def _get_default_tools():
+        return []
+
     def _tweak_geometry(self):
         self.central_widget.resize(600, 400)
         self.resize(self.central_widget.size())
@@ -113,10 +119,18 @@ class ScatterWidget(DataViewer):
     @defer_draw
     def _update_combos(self):
         """ Update contents of combo boxes """
+
+        # have to be careful here, since client and/or widget
+        # are potentially out of sync
+
         layer_ids = []
 
-        # look at all plottable components of datasets we are plotting,
-        # + hidden values if requested
+        # show hidden attributes if needed
+        if ((self.client.xatt and self.client.xatt.hidden) or
+                (self.client.yatt and self.client.yatt.hidden)):
+            self.hidden = True
+
+        # determine which components to put in combos
         for l in self.client.data:
             if not self.client.is_layer_present(l):
                 continue
@@ -125,18 +139,31 @@ class ScatterWidget(DataViewer):
                 if lid not in layer_ids:
                     layer_ids.append(lid)
 
-        for combo, att in zip([self.ui.xAxisComboBox, self.ui.yAxisComboBox],
-                              [self.xatt, self.yatt]):
+        oldx = self.xatt
+        oldy = self.yatt
+        newx = self.client.xatt or oldx
+        newy = self.client.yatt or oldy
+
+        for combo, target in zip([self.ui.xAxisComboBox, self.ui.yAxisComboBox],
+                                 [newx, newy]):
             combo.blockSignals(True)
             combo.clear()
 
+            if not layer_ids:  # empty component list
+                continue
+
+            # populate
             for lid in layer_ids:
                 combo.addItem(lid.label, userData=lid)
-            try:
-                combo.setCurrentIndex(layer_ids.index(att))
-            except ValueError:
-                combo.setCurrentIndex(0)
+
+            idx = layer_ids.index(target) if target in layer_ids else 0
+            combo.setCurrentIndex(idx)
+
             combo.blockSignals(False)
+
+        # ensure client and widget synced
+        self.client.xatt = self.xatt
+        self.client.lyatt = self.yatt
 
     @defer_draw
     def add_data(self, data):
@@ -165,7 +192,7 @@ class ScatterWidget(DataViewer):
             else:
                 self.ui.yAxisComboBox.setCurrentIndex(0)
 
-        self._update_window_title()
+        self.update_window_title()
         return True
 
     @defer_draw
@@ -196,18 +223,26 @@ class ScatterWidget(DataViewer):
             else:
                 self.ui.yAxisComboBox.setCurrentIndex(0)
 
-        self._update_window_title()
+        self.update_window_title()
         return True
 
     def register_to_hub(self, hub):
         super(ScatterWidget, self).register_to_hub(hub)
         self.client.register_to_hub(hub)
         hub.subscribe(self, core.message.DataUpdateMessage,
-                      lambda x: self._sync_labels())
+                      nonpartial(self._sync_labels))
         hub.subscribe(self, core.message.ComponentsChangedMessage,
-                      lambda x: self._update_combos())
+                      nonpartial(self._update_combos))
+        hub.subscribe(self, core.message.ComponentReplacedMessage,
+                      self._on_component_replace)
+
+    def _on_component_replace(self, msg):
+        # let client update its state first
+        self.client._on_component_replace(msg)
+        self._update_combos()
 
     def unregister(self, hub):
+        super(ScatterWidget, self).unregister(hub)
         hub.unsubscribe_all(self.client)
         hub.unsubscribe_all(self)
 
@@ -237,17 +272,15 @@ class ScatterWidget(DataViewer):
         component_id = self.yatt
         self.client.yatt = component_id
 
-    def _update_window_title(self):
+    @property
+    def window_title(self):
         data = self.client.data
         label = ', '.join([d.label for d in data if
                            self.client.is_visible(d)])
-        self.setWindowTitle(label)
+        return label
 
     def _sync_labels(self):
-        self._update_window_title()
-
-    def __str__(self):
-        return "Scatter Widget"
+        self.update_window_title()
 
     def options_widget(self):
         return self.option_widget

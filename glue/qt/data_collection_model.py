@@ -1,6 +1,6 @@
 # pylint: disable=E1101,F0401
 from ..external.qt.QtCore import (QAbstractItemModel, QModelIndex,
-                                  QObject, Qt, QTimer, Signal)
+                                  QObject, Qt, QTimer, Signal, QSize)
 from ..external.qt.QtGui import (QFont, QTreeView, QItemSelectionModel,
                                  QAbstractItemView, QStyledItemDelegate)
 
@@ -131,7 +131,7 @@ class SubsetListItem(Item):
 
     @memoize
     def child(self, row):
-        if row < self.dc.subset_groups:
+        if row < len(self.dc.subset_groups):
             return SubsetGroupItem(self.dc, row, self)
 
     @property
@@ -439,7 +439,6 @@ class DataCollectionView(QTreeView):
 
     def __init__(self, parent=None):
         super(DataCollectionView, self).__init__(parent)
-
         self.doubleClicked.connect(self._edit)
 
         # this keeps the full-row of the selection bar in-sync

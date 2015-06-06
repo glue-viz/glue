@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import logging
 from inspect import getmro
 from collections import defaultdict
@@ -152,7 +154,7 @@ class Hub(object):
         # subscriber => { message type => (filter, handler)}
 
         # loop over subscribed objects
-        for subscriber, subscriptions in self._subscriptions.items():
+        for subscriber, subscriptions in list(self._subscriptions.items()):
 
             # subscriptions to message or its superclasses
             messages = [msg for msg in subscriptions.keys() if
@@ -192,7 +194,7 @@ class Hub(object):
             except AttributeError:
                 module = ''
             if not module.startswith('glue.core'):
-                print 'Pickle warning: Hub removing subscription to %s' % s
+                print('Pickle warning: Hub removing subscription to %s' % s)
                 result['_subscriptions'].pop(s)
         return result
 

@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from functools import wraps, partial
 import traceback
 
@@ -6,7 +8,8 @@ from .data_factories import load_data
 from . import command
 from . import Data, Subset
 from .hub import HubListener
-from .util import PropertySetMixin, as_list
+from .util import PropertySetMixin
+from ..utils import as_list
 from .edit_subset_mode import EditSubsetMode
 from .session import Session
 from ..config import settings
@@ -21,7 +24,7 @@ def catch_error(msg):
             try:
                 return func(*args, **kwargs)
             except Exception as e:
-                m = "%s\n%s" % (msg, e.message)
+                m = "%s\n%s" % (msg, str(e))
                 detail = str(traceback.format_exc())
                 self = args[0]
                 self.report_error(m, detail)
@@ -49,7 +52,6 @@ class Application(HubListener):
         self._settings = {}
         for key, value, validator in settings:
             self._settings[key] = [value, validator]
-        self._load_settings()
 
     @property
     def session(self):
@@ -89,8 +91,9 @@ class Application(HubListener):
         """
         from .state import GlueSerializer
         gs = GlueSerializer(self)
+        state = gs.dumps(indent=2)
         with open(path, 'w') as out:
-            gs.dump(out, indent=2)
+            out.write(state)
 
     def new_tab(self):
         raise NotImplementedError()
@@ -122,9 +125,6 @@ class Application(HubListener):
         """Iterate over settings"""
         for key, (value, _) in self._settings.items():
             yield key, value
-
-    def _load_settings(self, path=None):
-        raise NotImplementedError()
 
     @catch_error("Could not load data")
     def load_data(self, path):
@@ -175,7 +175,7 @@ class Application(HubListener):
 
         datasets = as_list(datasets)
         data_collection.extend(datasets)
-        map(partial(cls._suggest_mergers, data_collection), datasets)
+        list(map(partial(cls._suggest_mergers, data_collection), datasets))
 
     @classmethod
     def _suggest_mergers(cls, data_collection, data):
@@ -212,7 +212,7 @@ class Application(HubListener):
         raise NotImplementedError()
 
     def __gluestate__(self, context):
-        viewers = [map(context.id, tab) for tab in self.viewers]
+        viewers = [list(map(context.id, tab)) for tab in self.viewers]
         data = self.session.data_collection
 
         return dict(session=context.id(self.session), viewers=viewers,
@@ -379,7 +379,7 @@ class ViewerBase(HubListener, PropertySetMixin):
                     pos=self.position,
                     properties=dict((k, context.id(v))
                                     for k, v in self.properties.items()),
-                    layers=map(context.do, self.layers)
+                    layers=list(map(context.do, self.layers))
                     )
 
     @classmethod
@@ -394,6 +394,5 @@ class ViewerBase(HubListener, PropertySetMixin):
         prop = dict((k, context.object(v)) for
                     k, v in rec['properties'].items())
         result.restore_layers(rec['layers'], context)
-
         result.properties = prop
         return result

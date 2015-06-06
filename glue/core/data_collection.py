@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from .hub import Hub, HubListener
 from .data import Data
 from .link_manager import LinkManager
@@ -6,7 +8,8 @@ from .visual import COLORS
 from .message import (DataCollectionAddMessage,
                       DataCollectionDeleteMessage,
                       DataAddComponentMessage)
-from .util import as_list, disambiguate
+from .util import disambiguate
+from ..utils import as_list
 
 __all__ = ['DataCollection']
 
@@ -174,7 +177,14 @@ class DataCollection(HubListener):
 
     def new_subset_group(self, label=None, subset_state=None):
         """
-        Create and return a new :class:`~glue.core.subset_group.SubsetGroup`
+        Create and return a new Subset Group.
+
+        :param label: The label to assign to the group
+        :type label: str
+        :param subset_state: The state to initialize the group with
+        :type subset_state: :class:`~glue.core.subset.SubsetState`
+
+        :returns: A new :class:`~glue.core.subset_group.SubsetGroup`
         """
         from .subset_group import SubsetGroup
         color = COLORS[self._sg_count % len(COLORS)]

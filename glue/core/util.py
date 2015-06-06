@@ -1,10 +1,20 @@
+from __future__ import absolute_import, division, print_function
+
 import logging
 from contextlib import contextmanager
 import string
 from itertools import count
 
 import numpy as np
+import pandas as pd
 
+from ..external.six.moves import reduce
+from ..external.six import string_types
+
+
+__all__ = ["identity", "relim", "split_component_view", "join_component_view",
+           "facet_subsets", "colorize_subsets", "defer", "disambiguate",
+           "row_lookup", "PropertySetMixin", "CallbackMixin", "Pointer"]
 
 def identity(x):
     return x
@@ -21,47 +31,6 @@ def relim(lo, hi, log=False):
         return x * .95, y * 1.05
     delta = y - x
     return (x - .02 * delta, y + .02 * delta)
-
-
-def file_format(filename):
-    if filename.find('.') == -1:
-        return ''
-    if filename.lower().endswith('.gz'):
-        result = filename.lower().rsplit('.', 2)[1]
-    else:
-        result = filename.lower().rsplit('.', 1)[1]
-    return result
-
-
-def point_contour(x, y, data):
-    """Calculate the contour that passes through (x,y) in data
-
-    :param x: x location
-    :param y: y location
-    :param data: 2D image
-    :type data: :class:`numpy.ndarray`
-
-    Returns:
-
-       * A (nrow, 2column) numpy array. The two columns give the x and
-         y locations of the contour vertices
-    """
-    try:
-        from scipy import ndimage
-    except ImportError:
-        raise ImportError("Image processing in Glue requires SciPy")
-
-    inten = data[y, x]
-    labeled, nr_objects = ndimage.label(data >= inten)
-    z = data * (labeled == labeled[y, x])
-    y, x = np.mgrid[0:data.shape[0], 0:data.shape[1]]
-    from matplotlib import _cntr
-    cnt = _cntr.Cntr(x, y, z)
-    xy = cnt.trace(inten)
-    if not xy:
-        return None
-    xy = xy[0]
-    return xy
 
 
 def split_component_view(arg):
@@ -111,30 +80,8 @@ def join_component_view(component, view):
     return tuple(result)
 
 
-def view_shape(shape, view):
-    """Return the shape of a view of an array
-
-    :param shape: Tuple describing shape of the array
-    :param view: View object -- a valid index into a numpy array, or None
-
-    Returns equivalent of np.zeros(shape)[view].shape
-    """
-    if view is None:
-        return shape
-    shp = tuple(slice(0, s, 1) for s in shape)
-    xy = np.broadcast_arrays(*np.ogrid[shp])
-    assert xy[0].shape == shape
-    return xy[0][view].shape
-
-
-def color2rgb(color):
-    from matplotlib.colors import ColorConverter
-    result = ColorConverter().to_rgb(color)
-    return result
-
-
 def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
-                  prefix=None, log=False):
+                  prefix='', log=False):
     """Create a series of subsets that partition the values of
     a particular attribute into several bins
 
@@ -158,7 +105,7 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
     :param steps: The number of subsets to create. Defaults to 5
     :type steps: int
 
-    :param prefix: If present, the new subsets will be labeled `prefix_1`, etc.
+    :param prefix: If present, the new subset labels will begin with `prefix`
     :type prefix: str
 
     :param log: If True, space divisions logarithmically. Default=False
@@ -200,7 +147,6 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
         if hi is None:
             hi = np.nanmax(vals)
 
-    prefix = prefix or cid.label
     reverse = lo > hi
     if log:
         rng = np.logspace(np.log10(lo), np.log10(hi), steps + 1)
@@ -208,18 +154,19 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
         rng = np.linspace(lo, hi, steps + 1)
 
     states = []
+    labels = []
     for i in range(steps):
         if reverse:
             states.append((cid <= rng[i]) & (cid > rng[i + 1]))
-
+            labels.append(prefix + '{0}<{1}<={2}'.format(rng[i + 1], cid, rng[i]))
         else:
             states.append((cid >= rng[i]) & (cid < rng[i + 1]))
+            labels.append(prefix + '{0}<={1}<{2}'.format(rng[i], cid, rng[i + 1]))
 
     result = []
-    for i, s in enumerate(states, start=1):
-        result.append(data_collection.new_subset_group())
-        result[-1].subset_state = s
-        result[-1].label = "%s_%i" % (prefix, i)
+    for lbl, s in zip(labels, states):
+        sg = data_collection.new_subset_group(label=lbl, subset_state=s)
+        result.append(sg)
 
     return result
 
@@ -253,71 +200,6 @@ def colorize_subsets(subsets, cmap, lo=0, hi=1):
         subset.style.color = '#%2.2x%2.2x%2.2x' % (r, g, b)
 
 
-def coerce_numeric(arr):
-    """Coerce an array into a numeric array, replacing
-       non-numeric elements with nans.
-
-       If the array is already a numeric type, it is returned
-       unchanged
-
-       :param arr: array to coerce
-       :type arr: :class:`numpy.ndarray`
-
-       :returns: array.
-    """
-    # already numeric type
-    if np.issubdtype(arr.dtype, np.number):
-        return arr
-
-    if np.issubdtype(arr.dtype, np.bool_):
-        return arr.astype(np.int)
-
-    # a string dtype
-    if np.issubdtype(arr.dtype, np.character):
-        lens = np.char.str_len(arr)
-        lmax = lens.max()
-        nonnull = lens > 0
-        coerced = np.genfromtxt(arr, delimiter=lmax + 1)
-        has_missing = not nonnull.all()
-        dtype = np.float if has_missing else coerced.dtype
-        result = np.empty(arr.shape, dtype=dtype)
-        result[nonnull] = coerced
-        if has_missing:
-            result[~nonnull] = np.nan
-        return result
-
-    return np.genfromtxt(arr)
-
-
-def check_sorted(array):
-    """ Return True if the array is sorted, False otherwise.
-    """
-    # this ignores NANs, and does the right thing if nans
-    # are concentrated at beginning or end of array
-    # otherwise, it will miss things at nan/finite boundaries
-    return not (array[:-1] > array[1:]).any()
-
-
-def lookup_class(ref):
-    """ Look up an object via it's module string (e.g., 'glue.core.Data')
-
-    :param ref: reference
-    :type ref: str
-    :rtype: object, or None if not found
-    """
-    mod = ref.split('.')[0]
-    try:
-        result = __import__(mod)
-    except ImportError:
-        return None
-    try:
-        for attr in ref.split('.')[1:]:
-            result = getattr(result, attr)
-        return result
-    except AttributeError:
-        return None
-
-
 class PropertySetMixin(object):
 
     """An object that provides a set of properties that
@@ -332,7 +214,7 @@ class PropertySetMixin(object):
     @property
     def properties(self):
         """ A dict mapping property names to values """
-        return {p: getattr(self, p) for p in self._property_set}
+        return dict((p, getattr(self, p)) for p in self._property_set)
 
     @properties.setter
     def properties(self, value):
@@ -369,12 +251,6 @@ class CallbackMixin(object):
     def notify(self, *args, **kwargs):
         for func in self._callbacks:
             func(*args, **kwargs)
-
-
-def as_list(x):
-    if isinstance(x, list):
-        return x
-    return [x]
 
 
 class Pointer(object):
@@ -429,20 +305,6 @@ def defer(instance, method):
             orig(*a, **k)
 
 
-def as_variable_name(x):
-    """
-    Convert a string to a legal python variable name
-
-    :param x: A string to (possibly) rename
-    :returns: A legal python variable name
-    """
-    allowed = string.letters + string.digits + '_'
-    result = [letter if letter in allowed else '_' for letter in x or 'x']
-    if result[0] in string.digits:
-        result.insert(0, '_')
-    return ''.join(result)
-
-
 def disambiguate(label, taken):
     """If necessary, add a suffix to label to avoid name conflicts
 
@@ -460,3 +322,28 @@ def disambiguate(label, taken):
         candidate = label + (suffix % i)
         if candidate not in taken:
             return candidate
+
+
+def row_lookup(data, categories):
+    """
+    Lookup which row in categories each data item is equal to
+
+    :param data: array-like
+    :param categories: array-like of unique values
+
+    :returns: Float array.
+              If result[i] is finite, then data[i] = categoreis[result[i]]
+              Otherwise, data[i] is not in the categories list
+    """
+
+    # np.searchsorted doesn't work on mixed types in Python3
+
+    ndata, ncat = len(data), len(categories)
+    data = pd.DataFrame({'data': data, 'row': np.arange(ndata)})
+    cats = pd.DataFrame({'categories': categories,
+                         'cat_row': np.arange(ncat)})
+
+    m = pd.merge(data, cats, left_on='data', right_on='categories')
+    result = np.zeros(ndata, dtype=float) * np.nan
+    result[np.array(m.row)] = m.cat_row
+    return result

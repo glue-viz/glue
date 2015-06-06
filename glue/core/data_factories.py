@@ -1,6 +1,5 @@
-""" Factory methods to build Data objects from files"""
+""" Factory methods to build Data objects from files
 
-"""
 Implementation notes:
 
 Each factory method conforms to the folowing structure, which
@@ -30,6 +29,9 @@ Putting this together, the simplest data factory code looks like this::
     __factories__.append(dummy_factory)
     set_default_factory("foo", dummy_factory)
 """
+
+from __future__ import absolute_import, division, print_function
+
 import os
 import warnings
 
@@ -37,11 +39,12 @@ import numpy as np
 
 from .data import Component, Data, CategoricalComponent
 from .io import extract_data_fits, extract_data_hdf5
-from .util import file_format, as_list
+from ..utils import as_list, file_format
 from .coordinates import coordinates_from_header, coordinates_from_wcs
-from ..external.astro import fits
 from ..backends import get_backend
 from ..config import auto_refresh
+from ..external import six
+from .contracts import contract
 
 __all__ = ['load_data', 'gridded_data', 'casalike_cube',
            'tabular_data', 'img_data', 'auto_data']
@@ -52,7 +55,7 @@ _default_factory = {}
 def _extension(path):
     # extract the extension type from a path
     #  test.fits -> fits
-    #  test.fits.gz -> fits.gz (special case)
+    #  test.gz -> fits.gz (special case)
     #  a.b.c.fits -> fits
     _, path = os.path.split(path)
     if '.' not in path:
@@ -91,11 +94,12 @@ def has_extension(exts):
 
 def is_hdf5(filename):
     # All hdf5 files begin with the same sequence
-    with open(filename) as infile:
-        return infile.read(8) == '\x89HDF\r\n\x1a\n'
+    with open(filename, 'rb') as infile:
+        return infile.read(8) == b'\x89HDF\r\n\x1a\n'
 
 
 def is_fits(filename):
+    from ..external.astro import fits
     try:
         with fits.open(filename):
             return True
@@ -228,6 +232,8 @@ class FileWatcher(object):
             self.callback()
 
 
+@contract(path='string', factory='callable|None',
+          returns='inst($Data)|list(inst($Data))')
 def load_data(path, factory=None, **kwargs):
     """Use a factory to load a file and assign a label.
 
@@ -240,16 +246,35 @@ def load_data(path, factory=None, **kwargs):
 
     Extra keywords are passed through to factory functions
     """
+    from ..qglue import parse_data
+
+    def as_data_objects(ds, lbl):
+        # pack other container types like astropy tables
+        # into glue data objects
+        for d in ds:
+            if isinstance(d, Data):
+                yield d
+                continue
+            for item in parse_data(d, lbl):
+                yield item
+
     factory = factory or auto_data
-    d = factory(path, **kwargs)
     lbl = data_label(path)
 
+    d = as_list(factory(path, **kwargs))
+    d = list(as_data_objects(d, lbl))
     log = LoadLog(path, factory, kwargs)
-    for item in as_list(d):
-        item.label = lbl
+    for item in d:
+        if item.label is '':
+            item.label = lbl
         log.log(item)  # attaches log metadata to item
         for cid in item.primary_components:
             log.log(item.get_component(cid))
+
+    if len(d) == 1:
+        # unpack single-length lists for user convenience
+        return d[0]
+
     return d
 
 
@@ -261,6 +286,7 @@ def data_label(path):
     return name
 
 
+@contract(extension='string', factory='callable')
 def set_default_factory(extension, factory):
     """Register an extension that should be handled by a factory by default
 
@@ -271,6 +297,7 @@ def set_default_factory(extension, factory):
         _default_factory[ex] = factory
 
 
+@contract(extension='string', returns='callable|None')
 def get_default_factory(extension):
     """Return the default factory function to read a given file extension.
 
@@ -284,6 +311,7 @@ def get_default_factory(extension):
         return None
 
 
+@contract(filename='string')
 def find_factory(filename, **kwargs):
     from ..config import data_factory
 
@@ -303,6 +331,7 @@ def find_factory(filename, **kwargs):
             return func
 
 
+@contract(filename='string')
 def auto_data(filename, *args, **kwargs):
     """Attempt to automatically construct a data object"""
     fac = find_factory(filename, **kwargs)
@@ -330,6 +359,7 @@ def gridded_data(filename, format='auto', **kwargs):
 
     # Read in the data
     if is_fits(filename):
+        from ..external.astro import fits
         arrays = extract_data_fits(filename, **kwargs)
         header = fits.getheader(filename)
         result.coords = coordinates_from_header(header)
@@ -348,6 +378,7 @@ def is_gridded_data(filename, **kwargs):
     if is_hdf5(filename):
         return True
 
+    from ..external.astro import fits
     if is_fits(filename):
         with fits.open(filename) as hdulist:
             for hdu in hdulist:
@@ -373,6 +404,8 @@ def casalike_cube(filename, **kwargs):
 
     Each stokes cube is split out as a separate component
     """
+    from ..external.astro import fits
+
     result = Data()
     with fits.open(filename, **kwargs) as hdulist:
         array = hdulist[0].data
@@ -388,6 +421,8 @@ def is_casalike(filename, **kwargs):
     Check if a file is a CASA like cube,
     with (P, P, V, Stokes) layout
     """
+    from ..external.astro import fits
+
     if not is_fits(filename):
         return False
     with fits.open(filename) as hdulist:
@@ -409,7 +444,7 @@ casalike_cube.identifier = is_casalike
 
 def _ascii_identifier_v02(origin, args, kwargs):
     # this works for astropy v0.2
-    if isinstance(args[0], basestring):
+    if isinstance(args[0], six.string_types):
         return args[0].endswith(('csv', 'tsv', 'txt', 'tbl', 'dat',
                                  'csv.gz', 'tsv.gz', 'txt.gz', 'tbl.gz',
                                  'dat.gz'))
@@ -422,7 +457,7 @@ def _ascii_identifier_v03(origin, *args, **kwargs):
     return _ascii_identifier_v02(origin, args, kwargs)
 
 
-def tabular_data(*args, **kwargs):
+def astropy_tabular_data(*args, **kwargs):
     """
     Build a data set from a table. We restrict ourselves to tables
     with 1D columns.
@@ -446,17 +481,33 @@ def tabular_data(*args, **kwargs):
         registry.register_identifier('ascii', Table, _ascii_identifier_v02,
                                      force=True)
     else:
-        registry.register_identifier('ascii', Table, _ascii_identifier_v03,
-                                     force=True)
-        # Clobber the identifier
-        # added in astropy/astropy/pull/1935
-        registry.register_identifier('ascii.csv', Table, lambda *a, **k: False,
-                                     force=True)
+        # Basically, we always want the plain ascii reader for now.
+        # But astropy will complain about ambiguous formats (or use another reader)
+        # unless we remove other registry identifiers and set up our own reader
 
-    # Import FITS compatibility (for Astropy 0.2.x)
-    from ..external import fits_io
+        nope = lambda *a, **k: False
+        registry.register_identifier('ascii.glue', Table, _ascii_identifier_v03,
+                                     force=True)
+        registry.register_identifier('ascii.csv', Table, nope, force=True)
+        registry.register_identifier('ascii.fast_csv', Table, nope, force=True)
+        registry.register_identifier('ascii', Table, nope, force=True)
+        registry.register_reader('ascii.glue', Table,
+                                 lambda path: Table.read(path, format='ascii'),
+                                 force=True)
 
-    table = Table.read(*args, **kwargs)
+    try:
+        table = Table.read(*args, **kwargs)
+    except:
+        # In Python 3, as of Astropy 0.4, if the format is not specified, the
+        # automatic format identification will fail (astropy/astropy#3013).
+        # This is only a problem for ASCII formats however, because it is due
+        # to the fact that the file object in io.ascii does not rewind to the
+        # start between guesses (due to a bug), so here we can explicitly try
+        # the ASCII format if the format keyword was not already present.
+        if 'format' not in kwargs:
+            table = Table.read(*args, format='ascii.glue', **kwargs)
+        else:
+            raise
 
     # Loop through columns and make component list
     for column_name in table.columns:
@@ -474,6 +525,20 @@ def tabular_data(*args, **kwargs):
         result.add_component(nc, column_name)
 
     return result
+astropy_tabular_data.label = "Catalog (Astropy Parser)"
+astropy_tabular_data.identifier = has_extension('xml vot csv txt tsv tbl dat fits '
+                                                'xml.gz vot.gz csv.gz txt.gz tbl.bz '
+                                                'dat.gz fits.gz')
+
+
+def tabular_data(path, **kwargs):
+    for fac in [astropy_tabular_data, pandas_read_table]:
+        try:
+            return fac(path, **kwargs)
+        except:
+            pass
+    else:
+        raise IOError("Could not parse file: %s" % path)
 
 tabular_data.label = "Catalog"
 tabular_data.identifier = has_extension('xml vot csv txt tsv tbl dat fits '
@@ -488,6 +553,7 @@ set_default_factory('txt', tabular_data)
 set_default_factory('tsv', tabular_data)
 set_default_factory('tbl', tabular_data)
 set_default_factory('dat', tabular_data)
+__factories__.append(astropy_tabular_data)
 
 # Add explicit factories for the formats which astropy.table
 # can parse, but does not auto-identify
@@ -523,15 +589,25 @@ def panda_process(indf):
     categorical data input by letting pandas.read_csv infer the type
 
     """
-
     result = Data()
     for name, column in indf.iteritems():
         if (column.dtype == np.object) | (column.dtype == np.bool):
-            # pandas has a 'special' nan implementation and this doesn't
-            # play well with np.unique
-            c = CategoricalComponent(column.fillna(np.nan))
+            # try to salvage numerical data
+            coerced = column.convert_objects(convert_numeric=True)
+            if (coerced.dtype != column.dtype) and coerced.isnull().mean() < 0.4:
+                c = Component(coerced.values)
+            else:
+                # pandas has a 'special' nan implementation and this doesn't
+                # play well with np.unique
+                c = CategoricalComponent(column.fillna(''))
         else:
             c = Component(column.values)
+
+        # strip off leading #
+        name = name.strip()
+        if name.startswith('#'):
+            name = name[1:].strip()
+
         result.add_component(c, name)
 
     return result
@@ -614,8 +690,9 @@ def img_loader(file_name):
     :rtype: Numpy array
     """
     try:
+        from skimage import img_as_ubyte
         from skimage.io import imread
-        return np.asarray(imread(file_name))
+        return np.asarray(img_as_ubyte(imread(file_name)))
     except ImportError:
         pass
 
@@ -671,3 +748,11 @@ for i in img_fmt:
 
 __factories__.append(img_data)
 __factories__.append(casalike_cube)
+
+try:
+    from .dendro_loader import load_dendro
+    __factories__.append(load_dendro)
+    load_dendro.label = 'Dendrogram'
+    load_dendro.identifier = has_extension('fits hdf5 h5')
+except ImportError:
+    pass

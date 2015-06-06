@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from inspect import getargspec
 
 from ..external.qt.QtGui import (QWidget, QHBoxLayout, QVBoxLayout,
@@ -6,7 +8,7 @@ from ..external.qt.QtGui import (QWidget, QHBoxLayout, QVBoxLayout,
 from ..external.qt.QtGui import QSpacerItem, QSizePolicy
 
 from .. import core
-from ..core.odict import OrderedDict
+from ..compat.collections import OrderedDict
 from .qtutil import load_ui, is_pyside
 
 
@@ -114,9 +116,15 @@ class LinkEquation(QWidget):
     def __init__(self, parent=None):
         super(LinkEquation, self).__init__(parent)
         from ..config import link_function, link_helper
-        # map of function/helper name -> function/helper tuple
+
+        # Set up mapping of function/helper name -> function/helper tuple. For the helpers, we use the 'display' name if available.
+        def get_name(item):
+            if hasattr(item, 'display') and item.display is not None:
+                return item.display
+            else:
+                return item.__name__
         f = [f for f in link_function.members if len(f.output_labels) == 1]
-        self._functions = OrderedDict((l[0].__name__, l) for l in
+        self._functions = OrderedDict((get_name(l[0]), l) for l in
                                       f + link_helper.members)
         self._argument_widgets = []
         self.spacer = None
@@ -191,7 +199,10 @@ class LinkEquation(QWidget):
 
     @function.setter
     def function(self, val):
-        name = val[0].__name__
+        if hasattr(val[0], 'display') and val[0].display is not None:
+            name = val[0].display
+        else:
+            name = val[0].__name__
         pos = self._ui.function.findText(name)
         if pos < 0:
             raise KeyError("No function or helper found %s" % [val])

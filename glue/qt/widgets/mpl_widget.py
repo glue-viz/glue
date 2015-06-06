@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+
+from __future__ import absolute_import, division, print_function
+
 from functools import partial, wraps
 
 from ...external.qt import QtGui
@@ -17,36 +20,7 @@ except ImportError:  # mpl >= 1.4
 import matplotlib
 from matplotlib.figure import Figure
 
-
-class DeferredMethod(object):
-
-    """
-    This class stubs out a method, and provides a
-    callable interface that logs its calls. These
-    can later be actually executed on the original (non-stubbed)
-    method by calling executed_deferred_calls
-    """
-
-    def __init__(self, method):
-        self.method = method
-        self.calls = []  # avoid hashability issues with dict/set
-
-    @property
-    def original_method(self):
-        return self.method
-
-    def __call__(self, instance, *a, **k):
-        if instance not in (c[0] for c in self.calls):
-            self.calls.append((instance, a, k))
-
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-        return partial(self.__call__, instance)
-
-    def execute_deferred_calls(self):
-        for instance, args, kwargs in self.calls:
-            self.method(instance, *args, **kwargs)
+from ...utils import DeferredMethod
 
 
 def defer_draw(func):
@@ -81,6 +55,7 @@ class MplCanvas(FigureCanvas):
     resize_end = Signal()
 
     def __init__(self):
+        self._draw_count = 0
         interactive = matplotlib.is_interactive()
         matplotlib.interactive(False)
         self.roi_callback = None
@@ -116,8 +91,13 @@ class MplCanvas(FigureCanvas):
 
     def paintEvent(self, event):
         # draw the zoom rectangle more prominently
-        drawRect = self.drawRect
-        self.drawRect = False
+        try:
+            drawRect = self.drawRect
+            self.drawRect = False
+
+        except AttributeError:  # mpl  1.4
+            drawRect = self._drawRect
+            self._drawRect = None
 
         # super needs this
         if self.renderer is None:
@@ -125,9 +105,13 @@ class MplCanvas(FigureCanvas):
 
         super(MplCanvas, self).paintEvent(event)
         if drawRect:
+            try:
+                x, y, w, h = self.rect[0], self.rect[1], self.rect[2], self.rect[3]
+            except TypeError:  # mpl 1.4
+                x, y, w, h = drawRect
             p = QtGui.QPainter(self)
             p.setPen(QtGui.QPen(Qt.red, 2, Qt.DotLine))
-            p.drawRect(self.rect[0], self.rect[1], self.rect[2], self.rect[3])
+            p.drawRect(x, y, w, h)
             p.end()
 
         if self.roi_callback is not None:
@@ -138,6 +122,10 @@ class MplCanvas(FigureCanvas):
             self.resize_begin.emit()
         self._resize_timer.start()
         super(MplCanvas, self).resizeEvent(event)
+
+    def draw(self, *args, **kwargs):
+        self._draw_count += 1
+        return super(MplCanvas, self).draw(*args, **kwargs)
 
 
 class MplWidget(QtGui.QWidget):

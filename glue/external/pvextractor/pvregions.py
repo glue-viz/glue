@@ -4,25 +4,16 @@ from astropy import coordinates
 from astropy import units as u
 import re
 
-try:
-    csystems = {'galactic': coordinates.Galactic,
-                'fk5': coordinates.FK5,
-                'fk4': coordinates.FK4,
-                'icrs': coordinates.ICRS}
-except AttributeError:  # astropy v0.2
-    csystems = {'galactic': coordinates.GalacticCoordinates,
-                'fk5': coordinates.FK5Coordinates,
-                'fk4': coordinates.FK4Coordinates,
-                'icrs': coordinates.ICRSCoordinates}
-
-cel_systems = ['fk5', 'fk4', 'icrs']
+csystems = {'galactic':coordinates.Galactic,
+            'fk5':coordinates.FK5,
+            'fk4':coordinates.FK4,
+            'icrs':coordinates.ICRS}
+cel_systems = ['fk5','fk4','icrs']
 # ecliptic, detector, etc. not supported (because I don't know what they mean)
 # (or with ecliptic, how to deal with them)
-all_systems = cel_systems + ['galactic', 'image', 'physical']
-
+all_systems = cel_systems+['galactic','image','physical']
 
 class SimpleRegion(object):
-
     def __init__(self, coord_list, coord_format, name):
         self.name = name
         self.coord_format = coord_format
@@ -103,7 +94,7 @@ def load_regions_stringlist(lines):
     return regions
 
 
-def line_to_path(region, wcs=None):
+def line_to_path(region):
     """
     Convert a line or segment to a path
     """
@@ -128,11 +119,11 @@ def line_to_path(region, wcs=None):
 
     # TODO: add widths for projection
 
-    p = path.WCSPath(C, wcs=wcs)
+    p = path.Path(C)
 
     return p
 
-def vector_to_path(vector_region, wcs=None):
+def vector_to_path(vector_region):
     """
     Convert a vector region to a path
 
@@ -151,14 +142,14 @@ def vector_to_path(vector_region, wcs=None):
     C = csystems[vector_region.coord_format]([C1.lonangle,C2.lonangle],
                                              [C1.latangle,C2.latangle])
 
-    p = path.WCSPath(C, wcs=wcs)
+    p = path.Path(C)
 
     return p
 
 region_converters = {'line':line_to_path, 'segment':line_to_path,
                      'vector':vector_to_path}
 
-def paths_from_regfile(regfile, wcs=None):
+def paths_from_regfile(regfile):
     """
     Given a ds9 region file, extract pv diagrams for each:
         group of points [NOT IMPLEMENTED]
@@ -170,10 +161,10 @@ def paths_from_regfile(regfile, wcs=None):
     #import pyregion
     #regions = pyregion.open(regfile)
     regions = load_regions_file(regfile)
-    return paths_from_regions(regions, wcs=wcs)
+    return paths_from_regions(regions)
 
-def paths_from_regions(regions, wcs=None):
-    paths = [region_converters[r.name](r, wcs=wcs)
+def paths_from_regions(regions):
+    paths = [region_converters[r.name](r)
              for r in regions
              if r.name in region_converters]
     return paths

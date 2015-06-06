@@ -1,9 +1,12 @@
 # pylint: disable=W0223
+
+from __future__ import absolute_import, division, print_function
+
 import sys
 import webbrowser
 
 from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
-                                 QMenu, QMdiSubWindow, QAction, QMessageBox,
+                                 QMenu, QAction, QMessageBox,
                                  QFileDialog, QInputDialog,
                                  QToolButton, QVBoxLayout, QWidget, QPixmap,
                                  QBrush, QPainter, QLabel, QHBoxLayout,
@@ -11,7 +14,7 @@ from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                                  QListWidgetItem)
 from ..external.qt.QtCore import Qt, QSize, QSettings, Signal
 
-from ..core import command
+from ..core import command, Data
 from .. import env
 from ..qt import get_qapp
 from .decorators import set_cursor, messagebox_on_error
@@ -20,7 +23,7 @@ from ..core.application_base import Application
 from .actions import act
 from .qtutil import (pick_class, data_wizard,
                      GlueTabBar, load_ui, get_icon, nonpartial)
-from .widgets.glue_mdi_area import GlueMdiArea
+from .widgets.glue_mdi_area import GlueMdiArea, GlueMdiSubWindow
 from .widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from .widgets.layer_tree_widget import PlotAction, LayerTreeWidget
 from .widgets.data_viewer import DataViewer
@@ -40,10 +43,15 @@ def _fix_ipython_pylab():
     shell = get_ipython()
     if shell is None:
         return
+
+    from IPython.core.error import UsageError
+
     try:
         shell.enable_pylab('inline', import_all=True)
     except ValueError:
         # if the shell is a normal terminal shell, we get here
+        pass
+    except UsageError:
         pass
 
 
@@ -186,6 +194,11 @@ class GlueApplication(Application, QMainWindow):
         self.tab_widget.setMovable(True)
         self.tab_widget.setTabsClosable(True)
 
+        # The following is a counter that never goes down, even if tabs are
+        # deleted (this is by design, to avoid having two tabs called the
+        # same if a tab is removed then a new one added again)
+        self._total_tab_count = 0
+
         lwidget = self._ui.layerWidget
         a = PlotAction(lwidget, self)
         lwidget.layerTree.addAction(a)
@@ -196,8 +209,9 @@ class GlueApplication(Application, QMainWindow):
         self._create_menu()
         self._connect()
         self.new_tab()
-        self._create_terminal()
         self._update_plot_dashboard(None)
+
+        self._load_settings()
 
     def _setup_ui(self):
         self._ui = load_ui('glue_application', None)
@@ -259,7 +273,8 @@ class GlueApplication(Application, QMainWindow):
         widget = GlueMdiArea(self)
         widget.setLayout(layout)
         tab = self.tab_widget
-        tab.addTab(widget, str("Tab %i" % (tab.count() + 1)))
+        self._total_tab_count += 1
+        tab.addTab(widget, str("Tab %i" % self._total_tab_count))
         tab.setCurrentWidget(widget)
         widget.subWindowActivated.connect(self._update_plot_dashboard)
 
@@ -289,11 +304,13 @@ class GlueApplication(Application, QMainWindow):
                               of new_widget
         :type hold_position: bool
 
-        :rtype: QMdiSubWindow. The window that this widget is wrapped in
+        :rtype: The window that this widget is wrapped in
         """
         page = self.tab(tab)
         pos = getattr(new_widget, 'position', None)
         sub = new_widget.mdi_wrap()
+
+        sub.closed.connect(self._clear_dashboard)
 
         if label:
             sub.setWindowTitle(label)
@@ -307,8 +324,7 @@ class GlueApplication(Application, QMainWindow):
         """
         Update a persistent setting in the application.
 
-        :param key: Name of a setting in the
-                    :attr:`Settings registry <glue.core.config.settings>`
+        :param key: Name of a setting in the ``settings`` registry
         :type key: str
         :param value: New value for the setting
         :type value: str
@@ -333,7 +349,7 @@ class GlueApplication(Application, QMainWindow):
         self.current_tab.tileSubWindows()
 
     def _get_plot_dashboards(self, sub_window):
-        if not isinstance(sub_window, QMdiSubWindow):
+        if not isinstance(sub_window, GlueMdiSubWindow):
             return QWidget(), QWidget(), ""
 
         widget = sub_window.widget()
@@ -342,27 +358,31 @@ class GlueApplication(Application, QMainWindow):
 
         return widget.layer_view(), widget.options_widget(), str(widget)
 
+    def _clear_dashboard(self):
+
+        for widget, title in [(self._ui.plot_layers, "Plot Layers"),
+                              (self._ui.plot_options, "Plot Options")]:
+            layout = widget.layout()
+            if layout is None:
+                layout = QVBoxLayout()
+                layout.setContentsMargins(4, 4, 4, 4)
+                widget.setLayout(layout)
+            while layout.count():
+                layout.takeAt(0).widget().hide()
+            widget.setTitle(title)
+
     def _update_plot_dashboard(self, sub_window):
+        self._clear_dashboard()
+
         if sub_window is None:
             return
 
-        layer_view, options_widget, title = \
-            self._get_plot_dashboards(sub_window)
+        layer_view, options_widget, title = self._get_plot_dashboards(sub_window)
 
         layout = self._ui.plot_layers.layout()
-        if not layout:
-            layout = QVBoxLayout()
-            self._ui.plot_layers.setLayout(layout)
-        while layout.count():
-            layout.takeAt(0).widget().hide()
         layout.addWidget(layer_view)
 
         layout = self._ui.plot_options.layout()
-        if not layout:
-            layout = QVBoxLayout()
-            self._ui.plot_options.setLayout(layout)
-        while layout.count():
-            layout.takeAt(0).widget().hide()
         layout.addWidget(options_widget)
 
         layer_view.show()
@@ -398,7 +418,12 @@ class GlueApplication(Application, QMainWindow):
         menu.setTitle("&File")
 
         menu.addAction(self._actions['data_new'])
+        if 'data_importers' in self._actions:
+            submenu = menu.addMenu("I&mport data")
+            for a in self._actions['data_importers']:
+                submenu.addAction(a)
         # menu.addAction(self._actions['data_save'])  # XXX add this
+        menu.addAction(self._actions['session_reset'])
         menu.addAction(self._actions['session_restore'])
         menu.addAction(self._actions['session_save'])
         if 'session_export' in self._actions:
@@ -413,6 +438,14 @@ class GlueApplication(Application, QMainWindow):
         menu.setTitle("&Edit ")
         menu.addAction(self._actions['undo'])
         menu.addAction(self._actions['redo'])
+        mbar.addMenu(menu)
+
+        menu = QMenu(mbar)
+        menu.setTitle("&View ")
+
+        a = QAction("&Console Log", menu)
+        a.triggered.connect(self._ui.log._show)
+        menu.addAction(a)
         mbar.addMenu(menu)
 
         menu = QMenu(mbar)
@@ -448,6 +481,15 @@ class GlueApplication(Application, QMainWindow):
         menu.addActions(tbar.actions())
         mbar.addMenu(menu)
 
+        menu = QMenu(mbar)
+        menu.setTitle("&Tools")
+
+        if 'plugins' in self._actions:
+            for plugin in self._actions['plugins']:
+                menu.addAction(plugin)
+
+        mbar.addMenu(menu)
+
         # trigger inclusion of Mac Native "Help" tool
         menu = mbar.addMenu("&Help")
         a = QAction("&Online Documentation", menu)
@@ -458,18 +500,21 @@ class GlueApplication(Application, QMainWindow):
         a.triggered.connect(nonpartial(submit_bug_report))
         menu.addAction(a)
 
-    def _choose_load_data(self):
-        self.add_datasets(self.data_collection, data_wizard())
+    def _choose_load_data(self, data_importer=None):
+        if data_importer is None:
+            self.add_datasets(self.data_collection, data_wizard())
+        else:
+            data = data_importer()
+            if not isinstance(data, list):
+                raise TypeError("Data loader should return list of Data objects")
+            for item in data:
+                if not isinstance(item, Data):
+                    raise TypeError("Data loader should return list of Data objects")
+            self.add_datasets(self.data_collection, data)
 
     def _create_actions(self):
         """ Create and connect actions, store in _actions dict """
         self._actions = {}
-
-        a = act("&Open Data Set", self,
-                tip="Open a new data set",
-                shortcut=QKeySequence.Open)
-        a.triggered.connect(nonpartial(self._choose_load_data))
-        self._actions['data_new'] = a
 
         a = act("&New Data Viewer", self,
                 tip="Open a new visualization window in the current tab",
@@ -501,6 +546,34 @@ class GlueApplication(Application, QMainWindow):
         a.triggered.connect(nonpartial(self._choose_save_session))
         self._actions['session_save'] = a
 
+        # Add file loader as first item in File menu for convenience. We then
+        # also add it again below in the Import menu for consistency.
+        a = act("&Open Data Set", self, tip="Open a new data set",
+                shortcut=QKeySequence.Open)
+        a.triggered.connect(nonpartial(self._choose_load_data,
+                                       data_wizard))
+        self._actions['data_new'] = a
+
+        # We now populate the "Import data" menu
+        from glue.config import importer
+
+        acts = []
+
+        # Add default file loader (later we can add this to the registry)
+        a = act("Import from file", self, tip="Import from file")
+        a.triggered.connect(nonpartial(self._choose_load_data,
+                                       data_wizard))
+        acts.append(a)
+
+        for i in importer:
+            label, data_importer = i
+            a = act(label, self, tip=label)
+            a.triggered.connect(nonpartial(self._choose_load_data,
+                                           data_importer))
+            acts.append(a)
+
+        self._actions['data_importers'] = acts
+
         from glue.config import exporters
         if len(exporters) > 0:
             acts = []
@@ -520,6 +593,11 @@ class GlueApplication(Application, QMainWindow):
         a.triggered.connect(nonpartial(self._restore_session))
         self._actions['session_restore'] = a
 
+        a = act('Reset S&ession', self,
+                tip='Reset session to clean state')
+        a.triggered.connect(nonpartial(self._reset_session))
+        self._actions['session_reset'] = a
+
         a = act("Undo", self,
                 tip='Undo last action',
                 shortcut=QKeySequence.Undo)
@@ -533,6 +611,17 @@ class GlueApplication(Application, QMainWindow):
         a.triggered.connect(nonpartial(self.redo))
         a.setEnabled(False)
         self._actions['redo'] = a
+
+        # Create actions for menubar plugins
+        from glue.config import menubar_plugin
+        acts = []
+        for label, function in menubar_plugin:
+            a = act(label, self, tip=label)
+            a.triggered.connect(nonpartial(function,
+                                           self.session,
+                                           self.data_collection))
+            acts.append(a)
+        self._actions['plugins'] = acts
 
     def choose_new_data_viewer(self, data=None):
         """ Create a new visualization window in the current tab
@@ -562,11 +651,11 @@ class GlueApplication(Application, QMainWindow):
         """ Save the data collection and hub to file.
 
         Can be restored via restore_session
-
-        Note: Saving of client is not currently supported. Thus,
-        restoring this session will lose all current viz windows
         """
-        outfile, file_filter = QFileDialog.getSaveFileName(self)
+
+        # include file filter twice, so it shows up in Dialog
+        outfile, file_filter = QFileDialog.getSaveFileName(self,
+                                                           filter="Glue Sessions (*.glu);; GlueSessions(*.glu)")
         if not outfile:
             return
         self.save_session(outfile)
@@ -597,8 +686,29 @@ class GlueApplication(Application, QMainWindow):
         if not file_name:
             return
 
-        ga = self.restore(file_name, show=True)
+        ga = self.restore(file_name)
         self.close()
+        return ga
+
+    def _reset_session(self, show=True):
+        """
+        Reset session to clean state.
+        """
+
+        if not os.environ.get('GLUE_TESTING'):
+            buttons = QMessageBox.Ok | QMessageBox.Cancel
+            dialog = QMessageBox.warning(self, "Confirm Close",
+                                         "Are you sure you want to reset the session? "
+                                         "This will close all datasets, subsets, and data viewers",
+                                         buttons=buttons,
+                                         defaultButton=QMessageBox.Cancel)
+            if not dialog == QMessageBox.Ok:
+                return
+
+        ga = GlueApplication()
+        ga.show()
+        self.close()
+
         return ga
 
     @staticmethod
@@ -626,11 +736,15 @@ class GlueApplication(Application, QMainWindow):
         """
         Returns True if the IPython terminal is present.
         """
+        self._create_terminal()  # ensure terminal is setup
         return self._terminal is not None
 
     def _create_terminal(self):
-        assert self._terminal is None, \
-            "should only call _create_terminal once"
+        if self._terminal is not None:  # already set up
+            return
+
+        if hasattr(self, '_terminal_exception'):  # already failed to set up
+            return
 
         self._terminal_button = QToolButton(self._ui)
         self._terminal_button.setToolTip("Toggle IPython Prompt")
@@ -687,11 +801,25 @@ class GlueApplication(Application, QMainWindow):
         self._terminal.show()
         self._terminal.widget().show()
 
-    def start(self):
+    def start(self, size=None, position=None):
         """
         Show the GUI and start the application.
+
+        Parameters
+        ----------
+        size : (int, int) Optional
+            The default width/height of the application.
+            If not provided, uses the full screen
+        position : (int, int) Optional
+            The default position of the application
         """
+        self._create_terminal()
         self.show()
+        if size is not None:
+            self.resize(*size)
+        if position is not None:
+            self.move(*position)
+
         self.raise_()  # bring window to front
         # at some point during all this, the MPL backend
         # switches. This call restores things, so
@@ -779,7 +907,8 @@ class GlueApplication(Application, QMainWindow):
         w.show()
         w.raise_()
 
-        w.merged_label.setText(data.label)
+        label = others[0].label if len(others) > 0 else data.label
+        w.merged_label.setText(label)
 
         entries = [QListWidgetItem(other.label) for other in others]
         for e in entries:

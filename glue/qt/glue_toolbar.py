@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import os
 import matplotlib
 from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
@@ -19,10 +21,6 @@ class GlueToolbar(NavigationToolbar2QT):
 
         Parameters
         ----------
-        data_collection : DataCollection instance
-         The data collection that this toolbar is meant to edit.
-         The toolbar looks to this collection for the available subsets
-         to manipulate.
         canvas : Maptloblib canvas instance
          The drawing canvas to interact with
         frame : QWidget
@@ -218,6 +216,14 @@ class GlueToolbar(NavigationToolbar2QT):
                 'key_press_event', mode.key)
             self.mode = mode.action_text
             self.canvas.widgetlock(self)
+            mode.activate()
+
+            # allows grabbing of key events before clicking on plot
+            # XXX qt specific syntax here
+            try:
+                self.canvas.setFocus()
+            except AttributeError:
+                pass
         else:
             self.canvas.widgetlock.release(self)
 

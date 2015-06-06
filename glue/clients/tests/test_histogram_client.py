@@ -1,4 +1,7 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+
+from __future__ import absolute_import, division, print_function
+
 import pytest
 
 from mock import MagicMock
@@ -8,7 +11,7 @@ from ..layer_artist import HistogramLayerArtist
 
 from ...core.data_collection import DataCollection
 from ...core.exceptions import IncompatibleDataException
-from ...core.data import Data, CategoricalComponent
+from ...core.data import Data, CategoricalComponent, ComponentID
 from ...core.subset import RangeSubsetState
 
 from .util import renderless_figure
@@ -314,6 +317,16 @@ class TestHistogramClient(object):
             a.clear()
             assert a.get_data()[0].size == 0
 
+    def test_component_replaced(self):
+        # regression test for 508
+        self.client.register_to_hub(self.collect.hub)
+        self.client.add_layer(self.data)
+        self.client.component = self.data.components[0]
+
+        test = ComponentID('test')
+        self.data.update_id(self.client.component, test)
+        assert self.client.component is test
+
 
 class TestCategoricalHistogram(TestHistogramClient):
 
@@ -368,6 +381,15 @@ class TestCategoricalHistogram(TestHistogramClient):
     def test_apply_roi_xlog(self):
         """ log-scale doesn't make sense for categorical data"""
         pass
+
+    def test_nbin_override_persists_over_attribute_change(self):
+        # regression test for #398
+        self.collect.append(self.data)
+        self.client.add_layer(self.data)
+        self.client.set_component(self.data.id['x'])
+        self.client.nbins = 7
+        self.client.set_component(self.data.id['y'])
+        assert self.client.nbins == 7
 
 
 class TestCommunication(object):

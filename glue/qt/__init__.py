@@ -2,7 +2,6 @@ from ..external.qt.QtGui import QApplication, QIcon
 
 import os
 
-
 def get_qapp():
     qapp = QApplication.instance()
     if qapp is None:
@@ -24,6 +23,4 @@ _app = get_qapp()
 import atexit
 atexit.register(teardown)
 
-from .glue_application import GlueApplication
-
-from .. import plugins  # register plugin info
+#from .glue_application import GlueApplication

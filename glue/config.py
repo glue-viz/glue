@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import os
 import sys
 import imp
@@ -9,11 +11,11 @@ Objects used to configure Glue at runtime.
 
 __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'ColormapRegistry', 'DataFactoryRegistry', 'QtClientRegistry',
-           'LinkFunctionRegistry', 'LinkHelperRegistry',
-           'ProfileFitterRegistry',
+           'LinkFunctionRegistry', 'LinkHelperRegistry', 'QtToolRegistry',
+           'SingleSubsetLayerActionRegistry', 'ProfileFitterRegistry',
            'qt_client', 'data_factory', 'link_function', 'link_helper',
-           'colormaps',
-           'exporters', 'settings', 'fit_plugin', 'auto_refresh']
+           'colormaps', 'exporters', 'settings', 'fit_plugin',
+           'auto_refresh', 'importer']
 
 
 class Registry(object):
@@ -33,6 +35,7 @@ class Registry(object):
 
     def __init__(self):
         self._members = []
+        self._lazy_members = []
         self._loaded = False
 
     @property
@@ -40,6 +43,7 @@ class Registry(object):
         """ A list of the members in the registry.
         The return value is a list. The contents of the list
         are specified in each subclass"""
+        self._load_lazy_members()
         if not self._loaded:
             self._members = self.default_members() + self._members
             self._loaded = True
@@ -52,8 +56,22 @@ class Registry(object):
         return []
 
     def add(self, value):
-        """ Add a new item to the registry """
+        """
+        Add a new item to the registry.
+        """
         self._members.append(value)
+
+    def lazy_add(self, value):
+        """
+        Add a reference to a plugin which will be loaded when needed.
+        """
+        self._lazy_members.append(value)
+
+    def _load_lazy_members(self):
+        from .plugins import load_plugin
+        while self._lazy_members:
+            plugin = self._lazy_members.pop()
+            load_plugin(plugin)
 
     def __iter__(self):
         return iter(self.members)
@@ -87,6 +105,70 @@ class SettingRegistry(Registry):
     def add(self, key, value, validator=str):
         self.members.append((key, value, validator))
 
+    def default_members(self):
+        import glue.plugins  # plugins will populate this registry
+        return []
+
+
+class DataImportRegistry(Registry):
+    """
+    Stores functions which can import data.
+
+    The members property is a list of importers, each represented as a
+    ``(label, load_function)`` tuple. The ``load_function`` should take no
+    arguments and return a list of :class:`~glue.core.data.Data` objects.
+    """
+
+    def default_members(self):
+        return []
+
+    def add(self, label, importer):
+        """
+        Add a new importer
+        :param label: Short label for the importer
+        :type label: str
+
+        :param importer: importer function
+        :type importer: function()
+        """
+        self.members.append((label, importer))
+
+    def __call__(self, label):
+        def adder(func):
+            self.add(label, func)
+            return func
+        return adder
+
+
+class MenubarPluginRegistry(Registry):
+    """
+    Stores menubar plugins.
+
+    The members property is a list of menubar plugins, each represented as a
+    ``(label, function)`` tuple. The ``function`` should take two items which
+    are a reference to the session and to the data collection respectively.
+    """
+
+    def default_members(self):
+        return []
+
+    def add(self, label, function):
+        """
+        Add a new menubar plugin
+        :param label: Short label for the plugin
+        :type label: str
+
+        :param function: function
+        :type function: function()
+        """
+        self.members.append((label, function))
+
+    def __call__(self, label):
+        def adder(func):
+            self.add(label, func)
+            return func
+        return adder
+
 
 class ExporterRegistry(Registry):
 
@@ -108,6 +190,7 @@ class ExporterRegistry(Registry):
     """
 
     def default_members(self):
+        import glue.plugins  # discover plugins
         return []
 
     def add(self, label, exporter, checker, outmode='file'):
@@ -187,8 +270,10 @@ class DataFactoryRegistry(Registry):
         from .core.data_factories import __factories__
         return [self.item(f, f.label, f.identifier) for f in __factories__]
 
-    def __call__(self, label, identifier, default=''):
+    def __call__(self, label, identifier=None, default=''):
         from .core.data_factories import set_default_factory
+        if identifier is None:
+            identifier = lambda *a, **k: False
 
         def adder(func):
             set_default_factory(default, func)
@@ -212,14 +297,57 @@ class QtClientRegistry(Registry):
 
     def default_members(self):
         try:
-            from .qt.widgets.scatter_widget import ScatterWidget
-            from .qt.widgets.image_widget import ImageWidget
-            from .qt.widgets.histogram_widget import HistogramWidget
-            return [ScatterWidget, ImageWidget, HistogramWidget]
-        except ImportError:
+            from .qt.widgets import default_widgets
+            from .qt.custom_viewer import CUSTOM_WIDGETS
+            return default_widgets + CUSTOM_WIDGETS
+        except ImportError as e:
             logging.getLogger(__name__).warning(
                 "could not import glue.qt in ConfigObject")
             return []
+
+
+class QtToolRegistry(Registry):
+
+    def __init__(self):
+        self._members = {}
+        self._lazy_members = []
+        self._loaded = False
+
+    @property
+    def members(self):
+        self._load_lazy_members()
+        if not self._loaded:
+            defaults = self.default_members()
+            for key in defaults:
+                if key in self._members:
+                    self._members[key].extend(defaults[key])
+                else:
+                    self._members[key] = defaults[key]
+            self._loaded = True
+        return self._members
+
+    def default_members(self):
+        defaults = {}
+        for viewer in qt_client.members:
+            try:
+                defaults[viewer] = viewer._get_default_tools()
+            except AttributeError:
+                logging.getLogger(__name__).warning(
+                    "could not get default tools for {0}".format(viewer.__name__))
+                defaults[viewer] = []
+
+        return defaults
+
+    def add(self, tool_cls, widget_cls=None):
+        """
+        Add a tool class to the registry, optionally specifying which widget
+        class it should apply to (``widget_cls``). if ``widget_cls`` is set
+        to `None`, the tool applies to all classes.
+        """
+        if widget_cls in self.members:
+            self.members[widget_cls].append(tool_cls)
+        else:
+            self.members[widget_cls] = [tool_cls]
 
 
 class LinkFunctionRegistry(Registry):
@@ -253,6 +381,24 @@ class LinkFunctionRegistry(Registry):
             self.add(self.item(func, info, out))
             return func
         return adder
+
+
+class SingleSubsetLayerActionRegistry(Registry):
+
+    """ Stores custom menu actions available when user selects a single
+        subset in the data collection view
+
+        This members property is a list of (label, tooltip, callback)
+        tuples. callback is a function that takes a Subset and DataCollection
+        as input
+    """
+    item = namedtuple('SingleSubsetLayerAction', 'label tooltip callback icon')
+
+    def default_members(self):
+        return []
+
+    def __call__(self, label, callback, tooltip=None, icon=None):
+        self.add(self.item(label, callback, tooltip, icon))
 
 
 class LinkHelperRegistry(Registry):
@@ -318,16 +464,21 @@ class BooleanSetting(object):
         return self.state
 
 qt_client = QtClientRegistry()
+tool_registry = QtToolRegistry()
 data_factory = DataFactoryRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
 colormaps = ColormapRegistry()
+importer = DataImportRegistry()
 exporters = ExporterRegistry()
 settings = SettingRegistry()
 fit_plugin = ProfileFitterRegistry()
+single_subset_action = SingleSubsetLayerActionRegistry()
+menubar_plugin = MenubarPluginRegistry()
 
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)
+enable_contracts = BooleanSetting(False)
 
 
 def load_configuration(search_path=None):
@@ -353,8 +504,7 @@ def load_configuration(search_path=None):
         except IOError:
             pass
         except Exception as e:
-            raise Exception("Error loading config file %s:\n%s" %
-                            (config_file, e))
+            raise type(e)("Error loading config file %s:\n%s" % (config_file, e), sys.exc_info()[2])
         finally:
             sys.path.remove(dir)
 

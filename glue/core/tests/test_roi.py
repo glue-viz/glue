@@ -1,4 +1,7 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+
+from __future__ import absolute_import, division, print_function
+
 import pytest
 
 import numpy as np
@@ -434,8 +437,8 @@ class TestRectangleMpl(TestMpl):
         roi.start_selection(DummyEvent(6, 6, inaxes=self.axes))
         roi.update_selection(DummyEvent(7, 8, inaxes=self.axes))
 
-        print roi
-        print roi._roi
+        print(roi)
+        print(roi._roi)
         assert roi._roi.xmin == 6
         assert roi._roi.xmax == 11
         assert roi._roi.ymin == 7

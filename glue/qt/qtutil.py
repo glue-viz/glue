@@ -2,6 +2,9 @@
 Various standalone utility code for
 working with Qt
 """
+
+from __future__ import absolute_import, division, print_function
+
 import os
 
 import pkg_resources
@@ -11,7 +14,7 @@ import numpy as np
 
 from ..external.axescache import AxesCache
 from ..external.qt import QtGui
-from ..external.qt.QtCore import Qt, QThread
+from ..external.qt.QtCore import (Qt, QThread, QAbstractListModel, QModelIndex)
 from ..external.qt.QtGui import (QColor, QInputDialog, QColorDialog,
                                  QListWidget, QTreeWidget, QPushButton,
                                  QMessageBox,
@@ -26,6 +29,9 @@ from ..external.qt import is_pyside
 from ..external.qt.QtCore import Signal
 from .. import core
 from . import ui, icons
+
+# We import nonpartial here for convenience
+from ..utils import nonpartial
 
 
 def mpl_to_qt4_color(color, alpha=1.0):
@@ -147,7 +153,8 @@ class GlueDataDialog(object):
         result = self._fd.exec_()
         if result == QtGui.QDialog.Rejected:
             return [], None
-        path = map(str, self.paths())  # cast out of unicode
+        # path = list(map(str, self.paths()))  # cast out of unicode
+        path = list(self.paths())
         factory = self.factory()
         return path, factory
 
@@ -344,10 +351,10 @@ def layer_icon(layer):
     :rtype: QIcon
     """
     icon = POINT_ICONS.get(layer.style.marker, 'circle_point')
-
     bm = QBitmap(icon_path(icon))
     color = mpl_to_qt4_color(layer.style.color)
     pm = tint_pixmap(bm, color)
+    pm = pm.scaledToHeight(15, Qt.SmoothTransformation)
     return QIcon(pm)
 
 
@@ -592,6 +599,7 @@ class RGBEdit(QWidget):
         self._artist = value
         for cid in self.cid.values():
             cid.data = value.layer
+        self.update_layers()
 
     def update_layers(self):
         if self.artist is None:
@@ -717,9 +725,12 @@ def _load_ui_pyqt4(path, parent):
     return loadUi(path, parent)
 
 
-def load_ui(name, parent=None):
+def load_ui(path, parent=None):
     """
-    Load a UI file, given it's name
+    Load a UI file, given its name.
+
+    This will first check if `path` exists, and if not it will assume it is the
+    name of a ui file to search for in the global glue ui directory.
 
     Parameters
     ----------
@@ -734,14 +745,19 @@ def load_ui(name, parent=None):
     w : QWidget
       The new widget
     """
-    path = ui_path(name)
+
+    if not os.path.exists(path):
+        path = global_ui_path(path)
+
     if is_pyside():
         return _load_ui_pyside(path, parent)
-    return _load_ui_pyqt4(path, parent)
+    else:
+        return _load_ui_pyqt4(path, parent)
 
 
-def ui_path(ui_name):
-    """Return the absolute path to a .ui file
+def global_ui_path(ui_name):
+    """
+    Return the absolute path to a .ui file bundled with glue.
 
     Parameters
     ----------
@@ -906,10 +922,10 @@ if __name__ == "__main__":
         layer = None
 
         def update(self):
-            print 'update', self.layer_visible
+            print('update', self.layer_visible)
 
         def redraw(self):
-            print 'draw'
+            print('draw')
 
     app = get_qapp()
     f = Foo()
@@ -918,24 +934,8 @@ if __name__ == "__main__":
     rgb.show()
     app.exec_()
 
-    print f.layer_visible
-    print f.contrast_layer
-
-
-def nonpartial(func, *args, **kwargs):
-    """Like functools.partial, this returns a function which,
-    when called, calls func(*args, **kwargs). Unlike functools.partial,
-    extra arguments passed to the returned function are *not* passed
-    to the input function.
-
-    This is used when connecting slots to QAction.triggered signals,
-    which appear to have different signatures, which seem to add
-    and extra argument in PyQt4 but not PySide
-    """
-    def result(*a, **k):
-        return func(*args, **kwargs)
-
-    return result
+    print(f.layer_visible)
+    print(f.contrast_layer)
 
 
 class Worker(QThread):
@@ -969,3 +969,196 @@ class Worker(QThread):
         except:
             import sys
             self.error.emit(sys.exc_info())
+
+
+def update_combobox(combo, labeldata):
+    """
+    Redefine the items in a combobox
+
+    Parameters
+    ----------
+    widget : QComboBox
+       The widget to update
+    labeldata : sequence if N (label, data) tuples
+       The combobox will contain N items with the appropriate
+       labels, and data set as the userData
+
+    Returns
+    -------
+    combo : QComboBox
+        The updated input
+
+    Notes
+    -----
+    If the current userData in the combo box matches
+    any of labeldata, that selection will be retained.
+    Otherwise, the first item will be selected.
+
+    Signals are disabled while the combo box is updated
+
+    combo is modified inplace
+    """
+    combo.blockSignals(True)
+    idx = combo.currentIndex()
+    if idx > 0:
+        current = combo.itemData(idx)
+    else:
+        current = None
+
+    combo.clear()
+    index = 0
+    for i, (label, data) in enumerate(labeldata):
+        combo.addItem(label, userData=data)
+        if data is current:
+            index = i
+    combo.blockSignals(False)
+    combo.setCurrentIndex(index)
+
+    return combo
+
+
+class PythonListModel(QAbstractListModel):
+
+    """
+    A Qt Model that wraps a python list, and exposes a list-like interface
+
+    This can be connected directly to multiple QListViews, which will
+    stay in sync with the state of the container.
+    """
+
+    def __init__(self, items, parent=None):
+        """
+        Create a new model
+
+        Parameters
+        ----------
+        items : list
+            The initial list to wrap
+        parent : QObject
+            The model parent
+        """
+        super(PythonListModel, self).__init__(parent)
+        self.items = items
+
+    def rowCount(self, parent=None):
+        """Number of rows"""
+        return len(self.items)
+
+    def headerData(self, section, orientation, role):
+        """Column labels"""
+        if role != Qt.DisplayRole:
+            return None
+        return "%i" % section
+
+    def row_label(self, row):
+        """ The textual label for the row"""
+        return str(self.items[row])
+
+    def data(self, index, role):
+        """Retrieve data at each index"""
+        if not index.isValid():
+            return None
+        if role == Qt.DisplayRole or role == Qt.EditRole:
+            return self.row_label(index.row())
+        if role == Qt.UserRole:
+            return self.items[index.row()]
+
+    def setData(self, index, value, role):
+        """
+        Update the data in-place
+
+        Parameters
+        ----------
+        index : QModelIndex
+            The location of the change
+        value : object
+            The new value
+        role : QEditRole
+            Which aspect of the model to update
+        """
+        if not index.isValid():
+            return False
+
+        if role == Qt.UserRole:
+            row = index.row()
+            self.items[row] = value
+            self.dataChanged.emit(index, index)
+            return True
+
+        return super(PythonListModel, self).setDdata(index, value, role)
+
+    def removeRow(self, row, parent=None):
+        """
+        Remove a row from the table
+
+        Parameters
+        ----------
+        row : int
+            Row to remove
+
+        Returns
+        -------
+        successful : bool
+        """
+        if row < 0 or row >= len(self.items):
+            return False
+
+        self.beginRemoveRows(QModelIndex(), row, row)
+        self._remove_row(row)
+        self.endRemoveRows()
+        return True
+
+    def pop(self, row=None):
+        """
+        Remove and return an item (default last item)
+
+        Parameters
+        ----------
+        row : int (optional)
+            Which row to remove. Default=last
+
+        Returns
+        --------
+        popped : object
+        """
+        if row is None:
+            row = len(self) - 1
+        result = self[row]
+        self.removeRow(row)
+        return result
+
+    def _remove_row(self, row):
+        # actually remove data. Subclasses can override this as needed
+        self.items.pop(row)
+
+    def __getitem__(self, row):
+        return self.items[row]
+
+    def __setitem__(self, row, value):
+        index = self.index(row)
+        self.setData(index, value, role=Qt.UserRole)
+
+    def __len__(self):
+        return len(self.items)
+
+    def insert(self, row, value):
+        self.beginInsertRows(QModelIndex(), row, row)
+        self.items.insert(row, value)
+        self.endInsertRows()
+        self.rowsInserted.emit(self.index(row), row, row)
+
+    def append(self, value):
+        row = len(self)
+        self.insert(row, value)
+
+    def extend(self, values):
+        for v in values:
+            self.append(v)
+
+    def set_list(self, values):
+        """
+        Set the model to a new list
+        """
+        self.beginResetModel()
+        self.items = values
+        self.endResetModel()

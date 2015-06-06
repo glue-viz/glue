@@ -1,11 +1,17 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103,W0612
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103,W0612
+
+from __future__ import absolute_import, division, print_function
+
 import pytest
 
 import numpy as np
+from numpy.testing import assert_array_equal
 
 from ..data import ComponentID, Data, Component
 from ..component_link import ComponentLink, BinaryComponentLink
 from ..subset import InequalitySubsetState
+from ..link_helpers import LinkSame
+from ..data_collection import DataCollection
 
 
 class TestComponentLink(object):
@@ -44,7 +50,7 @@ class TestComponentLink(object):
 
         result = link.compute(data)
         expected = from_.data
-        np.testing.assert_array_equal(result, expected)
+        assert_array_equal(result, expected)
 
     def test_compute_using(self):
         data, from_, to_ = self.toy_data()
@@ -55,7 +61,7 @@ class TestComponentLink(object):
 
         result = link.compute(data)
         expected = from_.data * 3
-        np.testing.assert_array_equal(result, expected)
+        assert_array_equal(result, expected)
 
     def test_getters(self):
         data, from_, to_ = self.toy_data()
@@ -136,44 +142,44 @@ def test_link_bad_input():
 
 def test_arithmetic_id_scalar():
     d = Data(x=[1, 2, 3, 4], y=[10, 20, 10, 20])
-    np.testing.assert_array_equal(d[d.id['x'] + 3], [4, 5, 6, 7])
-    np.testing.assert_array_equal(d[d.id['x'] - 3], [-2, -1, 0, 1])
-    np.testing.assert_array_equal(d[d.id['x'] * 3], [3, 6, 9, 12])
-    np.testing.assert_array_equal(d[d.id['y'] / 10], [1, 2, 1, 2])
-    np.testing.assert_array_equal(d[d.id['x'] ** 2], [1, 4, 9, 16])
+    assert_array_equal(d[d.id['x'] + 3], [4, 5, 6, 7])
+    assert_array_equal(d[d.id['x'] - 3], [-2, -1, 0, 1])
+    assert_array_equal(d[d.id['x'] * 3], [3, 6, 9, 12])
+    assert_array_equal(d[d.id['y'] / 10], [1, 2, 1, 2])
+    assert_array_equal(d[d.id['x'] ** 2], [1, 4, 9, 16])
 
-    np.testing.assert_array_equal(d[3 + d.id['x']], [4, 5, 6, 7])
-    np.testing.assert_array_equal(d[3 - d.id['x']], [2, 1, 0, -1])
-    np.testing.assert_array_equal(d[3 * d.id['x']], [3, 6, 9, 12])
-    np.testing.assert_array_equal(d[24 / d.id['x']], [24, 12, 8, 6])
-    np.testing.assert_array_equal(d[2 ** d.id['x']], [2, 4, 8, 16])
+    assert_array_equal(d[3 + d.id['x']], [4, 5, 6, 7])
+    assert_array_equal(d[3 - d.id['x']], [2, 1, 0, -1])
+    assert_array_equal(d[3 * d.id['x']], [3, 6, 9, 12])
+    assert_array_equal(d[24 / d.id['x']], [24, 12, 8, 6])
+    assert_array_equal(d[2 ** d.id['x']], [2, 4, 8, 16])
 
 
 def test_arithmetic_id_id():
     d = Data(x=[1, 2, 3, 4], y=[10, 20, 10, 20])
-    np.testing.assert_array_equal(d[d.id['x'] + d.id['y']], [11, 22, 13, 24])
-    np.testing.assert_array_equal(d[d.id['x'] - d.id['y']], [-9, -18, -7, -16])
-    np.testing.assert_array_equal(d[d.id['x'] * d.id['y']], [10, 40, 30, 80])
-    np.testing.assert_array_equal(
+    assert_array_equal(d[d.id['x'] + d.id['y']], [11, 22, 13, 24])
+    assert_array_equal(d[d.id['x'] - d.id['y']], [-9, -18, -7, -16])
+    assert_array_equal(d[d.id['x'] * d.id['y']], [10, 40, 30, 80])
+    assert_array_equal(
         d[d.id['y'] / d.id['x']], [10, 10, 10 / 3, 5])
-    np.testing.assert_array_equal(d[d.id['y'] ** d.id['x']],
-                                  [10, 400, 1000, 20 ** 4])
+    assert_array_equal(d[d.id['y'] ** d.id['x']],
+                       [10, 400, 1000, 20 ** 4])
 
 
 def test_arithmetic_id_link():
     d = Data(x=[1, 2, 3, 4], y=[10, 20, 10, 20])
     y10 = d.id['y'] / 10
-    np.testing.assert_array_equal(d[d.id['x'] + y10], [2, 4, 4, 6])
-    np.testing.assert_array_equal(d[d.id['x'] - y10], [0, 0, 2, 2])
-    np.testing.assert_array_equal(d[d.id['x'] * y10], [1, 4, 3, 8])
-    np.testing.assert_array_equal(d[d.id['x'] / y10], [1, 1, 3, 2])
-    np.testing.assert_array_equal(d[d.id['x'] ** y10], [1, 4, 3, 16])
+    assert_array_equal(d[d.id['x'] + y10], [2, 4, 4, 6])
+    assert_array_equal(d[d.id['x'] - y10], [0, 0, 2, 2])
+    assert_array_equal(d[d.id['x'] * y10], [1, 4, 3, 8])
+    assert_array_equal(d[d.id['x'] / y10], [1, 1, 3, 2])
+    assert_array_equal(d[d.id['x'] ** y10], [1, 4, 3, 16])
 
-    np.testing.assert_array_equal(d[y10 + d.id['x']], [2, 4, 4, 6])
-    np.testing.assert_array_equal(d[y10 - d.id['x']], [0, 0, -2, -2])
-    np.testing.assert_array_equal(d[y10 * d.id['x']], [1, 4, 3, 8])
-    np.testing.assert_array_equal(d[y10 / d.id['x']], [1, 1, 0, 0])
-    np.testing.assert_array_equal(d[y10 ** d.id['x']], [1, 4, 1, 16])
+    assert_array_equal(d[y10 + d.id['x']], [2, 4, 4, 6])
+    assert_array_equal(d[y10 - d.id['x']], [0, 0, -2, -2])
+    assert_array_equal(d[y10 * d.id['x']], [1, 4, 3, 8])
+    assert_array_equal(d[y10 / d.id['x']], [1, 1, 1 / 3., 1 / 2.])
+    assert_array_equal(d[y10 ** d.id['x']], [1, 4, 1, 16])
 
 
 def test_arithmetic_link_link():
@@ -182,11 +188,11 @@ def test_arithmetic_link_link():
     y = d[d.id['y']]
     xpy = d.id['x'] + d.id['y']
     xt3 = d.id['x'] * 3
-    np.testing.assert_array_equal(d[xpy + xt3], x + y + x * 3)
-    np.testing.assert_array_equal(d[xpy - xt3], x + y - x * 3)
-    np.testing.assert_array_equal(d[xpy * xt3], (x + y) * x * 3)
-    np.testing.assert_array_equal(d[xpy / xt3], (x + y) / (x * 3))
-    np.testing.assert_array_equal(d[xpy ** xt3], (x + y) ** (x * 3))
+    assert_array_equal(d[xpy + xt3], x + y + x * 3)
+    assert_array_equal(d[xpy - xt3], x + y - x * 3)
+    assert_array_equal(d[xpy * xt3], (x + y) * x * 3)
+    assert_array_equal(d[xpy / xt3], (x + y) / (x * 3))
+    assert_array_equal(d[xpy ** xt3], (x + y) ** (x * 3))
 
 
 def test_inequality():
@@ -199,40 +205,40 @@ def test_inequality():
     y = d[d.id['y']]
 
     s.subset_state = xpy < 22
-    np.testing.assert_array_equal(s.to_mask(), (x + y) < 22)
+    assert_array_equal(s.to_mask(), (x + y) < 22)
 
     s.subset_state = xpy <= 22
-    np.testing.assert_array_equal(s.to_mask(), (x + y) <= 22)
+    assert_array_equal(s.to_mask(), (x + y) <= 22)
 
     s.subset_state = xpy >= 22
-    np.testing.assert_array_equal(s.to_mask(), (x + y) >= 22)
+    assert_array_equal(s.to_mask(), (x + y) >= 22)
 
     s.subset_state = xpy > 22
-    np.testing.assert_array_equal(s.to_mask(), (x + y) > 22)
+    assert_array_equal(s.to_mask(), (x + y) > 22)
 
     s.subset_state = 22 < xpy
-    np.testing.assert_array_equal(s.to_mask(), 22 < (x + y))
+    assert_array_equal(s.to_mask(), 22 < (x + y))
 
     s.subset_state = 22 <= xpy
-    np.testing.assert_array_equal(s.to_mask(), 22 <= (x + y))
+    assert_array_equal(s.to_mask(), 22 <= (x + y))
 
     s.subset_state = 22 > xpy
-    np.testing.assert_array_equal(s.to_mask(), 22 > (x + y))
+    assert_array_equal(s.to_mask(), 22 > (x + y))
 
     s.subset_state = 22 >= xpy
-    np.testing.assert_array_equal(s.to_mask(), 22 >= (x + y))
+    assert_array_equal(s.to_mask(), 22 >= (x + y))
 
     s.subset_state = twentytwo < xpy
-    np.testing.assert_array_equal(s.to_mask(), 22 < (x + y))
+    assert_array_equal(s.to_mask(), 22 < (x + y))
 
     s.subset_state = twentytwo <= xpy
-    np.testing.assert_array_equal(s.to_mask(), 22 <= (x + y))
+    assert_array_equal(s.to_mask(), 22 <= (x + y))
 
     s.subset_state = twentytwo > xpy
-    np.testing.assert_array_equal(s.to_mask(), 22 > (x + y))
+    assert_array_equal(s.to_mask(), 22 > (x + y))
 
     s.subset_state = twentytwo >= xpy
-    np.testing.assert_array_equal(s.to_mask(), 22 >= (x + y))
+    assert_array_equal(s.to_mask(), 22 >= (x + y))
 
 
 def test_link_fixes_shape():
@@ -242,7 +248,7 @@ def test_link_fixes_shape():
     d = Data(x=[1, 2, 3, 4])
     y = ComponentID('y')
     link = ComponentLink([d.id['x']], y, using=double)
-    np.testing.assert_array_equal(d[link], [2, 4, 6, 8])
+    assert_array_equal(d[link], [2, 4, 6, 8])
 
 
 def test_link_str():
@@ -261,3 +267,23 @@ def test_link_str():
     assert str(x + x + y) == ('((x + x) + y)')
 
     assert repr(x + y) == '<BinaryComponentLink: (x + y)>'
+
+
+def test_duplicated_links_remove_first_input():
+    """
+    # test changes introduced for #508
+    """
+
+    d1 = Data(x=[1, 2, 3])
+    d2 = Data(y=[2, 4, 6])
+
+    x = d1.id['x']
+    y = d2.id['y']
+
+    dc = DataCollection([d1, d2])
+
+    dc.add_link(LinkSame(x, y))
+    assert y not in d2.components
+    assert y not in d1.components
+    assert x in d2.components
+    assert x in d2.components

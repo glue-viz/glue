@@ -11,6 +11,8 @@ but falls back to legacy libraries if astropy isn't installed on the
 users' system
 """
 
+from __future__ import absolute_import, division, print_function
+
 try:
     from astropy.io import fits
 except ImportError:

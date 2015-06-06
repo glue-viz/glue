@@ -6,6 +6,8 @@ Utility function to load a variety of python objects into glue
 # to minimize imports so that utilities like glue-deps
 # can run on systems with missing dependencies
 
+from __future__ import absolute_import, division, print_function
+
 from contextlib import contextmanager
 import sys
 
@@ -17,6 +19,8 @@ except ImportError:
     # let qglue import, even though this won't work
     # qglue will throw an ImportError
     Data = None
+
+from .external import six
 
 __all__ = ['qglue']
 
@@ -44,7 +48,7 @@ def _parse_data_dataframe(data, label):
     label = label or 'Data'
     result = Data(label=label)
     for c in data.columns:
-        result.add_component(data[c], c)
+        result.add_component(data[c], str(c))
     return [result]
 
 
@@ -58,12 +62,13 @@ def _parse_data_dict(data, label):
 
 
 def _parse_data_recarray(data, label):
-    print data.dtype.names
-    return [Data(label=label, **{n: data[n] for n in data.dtype.names})]
+    kwargs = dict((n, data[n]) for n in data.dtype.names)
+    return [Data(label=label, **kwargs)]
 
 
 def _parse_data_astropy_table(data, label):
-    return [Data(label=label, **{c: data[c] for c in data.columns})]
+    kwargs = dict((c, data[c]) for c in data.columns)
+    return [Data(label=label, **kwargs)]
 
 
 def _parse_data_glue_data(data, label):
@@ -83,17 +88,37 @@ def _parse_data_path(path, label):
         d.label = label
     return as_list(data)
 
+
+def _parse_data_hdulist(data, label):
+    """
+    Parse all HDUs in an HDUList into a data object, and build coords.
+    Assumes all extensions have the same shape
+    """
+    from .core.io import filter_hdulist_by_shape
+    from .core.coordinates import coordinates_from_header
+
+    result = Data(label=label)
+
+    hdulist = filter_hdulist_by_shape(data)
+    header = hdulist[0].header
+
+    result.coords = coordinates_from_header(header)
+    for hdu in hdulist:
+        result.add_component(hdu.data, label=hdu.name)
+
+    return [result]
+
 # (base class, parser function)
 _parsers = [
     (Data, _parse_data_glue_data),
-    (basestring, _parse_data_path),
+    (six.string_types, _parse_data_path),
     (dict, _parse_data_dict),
     (np.recarray, _parse_data_recarray),
     (np.ndarray, _parse_data_numpy),
     (list, _parse_data_numpy)]
 
 
-def _parse_data(data, label):
+def parse_data(data, label):
     for typ, prsr in _parsers:
         if isinstance(data, typ):
             try:
@@ -112,7 +137,10 @@ except ImportError:
 
 try:
     from astropy.table import Table
+    from astropy.io.fits import HDUList
     _parsers.append((Table, _parse_data_astropy_table))
+    # Put HDUList parser before list parser
+    _parsers = [(HDUList, _parse_data_hdulist)] + _parsers
 except ImportError:
     pass
 
@@ -121,7 +149,7 @@ def _parse_links(dc, links):
     from .core.link_helpers import MultiLink
     from .core import ComponentLink
 
-    data = {d.label: d for d in dc}
+    data = dict((d.label, d) for d in dc)
     result = []
 
     def find_cid(s):
@@ -141,12 +169,12 @@ def _parse_links(dc, links):
             u2 = link[3]
 
         # component names -> component IDs
-        if isinstance(f, basestring):
+        if isinstance(f, six.string_types):
             f = [find_cid(f)]
         else:
             f = [find_cid(item) for item in f]
 
-        if isinstance(t, basestring):
+        if isinstance(t, six.string_types):
             t = find_cid(t)
             result.append(ComponentLink(f, t, u))
         else:
@@ -191,10 +219,10 @@ def qglue(**kwargs):
         def kg2lb(kg):
             return kg * 2.2
 
-        links = [(['balls.kg'], ['cones.lbs'], lb2kg, kb2lb)]
+        links = [(['balls.kg'], ['cones.lbs'], lb2kg, kg2lb)]
         qglue(balls=balls, cones=cones, links=links)
 
-    :returns: A :class:`~glue.core.data_collection.DataCollection` object
+    :returns: A :class:`~glue.qt.glue_application.GlueApplication` object
     """
     from .core import DataCollection
     from glue.qt.glue_application import GlueApplication
@@ -203,7 +231,7 @@ def qglue(**kwargs):
 
     dc = DataCollection()
     for label, data in kwargs.items():
-        dc.extend(_parse_data(data, label))
+        dc.extend(parse_data(data, label))
 
     if links is not None:
         dc.add_link(_parse_links(dc, links))
@@ -211,4 +239,5 @@ def qglue(**kwargs):
     with restore_io():
         ga = GlueApplication(dc)
         ga.start()
-    return dc
+
+    return ga

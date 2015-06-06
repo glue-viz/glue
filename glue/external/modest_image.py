@@ -1,3 +1,5 @@
+from __future__ import print_function, division
+
 import matplotlib
 rcParams = matplotlib.rcParams
 
@@ -32,7 +34,7 @@ class ModestImage(mi.AxesImage):
 
         self._full_res = None
         self._sx, self._sy = None, None
-        self._bounds = (None, None, None, None)
+        self._bounds = None
         super(ModestImage, self).__init__(*args, **kwargs)
 
     def set_data(self, A):
@@ -70,9 +72,10 @@ class ModestImage(mi.AxesImage):
         shp = self._full_res.shape
         x0, x1, sx, y0, y1, sy = extract_matched_slices(ax, shp)
         # have we already calculated what we need?
-        if sx >= self._sx and sy >= self._sy and \
-            x0 >= self._bounds[0] and x1 <= self._bounds[1] and \
-                y0 >= self._bounds[2] and y1 <= self._bounds[3]:
+        if (self._bounds is not None
+            and sx >= self._sx and sy >= self._sy
+            and x0 >= self._bounds[0] and x1 <= self._bounds[1]
+            and y0 >= self._bounds[2] and y1 <= self._bounds[3]):
             return
         self._A = self._full_res[y0:y1:sy, x0:x1:sx]
         self._A = cbook.safe_masked_invalid(self._A)
@@ -115,8 +118,8 @@ def main():
     plt.gcf().canvas.draw()
     t1 = time()
 
-    print "Draw time for %s: %0.1f ms" % (artist.__class__.__name__,
-                                          (t1 - t0) * 1000)
+    print("Draw time for %s: %0.1f ms" % (artist.__class__.__name__,
+                                          (t1 - t0) * 1000))
 
     plt.show()
 
@@ -183,7 +186,7 @@ def extract_matched_slices(ax, shape):
     Indexing the full resolution array as array[y0:y1:sy, x0:x1:sx] returns
     a view well-matched to the axes' resolution and extent
     """
-    ext = ax.transAxes.transform([1, 1]) - ax.transAxes.transform([0, 0])
+    ext = (ax.transAxes.transform([(1, 1)]) - ax.transAxes.transform([(0, 0)]))[0]
     xlim, ylim = ax.get_xlim(), ax.get_ylim()
     dx, dy = xlim[1] - xlim[0], ylim[1] - ylim[0]
 

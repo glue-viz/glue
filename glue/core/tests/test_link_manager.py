@@ -1,4 +1,7 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+
+from __future__ import absolute_import, division, print_function
+
 import numpy as np
 
 from ..data import Data, Component
@@ -53,7 +56,7 @@ def example_components(self, add_derived=True):
 class TestAccessibleLinks(object):
 
     def setup_method(self, method):
-        self.cs = [ComponentID("%i" % i) for i in xrange(10)]
+        self.cs = [ComponentID("%i" % i) for i in range(10)]
 
     def test_returned_if_available(self):
         cids = self.cs[0:5]
@@ -72,6 +75,7 @@ class TestAccessibleLinks(object):
 
 
 class TestDiscoverLinks(object):
+
     def setup_method(self, method):
         example_components(self)
 
@@ -108,6 +112,7 @@ class TestDiscoverLinks(object):
 
 
 class TestFindDependents(object):
+
     def setup_method(self, method):
         example_components(self)
 
@@ -157,7 +162,7 @@ class TestLinkManager(object):
     def test_update_data_components_adds_correctly(self):
         example_components(self, add_derived=False)
         lm = LinkManager()
-        map(lm.add_link, self.links)
+        list(map(lm.add_link, self.links))
 
         lm.update_data_components(self.data)
         derived = set(self.data.derived_components)
@@ -165,12 +170,12 @@ class TestLinkManager(object):
         assert derived == expected
 
     def test_update_data_components_removes_correctly(self):
-        #add all but last link to manager
+        # add all but last link to manager
         example_components(self, add_derived=False)
         lm = LinkManager()
-        map(lm.add_link, self.links[:-1])
+        list(map(lm.add_link, self.links[:-1]))
 
-        #manually add last link as derived component
+        # manually add last link as derived component
         dc = DerivedComponent(self.data, self.links[-1])
         self.data.add_component(dc, dc.link.get_to_id())
         removed = set([dc.link.get_to_id()])
@@ -192,13 +197,13 @@ class TestLinkManager(object):
 
         dc = DataCollection([d1, d2])
 
-        #link world coordinates...
+        # link world coordinates...
         dc.add_link(LinkSame(
             d1.get_world_component_id(0), d2.get_world_component_id(0)))
         dc.add_link(LinkSame(
             d1.get_world_component_id(1), d2.get_world_component_id(1)))
 
-        #and then retrieve pixel coordinates
+        # and then retrieve pixel coordinates
         np.testing.assert_array_equal(
             d2[d1.get_pixel_component_id(0)], [[0, 0], [1, 1]])
         np.testing.assert_array_equal(
@@ -216,7 +221,6 @@ class TestLinkManager(object):
 
         dc = DataCollection([d1, d2])
         dc.add_link(LinkSame(d2.id['u'], d1.id['x']))
-        assert d1.find_component_id('x') is None
 
         np.testing.assert_array_equal(d1['z'], [3, 5, 7])
 
@@ -226,12 +230,13 @@ class TestLinkManager(object):
 
         d1 = Data(x=[1, 2, 3], y=[2, 3, 4])
         d2 = Data(u=[2, 3, 4], v=[3, 4, 5])
+        x = d1.id['x']
 
         z = d1.id['x'] + d1.id['y'] + 5
         d1.add_component_link(z, 'z')
 
         dc = DataCollection([d1, d2])
         dc.add_link(LinkSame(d2.id['u'], d1.id['x']))
-        assert d1.find_component_id('x') is None
+        assert x not in d1.components
 
         np.testing.assert_array_equal(d1['z'], [8, 10, 12])

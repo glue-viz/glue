@@ -2,6 +2,9 @@
 .. module::glue.message
 
 """
+
+from __future__ import absolute_import, division, print_function
+
 __all__ = ['Message', 'ErrorMessage', 'SubsetMessage', 'SubsetCreateMessage',
            'SubsetUpdateMessage', 'SubsetDeleteMessage', 'DataMessage',
            'DataAddComponentMessage', 'DataUpdateMessage',
@@ -122,6 +125,14 @@ class DataAddComponentMessage(DataMessage):
 
 class ComponentsChangedMessage(DataMessage):
     pass
+
+
+class ComponentReplacedMessage(ComponentsChangedMessage):
+
+    def __init__(self, sender, old_component, new_component, tag=None):
+        super(ComponentReplacedMessage, self).__init__(sender, old_component)
+        self.old = old_component
+        self.new = new_component
 
 
 class DataUpdateMessage(DataMessage):

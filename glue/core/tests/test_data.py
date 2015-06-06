@@ -1,4 +1,7 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103,R0903,R0904
+
+from __future__ import absolute_import, division, print_function
+
 import pytest
 import numpy as np
 from mock import MagicMock
@@ -11,6 +14,8 @@ from ..hub import Hub, HubListener
 from ..exceptions import IncompatibleAttribute
 from ..component_link import ComponentLink
 from ..registry import Registry
+from ... import core
+from ...external import six
 
 
 class TestCoordinates(Coordinates):
@@ -68,14 +73,22 @@ class TestData(object):
         cid2 = self.data.add_component(comp, cid)
         assert cid2 is cid
 
+    def test_add_component_via_setitem(self):
+        d = Data(x=[1, 2, 3])
+        d['y'] = d['x'] * 2
+        np.testing.assert_array_equal(d['y'], [2, 4, 6])
+
     def test_add_component_incompatible_shape(self):
         comp = MagicMock()
         comp.data.shape = (3, 2)
         with pytest.raises(TypeError) as exc:
             self.data.add_component(comp("junk label"))
-        if isinstance(exc.value, basestring):  # python 2.6
+        if isinstance(exc.value, six.string_types):  # python 2.6
             assert exc.value == ("add_component() takes at least 3 "
                                  "arguments (2 given)")
+        elif six.PY3:
+            assert exc.value.args[0] == ("add_component() missing 1 required "
+                                         "positional argument: 'label'")
         else:
             assert exc.value.args[0] == ("add_component() takes at least 3 "
                                          "arguments (2 given)")
@@ -109,12 +122,8 @@ class TestData(object):
 
     def test_register(self):
         hub = MagicMock(spec_set=Hub)
-        not_hub = MagicMock()
         self.data.register_to_hub(hub)
         assert hub is self.data.hub
-        with pytest.raises(TypeError) as exc:
-            self.data.register_to_hub(not_hub)
-        assert exc.value.args[0].startswith("input is not a Hub object")
 
     def test_component_order(self):
         """Components should be returned in the order they were specified"""
@@ -130,11 +139,11 @@ class TestData(object):
         hub = MagicMock(spec_set=Hub)
 
         # make sure broadcasting with no hub is ok
-        self.data.broadcast()
+        self.data.broadcast('testing')
 
         # make sure broadcast with hub gets relayed
         self.data.register_to_hub(hub)
-        self.data.broadcast()
+        self.data.broadcast('testing')
         assert hub.broadcast.call_count == 1
 
     def test_double_hub_add(self):
@@ -154,16 +163,11 @@ class TestData(object):
         self.data.add_component(comp, compid)
 
         pricomps = self.data.primary_components
-        print self.comp_id, compid, pricomps
-        print self.comp_id in pricomps
-        print compid not in pricomps
+        print(self.comp_id, compid, pricomps)
+        print(self.comp_id in pricomps)
+        print(compid not in pricomps)
         assert self.comp_id in pricomps
         assert compid not in pricomps
-
-    def test_add_component_invalid_label(self):
-        with pytest.raises(TypeError) as exc:
-            self.data.add_component(self.comp, label=5)
-        assert exc.value.args[0] == "label must be a ComponentID or string"
 
     def test_add_component_invalid_component(self):
         comp = Component(np.array([1]))
@@ -213,7 +217,7 @@ class TestData(object):
         assert self.data.find_component_id('does not exist') is None
 
     def test_add_subset(self):
-        s = Subset(None)
+        s = Subset(Data())
         self.data.add_subset(s)
         assert s in self.data.subsets
 
@@ -312,7 +316,10 @@ class TestData(object):
         d = Data(x=[1, 2, 3])
         with pytest.raises(ValueError) as exc:
             d['x'][:] = 5
-        assert 'read-only' in exc.value.args[0]
+        try:
+            assert 'read-only' in exc.value.args[0]
+        except AttributeError:  # COMPAT: Python 2.6
+            assert 'read-only' in exc.value
         assert not d['x'].flags['WRITEABLE']
 
     def test_categorical_immutable(self):
@@ -322,8 +329,26 @@ class TestData(object):
 
         with pytest.raises(ValueError) as exc:
             d['gender'][:] = 5
-        assert 'read-only' in exc.value.args[0]
+        try:
+            assert 'read-only' in exc.value.args[0]
+        except AttributeError:  # COMPAT: Python 2.6
+            assert 'read-only' in exc.value
         assert not d['gender'].flags['WRITEABLE']
+
+    def test_update_clears_subset_cache(self):
+        from glue.core.roi import RectangularROI
+
+        d = Data(x=[1, 2, 3], y=[1, 2, 3])
+        s = d.new_subset()
+        state = core.subset.RoiSubsetState()
+        state.xatt = d.id['x']
+        state.yatt = d.id['y']
+        state.roi = RectangularROI(xmin=1.5, xmax=2.5, ymin=1.5, ymax=2.5)
+        s.subset_state = state
+
+        np.testing.assert_array_equal(s.to_mask(), [False, True, False])
+        d.update_components({d.id['x']: [10, 20, 30]})
+        np.testing.assert_array_equal(s.to_mask(), [False, False, False])
 
 
 def test_component_id_item_access():

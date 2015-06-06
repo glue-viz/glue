@@ -1,6 +1,8 @@
 """This file contains tests concerning linking data and accessing
 linked components"""
 
+from __future__ import absolute_import, division, print_function
+
 from glue.core import Data, DataCollection
 from glue.core.link_helpers import LinkSame
 import numpy as np

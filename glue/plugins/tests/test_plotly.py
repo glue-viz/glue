@@ -6,15 +6,6 @@ from ...qt.glue_application import GlueApplication
 from ...qt.widgets import ScatterWidget, ImageWidget, HistogramWidget
 from ..export_plotly import build_plotly_call
 
-try:
-    import plotly
-    PLOTLY_INSTALLED = True
-except ImportError:
-    PLOTLY_INSTALLED = False
-
-
-pytest.mark.skipif('not PLOTLY_INSTALLED')
-
 
 class TestPlotly(object):
 
@@ -69,22 +60,27 @@ class TestPlotly(object):
         assert data[1]['name'] == 'subset'
 
     def test_axes(self):
+
         app = self.app
+
         v = app.new_data_viewer(ScatterWidget, data=self.data)
+
         v.xlog = True
         v.xmin = 10
         v.xmax = 100
+        v.xatt = self.data.id['x']
 
         v.ylog = False
         v.ymin = 2
         v.ymax = 4
+        v.yatt = self.data.id['y']
 
         args, kwargs = build_plotly_call(app)
 
         xaxis = dict(type='log', rangemode='normal',
-                     range=[1, 2], title='y', zeroline=False)
+                     range=[1, 2], title='x', zeroline=False)
         yaxis = dict(type='linear', rangemode='normal',
-                     range=[2, 4], title='x', zeroline=False)
+                     range=[2, 4], title='y', zeroline=False)
         layout = args[0]['layout']
         for k, v in layout['xaxis'].items():
             assert xaxis.get(k, v) == v

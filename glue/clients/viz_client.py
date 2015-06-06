@@ -1,5 +1,11 @@
+from __future__ import absolute_import, division, print_function
+
 import matplotlib.pyplot as plt
 from ..core.client import Client
+from ..core import Data
+from .layer_artist import LayerArtistContainer
+
+__all__ = ['VizClient', 'GenericMplClient']
 
 
 class VizClient(Client):
@@ -22,7 +28,7 @@ class VizClient(Client):
     VizClient provides a public refresh() method that calls all of
     these methods.
 
-    Attributes:
+    Attributes
     ----------
 
     options: A dictionary of global plot options, to be handled by
@@ -129,7 +135,7 @@ class VizClient(Client):
         raise NotImplementedError()
 
 
-def init_mpl(figure, axes, wcs=False):
+def init_mpl(figure, axes, wcs=False, axes_factory=None):
     if axes is not None and figure is not None and \
             axes.figure is not figure:
         raise ValueError("Axes and figure are incompatible")
@@ -140,18 +146,145 @@ def init_mpl(figure, axes, wcs=False):
         WCSAxesSubplot = None
 
     if axes is not None:
-        _ax = axes
+        _axes = axes
         _figure = axes.figure
     else:
         _figure = figure or plt.figure()
         if wcs and WCSAxesSubplot is not None:
-            _ax = WCSAxesSubplot(_figure, 111)
-            _figure.add_axes(_ax)
+            _axes = WCSAxesSubplot(_figure, 111)
+            _figure.add_axes(_axes)
         else:
-            _ax = _figure.add_subplot(1, 1, 1)
+            if axes_factory is not None:
+                _axes = axes_factory(_figure)
+            else:
+                _axes = _figure.add_subplot(1, 1, 1)
     try:
         _figure.set_tight_layout(True)
     except AttributeError:  # matplotlib < 1.1
         pass
 
-    return _figure, _ax
+    return _figure, _axes
+
+
+class GenericMplClient(Client):
+
+    """
+    This client base class handles the logic of adding, removing,
+    and updating layers.
+
+    Subsets are auto-added and removed with datasets.
+    New subsets are auto-added iff the data has already been added
+    """
+
+    def __init__(self, data=None, figure=None, axes=None,
+                 artist_container=None, axes_factory=None):
+
+        super(GenericMplClient, self).__init__(data=data)
+        if axes_factory is None:
+            axes_factory = self.create_axes
+        figure, self.axes = init_mpl(figure, axes, axes_factory=axes_factory)
+        self.artists = artist_container
+        if self.artists is None:
+            self.artists = LayerArtistContainer()
+
+        self._connect()
+
+    def create_axes(self, figure):
+        return figure.add_subplot(1, 1, 1)
+
+    def _connect(self):
+        pass
+
+    @property
+    def collect(self):
+        # a better name
+        return self.data
+
+    def _redraw(self):
+        self.axes.figure.canvas.draw()
+
+    def new_layer_artist(self, layer):
+        raise NotImplementedError
+
+    def apply_roi(self, roi):
+        raise NotImplementedError
+
+    def _update_layer(self, layer):
+        raise NotImplementedError
+
+    def add_layer(self, layer):
+        """
+        Add a new Data or Subset layer to the plot.
+
+        Returns the created layer artist
+
+        :param layer: The layer to add
+        :type layer: :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
+        """
+        if layer.data not in self.collect:
+            return
+
+        if layer in self.artists:
+            return self.artists[layer][0]
+
+        result = self.new_layer_artist(layer)
+        self.artists.append(result)
+        self._update_layer(layer)
+
+        self.add_layer(layer.data)
+        for s in layer.data.subsets:
+            self.add_layer(s)
+
+        if layer.data is layer:  # Added Data object. Relimit view
+            self.axes.autoscale_view(True, True, True)
+
+        return result
+
+    def remove_layer(self, layer):
+        if layer not in self.artists:
+            return
+
+        self.artists.pop(layer)
+        if isinstance(layer, Data):
+            list(map(self.remove_layer, layer.subsets))
+
+        self._redraw()
+
+    def set_visible(self, layer, state):
+        """
+        Toggle a layer's visibility
+
+        :param layer: which layer to modify
+        :param state: True or False
+        """
+
+    def _update_all(self):
+        for layer in self.artists.layers:
+            self._update_layer(layer)
+
+    def __contains__(self, layer):
+        return layer in self.artists
+
+    # Hub message handling
+    def _add_subset(self, message):
+        self.add_layer(message.sender)
+
+    def _remove_subset(self, message):
+        self.remove_layer(message.sender)
+
+    def _update_subset(self, message):
+        self._update_layer(message.sender)
+
+    def _update_data(self, message):
+        self._update_layer(message.sender)
+
+    def _remove_data(self, message):
+        self.remove_layer(message.data)
+
+    def restore_layers(self, layers, context):
+        """ Re-generate plot layers from a glue-serialized list"""
+        for l in layers:
+            l.pop('_type')
+            props = dict((k, context.object(v)) for k, v in l.items())
+            layer = self.add_layer(props['layer'])
+            layer.properties = props

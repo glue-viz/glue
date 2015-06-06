@@ -1,4 +1,7 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+
+from __future__ import absolute_import, division, print_function
+
 from distutils.version import LooseVersion  # pylint:disable=W0611
 
 import pytest
@@ -111,28 +114,28 @@ class TestScatterWidget(object):
         assert self.is_layer_present(layer)
 
     def test_add_first_data_updates_combos(self):
-        layer = self.add_layer_via_method()
+        self.add_layer_via_method()
         xatt = str(self.widget.ui.xAxisComboBox.currentText())
         yatt = str(self.widget.ui.yAxisComboBox.currentText())
         assert xatt is not None
         assert yatt is not None
 
     def test_flip_x(self):
-        layer = self.add_layer_via_method()
+        self.add_layer_via_method()
         self.widget.xflip = True
         assert self.widget.client.xflip
         self.widget.xflip = False
         assert not self.widget.client.xflip
 
     def test_flip_y(self):
-        layer = self.add_layer_via_method()
+        self.add_layer_via_method()
         self.widget.yflip = True
         assert self.widget.client.yflip
         self.widget.yflip = False
         assert not self.widget.client.yflip
 
     def test_log_x(self):
-        layer = self.add_layer_via_method()
+        self.add_layer_via_method()
         self.widget.xlog = True
         assert self.widget.client.xlog
         self.widget.xlog = False
@@ -145,9 +148,9 @@ class TestScatterWidget(object):
         assert not self.widget.client.ylog
 
     def test_double_add_ignored(self):
-        layer = self.add_layer_via_method()
+        self.add_layer_via_method()
         nobj = self.widget.ui.xAxisComboBox.count()
-        layer = self.add_layer_via_method()
+        self.add_layer_via_method()
         assert self.widget.ui.xAxisComboBox.count() == nobj
 
     def test_subsets_dont_duplicate_fields(self):
@@ -179,43 +182,43 @@ class TestScatterWidget(object):
         self.widget.windowTitle() == expected
 
     def test_second_data_add_preserves_plot_variables(self):
-        l1 = self.add_layer_via_method(0)
+        self.add_layer_via_method(0)
         self.widget.ui.xAxisComboBox.setCurrentIndex(3)
         self.widget.ui.yAxisComboBox.setCurrentIndex(2)
-        l2 = self.add_layer_via_method(1)
+        self.add_layer_via_method(1)
 
         assert self.widget.ui.xAxisComboBox.currentIndex() == 3
         assert self.widget.ui.yAxisComboBox.currentIndex() == 2
 
     def test_set_limits(self):
-        l1 = self.add_layer_via_method(0)
+        self.add_layer_via_method(0)
         w = self.widget
         c = self.widget.client
         ax = self.widget.client.axes
 
-        print w.xmin, w.xmax, w.ymin, w.ymax
-        print c.xmin, c.xmax, c.ymin, c.ymax
-        print ax.get_xlim(), ax.get_ylim()
+        print(w.xmin, w.xmax, w.ymin, w.ymax)
+        print(c.xmin, c.xmax, c.ymin, c.ymax)
+        print(ax.get_xlim(), ax.get_ylim())
 
         self.widget.xmax = 20
-        print w.xmin, w.xmax, w.ymin, w.ymax
-        print c.xmin, c.xmax, c.ymin, c.ymax
-        print ax.get_xlim(), ax.get_ylim()
+        print(w.xmin, w.xmax, w.ymin, w.ymax)
+        print(c.xmin, c.xmax, c.ymin, c.ymax)
+        print(ax.get_xlim(), ax.get_ylim())
 
         self.widget.xmin = 10
-        print w.xmin, w.xmax, w.ymin, w.ymax
-        print c.xmin, c.xmax, c.ymin, c.ymax
-        print ax.get_xlim(), ax.get_ylim()
+        print(w.xmin, w.xmax, w.ymin, w.ymax)
+        print(c.xmin, c.xmax, c.ymin, c.ymax)
+        print(ax.get_xlim(), ax.get_ylim())
 
         self.widget.ymax = 40
-        print w.xmin, w.xmax, w.ymin, w.ymax
-        print c.xmin, c.xmax, c.ymin, c.ymax
-        print ax.get_xlim(), ax.get_ylim()
+        print(w.xmin, w.xmax, w.ymin, w.ymax)
+        print(c.xmin, c.xmax, c.ymin, c.ymax)
+        print(ax.get_xlim(), ax.get_ylim())
 
         self.widget.ymin = 30
-        print w.xmin, w.xmax, w.ymin, w.ymax
-        print c.xmin, c.xmax, c.ymin, c.ymax
-        print ax.get_xlim(), ax.get_ylim()
+        print(w.xmin, w.xmax, w.ymin, w.ymax)
+        print(c.xmin, c.xmax, c.ymin, c.ymax)
+        print(ax.get_xlim(), ax.get_ylim())
 
         assert self.widget.client.axes.get_xlim() == (10, 20)
         assert self.widget.client.axes.get_ylim() == (30, 40)
@@ -243,7 +246,7 @@ class TestScatterWidget(object):
         draw_event in MPL 1.1.0. Ths functionality nevertheless seems
         to work when actually using Glue"""
 
-        l1 = self.add_layer_via_method(0)
+        self.add_layer_via_method(0)
         self.widget.client.axes.set_xlim((3, 4))
         self.widget.client.axes.set_ylim((5, 6))
 
@@ -263,11 +266,11 @@ class TestScatterWidget(object):
 
     def test_component_change_syncs_with_combo(self):
         l1 = self.add_layer_via_method()
-        cid = l1.add_component(l1[l1.components[0]], 'testing')
+        l1.add_component(l1[l1.components[0]], 'testing')
         self.assert_component_present('testing')
 
     def test_swap_axes(self):
-        l1 = self.add_layer_via_method()
+        self.add_layer_via_method()
         cl = self.widget.client
         cl.xlog, cl.xflip = True, True
         cl.ylog, cl.yflip = False, False
@@ -280,7 +283,7 @@ class TestScatterWidget(object):
         assert (cl.xatt, cl.yatt) == (y, x)
 
     def test_hidden(self):
-        l1 = self.add_layer_via_method()
+        self.add_layer_via_method()
         xcombo = self.widget.ui.xAxisComboBox
 
         self.widget.hidden = False
@@ -291,8 +294,8 @@ class TestScatterWidget(object):
         assert xcombo.count() == 4
 
     def test_add_subset_preserves_plot_variables(self):
-        l1 = self.add_layer_via_method(0)
-        print self.widget.client.layer_count
+        self.add_layer_via_method(0)
+        print(self.widget.client.layer_count)
 
         self.widget.ui.xAxisComboBox.setCurrentIndex(3)
         self.widget.ui.yAxisComboBox.setCurrentIndex(2)
@@ -304,6 +307,18 @@ class TestScatterWidget(object):
 
         assert self.widget.ui.xAxisComboBox.currentIndex() == 3
         assert self.widget.ui.yAxisComboBox.currentIndex() == 2
+
+    def test_title_synced_if_data_removed(self):
+        # regression test for #517
+        n0 = self.widget.windowTitle()
+        self.add_layer_via_method(0)
+        n1 = self.widget.windowTitle()
+        assert n1 != n0
+        l2 = self.add_layer_via_method(1)
+        n2 = self.widget.windowTitle()
+        assert n2 != n1
+        self.widget.remove_layer(l2)
+        assert self.widget.windowTitle() == n1
 
 
 class TestDrawCount(TestScatterWidget):

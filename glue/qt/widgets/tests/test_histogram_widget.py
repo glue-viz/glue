@@ -1,4 +1,7 @@
 #pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+
+from __future__ import absolute_import, division, print_function
+
 import pytest
 
 from . import simple_session
@@ -61,7 +64,7 @@ class TestHistogramWidget(object):
         self.collect.append(d2)
         self.widget.add_data(d2)
         assert self.widget.client.layer_present(d2)
-        print list(self.widget.client._artists)
+        print(list(self.widget.client._artists))
 
         self.assert_component_integrity()
 

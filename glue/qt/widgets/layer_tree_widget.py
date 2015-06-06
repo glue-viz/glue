@@ -3,11 +3,14 @@ Class which embellishes the DataCollectionView with buttons and actions for
 editing the data collection
 """
 
+from __future__ import absolute_import, division, print_function
+
 from ...external.qt.QtGui import (QWidget, QMenu,
                                   QAction, QKeySequence, QFileDialog)
 
 
 from ...external.qt.QtCore import Qt, Signal, QObject
+from ...external.six.moves import reduce
 
 from ..ui.layertree import Ui_LayerTree
 
@@ -20,6 +23,7 @@ from .custom_component_widget import CustomComponentWidget
 from ..actions import act as _act
 from ...core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode
 from .subset_facet import SubsetFacet
+from ...config import single_subset_action
 
 
 @core.decorators.singleton
@@ -199,6 +203,19 @@ class LinkAction(LayerAction):
         LinkEditor.update_links(self.data_collection)
 
 
+class MaskifySubsetAction(LayerAction):
+    _title = "Transform subset to pixel mask"
+    _tooltip = "Transform a subset to a pixel mask"
+
+    def _can_trigger(self):
+        return self.single_selection() and \
+            isinstance(self.selected_layers()[0], core.Subset)
+
+    def _do_action(self):
+        s = self.selected_layers()[0]
+        s.subset_state = s.state_as_mask()
+
+
 class SaveAction(LayerAction):
     _title = "Save subset"
     _tooltip = "Save the mask for this subset to a file"
@@ -324,6 +341,36 @@ class MergeAction(LayerAction):
         self.data_collection.merge(*self.selected_layers())
 
 
+class UserAction(LayerAction):
+
+    def __init__(self, layer_tree_widget, callback, **kwargs):
+        self._title = kwargs.get('name', 'User Action')
+        self._tooltip = kwargs.get('tooltip', None)
+        self._icon = kwargs.get('icon', None)
+        self._callback = callback
+        super(UserAction, self).__init__(layer_tree_widget)
+
+
+class SingleSubsetUserAction(UserAction):
+
+    """
+    User-defined callback functions to expose
+    when single subsets are selected.
+
+    Users register new actions via the :member:`glue.config.single_subset_action`
+    member
+
+    Callback functions are passed the subset and data collection
+    """
+
+    def _can_trigger(self):
+        return self.single_selection_subset()
+
+    def _do_action(self):
+        subset, = self.selected_layers()
+        return self._callback(subset, self.data_collection)
+
+
 class LayerCommunicator(QObject):
     layer_check_changed = Signal(object, bool)
 
@@ -439,6 +486,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
         self._actions['delete'] = DeleteAction(self)
         self._actions['facet'] = FacetAction(self)
         self._actions['merge'] = MergeAction(self)
+        self._actions['maskify'] = MaskifySubsetAction(self)
 
         # new component definer
         separator = QAction("sep", tree)
@@ -450,6 +498,13 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
         tree.addAction(a)
         a.triggered.connect(nonpartial(self._create_component))
         self._actions['new_component'] = a
+
+        # user-defined layer actions
+        for name, callback, tooltip, icon in single_subset_action:
+            self._actions[name] = SingleSubsetUserAction(self, callback,
+                                                         name=name,
+                                                         tooltip=tooltip,
+                                                         icon=icon)
 
         # right click pulls up menu
         tree.setContextMenuPolicy(Qt.ActionsContextMenu)
@@ -487,7 +542,8 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
 
 def save_subset(subset):
     assert isinstance(subset, core.subset.Subset)
-    fname, fltr = QFileDialog.getSaveFileName(caption="Select an output name")
+    fname, fltr = QFileDialog.getSaveFileName(caption="Select an output name",
+                                              filter='FITS mask (*.fits);; Fits mask (*.fits)')
     fname = str(fname)
     if not fname:
         return

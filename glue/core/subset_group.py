@@ -23,6 +23,8 @@ from .visual import VisualAttributes, RED
 from .message import (DataCollectionAddMessage,
                       DataCollectionDeleteMessage
                       )
+from .contracts import contract
+from ..external import six
 
 __all__ = ['GroupedSubset', 'SubsetGroup']
 
@@ -65,6 +67,10 @@ class GroupedSubset(Subset):
     def __eq__(self, other):
         return other is self
 
+    # In Python 3, if __eq__ is defined, then __hash__ has to be re-defined
+    if six.PY3:
+        __hash__ = object.__hash__
+
     def __gluestate__(self, context):
         return dict(group=context.id(self.group),
                     style=context.do(self.style))
@@ -90,8 +96,7 @@ class SubsetGroup(HubListener):
         self.subsets = []
         if subset_state is None:
             subset_state = SubsetState()
-        else:
-            print 'using', subset_state
+
         self.subset_state = subset_state
         self.label = label
         self._style = None
@@ -101,6 +106,7 @@ class SubsetGroup(HubListener):
         self.style.color = color
         self.style.alpha = alpha
 
+    @contract(data='isinstance(DataCollection)')
     def register(self, data):
         """
         Register to a :class:`~glue.core.data_collection.DataCollection`
@@ -126,11 +132,13 @@ class SubsetGroup(HubListener):
         self.subset_state = state
 
     def _add_data(self, data):
+        # add a new data object to group
         s = GroupedSubset(data, self)
         data.add_subset(s)
         self.subsets.append(s)
 
     def _remove_data(self, data):
+        # remove a data object from group
         for s in list(self.subsets):
             if s.data is data:
                 self.subsets.remove(s)
@@ -154,9 +162,10 @@ class SubsetGroup(HubListener):
         for s in self.subsets:
             s.sync_style(self.style)
 
+    @contract(item='string')
     def broadcast(self, item):
         # used by __setattr__ and VisualAttributes.__setattr__
-        if isinstance(item, VisualAttributes):
+        if item == 'style':
             self._sync_style()
             return
 
@@ -172,7 +181,7 @@ class SubsetGroup(HubListener):
         return dict(label=self.label,
                     state=context.id(self.subset_state),
                     style=context.do(self.style),
-                    subsets=map(context.id, self.subsets))
+                    subsets=list(map(context.id, self.subsets)))
 
     @classmethod
     def __setgluestate__(cls, rec, context):
@@ -182,7 +191,7 @@ class SubsetGroup(HubListener):
         result.label = rec['label']
         result.style = context.object(rec['style'])
         result.style.parent = result
-        result.subsets = map(context.object, rec['subsets'])
+        result.subsets = list(map(context.object, rec['subsets']))
 
     def __and__(self, other):
         return self.subset_state & other.subset_state

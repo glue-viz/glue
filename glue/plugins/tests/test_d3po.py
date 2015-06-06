@@ -1,15 +1,22 @@
+from __future__ import absolute_import, division, print_function
+
 from tempfile import mkdtemp
 import os
 from shutil import rmtree
 
-from astropy.table import Table
 import numpy as np
 
 from ..export_d3po import make_data_file
 from ...core import Data, Subset
 
+from ...tests.helpers import requires_astropy
 
+
+@requires_astropy
 def test_make_data_file():
+
+    from astropy.table import Table
+
     # astropy.Table interface has changed across versions. Check
     # that we build a valid table
     d = Data(x=[1, 2, 3], y=[2, 3, 4], label='data')

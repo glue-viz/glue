@@ -50,12 +50,14 @@ new saver and loader version. This ensures Glue can still load old
 serialization protocols. Versions must be sequential integers,
 starting from 1.
 """
+
+from __future__ import absolute_import, division, print_function
+
 from itertools import count
 from collections import defaultdict
 import json
 import types
 import logging
-from cStringIO import StringIO
 from inspect import isgeneratorfunction
 
 import numpy as np
@@ -67,18 +69,21 @@ from .data import (Data, Component, ComponentID, DerivedComponent,
                    CoordinateComponent)
 from . import (VisualAttributes, ComponentLink, DataCollection)
 from .component_link import CoordinateComponentLink
-from .util import lookup_class
+from ..utils import lookup_class
 from .roi import Roi
 from . import glue_pickle as gp
 from .. import core
 from .subset_group import coerce_subset_groups
+from ..external import six
+from io import BytesIO
+from base64 import b64encode, b64decode
 
-literals = tuple([types.NoneType, types.FloatType,
-                 types.IntType, types.LongType,
-                 types.NoneType, types.StringType,
-                 types.BooleanType, types.UnicodeType, types.ListType,
-                 tuple])
-literals += np.ScalarType
+
+literals = tuple([type(None), float, int, bytes, bool, list, tuple])
+
+if six.PY2:
+    literals += (long,)
+literals += (np.ScalarType,)
 
 _lookup = lookup_class
 
@@ -213,9 +218,12 @@ class GlueSerializer(object):
 
     def id(self, obj):
         """
-        Return a unique name for an object,
-        and add it to the ID registry if necessary
+        Return a unique name for an object, and add it to the ID registry
+        if necessary.
         """
+        if isinstance(obj, six.string_types):
+            return 'st__%s' % obj
+
         if isinstance(obj, literals):
             return obj
 
@@ -240,8 +248,10 @@ class GlueSerializer(object):
         sz = -1
         while sz != len(self._objs):
             sz = len(self._objs)
-            result = dict((oid, self.do(obj))
-                          for oid, obj in self._objs.items())
+            # we need to construct this in two steps otherwise we get a
+            # 'dictionary changed size during iteration' error.
+            result = [(oid, self.do(obj)) for oid, obj in list(self._objs.items())]
+            result = dict(result)
         return result
 
     def do(self, obj):
@@ -249,6 +259,9 @@ class GlueSerializer(object):
         Serialize an object, but do not add it to
         the ID registry
         """
+        if isinstance(obj, six.string_types):
+            return 'st__' + obj
+
         if isinstance(obj, literals):
             return obj
 
@@ -276,9 +289,12 @@ class GlueSerializer(object):
         if hasattr(obj, '__gluestate__'):
             return type(obj).__gluestate__, 1
 
-        for typ in type(obj).mro():
-            if typ in self.dispatch:
-                return self.dispatch[typ]
+        try:
+            for typ in type(obj).mro():
+                if typ in self.dispatch:
+                    return self.dispatch[typ]
+        except TypeError:  # no mro
+            pass
 
         raise GlueSerializeError("Don't know how to serialize"
                                  " %r of type %s" % (obj, type(obj)))
@@ -311,8 +327,8 @@ class GlueSerializer(object):
 
         Can be used as default kwarg in json.dumps/json.dump
         """
-        if np.isscalar(o):
-            return np.asscalar(o)  # coerce to pure-python type
+        if np.isscalar(o) and isinstance(o, np.generic):
+            return np.asscalar(o)  # coerce numpy number to pure-python type
         if isinstance(o, tuple):
             return list(o)
         return o
@@ -355,7 +371,7 @@ class GlueUnSerializer(object):
 
     def _dispatch(self, rec):
         typ = _lookup(rec['_type'])
-        version = rec.get('_protocol')
+        version = rec.get('_protocol', 1)
 
         if hasattr(typ, '__setgluestate__'):
             return typ.__setgluestate__
@@ -374,7 +390,10 @@ class GlueUnSerializer(object):
 
     @core.registry.disable
     def object(self, obj_id):
-        if isinstance(obj_id, basestring):
+        if isinstance(obj_id, six.string_types):
+            if obj_id.startswith('st__'):  # a string literal
+                return obj_id[4:]
+
             if obj_id in self._objs:
                 return self._objs[obj_id]
 
@@ -402,7 +421,7 @@ class GlueUnSerializer(object):
         if isgeneratorfunction(func):
             gen, obj = obj, next(obj)  # get the partially-constructed value...
 
-        if isinstance(obj_id, basestring):  # ... add it to the registry ...
+        if isinstance(obj_id, six.string_types):  # ... add it to the registry ...
             self._objs[obj_id] = obj
             self._working.remove(obj_id)
 
@@ -415,6 +434,16 @@ class GlueUnSerializer(object):
 
 saver = GlueSerializer.serializes
 loader = GlueUnSerializer.unserializes
+
+
+@saver(dict)
+def _save_dict(state, context):
+    return dict(contents=json.dumps(state))
+
+
+@loader(dict)
+def _load_dict(rec, context):
+    return json.loads(rec['contents'])
 
 
 @saver(CompositeSubsetState)
@@ -523,22 +552,22 @@ def _save_data_collection(dc, context):
     cids = [c for data in dc for c in data.component_ids()]
     components = [data.get_component(c)
                   for data in dc for c in data.component_ids()]
-    return dict(data=map(context.id, dc),
-                links=map(context.id, dc.links),
-                cids=map(context.id, cids),
-                components=map(context.id, components))
+    return dict(data=list(map(context.id, dc)),
+                links=list(map(context.id, dc.links)),
+                cids=list(map(context.id, cids)),
+                components=list(map(context.id, components)))
 
 
 @saver(DataCollection, version=2)
 def _save_data_collection_2(dc, context):
     result = _save_data_collection(dc, context)
-    result['groups'] = map(context.id, dc.subset_groups)
+    result['groups'] = list(map(context.id, dc.subset_groups))
     return result
 
 
 @loader(DataCollection)
 def _load_data_collection(rec, context):
-    dc = DataCollection(map(context.object, rec['data']))
+    dc = DataCollection(list(map(context.object, rec['data'])))
     for link in rec['links']:
         dc.add_link(context.object(link))
     coerce_subset_groups(dc)
@@ -548,7 +577,7 @@ def _load_data_collection(rec, context):
 @loader(DataCollection, version=2)
 def _load_data_collection_2(rec, context):
     result = _load_data_collection(rec, context)
-    result._subset_groups = map(context.object, rec['groups'])
+    result._subset_groups = list(map(context.object, rec['groups']))
     for grp in result.subset_groups:
         grp.register_to_hub(result.hub)
     return result
@@ -582,7 +611,7 @@ def _load_data(rec, context):
     # we override this function. This is pretty ugly
     result._create_pixel_and_world_components = lambda: None
 
-    comps = [map(context.object, [cid, comp])
+    comps = [list(map(context.object, [cid, comp]))
              for cid, comp in rec['components']]
     comps = sorted(comps,
                    key=lambda x: isinstance(x[1], (DerivedComponent,
@@ -599,8 +628,8 @@ def _load_data(rec, context):
 
     assert len(coord) == result.ndim * 2
 
-    result._world_component_ids = coord[:len(coord) / 2]
-    result._pixel_component_ids = coord[len(coord) / 2:]
+    result._world_component_ids = coord[:len(coord) // 2]
+    result._pixel_component_ids = coord[len(coord) // 2:]
 
     for s in rec['subsets']:
         result.add_subset(context.object(s))
@@ -609,11 +638,27 @@ def _load_data(rec, context):
 
 
 @loader(Data, version=2)
-def _load_datda_2(rec, context):
+def _load_data_2(rec, context):
     # adds style saving
     result = _load_data(rec, context)
     result.style = context.object(rec['style'])
     return result
+
+
+@saver(Data, version=3)
+def _save_data_3(data, context):
+    result = _save_data_2(data, context)
+    result['_key_joins'] = [[context.id(k), context.id(v0), context.id(v1)]
+                            for k, (v0, v1) in data._key_joins.items()]
+    return result
+
+
+@loader(Data, version=3)
+def _load_data_3(rec, context):
+    result = _load_data_2(rec, context)
+    yield result
+    result._key_joins = dict((context.object(k), (context.object(v0), context.object(v1)))
+                             for k, v0, v1 in rec['_key_joins'])
 
 
 @saver(ComponentID)
@@ -658,8 +703,8 @@ def _load_derived_component(rec, context):
 
 @saver(ComponentLink)
 def _save_component_link(link, context):
-    frm = map(context.id, [context.id(f) for f in link.get_from_ids()])
-    to = map(context.id, [link.get_to_id()])
+    frm = list(map(context.id, link.get_from_ids()))
+    to = list(map(context.id, [link.get_to_id()]))
     using = context.do(link.get_using())
     inverse = context.do(link.get_inverse())
     hidden = link.hidden
@@ -668,8 +713,8 @@ def _save_component_link(link, context):
 
 @loader(ComponentLink)
 def _load_component_link(rec, context):
-    frm = map(context.object, rec['frm'])
-    to = map(context.object, rec['to'])[0]
+    frm = list(map(context.object, rec['frm']))
+    to = list(map(context.object, rec['to']))[0]
     using = context.object(rec['using'])
     inverse = context.object(rec['inverse'])
     result = ComponentLink(frm, to, using, inverse)
@@ -679,8 +724,8 @@ def _load_component_link(rec, context):
 
 @saver(CoordinateComponentLink)
 def _save_coordinate_component_link(link, context):
-    frm = map(context.id, [context.id(f) for f in link._from_all])
-    to = map(context.id, [link.get_to_id()])
+    frm = list(map(context.id, link._from_all))
+    to = list(map(context.id, [link.get_to_id()]))
     coords = context.id(link.coords)
     index = link.index
     pix2world = link.pixel2world
@@ -690,12 +735,11 @@ def _save_coordinate_component_link(link, context):
 
 @loader(CoordinateComponentLink)
 def _load_coordinate_component_link(rec, context):
-    to = map(context.object, rec['to'])[0]  # XXX why is this a list?
+    to = list(map(context.object, rec['to']))[0]  # XXX why is this a list?
     coords = context.object(rec['coords'])
     index = rec['index']
     pix2world = rec['pix2world']
-    frm = map(context.object, rec['frm'])
-
+    frm = list(map(context.object, rec['frm']))
     return CoordinateComponentLink(frm, to, coords, index, pix2world)
 
 
@@ -723,14 +767,13 @@ def _save_session(session, context):
 
 @loader(np.ndarray)
 def _load_numpy(rec, context):
-    s = StringIO(rec['data'].decode('base64'))
+    s = BytesIO(b64decode(rec['data']))
     return np.load(s)
 
 
 @saver(np.ndarray)
 def _save_numpy(obj, context):
-    f = StringIO()
+    f = BytesIO()
     np.save(f, obj)
-    f.seek(0)
-    data = f.read().encode('base64')
+    data = b64encode(f.getvalue()).decode('ascii')
     return dict(data=data)

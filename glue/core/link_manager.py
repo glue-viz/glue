@@ -1,7 +1,27 @@
+from __future__ import absolute_import, division, print_function
+"""
+The LinkManager class is responsible for maintaining the conistency
+of the "web of links" in a DataCollection. It discovers how to
+combine ComponentLinks together to discover all of the ComponentIDs
+that a Data object can derive,
+
+As a trivial example, imagine a chain of 2 ComponentLinks linking
+ComponentIDs across 3 datasets:
+
+Data:        D1        D2       D3
+ComponentID: x         y        z
+Link:        <---x2y---><--y2z-->
+
+The LinkManager autocreates a link from D1.id['x'] to D3.id['z']
+by chaining x2y and y2z.
+"""
 import logging
 
-from .data import DerivedComponent
+from .data import DerivedComponent, Data, ComponentID
+from .component_link import ComponentLink
 from .link_helpers import LinkCollection
+from ..external import six
+from .contracts import contract
 
 
 def accessible_links(cids, links):
@@ -93,14 +113,24 @@ def find_dependents(data, link):
 
 
 class LinkManager(object):
+
     """A helper class to generate and store ComponentLinks,
     and compute which components are accesible from which data sets
     """
+
     def __init__(self):
         self._links = set()
         self._duplicated_ids = []
 
     def add_link(self, link):
+        """
+        Ingest one or more ComponentLinks to the manager
+
+        Parameters
+        ----------
+        link : ComponentLink, LinkCollection, or list thereof
+           The link(s) to ingest
+        """
         if isinstance(link, (LinkCollection, list)):
             for l in link:
                 self.add_link(l)
@@ -133,10 +163,12 @@ class LinkManager(object):
             if d in data.components:
                 data.update_id(d, o)
 
+    @contract(link=ComponentLink)
     def remove_link(self, link):
         logging.getLogger(__name__).debug('removing link %s', link)
         self._links.remove(link)
 
+    @contract(data=Data)
     def update_data_components(self, data):
         """Update all the DerivedComponents in a data object, based on
         all the Components deriveable based on the links in self.
@@ -180,7 +212,7 @@ class LinkManager(object):
 
         """
         links = discover_links(data, self._links)
-        for cid, link in links.iteritems():
+        for cid, link in six.iteritems(links):
             d = DerivedComponent(data, link)
             data.add_component(d, cid)
 

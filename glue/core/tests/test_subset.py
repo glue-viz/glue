@@ -1,4 +1,7 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+
+from __future__ import absolute_import, division, print_function
+
 import tempfile
 import operator as op
 
@@ -6,7 +9,8 @@ import pytest
 import numpy as np
 from mock import MagicMock
 
-from ..data import Data, ComponentID, Component
+from .. import DataCollection, ComponentLink
+from ..data import Data, Component
 from ..subset import (Subset, SubsetState,
                       ElementSubsetState, RoiSubsetState, RangeSubsetState)
 from ..subset import OrState
@@ -15,18 +19,24 @@ from ..subset import XorState
 from ..subset import InvertState
 from ..message import SubsetDeleteMessage
 from ..registry import Registry
+from .test_state import clone
+
+from ...tests.helpers import requires_astropy
 
 
 class TestSubset(object):
 
     def setup_method(self, method):
-        self.data = MagicMock()
+        self.data = MagicMock(spec=Data)
+        self.data.hub = MagicMock()
         self.data.label = "data"
         Registry().clear()
 
     def test_subset_mask_wraps_state(self):
         s = Subset(self.data)
-        state = MagicMock(spec=SubsetState)
+        state = MagicMock(spec_set=SubsetState)
+        state.to_mask.return_value = np.array([True])
+        assert state.to_mask.call_count == 0
         s.subset_state = state
         s.to_mask()
         state.to_mask.assert_called_once_with(self.data, None)
@@ -34,6 +44,7 @@ class TestSubset(object):
     def test_subset_index_wraps_state(self):
         s = Subset(self.data)
         state = MagicMock(spec=SubsetState)
+        state.to_index_list.return_value = np.array([1, 2, 3])
         s.subset_state = state
         s.to_index_list()
         state.to_index_list.assert_called_once_with(self.data)
@@ -59,7 +70,7 @@ class TestSubset(object):
     def test_paste_returns_copy_of_state(self):
         s = Subset(self.data)
         state1 = MagicMock(spec=SubsetState)
-        state1_copy = MagicMock()
+        state1_copy = MagicMock(spec=SubsetState)
         state1.copy.return_value = state1_copy
         s.subset_state = state1
 
@@ -128,14 +139,14 @@ class TestSubset(object):
     def test_broadcast_ignore(self):
         """subset doesn't broadcast until do_broadcast(True)"""
         s = Subset(self.data)
-        s.broadcast()
+        s.broadcast('style')
         assert s.data.hub.broadcast.call_count == 0
 
     def test_broadcast_processed(self):
         """subset broadcasts after do_broadcast(True)"""
         s = Subset(self.data)
         s.do_broadcast(True)
-        s.broadcast()
+        s.broadcast('style')
         assert s.data.hub.broadcast.call_count == 1
 
     def test_del(self):
@@ -148,6 +159,23 @@ class TestSubset(object):
         s.to_index_list.return_value = []
         get = s['test']
         assert list(get) == []
+
+    def test_state_with_array(self):
+        d = Data(x=[1, 2, 3])
+        s = d.new_subset()
+        s.subset_state = np.array([True, False, False])
+        np.testing.assert_array_equal(s.to_mask(), [True, False, False])
+
+    def test_state_array_bad_shape(self):
+        d = Data(x=[1, 2, 3])
+        s = d.new_subset()
+        with pytest.raises(ValueError):
+            s.subset_state = np.array([True])
+
+    def test_state_bad_type(self):
+        s = Subset(Data())
+        with pytest.raises(TypeError):
+            s.subset_state = 5
 
 target_states = ((op.and_, AndState),
                  (op.or_, OrState),
@@ -165,6 +193,7 @@ def test_binary_subset_combination(x):
 
 
 class TestSubsetStateCombinations(object):
+
     def setup_method(self, method):
         self.data = None
 
@@ -193,7 +222,9 @@ class TestSubsetStateCombinations(object):
 
 
 class TestCompositeSubsetStates(object):
+
     class DummyState(SubsetState):
+
         def __init__(self, mask):
             self._mask = mask
 
@@ -206,7 +237,7 @@ class TestCompositeSubsetStates(object):
     def setup_method(self, method):
         self.sub1 = self.DummyState(np.array([1, 1, 0, 0], dtype='bool'))
         self.sub2 = self.DummyState(np.array([1, 0, 1, 0], dtype='bool'))
-        self.data = None
+        self.data = Data(x=[1, 2, 3, 4])
 
     def test_or(self):
         s3 = OrState(self.sub1, self.sub2)
@@ -273,12 +304,13 @@ class TestElementSubsetState(object):
 class TestSubsetIo(object):
 
     def setup_method(self, method):
-        self.data = MagicMock()
+        self.data = MagicMock(spec=Data)
         self.data.shape = (4, 4)
         self.subset = Subset(self.data)
         inds = np.array([1, 2, 3])
         self.subset.subset_state = ElementSubsetState(indices=inds)
 
+    @requires_astropy
     def test_write(self):
         fobj, tmp = tempfile.mkstemp()
 
@@ -291,6 +323,7 @@ class TestSubsetIo(object):
                              [0, 0, 0, 0]], dtype=np.int16)
         np.testing.assert_array_equal(data, expected)
 
+    @requires_astropy
     def test_read(self):
         fobj, tmp = tempfile.mkstemp()
 
@@ -301,6 +334,7 @@ class TestSubsetIo(object):
         mask2 = sub2.to_mask()
         np.testing.assert_array_equal(mask1, mask2)
 
+    @requires_astropy
     def test_read_error(self):
         with pytest.raises(IOError) as exc:
             self.subset.read_mask('file_does_not_exist')
@@ -321,7 +355,7 @@ class TestSubsetState(object):
     def mask_check(self, mask, answer):
         self.state.to_mask = MagicMock()
         self.state.to_mask.return_value = mask
-        np.testing.assert_array_equal(self.state.to_index_list(None), answer)
+        np.testing.assert_array_equal(self.state.to_index_list(Data()), answer)
 
     def test_to_index_list_1d(self):
         mask = np.array([False, True])
@@ -345,6 +379,7 @@ class TestSubsetState(object):
 
 
 class TestCompositeSubsetStateCopy(object):
+
     def assert_composite_copy(self, cls):
         """Copying composite state should create new
         state with same type, with copies of sub states"""
@@ -371,6 +406,7 @@ class TestCompositeSubsetStateCopy(object):
 
 
 class DummySubsetState(SubsetState):
+
     def to_mask(self, data, view=None):
         result = np.ones(data.shape, dtype=bool)
         if view is not None:
@@ -405,12 +441,11 @@ class TestSubsetViews(object):
                                       self.c.data[::-1])
 
 
-#Test Fancy Indexing into the various subset states
+# Test Fancy Indexing into the various subset states
 
 
 def roifac(comp, cid):
     from ..roi import RectangularROI
-    from ..subset import RoiSubsetState
 
     result = RoiSubsetState()
     result.xatt = cid
@@ -422,7 +457,6 @@ def roifac(comp, cid):
 
 
 def rangefac(comp, cid):
-    from ..subset import RangeSubsetState
     return RangeSubsetState(.5, 2.5, att=cid)
 
 
@@ -475,7 +509,7 @@ facs = [roifac, rangefac, orfac, andfac, xorfac, invertfac,
 @pytest.mark.parametrize(('statefac', 'view'), [(f, v) for f in facs
                                                 for v in views])
 def test_mask_of_view_is_view_of_mask(statefac, view):
-    print statefac, view
+    print(statefac, view)
     d = Data()
     d.edit_subset = d.new_subset()
     c = Component(np.array([[1, 2], [3, 4]]))
@@ -507,6 +541,48 @@ def test_inequality_state_str():
     assert str((x < y) | (x < 2)) == '((x < y) | (x < 2))'
     assert str(~(x < y)) == '(~(x < y))'
     assert repr(x < 5) == ('<InequalitySubsetState: (x < 5)>')
+
+
+def test_to_mask_state():
+
+    d = Data(x=[1, 2, 3])
+    sub = d.new_subset()
+    sub.subset_state = d.id['x'] > 1
+    sub.subset_state = sub.state_as_mask()
+
+    np.testing.assert_array_equal(sub.to_mask(), [False, True, True])
+
+
+def test_to_mask_state_across_data():
+
+    d = Data(x=[1, 2, 3])
+    d2 = Data(x=[2, 3, 4])
+    dc = DataCollection([d, d2])
+
+    link = ComponentLink(d2.pixel_component_ids,
+                         d.pixel_component_ids[0],
+                         lambda x: x - 1)
+    dc.add_link(link)
+
+    sub = d.new_subset()
+    sub.subset_state = d.id['x'] > 1
+    sub.subset_state = sub.state_as_mask()
+
+    sub2 = d2.new_subset()
+    sub2.subset_state = sub.subset_state
+    np.testing.assert_array_equal(sub2.to_mask(), [False, False, True])
+
+
+def test_mask_clone():
+
+    d = Data(x=[1, 2, 3])
+    sub = d.new_subset()
+    sub.subset_state = d.id['x'] > 1
+    sub.subset_state = sub.state_as_mask()
+
+    d = clone(d)
+    sub = d.subsets[0]
+    np.testing.assert_array_equal(sub.to_mask(), [False, True, True])
 
 
 class TestAttributes(object):

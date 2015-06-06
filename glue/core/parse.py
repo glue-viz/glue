@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import re
 
 from .data import ComponentID
@@ -107,10 +109,11 @@ def _validate(cmd, references):
         tag = match.group('tag')
         if tag not in references:
             raise TypeError("Tag %s not in reference mapping: %s" %
-                            (tag, references.keys()))
+                            (tag, sorted(references.keys())))
 
 
 class ParsedCommand(object):
+
     """ Class to manage commands that define new components and subsets """
 
     def __init__(self, cmd, references):
@@ -155,6 +158,7 @@ class ParsedCommand(object):
 
 
 class ParsedComponentLink(ComponentLink):
+
     """ Class to create a new ComponentLink from a ParsedCommand object. """
 
     def __init__(self, to_, parsed):
@@ -167,7 +171,7 @@ class ParsedComponentLink(ComponentLink):
         """
         parsed.ensure_only_component_references()
         super(ParsedComponentLink, self).__init__(
-            parsed.reference_list, to_, 'dummy')
+            parsed.reference_list, to_, lambda: None)
         self._parsed = parsed
 
     def compute(self, data, view=None):
@@ -184,7 +188,9 @@ class ParsedComponentLink(ComponentLink):
 
 
 class ParsedSubsetState(SubsetState):
+
     """ A SubsetState defined by a ParsedCommand object """
+
     def __init__(self, parsed):
         """ Create a new object
 

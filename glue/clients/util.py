@@ -1,45 +1,12 @@
-import logging
+from __future__ import absolute_import, division, print_function
+
 from functools import partial
+
 import numpy as np
 from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
 from matplotlib.ticker import (LogFormatterMathtext, ScalarFormatter,
                                FuncFormatter)
 from ..core.data import CategoricalComponent
-from ..core.decorators import memoize
-
-
-def get_extent(view, transpose=False):
-    sy, sx = [s for s in view if isinstance(s, slice)]
-    if transpose:
-        return (sy.start, sy.stop, sx.start, sx.stop)
-    return (sx.start, sx.stop, sy.start, sy.stop)
-
-
-def view_cascade(data, view):
-    """ Return a set of views progressively zoomed out of input at roughly
-    constant pixel count
-
-    :param data: Data object to view
-    :param view: Original view into data
-
-    :rtype: tuple of views
-    """
-    shp = data.shape
-    v2 = list(view)
-    logging.debug("image shape: %s, view: %s", shp, view)
-
-    # choose stride length that roughly samples entire image
-    # at roughly the same pixel count
-    step = max(shp[i - 1] * v.step / max(v.stop - v.start, 1)
-               for i, v in enumerate(view) if isinstance(v, slice))
-    step = max(step, 1)
-
-    for i, v in enumerate(v2):
-        if not(isinstance(v, slice)):
-            continue
-        v2[i] = slice(0, shp[i - 1], step)
-
-    return tuple(v2), view
 
 
 def small_view(data, attribute):
@@ -59,34 +26,6 @@ def small_view_array(data):
     shp = data.shape
     view = tuple([slice(None, None, max(s / 50, 1)) for s in shp])
     return np.asarray(data)[view]
-
-
-def fast_limits(data, plo, phi):
-    """Quickly estimate percentiles in an array,
-    using a downsampled version
-
-    :param data: array-like
-    :param plo: Lo percentile
-    :param phi: High percentile
-
-    :rtype: Tuple of floats. Approximate values of each percentile in
-            data[component]
-    """
-    try:
-        from scipy import stats
-    except ImportError:
-        raise ImportError("Scale clipping requires SciPy")
-
-    shp = data.shape
-    view = tuple([slice(None, None, max(s / 50, 1)) for s in shp])
-    values = np.asarray(data)[view]
-    if ~np.isfinite(values).any():
-        return (0.0, 1.0)
-
-    limits = (-np.inf, np.inf)
-    lo = stats.scoreatpercentile(values.flat, plo, limit=limits)
-    hi = stats.scoreatpercentile(values.flat, phi, limit=limits)
-    return lo, hi
 
 
 def visible_limits(artists, axis):
@@ -131,6 +70,7 @@ def visible_limits(artists, axis):
 
 def tick_linker(all_categories, pos, *args):
     try:
+        pos = np.round(pos)
         return all_categories[int(pos)]
     except IndexError:
         return ''

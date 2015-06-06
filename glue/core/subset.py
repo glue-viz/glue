@@ -1,11 +1,19 @@
+from __future__ import absolute_import, division, print_function
+
 import operator
+import numbers
+
 import numpy as np
 
 from .visual import VisualAttributes, RED
 from .decorators import memoize
 from .message import SubsetDeleteMessage, SubsetUpdateMessage
+from .exceptions import IncompatibleAttribute
 from .registry import Registry
-from .util import split_component_view, view_shape
+from .util import split_component_view
+from ..utils import view_shape
+from ..external.six import PY3
+from .contracts import contract
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState',
@@ -14,7 +22,8 @@ __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
 OPSYM = {operator.ge: '>=', operator.gt: '>',
          operator.le: '<=', operator.lt: '<',
          operator.and_: '&', operator.or_: '|',
-         operator.xor: '^'}
+         operator.xor: '^', operator.eq: '==',
+         operator.ne: '!='}
 SYMOP = dict((v, k) for k, v in OPSYM.items())
 
 
@@ -32,11 +41,12 @@ class Subset(object):
     :param data:
         The dataset that this subset describes
     :type data: :class:`~glue.core.data.Data`
-
-    :param style: VisualAttributes instance
-        Describes visual attributes of the subset
     """
 
+    @contract(data='isinstance(Data)|None',
+              color='color',
+              alpha=float,
+              label='string|None')
     def __init__(self, data, color=RED, alpha=0.5, label=None):
         """ Create a new subset object.
 
@@ -48,13 +58,15 @@ class Subset(object):
         self.data = data
         self._subset_state = None
         self._label = None
+        self._style = None
         self._setup(color, alpha, label)
 
+    @contract(color='color', alpha='float', label='string|None')
     def _setup(self, color, alpha, label):
         self.color = color
         self.label = label  # trigger disambiguation
         self.style = VisualAttributes(parent=self)
-        self.style.markersize *= 2.5
+        self.style.markersize *= 1.5
         self.style.color = color
         self.style.alpha = alpha
         self.subset_state = SubsetState()  # calls proper setter method
@@ -65,6 +77,13 @@ class Subset(object):
 
     @subset_state.setter
     def subset_state(self, state):
+        if isinstance(state, np.ndarray):
+            if self.data.shape != state.shape:
+                raise ValueError("Shape of mask doesn't match shape of data")
+            cids = self.data.pixel_component_ids
+            state = MaskSubsetState(state, cids)
+        if not isinstance(state, SubsetState):
+            raise TypeError("State must be a SubsetState instance or array")
         self._subset_state = state
 
     @property
@@ -72,6 +91,7 @@ class Subset(object):
         return self._style
 
     @style.setter
+    @contract(value=VisualAttributes)
     def style(self, value):
         value.parent = self
         self._style = value
@@ -107,6 +127,7 @@ class Subset(object):
         self.data.add_subset(self)
         self.do_broadcast(True)
 
+    @contract(returns='array[N]')
     def to_index_list(self):
         """
         Convert the current subset to a list of indices. These index
@@ -129,8 +150,43 @@ class Subset(object):
            for the requested data set.
 
         """
-        return self.subset_state.to_index_list(self.data)
+        try:
+            return self.subset_state.to_index_list(self.data)
+        except IncompatibleAttribute as exc:
+            try:
+                return self._to_index_list_join()
+            except IncompatibleAttribute:
+                raise exc
 
+    def _to_index_list_join(self):
+        return np.where(self._to_mask_join(None).flat)[0]
+
+    def _to_mask_join(self, view):
+        """Conver the subset to a mask through an entity join
+           to another dataset. """
+        for other, (cid1, cid2) in self.data._key_joins.items():
+            if getattr(other, '_recursing', False):
+                continue
+
+            try:
+                self.data._recursing = True
+                s2 = Subset(other)
+                s2.subset_state = self.subset_state
+                key_right = s2.to_mask()
+            except IncompatibleAttribute:
+                continue
+            finally:
+                self.data._recursing = False
+
+            key_left = self.data[cid1, view]
+            result = np.in1d(key_left.ravel(),
+                             other[cid2, key_right])
+
+            return result.reshape(key_left.shape)
+
+        raise IncompatibleAttribute
+
+    @contract(view='array_view', returns='array')
     def to_mask(self, view=None):
         """
         Convert the current subset to a mask.
@@ -144,8 +200,15 @@ class Subset(object):
            defines whether each element belongs to the subset.
 
         """
-        return self.subset_state.to_mask(self.data, view)
+        try:
+            return self.subset_state.to_mask(self.data, view)
+        except IncompatibleAttribute as exc:
+            try:
+                return self._to_mask_join(view)
+            except IncompatibleAttribute:
+                raise exc
 
+    @contract(value=bool)
     def do_broadcast(self, value):
         """
         Set whether state changes to the subset are relayed to a hub.
@@ -159,7 +222,8 @@ class Subset(object):
         """
         object.__setattr__(self, '_broadcasting', value)
 
-    def broadcast(self, attribute=None):
+    @contract(attribute='string')
+    def broadcast(self, attribute):
         """
         Explicitly broadcast a SubsetUpdateMessage to the hub
 
@@ -196,6 +260,7 @@ class Subset(object):
 
         Registry().unregister(self, group=self.data)
 
+    @contract(file_name='string')
     def write_mask(self, file_name, format="fits"):
         """ Write a subset mask out to file
 
@@ -215,12 +280,13 @@ class Subset(object):
         else:
             raise AttributeError("format not supported: %s" % format)
 
+    @contract(file_name='string')
     def read_mask(self, file_name):
         try:
             from ..external.astro import fits
             mask = fits.open(file_name)[0].data
         except ImportError:
-            raise ImportError("Cannot write mask -- requires astropy")
+            raise ImportError("Cannot read mask -- requires astropy")
         except IOError:
             raise IOError("Could not read %s (not a fits file?)" % file_name)
         ind = np.where(mask.flat)[0]
@@ -244,6 +310,7 @@ class Subset(object):
         ma = self.to_mask(v)
         return self.data[view][ma]
 
+    @contract(other_subset='isinstance(Subset)')
     def paste(self, other_subset):
         """paste subset state from other_subset onto self """
         state = other_subset.subset_state.copy()
@@ -261,15 +328,19 @@ class Subset(object):
     def __repr__(self):
         return self.__str__()
 
+    @contract(other='isinstance(Subset)', returns='isinstance(Subset)')
     def __or__(self, other):
         return _combine([self, other], operator.or_)
 
+    @contract(other='isinstance(Subset)', returns='isinstance(Subset)')
     def __and__(self, other):
         return _combine([self, other], operator.and_)
 
+    @contract(returns='isinstance(Subset)')
     def __invert__(self):
         return _combine([self], operator.invert)
 
+    @contract(other='isinstance(Subset)', returns='isinstance(Subset)')
     def __xor__(self, other):
         return _combine([self, other], operator.xor)
 
@@ -279,6 +350,25 @@ class Subset(object):
         # XXX need to add equality specification for subset states
         return (self.subset_state == other.subset_state and
                 self.style == other.style)
+
+    def state_as_mask(self):
+        """
+        Convert the current SubsetState to a MaskSubsetState
+        """
+        try:
+            m = self.to_mask()
+        except IncompatibleAttribute:
+            m = np.zeros(self.data.shape, dtype=np.bool)
+        cids = self.data.pixel_component_ids
+        return MaskSubsetState(m, cids)
+
+    # In Python 2 we need to do this explicitly
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    # In Python 3, if __eq__ is defined, then __hash__ has to be re-defined
+    if PY3:
+        __hash__ = object.__hash__
 
 
 class SubsetState(object):
@@ -294,25 +384,35 @@ class SubsetState(object):
     def subset_state(self):  # convenience method, mimic interface of Subset
         return self
 
+    @contract(data='isinstance(Data)')
     def to_index_list(self, data):
         return np.where(self.to_mask(data).flat)[0]
 
+    @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
         shp = view_shape(data.shape, view)
         return np.zeros(shp, dtype=bool)
 
+    @contract(returns='isinstance(SubsetState)')
     def copy(self):
         return SubsetState()
 
+    @contract(other_state='isinstance(SubsetState)',
+              returns='isinstance(SubsetState)')
     def __or__(self, other_state):
         return OrState(self, other_state)
 
+    @contract(other_state='isinstance(SubsetState)',
+              returns='isinstance(SubsetState)')
     def __and__(self, other_state):
         return AndState(self, other_state)
 
+    @contract(returns='isinstance(SubsetState)')
     def __invert__(self):
         return InvertState(self)
 
+    @contract(other_state='isinstance(SubsetState)',
+              returns='isinstance(SubsetState)')
     def __xor__(self, other_state):
         return XorState(self, other_state)
 
@@ -330,6 +430,7 @@ class RoiSubsetState(SubsetState):
         return (self.xatt, self.yatt)
 
     @memoize
+    @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
         x = data[self.xatt, view]
         y = data[self.yatt, view]
@@ -357,6 +458,7 @@ class RangeSubsetState(SubsetState):
     def attributes(self):
         return (self.att,)
 
+    @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
         x = data[self.att, view]
         result = (x >= self.lo) & (x <= self.hi)
@@ -387,6 +489,7 @@ class CompositeSubsetState(SubsetState):
         return tuple(sorted(set(att)))
 
     @memoize
+    @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
         return self.op(self.state1.to_mask(data, view),
                        self.state2.to_mask(data, view))
@@ -411,11 +514,78 @@ class XorState(CompositeSubsetState):
 class InvertState(CompositeSubsetState):
 
     @memoize
+    @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
         return ~self.state1.to_mask(data, view)
 
     def __str__(self):
         return "(~%s)" % self.state1
+
+
+class MaskSubsetState(SubsetState):
+
+    """
+    A subset defined by boolean pixel mask
+    """
+
+    def __init__(self, mask, cids):
+        """
+        :param cids: List of ComponentIDs, defining the pixel coordinate space of the mask
+        :param mask: Boolean ndarray
+        """
+        self.cids = cids
+        self.mask = mask
+
+    def to_mask(self, data, view=None):
+        view = view or slice(None)
+
+        # shortcut for data on the same pixel grid
+        if data.pixel_component_ids == self.cids:
+            return self.mask[view].copy()
+
+        # locate each element of data in the coordinate system of the mask
+        vals = [data[c, view].astype(np.int) for c in self.cids]
+        result = self.mask[vals]
+
+        for v, n in zip(vals, data.shape):
+            result &= ((v >= 0) & (v < n))
+
+        return result
+
+    def __gluestate__(self, context):
+        return dict(cids=[context.id(c) for c in self.cids],
+                    mask=context.do(self.mask))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(context.object(rec['mask']),
+                   [context.object(c) for c in rec['cids']])
+
+
+class CategorySubsetState(SubsetState):
+
+    def __init__(self, attribute, values):
+        super(CategorySubsetState, self).__init__()
+        self._attribute = attribute
+        self._values = np.asarray(values).ravel()
+
+    @memoize
+    def to_mask(self, data, view=None):
+        vals = data[self._attribute, view]
+        result = np.in1d(vals.ravel(), self._values)
+        return result.reshape(vals.shape)
+
+    def copy(self):
+        return CategorySubsetState(self._attribute, self._values.copy())
+
+    def __gluestate__(self, context):
+        return dict(att=context.id(self._attribute),
+                    vals=context.do(self._values))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(context.object(rec['att']),
+                   context.object(rec['vals']))
 
 
 class ElementSubsetState(SubsetState):
@@ -446,16 +616,17 @@ class InequalitySubsetState(SubsetState):
         super(InequalitySubsetState, self).__init__()
         from .data import ComponentID
         valid_ops = [operator.gt, operator.ge,
-                     operator.lt, operator.le]
+                     operator.lt, operator.le,
+                     operator.eq, operator.ne]
         if op not in valid_ops:
             raise TypeError("Invalid boolean operator: %s" % op)
         if not isinstance(left, ComponentID) and not \
-                operator.isNumberType(left) and not \
+                isinstance(left, numbers.Number) and not \
                 isinstance(left, ComponentLink):
             raise TypeError("Input must be ComponenID or NumberType: %s"
                             % type(left))
         if not isinstance(right, ComponentID) and not \
-                operator.isNumberType(right) and not \
+                isinstance(right, numbers.Number) and not \
                 isinstance(right, ComponentLink):
             raise TypeError("Input must be ComponenID or NumberType: %s"
                             % type(right))
@@ -479,11 +650,11 @@ class InequalitySubsetState(SubsetState):
     def to_mask(self, data, view=None):
         from .data import ComponentID
         left = self._left
-        if not operator.isNumberType(self._left):
+        if not isinstance(self._left, numbers.Number):
             left = data[self._left, view]
 
         right = self._right
-        if not operator.isNumberType(self._right):
+        if not isinstance(self._right, numbers.Number):
             right = data[self._right, view]
 
         return self._operator(left, right)
@@ -499,6 +670,7 @@ class InequalitySubsetState(SubsetState):
         return '<%s: %s>' % (self.__class__.__name__, self)
 
 
+@contract(subsets='list(isinstance(Subset))', returns=Subset)
 def _combine(subsets, operator):
     state = operator(*[s.subset_state for s in subsets])
     result = Subset(None)

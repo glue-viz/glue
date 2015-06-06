@@ -12,3 +12,4 @@ glue/qt/glue_qt_resources.py
 Glue.egg-info
 dist
 *.orig
+doc/.eggs

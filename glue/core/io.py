@@ -1,15 +1,21 @@
-def extract_data_fits(filename, use_hdu='all'):
-    '''
-    Extract non-tabular HDUs from a FITS file. If `use_hdu` is 'all', then
-    all non-tabular HDUs are extracted, otherwise only the ones specified
-    by `use_hdu` are extracted (`use_hdu` should then contain a list of
-    integers). If the requested HDUs do not have the same dimensions, an
-    Exception is raised.
-    '''
-    from ..external.astro import fits
+from __future__ import absolute_import, division, print_function
 
-    # Read in all HDUs
-    hdulist = fits.open(filename, ignore_blank=True)
+
+def filter_hdulist_by_shape(hdulist, use_hdu='all'):
+    """
+    Remove empty HDUs, and ensure that all HDUs can be
+    packed into a single Data object (ie have the same shape)
+
+    Parameters
+    ----------
+    use_hdu : 'all' or list of integers (optional)
+        Which HDUs to use
+
+    Returns
+    -------
+    a new HDUList
+    """
+    from ..external.astro import fits
 
     # If only a subset are requested, extract those
     if use_hdu != 'all':
@@ -26,6 +32,23 @@ def extract_data_fits(filename, use_hdu='all'):
     for hdu in hdulist:
         if hdu.data.shape != reference_shape:
             raise Exception("HDUs are not all the same dimensions")
+
+    return hdulist
+
+
+def extract_data_fits(filename, use_hdu='all'):
+    '''
+    Extract non-tabular HDUs from a FITS file. If `use_hdu` is 'all', then
+    all non-tabular HDUs are extracted, otherwise only the ones specified
+    by `use_hdu` are extracted (`use_hdu` should then contain a list of
+    integers). If the requested HDUs do not have the same dimensions, an
+    Exception is raised.
+    '''
+    from ..external.astro import fits
+
+    # Read in all HDUs
+    hdulist = fits.open(filename, ignore_blank=True)
+    hdulist = filter_hdulist_by_shape(hdulist)
 
     # Extract data
     arrays = {}
@@ -83,7 +106,7 @@ def extract_data_hdf5(filename, use_datasets='all'):
         datasets.pop(key)
 
     # Check that dimensions of all datasets are the same
-    reference_shape = datasets[datasets.keys()[0]].value.shape
+    reference_shape = datasets[list(datasets.keys())[0]].value.shape
     for key in datasets:
         if datasets[key].value.shape != reference_shape:
             raise Exception("Datasets are not all the same dimensions")

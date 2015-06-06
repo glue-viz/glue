@@ -29,7 +29,7 @@ class QtROI(object):
 
     @property
     def canvas(self):
-        return self._ax.figure.canvas
+        return self._axes.figure.canvas
 
     def _paint_check(self, canvas):
         # check if the ROI should be rendered
@@ -55,7 +55,7 @@ class QtROI(object):
 
     def _transform(self, x, y):
         """ Convert points from MPL data coords to Qt Widget coords"""
-        t = self._ax.transData
+        t = self._axes.transData
         xy = np.column_stack((x, y))
         pts = t.transform(xy)
         pts[:, 1] = self.canvas.height() - pts[:, 1]
@@ -116,11 +116,11 @@ class QtXRangeROI(QtROI, roi.MplXRangeROI):
 
     def paint(self, canvas):
         x = self._roi.range()
-        xy = self._ax.transAxes.transform([(0, 0), (1.0, 1.0)])
-        xy = self._ax.transData.inverted().transform(xy)
+        xy = self._axes.transAxes.transform([(0, 0), (1.0, 1.0)])
+        xy = self._axes.transData.inverted().transform(xy)
         y = xy[:, 1]
         self.draw_polygon(canvas, [x[0], x[1], x[1], x[0]],
-                                  [y[0], y[0], y[1], y[1]])
+                          [y[0], y[0], y[1], y[1]])
 
 
 class QtYRangeROI(QtROI, roi.MplYRangeROI):
@@ -130,11 +130,11 @@ class QtYRangeROI(QtROI, roi.MplYRangeROI):
 
     def paint(self, canvas):
         y = self._roi.range()
-        xy = self._ax.transAxes.transform([(0, 0.0), (1.0, 1.0)])
-        xy = self._ax.transData.inverted().transform(xy)
+        xy = self._axes.transAxes.transform([(0, 0.0), (1.0, 1.0)])
+        xy = self._axes.transData.inverted().transform(xy)
         x = xy[:, 0]
         self.draw_polygon(canvas, [x[0], x[1], x[1], x[0]],
-                                  [y[0], y[0], y[1], y[1]])
+                          [y[0], y[0], y[1], y[1]])
 
 
 class QtCircularROI(QtROI, roi.MplCircularROI):
@@ -143,7 +143,7 @@ class QtCircularROI(QtROI, roi.MplCircularROI):
         roi.MplCircularROI.__init__(self, axes)
 
     def paint(self, canvas):
-        xy = map(int, self._roi.get_center())
+        xy = list(map(int, self._roi.get_center()))
         radius = int(self._roi.get_radius())
         center = QtCore.QPoint(xy[0], canvas.height() - xy[1])
 

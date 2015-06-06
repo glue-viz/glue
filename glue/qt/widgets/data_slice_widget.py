@@ -1,5 +1,5 @@
 from functools import partial
-from collections import Counter
+from ...compat.collections import Counter
 
 from ...external.qt.QtGui import (QWidget, QSlider, QLabel, QComboBox,
                                   QHBoxLayout, QVBoxLayout)
@@ -98,10 +98,12 @@ class DataSlice(QWidget):
 
     def __init__(self, data=None, parent=None):
         """
-        :param data: :class:`~glue.core.Data` instance, or None
+        :param data: :class:`~glue.core.data.Data` instance, or None
         """
         super(DataSlice, self).__init__(parent)
         self._slices = []
+        self._data = None
+
         layout = QVBoxLayout()
         layout.setSpacing(4)
         layout.setContentsMargins(0, 3, 0, 3)
@@ -109,29 +111,39 @@ class DataSlice(QWidget):
         self.setLayout(layout)
         self.set_data(data)
 
+    @property
+    def ndim(self):
+        return len(self.shape)
+
+    @property
+    def shape(self):
+        return tuple() if self._data is None else self._data.shape
+
     def _clear(self):
         for _ in range(self.layout.count()):
             self.layout.takeAt(0)
 
         for s in self._slices:
             s.close()
+
         self._slices = []
 
     def set_data(self, data):
         """
         Change datasets
 
-        :parm data: :class:`~glue.core.Data` instance
+        :parm data: :class:`~glue.core.data.Data` instance
         """
+
+        # remove old widgets
         self._clear()
-        if data is None:
-            self.ndim = 0
+
+        self._data = data
+
+        if data is None or data.ndim < 3:
             return
 
-        self.ndim = len(data.shape)
-        if self.ndim < 3:
-            return
-
+        # create slider widget for each dimension...
         for i, s in enumerate(data.shape):
             slider = SliceWidget(data.get_world_component_id(i).label,
                                  hi=s - 1)
@@ -153,8 +165,11 @@ class DataSlice(QWidget):
             if s == 1:
                 slider.freeze()
 
+        # ... and add to the layout
         for s in self._slices[::-1]:
             self.layout.addWidget(s)
+            s.show()  # this somehow fixes #342
+
         self.layout.addStretch(5)
 
     def _on_slice(self, index, slice_val):

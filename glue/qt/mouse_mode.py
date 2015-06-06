@@ -16,13 +16,16 @@ The basic usage pattern is thus:
    methods in a MouseMode, for additional behavior
 
 """
-from ..external.qt.QtGui import QAction
+
+from __future__ import absolute_import, division, print_function
+
+from ..external.qt.QtGui import QAction, QDoubleValidator
 
 from ..core import util
 from ..core import roi
 from ..core.callback_property import CallbackProperty
 from . import get_qapp
-from .qtutil import get_icon, nonpartial
+from .qtutil import get_icon, nonpartial, load_ui
 from . import qt_roi
 
 
@@ -72,6 +75,12 @@ class MouseMode(object):
             return
         self._event_x, self._event_y = event.x, event.y
         self._event_xdata, self._event_ydata = event.xdata, event.ydata
+
+    def activate(self):
+        """
+        Fired when the toolbar button is activated
+        """
+        pass
 
     def press(self, event):
         """ Handles mouse presses
@@ -148,6 +157,9 @@ class RoiModeBase(MouseMode):
         super(RoiModeBase, self).__init__(axes, **kwargs)
         self._roi_tool = None
 
+    def activate(self):
+        self._roi_tool._sync_patch()
+
     def roi(self):
         """ The ROI defined by this mouse mode
 
@@ -161,6 +173,9 @@ class RoiModeBase(MouseMode):
             self._roi_tool.finalize_selection(event)
         if self._roi_callback is not None:
             self._roi_callback(self)
+
+    def clear(self):
+        self._roi_tool.reset()
 
 
 class RoiMode(RoiModeBase):
@@ -232,10 +247,12 @@ class ClickRoiMode(RoiModeBase):
     def __init__(self, axes, **kwargs):
         super(ClickRoiMode, self).__init__(axes, **kwargs)
         self._last_event = None
+        self._drawing = False
 
     def press(self, event):
-        if not self._roi_tool.active():
+        if not self._roi_tool.active() or not self._drawing:
             self._roi_tool.start_selection(event)
+            self._drawing = True
         else:
             self._roi_tool.update_selection(event)
         self._last_event = event
@@ -250,8 +267,10 @@ class ClickRoiMode(RoiModeBase):
     def key(self, event):
         if event.key == 'enter':
             self._finish_roi(self._last_event)
+            self._drawing = False
         elif event.key == 'escape':
             self._roi_tool.reset()
+            self._drawing = False
         super(ClickRoiMode, self).key(event)
 
 
@@ -277,7 +296,9 @@ class PathMode(ClickRoiMode):
         self.icon = get_icon('glue_slice')
         self.mode_id = 'Slice'
         self.action_text = 'Slice Extraction'
-        self.tool_tip = 'Extract a slice from an arbitrary path'
+        self.tool_tip = ('Extract a slice from an arbitrary path\n'
+                         '  ENTER accepts the path\n'
+                         '  ESCAPE clears the path')
         self._roi_tool = qt_roi.QtPathROI(self._axes)
         self.shortcut = 'P'
 
@@ -310,7 +331,9 @@ class PolyMode(ClickRoiMode):
         self.icon = get_icon('glue_lasso')
         self.mode_id = 'Polygon'
         self.action_text = 'Polygonal ROI'
-        self.tool_tip = 'Lasso a region of interest'
+        self.tool_tip = ('Lasso a region of interest\n'
+                         '  ENTER accepts the path\n'
+                         '  ESCAPE clears the path')
         self._roi_tool = qt_roi.QtPolygonalROI(self._axes)
         self.shortcut = 'G'
 
@@ -359,6 +382,24 @@ class VRangeMode(RoiMode):
         self.shortcut = 'V'
 
 
+class PickMode(RoiMode):
+
+    """ Defines a PointROI. Defines single point selections """
+
+    def __init__(self, axes, **kwargs):
+        super(PickMode, self).__init__(axes, **kwargs)
+        self.icon = get_icon('glue_yrange_select')
+        self.mode_id = 'Pick'
+        self.action_text = 'Pick'
+        self.tool_tip = 'Select a single item'
+        self._roi_tool = roi.MplPickROI(self._axes)
+        self.shortcut = 'K'
+
+    def press(self, event):
+        super(PickMode, self).press(event)
+        self._drag = True
+
+
 class ContrastMode(MouseMode):
 
     """Uses right mouse button drags to set bias and contrast, ala DS9
@@ -384,6 +425,8 @@ class ContrastMode(MouseMode):
         self._percent_lo = 1.
         self._percent_hi = 99.
         self.stretch = 'linear'
+        self._vmin = None
+        self._vmax = None
 
     def set_clip_percentile(self, lo, hi):
         """Percentiles at which to clip the data at black/white"""
@@ -391,9 +434,52 @@ class ContrastMode(MouseMode):
             return
         self._percent_lo = lo
         self._percent_hi = hi
+        self._vmin = None
+        self._vmax = None
 
     def get_clip_percentile(self):
-        return self._percent_lo, self._percent_hi
+        if self._vmin is None and self._vmax is None:
+            return self._percent_lo, self._percent_hi
+        return None, None
+
+    def get_vmin_vmax(self):
+        if self._percent_lo is None or self._percent_hi is None:
+            return self._vmin, self._vmax
+        return None, None
+
+    def set_vmin_vmax(self, vmin, vmax):
+        if vmin == self._vmin and vmax == self._vmax:
+            return
+        self._percent_hi = self._percent_lo = None
+        self._vmin = vmin
+        self._vmax = vmax
+
+    def choose_vmin_vmax(self):
+        dialog = load_ui('contrastlimits', None)
+        v = QDoubleValidator()
+        dialog.vmin.setValidator(v)
+        dialog.vmax.setValidator(v)
+
+        vmin, vmax = self.get_vmin_vmax()
+        if vmin is not None:
+            dialog.vmin.setText(str(vmin))
+        if vmax is not None:
+            dialog.vmax.setText(str(vmax))
+
+        def _apply():
+            try:
+                vmin = float(dialog.vmin.text())
+                vmax = float(dialog.vmax.text())
+                self.set_vmin_vmax(vmin, vmax)
+                if self._move_callback is not None:
+                    self._move_callback(self)
+            except ValueError:
+                pass
+
+        bb = dialog.buttonBox
+        bb.button(bb.Apply).clicked.connect(_apply)
+        dialog.accepted.connect(_apply)
+        dialog.show()
 
     def move(self, event):
         """ MoveEvent. Update bias and contrast on Right Mouse button drag """
@@ -428,6 +514,10 @@ class ContrastMode(MouseMode):
         a.triggered.connect(nonpartial(self.set_clip_percentile, 10, 90))
         result.append(a)
 
+        rng = QAction("Set range...", None)
+        rng.triggered.connect(nonpartial(self.choose_vmin_vmax))
+        result.append(rng)
+
         a = QAction("", None)
         a.setSeparator(True)
         result.append(a)
@@ -457,6 +547,8 @@ class ContrastMode(MouseMode):
         result.append(a)
 
         for r in result:
+            if r is rng:
+                continue
             if self._move_callback is not None:
                 r.triggered.connect(nonpartial(self._move_callback, self))
 
@@ -484,60 +576,3 @@ class SpectrumExtractorMode(RoiMode):
                                         edgewidth=3,
                                         alpha=1.0)
         self.shortcut = 'S'
-
-    def clear(self):
-        self._roi_tool.reset()
-
-
-class ContourMode(MouseMode):
-
-    """ Creates ROIs by using the mouse to 'pick' contours out of the data """
-
-    def __init__(self, *args, **kwargs):
-        super(ContourMode, self).__init__(*args, **kwargs)
-
-        self.icon = get_icon("glue_contour")
-        self.mode_id = 'Contour'
-        self.action_text = 'Contour'
-        self.tool_tip = 'Define a region of intrest via contours'
-        self.shortcut = 'N'
-
-    def roi(self, data):
-        """Caculate an ROI as the contour which passes through the mouse
-
-        :param data: The data set to use
-        :type data: ndarray
-
-        Returns
-
-           * A :class:`~glue.core.roi.PolygonalROI` object, or None if one
-             could not be calculated
-
-        This method calculates the (single) contour that passes
-        through the mouse location, and uses this path to define
-        a new ROI
-        """
-        x, y = self._event_xdata, self._event_ydata
-        return contour_to_roi(x, y, data)
-
-
-def contour_to_roi(x, y, data):
-    """ Return a PolygonalROI for the contour that passes through (x,y) in data
-
-    :param x: x coordinate
-    :param y: y coordinate
-    :param data: data
-    :type data: numpy array
-
-    Returns:
-       * A :class:`~glue.core.roi.PolygonalROI` instance
-    """
-    if x is None or y is None:
-        return None
-
-    xy = util.point_contour(x, y, data)
-    if xy is None:
-        return None
-
-    p = roi.PolygonalROI(vx=xy[:, 0], vy=xy[:, 1])
-    return p

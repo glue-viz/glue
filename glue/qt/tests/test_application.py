@@ -1,7 +1,12 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+
+from __future__ import absolute_import, division, print_function
+
 from distutils.version import LooseVersion
 import tempfile
+import io
 import os
+import sys
 
 import pytest
 from mock import patch, MagicMock
@@ -18,6 +23,10 @@ from ..widgets.scatter_widget import ScatterWidget
 from ..widgets.image_widget import ImageWidget
 from ...core import Data
 
+from ...external.six import PY3
+
+from ...tests.helpers import requires_ipython_ge_012
+
 
 def tab_count(app):
     return app.tab_bar.count()
@@ -27,6 +36,7 @@ class TestGlueApplication(object):
 
     def setup_method(self, method):
         self.app = GlueApplication()
+        self.app._create_terminal()
 
     def teardown_method(self, method):
         self.app.close()
@@ -54,18 +64,21 @@ class TestGlueApplication(object):
     def test_choose_save_session_ioerror(self):
         """should show box on ioerror"""
         with patch('glue.qt.glue_application.QFileDialog') as fd:
-            with patch('__builtin__.open') as op:
+            if sys.version_info[0] == 2:
+                mock_open = '__builtin__.open'
+            else:
+                mock_open = 'builtins.open'
+            with patch(mock_open) as op:
                 op.side_effect = IOError
                 fd.getSaveFileName.return_value = '/tmp/junk', '/tmp/junk'
                 with patch('glue.qt.glue_application.QMessageBox') as mb:
                     self.app._choose_save_session()
                     assert mb.call_count == 1
 
-    @pytest.mark.xfail("LooseVersion(ipy_version) <= LooseVersion('0.11')")
+    @requires_ipython_ge_012
     def test_terminal_present(self):
         """For good setups, terminal is available"""
         if not self.app.has_terminal():
-            import sys
             sys.stderr.write(self.app._terminal_exception)
             assert False
 
@@ -76,6 +89,7 @@ class TestGlueApplication(object):
         with patch('glue.qt.widgets.terminal.glue_terminal') as terminal:
             terminal.side_effect = Exception("disabled")
             app = GlueApplication()
+            app._create_terminal()
             return app
 
     def test_functional_without_terminal(self):
@@ -96,7 +110,7 @@ class TestGlueApplication(object):
         except:
             return False
 
-    @pytest.mark.xfail("LooseVersion(ipy_version) <= LooseVersion('0.11')")
+    @requires_ipython_ge_012
     def test_toggle_terminal(self):
         term = MagicMock()
         self.app._terminal = term
@@ -110,14 +124,27 @@ class TestGlueApplication(object):
         assert term.hide.call_count == 1
 
     def test_close_tab(self):
+
         assert self.app.tab_widget.count() == 1
+        assert self.app.tab_bar.tabText(0) == 'Tab 1'
+
         self.app.new_tab()
         assert self.app.tab_widget.count() == 2
+        assert self.app.tab_bar.tabText(0) == 'Tab 1'
+        assert self.app.tab_bar.tabText(1) == 'Tab 2'
+
         self.app.close_tab(0)
         assert self.app.tab_widget.count() == 1
+        assert self.app.tab_bar.tabText(0) == 'Tab 2'
+
         # do not delete last tab
         self.app.close_tab(0)
         assert self.app.tab_widget.count() == 1
+
+        # check that counter always goes up
+        self.app.new_tab()
+        assert self.app.tab_bar.tabText(0) == 'Tab 2'
+        assert self.app.tab_bar.tabText(1) == 'Tab 3'
 
     def test_new_data_viewer_cancel(self):
         with patch('glue.qt.glue_application.pick_class') as pc:

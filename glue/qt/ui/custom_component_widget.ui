@@ -104,14 +104,7 @@ p, li { white-space: pre-wrap; }
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="expression">
-         <property name="toolTip">
-          <string>Define a new component. E.g. {component_a} - {component_b}</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
+        <widget class="QWidget" name="expression_holder" native="true"/>
        </item>
       </layout>
      </item>
@@ -161,7 +154,6 @@ p, li { white-space: pre-wrap; }
     </layout>
    </item>
   </layout>
-  <zorder>new_label</zorder>
  </widget>
  <resources/>
  <connections>

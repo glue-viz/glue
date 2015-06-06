@@ -1,4 +1,5 @@
-""" This module provides several classes and LinkCollection classes to
+"""
+This module provides several classes and LinkCollection classes to
 assist in linking data.
 
 The functions in this class (and stored in the __LINK_FUNCTIONS__
@@ -10,12 +11,17 @@ The :class:`LinkCollection` class and its sublcasses are factories to create
 multiple ComponentLinks easily. They are meant to be passed to
 :meth:`~glue.core.data_collection.DataCollection.add_link()`
 """
+
+from __future__ import absolute_import, division, print_function
+
 from .component_link import ComponentLink
 from .data import ComponentID
-from ..external.aplpy import gal2fk5, fk52gal
+from ..external import six
+
+import numpy as np
 
 __all__ = ['LinkCollection', 'LinkSame', 'LinkTwoWay', 'MultiLink',
-           'LinkAligned', 'Galactic2Equatorial']
+           'LinkAligned']
 
 __LINK_FUNCTIONS__ = []
 __LINK_HELPERS__ = []
@@ -40,10 +46,10 @@ __LINK_FUNCTIONS__.append(lengths_to_volume)
 
 class PartialResult(object):
 
-    def __init__(self, func, index):
+    def __init__(self, func, index, name_prefix=""):
         self.func = func
         self.index = index
-        self.__name__ = '%s_%i' % (func.__name__, index + 1)
+        self.__name__ = '%s%s_%i' % (name_prefix, func.__name__, index + 1)
 
     def __call__(self, *args, **kwargs):
         return self.func(*args, **kwargs)[self.index]
@@ -60,7 +66,7 @@ def _toid(arg):
     """Coerce the input to a ComponentID, if possible"""
     if isinstance(arg, ComponentID):
         return arg
-    elif isinstance(arg, basestring):
+    elif isinstance(arg, six.string_types):
         return ComponentID(arg)
     else:
         raise TypeError('Cannot be cast to a ComponentID: %s' % arg)
@@ -99,7 +105,6 @@ class LinkTwoWay(LinkCollection):
 
 
 class MultiLink(LinkCollection):
-
     """
     Compute all the ComponentLinks to link groups of ComponentIDs
 
@@ -119,20 +124,20 @@ class MultiLink(LinkCollection):
     """
 
     def __init__(self, cids_left, cids_right, forwards=None, backwards=None):
-        cids_left = map(_toid, cids_left)
-        cids_right = map(_toid, cids_right)
+        cids_left = list(map(_toid, cids_left))
+        cids_right = list(map(_toid, cids_right))
 
         if forwards is None and backwards is None:
             raise TypeError("Must supply either forwards or backwards")
 
         if forwards is not None:
             for i, r in enumerate(cids_right):
-                func = PartialResult(forwards, i)
+                func = PartialResult(forwards, i, name_prefix=self.__class__.__name__ + ".")
                 self.append(ComponentLink(cids_left, r, func))
 
         if backwards is not None:
             for i, l in enumerate(cids_left):
-                func = PartialResult(backwards, i)
+                func = PartialResult(backwards, i, name_prefix=self.__class__.__name__ + ".")
                 self.append(ComponentLink(cids_right, l, func))
 
 
@@ -156,51 +161,15 @@ class LinkAligned(LinkCollection):
                                      data[i + 1].get_pixel_component_id(j)))
 
 
-class Galactic2Equatorial(MultiLink):
-
-    """
-    Instantiate a ComponentList with four ComponentLinks that map galactic
-    and equatorial coordinates
-
-    :param l: ComponentID for galactic longitude
-    :param b: ComponentID for galactic latitude
-    :param ra: ComponentID for J2000 Right Ascension
-    :param dec: ComponentID for J2000 Declination
-
-    Returns a :class:`LinkCollection` object which links
-    these ComponentIDs
-    """
-
-    # attributes used by the Gui
-    info_text = """Link Galactic and Equatorial coordinates"""
-    input_args = ['l', 'b', 'ra', 'dec']
-
-    def __init__(self, l, b, ra, dec):
-        MultiLink.__init__(self, [ra, dec], [l, b], fk52gal, gal2fk5)
-
-
-def radec2glon(ra, dec):
-    """Compute galactic longitude from right ascension and declination"""
-    return fk52gal(ra, dec)[0]
-radec2glon.output_args = ['l']
-
-
-def radec2glat(ra, dec):
-    """Compute galactic latitude from right ascension and declination"""
-    return fk52gal(ra, dec)[1]
-radec2glat.output_args = ['b']
-
-
-def lb2ra(lon, lat):
-    """Compute right ascension from galactic longitude and latitude"""
-    return gal2fk5(lon, lat)[0]
-lb2ra.output_args = ['ra']
-
-
-def lb2dec(lon, lat):
-    """Compute declination from galactic longitude and latitude"""
-    return gal2fk5(lon, lat)[1]
-lb2dec.output_args = ['dec']
-
-__LINK_FUNCTIONS__.extend([radec2glon, radec2glat, lb2ra, lb2dec])
-__LINK_HELPERS__.append(Galactic2Equatorial)
+# DEPRECATED: for backward-compatibility we import the following celestial
+# conversions. This is needed because glue saved sessions will refer to the
+# functions at this location. We can only remove this if we are ok with
+# breaking compatibility with glue session files at some point.
+try:
+    import astropy
+except:
+    pass
+else:
+    from ..plugins.coordinate_helpers.deprecated import (Galactic2Equatorial,
+                                                         radec2glon, radec2glat,
+                                                         lb2ra, lb2dec)

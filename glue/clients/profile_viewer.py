@@ -277,7 +277,7 @@ class ProfileViewer(object):
         if ymask.size == 0:
             return
 
-        ylim = np.nan_to_num([np.nanmin(ymask), np.nanmax(ymask)])
+        ylim = np.nan_to_num(np.array([np.nanmin(ymask), np.nanmax(ymask)]))
         self.axes.set_ylim(ylim[0], ylim[1] + .05 * (ylim[1] - ylim[0]))
 
         if self._resid is None:
@@ -314,17 +314,17 @@ class ProfileViewer(object):
         :type y: array-like
 
         :param xatt: ComponentID associated with X axis
-        :type xatt: :class:`~glue.core.data.CompoenntID`
+        :type xatt: :class:`~glue.core.data.ComponentID`
 
         :param yatt: ComponentID associated with Y axis
-        :type yatt: :class:`~glue.core.data.CompoenntID`
+        :type yatt: :class:`~glue.core.data.ComponentID`
 
         Extra kwargs are passed to matplotlib.plot, to
         customize plotting
 
         Returns the created MPL artist
         """
-        self._clear_fit()
+        self.clear_fit()
         self._x = np.asarray(x).ravel()
         self._xatt = xatt
         self._y = np.asarray(y).ravel()
@@ -332,7 +332,7 @@ class ProfileViewer(object):
         if self._artist is not None:
             self._artist.remove()
 
-        kwargs.setdefault('drawstyle', 'steps-mid')
+        kwargs.setdefault('drawstyle', 'steps-post')
 
         self._artist = self.axes.plot(x, y, **kwargs)[0]
         self._relayout()
@@ -340,7 +340,7 @@ class ProfileViewer(object):
 
         return self._artist
 
-    def _clear_fit(self):
+    def clear_fit(self):
         for a in self._fit_artists:
             a.remove()
         self._fit_artists = []
@@ -416,7 +416,7 @@ class ProfileViewer(object):
         return result, x, y, dy
 
     def plot_fit(self, fitter, fit_result):
-        self._clear_fit()
+        self.clear_fit()
         x = self._x
         y = fitter.predict(fit_result, x)
         self._fit_artists = fitter.plot(fit_result, self.axes, x)
@@ -465,7 +465,7 @@ class ProfileViewer(object):
     @property
     def _center(self):
         """Return the data coordinates of the axes center, as (x, y)"""
-        xy = self.axes.transAxes.transform([.5, .5])
+        xy = self.axes.transAxes.transform([(.5, .5)])
         xy = self.axes.transData.inverted().transform(xy)
         return tuple(xy.ravel())
 
