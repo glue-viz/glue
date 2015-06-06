@@ -7,6 +7,8 @@ from ...external import six
 
 from .helpers import set_default_factory, __factories__, has_extension
 
+__all__ = ['tabular_data', 'sextractor_factory']
+
 
 def _ascii_identifier_v02(origin, args, kwargs):
     # this works for astropy v0.2

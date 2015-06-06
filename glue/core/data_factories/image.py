@@ -9,6 +9,8 @@ from ..coordinates import coordinates_from_wcs
 
 img_fmt = ['jpg', 'jpeg', 'bmp', 'png', 'tiff', 'tif']
 
+__all__ = []
+
 
 def img_loader(file_name):
     """Load an image to a numpy array, using either PIL or skimage

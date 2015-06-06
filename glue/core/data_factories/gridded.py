@@ -7,6 +7,8 @@ from ..coordinates import coordinates_from_header
 
 from .helpers import set_default_factory, __factories__
 
+__all__ = ['is_casalike', 'gridded_data', 'casalike_cube']
+
 
 def is_hdf5(filename):
     # All hdf5 files begin with the same sequence

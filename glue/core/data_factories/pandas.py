@@ -6,6 +6,8 @@ from ..data import Data, Component, CategoricalComponent
 
 from .helpers import has_extension, __factories__
 
+__all__ = ['pandas_read_table']
+
 
 def panda_process(indf):
     """

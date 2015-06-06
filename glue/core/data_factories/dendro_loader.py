@@ -7,6 +7,8 @@ import numpy as np
 from astrodendro import Dendrogram
 from ..data import Data
 
+__all__ = []
+
 
 def load_dendro(file):
     """
