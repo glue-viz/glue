@@ -9,7 +9,7 @@ from ..coordinates import coordinates_from_wcs
 
 img_fmt = ['jpg', 'jpeg', 'bmp', 'png', 'tiff', 'tif']
 
-__all__ = []
+__all__ = ['img_data']
 
 
 def img_loader(file_name):
