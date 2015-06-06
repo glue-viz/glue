@@ -513,8 +513,8 @@ class PolygonalROI(VertexROIBase):
         return result
 
     def move_to(self, xdelta, ydelta):
-        self.vx = map(lambda x: x + xdelta, self.vx)
-        self.vy = map(lambda y: y + ydelta, self.vy)
+        self.vx = list(map(lambda x: x + xdelta, self.vx))
+        self.vy = list(map(lambda y: y + ydelta, self.vy))
 
 
 class Path(VertexROIBase):
@@ -573,7 +573,9 @@ class AbstractMplRoi(object):  # pragma: no cover
         raise NotImplementedError()
 
     def abort_selection(self, event):
-        raise NotImplementedError()
+        if self._mid_selection:
+            self._roi_restore()
+        self.reset(include_roi=False)
 
     def _sync_patch(self):
         raise NotImplementedError()
@@ -690,10 +692,6 @@ class MplRectangularROI(AbstractMplRoi):
         self._patch.set_visible(False)
         self._draw()
 
-    def abort_selection(self, event):
-        self._roi_restore()
-        self.reset(include_roi=False)
-
     def _sync_patch(self):
         if self._roi.defined():
             corner = self._roi.corner()
@@ -773,10 +771,6 @@ class MplXRangeROI(AbstractMplRoi):
         self._patch.set_visible(False)
         self._draw()
 
-    def abort_selection(self, event):
-        self._roi_restore()
-        self.reset(include_roi=False)
-
     def _sync_patch(self):
         if self._roi.defined():
             rng = self._roi.range()
@@ -850,10 +844,6 @@ class MplYRangeROI(AbstractMplRoi):
         self._mid_selection = False
         self._patch.set_visible(False)
         self._draw()
-
-    def abort_selection(self, event):
-        self._roi_restore()
-        self.reset(include_roi=False)
 
     def _sync_patch(self):
         if self._roi.defined():
@@ -990,10 +980,6 @@ class MplCircularROI(AbstractMplRoi):
         self._patch.set_visible(False)
         self._axes.figure.canvas.draw()
 
-    def abort_selection(self, event):
-        self._roi_restore()
-        self.reset(include_roi=False)
-
 
 class MplPolygonalROI(AbstractMplRoi):
 
@@ -1081,10 +1067,6 @@ class MplPolygonalROI(AbstractMplRoi):
         self._mid_selection = False
         self._patch.set_visible(False)
         self._axes.figure.canvas.draw()
-
-    def abort_selection(self, event):
-        self._roi_restore()
-        self.reset(include_roi=False)
 
 
 class MplPathROI(MplPolygonalROI):
