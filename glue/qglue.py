@@ -94,7 +94,7 @@ def _parse_data_hdulist(data, label):
     Parse all HDUs in an HDUList into a data object, and build coords.
     Assumes all extensions have the same shape
     """
-    from .core.io import filter_hdulist_by_shape
+    from .core.data_factories.io import filter_hdulist_by_shape
     from .core.coordinates import coordinates_from_header
 
     result = Data(label=label)

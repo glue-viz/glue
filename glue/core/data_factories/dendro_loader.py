@@ -5,7 +5,9 @@ astrodendro must be installed in order to use this loader
 """
 import numpy as np
 from astrodendro import Dendrogram
-from .data import Data
+from ..data import Data
+
+__all__ = []
 
 
 def load_dendro(file):
