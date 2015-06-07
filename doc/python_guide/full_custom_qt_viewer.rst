@@ -117,18 +117,18 @@ These names are because the top space is usually used for showing which
 layers are included in a plot, and the bottom space is used for options (such
 as the number of bins in histograms).
 
-For example, you could do:
+For example, you could do::
 
     class MyGlueWidget(DataViewer):
 
-        LABEL = "My first data viewer"
+        ...
 
         def __init__(self, session, parent=None):
-            super(MyGlueWidget, self).__init__(session, parent=parent)
-            self.my_widget = MyWidget()
-            self.setCentralWidget(self.my_widget)
+            ...
             self._layer_view = UsefulWidget(...)
             self._options_widget = AnotherWidget(...)
+
+        ...
 
         def layer_view(self):
             return self._layer_view
@@ -142,3 +142,26 @@ want, and the important thing is that ``layer_view`` is the top one, and
 
 Setting up a client
 -------------------
+
+Once the data viewer has been instantiated, the main glue application will call the ``register_to_hub`` method on the data viewer, and will pass it the hub as an argument. This allows you to set up your data viewer as a client that can listen to specific messages from the hub::
+
+    from glue.core.message import DataCollectionAddMessage
+
+    class MyGlueWidget(DataViewer):
+
+        ...
+
+        def register_to_hub(self, hub):
+
+            super(MyGlueWidget, self).register_to_hub(hub)
+
+            # Now we can subscribe to messages with the hub
+
+            hub.subscribe(self,
+                          DataUpdateMessage,
+                          handler=self._update_data)
+
+        def _update_data(self, msg):
+
+            # Process DataUpdateMessage here
+
