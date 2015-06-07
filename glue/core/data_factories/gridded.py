@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from ..data import Component, Data
-from ..io import extract_data_fits, extract_data_hdf5
+from .io import extract_data_fits, extract_data_hdf5
 from ...utils import file_format
 from ..coordinates import coordinates_from_header
 
