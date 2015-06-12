@@ -15,7 +15,7 @@ def filter_hdulist_by_shape(hdulist, use_hdu='all'):
     -------
     a new HDUList
     """
-    from ..external.astro import fits
+    from ...external.astro import fits
 
     # If only a subset are requested, extract those
     if use_hdu != 'all':
@@ -47,7 +47,7 @@ def extract_data_fits(filename, use_hdu='all'):
     integers). If the requested HDUs do not have the same dimensions, an
     Exception is raised.
     '''
-    from ..external.astro import fits
+    from ...external.astro import fits
 
     # Read in all HDUs
     hdulist = fits.open(filename, ignore_blank=True)

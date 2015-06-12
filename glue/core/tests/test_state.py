@@ -15,7 +15,7 @@ from ...qt.widgets.image_widget import ImageWidget
 from ...qt.widgets.histogram_widget import HistogramWidget
 from .util import make_file
 from ..data_factories import load_data
-from .test_data_factories import TEST_FITS_DATA
+from ..data_factories.tests.test_data_factories import TEST_FITS_DATA
 from io import BytesIO
 
 from ...tests.helpers import requires_astropy

@@ -9,15 +9,15 @@ notifications:
 
 env:
   matrix:
-    - PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=1.0
-    - PYTHON_VERSION=3.4 MPL_VER=1.4 ASTRO_VER=1.0
+    - PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=1.0 QT_PKG=pyside
+    - PYTHON_VERSION=3.4 MPL_VER=1.4 ASTRO_VER=1.0 QT_PKG=pyqt
   global:
     - CONDA_ARGS="--yes"
     - PIP_ARGS=""
     - PYTEST_ARGS="--cov glue"
     - NUMPY_VER=1.9
     - IPYTHON_VER=2
-    - CONDA_BASE="pip numpy=$NUMPY_VER scipy cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.3 xlrd pillow pytest mock coverage pyyaml requests sphinx_rtd_theme"
+    - CONDA_DEPS="pip scipy cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.3 xlrd pillow pytest mock coverage pyyaml requests sphinx_rtd_theme"
     - PIP_BASE="pytest-cov coveralls pyavm astrodendro awscli"
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
     - secure: "SU9BYH8d9eNigypG3lC83s0NY6Mq9AHGKXyEGeXDtz1npJIC1KHdzPMP1v1K3dzCgl1p6ReMXPjZMCENyfNkad/xvzTzGk0Nu/4BjihrUPV6+ratVeLpv0JLm8ikh8q+sZURkdtzUOlds+Hfn5ku4LdpT87tcKHY9TINAGA34ZM="
@@ -31,12 +31,12 @@ matrix:
         # Python 2.6
         - os: linux
           env:
-            - PYTHON_VERSION=2.6 MPL_VER=1.4 ASTRO_VER=0.4
+            - PYTHON_VERSION=2.6 MPL_VER=1.4 ASTRO_VER=0.4 QT_PKG=pyside
         
         # Astropy dev
         - os: linux
           env:
-            - PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=dev
+            - PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=dev QT_PKG=pyside
 
         # The following configuration tests that glue functions with minimal
         # dependencies. The --no-deps is to prevent scipy from getting
@@ -45,11 +45,12 @@ matrix:
           env:
             - PYTHON_VERSION=2.7
             - PYTEST_ARGS="--cov glue"
-            - CONDA_BASE="pip setuptools=7.0 numpy=$NUMPY_VER pandas mock --no-deps"
+            - CONDA_DEPS="pip setuptools=7.0 numpy=$NUMPY_VER pandas mock --no-deps"
             - IPYTHON_VER=None
             - ASTRO_VER=None
             - MPL_VER=1.4
             - PIP_BASE="pytest-cov coveralls"
+            - QT_PKG=pyside
 
         - os: linux
           env:
@@ -60,17 +61,18 @@ matrix:
             - APP_TRIGGER=1 
             - GINGA=1
             - PYTEST_ARGS="--cov glue --no-optional-skip"
+            - QT_PKG=pyside
 
         # Test with older package versions:
 
         - os: linux
-          env: PYTHON_VERSION=2.7 MPL_VER=1.3 ASTRO_VER=0.3 NUMPY_VER=1.8
+          env: PYTHON_VERSION=2.7 MPL_VER=1.3 ASTRO_VER=0.3 NUMPY_VER=1.8 QT_PKG=pyqt
 
         - os: linux
-          env: PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=1.1
+          env: PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=1.1 QT_PKG=pyside
 
         - os: linux
-          env: PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=0.13
+          env: PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=0.4 IPYTHON_VER=0.13 QT_PKG=pyside
 
 
 before_install:
@@ -95,16 +97,19 @@ install:
 
   - conda create --yes -n test python=$PYTHON_VERSION
   - source activate test
-  - conda install $CONDA_ARGS $CONDA_BASE
-  - if [[ $PYTHON_VERSION == 2* ]]; then conda install $CONDA_ARGS python=$PYTHON_VERSION pyside; fi
-  - if [[ $PYTHON_VERSION == 3* ]]; then conda install $CONDA_ARGS python=$PYTHON_VERSION pyqt; fi
+
+  # Some package versions should always be specified when installing packages
+  # to make sure they are not updated.
+  - export CONDA_BASE="python=$PYTHON_VERSION numpy=$NUMPY_VER matplotlib=$MPL_VER"
+
+  - conda install $CONDA_ARGS $CONDA_BASE $CONDA_DEPS
+  - conda install $CONDA_ARGS $CONDA_BASE $QT_PKG
 
   - LC_ALL=C pip install $PIP_ARGS $PIP_BASE
   - if [[ $GINGA ]]; then pip install $PIP_ARGS https://github.com/glue-viz/ginga/archive/master.zip; fi
   - if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy; fi
-  - if [[ $ASTRO_VER != dev && $ASTRO_VER != None ]]; then conda install $CONDA_ARGS numpy=$NUMPY_VER astropy=$ASTRO_VER; fi
-  - if [[ $IPYTHON_VER != None ]]; then conda install $CONDA_ARGS IPython=$IPYTHON_VER; fi
-  - if [[ $MPL_VER != None ]]; then conda install $CONDA_ARGS numpy=$NUMPY_VER matplotlib=$MPL_VER; fi
+  - if [[ $ASTRO_VER != dev && $ASTRO_VER != None ]]; then conda install $CONDA_ARGS $CONDA_BASE numpy=$NUMPY_VER astropy=$ASTRO_VER; fi
+  - if [[ $IPYTHON_VER != None ]]; then conda install $CONDA_ARGS $CONDA_BASE IPython=$IPYTHON_VER; fi
 
   # For now we also install astropy_helpers because setup_requires has a bug
   # that means it generates PEP440 warnings for the astropy_helpers version
