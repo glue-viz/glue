@@ -81,7 +81,7 @@ class Application(HubListener):
         return c
 
     @catch_error("Failed to save session")
-    def save_session(self, path):
+    def save_session(self, path, include_data=False):
         """ Save the data collection and hub to file.
 
         Can be restored via restore_session
@@ -90,7 +90,7 @@ class Application(HubListener):
         restoring this session will lose all current viz windows
         """
         from .state import GlueSerializer
-        gs = GlueSerializer(self)
+        gs = GlueSerializer(self, include_data=include_data)
         state = gs.dumps(indent=2)
         with open(path, 'w') as out:
             out.write(state)
