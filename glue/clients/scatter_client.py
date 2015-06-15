@@ -1,11 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
 from functools import partial
-
 import numpy as np
+from matplotlib.dates import num2date
 
 from ..core.client import Client
-from ..core.data import Data, IncompatibleAttribute, ComponentID, CategoricalComponent
+from ..core.data import Data, IncompatibleAttribute, Component, ComponentID, CategoricalComponent
 from ..core.subset import RoiSubsetState, RangeSubsetState
 from ..core.roi import PolygonalROI, RangeROI
 from ..core.util import relim
@@ -34,6 +34,7 @@ class ScatterClient(Client):
     xflip = CallbackProperty(False)
     xatt = CallbackProperty()
     yatt = CallbackProperty()
+    gatt = CallbackProperty()
     jitter = CallbackProperty()
 
     def __init__(self, data=None, figure=None, axes=None,
@@ -59,6 +60,7 @@ class ScatterClient(Client):
         self._layer_updated = False  # debugging
         self._xset = False
         self._yset = False
+        self._gset = False
         self.axes = axes
 
         self._connect()
@@ -93,12 +95,12 @@ class ScatterClient(Client):
         add_callback(self, 'ymax', self._set_limits)
         add_callback(self, 'xatt', partial(self._set_xydata, 'x'))
         add_callback(self, 'yatt', partial(self._set_xydata, 'y'))
+        add_callback(self, 'gatt', partial(self._set_xydata, 'g'))
         add_callback(self, 'jitter', self._jitter)
         self.axes.figure.canvas.mpl_connect('draw_event',
                                             lambda x: self._pull_properties())
 
     def _set_limits(self, *args):
-
         xlim = min(self.xmin, self.xmax), max(self.xmin, self.xmax)
         if self.xflip:
             xlim = xlim[::-1]
@@ -112,12 +114,26 @@ class ScatterClient(Client):
         self.axes.set_ylim(ylim)
         if xlim != xold or ylim != yold:
             self._redraw()
+            self._update_axis_labels()
 
     def plottable_attributes(self, layer, show_hidden=False):
         data = layer.data
         comp = data.components if show_hidden else data.visible_components
         return [c for c in comp if
-                data.get_component(c).numeric]
+                data.get_component(c).numeric or data.get_component(c).datetime]
+
+    def groupable_attributes(self, layer, show_hidden=False):
+        data = layer.data
+        if not data.find_component_id('None'):
+            l = data._shape[0]
+            none_comp = Component(np.array(range(0, l)), units='None')
+            data.add_component(none_comp, 'None', hidden=False)
+        comp = data.components if show_hidden else data.visible_components
+        groups = [comp[-1]]
+        for c in comp:
+            if data.get_component(c).group:
+                groups.append(c)
+        return groups
 
     def add_layer(self, layer):
         """ Adds a new visual layer to a client, to display either a dataset
@@ -219,9 +235,8 @@ class ScatterClient(Client):
            If True, will rescale x/y axes to fit the data
         :type snap: bool
         """
-
-        if coord not in ('x', 'y'):
-            raise TypeError("coord must be one of x,y")
+        if coord not in ('x', 'y', 'g'):
+            raise TypeError("coord must be one of x, y, g")
         if not isinstance(attribute, ComponentID):
             raise TypeError("attribute must be a ComponentID")
 
@@ -234,6 +249,9 @@ class ScatterClient(Client):
             new_add = not self._yset
             self.yatt = attribute
             self._yset = self.yatt is not None
+        elif coord == 'g':
+            self.gatt = attribute
+            self._gset = self.gatt is not None
 
         # update plots
         list(map(self._update_layer, self.artists.layers))
@@ -257,19 +275,32 @@ class ScatterClient(Client):
 
         if isinstance(roi, RangeROI):
             lo, hi = roi.range()
-            att = self.xatt if roi.ori == 'x' else self.yatt
+            if roi.ori == 'x':
+                att = self.xatt
+                is_date = self._check_if_date(self.xatt)
+            else:
+                att = self.yatt
+                is_date = self._check_if_date(self.yatt)
+            if is_date:
+                lo = np.datetime64(num2date(lo))
+                hi = np.datetime64(num2date(hi))
             subset_state = RangeSubsetState(lo, hi, att)
         else:
             subset_state = RoiSubsetState()
             subset_state.xatt = self.xatt
             subset_state.yatt = self.yatt
             x, y = roi.to_polygon()
+            if self._check_if_date(self.xatt):
+                x = np.array(list(np.datetime64(num2date(d)) for d in x))
+            if self._check_if_date(self.yatt):
+                y = np.array(list(np.datetime64(num2date(d)) for d in y))
             subset_state.roi = PolygonalROI(x, y)
 
         mode = EditSubsetMode()
         visible = [d for d in self._data if self.is_visible(d)]
         focus = visible[0] if len(visible) > 0 else None
         mode.update(self._data, subset_state, focus_data=focus)
+        self._update_axis_labels()
 
     def _set_xlog(self, state):
         """ Set the x axis scaling
@@ -333,7 +364,6 @@ class ScatterClient(Client):
         self.axes.figure.canvas.draw()
 
     def _jitter(self, *args):
-
         for attribute in [self.xatt, self.yatt]:
             if attribute is not None:
                 for data in self.data:
@@ -407,6 +437,19 @@ class ScatterClient(Client):
                 pass
         return False
 
+    def _check_if_date(self, attribute):
+        """ A function to check if an attribute has date formatted information.
+        :param attribute: core.Data.ComponentID
+        :return: True iff Data is Date
+        """
+        for data in self._data:
+            try:
+                if data.get_component(attribute).datetime:
+                    return True
+            except IncompatibleAttribute:
+                pass
+        return False
+
     def _update_subset(self, message):
         self._update_layer(message.sender)
 
@@ -433,6 +476,7 @@ class ScatterClient(Client):
         for art in self.artists[layer]:
             art.xatt = self.xatt
             art.yatt = self.yatt
+            art.gatt = self.gatt
             art.force_update() if force else art.update()
         self._redraw()
 
@@ -465,6 +509,8 @@ class ScatterClient(Client):
             self.xatt = new
         if self.yatt is old:
             self.yatt = new
+        if self.gatt is old:
+            self.gatt = new
 
     def register_to_hub(self, hub):
         super(ScatterClient, self).register_to_hub(hub)

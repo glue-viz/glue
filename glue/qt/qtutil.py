@@ -10,6 +10,7 @@ import os
 import pkg_resources
 from matplotlib.colors import ColorConverter
 from matplotlib import cm
+from matplotlib.dates import num2date
 import numpy as np
 
 from ..external.axescache import AxesCache
@@ -493,6 +494,35 @@ def pretty_number(numbers):
         result = "%0.3f" % n
     if result.find('.') != -1:
         result = result.rstrip('0')
+
+    return result
+
+
+def pretty_date(dates):
+    """Convert a list of numbers into a nice list of date(time)s
+
+    :param dates: Numbers to convert
+    :type dates: List or other iterable of numbers
+
+    :rtype: A list of strings
+    """
+    try:
+        return [pretty_date(d) for d in dates]
+    except TypeError:
+        pass
+
+    d = num2date(dates)
+    t = [d.hour, d.minute, d.second, d.microsecond]
+    result = "%i/%02d/%04d" % (d.month, d.day, d.year)
+
+    if t[3] is not 0:
+        result += " %i:%02d:%02d:%i" % (d.hour, d.minute, d.second, d.microsecond)
+    elif t[2] is not 0:
+        result += " %i:%02d:%02d" % (d.hour, d.minute, d.second)
+    elif t[1] is not 0:
+        result += " %i:%02d" % (d.hour, d.minute)
+    elif t[0] is not 0:
+        result += " %i" % d.hour
 
     return result
 
