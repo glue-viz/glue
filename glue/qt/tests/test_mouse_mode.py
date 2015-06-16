@@ -127,6 +127,14 @@ class TestRoiMode(TestMouseMode):
         self.mode.roi()
         self.mode._roi_tool.roi.assert_called_once_with()
 
+    def test_roi_resets_on_escape(self):
+        e = Event(1, 2)
+        e2 = Event(1, 30, key='escape')
+        self.mode.press(e)
+        self.mode.key(e2)
+        self.mode.press(e)
+        assert self.mode._roi_tool.abort_selection.call_count == 1
+
 
 class TestClickRoiMode(TestMouseMode):
 
