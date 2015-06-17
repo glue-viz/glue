@@ -124,8 +124,7 @@ First, make a scatter plot of the point source catalog. Then, delete the West Ar
    :width: 500px
 
 You can also overplot the catalog rows on top of the image. To do this, click the arrow next to the new subset -- this shows the individual selections applied to each dataset. Click and drag the subset for the point source catalog on top of the image. To see these points more easily, you may want to disable the
-selection applied to the image itself by unchecking the `East arm
-(w5)` entry in the plot layer window.
+selection applied to the image itself by unchecking the `East arm (w5)` entry in the plot layer window.
 
 .. figure:: images/link_subset_2.png
    :align: center
@@ -152,9 +151,20 @@ Saving your work
 Glue provides a number of ways to save your work, and to export your work for further analysis in other programs.
 
 **Saving The Session**
-You can save a Glue session for later work via the ``File->Save Session`` menu. This creates a glue session file (the preferred file extension is ``.glu``). You can restore this session later via ``File->Open Session``
 
-.. warning:: These files store references to the files you opened, and not copies of the files themselves. Thus, you won't be able to re-load this session if you move any of the original data.
+You can save a Glue session for later work via the ``File->Save Session``
+menu. This creates a glue session file (the preferred file extension is
+``.glu``). You can restore this session later via ``File->Open Session``.
+
+By default, these files store references to the files you opened, and not
+copies of the files themselves. Thus, you won't be able to re-load this
+session if you move any of the original data. To include the data in the
+session file, you can select 'Glue Session including data' when saving:
+
+.. figure:: images/save_with_data.png
+   :align: center
+   :width: 400px
+
 
 **Exporting the plots**
 Glue can export certain kinds of plot combinations to other formats and web services.

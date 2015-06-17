@@ -4,6 +4,7 @@ Changelog
 v0.5 (Unreleased)
 -----------------
 
+* Added an option to bundle all data in .glu session files
 * Added a ``menu_plugin`` registry to add custom tools to the registry
 * Support for 'lazy-loading' plugins which means their import is deferred until they are needed
 * Support for connecting custom importers

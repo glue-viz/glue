@@ -21,8 +21,8 @@ from io import BytesIO
 from ...tests.helpers import requires_astropy
 
 
-def clone(object):
-    gs = GlueSerializer(object)
+def clone(object, include_data=False):
+    gs = GlueSerializer(object, include_data=include_data)
     oid = gs.id(object)
     dump = gs.dumps()
     gu = GlueUnSerializer.loads(dump)
@@ -112,6 +112,14 @@ def test_data_factory():
     with make_file(TEST_FITS_DATA, '.fits', decompress=True) as infile:
         d = load_data(infile)
         d2 = clone(d)
+
+    np.testing.assert_array_equal(d['PRIMARY'], d2['PRIMARY'])
+
+@requires_astropy
+def test_data_factory_include_data():
+    with make_file(TEST_FITS_DATA, '.fits', decompress=True) as infile:
+        d = load_data(infile)
+        d2 = clone(d, include_data=True)
 
     np.testing.assert_array_equal(d['PRIMARY'], d2['PRIMARY'])
 
