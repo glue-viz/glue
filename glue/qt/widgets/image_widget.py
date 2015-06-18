@@ -390,11 +390,16 @@ class ImageWidget(ImageWidgetBase):
         axes = self.client.axes
 
         def apply_mode(mode):
+            for roi_mode in roi_modes:
+                if roi_mode != mode:
+                    roi_mode._roi_tool.reset()
             self.apply_roi(mode.roi())
 
         rect = RectangleMode(axes, roi_callback=apply_mode)
         circ = CircleMode(axes, roi_callback=apply_mode)
         poly = PolyMode(axes, roi_callback=apply_mode)
+        roi_modes = [rect, circ, poly]
+
         contrast = ContrastMode(axes, move_callback=self._set_norm)
 
         self._contrast = contrast

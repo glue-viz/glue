@@ -10,6 +10,7 @@ from matplotlib.figure import Figure
 from mock import MagicMock
 
 from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI,
+                   PointROI, MplPickROI,
                    MplCircularROI, MplRectangularROI, MplPolygonalROI,
                    XRangeROI, MplXRangeROI, YRangeROI, MplYRangeROI)
 
@@ -339,6 +340,17 @@ class TestPolygon(object):
         """ __str__ returns a string """
         assert type(str(self.roi)) == str
 
+    def test_move(self):
+        """Move polygon"""
+        self.define_as_square()
+        vx = list(self.roi.vx)
+        vy = list(self.roi.vy)
+        self.roi.move_to(1, 1)
+        assert type(self.roi.vx) == list
+        assert type(self.roi.vy) == list
+        assert self.roi.vx[0] - vx[0] == 1
+        assert self.roi.vy[0] - vy[0] == 1
+
 
 class DummyEvent(object):
     def __init__(self, x, y, inaxes=True):
@@ -383,13 +395,13 @@ class TestMpl(object):
         assert self.axes.figure.canvas.draw.call_count == 1
         event = DummyEvent(5, 5, inaxes=self.axes)
         self.roi.start_selection(event)
-        assert self.axes.figure.canvas.draw.call_count == 2
-        self.roi.update_selection(event)
         assert self.axes.figure.canvas.draw.call_count == 3
         self.roi.update_selection(event)
         assert self.axes.figure.canvas.draw.call_count == 4
-        self.roi.finalize_selection(event)
+        self.roi.update_selection(event)
         assert self.axes.figure.canvas.draw.call_count == 5
+        self.roi.finalize_selection(event)
+        assert self.axes.figure.canvas.draw.call_count == 6
 
     def test_patch_shown_on_start(self):
         assert not self.roi._patch.get_visible()
@@ -419,13 +431,7 @@ class TestMpl(object):
     def test_roi_undefined_before_start(self):
         assert not self.roi._roi.defined()
 
-
-class TestRectangleMpl(TestMpl):
-
-    def _roi_factory(self):
-        return MplRectangularROI(self.axes)
-
-    def test_scrub(self):
+    def scrub(self, assert_final_position):
         roi = self._roi_factory()
 
         event = DummyEvent(5, 5, inaxes=self.axes)
@@ -437,12 +443,49 @@ class TestRectangleMpl(TestMpl):
         roi.start_selection(DummyEvent(6, 6, inaxes=self.axes))
         roi.update_selection(DummyEvent(7, 8, inaxes=self.axes))
 
-        print(roi)
-        print(roi._roi)
-        assert roi._roi.xmin == 6
-        assert roi._roi.xmax == 11
-        assert roi._roi.ymin == 7
-        assert roi._roi.ymax == 12
+        assert_final_position(roi)
+
+    def abort(self, assert_final_position):
+        roi = self._roi_factory()
+
+        event = DummyEvent(5, 5, inaxes=self.axes)
+        roi.start_selection(event)
+        event = DummyEvent(10, 10, inaxes=self.axes)
+        roi.update_selection(event)
+
+        #restart without finalize = scrub
+        roi.start_selection(DummyEvent(6, 6, inaxes=self.axes))
+        roi.update_selection(DummyEvent(7, 8, inaxes=self.axes))
+
+        # Now abort
+        roi.abort_selection(None)
+
+        assert_final_position(roi)
+
+class TestRectangleMpl(TestMpl):
+
+    def _roi_factory(self):
+        return MplRectangularROI(self.axes)
+
+    def test_scrub(self):
+
+        def assert_final_position(roi):
+            assert roi._roi.xmin == 6
+            assert roi._roi.xmax == 11
+            assert roi._roi.ymin == 7
+            assert roi._roi.ymax == 12
+
+        self.scrub(assert_final_position)
+
+    def test_abort(self):
+
+        def assert_final_position(roi):
+            assert roi._roi.xmin == 5
+            assert roi._roi.xmax == 10
+            assert roi._roi.ymin == 5
+            assert roi._roi.ymax == 10
+
+        self.abort(assert_final_position)
 
     def assert_roi_correct(self, x0, x1, y0, y1):
         corner = self.roi.roi().corner()
@@ -547,6 +590,22 @@ class TestXRangeMpl(TestMpl):
 
         assert not self.roi._patch.get_visible()
 
+    def test_scrub(self):
+
+        def assert_final_position(roi):
+            assert_almost_equal(roi._roi.min, 3.0)
+            assert_almost_equal(roi._roi.max, 8.0)
+
+        self.scrub(assert_final_position)
+
+    def test_abort(self):
+
+        def assert_final_position(roi):
+            assert_almost_equal(roi._roi.min, 5.0)
+            assert_almost_equal(roi._roi.max, 10.0)
+
+        self.abort(assert_final_position)
+
 
 class TestYRangeMpl(TestMpl):
     def _roi_factory(self):
@@ -578,6 +637,22 @@ class TestYRangeMpl(TestMpl):
         assert self.roi._roi.range() == (1, 2)
 
         assert not self.roi._patch.get_visible()
+
+    def test_scrub(self):
+
+        def assert_final_position(roi):
+            assert_almost_equal(roi._roi.min, 4.0)
+            assert_almost_equal(roi._roi.max, 9.0)
+
+        self.scrub(assert_final_position)
+
+    def test_abort(self):
+
+        def assert_final_position(roi):
+            assert_almost_equal(roi._roi.min, 5.0)
+            assert_almost_equal(roi._roi.max, 10.0)
+
+        self.abort(assert_final_position)
 
 
 class TestCircleMpl(TestMpl):
@@ -622,6 +697,24 @@ class TestCircleMpl(TestMpl):
         assert not roi.contains(x + 1.05 * r, y)
         assert not roi.contains(x + .8 * r, y + .8 * r)
 
+    def test_scrub(self):
+
+        def assert_final_position(roi):
+            assert roi._roi.xc == 6
+            assert roi._roi.yc == 7
+            assert_almost_equal(roi._roi.radius, 7.0, decimal=0)
+
+        self.scrub(assert_final_position)
+
+    def test_abort(self):
+
+        def assert_final_position(roi):
+            assert roi._roi.xc == 5
+            assert roi._roi.yc == 5
+            assert_almost_equal(roi._roi.radius, 7.0, decimal=0)
+
+        self.abort(assert_final_position)
+
 
 class TestPolyMpl(TestMpl):
     def _roi_factory(self):
@@ -631,10 +724,10 @@ class TestPolyMpl(TestMpl):
         return isinstance(self.roi._roi, PolygonalROI)
 
     def send_events(self):
-        ev0 = DummyEvent(0, 0, inaxes=self.axes)
-        ev1 = DummyEvent(0, 1, inaxes=self.axes)
-        ev2 = DummyEvent(1, 1, inaxes=self.axes)
-        ev3 = DummyEvent(1, 0, inaxes=self.axes)
+        ev0 = DummyEvent(5, 5, inaxes=self.axes)
+        ev1 = DummyEvent(5, 10, inaxes=self.axes)
+        ev2 = DummyEvent(10, 10, inaxes=self.axes)
+        ev3 = DummyEvent(10, 5, inaxes=self.axes)
         self.roi.start_selection(ev0)
         self.roi.update_selection(ev1)
         self.roi.update_selection(ev2)
@@ -643,12 +736,74 @@ class TestPolyMpl(TestMpl):
 
     def assert_roi_correct(self):
         roi = self.roi.roi()
-        assert roi.contains(.5, .5)
-        assert not roi.contains(1.5, .5)
+        assert roi.contains(7.0, 7.0)
+        assert not roi.contains(12, 7.0)
 
     def test_define(self):
         self.send_events()
         self.assert_roi_correct()
+
+    def test_scrub(self):
+        # Define the shape
+        self.send_events()
+
+        # Restart without finalize == scrub
+        self.roi.start_selection(DummyEvent(6, 6, inaxes=self.axes))
+        self.roi.update_selection(DummyEvent(7, 8, inaxes=self.axes))
+
+        assert self.roi._roi.vx[0] == 6
+        assert self.roi._roi.vy[0] == 7
+
+    def test_abort(self):
+        self.send_events()
+
+        # Restart without finalize == scrub
+        self.roi.start_selection(DummyEvent(6, 6, inaxes=self.axes))
+        self.roi.update_selection(DummyEvent(7, 8, inaxes=self.axes))
+
+         # Now abort
+        self.roi.abort_selection(None)
+
+        assert self.roi._roi.vx[0] == 5
+        assert self.roi._roi.vy[0] == 5
+
+
+class TestPickMpl(TestMpl):
+    def _roi_factory(self):
+        return MplPickROI(self.axes)
+
+    def test_proper_roi(self):
+        return isinstance(self.roi._roi, PointROI)
+
+    def test_start_ignored_if_not_inaxes(self):
+        ev = DummyEvent(0, 0, inaxes=None)
+        self.roi.start_selection(ev)
+        assert self.roi._roi.defined()
+
+    def test_update_before_start_ignored(self):
+        ev = DummyEvent(0, 0, inaxes=None)
+        self.roi.update_selection(ev)
+        assert self.roi._roi.defined()
+
+    def test_finalize_before_start_ignored(self):
+        ev = DummyEvent(0, 0, inaxes=None)
+        self.roi.finalize_selection(ev)
+        assert self.roi._roi.defined()
+
+    def test_large_zorder(self):
+        """No patch to test for."""
+
+    def test_patch_shown_on_start(self):
+        """No patch to test for."""
+
+    def test_patch_hidden_on_finalise(self):
+        """No patch to test for."""
+
+    def test_patch_hidden_on_finalise(self):
+        """No patch to test for."""
+
+    def test_canvas_syncs_properly(self):
+        """No patch to test for."""
 
 
 class TestUtil(object):
