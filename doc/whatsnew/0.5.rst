@@ -1,0 +1,53 @@
+.. _whatsnew_05:
+
+What's new in v0.5?
+===================
+
+Python 3 compatibility
+----------------------
+
+Glue v0.5 is now fully compatible with Python 3, fixes compatibility with 2.6, and remains compatible with Python 2.7.
+
+Installation with Anaconda/conda
+--------------------------------
+
+If you make use of Anaconda or Miniconda, Glue can now be installed very easily by doing::
+
+    conda install glueviz
+
+This will install glue itself as well as all of the required and many
+optional dependencies.
+
+New features
+------------
+
+Glue v0.5 includes a number of new features, in particular:
+
+* The ability to :ref:`include a copy of all datasets <saving_session>` in
+  ``.glu`` session files, to make it easier to exchange session files with
+  other users (when saving a session file, choose the option to include all
+  data from the drop-down menu).
+
+* The ability to write and register
+  :ref:`custom data importers <custom_importers>`, as well as
+  :ref:`custom menubar tools <custom_menubar_tools>`.
+  
+* An improved interface for :ref:`creating new components <new_components>`,
+  including tab-completion and color highlighting of component names.
+
+* The ability to specify plugins to load by :ref:`providing the name of a plugin package <lazy_load_plugin>`,
+  rather than having to import it explicitly.
+  
+* The ability to pass ``HDUList`` objects when using ``qglue``.
+
+* The ability to use the ``load_ui`` function in external plugins.
+
+* The Astronomy coordinate system transformations now include more coordinate
+  frames.
+
+Improvements
+------------
+
+In addition to the new features described above, we have made a number of
+internal improvements to the code structure, and have fixed a number of
+usability bugs reported by users.

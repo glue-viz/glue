@@ -1,3 +1,5 @@
+.. _new_components:
+
 Defining New Components
 =======================
 

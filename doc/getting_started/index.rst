@@ -146,6 +146,8 @@ As was mentioned :ref:`above <multi_selection_note>`, the highlighted subsets in
 .. note:: Careful readers will notice that we didn't use the image subset from earlier sections when working with the catalog. This is because that selection combined spatial constraints (the original rectangle in the image) with a constraint on intensity (the histogram selection). There is no mapping from image intensity to quantities in the catalog, so it isn't possible to filter the catalog on that subset. In situations where Glue is unable to apply a filter to a dataset, it doesn't render the subset in the visualization.
 
 
+.. _saving_session:
+
 Saving your work
 ================
 Glue provides a number of ways to save your work, and to export your work for further analysis in other programs.

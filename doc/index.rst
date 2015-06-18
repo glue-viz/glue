@@ -17,7 +17,10 @@ Glue is a Python library to explore relationships within and among related datas
  <iframe src="http://player.vimeo.com/video/53378575?badge=0"  width="500" height="275" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
  </center>
 
-For more demos, check out the :ref:`videos <demo_videos>` page
+For more demos, check out the :ref:`videos <demo_videos>` page.
+
+The latest version of glue is v0.5 - find out :ref:`whatsnew_05`.
+
 
 
 .. toctree::

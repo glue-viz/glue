@@ -113,6 +113,8 @@ this file to your function, and use the resulting Data object.
 For more examples of custom data loaders, see the `example repository
 <https://github.com/glue-viz/glue-data-loaders>`_.
 
+.. _custom_importers:
+
 Custom importers
 ----------------
 
@@ -137,6 +139,8 @@ An importer can be defined using the ``@importer`` decorator::
 
 The label in the ``@importer`` decorator is the text that will appear in the
 ``Import`` menu in Glue.
+
+.. _custom_menubar_tools:
 
 Custom menubar tools
 --------------------
@@ -208,6 +212,8 @@ Registry name                  Registry class
 ``fit_plugin``               :class:`glue.config.ProfileFitterRegistry`
 ``single_subset_action``     :class:`glue.config.SingleSubsetLayerActionRegistry`
 ========================== =======================================================
+
+.. _lazy_load_plugin:
 
 Deferring loading of plug-in functionality (advanced)
 -----------------------------------------------------

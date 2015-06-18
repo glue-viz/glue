@@ -4,10 +4,8 @@ Installing Glue
 ===============
 
 There are several ways to install Glue on your computer. We recommend one of
-the first two options, which greatly simplify of the (sometimes tricky) task of
-installing Qt, Matplotlib, and other libraries that Glue relies on.
-
-.. note :: Glue support with Python 3 is currently experimental.
+the first two options, which greatly simplify of the (sometimes tricky) task
+of installing Qt, Matplotlib, and other libraries that Glue relies on.
 
 Easiest Option (Recommended for Mac users)
 ------------------------------------------
@@ -25,8 +23,8 @@ Continuum Analytics. Anaconda includes all of Glue's main dependencies.
 First, download and install the `appropriate version of Anaconda
 <http://continuum.io/downloads.html>`_ for your operating system. Then, you can try and install glue using::
 
-    conda install -c https://conda.binstar.org/glueviz glueviz
-    
+    conda install glueviz
+
 If for any reason this fails, you can also try and install glue using pip::
 
     pythonw -m pip install glueviz
