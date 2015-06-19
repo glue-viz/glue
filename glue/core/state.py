@@ -194,12 +194,13 @@ class GlueSerializer(object):
     """
     dispatch = VersionedDict()
 
-    def __init__(self, obj):
+    def __init__(self, obj, include_data=False):
         self._names = {}  # map id(object) -> name
         self._objs = {}   # map name -> object
         self._working = set()
         self._main = obj
         self.id(obj)
+        self.include_data = include_data
 
     @classmethod
     def serializes(cls, obj, version=1):
@@ -673,7 +674,8 @@ def _load_component_id(rec, context):
 
 @saver(Component)
 def _save_component(component, context):
-    if hasattr(component, '_load_log'):
+
+    if not context.include_data and hasattr(component, '_load_log'):
         log = component._load_log
         return dict(log=context.id(log),
                     log_item=log.id(component))
