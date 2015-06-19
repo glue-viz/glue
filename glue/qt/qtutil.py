@@ -707,24 +707,6 @@ def _custom_widgets():
     yield LinkEquation
 
 
-def _load_ui_pyside(path, parent):
-    from PySide.QtUiTools import QUiLoader
-    loader = QUiLoader()
-
-    # must register custom widgets referenced in .ui files
-    for w in _custom_widgets():
-        loader.registerCustomWidget(w)
-
-    widget = loader.load(path, parent)
-
-    return widget
-
-
-def _load_ui_pyqt4(path, parent):
-    from PyQt4.uic import loadUi
-    return loadUi(path, parent)
-
-
 def load_ui(path, parent=None):
     """
     Load a UI file, given its name.
@@ -749,10 +731,8 @@ def load_ui(path, parent=None):
     if not os.path.exists(path):
         path = global_ui_path(path)
 
-    if is_pyside():
-        return _load_ui_pyside(path, parent)
-    else:
-        return _load_ui_pyqt4(path, parent)
+    from ..external.qt import load_ui
+    return load_ui(path, parent)
 
 
 def global_ui_path(ui_name):
