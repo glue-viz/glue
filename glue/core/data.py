@@ -217,6 +217,15 @@ class Component(object):
         """
         return np.can_cast(self.data[0], np.complex)
 
+    @property
+    def group(self):
+        """
+        Whether or not the datatype can be considered a grouping identifier
+        """
+        elems = len(self.data[:])
+        groups = len(np.unique(self.data[:]))
+        return (elems / groups) > 2 and groups < 1001
+
     def __str__(self):
         return "Component with shape %s" % shape_to_string(self.shape)
 

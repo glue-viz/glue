@@ -53,12 +53,9 @@ class ScatterWidget(DataViewer):
 
         self.setCentralWidget(self.central_widget)
 
-        self.ui = load_ui('scatterwidget', self.option_widget)
+        self._load_ui()
+        self._setup_client()
         self._tweak_geometry()
-
-        self.client = ScatterClient(self._data,
-                                    self.central_widget.canvas.fig,
-                                    artist_container=self._container)
 
         self._connect()
         self.unique_fields = set()
@@ -66,6 +63,14 @@ class ScatterWidget(DataViewer):
         cache_axes(self.client.axes, tb)
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
+
+    def _load_ui(self):
+        self.ui = load_ui('scatterwidget', self.option_widget)
+
+    def _setup_client(self):
+        self.client = ScatterClient(self._data,
+                                    self.central_widget.canvas.fig,
+                                    artist_container=self._container)
 
     @staticmethod
     def _get_default_tools():

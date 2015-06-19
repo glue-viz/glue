@@ -36,6 +36,8 @@ class ScatterClient(Client):
     yatt = CallbackProperty()
     jitter = CallbackProperty()
 
+    layer_artist_class = ScatterLayerArtist
+
     def __init__(self, data=None, figure=None, axes=None,
                  artist_container=None):
         """
@@ -134,7 +136,7 @@ class ScatterClient(Client):
         if layer in self.artists:
             return self.artists[layer][0]
 
-        result = ScatterLayerArtist(layer, self.axes)
+        result = self.layer_artist_class(layer, self.axes)
         self.artists.append(result)
         self._update_layer(layer)
         self._ensure_subsets_added(layer)
@@ -414,7 +416,7 @@ class ScatterClient(Client):
         """ Re-generate a list of plot layers from a glue-serialized list"""
         for l in layers:
             cls = lookup_class(l.pop('_type'))
-            if cls != ScatterLayerArtist:
+            if cls != self.layer_artist_class:
                 raise ValueError("Scatter client cannot restore layer of type "
                                  "%s" % cls)
             props = dict((k, context.object(v)) for k, v in l.items())
