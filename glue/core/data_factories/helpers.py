@@ -43,7 +43,7 @@ from ..contracts import contract
 
 __all__ = ['load_data', 'auto_data', '__factories__', 'data_label',
            'load_data', '_extension', 'find_factory', 'get_default_factory',
-           'FileWatcher','set_default_factory']
+           'FileWatcher','set_default_factory', 'LoadLog']
 
 
 __factories__ = []

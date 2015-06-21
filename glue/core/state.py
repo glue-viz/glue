@@ -371,7 +371,12 @@ class GlueUnSerializer(object):
         return decorator
 
     def _dispatch(self, rec):
+
         typ = _lookup(rec['_type'])
+
+        if typ is None:
+            raise GlueSerializeError("Unkonwn type %s" % rec['_type'])
+
         version = rec.get('_protocol', 1)
 
         if hasattr(typ, '__setgluestate__'):
