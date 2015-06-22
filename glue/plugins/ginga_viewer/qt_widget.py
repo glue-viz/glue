@@ -44,20 +44,22 @@ class GingaWidget(ImageWidgetBase):
 
     def __init__(self, session, parent=None):
 
-        self.logger = log.get_logger(name='ginga', log_stderr=True)
+        self.logger = log.get_logger(name='ginga', level=20, null=True,
+                                     # uncomment for debugging
+                                     #log_stderr=True
+                                     )
 
         self.canvas = ImageViewCanvas(self.logger, render='widget')
 
         # prevent widget from grabbing focus
         self.canvas.set_follow_focus(False)
-        self.canvas.enable_overlays(True)
 
         # enable interactive features
         bindings = self.canvas.get_bindings()
         bindings.enable_all(True)
-        self.canvas.set_callback('none-move', self.motion_readout)
-        self.canvas.set_callback('draw-event', self._apply_roi_cb)
-        self.canvas.set_callback('draw-down', self._clear_roi_cb)
+        self.canvas.add_callback('none-move', self.motion_readout)
+        self.canvas.add_callback('draw-event', self._apply_roi_cb)
+        self.canvas.add_callback('draw-down', self._clear_roi_cb)
         self.canvas.enable_draw(False)
         self.canvas.enable_autozoom('off')
         self.canvas.set_zoom_algorithm('rate')
@@ -188,7 +190,7 @@ class GingaWidget(ImageWidgetBase):
         self.canvas.draw_context = self
         self.canvas.set_drawtype(name, color='cyan', linestyle='dash')
         bm = self.canvas.get_bindmap()
-        bm.set_modifier('draw', modtype='locked')
+        bm.set_mode('draw', mode_type='locked')
 
     def _clear_roi_cb(self, canvas, *args):
         try:
@@ -243,9 +245,9 @@ class GingaWidget(ImageWidgetBase):
         """
         bm = self.canvas.get_bindmap()
         if not tf:
-            bm.reset_modifier(self.canvas)
+            bm.reset_mode(self.canvas)
             return
-        bm.set_modifier(modname, modtype='locked')
+        bm.set_mode(modname, mode_type='locked')
         return True
 
     def mode_set_cb(self, bm, modname, mtype):
@@ -332,8 +334,8 @@ class GingaTool(object):
         self.parent_canvas = canvas
         self._shape_tag = None
 
-        self.parent_canvas.set_callback('draw-event', self._extract_callback)
-        self.parent_canvas.set_callback('draw-down', self._clear_shape_cb)
+        self.parent_canvas.add_callback('draw-event', self._extract_callback)
+        self.parent_canvas.add_callback('draw-down', self._clear_shape_cb)
 
     def _get_modes(self, canvas):
         return [(self.label, get_icon(self.icon), self._set_path_mode)]
@@ -348,7 +350,7 @@ class GingaTool(object):
 
         self.parent_canvas.set_drawtype(self.shape, color=self.color, linestyle=self.linestyle)
         bm = self.parent_canvas.get_bindmap()
-        bm.set_modifier('draw', modtype='locked')
+        bm.set_mode('draw', mode_type='locked')
 
     def _clear_shape_cb(self, *args):
         try:
