@@ -732,7 +732,7 @@ def load_ui(path, parent=None):
         path = global_ui_path(path)
 
     from ..external.qt import load_ui
-    return load_ui(path, parent)
+    return load_ui(path, parent, custom_widgets=_custom_widgets())
 
 
 def global_ui_path(ui_name):
