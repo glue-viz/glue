@@ -26,3 +26,4 @@ The following pages discuss these concepts. You may want to start by reading the
    customization.rst
    liveupdate.rst
    custom_viewer.rst
+   full_custom_qt_viewer.rst
