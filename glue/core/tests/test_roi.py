@@ -343,8 +343,10 @@ class TestPolygon(object):
 
 class TestCategorical(object):
 
-    def setup_method(self, method):
-        self.roi = CategoricalRoi()
+    def test_empty(self):
+
+        roi = CategoricalRoi()
+        assert not roi.defined()
 
     def test_defined(self):
 
@@ -355,17 +357,24 @@ class TestCategorical(object):
 
     def test_loads_from_components(self):
 
+        roi = CategoricalRoi()
         comp = CategoricalComponent(np.array(['a', 'a', 'b']))
-        self.roi.update_categories(comp)
+        roi.update_categories(comp)
 
-        np.testing.assert_array_equal(self.roi.categories,
+        np.testing.assert_array_equal(roi.categories,
                                       np.array(['a', 'b']))
+
+        roi = CategoricalRoi(categories=comp)
+        np.testing.assert_array_equal(roi.categories,
+                                      np.array(['a', 'b']))
+
 
     def test_applies_components(self):
 
+        roi = CategoricalRoi()
         comp = CategoricalComponent(np.array(['a', 'b', 'c']))
-        self.roi.update_categories(CategoricalComponent(np.array(['a', 'b'])))
-        contained = self.roi.contains(comp, None)
+        roi.update_categories(CategoricalComponent(np.array(['a', 'b'])))
+        contained = roi.contains(comp, None)
         np.testing.assert_array_equal(contained,
                                       np.array([True, True, False]))
 

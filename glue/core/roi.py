@@ -1111,7 +1111,10 @@ class CategoricalRoi(Roi):
     """
 
     def __init__(self, categories=None):
-        self.categories = np.unique(categories)
+        if categories is None:
+            self.categories = None
+        else:
+            self.update_categories(categories)
 
     def _categorical_helper(self, indata):
         """
