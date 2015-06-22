@@ -1106,6 +1106,10 @@ class MplPathROI(MplPolygonalROI):
 
 class CategoricalRoi(Roi):
 
+    """
+    A ROI abstraction to represent selections of categorical data.
+    """
+
     def __init__(self, categories=None):
         self.categories = np.unique(categories)
 
@@ -1126,6 +1130,20 @@ class CategoricalRoi(Roi):
             return np.asarray(indata)
 
     def contains(self, x, y):
+        """
+        Test whether a set categorical elements fall within
+        the region of interest
+
+        :param x: Any array-like object of categories
+                 (includes CategoricalComponenets)
+        :param y: Unused but required for compatibility
+
+        *Returns*
+
+           A list of True/False values, for whether each x value falls
+           within the ROI
+
+        """
 
         check = self._categorical_helper(x)
         index = np.minimum(np.searchsorted(self.categories, check),
@@ -1146,7 +1164,7 @@ class CategoricalRoi(Roi):
     @staticmethod
     def from_range(cat_comp, lo, hi):
         """
-        Utility function to help contruct the Roi from a range.
+        Utility function to help construct the Roi from a range.
 
         :param cat_comp: Anything understood by ._categorical_helper ... array, list or component
         :param lo: lower bound of the range

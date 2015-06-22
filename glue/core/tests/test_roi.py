@@ -11,7 +11,7 @@ from glue.core.data import CategoricalComponent
 from mock import MagicMock
 
 from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI, CategoricalRoi,
-                   MplCircularROI, MplRectangularROI, MplPolygonalROI,
+                   MplCircularROI, MplRectangularROI, MplPolygonalROI, MplPickROI, PointROI,
                    XRangeROI, MplXRangeROI, YRangeROI, MplYRangeROI)
 
 from .. import roi as r
@@ -377,17 +377,6 @@ class TestCategorical(object):
         np.testing.assert_array_equal(roi.categories,
                                       np.array(list('ghij')))
 
-
-    def test_move(self):
-        """Move polygon"""
-        self.define_as_square()
-        vx = list(self.roi.vx)
-        vy = list(self.roi.vy)
-        self.roi.move_to(1, 1)
-        assert type(self.roi.vx) == list
-        assert type(self.roi.vy) == list
-        assert self.roi.vx[0] - vx[0] == 1
-        assert self.roi.vy[0] - vy[0] == 1
 
 
 class DummyEvent(object):
