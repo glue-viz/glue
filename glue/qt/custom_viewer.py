@@ -275,6 +275,7 @@ class MissingSettingError(KeyError):
 class SettingsOracle(SettingsOracleInterface):
 
     def __init__(self, settings, **override):
+
         reserved_words = set(['axes', 'layer', 'self'])
         for key in settings.keys():
             if key in reserved_words:
