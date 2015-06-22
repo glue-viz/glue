@@ -12,7 +12,7 @@ from ..core import Data, DataCollection, Hub
 def test_die_on_error_exception():
     """Decorator should spawn a QMessageBox and exit"""
     with pytest.raises(SystemExit):
-        with patch('glue.external.qt.QtGui.QMessageBox') as qmb:
+        with patch('glue.utils.qt.QMessageBoxPatched') as qmb:
             @die_on_error('test_msg')
             def test():
                 raise Exception()

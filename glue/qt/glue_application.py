@@ -7,13 +7,14 @@ import sys
 import webbrowser
 
 from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
-                                 QMenu, QAction, QMessageBox,
+                                 QMenu, QAction,
                                  QFileDialog, QInputDialog,
                                  QToolButton, QVBoxLayout, QWidget, QPixmap,
                                  QBrush, QPainter, QLabel, QHBoxLayout,
                                  QTextEdit, QTextCursor, QPushButton,
                                  QListWidgetItem)
 from ..external.qt.QtCore import Qt, QSize, QSettings, Signal
+from ..utils.qt import QMessageBoxPatched as QMessageBox
 
 from ..core import command, Data
 from .. import env

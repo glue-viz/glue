@@ -97,7 +97,7 @@ def die_on_error(msg):
             except Exception as e:
                 import traceback
                 from . import qt
-                from .external.qt.QtGui import QMessageBox
+                from .utils.qt import QMessageBoxPatched as QMessageBox
                 m = "%s\n%s" % (msg, e)
                 detail = str(traceback.format_exc())
                 if len(m) > 500:

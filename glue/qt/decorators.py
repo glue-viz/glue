@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from functools import wraps
 import traceback
-from ..external.qt.QtGui import QMessageBox
+from ..utils.qt import QMessageBoxPatched as QMessageBox
 
 
 def set_cursor(shape):

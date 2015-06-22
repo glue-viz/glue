@@ -16,6 +16,7 @@ v0.5 (Unreleased)
 * The error console log is now availble through the View menu
 * Fixed compatibility with Python 2.6
 * Python 3.x support is now stable
+* Fixed the ability to copy detailed error messages
 
 v0.4 (Released December 22, 2015)
 ---------------------------------
