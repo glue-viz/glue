@@ -115,12 +115,13 @@ class AttributeInfo(np.ndarray):
     """
 
     @classmethod
-    def make(cls, id, values, categories=None):
+    def make(cls, id, values, comp, categories=None):
         values = np.asarray(values)
         result = values.view(AttributeInfo)
         result.id = id
         result.values = values
         result.categories = categories
+        result._component = comp
         return result
 
     @classmethod
@@ -142,14 +143,14 @@ class AttributeInfo(np.ndarray):
         categories = None
         if isinstance(comp, core.data.CategoricalComponent):
             categories = comp._categories
-        return cls.make(cid, values, categories)
+        return cls.make(cid, values, comp, categories)
 
     def __gluestate__(self, context):
         return dict(cid=context.id(self.id))
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        return cls.make(context.object(rec['cid']), [])
+        return cls.make(context.object(rec['cid']), [], None)
 
 
 class ViewerState(object):
@@ -246,15 +247,15 @@ def introspect_and_call(func, settings):
     try:
         # get the current values of each input to the UDF
         a = [settings(item) for item in a]
-    except AttributeError as exc:
+    except MissingSettingError as exc:
         # the UDF expects an argument that we don't know how to provide
         # try to give a helpful error message
         missing = exc.args[0]
         setting_list = "\n -".join(settings.setting_names())
-        raise AttributeError("This custom viewer is trying to use an "
-                             "unrecognized variable named %s\n. Valid "
-                             "variable names are\n -%s" %
-                             (missing, setting_list))
+        raise MissingSettingError("This custom viewer is trying to use an "
+                                  "unrecognized variable named %s\n. Valid "
+                                  "variable names are\n -%s" %
+                                  (missing, setting_list))
     k = k or {}
 
     return func(*a, **k)
@@ -268,10 +269,20 @@ class SettingsOracleInterface(object):
     def setting_names(self):
         return NotImplementedError()
 
+class MissingSettingError(KeyError):
+    pass
 
 class SettingsOracle(SettingsOracleInterface):
 
     def __init__(self, settings, **override):
+
+        reserved_words = set(['axes', 'layer', 'self'])
+        for key in settings.keys():
+            if key in reserved_words:
+                raise AssertionError('You tried to create a custom setting %s' % key +
+                                     ' but you cannot use a reserved word: ' +
+                                     ','.join(sorted(reserved_words)))
+
         self.settings = settings  # dict-like, items have a value() method
         self.override = override  # look for settings here first
 
@@ -280,18 +291,18 @@ class SettingsOracle(SettingsOracleInterface):
         self.view = override.pop('view', None)
 
     def __call__(self, key):
-        try:
-            if key == 'self':
-                return self.override['_self']
-            if key in self.override:
-                return self.override[key]
-            if key == 'style':
-                return self.layer.style
-            if key == 'layer':
-                return self.layer
-            return self.settings[key].value(self.layer, self.view)
-        except (KeyError, AttributeError):
-            raise AttributeError(key)
+        if key == 'self':
+            return self.override['_self']
+        if key in self.override:
+            return self.override[key]
+        if key == 'style':
+            return self.layer.style
+        if key == 'layer':
+            return self.layer
+        if key not in self.settings:
+            raise MissingSettingError(key)
+
+        return self.settings[key].value(self.layer, self.view)
 
     def setting_names(self):
         return list(set(list(self.settings.keys()) + ['style', 'layer']))
@@ -404,7 +415,7 @@ class FrozenSettings(object):
         try:
             result = self.kwargs[key]
         except KeyError:
-            raise AttributeError(key)
+            raise MissingSettingError(key)
 
         if isinstance(result, AttributeInfo) and layer is not None:
             cid = result.id
@@ -421,6 +432,9 @@ class FrozenSettings(object):
                 return self.value(key, layer, view)
 
         return o
+
+    def __contains__(self, item):
+        return item in self.kwargs
 
     def keys(self):
         return self.kwargs.keys()
@@ -1029,7 +1043,11 @@ class FormElement(object):
         given a shorthand object. For examle,
         FormElement.auto((0., 1.)) returns a NumberElement
         """
-        for cls in FormElement.__subclasses__():
+
+        def subclasses(cls):
+            return cls.__subclasses__() + [g for s in cls.__subclasses__() for g in subclasses(s)]
+
+        for cls in subclasses(FormElement):
             if cls.recognizes(params):
                 return cls(params)
         raise ValueError("Unrecognzied UI Component: %s" % (params,))
@@ -1082,13 +1100,107 @@ class NumberElement(FormElement):
             return False
 
     def _build_ui(self):
-        w = QtGui.QSlider()
         w = LabeledSlider(*self.params[:3])
         w.valueChanged.connect(nonpartial(self.changed))
         return w
 
     def value(self, layer=None, view=None):
         return self.ui.value()
+
+
+class TextBoxElement(FormElement):
+    """
+    A form element representing a generic textbox
+
+    The shorthand is any string starting with an _.::
+
+        e = FormElement.auto("_default")
+
+    Everything after the underscore is taken as the default value.
+    """
+    state = wp.ValueProperty('ui')
+
+    def _build_ui(self):
+        self._widget = GenericTextBox()
+        self._widget.textChanged.connect(nonpartial(self.changed))
+        self.set_value(self.params[1:])
+        return self._widget
+
+    def value(self, layer=None, view=None):
+        return self._widget.text()
+
+    def set_value(self, val):
+        self._widget.setText(str(val))
+
+    @classmethod
+    def recognizes(cls, params):
+        try:
+            if isinstance(params, str) & params.startswith('_'):
+                return True
+        except AttributeError:
+            return None
+
+
+class FloatElement(FormElement):
+    """
+    A form element representing a generic number box.
+
+    The shorthand is any number::
+
+        e = FormElement.auto(2)
+
+    The number itself is taken as the default value.
+    """
+    state = wp.ValueProperty('ui')
+
+    def _build_ui(self):
+        self._widget = GenericTextBox()
+        self._widget.textChanged.connect(nonpartial(self.changed))
+        self.set_value(self.params)
+        return self._widget
+
+    def value(self, layer=None, view=None):
+        try:
+            return float(self._widget.text())
+        except ValueError:
+            return None
+
+    def set_value(self, val):
+        self._widget.setText(str(val))
+
+    @classmethod
+    def recognizes(cls, params):
+        return isinstance(params, (int, float)) and not isinstance(params, bool)
+
+class GenericTextBox(QtGui.QWidget):
+
+    def __init__(self, parent=None):
+        super(GenericTextBox, self).__init__(parent)
+        self._l = QtGui.QHBoxLayout()
+        self._textbox = QtGui.QLineEdit()
+        self._l.setContentsMargins(2, 2, 2, 2)
+        self._l.addWidget(self._textbox)
+        self.setLayout(self._l)
+
+    @property
+    def valueChanged(self):
+        return self._textbox.textChanged
+
+    @property
+    def textChanged(self):
+        return self._textbox.textChanged
+
+    def value(self, layer=None, view=None):
+        return self._textbox.text()
+
+    def text(self):
+        return self._textbox.text()
+
+    def set_value(self, text):
+        self._textbox.setText(text)
+
+    setText = set_value
+    setValue = set_value
 
 
 class LabeledSlider(QtGui.QWidget):
@@ -1215,7 +1327,7 @@ class FixedComponent(FormElement):
         if layer is not None:
             cid = layer.data.id[cid]
             return AttributeInfo.from_layer(layer, cid, view)
-        return AttributeInfo.make(cid, [])
+        return AttributeInfo.make(cid, [], None)
 
     @property
     def state(self):
@@ -1260,8 +1372,22 @@ class ComponenentElement(FormElement, core.hub.HubListener):
     def value(self, layer=None, view=None):
         cid = self._component
         if layer is None or cid is None:
-            return AttributeInfo.make(cid, [])
+            return AttributeInfo.make(cid, [], None)
         return AttributeInfo.from_layer(layer, cid, view)
+
+    def _list_components(self):
+        """
+        Determine which components to list.
+
+
+        This can be overridden by subclassing to limit which components are
+        visible to the user.
+
+        """
+        comps = list(set([c for l in self.container.layers
+                          for c in l.data.components if not c._hidden]))
+        comps = sorted(comps, key=lambda x: x.label)
+        return comps
 
     def _update_components(self):
         combo = self.ui
@@ -1270,9 +1396,7 @@ class ComponenentElement(FormElement, core.hub.HubListener):
         combo.blockSignals(True)
         combo.clear()
 
-        comps = list(set([c for l in self.container.layers
-                          for c in l.data.components if not c._hidden]))
-        comps = sorted(comps, key=lambda x: x.label)
+        comps = self._list_components()
         for c in comps:
             combo.addItem(c.label, userData=c)
 

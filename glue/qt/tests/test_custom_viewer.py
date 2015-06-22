@@ -9,7 +9,11 @@ from ... import custom_viewer
 from ...core import Data
 from ...core.subset import SubsetState
 from ...core.tests.util import simple_session
-from ..custom_viewer import FormElement, NumberElement, ChoiceElement, CustomViewer, CustomSubsetState, AttributeInfo
+from ..custom_viewer import FormElement, NumberElement, \
+    ChoiceElement, CustomViewer, \
+    CustomSubsetState, AttributeInfo, \
+    FloatElement, TextBoxElement, SettingsOracle, \
+    MissingSettingError, FrozenSettings
 from ..glue_application import GlueApplication
 from ...core.tests.test_state import check_clone_app, clone
 
@@ -26,6 +30,7 @@ viewer = custom_viewer('Testing Custom Viewer',
                        e=False,
                        f=['a', 'b', 'c'],
                        g=OrderedDict(a=1, b=2, c=3),
+                       h=64
                        )
 
 
@@ -45,8 +50,8 @@ def _setup(axes):
 
 
 @viewer.plot_data
-def _plot_data(axes, a, b, g):
-    plot_data(axes=axes, a=a, b=b, g=g)
+def _plot_data(axes, a, b, g, h):
+    plot_data(axes=axes, a=a, b=b, g=g, h=h)
     return []
 
 
@@ -82,12 +87,13 @@ class ViewerSubclass(CustomViewer):
     e = False
     f = ['a', 'b', 'c']
     g = OrderedDict(a=1, b=2, c=3)
+    h = 64
 
     def setup(self, axes):
         return setup(axes)
 
-    def plot_data(self, axes, a, b, g):
-        return plot_data(axes=axes, a=a, b=b, g=g)
+    def plot_data(self, axes, a, b, g, h):
+        return plot_data(axes=axes, a=a, b=b, g=g, h=h)
 
     def plot_subset(self, b, c, d, e, f, style):
         return plot_subset(b=b, c=c, d=d, e=e, f=f, style=style)
@@ -144,9 +150,10 @@ class TestCustomViewer(object):
 
         a, k = plot_data.call_args
         assert isinstance(k['axes'], Axes)
-        assert set(k.keys()) == set(('axes', 'a', 'b', 'g'))
+        assert set(k.keys()) == set(('axes', 'a', 'b', 'g', 'h'))
         assert k['a'] == 50
         assert k['g'] == 1
+        assert k['h'] == 64
 
     def test_plot_subset(self):
         w = self.build()
@@ -254,7 +261,6 @@ class TestCustomSelectMethod(object):
         v = w._coordinator
         roi = MagicMock()
         s = CustomSubsetState(type(v), roi, v.settings())
-
         assert_array_equal(s.to_mask(self.data), [False, True, True])
 
     def test_state_view(self):
@@ -313,6 +319,29 @@ class TestFormElements(object):
         e = FormElement.auto(('a', 'b'))
         assert isinstance(e, ChoiceElement)
 
+    def test_float(self):
+        e = FormElement.auto(1.2)
+        assert isinstance(e, FloatElement)
+
+        e = FormElement.auto(2)
+        assert isinstance(e, FloatElement)
+        assert e.value() == 2
+
+    def test_textbox(self):
+        e = FormElement.auto('_str')
+        assert isinstance(e, TextBoxElement)
+        assert e.value() == 'str'
+
+    def test_recognizes_subsubclasses(self):
+
+        class SubClassFormElement(TextBoxElement):
+            @classmethod
+            def recognizes(cls, params):
+                return params == 'specific_class'
+
+        e = FormElement.auto('specific_class')
+        assert isinstance(e, SubClassFormElement)
+
     def test_unrecognized(self):
         with pytest.raises(ValueError):
             e = FormElement.auto(None)
@@ -344,3 +373,67 @@ class TestAttributeInfo(object):
         assert_array_equal(v, [3, 4, 5])
         assert v.id == self.d.id['x']
         assert v.categories is None
+
+    def test_has_component(self):
+
+        v = AttributeInfo.from_layer(self.s, self.d.id['x'])
+        comp = self.s.data.get_component(self.d.id['x'])
+        assert v._component == comp
+
+
+
+class TestSettingsOracle(object):
+
+
+
+    def test_oracle_raises_original_error(self):
+        class BadFormElement(TextBoxElement):
+
+            def value(self, layer=None, view=None):
+                raise AttributeError('Inner Error')
+
+        oracle = SettingsOracle({'bad_form': BadFormElement('str("text")')})
+
+        try:
+            oracle('bad_form')
+            assert False
+        except AttributeError as err:
+            assert 'Inner Error' in err.args
+
+    def test_oracle_raises_missing(self):
+        oracle = SettingsOracle({'Form': TextBoxElement('_text')})
+        with pytest.raises(MissingSettingError):
+            oracle('missing')
+
+    def test_frozen_oracle_raises_missing(self):
+
+        oracle = FrozenSettings()
+        with pytest.raises(MissingSettingError):
+            oracle.value('missing')
+
+
+    def test_load_reserved_words(self):
+
+        _self = MagicMock()
+        layer = MagicMock()
+        style = layer.style
+        extra = MagicMock()
+        oracle = SettingsOracle({}, _self=_self,
+                                    layer=layer,
+                                    extra=extra)
+        assert oracle('self') == _self
+        assert oracle('layer') == layer
+        assert oracle('style') == style
+        assert oracle('extra') == extra
+
+
+    def test_setting_names(self):
+
+        oracle = SettingsOracle({'Form': TextBoxElement('_text')})
+        assert sorted(oracle.setting_names()) == sorted(['style', 'layer', 'Form'])
+
+
+    def test_raises_if_overlapping_reserved_words(self):
+
+        with pytest.raises(AssertionError):
+            oracle = SettingsOracle({'self': TextBoxElement('_text')})
