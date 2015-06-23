@@ -17,11 +17,11 @@ from ..external.qt import QtGui
 from ..external.qt.QtCore import (Qt, QThread, QAbstractListModel, QModelIndex)
 from ..external.qt.QtGui import (QColor, QInputDialog, QColorDialog,
                                  QListWidget, QTreeWidget, QPushButton,
-                                 QMessageBox,
                                  QTabBar, QBitmap, QIcon, QPixmap, QImage,
                                  QWidget,
                                  QLabel, QGridLayout,
                                  QRadioButton, QButtonGroup, QCheckBox)
+from ..utils.qt import QMessageBoxPatched as QMessageBox
 
 from .decorators import set_cursor
 from .mime import PyMimeData, LAYERS_MIME_TYPE
