@@ -1,3 +1,5 @@
+:orphan:
+
 .. _whatsnew_05:
 
 What's new in v0.5?

@@ -10,10 +10,12 @@ link_tutorial.rst gui_guide/link_tutorial.rst
 merging.rst gui_guide/merging.rst
 slice.rst gui_guide/slice.rst
 spectrum.rst gui_guide/spectrum.rst
-custom_viewer.rst python_guide/custom_viewer.rst
-customization.rst python_guide/customization.rst
+custom_viewer.rst customizing_guide/custom_viewer.rst
+customization.rst customization/customization.rst
 data_tutorial.rst python_guide/data_tutorial.rst
 data_viewer_options.rst python_guide/data_viewer_options.rst
 glue_from_python.rst python_guide/glue_from_python.rst
 python_guide.rst python_guide/index.rst
 liveupdate.rst python_guide/liveupdate.rst
+python_guide/custom_viewer.rst customizing_guide/custom_viewer.rst
+python_guide/customization.rst customizing_guide/customization.rst

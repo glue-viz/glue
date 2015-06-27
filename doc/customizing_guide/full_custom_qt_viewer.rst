@@ -1,5 +1,5 @@
-How to write a fully customized Qt viewer
-=========================================
+Writing a fully customized Qt viewer (advanced)
+===============================================
 
 Motivation
 ----------
@@ -164,4 +164,3 @@ Once the data viewer has been instantiated, the main glue application will call 
         def _update_data(self, msg):
 
             # Process DataUpdateMessage here
-

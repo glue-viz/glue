@@ -22,6 +22,8 @@ For more demos, check out the :ref:`videos <demo_videos>` page.
 The latest version of glue is v0.5 - find out :ref:`whatsnew_05`.
 
 
+Using glue
+----------
 
 .. toctree::
    :maxdepth: 2
@@ -30,10 +32,35 @@ The latest version of glue is v0.5 - find out :ref:`whatsnew_05`.
    getting_started/index.rst
    gui_guide/index.rst
    python_guide/index.rst
-   developer_guide/index.rst
-   faq.rst
    videos.rst
+
+Customizing glue
+----------------
+
+.. toctree::
+   :maxdepth: 1
+
+   customizing_guide/customization.rst
+   customizing_guide/custom_viewer.rst
+   customizing_guide/full_custom_qt_viewer.rst
+
+Getting help
+------------
+
+.. toctree::
+   :maxdepth: 2
+
+   faq.rst
    help.rst
+
+Developer guide
+---------------
+
+.. toctree::
+   :maxdepth: 1
+
+   developer_guide/architecture.rst
+   developer_guide/api.rst
 
 Indices and tables
 ==================
