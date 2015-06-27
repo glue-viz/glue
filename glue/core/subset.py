@@ -14,6 +14,7 @@ from .util import split_component_view
 from ..utils import view_shape
 from ..external.six import PY3
 from .contracts import contract
+from .roi import CategoricalRoi
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState',
@@ -444,6 +445,40 @@ class RoiSubsetState(SubsetState):
         result.yatt = self.yatt
         result.roi = self.roi
         return result
+
+
+class CategoricalRoiSubsetState(SubsetState):
+
+    def __init__(self, att=None, roi=None):
+        super(CategoricalRoiSubsetState, self).__init__()
+        self.att = att
+        self.roi = roi
+
+    @property
+    def attributes(self):
+        return self.att,
+
+    @memoize
+    @contract(data='isinstance(Data)', view='array_view')
+    def to_mask(self, data, view=None):
+        x = data.get_component(self.att)._categorical_data[view]
+        result = self.roi.contains(x, None)
+        assert x.shape == result.shape
+        return result.ravel()
+
+    def copy(self):
+        result = CategoricalRoiSubsetState()
+        result.att = self.att
+        result.roi = self.roi
+        return result
+
+    @staticmethod
+    def from_range(component, att, lo, hi):
+
+        roi = CategoricalRoi.from_range(component, lo, hi)
+        subset = CategoricalRoiSubsetState(roi=roi,
+                                           att=att)
+        return subset
 
 
 class RangeSubsetState(SubsetState):

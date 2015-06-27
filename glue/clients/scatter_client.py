@@ -6,8 +6,8 @@ import numpy as np
 
 from ..core.client import Client
 from ..core.data import Data, IncompatibleAttribute, ComponentID, CategoricalComponent
-from ..core.subset import RoiSubsetState, RangeSubsetState
-from ..core.roi import PolygonalROI, RangeROI
+from ..core.subset import RoiSubsetState, RangeSubsetState, CategoricalRoiSubsetState, AndState
+from ..core.roi import PolygonalROI, RangeROI, CategoricalRoi, RectangularROI
 from ..core.util import relim
 from ..core.edit_subset_mode import EditSubsetMode
 from ..core.message import ComponentReplacedMessage
@@ -251,6 +251,28 @@ class ScatterClient(Client):
         self._pull_properties()
         self._redraw()
 
+    def _process_categorical_roi(self, roi):
+        """ Returns a RoiSubsetState object.
+        """
+
+        if isinstance(roi, RectangularROI):
+            subsets = []
+            axes = [('x', roi.xmin, roi.xmax),
+                    ('y', roi.ymin, roi.ymax)]
+            for coord, lo, hi in axes:
+                comp = list(self._get_data_components(coord))
+                if comp:
+                    if comp[0].categorical:
+                        subset = CategoricalRoiSubsetState.from_range(comp[0], self.xatt, lo, hi)
+                    else:
+                        subset = RangeSubsetState(lo, hi, self.xatt)
+                else:
+                    subset = None
+                subsets.append(subset)
+        else:
+            raise AssertionError
+        return AndState(*subsets)
+
     def apply_roi(self, roi):
         # every editable subset is updated
         # using specified ROI
@@ -258,13 +280,23 @@ class ScatterClient(Client):
         if isinstance(roi, RangeROI):
             lo, hi = roi.range()
             att = self.xatt if roi.ori == 'x' else self.yatt
-            subset_state = RangeSubsetState(lo, hi, att)
+            if self._check_categorical(att):
+                comp = list(self._get_data_components(roi.ori))
+                if comp:
+                    subset_state = CategoricalRoiSubsetState.from_range(comp[0], att, lo, hi)
+                else:
+                    subset_state = None
+            else:
+                subset_state = RangeSubsetState(lo, hi, att)
         else:
-            subset_state = RoiSubsetState()
-            subset_state.xatt = self.xatt
-            subset_state.yatt = self.yatt
-            x, y = roi.to_polygon()
-            subset_state.roi = PolygonalROI(x, y)
+            if self._check_categorical(self.xatt) or self._check_categorical(self.yatt):
+                subset_state = self._process_categorical_roi(roi)
+            else:
+                subset_state = RoiSubsetState()
+                subset_state.xatt = self.xatt
+                subset_state.yatt = self.yatt
+                x, y = roi.to_polygon()
+                subset_state.roi = PolygonalROI(x, y)
 
         mode = EditSubsetMode()
         visible = [d for d in self._data if self.is_visible(d)]

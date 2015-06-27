@@ -3,6 +3,7 @@
 from __future__ import absolute_import, division, print_function
 
 import pytest
+import numpy as np
 
 from mock import MagicMock
 
@@ -12,7 +13,7 @@ from ..layer_artist import HistogramLayerArtist
 from ...core.data_collection import DataCollection
 from ...core.exceptions import IncompatibleDataException
 from ...core.data import Data, CategoricalComponent, ComponentID
-from ...core.subset import RangeSubsetState
+from ...core.subset import RangeSubsetState, CategoricalRoiSubsetState
 
 from .util import renderless_figure
 
@@ -368,6 +369,23 @@ class TestCategoricalHistogram(TestHistogramClient):
         formatter = self.client.axes.xaxis.get_major_formatter()
         xlabels = [formatter.format_data(pos) for pos in range(6)]
         assert correct_labels == xlabels
+
+    def test_apply_roi(self):
+        self.client.add_layer(self.data)
+        self.client.set_component(self.data.id['x'])
+        # bins are 1...4
+
+        self.data.edit_subset = [self.data.subsets[0]]
+
+        roi = MagicMock()
+        roi.to_polygon.return_value = [1.2, 2, 4], [2, 3, 4]
+
+        self.client.apply_roi(roi)
+        state = self.data.subsets[0].subset_state
+        assert isinstance(state, CategoricalRoiSubsetState)
+        np.testing.assert_equal(self.data.subsets[0].subset_state.roi.categories,
+                                np.array(['a', 'b', 'c', 'd', 'e']))
+
 
     # REMOVED TESTS
     def test_xlog_axes_labels(self):

@@ -1102,3 +1102,80 @@ class MplPathROI(MplPolygonalROI):
         if self._patch is not None:
             self._patch.set_visible(False)
         self._axes.figure.canvas.draw()
+
+
+class CategoricalRoi(Roi):
+
+    """
+    A ROI abstraction to represent selections of categorical data.
+    """
+
+    def __init__(self, categories=None):
+        if categories is None:
+            self.categories = None
+        else:
+            self.update_categories(categories)
+
+    def _categorical_helper(self, indata):
+        """
+        A helper function to do the rigamaroll of getting categorical data.
+
+        :param indata: Any type of input data
+        :return: The best guess at the categorical data associated with indata
+        """
+
+        try:
+            if indata.categorical:
+                return indata._categorical_data
+            else:
+                return indata[:]
+        except AttributeError:
+            return np.asarray(indata)
+
+    def contains(self, x, y):
+        """
+        Test whether a set categorical elements fall within
+        the region of interest
+
+        :param x: Any array-like object of categories
+                 (includes CategoricalComponenets)
+        :param y: Unused but required for compatibility
+
+        *Returns*
+
+           A list of True/False values, for whether each x value falls
+           within the ROI
+
+        """
+
+        check = self._categorical_helper(x)
+        index = np.minimum(np.searchsorted(self.categories, check),
+                           len(self.categories)-1)
+        return self.categories[index] == check
+
+    def update_categories(self, categories):
+
+        self.categories = np.unique(self._categorical_helper(categories))
+
+    def defined(self):
+        """ Returns True if the ROI is defined """
+        return self.categories is not None
+
+    def reset(self):
+        self.categories = None
+
+    @staticmethod
+    def from_range(cat_comp, lo, hi):
+        """
+        Utility function to help construct the Roi from a range.
+
+        :param cat_comp: Anything understood by ._categorical_helper ... array, list or component
+        :param lo: lower bound of the range
+        :param hi: upper bound of the range
+        :return: CategoricalRoi object
+        """
+
+        roi = CategoricalRoi()
+        cat_data = cat_comp._categories
+        roi.update_categories(cat_data[np.floor(lo):np.ceil(hi)])
+        return roi

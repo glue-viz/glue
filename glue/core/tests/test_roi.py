@@ -7,11 +7,11 @@ import pytest
 import numpy as np
 from numpy.testing import assert_almost_equal
 from matplotlib.figure import Figure
+from glue.core.data import CategoricalComponent
 from mock import MagicMock
 
-from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI,
-                   PointROI, MplPickROI,
-                   MplCircularROI, MplRectangularROI, MplPolygonalROI,
+from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI, CategoricalRoi,
+                   MplCircularROI, MplRectangularROI, MplPolygonalROI, MplPickROI, PointROI,
                    XRangeROI, MplXRangeROI, YRangeROI, MplYRangeROI)
 
 from .. import roi as r
@@ -340,16 +340,52 @@ class TestPolygon(object):
         """ __str__ returns a string """
         assert type(str(self.roi)) == str
 
-    def test_move(self):
-        """Move polygon"""
-        self.define_as_square()
-        vx = list(self.roi.vx)
-        vy = list(self.roi.vy)
-        self.roi.move_to(1, 1)
-        assert type(self.roi.vx) == list
-        assert type(self.roi.vy) == list
-        assert self.roi.vx[0] - vx[0] == 1
-        assert self.roi.vy[0] - vy[0] == 1
+
+class TestCategorical(object):
+
+    def test_empty(self):
+
+        roi = CategoricalRoi()
+        assert not roi.defined()
+
+    def test_defined(self):
+
+        nroi = CategoricalRoi(categories=['a', 'b', 'c'])
+        assert nroi.defined()
+        nroi.reset()
+        assert not nroi.defined()
+
+    def test_loads_from_components(self):
+
+        roi = CategoricalRoi()
+        comp = CategoricalComponent(np.array(['a', 'a', 'b']))
+        roi.update_categories(comp)
+
+        np.testing.assert_array_equal(roi.categories,
+                                      np.array(['a', 'b']))
+
+        roi = CategoricalRoi(categories=comp)
+        np.testing.assert_array_equal(roi.categories,
+                                      np.array(['a', 'b']))
+
+
+    def test_applies_components(self):
+
+        roi = CategoricalRoi()
+        comp = CategoricalComponent(np.array(['a', 'b', 'c']))
+        roi.update_categories(CategoricalComponent(np.array(['a', 'b'])))
+        contained = roi.contains(comp, None)
+        np.testing.assert_array_equal(contained,
+                                      np.array([True, True, False]))
+
+    def test_from_range(self):
+
+        comp = CategoricalComponent(np.array(list('abcdefghijklmnopqrstuvwxyz')*2))
+
+        roi = CategoricalRoi.from_range(comp, 6, 10)
+        np.testing.assert_array_equal(roi.categories,
+                                      np.array(list('ghij')))
+
 
 
 class DummyEvent(object):

@@ -677,6 +677,36 @@ class TestCategoricalScatterClient(TestScatterClient):
         timer = timeit(timer_func, number=1)
         assert timer < 3  # this is set for Travis speed
 
+    def test_apply_roi(self):
+        data = self.add_data_and_attributes()
+        roi = core.roi.RectangularROI()
+        roi.update_limits(*self.roi_limits)
+        x, y = self.roi_points
+        self.client.apply_roi(roi)
+
+    def test_range_rois_preserved(self):
+        data = self.add_data_and_attributes()
+        assert self.client.xatt is not self.client.yatt
+
+        roi = core.roi.XRangeROI()
+        roi.set_range(1, 2)
+        self.client.apply_roi(roi)
+        assert isinstance(data.edit_subset.subset_state,
+                          core.subset.CategoricalRoiSubsetState)
+        assert data.edit_subset.subset_state.att == self.client.xatt
+
+        roi = core.roi.YRangeROI()
+        roi.set_range(1, 2)
+        self.client.apply_roi(roi)
+        assert isinstance(data.edit_subset.subset_state,
+                          core.subset.RangeSubsetState)
+        assert data.edit_subset.subset_state.att == self.client.yatt
+        roi = core.roi.RectangularROI(xmin=1, xmax=2, ymin=1, ymax=2)
+
+        self.client.apply_roi(roi)
+        assert isinstance(data.edit_subset.subset_state,
+                          core.subset.AndState)
+
     # REMOVED TESTS
     def test_invalid_plot(self):
         """ This fails because the axis ticks shouldn't reset after
