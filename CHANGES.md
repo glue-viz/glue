@@ -1,31 +1,63 @@
-Changelog
-=========
+Full changelog
+==============
 
 v0.5 (Unreleased)
 -----------------
 
-* Added an option to bundle all data in .glu session files
-* Added a ``menu_plugin`` registry to add custom tools to the registry
-* Support for 'lazy-loading' plugins which means their import is deferred until they are needed
-* Support for connecting custom importers
-* ``qglue`` now correctly interprets HDUList objects 
-* Internal improvements to organization of domain-specific code (such as the Astronomy coordinate conversions and ginga data viewer)
-* Astronomy coordinate conversions now include more coordinate frames.
-* ``load_ui`` now checks whether ``.ui`` file exists locally before retrieving it from the ``glue.qt.ui`` sub-package
-* Improved interface for adding new components, with syntax highlighting and tab-completion
-* Improved error/warning messages and miscellaneous bug fixes
-* The error console log is now availble through the View menu
-* Fixed compatibility with Python 2.6
-* Python 3.x support is now stable
-* Fixed the ability to copy detailed error messages
+* Added the ability to include float and string UI elements in custom
+  viewers. [#653]
+
+* Added an option to bundle all data in .glu session files. [#661]
+
+* Added a ``menu_plugin`` registry to add custom tools to the registry. [#644]
+
+* Support for 'lazy-loading' plugins which means their import is deferred
+  until they are needed. [#590]
+
+* Support for connecting custom importers. [#593]
+
+* ``qglue`` now correctly interprets HDUList objects. [#598]
+
+* Internal improvements to organization of domain-specific code (such as the
+  Astronomy coordinate conversions and ginga data viewer). [#488, #585]
+
+* Astronomy coordinate conversions now include more coordinate frames. [#578]
+
+* ``load_ui`` now checks whether ``.ui`` file exists locally before
+  retrieving it from the ``glue.qt.ui`` sub-package. [#599]
+
+* Improved interface for adding new components, with syntax highlighting
+  and tab-completion. [#572, #575]
+
+* Improved error/warning messages. [#582]
+
+* Miscellaneous bug fixes. [#637, #636, #608]
+
+* The error console log is now available through the View menu
+
+* Improved under-the-hood handling of categorical ROIs. [#601]
+
+* Fixed compatibility with Python 2.6. [#540]
+
+* Python 3.x support is now stable. [#576]
+
+* Fixed the ability to copy detailed error messages. [#675]
+
+* Added instructions on how to make a fully-customized Qt viewer. [#619]
+
+* Fixes to the ginga plugin to support the latest version. [#584, #656]
+
+* Added the ability to drag circular, rectangular, and lasso selections. [#657]
+
+* Added the ability to reset a session. [#630]
 
 v0.4 (Released December 22, 2015)
 ---------------------------------
 
 Release Highlights:
-* Introduced custom viewers
-* Ginga-based image viewer
-* Experimental Python 3.x support
+ * Introduced custom viewers
+ * Ginga-based image viewer
+ * Experimental Python 3.x support
 
 Other Notes
  * Better testing for support of optional dependencies
