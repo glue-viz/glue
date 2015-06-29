@@ -125,9 +125,9 @@ script:
   # In the following command, the test -s ensures that warnings are not emitted
   # by the docs build.
   - if [ $DOC_TRIGGER ]; then
-      cat doc/warnings.log
-      test ! -s doc/warnings.log
-      linkchecker doc/_build/html
+      cat doc/warnings.log;
+      test ! -s doc/warnings.log;
+      linkchecker doc/_build/html;
     fi
 
 after_success:
