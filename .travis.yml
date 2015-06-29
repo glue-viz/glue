@@ -114,7 +114,7 @@ install:
   # For now we also install astropy_helpers because setup_requires has a bug
   # that means it generates PEP440 warnings for the astropy_helpers version
   # number.
-  - if [ $DOC_TRIGGER ]; then pip install astropy-helpers; fi
+  - if [ $DOC_TRIGGER ]; then pip install astropy-helpers linkchecker; fi
 
   - python setup.py install
 
@@ -124,8 +124,11 @@ script:
 
   # In the following command, the test -s ensures that warnings are not emitted
   # by the docs build.
-  - if [ $DOC_TRIGGER ]; then cat doc/warnings.log; fi
-  - if [ $DOC_TRIGGER ]; then test ! -s doc/warnings.log; fi
+  - if [ $DOC_TRIGGER ]; then
+      cat doc/warnings.log
+      test ! -s doc/warnings.log
+      linkchecker doc/_build/html
+    fi
 
 after_success:
 
