@@ -119,7 +119,7 @@ set up this functionality. Keywords serve two purposes: they define
 new widgets to interact with the viewer, and they define keywords to pass
 onto drawing functions like ``plot_data``.
 
-For example, consider `this version <scripts/bball_viewer_3.py>`__ of the Shot Plot code:
+For example, consider :download:`this version <scripts/bball_viewer_3.py>` of the Shot Plot code:
 
 .. literalinclude:: scripts/bball_viewer_3.py
    :linenos:
@@ -167,7 +167,7 @@ contained in a user-drawn :class:`region of interest <glue.core.roi.Roi>`:
    :lines: 18-20
    :linenos:
 
-With `this version <scripts/bball_viewer_4.py>`__ of the code you can how draw shapes on the plot to select data:
+With :download:`this version <scripts/bball_viewer_4.py>` of the code you can how draw shapes on the plot to select data:
 
 .. figure:: images/bball_5.png
    :align: center
