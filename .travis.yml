@@ -127,7 +127,7 @@ script:
   - if [ $DOC_TRIGGER ]; then
       cat doc/warnings.log;
       test ! -s doc/warnings.log;
-      linkchecker doc/_build/html;
+      linkchecker --ignore-url=".*fontawesome_webfont.*" doc/_build/html;
     fi
 
 after_success:
