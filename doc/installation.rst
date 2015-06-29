@@ -62,7 +62,7 @@ these packages is somewhat beyond the scope of this document, and
 unforunately trickier than it should be. If you want to dive in, here
 is the basic strategy:
 
- * Install `Qt 4 <http://qt-project.org/downloads>`_ and either `PyQt4 <http://www.riverbankcomputing.com/software/pyqt/download>`_ or `PySide <http://qt-project.org/wiki/Get-PySide>`_. If at all possible, use the binary installers; building PyQt4 or PySide from source is tricky (this is a euphemism).
+ * Install `Qt 4 <http://download.qt.io/archive/qt/4.8/4.8.6/>`_ and either `PyQt4 <http://www.riverbankcomputing.com/software/pyqt/download>`_ or `PySide <http://qt-project.org/wiki/Get-PySide>`_. If at all possible, use the binary installers; building PyQt4 or PySide from source is tricky (this is a euphemism).
 
  * Install Glue using pip: ``pip install glueviz``. Alternatively, ``git clone`` the repository and install via ``python setup.py install``
 
