@@ -12,7 +12,7 @@ from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                                  QToolButton, QVBoxLayout, QWidget, QPixmap,
                                  QBrush, QPainter, QLabel, QHBoxLayout,
                                  QTextEdit, QTextCursor, QPushButton,
-                                 QListWidgetItem)
+                                 QListWidgetItem, QIcon)
 from ..external.qt.QtCore import Qt, QSize, QSettings, Signal
 from ..utils.qt import QMessageBoxPatched as QMessageBox
 
@@ -187,6 +187,10 @@ class GlueApplication(Application, QMainWindow):
                              session=session)
 
         self.app = get_qapp()
+        self.app.setQuitOnLastWindowClosed(True)
+        pth = os.path.abspath(os.path.dirname(__file__))
+        pth = os.path.join(pth, 'icons', 'app_icon.png')
+        self.app.setWindowIcon(QIcon(pth))
 
         self.setWindowIcon(self.app.windowIcon())
         self.setAttribute(Qt.WA_DeleteOnClose)
