@@ -23,7 +23,7 @@ Glue relies on several libraries to parse different file formats:
    tables.
  * `scikit-image <http://scikit-image.org/>`_ to read popular image
    formats like ``.jpeg`` and ``.tiff``
- * `h5py <http://www.h5py.org/docs/>`_ to read HDF5 files
+ * `h5py <http://www.h5py.org/>`_ to read HDF5 files
 
 If Glue's predefined data loaders don't fit your needs, ou can also :ref:`write your own <custom_data_factory>` loader, and plug it into Glue.
 
