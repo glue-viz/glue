@@ -38,7 +38,6 @@ def setup():
     from ...config import tool_registry
     from ...qt.widgets import ImageWidget
     tool_registry.add(SpectrumTool, widget_cls=ImageWidget)
-    logger.info("Loaded spectrum tool plugin")
 
 
 class Extractor(object):

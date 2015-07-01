@@ -236,12 +236,10 @@ def main(argv=sys.argv):
             start_glue(config=opt.config)
 
 
-def load_plugins():
+_loaded_plugins = set()
 
-    # Register default plugins (but don't load them)
-    from .plugins import register_plugins
-    logger.info("Registering built-in plugins")
-    register_plugins()
+
+def load_plugins():
 
     # Search for plugins installed via entry_points. Basically, any package can
     # define plugins for glue, and needs to define an entry point using the
@@ -260,13 +258,17 @@ def load_plugins():
     logger.info("Loading external plugins")
     from pkg_resources import iter_entry_points
     for item in iter_entry_points(group='glue.plugins', name=None):
+        if item.module_name in _loaded_plugins:
+            logger.info("Plugin {0} already loaded".format(item.name))
+            continue
         try:
             function = item.resolve()
             function()
         except Exception as exc:
-            logger.info("Loading plugin: {0} failed (Exception: {1})".format(item.name, exc))
+            logger.info("Loading plugin {0} failed (Exception: {1})".format(item.name, exc))
         else:
-            logger.info("Loading plugin: {0} succeeded".format(item.name))
+            logger.info("Loading plugin {0} succeeded".format(item.name))
+            _loaded_plugins.add(item.module_name)
 
 
 if __name__ == "__main__":

@@ -9,7 +9,6 @@ def setup():
     from ...config import tool_registry
     from ...qt.widgets import ImageWidget
     tool_registry.add(PVSlicerTool, widget_cls=ImageWidget)
-    logger.info("Loaded pv slicer plugin")
 
 
 class PVSlicerTool(object):

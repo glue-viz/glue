@@ -310,4 +310,3 @@ def setup():
     exporters.add('Plotly', save_plotly, can_save_plotly, outmode='label')
     settings.add('PLOTLY_USER', 'Glue')
     settings.add('PLOTLY_APIKEY', 't24aweai14')
-    logger.info("Loaded plotly exporter plugin")
