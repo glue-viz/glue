@@ -11,7 +11,9 @@ You might run into an error message like::
     The .nib file should be placed in QtGui.framework/Versions/Current/Resources/
     or in the resources directory of your application bundle.
 
-This due to a quirk in Anaconda that requires that python GUIs be run with ``pythonw`` instead of ``python``. See :ref:`the installation page <pythonw_note>` about how to properly install Glue with Anaconda.
+This due to a quirk in Anaconda that requires that python GUIs be run with
+``pythonw`` instead of ``python``. See :doc:`installation` for the latest
+instructions on how to properly install Glue with Anaconda.
 
 What data formats does Glue understand?
 ---------------------------------------
