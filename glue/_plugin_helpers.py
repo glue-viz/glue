@@ -1,4 +1,4 @@
-# The following funtion is a thin wrapper around iter_entry_tools. The reason it
+# The following funtion is a thin wrapper around iter_entry_points. The reason it
 # is in this separate file is that when making the Mac app, py2app doesn't
 # support entry points, so we replace this function with a version that has the
 # entry points we want hardcoded. If this function was in glue/main.py, the
