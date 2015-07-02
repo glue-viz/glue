@@ -1,5 +1,4 @@
 def setup():
-    from ...logger import logger
     try:
         from . import link_helpers
     except ImportError:

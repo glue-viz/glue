@@ -34,7 +34,6 @@ from ...utils import drop_axis
 
 
 def setup():
-    from ...logger import logger
     from ...config import tool_registry
     from ...qt.widgets import ImageWidget
     tool_registry.add(SpectrumTool, widget_cls=ImageWidget)

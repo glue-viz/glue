@@ -118,8 +118,6 @@ def custom_viewer(name, **kwargs):
     from .qt.custom_viewer import CustomViewer
     return CustomViewer.create_new_subclass(name, **kwargs)
 
-from .logger import logger
-
 # Load user's configuration file
 from .config import load_configuration
 env = load_configuration()
