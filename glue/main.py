@@ -236,5 +236,40 @@ def main(argv=sys.argv):
             start_glue(config=opt.config)
 
 
+_loaded_plugins = set()
+
+
+def load_plugins():
+
+    # Search for plugins installed via entry_points. Basically, any package can
+    # define plugins for glue, and needs to define an entry point using the
+    # following format:
+    #
+    # entry_points = """
+    # [glue.plugins]
+    # webcam_importer=glue_exp.importers.webcam:setup
+    # vizier_importer=glue_exp.importers.vizier:setup
+    # dataverse_importer=glue_exp.importers.dataverse:setup
+    # """
+    #
+    # where ``setup`` is a function that does whatever is needed to set up the
+    # plugin, such as add items to various registries.
+
+    logger.info("Loading external plugins")
+    from ._plugin_helpers import iter_plugin_entry_points
+    for item in iter_plugin_entry_points():
+        if item.module_name in _loaded_plugins:
+            logger.info("Plugin {0} already loaded".format(item.name))
+            continue
+        try:
+            function = item.resolve()
+            function()
+        except Exception as exc:
+            logger.info("Loading plugin {0} failed (Exception: {1})".format(item.name, exc))
+        else:
+            logger.info("Loading plugin {0} succeeded".format(item.name))
+            _loaded_plugins.add(item.module_name)
+
+
 if __name__ == "__main__":
     sys.exit(main(sys.argv))  # prama: no cover

@@ -18,6 +18,7 @@ from ..utils.qt import QMessageBoxPatched as QMessageBox
 
 from ..core import command, Data
 from .. import env
+from ..main import load_plugins
 from ..qt import get_qapp
 from .decorators import set_cursor, messagebox_on_error
 from ..core.application_base import Application
@@ -191,6 +192,8 @@ class GlueApplication(Application, QMainWindow):
         pth = os.path.abspath(os.path.dirname(__file__))
         pth = os.path.join(pth, 'icons', 'app_icon.png')
         self.app.setWindowIcon(QIcon(pth))
+
+        load_plugins()
 
         self.setWindowIcon(self.app.windowIcon())
         self.setAttribute(Qt.WA_DeleteOnClose)

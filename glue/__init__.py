@@ -118,10 +118,6 @@ def custom_viewer(name, **kwargs):
     from .qt.custom_viewer import CustomViewer
     return CustomViewer.create_new_subclass(name, **kwargs)
 
-# Register default plugins (but don't load them)
-from .plugins import register_plugins
-register_plugins()
-
 # Load user's configuration file
 from .config import load_configuration
 env = load_configuration()
@@ -129,6 +125,8 @@ env = load_configuration()
 from .qglue import qglue
 
 from .version import __version__
+
+from .main import load_plugins
 
 def test(no_optional_skip=False):
     import os

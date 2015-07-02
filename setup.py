@@ -67,10 +67,24 @@ class PyTest(TestCommand):
 cmdclass['test'] = PyTest
 
 
-console_scripts = ['glue = glue.main:main',
-                   'glue-config = glue.config_gen:main',
-                   'glue-deps = glue._deps:main',
+console_scripts = [
                    ]
+
+# Define built-in plugins
+entry_points = """
+[glue.plugins]
+ginga_viewer = glue.plugins.ginga_viewer:setup
+export_d3po = glue.plugins.export_d3po:setup
+export_plotly = glue.plugins.export_plotly:setup
+pv_slicer = glue.plugins.tools.pv_slicer:setup
+spectrum_tool = glue.plugins.tools.spectrum_tool:setup
+coordinate_helpers = glue.plugins.coordinate_helpers:setup
+
+[console_scripts]
+glue = glue.main:main
+glue-config = glue.config_gen:main
+glue-deps = glue._deps:main
+"""
 
 setup(name='glueviz',
       version=__version__,
@@ -88,7 +102,7 @@ setup(name='glueviz',
           'License :: OSI Approved :: BSD License'
           ],
       packages = find_packages(),
-      entry_points={'console_scripts' : console_scripts},
+      entry_points=entry_points,
       cmdclass=cmdclass,
       package_data={'': ['*.png', '*.ui']}
     )
