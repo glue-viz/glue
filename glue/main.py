@@ -256,8 +256,8 @@ def load_plugins():
     # plugin, such as add items to various registries.
 
     logger.info("Loading external plugins")
-    from pkg_resources import iter_entry_points
-    for item in iter_entry_points(group='glue.plugins', name=None):
+    from ._plugin_helpers import iter_plugin_entry_points
+    for item in iter_plugin_entry_points():
         if item.module_name in _loaded_plugins:
             logger.info("Plugin {0} already loaded".format(item.name))
             continue
