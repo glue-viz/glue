@@ -1,6 +1,6 @@
 api.rst developer_guide/api.rst
 architecture.rst developer_guide/architecture.rst
-developer_guide.rst developer_guide/index.rst
+developer_guide.rst index.rst
 getting_started.rst getting_started/index.rst
 configuration.rst customizing_guide/configuration.rst
 custom_subsets.rst python_guide/glue_from_python.rst
@@ -17,7 +17,7 @@ data_viewer_options.rst python_guide/data_viewer_options.rst
 glue_from_python.rst python_guide/glue_from_python.rst
 python_guide.rst python_guide/index.rst
 liveupdate.rst python_guide/liveupdate.rst
-python_guide/custom_viewer.rst customizing_guide/custom_viewer.rst
-python_guide/customization.rst customizing_guide/customization.rst
-gui_guide/custom_subsets.rst python_guide/glue_from_python.rst
-gui_guide/configuration.rst customizing_guide/configuration.rst
+python_guide/custom_viewer.rst ../customizing_guide/custom_viewer.rst
+python_guide/customization.rst ../customizing_guide/customization.rst
+gui_guide/custom_subsets.rst ../python_guide/glue_from_python.rst
+gui_guide/configuration.rst ../customizing_guide/configuration.rst
