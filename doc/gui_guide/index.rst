@@ -5,10 +5,8 @@ User Interface Guide
    :maxdepth: 2
 
    link_tutorial.rst
-   merging
+   merging.rst
    components.rst
-   custom_subsets.rst
    spectrum.rst
    slice.rst
    dendro.rst
-   configuration.rst

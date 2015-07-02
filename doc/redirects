@@ -2,8 +2,8 @@ api.rst developer_guide/api.rst
 architecture.rst developer_guide/architecture.rst
 developer_guide.rst developer_guide/index.rst
 getting_started.rst getting_started/index.rst
-configuration.rst gui_guide/configuration.rst
-custom_subsets.rst gui_guide/custom_subsets.rst
+configuration.rst customizing_guide/configuration.rst
+custom_subsets.rst python_guide/glue_from_python.rst
 dendro.rst gui_guide/dendro.rst
 gui_guide.rst gui_guide/index.rst
 link_tutorial.rst gui_guide/link_tutorial.rst
@@ -19,3 +19,5 @@ python_guide.rst python_guide/index.rst
 liveupdate.rst python_guide/liveupdate.rst
 python_guide/custom_viewer.rst customizing_guide/custom_viewer.rst
 python_guide/customization.rst customizing_guide/customization.rst
+gui_guide/custom_subsets.rst python_guide/glue_from_python.rst
+gui_guide/configuration.rst customizing_guide/configuration.rst

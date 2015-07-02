@@ -40,6 +40,7 @@ Customizing glue
 .. toctree::
    :maxdepth: 1
 
+   customizing_guide/configuration.rst
    customizing_guide/customization.rst
    customizing_guide/custom_viewer.rst
    customizing_guide/full_custom_qt_viewer.rst
