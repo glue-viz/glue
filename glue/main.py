@@ -262,11 +262,19 @@ def load_plugins():
 
     import setuptools
     logger.info("Loading external plugins using setuptools=={0}".format(setuptools.__version__))
-    from ._plugin_helpers import iter_plugin_entry_points
+
+    from ._plugin_helpers import iter_plugin_entry_points, PluginConfig
+    config = PluginConfig.load()
+
     for item in iter_plugin_entry_points():
+
         if item.module_name in _loaded_plugins:
             logger.info("Plugin {0} already loaded".format(item.name))
             continue
+
+        if not config.plugins[item.name]:
+            continue
+
         try:
             function = item.load()
             function()
@@ -276,6 +284,7 @@ def load_plugins():
             logger.info("Loading plugin {0} succeeded".format(item.name))
             _loaded_plugins.add(item.module_name)
 
+    config.save()
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))  # prama: no cover
