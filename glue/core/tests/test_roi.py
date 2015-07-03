@@ -389,10 +389,11 @@ class TestCategorical(object):
 
 
 class DummyEvent(object):
-    def __init__(self, x, y, inaxes=True):
+    def __init__(self, x, y, inaxes=True, key=None):
         self.inaxes = inaxes
         self.xdata = x
         self.ydata = y
+        self.key = key
 
 
 class MockAxes(object):
@@ -467,36 +468,29 @@ class TestMpl(object):
     def test_roi_undefined_before_start(self):
         assert not self.roi._roi.defined()
 
-    def scrub(self, assert_final_position):
-        roi = self._roi_factory()
+    def scrub(self, roi=None, abort=False, outside=False):
 
-        event = DummyEvent(5, 5, inaxes=self.axes)
-        roi.start_selection(event)
-        event = DummyEvent(10, 10, inaxes=self.axes)
-        roi.update_selection(event)
+        if roi is None:
 
-        #restart without finalize = scrub
-        roi.start_selection(DummyEvent(6, 6, inaxes=self.axes))
-        roi.update_selection(DummyEvent(7, 8, inaxes=self.axes))
+            roi = self._roi_factory()
 
-        assert_final_position(roi)
+            event = DummyEvent(5, 5, inaxes=self.axes)
+            roi.start_selection(event)
+            event = DummyEvent(10, 10, inaxes=self.axes)
+            roi.update_selection(event)
 
-    def abort(self, assert_final_position):
-        roi = self._roi_factory()
+        if outside:
+            roi.start_selection(DummyEvent(16, 16, inaxes=self.axes, key='control'))
+            roi.update_selection(DummyEvent(17, 18, inaxes=self.axes, key='control'))
+        else:
+            roi.start_selection(DummyEvent(6, 6, inaxes=self.axes, key='control'))
+            roi.update_selection(DummyEvent(7, 8, inaxes=self.axes, key='control'))
 
-        event = DummyEvent(5, 5, inaxes=self.axes)
-        roi.start_selection(event)
-        event = DummyEvent(10, 10, inaxes=self.axes)
-        roi.update_selection(event)
+        if abort:
+            roi.abort_selection(None)
 
-        #restart without finalize = scrub
-        roi.start_selection(DummyEvent(6, 6, inaxes=self.axes))
-        roi.update_selection(DummyEvent(7, 8, inaxes=self.axes))
+        return roi
 
-        # Now abort
-        roi.abort_selection(None)
-
-        assert_final_position(roi)
 
 class TestRectangleMpl(TestMpl):
 
@@ -505,23 +499,30 @@ class TestRectangleMpl(TestMpl):
 
     def test_scrub(self):
 
-        def assert_final_position(roi):
-            assert roi._roi.xmin == 6
-            assert roi._roi.xmax == 11
-            assert roi._roi.ymin == 7
-            assert roi._roi.ymax == 12
+        roi = self.scrub()
 
-        self.scrub(assert_final_position)
+        assert roi._roi.xmin == 6
+        assert roi._roi.xmax == 11
+        assert roi._roi.ymin == 7
+        assert roi._roi.ymax == 12
 
     def test_abort(self):
 
-        def assert_final_position(roi):
-            assert roi._roi.xmin == 5
-            assert roi._roi.xmax == 10
-            assert roi._roi.ymin == 5
-            assert roi._roi.ymax == 10
+        roi = self.scrub(abort=True)
 
-        self.abort(assert_final_position)
+        assert roi._roi.xmin == 5
+        assert roi._roi.xmax == 10
+        assert roi._roi.ymin == 5
+        assert roi._roi.ymax == 10
+
+    def test_outside(self):
+
+        roi = self.scrub(outside=True)
+
+        assert roi._roi.xmin == 5
+        assert roi._roi.xmax == 10
+        assert roi._roi.ymin == 5
+        assert roi._roi.ymax == 10
 
     def assert_roi_correct(self, x0, x1, y0, y1):
         corner = self.roi.roi().corner()
@@ -628,19 +629,24 @@ class TestXRangeMpl(TestMpl):
 
     def test_scrub(self):
 
-        def assert_final_position(roi):
-            assert_almost_equal(roi._roi.min, 3.0)
-            assert_almost_equal(roi._roi.max, 8.0)
+        roi = self.scrub()
 
-        self.scrub(assert_final_position)
+        assert_almost_equal(roi._roi.min, 3.0)
+        assert_almost_equal(roi._roi.max, 8.0)
 
     def test_abort(self):
 
-        def assert_final_position(roi):
-            assert_almost_equal(roi._roi.min, 5.0)
-            assert_almost_equal(roi._roi.max, 10.0)
+        roi = self.scrub(abort=True)
 
-        self.abort(assert_final_position)
+        assert_almost_equal(roi._roi.min, 5.0)
+        assert_almost_equal(roi._roi.max, 10.0)
+
+    def test_outside(self):
+
+        roi = self.scrub(outside=True)
+
+        assert_almost_equal(roi._roi.min, 5.0)
+        assert_almost_equal(roi._roi.max, 10.0)
 
 
 class TestYRangeMpl(TestMpl):
@@ -676,19 +682,24 @@ class TestYRangeMpl(TestMpl):
 
     def test_scrub(self):
 
-        def assert_final_position(roi):
-            assert_almost_equal(roi._roi.min, 4.0)
-            assert_almost_equal(roi._roi.max, 9.0)
+        roi = self.scrub()
 
-        self.scrub(assert_final_position)
+        assert_almost_equal(roi._roi.min, 4.0)
+        assert_almost_equal(roi._roi.max, 9.0)
 
     def test_abort(self):
 
-        def assert_final_position(roi):
-            assert_almost_equal(roi._roi.min, 5.0)
-            assert_almost_equal(roi._roi.max, 10.0)
+        roi = self.scrub(abort=True)
 
-        self.abort(assert_final_position)
+        assert_almost_equal(roi._roi.min, 5.0)
+        assert_almost_equal(roi._roi.max, 10.0)
+
+    def test_outside(self):
+
+        roi = self.scrub(outside=True)
+
+        assert_almost_equal(roi._roi.min, 5.0)
+        assert_almost_equal(roi._roi.max, 10.0)
 
 
 class TestCircleMpl(TestMpl):
@@ -735,21 +746,27 @@ class TestCircleMpl(TestMpl):
 
     def test_scrub(self):
 
-        def assert_final_position(roi):
-            assert roi._roi.xc == 6
-            assert roi._roi.yc == 7
-            assert_almost_equal(roi._roi.radius, 7.0, decimal=0)
+        roi = self.scrub()
 
-        self.scrub(assert_final_position)
+        assert roi._roi.xc == 6
+        assert roi._roi.yc == 7
+        assert_almost_equal(roi._roi.radius, 7.0, decimal=0)
 
     def test_abort(self):
 
-        def assert_final_position(roi):
-            assert roi._roi.xc == 5
-            assert roi._roi.yc == 5
-            assert_almost_equal(roi._roi.radius, 7.0, decimal=0)
+        roi = self.scrub(abort=True)
 
-        self.abort(assert_final_position)
+        assert roi._roi.xc == 5
+        assert roi._roi.yc == 5
+        assert_almost_equal(roi._roi.radius, 7.0, decimal=0)
+
+    def test_outside(self):
+
+        roi = self.scrub(outside=True)
+
+        assert roi._roi.xc == 5
+        assert roi._roi.yc == 5
+        assert_almost_equal(roi._roi.radius, 7.0, decimal=0)
 
 
 class TestPolyMpl(TestMpl):
@@ -780,28 +797,31 @@ class TestPolyMpl(TestMpl):
         self.assert_roi_correct()
 
     def test_scrub(self):
-        # Define the shape
+
         self.send_events()
 
-        # Restart without finalize == scrub
-        self.roi.start_selection(DummyEvent(6, 6, inaxes=self.axes))
-        self.roi.update_selection(DummyEvent(7, 8, inaxes=self.axes))
+        roi = self.scrub(roi=self.roi)
 
-        assert self.roi._roi.vx[0] == 6
-        assert self.roi._roi.vy[0] == 7
+        assert roi._roi.vx[0] == 6
+        assert roi._roi.vy[0] == 7
 
     def test_abort(self):
+
         self.send_events()
 
-        # Restart without finalize == scrub
-        self.roi.start_selection(DummyEvent(6, 6, inaxes=self.axes))
-        self.roi.update_selection(DummyEvent(7, 8, inaxes=self.axes))
+        roi = self.scrub(roi=self.roi, abort=True)
 
-         # Now abort
-        self.roi.abort_selection(None)
+        assert roi._roi.vx[0] == 5
+        assert roi._roi.vy[0] == 5
 
-        assert self.roi._roi.vx[0] == 5
-        assert self.roi._roi.vy[0] == 5
+    def test_outside(self):
+
+        self.send_events()
+
+        roi = self.scrub(roi=self.roi, outside=True)
+
+        assert roi._roi.vx[0] == 5
+        assert roi._roi.vy[0] == 5
 
 
 class TestPickMpl(TestMpl):

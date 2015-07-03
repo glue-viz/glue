@@ -18,7 +18,7 @@ __all__ = ['Roi', 'RectangularROI', 'CircularROI', 'PolygonalROI',
            'XRangeROI', 'RangeROI', 'YRangeROI','VertexROIBase']
 
 PATCH_COLOR = '#FFFF00'
-
+SCRUBBING_KEY = 'control'
 
 try:
     from matplotlib.nxutils import points_inside_poly
@@ -653,15 +653,21 @@ class MplRectangularROI(AbstractMplRoi):
         return RectangularROI()
 
     def start_selection(self, event):
+
         if event.inaxes != self._axes:
-            return
+            return False
+
+        if event.key == SCRUBBING_KEY:
+            if not self._roi.defined():
+                return False
+            elif not self._roi.contains(event.xdata, event.ydata):
+                return False
 
         self._roi_store()
         self._xi = event.xdata
         self._yi = event.ydata
 
-        if self._roi.defined() and \
-           self._roi.contains(event.xdata, event.ydata):
+        if event.key == SCRUBBING_KEY:
             self._scrubbing = True
             self._cx, self._cy = self._roi.center()
         else:
@@ -673,8 +679,15 @@ class MplRectangularROI(AbstractMplRoi):
         self._sync_patch()
 
     def update_selection(self, event):
+
         if not self._mid_selection or event.inaxes != self._axes:
-            return
+            return False
+
+        if event.key == SCRUBBING_KEY:
+            if not self._roi.defined():
+                return False
+            elif not self._roi.contains(event.xdata, event.ydata):
+                return False
 
         if self._scrubbing:
             self._roi.move_to(self._cx + event.xdata - self._xi,
@@ -738,13 +751,19 @@ class MplXRangeROI(AbstractMplRoi):
         return XRangeROI()
 
     def start_selection(self, event):
+
         if event.inaxes != self._axes:
-            return
+            return False
+
+        if event.key == SCRUBBING_KEY:
+            if not self._roi.defined():
+                return False
+            elif not self._roi.contains(event.xdata, event.ydata):
+                return False
 
         self._roi_store()
 
-        if self._roi.defined() and \
-           self._roi.contains(event.xdata, event.xdata):
+        if event.key == SCRUBBING_KEY:
             self._scrubbing = True
             self._dx = event.xdata - self._roi.center()
         else:
@@ -755,8 +774,15 @@ class MplXRangeROI(AbstractMplRoi):
         self._sync_patch()
 
     def update_selection(self, event):
+
         if not self._mid_selection or event.inaxes != self._axes:
-            return
+            return False
+
+        if event.key == SCRUBBING_KEY:
+            if not self._roi.defined():
+                return False
+            elif not self._roi.contains(event.xdata, event.ydata):
+                return False
 
         if self._scrubbing:
             self._roi.move_to(event.xdata + self._dx)
@@ -812,13 +838,19 @@ class MplYRangeROI(AbstractMplRoi):
         return YRangeROI()
 
     def start_selection(self, event):
+
         if event.inaxes != self._axes:
-            return
+            return False
+
+        if event.key == SCRUBBING_KEY:
+            if not self._roi.defined():
+                return False
+            elif not self._roi.contains(event.xdata, event.ydata):
+                return False
 
         self._roi_store()
 
-        if self._roi.defined() and \
-           self._roi.contains(event.ydata, event.ydata):
+        if event.key == SCRUBBING_KEY:
             self._scrubbing = True
             self._dy = event.ydata - self._roi.center()
         else:
@@ -829,8 +861,15 @@ class MplYRangeROI(AbstractMplRoi):
         self._sync_patch()
 
     def update_selection(self, event):
+
         if not self._mid_selection or event.inaxes != self._axes:
-            return
+            return False
+
+        if event.key == SCRUBBING_KEY:
+            if not self._roi.defined():
+                return False
+            elif not self._roi.contains(event.xdata, event.ydata):
+                return False
 
         if self._scrubbing:
             self._roi.move_to(event.ydata + self._dy)
@@ -918,16 +957,23 @@ class MplCircularROI(AbstractMplRoi):
         self._axes.figure.canvas.draw()
 
     def start_selection(self, event):
-        if event.inaxes != self._axes:
-            return
 
-        self._roi_store()
+        if event.inaxes != self._axes:
+            return False
+
         xy = data_to_pixel(self._axes, [event.xdata], [event.ydata])
         xi = xy[0, 0]
         yi = xy[0, 1]
 
-        if self._roi.defined() and \
-           self._roi.contains(xi, yi):
+        if event.key == SCRUBBING_KEY:
+            if not self._roi.defined():
+                return False
+            elif not self._roi.contains(xi, yi):
+                return False
+
+        self._roi_store()
+
+        if event.key == SCRUBBING_KEY:
             self._scrubbing = True
             (xc, yc) = self._roi.get_center()
             self._dx = xc - xi
@@ -943,12 +989,19 @@ class MplCircularROI(AbstractMplRoi):
         self._sync_patch()
 
     def update_selection(self, event):
+
         if not self._mid_selection or event.inaxes != self._axes:
-            return
+            return False
 
         xy = data_to_pixel(self._axes, [event.xdata], [event.ydata])
         xi = xy[0, 0]
         yi = xy[0, 1]
+
+        if event.key == SCRUBBING_KEY:
+            if not self._roi.defined():
+                return False
+            elif not self._roi.contains(xi, yi):
+                return False
 
         if self._scrubbing:
             self._roi.set_center(xi + self._dx, yi + self._dy)
@@ -1032,12 +1085,19 @@ class MplPolygonalROI(AbstractMplRoi):
         self._axes.figure.canvas.draw()
 
     def start_selection(self, event):
+
         if event.inaxes != self._axes:
-            return
+            return False
+
+        if event.key == SCRUBBING_KEY:
+            if not self._roi.defined():
+                return False
+            elif not self._roi.contains(event.xdata, event.ydata):
+                return False
 
         self._roi_store()
-        if self._roi.defined() and \
-           self._roi.contains(event.xdata, event.ydata):
+
+        if event.key == SCRUBBING_KEY:
             self._scrubbing = True
             self._cx = event.xdata
             self._cy = event.ydata
@@ -1049,8 +1109,15 @@ class MplPolygonalROI(AbstractMplRoi):
         self._sync_patch()
 
     def update_selection(self, event):
+
         if not self._mid_selection or event.inaxes != self._axes:
-            return
+            return False
+
+        if event.key == SCRUBBING_KEY:
+            if not self._roi.defined():
+                return False
+            elif not self._roi.contains(event.xdata, event.ydata):
+                return False
 
         if self._scrubbing:
             self._roi.move_to(event.xdata - self._cx,
