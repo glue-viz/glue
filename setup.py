@@ -66,10 +66,6 @@ class PyTest(TestCommand):
 
 cmdclass['test'] = PyTest
 
-
-console_scripts = [
-                   ]
-
 # Define built-in plugins
 entry_points = """
 [glue.plugins]

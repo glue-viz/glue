@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.5 (Unreleased)
+v0.5 (2015-07-03)
 -----------------
 
 * Improvements to the PyQt/PySide wrapper module (now maintained in a separate repository). [#671]
