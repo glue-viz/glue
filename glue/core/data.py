@@ -187,6 +187,14 @@ class Component(object):
         self._data = data
 
     @property
+    def units(self):
+        return self._units
+
+    @units.setter
+    def units(self, value):
+        self._units = str(value)
+
+    @property
     def hidden(self):
         """Whether the Component is hidden by default"""
         return False

@@ -12,6 +12,8 @@ from ..data import (Component, ComponentID, Data,
                     DerivedComponent, CoordinateComponent,
                     CategoricalComponent)
 from ... import core
+from ...tests.helpers import requires_astropy
+from ...external import six
 
 
 VIEWS = (np.s_[:], np.s_[1], np.s_[::-1], np.s_[0, :])
@@ -302,3 +304,22 @@ def test_view_derived(view):
     dc = DerivedComponent(d, link)
 
     np.testing.assert_array_equal(dc[view], comp.data[view] * 3)
+
+
+@requires_astropy
+def test_units():
+
+    # Make sure that units get converted to strings. At the moment if these
+    # are set to Astropy units for example, things can go wrong for example
+    # when writing out the datasets. Once we settle on a units framework, we
+    # can then use that instead of converting units to strings.
+
+    from astropy import units as u
+
+    comp = Component([1,2,3], units='m')
+    assert comp.units == 'm'
+    assert isinstance(comp.units, six.string_types)
+
+    comp = Component([1,2,3], units=u.m)
+    assert comp.units == 'm'
+    assert isinstance(comp.units, six.string_types)
