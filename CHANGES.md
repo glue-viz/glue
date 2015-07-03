@@ -4,6 +4,12 @@ Full changelog
 v0.5 (Unreleased)
 -----------------
 
+* Improvements to the PyQt/PySide wrapper module (now maintained in a separate repository). [#671]
+
+* Fixed broken links on website. [#678]
+
+* Added the ability to discover plugins via entry points. [#677]
+
 * Added the ability to include float and string UI elements in custom
   viewers. [#653]
 
