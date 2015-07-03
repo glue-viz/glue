@@ -3,57 +3,65 @@
 Installing Glue
 ===============
 
-There are several ways to install Glue on your computer. We recommend one of
-the first two options, which greatly simplify of the (sometimes tricky) task of
-installing Qt, Matplotlib, and other libraries that Glue relies on.
+There are several ways to install Glue on your computer:
 
-.. note :: Glue support with Python 3 is currently experimental.
+Recommended: Anaconda Python Distribution
+-----------------------------------------
 
-Easiest Option (Recommended for Mac users)
-------------------------------------------
+**Platforms:** MacOS X, Linux, and Windows
 
-Mac users with OS X >= 10.7 can download Glue as a `standalone program
-<http://mac.glueviz.org>`_.
+We recommend using the `Anaconda <http://continuum.io/downloads.html>`_
+Python distribution from Continuum Analytics (or the related Miniconda
+distribution). Anaconda includes all of Glue's main dependencies.
 
-Easy Option (Recommended for Windows, Unix users)
--------------------------------------------------
+Once Anaconda or Miniconda are `installed
+<http://continuum.io/downloads.html>`_ for your operating system, you
+can install glue using::
 
-We recommend using the `Anaconda
-<http://continuum.io/downloads.html>`_ Python distribution from
-Continuum Analytics. Anaconda includes all of Glue's main dependencies.
+    conda install glueviz
 
-First, download and install the `appropriate version of Anaconda
-<http://continuum.io/downloads.html>`_ for your operating system. Then, you can try and install glue using::
-
-    conda install -c https://conda.binstar.org/glueviz glueviz
-    
-If for any reason this fails, you can also try and install glue using pip::
-
-    pythonw -m pip install glueviz
-
-You can then install any additional Glue dependencies by running::
+You can then install any additional (optional) Glue dependencies by running::
 
     glue-deps install
     
 on the command line. For more information on ``glue-deps``, see :ref:`below <glue-deps>`
 
-The `Enthought Python Distribution <https://www.enthought.com/products/epd/>`_
-also includes all non-trivial dependencies. The installation instructions are
-the same (though the ``conda install`` command will not work).
-
 .. note :: Anaconda installs its own version of Python
 
-.. _pythonw_note:
-.. note :: The nonstandard pip invocation (``pythonw -m pip``) is needed on 
-           some OSes with Anaconda, because programs which create graphical
-           swindows must be invoked using ``pythonw`` instead of ``python``.
+.. note :: There is currently a known issue when running Anaconda's Qt on 
+           certain Linux distributions (including Kubuntu). See
+           `Issue with PyQt4 from conda`_ for more details.
 
-.. warning :: There is currently a known issue when running Anaconda's Qt on 
-              certain Linux distributions (including Kubuntu). See
-              `Issue with PyQt4 from conda`_ for more details.
+Enthought Canopy
+----------------
+
+**Platforms:** MacOS X, Linux, and Windows
+
+The `Enthought Python Distribution <https://www.enthought.com/products/epd/>`_ includes most but not all
+non-trivial dependencies.
+
+You can install Glue using::
+
+    pip install glueviz
+
+You can then install any additional (optional) Glue dependencies by running::
+
+    glue-deps install
+
+on the command line. For more information on ``glue-deps``, see :ref:`below <glue-deps>`
+
+Standalone Application
+----------------------
+
+**Platforms:** MacOS X
+
+Mac users with OS X >= 10.7 can download Glue as a `standalone program
+<http://mac.glueviz.org>`_. This is the fastest way to get started with using Glue, but this application includes its own version of Python, and will not recognize any packages in other Python installations. If you want to use glue in your existing Python installation, follow instructions in the other sections.
 
 Building from Source (For the Brave)
 ------------------------------------
+
+**Platforms:** MacOS X, Linux, and Windows
 
 The source code for Glue is available on `GitHub
 <http://www.github.com/glue-viz/glue>`_. Glue relies upon a number of

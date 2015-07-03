@@ -1,13 +1,14 @@
 Visualizing Astronomical Dendrograms
 ====================================
 
-.. note:: Dendrogram visualization is experimental in Glue v0.3
+.. note:: Dendrogram visualization is experimental
 
 You can use Glue to visualize dendrograms created by the
 `astrodendro <http://dendrograms.org/>`_ package.
 
-Enabling Denrogram Visualization
---------------------------------
+Enabling Dendrogram Visualization
+---------------------------------
+
 Because dendrogram visualization is still experimental, you
 must enable it before using it. To do so, add the following
 line to your :ref:`~/.glue/config.py <configuration>` file::
@@ -17,6 +18,7 @@ line to your :ref:`~/.glue/config.py <configuration>` file::
 
 Building a dendrogram
 ---------------------
+
 The details of constructing dendrograms for astronomical images
 is beyond the scope of this document -- see `<http://dendrograms.org/>`_
 for more information. The following snippet builds a dendrogram
@@ -38,6 +40,7 @@ You can now visualize the W5 dendrogram alongside its image:
 
 Linking to Catalog Properties
 -----------------------------
+
 If you have used astrodendro to compute a catalog of structure properties,
 you can visualize that in Glue as well. The best way to do this is to
 save the catalog as a table, load it into Glue, and
