@@ -6,6 +6,9 @@ v0.6 (unreleased)
 
 * Fixed treatment of newlines when copying detailed error. [#687]
 
+* Fix a bug that prevented sessions from being saved with embedded files if
+  component units were Astropy units. [#686]
+
 v0.5 (2015-07-03)
 -----------------
 
