@@ -4,7 +4,7 @@ Full changelog
 v0.6 (unreleased)
 -----------------
 
-* No changes yet
+* Fixed treatment of newlines when copying detailed error. [#687]
 
 v0.5 (2015-07-03)
 -----------------
