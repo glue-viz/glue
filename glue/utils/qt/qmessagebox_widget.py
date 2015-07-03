@@ -1,5 +1,6 @@
 # A patched version of QMessageBox that allows copying the error
 
+import os
 from ...external.qt import QtGui
 
 __all__ = ['QMessageBoxPatched']
@@ -36,4 +37,6 @@ class QMessageBoxPatched(QtGui.QMessageBox):
     def copy_detailed(self):
         clipboard = QtGui.QApplication.clipboard()
         selected_text = self.detailed_text_widget.textCursor().selectedText()
+        # Newlines are unicode, so need to normalize them to ASCII
+        selected_text = os.linesep.join(selected_text.splitlines())
         clipboard.setText(selected_text)
