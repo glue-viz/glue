@@ -6,6 +6,9 @@ import warnings
 import numpy as np
 import pandas as pd
 
+from glue.core.subset import (RoiSubsetState, RangeSubsetState,
+                              CategoricalRoiSubsetState, AndState)
+from glue.core.roi import PolygonalROI, CategoricalRoi, RangeROI, RectangularROI
 from glue.core.util import row_lookup
 from glue.utils import unique, shape_to_string, coerce_numeric, check_sorted
 
@@ -100,6 +103,33 @@ class Component(object):
 
     def jitter(self, method=None):
         raise NotImplementedError
+
+    def subset_from_roi(self, att, roi, other_comp=None, other_att=None):
+        """ Create an SubsetState object
+        :param att: attribute name of this Component
+        :param roi: an ROI object
+        :param other_comp: The other Component for 2D ROIs
+        :param other_att: The attribute name of the other Component
+        :return: A SubsetState (or subclass) object
+        """
+
+        if isinstance(other_comp, CategoricalComponent):
+            return other_comp.subset_from_roi(other_att, roi,
+                                              other_comp=self,
+                                              other_att=att,
+                                              is_nested=True)
+
+        if isinstance(roi, RangeROI):
+            lo, hi = roi.range()
+            subset_state = RangeSubsetState(lo, hi, att)
+        else:
+            subset_state = RoiSubsetState()
+            subset_state.xatt = att
+            subset_state.yatt = other_att
+            x, y = roi.to_polygon()
+            subset_state.roi = PolygonalROI(x, y)
+
+        return subset_state
 
     def to_series(self, **kwargs):
         """ Convert into a pandas.Series object.
@@ -361,6 +391,30 @@ class CategoricalComponent(Component):
             self._data += rand_state.uniform(-0.5, 0.5, size=self._data.shape)
             self._is_jittered = True
             self._data.setflags(write=iswrite)
+
+    def subset_from_roi(self, att, roi, other_comp=None, other_att=None, is_nested=False):
+        """ Create an SubsetState object
+        :param att: attribute name of this Component
+        :param roi: an ROI object
+        :param other_comp: The other Component for 2D ROIs
+        :param other_att: The attribute name of the other Component
+        :param is_nested: True if this was passed from another Component.
+        :return: A SubsetState (or subclass) object
+        """
+
+        if isinstance(roi, RangeROI):
+            return CategoricalRoiSubsetState.from_range(self, att, roi.min, roi.max)
+        elif isinstance(roi, CategoricalRoi):
+            return CategoricalRoiSubsetState(roi=roi, att=att)
+        elif isinstance(roi, RectangularROI):
+            if is_nested:
+                roi = roi.transpose()
+            cat_subset = CategoricalRoiSubsetState.from_range(self, att,
+                                                              roi.xmin, roi.xmax)
+            cont_subset = RangeSubsetState(roi.ymin, roi.ymax, other_att)
+            return AndState(cat_subset, cont_subset)
+        else:
+            raise NotImplementedError
 
     def to_series(self, **kwargs):
         """ Convert into a pandas.Series object.
