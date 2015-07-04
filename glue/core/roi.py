@@ -165,6 +165,16 @@ class RectangularROI(Roi):
         self.ymin += dy
         self.ymax += dy
 
+    def transpose(self, copy=True):
+        if copy:
+            new = self.copy()
+            new.xmin, new.xmax = self.ymin, self.ymax
+            new.ymin, new.ymax = self.xmin, self.xmax
+            return new
+
+        self.xmin, self.ymin = self.ymin, self.xmin
+        self.xmax, self.ymax = self.ymax, self.xmax
+
     def corner(self):
         return (self.xmin, self.ymin)
 
@@ -1115,6 +1125,11 @@ class CategoricalRoi(Roi):
             self.categories = None
         else:
             self.update_categories(categories)
+
+    def to_polygon(self):
+        """ Just not possible.
+        """
+        raise NotImplementedError
 
     def _categorical_helper(self, indata):
         """
