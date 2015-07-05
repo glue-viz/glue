@@ -19,7 +19,7 @@ from ..hub import Hub
 from ..registry import Registry
 from ..subset import (Subset, CategoricalRoiSubsetState, SubsetState,
                       RoiSubsetState, RangeSubsetState, AndState)
-from ..roi import PolygonalROI, CategoricalRoi, RangeROI, RectangularROI
+from ..roi import PolygonalROI, CategoricalROI, RangeROI, RectangularROI
 
 
 class _TestCoordinates(Coordinates):
@@ -369,7 +369,7 @@ class TestROICreation(object):
 
         d = Data(x=['a', 'b', 'c'], y=[1, 2, 3])
         comp = d.get_component(d.id['x'])
-        roi = CategoricalRoi(['b', 'c'])
+        roi = CategoricalROI(['b', 'c'])
         s = comp.subset_from_roi('x', roi)
         assert isinstance(s, CategoricalRoiSubsetState)
         np.testing.assert_array_equal((s.roi.contains(['a', 'b', 'c'], None)),
@@ -391,17 +391,14 @@ class TestROICreation(object):
         assert isinstance(s, RoiSubsetState)
         np.testing.assert_array_equal(s.to_mask(d), [True, True, False, False])
 
-    def test_polygon_raises_categorical(self):
+    def test_polygon_categorical(self):
 
         d = Data(x=[1, 1.3, 3, 10], y=['a', 'b', 'c', 'd'])
         x_comp = d.get_component(d.id['x'])
         y_comp = d.get_component(d.id['y'])
         roi = PolygonalROI([0, 0, 2, 2], [0, 2, 2, 0])
-        with pytest.raises(NotImplementedError):
-            s = x_comp.subset_from_roi('x', roi, other_comp=y_comp, other_att='y')
-
-        with pytest.raises(NotImplementedError):
-            s = y_comp.subset_from_roi('y', roi, other_comp=x_comp, other_att='x')
+        s = x_comp.subset_from_roi('x', roi, other_comp=y_comp, other_att='y')
+        assert isinstance(s, AndState)
 
     def test_rectangular_categorical(self):
 

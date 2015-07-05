@@ -8,7 +8,7 @@ import pandas as pd
 
 from glue.core.subset import (RoiSubsetState, RangeSubsetState,
                               CategoricalRoiSubsetState, AndState)
-from glue.core.roi import (PolygonalROI, CategoricalRoi, RangeROI, XRangeROI,
+from glue.core.roi import (PolygonalROI, CategoricalROI, RangeROI, XRangeROI,
                            YRangeROI, RectangularROI)
 from glue.core.util import row_lookup
 from glue.utils import unique, shape_to_string, coerce_numeric, check_sorted
@@ -106,11 +106,18 @@ class Component(object):
         raise NotImplementedError
 
     def subset_from_roi(self, att, roi, other_comp=None, other_att=None, coord='x'):
-        """ Create an SubsetState object
+        """ Create a SubsetState object from an ROI.
+
+        This encapsulates the logic for creating subset states with
+        Components. See the documentation for CategoricalComponents for caveats
+        involved with mixed-type plots.
+
         :param att: attribute name of this Component
         :param roi: an ROI object
         :param other_comp: The other Component for 2D ROIs
         :param other_att: The attribute name of the other Component
+        :param coord: The orientation of this Component
+        :param is_nested: True if this was passed from another Component.
         :return: A SubsetState (or subclass) object
         """
 
@@ -118,6 +125,7 @@ class Component(object):
 
         if hasattr(roi, 'min') and hasattr(roi, 'ori'):
             # RangeROI and its subclasses
+            assert roi.ori in set('xy')
             lo, hi = roi.range()
             if roi.ori == coord:
                 subset_state = RangeSubsetState(lo, hi, att)
@@ -130,7 +138,7 @@ class Component(object):
             elif roi.ori != coord:
                 subset_state = RangeSubsetState(lo, hi, other_att)
             else:
-                raise AssertionError('RangeROI.ori must be "x" or "y"')
+                raise AssertionError
         else:
             if isinstance(other_comp, CategoricalComponent):
                 return other_comp.subset_from_roi(other_att, roi,
@@ -407,12 +415,21 @@ class CategoricalComponent(Component):
             self._is_jittered = True
             self._data.setflags(write=iswrite)
 
-    def subset_from_roi(self, att, roi, other_comp=None, other_att=None, coord='x', is_nested=False):
-        """ Create an SubsetState object
+    def subset_from_roi(self, att, roi, other_comp=None,
+                        other_att=None, coord='x',
+                        is_nested=False):
+        """ Create a SubsetState object from an ROI.
+
+        This encapsulates the logic for creating subset states with
+        CategoricalComponents. There is an important caveat, only RangeROIs
+        and RectangularROIs make sense in mixed type plots. As such, polygons
+        are converted to their outer-most edges in this case.
+
         :param att: attribute name of this Component
         :param roi: an ROI object
         :param other_comp: The other Component for 2D ROIs
         :param other_att: The attribute name of the other Component
+        :param coord: The orientation of this Component
         :param is_nested: True if this was passed from another Component.
         :return: A SubsetState (or subclass) object
         """
@@ -421,6 +438,7 @@ class CategoricalComponent(Component):
 
         if hasattr(roi, 'min') and hasattr(roi, 'ori'):
             # RangeRoi and its subclasses
+            assert roi.ori in set('xy')
             if roi.ori == coord:
                 return CategoricalRoiSubsetState.from_range(self, att, roi.min, roi.max)
             elif roi.ori != coord:
@@ -430,8 +448,8 @@ class CategoricalComponent(Component):
                                                   other_att=att,
                                                   coord=other_coord)
             else:
-                raise AssertionError('RangeROI.ori must be "x" or "y"')
-        elif isinstance(roi, CategoricalRoi):
+                raise AssertionError
+        elif isinstance(roi, CategoricalROI):
             return CategoricalRoiSubsetState(roi=roi, att=att)
         else:
             x, y = roi.to_polygon()

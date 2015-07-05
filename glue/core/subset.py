@@ -6,7 +6,7 @@ import operator
 import numpy as np
 
 from glue.external.six import PY3
-from glue.core.roi import CategoricalRoi
+from glue.core.roi import CategoricalROI
 from glue.core.contracts import contract
 from glue.core.util import split_component_view
 from glue.core.registry import Registry
@@ -477,7 +477,7 @@ class CategoricalRoiSubsetState(SubsetState):
     @staticmethod
     def from_range(component, att, lo, hi):
 
-        roi = CategoricalRoi.from_range(component, lo, hi)
+        roi = CategoricalROI.from_range(component, lo, hi)
         subset = CategoricalRoiSubsetState(roi=roi,
                                            att=att)
         return subset

@@ -15,7 +15,8 @@ np.seterr(all='ignore')
 __all__ = ['Roi', 'RectangularROI', 'CircularROI', 'PolygonalROI',
            'AbstractMplRoi', 'MplRectangularROI', 'MplCircularROI',
            'MplPolygonalROI', 'MplXRangeROI', 'MplYRangeROI',
-           'XRangeROI', 'RangeROI', 'YRangeROI', 'VertexROIBase']
+           'XRangeROI', 'RangeROI', 'YRangeROI', 'VertexROIBase',
+           'CategoricalROI']
 
 PATCH_COLOR = '#FFFF00'
 SCRUBBING_KEY = 'control'
@@ -1171,7 +1172,7 @@ class MplPathROI(MplPolygonalROI):
         self._axes.figure.canvas.draw()
 
 
-class CategoricalRoi(Roi):
+class CategoricalROI(Roi):
 
     """
     A ROI abstraction to represent selections of categorical data.
@@ -1244,7 +1245,7 @@ class CategoricalRoi(Roi):
         :param cat_comp: Anything understood by ._categorical_helper ... array, list or component
         :param lo: lower bound of the range
         :param hi: upper bound of the range
-        :return: CategoricalRoi object
+        :return: CategoricalROI object
         """
 
         # Convert lo and hi to integers. Note that if lo or hi are negative,
@@ -1257,7 +1258,7 @@ class CategoricalRoi(Roi):
         lo = np.intp(np.ceil(lo) if lo > 0 else 0)
         hi = np.intp(np.ceil(hi) if hi > 0 else 0)
 
-        roi = CategoricalRoi()
+        roi = CategoricalROI()
         cat_data = cat_comp.categories
         roi.update_categories(cat_data[lo:hi])
 
