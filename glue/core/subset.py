@@ -14,7 +14,7 @@ from .util import split_component_view
 from ..utils import view_shape
 from ..external.six import PY3
 from .contracts import contract
-from .roi import CategoricalRoi
+from .roi import CategoricalROI
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState',
@@ -475,7 +475,7 @@ class CategoricalRoiSubsetState(SubsetState):
     @staticmethod
     def from_range(component, att, lo, hi):
 
-        roi = CategoricalRoi.from_range(component, lo, hi)
+        roi = CategoricalROI.from_range(component, lo, hi)
         subset = CategoricalRoiSubsetState(roi=roi,
                                            att=att)
         return subset

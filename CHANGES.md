@@ -9,6 +9,9 @@ v0.6 (unreleased)
 * Fix a bug that prevented sessions from being saved with embedded files if
   component units were Astropy units. [#686]
 
+* Improved under-the-hood creation of ROIs for Scatter and Histogram Clients. [#676]
+
+
 v0.5 (2015-07-03)
 -----------------
 

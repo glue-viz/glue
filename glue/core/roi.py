@@ -165,6 +165,16 @@ class RectangularROI(Roi):
         self.ymin += dy
         self.ymax += dy
 
+    def transpose(self, copy=True):
+        if copy:
+            new = self.copy()
+            new.xmin, new.xmax = self.ymin, self.ymax
+            new.ymin, new.ymax = self.xmin, self.xmax
+            return new
+
+        self.xmin, self.ymin = self.ymin, self.xmin
+        self.xmax, self.ymax = self.ymax, self.xmax
+
     def corner(self):
         return (self.xmin, self.ymin)
 
@@ -1104,7 +1114,7 @@ class MplPathROI(MplPolygonalROI):
         self._axes.figure.canvas.draw()
 
 
-class CategoricalRoi(Roi):
+class CategoricalROI(Roi):
 
     """
     A ROI abstraction to represent selections of categorical data.
@@ -1115,6 +1125,11 @@ class CategoricalRoi(Roi):
             self.categories = None
         else:
             self.update_categories(categories)
+
+    def to_polygon(self):
+        """ Just not possible.
+        """
+        raise NotImplementedError
 
     def _categorical_helper(self, indata):
         """
@@ -1175,7 +1190,7 @@ class CategoricalRoi(Roi):
         :return: CategoricalRoi object
         """
 
-        roi = CategoricalRoi()
+        roi = CategoricalROI()
         cat_data = cat_comp._categories
         roi.update_categories(cat_data[np.floor(lo):np.ceil(hi)])
         return roi

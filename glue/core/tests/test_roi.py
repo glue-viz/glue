@@ -10,7 +10,7 @@ from matplotlib.figure import Figure
 from glue.core.data import CategoricalComponent
 from mock import MagicMock
 
-from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI, CategoricalRoi,
+from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI, CategoricalROI,
                    MplCircularROI, MplRectangularROI, MplPolygonalROI, MplPickROI, PointROI,
                    XRangeROI, MplXRangeROI, YRangeROI, MplYRangeROI)
 
@@ -345,33 +345,33 @@ class TestCategorical(object):
 
     def test_empty(self):
 
-        roi = CategoricalRoi()
+        roi = CategoricalROI()
         assert not roi.defined()
 
     def test_defined(self):
 
-        nroi = CategoricalRoi(categories=['a', 'b', 'c'])
+        nroi = CategoricalROI(categories=['a', 'b', 'c'])
         assert nroi.defined()
         nroi.reset()
         assert not nroi.defined()
 
     def test_loads_from_components(self):
 
-        roi = CategoricalRoi()
+        roi = CategoricalROI()
         comp = CategoricalComponent(np.array(['a', 'a', 'b']))
         roi.update_categories(comp)
 
         np.testing.assert_array_equal(roi.categories,
                                       np.array(['a', 'b']))
 
-        roi = CategoricalRoi(categories=comp)
+        roi = CategoricalROI(categories=comp)
         np.testing.assert_array_equal(roi.categories,
                                       np.array(['a', 'b']))
 
 
     def test_applies_components(self):
 
-        roi = CategoricalRoi()
+        roi = CategoricalROI()
         comp = CategoricalComponent(np.array(['a', 'b', 'c']))
         roi.update_categories(CategoricalComponent(np.array(['a', 'b'])))
         contained = roi.contains(comp, None)
@@ -382,7 +382,7 @@ class TestCategorical(object):
 
         comp = CategoricalComponent(np.array(list('abcdefghijklmnopqrstuvwxyz')*2))
 
-        roi = CategoricalRoi.from_range(comp, 6, 10)
+        roi = CategoricalROI.from_range(comp, 6, 10)
         np.testing.assert_array_equal(roi.categories,
                                       np.array(list('ghij')))
 
