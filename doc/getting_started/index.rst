@@ -55,11 +55,13 @@ We can highlight the west arm of W5 using the rectangle selector:
 
 Notice that this highlights the relevant pixels in the image, adds a new subset (which we've named ``west arm``) to the data manager, and adds a new visualization layer (also labeled ``west arm (w5)``) in the visualization dashboard.
 
-We can redefine this subset by dragging a new rectangle in the image. Alternately, we could define a second subset by clicking the ``New Subset`` button (next to the folder button).
+We can redefine this subset by dragging a new rectangle in the image, or we can
+also move around the current subset by pressing the 'control' key and clicking
+on the subset then dragging it. Alternately, we could define a second subset by
+clicking the ``New Subset`` button (next to the folder button).
 
 .. _multi_selection_note:
 .. note:: When multiple subsets are defined, only the highlighted entries in the data manager are affected when drawing new subsets. If no subsets are highlighted, then a new subset is created.
-
 
 You can edit the properties of a visualization layer (color, name, etc.) By double-clicking on the entry in the visualization dashboard.
 
