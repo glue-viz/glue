@@ -14,7 +14,8 @@ def iter_plugin_entry_points():
     return iter_entry_points(group='glue.plugins', name=None)
 
 
-PLUGIN_CFG = os.path.join(os.path.expanduser('~'), '.glue', 'plugins.cfg')
+CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
+PLUGIN_CFG =  os.path.join(CFG_DIR, 'plugins.cfg')
 
 
 class PluginConfig(object):
@@ -58,6 +59,9 @@ class PluginConfig(object):
 
         for key in sorted(self.plugins):
             config['plugins'][key] = str(int(self.plugins[key]))
+
+        if not os.path.exists(CFG_DIR):
+            os.mkdir(CFG_DIR)
 
         with open(PLUGIN_CFG, 'w') as fout:
             config.write(fout)
