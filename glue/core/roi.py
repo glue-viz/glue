@@ -1114,7 +1114,7 @@ class MplPathROI(MplPolygonalROI):
         self._axes.figure.canvas.draw()
 
 
-class CategoricalRoi(Roi):
+class CategoricalROI(Roi):
 
     """
     A ROI abstraction to represent selections of categorical data.
@@ -1190,7 +1190,7 @@ class CategoricalRoi(Roi):
         :return: CategoricalRoi object
         """
 
-        roi = CategoricalRoi()
+        roi = CategoricalROI()
         cat_data = cat_comp._categories
         roi.update_categories(cat_data[np.floor(lo):np.ceil(hi)])
         return roi

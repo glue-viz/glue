@@ -7,7 +7,7 @@ import numpy as np
 from ..core.client import Client
 from ..core.data import Data, IncompatibleAttribute, ComponentID, CategoricalComponent
 from ..core.subset import RoiSubsetState, RangeSubsetState, CategoricalRoiSubsetState, AndState
-from ..core.roi import PolygonalROI, RangeROI, CategoricalRoi, RectangularROI
+from ..core.roi import PolygonalROI, RangeROI, CategoricalROI, RectangularROI
 from ..core.util import relim
 from ..core.edit_subset_mode import EditSubsetMode
 from ..core.message import ComponentReplacedMessage
