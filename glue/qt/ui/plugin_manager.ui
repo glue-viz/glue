@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>VizieR Importer</string>
+   <string>Plugin Manager</string>
   </property>
   <property name="sizeGripEnabled">
    <bool>false</bool>
