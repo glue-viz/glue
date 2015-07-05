@@ -478,6 +478,7 @@ class TestMpl(object):
             roi.start_selection(event)
             event = DummyEvent(10, 10, inaxes=self.axes)
             roi.update_selection(event)
+            roi.finalize_selection(DummyEvent(10, 10))
 
         if outside:
             roi.start_selection(DummyEvent(16, 16, inaxes=self.axes, key='control'))
