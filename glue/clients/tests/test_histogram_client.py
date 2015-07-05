@@ -12,6 +12,7 @@ from glue.core.component import CategoricalComponent
 from glue.core.data import Data
 from glue.core.exceptions import IncompatibleDataException
 from glue.core.data_collection import DataCollection
+from glue.core.roi import RangeROI, PolygonalROI
 
 from ..histogram_client import HistogramClient
 from ..layer_artist import HistogramLayerArtist
@@ -219,9 +220,7 @@ class TestHistogramClient(object):
         # bins are -7...-1
 
         self.data.edit_subset = [self.data.subsets[0]]
-
-        roi = MagicMock()
-        roi.to_polygon.return_value = [-5.1, -4.5, -3.2], [2, 3, 4]
+        roi = PolygonalROI(vx=[-5.1, -4.5, -3.2], vy=[2, 3, 4])
 
         self.client.apply_roi(roi)
         state = self.data.subsets[0].subset_state
@@ -236,8 +235,7 @@ class TestHistogramClient(object):
         self.client.set_component(self.data.id['x'])
         self.data.edit_subset = [self.data.subsets[0]]
         self.client.xlog = True
-        roi = MagicMock()
-        roi.to_polygon.return_value = [1, 2, 3], [2, 3, 4]
+        roi = PolygonalROI(vx=[1, 2, 3], vy=[2, 3, 4])
 
         self.client.apply_roi(roi)
         state = self.data.subsets[0].subset_state

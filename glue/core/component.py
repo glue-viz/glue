@@ -116,7 +116,8 @@ class Component(object):
 
         assert coord in set('xy')
 
-        if isinstance(roi, (RangeROI, XRangeROI, YRangeROI)):
+        if hasattr(roi, 'min') and hasattr(roi, 'ori'):
+            # RangeROI and its subclasses
             lo, hi = roi.range()
             if roi.ori == coord:
                 subset_state = RangeSubsetState(lo, hi, att)
@@ -418,8 +419,8 @@ class CategoricalComponent(Component):
 
         assert coord in set('xy')
 
-        if isinstance(roi, (RangeROI, XRangeROI, YRangeROI)):
-            lo, hi = roi.range()
+        if hasattr(roi, 'min') and hasattr(roi, 'ori'):
+            # RangeRoi and its subclasses
             if roi.ori == coord:
                 return CategoricalRoiSubsetState.from_range(self, att, roi.min, roi.max)
             elif roi.ori != coord:
@@ -432,15 +433,15 @@ class CategoricalComponent(Component):
                 raise AssertionError('RangeROI.ori must be "x" or "y"')
         elif isinstance(roi, CategoricalRoi):
             return CategoricalRoiSubsetState(roi=roi, att=att)
-        elif isinstance(roi, RectangularROI):
-            if is_nested:
-                roi = roi.transpose()
-            cat_subset = CategoricalRoiSubsetState.from_range(self, att,
-                                                              roi.xmin, roi.xmax)
-            cont_subset = RangeSubsetState(roi.ymin, roi.ymax, other_att)
-            return AndState(cat_subset, cont_subset)
         else:
-            raise NotImplementedError
+            x, y = roi.to_polygon()
+            if is_nested:
+                x, y = y, x
+
+            cat_subset = CategoricalRoiSubsetState.from_range(self, att,
+                                                              min(x), max(x))
+            cont_subset = RangeSubsetState(min(y), max(y), other_att)
+            return AndState(cat_subset, cont_subset)
 
     def to_series(self, **kwargs):
         """ Convert into a pandas.Series object.
