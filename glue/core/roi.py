@@ -686,8 +686,6 @@ class MplRectangularROI(AbstractMplRoi):
         if event.key == SCRUBBING_KEY:
             if not self._roi.defined():
                 return False
-            elif not self._roi.contains(event.xdata, event.ydata):
-                return False
 
         if self._scrubbing:
             self._roi.move_to(self._cx + event.xdata - self._xi,
@@ -781,8 +779,6 @@ class MplXRangeROI(AbstractMplRoi):
         if event.key == SCRUBBING_KEY:
             if not self._roi.defined():
                 return False
-            elif not self._roi.contains(event.xdata, event.ydata):
-                return False
 
         if self._scrubbing:
             self._roi.move_to(event.xdata + self._dx)
@@ -867,8 +863,6 @@ class MplYRangeROI(AbstractMplRoi):
 
         if event.key == SCRUBBING_KEY:
             if not self._roi.defined():
-                return False
-            elif not self._roi.contains(event.xdata, event.ydata):
                 return False
 
         if self._scrubbing:
@@ -1000,8 +994,6 @@ class MplCircularROI(AbstractMplRoi):
         if event.key == SCRUBBING_KEY:
             if not self._roi.defined():
                 return False
-            elif not self._roi.contains(xi, yi):
-                return False
 
         if self._scrubbing:
             self._roi.set_center(xi + self._dx, yi + self._dy)
@@ -1115,8 +1107,6 @@ class MplPolygonalROI(AbstractMplRoi):
 
         if event.key == SCRUBBING_KEY:
             if not self._roi.defined():
-                return False
-            elif not self._roi.contains(event.xdata, event.ydata):
                 return False
 
         if self._scrubbing:
