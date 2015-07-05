@@ -356,13 +356,21 @@ class TestROICreation(object):
 
     def test_range_roi(self):
 
-        d = Data(x=[1, 2, 3], y=[1, 2, 3])
-        comp = d.get_component(d.id['x'])
+        d = Data(xdata=[1, 2, 3], ydata=[1, 2, 3])
+        comp = d.get_component(d.id['xdata'])
         roi = RangeROI('x', min=2,max=3)
-        s = comp.subset_from_roi('x', roi)
+        s = comp.subset_from_roi('xdata', roi)
         assert isinstance(s, RangeSubsetState)
         np.testing.assert_array_equal((s.lo, s.hi),
                                       [2, 3])
+
+        roi = RangeROI('y', min=2,max=3)
+        s = comp.subset_from_roi('xdata', roi, other_att='ydata',
+                                 other_comp=d.get_component(d.id['ydata']))
+        assert isinstance(s, RangeSubsetState)
+        assert s.att == 'ydata'
+
+
 
     def test_range_roi_categorical(self):
 

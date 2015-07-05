@@ -16,7 +16,8 @@ from .component_link import (ComponentLink, CoordinateComponentLink,
 from .subset import (Subset, InequalitySubsetState, SubsetState,
                      RoiSubsetState, RangeSubsetState,
                      CategoricalRoiSubsetState, AndState)
-from .roi import PolygonalROI, CategoricalRoi, RangeROI, RectangularROI
+from .roi import (PolygonalROI, CategoricalRoi, RangeROI, RectangularROI,
+                    XRangeROI, YRangeROI)
 from .hub import Hub
 from .util import split_component_view, row_lookup
 from ..utils import unique, shape_to_string, view_shape, coerce_numeric, check_sorted
@@ -241,7 +242,7 @@ class Component(object):
     def jitter(self, method=None):
         raise NotImplementedError
 
-    def subset_from_roi(self, att, roi, other_comp=None, other_att=None):
+    def subset_from_roi(self, att, roi, other_comp=None, other_att=None, coord='x'):
         """ Create an SubsetState object
         :param att: attribute name of this Component
         :param roi: an ROI object
@@ -250,16 +251,29 @@ class Component(object):
         :return: A SubsetState (or subclass) object
         """
 
-        if isinstance(other_comp, CategoricalComponent):
-            return other_comp.subset_from_roi(other_att, roi,
-                                              other_comp=self,
-                                              other_att=att,
-                                              is_nested=True)
+        assert coord in set('xy')
 
-        if isinstance(roi, RangeROI):
+        if isinstance(roi, (RangeROI, XRangeROI, YRangeROI)):
             lo, hi = roi.range()
-            subset_state = RangeSubsetState(lo, hi, att)
+            if roi.ori == coord:
+                subset_state = RangeSubsetState(lo, hi, att)
+            elif (roi.ori != coord) and isinstance(other_comp, CategoricalComponent):
+                other_coord = 'y' if coord == 'x' else 'x'
+                return other_comp.subset_from_roi(other_att, roi,
+                                                  other_comp=self,
+                                                  other_att=att,
+                                                  coord=other_coord)
+            elif roi.ori != coord:
+                subset_state = RangeSubsetState(lo, hi, other_att)
+            else:
+                raise AssertionError('RangeROI.ori must be "x" or "y"')
         else:
+            if isinstance(other_comp, CategoricalComponent):
+                return other_comp.subset_from_roi(other_att, roi,
+                                                  other_comp=self,
+                                                  other_att=att,
+                                                  is_nested=True)
+
             subset_state = RoiSubsetState()
             subset_state.xatt = att
             subset_state.yatt = other_att
@@ -468,7 +482,7 @@ class CategoricalComponent(Component):
         self.jitter(method=self._jitter_method)
         self._data.setflags(write=False)
 
-    def subset_from_roi(self, att, roi, other_comp=None, other_att=None, is_nested=False):
+    def subset_from_roi(self, att, roi, other_comp=None, other_att=None, coord='x', is_nested=False):
         """ Create an SubsetState object
         :param att: attribute name of this Component
         :param roi: an ROI object
@@ -478,8 +492,20 @@ class CategoricalComponent(Component):
         :return: A SubsetState (or subclass) object
         """
 
-        if isinstance(roi, RangeROI):
-            return CategoricalRoiSubsetState.from_range(self, att, roi.min, roi.max)
+        assert coord in set('xy')
+
+        if isinstance(roi, (RangeROI, XRangeROI, YRangeROI)):
+            lo, hi = roi.range()
+            if roi.ori == coord:
+                return CategoricalRoiSubsetState.from_range(self, att, roi.min, roi.max)
+            elif roi.ori != coord:
+                other_coord = 'y' if coord == 'x' else 'x'
+                return other_comp.subset_from_roi(other_att, roi,
+                                                  other_comp=self,
+                                                  other_att=att,
+                                                  coord=other_coord)
+            else:
+                raise AssertionError('RangeROI.ori must be "x" or "y"')
         elif isinstance(roi, CategoricalRoi):
             return CategoricalRoiSubsetState(roi=roi, att=att)
         elif isinstance(roi, RectangularROI):
