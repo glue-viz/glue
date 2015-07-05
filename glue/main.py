@@ -284,7 +284,10 @@ def load_plugins():
             logger.info("Loading plugin {0} succeeded".format(item.name))
             _loaded_plugins.add(item.module_name)
 
-    config.save()
+    try:
+        config.save()
+    except Exception as e:
+        logger.warn("Failed to load plugin configuration")
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))  # prama: no cover

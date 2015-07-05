@@ -43,7 +43,6 @@ class PluginConfig(object):
 
         plugins = {}
         for key in sorted(config['plugins']):
-            print(config['plugins'][key])
             plugins[key] = bool(int(config['plugins'][key]))
 
         self = cls(plugins=plugins)

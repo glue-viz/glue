@@ -33,6 +33,7 @@ from .widgets.data_viewer import DataViewer
 from .widgets.settings_editor import SettingsEditor
 from .widgets.mpl_widget import defer_draw
 from .feedback import submit_bug_report
+from .plugin_manager import QtPluginManager
 
 __all__ = ['GlueApplication']
 DOCS_URL = 'http://www.glue-viz.org'
@@ -512,7 +513,9 @@ class GlueApplication(Application, QMainWindow):
         mbar.addMenu(menu)
 
         menu = QMenu(mbar)
-        menu.setTitle("&Tools")
+        menu.setTitle("&Plugins")
+        menu.addAction(self._actions['plugin_manager'])
+        menu.addSeparator()
 
         if 'plugins' in self._actions:
             for plugin in self._actions['plugins']:
@@ -652,6 +655,11 @@ class GlueApplication(Application, QMainWindow):
                                            self.data_collection))
             acts.append(a)
         self._actions['plugins'] = acts
+
+        a = act('&Plugin Manager', self,
+                tip='Open plugin manager')
+        a.triggered.connect(nonpartial(self.plugin_manager))
+        self._actions['plugin_manager'] = a
 
     def choose_new_data_viewer(self, data=None):
         """ Create a new visualization window in the current tab
@@ -895,6 +903,10 @@ class GlueApplication(Application, QMainWindow):
         qmb.setDetailedText(detail)
         qmb.resize(400, qmb.size().height())
         qmb.exec_()
+
+    def plugin_manager(self):
+        pm = QtPluginManager()
+        pm.exec_()
 
     def _update_undo_redo_enabled(self):
         undo, redo = self._cmds.can_undo_redo()
