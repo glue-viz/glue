@@ -5,6 +5,7 @@ import numpy as np
 from ..core.client import Client
 from ..core import message as msg
 from ..core.data import Data, CategoricalComponent
+from ..core.roi import RangeROI
 from ..core.subset import RangeSubsetState, CategoricalRoiSubsetState
 from ..core.exceptions import IncompatibleDataException, IncompatibleAttribute
 from ..core.edit_subset_mode import EditSubsetMode
@@ -378,16 +379,9 @@ class HistogramClient(Client):
         if self.xlog:
             lo = 10 ** lo
             hi = 10 ** hi
-
-        comp = list(self._get_data_components('x'))
-        if comp:
-            comp = comp[0]
-            if comp.categorical:
-                state = CategoricalRoiSubsetState.from_range(comp, self.component,
-                                                             lo, hi)
-            else:
-                state = RangeSubsetState(lo, hi)
-                state.att = self.component
+        nroi = RangeROI(min=lo, max=hi, orientation='x')
+        for comp in self._get_data_components('x'):
+            state = comp.subset_from_roi(self.component, nroi, coord='x')
             mode = EditSubsetMode()
             visible = [d for d in self.data if self.is_layer_visible(d)]
             focus = visible[0] if len(visible) > 0 else None
