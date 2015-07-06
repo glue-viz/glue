@@ -1,6 +1,11 @@
 Full changelog
 ==============
 
+v0.6 (unreleased)
+-----------------
+
+* No changes yet
+
 v0.5.2 (unreleased)
 -------------------
 
