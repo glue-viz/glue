@@ -201,8 +201,11 @@ class RoiMode(RoiModeBase):
         dx = abs(event.x - self._start_event.x)
         dy = abs(event.y - self._start_event.y)
         if (dx + dy) > self._drag_dist:
-            self._roi_tool.start_selection(self._start_event)
-            self._drag = True
+            status = self._roi_tool.start_selection(self._start_event)
+            # If start_selection returns False, the selection has not been
+            # started and we should abort, so we set self._drag to False in this
+            # case.
+            self._drag = True if status is None else status
 
     def press(self, event):
         self._start_event = event
