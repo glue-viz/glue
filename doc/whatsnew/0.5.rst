@@ -2,8 +2,8 @@
 
 .. _whatsnew_05:
 
-What's new in v0.5?
-===================
+What's new in v0.5.x?
+=====================
 
 Python 3 compatibility
 ----------------------
@@ -53,6 +53,9 @@ Glue v0.5 includes a number of new features, in particular:
 
 * Support for more coordinate frames for the Astronomy coordinate system
   transformations.
+
+* The ability to drag existing selection regions by pressing 'control',
+  selecting a selection, and moving it around.
 
 Improvements
 ------------

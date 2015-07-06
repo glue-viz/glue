@@ -9,6 +9,8 @@ v0.6 (unreleased)
 * Fix a bug that prevented sessions from being saved with embedded files if
   component units were Astropy units. [#686]
 
+* Users should now press 'control' to drag rather than re-define subsets. [#689]
+
 v0.5 (2015-07-03)
 -----------------
 
