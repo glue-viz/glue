@@ -41,9 +41,10 @@ from ...backends import get_backend
 from ...config import auto_refresh
 from ..contracts import contract
 
-__all__ = ['load_data', 'auto_data', '__factories__', 'data_label',
-           'load_data', '_extension', 'find_factory', 'get_default_factory',
-           'FileWatcher','set_default_factory', 'LoadLog']
+__all__ = ['FileWatcher', 'LoadLog',
+           'auto_data', 'data_label', 'find_factory', 'get_default_factory',
+           'has_extension', 'load_data', 'set_default_factory',
+           '_extension', '__factories__']
 
 
 __factories__ = []
@@ -325,9 +326,3 @@ def auto_data(filename, *args, **kwargs):
 auto_data.label = 'Auto'
 auto_data.identifier = lambda x: True
 __factories__.append(auto_data)
-
-
-
-
-
-
