@@ -51,3 +51,5 @@ requires_pil_or_skimage = pytest.mark.skipif(str(not SKIMAGE_INSTALLED and not P
                                              reason='Requires PIL or scikit-image')
 
 GINGA_INSTALLED, requires_ginga = make_skipper('ginga')
+
+H5PY_INSTALLED, requires_h5py = make_skipper('h5py')
