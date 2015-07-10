@@ -4,7 +4,7 @@ Full changelog
 v0.5.2 (unreleased)
 -------------------
 
-* No changes yet
+* Fix loading of plugins with setuptools < 11.3
 
 v0.5.1 (2015-07-06)
 -------------------
