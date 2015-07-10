@@ -14,9 +14,6 @@ def iter_plugin_entry_points():
     return iter_entry_points(group='glue.plugins', name=None)
 
 
-CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
-
-
 class PluginConfig(object):
 
     def __init__(self, plugins={}):
@@ -32,7 +29,12 @@ class PluginConfig(object):
     @classmethod
     def load(cls):
 
-        plugin_cfg =  os.path.join(CFG_DIR, 'plugins.cfg')
+        # Import at runtime because some tests change this value. We also don't
+        # just import the variable directly otherwise it is cached.
+        from . import config
+        cfg_dir = config.CFG_DIR
+        
+        plugin_cfg =  os.path.join(cfg_dir, 'plugins.cfg')
 
         from .external.six.moves import configparser
 
@@ -52,7 +54,12 @@ class PluginConfig(object):
 
     def save(self):
 
-        plugin_cfg =  os.path.join(CFG_DIR, 'plugins.cfg')
+        # Import at runtime because some tests change this value. We also don't
+        # just import the variable directly otherwise it is cached.
+        from . import config
+        cfg_dir = config.CFG_DIR
+
+        plugin_cfg =  os.path.join(cfg_dir, 'plugins.cfg')
 
         from .external.six.moves import configparser
 
@@ -62,8 +69,8 @@ class PluginConfig(object):
         for key in sorted(self.plugins):
             config.set('plugins', key, value=str(int(self.plugins[key])))
 
-        if not os.path.exists(CFG_DIR):
-            os.mkdir(CFG_DIR)
+        if not os.path.exists(cfg_dir):
+            os.mkdir(cfg_dir)
 
         with open(plugin_cfg, 'w') as fout:
             config.write(fout)

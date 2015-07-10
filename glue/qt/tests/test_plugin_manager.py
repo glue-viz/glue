@@ -10,18 +10,21 @@ from ...main import load_plugins
 
 
 def setup_function(func):
-    func.cfg_dir_orig = ph.CFG_DIR
+    from ... import config
+    func.CFG_DIR_ORIG = config.CFG_DIR
 
 
 def teardown_function(func):
-    ph.CFG_DIR = func.cfg_dir_orig
+    from ... import config
+    config.CFG_DIR = func.CFG_DIR_ORIG
 
 
 def test_basic_empty(tmpdir):
 
     # Test that things work when the plugin cfg file is empty
 
-    ph.CFG_DIR = tmpdir.join('.glue').strpath
+    from ... import config
+    config.CFG_DIR = tmpdir.join('.glue').strpath
 
     w = QtPluginManager()
     w.clear()
@@ -33,7 +36,8 @@ def test_basic(tmpdir):
 
     # Test that things work when the plugin cfg file is populated
 
-    ph.CFG_DIR = tmpdir.join('.glue').strpath
+    from ... import config
+    config.CFG_DIR = tmpdir.join('.glue').strpath
 
     load_plugins()
 
@@ -49,17 +53,18 @@ def test_basic(tmpdir):
 
     config2 = ph.PluginConfig.load()
 
-    print(config)
-    print(config2)
-
     assert config.plugins == config2.plugins
 
 
 def test_permission_fail(tmpdir):
 
-    ph.CFG_DIR = tmpdir.join('.glue').strpath
-    os.mkdir(ph.CFG_DIR)
-    os.chmod(ph.CFG_DIR, 0o000)
+    from ... import config
+    config.CFG_DIR = tmpdir.join('.glue').strpath
+
+    os.mkdir(config.CFG_DIR)
+    os.chmod(config.CFG_DIR, 0o000)
+
+    config2 = ph.PluginConfig.load()
 
     with patch.object(QMessageBoxPatched, 'exec_', return_value=None) as qmb:
         w = QtPluginManager()
