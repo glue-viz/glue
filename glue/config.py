@@ -525,10 +525,9 @@ def _default_search_order():
     """
 
     from . import config
-    cfg_dir = config.CFG_DIR
 
     search_order = [os.path.join(os.getcwd(), 'config.py')]
     if 'GLUERC' in os.environ:
         search_order.append(os.environ['GLUERC'])
-    search_order.append(os.path.join(cfg_dir, 'config.py'))
+    search_order.append(os.path.join(config.CFG_DIR, 'config.py'))
     return search_order[::-1]
