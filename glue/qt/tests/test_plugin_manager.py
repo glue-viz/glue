@@ -61,8 +61,10 @@ def test_permission_fail(tmpdir):
     from ... import config
     config.CFG_DIR = tmpdir.join('.glue').strpath
 
-    os.mkdir(config.CFG_DIR)
-    os.chmod(config.CFG_DIR, 0o000)
+    # Make a *file* at that location so that reading the plugin file will fail
+
+    with open(config.CFG_DIR, 'w') as f:
+        f.write("test")
 
     config2 = ph.PluginConfig.load()
 
