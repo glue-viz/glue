@@ -95,7 +95,7 @@ before_install:
   # now set up a plugin configuration file with some plugins disabled. This is
   # to make sure that when we run the tests, glue will ignore this
   # configuration and will instead run tests for all plugins.
-  - if [ NO_CFG_FILES = false ]; then mkdir ~/.glue; printf "[plugins]\nspectrum_tool = 0\n" >> ~/.glue/plugins.cfg; fi
+  - if [[ $NO_CFG_FILES == false ]]; then mkdir ~/.glue; printf "[plugins]\nspectrum_tool = 0\n" >> ~/.glue/plugins.cfg; fi
 
 install:
 
