@@ -20,7 +20,7 @@ class QtPluginManager(QtGui.QDialog):
         self.confirm.clicked.connect(self.finalize)
 
         self._checkboxes = {}
-        
+
         self.update_list()
 
     def clear(self):
@@ -35,7 +35,7 @@ class QtPluginManager(QtGui.QDialog):
 
         for plugin in sorted(config.plugins):
             check = QtGui.QTreeWidgetItem(self.tree.invisibleRootItem(),
-                                         ["", plugin])
+                                          ["", plugin])
             check.setFlags(check.flags() | QtCore.Qt.ItemIsUserCheckable)
             if config.plugins[plugin]:
                 check.setCheckState(0, QtCore.Qt.Checked)
@@ -45,7 +45,6 @@ class QtPluginManager(QtGui.QDialog):
 
         self.tree.resizeColumnToContents(0)
         self.tree.resizeColumnToContents(1)
-
 
     def finalize(self):
 
@@ -68,4 +67,3 @@ class QtPluginManager(QtGui.QDialog):
             return
 
         self.accept()
-

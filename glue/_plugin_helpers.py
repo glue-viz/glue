@@ -15,7 +15,6 @@ def iter_plugin_entry_points():
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
-PLUGIN_CFG =  os.path.join(CFG_DIR, 'plugins.cfg')
 
 
 class PluginConfig(object):
@@ -33,10 +32,12 @@ class PluginConfig(object):
     @classmethod
     def load(cls):
 
+        plugin_cfg =  os.path.join(CFG_DIR, 'plugins.cfg')
+
         from .external.six.moves import configparser
 
         config = configparser.ConfigParser()
-        read = config.read(PLUGIN_CFG)
+        read = config.read(plugin_cfg)
 
         if len(read) == 0 or not config.has_section('plugins'):
             return cls()
@@ -51,16 +52,18 @@ class PluginConfig(object):
 
     def save(self):
 
+        plugin_cfg =  os.path.join(CFG_DIR, 'plugins.cfg')
+
         from .external.six.moves import configparser
 
         config = configparser.ConfigParser()
-        config['plugins'] = {}
+        config.add_section('plugins')
 
         for key in sorted(self.plugins):
-            config['plugins'][key] = str(int(self.plugins[key]))
+            config.set('plugins', key, value=str(int(self.plugins[key])))
 
         if not os.path.exists(CFG_DIR):
             os.mkdir(CFG_DIR)
 
-        with open(PLUGIN_CFG, 'w') as fout:
+        with open(plugin_cfg, 'w') as fout:
             config.write(fout)
