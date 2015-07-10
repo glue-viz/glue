@@ -38,12 +38,12 @@ class PluginConfig(object):
         config = configparser.ConfigParser()
         read = config.read(PLUGIN_CFG)
 
-        if len(read) == 0 or not 'plugins' in config:
+        if len(read) == 0 or not config.has_section('plugins'):
             return cls()
 
         plugins = {}
-        for key in sorted(config['plugins']):
-            plugins[key] = bool(int(config['plugins'][key]))
+        for name, enabled in config.items('plugins'):
+            plugins[name] = bool(int(enabled))
 
         self = cls(plugins=plugins)
 
