@@ -153,6 +153,11 @@ def start_glue(gluefile=None, config=None, datafiles=None):
     import glue
     from glue.qt.glue_application import GlueApplication
 
+    # Start off by loading plugins. We need to do this before restoring
+    # the session or loading the configuration since these may use existing
+    # plugins.
+    load_plugins()
+
     datafiles = datafiles or []
 
     data, hub = None, None
