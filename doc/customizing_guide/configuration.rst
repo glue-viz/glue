@@ -29,7 +29,7 @@ Example Usage: Custom Link Functions
 
 As an example, let's create some translation functions which will
 allow us to link RA / Dec data to other data in Galactic
-latitude/longitude::
+latitude/longitude:
 
 .. literalinclude:: scripts/coord_convert.py
 
