@@ -72,6 +72,7 @@ def is_gridded_data(filename, **kwargs):
 gridded_data.label = "FITS/HDF5 Image"
 gridded_data.identifier = is_gridded_data
 __factories__.append(gridded_data)
+set_default_factory('fits', gridded_data)
 set_default_factory('hd5', gridded_data)
 set_default_factory('hdf5', gridded_data)
 
