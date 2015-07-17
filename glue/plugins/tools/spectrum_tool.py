@@ -755,7 +755,8 @@ class SpectrumTool(object):
     def _setup_mouse_mode(self):
         # This will be added to the ImageWidget's toolbar
         mode = SpectrumExtractorMode(self.image_widget.client.axes,
-                                     release_callback=self._update_profile)
+                                     release_callback=self._update_profile,
+                                     move_callback=self._update_profile)
         return mode
 
     def _setup_toolbar(self):
