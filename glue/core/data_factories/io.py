@@ -19,15 +19,14 @@ def filter_hdulist_by_shape(hdulist, use_hdu='all'):
 
     # If only a subset are requested, extract those
     if use_hdu != 'all':
+        if isinstance(use_hdu, int):
+            use_hdu = [use_hdu]
         hdulist = [hdulist[hdu] for hdu in use_hdu]
 
     # Now only keep HDUs that are not tables or empty.
-    valid_hdus = []
-    for hdu in hdulist:
-        if (isinstance(hdu, fits.PrimaryHDU) or \
-            isinstance(hdu, fits.ImageHDU)) and \
-            hdu.data is not None:
-            valid_hdus.append(hdu)
+    valid_hdus = [hdu for hdu in hdulist
+                  if (isinstance(hdu, (fits.PrimaryHDU, fits.ImageHDU)) and
+                      hdu.data is not None)]
 
     # Check that dimensions of all HDU are the same
     # Allow for HDU's that have no data.
@@ -51,7 +50,7 @@ def extract_data_fits(filename, use_hdu='all'):
 
     # Read in all HDUs
     hdulist = fits.open(filename, ignore_blank=True)
-    hdulist = filter_hdulist_by_shape(hdulist)
+    hdulist = filter_hdulist_by_shape(hdulist, use_hdu=use_hdu)
 
     # Extract data
     arrays = {}
