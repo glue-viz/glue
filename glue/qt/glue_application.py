@@ -193,6 +193,8 @@ class GlueApplication(Application, QMainWindow):
         pth = os.path.join(pth, 'icons', 'app_icon.png')
         self.app.setWindowIcon(QIcon(pth))
 
+        # Even though we loaded the plugins in start_glue, we re-load them here
+        # in case glue was started directly by initializing this class.
         load_plugins()
 
         self.setWindowIcon(self.app.windowIcon())
