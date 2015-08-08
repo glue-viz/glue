@@ -255,14 +255,15 @@ def load_plugins():
     # where ``setup`` is a function that does whatever is needed to set up the
     # plugin, such as add items to various registries.
 
-    logger.info("Loading external plugins")
+    import setuptools
+    logger.info("Loading external plugins using setuptools=={0}".format(setuptools.__version__))
     from ._plugin_helpers import iter_plugin_entry_points
     for item in iter_plugin_entry_points():
         if item.module_name in _loaded_plugins:
             logger.info("Plugin {0} already loaded".format(item.name))
             continue
         try:
-            function = item.resolve()
+            function = item.load()
             function()
         except Exception as exc:
             logger.info("Loading plugin {0} failed (Exception: {1})".format(item.name, exc))
