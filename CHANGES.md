@@ -1,10 +1,14 @@
 Full changelog
 ==============
 
-v0.5.2 (unreleased)
+v0.5.2 (2015-08-13)
 -------------------
 
-* Fix loading of plugins with setuptools < 11.3
+* Fix loading of plugins with setuptools < 11.3 [#699]
+
+* Fix loading of plugins when using glue programmatically rather than through the GUI [#698]
+
+* Backward-compatibility fixes after refactoring data_factories [#696, #703]
 
 v0.5.1 (2015-07-06)
 -------------------
