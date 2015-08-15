@@ -1,8 +1,10 @@
 import numpy as np
 
 from ..helpers import auto_data
+from ....tests.helpers import requires_h5py
 
 
+@requires_h5py
 def test_skip_non_numerical(tmpdir):
 
     # This is a regression for a bug that caused the HDF5 loader to crash if it

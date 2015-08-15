@@ -294,7 +294,10 @@ def find_factory(filename, **kwargs):
         if func is auto_data:
             continue
 
-        is_format = identifier(filename, **kwargs)
+        try:
+            is_format = identifier(filename, **kwargs)
+        except ImportError:  # dependencies missing
+            continue
 
         if is_format:
 

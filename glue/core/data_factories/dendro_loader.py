@@ -50,7 +50,7 @@ def is_dendro(file, **kwargs):
 
     elif is_fits(file):
 
-        from astropy.io import fits
+        from ...external.astro import fits
 
         hdulist = fits.open(file)
 
