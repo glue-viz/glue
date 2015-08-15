@@ -50,25 +50,4 @@ def test_add_data_factory():
     @data_factory('XYZ file', "*txt")
     def foo(x):
         pass
-    assert (foo, 'XYZ file', '*txt') in data_factory
-
-
-def test_data_factory_default():
-    from ..core.data_factories import get_default_factory
-
-    @data_factory("XYZ file", '*xyz', 'xyz abc')
-    def foo(x):
-        pass
-    assert get_default_factory('xyz') is foo
-    assert get_default_factory('abc') is foo
-
-    @data_factory('ABC file', '*abc', 'abc')
-    def bar(x):
-        pass
-
-    assert get_default_factory('xyz') is foo
-    assert get_default_factory('abc') is bar
-
-    @data_factory('', '', '')
-    def baz(x):
-        pass
+    assert (foo, 'XYZ file', '*txt', 0) in data_factory

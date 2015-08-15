@@ -33,7 +33,7 @@ def test_glue_action_button():
     assert b.text() == 'test2'
 
 
-@data_factory('testing_factory', '*.*')
+@data_factory('testing_factory', identifier=lambda *args: True, priority=-999)
 def dummy_factory(filename):
     from glue.core import Data
     result = Data()
