@@ -54,7 +54,44 @@ def is_dendro(file, **kwargs):
 
         hdulist = fits.open(file)
 
-        return 'data' in hdulist and 'index_map' in hdulist and 'newick' in hdulist
+        if 'data' in hdulist and 'index_map' in hdulist and 'newick' in hdulist:
+
+            return True
+
+        else:
+
+            # For older versions of astrodendro, the HDUs did not have names
+
+            # Here we use heuristics to figure out if this is likely to be a
+            # dendrogram. Specifically, there should be three HDU extensions.
+            # The primary HDU should be empty, HDU 1 and HDU 2 should have
+            # matching shapes, and HDU 3 should have a 1D array. Also, if the
+            # HDUs do have names then this is not a dendrogram since the old
+            # files did not have names
+
+            # This branch can be removed once we think most dendrogram files
+            # will have HDU names.
+
+            if len(hdulist) != 4:
+                return False
+
+            if hdulist[1].name != '' or hdulist[2].name != '' or hdulist[3].name != '':
+                return False
+
+            if hdulist[0].data is not None:
+                return False
+
+            if hdulist[1].data is None or hdulist[2].data is None or hdulist[3].data is None:
+                return False
+
+            if hdulist[1].data.shape != hdulist[2].data.shape:
+                return False
+
+            if hdulist[3].data.ndim != 1:
+                return False
+
+            # We're probably ok, so return True
+            return True
 
     else:
 
