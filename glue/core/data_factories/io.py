@@ -77,7 +77,8 @@ def extract_hdf5_datasets(handle):
             for key in sub_datasets:
                 datasets[key] = sub_datasets[key]
         elif isinstance(handle[group], h5py.highlevel.Dataset):
-            datasets[handle[group].name] = handle[group]
+            if handle[group].dtype.kind in ('f', 'i'):
+                datasets[handle[group].name] = handle[group]
     return datasets
 
 
