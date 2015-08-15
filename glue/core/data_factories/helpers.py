@@ -300,8 +300,6 @@ def find_factory(filename, **kwargs):
 
             valid_formats.append((priority, label, func))
 
-    print(valid_formats)
-
     priorities = list(zip(*valid_formats))[0]
 
     highest_priority = max(priorities)
