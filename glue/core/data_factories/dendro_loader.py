@@ -7,6 +7,8 @@ import numpy as np
 from astrodendro import Dendrogram
 from ..data import Data
 
+from .gridded import is_fits, is_hdf5
+
 __all__ = ['load_dendro']
 
 
@@ -34,3 +36,26 @@ def load_dendro(file):
     im = Data(intensity=dg.data, structure=dg.index_map)
     im.join_on_key(dendro, 'structure', dendro.pixel_component_ids[0])
     return [dendro, im]
+
+
+def is_dendro(file, **kwargs):
+
+    if is_hdf5(file):
+
+        import h5py
+
+        f = h5py.File(file, 'r')
+
+        return 'data' in f and 'index_map' in f and 'newick' in f
+
+    elif is_fits(file):
+
+        from astropy.io import fits
+
+        hdulist = fits.open(file)
+
+        return 'data' in hdulist and 'index_map' in hdulist and 'newick' in hdulist
+
+    else:
+
+        return False
