@@ -284,8 +284,6 @@ class DataFactoryRegistry(Registry):
 
     def __call__(self, label, identifier=None, priority=None, default=''):
 
-        from .core.data_factories import set_default_factory
-
         if identifier is None:
             identifier = lambda *a, **k: False
 
@@ -293,7 +291,6 @@ class DataFactoryRegistry(Registry):
             priority = 0
 
         def adder(func):
-            set_default_factory(default, func)
             self.add(self.item(func, label, identifier, priority))
             return func
 

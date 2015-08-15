@@ -17,9 +17,6 @@ whether it can handle a requested filename and keyword set
 
 5) The function is added to the __factories__ list
 
-6) Optionally, the function is registered to open a given extension by
-default by calling set_default_factory
-
 Putting this together, the simplest data factory code looks like this::
 
     def dummy_factory(file_name):
@@ -27,7 +24,6 @@ Putting this together, the simplest data factory code looks like this::
     dummy_factory.label = "Foo file"
     dummy_factory.identifier = has_extension('foo FOO')
     __factories__.append(dummy_factory)
-    set_default_factory("foo", dummy_factory)
 """
 
 from __future__ import absolute_import, division, print_function
@@ -42,13 +38,12 @@ from ...config import auto_refresh
 from ..contracts import contract
 
 __all__ = ['FileWatcher', 'LoadLog',
-           'auto_data', 'data_label', 'find_factory', 'get_default_factory',
-           'has_extension', 'load_data', 'set_default_factory',
+           'auto_data', 'data_label', 'find_factory',
+           'has_extension', 'load_data',
            '_extension', '__factories__']
 
 
 __factories__ = []
-_default_factory = {}
 
 
 def _extension(path):
@@ -272,27 +267,13 @@ def data_label(path):
 
 @contract(extension='string', factory='callable')
 def set_default_factory(extension, factory):
-    """Register an extension that should be handled by a factory by default
-
-    :param extension: File extension (do not include the '.')
-    :param factory: The factory function to dispatch to
-    """
-    for ex in extension.split():
-        _default_factory[ex] = factory
+    warnings.warn("set_default_factory is deprecated and no longer has any effect")
 
 
 @contract(extension='string', returns='callable|None')
 def get_default_factory(extension):
-    """Return the default factory function to read a given file extension.
-
-    :param extension: The extension to lookup
-
-    :rtype: A factory function, or None if the extension has no default
-    """
-    try:
-        return _default_factory[extension]
-    except KeyError:
-        return None
+    warnings.warn("get_default_factory is deprecated and will always return None")
+    return None
 
 
 @contract(filename='string')
