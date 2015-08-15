@@ -267,21 +267,36 @@ class DataFactoryRegistry(Registry):
     This has the additional side-effect of associating
     this this factory with filenames ending in ``txt`` by default
     """
-    item = namedtuple('DataFactory', 'function label identifier')
+
+    item = namedtuple('DataFactory', 'function label identifier priority')
 
     def default_members(self):
-        from .core.data_factories import __factories__
-        return [self.item(f, f.label, f.identifier) for f in __factories__]
 
-    def __call__(self, label, identifier=None, default=''):
+        from .core.data_factories import __factories__
+
+        def get_priority(fact):
+            try:
+                return fact.priority
+            except AttributeError:
+                return 0
+
+        return [self.item(f, f.label, f.identifier, get_priority(f)) for f in __factories__]
+
+    def __call__(self, label, identifier=None, priority=None, default=''):
+
         from .core.data_factories import set_default_factory
+
         if identifier is None:
             identifier = lambda *a, **k: False
 
+        if priority is None:
+            priority = 0
+
         def adder(func):
             set_default_factory(default, func)
-            self.add(self.item(func, label, identifier))
+            self.add(self.item(func, label, identifier, priority))
             return func
+
         return adder
 
 

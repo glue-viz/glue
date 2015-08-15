@@ -297,23 +297,40 @@ def get_default_factory(extension):
 
 @contract(filename='string')
 def find_factory(filename, **kwargs):
+
     from ...config import data_factory
 
-    # on first pass, only try the default factory
-    default = _default_factory.get(_extension(filename))
-    for func, _, identifier in data_factory:
+    # We no longer try the 'default' factory first because we actually need to
+    # try all identifiers and select the one to use based on the priority. This
+    # allows us to define more specialized loaders take priority over more
+    # general ones. For example, a FITS file that is a dendrogram should be
+    # loaded as a dendrogram, not a plain FITS file.
+
+    valid_formats = []
+
+    for func, label, identifier, priority in data_factory:
+
         if func is auto_data:
             continue
-        if (func is default) and identifier(filename, **kwargs):
-            return func
 
-    # if that fails, try everything
-    for func, _, identifier in data_factory:
-        if func is auto_data:
-            continue
-        if identifier(filename, **kwargs):
-            return func
+        is_format = identifier(filename, **kwargs)
 
+        if is_format:
+
+            valid_formats.append((priority, label, func))
+
+    print(valid_formats)
+
+    priorities = list(zip(*valid_formats))[0]
+
+    highest_priority = max(priorities)
+
+    if priorities.count(highest_priority) > 1:
+        raise ValueError("Ambiguous file type")
+
+    func = valid_formats[priorities.index(highest_priority)][2]
+
+    return func
 
 @contract(filename='string')
 def auto_data(filename, *args, **kwargs):
