@@ -18,6 +18,9 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'auto_refresh', 'importer']
 
 
+CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
+
+
 class Registry(object):
 
     """Container to hold groups of objects or settings.
@@ -520,8 +523,11 @@ def _default_search_order():
        * HOME/.glue/config.py
        * Glue's own default config
     """
+
+    from . import config
+
     search_order = [os.path.join(os.getcwd(), 'config.py')]
     if 'GLUERC' in os.environ:
         search_order.append(os.environ['GLUERC'])
-    search_order.append(os.path.expanduser('~/.glue/config.py'))
+    search_order.append(os.path.join(config.CFG_DIR, 'config.py'))
     return search_order[::-1]

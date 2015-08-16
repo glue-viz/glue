@@ -6,7 +6,71 @@
 # evaluated at compile time rather than at runtime, so the patched version
 # wouldn't be used.
 
+import os
+from collections import defaultdict
 
 def iter_plugin_entry_points():
     from pkg_resources import iter_entry_points
     return iter_entry_points(group='glue.plugins', name=None)
+
+
+class PluginConfig(object):
+
+    def __init__(self, plugins={}):
+        self.plugins = defaultdict(lambda: True)
+        self.plugins.update(plugins)
+
+    def __str__(self):
+        string = ""
+        for plugin in sorted(self.plugins):
+            string += "{0}: {1}\n".format(plugin, self.plugins[plugin])
+        return string
+
+    @classmethod
+    def load(cls):
+
+        # Import at runtime because some tests change this value. We also don't
+        # just import the variable directly otherwise it is cached.
+        from . import config
+        cfg_dir = config.CFG_DIR
+        
+        plugin_cfg =  os.path.join(cfg_dir, 'plugins.cfg')
+
+        from .external.six.moves import configparser
+
+        config = configparser.ConfigParser()
+        read = config.read(plugin_cfg)
+
+        if len(read) == 0 or not config.has_section('plugins'):
+            return cls()
+
+        plugins = {}
+        for name, enabled in config.items('plugins'):
+            plugins[name] = bool(int(enabled))
+
+        self = cls(plugins=plugins)
+
+        return self
+
+    def save(self):
+
+        # Import at runtime because some tests change this value. We also don't
+        # just import the variable directly otherwise it is cached.
+        from . import config
+        cfg_dir = config.CFG_DIR
+
+        plugin_cfg =  os.path.join(cfg_dir, 'plugins.cfg')
+
+        from .external.six.moves import configparser
+
+        config = configparser.ConfigParser()
+        config.add_section('plugins')
+
+        for key in sorted(self.plugins):
+            config.set('plugins', key, value=str(int(self.plugins[key])))
+
+        if not os.path.exists(cfg_dir):
+            os.mkdir(cfg_dir)
+
+        with open(plugin_cfg, 'w') as fout:
+            config.write(fout)

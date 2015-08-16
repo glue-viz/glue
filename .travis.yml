@@ -17,6 +17,7 @@ env:
     - PYTEST_ARGS="--cov glue"
     - NUMPY_VER=1.9
     - IPYTHON_VER=2
+    - NO_CFG_FILES=false
     - CONDA_DEPS="pip scipy cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.3 xlrd pillow pytest mock coverage pyyaml requests sphinx_rtd_theme"
     - PIP_BASE="pytest-cov coveralls pyavm astrodendro awscli"
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
@@ -62,6 +63,7 @@ matrix:
             - GINGA=1
             - PYTEST_ARGS="--cov glue --no-optional-skip"
             - QT_PKG=pyside
+            - NO_CFG_FILES=true
 
         # Test with older package versions:
 
@@ -90,6 +92,10 @@ before_install:
   - if [ $APP_TRIGGER ]; then source .setup_app_trigger.sh; fi
   - if [ $TRAVIS_BRANCH = master ]; then export S3_DIR=latest; else export S3_DIR=$TRAVIS_BRANCH; fi
 
+  # now set up a plugin configuration file with some plugins disabled. This is
+  # to make sure that when we run the tests, glue will ignore this
+  # configuration and will instead run tests for all plugins.
+  - if [[ $NO_CFG_FILES == false ]]; then mkdir ~/.glue; printf "[plugins]\nspectrum_tool = 0\n" >> ~/.glue/plugins.cfg; fi
 
 install:
 

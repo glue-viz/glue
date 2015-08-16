@@ -2,6 +2,8 @@
 
 __all__ = ['custom_viewer', 'qglue', 'test']
 
+import os
+
 try:
     from sip import setapi
 except ImportError:
@@ -129,7 +131,6 @@ from .version import __version__
 from .main import load_plugins
 
 def test(no_optional_skip=False):
-    import os
     from pytest import main
     root = os.path.abspath(os.path.dirname(__file__))
     args = [root]

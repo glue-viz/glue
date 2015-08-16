@@ -23,7 +23,12 @@ def get_clobber():
 
 
 def main():
-    dest = os.path.expanduser('~/.glue/')
+
+    # Import at runtime because some tests change this value. We also don't
+    # just import the function directly otherwise it is cached.
+    from . import config
+    dest = config.CFG_DIR
+
     if not os.path.exists(dest):
         print("Creating directory %s" % dest)
         os.makedirs(dest)

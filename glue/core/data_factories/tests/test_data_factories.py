@@ -11,7 +11,7 @@ from ...tests.util import make_file
 
 from ....tests.helpers import (requires_astropy, requires_astropy_ge_03,
                               requires_astropy_ge_04, requires_pil_or_skimage,
-                              requires_xlrd, requires_astrodendro)
+                              requires_xlrd, requires_astrodendro, requires_h5py)
 
 
 def test_load_data_auto_assigns_label():
@@ -66,6 +66,7 @@ def test_fits_uses_mmapping():
 
 
 @requires_astropy
+@requires_h5py
 @pytest.mark.parametrize('suffix', ['.h5', '.hdf5', '.hd5', '.h5custom'])
 def test_hdf5_loader(suffix):
     data = b'x\xda\xeb\xf4pq\xe3\xe5\x92\xe2b\x00\x01\x0e\x0e\x06\x16\x06\x01\x06d\xf0\x1f\n*8P\xf90\xf9\x04(\xcd\x08\xa5;\xa0\xf4\n&\x988#XN\x02*.\x085\x1f]]H\x90\xab+H\xf5\x7f4\x00\xb3\xc7\x80\x05Bs0\x8c\x82\x91\x08<\\\x1d\x03@t\x04\x94\x0fK\xa5\'\x98P\xd5U\xa0\xa5G\x0f\n\xeded`\x83\x98\xc5\x08\xe3CR2##D\x80\x19\xaa\x0eA\x0b\x80\x95\np\xc0\xd2\xaa\x03\x98d\x05\xf2@\xe2LLL\x8c\x90t,\x01\xe633&@\x93\xb4\x04\x8a\xbdBP\xdd 5\xc9\xd5]A\x0c\x0c\r\x83"\x1e\x82\xfd\xfc]@9\x1a\x96\x0f\x15\x98G\xd3\xe6(\x18\x05\xa3\x00W\xf9\t\x01Lh\xe5$\x00\xc2A.\xaf'
