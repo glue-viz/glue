@@ -110,6 +110,13 @@ file type when loading data:
 If you open a file using this file type selection, Glue will pass the path of
 this file to your function, and use the resulting Data object.
 
+If you are defining a data factory that may clash with an existing one, for
+example if you are defining a loader for a specific type of FITS file, then
+make sure that the identifier function (e.g. ``is_jpeg`` above) returns `True`
+only for that specific subset of FITS files. Then you can set the ``priority=``
+keyword in the ``@data_factory`` decorator. The value should be an integer or
+floating-point number, with larger numbers indicating a higher priority.
+
 For more examples of custom data loaders, see the `example repository
 <https://github.com/glue-viz/glue-data-loaders>`_.
 
