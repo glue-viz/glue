@@ -4,7 +4,7 @@ Full changelog
 v0.6 (unreleased)
 -----------------
 
-* No changes yet
+* Added a GUI plugin manager in the 'Plugins' menu. [#682]
 
 v0.5.2 (2015-08-13)
 -------------------
