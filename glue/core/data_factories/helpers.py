@@ -266,12 +266,12 @@ def data_label(path):
 
 
 @contract(extension='string', factory='callable')
-def set_default_factory(extension, factory):
+def set_default_factory(extension, factory):  # pragma: no cover
     warnings.warn("set_default_factory is deprecated and no longer has any effect")
 
 
 @contract(extension='string', returns='callable|None')
-def get_default_factory(extension):
+def get_default_factory(extension):  # pragma: no cover
     warnings.warn("get_default_factory is deprecated and will always return None")
     return None
 
