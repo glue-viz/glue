@@ -317,7 +317,7 @@ def find_factory(filename, **kwargs):
         return None
     elif len(valid_formats) > 1:
         labels = ["'{0}'".format(x.label) for x in valid_formats]
-        warnings.warn("Multiple data factories matched the input: {0}. Picking {1}.".format(', '.join(labels), labels[0]))
+        warnings.warn("Multiple data factories matched the input: {0}. Choosing {1}.".format(', '.join(labels), labels[0]))
 
     func = valid_formats[0].function
 

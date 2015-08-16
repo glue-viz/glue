@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import warnings
+
 import pytest
 from mock import MagicMock
 import numpy as np
@@ -12,6 +14,8 @@ from ...tests.util import make_file
 from ....tests.helpers import (requires_astropy, requires_astropy_ge_03,
                               requires_astropy_ge_04, requires_pil_or_skimage,
                               requires_xlrd, requires_astrodendro, requires_h5py)
+
+from ....config import data_factory
 
 
 def test_load_data_auto_assigns_label():
@@ -336,3 +340,33 @@ def test_dendrogram_load():
     assert_array_equal(dg['parent'], [-1, 0, 0])
     assert_array_equal(dg['height'], [3, 3, 3])
     assert_array_equal(dg['peak'], [3, 3, 3])
+
+
+def test_ambiguous_format(tmpdir):
+
+    @data_factory('b', identifier=df.has_extension('spam'), priority=34)
+    def reader1(filename):
+        return Data()
+
+    @data_factory('a', identifier=df.has_extension('spam'), priority=34)
+    def reader2(filename):
+        return Data()
+
+    @data_factory('c', identifier=df.has_extension('spam'), priority=22)
+    def reader3(filename):
+        return Data()
+
+    filename = tmpdir.join('test.spam').strpath
+    with open(filename, 'w') as f:
+        f.write('Camelot!')
+
+    # Should raise a warning and pick the highest priority one in alphabetical
+    # order
+
+    with warnings.catch_warnings(record=True) as w:
+        factory = df.find_factory(filename)
+
+    assert len(w) == 1
+    assert str(w[0].message) == "Multiple data factories matched the input: 'a', 'b'. Choosing 'a'."
+
+    assert factory is reader2
