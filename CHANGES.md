@@ -6,6 +6,11 @@ v0.6 (unreleased)
 
 * Added a GUI plugin manager in the 'Plugins' menu. [#682]
 
+* Data factories can now be given priorities to determine which ones should
+  take precedence in ambiguous cases. The ``set_default_factory`` and
+  ``get_default_factory`` functions are now deprecated since it is possible to
+  achieve this solely with priorities. [#719]
+
 v0.5.2 (2015-08-13)
 -------------------
 
