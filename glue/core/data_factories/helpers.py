@@ -287,30 +287,39 @@ def find_factory(filename, **kwargs):
     # general ones. For example, a FITS file that is a dendrogram should be
     # loaded as a dendrogram, not a plain FITS file.
 
+    best_priority = None
     valid_formats = []
 
-    for func, label, identifier, priority in data_factory:
+    # Iterating over the data factory returns the formats sorted by decreasing
+    # alphabetical order then by label (alphabetically) in order to be
+    # deterministic. This is implemented in DataFactoryRegistry.__iter__.
 
-        if func is auto_data:
+    for df in data_factory:
+
+        # Once we've found a match, and iterated through the rest of the
+        # importers with the same priority, we can exit the loop.
+        if best_priority is not None and df.priority < best_priority:
+            break
+
+        if df.function is auto_data:
             continue
 
         try:
-            is_format = identifier(filename, **kwargs)
+            is_format = df.identifier(filename, **kwargs)
         except ImportError:  # dependencies missing
             continue
 
         if is_format:
+            valid_formats.append(df)
+            best_priority = df.priority
 
-            valid_formats.append((priority, label, func))
+    if len(valid_formats) == 0:
+        return None
+    elif len(valid_formats) > 1:
+        labels = ["'{0}'".format(x.label) for x in valid_formats]
+        warnings.warn("Multiple data factories matched the input: {0}. Picking {1}.".format(', '.join(labels), labels[0]))
 
-    priorities = list(zip(*valid_formats))[0]
-
-    highest_priority = max(priorities)
-
-    if priorities.count(highest_priority) > 1:
-        raise ValueError("Ambiguous file type")
-
-    func = valid_formats[priorities.index(highest_priority)][2]
+    func = valid_formats[0].function
 
     return func
 

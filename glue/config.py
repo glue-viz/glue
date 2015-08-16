@@ -296,6 +296,10 @@ class DataFactoryRegistry(Registry):
 
         return adder
 
+    def __iter__(self):
+        for member in sorted(self.members, key=lambda x: (-x.priority, x.label)):
+            yield member
+
 
 class QtClientRegistry(Registry):
 
