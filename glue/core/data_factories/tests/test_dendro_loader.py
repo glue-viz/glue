@@ -7,7 +7,6 @@ import numpy as np
 
 from ..helpers import find_factory
 from ....tests.helpers import requires_astrodendro
-from ....external.astro import fits
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 
@@ -32,6 +31,8 @@ def test_identifier_heuristics(tmpdir):
     filename = tmpdir.join('test.fits').strpath
 
     from ..dendro_loader import is_dendro
+
+    from ....external.astro import fits
 
     hdulist = fits.HDUList()
     hdulist.append(fits.PrimaryHDU())
