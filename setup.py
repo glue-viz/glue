@@ -23,17 +23,15 @@ if '.dev' in __version__:
     command_number = 'git rev-list --count HEAD'
 
     try:
-        commit_hash = subprocess.check_output(command_hash, shell=True)\
-            .decode('ascii').strip()
-        commit_number = subprocess.check_output(command_number, shell=True)\
-            .decode('ascii').strip()
+        commit_hash = subprocess.check_output(command_hash, shell=True).decode('ascii').strip()
+        commit_number = subprocess.check_output(command_number, shell=True).decode('ascii').strip()
     except Exception:
         pass
     else:
         # We write the git hash and value so that they gets frozen if installed
         with open(os.path.join('glue', '_githash.py'), 'w') as f:
-            f.write("__githash__ = \"{}\"\n".format(commit_hash))
-            f.write("__dev_value__ = \"{}\"\n".format(commit_number))
+            f.write("__githash__ = \"{githash}\"\n".format(githash=commit_hash))
+            f.write("__dev_value__ = \"{dev_value}\"\n".format(dev_value=commit_number))
 
         # We modify __version__ here too for commands such as egg_info
         __version__ += commit_number
