@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
-from setuptools import setup, Command, find_packages
+from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
 import os
@@ -23,12 +23,11 @@ if '.dev' in __version__:
     command_number = 'git rev-list --count HEAD'
 
     try:
-        commit_hash = subprocess.check_output(command, shell=True).decode('ascii').strip()
-        commit_number = subprocess.check_output(command, shell=True).decode('ascii').strip()
+        commit_hash = subprocess.check_output(command_hash, shell=True).decode('ascii').strip()
+        commit_number = subprocess.check_output(command_number, shell=True).decode('ascii').strip()
     except Exception:
         pass
     else:
-
         # We write the git hash and value so that they gets frozen if installed
         with open(os.path.join('glue', '_githash.py'), 'w') as f:
             f.write("__githash__ = \"{githash}\"\n".format(githash=commit_hash))
@@ -42,9 +41,10 @@ try:
     LONG_DESCRIPTION = pypandoc.convert('README.md', 'rst')
 except (IOError, ImportError):
     with open('README.md') as infile:
-        LONG_DESCRIPTION=infile.read()
+        LONG_DESCRIPTION = infile.read()
 
 cmdclass = {}
+
 
 class PyTest(TestCommand):
     user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
@@ -59,7 +59,7 @@ class PyTest(TestCommand):
         self.test_suite = True
 
     def run_tests(self):
-        #import here, cause outside the eggs aren't loaded
+        # import here, cause outside the eggs aren't loaded
         import pytest
         errno = pytest.main(self.pytest_args + ['glue'])
         sys.exit(errno)
@@ -84,7 +84,7 @@ glue-deps = glue._deps:main
 
 setup(name='glueviz',
       version=__version__,
-      description = 'Multidimensional data visualzation across files',
+      description='Multidimensional data visualzation across files',
       long_description=LONG_DESCRIPTION,
       author='Chris Beaumont, Thomas Robitaille',
       author_email='glueviz@gmail.com',
@@ -102,8 +102,8 @@ setup(name='glueviz',
           'Topic :: Scientific/Engineering :: Visualization',
           'License :: OSI Approved :: BSD License'
           ],
-      packages = find_packages(),
+      packages=find_packages(),
       entry_points=entry_points,
       cmdclass=cmdclass,
       package_data={'': ['*.png', '*.ui']}
-    )
+      )
