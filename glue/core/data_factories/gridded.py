@@ -25,12 +25,19 @@ def is_fits(filename):
         return False
 
 
-def gridded_data(filename, format='auto', **kwargs):
+def gridded_data(filename, format='auto', wcs_ext=0, **kwargs):
     """
     Construct an n - dimensional data object from ``filename``. If the
     format cannot be determined from the extension, it can be
     specified using the ``format`` option. Valid formats are 'fits' and
     'hdf5'.
+
+    :param wcs_ext:
+        Specify the number of the extension used to read the wcs info.
+    :param kwargs:
+        Extra arguments passed to the function used to extract data
+        (``extract_data_fits`` or ``extract_data_hdf5``).
+
     """
     result = Data()
 
@@ -42,7 +49,7 @@ def gridded_data(filename, format='auto', **kwargs):
     if is_fits(filename):
         from ...external.astro import fits
         arrays = extract_data_fits(filename, **kwargs)
-        header = fits.getheader(filename)
+        header = fits.getheader(filename, ext=wcs_ext)
         result.coords = coordinates_from_header(header)
     elif is_hdf5(filename):
         arrays = extract_data_hdf5(filename, **kwargs)
