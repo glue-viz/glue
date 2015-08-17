@@ -274,18 +274,6 @@ class DataFactoryRegistry(Registry):
 
     item = namedtuple('DataFactory', 'function label identifier priority')
 
-    def default_members(self):
-
-        from .core.data_factories import __factories__
-
-        def get_priority(fact):
-            try:
-                return fact.priority
-            except AttributeError:
-                return 0
-
-        return [self.item(f, f.label, f.identifier, get_priority(f)) for f in __factories__]
-
     def __call__(self, label, identifier=None, priority=None, default=''):
 
         if identifier is None:

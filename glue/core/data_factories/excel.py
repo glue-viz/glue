@@ -1,11 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
+from ...config import data_factory
+
 from .pandas import panda_process
-from .helpers import has_extension, __factories__
+from .helpers import has_extension
 
 __all__ = []
 
 
+@data_factory(label="Excel", identifier=has_extension('xls xlsx'))
 def panda_read_excel(path, sheet='Sheet1', **kwargs):
     """ A factory for reading excel data using pandas.
     :param path: path/to/file
@@ -20,7 +23,3 @@ def panda_read_excel(path, sheet='Sheet1', **kwargs):
 
     indf = pd.read_excel(path, sheet, **kwargs)
     return panda_process(indf)
-
-panda_read_excel.label = "Excel"
-panda_read_excel.identifier = has_extension('xls xlsx')
-__factories__.append(panda_read_excel)

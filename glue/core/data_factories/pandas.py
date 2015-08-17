@@ -4,7 +4,9 @@ import numpy as np
 
 from ..data import Data, Component, CategoricalComponent
 
-from .helpers import has_extension, __factories__
+from .helpers import has_extension
+
+from ...config import data_factory
 
 __all__ = ['pandas_read_table']
 
@@ -39,6 +41,7 @@ def panda_process(indf):
     return result
 
 
+@data_factory(label="Pandas Table", identifier=has_extension('csv csv txt tsv tbl dat'))
 def pandas_read_table(path, **kwargs):
     """ A factory for reading tabular data using pandas
     :param path: path/to/file
@@ -79,6 +82,3 @@ def pandas_read_table(path, **kwargs):
         return panda_process(fallback)
     raise IOError("Could not parse %s using pandas" % path)
 
-pandas_read_table.label = "Pandas Table"
-pandas_read_table.identifier = has_extension('csv csv txt tsv tbl dat')
-__factories__.append(pandas_read_table)

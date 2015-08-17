@@ -4,8 +4,9 @@ import numpy as np
 
 from ..data import Component, Data
 from ...external import six
+from ...config import data_factory
 
-from .helpers import __factories__, has_extension
+from .helpers import has_extension
 
 __all__ = ['tabular_data', 'sextractor_factory', 'astropy_tabular_data',
            'formatted_table_factory']
@@ -26,6 +27,10 @@ def _ascii_identifier_v03(origin, *args, **kwargs):
     return _ascii_identifier_v02(origin, args, kwargs)
 
 
+@data_factory(label="Catalog (Astropy Parser)",
+              identifier=has_extension('xml vot csv txt tsv tbl dat fits '
+                                       'xml.gz vot.gz csv.gz txt.gz tbl.bz '
+                                       'dat.gz fits.gz'))
 def astropy_tabular_data(*args, **kwargs):
     """
     Build a data set from a table. We restrict ourselves to tables
@@ -94,11 +99,13 @@ def astropy_tabular_data(*args, **kwargs):
         result.add_component(nc, column_name)
 
     return result
-astropy_tabular_data.label = "Catalog (Astropy Parser)"
-astropy_tabular_data.identifier = has_extension('xml vot csv txt tsv tbl dat fits '
-                                                'xml.gz vot.gz csv.gz txt.gz tbl.bz '
-                                                'dat.gz fits.gz')
 
+
+@data_factory(label="Catalog",
+              identifier=has_extension('xml vot csv txt tsv tbl dat fits '
+                                        'xml.gz vot.gz csv.gz txt.gz tbl.bz '
+                                        'dat.gz fits.gz'),
+              priority=1)
 def tabular_data(path, **kwargs):
     from .pandas import pandas_read_table
     for fac in [astropy_tabular_data, pandas_read_table]:
@@ -109,26 +116,17 @@ def tabular_data(path, **kwargs):
     else:
         raise IOError("Could not parse file: %s" % path)
 
-tabular_data.label = "Catalog"
-tabular_data.identifier = has_extension('xml vot csv txt tsv tbl dat fits '
-                                        'xml.gz vot.gz csv.gz txt.gz tbl.bz '
-                                        'dat.gz fits.gz')
-tabular_data.priority = 1
-
-__factories__.append(tabular_data)
-__factories__.append(astropy_tabular_data)
 
 # Add explicit factories for the formats which astropy.table
 # can parse, but does not auto-identify
 
 
 def formatted_table_factory(format, label):
+    
+    @data_factory(label=label, identifier=lambda *a, **k: False)
     def factory(file, **kwargs):
         kwargs['format'] = 'ascii.%s' % format
         return tabular_data(file, **kwargs)
-
-    factory.label = label
-    factory.identifier = lambda *a, **k: False
 
     # rename function to its variable reference below
     # allows pickling to work
@@ -142,5 +140,3 @@ daophot_factory = formatted_table_factory('daophot', 'DAOphot Catalog')
 ipac_factory = formatted_table_factory('ipac', 'IPAC Catalog')
 aastex_factory = formatted_table_factory('aastex', 'AASTeX Table')
 latex_factory = formatted_table_factory('latex', 'LaTeX Table')
-__factories__.extend([sextractor_factory, cds_factory, daophot_factory,
-                      ipac_factory, aastex_factory, latex_factory])
