@@ -250,39 +250,59 @@ class DataFactoryRegistry(Registry):
     """Stores data factories. Data factories take filenames as input,
     and return :class:`~glue.core.data.Data` instances
 
-    The members property returns a list of (function, label, identifier)
-    namedtuples:
+    The members property returns a list of (function, label, identifier,
+    priority) namedtuples:
 
     - Function is the factory that creates the data object
     - label is a short human-readable description of the factory
     - identifier is a function that takes ``(filename, **kwargs)`` as input
       and returns True if the factory can open the file
+    - priority is a numerical value that indicates how confident the data
+      factory is that it should read the data, relative to other data
+      factories. For example, a highly specialized FITS reader for specific
+      FITS file types can be given a higher priority than the generic FITS
+      reader in order to take precedence over it.
 
     New data factories can be registered via::
 
-        @data_factory('label_name', identifier, default='txt')
+        @data_factory('label_name', identifier=identifier, priority=10)
         def new_factory(file_name):
             ...
-
-    This has the additional side-effect of associating
-    this this factory with filenames ending in ``txt`` by default
+            
+    If not specified, the priority defaults to 0.
     """
-    item = namedtuple('DataFactory', 'function label identifier')
+
+    item = namedtuple('DataFactory', 'function label identifier priority')
 
     def default_members(self):
-        from .core.data_factories import __factories__
-        return [self.item(f, f.label, f.identifier) for f in __factories__]
 
-    def __call__(self, label, identifier=None, default=''):
-        from .core.data_factories import set_default_factory
+        from .core.data_factories import __factories__
+
+        def get_priority(fact):
+            try:
+                return fact.priority
+            except AttributeError:
+                return 0
+
+        return [self.item(f, f.label, f.identifier, get_priority(f)) for f in __factories__]
+
+    def __call__(self, label, identifier=None, priority=None, default=''):
+
         if identifier is None:
             identifier = lambda *a, **k: False
 
+        if priority is None:
+            priority = 0
+
         def adder(func):
-            set_default_factory(default, func)
-            self.add(self.item(func, label, identifier))
+            self.add(self.item(func, label, identifier, priority))
             return func
+
         return adder
+
+    def __iter__(self):
+        for member in sorted(self.members, key=lambda x: (-x.priority, x.label)):
+            yield member
 
 
 class QtClientRegistry(Registry):

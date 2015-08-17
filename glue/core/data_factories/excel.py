@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from .pandas import panda_process
-from .helpers import has_extension, __factories__, set_default_factory
+from .helpers import has_extension, __factories__
 
 __all__ = []
 
@@ -24,5 +24,3 @@ def panda_read_excel(path, sheet='Sheet1', **kwargs):
 panda_read_excel.label = "Excel"
 panda_read_excel.identifier = has_extension('xls xlsx')
 __factories__.append(panda_read_excel)
-set_default_factory('xls', panda_read_excel)
-set_default_factory('xlsx', panda_read_excel)

@@ -17,9 +17,6 @@ whether it can handle a requested filename and keyword set
 
 5) The function is added to the __factories__ list
 
-6) Optionally, the function is registered to open a given extension by
-default by calling set_default_factory
-
 Putting this together, the simplest data factory code looks like this::
 
     def dummy_factory(file_name):
@@ -27,7 +24,6 @@ Putting this together, the simplest data factory code looks like this::
     dummy_factory.label = "Foo file"
     dummy_factory.identifier = has_extension('foo FOO')
     __factories__.append(dummy_factory)
-    set_default_factory("foo", dummy_factory)
 """
 
 from __future__ import absolute_import, division, print_function
@@ -42,13 +38,12 @@ from ...config import auto_refresh
 from ..contracts import contract
 
 __all__ = ['FileWatcher', 'LoadLog',
-           'auto_data', 'data_label', 'find_factory', 'get_default_factory',
-           'has_extension', 'load_data', 'set_default_factory',
+           'auto_data', 'data_label', 'find_factory',
+           'has_extension', 'load_data',
            '_extension', '__factories__']
 
 
 __factories__ = []
-_default_factory = {}
 
 
 def _extension(path):
@@ -271,49 +266,62 @@ def data_label(path):
 
 
 @contract(extension='string', factory='callable')
-def set_default_factory(extension, factory):
-    """Register an extension that should be handled by a factory by default
-
-    :param extension: File extension (do not include the '.')
-    :param factory: The factory function to dispatch to
-    """
-    for ex in extension.split():
-        _default_factory[ex] = factory
+def set_default_factory(extension, factory):  # pragma: no cover
+    warnings.warn("set_default_factory is deprecated and no longer has any effect")
 
 
 @contract(extension='string', returns='callable|None')
-def get_default_factory(extension):
-    """Return the default factory function to read a given file extension.
-
-    :param extension: The extension to lookup
-
-    :rtype: A factory function, or None if the extension has no default
-    """
-    try:
-        return _default_factory[extension]
-    except KeyError:
-        return None
+def get_default_factory(extension):  # pragma: no cover
+    warnings.warn("get_default_factory is deprecated and will always return None")
+    return None
 
 
 @contract(filename='string')
 def find_factory(filename, **kwargs):
+
     from ...config import data_factory
 
-    # on first pass, only try the default factory
-    default = _default_factory.get(_extension(filename))
-    for func, _, identifier in data_factory:
-        if func is auto_data:
-            continue
-        if (func is default) and identifier(filename, **kwargs):
-            return func
+    # We no longer try the 'default' factory first because we actually need to
+    # try all identifiers and select the one to use based on the priority. This
+    # allows us to define more specialized loaders take priority over more
+    # general ones. For example, a FITS file that is a dendrogram should be
+    # loaded as a dendrogram, not a plain FITS file.
 
-    # if that fails, try everything
-    for func, _, identifier in data_factory:
-        if func is auto_data:
-            continue
-        if identifier(filename, **kwargs):
-            return func
+    best_priority = None
+    valid_formats = []
 
+    # Iterating over the data factory returns the formats sorted by decreasing
+    # alphabetical order then by label (alphabetically) in order to be
+    # deterministic. This is implemented in DataFactoryRegistry.__iter__.
+
+    for df in data_factory:
+
+        # Once we've found a match, and iterated through the rest of the
+        # importers with the same priority, we can exit the loop.
+        if best_priority is not None and df.priority < best_priority:
+            break
+
+        if df.function is auto_data:
+            continue
+
+        try:
+            is_format = df.identifier(filename, **kwargs)
+        except ImportError:  # dependencies missing
+            continue
+
+        if is_format:
+            valid_formats.append(df)
+            best_priority = df.priority
+
+    if len(valid_formats) == 0:
+        return None
+    elif len(valid_formats) > 1:
+        labels = ["'{0}'".format(x.label) for x in valid_formats]
+        warnings.warn("Multiple data factories matched the input: {0}. Choosing {1}.".format(', '.join(labels), labels[0]))
+
+    func = valid_formats[0].function
+
+    return func
 
 @contract(filename='string')
 def auto_data(filename, *args, **kwargs):

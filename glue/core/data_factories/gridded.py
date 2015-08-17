@@ -5,7 +5,7 @@ from .io import extract_data_fits, extract_data_hdf5
 from ...utils import file_format
 from ..coordinates import coordinates_from_header
 
-from .helpers import set_default_factory, __factories__
+from .helpers import __factories__
 
 __all__ = ['is_casalike', 'gridded_data', 'casalike_cube']
 
@@ -71,10 +71,8 @@ def is_gridded_data(filename, **kwargs):
 
 gridded_data.label = "FITS/HDF5 Image"
 gridded_data.identifier = is_gridded_data
+gridded_data.priority = 2
 __factories__.append(gridded_data)
-set_default_factory('fits', gridded_data)
-set_default_factory('hd5', gridded_data)
-set_default_factory('hdf5', gridded_data)
 
 
 def casalike_cube(filename, **kwargs):

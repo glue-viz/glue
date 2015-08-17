@@ -5,7 +5,7 @@ import numpy as np
 from ..data import Component, Data
 from ...external import six
 
-from .helpers import set_default_factory, __factories__, has_extension
+from .helpers import __factories__, has_extension
 
 __all__ = ['tabular_data', 'sextractor_factory', 'astropy_tabular_data',
            'formatted_table_factory']
@@ -99,7 +99,6 @@ astropy_tabular_data.identifier = has_extension('xml vot csv txt tsv tbl dat fit
                                                 'xml.gz vot.gz csv.gz txt.gz tbl.bz '
                                                 'dat.gz fits.gz')
 
-
 def tabular_data(path, **kwargs):
     from .pandas import pandas_read_table
     for fac in [astropy_tabular_data, pandas_read_table]:
@@ -114,15 +113,9 @@ tabular_data.label = "Catalog"
 tabular_data.identifier = has_extension('xml vot csv txt tsv tbl dat fits '
                                         'xml.gz vot.gz csv.gz txt.gz tbl.bz '
                                         'dat.gz fits.gz')
+tabular_data.priority = 1
 
 __factories__.append(tabular_data)
-set_default_factory('xml', tabular_data)
-set_default_factory('vot', tabular_data)
-set_default_factory('csv', tabular_data)
-set_default_factory('txt', tabular_data)
-set_default_factory('tsv', tabular_data)
-set_default_factory('tbl', tabular_data)
-set_default_factory('dat', tabular_data)
 __factories__.append(astropy_tabular_data)
 
 # Add explicit factories for the formats which astropy.table
