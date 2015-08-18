@@ -51,7 +51,7 @@ def pandas_read_table(path, **kwargs):
     import pandas as pd
     try:
         from pandas.parser import CParserError
-    except ImportError:
+    except ImportError:  # pragma: no cover
         from pandas._parser import CParserError
 
     # iterate over common delimiters to search for best option
