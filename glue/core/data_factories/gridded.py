@@ -4,8 +4,7 @@ from ..data import Component, Data
 from .io import extract_data_fits, extract_data_hdf5
 from ...utils import file_format
 from ..coordinates import coordinates_from_header
-
-from .helpers import __factories__
+from ...config import data_factory
 
 __all__ = ['is_casalike', 'gridded_data', 'casalike_cube']
 
@@ -25,6 +24,21 @@ def is_fits(filename):
         return False
 
 
+def is_gridded_data(filename, **kwargs):
+    if is_hdf5(filename):
+        return True
+
+    from ...external.astro import fits
+    if is_fits(filename):
+        with fits.open(filename) as hdulist:
+            for hdu in hdulist:
+                if not isinstance(hdu, (fits.PrimaryHDU, fits.ImageHDU)):
+                    return False
+            return True
+    return False
+
+
+@data_factory(label="FITS/HDF5 Image", identifier=is_gridded_data, priority=2)
 def gridded_data(filename, format='auto', **kwargs):
     """
     Construct an n - dimensional data object from ``filename``. If the
@@ -55,46 +69,6 @@ def gridded_data(filename, format='auto', **kwargs):
     return result
 
 
-def is_gridded_data(filename, **kwargs):
-    if is_hdf5(filename):
-        return True
-
-    from ...external.astro import fits
-    if is_fits(filename):
-        with fits.open(filename) as hdulist:
-            for hdu in hdulist:
-                if not isinstance(hdu, (fits.PrimaryHDU, fits.ImageHDU)):
-                    return False
-            return True
-    return False
-
-
-gridded_data.label = "FITS/HDF5 Image"
-gridded_data.identifier = is_gridded_data
-gridded_data.priority = 2
-__factories__.append(gridded_data)
-
-
-def casalike_cube(filename, **kwargs):
-    """
-    This provides special support for 4D CASA - like cubes,
-    which have 2 spatial axes, a spectral axis, and a stokes axis
-    in that order.
-
-    Each stokes cube is split out as a separate component
-    """
-    from ...external.astro import fits
-
-    result = Data()
-    with fits.open(filename, **kwargs) as hdulist:
-        array = hdulist[0].data
-        header = hdulist[0].header
-    result.coords = coordinates_from_header(header)
-    for i in range(array.shape[0]):
-        result.add_component(array[[i]], label='STOKES %i' % i)
-    return result
-
-
 def is_casalike(filename, **kwargs):
     """
     Check if a file is a CASA like cube,
@@ -117,6 +91,22 @@ def is_casalike(filename, **kwargs):
     return ax == ['celestial', 'celestial', 'spectral', 'stokes']
 
 
-casalike_cube.label = 'CASA PPV Cube'
-casalike_cube.identifier = is_casalike
-__factories__.append(casalike_cube)
+@data_factory(label='CASA PPV Cube', identifier=is_casalike)
+def casalike_cube(filename, **kwargs):
+    """
+    This provides special support for 4D CASA - like cubes,
+    which have 2 spatial axes, a spectral axis, and a stokes axis
+    in that order.
+
+    Each stokes cube is split out as a separate component
+    """
+    from ...external.astro import fits
+
+    result = Data()
+    with fits.open(filename, **kwargs) as hdulist:
+        array = hdulist[0].data
+        header = hdulist[0].header
+    result.coords = coordinates_from_header(header)
+    for i in range(array.shape[0]):
+        result.add_component(array[[i]], label='STOKES %i' % i)
+    return result

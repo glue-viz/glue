@@ -11,6 +11,10 @@ v0.6 (unreleased)
   ``get_default_factory`` functions are now deprecated since it is possible to
   achieve this solely with priorities. [#719]
 
+* Registering data factories should now always be done with the
+  ``@data_factory`` decorator, and not by adding functions to
+  ``__factories__``, as was possible in early versions of Glue. [#724]
+
 v0.5.2 (2015-08-13)
 -------------------
 

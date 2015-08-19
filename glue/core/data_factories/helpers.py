@@ -9,21 +9,17 @@ helps the GUI Frontend easily load data:
 
 2) The return value is a Data object
 
-3) The function has a .label attribute that describes (in human
-language) what kinds of files it understands
-
-4) The function has a callable .identifier attribute that returns
+3) The function should be decorated with data_factory and the decorator should
+be given a label parameter that describes (in human language) what kinds of
+files it understands, as well as a callable identifier parameter that returns
 whether it can handle a requested filename and keyword set
-
-5) The function is added to the __factories__ list
 
 Putting this together, the simplest data factory code looks like this::
 
+    from glue.config import data_factory
+    @data_factory(label="Foo file", identifier=has_extension('foo FOO'))
     def dummy_factory(file_name):
         return glue.core.Data()
-    dummy_factory.label = "Foo file"
-    dummy_factory.identifier = has_extension('foo FOO')
-    __factories__.append(dummy_factory)
 """
 
 from __future__ import absolute_import, division, print_function
@@ -34,16 +30,13 @@ import warnings
 from ..data import Component, Data
 from ...utils import as_list
 from ...backends import get_backend
-from ...config import auto_refresh
+from ...config import auto_refresh, data_factory
 from ..contracts import contract
 
 __all__ = ['FileWatcher', 'LoadLog',
            'auto_data', 'data_label', 'find_factory',
            'has_extension', 'load_data',
-           '_extension', '__factories__']
-
-
-__factories__ = []
+           '_extension']
 
 
 def _extension(path):
@@ -323,6 +316,8 @@ def find_factory(filename, **kwargs):
 
     return func
 
+
+@data_factory(label='Auto', identifier=lambda x: True)
 @contract(filename='string')
 def auto_data(filename, *args, **kwargs):
     """Attempt to automatically construct a data object"""
@@ -331,6 +326,3 @@ def auto_data(filename, *args, **kwargs):
         raise KeyError("Don't know how to open file: %s" % filename)
     return fac(filename, *args, **kwargs)
 
-auto_data.label = 'Auto'
-auto_data.identifier = lambda x: True
-__factories__.append(auto_data)

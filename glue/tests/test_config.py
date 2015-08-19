@@ -38,14 +38,6 @@ def test_add_link_default():
     assert val in link_function
 
 
-def test_data_facotry_defaults():
-    from ..core.data_factories import __factories__
-    assert len(__factories__) > 0
-
-    for f in __factories__:
-        assert f in (ff[0] for ff in data_factory.members)
-
-
 def test_add_data_factory():
     @data_factory('XYZ file', "*txt")
     def foo(x):

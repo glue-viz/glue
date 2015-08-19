@@ -4,10 +4,11 @@ import numpy as np
 
 from ..data import Data
 
-from .helpers import has_extension, set_default_factory, __factories__
+from .helpers import has_extension, set_default_factory
 from ..coordinates import coordinates_from_wcs
+from ...config import data_factory
 
-img_fmt = ['jpg', 'jpeg', 'bmp', 'png', 'tiff', 'tif']
+IMG_FMT = ['jpg', 'jpeg', 'bmp', 'png', 'tiff', 'tif']
 
 __all__ = ['img_data']
 
@@ -33,6 +34,7 @@ def img_loader(file_name):
                           file_name)
 
 
+@data_factory(label='Image', identifier=has_extension(' '.join(IMG_FMT)))
 def img_data(file_name):
     """Load common image files into a Glue data object"""
     result = Data()
@@ -69,10 +71,3 @@ def img_data(file_name):
         result.add_component(c, l)
 
     return result
-
-img_data.label = "Image"
-img_data.identifier = has_extension(' '.join(img_fmt))
-for i in img_fmt:
-    set_default_factory(i, img_data)
-
-__factories__.append(img_data)
