@@ -4,30 +4,45 @@ from os.path import basename
 
 from astropy.table import Table
 
+from ...external.astro import fits
+from ...config import data_factory
 from ..data import Component, Data
 from ..coordinates import coordinates_from_header
-from ...external.astro import fits
-
-from .helpers import set_default_factory, __factories__
-from .gridded import is_fits
 
 __all__ = ['fits_container']
 
 
-def fits_container(filename, **kwargs):
+@data_factory('Generic FITS', )
+def fits_container(source, exclude_exts=None, **kwargs):
+    """Read in all extensions from a FITS file.
+
+    Parameters
+    ----------
+    source: str or HDUList
+        The pathname to the FITS file.
+        If and HDUList is passed in, simply use that.
+
+    exclude_exts: [hdu, ] or [index, ]
+        List of HDU's to exclude from reading.
+        This can be a list of HDU's or a list
+        of HDU indexes.
     """
-    Read in all possible extensions from a FITS file.
-    Extensions are group by dimensionality of data,
-    including table extensions.
-    """
-    hdulist = fits.open(filename)
+    exclude_exts = exclude_exts or []
+    if not isinstance(source, fits.hdu.hdulist.HDUList):
+        hdulist = fits.open(source)
+    else:
+        hdulist = source
     groups = dict()
-    label_base = basename(filename).rpartition('.')[0]
+    label_base = basename(hdulist.filename()).rpartition('.')[0]
+
     if not label_base:
-        label_base = basename(filename)
+        label_base = basename(hdulist.filename())
+
     for extnum, hdu in enumerate(hdulist):
-        if hdu.data is not None:
-            hdu_name = hdu.name if hdu.name else str(extnum)
+        hdu_name = hdu.name if hdu.name else str(extnum)
+        if hdu.data is not None and \
+           hdu_name not in exclude_exts and \
+           extnum not in exclude_exts:
             if is_image_hdu(hdu):
                 shape = hdu.data.shape
                 try:
@@ -61,24 +76,18 @@ def fits_container(filename, **kwargs):
                     except KeyError:
                         data = Data(label=data_label)
                         groups[data_label] = data
-                    component = Component.autotyped(column, units=column.unit)
+                    component = Component(column, units=column.unit)
                     data.add_component(component=component,
                                        label=column_name)
-    return [data for data in groups.itervalues()]
-
-
-fits_container.label = "FITS full file"
-fits_container.identifier = is_fits
-__factories__.append(fits_container)
-set_default_factory('fits', fits_container)
+    return groups.values()
 
 
 # Utilities
 def is_image_hdu(hdu):
     from astropy.io.fits.hdu import PrimaryHDU, ImageHDU
-    return reduce(lambda x, y: x | isinstance(hdu, y), (PrimaryHDU, ImageHDU), False)
+    return isinstance(hdu, (PrimaryHDU, ImageHDU))
 
 
 def is_table_hdu(hdu):
     from astropy.io.fits.hdu import TableHDU, BinTableHDU
-    return reduce(lambda x, y: x | isinstance(hdu, y), (TableHDU, BinTableHDU), False)
+    return isinstance(hdu, (TableHDU, BinTableHDU))
