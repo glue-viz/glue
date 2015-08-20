@@ -1232,7 +1232,18 @@ class CategoricalRoi(Roi):
         :return: CategoricalRoi object
         """
 
+        # Convert lo and hi to integers. Note that if lo or hi are negative,
+        # which can happen if the user zoomed out, we need to reset the to zero
+        # otherwise they will have strange effects when slicing the categories.
+
+        # Note that we used ceil for lo, because if lo is 0.9 then we should
+        # only select 1 and above.
+
+        lo = np.ceil(lo) if lo > 0 else 0
+        hi = np.ceil(hi) if hi > 0 else 0
+
         roi = CategoricalRoi()
         cat_data = cat_comp._categories
-        roi.update_categories(cat_data[np.floor(lo):np.ceil(hi)])
+        roi.update_categories(cat_data[lo:hi])
+
         return roi
