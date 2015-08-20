@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import os
+
 from ...config import data_factory
 
 from .pandas import panda_process
@@ -27,6 +29,10 @@ def panda_read_excel(path, sheet=None, **kwargs):
     except ImportError:
         raise ImportError('xlrd is required for Excel input.')
 
+    name = os.path.basename(path)
+    if '.xls' in name:
+        name = name.rsplit('.xls', 1)[0]
+
     xl_workbook = xlrd.open_workbook(path)
 
     if sheet is None:
@@ -34,9 +40,11 @@ def panda_read_excel(path, sheet=None, **kwargs):
     else:
         sheet_names = [sheet]
 
-    data = []
+    all_data = []
     for sheet in sheet_names:
         indf = pd.read_excel(path, sheet, **kwargs)
-        data.append(panda_process(indf))
+        data = panda_process(indf)
+        data.label = "{0}:{1}".format(name, sheet)
+        all_data.append(data)
 
-    return data
+    return all_data
