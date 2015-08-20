@@ -6,6 +6,7 @@ from ..data import Data, Component, CategoricalComponent
 
 from .helpers import has_extension
 
+from ...external import six
 from ...config import data_factory
 
 __all__ = ['pandas_read_table']
@@ -30,6 +31,12 @@ def panda_process(indf):
                 c = CategoricalComponent(column.fillna(''))
         else:
             c = Component(column.values)
+
+        # convert header to string - in some cases if the first row contains
+        # numbers, these are cast to numerical types, so we want to change that
+        # here.
+        if not isinstance(name, six.string_types):
+            name = str(name)
 
         # strip off leading #
         name = name.strip()
