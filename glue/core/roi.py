@@ -236,7 +236,7 @@ class RangeROI(Roi):
         """:param orientation: 'x' or 'y'. Sets which axis to range"""
         super(RangeROI, self).__init__()
         if orientation not in ['x', 'y']:
-            raise TypeError("Orientation must be one of 'x', 'y'")
+            raise ValueError("Orientation must be one of 'x', 'y'")
 
         self.min = min
         self.max = max
