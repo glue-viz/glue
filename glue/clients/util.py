@@ -94,14 +94,14 @@ def update_ticks(axes, coord, components, is_log):
     else:
         raise TypeError("coord must be one of x,y")
 
-    is_cat = all(isinstance(comp, CategoricalComponent) for comp in components)
+    is_cat = all(comp.categorical for comp in components)
     if is_log:
         axis.set_major_locator(LogLocator())
         axis.set_major_formatter(LogFormatterMathtext())
     elif is_cat:
         all_categories = np.empty((0,), dtype=np.object)
         for comp in components:
-            all_categories = np.union1d(comp._categories, all_categories)
+            all_categories = np.union1d(comp.categories, all_categories)
         locator = MaxNLocator(10, integer=True)
         locator.view_limits(0, all_categories.shape[0])
         format_func = partial(tick_linker, all_categories)

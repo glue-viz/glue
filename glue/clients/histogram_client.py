@@ -229,10 +229,10 @@ class HistogramClient(Client):
         c = list(self._get_data_components('x'))
         if c:
             c = c[0]
-            if isinstance(c, CategoricalComponent):
-                val = min(c._categories.size, 100)
+            if c.categorical:
+                val = min(c.categories.size, 100)
                 if not calculate_only:
-                    self.xlimits = (-0.5, c._categories.size - 0.5)
+                    self.xlimits = (-0.5, c.categories.size - 0.5)
 
         if not calculate_only:
             self.nbins = val

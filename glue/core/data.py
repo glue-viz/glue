@@ -428,11 +428,14 @@ class CategoricalComponent(Component):
 
     @property
     def data(self):
-        # TODO: deprecate this in future
-        # warnings.warn("The 'data' attribute is deprecated. Use 'codes' "
-        #               "instead to access the underlying index of the "
-        #               "categories")
+        warnings.warn("The 'data' attribute is deprecated. Use 'codes' "
+                      "instead to access the underlying index of the "
+                      "categories")
         return self.codes
+
+    @property
+    def numeric(self):
+        return False
 
     @property
     def categorical(self):
@@ -1100,7 +1103,10 @@ class Data(object):
         if view is not None:
             result = comp[view]
         else:
-            result = comp.data
+            if comp.categorical:
+                result = comp.codes
+            else:
+                result = comp.data
 
         assert result.shape == shp, \
             "Component view returned bad shape: %s %s" % (result.shape, shp)

@@ -117,7 +117,8 @@ class ScatterClient(Client):
         data = layer.data
         comp = data.components if show_hidden else data.visible_components
         return [c for c in comp if
-                data.get_component(c).numeric]
+                data.get_component(c).numeric
+                or data.get_component(c).categorical]
 
     def add_layer(self, layer):
         """ Adds a new visual layer to a client, to display either a dataset
@@ -438,7 +439,7 @@ class ScatterClient(Client):
         for data in self._data:
             try:
                 comp = data.get_component(attribute)
-                if isinstance(comp, CategoricalComponent):
+                if comp.categorical:
                     return True
             except IncompatibleAttribute:
                 pass
