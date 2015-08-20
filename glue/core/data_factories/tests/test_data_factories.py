@@ -13,7 +13,7 @@ from ...tests.util import make_file
 
 from ....tests.helpers import (requires_astropy, requires_astropy_ge_03,
                               requires_astropy_ge_04, requires_pil_or_skimage,
-                              requires_xlrd, requires_astrodendro, requires_h5py)
+                              requires_astrodendro, requires_h5py)
 
 from ....config import data_factory
 

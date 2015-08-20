@@ -1,7 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import xlrd
-
 from ...config import data_factory
 
 from .pandas import panda_process
@@ -24,8 +22,13 @@ def panda_read_excel(path, sheet=None, **kwargs):
     except ImportError:
         raise ImportError('Pandas is required for Excel input.')
 
+    try:
+        import xlrd
+    except ImportError:
+        raise ImportError('xlrd is required for Excel input.')
+
     xl_workbook = xlrd.open_workbook(path)
-    
+
     if sheet is None:
         sheet_names = xl_workbook.sheet_names()
     else:
