@@ -39,3 +39,16 @@ def test_excel_multiple():
     assert_array_equal(datasets[1].get_component('a')._categorical_data, ['b', 'c', 'd', 'e'])
 
     assert datasets[1].label == 'simple_data:Data2'
+
+
+@requires_xlrd
+def test_excel_single():
+
+    from ..excel import panda_read_excel
+
+    d = panda_read_excel(os.path.join(DATA, 'simple_data.xlsx'), sheet='Data2')[0]
+
+    assert_array_equal(d['1'], [2, 3, 4, 5])
+    assert_array_equal(d.get_component('a')._categorical_data, ['b', 'c', 'd', 'e'])
+
+    assert d.label == 'simple_data:Data2'
