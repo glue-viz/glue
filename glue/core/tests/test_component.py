@@ -4,6 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 import operator
 
+import warnings
 from mock import MagicMock
 import pytest
 import numpy as np
@@ -94,6 +95,20 @@ class TestCategoricalComponent(object):
 
         d = Data(x=['a', 'b', 'c'])
         assert isinstance(d.get_component('x'), CategoricalComponent)
+
+    def test_basic_properties(self):
+        data = ['a', 'b', 'c', 'b', 'b', 'c', 'a', 'c', 'd']
+        cat_comp = CategoricalComponent(data)
+        np.testing.assert_equal(cat_comp.labels, data)
+        np.testing.assert_equal(cat_comp.codes, [0, 1, 2, 1, 1, 2, 0, 2, 3])
+        np.testing.assert_equal(cat_comp.categories, ['a', 'b', 'c', 'd'])
+        # TODO: uncomment once data is deprecated
+        # with warnings.catch_warnings(record=True) as w:
+        #     cat_comp.data
+        # assert len(w) == 1
+        # assert str(w[0].message) == ("The 'data' attribute is deprecated. Use 'codes' "
+        #                              "instead to access the underlying index of the "
+        #                              "categories")
 
     def test_accepts_numpy(self):
         cat_comp = CategoricalComponent(self.array_data)
