@@ -2,8 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 from os.path import basename
 
-from astropy.table import Table
-
 from ...external.astro import fits
 from ...config import data_factory
 from ..data import Component, Data
@@ -16,7 +14,7 @@ __all__ = ['fits_container']
     label='Generic FITS',
     priority=100,
 )
-def fits_container(source, exclude_exts=None, **kwargs):
+def fits_container(source, auto_merge=False, exclude_exts=None, **kwargs):
     """Read in all extensions from a FITS file.
 
     Parameters
@@ -25,11 +23,17 @@ def fits_container(source, exclude_exts=None, **kwargs):
         The pathname to the FITS file.
         If an HDUList is passed in, simply use that.
 
+    auto_merge: bool
+        Merge extensions that have the same shape
+        and only one has a defined WCS.
+
     exclude_exts: [hdu, ] or [index, ]
         List of HDU's to exclude from reading.
         This can be a list of HDU's or a list
         of HDU indexes.
     """
+    from astropy.table import Table
+
     exclude_exts = exclude_exts or []
     if not isinstance(source, fits.hdu.hdulist.HDUList):
         hdulist = fits.open(source)
@@ -42,7 +46,7 @@ def fits_container(source, exclude_exts=None, **kwargs):
     if not label_base:
         label_base = basename(hdulist.filename())
 
-    # Create a new Data.
+    # Create a new image Data.
     def new_data():
         label = '{}[{}]'.format(
             label_base,
@@ -62,7 +66,7 @@ def fits_container(source, exclude_exts=None, **kwargs):
             if is_image_hdu(hdu):
                 shape = hdu.data.shape
                 coords = coordinates_from_header(hdu.header)
-                if has_wcs(coords):
+                if not auto_merge or has_wcs(coords):
                     data = new_data()
                 else:
                     try:
@@ -74,22 +78,14 @@ def fits_container(source, exclude_exts=None, **kwargs):
             elif is_table_hdu(hdu):
                 # Loop through columns and make component list
                 table = Table(hdu.data)
-                table_name = '{}[{}]'.format(
+                label = '{}[{}]'.format(
                     label_base,
                     hdu_name
                 )
+                data = Data(label=label)
+                groups[hdu_name] = data
                 for column_name in table.columns:
                     column = table[column_name]
-                    shape = column.shape
-                    data_label = '{}[{}]'.format(
-                        table_name,
-                        'x'.join(str(x) for x in shape)
-                    )
-                    try:
-                        data = groups[data_label]
-                    except KeyError:
-                        data = Data(label=data_label)
-                        groups[data_label] = data
                     component = Component(column, units=column.unit)
                     data.add_component(component=component,
                                        label=column_name)
