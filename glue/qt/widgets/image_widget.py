@@ -48,6 +48,8 @@ class ImageWidgetBase(DataViewer):
                                      'Current attribute')
     data = CurrentComboProperty('ui.displayDataCombo',
                                 'Current data')
+    aspect_ratio = CurrentComboProperty('ui.aspectCombo',
+                                        'Aspect ratio for image')
     rgb_mode = ButtonProperty('ui.rgb',
                               'RGB Mode?')
     rgb_viz = Pointer('ui.rgb_options.rgb_visible')
@@ -73,6 +75,9 @@ class ImageWidgetBase(DataViewer):
         self.ui.slice = DataSlice()
         self.ui.slice_layout.addWidget(self.ui.slice)
         self._tweak_geometry()
+
+        self.ui.aspectCombo.addItem("Square Pixels", userData='equal')
+        self.ui.aspectCombo.addItem("Automatic", userData='auto')
 
     def make_client(self):
         """ Instantiate and return an ImageClient subclass """
@@ -215,10 +220,12 @@ class ImageWidgetBase(DataViewer):
         # sync window title to data/attribute
         add_callback(self.client, 'display_data', nonpartial(self.update_window_title))
         add_callback(self.client, 'display_attribute', nonpartial(self.update_window_title))
+        add_callback(self.client, 'display_aspect', nonpartial(self.client.update_aspect))
 
         # sync data/attribute combos with client properties
         connect_current_combo(self.client, 'display_data', self.ui.displayDataCombo)
         connect_current_combo(self.client, 'display_attribute', self.ui.attributeComboBox)
+        connect_current_combo(self.client, 'display_aspect', self.ui.aspectCombo)
 
     @defer_draw
     def _update_rgb_console(self, is_monochrome):

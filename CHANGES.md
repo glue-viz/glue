@@ -4,7 +4,13 @@ Full changelog
 v0.6 (unreleased)
 -----------------
 
+* When saving a session, if no extension is specified, the .glu extension is
+  added. [#729]
+
 * Added a GUI plugin manager in the 'Plugins' menu. [#682]
+
+* Added an option to specify whether to use an automatic aspect ratio for image
+  data or whether to enforce square pixels. [#717]
 
 * Data factories can now be given priorities to determine which ones should
   take precedence in ambiguous cases. The ``set_default_factory`` and
@@ -14,6 +20,11 @@ v0.6 (unreleased)
 * Registering data factories should now always be done with the
   ``@data_factory`` decorator, and not by adding functions to
   ``__factories__``, as was possible in early versions of Glue. [#724]
+
+v0.5.3 (unreleased)
+-------------------
+
+* Fix selection in scatter plots when categorical data are present. [#727]
 
 v0.5.2 (2015-08-13)
 -------------------

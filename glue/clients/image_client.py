@@ -36,8 +36,10 @@ def requires_data(func):
 
 
 class ImageClient(VizClient):
+
     display_data = CallbackProperty(None)
     display_attribute = CallbackProperty(None)
+    display_aspect = CallbackProperty(None)
 
     def __init__(self, data, artist_container=None):
 
@@ -327,14 +329,20 @@ class ImageClient(VizClient):
 
         self._view = view
         for a in list(self.artists):
-            if (not isinstance(a, ScatterLayerBase)) and \
-                    a.layer.data is not self.display_data:
+            if (not isinstance(a, ScatterLayerBase) and
+                    a.layer.data is not self.display_data):
                 self.artists.remove(a)
             else:
-                a.update(view, transpose)
+                if isinstance(a, ImageLayerArtist):
+                    a.update(view, transpose, aspect=self.display_aspect)
+                else:
+                    a.update(view, transpose)
         for a in self.artists[self.display_data]:
             meth = a.update if not force else a.force_update
-            meth(view, transpose=transpose)
+            if isinstance(a, ImageLayerArtist):
+                meth(view, transpose=transpose, aspect=self.display_aspect)
+            else:
+                meth(view, transpose=transpose)
 
     def _update_subset_single(self, s, redraw=False, force=False):
         """
@@ -463,6 +471,10 @@ class ImageClient(VizClient):
         self._update_data_plot()
         self._redraw()
         return result
+
+    def update_aspect(self):
+        self._update_data_plot(relim=True)
+        self._redraw()
 
     def add_layer(self, layer):
         if layer in self.artists:
