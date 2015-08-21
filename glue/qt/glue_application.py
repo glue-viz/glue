@@ -694,8 +694,15 @@ class GlueApplication(Application, QMainWindow):
         # include file filter twice, so it shows up in Dialog
         outfile, file_filter = QFileDialog.getSaveFileName(self,
                                                            filter="Glue Session (*.glu);; Glue Session including data (*.glu)")
+
+        # This indicates that the user cancelled
         if not outfile:
             return
+
+        # Add extension if not specified
+        if not '.' in outfile:
+            outfile += '.glu'
+
         self.save_session(outfile, include_data="including data" in file_filter)
 
     @messagebox_on_error("Failed to export session")
