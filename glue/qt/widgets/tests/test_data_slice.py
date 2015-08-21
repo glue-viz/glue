@@ -2,7 +2,33 @@ import numpy as np
 from mock import MagicMock
 
 from .... import core
-from ..data_slice_widget import DataSlice
+from ..data_slice_widget import SliceWidget, DataSlice
+
+
+class TestSliceWidget(object):
+
+    def test_slice_center(self):
+        s = SliceWidget(lo=0, hi=10)
+        assert s.slice_center == 5
+
+    def test_browse_slice(self):
+        s = SliceWidget(lo=0, hi=10)
+        assert s.slice_center == 5
+        s._ui_slider.prev.click()
+        assert s.slice_center == 4
+        s._ui_slider.next.click()
+        s._ui_slider.next.click()
+        assert s.slice_center == 6
+        s._ui_slider.first.click()
+        assert s.slice_center == 0
+        s._ui_slider.prev.click()
+        assert s.slice_center == 0
+        s._ui_slider.last.click()
+        assert s.slice_center == 10
+        s._ui_slider.next.click()
+        assert s.slice_center == 10
+        s._ui_slider.prev.click()
+        assert s.slice_center == 9
 
 
 class TestArraySlice(object):
