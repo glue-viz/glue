@@ -6,6 +6,9 @@ v0.6 (unreleased)
 
 * Added a GUI plugin manager in the 'Plugins' menu. [#682]
 
+* Added an option to specify whether to use an automatic aspect ratio for image
+  data or whether to enforce square pixels. [#717]
+
 * Data factories can now be given priorities to determine which ones should
   take precedence in ambiguous cases. The ``set_default_factory`` and
   ``get_default_factory`` functions are now deprecated since it is possible to

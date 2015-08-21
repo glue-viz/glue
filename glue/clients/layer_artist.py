@@ -452,7 +452,11 @@ class ImageLayerArtist(LayerArtist, ImageLayerBase):
             data = small_view_array(self._override_image)
         self.norm.update_clip(data)
 
-    def update(self, view, transpose=False):
+    def update(self, view, transpose=False, aspect=None):
+
+        if aspect is None:
+            aspect = 'equal'
+
         self.clear()
         views = view_cascade(self.layer, view)
         artists = []
@@ -470,7 +474,7 @@ class ImageLayerArtist(LayerArtist, ImageLayerBase):
                                              interpolation='nearest',
                                              origin='lower',
                                              extent=extent, zorder=0))
-            self._axes.set_aspect('equal', adjustable='datalim')
+            self._axes.set_aspect(aspect, adjustable='datalim')
         self.artists = artists
         self._sync_style()
 
@@ -541,8 +545,13 @@ class RGBImageLayerArtist(ImageLayerArtist, RGBImageLayerBase):
             self.norm = self.bnorm
             self.bnorm = spr(*args, **kwargs)
 
-    def update(self, view=None, transpose=False):
+    def update(self, view=None, transpose=False, aspect=None):
+
         self.clear()
+
+        if aspect is None:
+            aspect = 'equal'
+
         if self.r is None or self.g is None or self.b is None:
             return
 
@@ -591,7 +600,7 @@ class RGBImageLayerArtist(ImageLayerArtist, RGBImageLayerBase):
                                              interpolation='nearest',
                                              origin='lower',
                                              extent=extent, zorder=0))
-            self._axes.set_aspect('equal', adjustable='datalim')
+            self._axes.set_aspect(aspect, adjustable='datalim')
         self.artists = artists
         self._sync_style()
 
