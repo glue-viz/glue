@@ -8,12 +8,12 @@ from ...external.qt.QtCore import Qt, Signal
 from ..widget_properties import (TextProperty,
                                  ValueProperty,
                                  CurrentComboProperty)
-from ..qtutil import nonpartial
+from ..qtutil import nonpartial, load_ui
 
 
 class SliceWidget(QWidget):
     label = TextProperty('_ui_label')
-    slice_center = ValueProperty('_ui_slider')
+    slice_center = ValueProperty('_ui_slider.slider')
     mode = CurrentComboProperty('_ui_mode')
 
     slice_changed = Signal(int)
@@ -46,50 +46,39 @@ class SliceWidget(QWidget):
 
         layout.addLayout(top)
 
-        slider = QSlider(Qt.Horizontal)
-        slider.setMinimum(lo)
-        slider.setMaximum(hi)
-        slider.setValue((lo + hi) / 2)
-        slider.valueChanged.connect(lambda x:
-                                    self.slice_changed.emit(self.mode))
+        slider = load_ui('cube_slider')
+        slider.slider
 
-        slider_lbl = QLineEdit()
-        slider_lbl.setMinimumWidth(50)
-        slider_lbl.setText(str(slider.value()))
-        slider.valueChanged.connect(lambda x: slider_lbl.setText(str(x)))
-        slider_lbl.textChanged.connect(lambda x: slider.setValue(int(x)))
+        slider.slider.setMinimum(lo)
+        slider.slider.setMaximum(hi)
+        slider.slider.setValue((lo + hi) / 2)
+        slider.slider.valueChanged.connect(lambda x:
+                                                  self.slice_changed.emit(self.mode))
+        slider.slider.valueChanged.connect(lambda x: slider.label.setText(str(x)))
 
-        browser = {}
-        browser['first'] = QPushButton("<<")
-        browser['prev'] = QPushButton("<")
-        browser['label'] = slider_lbl
-        browser['next'] = QPushButton(">")
-        browser['last'] = QPushButton(">>")
+        slider.label.setMinimumWidth(50)
+        slider.label.setText(str(slider.slider.value()))
+        slider.label.textChanged.connect(lambda x: slider.slider.setValue(int(x)))
 
-        slider_browser = QHBoxLayout()
-        for key in ['first', 'prev', 'label', 'next', 'last']:
-            slider_browser.addWidget(browser[key])
-            if key == 'label':
-                pass
-            else:
-                browser[key].clicked.connect(nonpartial(self._browse_slice, key))
+        slider.first.clicked.connect(nonpartial(self._browse_slice, 'first'))
+        slider.prev.clicked.connect(nonpartial(self._browse_slice, 'prev'))
+        slider.next.clicked.connect(nonpartial(self._browse_slice, 'next'))
+        slider.last.clicked.connect(nonpartial(self._browse_slice, 'last'))
 
-        layout.addLayout(slider_browser)
         layout.addWidget(slider)
 
         self.setLayout(layout)
 
         self._ui_label = label
         self._ui_slider = slider
-        self._ui_slider_browser = browser
         self._ui_mode = mode
         self._update_mode()
         self._frozen = False
 
     def _browse_slice(self, action):
-        imin = self._ui_slider.minimum()
-        imax = self._ui_slider.maximum()
-        value = self._ui_slider.value()
+        imin = self._ui_slider.slider.minimum()
+        imax = self._ui_slider.slider.maximum()
+        value = self._ui_slider.slider.value()
         if action == 'first':
             value = imin
         elif action == 'last':
@@ -98,17 +87,13 @@ class SliceWidget(QWidget):
             value = max(value - 1, imin)
         elif action == 'next':
             value = min(value + 1, imax)
-        self._ui_slider.setValue(value)
+        self._ui_slider.slider.setValue(value)
 
     def _update_mode(self, *args):
         if self.mode != 'slice':
             self._ui_slider.hide()
-            for key in self._ui_slider_browser:
-                self._ui_slider_browser[key].hide()
         else:
             self._ui_slider.show()
-            for key in self._ui_slider_browser:
-                self._ui_slider_browser[key].show()
 
     def freeze(self):
         self.mode = 'slice'
