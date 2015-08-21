@@ -2,12 +2,13 @@ from functools import partial
 from ...compat.collections import Counter
 
 from ...external.qt.QtGui import (QWidget, QSlider, QLabel, QComboBox,
-                                  QHBoxLayout, QVBoxLayout)
+                                  QHBoxLayout, QVBoxLayout, QPushButton, QLineEdit)
 from ...external.qt.QtCore import Qt, Signal
 
 from ..widget_properties import (TextProperty,
                                  ValueProperty,
                                  CurrentComboProperty)
+from ..qtutil import nonpartial
 
 
 class SliceWidget(QWidget):
@@ -47,31 +48,67 @@ class SliceWidget(QWidget):
 
         slider = QSlider(Qt.Horizontal)
         slider.setMinimum(lo)
-        slider_lbl = QLabel()
         slider.setMaximum(hi)
         slider.setValue((lo + hi) / 2)
         slider.valueChanged.connect(lambda x:
                                     self.slice_changed.emit(self.mode))
+
+        slider_lbl = QLineEdit()
+        slider_lbl.setMinimumWidth(50)
+        slider_lbl.setText(str(slider.value()))
         slider.valueChanged.connect(lambda x: slider_lbl.setText(str(x)))
-        layout.addWidget(slider_lbl)
+        slider_lbl.textChanged.connect(lambda x: slider.setValue(int(x)))
+
+        browser = {}
+        browser['first'] = QPushButton("<<")
+        browser['prev'] = QPushButton("<")
+        browser['label'] = slider_lbl
+        browser['next'] = QPushButton(">")
+        browser['last'] = QPushButton(">>")
+
+        slider_browser = QHBoxLayout()
+        for key in ['first', 'prev', 'label', 'next', 'last']:
+            slider_browser.addWidget(browser[key])
+            if key == 'label':
+                pass
+            else:
+                browser[key].clicked.connect(nonpartial(self._browse_slice, key))
+
+        layout.addLayout(slider_browser)
         layout.addWidget(slider)
 
         self.setLayout(layout)
 
         self._ui_label = label
         self._ui_slider = slider
-        self._slider_lbl = slider_lbl
+        self._ui_slider_browser = browser
         self._ui_mode = mode
         self._update_mode()
         self._frozen = False
 
+    def _browse_slice(self, action):
+        imin = self._ui_slider.minimum()
+        imax = self._ui_slider.maximum()
+        value = self._ui_slider.value()
+        if action == 'first':
+            value = imin
+        elif action == 'last':
+            value = imax
+        elif action == 'prev':
+            value = max(value - 1, imin)
+        elif action == 'next':
+            value = min(value + 1, imax)
+        self._ui_slider.setValue(value)
+
     def _update_mode(self, *args):
         if self.mode != 'slice':
             self._ui_slider.hide()
-            self._slider_lbl.hide()
+            for key in self._ui_slider_browser:
+                self._ui_slider_browser[key].hide()
         else:
             self._ui_slider.show()
-            self._slider_lbl.show()
+            for key in self._ui_slider_browser:
+                self._ui_slider_browser[key].show()
 
     def freeze(self):
         self.mode = 'slice'
