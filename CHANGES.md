@@ -4,6 +4,9 @@ Full changelog
 v0.6 (unreleased)
 -----------------
 
+* When saving a session, if no extension is specified, the .glu extension is
+  added. [#729]
+
 * Added a GUI plugin manager in the 'Plugins' menu. [#682]
 
 * Data factories can now be given priorities to determine which ones should

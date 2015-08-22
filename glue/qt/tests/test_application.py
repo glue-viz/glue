@@ -51,7 +51,7 @@ class TestGlueApplication(object):
         with patch('glue.qt.glue_application.QFileDialog') as fd:
             fd.getSaveFileName.return_value = '/tmp/junk', 'jnk'
             self.app._choose_save_session()
-            self.app.save_session.assert_called_once_with('/tmp/junk', include_data=False)
+            self.app.save_session.assert_called_once_with('/tmp/junk.glu', include_data=False)
 
     def test_save_session_cancel(self):
         """shouldnt try to save file if no file name provided"""
