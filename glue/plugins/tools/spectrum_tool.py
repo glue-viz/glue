@@ -270,7 +270,6 @@ class NavContext(SpectrumContext):
 
 
 class CollapseContext(SpectrumContext):
-
     """
     Mode to collapse a section of a cube into a 2D image.
 
@@ -355,7 +354,8 @@ class CollapseContext(SpectrumContext):
         pth : str
            Path to write to
         """
-        from astropy.io import fits
+        
+        from ...external.astro import fits
 
         data = self.client.display_data
         if data is None:
@@ -373,6 +373,8 @@ class CollapseContext(SpectrumContext):
                 msg = "Could not extract 2D wcs for this data: %s" % e
                 logging.getLogger(__name__).warn(msg)
                 header = fits.Header()
+        else:
+            header = fits.Header()
 
         lo, hi = self.grip.range
         history = ('Created by Glue. %s projection over channels %i-%i of axis %i. Slice=%s' %
