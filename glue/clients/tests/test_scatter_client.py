@@ -707,6 +707,23 @@ class TestCategoricalScatterClient(TestScatterClient):
         assert isinstance(data.edit_subset.subset_state,
                           core.subset.AndState)
 
+    @pytest.mark.parametrize(('roi_limits', 'mask'), [((0, -0.1, 10, 0.1), [0, 0, 0]),
+                                                      ((0, 0.9, 10, 1.1), [1, 0, 0]),
+                                                      ((0, 1.9, 10, 2.1), [0, 1, 0]),
+                                                      ((0, 2.9, 10, 3.1), [0, 0, 1]),
+                                                      ((0, 0.9, 10, 3.1), [1, 1, 1]),
+                                                      ((-0.1, -1, 0.1, 5), [1, 1, 0]),
+                                                      ((0.9, -1, 1.1, 5), [0, 0, 1]),
+                                                      ((-0.1, 0.9, 1.1, 3.1), [1, 1, 1])])
+    def test_apply_roi_results(self, roi_limits, mask):
+        # Regression test for glue-viz/glue#718
+        data = self.add_data_and_attributes()
+        roi = core.roi.RectangularROI()
+        roi.update_limits(*roi_limits)
+        x, y = self.roi_points
+        self.client.apply_roi(roi)
+        np.testing.assert_equal(data.edit_subset.to_mask(), mask)
+
     # REMOVED TESTS
     def test_invalid_plot(self):
         """ This fails because the axis ticks shouldn't reset after
