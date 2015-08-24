@@ -9,4 +9,3 @@ standard library or external dependencies.
 from .array import *
 from .matplotlib import *
 from .misc import *
-from .wcs import *

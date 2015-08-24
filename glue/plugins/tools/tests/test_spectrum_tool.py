@@ -6,8 +6,9 @@ from ....core.tests.util import simple_session
 from ....core import Data, Coordinates
 from ....core.roi import RectangularROI
 from ....qt.widgets import ImageWidget
+from ....tests.helpers import requires_astropy
 
-from ..spectrum_tool import Extractor, ConstraintsWidget, FitSettingsWidget, SpectrumTool
+from ..spectrum_tool import Extractor, ConstraintsWidget, FitSettingsWidget, SpectrumTool, CollapseContext
 from ....core.fitters import PolynomialFitter
 
 needs_modeling = lambda x: x
@@ -26,17 +27,22 @@ class MockCoordinates(Coordinates):
         return [a / 2 for a in args]
 
 
-class TestSpectrumTool(object):
+class BaseTestSpectrumTool(object):
+
+    def setup_data(self):
+        self.data = Data(x=np.zeros((3, 3, 3)))
 
     def setup_method(self, method):
-        d = Data(x=np.zeros((3, 3, 3)))
+
+        self.setup_data()
+
         session = simple_session()
-        session.data_collection.append(d)
+        session.data_collection.append(self.data)
 
         self.image = ImageWidget(session)
-        self.image.add_data(d)
-        self.image.data = d
-        self.image.attribute = d.id['x']
+        self.image.add_data(self.data)
+        self.image.data = self.data
+        self.image.attribute = self.data.id['x']
         for tool in self.image._tools:
             if isinstance(tool, SpectrumTool):
                 self.tool = tool
@@ -44,6 +50,9 @@ class TestSpectrumTool(object):
         else:
             raise Exception("SpectrumTool not found")
         self.tool.show = lambda *args: None
+
+
+class TestSpectrumTool(BaseTestSpectrumTool):
 
     def build_spectrum(self):
         roi = RectangularROI()
@@ -204,3 +213,36 @@ def test_4d_single_channel():
     _, actual = Extractor.spectrum(d, d.id['x'], roi, slc, zaxis)
 
     np.testing.assert_array_almost_equal(expected, actual)
+
+
+@requires_astropy
+class TestCollapseContext(BaseTestSpectrumTool):
+
+    def test_collapse(self, tmpdir):
+
+        roi = RectangularROI()
+        roi.update_limits(0, 2, 0, 2)
+        self.tool._update_profile()
+
+        self._save(tmpdir)
+
+    def _save(self, tmpdir):
+        for context in self.tool._contexts:
+            if isinstance(context, CollapseContext):
+                break
+        else:
+            raise ValueError("Could not find collapse context")
+
+        context.save_to(tmpdir.join('test.fits').strpath)
+
+
+@requires_astropy
+class TestCollapseContextWCS(TestCollapseContext):
+
+    def setup_data(self):
+        from ....core.coordinates import coordinates_from_wcs
+        from ....external.astro import WCS
+        wcs = WCS(naxis=3)
+
+        self.data = Data(x=np.zeros((3, 3, 3)))
+        self.data.coords = coordinates_from_wcs(wcs)

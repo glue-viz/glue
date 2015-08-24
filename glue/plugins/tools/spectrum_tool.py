@@ -30,7 +30,6 @@ from ...config import fit_plugin
 from ...external.six.moves import range as xrange
 from ...qt.widgets.glue_mdi_area import GlueMdiSubWindow
 from ...qt.decorators import messagebox_on_error
-from ...utils import drop_axis
 
 
 def setup():
@@ -271,7 +270,6 @@ class NavContext(SpectrumContext):
 
 
 class CollapseContext(SpectrumContext):
-
     """
     Mode to collapse a section of a cube into a 2D image.
 
@@ -356,7 +354,8 @@ class CollapseContext(SpectrumContext):
         pth : str
            Path to write to
         """
-        from astropy.io import fits
+        
+        from ...external.astro import fits
 
         data = self.client.display_data
         if data is None:
@@ -368,12 +367,14 @@ class CollapseContext(SpectrumContext):
         wcs = getattr(data.coords, 'wcs', None)
         if wcs:
             try:
-                wcs = drop_axis(wcs, data.ndim - 1 - self.main.profile_axis)
+                wcs.dropaxis(data.ndim - 1 - self.main.profile_axis)
                 header = wcs.to_header(True)
             except Exception as e:
                 msg = "Could not extract 2D wcs for this data: %s" % e
                 logging.getLogger(__name__).warn(msg)
                 header = fits.Header()
+        else:
+            header = fits.Header()
 
         lo, hi = self.grip.range
         history = ('Created by Glue. %s projection over channels %i-%i of axis %i. Slice=%s' %

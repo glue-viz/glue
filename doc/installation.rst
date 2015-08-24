@@ -92,7 +92,7 @@ Glue has the following required dependencies:
 And the following optional dependencies are also highly recommended:
 
 * `SciPy <http://www.scipy.org>`_
-* `Astropy <http://www.astropy.org>`_
+* `Astropy <http://www.astropy.org>`_ 0.4 or later
 * `h5py <http://www.h5py.org>`_ (if using HDF5 files)
 
 In addition to these, there are several other optional dependencies to suport
