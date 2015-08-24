@@ -87,6 +87,8 @@ class SliceWidget(QWidget):
             value = max(value - 1, imin)
         elif action == 'next':
             value = min(value + 1, imax)
+        else:
+            raise ValueError("Action should be one of first/prev/next/last")
         self._ui_slider.slider.setValue(value)
 
     def _update_mode(self, *args):
