@@ -6,6 +6,7 @@ from ....core.tests.util import simple_session
 from ....core import Data, Coordinates
 from ....core.roi import RectangularROI
 from ....qt.widgets import ImageWidget
+from ....tests.helpers import requires_astropy
 
 from ..spectrum_tool import Extractor, ConstraintsWidget, FitSettingsWidget, SpectrumTool, CollapseContext
 from ....core.fitters import PolynomialFitter
@@ -214,6 +215,7 @@ def test_4d_single_channel():
     np.testing.assert_array_almost_equal(expected, actual)
 
 
+@requires_astropy
 class TestCollapseContext(BaseTestSpectrumTool):
 
     def test_collapse(self, tmpdir):
@@ -234,6 +236,7 @@ class TestCollapseContext(BaseTestSpectrumTool):
         context.save_to(tmpdir.join('test.fits').strpath)
 
 
+@requires_astropy
 class TestCollapseContextWCS(TestCollapseContext):
 
     def setup_data(self):
