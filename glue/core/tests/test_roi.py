@@ -12,12 +12,37 @@ from mock import MagicMock
 
 from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI, CategoricalRoi,
                    MplCircularROI, MplRectangularROI, MplPolygonalROI, MplPickROI, PointROI,
-                   XRangeROI, MplXRangeROI, YRangeROI, MplYRangeROI)
+                   XRangeROI, MplXRangeROI, YRangeROI, MplYRangeROI, RangeROI)
 
 from .. import roi as r
 
 FIG = Figure()
 AXES = FIG.add_subplot(111)
+
+
+class TestPoint(object):
+
+    def setup_method(self, method):
+        self.roi = PointROI(1, 2)
+
+    def test_contains(self):
+        assert not self.roi.contains(3, 3)
+        assert not self.roi.contains(1, 2)
+
+    def test_move_to(self):
+        self.roi.move_to(4, 5)
+        assert self.roi.x == 4
+        assert self.roi.y == 5
+
+    def test_defined(self):
+        assert self.roi.defined()
+
+    def test_not_defined(self):
+        self.roi.reset()
+        assert not self.roi.defined()
+
+    def test_center(self):
+        assert self.roi.center() == (1, 2)
 
 
 class TestRectangle(object):
@@ -95,7 +120,15 @@ class TestRectangle(object):
         assert type(str(self.roi)) == str
 
 
+class TestRange(object):
+
+    def test_wrong_orientation(self):
+        with pytest.raises(ValueError):
+            RangeROI(orientation='a')
+
+
 class TestXRange(object):
+
     def test_undefined_on_init(self):
         assert not XRangeROI().defined()
 

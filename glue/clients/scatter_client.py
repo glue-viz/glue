@@ -259,13 +259,14 @@ class ScatterClient(Client):
             subsets = []
             axes = [('x', roi.xmin, roi.xmax),
                     ('y', roi.ymin, roi.ymax)]
+
             for coord, lo, hi in axes:
                 comp = list(self._get_data_components(coord))
                 if comp:
                     if comp[0].categorical:
-                        subset = CategoricalRoiSubsetState.from_range(comp[0], self.xatt, lo, hi)
+                        subset = CategoricalRoiSubsetState.from_range(comp[0], self._get_attribute(coord), lo, hi)
                     else:
-                        subset = RangeSubsetState(lo, hi, self.xatt)
+                        subset = RangeSubsetState(lo, hi, self._get_attribute(coord))
                 else:
                     subset = None
                 subsets.append(subset)
@@ -408,15 +409,19 @@ class ScatterClient(Client):
         """The data objects in the scatter plot"""
         return list(self._data)
 
+    def _get_attribute(self, coord):
+        if coord == 'x':
+            return self.xatt
+        elif coord == 'y':
+            return self.yatt
+        else:
+            raise TypeError('coord must be x or y')
+
     def _get_data_components(self, coord):
         """ Returns the components for each dataset for x and y axes.
         """
-        if coord == 'x':
-            attribute = self.xatt
-        elif coord == 'y':
-            attribute = self.yatt
-        else:
-            raise TypeError('coord must be x or y')
+
+        attribute = self._get_attribute(coord)
 
         for data in self._data:
             try:

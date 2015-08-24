@@ -384,7 +384,7 @@ class TestCategoricalHistogram(TestHistogramClient):
         state = self.data.subsets[0].subset_state
         assert isinstance(state, CategoricalRoiSubsetState)
         np.testing.assert_equal(self.data.subsets[0].subset_state.roi.categories,
-                                np.array(['a', 'b', 'c', 'd', 'e']))
+                                np.array(['b', 'c', 'd', 'e']))
 
 
     # REMOVED TESTS
