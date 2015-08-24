@@ -26,7 +26,7 @@ class MockCoordinates(Coordinates):
         return [a / 2 for a in args]
 
 
-class TestSpectrumTool(object):
+class BaseTestSpectrumTool(object):
 
     def setup_data(self):
         self.data = Data(x=np.zeros((3, 3, 3)))
@@ -49,6 +49,9 @@ class TestSpectrumTool(object):
         else:
             raise Exception("SpectrumTool not found")
         self.tool.show = lambda *args: None
+
+
+class TestSpectrumTool(BaseTestSpectrumTool):
 
     def build_spectrum(self):
         roi = RectangularROI()
@@ -211,10 +214,7 @@ def test_4d_single_channel():
     np.testing.assert_array_almost_equal(expected, actual)
 
 
-class TestCollapseContext(object):
-
-    setup_method = TestSpectrumTool.setup_method
-    setup_data = TestSpectrumTool.setup_data
+class TestCollapseContext(BaseTestSpectrumTool):
 
     def test_collapse(self, tmpdir):
 
