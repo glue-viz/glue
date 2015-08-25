@@ -48,7 +48,7 @@ def fits_container(source, auto_merge=False, exclude_exts=None, **kwargs):
 
     # Create a new image Data.
     def new_data():
-        label = '{}[{}]'.format(
+        label = '{0}[{1}]'.format(
             label_base,
             hdu_name
         )
@@ -78,7 +78,7 @@ def fits_container(source, auto_merge=False, exclude_exts=None, **kwargs):
             elif is_table_hdu(hdu):
                 # Loop through columns and make component list
                 table = Table(hdu.data)
-                label = '{}[{}]'.format(
+                label = '{0}[{1}]'.format(
                     label_base,
                     hdu_name
                 )
