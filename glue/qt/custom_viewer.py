@@ -141,8 +141,8 @@ class AttributeInfo(np.ndarray):
         values = layer[cid, view]
         comp = layer.data.get_component(cid)
         categories = None
-        if isinstance(comp, core.data.CategoricalComponent):
-            categories = comp._categories
+        if comp.categorical:
+            categories = comp.categories
         return cls.make(cid, values, comp, categories)
 
     def __gluestate__(self, context):

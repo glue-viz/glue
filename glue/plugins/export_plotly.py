@@ -25,7 +25,7 @@ def _data(layer, component):
     result = layer[component]
     comp = layer.data.get_component(component)
     if isinstance(comp, CategoricalComponent):
-        result = comp._categories[result.astype(np.int)]
+        result = comp.categories[result.astype(np.int)]
     return result
 
 

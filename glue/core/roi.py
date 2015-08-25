@@ -1243,7 +1243,7 @@ class CategoricalRoi(Roi):
         hi = np.ceil(hi) if hi > 0 else 0
 
         roi = CategoricalRoi()
-        cat_data = cat_comp._categories
+        cat_data = cat_comp.categories
         roi.update_categories(cat_data[lo:hi])
 
         return roi

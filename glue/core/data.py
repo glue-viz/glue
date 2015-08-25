@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import operator
 import logging
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -403,6 +404,38 @@ class CategoricalComponent(Component):
             self._update_categories()
         else:
             self._update_data()
+
+    @property
+    def codes(self):
+        """
+        The index of the category for each value in the array.
+        """
+        return self._data
+
+    @property
+    def labels(self):
+        """
+        The original categorical data.
+        """
+        return self._categorical_data
+
+    @property
+    def categories(self):
+        """
+        The categories.
+        """
+        return self._categories
+
+    @property
+    def data(self):
+        warnings.warn("The 'data' attribute is deprecated. Use 'codes' "
+                      "instead to access the underlying index of the "
+                      "categories")
+        return self.codes
+
+    @property
+    def numeric(self):
+        return False
 
     @property
     def categorical(self):
@@ -1070,7 +1103,10 @@ class Data(object):
         if view is not None:
             result = comp[view]
         else:
-            result = comp.data
+            if comp.categorical:
+                result = comp.codes
+            else:
+                result = comp.data
 
         assert result.shape == shp, \
             "Component view returned bad shape: %s %s" % (result.shape, shp)

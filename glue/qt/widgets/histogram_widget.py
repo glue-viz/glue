@@ -148,7 +148,8 @@ class HistogramWidget(DataViewer):
             item.setFlags(item.flags() & ~Qt.ItemIsEnabled)
             model.appendRow(item)
             for c in d.visible_components:
-                if not d.get_component(c).numeric:
+                if (not d.get_component(c).categorical and
+                    not d.get_component(c).numeric):
                     continue
                 if c is new:
                     found = True
