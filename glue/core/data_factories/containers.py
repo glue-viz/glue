@@ -92,7 +92,7 @@ def fits_container(source, auto_merge=False, exclude_exts=None, **kwargs):
                     component = Component(column, units=column.unit)
                     data.add_component(component=component,
                                        label=column_name)
-    return groups.values()
+    return [groups[idx] for idx in groups]
 
 
 # Utilities
