@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 from os.path import basename
 
-from ...external.astro import fits
 from ...config import data_factory
 from ..data import Component, Data
 from ..coordinates import coordinates_from_header
@@ -35,6 +34,7 @@ def fits_container(source, auto_merge=False, exclude_exts=None, **kwargs):
         This can be a list of HDU's or a list
         of HDU indexes.
     """
+    from ...external.astro import fits
     from astropy.table import Table
 
     exclude_exts = exclude_exts or []
