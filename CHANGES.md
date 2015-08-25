@@ -24,6 +24,11 @@ v0.6 (unreleased)
   ``@data_factory`` decorator, and not by adding functions to
   ``__factories__``, as was possible in early versions of Glue. [#724]
 
+* Made the Excel spreadsheet reader more robust: column headers no longer have
+  to be strings, and the reader no longer expects the first sheet to be called
+  'Sheet1'. All sheets are now read by default. Datasets are now named as
+  filename:sheetname [#726]
+
 v0.5.3 (unreleased)
 -------------------
 
