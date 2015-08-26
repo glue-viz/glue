@@ -5,15 +5,17 @@ from os.path import basename
 from ...config import data_factory
 from ..data import Component, Data
 from ..coordinates import coordinates_from_header
+from .gridded import is_fits
 
 __all__ = ['fits_container']
 
 
 @data_factory(
     label='Generic FITS',
+    identifier=is_fits,
     priority=100,
 )
-def fits_container(source, auto_merge=False, exclude_exts=None, **kwargs):
+def fits_container(source, auto_merge=False, exclude_exts=None):
     """Read in all extensions from a FITS file.
 
     Parameters
@@ -31,6 +33,7 @@ def fits_container(source, auto_merge=False, exclude_exts=None, **kwargs):
         This can be a list of HDU's or a list
         of HDU indexes.
     """
+
     from ...external.astro import fits
     from astropy.table import Table
 
@@ -41,10 +44,15 @@ def fits_container(source, auto_merge=False, exclude_exts=None, **kwargs):
         hdulist = source
     groups = dict()
     extension_by_shape = dict()
-    label_base = basename(hdulist.filename()).rpartition('.')[0]
+
+    hdulist_name = hdulist.filename()
+    if hdulist_name is None:
+        hdulist_name = "HDUList"
+
+    label_base = basename(hdulist_name).rpartition('.')[0]
 
     if not label_base:
-        label_base = basename(hdulist.filename())
+        label_base = basename(hdulist_name)
 
     # Create a new image Data.
     def new_data():
@@ -60,9 +68,10 @@ def fits_container(source, auto_merge=False, exclude_exts=None, **kwargs):
 
     for extnum, hdu in enumerate(hdulist):
         hdu_name = hdu.name if hdu.name else str(extnum)
-        if hdu.data is not None and \
-           hdu_name not in exclude_exts and \
-           extnum not in exclude_exts:
+        if (hdu.data is not None and
+            hdu.data.size > 0 and
+            hdu_name not in exclude_exts and
+            extnum not in exclude_exts):
             if is_image_hdu(hdu):
                 shape = hdu.data.shape
                 coords = coordinates_from_header(hdu.header)
