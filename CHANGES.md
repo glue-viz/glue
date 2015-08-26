@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.5.3 (unreleased)
+v0.5.3 (2015-08-26)
 -------------------
 
 * Fix selection in scatter plots when categorical data are present. [#727]
