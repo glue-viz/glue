@@ -92,12 +92,12 @@ def test_auto_merge_fits():
         'HDUList[B]': Expected(
             shape=(3, 4),
             ndim=2
-            )
+        )
     }
 
     # Check that merging works
 
-    data = np.ones((3,4))
+    data = np.ones((3, 4))
     hdu1 = fits.ImageHDU(data)
     hdu1.name = 'a'
     hdu2 = fits.ImageHDU(data)

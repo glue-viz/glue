@@ -69,9 +69,9 @@ def fits_container(source, auto_merge=False, exclude_exts=None):
     for extnum, hdu in enumerate(hdulist):
         hdu_name = hdu.name if hdu.name else str(extnum)
         if (hdu.data is not None and
-            hdu.data.size > 0 and
-            hdu_name not in exclude_exts and
-            extnum not in exclude_exts):
+                hdu.data.size > 0 and
+                hdu_name not in exclude_exts and
+                extnum not in exclude_exts):
             if is_image_hdu(hdu):
                 shape = hdu.data.shape
                 coords = coordinates_from_header(hdu.header)
