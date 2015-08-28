@@ -120,6 +120,9 @@ general = (
 
 ipython = (
     Dependency('IPython', 'Needed for interactive IPython terminal'),
+    Dependency('ipykernel', 'Needed for interactive IPython terminal'),
+    Dependency('qtconsole', 'Needed for interactive IPython terminal'),
+    Dependency('traitlets', 'Needed for interactive IPython terminal'),
     Dependency('pygments', 'Needed for interactive IPython terminal'),
     Dependency('zmq', 'Needed for interactive IPython terminal', 'pyzmq'))
 
