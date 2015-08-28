@@ -16,7 +16,7 @@ env:
     - PIP_ARGS=""
     - PYTEST_ARGS="--cov glue"
     - NUMPY_VER=1.9
-    - IPYTHON_VER=2
+    - IPYTHON_VER=4
     - NO_CFG_FILES=false
     - CONDA_DEPS="pip scipy cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.3 xlrd pillow pytest mock coverage pyyaml requests sphinx_rtd_theme"
     - PIP_BASE="pytest-cov coveralls pyavm astrodendro awscli"
@@ -116,6 +116,7 @@ install:
   - if [[ $ASTRO_VER == dev ]]; then pip install -e git+git://github.com/astropy/astropy.git#egg=astropy; fi
   - if [[ $ASTRO_VER != dev && $ASTRO_VER != None ]]; then conda install $CONDA_ARGS $CONDA_BASE numpy=$NUMPY_VER astropy=$ASTRO_VER; fi
   - if [[ $IPYTHON_VER != None ]]; then conda install $CONDA_ARGS $CONDA_BASE IPython=$IPYTHON_VER; fi
+  - if [[ $IPYTHON_VER == 4 ]]; then conda install $CONDA_ARGS $CONDA_BASE qtconsole ipykernel; fi
 
   # For now we also install astropy_helpers because setup_requires has a bug
   # that means it generates PEP440 warnings for the astropy_helpers version
