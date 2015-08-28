@@ -32,7 +32,7 @@ matrix:
         # Python 2.6
         - os: linux
           env:
-            - PYTHON_VERSION=2.6 MPL_VER=1.4 ASTRO_VER=0.4 QT_PKG=pyside
+            - PYTHON_VERSION=2.6 IPYTHON_VER=1 MPL_VER=1.4 ASTRO_VER=0.4 QT_PKG=pyside
         
         # Astropy dev
         - os: linux
