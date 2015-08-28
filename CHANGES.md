@@ -27,7 +27,9 @@ v0.6 (unreleased)
 * Made the Excel spreadsheet reader more robust: column headers no longer have
   to be strings, and the reader no longer expects the first sheet to be called
   'Sheet1'. All sheets are now read by default. Datasets are now named as
-  filename:sheetname [#726]
+  filename:sheetname. [#726]
+  
+* Fix compatibility with IPython 4. [#733]
 
 v0.5.3 (unreleased)
 -------------------
