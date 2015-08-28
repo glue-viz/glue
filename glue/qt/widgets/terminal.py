@@ -34,33 +34,53 @@ from zmq import ZMQError
 from zmq.eventloop.zmqstream import ZMQStream
 from zmq.eventloop import ioloop
 
-from IPython.utils.traitlets import TraitError
-from IPython.lib.kernel import find_connection_file
 from IPython.core.usage import default_banner
 
-try:   # IPython 1.0
-    from IPython.kernel.zmq.ipkernel import Kernel
-    from IPython.kernel.zmq.kernelapp import IPKernelApp
-    from IPython.kernel.zmq.iostream import OutStream
-    from IPython.qt.manager import QtKernelManager
-    from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
+try:  # IPython 4.0
 
-    # these are only needed for v1.0
-    from IPython.kernel.connect import get_connection_file
     from IPython import get_ipython
-    from IPython.qt.client import QtKernelClient
-    from IPython.kernel.inprocess.ipkernel import InProcessKernel
-    from IPython.kernel.inprocess.ipkernel import InProcessInteractiveShell
-    from IPython.qt.inprocess import \
-        QtInProcessKernelManager
+
+    from traitlets import TraitError
+
+    from ipykernel import find_connection_file
+    from ipykernel.kernelbase import Kernel
+    from ipykernel.kernelapp import IPKernelApp
+    from ipykernel.iostream import OutStream
+    from ipykernel.inprocess.ipkernel import InProcessInteractiveShell
+    from ipykernel.connect import get_connection_file
+
+    from qtconsole.client import QtKernelClient
+    from qtconsole.manager import QtKernelManager
+    from qtconsole.inprocess import QtInProcessKernelManager
+    from qtconsole.rich_jupyter_widget import RichJupyterWidget as RichIPythonWidget
 
 except ImportError:
-    from IPython.zmq.ipkernel import Kernel
-    from IPython.zmq.ipkernel import IPKernelApp
-    from IPython.zmq.iostream import OutStream
-    from IPython.frontend.qt.kernelmanager import QtKernelManager
-    from IPython.frontend.qt.console.rich_ipython_widget import \
-        RichIPythonWidget
+
+    from IPython.utils.traitlets import TraitError
+    from IPython.lib.kernel import find_connection_file
+
+    try:   # IPython 1.0-3.0
+
+        from IPython import get_ipython
+
+        from IPython.kernel.zmq.ipkernel import Kernel
+        from IPython.kernel.zmq.kernelapp import IPKernelApp
+        from IPython.kernel.zmq.iostream import OutStream
+        from IPython.kernel.inprocess.ipkernel import InProcessInteractiveShell
+        from IPython.kernel.connect import get_connection_file
+
+        from IPython.qt.client import QtKernelClient
+        from IPython.qt.manager import QtKernelManager
+        from IPython.qt.inprocess import QtInProcessKernelManager
+        from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
+
+    except ImportError:  # IPython < 1.0
+
+        from IPython.zmq.ipkernel import Kernel
+        from IPython.zmq.ipkernel import IPKernelApp
+        from IPython.zmq.iostream import OutStream
+        from IPython.frontend.qt.kernelmanager import QtKernelManager
+        from IPython.frontend.qt.console.rich_ipython_widget import RichIPythonWidget
 
 
 def in_process_console(console_class=RichIPythonWidget, **kwargs):
