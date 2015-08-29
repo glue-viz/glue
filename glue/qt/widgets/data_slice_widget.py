@@ -197,7 +197,6 @@ class DataSlice(QWidget):
                 line = QFrame()
                 line.setFrameShape(QFrame.HLine)
                 line.setFrameShadow(QFrame.Sunken)
-                line.setStyleSheet("border: 1px solid #919191")
                 self.layout.addWidget(line)
             s.show()  # this somehow fixes #342
 
