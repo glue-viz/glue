@@ -33,7 +33,7 @@ install:
     - "python --version"
 
     # Install specified version of numpy and dependencies
-    - "conda install -q --yes numpy scipy cython astropy pyqt matplotlib h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage"
+    - "conda install -q --yes numpy scipy cython astropy pyqt matplotlib h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage ipython ipykernel qtconsole traitlets"
 
 # Not a .NET project, we build SunPy in the install step instead
 build: false
