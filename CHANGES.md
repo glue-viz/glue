@@ -18,7 +18,8 @@ v0.6 (unreleased)
   achieve this solely with priorities. [#719]
 
 * Improved cube slider to include editable slice value as well as
-  first/previous/next/last buttons. [#690]
+  first/previous/next/last buttons, and improved spacing of sliders for 4+
+  dimensional cubes. [#690, #734]
 
 * Registering data factories should now always be done with the
   ``@data_factory`` decorator, and not by adding functions to

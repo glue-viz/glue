@@ -1,7 +1,7 @@
 from functools import partial
 from ...compat.collections import Counter
 
-from ...external.qt.QtGui import (QWidget, QSlider, QLabel, QComboBox,
+from ...external.qt.QtGui import (QWidget, QSlider, QLabel, QComboBox, QFrame,
                                   QHBoxLayout, QVBoxLayout, QPushButton, QLineEdit)
 from ...external.qt.QtCore import Qt, Signal
 
@@ -29,6 +29,7 @@ class SliceWidget(QWidget):
 
         layout = QVBoxLayout()
         layout.setContentsMargins(3, 1, 3, 1)
+        layout.setSpacing(0)
 
         top = QHBoxLayout()
         top.setContentsMargins(3, 3, 3, 3)
@@ -192,6 +193,11 @@ class DataSlice(QWidget):
         # ... and add to the layout
         for s in self._slices[::-1]:
             self.layout.addWidget(s)
+            if s is not self._slices[0]:
+                line = QFrame()
+                line.setFrameShape(QFrame.HLine)
+                line.setFrameShadow(QFrame.Sunken)
+                self.layout.addWidget(line)
             s.show()  # this somehow fixes #342
 
         self.layout.addStretch(5)
