@@ -1,0 +1,522 @@
+{
+  "LoadLog": {
+    "path": "{DATA_PATH}single_table.fits", 
+    "_type": "glue.core.data_factories.LoadLog", 
+    "factory": {
+      "function": "glue.core.data_factories.auto_data", 
+      "_type": "types.FunctionType"
+    }, 
+    "kwargs": [
+      []
+    ]
+  }, 
+  "a_2": {
+    "hidden": false, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "a"
+  }, 
+  "a_1": {
+    "hidden": false, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "a"
+  }, 
+  "a_0": {
+    "hidden": false, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "a"
+  }, 
+  "World 0_0": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "World 0"
+  }, 
+  "World 0_1": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "World 0"
+  }, 
+  "World 0_2": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "World 0"
+  }, 
+  "World 0": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "World 0"
+  }, 
+  "Coordinates_1": {
+    "_type": "glue.core.coordinates.Coordinates"
+  }, 
+  "CoordinateComponent_6": {
+    "world": true, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 0
+  }, 
+  "CoordinateComponent_5": {
+    "world": false, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 0
+  }, 
+  "CoordinateComponent_4": {
+    "world": true, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 0
+  }, 
+  "__main__": {
+    "_type": "glue.qt.glue_application.GlueApplication", 
+    "session": "Session", 
+    "data": "DataCollection", 
+    "viewers": [
+      []
+    ]
+  }, 
+  "b_0": {
+    "hidden": false, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "b"
+  }, 
+  "b_1": {
+    "hidden": false, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "b"
+  }, 
+  "b_2": {
+    "hidden": false, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "b"
+  }, 
+  "double_tables": {
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes", 
+      "color": "#373737", 
+      "markersize": 3, 
+      "marker": "o", 
+      "alpha": 0.5, 
+      "linewidth": 1, 
+      "linestyle": "solid"
+    }, 
+    "_protocol": 3, 
+    "subsets": [], 
+    "_type": "glue.core.data.Data", 
+    "label": "double_tables", 
+    "coords": "Coordinates", 
+    "components": [
+      [
+        "a_2", 
+        "Component_5"
+      ], 
+      [
+        "Pixel Axis 0_2", 
+        "CoordinateComponent_5"
+      ], 
+      [
+        "World 0_2", 
+        "CoordinateComponent_6"
+      ], 
+      [
+        "b_2", 
+        "Component_6"
+      ]
+    ], 
+    "_key_joins": []
+  }, 
+  "Component": {
+    "log_item": 0, 
+    "_type": "glue.core.data.Component", 
+    "log": "LoadLog"
+  }, 
+  "single_table": {
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes", 
+      "color": "#373737", 
+      "markersize": 3, 
+      "marker": "o", 
+      "alpha": 0.5, 
+      "linewidth": 1, 
+      "linestyle": "solid"
+    }, 
+    "_protocol": 3, 
+    "subsets": [], 
+    "_type": "glue.core.data.Data", 
+    "label": "single_table", 
+    "coords": "Coordinates_0", 
+    "components": [
+      [
+        "a_0", 
+        "Component_1"
+      ], 
+      [
+        "Pixel Axis 0_0", 
+        "CoordinateComponent_1"
+      ], 
+      [
+        "World 0_0", 
+        "CoordinateComponent_2"
+      ], 
+      [
+        "b_0", 
+        "Component_2"
+      ]
+    ], 
+    "_key_joins": []
+  }, 
+  "CoordinateComponent_3": {
+    "world": false, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 0
+  }, 
+  "CoordinateComponentLink": {
+    "index": 0, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "World 0_2"
+    ], 
+    "to": [
+      "Pixel Axis 0_2"
+    ], 
+    "pix2world": false, 
+    "coords": "Coordinates"
+  }, 
+  "CoordinateComponent_2": {
+    "world": true, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 0
+  }, 
+  "CoordinateComponent_1": {
+    "world": false, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 0
+  }, 
+  "single_table_auto": {
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes", 
+      "color": "#373737", 
+      "markersize": 3, 
+      "marker": "o", 
+      "alpha": 0.5019607843137255, 
+      "linewidth": 1, 
+      "linestyle": "solid"
+    }, 
+    "_protocol": 3, 
+    "subsets": [], 
+    "_type": "glue.core.data.Data", 
+    "label": "single_table_auto", 
+    "coords": "Coordinates_1", 
+    "components": [
+      [
+        "a", 
+        "Component"
+      ], 
+      [
+        "Pixel Axis 0", 
+        "CoordinateComponent"
+      ], 
+      [
+        "World 0", 
+        "CoordinateComponent_0"
+      ], 
+      [
+        "b", 
+        "Component_0"
+      ]
+    ], 
+    "_key_joins": []
+  }, 
+  "CoordinateComponent_0": {
+    "world": true, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 0
+  }, 
+  "Pixel Axis 0_0": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "Pixel Axis 0"
+  }, 
+  "Pixel Axis 0_1": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "Pixel Axis 0"
+  }, 
+  "Pixel Axis 0_2": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "Pixel Axis 0"
+  }, 
+  "Pixel Axis 0": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "Pixel Axis 0"
+  }, 
+  "CoordinateComponentLink_3": {
+    "index": 0, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "World 0"
+    ], 
+    "to": [
+      "Pixel Axis 0"
+    ], 
+    "pix2world": false, 
+    "coords": "Coordinates_1"
+  }, 
+  "CoordinateComponentLink_2": {
+    "index": 0, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "Pixel Axis 0"
+    ], 
+    "to": [
+      "World 0"
+    ], 
+    "pix2world": true, 
+    "coords": "Coordinates_1"
+  }, 
+  "CoordinateComponentLink_1": {
+    "index": 0, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "Pixel Axis 0_0"
+    ], 
+    "to": [
+      "World 0_0"
+    ], 
+    "pix2world": true, 
+    "coords": "Coordinates_0"
+  }, 
+  "CoordinateComponentLink_0": {
+    "index": 0, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "Pixel Axis 0_1"
+    ], 
+    "to": [
+      "World 0_1"
+    ], 
+    "pix2world": true, 
+    "coords": "Coordinates_2"
+  }, 
+  "CoordinateComponentLink_6": {
+    "index": 0, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "World 0_1"
+    ], 
+    "to": [
+      "Pixel Axis 0_1"
+    ], 
+    "pix2world": false, 
+    "coords": "Coordinates_2"
+  }, 
+  "CoordinateComponentLink_5": {
+    "index": 0, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "World 0_0"
+    ], 
+    "to": [
+      "Pixel Axis 0_0"
+    ], 
+    "pix2world": false, 
+    "coords": "Coordinates_0"
+  }, 
+  "Coordinates_0": {
+    "_type": "glue.core.coordinates.Coordinates"
+  }, 
+  "Coordinates_2": {
+    "_type": "glue.core.coordinates.Coordinates"
+  }, 
+  "Coordinates": {
+    "_type": "glue.core.coordinates.Coordinates"
+  }, 
+  "CoordinateComponent": {
+    "world": false, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 0
+  }, 
+  "CoordinateComponentLink_4": {
+    "index": 0, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "Pixel Axis 0_2"
+    ], 
+    "to": [
+      "World 0_2"
+    ], 
+    "pix2world": true, 
+    "coords": "Coordinates"
+  }, 
+  "a": {
+    "hidden": false, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "a"
+  }, 
+  "b": {
+    "hidden": false, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "b"
+  }, 
+  "double_tables_auto": {
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes", 
+      "color": "#373737", 
+      "markersize": 3, 
+      "marker": "o", 
+      "alpha": 0.5019607843137255, 
+      "linewidth": 1, 
+      "linestyle": "solid"
+    }, 
+    "_protocol": 3, 
+    "subsets": [], 
+    "_type": "glue.core.data.Data", 
+    "label": "double_tables_auto", 
+    "coords": "Coordinates_2", 
+    "components": [
+      [
+        "a_1", 
+        "Component_3"
+      ], 
+      [
+        "Pixel Axis 0_1", 
+        "CoordinateComponent_3"
+      ], 
+      [
+        "World 0_1", 
+        "CoordinateComponent_4"
+      ], 
+      [
+        "b_1", 
+        "Component_4"
+      ]
+    ], 
+    "_key_joins": []
+  }, 
+  "Component_3": {
+    "log_item": 0, 
+    "_type": "glue.core.data.Component", 
+    "log": "LoadLog_0"
+  }, 
+  "Component_2": {
+    "log_item": 3, 
+    "_type": "glue.core.data.Component", 
+    "log": "LoadLog_1"
+  }, 
+  "Component_1": {
+    "log_item": 0, 
+    "_type": "glue.core.data.Component", 
+    "log": "LoadLog_1"
+  }, 
+  "Component_0": {
+    "log_item": 3, 
+    "_type": "glue.core.data.Component", 
+    "log": "LoadLog"
+  }, 
+  "Component_6": {
+    "log_item": 3, 
+    "_type": "glue.core.data.Component", 
+    "log": "LoadLog_2"
+  }, 
+  "Component_5": {
+    "log_item": 0, 
+    "_type": "glue.core.data.Component", 
+    "log": "LoadLog_2"
+  }, 
+  "Component_4": {
+    "log_item": 3, 
+    "_type": "glue.core.data.Component", 
+    "log": "LoadLog_0"
+  }, 
+  "DataCollection": {
+    "_type": "glue.core.data_collection.DataCollection", 
+    "components": [
+      "Component", 
+      "CoordinateComponent", 
+      "CoordinateComponent_0", 
+      "Component_0", 
+      "Component_1", 
+      "CoordinateComponent_1", 
+      "CoordinateComponent_2", 
+      "Component_2", 
+      "Component_3", 
+      "CoordinateComponent_3", 
+      "CoordinateComponent_4", 
+      "Component_4", 
+      "Component_5", 
+      "CoordinateComponent_5", 
+      "CoordinateComponent_6", 
+      "Component_6"
+    ], 
+    "links": [
+      "CoordinateComponentLink", 
+      "CoordinateComponentLink_0", 
+      "CoordinateComponentLink_1", 
+      "CoordinateComponentLink_2", 
+      "CoordinateComponentLink_3", 
+      "CoordinateComponentLink_4", 
+      "CoordinateComponentLink_5", 
+      "CoordinateComponentLink_6"
+    ], 
+    "_protocol": 2, 
+    "groups": [], 
+    "cids": [
+      "a", 
+      "Pixel Axis 0", 
+      "World 0", 
+      "b", 
+      "a_0", 
+      "Pixel Axis 0_0", 
+      "World 0_0", 
+      "b_0", 
+      "a_1", 
+      "Pixel Axis 0_1", 
+      "World 0_1", 
+      "b_1", 
+      "a_2", 
+      "Pixel Axis 0_2", 
+      "World 0_2", 
+      "b_2"
+    ], 
+    "data": [
+      "single_table_auto", 
+      "single_table", 
+      "double_tables_auto", 
+      "double_tables"
+    ]
+  }, 
+  "Session": {
+    "_type": "glue.core.session.Session"
+  }, 
+  "LoadLog_2": {
+    "path": "{DATA_PATH}double_tables.fits", 
+    "_type": "glue.core.data_factories.LoadLog", 
+    "factory": {
+      "function": "glue.core.data_factories.astropy_tabular_data", 
+      "_type": "types.FunctionType"
+    }, 
+    "kwargs": [
+      []
+    ]
+  }, 
+  "LoadLog_0": {
+    "path": "{DATA_PATH}double_tables.fits", 
+    "_type": "glue.core.data_factories.LoadLog", 
+    "factory": {
+      "function": "glue.core.data_factories.auto_data", 
+      "_type": "types.FunctionType"
+    }, 
+    "kwargs": [
+      []
+    ]
+  }, 
+  "LoadLog_1": {
+    "path": "{DATA_PATH}single_table.fits", 
+    "_type": "glue.core.data_factories.LoadLog", 
+    "factory": {
+      "function": "glue.core.data_factories.astropy_tabular_data", 
+      "_type": "types.FunctionType"
+    }, 
+    "kwargs": [
+      []
+    ]
+  }
+}
