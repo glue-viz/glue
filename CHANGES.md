@@ -32,6 +32,8 @@ v0.6 (unreleased)
   
 * Fix compatibility with IPython 4. [#733]
 
+* Improved reading of FITS files - all HDUs are now read by default. [#704, #732]
+
 v0.5.3 (unreleased)
 -------------------
 

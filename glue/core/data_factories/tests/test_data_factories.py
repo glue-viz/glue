@@ -71,7 +71,7 @@ def test_color_png_loader():
 def test_fits_image_loader():
     with make_file(TEST_FITS_DATA, '.fits', decompress=True) as fname:
         d = df.load_data(fname)
-        assert df.find_factory(fname) is df.gridded_data
+        assert df.find_factory(fname) is df.fits_container
     assert_array_equal(d['PRIMARY'], [1, 2, 3])
 
 
@@ -79,7 +79,7 @@ def test_fits_image_loader():
 def test_fits_uses_mmapping():
     with make_file(TEST_FITS_DATA, '.fits', decompress=True) as fname:
         d = df.load_data(fname)
-        assert df.find_factory(fname) is df.gridded_data
+        assert df.find_factory(fname) is df.fits_container
     assert not d['PRIMARY'].flags['OWNDATA']
 
 
@@ -99,7 +99,7 @@ def test_fits_catalog_factory():
     data = b'\x1f\x8b\x08\x08\x19\r\x9cQ\x02\x03test.fits\x00\xed\xd7AO\x830\x18\xc6\xf1\xe9\'yo\x1c\'\x1c\x8c\x97\x1d\x86c\xa6\x911"5\xc1c\x91n\x92\x8cBJ\x97\xb8o\xef\x06\xd3\x98H\xdd\x16\x97]|~\x17\x12H\xfeyI{h\x136\x8b\xc3\x80hD=8\r\xe9\xb5R\x8bJ\x97\r\x99\x8a\xa6\x8c\'\xd4\x18\xa1r\xa1s\xea\xe53\x1e\xb3\xd4\xd2\xbb\xdb\xf6\x84\xd6bC\xb90\x82\xcc\xa6\x96t@4NYB\x96\xde\xcd\xb6\xa7\xd6e&5U\x8b\xcfrQJ\xd5\x14\x95jz{A\xca\x83hb\xfd\xdf\x93\xb51\x00\x00\x00\x00\xf87v\xc7\xc9\x84\xcd\xa3\x119>\x8b\xf8\xd8\x0f\x03\xe7\xdb\xe7!e\x85\x12zCFd+I\xf2\xddt\x87Sk\xef\xa2\xe7g\xef\xf4\xf3s\xdbs\xfb{\xee\xed\xb6\xb7\x92ji\xdev\xbd\xaf\x12\xb9\x07\xe6\xf3,\xf3\xb9\x96\x9eg\xef\xc5\xf7\xf3\xe7\x88\x1fu_X\xeaj]S-\xb4(\xa5\x91\xba\xff\x7f\x1f~\xeb\xb9?{\xcd\x81\xf5\xe0S\x16\x84\x93\xe4\x98\xf5\xe8\xb6\xcc\xa2\x90\xab\xdc^\xe5\xfc%\x0e\xda\xf5p\xc4\xfe\x95\xf3\x97\xfd\xcc\xa7\xf3\xa7Y\xd7{<Ko7_\xbb\xbeNv\xb6\xf9\xbc\xf3\xcd\x87\xfb\x1b\x00\x00\xc0\xe5\r:W\xfb\xe7\xf5\x00\x00\x00\x00\x00\x00\xac>\x00\x04\x01*\xc7\xc0!\x00\x00'
     with make_file(data, '.fits') as fname:
         d = df.load_data(fname)
-        assert df.find_factory(fname) is df.tabular_data
+        assert df.find_factory(fname) is df.fits_container
 
     assert_array_equal(d['a'], [1])
     assert_array_equal(d['b'], [2])
@@ -142,7 +142,7 @@ def test_fits_gz_factory():
 
     with make_file(data, '.fits.gz') as fname:
         d = df.load_data(fname)
-        assert df.find_factory(fname) is df.gridded_data
+        assert df.find_factory(fname) is df.fits_container
 
     assert_array_equal(d['PRIMARY'], [[0, 0], [0, 0]])
 
