@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from os.path import basename
 
+from ...compat.collections import OrderedDict
 from ...config import data_factory
 from ..data import Component, Data
 from ..coordinates import coordinates_from_header
@@ -42,8 +43,8 @@ def fits_container(source, auto_merge=False, exclude_exts=None):
         hdulist = fits.open(source)
     else:
         hdulist = source
-    groups = dict()
-    extension_by_shape = dict()
+    groups = OrderedDict()
+    extension_by_shape = OrderedDict()
 
     hdulist_name = hdulist.filename()
     if hdulist_name is None:
