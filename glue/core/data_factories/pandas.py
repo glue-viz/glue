@@ -7,7 +7,7 @@ from ..data import Data, Component, CategoricalComponent
 from .helpers import has_extension
 
 from ...external import six
-from ...config import data_factory
+from ..config import data_factory
 
 __all__ = ['pandas_read_table']
 

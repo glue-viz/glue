@@ -113,7 +113,7 @@ class GlueDataDialog(object):
 
     def __init__(self, parent=None):
         self._fd = QtGui.QFileDialog(parent)
-        from glue.config import data_factory
+        from ..core.config import data_factory
         self.filters = [(f, self._filter(f))
                         for f in data_factory.members]
         self.setNameFilter()

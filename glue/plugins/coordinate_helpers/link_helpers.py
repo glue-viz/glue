@@ -3,7 +3,7 @@
 
 # Coordinate transforms (requires Astropy>)
 
-from ...config import link_function, link_helper
+from ...core.config import link_function, link_helper
 from ...core.link_helpers import MultiLink
 
 from astropy import units as u

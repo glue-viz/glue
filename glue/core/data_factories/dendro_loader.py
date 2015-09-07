@@ -6,7 +6,7 @@ astrodendro must be installed in order to use this loader
 import numpy as np
 from astrodendro import Dendrogram
 from ..data import Data
-from ...config import data_factory
+from ..config import data_factory
 
 from .gridded import is_fits, is_hdf5
 

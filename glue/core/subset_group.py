@@ -19,7 +19,8 @@ from . import Subset
 from .subset import SubsetState
 from .util import Pointer
 from .hub import HubListener
-from .visual import VisualAttributes, RED
+from .config import DEFAULT_SUBSET_COLOR
+from .visual import VisualAttributes
 from .message import (DataCollectionAddMessage,
                       DataCollectionDeleteMessage
                       )
@@ -86,7 +87,7 @@ class GroupedSubset(Subset):
 
 class SubsetGroup(HubListener):
 
-    def __init__(self, color=RED, alpha=0.5, label=None, subset_state=None):
+    def __init__(self, color=DEFAULT_SUBSET_COLOR, alpha=0.5, label=None, subset_state=None):
         """
         Create a new empty SubsetGroup
 

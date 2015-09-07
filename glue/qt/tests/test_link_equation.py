@@ -5,7 +5,7 @@ import pytest
 
 from ..link_equation import (function_label, helper_label,
                              LinkEquation, ArgumentWidget)
-from ...config import link_function, link_helper
+from ...core.config import link_function, link_helper
 
 
 @link_function('testing function', ['y'])

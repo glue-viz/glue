@@ -20,7 +20,7 @@ and never directly from the contracts package.
 from numpy import ndarray, s_
 from pandas import Series
 
-from ..config import enable_contracts
+from .config import enable_contracts
 from ..external.six import string_types
 
 

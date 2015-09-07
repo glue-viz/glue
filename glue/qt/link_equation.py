@@ -115,7 +115,7 @@ class LinkEquation(QWidget):
 
     def __init__(self, parent=None):
         super(LinkEquation, self).__init__(parent)
-        from ..config import link_function, link_helper
+        from ..core.config import link_function, link_helper
 
         # Set up mapping of function/helper name -> function/helper tuple. For the helpers, we use the 'display' name if available.
         def get_name(item):

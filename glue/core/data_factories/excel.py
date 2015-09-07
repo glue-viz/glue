@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from ...config import data_factory
+from ..config import data_factory
 
 from .pandas import panda_process
 from .helpers import has_extension

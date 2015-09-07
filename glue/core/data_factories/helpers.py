@@ -30,7 +30,7 @@ import warnings
 from ..data import Component, Data
 from ...utils import as_list
 from ...backends import get_backend
-from ...config import auto_refresh, data_factory
+from ..config import auto_refresh, data_factory
 from ..contracts import contract
 
 __all__ = ['FileWatcher', 'LoadLog',
@@ -272,7 +272,7 @@ def get_default_factory(extension):  # pragma: no cover
 @contract(filename='string')
 def find_factory(filename, **kwargs):
 
-    from ...config import data_factory
+    from ..config import data_factory
 
     # We no longer try the 'default' factory first because we actually need to
     # try all identifiers and select the one to use based on the priority. This

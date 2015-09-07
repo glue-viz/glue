@@ -26,14 +26,14 @@ from ...qt.widget_properties import CurrentComboProperty
 from ...core.aggregate import Aggregate
 from ...qt.mime import LAYERS_MIME_TYPE
 from ...qt.simpleforms import build_form_item
-from ...config import fit_plugin
 from ...external.six.moves import range as xrange
 from ...qt.widgets.glue_mdi_area import GlueMdiSubWindow
 from ...qt.decorators import messagebox_on_error
 
+from ..config import fit_plugin
 
 def setup():
-    from ...config import tool_registry
+    from ...qt.config import tool_registry
     from ...qt.widgets import ImageWidget
     tool_registry.add(SpectrumTool, widget_cls=ImageWidget)
 
