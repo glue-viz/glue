@@ -5,7 +5,7 @@ import numbers
 
 import numpy as np
 
-from .visual import VisualAttributes, RED
+from .visual import VisualAttributes
 from .decorators import memoize
 from .message import SubsetDeleteMessage, SubsetUpdateMessage
 from .exceptions import IncompatibleAttribute
@@ -15,6 +15,8 @@ from ..utils import view_shape
 from ..external.six import PY3
 from .contracts import contract
 from .roi import CategoricalRoi
+
+from ..config import settings
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState',
@@ -48,7 +50,7 @@ class Subset(object):
               color='color',
               alpha=float,
               label='string|None')
-    def __init__(self, data, color=RED, alpha=0.5, label=None):
+    def __init__(self, data, color=settings.SUBSET_COLORS[0], alpha=0.5, label=None):
         """ Create a new subset object.
 
         Note: the preferred way for creating subsets is

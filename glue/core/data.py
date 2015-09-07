@@ -10,7 +10,6 @@ import pandas as pd
 from .contracts import contract
 from .coordinates import Coordinates
 from .visual import VisualAttributes
-from .visual import COLORS
 from .exceptions import IncompatibleAttribute
 from .component_link import (ComponentLink, CoordinateComponentLink,
                              BinaryComponentLink)
@@ -24,6 +23,7 @@ from .message import (DataUpdateMessage,
                       SubsetCreateMessage, ComponentsChangedMessage,
                       ComponentReplacedMessage)
 
+from ..config import settings
 from ..compat.collections import OrderedDict
 from ..external import six
 
@@ -945,7 +945,7 @@ class Data(object):
         :returns: The new subset object
         """
         nsub = len(self.subsets)
-        color = color or COLORS[nsub % len(COLORS)]
+        color = color or settings.SUBSET_COLORS[nsub % len(settings.SUBSET_COLORS)]
         label = label or "%s.%i" % (self.label, nsub + 1)
         new_subset = Subset(self, color=color, label=label, **kwargs)
         if subset is not None:

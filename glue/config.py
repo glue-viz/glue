@@ -93,7 +93,35 @@ class Registry(object):
         return arg
 
 
-class SettingRegistry(Registry):
+class DictRegistry(Registry):
+    """
+    Base class for registries that are based on dictionaries instead of lists
+    of objects.
+    """
+
+    def __init__(self):
+        self._members = {}
+        self._lazy_members = []
+        self._loaded = False
+
+    @property
+    def members(self):
+        self._load_lazy_members()
+        if not self._loaded:
+            defaults = self.default_members()
+            for key in defaults:
+                if key in self._members:
+                    self._members[key].extend(defaults[key])
+                else:
+                    self._members[key] = defaults[key]
+            self._loaded = True
+        return self._members
+
+    def default_members(self):
+        return {}
+
+
+class SettingRegistry(DictRegistry):
 
     """Stores key/value settings that code can use to customize Glue
 
@@ -105,12 +133,34 @@ class SettingRegistry(Registry):
                    returns the (possibly sanitized) setting value.
     """
 
-    def add(self, key, value, validator=str):
-        self.members.append((key, value, validator))
+    def __init__(self):
+        super(SettingRegistry, self).__init__()
+        self._validators = {}
 
-    def default_members(self):
-        import glue.plugins  # plugins will populate this registry
-        return []
+    def add(self, key, value, validator=str):
+        self._members[key] = validator(value)
+        self._validators[key] = validator
+
+    def __getattr__(self, attr):
+        if attr.startswith('_'):
+            raise AttributeError("No such setting: {0}".format(attr))
+        else:
+            try:
+                return self._members[attr]
+            except KeyError:
+                raise AttributeError("No such setting: {0}".format(attr))
+
+    def __setattr__(self, attr, value):
+        if attr.startswith('_'):
+            object.__setattr__(self, attr, value)
+        elif attr in self._members:
+            self._members[attr] = self._validators[attr](value)
+        else:
+            raise AttributeError("No such setting: {0}".format(attr))
+
+    def __iter__(self):
+        for key in self._members:
+            yield key, self._members[key], self._validators[key]
 
 
 class DataImportRegistry(Registry):
@@ -121,9 +171,6 @@ class DataImportRegistry(Registry):
     ``(label, load_function)`` tuple. The ``load_function`` should take no
     arguments and return a list of :class:`~glue.core.data.Data` objects.
     """
-
-    def default_members(self):
-        return []
 
     def add(self, label, importer):
         """
@@ -151,9 +198,6 @@ class MenubarPluginRegistry(Registry):
     ``(label, function)`` tuple. The ``function`` should take two items which
     are a reference to the session and to the data collection respectively.
     """
-
-    def default_members(self):
-        return []
 
     def add(self, label, function):
         """
@@ -191,10 +235,6 @@ class ExporterRegistry(Registry):
       'directory': exporter creates a directory
       'label': exporter doesn't write to disk, but needs a label
     """
-
-    def default_members(self):
-        import glue.plugins  # discover plugins
-        return []
 
     def add(self, label, exporter, checker, outmode='file'):
         """
@@ -268,7 +308,7 @@ class DataFactoryRegistry(Registry):
         @data_factory('label_name', identifier=identifier, priority=10)
         def new_factory(file_name):
             ...
-            
+
     If not specified, the priority defaults to 0.
     """
 
@@ -317,25 +357,7 @@ class QtClientRegistry(Registry):
             return []
 
 
-class QtToolRegistry(Registry):
-
-    def __init__(self):
-        self._members = {}
-        self._lazy_members = []
-        self._loaded = False
-
-    @property
-    def members(self):
-        self._load_lazy_members()
-        if not self._loaded:
-            defaults = self.default_members()
-            for key in defaults:
-                if key in self._members:
-                    self._members[key].extend(defaults[key])
-                else:
-                    self._members[key] = defaults[key]
-            self._loaded = True
-        return self._members
+class QtToolRegistry(DictRegistry):
 
     def default_members(self):
         defaults = {}
@@ -404,9 +426,6 @@ class SingleSubsetLayerActionRegistry(Registry):
         as input
     """
     item = namedtuple('SingleSubsetLayerAction', 'label tooltip callback icon')
-
-    def default_members(self):
-        return []
 
     def __call__(self, label, callback, tooltip=None, icon=None):
         self.add(self.item(label, callback, tooltip, icon))
@@ -490,7 +509,6 @@ menubar_plugin = MenubarPluginRegistry()
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)
 enable_contracts = BooleanSetting(False)
-
 
 def load_configuration(search_path=None):
     ''' Find and import a config.py file

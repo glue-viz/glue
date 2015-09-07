@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+from ..config import settings
 # Define acceptable line styles
 VALID_LINESTYLES = ['solid', 'dashed', 'dash-dot', 'dotted', 'none']
 
@@ -18,7 +19,9 @@ LIGHT_GREEN = "#B2DF8A"
 LIGHT_RED = "#FB9A99"
 LIGHT_ORANGE = "#FDBF6F"
 LIGHT_PURPLE = "#CAB2D6"
-COLORS = [RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK]
+
+settings.add('SUBSET_COLORS', [RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK], validator=list)
+settings.add('DEFAULT_VISUAL_COLOR', GRAY)
 
 __all__ = ['VisualAttributes']
 
@@ -39,7 +42,7 @@ class VisualAttributes(object):
 
     '''
 
-    def __init__(self, parent=None, washout=False, color=GREY):
+    def __init__(self, parent=None, washout=False, color=settings.DEFAULT_VISUAL_COLOR):
 
         # Color can be specified using Matplotlib notation. Specifically, it
         # can be:
