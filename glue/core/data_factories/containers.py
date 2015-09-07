@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from os.path import basename
 
 from ...compat.collections import OrderedDict
-from ...config import data_factory
+from ..config import data_factory
 from ..data import Component, Data
 from ..coordinates import coordinates_from_header
 from .gridded import is_fits

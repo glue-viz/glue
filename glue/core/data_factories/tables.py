@@ -4,7 +4,7 @@ import numpy as np
 
 from ..data import Component, Data
 from ...external import six
-from ...config import data_factory
+from ..config import data_factory
 
 from .helpers import has_extension
 

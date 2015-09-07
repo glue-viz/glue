@@ -10,8 +10,8 @@ from mock import MagicMock, patch
 from ..qtutil import GlueDataDialog
 from ..qtutil import pretty_number, GlueComboBox, PythonListModel
 
-from glue.config import data_factory
-from glue.core import Subset
+from ...core.config import data_factory
+from ...core import Subset
 
 
 def test_glue_action_button():

@@ -12,7 +12,7 @@ from .util import PropertySetMixin
 from ..utils import as_list
 from .edit_subset_mode import EditSubsetMode
 from .session import Session
-from ..config import settings
+from .config import settings
 
 __all__ = ['Application', 'ViewerBase']
 

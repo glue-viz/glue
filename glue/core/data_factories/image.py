@@ -6,7 +6,7 @@ from ..data import Data
 
 from .helpers import has_extension, set_default_factory
 from ..coordinates import coordinates_from_wcs
-from ...config import data_factory
+from ..config import data_factory
 
 IMG_FMT = ['jpg', 'jpeg', 'bmp', 'png', 'tiff', 'tif']
 

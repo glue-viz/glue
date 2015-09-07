@@ -23,7 +23,7 @@ from .custom_component_widget import CustomComponentWidget
 from ..actions import act as _act
 from ...core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode
 from .subset_facet import SubsetFacet
-from ...config import single_subset_action
+from ...core.config import single_subset_action
 
 
 @core.decorators.singleton

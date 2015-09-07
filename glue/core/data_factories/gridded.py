@@ -4,7 +4,7 @@ from ..data import Component, Data
 from .io import extract_data_fits, extract_data_hdf5
 from ...utils import file_format
 from ..coordinates import coordinates_from_header
-from ...config import data_factory
+from ..config import data_factory
 
 __all__ = ['is_casalike', 'gridded_data', 'casalike_cube']
 

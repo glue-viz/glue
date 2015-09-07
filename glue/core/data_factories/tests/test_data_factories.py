@@ -15,7 +15,7 @@ from ....tests.helpers import (requires_astropy, requires_astropy_ge_03,
                               requires_astropy_ge_04, requires_pil_or_skimage,
                               requires_astrodendro, requires_h5py)
 
-from ....config import data_factory
+from ...config import data_factory
 
 
 def test_load_data_auto_assigns_label():

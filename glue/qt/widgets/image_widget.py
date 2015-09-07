@@ -99,9 +99,9 @@ class ImageWidgetBase(DataViewer):
         """
         Set up additional tools for this widget
         """
-        from ... import config
+        from ..config import tool_registry
         self._tools = []
-        for tool in config.tool_registry.members[self.__class__]:
+        for tool in tool_registry.members[self.__class__]:
             self._tools.append(tool(self))
 
     def _tweak_geometry(self):
@@ -456,11 +456,11 @@ class ColormapAction(QAction):
 
 def _colormap_mode(parent, on_trigger):
 
-    from ... import config
+    from ...core.config import colormaps
 
     # actions for each colormap
     acts = []
-    for label, cmap in config.colormaps:
+    for label, cmap in colormaps:
         a = ColormapAction(label, cmap, parent)
         a.triggered.connect(nonpartial(on_trigger, cmap))
         acts.append(a)

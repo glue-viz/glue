@@ -176,7 +176,7 @@ class TestGlueApplication(object):
         assert viewer.viewer_size == (100, 200)
 
     def test_new_data_defaults(self):
-        from ...config import qt_client
+        from ..config import qt_client
 
         with patch('glue.qt.glue_application.pick_class') as pc:
             pc.return_value = None
