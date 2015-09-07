@@ -5,7 +5,8 @@ import numbers
 
 import numpy as np
 
-from .visual import VisualAttributes, RED
+from .config import DEFAULT_SUBSET_COLOR
+from .visual import VisualAttributes
 from .decorators import memoize
 from .message import SubsetDeleteMessage, SubsetUpdateMessage
 from .exceptions import IncompatibleAttribute
@@ -48,7 +49,7 @@ class Subset(object):
               color='color',
               alpha=float,
               label='string|None')
-    def __init__(self, data, color=RED, alpha=0.5, label=None):
+    def __init__(self, data, color=DEFAULT_SUBSET_COLOR, alpha=0.5, label=None):
         """ Create a new subset object.
 
         Note: the preferred way for creating subsets is

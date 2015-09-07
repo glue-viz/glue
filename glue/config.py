@@ -20,6 +20,7 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
 
+from .core.config import *
 
 class Registry(object):
 

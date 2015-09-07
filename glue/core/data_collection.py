@@ -4,7 +4,7 @@ from .hub import Hub, HubListener
 from .data import Data
 from .link_manager import LinkManager
 from .registry import Registry
-from .visual import COLORS
+from .config import SUBSET_COLORS
 from .message import (DataCollectionAddMessage,
                       DataCollectionDeleteMessage,
                       DataAddComponentMessage)
@@ -187,7 +187,7 @@ class DataCollection(HubListener):
         :returns: A new :class:`~glue.core.subset_group.SubsetGroup`
         """
         from .subset_group import SubsetGroup
-        color = COLORS[self._sg_count % len(COLORS)]
+        color = SUBSET_COLORS[self._sg_count % len(SUBSET_COLORS)]
         self._sg_count += 1
         label = label or "%i" % (self._sg_count)
 
