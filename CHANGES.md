@@ -34,6 +34,9 @@ v0.6 (unreleased)
 
 * Improved reading of FITS files - all HDUs are now read by default. [#704, #732]
 
+* Fix a bug that caused the color of an extracted spectrum to vary if extracted
+  multiple times. [#743]
+
 v0.5.3 (unreleased)
 -------------------
 
