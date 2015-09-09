@@ -354,7 +354,7 @@ class CollapseContext(SpectrumContext):
         pth : str
            Path to write to
         """
-        
+
         from ...external.astro import fits
 
         data = self.client.display_data
@@ -755,7 +755,8 @@ class SpectrumTool(object):
     def _setup_mouse_mode(self):
         # This will be added to the ImageWidget's toolbar
         mode = SpectrumExtractorMode(self.image_widget.client.axes,
-                                     release_callback=self._update_profile)
+                                     release_callback=self._update_profile,
+                                     move_callback=self._move_profile)
         return mode
 
     def _setup_toolbar(self):
@@ -837,6 +838,10 @@ class SpectrumTool(object):
     def _update_profile(self, *args):
         roi = self.mouse_mode.roi()
         return self._update_from_roi(roi)
+
+    def _move_profile(self, *args):
+        if self.mouse_mode._roi_tool._scrubbing:
+            self._update_profile(args)
 
     def _set_profile(self, x, y):
         data = self.data
