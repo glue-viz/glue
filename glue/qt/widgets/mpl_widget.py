@@ -61,10 +61,6 @@ class MplCanvas(FigureCanvas):
         self.roi_callback = None
 
         self.fig = Figure(facecolor='#ffffff')
-        try:
-            self.fig.set_tight_layout(True)
-        except AttributeError:  # matplotlib < 1.1
-            pass
 
         FigureCanvas.__init__(self, self.fig)
         FigureCanvas.setSizePolicy(self,

@@ -141,27 +141,23 @@ def init_mpl(figure, axes, wcs=False, axes_factory=None):
         raise ValueError("Axes and figure are incompatible")
 
     try:
-        from ..external.wcsaxes import WCSAxesSubplot
+        from ..external.wcsaxes import WCSAxes
     except ImportError:
-        WCSAxesSubplot = None
+        WCSAxes = None
 
     if axes is not None:
         _axes = axes
         _figure = axes.figure
     else:
         _figure = figure or plt.figure()
-        if wcs and WCSAxesSubplot is not None:
-            _axes = WCSAxesSubplot(_figure, 111)
+        if wcs and WCSAxes is not None:
+            _axes = WCSAxes(_figure, [0.125, 0.125, 0.8, 0.8])
             _figure.add_axes(_axes)
         else:
             if axes_factory is not None:
                 _axes = axes_factory(_figure)
             else:
-                _axes = _figure.add_subplot(1, 1, 1)
-    try:
-        _figure.set_tight_layout(True)
-    except AttributeError:  # matplotlib < 1.1
-        pass
+                _axes = _figure.add_axes([0.125, 0.125, 0.8, 0.8])
 
     return _figure, _axes
 

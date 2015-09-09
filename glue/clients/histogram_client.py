@@ -57,15 +57,10 @@ class HistogramClient(Client):
         super(HistogramClient, self).__init__(data)
 
         self._artists = artist_container or LayerArtistContainer()
-        self._axes = figure.add_subplot(111)
+        self._axes = figure.add_axes([0.125, 0.125, 0.8, 0.8])
         self._component = None
         self._saved_nbins = None
         self._xlim = {}
-
-        try:
-            self._axes.figure.set_tight_layout(True)
-        except AttributeError:  # pragma: nocover (matplotlib < 1.1)
-            pass
 
     @property
     def bins(self):
