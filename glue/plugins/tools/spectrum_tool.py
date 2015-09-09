@@ -847,7 +847,7 @@ class SpectrumTool(object):
 
         xlim = self.axes.get_xlim()
         self.profile.set_xlabel(xlabel)
-        self.profile.set_profile(x, y, c='k')
+        self.profile.set_profile(x, y, color='k')
 
         # relim x range if requested
         if self._relim_requested:
