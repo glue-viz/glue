@@ -3,6 +3,7 @@ from ..external.qt.QtCore import (QAbstractItemModel, QModelIndex,
                                   QObject, Qt, QTimer, Signal, QSize)
 from ..external.qt.QtGui import (QFont, QTreeView, QItemSelectionModel,
                                  QAbstractItemView, QStyledItemDelegate)
+from ..external.qt import is_pyqt5
 
 from .qtutil import layer_icon
 from .mime import LAYERS_MIME_TYPE, PyMimeData
@@ -243,7 +244,11 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
         # without this reference, PySide clobbers instance
         # data of model items
         self.register_to_hub(self.data_collection.hub)
-        self.setSupportedDragActions(Qt.CopyAction)
+        if not is_pyqt5():
+            self.setSupportedDragActions(Qt.CopyAction)
+
+    def supportedDragActions(self):
+        return [Qt.CopyAction]
 
     def index(self, row, column, parent=QModelIndex()):
         if column != 0:
@@ -413,7 +418,8 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
     def invalidate(self):
         self.root = DataCollectionItem(self.data_collection)
         self._items.clear()
-        self.reset()
+        if not is_pyqt5():
+            self.reset()
         self.layoutChanged.emit()
 
     def glue_data(self, indices):
