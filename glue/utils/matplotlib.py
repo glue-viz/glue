@@ -176,3 +176,49 @@ def point_contour(x, y, data):
         return None
     xy = xy[0]
     return xy
+
+
+def FixedMarginAxes(ax_class, margins=[1, 1, 1, 1]):
+    """
+    Class factory to make an axes class that will preserve fixed margins when
+    figure is resized.
+
+    Parameters
+    ----------
+    ax_class : matplotlib.axes.Axes
+        The axes class to wrap
+    margins : iterable
+        The margins, in inches. The order of the margins is
+        ``[left, right, bottom, top]``
+    """
+
+    # Note that margins gets used directly in get_fixed_margin_rect and we
+    # don't pass it through the axes class.
+
+    def get_fixed_margin_rect(fig):
+
+        fig_width = fig.get_figwidth()
+        fig_height = fig.get_figheight()
+
+        x0 = margins[0] / fig_width
+        x1 = 1 - margins[1] / fig_width
+        y0 = margins[2] / fig_height
+        y1 = 1 - margins[3] / fig_height
+
+        dx = max(0.01, x1 - x0)
+        dy = max(0.01, y1 - y0)
+
+        return [x0, y0, dx, dy]
+
+    class ax_subclass(ax_class):
+
+        def __init__(self, fig, **kwargs):
+            rect = get_fixed_margin_rect(fig)
+            super(ax_subclass, self).__init__(fig, rect, **kwargs)
+
+        def draw(self, *args, **kwargs):
+            rect = get_fixed_margin_rect(self.figure)
+            self.set_position(rect)
+            super(ax_subclass, self).draw(*args, **kwargs)
+
+    return ax_subclass
