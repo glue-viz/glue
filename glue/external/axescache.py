@@ -127,6 +127,7 @@ class AxesCache(object):
 
     def __init__(self, axes):
         self.axes = axes
+        self.ax_class = axes.__class__
 
         self._capture = None
         self.axes.draw = self.draw
@@ -134,7 +135,7 @@ class AxesCache(object):
 
     def draw(self, renderer, *args, **kwargs):
         if self._capture is None or not self._enabled:
-            Axes.draw(self.axes, renderer, *args, **kwargs)
+            self.ax_class.draw(self.axes, renderer, *args, **kwargs)
             self._capture = RenderCapture(self.axes, renderer)
         else:
             self.axes.axesPatch.draw(renderer, *args, **kwargs)
