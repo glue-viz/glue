@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import matplotlib.pyplot as plt
 from ..core.client import Client
 from ..core import Data
-from ..utils.matplotlib import FixedMarginAxes
+from ..utils.matplotlib import fixed_margin_axes
 from .layer_artist import LayerArtistContainer
 
 __all__ = ['VizClient', 'GenericMplClient']
@@ -153,15 +153,15 @@ def init_mpl(figure, axes, wcs=False, axes_factory=None):
     else:
         _figure = figure or plt.figure()
         if wcs and WCSAxes is not None:
-            FixedMarginWCSAxes = FixedMarginAxes(WCSAxes, [1, 0.5, 0.75, 0.5])
+            FixedMarginWCSAxes = fixed_margin_axes(WCSAxes, [1, 0.5, 0.75, 0.5])
             _axes = FixedMarginWCSAxes(_figure)
             _figure.add_axes(_axes)
         else:
             if axes_factory is not None:
                 _axes = axes_factory(_figure)
             else:
-                FixedMarginMplAxes = FixedMarginAxes(plt.Axes, [1, 0.5, 0.75, 0.5])
-                _axes = FixedMarginMplAxes(_figure)
+                FixedMarginAxes = fixed_margin_axes(plt.Axes, [1, 0.5, 0.75, 0.5])
+                _axes = FixedMarginAxes(_figure)
                 _figure.add_axes(_axes)
 
     return _figure, _axes

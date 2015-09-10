@@ -178,7 +178,7 @@ def point_contour(x, y, data):
     return xy
 
 
-def FixedMarginAxes(ax_class, margins=[1, 1, 1, 1]):
+def fixed_margin_axes(ax_class, margins=[1, 1, 1, 1]):
     """
     Class factory to make an axes class that will preserve fixed margins when
     figure is resized.

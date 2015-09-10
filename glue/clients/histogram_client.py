@@ -13,7 +13,7 @@ from .layer_artist import HistogramLayerArtist, LayerArtistContainer
 from .util import update_ticks, visible_limits
 from ..core.callback_property import CallbackProperty, add_callback
 from ..utils import lookup_class
-from ..utils.matplotlib import FixedMarginAxes
+from ..utils.matplotlib import fixed_margin_axes
 
 
 class UpdateProperty(CallbackProperty):
@@ -59,8 +59,8 @@ class HistogramClient(Client):
         super(HistogramClient, self).__init__(data)
 
         self._artists = artist_container or LayerArtistContainer()
-        FixedMarginMplAxes = FixedMarginAxes(plt.Axes, [1, 0.5, 0.75, 0.5])
-        self._axes = FixedMarginMplAxes(figure)
+        FixedMarginAxes = fixed_margin_axes(plt.Axes, [1, 0.5, 0.75, 0.5])
+        self._axes = FixedMarginAxes(figure)
         figure.add_axes(self._axes)
         self._component = None
         self._saved_nbins = None
