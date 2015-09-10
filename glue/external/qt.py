@@ -235,7 +235,7 @@ def reload_qt():
     elif os.environ.get('QT_API') == QT_API_PYSIDE:
         loaders = [_load_pyside, _load_pyqt4]
     else:
-        loaders = [_load_pyqt4, _load_pyside]
+        loaders = [_load_pyqt4, _load_pyside, _load_pyqt5]
 
     msgs = []
 

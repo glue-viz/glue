@@ -2,7 +2,16 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import matplotlib
-from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
+
+from ..external.qt import QtCore, QtGui, is_pyqt5
+from ..external.qt.QtGui import QMenu
+from ..external.qt.QtCore import Qt, Signal
+
+if is_pyqt5():
+    from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
+else:
+    from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
+
 from ..external.qt import QtCore, QtGui
 from ..external.qt.QtGui import QMenu
 from ..external.qt.QtCore import Qt, Signal
