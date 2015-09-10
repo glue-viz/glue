@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import matplotlib.pyplot as plt
 from ..core.client import Client
 from ..core import Data
-from ..utils.matplotlib import fixed_margin_axes
+from ..utils.matplotlib import fix_margins
 from .layer_artist import LayerArtistContainer
 
 __all__ = ['VizClient', 'GenericMplClient']
@@ -143,26 +143,25 @@ def init_mpl(figure, axes, wcs=False, axes_factory=None):
         raise ValueError("Axes and figure are incompatible")
 
     try:
-        from ..external.wcsaxes import WCSAxes
+        from ..external.wcsaxes import WCSAxesSubplot
     except ImportError:
-        WCSAxes = None
+        WCSAxesSubplot = None
 
     if axes is not None:
         _axes = axes
         _figure = axes.figure
     else:
         _figure = figure or plt.figure()
-        if wcs and WCSAxes is not None:
-            FixedMarginWCSAxes = fixed_margin_axes(WCSAxes, [1, 0.5, 0.75, 0.5])
-            _axes = FixedMarginWCSAxes(_figure)
+        if wcs and WCSAxesSubplot is not None:
+            _axes = WCSAxesSubplot(_figure, 111)
             _figure.add_axes(_axes)
+            fix_margins(_axes, [1, 0.25, 0.50, 0.25])
         else:
             if axes_factory is not None:
                 _axes = axes_factory(_figure)
             else:
-                FixedMarginAxes = fixed_margin_axes(plt.Axes, [1, 0.5, 0.75, 0.5])
-                _axes = FixedMarginAxes(_figure)
-                _figure.add_axes(_axes)
+                _axes = _figure.add_subplot(1, 1, 1)
+                fix_margins(_axes, [1, 0.25, 0.50, 0.25])
 
     return _figure, _axes
 

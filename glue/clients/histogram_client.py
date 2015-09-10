@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 from ..core.client import Client
 from ..core import message as msg
@@ -13,7 +12,7 @@ from .layer_artist import HistogramLayerArtist, LayerArtistContainer
 from .util import update_ticks, visible_limits
 from ..core.callback_property import CallbackProperty, add_callback
 from ..utils import lookup_class
-from ..utils.matplotlib import fixed_margin_axes
+from ..utils.matplotlib import fix_margins
 
 
 class UpdateProperty(CallbackProperty):
@@ -59,9 +58,8 @@ class HistogramClient(Client):
         super(HistogramClient, self).__init__(data)
 
         self._artists = artist_container or LayerArtistContainer()
-        FixedMarginAxes = fixed_margin_axes(plt.Axes, [1, 0.5, 0.75, 0.5])
-        self._axes = FixedMarginAxes(figure)
-        figure.add_axes(self._axes)
+        self._axes = figure.add_subplot(111)
+        fix_margins(self._axes, [1, 0.25, 0.50, 0.25])
         self._component = None
         self._saved_nbins = None
         self._xlim = {}
