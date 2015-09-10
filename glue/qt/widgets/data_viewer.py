@@ -18,7 +18,7 @@ from .glue_mdi_area import GlueMdiSubWindow
 __all__ = ['DataViewer']
 
 
-class DataViewer(QMainWindow, ViewerBase):
+class DataViewer(ViewerBase, QMainWindow):
 
     """Base class for all Qt DataViewer widgets.
 

@@ -248,7 +248,7 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
             self.setSupportedDragActions(Qt.CopyAction)
 
     def supportedDragActions(self):
-        return [Qt.CopyAction]
+        return Qt.CopyAction
 
     def index(self, row, column, parent=QModelIndex()):
         if column != 0:
