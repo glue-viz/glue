@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import matplotlib.pyplot as plt
 from ..core.client import Client
 from ..core import Data
+from ..utils.matplotlib import FixedMarginAxes
 from .layer_artist import LayerArtistContainer
 
 __all__ = ['VizClient', 'GenericMplClient']
@@ -136,8 +137,9 @@ class VizClient(Client):
 
 
 def init_mpl(figure, axes, wcs=False, axes_factory=None):
-    if axes is not None and figure is not None and \
-            axes.figure is not figure:
+
+    if (axes is not None and figure is not None and
+            axes.figure is not figure):
         raise ValueError("Axes and figure are incompatible")
 
     try:
@@ -151,13 +153,16 @@ def init_mpl(figure, axes, wcs=False, axes_factory=None):
     else:
         _figure = figure or plt.figure()
         if wcs and WCSAxes is not None:
-            _axes = WCSAxes(_figure, [0.125, 0.125, 0.8, 0.8])
+            FixedMarginWCSAxes = FixedMarginAxes(WCSAxes, [1, 0.5, 0.75, 0.5])
+            _axes = FixedMarginWCSAxes(_figure)
             _figure.add_axes(_axes)
         else:
             if axes_factory is not None:
                 _axes = axes_factory(_figure)
             else:
-                _axes = _figure.add_axes([0.125, 0.125, 0.8, 0.8])
+                FixedMarginMplAxes = FixedMarginAxes(plt.Axes, [1, 0.5, 0.75, 0.5])
+                _axes = FixedMarginMplAxes(_figure)
+                _figure.add_axes(_axes)
 
     return _figure, _axes
 
