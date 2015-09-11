@@ -185,6 +185,14 @@ class AxesResizer(object):
         self.ax = ax
         self.margins = margins
 
+    @property
+    def margins(self):
+        return self._margins
+
+    @margins.setter
+    def margins(self, margins):
+        self._margins = margins
+
     def on_resize(self, event):
 
         fig_width = self.ax.figure.get_figwidth()
@@ -198,7 +206,7 @@ class AxesResizer(object):
         dx = max(0.01, x1 - x0)
         dy = max(0.01, y1 - y0)
 
-        self.ax.set_position([x0, y0, dx, dy]) 
+        self.ax.set_position([x0, y0, dx, dy])
         self.ax.figure.canvas.draw()
 
 
@@ -213,7 +221,15 @@ def freeze_margins(axes, margins=[1, 1, 1, 1]):
     margins : iterable
         The margins, in inches. The order of the margins is
         ``[left, right, bottom, top]``
+
+    Notes
+    -----
+    The object that controls the resizing is stored as the resizer attribute of
+    the Axes. This can be used to then change the margins:
+
+        >> ax.resizer.margins = [0.5, 0.5, 0.5, 0.5]
+
     """
 
-    resizer = AxesResizer(axes, margins)
-    axes.figure.canvas.mpl_connect('resize_event', resizer.on_resize)
+    axes.resizer = AxesResizer(axes, margins)
+    axes.figure.canvas.mpl_connect('resize_event', axes.resizer.on_resize)
