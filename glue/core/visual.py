@@ -1,27 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
 from ..config import settings
+
 # Define acceptable line styles
 VALID_LINESTYLES = ['solid', 'dashed', 'dash-dot', 'dotted', 'none']
-
-GREY = '#373737'
-GRAY = GREY
-BLUE = "#1F78B4"
-GREEN = "#33A02C"
-RED = "#E31A1C"
-ORANGE = "#FF7F00"
-PURPLE = "#6A3D9A"
-YELLOW = "#FFFF99"
-BROWN = "#8C510A"
-PINK = "#FB9A99"
-LIGHT_BLUE = "#A6CEE3"
-LIGHT_GREEN = "#B2DF8A"
-LIGHT_RED = "#FB9A99"
-LIGHT_ORANGE = "#FDBF6F"
-LIGHT_PURPLE = "#CAB2D6"
-
-settings.add('SUBSET_COLORS', [RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK], validator=list)
-settings.add('DEFAULT_VISUAL_COLOR', GRAY)
 
 __all__ = ['VisualAttributes']
 
