@@ -12,7 +12,7 @@ from .layer_artist import HistogramLayerArtist, LayerArtistContainer
 from .util import update_ticks, visible_limits
 from ..core.callback_property import CallbackProperty, add_callback
 from ..utils import lookup_class
-from ..utils.matplotlib import fix_margins
+from ..utils.matplotlib import freeze_margins
 
 
 class UpdateProperty(CallbackProperty):
@@ -59,7 +59,7 @@ class HistogramClient(Client):
 
         self._artists = artist_container or LayerArtistContainer()
         self._axes = figure.add_subplot(111)
-        fix_margins(self._axes, [1, 0.25, 0.50, 0.25])
+        freeze_margins(self._axes, [1, 0.25, 0.50, 0.25])
         self._component = None
         self._saved_nbins = None
         self._xlim = {}

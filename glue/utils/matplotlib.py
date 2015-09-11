@@ -202,7 +202,7 @@ class AxesResizer(object):
         self.ax.figure.canvas.draw()
 
 
-def fix_margins(axes, margins=[1, 1, 1, 1]):
+def freeze_margins(axes, margins=[1, 1, 1, 1]):
     """
     Make sure margins of axes stay fixed.
 

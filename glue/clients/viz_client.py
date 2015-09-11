@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import matplotlib.pyplot as plt
 from ..core.client import Client
 from ..core import Data
-from ..utils.matplotlib import fix_margins
+from ..utils.matplotlib import freeze_margins
 from .layer_artist import LayerArtistContainer
 
 __all__ = ['VizClient', 'GenericMplClient']
@@ -155,13 +155,13 @@ def init_mpl(figure, axes, wcs=False, axes_factory=None):
         if wcs and WCSAxesSubplot is not None:
             _axes = WCSAxesSubplot(_figure, 111)
             _figure.add_axes(_axes)
-            fix_margins(_axes, [1, 0.25, 0.50, 0.25])
+            freeze_margins(_axes, [1, 0.25, 0.50, 0.25])
         else:
             if axes_factory is not None:
                 _axes = axes_factory(_figure)
             else:
                 _axes = _figure.add_subplot(1, 1, 1)
-                fix_margins(_axes, [1, 0.25, 0.50, 0.25])
+                freeze_margins(_axes, [1, 0.25, 0.50, 0.25])
 
     return _figure, _axes
 
