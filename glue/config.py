@@ -577,4 +577,4 @@ LIGHT_ORANGE = "#FDBF6F"
 LIGHT_PURPLE = "#CAB2D6"
 
 settings.add('SUBSET_COLORS', [RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK], validator=list)
-settings.add('DEFAULT_VISUAL_COLOR', GRAY)
+settings.add('DATA_COLOR', GRAY)

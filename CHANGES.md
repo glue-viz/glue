@@ -38,13 +38,16 @@ v0.6 (unreleased)
   to be strings, and the reader no longer expects the first sheet to be called
   'Sheet1'. All sheets are now read by default. Datasets are now named as
   filename:sheetname. [#726]
-  
+
 * Fix compatibility with IPython 4. [#733]
 
 * Improved reading of FITS files - all HDUs are now read by default. [#704, #732]
 
 * Fix a bug that caused the color of an extracted spectrum to vary if extracted
   multiple times. [#743]
+
+* Added two new settings ``settings.SUBSET_COLORS`` and ``settings.DATA_COLOR``
+  that can be used to customize the default subset and data colors. [#742]
 
 v0.5.3 (unreleased)
 -------------------

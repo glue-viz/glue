@@ -24,7 +24,7 @@ class VisualAttributes(object):
 
     '''
 
-    def __init__(self, parent=None, washout=False, color=settings.DEFAULT_VISUAL_COLOR):
+    def __init__(self, parent=None, washout=False, color=settings.DATA_COLOR):
 
         # Color can be specified using Matplotlib notation. Specifically, it
         # can be:
