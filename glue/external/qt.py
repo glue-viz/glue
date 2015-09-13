@@ -299,6 +299,12 @@ def get_qapp(icon_path=None):
         qapp.setQuitOnLastWindowClosed(True)
         if icon_path is not None:
             qapp.setWindowIcon(QIcon(icon_path))
+
+    # Make sure we use high resolution icons with PyQt5 for HDPI
+    # displays. TODO: check impact on non-HDPI displays.
+    if is_pyqt5():
+        qapp.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps);
+
     return qapp
 
 
