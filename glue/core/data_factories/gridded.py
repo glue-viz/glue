@@ -26,7 +26,7 @@ def is_gridded_data(filename, **kwargs):
     return False
 
 
-@data_factory(label="FITS/HDF5 Image", identifier=is_gridded_data, priority=2)
+@data_factory(label="FITS/HDF5 Image", identifier=is_gridded_data, deprecated=True)
 def gridded_data(filename, format='auto', **kwargs):
 
     result = Data()

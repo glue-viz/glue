@@ -115,7 +115,7 @@ class GlueDataDialog(object):
         self._fd = QtGui.QFileDialog(parent)
         from glue.config import data_factory
         self.filters = [(f, self._filter(f))
-                        for f in data_factory.members]
+                        for f in data_factory.members if not f.deprecated]
         self.setNameFilter()
         self._fd.setFileMode(QtGui.QFileDialog.ExistingFiles)
         try:

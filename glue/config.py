@@ -312,18 +312,21 @@ class DataFactoryRegistry(Registry):
     If not specified, the priority defaults to 0.
     """
 
-    item = namedtuple('DataFactory', 'function label identifier priority')
+    item = namedtuple('DataFactory', 'function label identifier priority deprecated')
 
-    def __call__(self, label, identifier=None, priority=None, default=''):
+    def __call__(self, label, identifier=None, priority=None, default='', deprecated=False):
 
         if identifier is None:
             identifier = lambda *a, **k: False
 
         if priority is None:
-            priority = 0
+            if deprecated:
+                priority = -1000
+            else:
+                priority = 0
 
         def adder(func):
-            self.add(self.item(func, label, identifier, priority))
+            self.add(self.item(func, label, identifier, priority, deprecated))
             return func
 
         return adder
