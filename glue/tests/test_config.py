@@ -42,4 +42,4 @@ def test_add_data_factory():
     @data_factory('XYZ file', "*txt")
     def foo(x):
         pass
-    assert (foo, 'XYZ file', '*txt', 0) in data_factory
+    assert (foo, 'XYZ file', '*txt', 0, False) in data_factory

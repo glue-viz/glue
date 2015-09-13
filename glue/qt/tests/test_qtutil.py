@@ -73,7 +73,7 @@ class TestGlueDataDialog(object):
     def test_filters(self):
         """Should build filter list from data_factories env var"""
         fd = GlueDataDialog()
-        assert len(fd.filters) == len(data_factory.members)
+        assert len(fd.filters) == len([x for x in data_factory.members if not x.deprecated])
 
     def test_load_multiple(self):
         fd = GlueDataDialog()
