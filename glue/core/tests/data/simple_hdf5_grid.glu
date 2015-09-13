@@ -1,0 +1,498 @@
+{
+  "CoordinateComponent_9": {
+    "world": true, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 1
+  }, 
+  "CoordinateComponent_8": {
+    "world": true, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 0
+  }, 
+  "World 0_0": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "World 0"
+  }, 
+  "World 2": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "World 2"
+  }, 
+  "World 1": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "World 1"
+  }, 
+  "CoordinateComponent_0": {
+    "world": false, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 1
+  }, 
+  "single_grid": {
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes", 
+      "color": "#373737", 
+      "markersize": 3, 
+      "marker": "o", 
+      "alpha": 0.5, 
+      "linewidth": 1, 
+      "linestyle": "solid"
+    }, 
+    "_protocol": 3, 
+    "subsets": [], 
+    "_type": "glue.core.data.Data", 
+    "label": "single_grid", 
+    "coords": "Coordinates", 
+    "components": [
+      [
+        "/array1_0", 
+        "Component_0"
+      ], 
+      [
+        "Pixel z_0", 
+        "CoordinateComponent_5"
+      ], 
+      [
+        "Pixel y_0", 
+        "CoordinateComponent_6"
+      ], 
+      [
+        "Pixel x_0", 
+        "CoordinateComponent_7"
+      ], 
+      [
+        "World 0_0", 
+        "CoordinateComponent_8"
+      ], 
+      [
+        "World 1_0", 
+        "CoordinateComponent_9"
+      ], 
+      [
+        "World 2_0", 
+        "CoordinateComponent_10"
+      ]
+    ], 
+    "_key_joins": []
+  }, 
+  "CoordinateComponent_6": {
+    "world": false, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 1
+  }, 
+  "CoordinateComponent_5": {
+    "world": false, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 0
+  }, 
+  "CoordinateComponent_4": {
+    "world": true, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 2
+  }, 
+  "World 1_0": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "World 1"
+  }, 
+  "CoordinateComponentLink_6": {
+    "index": 2, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "World 0", 
+      "World 1", 
+      "World 2"
+    ], 
+    "to": [
+      "Pixel x"
+    ], 
+    "pix2world": false, 
+    "coords": "Coordinates_0"
+  }, 
+  "CoordinateComponentLink_10": {
+    "index": 2, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "World 0_0", 
+      "World 1_0", 
+      "World 2_0"
+    ], 
+    "to": [
+      "Pixel x_0"
+    ], 
+    "pix2world": false, 
+    "coords": "Coordinates"
+  }, 
+  "__main__": {
+    "_type": "glue.qt.glue_application.GlueApplication", 
+    "session": "Session", 
+    "data": "DataCollection", 
+    "viewers": [
+      []
+    ]
+  }, 
+  "CoordinateComponentLink_2": {
+    "index": 1, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "World 0", 
+      "World 1", 
+      "World 2"
+    ], 
+    "to": [
+      "Pixel y"
+    ], 
+    "pix2world": false, 
+    "coords": "Coordinates_0"
+  }, 
+  "Pixel x_0": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "Pixel x"
+  }, 
+  "World 2_0": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "World 2"
+  }, 
+  "Component": {
+    "log_item": 0, 
+    "_type": "glue.core.data.Component", 
+    "log": "LoadLog"
+  }, 
+  "Pixel y_0": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "Pixel y"
+  }, 
+  "CoordinateComponent_3": {
+    "world": true, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 1
+  }, 
+  "Pixel z_0": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "Pixel z"
+  }, 
+  "CoordinateComponentLink": {
+    "index": 0, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "World 0", 
+      "World 1", 
+      "World 2"
+    ], 
+    "to": [
+      "Pixel z"
+    ], 
+    "pix2world": false, 
+    "coords": "Coordinates_0"
+  }, 
+  "/array1_0": {
+    "hidden": false, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "/array1"
+  }, 
+  "CoordinateComponent_2": {
+    "world": true, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 0
+  }, 
+  "CoordinateComponent_10": {
+    "world": true, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 2
+  }, 
+  "CoordinateComponent_1": {
+    "world": false, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 2
+  }, 
+  "CoordinateComponentLink_9": {
+    "index": 0, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "Pixel z", 
+      "Pixel y", 
+      "Pixel x"
+    ], 
+    "to": [
+      "World 0"
+    ], 
+    "pix2world": true, 
+    "coords": "Coordinates_0"
+  }, 
+  "World 0": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "World 0"
+  }, 
+  "Pixel z": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "Pixel z"
+  }, 
+  "Pixel y": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "Pixel y"
+  }, 
+  "Pixel x": {
+    "hidden": true, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "Pixel x"
+  }, 
+  "CoordinateComponentLink_3": {
+    "index": 2, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "Pixel z_0", 
+      "Pixel y_0", 
+      "Pixel x_0"
+    ], 
+    "to": [
+      "World 2_0"
+    ], 
+    "pix2world": true, 
+    "coords": "Coordinates"
+  }, 
+  "CoordinateComponent_7": {
+    "world": false, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 2
+  }, 
+  "CoordinateComponentLink_1": {
+    "index": 0, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "World 0_0", 
+      "World 1_0", 
+      "World 2_0"
+    ], 
+    "to": [
+      "Pixel z_0"
+    ], 
+    "pix2world": false, 
+    "coords": "Coordinates"
+  }, 
+  "CoordinateComponentLink_0": {
+    "index": 1, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "Pixel z", 
+      "Pixel y", 
+      "Pixel x"
+    ], 
+    "to": [
+      "World 1"
+    ], 
+    "pix2world": true, 
+    "coords": "Coordinates_0"
+  }, 
+  "CoordinateComponentLink_7": {
+    "index": 1, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "Pixel z_0", 
+      "Pixel y_0", 
+      "Pixel x_0"
+    ], 
+    "to": [
+      "World 1_0"
+    ], 
+    "pix2world": true, 
+    "coords": "Coordinates"
+  }, 
+  "LoadLog": {
+    "path": "{DATA_PATH}single_grid.hdf5", 
+    "_type": "glue.core.data_factories.LoadLog", 
+    "factory": {
+      "function": "glue.core.data_factories.auto_data", 
+      "_type": "types.FunctionType"
+    }, 
+    "kwargs": [
+      []
+    ]
+  }, 
+  "CoordinateComponentLink_5": {
+    "index": 0, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "Pixel z_0", 
+      "Pixel y_0", 
+      "Pixel x_0"
+    ], 
+    "to": [
+      "World 0_0"
+    ], 
+    "pix2world": true, 
+    "coords": "Coordinates"
+  }, 
+  "Coordinates_0": {
+    "_type": "glue.core.coordinates.Coordinates"
+  }, 
+  "Coordinates": {
+    "_type": "glue.core.coordinates.Coordinates"
+  }, 
+  "CoordinateComponent": {
+    "world": false, 
+    "_type": "glue.core.data.CoordinateComponent", 
+    "axis": 0
+  }, 
+  "CoordinateComponentLink_4": {
+    "index": 2, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "Pixel z", 
+      "Pixel y", 
+      "Pixel x"
+    ], 
+    "to": [
+      "World 2"
+    ], 
+    "pix2world": true, 
+    "coords": "Coordinates_0"
+  }, 
+  "CoordinateComponentLink_8": {
+    "index": 1, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "World 0_0", 
+      "World 1_0", 
+      "World 2_0"
+    ], 
+    "to": [
+      "Pixel y_0"
+    ], 
+    "pix2world": false, 
+    "coords": "Coordinates"
+  }, 
+  "/array1": {
+    "hidden": false, 
+    "_type": "glue.core.data.ComponentID", 
+    "label": "/array1"
+  }, 
+  "Component_0": {
+    "log_item": 0, 
+    "_type": "glue.core.data.Component", 
+    "log": "LoadLog_0"
+  }, 
+  "DataCollection": {
+    "_type": "glue.core.data_collection.DataCollection", 
+    "components": [
+      "Component", 
+      "CoordinateComponent", 
+      "CoordinateComponent_0", 
+      "CoordinateComponent_1", 
+      "CoordinateComponent_2", 
+      "CoordinateComponent_3", 
+      "CoordinateComponent_4", 
+      "Component_0", 
+      "CoordinateComponent_5", 
+      "CoordinateComponent_6", 
+      "CoordinateComponent_7", 
+      "CoordinateComponent_8", 
+      "CoordinateComponent_9", 
+      "CoordinateComponent_10"
+    ], 
+    "links": [
+      "CoordinateComponentLink", 
+      "CoordinateComponentLink_0", 
+      "CoordinateComponentLink_1", 
+      "CoordinateComponentLink_2", 
+      "CoordinateComponentLink_3", 
+      "CoordinateComponentLink_4", 
+      "CoordinateComponentLink_5", 
+      "CoordinateComponentLink_6", 
+      "CoordinateComponentLink_7", 
+      "CoordinateComponentLink_8", 
+      "CoordinateComponentLink_9", 
+      "CoordinateComponentLink_10"
+    ], 
+    "_protocol": 2, 
+    "groups": [], 
+    "cids": [
+      "/array1", 
+      "Pixel z", 
+      "Pixel y", 
+      "Pixel x", 
+      "World 0", 
+      "World 1", 
+      "World 2", 
+      "/array1_0", 
+      "Pixel z_0", 
+      "Pixel y_0", 
+      "Pixel x_0", 
+      "World 0_0", 
+      "World 1_0", 
+      "World 2_0"
+    ], 
+    "data": [
+      "single_grid_auto", 
+      "single_grid"
+    ]
+  }, 
+  "Session": {
+    "_type": "glue.core.session.Session"
+  }, 
+  "LoadLog_0": {
+    "path": "{DATA_PATH}single_grid.hdf5", 
+    "_type": "glue.core.data_factories.LoadLog", 
+    "factory": {
+      "function": "glue.core.data_factories.gridded_data", 
+      "_type": "types.FunctionType"
+    }, 
+    "kwargs": [
+      []
+    ]
+  }, 
+  "single_grid_auto": {
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes", 
+      "color": "#373737", 
+      "markersize": 3, 
+      "marker": "o", 
+      "alpha": 0.5019607843137255, 
+      "linewidth": 1, 
+      "linestyle": "solid"
+    }, 
+    "_protocol": 3, 
+    "subsets": [], 
+    "_type": "glue.core.data.Data", 
+    "label": "single_grid_auto", 
+    "coords": "Coordinates_0", 
+    "components": [
+      [
+        "/array1", 
+        "Component"
+      ], 
+      [
+        "Pixel z", 
+        "CoordinateComponent"
+      ], 
+      [
+        "Pixel y", 
+        "CoordinateComponent_0"
+      ], 
+      [
+        "Pixel x", 
+        "CoordinateComponent_1"
+      ], 
+      [
+        "World 0", 
+        "CoordinateComponent_2"
+      ], 
+      [
+        "World 1", 
+        "CoordinateComponent_3"
+      ], 
+      [
+        "World 2", 
+        "CoordinateComponent_4"
+      ]
+    ], 
+    "_key_joins": []
+  }
+}
