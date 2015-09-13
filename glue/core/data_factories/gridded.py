@@ -1,51 +1,34 @@
+# NOTE: This file exists only for the purposes of backward-compatibility
+
 from __future__ import absolute_import, division, print_function
 
 from ..data import Component, Data
-from .io import extract_data_fits, extract_data_hdf5
 from ...utils import file_format
 from ..coordinates import coordinates_from_header
 from ...config import data_factory
 
-__all__ = ['is_casalike', 'gridded_data', 'casalike_cube']
+from .fits import is_fits, extract_data_fits, is_casalike, casalike_cube
+from .hdf5 import is_hdf5, extract_data_hdf5
 
-
-def is_hdf5(filename):
-    # All hdf5 files begin with the same sequence
-    with open(filename, 'rb') as infile:
-        return infile.read(8) == b'\x89HDF\r\n\x1a\n'
-
-
-def is_fits(filename):
-    from ...external.astro import fits
-    try:
-        with fits.open(filename):
-            return True
-    except IOError:
-        return False
+__all__ = ['is_gridded_data', 'gridded_data', 'is_casalike', 'casalike_cube']
 
 
 def is_gridded_data(filename, **kwargs):
+
     if is_hdf5(filename):
         return True
 
-    from ...external.astro import fits
     if is_fits(filename):
+        from ...external.astro import fits
         with fits.open(filename) as hdulist:
-            for hdu in hdulist:
-                if not isinstance(hdu, (fits.PrimaryHDU, fits.ImageHDU)):
-                    return False
-            return True
+            return is_image_hdu(hdulist[0])
+
     return False
 
 
 @data_factory(label="FITS/HDF5 Image", identifier=is_gridded_data, priority=2)
 def gridded_data(filename, format='auto', **kwargs):
-    """
-    Construct an n - dimensional data object from ``filename``. If the
-    format cannot be determined from the extension, it can be
-    specified using the ``format`` option. Valid formats are 'fits' and
-    'hdf5'.
-    """
+
     result = Data()
 
     # Try and automatically find the format if not specified
@@ -66,47 +49,8 @@ def gridded_data(filename, format='auto', **kwargs):
     for component_name in arrays:
         comp = Component.autotyped(arrays[component_name])
         result.add_component(comp, component_name)
+
     return result
 
 
-def is_casalike(filename, **kwargs):
-    """
-    Check if a file is a CASA like cube,
-    with (P, P, V, Stokes) layout
-    """
-    from ...external.astro import fits
 
-    if not is_fits(filename):
-        return False
-    with fits.open(filename) as hdulist:
-        if len(hdulist) != 1:
-            return False
-        if hdulist[0].header['NAXIS'] != 4:
-            return False
-
-        from astropy.wcs import WCS
-        w = WCS(hdulist[0].header)
-
-    ax = [a.get('coordinate_type') for a in w.get_axis_types()]
-    return ax == ['celestial', 'celestial', 'spectral', 'stokes']
-
-
-@data_factory(label='CASA PPV Cube', identifier=is_casalike)
-def casalike_cube(filename, **kwargs):
-    """
-    This provides special support for 4D CASA - like cubes,
-    which have 2 spatial axes, a spectral axis, and a stokes axis
-    in that order.
-
-    Each stokes cube is split out as a separate component
-    """
-    from ...external.astro import fits
-
-    result = Data()
-    with fits.open(filename, **kwargs) as hdulist:
-        array = hdulist[0].data
-        header = hdulist[0].header
-    result.coords = coordinates_from_header(header)
-    for i in range(array.shape[0]):
-        result.add_component(array[[i]], label='STOKES %i' % i)
-    return result

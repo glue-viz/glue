@@ -6,18 +6,87 @@ from ...compat.collections import OrderedDict
 from ...config import data_factory
 from ..data import Component, Data
 from ..coordinates import coordinates_from_header
-from .gridded import is_fits
 
-__all__ = ['fits_container']
+__all__ = ['fits_reader']
+
+
+def is_fits(filename):
+    from ...external.astro import fits
+    try:
+        with fits.open(filename):
+            return True
+    except IOError:
+        return False
+
+        
+def filter_hdulist_by_shape(hdulist, use_hdu='all'):
+    """
+    Remove empty HDUs, and ensure that all HDUs can be
+    packed into a single Data object (ie have the same shape)
+
+    Parameters
+    ----------
+    use_hdu : 'all' or list of integers (optional)
+        Which HDUs to use
+
+    Returns
+    -------
+    a new HDUList
+    """
+    from ...external.astro import fits
+
+    # If only a subset are requested, extract those
+    if use_hdu != 'all':
+        hdulist = [hdulist[hdu] for hdu in use_hdu]
+
+    # Now only keep HDUs that are not tables or empty.
+    valid_hdus = []
+    for hdu in hdulist:
+        if (isinstance(hdu, fits.PrimaryHDU) or \
+            isinstance(hdu, fits.ImageHDU)) and \
+            hdu.data is not None:
+            valid_hdus.append(hdu)
+
+    # Check that dimensions of all HDU are the same
+    # Allow for HDU's that have no data.
+    reference_shape = valid_hdus[0].data.shape
+    for hdu in valid_hdus:
+        if hdu.data.shape != reference_shape:
+            raise Exception("HDUs are not all the same dimensions")
+
+    return valid_hdus
+
+
+def extract_data_fits(filename, use_hdu='all'):
+    '''
+    Extract non-tabular HDUs from a FITS file. If `use_hdu` is 'all', then
+    all non-tabular HDUs are extracted, otherwise only the ones specified
+    by `use_hdu` are extracted (`use_hdu` should then contain a list of
+    integers). If the requested HDUs do not have the same dimensions, an
+    Exception is raised.
+    '''
+    from ...external.astro import fits
+
+    # Read in all HDUs
+    hdulist = fits.open(filename, ignore_blank=True)
+    hdulist = filter_hdulist_by_shape(hdulist)
+
+    # Extract data
+    arrays = {}
+    for hdu in hdulist:
+        arrays[hdu.name] = hdu.data
+
+    return arrays
 
 
 @data_factory(
-    label='Generic FITS',
+    label='FITS file',
     identifier=is_fits,
     priority=100,
 )
-def fits_container(source, auto_merge=False, exclude_exts=None):
-    """Read in all extensions from a FITS file.
+def fits_reader(source, auto_merge=False, exclude_exts=None):
+    """
+    Read in all extensions from a FITS file.
 
     Parameters
     ----------
@@ -116,3 +185,46 @@ def is_table_hdu(hdu):
 def has_wcs(coords):
     return any(axis['coordinate_type'] is not None
                for axis in coords.wcs.get_axis_types())
+
+
+def is_casalike(filename, **kwargs):
+   """
+   Check if a file is a CASA like cube,
+   with (P, P, V, Stokes) layout
+   """
+   from ...external.astro import fits
+
+   if not is_fits(filename):
+       return False
+   with fits.open(filename) as hdulist:
+       if len(hdulist) != 1:
+           return False
+       if hdulist[0].header['NAXIS'] != 4:
+           return False
+
+       from astropy.wcs import WCS
+       w = WCS(hdulist[0].header)
+
+   ax = [a.get('coordinate_type') for a in w.get_axis_types()]
+   return ax == ['celestial', 'celestial', 'spectral', 'stokes']
+
+
+@data_factory(label='CASA PPV Cube', identifier=is_casalike)
+def casalike_cube(filename, **kwargs):
+   """
+   This provides special support for 4D CASA - like cubes,
+   which have 2 spatial axes, a spectral axis, and a stokes axis
+   in that order.
+
+   Each stokes cube is split out as a separate component
+   """
+   from ...external.astro import fits
+
+   result = Data()
+   with fits.open(filename, **kwargs) as hdulist:
+       array = hdulist[0].data
+       header = hdulist[0].header
+   result.coords = coordinates_from_header(header)
+   for i in range(array.shape[0]):
+       result.add_component(array[[i]], label='STOKES %i' % i)
+   return result

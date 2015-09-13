@@ -9,7 +9,7 @@ import numpy as np
 from ....tests.helpers import requires_astropy
 
 from ... import data_factories as df
-from ..containers import fits_container
+from ..containers import fits_reader
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 
@@ -51,14 +51,14 @@ def test_container_fits():
     # Make sure the factory gets used
 
     d_set = df.load_data(os.path.join(DATA, 'generic.fits'),
-                         factory=df.fits_container)
+                         factory=df.fits_reader)
 
     _assert_equal_expected(d_set, expected)
 
-    # Check that fits_container takes HDUList objects
+    # Check that fits_reader takes HDUList objects
 
     hdulist = fits.open(os.path.join(DATA, 'generic.fits'))
-    d_set = fits_container(hdulist)
+    d_set = fits_reader(hdulist)
 
     _assert_equal_expected(d_set, expected)
 
@@ -66,13 +66,13 @@ def test_container_fits():
     # None
 
     hdulist[0].data = np.array([])
-    d_set = fits_container(hdulist)
+    d_set = fits_reader(hdulist)
 
     _assert_equal_expected(d_set, expected)
 
     # Check that exclude_exts works
 
-    d_set = fits_container(hdulist, exclude_exts=['TWOD'])
+    d_set = fits_reader(hdulist, exclude_exts=['TWOD'])
     expected_reduced = deepcopy(expected)
     expected_reduced.pop('generic[TWOD]')
 
@@ -104,7 +104,7 @@ def test_auto_merge_fits():
     hdu2.name = 'b'
     hdulist = fits.HDUList([hdu1, hdu2])
 
-    d_set = fits_container(hdulist)
+    d_set = fits_reader(hdulist)
 
     _assert_equal_expected(d_set, expected)
 
@@ -115,7 +115,7 @@ def test_auto_merge_fits():
         ),
     }
 
-    d_set = fits_container(hdulist, auto_merge=True)
+    d_set = fits_reader(hdulist, auto_merge=True)
 
     _assert_equal_expected(d_set, expected)
 
