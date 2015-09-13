@@ -12,7 +12,8 @@ from .layer_artist import HistogramLayerArtist, LayerArtistContainer
 from .util import update_ticks, visible_limits
 from ..core.callback_property import CallbackProperty, add_callback
 from ..utils import lookup_class
-
+from ..utils.matplotlib import freeze_margins
+from .viz_client import init_mpl
 
 class UpdateProperty(CallbackProperty):
 
@@ -57,15 +58,10 @@ class HistogramClient(Client):
         super(HistogramClient, self).__init__(data)
 
         self._artists = artist_container or LayerArtistContainer()
-        self._axes = figure.add_subplot(111)
+        self._figure, self._axes = init_mpl(figure=figure, axes=None)
         self._component = None
         self._saved_nbins = None
         self._xlim = {}
-
-        try:
-            self._axes.figure.set_tight_layout(True)
-        except AttributeError:  # pragma: nocover (matplotlib < 1.1)
-            pass
 
     @property
     def bins(self):

@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import matplotlib.pyplot as plt
 from ..core.client import Client
 from ..core import Data
+from ..utils.matplotlib import freeze_margins
 from .layer_artist import LayerArtistContainer
 
 __all__ = ['VizClient', 'GenericMplClient']
@@ -135,9 +136,10 @@ class VizClient(Client):
         raise NotImplementedError()
 
 
-def init_mpl(figure, axes, wcs=False, axes_factory=None):
-    if axes is not None and figure is not None and \
-            axes.figure is not figure:
+def init_mpl(figure=None, axes=None, wcs=False, axes_factory=None):
+
+    if (axes is not None and figure is not None and
+            axes.figure is not figure):
         raise ValueError("Axes and figure are incompatible")
 
     try:
@@ -158,10 +160,8 @@ def init_mpl(figure, axes, wcs=False, axes_factory=None):
                 _axes = axes_factory(_figure)
             else:
                 _axes = _figure.add_subplot(1, 1, 1)
-    try:
-        _figure.set_tight_layout(True)
-    except AttributeError:  # matplotlib < 1.1
-        pass
+
+    freeze_margins(_axes, margins=[1, 0.25, 0.50, 0.25])
 
     return _figure, _axes
 

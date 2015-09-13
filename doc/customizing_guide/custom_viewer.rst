@@ -230,3 +230,12 @@ Other Guidelines
  - By default, ``plot_data`` and ``plot_subset`` are called whenever
    UI settings change. To disable this behavior, set
    ``viewer.redraw_on_settings_change=False``.
+
+ - By default, Glue sets the margins of figures so that the space between axes
+   and the edge of figures is constant in absolute terms. If the default values
+   are not adequate for your viewer, you can set the margins in the ``setup``
+   method of the custom viewer by doing e.g.::
+
+       axes.resizer.margins = [0.75, 0.25, 0.5, 0.25]
+
+   where the list gives the ``[left, right, bottom, top]`` margins in inches.

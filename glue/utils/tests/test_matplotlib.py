@@ -9,7 +9,7 @@ from ...tests.helpers import requires_scipy
 
 from ..matplotlib import (point_contour, fast_limits, all_artists, new_artists,
                           remove_artists, view_cascade, get_extent, color2rgb,
-                          defer_draw)
+                          defer_draw, freeze_margins)
 
 
 @requires_scipy
@@ -94,3 +94,43 @@ def test_defer_draw():
                          (('red', (1, 0, 0)), ('green', (0, 0.5020, 0)), ('orange', (1., 0.6470, 0.))))
 def test_color2rgb(color, rgb):
     assert_allclose(color2rgb(color), rgb, atol=0.001)
+
+
+def test_freeze_margins():
+
+    fig = plt.figure(figsize=(4,4))
+
+    ax = fig.add_subplot(1,1,1)
+    freeze_margins(ax, margins=[1, 1, 1, 1])
+
+    bbox = ax.get_position()
+    np.testing.assert_allclose(bbox.x0, 0.125)
+    np.testing.assert_allclose(bbox.y0, 0.1)
+    np.testing.assert_allclose(bbox.x1, 0.9)
+    np.testing.assert_allclose(bbox.y1, 0.9)
+
+    fig.canvas.resize_event()
+
+    bbox = ax.get_position()
+    np.testing.assert_allclose(bbox.x0, 0.25)
+    np.testing.assert_allclose(bbox.y0, 0.25)
+    np.testing.assert_allclose(bbox.x1, 0.75)
+    np.testing.assert_allclose(bbox.y1, 0.75)
+
+    fig.set_size_inches(8,8)
+    fig.canvas.resize_event()
+
+    bbox = ax.get_position()
+    np.testing.assert_allclose(bbox.x0, 0.125)
+    np.testing.assert_allclose(bbox.y0, 0.125)
+    np.testing.assert_allclose(bbox.x1, 0.875)
+    np.testing.assert_allclose(bbox.y1, 0.875)
+
+    ax.resizer.margins = [0, 1, 2, 4]
+    fig.canvas.resize_event()
+
+    bbox = ax.get_position()
+    np.testing.assert_allclose(bbox.x0, 0.)
+    np.testing.assert_allclose(bbox.y0, 0.25)
+    np.testing.assert_allclose(bbox.x1, 0.875)
+    np.testing.assert_allclose(bbox.y1, 0.5)

@@ -176,3 +176,60 @@ def point_contour(x, y, data):
         return None
     xy = xy[0]
     return xy
+
+
+class AxesResizer(object):
+
+    def __init__(self, ax, margins):
+
+        self.ax = ax
+        self.margins = margins
+
+    @property
+    def margins(self):
+        return self._margins
+
+    @margins.setter
+    def margins(self, margins):
+        self._margins = margins
+
+    def on_resize(self, event):
+
+        fig_width = self.ax.figure.get_figwidth()
+        fig_height = self.ax.figure.get_figheight()
+
+        x0 = self.margins[0] / fig_width
+        x1 = 1 - self.margins[1] / fig_width
+        y0 = self.margins[2] / fig_height
+        y1 = 1 - self.margins[3] / fig_height
+
+        dx = max(0.01, x1 - x0)
+        dy = max(0.01, y1 - y0)
+
+        self.ax.set_position([x0, y0, dx, dy])
+        self.ax.figure.canvas.draw()
+
+
+def freeze_margins(axes, margins=[1, 1, 1, 1]):
+    """
+    Make sure margins of axes stay fixed.
+
+    Parameters
+    ----------
+    ax_class : matplotlib.axes.Axes
+        The axes class for which to fix the margins
+    margins : iterable
+        The margins, in inches. The order of the margins is
+        ``[left, right, bottom, top]``
+
+    Notes
+    -----
+    The object that controls the resizing is stored as the resizer attribute of
+    the Axes. This can be used to then change the margins:
+
+        >> ax.resizer.margins = [0.5, 0.5, 0.5, 0.5]
+
+    """
+
+    axes.resizer = AxesResizer(axes, margins)
+    axes.figure.canvas.mpl_connect('resize_event', axes.resizer.on_resize)
