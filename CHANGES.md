@@ -7,6 +7,9 @@ v0.6 (unreleased)
 * Prevent axes from moving around when data viewers are being resized, and
   instead make the absolute margins between axes and figure edge fixed. [#745]
 
+* Added tests to ensure that we remain backward-compatible with old session
+  files for the FITS and HDF5 factories. [#736, #748]
+
 * When a box has been drawn to extract a spectrum from a cube, the box can
   then be moved by pressing the control key and dragging it. [#707]
 

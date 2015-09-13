@@ -3,7 +3,7 @@
 import os
 import numpy as np
 
-from ...tests.helpers import requires_astropy
+from ...tests.helpers import requires_astropy, requires_h5py
 
 from ..state import GlueUnSerializer
 
@@ -30,7 +30,9 @@ def test_load_simple_tables_04():
 
     dc = ga.session.data_collection
 
-    # All tables should actually be the same becaus
+    # All tables should actually be the same because the FITS reader back at
+    # 0.4 only read in the first HDU so the new reader is back-compatible
+    # since it preserves HDU order.
 
     assert len(dc) == 4
 
@@ -47,5 +49,33 @@ def test_load_simple_tables_04():
     np.testing.assert_equal(dc[0]['b'], dc[2]['b'])
     np.testing.assert_equal(dc[0]['a'], dc[3]['a'])
     np.testing.assert_equal(dc[0]['b'], dc[3]['b'])
+
+    ga.close()
+
+
+@requires_h5py
+def test_load_hdf5_grids_04():
+
+    # This loads a session file made with Glue v0.4. In this session, we have
+    # loaded two gridded datasets from an HDF5 datafile: the first one loaded
+    # via the auto loader and the other via the FITS/HDF5 loader.
+
+    with open(os.path.join(DATA, 'simple_hdf5_grid.glu'), 'r') as f:
+        template = f.read()
+
+    content = template.replace('{DATA_PATH}', (DATA + os.sep).replace('\\', '\\\\'))
+    state = GlueUnSerializer.loads(content)
+
+    ga = state.object('__main__')
+
+    dc = ga.session.data_collection
+
+    assert len(dc) == 2
+
+    assert dc[0].label == 'single_grid_auto'
+    assert dc[1].label == 'single_grid'
+
+    np.testing.assert_equal(dc[0]['/array1'], 1)
+    np.testing.assert_equal(dc[0]['/array1'].shape, (2, 3, 4))
 
     ga.close()
