@@ -255,7 +255,7 @@ class GlueToolbar(NavigationToolbar2QT):
             self.buttons[mode].setChecked(self._active == mode)
 
     def set_message(self, s):
-        self.emit(QtCore.SIGNAL("message"), s)
+        self.message.emit(s)
         parent = QtGui.QToolBar.parent(self)
         if parent is None:
             return
