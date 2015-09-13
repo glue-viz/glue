@@ -51,6 +51,3 @@ def gridded_data(filename, format='auto', **kwargs):
         result.add_component(comp, component_name)
 
     return result
-
-
-

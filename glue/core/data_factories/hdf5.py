@@ -79,7 +79,7 @@ def is_hdf5(filename):
 def hdf5_reader(filename, format='auto', **kwargs):
     """
     Read in all datasets from an HDF5 file
-    
+
     Parameters
     ----------
     source: str or HDUList
@@ -96,6 +96,3 @@ def hdf5_reader(filename, format='auto', **kwargs):
         result.add_component(comp, component_name)
 
     return result
-
-
-

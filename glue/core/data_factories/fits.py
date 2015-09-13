@@ -18,7 +18,7 @@ def is_fits(filename):
     except IOError:
         return False
 
-        
+
 def filter_hdulist_by_shape(hdulist, use_hdu='all'):
     """
     Remove empty HDUs, and ensure that all HDUs can be
@@ -42,9 +42,9 @@ def filter_hdulist_by_shape(hdulist, use_hdu='all'):
     # Now only keep HDUs that are not tables or empty.
     valid_hdus = []
     for hdu in hdulist:
-        if (isinstance(hdu, fits.PrimaryHDU) or \
-            isinstance(hdu, fits.ImageHDU)) and \
-            hdu.data is not None:
+        if (isinstance(hdu, fits.PrimaryHDU) or
+                isinstance(hdu, fits.ImageHDU)) and \
+                hdu.data is not None:
             valid_hdus.append(hdu)
 
     # Check that dimensions of all HDU are the same
@@ -188,43 +188,43 @@ def has_wcs(coords):
 
 
 def is_casalike(filename, **kwargs):
-   """
-   Check if a file is a CASA like cube,
-   with (P, P, V, Stokes) layout
-   """
-   from ...external.astro import fits
+    """
+    Check if a file is a CASA like cube,
+    with (P, P, V, Stokes) layout
+    """
+    from ...external.astro import fits
 
-   if not is_fits(filename):
-       return False
-   with fits.open(filename) as hdulist:
-       if len(hdulist) != 1:
-           return False
-       if hdulist[0].header['NAXIS'] != 4:
-           return False
+    if not is_fits(filename):
+        return False
+    with fits.open(filename) as hdulist:
+        if len(hdulist) != 1:
+            return False
+        if hdulist[0].header['NAXIS'] != 4:
+            return False
 
-       from astropy.wcs import WCS
-       w = WCS(hdulist[0].header)
+        from astropy.wcs import WCS
+        w = WCS(hdulist[0].header)
 
-   ax = [a.get('coordinate_type') for a in w.get_axis_types()]
-   return ax == ['celestial', 'celestial', 'spectral', 'stokes']
+    ax = [a.get('coordinate_type') for a in w.get_axis_types()]
+    return ax == ['celestial', 'celestial', 'spectral', 'stokes']
 
 
 @data_factory(label='CASA PPV Cube', identifier=is_casalike)
 def casalike_cube(filename, **kwargs):
-   """
-   This provides special support for 4D CASA - like cubes,
-   which have 2 spatial axes, a spectral axis, and a stokes axis
-   in that order.
+    """
+    This provides special support for 4D CASA - like cubes,
+    which have 2 spatial axes, a spectral axis, and a stokes axis
+    in that order.
 
-   Each stokes cube is split out as a separate component
-   """
-   from ...external.astro import fits
+    Each stokes cube is split out as a separate component
+    """
+    from ...external.astro import fits
 
-   result = Data()
-   with fits.open(filename, **kwargs) as hdulist:
-       array = hdulist[0].data
-       header = hdulist[0].header
-   result.coords = coordinates_from_header(header)
-   for i in range(array.shape[0]):
-       result.add_component(array[[i]], label='STOKES %i' % i)
-   return result
+    result = Data()
+    with fits.open(filename, **kwargs) as hdulist:
+        array = hdulist[0].data
+        header = hdulist[0].header
+    result.coords = coordinates_from_header(header)
+    for i in range(array.shape[0]):
+        result.add_component(array[[i]], label='STOKES %i' % i)
+    return result

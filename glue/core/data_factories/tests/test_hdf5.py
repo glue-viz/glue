@@ -21,7 +21,7 @@ def test_skip_non_numerical(tmpdir):
 
     f = h5py.File(filename, 'w')
     f.create_dataset('a', data='hello')
-    f.create_dataset('b', data=np.array([1,2,3]))
+    f.create_dataset('b', data=np.array([1, 2, 3]))
     f.close()
 
     auto_data(filename)

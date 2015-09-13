@@ -12,8 +12,8 @@ from ...data import CategoricalComponent, Data
 from ...tests.util import make_file
 
 from ....tests.helpers import (requires_astropy, requires_astropy_ge_03,
-                              requires_astropy_ge_04, requires_pil_or_skimage,
-                              requires_astrodendro, requires_h5py)
+                               requires_astropy_ge_04, requires_pil_or_skimage,
+                               requires_astrodendro, requires_h5py)
 
 from ....config import data_factory
 
@@ -46,7 +46,7 @@ def test_data_label():
 
 @requires_pil_or_skimage
 def test_grey_png_loader():
-	# Greyscale PNG
+    # Greyscale PNG
     data = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x02\x00\x00\x00\x02\x08\x00\x00\x00\x00W\xddR\xf8\x00\x00\x00\x0eIDATx\x9ccdddab\x04\x00\x00&\x00\x0b\x8e`\xe7A\x00\x00\x00\x00IEND\xaeB`\x82'
     with make_file(data, '.png') as fname:
         d = df.load_data(fname)
@@ -56,7 +56,7 @@ def test_grey_png_loader():
 
 @requires_pil_or_skimage
 def test_color_png_loader():
-	# Colorscale PNG
+    # Colorscale PNG
     data = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x02\x00\x00\x00\x02\x08\x02\x00\x00\x00\xfd\xd4\x9as\x00\x00\x00\x15IDAT\x08\xd7\x05\xc1\x01\x01\x00\x00\x00\x80\x10\xffO\x17B\x14\x1a!\xec\x04\xfc\xf2!Q\\\x00\x00\x00\x00IEND\xaeB`\x82'
     with make_file(data, '.png') as fname:
         d = df.load_data(fname)
@@ -64,8 +64,6 @@ def test_color_png_loader():
     assert_array_equal(d['red'], [[255, 0], [255, 0]])
     assert_array_equal(d['green'], [[255, 0], [0, 255]])
     assert_array_equal(d['blue'], [[0, 255], [0, 0]])
-
-
 
 
 @pytest.mark.parametrize(('delim', 'suffix'),
