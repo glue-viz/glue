@@ -77,9 +77,11 @@ spectrum_tool = glue.plugins.tools.spectrum_tool:setup
 coordinate_helpers = glue.plugins.coordinate_helpers:setup
 
 [console_scripts]
-glue = glue.main:main
 glue-config = glue.config_gen:main
 glue-deps = glue._deps:main
+
+[gui_scripts]
+glue = glue.main:main
 """
 
 setup(name='glueviz',
