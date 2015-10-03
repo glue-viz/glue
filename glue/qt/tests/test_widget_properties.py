@@ -28,7 +28,6 @@ from ...external.qt import QtCore, get_qapp
 from ...external.echo import CallbackProperty
 
 
-
 def test_combo_data():
 
     class TestClass(object):

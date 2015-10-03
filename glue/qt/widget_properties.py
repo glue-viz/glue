@@ -57,7 +57,6 @@ class WidgetProperty(object):
         widget = reduce(getattr, [instance] + self._att)
         self.setter(widget, value)
 
-
     def getter(self, widget):
         """ Return the state of a widget. Depends on type of widget,
         and must be overridden"""
