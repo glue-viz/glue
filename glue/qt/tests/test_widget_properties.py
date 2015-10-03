@@ -20,7 +20,10 @@ from ...external.qt.QtGui import (QCheckBox,
                                   QLabel,
                                   QSlider,
                                   QTabWidget,
-                                  QWidget)
+                                  QWidget,
+                                  QKeyEvent)
+
+from ...external.qt import QtCore, get_qapp
 
 from ...external.echo import CallbackProperty
 
@@ -248,15 +251,23 @@ def test_connect_float_edit():
     t = Test()
 
     line = QLineEdit()
+    dum = QWidget()
 
     connect_float_edit(t, 'a', line)
 
-    # TODO: simulate editingFinished event
-    # line.setText('1.0')
-    # assert t.a == 1.0
-    #
-    # line.setText('4.0')
-    # assert t.a == 4.0
+    event = QKeyEvent(QtCore.QEvent.KeyPress,
+                      QtCore.Qt.Key_Return,
+                      QtCore.Qt.NoModifier)
+
+    app = get_qapp()
+
+    line.setText('1.0')
+    app.sendEvent(line, event)
+    assert t.a == 1.0
+
+    line.setText('4.0')
+    app.sendEvent(line, event)
+    assert t.a == 4.0
 
     t.a = 3.0
     assert line.text() == '3'
