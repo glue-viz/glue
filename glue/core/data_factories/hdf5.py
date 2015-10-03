@@ -48,8 +48,6 @@ def hdf5_reader(filename, format='auto', auto_merge=False, **kwargs):
         If an HDUList is passed in, simply use that.
     """
 
-    result = Data()
-
     import h5py
 
     # Open file
