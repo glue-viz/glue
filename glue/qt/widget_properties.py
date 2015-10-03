@@ -61,11 +61,11 @@ class WidgetProperty(object):
     def getter(self, widget):
         """ Return the state of a widget. Depends on type of widget,
         and must be overridden"""
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def setter(self, widget, value):
         """ Set the state of a widget to a certain value"""
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
 
 class CurrentComboDataProperty(WidgetProperty):
@@ -197,7 +197,7 @@ class ValueProperty(WidgetProperty):
         Python values to Qt widget values. This can be used for to specify a
         non-linear mapping for sliders.
     """
-    
+
     def __init__(self, att, docstring='', mapping=None):
         super(ValueProperty, self).__init__(att, docstring=docstring)
         self.mapping = mapping
@@ -232,9 +232,8 @@ def connect_current_combo(client, prop, widget):
     """
 
     def _push_combo(value):
-        try:
-            idx = _find_combo_data(widget, value)
-        except ValueError:  # not found. Punt instead of failing
+        idx = widget.findData(value)
+        if idx == -1:
             return
         widget.setCurrentIndex(idx)
 
@@ -263,6 +262,8 @@ def connect_float_edit(client, prop, widget):
             setattr(client, prop, 0)
 
     def update_widget(val):
+        if val is None:
+            val = 0.
         widget.setText(pretty_number(val))
 
     add_callback(client, prop, update_widget)
@@ -278,15 +279,3 @@ def connect_int_spin(client, prop, widget):
     """
     add_callback(client, prop, widget.setValue)
     widget.valueChanged.connect(partial(setattr, client, prop))
-
-
-def _find_index(widget, value, func='itemData'):
-    """
-    Returns the index where func(index) == value
-
-    Raises a ValueError if data is not found
-    """
-    for i in range(widget.count()):
-        if getattr(widget, func)(i) == value:
-            return i
-    raise ValueError("%s not found" % value)

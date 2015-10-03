@@ -8,7 +8,11 @@ from ..widget_properties import (CurrentComboDataProperty,
                                  TextProperty,
                                  ButtonProperty,
                                  FloatLineProperty,
-                                 ValueProperty)
+                                 ValueProperty,
+                                 connect_bool_button,
+                                 connect_current_combo,
+                                 connect_float_edit,
+                                 connect_int_spin)
 
 from ...external.qt.QtGui import (QCheckBox,
                                   QLineEdit,
@@ -18,7 +22,7 @@ from ...external.qt.QtGui import (QCheckBox,
                                   QTabWidget,
                                   QWidget)
 
-
+from ...external.echo import CallbackProperty
 
 
 
@@ -126,6 +130,9 @@ def test_float():
     tc._float.setText('10')
     assert tc.flt == 10.0
 
+    tc._float.setText('')
+    assert tc.flt == 0.0
+
 
 def test_value():
 
@@ -178,3 +185,96 @@ def test_tab():
     with pytest.raises(ValueError) as exc:
         tc.tab = 'tab3'
     assert exc.value.args[0] == "Cannot find value 'tab3' in tabs"
+
+
+def test_connect_bool_button():
+
+    class Test(object):
+        a = CallbackProperty()
+
+    t = Test()
+
+    box = QCheckBox()
+    connect_bool_button(t, 'a', box)
+
+    box.setChecked(True)
+    assert t.a
+
+    box.setChecked(False)
+    assert not t.a
+
+    t.a = True
+    assert box.isChecked()
+
+    t.a = False
+    assert not box.isChecked()
+
+
+def test_connect_current_combo():
+
+    class Test(object):
+        a = CallbackProperty()
+
+    t = Test()
+
+    combo = QComboBox()
+    combo.addItem('a', 'a')
+    combo.addItem('b', 'b')
+
+    connect_current_combo(t, 'a', combo)
+
+    combo.setCurrentIndex(1)
+    assert t.a == 'b'
+
+    combo.setCurrentIndex(0)
+    assert t.a == 'a'
+
+    t.a = 'b'
+    assert combo.currentIndex() == 1
+
+    t.a = 'a'
+    assert combo.currentIndex() == 0
+
+    # TODO: should the following not return an error?
+    t.a = 'c'
+    assert combo.currentIndex() == 0
+
+
+def test_connect_float_edit():
+
+    class Test(object):
+        a = CallbackProperty()
+
+    t = Test()
+
+    line = QLineEdit()
+
+    connect_float_edit(t, 'a', line)
+
+    # TODO: simulate editingFinished event
+    # line.setText('1.0')
+    # assert t.a == 1.0
+    #
+    # line.setText('4.0')
+    # assert t.a == 4.0
+
+    t.a = 3.0
+    assert line.text() == '3'
+
+
+def test_connect_int_spin():
+
+    class Test(object):
+        a = CallbackProperty()
+
+    t = Test()
+
+    slider = QSlider()
+
+    connect_int_spin(t, 'a', slider)
+
+    slider.setValue(4)
+    assert t.a == 4
+
+    t.a = 3.0
+    assert slider.value() == 3.0
