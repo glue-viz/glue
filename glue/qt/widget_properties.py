@@ -28,24 +28,24 @@ from ..core.callback_property import add_callback
 
 
 class WidgetProperty(object):
-
-    """ Base class for widget properties
+    """
+    Base class for widget properties
 
     Subclasses implement, at a minimum, the "get" and "set" methods,
     which translate between widget states and python variables
+
+    Parameters
+    ----------
+    att : str
+        The location, within a class instance, of the widget to wrap around.
+        If the widget is nested inside another variable, normal '.' syntax
+        can be used (e.g. 'sub_window.button')
+    docstring : str, optional
+        Optional short summary for the property. Used by sphinx. Should be 1
+        sentence or less.
     """
 
     def __init__(self, att, docstring=''):
-        """
-        :param att: The location, within a class instance, of the widget
-        to wrap around. If the widget is nested inside another variable,
-        normal '.' syntax can be used (e.g. 'sub_window.button')
-
-        :type att: str
-        :param docstring: Optional short summary for the property.
-                          Used by sphinx. Should be 1 sentence or less.
-        :type docstring: str
-        """
         self.__doc__ = docstring
         self._att = att.split('.')
 
@@ -57,6 +57,7 @@ class WidgetProperty(object):
         widget = reduce(getattr, [instance] + self._att)
         self.setter(widget, value)
 
+
     def getter(self, widget):
         """ Return the state of a widget. Depends on type of widget,
         and must be overridden"""
@@ -67,25 +68,78 @@ class WidgetProperty(object):
         raise NotImplementedError()
 
 
-class CurrentComboProperty(WidgetProperty):
-
-    """Wrapper around ComboBoxes"""
+class CurrentComboDataProperty(WidgetProperty):
+    """
+    Wrapper around ComboBoxes
+    """
 
     def getter(self, widget):
-        """ Return the itemData stored in the currently-selected item """
+        """
+        Return the itemData stored in the currently-selected item
+        """
         return widget.itemData(widget.currentIndex())
 
     def setter(self, widget, value):
-        """ Update the currently selected item to the one which stores value in
+        """
+        Update the currently selected item to the one which stores value in
         its itemData
         """
-        idx = _find_combo_data(widget, value)
+        idx = widget.findData(value)
+        if idx == -1:
+            raise ValueError("Cannot find data '{0}' in combo box".format(value))
+        widget.setCurrentIndex(idx)
+
+CurrentComboProperty = CurrentComboDataProperty
+
+
+class CurrentComboTextProperty(WidgetProperty):
+    """
+    Wrapper around ComboBoxes
+    """
+
+    def getter(self, widget):
+        """
+        Return the itemData stored in the currently-selected item
+        """
+        return widget.itemText(widget.currentIndex())
+
+    def setter(self, widget, value):
+        """
+        Update the currently selected item to the one which stores value in
+        its itemData
+        """
+        idx = widget.findText(value)
+        if idx == -1:
+            raise ValueError("Cannot find text '{0}' in combo box".format(value))
+        widget.setCurrentIndex(idx)
+
+
+class CurrentTabProperty(WidgetProperty):
+
+    def getter(self, widget):
+        """
+        Return the itemData stored in the currently-selected item
+        """
+        return widget.tabText(widget.currentIndex())
+
+    def setter(self, widget, value):
+        """
+        Update the currently selected item to the one which stores value in
+        its itemData
+        """
+        for idx in range(widget.count()):
+            if widget.tabText(idx) == value:
+                break
+        else:
+            raise ValueError("Cannot find value '{0}' in tabs".format(value))
+
         widget.setCurrentIndex(idx)
 
 
 class TextProperty(WidgetProperty):
-
-    """ Wrapper around the text() and setText() methods for QLabel etc"""
+    """
+    Wrapper around the text() and setText() methods for QLabel etc
+    """
 
     def getter(self, widget):
         return widget.text()
@@ -95,8 +149,9 @@ class TextProperty(WidgetProperty):
 
 
 class ButtonProperty(WidgetProperty):
-
-    """Wrapper around the check state for QAbstractButton widgets"""
+    """
+    Wrapper around the check state for QAbstractButton widgets
+    """
 
     def getter(self, widget):
         return widget.isChecked()
@@ -106,10 +161,10 @@ class ButtonProperty(WidgetProperty):
 
 
 class FloatLineProperty(WidgetProperty):
+    """
+    Wrapper around the text state for QLineEdit widgets.
 
-    """Wrapper around the text state for QLineEdit widgets.
-
-    Assumes that the text is a floating point number
+    Assumes that the text is a floating-point number
     """
 
     def getter(self, widget):
@@ -124,14 +179,40 @@ class FloatLineProperty(WidgetProperty):
 
 
 class ValueProperty(WidgetProperty):
+    """
+    Wrapper around widgets with value() and setValue()
 
-    """Wrapper around value() and setValue() intspin boxes"""
+    Parameters
+    ----------
+    att : str
+        The location, within a class instance, of the widget to wrap around.
+        If the widget is nested inside another variable, normal '.' syntax
+        can be used (e.g. 'sub_window.button')
+    docstring : str, optional
+        Optional short summary for the property. Used by sphinx. Should be 1
+        sentence or less.
+    mapping : tuple, optional
+        If specified, should be a tuple of two functions - the first to map
+        from Qt widget values to Python values, and the second to map from
+        Python values to Qt widget values. This can be used for to specify a
+        non-linear mapping for sliders.
+    """
+    
+    def __init__(self, att, docstring='', mapping=None):
+        super(ValueProperty, self).__init__(att, docstring=docstring)
+        self.mapping = mapping
 
     def getter(self, widget):
-        return widget.value()
+        if self.mapping is None:
+            return widget.value()
+        else:
+            return self.mapping[0](widget.value())
 
     def setter(self, widget, value):
-        widget.setValue(value)
+        if self.mapping is None:
+            widget.setValue(value)
+        else:
+            widget.setValue(self.mapping[1](value))
 
 
 def connect_bool_button(client, prop, widget):
@@ -199,13 +280,13 @@ def connect_int_spin(client, prop, widget):
     widget.valueChanged.connect(partial(setattr, client, prop))
 
 
-def _find_combo_data(widget, value):
+def _find_index(widget, value, func='itemData'):
     """
-    Returns the index in a combo box where itemData == value
+    Returns the index where func(index) == value
 
     Raises a ValueError if data is not found
     """
     for i in range(widget.count()):
-        if widget.itemData(i) == value:
+        if getattr(widget, func)(i) == value:
             return i
-    raise ValueError("%s not found in combo box" % value)
+    raise ValueError("%s not found" % value)

@@ -1,42 +1,180 @@
 from __future__ import absolute_import, division, print_function
 
-from ..widget_properties import (ButtonProperty,
-                                 FloatLineProperty)
+import pytest
 
-from ...external.qt.QtGui import QCheckBox, QLineEdit
+from ..widget_properties import (CurrentComboDataProperty,
+                                 CurrentComboTextProperty,
+                                 CurrentTabProperty,
+                                 TextProperty,
+                                 ButtonProperty,
+                                 FloatLineProperty,
+                                 ValueProperty)
+
+from ...external.qt.QtGui import (QCheckBox,
+                                  QLineEdit,
+                                  QComboBox,
+                                  QLabel,
+                                  QSlider,
+                                  QTabWidget,
+                                  QWidget)
 
 
-class TestClass(object):
-    b = ButtonProperty('_button')
-    fl = FloatLineProperty('_float')
 
-    def __init__(self):
-        self._button = QCheckBox()
-        self._float = QLineEdit()
+
+
+def test_combo_data():
+
+    class TestClass(object):
+
+        co = CurrentComboDataProperty('_combo')
+
+        def __init__(self):
+            self._combo = QComboBox()
+            self._combo.addItem('a', 'a')
+            self._combo.addItem('b', 'b')
+
+    tc = TestClass()
+
+    tc.co = 'a'
+    assert tc.co == 'a'
+    assert tc._combo.currentIndex() == 0
+
+    tc.co = 'b'
+    assert tc.co == 'b'
+    assert tc._combo.currentIndex() == 1
+
+    with pytest.raises(ValueError) as exc:
+        tc.co = 'c'
+    assert exc.value.args[0] == "Cannot find data 'c' in combo box"
+
+
+def test_combo_text():
+
+    class TestClass(object):
+
+        co = CurrentComboTextProperty('_combo')
+
+        def __init__(self):
+            self._combo = QComboBox()
+            self._combo.addItem('a')
+            self._combo.addItem('b')
+
+    tc = TestClass()
+
+    tc.co = 'a'
+    assert tc.co == 'a'
+    assert tc._combo.currentIndex() == 0
+
+    tc.co = 'b'
+    assert tc.co == 'b'
+    assert tc._combo.currentIndex() == 1
+
+    with pytest.raises(ValueError) as exc:
+        tc.co = 'c'
+    assert exc.value.args[0] == "Cannot find text 'c' in combo box"
+
+
+def test_text():
+
+    class TestClass(object):
+        lab = TextProperty('_label')
+        def __init__(self):
+            self._label = QLabel()
+
+    tc = TestClass()
+    tc.lab = 'hello'
+    assert tc.lab == 'hello'
+    assert tc._label.text() == 'hello'
 
 
 def test_button():
-    tc = TestClass()
-    assert tc.b == tc._button.checkState()
 
-    tc.b = True
+    class TestClass(object):
+        but = ButtonProperty('_button')
+        def __init__(self):
+            self._button = QCheckBox()
+
+    tc = TestClass()
+
+    assert tc.but == tc._button.checkState()
+
+    tc.but = True
     assert tc._button.isChecked()
 
-    tc.b = False
+    tc.but = False
     assert not tc._button.isChecked()
 
     tc._button.setChecked(True)
-    assert tc.b
+    assert tc.but
 
     tc._button.setChecked(False)
-    assert not tc.b
+    assert not tc.but
 
 
 def test_float():
+
+    class TestClass(object):
+        flt = FloatLineProperty('_float')
+        def __init__(self):
+            self._float = QLineEdit()
+
     tc = TestClass()
 
-    tc.fl = 1.0
+    tc.flt = 1.0
     assert float(tc._float.text()) == 1.0
 
     tc._float.setText('10')
-    assert tc.fl == 10.0
+    assert tc.flt == 10.0
+
+
+def test_value():
+
+    class TestClass(object):
+        val = ValueProperty('_slider')
+        def __init__(self):
+            self._slider = QSlider()
+
+    tc = TestClass()
+
+    tc.val = 2.0
+    assert tc.val == 2.0
+    assert tc._slider.value() == 2.0
+
+
+def test_value_mapping():
+
+    class TestClass(object):
+        val = ValueProperty('_slider', mapping=(lambda x: 2 * x,
+                                                lambda x: 0.5 * x))
+        def __init__(self):
+            self._slider = QSlider()
+
+    tc = TestClass()
+
+    tc.val = 2.0
+    assert tc.val == 2.0
+    assert tc._slider.value() == 1.0
+
+
+def test_tab():
+
+    class TestClass(object):
+        tab = CurrentTabProperty('_tab')
+        def __init__(self):
+            self._tab = QTabWidget()
+            self._tab.addTab(QWidget(), 'tab1')
+            self._tab.addTab(QWidget(), 'tab2')
+
+    tc = TestClass()
+
+    tc.tab = 'tab1'
+    assert tc.tab == 'tab1'
+    assert tc._tab.currentIndex() == 0
+
+    tc.tab = 'tab2'
+    assert tc.tab == 'tab2'
+    assert tc._tab.currentIndex() == 1
+
+    with pytest.raises(ValueError) as exc:
+        tc.tab = 'tab3'
+    assert exc.value.args[0] == "Cannot find value 'tab3' in tabs"
