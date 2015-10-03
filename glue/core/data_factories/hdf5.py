@@ -2,8 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from astropy.table import Table
-
 from ...compat.collections import OrderedDict
 from ..data import Component, Data
 from ...config import data_factory
@@ -49,6 +47,7 @@ def hdf5_reader(filename, format='auto', auto_merge=False, **kwargs):
     """
 
     import h5py
+    from astropy.table import Table
 
     # Open file
     file_handle = h5py.File(filename, 'r')
