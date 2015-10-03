@@ -7,8 +7,10 @@ from ...utils import file_format
 from ..coordinates import coordinates_from_header
 from ...config import data_factory
 
-from .fits import is_fits, extract_data_fits, is_casalike, casalike_cube
-from .hdf5 import is_hdf5, extract_data_hdf5
+from .fits import is_fits, is_casalike, is_image_hdu, casalike_cube
+from .hdf5 import is_hdf5
+
+from .compat import extract_data_fits, extract_data_hdf5
 
 __all__ = ['is_gridded_data', 'gridded_data', 'is_casalike', 'casalike_cube']
 
@@ -26,7 +28,9 @@ def is_gridded_data(filename, **kwargs):
     return False
 
 
-@data_factory(label="FITS/HDF5 Image", identifier=is_gridded_data, deprecated=True)
+@data_factory(label="FITS/HDF5 Image",
+              identifier=is_gridded_data,
+              deprecated=True)
 def gridded_data(filename, format='auto', **kwargs):
 
     result = Data()
