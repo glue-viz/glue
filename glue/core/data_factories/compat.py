@@ -45,7 +45,45 @@ def extract_data_hdf5(filename, use_datasets='all'):
     file_handle.close()
 
     return arrays
-    
+
+
+def filter_hdulist_by_shape(hdulist, use_hdu='all'):
+    """
+    Remove empty HDUs, and ensure that all HDUs can be
+    packed into a single Data object (ie have the same shape)
+
+    Parameters
+    ----------
+    use_hdu : 'all' or list of integers (optional)
+        Which HDUs to use
+
+    Returns
+    -------
+    a new HDUList
+    """
+    from ...external.astro import fits
+
+    # If only a subset are requested, extract those
+    if use_hdu != 'all':
+        hdulist = [hdulist[hdu] for hdu in use_hdu]
+
+    # Now only keep HDUs that are not tables or empty.
+    valid_hdus = []
+    for hdu in hdulist:
+        if (isinstance(hdu, fits.PrimaryHDU) or
+                isinstance(hdu, fits.ImageHDU)) and \
+                hdu.data is not None:
+            valid_hdus.append(hdu)
+
+    # Check that dimensions of all HDU are the same
+    # Allow for HDU's that have no data.
+    reference_shape = valid_hdus[0].data.shape
+    for hdu in valid_hdus:
+        if hdu.data.shape != reference_shape:
+            raise Exception("HDUs are not all the same dimensions")
+
+    return valid_hdus
+
 
 def extract_data_fits(filename, use_hdu='all'):
     '''
@@ -67,4 +105,3 @@ def extract_data_fits(filename, use_hdu='all'):
         arrays[hdu.name] = hdu.data
 
     return arrays
-
