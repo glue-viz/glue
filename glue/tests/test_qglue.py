@@ -102,7 +102,7 @@ class TestQGlue(object):
 
     def test_hdulist(self):
         dc = qglue(data1=self.hdulist).data_collection
-        self.check_setup(dc, {'data1': ['PRIMARY']})
+        self.check_setup(dc, {'data1[PRIMARY]': ['PRIMARY']})
 
     def test_glue_data(self):
         d = Data(x=[1, 2, 3])

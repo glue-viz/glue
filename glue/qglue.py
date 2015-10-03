@@ -90,23 +90,9 @@ def _parse_data_path(path, label):
 
 
 def _parse_data_hdulist(data, label):
-    """
-    Parse all HDUs in an HDUList into a data object, and build coords.
-    Assumes all extensions have the same shape
-    """
-    from .core.data_factories.io import filter_hdulist_by_shape
-    from .core.coordinates import coordinates_from_header
+    from .core.data_factories.fits import fits_reader
+    return fits_reader(data, label=label)
 
-    result = Data(label=label)
-
-    hdulist = filter_hdulist_by_shape(data)
-    header = hdulist[0].header
-
-    result.coords = coordinates_from_header(header)
-    for hdu in hdulist:
-        result.add_component(hdu.data, label=hdu.name)
-
-    return [result]
 
 # (base class, parser function)
 _parsers = [

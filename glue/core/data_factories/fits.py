@@ -24,7 +24,7 @@ def is_fits(filename):
     identifier=is_fits,
     priority=100,
 )
-def fits_reader(source, auto_merge=False, exclude_exts=None):
+def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
     """
     Read in all extensions from a FITS file.
 
@@ -55,14 +55,20 @@ def fits_reader(source, auto_merge=False, exclude_exts=None):
     groups = OrderedDict()
     extension_by_shape = OrderedDict()
 
-    hdulist_name = hdulist.filename()
-    if hdulist_name is None:
-        hdulist_name = "HDUList"
+    if label is not None:
 
-    label_base = basename(hdulist_name).rpartition('.')[0]
+        label_base = label
 
-    if not label_base:
-        label_base = basename(hdulist_name)
+    else:
+
+        hdulist_name = hdulist.filename()
+        if hdulist_name is None:
+            hdulist_name = "HDUList"
+
+        label_base = basename(hdulist_name).rpartition('.')[0]
+
+        if not label_base:
+            label_base = basename(hdulist_name)
 
     # Create a new image Data.
     def new_data():
