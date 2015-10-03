@@ -83,8 +83,11 @@ class CurrentComboDataProperty(WidgetProperty):
         Update the currently selected item to the one which stores value in
         its itemData
         """
-        idx = widget.findData(value)
-        if idx == -1:
+        # Note, we don't use findData here because it doesn't work
+        # well with non-str data
+        try:
+            idx = _find_combo_data(widget, value)
+        except ValueError:
             raise ValueError("Cannot find data '{0}' in combo box".format(value))
         widget.setCurrentIndex(idx)
 
@@ -278,3 +281,15 @@ def connect_int_spin(client, prop, widget):
     """
     add_callback(client, prop, widget.setValue)
     widget.valueChanged.connect(partial(setattr, client, prop))
+
+
+def _find_combo_data(widget, value):
+    """
+    Returns the index in a combo box where itemData == value
+
+    Raises a ValueError if data is not found
+    """
+    for i in range(widget.count()):
+        if widget.itemData(i) == value:
+            return i
+    raise ValueError("%s not found in combo box" % value)
