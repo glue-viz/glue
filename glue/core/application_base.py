@@ -231,7 +231,7 @@ class Application(HubListener):
         """Return a tuple of tuples of viewers currently open
         The i'th tuple stores the viewers in the i'th close_tab
         """
-        raise NotImplementedError()
+        return []
 
     def __gluestate__(self, context):
         viewers = [list(map(context.id, tab)) for tab in self.viewers]

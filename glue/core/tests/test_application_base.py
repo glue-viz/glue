@@ -9,8 +9,8 @@ from ...external.six.moves import cPickle as pickle
 
 class MockApplication(Application):
 
-    def __init__(self, data=None, hub=None):
-        super(MockApplication, self).__init__(data, hub)
+    def __init__(self, data_collection=None, session=None):
+        super(MockApplication, self).__init__(data_collection=data_collection, session=session)
         self.tab = MagicMock()
         self.errors = MagicMock()
 
@@ -54,3 +54,10 @@ class TestApplicationBase(object):
         assert args[1] == [x]
 
         assert self.app.data_collection.merge.call_count == 1
+
+
+def test_session(tmpdir):
+    session_file = tmpdir.join('test.glu').strpath
+    app = MockApplication()
+    app.save_session(session_file)
+    app2 = MockApplication.restore_session(session_file)
