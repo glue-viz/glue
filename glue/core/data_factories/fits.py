@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import warnings
 from os.path import basename
 
 from ...compat.collections import OrderedDict
@@ -13,8 +14,10 @@ __all__ = ['is_fits', 'fits_reader', 'is_casalike', 'casalike_cube']
 def is_fits(filename):
     from ...external.astro import fits
     try:
-        with fits.open(filename):
-            return True
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            with fits.open(filename):
+                return True
     except IOError:
         return False
 
