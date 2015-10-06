@@ -69,7 +69,7 @@ class WidgetProperty(object):
 
 class CurrentComboDataProperty(WidgetProperty):
     """
-    Wrapper around ComboBoxes
+    Wrapper around the data in QComboBox.
     """
 
     def getter(self, widget):
@@ -96,7 +96,7 @@ CurrentComboProperty = CurrentComboDataProperty
 
 class CurrentComboTextProperty(WidgetProperty):
     """
-    Wrapper around ComboBoxes
+    Wrapper around the text in QComboBox.
     """
 
     def getter(self, widget):
@@ -117,6 +117,9 @@ class CurrentComboTextProperty(WidgetProperty):
 
 
 class CurrentTabProperty(WidgetProperty):
+    """
+    Wrapper around QTabWidget.
+    """
 
     def getter(self, widget):
         """
