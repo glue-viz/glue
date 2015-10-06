@@ -43,6 +43,12 @@ v0.6 (unreleased)
 
 * Improved reading of FITS files - all HDUs are now read by default. [#704, #732]
 
+* Added new widget property classes, for combo boxes (based on label instead of
+  data) and for tab widgets. [#752]
+
+* Improved reading of HDF5 files - all datasets in an HDF5 file are now read by
+  default. [#747]
+
 * Fix a bug that caused the color of an extracted spectrum to vary if extracted
   multiple times. [#743]
 
