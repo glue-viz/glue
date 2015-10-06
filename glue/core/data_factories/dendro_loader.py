@@ -8,7 +8,8 @@ from astrodendro import Dendrogram
 from ..data import Data
 from ...config import data_factory
 
-from .gridded import is_fits, is_hdf5
+from .fits import is_fits
+from .hdf5 import is_hdf5
 
 __all__ = ['load_dendro', 'is_dendro']
 

@@ -6,18 +6,27 @@ from ...compat.collections import OrderedDict
 from ...config import data_factory
 from ..data import Component, Data
 from ..coordinates import coordinates_from_header
-from .gridded import is_fits
 
-__all__ = ['fits_container']
+__all__ = ['is_fits', 'fits_reader', 'is_casalike', 'casalike_cube']
+
+
+def is_fits(filename):
+    from ...external.astro import fits
+    try:
+        with fits.open(filename):
+            return True
+    except IOError:
+        return False
 
 
 @data_factory(
-    label='Generic FITS',
+    label='FITS file',
     identifier=is_fits,
     priority=100,
 )
-def fits_container(source, auto_merge=False, exclude_exts=None):
-    """Read in all extensions from a FITS file.
+def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
+    """
+    Read in all extensions from a FITS file.
 
     Parameters
     ----------
@@ -46,14 +55,20 @@ def fits_container(source, auto_merge=False, exclude_exts=None):
     groups = OrderedDict()
     extension_by_shape = OrderedDict()
 
-    hdulist_name = hdulist.filename()
-    if hdulist_name is None:
-        hdulist_name = "HDUList"
+    if label is not None:
 
-    label_base = basename(hdulist_name).rpartition('.')[0]
+        label_base = label
 
-    if not label_base:
-        label_base = basename(hdulist_name)
+    else:
+
+        hdulist_name = hdulist.filename()
+        if hdulist_name is None:
+            hdulist_name = "HDUList"
+
+        label_base = basename(hdulist_name).rpartition('.')[0]
+
+        if not label_base:
+            label_base = basename(hdulist_name)
 
     # Create a new image Data.
     def new_data():
@@ -103,6 +118,7 @@ def fits_container(source, auto_merge=False, exclude_exts=None):
 
 
 # Utilities
+
 def is_image_hdu(hdu):
     from astropy.io.fits.hdu import PrimaryHDU, ImageHDU
     return isinstance(hdu, (PrimaryHDU, ImageHDU))
@@ -116,3 +132,46 @@ def is_table_hdu(hdu):
 def has_wcs(coords):
     return any(axis['coordinate_type'] is not None
                for axis in coords.wcs.get_axis_types())
+
+
+def is_casalike(filename, **kwargs):
+    """
+    Check if a file is a CASA like cube,
+    with (P, P, V, Stokes) layout
+    """
+    from ...external.astro import fits
+
+    if not is_fits(filename):
+        return False
+    with fits.open(filename) as hdulist:
+        if len(hdulist) != 1:
+            return False
+        if hdulist[0].header['NAXIS'] != 4:
+            return False
+
+        from astropy.wcs import WCS
+        w = WCS(hdulist[0].header)
+
+    ax = [a.get('coordinate_type') for a in w.get_axis_types()]
+    return ax == ['celestial', 'celestial', 'spectral', 'stokes']
+
+
+@data_factory(label='CASA PPV Cube', identifier=is_casalike)
+def casalike_cube(filename, **kwargs):
+    """
+    This provides special support for 4D CASA - like cubes,
+    which have 2 spatial axes, a spectral axis, and a stokes axis
+    in that order.
+
+    Each stokes cube is split out as a separate component
+    """
+    from ...external.astro import fits
+
+    result = Data()
+    with fits.open(filename, **kwargs) as hdulist:
+        array = hdulist[0].data
+        header = hdulist[0].header
+    result.coords = coordinates_from_header(header)
+    for i in range(array.shape[0]):
+        result.add_component(array[[i]], label='STOKES %i' % i)
+    return result

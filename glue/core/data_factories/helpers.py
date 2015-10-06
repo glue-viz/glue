@@ -325,4 +325,3 @@ def auto_data(filename, *args, **kwargs):
     if fac is None:
         raise KeyError("Don't know how to open file: %s" % filename)
     return fac(filename, *args, **kwargs)
-
