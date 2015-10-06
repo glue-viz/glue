@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
+import warnings
 from ...compat.collections import OrderedDict
 from ..data import Component, Data
 from ...config import data_factory
@@ -85,9 +86,12 @@ def hdf5_reader(filename, format='auto', auto_merge=False, **kwargs):
             groups[label] = data
             for column_name in table.columns:
                 column = table[column_name]
-                component = Component(column, units=column.unit)
-                data.add_component(component=component,
-                                   label=column_name)
+                if column.ndim == 1:
+                    component = Component(column, units=column.unit)
+                    data.add_component(component=component,
+                                       label=column_name)
+                else:
+                    warnings.warn("HDF5: Ignoring vector column {0}".format(column_name))
 
     # Close HDF5 file
     file_handle.close()
