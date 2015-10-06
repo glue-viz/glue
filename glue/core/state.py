@@ -330,7 +330,7 @@ class GlueSerializer(object):
         """
         if np.isscalar(o) and isinstance(o, np.generic):
             return np.asscalar(o)  # coerce numpy number to pure-python type
-        if isinstance(o, tuple):
+        if isinstance(o, (tuple, set)):
             return list(o)
         return o
 

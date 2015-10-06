@@ -731,7 +731,7 @@ class GlueApplication(Application, QMainWindow):
         if not file_name:
             return
 
-        ga = self.restore(file_name)
+        ga = self.restore_session(file_name)
         self.close()
         return ga
 
@@ -757,22 +757,23 @@ class GlueApplication(Application, QMainWindow):
         return ga
 
     @staticmethod
-    def restore(path, show=True):
-        """Reload a previously-saved session
-
-        :param path: Path to the file to load
-        :type path: str
-        :param show: If True (the default), immediately show the widget
-        :type show: bool
-
-        :returns: A new :class:`GlueApplication`
+    def restore_session(path, show=True):
         """
-        from ..core.state import GlueUnSerializer
+        Reload a previously-saved session
 
-        with open(path) as infile:
-            state = GlueUnSerializer.load(infile)
+        Parameters
+        ----------
+        path : str
+            Path to the file to load
+        show : bool, optional
+            If True (the default), immediately show the widget
 
-        ga = state.object('__main__')
+        Returns
+        -------
+        app : :class:`GlueApplication`
+            The loaded application
+        """
+        ga = super(GlueApplication, self).restore_session(path)
         if show:
             ga.show()
         return ga
