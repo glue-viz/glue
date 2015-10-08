@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from .data_viewer import DataViewer
 
-from ...external.qt.QtGui import QTableView, QAbstractItemView, QItemSelectionModel, QItemSelection
+from ...external.qt.QtGui import QTableView, QAbstractItemView, QItemSelectionModel, QItemSelection, QSortFilterProxyModel
 from ...external.qt.QtCore import Qt, QAbstractTableModel, QAbstractItemModel, SIGNAL, QObject
 
 from ...core import message as msg
@@ -18,8 +18,11 @@ class DataTableModel(QAbstractTableModel):
 
     def __init__(self, data):
         super(DataTableModel, self).__init__()
+        if data.ndim != 1:
+            raise ValueError("Can only use Table widget for one-dimensional data")
         self._data = data
         self.show_hidden = False
+        self.order = np.arange(data.shape[0])
 
     @property
     def columns(self):
@@ -42,20 +45,36 @@ class DataTableModel(QAbstractTableModel):
         if orientation == Qt.Horizontal:
             return self.columns[section].label
         elif orientation == Qt.Vertical:
-            return str(section)
+            return str(self.order[section])
 
     def data(self, index, role):
+
         if not index.isValid():
             return None
+
         if role == Qt.DisplayRole:
             c = self.columns[index.column()]
-            idx = np.unravel_index([index.row()], self._data.shape)
+            idx = self.order[index.row()]
             comp = self._data.get_component(c)
             if comp.categorical:
                 comp = comp.labels
             else:
                 comp = comp.data
-            return str(comp[idx][0])
+            if isinstance(comp[idx], bytes):
+                return comp[idx].decode('ascii')
+            else:
+                return str(comp[idx])
+
+    def sort(self, column, ascending):
+        c = self.columns[column]
+        comp = self._data.get_component(c)
+        if comp.categorical:
+            self.order = np.argsort(comp.labels)
+        else:
+            self.order = np.argsort(comp.data)
+        if ascending == Qt.DescendingOrder:
+            self.order = self.order[::-1]
+        self.layoutChanged.emit()
 
 
 class TableWidget(DataViewer):
@@ -76,10 +95,11 @@ class TableWidget(DataViewer):
         hdr = self.ui.table.verticalHeader()
         hdr.setResizeMode(hdr.Interactive)
 
-
         self.ui.table.clicked.connect(self._clicked)
 
         self.model = None
+        self.subset = None
+        self.selected_rows = []
 
     def register_to_hub(self, hub):
 
@@ -111,22 +131,27 @@ class TableWidget(DataViewer):
         if self.data is not None:
 
             model = self.ui.table.selectionModel()
-            rows = [x.row() for x in model.selectedRows()]
-            subset_state = ElementSubsetState(rows)
+            self.selected_rows = [self.model.order[x.row()] for x in model.selectedRows()]
+            subset_state = ElementSubsetState(self.selected_rows)
 
             mode = EditSubsetMode()
             mode.update(self.data, subset_state, focus_data=self.data)
 
     def _add_subset(self, message):
-
         self.subset = message.subset
+        self.selected_rows = self.subset.to_index_list()
+        self._update_selection()
+
+    def _update_selection(self):
+
         self.ui.table.clearSelection()
         selection_mode = self.ui.table.selectionMode()
         self.ui.table.setSelectionMode(QAbstractItemView.MultiSelection);
 
         # The following is more efficient than just calling selectRow
         model = self.ui.table.selectionModel()
-        for index in message.subset.to_index_list():
+        for index in self.selected_rows:
+            index = self.model.order[index]
             model_index = self.model.createIndex(index, 0)
             model.select(model_index,
                          QItemSelectionModel.Select | QItemSelectionModel.Rows)
@@ -156,6 +181,7 @@ class TableWidget(DataViewer):
     def set_data(self, data):
         self.setUpdatesEnabled(False)
         self.model = DataTableModel(data)
+        self.model.layoutChanged.connect(self._update_selection)
         self.ui.table.setModel(self.model)
         self.setUpdatesEnabled(True)
 
