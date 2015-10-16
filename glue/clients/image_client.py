@@ -475,8 +475,12 @@ class ImageClient(VizClient):
         self._redraw()
         return result
 
-    def update_aspect(self):
+    def _update_aspect(self):
         self._update_data_plot(relim=True)
+        self._redraw()
+
+    def _update_attribute(self):
+        self._update_data_plot()
         self._redraw()
 
     def add_layer(self, layer):

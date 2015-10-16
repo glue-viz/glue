@@ -220,7 +220,8 @@ class ImageWidgetBase(DataViewer):
         # sync window title to data/attribute
         add_callback(self.client, 'display_data', nonpartial(self.update_window_title))
         add_callback(self.client, 'display_attribute', nonpartial(self.update_window_title))
-        add_callback(self.client, 'display_aspect', nonpartial(self.client.update_aspect))
+        add_callback(self.client, 'display_attribute', nonpartial(self.client._update_attribute))
+        add_callback(self.client, 'display_aspect', nonpartial(self.client._update_aspect))
 
         # sync data/attribute combos with client properties
         connect_current_combo(self.client, 'display_data', self.ui.displayDataCombo)
