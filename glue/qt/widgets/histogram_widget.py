@@ -77,15 +77,16 @@ class HistogramWidget(DataViewer):
         self.resize(self.central_widget.size())
 
     def _connect(self):
+
         ui = self.ui
         cl = self.client
-        ui.attributeCombo.currentIndexChanged.connect(
-            self._set_attribute_from_combo)
+
+        ui.attributeCombo.currentIndexChanged.connect(self._set_attribute_from_combo)
+
         ui.normalized_box.toggled.connect(partial(setattr, cl, 'normed'))
         ui.autoscale_box.toggled.connect(partial(setattr, cl, 'autoscale'))
         ui.cumulative_box.toggled.connect(partial(setattr, cl, 'cumulative'))
-        ui.xlog_box.toggled.connect(partial(setattr, cl, 'xlog'))
-        ui.ylog_box.toggled.connect(partial(setattr, cl, 'ylog'))
+
         connect_int_spin(cl, 'nbins', ui.binSpinBox)
         connect_float_edit(cl, 'xmin', ui.xmin)
         connect_float_edit(cl, 'xmax', ui.xmax)
@@ -182,20 +183,21 @@ class HistogramWidget(DataViewer):
 
     @defer_draw
     def _set_attribute_from_combo(self, *args):
-        for d in self._data:
-            try:
-                component = d.get_component(self.component)
-            except:
-                continue
+        if self.component is not None:
+            for d in self._data:
+                try:
+                    component = d.get_component(self.component)
+                except:
+                    continue
+                else:
+                    break
+            if component.categorical:
+                if self.ui.xlog_box.isEnabled():
+                    self.ui.xlog_box.setEnabled(False)
+                    self.xlog = False
             else:
-                break
-        if component.categorical:
-            if self.ui.xlog_box.isEnabled():
-                self.ui.xlog_box.setEnabled(False)
-                self.xlog = False
-        else:
-            if not self.ui.xlog_box.isEnabled():
-                self.ui.xlog_box.setEnabled(True)
+                if not self.ui.xlog_box.isEnabled():
+                    self.ui.xlog_box.setEnabled(True)
         self.client.set_component(self.component)
         self.update_window_title()
 
