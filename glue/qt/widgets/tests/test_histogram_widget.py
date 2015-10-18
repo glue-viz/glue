@@ -8,6 +8,9 @@ from . import simple_session
 from ..histogram_widget import HistogramWidget, _hash
 from .... import core
 
+from ....external.qt.QtGui import QKeyEvent
+from ....external.qt import QtCore, get_qapp
+
 
 def mock_data():
     return core.Data(label='d1', x=[1, 2, 3], y=[2, 3, 4])
@@ -103,14 +106,20 @@ class TestHistogramWidget(object):
         self.widget.ui.binSpinBox.setValue(7.0)
         assert self.widget.client.nbins == 7
 
-    def test_update_xmin(self):
+    def test_update_xmin_xmax(self):
+
+        event = QKeyEvent(QtCore.QEvent.KeyPress,
+                          QtCore.Qt.Key_Return,
+                          QtCore.Qt.NoModifier)
+
+        app = get_qapp()
+
         self.widget.ui.xmin.setText('-5')
-        self.widget._set_limits()
+        app.sendEvent(self.widget.ui.xmin, event)
         assert self.widget.client.xlimits[0] == -5
 
-    def test_update_xmax(self):
-        self.widget.ui.xmin.setText('15')
-        self.widget._set_limits()
+        self.widget.ui.xmax.setText('15')
+        app.sendEvent(self.widget.ui.xmax, event)
         assert self.widget.client.xlimits[1] == 15
 
     def test_update_component_updates_title(self):
