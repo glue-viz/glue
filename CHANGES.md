@@ -55,6 +55,8 @@ v0.6 (unreleased)
 * Added two new settings ``settings.SUBSET_COLORS`` and ``settings.DATA_COLOR``
   that can be used to customize the default subset and data colors. [#742]
 
+* Improve defaults for image data limits.
+
 v0.5.3 (unreleased)
 -------------------
 
