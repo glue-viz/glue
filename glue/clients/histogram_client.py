@@ -64,8 +64,10 @@ class HistogramClient(Client):
         self._figure, self._axes = init_mpl(figure=figure, axes=None)
         self._component = None
         self._saved_nbins = None
-        self._xlim = {}
+        self._xlim_cache = {}
+        self._xlog_cache = {}
         self._sync_enabled = True
+        self._xlog_curr = False
 
     @property
     def bins(self):
@@ -229,8 +231,12 @@ class HistogramClient(Client):
                 continue
 
             if self.xlog:
-                lo = min(lo, np.nanmin(data[data > 0]))
-                hi = max(hi, np.nanmax(data[data > 0]))
+                if np.any(data > 0):
+                    lo = min(lo, np.nanmin(data[data > 0]))
+                    hi = max(hi, np.nanmax(data[data > 0]))
+                else:
+                    lo = 1
+                    hi = 10
             else:
                 lo = min(lo, np.nanmin(data))
                 hi = max(hi, np.nanmax(data))
@@ -256,9 +262,18 @@ class HistogramClient(Client):
             return
 
         if self.component is not None:
-            if not (self.xlog, self.component) in self._xlim:
+
+            if not (self.xlog, self.component) in self._xlim_cache or not self.component in self._xlog_cache:
                 self._auto_limits()
-            self._xlim[(self.xlog, self.component)] = self.xmin, self.xmax
+                self._xlim_cache[(self.xlog, self.component)] = self.xmin, self.xmax
+                self._xlog_cache[self.component] = self.xlog
+            elif self.xlog is self._xlog_curr:
+                self._xlim_cache[(self.xlog, self.component)] = self.xmin, self.xmax
+            else:
+                self._xlog_cache[self.component] = self.xlog
+                self.xmin, self.xmax = self._xlim_cache[(self.xlog, self.component)]
+
+            self._xlog_curr = self.xlog
 
         layers = set(a.layer for a in self._artists)
         for l in layers:
@@ -322,11 +337,17 @@ class HistogramClient(Client):
         self._component = component
         cur = comp_obj()
 
-        if (self.xlog, self.component) in self._xlim:
-            self.xmin, self.xmax = self._xlim[(self.xlog, self.component)]
+        if self.component in self._xlog_cache:
+            self.xlog = self._xlog_cache[self.component]
+        else:
+            self.xlog = False
+            self._xlog_cache[self.component] = self.xlog
+
+        if (self.xlog, self.component) in self._xlim_cache:
+            self.xmin, self.xmax = self._xlim_cache[(self.xlog, self.component)]
         else:
             self._auto_limits()
-            self._xlim[(self.xlog, self.component)] = self.xmin, self.xmax
+            self._xlim_cache[(self.xlog, self.component)] = self.xmin, self.xmax
 
         self._sync_enabled = True
 

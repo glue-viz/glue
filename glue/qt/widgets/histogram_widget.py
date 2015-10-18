@@ -9,7 +9,7 @@ from ...core import message as msg
 from ...clients.histogram_client import HistogramClient
 from ..widget_properties import (connect_int_spin, ButtonProperty,
                                  FloatLineProperty, connect_float_edit,
-                                 ValueProperty)
+                                 ValueProperty, connect_bool_button)
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import HRangeMode
 from .data_viewer import DataViewer
@@ -89,6 +89,8 @@ class HistogramWidget(DataViewer):
         connect_int_spin(cl, 'nbins', ui.binSpinBox)
         connect_float_edit(cl, 'xmin', ui.xmin)
         connect_float_edit(cl, 'xmax', ui.xmax)
+        connect_bool_button(cl, 'xlog', ui.xlog_box)
+        connect_bool_button(cl, 'ylog', ui.ylog_box)
 
     def make_toolbar(self):
         result = GlueToolbar(self.central_widget.canvas, self,
