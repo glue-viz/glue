@@ -304,6 +304,8 @@ class HistogramClient(Client):
         if self._component is component:
             return
 
+        self._sync_enabled = False
+
         iscat = lambda x: isinstance(x, CategoricalComponent)
 
         def comp_obj():
@@ -319,8 +321,6 @@ class HistogramClient(Client):
         first_add = self._component is None
         self._component = component
         cur = comp_obj()
-
-        self._sync_enabled = False
 
         if (self.xlog, self.component) in self._xlim:
             self.xmin, self.xmax = self._xlim[(self.xlog, self.component)]

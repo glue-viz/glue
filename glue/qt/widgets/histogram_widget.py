@@ -180,6 +180,20 @@ class HistogramWidget(DataViewer):
 
     @defer_draw
     def _set_attribute_from_combo(self, *args):
+        for d in self._data:
+            try:
+                component = d.get_component(self.component)
+            except:
+                continue
+            else:
+                break
+        if component.categorical:
+            if self.ui.xlog_box.isEnabled():
+                self.ui.xlog_box.setEnabled(False)
+                self.xlog = False
+        else:
+            if not self.ui.xlog_box.isEnabled():
+                self.ui.xlog_box.setEnabled(True)
         self.client.set_component(self.component)
         self.update_window_title()
 
