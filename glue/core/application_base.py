@@ -95,6 +95,28 @@ class Application(HubListener):
         with open(path, 'w') as out:
             out.write(state)
 
+    @staticmethod
+    def restore_session(path):
+        """
+        Reload a previously-saved session
+
+        Parameters
+        ----------
+        path : str
+            Path to the file to load
+
+        Returns
+        -------
+        app : :class:`Application`
+            The loaded application
+        """
+        from ..core.state import GlueUnSerializer
+
+        with open(path) as infile:
+            state = GlueUnSerializer.load(infile)
+
+        return state.object('__main__')
+
     def new_tab(self):
         raise NotImplementedError()
 
@@ -209,14 +231,14 @@ class Application(HubListener):
         """Return a tuple of tuples of viewers currently open
         The i'th tuple stores the viewers in the i'th close_tab
         """
-        raise NotImplementedError()
+        return []
 
     def __gluestate__(self, context):
         viewers = [list(map(context.id, tab)) for tab in self.viewers]
         data = self.session.data_collection
-
+        from ..main import _loaded_plugins
         return dict(session=context.id(self.session), viewers=viewers,
-                    data=context.id(data))
+                    data=context.id(data), plugins=_loaded_plugins)
 
     @classmethod
     def __setgluestate__(cls, rec, context):
