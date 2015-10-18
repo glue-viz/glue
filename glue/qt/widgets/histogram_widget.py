@@ -8,7 +8,7 @@ from ...external.qt.QtCore import Qt
 from ...core import message as msg
 from ...clients.histogram_client import HistogramClient
 from ..widget_properties import (connect_int_spin, ButtonProperty,
-                                 FloatLineProperty,
+                                 FloatLineProperty, connect_float_edit,
                                  ValueProperty)
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import HRangeMode
@@ -81,27 +81,14 @@ class HistogramWidget(DataViewer):
         cl = self.client
         ui.attributeCombo.currentIndexChanged.connect(
             self._set_attribute_from_combo)
-        ui.attributeCombo.currentIndexChanged.connect(
-            self._update_minmax_labels)
-        connect_int_spin(cl, 'nbins', ui.binSpinBox)
         ui.normalized_box.toggled.connect(partial(setattr, cl, 'normed'))
         ui.autoscale_box.toggled.connect(partial(setattr, cl, 'autoscale'))
         ui.cumulative_box.toggled.connect(partial(setattr, cl, 'cumulative'))
         ui.xlog_box.toggled.connect(partial(setattr, cl, 'xlog'))
         ui.ylog_box.toggled.connect(partial(setattr, cl, 'ylog'))
-        ui.xmin.editingFinished.connect(self._set_limits)
-        ui.xmax.editingFinished.connect(self._set_limits)
-
-    @defer_draw
-    def _set_limits(self):
-        lo = float(self.ui.xmin.text())
-        hi = float(self.ui.xmax.text())
-        self.client.xlimits = lo, hi
-
-    def _update_minmax_labels(self):
-        lo, hi = pretty_number(self.client.xlimits)
-        self.ui.xmin.setText(lo)
-        self.ui.xmax.setText(hi)
+        connect_int_spin(cl, 'nbins', ui.binSpinBox)
+        connect_float_edit(cl, 'xmin', ui.xmin)
+        connect_float_edit(cl, 'xmax', ui.xmax)
 
     def make_toolbar(self):
         result = GlueToolbar(self.central_widget.canvas, self,
@@ -209,7 +196,6 @@ class HistogramWidget(DataViewer):
 
         self.client.add_layer(data)
         self._update_attributes()
-        self._update_minmax_labels()
 
         return True
 

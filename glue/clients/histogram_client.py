@@ -54,6 +54,9 @@ class HistogramClient(Client):
     xlog = UpdateProperty(False, relim=True)
     ylog = UpdateProperty(False)
 
+    xmin = UpdateProperty(None, relim=True)
+    xmax = UpdateProperty(None, relim=True)
+
     def __init__(self, data, figure, artist_container=None):
         super(HistogramClient, self).__init__(data)
 
@@ -62,6 +65,7 @@ class HistogramClient(Client):
         self._component = None
         self._saved_nbins = None
         self._xlim = {}
+        self._sync_enabled = True
 
     @property
     def bins(self):
@@ -80,34 +84,11 @@ class HistogramClient(Client):
 
     @property
     def xlimits(self):
-        try:
-            return self._xlim[self.component]
-        except KeyError:
-            pass
-
-        lo, hi = self._default_limits()
-        self._xlim[self.component] = lo, hi
-        return lo, hi
-
-    def _default_limits(self):
-        if self.component is None:
-            return 0, 1
-        lo, hi = np.inf, -np.inf
-        for a in self._artists:
-            try:
-                data = a.layer[self.component]
-            except IncompatibleAttribute:
-                continue
-
-            if data.size == 0:
-                continue
-            lo = min(lo, np.nanmin(data))
-            hi = max(hi, np.nanmax(data))
-        return lo, hi
+        return self.xmin, self.xmax
 
     @xlimits.setter
-    @update_on_true
     def xlimits(self, value):
+
         lo, hi = value
         old = self.xlimits
         if lo is None:
@@ -115,9 +96,8 @@ class HistogramClient(Client):
         if hi is None:
             hi = old[1]
 
-        self._xlim[self.component] = min(lo, hi), max(lo, hi)
-        self._relim()
-        return True
+        self.xmin = min(lo, hi)
+        self.xmax = max(lo, hi)
 
     def layer_present(self, layer):
         return layer in self._artists
@@ -234,9 +214,34 @@ class HistogramClient(Client):
             self.nbins = val
         return val
 
+    def _auto_limits(self):
+
+        lo, hi = np.inf, -np.inf
+
+        for a in self._artists:
+
+            try:
+                data = a.layer[self.component]
+            except IncompatibleAttribute:
+                continue
+
+            if data.size == 0:
+                continue
+
+            if self.xlog:
+                lo = min(lo, np.nanmin(data[data > 0]))
+                hi = max(hi, np.nanmax(data[data > 0]))
+            else:
+                lo = min(lo, np.nanmin(data))
+                hi = max(hi, np.nanmax(data))
+
+        self.xmin = lo
+        self.xmax = hi
+
     def _sync_layer(self, layer, force=False):
         for a in self._artists[layer]:
-            a.lo, a.hi = self.xlimits
+            a.lo = self.xmin
+            a.hi = self.xmax
             a.nbins = self.nbins
             a.xlog = self.xlog
             a.ylog = self.ylog
@@ -246,6 +251,15 @@ class HistogramClient(Client):
             a.update() if not force else a.force_update()
 
     def sync_all(self, force=False):
+
+        if not self._sync_enabled:
+            return
+
+        if self.component is not None:
+            if not (self.xlog, self.component) in self._xlim:
+                self._auto_limits()
+            self._xlim[(self.xlog, self.component)] = self.xmin, self.xmax
+
         layers = set(a.layer for a in self._artists)
         for l in layers:
             self._sync_layer(l, force=force)
@@ -286,6 +300,7 @@ class HistogramClient(Client):
         component: ComponentID
             The new component to plot
         """
+
         if self._component is component:
             return
 
@@ -305,6 +320,16 @@ class HistogramClient(Client):
         self._component = component
         cur = comp_obj()
 
+        self._sync_enabled = False
+
+        if (self.xlog, self.component) in self._xlim:
+            self.xmin, self.xmax = self._xlim[(self.xlog, self.component)]
+        else:
+            self._auto_limits()
+            self._xlim[(self.xlog, self.component)] = self.xmin, self.xmax
+
+        self._sync_enabled = True
+
         if first_add or iscat(cur):
             self._auto_nbin()
 
@@ -321,7 +346,7 @@ class HistogramClient(Client):
         self._relim()
 
     def _relim(self):
-        lim = self.xlimits
+        lim = self.xmin, self.xmax
         if self.xlog:
             lim = list(np.log10(lim))
             if not np.isfinite(lim[0]):

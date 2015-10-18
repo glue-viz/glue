@@ -245,8 +245,8 @@ class TestHistogramClient(object):
         self.client.apply_roi(roi)
         state = self.data.subsets[0].subset_state
         assert isinstance(state, RangeSubsetState)
-        assert state.lo == 10
-        assert state.hi == 1000
+        np.testing.assert_allclose(state.lo, 7.3680629972807736)
+        np.testing.assert_allclose(state.hi, 1000)
 
     def test_xlimits_sticky_with_component(self):
         self.client.add_layer(self.data)
