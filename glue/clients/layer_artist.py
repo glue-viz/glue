@@ -607,9 +607,14 @@ class RGBImageLayerArtist(ImageLayerArtist, RGBImageLayerBase):
 
 class SubsetImageLayerArtist(LayerArtist, SubsetImageLayerBase):
 
-    def update(self, view, transpose=False):
-        subset = self.layer
+    def update(self, view, transpose=False, aspect=None):
+
         self.clear()
+
+        if aspect is None:
+            aspect = 'equal'
+
+        subset = self.layer
         logging.debug("View into subset %s is %s", self.layer, view)
 
         try:
@@ -634,6 +639,7 @@ class SubsetImageLayerArtist(LayerArtist, SubsetImageLayerBase):
                                           interpolation='nearest',
                                           origin='lower',
                                           zorder=5, visible=self.visible)]
+        self._axes.set_aspect(aspect, adjustable='datalim')
 
 
 class DendroLayerArtist(LayerArtist):
