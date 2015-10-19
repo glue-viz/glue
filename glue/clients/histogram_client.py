@@ -231,9 +231,11 @@ class HistogramClient(Client):
                 continue
 
             if self.xlog:
-                if np.any(data > 0):
-                    lo = min(lo, np.nanmin(data[data > 0]))
-                    hi = max(hi, np.nanmax(data[data > 0]))
+                positive = data > 0
+                if np.any(positive):
+                    positive_data = data[positive]
+                    lo = min(lo, np.nanmin(positive_data))
+                    hi = max(hi, np.nanmax(positive_data))
                 else:
                     lo = 1
                     hi = 10
