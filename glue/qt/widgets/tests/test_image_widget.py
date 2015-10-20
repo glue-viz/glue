@@ -2,6 +2,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import time
+
 import numpy as np
 from mock import MagicMock
 
@@ -10,6 +12,7 @@ from ..image_widget import ImageWidget
 from .... import core
 from ....core.tests.test_state import TestApplication
 from ...glue_application import GlueApplication
+from ....external.qt import get_qapp
 
 from . import simple_session
 
@@ -159,6 +162,46 @@ class TestImageWidget(_TestImageWidgetBase):
         self.widget._container.on_empty(fail)
         self.widget.rgb_mode = True
         self.widget.rgb_mode = False
+
+    def test_resize(self):
+
+        # Regression test for a bug that caused images to not be shown at
+        # full resolution after resizing a widget.
+
+        large = core.Data(label='im', x=np.random.random((1024, 1024)))
+        self.collect.append(large)
+
+        app = get_qapp()
+        self.widget.add_data(large)
+        self.widget.show()
+
+        self.widget.resize(300, 300)
+        time.sleep(0.3)
+        app.processEvents()
+
+        extx, exty = self.widget.client._view_window[4:]
+        np.testing.assert_allclose(extx, 196)
+        np.testing.assert_allclose(exty, 191)
+
+        # While resizing, the view window should not change until we've
+        # waited for a bit, to avoid resampling the data every time.
+        for res in range(10):
+
+            self.widget.resize(300 + res * 30, 300 + res * 30)
+            app.processEvents()
+
+            extx, exty = self.widget.client._view_window[4:]
+            np.testing.assert_allclose(extx, 196)
+            np.testing.assert_allclose(exty, 191)
+
+        time.sleep(0.3)
+        app.processEvents()
+
+        extx, exty = self.widget.client._view_window[4:]
+        np.testing.assert_allclose(extx, 466)
+        np.testing.assert_allclose(exty, 465)
+
+        self.widget.close()
 
 
 class TestStateSave(TestApplication):
