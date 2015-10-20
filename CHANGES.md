@@ -52,6 +52,9 @@ v0.6 (unreleased)
 * Fix a bug that caused the color of an extracted spectrum to vary if extracted
   multiple times. [#743]
 
+* Fixed a bug that caused compressed image HDUs to not be read correctly.
+  [#767]
+
 * Added two new settings ``settings.SUBSET_COLORS`` and ``settings.DATA_COLOR``
   that can be used to customize the default subset and data colors. [#742]
 
