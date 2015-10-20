@@ -179,9 +179,7 @@ class TestImageWidget(_TestImageWidgetBase):
         time.sleep(0.3)
         app.processEvents()
 
-        extx, exty = self.widget.client._view_window[4:]
-        np.testing.assert_allclose(extx, 196)
-        np.testing.assert_allclose(exty, 191)
+        extx0, exty0 = self.widget.client._view_window[4:]
 
         # While resizing, the view window should not change until we've
         # waited for a bit, to avoid resampling the data every time.
@@ -191,15 +189,15 @@ class TestImageWidget(_TestImageWidgetBase):
             app.processEvents()
 
             extx, exty = self.widget.client._view_window[4:]
-            np.testing.assert_allclose(extx, 196)
-            np.testing.assert_allclose(exty, 191)
+            assert extx == extx0
+            assert exty == exty0
 
         time.sleep(0.3)
         app.processEvents()
 
         extx, exty = self.widget.client._view_window[4:]
-        np.testing.assert_allclose(extx, 466)
-        np.testing.assert_allclose(exty, 465)
+        assert extx != extx0
+        assert exty != exty0
 
         self.widget.close()
 
