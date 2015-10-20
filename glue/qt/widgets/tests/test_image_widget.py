@@ -4,6 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 import time
 
+import pytest
 import numpy as np
 from mock import MagicMock
 
@@ -18,6 +19,8 @@ from . import simple_session
 
 import os
 os.environ['GLUE_TESTING'] = 'True'
+
+TRAVIS_OSX = os.environ.get('TRAVIS_OS_NAME', None) == 'osx'
 
 
 class _TestImageWidgetBase(object):
@@ -163,6 +166,7 @@ class TestImageWidget(_TestImageWidgetBase):
         self.widget.rgb_mode = True
         self.widget.rgb_mode = False
 
+    @pytest.mark.skipif("TRAVIS_OSX")
     def test_resize(self):
 
         # Regression test for a bug that caused images to not be shown at
@@ -176,7 +180,7 @@ class TestImageWidget(_TestImageWidgetBase):
         self.widget.show()
 
         self.widget.resize(300, 300)
-        time.sleep(0.3)
+        time.sleep(0.5)
         app.processEvents()
 
         extx0, exty0 = self.widget.client._view_window[4:]
@@ -192,7 +196,7 @@ class TestImageWidget(_TestImageWidgetBase):
             assert extx == extx0
             assert exty == exty0
 
-        time.sleep(0.3)
+        time.sleep(0.5)
         app.processEvents()
 
         extx, exty = self.widget.client._view_window[4:]
