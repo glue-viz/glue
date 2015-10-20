@@ -36,7 +36,7 @@ from .feedback import submit_bug_report
 from .plugin_manager import QtPluginManager
 
 __all__ = ['GlueApplication']
-DOCS_URL = 'http://www.glue-viz.org'
+DOCS_URL = 'http://www.glueviz.org'
 
 
 def _fix_ipython_pylab():
