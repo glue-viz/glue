@@ -49,6 +49,8 @@ v0.6 (unreleased)
 * Improved reading of HDF5 files - all datasets in an HDF5 file are now read by
   default. [#747]
 
+* Fix a bug that caused images to not be shown at full resolution after resizing. [#768]
+
 * Fix a bug that caused the color of an extracted spectrum to vary if extracted
   multiple times. [#743]
 
