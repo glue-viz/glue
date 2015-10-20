@@ -369,7 +369,10 @@ class ImageClient(VizClient):
         transpose = self.slice.index('x') < self.slice.index('y')
         for a in self.artists[s]:
             meth = a.update if not force else a.force_update
-            meth(view, transpose)
+            if isinstance(a, SubsetImageLayerArtist):
+                meth(view, transpose=transpose, aspect=self.display_aspect)
+            else:
+                meth(view, transpose=transpose)
 
         if redraw:
             self._redraw()
