@@ -8,8 +8,8 @@ from ...external.qt.QtCore import Qt
 from ...core import message as msg
 from ...clients.histogram_client import HistogramClient
 from ..widget_properties import (connect_int_spin, ButtonProperty,
-                                 FloatLineProperty,
-                                 ValueProperty)
+                                 FloatLineProperty, connect_float_edit,
+                                 ValueProperty, connect_bool_button)
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import HRangeMode
 from .data_viewer import DataViewer
@@ -77,31 +77,21 @@ class HistogramWidget(DataViewer):
         self.resize(self.central_widget.size())
 
     def _connect(self):
+
         ui = self.ui
         cl = self.client
-        ui.attributeCombo.currentIndexChanged.connect(
-            self._set_attribute_from_combo)
-        ui.attributeCombo.currentIndexChanged.connect(
-            self._update_minmax_labels)
-        connect_int_spin(cl, 'nbins', ui.binSpinBox)
+
+        ui.attributeCombo.currentIndexChanged.connect(self._set_attribute_from_combo)
+
         ui.normalized_box.toggled.connect(partial(setattr, cl, 'normed'))
         ui.autoscale_box.toggled.connect(partial(setattr, cl, 'autoscale'))
         ui.cumulative_box.toggled.connect(partial(setattr, cl, 'cumulative'))
-        ui.xlog_box.toggled.connect(partial(setattr, cl, 'xlog'))
-        ui.ylog_box.toggled.connect(partial(setattr, cl, 'ylog'))
-        ui.xmin.editingFinished.connect(self._set_limits)
-        ui.xmax.editingFinished.connect(self._set_limits)
 
-    @defer_draw
-    def _set_limits(self):
-        lo = float(self.ui.xmin.text())
-        hi = float(self.ui.xmax.text())
-        self.client.xlimits = lo, hi
-
-    def _update_minmax_labels(self):
-        lo, hi = pretty_number(self.client.xlimits)
-        self.ui.xmin.setText(lo)
-        self.ui.xmax.setText(hi)
+        connect_int_spin(cl, 'nbins', ui.binSpinBox)
+        connect_float_edit(cl, 'xmin', ui.xmin)
+        connect_float_edit(cl, 'xmax', ui.xmax)
+        connect_bool_button(cl, 'xlog', ui.xlog_box)
+        connect_bool_button(cl, 'ylog', ui.ylog_box)
 
     def make_toolbar(self):
         result = GlueToolbar(self.central_widget.canvas, self,
@@ -193,6 +183,21 @@ class HistogramWidget(DataViewer):
 
     @defer_draw
     def _set_attribute_from_combo(self, *args):
+        if self.component is not None:
+            for d in self._data:
+                try:
+                    component = d.get_component(self.component)
+                except:
+                    continue
+                else:
+                    break
+            if component.categorical:
+                if self.ui.xlog_box.isEnabled():
+                    self.ui.xlog_box.setEnabled(False)
+                    self.xlog = False
+            else:
+                if not self.ui.xlog_box.isEnabled():
+                    self.ui.xlog_box.setEnabled(True)
         self.client.set_component(self.component)
         self.update_window_title()
 
@@ -209,7 +214,6 @@ class HistogramWidget(DataViewer):
 
         self.client.add_layer(data)
         self._update_attributes()
-        self._update_minmax_labels()
 
         return True
 

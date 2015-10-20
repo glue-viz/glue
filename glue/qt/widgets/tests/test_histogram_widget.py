@@ -103,14 +103,14 @@ class TestHistogramWidget(object):
         self.widget.ui.binSpinBox.setValue(7.0)
         assert self.widget.client.nbins == 7
 
-    def test_update_xmin(self):
+    def test_update_xmin_xmax(self):
+
         self.widget.ui.xmin.setText('-5')
-        self.widget._set_limits()
+        self.widget.ui.xmin.editingFinished.emit()
         assert self.widget.client.xlimits[0] == -5
 
-    def test_update_xmax(self):
-        self.widget.ui.xmin.setText('15')
-        self.widget._set_limits()
+        self.widget.ui.xmax.setText('15')
+        self.widget.ui.xmax.editingFinished.emit()
         assert self.widget.client.xlimits[1] == 15
 
     def test_update_component_updates_title(self):

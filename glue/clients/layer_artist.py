@@ -911,7 +911,7 @@ class HistogramLayerArtist(LayerArtist, HistogramLayerBase):
         else:
             rng = self.lo, self.hi
         nbinpatch = self._axes.hist(data,
-                                    bins=self.nbins,
+                                    bins=int(self.nbins),
                                     range=rng)
         self._y, self.x, self.artists = nbinpatch
         return True
