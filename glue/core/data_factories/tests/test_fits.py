@@ -178,3 +178,12 @@ def test_fits_catalog_factory():
 
     assert_array_equal(d['a'], [1])
     assert_array_equal(d['b'], [2])
+
+
+@requires_astropy
+def test_fits_compressed():
+    # Regression test for bug that caused images with compressed image HDUs
+    # to not be read
+    d = df.load_data(os.path.join(DATA, 'compressed_image.fits'),
+                     factory=df.fits_reader)
+    assert d.ndim == 2

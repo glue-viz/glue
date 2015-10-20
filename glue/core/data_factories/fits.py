@@ -53,6 +53,7 @@ def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
     exclude_exts = exclude_exts or []
     if not isinstance(source, fits.hdu.hdulist.HDUList):
         hdulist = fits.open(source)
+        hdulist.verify('fix')
     else:
         hdulist = source
     groups = OrderedDict()
@@ -123,8 +124,8 @@ def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
 # Utilities
 
 def is_image_hdu(hdu):
-    from astropy.io.fits.hdu import PrimaryHDU, ImageHDU
-    return isinstance(hdu, (PrimaryHDU, ImageHDU))
+    from astropy.io.fits.hdu import PrimaryHDU, ImageHDU, CompImageHDU
+    return isinstance(hdu, (PrimaryHDU, ImageHDU, CompImageHDU))
 
 
 def is_table_hdu(hdu):
