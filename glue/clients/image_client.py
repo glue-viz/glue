@@ -479,10 +479,6 @@ class ImageClient(VizClient):
         self._update_data_plot(relim=True)
         self._redraw()
 
-    def _update_attribute(self):
-        self._update_data_plot()
-        self._redraw()
-
     def add_layer(self, layer):
         if layer in self.artists:
             return self.artists[layer][0]
@@ -755,10 +751,13 @@ class MplImageClient(ImageClient):
         vw = _view_window(self._axes)
         if vw != self._view_window:
             logging.getLogger(__name__).debug("updating")
-            self._update_data_plot()
-            self._update_subset_plots()
-            self._redraw()
+            self._update_and_redraw()
             self._view_window = vw
+
+    def _update_and_redraw(self):
+        self._update_data_plot()
+        self._update_subset_plots()
+        self._redraw()
 
     @requires_data
     def _update_axis_labels(self):

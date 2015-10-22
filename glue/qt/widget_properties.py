@@ -237,7 +237,7 @@ def connect_current_combo(client, prop, widget):
     """
 
     def _push_combo(value):
-        idx = widget.findData(value)
+        idx = _find_combo_data(widget, value)
         if idx == -1:
             return
         widget.setCurrentIndex(idx)

@@ -138,6 +138,7 @@ class ImageWidgetBase(DataViewer):
             r = self.client.add_layer(data)
             if r is not None and self.client.display_data is not None:
                 self.add_data_to_combo(data)
+                self.client.display_data = data
                 self.set_attribute_combo(self.client.display_data)
 
         return r is not None
@@ -218,15 +219,25 @@ class ImageWidgetBase(DataViewer):
         add_callback(self.client, 'display_data', self.ui.slice.set_data)
 
         # sync window title to data/attribute
-        add_callback(self.client, 'display_data', nonpartial(self.update_window_title))
-        add_callback(self.client, 'display_attribute', nonpartial(self.update_window_title))
-        add_callback(self.client, 'display_attribute', nonpartial(self.client._update_attribute))
+        add_callback(self.client, 'display_data', nonpartial(self._display_data_changed))
+        add_callback(self.client, 'display_attribute', nonpartial(self._display_attribute_changed))
         add_callback(self.client, 'display_aspect', nonpartial(self.client._update_aspect))
 
         # sync data/attribute combos with client properties
         connect_current_combo(self.client, 'display_data', self.ui.displayDataCombo)
         connect_current_combo(self.client, 'display_attribute', self.ui.attributeComboBox)
         connect_current_combo(self.client, 'display_aspect', self.ui.aspectCombo)
+
+    def _display_data_changed(self, *args):
+        with self.client.artists.ignore_empty():
+            self.set_attribute_combo(self.client.display_data)
+        self.client.add_layer(self.client.display_data)
+        self.client._update_and_redraw()
+        self.update_window_title()
+
+    def _display_attribute_changed(self, *args):
+        self.client._update_and_redraw()
+        self.update_window_title()
 
     @defer_draw
     def _update_rgb_console(self, is_monochrome):
