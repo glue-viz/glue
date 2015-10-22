@@ -76,6 +76,10 @@ def test_combo_text():
         tc.co = 'c'
     assert exc.value.args[0] == "Cannot find text 'c' in combo box"
 
+    tc.co = None
+    assert tc.co == None
+    assert tc._combo.currentIndex() == -1
+
 
 def test_text():
 
@@ -238,6 +242,9 @@ def test_connect_current_combo():
     with pytest.raises(ValueError) as exc:
         t.a = 'c'
     assert exc.value.args[0] == 'c not found in combo box'
+
+    t.a = None
+    assert combo.currentIndex() == -1
 
 
 def test_connect_float_edit():

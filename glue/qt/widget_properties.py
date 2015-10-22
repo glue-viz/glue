@@ -76,7 +76,10 @@ class CurrentComboDataProperty(WidgetProperty):
         """
         Return the itemData stored in the currently-selected item
         """
-        return widget.itemData(widget.currentIndex())
+        if widget.currentIndex() == -1:
+            return None
+        else:
+            return widget.itemData(widget.currentIndex())
 
     def setter(self, widget, value):
         """
@@ -88,7 +91,10 @@ class CurrentComboDataProperty(WidgetProperty):
         try:
             idx = _find_combo_data(widget, value)
         except ValueError:
-            raise ValueError("Cannot find data '{0}' in combo box".format(value))
+            if value is None:
+                idx = -1
+            else:            
+                raise ValueError("Cannot find data '{0}' in combo box".format(value))
         widget.setCurrentIndex(idx)
 
 CurrentComboProperty = CurrentComboDataProperty
@@ -103,7 +109,10 @@ class CurrentComboTextProperty(WidgetProperty):
         """
         Return the itemData stored in the currently-selected item
         """
-        return widget.itemText(widget.currentIndex())
+        if widget.currentIndex() == -1:
+            return None
+        else:
+            return widget.itemText(widget.currentIndex())
 
     def setter(self, widget, value):
         """
@@ -112,7 +121,8 @@ class CurrentComboTextProperty(WidgetProperty):
         """
         idx = widget.findText(value)
         if idx == -1:
-            raise ValueError("Cannot find text '{0}' in combo box".format(value))
+            if value is not None:
+                raise ValueError("Cannot find text '{0}' in combo box".format(value))
         widget.setCurrentIndex(idx)
 
 
