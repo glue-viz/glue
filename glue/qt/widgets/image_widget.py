@@ -13,7 +13,7 @@ from ...clients.image_client import MplImageClient
 from ...clients.ds9norm import DS9Normalize
 from ...external.modest_image import imshow
 
-from ...clients.layer_artist import Pointer
+from ...clients.layer_artist import Pointer, ImageLayerArtist
 from ...core.callback_property import add_callback, delay_callback
 
 from .data_slice_widget import DataSlice
@@ -138,7 +138,8 @@ class ImageWidgetBase(DataViewer):
             r = self.client.add_layer(data)
             if r is not None and self.client.display_data is not None:
                 self.add_data_to_combo(data)
-                self.client.display_data = data
+                if self.client.can_image_data(data):
+                    self.client.display_data = data
                 self.set_attribute_combo(self.client.display_data)
 
         return r is not None
@@ -229,6 +230,11 @@ class ImageWidgetBase(DataViewer):
         connect_current_combo(self.client, 'display_aspect', self.ui.aspectCombo)
 
     def _display_data_changed(self, *args):
+
+        if self.client.display_data is None:
+            self.ui.attributeComboBox.clear()
+            return
+
         with self.client.artists.ignore_empty():
             self.set_attribute_combo(self.client.display_data)
         self.client.add_layer(self.client.display_data)
@@ -236,6 +242,10 @@ class ImageWidgetBase(DataViewer):
         self.update_window_title()
 
     def _display_attribute_changed(self, *args):
+
+        if self.client.display_attribute is None:
+            return
+
         self.client._update_and_redraw()
         self.update_window_title()
 

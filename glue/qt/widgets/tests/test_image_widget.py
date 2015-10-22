@@ -188,7 +188,7 @@ class TestImageWidget(_TestImageWidgetBase):
         # What appears to happen when the test fails is that the QTimer gets
         # started but basically never ends up triggering the timeout.
 
-        large = core.Data(label='im', x=np.random.random((1024, 1024)))
+        large = core.Data(label='largeim', x=np.random.random((1024, 1024)))
         self.collect.append(large)
 
         app = get_qapp()
