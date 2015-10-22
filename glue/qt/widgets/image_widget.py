@@ -13,7 +13,7 @@ from ...clients.image_client import MplImageClient
 from ...clients.ds9norm import DS9Normalize
 from ...external.modest_image import imshow
 
-from ...clients.layer_artist import Pointer, ImageLayerArtist
+from ...clients.layer_artist import Pointer
 from ...core.callback_property import add_callback, delay_callback
 
 from .data_slice_widget import DataSlice
