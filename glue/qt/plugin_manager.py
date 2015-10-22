@@ -30,7 +30,8 @@ class QtPluginManager(object):
         self.clear()
 
         config = PluginConfig.load()
-        config.filter(installed)
+        if installed is not None:
+            config.filter(installed)
 
         for plugin in sorted(config.plugins):
             check = QtGui.QTreeWidgetItem(self.ui.tree.invisibleRootItem(),
