@@ -27,6 +27,7 @@ from ...external.six import PY3
 
 from ...tests.helpers import requires_ipython_ge_012
 
+os.environ['GLUE_TESTING'] = 'True'
 
 def tab_count(app):
     return app.tab_bar.count()

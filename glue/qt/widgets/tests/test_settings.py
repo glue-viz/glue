@@ -24,6 +24,9 @@ class TestSettings(object):
         self.editor = SettingsEditor(self.a)
         self.widget = self.editor.widget
 
+    def teardown_method(self, method):
+        self.widget.close()
+
     def test_init(self):
         assert self.widget.item(0, 0).text() == 'k1'
         assert self.widget.item(0, 1).text() == 'v1'
