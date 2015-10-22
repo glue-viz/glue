@@ -20,10 +20,6 @@ from .util import renderless_figure
 FIGURE = renderless_figure()
 
 
-class TestException(Exception):
-    pass
-
-
 class TestHistogramClient(object):
 
     def setup_method(self, method):
