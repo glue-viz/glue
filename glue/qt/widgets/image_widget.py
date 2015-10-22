@@ -443,6 +443,7 @@ class ImageWidget(ImageWidgetBase):
     def _connect(self):
         super(ImageWidget, self)._connect()
         self.ui.rgb_options.current_changed.connect(lambda: self._toolbars[0].set_mode(self._contrast))
+        self.central_widget.canvas.resize_end.connect(self.client.check_update)
 
 
 class ColormapAction(QAction):

@@ -2,6 +2,9 @@
 
 from __future__ import absolute_import, division, print_function
 
+import time
+
+import pytest
 import numpy as np
 from mock import MagicMock
 
@@ -10,11 +13,15 @@ from ..image_widget import ImageWidget
 from .... import core
 from ....core.tests.test_state import TestApplication
 from ...glue_application import GlueApplication
+from ....external.qt import get_qapp
 
 from . import simple_session
 
 import os
 os.environ['GLUE_TESTING'] = 'True'
+
+CI = os.environ.get('CI', 'false').lower() == 'true'
+TRAVIS_LINUX = os.environ.get('TRAVIS_OS_NAME', None) == 'linux'
 
 
 class _TestImageWidgetBase(object):
@@ -159,6 +166,60 @@ class TestImageWidget(_TestImageWidgetBase):
         self.widget._container.on_empty(fail)
         self.widget.rgb_mode = True
         self.widget.rgb_mode = False
+
+    @pytest.mark.skipif("CI and not TRAVIS_LINUX")
+    def test_resize(self):
+
+        # Regression test for a bug that caused images to not be shown at
+        # full resolution after resizing a widget.
+
+        # This test only runs correctly on Linux on Travis at the moment,
+        # although it works fine locally on MacOS X. I have not yet tracked
+        # down the cause of the failure, but essentially the first time that
+        # self.widget.client._view_window is accessed below, it is still None.
+        # The issue is made more complicated by the fact that whether the test
+        # succeeds or not (after removing code in ImageWidget) depends on
+        # whether another test is run first - in particular I tried with
+        # test_resize from test_application.py. I was able to then get the
+        # test here to pass if the other test_resize was *not* run first.
+        # This should be investigated more in future, but for now, it's most
+        # important that we get the fix in.
+
+        # What appears to happen when the test fails is that the QTimer gets
+        # started but basically never ends up triggering the timeout.
+
+        large = core.Data(label='im', x=np.random.random((1024, 1024)))
+        self.collect.append(large)
+
+        app = get_qapp()
+        self.widget.add_data(large)
+        self.widget.show()
+
+        self.widget.resize(300, 300)
+        time.sleep(0.5)
+        app.processEvents()
+
+        extx0, exty0 = self.widget.client._view_window[4:]
+
+        # While resizing, the view window should not change until we've
+        # waited for a bit, to avoid resampling the data every time.
+        for res in range(10):
+
+            self.widget.resize(300 + res * 30, 300 + res * 30)
+            app.processEvents()
+
+            extx, exty = self.widget.client._view_window[4:]
+            assert extx == extx0
+            assert exty == exty0
+
+        time.sleep(0.5)
+        app.processEvents()
+
+        extx, exty = self.widget.client._view_window[4:]
+        assert extx != extx0
+        assert exty != exty0
+
+        self.widget.close()
 
 
 class TestStateSave(TestApplication):
