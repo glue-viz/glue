@@ -8,13 +8,11 @@ from .qtutil import load_ui
 __all__ = ["QtPluginManager"]
 
 
-class QtPluginManager(QtGui.QDialog):
+class QtPluginManager(object):
 
     def __init__(self):
 
-        super(QtPluginManager, self).__init__()
-
-        self.ui = load_ui('plugin_manager.ui', self)
+        self.ui = load_ui('plugin_manager.ui', None)
 
         self.ui.cancel.clicked.connect(self.reject)
         self.ui.confirm.clicked.connect(self.finalize)
@@ -46,6 +44,9 @@ class QtPluginManager(QtGui.QDialog):
         self.ui.tree.resizeColumnToContents(0)
         self.ui.tree.resizeColumnToContents(1)
 
+    def reject(self):
+        self.ui.reject()
+
     def finalize(self):
 
         config = PluginConfig.load()
@@ -66,4 +67,6 @@ class QtPluginManager(QtGui.QDialog):
             message.exec_()
             return
 
-        self.accept()
+        self.ui.accept()
+        
+

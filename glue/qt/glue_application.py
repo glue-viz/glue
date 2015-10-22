@@ -914,7 +914,7 @@ class GlueApplication(Application, QMainWindow):
 
     def plugin_manager(self):
         pm = QtPluginManager()
-        pm.exec_()
+        pm.ui.exec_()
 
     def _update_undo_redo_enabled(self):
         undo, redo = self._cmds.can_undo_redo()
