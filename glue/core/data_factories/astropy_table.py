@@ -83,7 +83,7 @@ def astropy_tabular_data(*args, **kwargs):
     return result
 
 
-@data_factory(label="Catalog (astropy.table parser)",
+@data_factory(label="VO or FITS table",
               identifier=has_extension('xml vot fits xml.gz vot.gz fits.gz'),
               priority=1)
 def astropy_tabular_data_specialized(*args, **kwargs):
