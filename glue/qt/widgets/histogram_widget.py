@@ -184,13 +184,7 @@ class HistogramWidget(DataViewer):
     @defer_draw
     def _set_attribute_from_combo(self, *args):
         if self.component is not None:
-            for d in self._data:
-                try:
-                    component = d.get_component(self.component)
-                except:
-                    continue
-                else:
-                    break
+            component = self._data.get_component_by_id(self.component)
             if component.categorical:
                 if self.ui.xlog_box.isEnabled():
                     self.ui.xlog_box.setEnabled(False)

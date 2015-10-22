@@ -310,3 +310,14 @@ class TestDataCollection(object):
         assert_array_equal(c['a'], [3, 4, 5])
         dc.merge(a, b)
         assert_array_equal(c['a'], [3, 4, 5])
+
+    def test_get_component_by_id(self):
+        d1 = Data(x=[1, 2, 3])
+        d2 = Data(y=[2, 3, 4])
+        c1 = d1.find_component_id('x')
+        dc = DataCollection([d1, d2])
+        comp = dc.get_component_by_id(c1)
+        c2 = ComponentID('z')
+        with pytest.raises(ValueError) as exc:
+            comp = dc.get_component_by_id(c2)
+        assert exc.value.args[0] == "Component ID z not found in any datasets in data collection"

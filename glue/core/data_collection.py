@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from .hub import Hub, HubListener
-from .data import Data
+from .data import Data, IncompatibleAttribute
 from .link_manager import LinkManager
 from .registry import Registry
 from .message import (DataCollectionAddMessage,
@@ -296,3 +296,11 @@ class DataCollection(HubListener):
 
     def __nonzero__(self):
         return True
+
+    def get_component_by_id(self, component_id):
+        for data in self:
+            try:
+                return data.get_component(component_id)
+            except IncompatibleAttribute:
+                continue
+        raise ValueError("Component ID {0} not found in any datasets in data collection".format(component_id))
