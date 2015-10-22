@@ -412,10 +412,15 @@ class ImageClient(VizClient):
                 self.delete_layer(subset)
 
         if layer is self.display_data:
-            if len(self.artists) > 0:
-                self.display_data = self.artists.layers[0].data
+            for layer in self.artists:
+                if isinstance(layer, ImageLayerArtist):
+                    self.display_data = layer.data
+                    break
             else:
+                for artist in self.artists:
+                    self.delete_layer(artist.layer)
                 self.display_data = None
+                self.display_attribute = None
 
         self._redraw()
 
@@ -475,7 +480,7 @@ class ImageClient(VizClient):
         self._redraw()
         return result
 
-    def update_aspect(self):
+    def _update_aspect(self):
         self._update_data_plot(relim=True)
         self._redraw()
 
@@ -751,10 +756,13 @@ class MplImageClient(ImageClient):
         vw = _view_window(self._axes)
         if vw != self._view_window:
             logging.getLogger(__name__).debug("updating")
-            self._update_data_plot()
-            self._update_subset_plots()
-            self._redraw()
+            self._update_and_redraw()
             self._view_window = vw
+
+    def _update_and_redraw(self):
+        self._update_data_plot()
+        self._update_subset_plots()
+        self._redraw()
 
     @requires_data
     def _update_axis_labels(self):

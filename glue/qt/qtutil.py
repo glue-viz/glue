@@ -980,7 +980,7 @@ def update_combobox(combo, labeldata):
     """
     combo.blockSignals(True)
     idx = combo.currentIndex()
-    if idx > 0:
+    if idx >= 0:
         current = combo.itemData(idx)
     else:
         current = None
@@ -993,6 +993,12 @@ def update_combobox(combo, labeldata):
             index = i
     combo.blockSignals(False)
     combo.setCurrentIndex(index)
+
+    # We need to force emit this, otherwise if the index happens to be the
+    # same as before, even if the data is different, callbacks won't be
+    # called.
+    if idx == index or idx == -1:
+        combo.currentIndexChanged.emit(index)
 
     return combo
 

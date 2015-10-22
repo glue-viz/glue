@@ -7,6 +7,11 @@ v0.6 (unreleased)
 * Prevent axes from moving around when data viewers are being resized, and
   instead make the absolute margins between axes and figure edge fixed. [#745]
 
+* Fixed a bug that caused image plots to not be updated immediately when
+  changing component, and fixed a bug that caused data and attribute combo
+  boxes to not update correctly when showing multiple datasets in an
+  ImageWidget. [#755]
+
 * Added tests to ensure that we remain backward-compatible with old session
   files for the FITS and HDF5 factories. [#736, #748]
 

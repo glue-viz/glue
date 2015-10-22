@@ -188,7 +188,7 @@ class TestImageWidget(_TestImageWidgetBase):
         # What appears to happen when the test fails is that the QTimer gets
         # started but basically never ends up triggering the timeout.
 
-        large = core.Data(label='im', x=np.random.random((1024, 1024)))
+        large = core.Data(label='largeim', x=np.random.random((1024, 1024)))
         self.collect.append(large)
 
         app = get_qapp()
@@ -295,3 +295,58 @@ class TestStateSave(TestApplication):
         assert w.ratt.label == 'x'
         assert w.gatt.label == 'y'
         assert w.batt.label == 'x'
+
+
+def test_combo_box_updates():
+
+    # Regression test for a bug that caused combo boxes to not be updated
+    # correctly when switching between different datasets.
+
+    session = simple_session()
+    hub = session.hub
+    dc = session.data_collection
+
+    data1 = core.Data(label='im1',
+                        x=[[1, 2], [3, 4]],
+                        y=[[2, 3], [4, 5]])
+
+    data2 = core.Data(label='im2',
+                        a=[[1, 2], [3, 4]],
+                        b=[[2, 3], [4, 5]])
+
+    dc.append(data1)
+    dc.append(data2)
+
+    widget = ImageWidget(session)
+    widget.register_to_hub(hub)
+
+    widget.add_data(data1)
+
+    assert widget.client.display_data is data1
+
+    assert widget.data.label == 'im1'
+    assert widget.attribute.label == 'x'
+
+    widget.add_data(data2)
+
+    assert widget.client.display_data is data2
+
+    assert widget.data.label == 'im2'
+    assert widget.attribute.label == 'a'
+
+    widget.attribute = data2.find_component_id('b')
+
+    with pytest.raises(ValueError) as exc:
+        widget.attribute =  data1.find_component_id('x')
+    assert exc.value.args[0] == "Cannot find data 'x' in combo box"
+
+    widget.data = data1
+    assert widget.attribute.label == 'x'
+
+    widget.attribute = data1.find_component_id('y')
+
+    with pytest.raises(ValueError) as exc:
+        widget.attribute =  data2.find_component_id('a')
+    assert exc.value.args[0] == "Cannot find data 'a' in combo box"
+
+    assert widget.client.display_data is data1
