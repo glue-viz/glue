@@ -10,7 +10,7 @@ from .astropy_table import astropy_tabular_data
 __all__ = ['tabular_data']
 
 
-@data_factory(label="Catalog",
+@data_factory(label="ASCII Table",
               identifier=has_extension('csv txt tsv tbl dat '
                                        'csv.gz txt.gz tbl.bz '
                                        'dat.gz'),
