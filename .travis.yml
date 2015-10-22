@@ -123,6 +123,9 @@ install:
   # number.
   - if [ $DOC_TRIGGER ]; then pip install astropy-helpers linkchecker; fi
 
+  # Uninstal PyQt if we are using PySide
+  - if [ $QT_PKG == pyside ]; then conda remove --yes pyqt sip; fi
+
   - python setup.py install
 
 script:
