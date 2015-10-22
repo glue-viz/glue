@@ -237,6 +237,8 @@ def connect_current_combo(client, prop, widget):
     """
 
     def _push_combo(value):
+        # NOTE: we can't use findData here because if the data is not a 
+        # string, PySide will crash
         idx = _find_combo_data(widget, value)
         if idx == -1:
             return
