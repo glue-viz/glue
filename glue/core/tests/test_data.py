@@ -18,7 +18,7 @@ from ... import core
 from ...external import six
 
 
-class TestCoordinates(Coordinates):
+class _TestCoordinates(Coordinates):
 
     def pixel2world(self, *args):
         return [(i + 2.) * a for i, a in enumerate(args)]
@@ -34,7 +34,7 @@ class TestData(object):
         Registry().clear()
         comp = Component(np.random.random((2, 3)))
         self.comp = comp
-        self.data.coords = TestCoordinates()
+        self.data.coords = _TestCoordinates()
         self.comp_id = self.data.add_component(comp, 'Test Component')
 
     def test_2d_component_print(self):
