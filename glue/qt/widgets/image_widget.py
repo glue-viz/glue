@@ -229,7 +229,7 @@ class ImageWidgetBase(DataViewer):
         connect_current_combo(self.client, 'display_attribute', self.ui.attributeComboBox)
         connect_current_combo(self.client, 'display_aspect', self.ui.aspectCombo)
 
-    def _display_data_changed(self, *args):
+    def _display_data_changed(self):
 
         if self.client.display_data is None:
             self.ui.attributeComboBox.clear()
@@ -241,7 +241,7 @@ class ImageWidgetBase(DataViewer):
         self.client._update_and_redraw()
         self.update_window_title()
 
-    def _display_attribute_changed(self, *args):
+    def _display_attribute_changed(self):
 
         if self.client.display_attribute is None:
             return
