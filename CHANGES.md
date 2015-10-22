@@ -18,6 +18,8 @@ v0.6 (unreleased)
 * When a box has been drawn to extract a spectrum from a cube, the box can
   then be moved by pressing the control key and dragging it. [#707]
 
+* Refactored ASCII I/O to include more Astropy table formats. [#762]
+
 * When saving a session, if no extension is specified, the .glu extension is
   added. [#729]
 
