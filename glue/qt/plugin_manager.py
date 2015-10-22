@@ -10,7 +10,7 @@ __all__ = ["QtPluginManager"]
 
 class QtPluginManager(object):
 
-    def __init__(self):
+    def __init__(self, installed=None):
 
         self.ui = load_ui('plugin_manager.ui', None)
 
@@ -19,17 +19,18 @@ class QtPluginManager(object):
 
         self._checkboxes = {}
 
-        self.update_list()
+        self.update_list(installed=installed)
 
     def clear(self):
         self._checkboxes.clear()
         self.ui.tree.clear()
 
-    def update_list(self):
+    def update_list(self, installed=None):
 
         self.clear()
 
         config = PluginConfig.load()
+        config.filter(installed)
 
         for plugin in sorted(config.plugins):
             check = QtGui.QTreeWidgetItem(self.ui.tree.invisibleRootItem(),
@@ -68,5 +69,3 @@ class QtPluginManager(object):
             return
 
         self.ui.accept()
-        
-
