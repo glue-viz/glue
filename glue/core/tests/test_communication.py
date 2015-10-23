@@ -26,7 +26,7 @@ Processed (or ignored!) by clients
 """
 
 
-class TestClient(Client):
+class _TestClient(Client):
 
     def __init__(self, data):
         Client.__init__(self, data)
@@ -58,9 +58,9 @@ class TestCommunication(object):
         self.d2 = Data()
         self.d3 = Data()
         dc = DataCollection([self.d1])
-        self.c1 = TestClient(dc)
-        self.c2 = TestClient(DataCollection([self.d2]))
-        self.c3 = TestClient(dc)
+        self.c1 = _TestClient(dc)
+        self.c2 = _TestClient(DataCollection([self.d2]))
+        self.c3 = _TestClient(dc)
         self.s1 = Subset(self.d1)
         self.s2 = Subset(self.d2)
         self.m1 = SubsetCreateMessage(self.s1)
@@ -74,7 +74,7 @@ class TestCommunication(object):
 
         h = Hub()
         d = Data()
-        c = TestClient(DataCollection([d]))
+        c = _TestClient(DataCollection([d]))
         assert not c in h._subscriptions
         c.register_to_hub(h)
         assert c in h._subscriptions
@@ -118,7 +118,7 @@ class TestCommunication(object):
         assert self.c1.last_message is None
         assert self.c1.call is None
 
-    @pytest.mark.skip("Relaxed requirement. Hub now ignores exceptions")
+    @pytest.mark.skipif(True, reason="Relaxed requirement. Hub now ignores exceptions")
     def test_uncaught_message(self):
         #broadcast a message without a message handler
         self.hub.subscribe(self.c1, Message)
@@ -175,7 +175,7 @@ class TestCommunication(object):
         #sends messages
         d = Data()
         dc = DataCollection(d)
-        c = TestClient(dc)
+        c = _TestClient(dc)
 
         c.register_to_hub(dc.hub)
         sub = d.new_subset()

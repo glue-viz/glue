@@ -33,7 +33,7 @@ class PluginConfig(object):
         # just import the variable directly otherwise it is cached.
         from . import config
         cfg_dir = config.CFG_DIR
-        
+
         plugin_cfg =  os.path.join(cfg_dir, 'plugins.cfg')
 
         from .external.six.moves import configparser
@@ -74,3 +74,13 @@ class PluginConfig(object):
 
         with open(plugin_cfg, 'w') as fout:
             config.write(fout)
+
+    def filter(self, keep):
+        """
+        Keep only certain plugins.
+
+        This is used to filter out plugins that are not installed.
+        """
+        for key in list(self.plugins.keys())[:]:
+            if not key in keep:
+                self.plugins.pop(key)

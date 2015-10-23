@@ -8,33 +8,33 @@ from .qtutil import load_ui
 __all__ = ["QtPluginManager"]
 
 
-class QtPluginManager(QtGui.QDialog):
+class QtPluginManager(object):
 
-    def __init__(self):
+    def __init__(self, installed=None):
 
-        super(QtPluginManager, self).__init__()
+        self.ui = load_ui('plugin_manager.ui', None)
 
-        self.ui = load_ui('plugin_manager.ui', self)
-
-        self.cancel.clicked.connect(self.reject)
-        self.confirm.clicked.connect(self.finalize)
+        self.ui.cancel.clicked.connect(self.reject)
+        self.ui.confirm.clicked.connect(self.finalize)
 
         self._checkboxes = {}
 
-        self.update_list()
+        self.update_list(installed=installed)
 
     def clear(self):
         self._checkboxes.clear()
-        self.tree.clear()
+        self.ui.tree.clear()
 
-    def update_list(self):
+    def update_list(self, installed=None):
 
         self.clear()
 
         config = PluginConfig.load()
+        if installed is not None:
+            config.filter(installed)
 
         for plugin in sorted(config.plugins):
-            check = QtGui.QTreeWidgetItem(self.tree.invisibleRootItem(),
+            check = QtGui.QTreeWidgetItem(self.ui.tree.invisibleRootItem(),
                                           ["", plugin])
             check.setFlags(check.flags() | QtCore.Qt.ItemIsUserCheckable)
             if config.plugins[plugin]:
@@ -43,8 +43,11 @@ class QtPluginManager(QtGui.QDialog):
                 check.setCheckState(0, QtCore.Qt.Unchecked)
             self._checkboxes[plugin] = check
 
-        self.tree.resizeColumnToContents(0)
-        self.tree.resizeColumnToContents(1)
+        self.ui.tree.resizeColumnToContents(0)
+        self.ui.tree.resizeColumnToContents(1)
+
+    def reject(self):
+        self.ui.reject()
 
     def finalize(self):
 
@@ -66,4 +69,4 @@ class QtPluginManager(QtGui.QDialog):
             message.exec_()
             return
 
-        self.accept()
+        self.ui.accept()

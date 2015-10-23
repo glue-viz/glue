@@ -10,10 +10,10 @@ from ..mouse_mode import MouseMode
 from ..qtutil import get_icon
 
 
-class TestMode(MouseMode):
+class MouseModeTest(MouseMode):
 
     def __init__(self, axes, release_callback=None):
-        super(TestMode, self).__init__(axes, release_callback=release_callback)
+        super(MouseModeTest, self).__init__(axes, release_callback=release_callback)
         self.icon = get_icon('square')
         self.mode_id = 'TEST'
         self.action_text = 'test text'
@@ -37,10 +37,13 @@ class TestToolbar(object):
         self.canvas = widget.canvas
         self.axes = axes
         self.tb = GlueToolbar(self.canvas, self.win)
-        self.mode = TestMode(self.axes, release_callback=self.callback)
+        self.mode = MouseModeTest(self.axes, release_callback=self.callback)
         self.tb.add_mode(self.mode)
         self.win.addToolBar(self.tb)
         self._called_back = False
+
+    def teardown_method(self, method):
+        self.win.close()
 
     def _make_plot_widget(self, parent):
         widget = MplWidget(parent)

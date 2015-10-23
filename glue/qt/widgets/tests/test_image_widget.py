@@ -350,3 +350,6 @@ def test_combo_box_updates():
     assert exc.value.args[0] == "Cannot find data 'a' in combo box"
 
     assert widget.client.display_data is data1
+
+
+del TestApplication

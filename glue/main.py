@@ -242,6 +242,7 @@ def main(argv=sys.argv):
 
 
 _loaded_plugins = set()
+_installed_plugins = set()
 
 
 def load_plugins():
@@ -267,6 +268,9 @@ def load_plugins():
     config = PluginConfig.load()
 
     for item in iter_plugin_entry_points():
+
+        if not item.module_name in _installed_plugins:
+            _installed_plugins.add(item.name)
 
         if item.module_name in _loaded_plugins:
             logger.info("Plugin {0} already loaded".format(item.name))
