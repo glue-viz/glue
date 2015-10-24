@@ -302,10 +302,11 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
         return result
 
     def flags(self, index=QModelIndex()):
-        if not index.isValid():
+        item = self._get_item(index)
+        if item is None:
             return Qt.NoItemFlags
-
-        return self._get_item(index).flags
+        else:
+            return item.flags
 
     def data(self, index, role):
         if not index.isValid():
