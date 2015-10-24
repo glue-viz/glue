@@ -5,6 +5,14 @@
 What's new in Glue v0.6?
 ========================
 
+Below we list some of the main changes in Glue v0.6. As a reminder, you can easily update glue if you are using Anaconda/Miniconda, by doing::
+
+    conda install glueviz
+
+If instead you installed glue with pip, you can update with::
+
+    pip install glueviz --upgrade
+
 Improved file readers
 ---------------------
 
