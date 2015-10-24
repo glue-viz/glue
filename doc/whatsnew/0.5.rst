@@ -2,8 +2,8 @@
 
 .. _whatsnew_05:
 
-What's new in v0.5.x?
-=====================
+What's new in Glue v0.5?
+========================
 
 Python 3 compatibility
 ----------------------
