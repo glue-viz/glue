@@ -41,6 +41,11 @@ matrix:
           env:
             - PYTHON_VERSION=2.7 MPL_VERSION=1.4 ASTROPY_VERSION=dev
 
+        # PyQt5
+        - os: linux
+          env:
+            - PYTHON_VERSION=2.7 MPL_VER=1.4 ASTRO_VER=1.0 QT_PKG=pyqt5
+
         # The following configuration tests that glue functions with minimal
         # dependencies. The --no-deps is to prevent scipy from getting
         # installed as a pandas dependency.
@@ -93,6 +98,8 @@ before_install:
   - if [[ $PYTHON_VERSION == 2.6 && $IPYTHON_VERSION == 2 ]]; then export IPYTHON_VERSION=1; fi
   - if [[ $IPYTHON_VERSION != None ]]; then export CONDA_DEPENDENCIES="IPython=$IPYTHON_VERSION "$CONDA_DEPENDENCIES; fi
   - if [[ $IPYTHON_VERSION == 4 ]]; then export CONDA_DEPENDENCIES="qtconsole ipykernel "$CONDA_DEPENDENCIES; fi
+
+  - if [[ $QT_PKG == pyqt5]]; then export CONDA_DEPENDENCIES="-c astrofrog "$CONDA_DEPENDENCIES
 
   # Documentation dependencies
   - if [ $DOC_TRIGGER ]; then export PIP_DEPENDENCIES="astropy-helpers linkchecker "$PIP_DEPENDENCIES; fi
