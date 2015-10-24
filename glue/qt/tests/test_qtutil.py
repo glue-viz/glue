@@ -5,7 +5,7 @@ import pytest
 
 from .. import qtutil
 from ...external.qt import QtGui
-from ...external.qt.QtCore import Qt
+from ...external.qt.QtCore import Qt, QDir
 from mock import MagicMock, patch
 from ..qtutil import GlueDataDialog
 from ..qtutil import pretty_number, GlueComboBox, PythonListModel, update_combobox
@@ -50,7 +50,7 @@ class TestGlueDataDialog(object):
         fd = GlueDataDialog()
         assert len(fd.filters) > 0
         for k, v in fd.filters:
-            fd._fd.setFilter(v)
+            fd._fd.selectNameFilter(v)
             assert fd.factory() is k
 
     def test_load_data_cancel(self):
