@@ -389,6 +389,7 @@ class ImageLayerArtist(LayerArtist, ImageLayerBase):
         self._cmap = gray
         self._override_image = None
         self._clip_cache = None
+        self.aspect = 'equal'
 
     @property
     def norm(self):
@@ -454,8 +455,8 @@ class ImageLayerArtist(LayerArtist, ImageLayerBase):
 
     def update(self, view, transpose=False, aspect=None):
 
-        if aspect is None:
-            aspect = 'equal'
+        if aspect is not None:
+            self.aspect = aspect
 
         self.clear()
         views = view_cascade(self.layer, view)
@@ -474,7 +475,7 @@ class ImageLayerArtist(LayerArtist, ImageLayerBase):
                                              interpolation='nearest',
                                              origin='lower',
                                              extent=extent, zorder=0))
-            self._axes.set_aspect(aspect, adjustable='datalim')
+            self._axes.set_aspect(self.aspect, adjustable='datalim')
         self.artists = artists
         self._sync_style()
 
@@ -530,6 +531,7 @@ class RGBImageLayerArtist(ImageLayerArtist, RGBImageLayerBase):
     def __init__(self, layer, ax, last_view=None):
         super(RGBImageLayerArtist, self).__init__(layer, ax)
         self.contrast_layer = 'green'
+        self.aspect = 'equal'
         self.layer_visible = dict(red=True, green=True, blue=True)
         self.last_view = last_view
 
@@ -549,8 +551,8 @@ class RGBImageLayerArtist(ImageLayerArtist, RGBImageLayerBase):
 
         self.clear()
 
-        if aspect is None:
-            aspect = 'equal'
+        if aspect is not None:
+            self.aspect = aspect
 
         if self.r is None or self.g is None or self.b is None:
             return
@@ -600,7 +602,7 @@ class RGBImageLayerArtist(ImageLayerArtist, RGBImageLayerBase):
                                              interpolation='nearest',
                                              origin='lower',
                                              extent=extent, zorder=0))
-            self._axes.set_aspect(aspect, adjustable='datalim')
+            self._axes.set_aspect(self.aspect, adjustable='datalim')
         self.artists = artists
         self._sync_style()
 
