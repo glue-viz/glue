@@ -87,7 +87,7 @@ def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
         return data
 
     for extnum, hdu in enumerate(hdulist):
-        hdu_name = hdu.name if hdu.name else str(extnum)
+        hdu_name = hdu.name if hdu.name else "HDU{0}".format(extnum)
         if (hdu.data is not None and
                 hdu.data.size > 0 and
                 hdu_name not in exclude_exts and
