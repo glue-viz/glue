@@ -264,7 +264,9 @@ class ViewerBase(HubListener, PropertySetMixin):
     _container_cls = None
 
     def __init__(self, session):
-        super(ViewerBase, self).__init__()
+
+        HubListener.__init__(self)
+        PropertySetMixin.__init__(self)
 
         self._session = session
         self._data = session.data_collection
