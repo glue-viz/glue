@@ -774,7 +774,7 @@ class GlueApplication(Application, QMainWindow):
         app : :class:`GlueApplication`
             The loaded application
         """
-        ga = super(GlueApplication, self).restore_session(path)
+        ga = Application.restore_session(path)
         if show:
             ga.show()
         return ga

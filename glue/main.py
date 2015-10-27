@@ -118,7 +118,7 @@ def die_on_error(msg):
 def restore_session(gluefile):
     """Load a .glu file and return a DataCollection, Hub tuple"""
     from glue.qt.glue_application import GlueApplication
-    return GlueApplication.restore(gluefile)
+    return GlueApplication.restore_session(gluefile)
 
 
 @die_on_error("Error reading data file")
