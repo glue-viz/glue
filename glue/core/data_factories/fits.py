@@ -139,7 +139,7 @@ def has_wcs(coords):
 
 def is_casalike(filename, **kwargs):
     """
-    Check if a file is a CASA like cube,
+    Check if a FITS file is a CASA like cube,
     with (P, P, V, Stokes) layout
     """
     from ...external.astro import fits
@@ -162,7 +162,7 @@ def is_casalike(filename, **kwargs):
 @data_factory(label='CASA PPV Cube', identifier=is_casalike)
 def casalike_cube(filename, **kwargs):
     """
-    This provides special support for 4D CASA - like cubes,
+    This provides special support for 4D CASA FITS - like cubes,
     which have 2 spatial axes, a spectral axis, and a stokes axis
     in that order.
 
