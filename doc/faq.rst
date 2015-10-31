@@ -65,8 +65,9 @@ Does Glue Understand CASA Cubes?
 --------------------------------
 Many radio astronomy datacubes are 4 dimensional, and give intensity
 as a function of 2 spatial dimensions, a frequency dimension, and a
-Stokes polarization dimension. By default, Glue will read these images
-in as 4D hypercubes.
+Stokes polarization dimension. By default, Glue will read these FITS
+images in as 4D hypercubes (use the task exportfits in CASA to write
+a native CASA image into a FITS cube that glue can read).
 
 However, you might wish to load the image as a series of 3D cubes,
 one for each Stokes parameter. This would more easily allow you,
@@ -89,6 +90,14 @@ You can also submit bug reports directly from Glue, by clicking ``Help->Send Fee
 How do I make a scatterplot of columns from two different catalogs?
 -------------------------------------------------------------------
 :ref:`Merge <merging>` the two datasets into a single object.
+
+How do I make a scatterplot between two images?
+-------------------------------------------------------------------
+:ref:`Merge <merging>` the two datasets into a single object, like you do for catalogs. This will only work if the two images have exactly the same shape (although it does not check if the WCS is the same).  You can then drop the merged object with the **Image Viewer**, and do this a second time for which you will select the other *Attribute* (on lower left) to be visible. For a third one you select the **Scatter Plot**. You can then select regions in any of the three plots, and the corresponding selections in the other plots will be highlighted. Another interesting way to visualize your two related images is drop a 4th object using **Image Viewer**, but this time select the RGB instead of Monochrome, and put each image into one of the colors. Right mouse down will change the *Contrast* selected color after you have selected the *bias/contrast button* on the top row. Obviously with three images  this is a great way to create a colorful RGB image.
+
+     
+
+A note on brushing in the image. If you want to just highlight a single pixel (pretty easy once you zoom in), you need to make sure your rectangular selection has its top right selection in that pixel. You cannot just highlight inside the pixel, it needs to cross boundaries between pixels.
 
 I have some other question...?
 ------------------------------
