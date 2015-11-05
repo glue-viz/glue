@@ -4,12 +4,16 @@ python_version=$1
 
 if [ ${python_version:0:1} == "2" ]
 then
-    wget http://repo.continuum.io/miniconda/Miniconda-3.6.0-Linux-x86_64.sh -O miniconda.sh
+    wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
 else
-    wget http://repo.continuum.io/miniconda/Miniconda3-3.6.0-Linux-x86_64.sh -O miniconda.sh
+    wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
 fi
 
-chmod +x miniconda.sh
-./miniconda.sh -b
-export PATH=/home/travis/anaconda/bin:/home/travis/miniconda/bin:/home/travis/miniconda3/bin:$PATH
-which conda
+# http://conda.pydata.org/docs/travis.html#the-travis-yml-file
+
+bash miniconda.sh -b -p $HOME/miniconda
+export PATH="$HOME/miniconda/bin:$PATH"
+hash -r
+conda config --set always_yes yes --set changeps1 no
+conda update -q conda
+conda info -a
