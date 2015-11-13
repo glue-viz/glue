@@ -44,11 +44,11 @@ matrix:
           env:
             - PYTHON_VERSION=2.7
             - PYTEST_ARGS="--cov glue"
-            - CONDA_DEPS="pip setuptools=7.0 numpy=$NUMPY_VER pandas mock pbr six funcsigs --no-deps"
+            - CONDA_DEPENDENCIES="pip setuptools=7.0 numpy=$NUMPY_VER pandas mock pbr six funcsigs --no-deps"
             - IPYTHON_VERSION=None
             - ASTROPY_VERSION=None
             - MPL_VERSION=1.4
-            - PIP_BASE="pytest-cov coveralls"
+            - PIP_DEPENDENCIES="pytest-cov coveralls"
             - QT_PKG=pyqt
 
         - os: linux
@@ -82,8 +82,8 @@ before_install:
 
   # Special cases depending on IPython version
   - if [[ $PYTHON_VERSION == 2.6 && $IPYTHON_VERSION == 2 ]]; then export IPYTHON_VERSION=1; fi
-  - if [[ $IPYTHON_VERSION != None ]]; then export CONDA_DEPENDENCIES="Python=$IPYTHON_VERSION"; fi
-  - if [[ $IPYTHON_VERSION == 4 ]]; then export CONDA_DEPENDENCIES="qtconsole ipykernel"; fi
+  - if [[ $IPYTHON_VERSION != None ]]; then export CONDA_DEPENDENCIES="Python=$IPYTHON_VERSION "$CONDA_DEPENDENCIES; fi
+  - if [[ $IPYTHON_VERSION == 4 ]]; then export CONDA_DEPENDENCIES="qtconsole ipykernel "$CONDA_DEPENDENCIES; fi
 
   # Documentation dependencies
   - if [ $DOC_TRIGGER ]; then export PIP_DEPENDENCIES="astropy-helpers linkchecker "$PIP_DEPENDENCIES; fi
@@ -115,7 +115,7 @@ install:
   - if [[ $GINGA ]]; then pip install $PIP_ARGS https://github.com/glue-viz/ginga/archive/master.zip; fi
 
   # Uninstall PyQt if we are using PySide
-  - if [ $QT_PKG == pyside ]; then conda remove --yes pyqt sip; fi
+  - if [ $QT_PKG == pyside ]; then conda remove pyqt sip || true; fi
 
   - python setup.py install
 
