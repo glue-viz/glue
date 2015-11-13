@@ -14,7 +14,7 @@ env:
   global:
     - PYTEST_ARGS="--cov glue"
     - NUMPY_VERSION=1.9
-    - IPYTHON_VERSIONSION=4
+    - IPYTHON_VERSION=4
     - NO_CFG_FILES=false
     - CONDA_DEPENDENCIES="pip scipy cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.3 xlrd pillow pytest mock coverage pyyaml requests sphinx_rtd_theme"
     - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli"
