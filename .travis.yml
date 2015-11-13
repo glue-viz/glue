@@ -46,7 +46,7 @@ matrix:
             - PYTEST_ARGS="--cov glue"
             - CONDA_DEPENDENCIES="pip setuptools=7.0 numpy=$NUMPY_VER pandas mock pbr six funcsigs --no-deps"
             - IPYTHON_VERSION=None
-            - ASTROPY_VERSION=None
+            - ASTROPY_VERSION=''
             - MPL_VERSION=1.4
             - PIP_DEPENDENCIES="pytest-cov coveralls"
             - QT_PKG=pyqt
