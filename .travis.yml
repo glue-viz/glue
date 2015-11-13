@@ -82,7 +82,7 @@ before_install:
 
   # Special cases depending on IPython version
   - if [[ $PYTHON_VERSION == 2.6 && $IPYTHON_VERSION == 2 ]]; then export IPYTHON_VERSION=1; fi
-  - if [[ $IPYTHON_VERSION != None ]]; then export CONDA_DEPENDENCIES="Python=$IPYTHON_VERSION "$CONDA_DEPENDENCIES; fi
+  - if [[ $IPYTHON_VERSION != None ]]; then export CONDA_DEPENDENCIES="IPython=$IPYTHON_VERSION "$CONDA_DEPENDENCIES; fi
   - if [[ $IPYTHON_VERSION == 4 ]]; then export CONDA_DEPENDENCIES="qtconsole ipykernel "$CONDA_DEPENDENCIES; fi
 
   # Documentation dependencies
