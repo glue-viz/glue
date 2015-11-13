@@ -129,7 +129,7 @@ install:
   - python setup.py install
 
 script:
-  - py.test $PYTEST_ARGS glue -s
+  - py.test $PYTEST_ARGS glue -sv
   - if [ $DOC_TRIGGER ]; then cd doc && make html 2> warnings.log && cd ../ ; fi
 
   # In the following command, the test -s ensures that warnings are not emitted
