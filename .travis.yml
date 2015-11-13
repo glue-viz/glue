@@ -117,7 +117,11 @@ install:
   - python setup.py install
 
 script:
-  - xvfb-run py.test $PYTEST_ARGS glue -sv
+  - if [[ $TRAVIS_OS_NAME == linux ]]; then
+      xvfb-run py.test $PYTEST_ARGS glue -sv;
+    else
+      py.test $PYTEST_ARGS glue -sv;
+    fi
   - if [ $DOC_TRIGGER ]; then cd doc && make html 2> warnings.log && cd ../ ; fi
 
   # In the following command, the test -s ensures that warnings are not emitted
