@@ -3,6 +3,7 @@ from __future__ import print_function
 
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
+from distutils.core import Command
 
 import os
 import sys
@@ -46,22 +47,20 @@ except (IOError, ImportError):
 cmdclass = {}
 
 
-class PyTest(TestCommand):
+class PyTest(Command):
+
     user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
 
     def initialize_options(self):
-        TestCommand.initialize_options(self)
-        self.pytest_args = []
+        self.pytest_args = ""
 
     def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
+        pass
 
-    def run_tests(self):
+    def run(self):
         # import here, cause outside the eggs aren't loaded
         import pytest
-        errno = pytest.main(self.pytest_args + ['glue'])
+        errno = pytest.main(self.pytest_args + ' glue')
         sys.exit(errno)
 
 cmdclass['test'] = PyTest
