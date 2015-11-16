@@ -30,6 +30,9 @@ install:
     - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
     - "activate test"
 
+    # Install to make sure entry points work
+    - "python setup.py install"
+
 # Not a .NET project, we build SunPy in the install step instead
 build: false
 
