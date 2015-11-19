@@ -4,18 +4,18 @@ from __future__ import absolute_import, division, print_function
 
 from functools import partial, wraps
 
-from ...external.qt import QtGui
+from ...external.qt import QtGui, is_pyqt5
 from ...external.qt.QtCore import Signal, Qt, QTimer
 
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as \
-    FigureCanvas
-
-try:
-    from matplotlib.backends.backend_qt4agg import FigureManagerQTAgg as \
-        FigureManager
-except ImportError:  # mpl >= 1.4
-    from matplotlib.backends.backend_qt4agg import FigureManagerQT as \
-        FigureManager
+if is_pyqt5():
+    from matplotlib.backends.backend_qt5 import FigureManagerQT as FigureManager
+    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+else:
+    try:
+        from matplotlib.backends.backend_qt4agg import FigureManagerQT as FigureManager
+    except ImportError:  # mpl < 1.4
+        from matplotlib.backends.backend_qt4agg import FigureManagerQTAgg as FigureManager
+    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 
 import matplotlib
 from matplotlib.figure import Figure

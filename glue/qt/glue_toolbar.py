@@ -2,10 +2,16 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import matplotlib
-from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
-from ..external.qt import QtCore, QtGui
+
+from ..external.qt import QtCore, QtGui, is_pyqt5
 from ..external.qt.QtGui import QMenu
 from ..external.qt.QtCore import Qt, Signal
+
+if is_pyqt5():
+    from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
+else:
+    from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
+
 from ..core.callback_property import add_callback
 from .qtutil import get_icon, nonpartial
 
@@ -246,7 +252,7 @@ class GlueToolbar(NavigationToolbar2QT):
             self.buttons[mode].setChecked(self._active == mode)
 
     def set_message(self, s):
-        self.emit(QtCore.SIGNAL("message"), s)
+        self.message.emit(s)
         parent = QtGui.QToolBar.parent(self)
         if parent is None:
             return

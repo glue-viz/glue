@@ -232,6 +232,9 @@ def test_connect_current_combo():
     combo.setCurrentIndex(0)
     assert t.a == 'a'
 
+    combo.setCurrentIndex(-1)
+    assert t.a is None
+
     t.a = 'b'
     assert combo.currentIndex() == 1
 

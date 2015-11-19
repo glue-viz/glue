@@ -235,7 +235,7 @@ def reload_qt():
     elif os.environ.get('QT_API') == QT_API_PYSIDE:
         loaders = [_load_pyside, _load_pyqt4]
     else:
-        loaders = [_load_pyqt4, _load_pyside]
+        loaders = [_load_pyqt4, _load_pyside, _load_pyqt5]
 
     msgs = []
 
@@ -299,6 +299,12 @@ def get_qapp(icon_path=None):
         qapp.setQuitOnLastWindowClosed(True)
         if icon_path is not None:
             qapp.setWindowIcon(QIcon(icon_path))
+
+    # Make sure we use high resolution icons with PyQt5 for HDPI
+    # displays. TODO: check impact on non-HDPI displays.
+    if is_pyqt5():
+        qapp.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps);
+
     return qapp
 
 

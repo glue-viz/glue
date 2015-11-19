@@ -7,6 +7,7 @@ from mock import MagicMock
 from ..layer_artist_model import LayerArtistModel, LayerArtistView
 from ...clients.layer_artist import LayerArtist as _LayerArtist
 from ...core import Data
+from ...external.qt import is_pyqt5
 
 
 class LayerArtist(_LayerArtist):
@@ -93,12 +94,16 @@ def test_change_label_invalid_row():
 def test_flags():
     model, _ = setup_model(1)
 
-    assert model.flags(model.index(0)) == (Qt.ItemIsEditable |
-                                           Qt.ItemIsDragEnabled |
-                                           Qt.ItemIsEnabled |
-                                           Qt.ItemIsSelectable |
-                                           Qt.ItemIsUserCheckable)
-    assert model.flags(model.index(-1)) == (Qt.ItemIsDropEnabled)
+    expected = (Qt.ItemIsEditable |
+                Qt.ItemIsDragEnabled |
+                Qt.ItemIsEnabled |
+                Qt.ItemIsSelectable |
+                Qt.ItemIsUserCheckable)
+
+    if is_pyqt5():
+        expected |= Qt.ItemNeverHasChildren
+
+    assert model.flags(model.index(0)) == expected
 
 
 def test_move_artist_empty():

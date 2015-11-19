@@ -369,15 +369,20 @@ class HistogramClient(Client):
         self._relim()
 
     def _relim(self):
-        lim = self.xmin, self.xmax
-        if self.xlog:
-            lim = list(np.log10(lim))
-            if not np.isfinite(lim[0]):
-                lim[0] = 1e-5
-            if not np.isfinite(lim[1]):
-                lim[1] = 1
 
-        self._axes.set_xlim(lim)
+        xmin, xmax = self.xmin, self.xmax
+
+        if self.xlog:
+            if xmin is None or not np.isfinite(xmin):
+                xmin = 0
+            else:
+                xmin = np.log10(xmin)
+            if xmax is None or not np.isfinite(xmax):
+                xmax = 1
+            else:
+                xmax = np.log10(xmax)
+
+        self._axes.set_xlim((xmin, xmax))
         self._redraw()
 
     def _numerical_data_changed(self, message):

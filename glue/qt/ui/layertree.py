@@ -1,4 +1,4 @@
-from glue.external.qt import QtCore, QtGui
+from ...external.qt import QtCore, QtGui, is_pyqt5
 from ..data_collection_model import DataCollectionView
 from ..qtutil import GlueActionButton, get_icon
 
@@ -74,8 +74,15 @@ class Ui_LayerTree(object):
         QtCore.QMetaObject.connectSlotsByName(LayerTree)
 
     def retranslateUi(self, LayerTree):
-        LayerTree.setWindowTitle(QtGui.QApplication.translate("LayerTree", "Form", None, QtGui.QApplication.UnicodeUTF8))
-        self.layerAddButton.setToolTip(QtGui.QApplication.translate("LayerTree", "Load a new data set", None, QtGui.QApplication.UnicodeUTF8))
-        self.newSubsetButton.setToolTip(QtGui.QApplication.translate("LayerTree", "Create a new empty subset", None, QtGui.QApplication.UnicodeUTF8))
-        self.layerRemoveButton.setToolTip(QtGui.QApplication.translate("LayerTree", "Delete Layer", None, QtGui.QApplication.UnicodeUTF8))
-        self.linkButton.setToolTip(QtGui.QApplication.translate("LayerTree", "Link data", None, QtGui.QApplication.UnicodeUTF8))
+        if is_pyqt5():
+            LayerTree.setWindowTitle(QtGui.QApplication.translate("LayerTree", "Form", None))
+            self.layerAddButton.setToolTip(QtGui.QApplication.translate("LayerTree", "Load a new data set", None))
+            self.newSubsetButton.setToolTip(QtGui.QApplication.translate("LayerTree", "Create a new empty subset", None))
+            self.layerRemoveButton.setToolTip(QtGui.QApplication.translate("LayerTree", "Delete Layer", None))
+            self.linkButton.setToolTip(QtGui.QApplication.translate("LayerTree", "Link data", None))
+        else:
+            LayerTree.setWindowTitle(QtGui.QApplication.translate("LayerTree", "Form", None, QtGui.QApplication.UnicodeUTF8))
+            self.layerAddButton.setToolTip(QtGui.QApplication.translate("LayerTree", "Load a new data set", None, QtGui.QApplication.UnicodeUTF8))
+            self.newSubsetButton.setToolTip(QtGui.QApplication.translate("LayerTree", "Create a new empty subset", None, QtGui.QApplication.UnicodeUTF8))
+            self.layerRemoveButton.setToolTip(QtGui.QApplication.translate("LayerTree", "Delete Layer", None, QtGui.QApplication.UnicodeUTF8))
+            self.linkButton.setToolTip(QtGui.QApplication.translate("LayerTree", "Link data", None, QtGui.QApplication.UnicodeUTF8))

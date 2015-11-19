@@ -259,7 +259,10 @@ def connect_current_combo(client, prop, widget):
         widget.setCurrentIndex(idx)
 
     def _pull_combo(idx):
-        setattr(client, prop, widget.itemData(idx))
+        if idx == -1:
+            setattr(client, prop, None)
+        else:
+            setattr(client, prop, widget.itemData(idx))
 
     add_callback(client, prop, _push_combo)
     widget.currentIndexChanged.connect(_pull_combo)
