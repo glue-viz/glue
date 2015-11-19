@@ -3,6 +3,8 @@
 from __future__ import absolute_import, division, print_function
 import pytest
 
+import matplotlib.pyplot as plt
+
 from .. import qtutil
 from ...external.qt import QtGui
 from ...external.qt.QtCore import Qt, QDir
@@ -360,8 +362,13 @@ class TestRGBEdit(object):
         from glue.clients.layer_artist import RGBImageLayerArtist
         from glue.core import Data
         d = Data()
-        self.artist = RGBImageLayerArtist(d, None)
+        self.fig = plt.figure()
+        self.ax = self.fig.add_subplot(1,1,1)
+        self.artist = RGBImageLayerArtist(d, self.ax)
         self.w = qtutil.RGBEdit(artist=self.artist)
+
+    def teardown_method(self, method):
+        plt.close(self.fig)
 
     def test_update_visible(self):
         for color in ['red', 'green', 'blue']:
