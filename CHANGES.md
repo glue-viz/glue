@@ -6,6 +6,8 @@ v0.6 (unreleased)
 
 * Added experimental support for PyQt5. [#663]
 
+* Fix ``glue -t`` option. [#791]
+
 * Prevent axes from moving around when data viewers are being resized, and
   instead make the absolute margins between axes and figure edge fixed. [#745]
 
