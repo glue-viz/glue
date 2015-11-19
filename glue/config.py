@@ -15,7 +15,7 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'SingleSubsetLayerActionRegistry', 'ProfileFitterRegistry',
            'qt_client', 'data_factory', 'link_function', 'link_helper',
            'colormaps', 'exporters', 'settings', 'fit_plugin',
-           'auto_refresh', 'importer']
+           'auto_refresh', 'importer', 'DictRegistry']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
