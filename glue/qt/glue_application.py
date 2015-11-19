@@ -4,6 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import sys
+import warnings
 import webbrowser
 
 from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
@@ -835,10 +836,12 @@ class GlueApplication(Application, QMainWindow):
     def _toggle_terminal(self):
         if self._terminal.isVisible():
             self._hide_terminal()
-            assert not self._terminal.isVisible()
+            if self._terminal.isVisible():
+                warnings.warn("An unexpected error occurred while trying to hide the terminal")
         else:
             self._show_terminal()
-            assert self._terminal.isVisible()
+            if not self._terminal.isVisible():
+                warnings.warn("An unexpected error occurred while trying to show the terminal")
 
     def _hide_terminal(self):
         self._terminal.hide()
