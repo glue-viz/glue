@@ -135,7 +135,7 @@ def load_data_files(datafiles):
 
 def run_tests():
     from glue import test
-    test.main()
+    test()
 
 
 def start_glue(gluefile=None, config=None, datafiles=None):
