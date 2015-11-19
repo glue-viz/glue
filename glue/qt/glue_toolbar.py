@@ -12,9 +12,6 @@ if is_pyqt5():
 else:
     from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
 
-from ..external.qt import QtCore, QtGui
-from ..external.qt.QtGui import QMenu
-from ..external.qt.QtCore import Qt, Signal
 from ..core.callback_property import add_callback
 from .qtutil import get_icon, nonpartial
 

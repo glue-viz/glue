@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 from .. import qtutil
 from ...external.qt import QtGui
-from ...external.qt.QtCore import Qt, QDir
+from ...external.qt.QtCore import Qt
 from mock import MagicMock, patch
 from ..qtutil import GlueDataDialog
 from ..qtutil import pretty_number, GlueComboBox, PythonListModel, update_combobox
