@@ -132,7 +132,7 @@ install:
   - if [[ $GINGA ]]; then pip install $PIP_ARGS https://github.com/glue-viz/ginga/archive/master.zip; fi
 
   # Uninstall PyQt if we are using PySide or PyQt5
-  - if [ $QT_PKG == pyside ]; then conda remove pyqt qt sip || true; fi
+  - if [ $QT_PKG == pyside ]; then conda remove pyqt sip || true; fi
   - if [ $QT_PKG == pyqt5 ]; then conda remove pyqt qt || true; fi
 
   - if [[ $QT_PKG == pyqt5 ]]; then
