@@ -39,7 +39,7 @@ class ImageClient(VizClient):
 
     display_data = CallbackProperty(None)
     display_attribute = CallbackProperty(None)
-    display_aspect = CallbackProperty(None)
+    display_aspect = CallbackProperty('equal')
 
     def __init__(self, data, artist_container=None):
 

@@ -167,6 +167,38 @@ class TestImageWidget(_TestImageWidgetBase):
         self.widget.rgb_mode = True
         self.widget.rgb_mode = False
 
+    def test_rgb_mode_toggle_aspect(self):
+
+        # Regression test: make sure that aspect ratio is preserved when
+        # toggling the RGB mode.
+
+        self.widget.add_data(self.im)
+
+        client = self.widget.client
+
+        assert client.display_aspect == 'equal'
+        for artist in client.artists:
+            assert artist.aspect == 'equal'
+
+        self.widget.rgb_mode = True
+
+        assert client.display_aspect == 'equal'
+        for artist in client.artists:
+            assert artist.aspect == 'equal'
+
+        self.widget.rgb_mode = False
+        self.widget.aspect_ratio = 'auto'
+
+        assert client.display_aspect == 'auto'
+        for artist in client.artists:
+            assert artist.aspect == 'auto'
+
+        self.widget.rgb_mode = True
+
+        assert client.display_aspect == 'auto'
+        for artist in client.artists:
+            assert artist.aspect == 'auto'
+
     @pytest.mark.skipif("CI and not TRAVIS_LINUX")
     def test_resize(self):
 
