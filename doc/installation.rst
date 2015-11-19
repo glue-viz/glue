@@ -65,7 +65,7 @@ Building from Source (For the Brave)
 
 The source code for Glue is available on `GitHub
 <http://www.github.com/glue-viz/glue>`_. Glue relies upon a number of
-scientific python libraries, as well as the QT GUI library. Installing
+scientific python libraries, as well as the Qt GUI library. Installing
 these packages is somewhat beyond the scope of this document, and
 unforunately trickier than it should be. If you want to dive in, here
 is the basic strategy:
@@ -87,7 +87,8 @@ Glue has the following required dependencies:
 * `Numpy <http://www.numpy.org>`_
 * `Matplotlib <http://www.matplotlib.org>`_
 * `Pandas <http://pandas.pydata.org/>`_
-* Either `PyQt4`_ or `PySide`_
+* Either `PyQt4`_ or `PySide`_ (or `PyQt5`_, but support is still
+  experimental)
 
 And the following optional dependencies are also highly recommended:
 
