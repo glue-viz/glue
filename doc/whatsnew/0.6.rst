@@ -101,6 +101,15 @@ if you are develop a data factory that reads FITS files in a special way, and
 want it to take precedence on all other data factories, you can set the
 priority to a large value.
 
+Experimental support for PyQt5
+------------------------------
+
+Glue should now work with the
+[PyQt5](https://riverbankcomputing.com/software/pyqt/download5) package, but
+support is experimental for now. If you do try out PyQt5, please
+[report any issues](https://github.com/glue-viz/glue/issues) you encounter!
+
+
 Other Improvements
 ------------------
 
