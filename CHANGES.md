@@ -8,6 +8,8 @@ v0.6 (unreleased)
 
 * Fix ``glue -t`` option. [#791]
 
+* Updated ``glue-deps`` to show PyQt/PySide versions. [#796]
+
 * Fix bug that caused viewers to be restored with the wrong size. [#781, #783]
 
 * Prevent axes from moving around when data viewers are being resized, and
