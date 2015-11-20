@@ -21,6 +21,7 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 import atexit
+from distutils.version import LooseVersion
 from contextlib import contextmanager
 
 # must import these first, to set up Qt properly
@@ -34,9 +35,12 @@ from zmq import ZMQError
 from zmq.eventloop.zmqstream import ZMQStream
 from zmq.eventloop import ioloop
 
+import IPython
 from IPython.core.usage import default_banner
 
-try:  # IPython 4.0
+IPYTHON_VERSION = LooseVersion(IPython.__version__)
+
+if IPYTHON_VERSION >= LooseVersion('4'):
 
     from IPython import get_ipython
 
@@ -54,12 +58,12 @@ try:  # IPython 4.0
     from qtconsole.inprocess import QtInProcessKernelManager
     from qtconsole.rich_jupyter_widget import RichJupyterWidget as RichIPythonWidget
 
-except ImportError:
+else:
 
     from IPython.utils.traitlets import TraitError
     from IPython.lib.kernel import find_connection_file
 
-    try:   # IPython 1.0-3.0
+    if IPYTHON_VERSION >= LooseVersion('1'):
 
         from IPython import get_ipython
 
@@ -74,7 +78,7 @@ except ImportError:
         from IPython.qt.inprocess import QtInProcessKernelManager
         from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
 
-    except ImportError:  # IPython < 1.0
+    else:
 
         from IPython.zmq.ipkernel import Kernel
         from IPython.zmq.ipkernel import IPKernelApp
