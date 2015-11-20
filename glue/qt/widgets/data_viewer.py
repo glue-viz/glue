@@ -135,7 +135,10 @@ class DataViewer(ViewerBase, QMainWindow):
 
     @property
     def viewer_size(self):
-        sz = QMainWindow.size(self)
+        if self._mdi_wrapper is not None:
+            sz = self._mdi_wrapper.size()
+        else:
+            sz = self.size()
         return sz.width(), sz.height()
 
     @viewer_size.setter

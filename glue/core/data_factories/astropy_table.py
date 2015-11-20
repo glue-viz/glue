@@ -83,10 +83,19 @@ def astropy_tabular_data(*args, **kwargs):
     return result
 
 
-@data_factory(label="VO or FITS table",
-              identifier=has_extension('xml vot fits xml.gz vot.gz fits.gz'),
+@data_factory(label="VO table",
+              identifier=has_extension('xml vot xml.gz vot.gz'),
               priority=1)
-def astropy_tabular_data_specialized(*args, **kwargs):
+def astropy_tabular_data_votable(*args, **kwargs):
+    kwargs['format'] = 'votable'
+    return astropy_tabular_data(*args, **kwargs)
+
+
+@data_factory(label="FITS table",
+              identifier=has_extension('fits fits.gz fit fit.gz'),
+              priority=1)
+def astropy_tabular_data_fits(*args, **kwargs):
+    kwargs['format'] = 'fits'
     return astropy_tabular_data(*args, **kwargs)
 
 

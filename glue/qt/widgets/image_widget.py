@@ -269,7 +269,7 @@ class ImageWidgetBase(DataViewer):
         self.client.register_to_hub(hub)
 
         dc_filt = lambda x: x.sender is self.client._data
-        layer_present_filter = lambda x: x.data in self.client.artists
+        display_data_filter = lambda x: x.data is self.client.display_data
 
         hub.subscribe(self,
                       core.message.DataCollectionAddMessage,
@@ -286,7 +286,7 @@ class ImageWidgetBase(DataViewer):
         hub.subscribe(self,
                       core.message.ComponentsChangedMessage,
                       handler=lambda x: self.set_attribute_combo(x.data),
-                      filter=layer_present_filter)
+                      filter=display_data_filter)
 
     def unregister(self, hub):
         super(ImageWidgetBase, self).unregister(hub)
