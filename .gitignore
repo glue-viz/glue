@@ -1,15 +1,39 @@
+# Sphinx & coverage
 build
 doc/_build
 doc/api
-.pylintrc
-*.ropeproject
-*.pyc
 glue/tests/htmlcov
-glue/qt/glue_qt_resources.py
-*.__junk*
 *.coverage
 *htmlcov*
-Glue.egg-info
-dist
-*.orig
+
+# Packages/installer info
 doc/.eggs
+Glue.egg-info
+glueviz.egg-info
+dist
+
+# Compiled files
+*.pyc
+
+# Other generated files
+glue/_githash.py
+
+# Other
+.pylintrc
+*.ropeproject
+glue/qt/glue_qt_resources.py
+*.__junk*
+*.orig
+*~
+.cache
+
+# Mac OSX
+.DS_Store
+
+# PyCharm
+.idea
+
+# Eclipse editor project files
+.project
+.pydevproject
+.settings
