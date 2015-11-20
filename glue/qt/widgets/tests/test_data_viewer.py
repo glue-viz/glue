@@ -71,3 +71,26 @@ def test_close_on_last_layer_remove(widget):
         dc.remove(d)
         dc.remove(d2)
     assert close.call_count >= 1
+
+
+@pytest.mark.parametrize(('widget'),
+                        [HistogramWidget, ScatterWidget, ImageWidget])
+def test_viewer_size(widget, tmpdir):
+
+    # regression test for #781
+    # viewers were not restored with the right size
+
+    d = Data(x=[[1, 2], [3, 4]])
+    d2 = Data(z=[1, 2, 3])
+    dc = DataCollection([d, d2])
+    app = GlueApplication(dc)
+    w = app.new_data_viewer(widget, data=d)
+    w.viewer_size = (300, 400)
+
+    filename = tmpdir.join('session.glu').strpath
+    app.save_session(filename, include_data=True)
+
+    app2 = GlueApplication.restore_session(filename)
+
+    for viewer in app2.viewers:
+        assert viewer[0].viewer_size == (300, 400)

@@ -8,6 +8,8 @@ v0.6 (unreleased)
 
 * Fix ``glue -t`` option. [#791]
 
+* Fix bug that caused viewers to be restored with the wrong size. [#781, #783]
+
 * Prevent axes from moving around when data viewers are being resized, and
   instead make the absolute margins between axes and figure edge fixed. [#745]
 
