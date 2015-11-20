@@ -35,6 +35,7 @@ matrix:
         - os: linux
           env:
             - PYTHON_VERSION=2.6 IPYTHON_VERSION=1 MPL_VERSION=1.4 ASTROPY_VERSION=0.4
+            - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli"
 
         # Astropy dev
         - os: linux
