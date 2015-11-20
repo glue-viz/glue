@@ -8,10 +8,11 @@ from ....qt.widgets.image_widget import StandaloneImageWidget
 
 from ....core import Data
 
-from ....tests.helpers import requires_astropy
+from ....tests.helpers import requires_astropy, requires_scipy
 
 
 @requires_astropy
+@requires_scipy
 class TestSliceExtraction(object):
 
     def setup_method(self, method):

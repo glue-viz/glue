@@ -90,6 +90,12 @@ setup(name='glueviz',
       author='Chris Beaumont, Thomas Robitaille',
       author_email='glueviz@gmail.com',
       url='http://glueviz.org',
+      install_requires=['numpy', 'pandas', 'astropy', 'matplotlib'],
+      extras_require={
+          'general':  ['dill', 'h5py', 'scipy', 'scikit-image'],
+          'astro': ['PyAVM'],
+          'export': ['plotly']
+      },
       classifiers=[
           'Intended Audience :: Science/Research',
           'Operating System :: OS Independent',

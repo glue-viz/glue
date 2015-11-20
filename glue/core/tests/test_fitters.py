@@ -21,6 +21,7 @@ if ASTROPY_GE_03_INSTALLED:
 
 
 @requires_astropy_ge_03
+@requires_scipy
 class TestAstropyFitter(object):
 
     def test_fit(self):
@@ -177,13 +178,6 @@ class TestSetConstraints(object):
             'mean': dict(value=2, fixed=False, limits=[1, 2]),
             'stddev': dict(value=3, fixed=False, limits=None)
         }
-
-
-try:
-    import scipy
-    SCIPY_INSTALLED = True
-except:
-    SCIPY_INSTALLED = False
 
 
 @requires_scipy
