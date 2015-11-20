@@ -1,4 +1,4 @@
-recursive-include glue *ui *png
+recursive-include glue *.ui *.png *.glu *.hdf5 *.fits *.xlsx
 include LICENSE
 include README.md
 include glueviz.desktop

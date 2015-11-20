@@ -112,5 +112,5 @@ setup(name='glueviz',
       packages=find_packages(),
       entry_points=entry_points,
       cmdclass=cmdclass,
-      package_data={'': ['*.png', '*.ui']}
+      package_data={'': ['*.png', '*.ui', '*.glu', '*.hdf5', '*.fits', '*.xlsx']}
       )
