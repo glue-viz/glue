@@ -63,8 +63,8 @@ def has_extension(exts):
     It returns a function that tests whether its input
     filename contains a particular extension
 
-    Inputs
-    ------
+    Parameters
+    ----------
     exts : str
       A space-delimited string listing the extensions
       (e.g., 'txt', or 'txt csv fits')

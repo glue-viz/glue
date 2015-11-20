@@ -7,6 +7,8 @@ from ...compat.collections import OrderedDict
 from ..data import Component, Data
 from ...config import data_factory
 
+__all__ = ['is_hdf5', 'hdf5_reader']
+
 
 def extract_hdf5_datasets(handle):
     '''
