@@ -12,7 +12,13 @@ from ...external.qt.QtGui import (QAction,
 from ...external.qt.QtCore import Qt, QSize
 
 from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
-from ginga.qtw import Readout, ColorBar
+from ginga.qtw import ColorBar
+
+try:
+    from ginga.gw import Readout
+except ImportError:  # older versions of ginga
+    from ginga.qtw import Readout
+
 from ginga.misc import log
 from ginga import cmap as ginga_cmap
 # ginga_cmap.add_matplotlib_cmaps()
@@ -104,7 +110,10 @@ class GingaWidget(ImageWidgetBase):
         layout.setSpacing(0)
         layout.addWidget(self.canvas.get_widget(), stretch=1)
         layout.addWidget(self.colorbar, stretch=0)
-        layout.addWidget(self.readout.get_widget(), stretch=0)
+        try:
+            layout.addWidget(self.readout.get_widget(), stretch=0)
+        except TypeError:  # recent versions of ginga
+            layout.addWidget(self.readout.get_widget().get_widget(), stretch=0)
         topw.setLayout(layout)
         return topw
 
