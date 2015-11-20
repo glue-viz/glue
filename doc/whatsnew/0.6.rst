@@ -109,6 +109,11 @@ Glue should now work with the
 support is experimental for now. If you do try out PyQt5, please
 [report any issues](https://github.com/glue-viz/glue/issues) you encounter!
 
+Python 2.6 support
+------------------
+
+This will be the last major release to support Python 2.6. Future releases
+will support only Python 2.7 and 3.3 and above.
 
 Other Improvements
 ------------------
