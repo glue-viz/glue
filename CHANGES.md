@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.6 (unreleased)
+v0.6 (2015-11-20)
 -----------------
 
 * Added experimental support for PyQt5. [#663]

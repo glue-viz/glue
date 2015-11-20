@@ -1,4 +1,4 @@
-__version__ = '0.6.0.dev'
+__version__ = '0.6.0'
 
 try:
     from ._githash import __githash__, __dev_value__
