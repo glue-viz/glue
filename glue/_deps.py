@@ -43,6 +43,8 @@ class Dependency(object):
         if self.installed:
             return
 
+        print("-> Installing {0} with pip".format(self.module))
+
         try:
             check_call(['pip', 'install', self.package])
         except CalledProcessError:
@@ -70,39 +72,62 @@ PIP package name:
         return "%20s:\t%s" % (self.module, status)
 
 
-class QtDep(Dependency):
-
-    def __init__(self):
-        self.module = 'PyQt4 or PySide'
-        self.info = ('GUI Library (install at http://bit.ly/YfTFxj or '
-                     'http://bit.ly/Zci3Di)')
-        self.package = 'N/A'
-        self.failed = False
-
-    @property
-    def installed(self):
-        for mod in ['PyQt4', 'PySide']:
-            try:
-                find_module(mod)
-                return True
-            except ImportError:
-                pass
-        else:
-            return False
+class QtDependency(Dependency):
 
     def install(self):
-        print("*******************************\n"
-              "CANNOT AUTOMATICALLY INSTALL PyQt4 or PySide.\n"
-              "Install PyQt4 at http://bit.ly/YfTFxj, or\n"
-              "Install PySide at http://bit.ly/Zci3Di\n"
-              "*******************************\n"
-              )
+        print("-> Cannot install {0} automatically - skipping".format(self.module))
+
+    def __str__(self):
+        if self.installed:
+            status = 'INSTALLED (%s)' % self.version
+        else:
+            status = 'NOT INSTALLED'
+        return "%20s:\t%s" % (self.module, status)
+
+
+class PyQt4(QtDependency):
+
+    @property
+    def version(self):
+        try:
+            from PyQt4 import Qt
+            return "PyQt: {0} - Qt: {1}".format(Qt.PYQT_VERSION_STR, Qt.QT_VERSION_STR)
+        except (ImportError, AttributeError):
+            return 'unknown version'
+
+
+class PyQt5(QtDependency):
+
+    @property
+    def version(self):
+        try:
+            from PyQt5 import Qt
+            return "PyQt: {0} - Qt: {1}".format(Qt.PYQT_VERSION_STR, Qt.QT_VERSION_STR)
+        except (ImportError, AttributeError):
+            return 'unknown version'
+
+
+class PySide(QtDependency):
+
+    @property
+    def version(self):
+        try:
+            import PySide
+            from PySide import QtCore
+            return "PySide: {0} - Qt: {1}".format(PySide.__version__, QtCore.__version__)
+        except (ImportError, AttributeError):
+            return 'unknown version'
 
 
 # Add any dependencies here
 # Make sure to add new categories to the categories tuple
+gui_framework = (
+    PyQt4('PyQt4', ''),
+    PyQt5('PyQt5', ''),
+    PySide('PySide', '')
+)
+
 required = (
-    QtDep(),
     Dependency('numpy', 'Required', min_version='1.4'),
     Dependency('matplotlib', 'Required for plotting', min_version='1.1'),
     Dependency(
@@ -139,7 +164,8 @@ export = (
     Dependency('plotly', 'Used to explort plots to Plot.ly'),
 )
 
-categories = (('required', required),
+categories = (('gui framework', gui_framework),
+              ('required', required),
               ('general', general),
               ('ipython terminal', ipython),
               ('astronomy', astronomy),
@@ -157,7 +183,7 @@ def get_status():
             s += str(dep) + os.linesep
         s += os.linesep
     return s
-    
+
 
 def show_status():
     print(get_status())
