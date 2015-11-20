@@ -35,6 +35,7 @@ matrix:
         - os: linux
           env:
             - PYTHON_VERSION=2.6 IPYTHON_VERSION=1 MPL_VERSION=1.4 ASTROPY_VERSION=0.4
+            # We don't test ginga with Python 2.6 since it is not supported
             - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli"
 
         # Astropy dev
@@ -46,6 +47,8 @@ matrix:
         - os: linux
           env:
             - PYTHON_VERSION=2.7 MPL_VERSION=1.5 NUMPY_VERSION=1.10 ASTROPY_VERSION=1.0 QT_PKG=pyqt5
+            # We don't test ginga with PyQt5 due to a bug in ginga with QT_API
+            - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli"
 
         # The following configuration tests that glue functions with minimal
         # dependencies. The --no-deps is to prevent scipy from getting
