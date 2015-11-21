@@ -105,9 +105,9 @@ Experimental support for PyQt5
 ------------------------------
 
 Glue should now work with the
-[PyQt5](https://riverbankcomputing.com/software/pyqt/download5) package, but
+`PyQt5 <https://riverbankcomputing.com/software/pyqt/download5>`_ package, but
 support is experimental for now. If you do try out PyQt5, please
-[report any issues](https://github.com/glue-viz/glue/issues) you encounter!
+`report any issues <https://github.com/glue-viz/glue/issues>`_ you encounter!
 
 Python 2.6 support
 ------------------
