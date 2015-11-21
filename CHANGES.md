@@ -4,7 +4,7 @@ Full changelog
 v0.7 (unreleased)
 -----------------
 
-* No changes yet
+* Python 2.6 is no longer supported. [#804]
 
 v0.6 (2015-11-20)
 -----------------

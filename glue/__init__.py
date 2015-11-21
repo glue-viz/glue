@@ -13,13 +13,7 @@ else:
     setapi('QVariant', 2)
 
 import logging
-try:
-    from logging import NullHandler
-except ImportError:  # python 2.6 workaround
-    class NullHandler(logging.Handler):
-
-        def emit(self, record):
-            pass
+from logging import NullHandler
 
 logging.getLogger('glue').addHandler(NullHandler())
 

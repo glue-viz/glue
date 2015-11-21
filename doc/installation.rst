@@ -83,7 +83,7 @@ Dependencies
 
 Glue has the following required dependencies:
 
-* Python 2.6, 2.7, or 3.3 and higher
+* Python 2.7, or 3.3 and higher
 * `Numpy <http://www.numpy.org>`_
 * `Matplotlib <http://www.matplotlib.org>`_
 * `Pandas <http://pandas.pydata.org/>`_

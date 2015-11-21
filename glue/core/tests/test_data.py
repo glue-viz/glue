@@ -83,10 +83,7 @@ class TestData(object):
         comp.data.shape = (3, 2)
         with pytest.raises(TypeError) as exc:
             self.data.add_component(comp("junk label"))
-        if isinstance(exc.value, six.string_types):  # python 2.6
-            assert exc.value == ("add_component() takes at least 3 "
-                                 "arguments (2 given)")
-        elif six.PY3:
+        if six.PY3:
             assert exc.value.args[0] == ("add_component() missing 1 required "
                                          "positional argument: 'label'")
         else:
@@ -316,10 +313,7 @@ class TestData(object):
         d = Data(x=[1, 2, 3])
         with pytest.raises(ValueError) as exc:
             d['x'][:] = 5
-        try:
-            assert 'read-only' in exc.value.args[0]
-        except AttributeError:  # COMPAT: Python 2.6
-            assert 'read-only' in exc.value
+        assert 'read-only' in exc.value.args[0]
         assert not d['x'].flags['WRITEABLE']
 
     def test_categorical_immutable(self):
@@ -329,10 +323,7 @@ class TestData(object):
 
         with pytest.raises(ValueError) as exc:
             d['gender'][:] = 5
-        try:
-            assert 'read-only' in exc.value.args[0]
-        except AttributeError:  # COMPAT: Python 2.6
-            assert 'read-only' in exc.value
+        assert 'read-only' in exc.value.args[0]
         assert not d['gender'].flags['WRITEABLE']
 
     def test_update_clears_subset_cache(self):
