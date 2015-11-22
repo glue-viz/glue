@@ -44,7 +44,7 @@ def test_single_draw_call_on_create(widget):
     app = GlueApplication(dc)
 
     try:
-        from glue.qt.widgets.mpl_widget import MplCanvas
+        from ..mpl_widget import MplCanvas
         draw = MplCanvas.draw
         MplCanvas.draw = MagicMock()
 

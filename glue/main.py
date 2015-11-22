@@ -6,7 +6,7 @@ import sys
 import optparse
 from .logger import logger
 
-from glue import __version__
+from . import __version__
 
 
 def parse(argv):
@@ -117,24 +117,24 @@ def die_on_error(msg):
 @die_on_error("Error restoring Glue session")
 def restore_session(gluefile):
     """Load a .glu file and return a DataCollection, Hub tuple"""
-    from glue.qt.glue_application import GlueApplication
+    from .qt.glue_application import GlueApplication
     return GlueApplication.restore_session(gluefile)
 
 
 @die_on_error("Error reading data file")
 def load_data_files(datafiles):
     """Load data files and return a DataCollection"""
-    import glue
-    from glue.core.data_factories import auto_data, load_data
+    from .core.data_collection import DataCollection
+    from .core.data_factories import auto_data, load_data
 
-    dc = glue.core.DataCollection()
+    dc = DataCollection()
     for df in datafiles:
         dc.append(load_data(df, auto_data))
     return dc
 
 
 def run_tests():
-    from glue import test
+    from . import test
     test()
 
 
@@ -151,7 +151,7 @@ def start_glue(gluefile=None, config=None, datafiles=None):
     :type datafiles: list of str
     """
     import glue
-    from glue.qt.glue_application import GlueApplication
+    from .qt.glue_application import GlueApplication
 
     # Start off by loading plugins. We need to do this before restoring
     # the session or loading the configuration since these may use existing

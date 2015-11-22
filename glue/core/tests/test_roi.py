@@ -7,13 +7,12 @@ import pytest
 import numpy as np
 from numpy.testing import assert_almost_equal
 from matplotlib.figure import Figure
-from glue.core.data import CategoricalComponent
 from mock import MagicMock
 
+from ..component import CategoricalComponent
 from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI, CategoricalRoi,
                    MplCircularROI, MplRectangularROI, MplPolygonalROI, MplPickROI, PointROI,
                    XRangeROI, MplXRangeROI, YRangeROI, MplYRangeROI, RangeROI)
-
 from .. import roi as r
 
 FIG = Figure()
@@ -884,9 +883,6 @@ class TestPickMpl(TestMpl):
         """No patch to test for."""
 
     def test_patch_shown_on_start(self):
-        """No patch to test for."""
-
-    def test_patch_hidden_on_finalise(self):
         """No patch to test for."""
 
     def test_patch_hidden_on_finalise(self):

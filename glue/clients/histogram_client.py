@@ -4,7 +4,7 @@ import numpy as np
 
 from ..core.client import Client
 from ..core import message as msg
-from ..core.data import Data, CategoricalComponent
+from ..core.data import Data
 from ..core.subset import RangeSubsetState, CategoricalRoiSubsetState
 from ..core.exceptions import IncompatibleDataException, IncompatibleAttribute
 from ..core.edit_subset_mode import EditSubsetMode
@@ -323,7 +323,7 @@ class HistogramClient(Client):
 
         self._sync_enabled = False
 
-        iscat = lambda x: isinstance(x, CategoricalComponent)
+        iscat = lambda x: x.categorical
 
         def comp_obj():
             # the current Component (not ComponentID) object
@@ -361,7 +361,7 @@ class HistogramClient(Client):
             self._saved_nbins = old
 
         # restore old bins if switch from category to non-category
-        if iscat(prev) and cur and not iscat(cur) and self._saved_nbins is not None:
+        if prev and iscat(prev) and cur and not iscat(cur) and self._saved_nbins is not None:
             self.nbins = self._saved_nbins
             self._saved_nbins = None
 

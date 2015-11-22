@@ -116,7 +116,7 @@ class LinkEditor(object):
 
 def main():
     import numpy as np
-    from glue.core import Data, DataCollection
+    from ..core import Data, DataCollection
 
     x = np.array([1, 2, 3])
     d = Data(label='data', x=x, y=x * 2)

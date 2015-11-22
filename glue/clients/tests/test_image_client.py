@@ -10,6 +10,8 @@ import numpy as np
 from ...tests import example_data
 from ... import core
 from ...core.exceptions import IncompatibleAttribute
+from ...core.link_helpers import LinkSame
+
 from ..layer_artist import RGBImageLayerArtist, ImageLayerArtist
 from ..image_client import MplImageClient
 
@@ -61,7 +63,6 @@ class _TestImageClientBase(object):
         return client
 
     def create_client_with_cube_and_scatter(self):
-        from glue.core.link_helpers import LinkSame
 
         client = self.create_client_with_cube()
         self.collect.append(self.cube)
@@ -78,7 +79,6 @@ class _TestImageClientBase(object):
         return client
 
     def create_client_with_image_and_scatter(self):
-        from glue.core.link_helpers import LinkSame
 
         client = self.create_client_with_image()
         self.collect.append(self.scatter)

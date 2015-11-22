@@ -145,7 +145,8 @@ class StyleDialog(QDialog):
 
 
 if __name__ == "__main__":
-    from glue.core import Data
+    
+    from ..core import Data
 
     d = Data(label='data label', x=[1, 2, 3, 4])
     StyleDialog.edit_style(d)

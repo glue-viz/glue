@@ -589,7 +589,7 @@ class GlueApplication(Application, QMainWindow):
         self._actions['data_new'] = a
 
         # We now populate the "Import data" menu
-        from glue.config import importer
+        from ..config import importer
 
         acts = []
 
@@ -608,7 +608,7 @@ class GlueApplication(Application, QMainWindow):
 
         self._actions['data_importers'] = acts
 
-        from glue.config import exporters
+        from ..config import exporters
         if len(exporters) > 0:
             acts = []
             for e in exporters:
@@ -647,7 +647,7 @@ class GlueApplication(Application, QMainWindow):
         self._actions['redo'] = a
 
         # Create actions for menubar plugins
-        from glue.config import menubar_plugin
+        from ..config import menubar_plugin
         acts = []
         for label, function in menubar_plugin:
             a = act(label, self, tip=label)

@@ -65,7 +65,7 @@ def _build_custom_contracts():
 
     @new_contract
     def data_view(value):
-        from glue.core import ComponentID
+        from . import ComponentID
 
         if value is None:
             return

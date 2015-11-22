@@ -1,19 +1,22 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 
 from __future__ import absolute_import, division, print_function
+
 import pytest
+from mock import MagicMock, patch
 
 import matplotlib.pyplot as plt
 
-from .. import qtutil
 from ...external.qt import QtGui
 from ...external.qt.QtCore import Qt
-from mock import MagicMock, patch
+
+from ...config import data_factory
+from ...core import Data, Subset
+from ...clients.layer_artist import RGBImageLayerArtist
+
+from .. import qtutil
 from ..qtutil import GlueDataDialog
 from ..qtutil import pretty_number, GlueComboBox, PythonListModel, update_combobox
-
-from glue.config import data_factory
-from glue.core import Subset
 
 
 def test_glue_action_button():
@@ -37,7 +40,6 @@ def test_glue_action_button():
 
 @data_factory('testing_factory', identifier=lambda *args: True, priority=-999)
 def dummy_factory(filename):
-    from glue.core import Data
     result = Data()
     result.made_with_dummy_factory = True
     return result
@@ -359,8 +361,6 @@ class TestGlueListWidget(object):
 class TestRGBEdit(object):
 
     def setup_method(self, method):
-        from glue.clients.layer_artist import RGBImageLayerArtist
-        from glue.core import Data
         d = Data()
         self.fig = plt.figure()
         self.ax = self.fig.add_subplot(1,1,1)

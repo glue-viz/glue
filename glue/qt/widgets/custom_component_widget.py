@@ -229,8 +229,8 @@ class CustomComponentWidget(object):
                 break
 
 def main():
-    from glue.core.data import Data
-    from glue.core.data_collection import DataCollection
+    from ...core.data import Data
+    from ...core.data_collection import DataCollection
     import numpy as np
 
     x = np.random.random((5, 5))

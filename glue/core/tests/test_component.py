@@ -9,9 +9,11 @@ from mock import MagicMock
 import pytest
 import numpy as np
 
-from ..data import (Component, ComponentID, Data,
-                    DerivedComponent, CoordinateComponent,
-                    CategoricalComponent)
+from ..data import Data
+from ..component import (Component, DerivedComponent, CoordinateComponent,
+                         CategoricalComponent)
+from ..component_id import ComponentID
+
 from ... import core
 from ...tests.helpers import requires_astropy
 from ...external import six
@@ -79,22 +81,20 @@ class TestCategoricalComponent(object):
         self.array_data = np.array(self.list_data)
 
     def test_autodetection(self):
-        assert isinstance(Component.autotyped(self.array_data),
-                          CategoricalComponent)
-        assert isinstance(Component.autotyped(self.list_data),
-                          CategoricalComponent)
+        assert Component.autotyped(self.array_data).categorical
+        assert Component.autotyped(self.list_data).categorical
 
         x = np.array([True, False, True, False])
-        assert not isinstance(Component.autotyped(x), CategoricalComponent)
+        assert not Component.autotyped(x).categorical
 
         x = np.array([1, 2, 3, 4])
-        assert not isinstance(Component.autotyped(x), CategoricalComponent)
+        assert not Component.autotyped(x).categorical
 
         x = np.array(['1', '2', '3', '4'])
-        assert not isinstance(Component.autotyped(x), CategoricalComponent)
+        assert not Component.autotyped(x).categorical
 
         d = Data(x=['a', 'b', 'c'])
-        assert isinstance(d.get_component('x'), CategoricalComponent)
+        assert d.get_component('x').categorical
 
     def test_basic_properties(self):
         data = ['a', 'b', 'c', 'b', 'b', 'c', 'a', 'c', 'd']

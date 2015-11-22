@@ -12,8 +12,12 @@ from timeit import timeit
 from functools import partial
 
 from ...tests import example_data
-from ... import core
-from ...core.data import ComponentID
+from ...core.subset import RangeSubsetState, CategoricalRoiSubsetState, AndState
+from ...core.roi import RectangularROI, XRangeROI, YRangeROI
+from ...core.data import Data
+from ...core.data_collection import DataCollection
+from ...core.component import Component, CategoricalComponent
+from ...core.component_id import ComponentID
 from ...core.edit_subset_mode import EditSubsetMode
 from ..scatter_client import ScatterClient
 from .util import renderless_figure
@@ -32,7 +36,7 @@ class TestScatterClient(object):
                     self.data[1].find_component_id('d')]
         self.roi_limits = (0.5, 0.5, 1.5, 1.5)
         self.roi_points = (np.array([1]), np.array([1]))
-        self.collect = core.data_collection.DataCollection()
+        self.collect = DataCollection()
         EditSubsetMode().data_collection = self.collect
 
         self.hub = self.collect.hub
@@ -121,7 +125,7 @@ class TestScatterClient(object):
         assert xydata[1][1] <= xylimits[1][1]
 
     def setup_2d_data(self):
-        d = core.Data(x=[[1, 2], [3, 4]], y=[[2, 4], [6, 8]])
+        d = Data(x=[[1, 2], [3, 4]], y=[[2, 4], [6, 8]])
         self.collect.append(d)
         self.client.add_layer(d)
         self.client.xatt = d.id['x']
@@ -169,7 +173,7 @@ class TestScatterClient(object):
             assert not self.client.is_layer_present(d)
 
     def test_add_external_data_raises_exception(self):
-        data = core.data.Data()
+        data = Data()
         with pytest.raises(TypeError) as exc:
             self.client.add_data(data)
         assert exc.value.args[0] == "Layer not in data collection"
@@ -289,7 +293,7 @@ class TestScatterClient(object):
     def test_invalid_plot(self):
         layer = self.add_data_and_attributes()
         assert self.layer_drawn(layer)
-        c = core.data.ComponentID('bad id')
+        c = ComponentID('bad id')
         self.client.xatt = c
         assert not self.layer_drawn(layer)
         self.client.xatt = self.ids[0]
@@ -300,7 +304,7 @@ class TestScatterClient(object):
         ctr = MagicMock()
         layer = self.add_data_and_attributes()
         assert self.layer_drawn(layer)
-        c = core.data.ComponentID('bad id')
+        c = ComponentID('bad id')
         self.client._redraw = ctr
         ct0 = ctr.call_count
         self.client.xatt = c
@@ -358,7 +362,7 @@ class TestScatterClient(object):
 
     def test_apply_roi(self):
         data = self.add_data_and_attributes()
-        roi = core.roi.RectangularROI()
+        roi = RectangularROI()
         roi.update_limits(*self.roi_limits)
         x, y = self.roi_points
         self.client.apply_roi(roi)
@@ -368,7 +372,7 @@ class TestScatterClient(object):
         data = self.add_data_and_attributes()
         data._subsets = []
         data.edit_subset = None
-        roi = core.roi.RectangularROI()
+        roi = RectangularROI()
         roi.update_limits(*self.roi_limits)
         x, y = self.roi_points
         self.client.apply_roi(roi)
@@ -379,7 +383,7 @@ class TestScatterClient(object):
         d2 = self.add_data()
         state1 = d1.edit_subset.subset_state
         state2 = d2.edit_subset.subset_state
-        roi = core.roi.RectangularROI()
+        roi = RectangularROI()
         roi.update_limits(*self.roi_limits)
         x, y = self.roi_points
         self.client.apply_roi(roi)
@@ -392,7 +396,7 @@ class TestScatterClient(object):
         d1.edit_subset = None
         d2.edit_subset = d2.new_subset()
         ct = len(d1.subsets)
-        roi = core.roi.RectangularROI()
+        roi = RectangularROI()
         roi.update_limits(*self.roi_limits)
         x, y = self.roi_points
         self.client.apply_roi(roi)
@@ -444,7 +448,7 @@ class TestScatterClient(object):
 
     def test_visibility_sticky(self):
         data = self.add_data_and_attributes()
-        roi = core.roi.RectangularROI()
+        roi = RectangularROI()
         roi.update_limits(*self.roi_limits)
         assert self.client.is_visible(data.edit_subset)
         self.client.apply_roi(roi)
@@ -468,9 +472,9 @@ class TestScatterClient(object):
         assert self.client._visible_limits(1) == (2, 8)
 
     def test_limits_nans(self):
-        d = core.Data()
-        x = core.Component(np.array([[1, 2], [np.nan, 4]]))
-        y = core.Component(np.array([[2, 4], [np.nan, 8]]))
+        d = Data()
+        x = Component(np.array([[1, 2], [np.nan, 4]]))
+        y = Component(np.array([[2, 4], [np.nan, 8]]))
         xid = d.add_component(x, 'x')
         yid = d.add_component(y, 'y')
         self.collect.append(d)
@@ -482,9 +486,9 @@ class TestScatterClient(object):
         assert self.client._visible_limits(1) == (2, 8)
 
     def test_limits_inf(self):
-        d = core.Data()
-        x = core.Component(np.array([[1, 2], [np.infty, 4]]))
-        y = core.Component(np.array([[2, 4], [-np.infty, 8]]))
+        d = Data()
+        x = Component(np.array([[1, 2], [np.infty, 4]]))
+        y = Component(np.array([[2, 4], [-np.infty, 8]]))
         xid = d.add_component(x, 'x')
         yid = d.add_component(y, 'y')
         self.collect.append(d)
@@ -566,15 +570,15 @@ class TestScatterClient(object):
         data = self.add_data_and_attributes()
         assert self.client.xatt is not self.client.yatt
 
-        roi = core.roi.XRangeROI()
+        roi = XRangeROI()
         roi.set_range(1, 2)
         self.client.apply_roi(roi)
         assert isinstance(data.edit_subset.subset_state,
-                          core.subset.RangeSubsetState)
+                          RangeSubsetState)
         assert data.edit_subset.subset_state.att == self.client.xatt
 
-        roi = core.roi.RectangularROI()
-        roi = core.roi.YRangeROI()
+        roi = RectangularROI()
+        roi = YRangeROI()
         roi.set_range(1, 2)
         self.client.apply_roi(roi)
         assert data.edit_subset.subset_state.att == self.client.yatt
@@ -597,7 +601,7 @@ class TestCategoricalScatterClient(TestScatterClient):
                     self.data[1].find_component_id('y2')]
         self.roi_limits = (0.5, 0.5, 4, 4)
         self.roi_points = (np.array([1]), np.array([3]))
-        self.collect = core.data_collection.DataCollection()
+        self.collect = DataCollection()
         self.hub = self.collect.hub
 
         FIGURE.clf()
@@ -646,11 +650,11 @@ class TestCategoricalScatterClient(TestScatterClient):
         """ If you change to a categorical axis and then change back
         to a numeric, the axis ticks should fix themselves properly.
         """
-        data = core.Data()
-        data.add_component(core.Component(np.arange(100)), 'y')
+        data = Data()
+        data.add_component(Component(np.arange(100)), 'y')
         data.add_component(
-            core.data.CategoricalComponent(['a'] * 50 + ['b'] * 50), 'xcat')
-        data.add_component(core.Component(2 * np.arange(100)), 'xcont')
+            CategoricalComponent(['a'] * 50 + ['b'] * 50), 'xcat')
+        data.add_component(Component(2 * np.arange(100)), 'xcont')
 
         self.add_data(data=data)
         self.client.yatt = data.find_component_id('y')
@@ -665,11 +669,11 @@ class TestCategoricalScatterClient(TestScatterClient):
     def test_high_cardinatility_timing(self):
 
         card = 50000
-        data = core.Data()
+        data = Data()
         card_data = [str(num) for num in range(card)]
-        data.add_component(core.Component(np.arange(card * 5)), 'y')
+        data.add_component(Component(np.arange(card * 5)), 'y')
         data.add_component(
-            core.data.CategoricalComponent(np.repeat([card_data], 5)), 'xcat')
+            CategoricalComponent(np.repeat([card_data], 5)), 'xcat')
         self.add_data(data)
         comp = data.find_component_id('xcat')
         timer_func = partial(self.client._set_xydata, 'x', comp)
@@ -679,7 +683,7 @@ class TestCategoricalScatterClient(TestScatterClient):
 
     def test_apply_roi(self):
         data = self.add_data_and_attributes()
-        roi = core.roi.RectangularROI()
+        roi = RectangularROI()
         roi.update_limits(*self.roi_limits)
         x, y = self.roi_points
         self.client.apply_roi(roi)
@@ -688,24 +692,24 @@ class TestCategoricalScatterClient(TestScatterClient):
         data = self.add_data_and_attributes()
         assert self.client.xatt is not self.client.yatt
 
-        roi = core.roi.XRangeROI()
+        roi = XRangeROI()
         roi.set_range(1, 2)
         self.client.apply_roi(roi)
         assert isinstance(data.edit_subset.subset_state,
-                          core.subset.CategoricalRoiSubsetState)
+                          CategoricalRoiSubsetState)
         assert data.edit_subset.subset_state.att == self.client.xatt
 
-        roi = core.roi.YRangeROI()
+        roi = YRangeROI()
         roi.set_range(1, 2)
         self.client.apply_roi(roi)
         assert isinstance(data.edit_subset.subset_state,
-                          core.subset.RangeSubsetState)
+                          RangeSubsetState)
         assert data.edit_subset.subset_state.att == self.client.yatt
-        roi = core.roi.RectangularROI(xmin=1, xmax=2, ymin=1, ymax=2)
+        roi = RectangularROI(xmin=1, xmax=2, ymin=1, ymax=2)
 
         self.client.apply_roi(roi)
         assert isinstance(data.edit_subset.subset_state,
-                          core.subset.AndState)
+                          AndState)
 
     @pytest.mark.parametrize(('roi_limits', 'mask'), [((0, -0.1, 10, 0.1), [0, 0, 0]),
                                                       ((0, 0.9, 10, 1.1), [1, 0, 0]),
@@ -718,7 +722,7 @@ class TestCategoricalScatterClient(TestScatterClient):
     def test_apply_roi_results(self, roi_limits, mask):
         # Regression test for glue-viz/glue#718
         data = self.add_data_and_attributes()
-        roi = core.roi.RectangularROI()
+        roi = RectangularROI()
         roi.update_limits(*roi_limits)
         x, y = self.roi_points
         self.client.apply_roi(roi)

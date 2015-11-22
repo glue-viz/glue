@@ -4,10 +4,10 @@ from ..config import qt_client, link_function, data_factory
 
 
 def test_default_clients():
-    from glue.qt.widgets.image_widget import ImageWidget
-    from glue.qt.widgets.scatter_widget import ScatterWidget
-    from glue.qt.widgets.histogram_widget import HistogramWidget
-    import glue.config
+
+    from ..qt.widgets.image_widget import ImageWidget
+    from ..qt.widgets.scatter_widget import ScatterWidget
+    from ..qt.widgets.histogram_widget import HistogramWidget
 
     assert ImageWidget in qt_client
     assert ScatterWidget in qt_client
