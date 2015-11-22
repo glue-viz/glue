@@ -19,37 +19,37 @@ class TestSubsetGroup(object):
     def test_creation(self):
         self.sg.register(self.dc)
         sg = self.sg
-        for subset, data in zip(sg.subsets, self.dc):
-            assert subset is data.subsets[0]
+        for sub, data in zip(sg.subsets, self.dc):
+            assert sub is data.subsets[0]
 
     def test_attributes_matched_to_group(self):
         self.sg.register(self.dc)
         sg = self.sg
-        for subset in sg.subsets:
-            assert subset.subset_state is sg.subset_state
-            assert subset.label is sg.label
+        for sub in sg.subsets:
+            assert sub.subset_state is sg.subset_state
+            assert sub.label is sg.label
 
     def test_attributes_synced_to_group(self):
         self.sg.register(self.dc)
         sg = self.sg
         sg.subsets[0].subset_state = SubsetState()
         sg.subsets[0].label = 'testing'
-        for subset in sg.subsets:
-            assert subset.subset_state is sg.subset_state
-            assert subset.label is sg.label
+        for sub in sg.subsets:
+            assert sub.subset_state is sg.subset_state
+            assert sub.label is sg.label
 
     def test_set_style_overrides(self):
         self.sg.register(self.dc)
         sg = self.sg
         sg.subsets[0].style.color = 'blue'
-        for s in sg.subsets[1:]:
-            assert s.style.color != 'blue'
+        for sub in sg.subsets[1:]:
+            assert sub.style.color != 'blue'
         assert sg.subsets[0].style.color == 'blue'
 
     def test_new_subset_group_syncs_style(self):
         sg = self.dc.new_subset_group()
-        for s in sg.subsets:
-            assert s.style == sg.style
+        for sub in sg.subsets:
+            assert sub.style == sg.style
 
     def test_set_group_style_clears_override(self):
         sg = self.dc.new_subset_group()
