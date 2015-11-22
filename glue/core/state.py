@@ -593,7 +593,7 @@ def _load_data_collection_2(rec, context):
 def _save_data(data, context):
 
     return dict(components=[(context.id(c),
-                            context.id(data.get_component(c)))
+                             context.id(data.get_component(c)))
                             for c in data._components],
                 subsets=[context.id(s) for s in data.subsets],
                 label=data.label,

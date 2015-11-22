@@ -80,7 +80,7 @@ def test_multilink_nofunc():
 
 def test_linksame_string():
     """String inputs auto-converted to component IDs"""
-    #ComponentLink does type checking to ensure conversion happens
+    # ComponentLink does type checking to ensure conversion happens
     links = LinkSame('a', 'b')
 
 
@@ -109,7 +109,7 @@ def test_link_aligned(ndata, ndim):
         d.add_component(c, 'test')
         ds.append(d)
 
-    #assert that all componentIDs are interchangeable
+    # assert that all componentIDs are interchangeable
     links = LinkAligned(ds)
     dc = DataCollection(ds)
     dc.add_link(links)

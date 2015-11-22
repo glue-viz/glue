@@ -69,8 +69,8 @@ class TestCommunication(object):
         self.m4 = DataUpdateMessage(self.d1, 'dummy_attribute')
 
     def test_basic_register(self):
-        #create and register a client. Make sure it's
-        #added to subscription table
+        # create and register a client. Make sure it's
+        # added to subscription table
 
         h = Hub()
         d = Data()
@@ -80,9 +80,9 @@ class TestCommunication(object):
         assert c in h._subscriptions
 
     def test_basic_broadcast(self):
-        #broadcast a subsetCreateMessage.
-        #make sure the registered client catches it.
-        #make sure an unregistered one doesn't
+        # broadcast a subsetCreateMessage.
+        # make sure the registered client catches it.
+        # make sure an unregistered one doesn't
 
         self.c1.register_to_hub(self.hub)
         self.hub.broadcast(self.m1)
@@ -92,8 +92,8 @@ class TestCommunication(object):
         assert self.c2.last_message is None
 
     def test_proper_handlers(self):
-        #broadcast the 4 basic methods. make sure the proper handlers
-        #catch them
+        # broadcast the 4 basic methods. make sure the proper handlers
+        # catch them
         self.c1.register_to_hub(self.hub)
         assert self.c1.call is None
 
@@ -110,7 +110,7 @@ class TestCommunication(object):
         assert self.c1.call == self.c1._update_data
 
     def test_ignore_message(self):
-        #send a message that should be ignored
+        # send a message that should be ignored
         class IgnoredMessage(Message):
             pass
         self.c1.register_to_hub(self.hub)
@@ -120,15 +120,15 @@ class TestCommunication(object):
 
     @pytest.mark.skipif(True, reason="Relaxed requirement. Hub now ignores exceptions")
     def test_uncaught_message(self):
-        #broadcast a message without a message handler
+        # broadcast a message without a message handler
         self.hub.subscribe(self.c1, Message)
         with pytest.raises(NotImplementedError) as exc:
             self.hub.broadcast(Message(None))
         assert exc.value.args[0].startswith("Message has no handler:")
 
     def test_multi_client(self):
-        #register 2 clients with same data to hub
-        #make sure events get to both
+        # register 2 clients with same data to hub
+        # make sure events get to both
 
         self.c1.register_to_hub(self.hub)
         self.c3.register_to_hub(self.hub)
@@ -137,8 +137,8 @@ class TestCommunication(object):
         assert self.c3.last_message is self.m1
 
     def test_standard_filter(self):
-        #register 2 clients with 2 different data sets
-        #make sure events are filtered properly
+        # register 2 clients with 2 different data sets
+        # make sure events are filtered properly
         self.c1.register_to_hub(self.hub)
         self.c2.register_to_hub(self.hub)
 
@@ -171,8 +171,8 @@ class TestCommunication(object):
         assert self.c1.last_message is self.m1
 
     def test_subset_relay(self):
-        #make sure subset modification
-        #sends messages
+        # make sure subset modification
+        # sends messages
         d = Data()
         dc = DataCollection(d)
         c = _TestClient(dc)

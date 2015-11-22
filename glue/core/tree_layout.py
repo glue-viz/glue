@@ -44,6 +44,7 @@ class TreeLayout(object):
         height: Height of this node
 
         """
+
         def __init__(self, node, x=0., y=0., width=0., height=0.):
             self.x = x
             self.y = y
@@ -174,7 +175,7 @@ class TreeLayout(object):
         trees.
 
         """
-        #code for when t is a list of trees
+        # code for when t is a list of trees
         if isinstance(tree, list):
             x = []
             y = []
@@ -226,7 +227,7 @@ class TreeLayout(object):
                 y.append(None)
             return (x, y)
 
-        #code for when branch is a scalar
+        # code for when branch is a scalar
         node = self[branch].node
         parent = node.parent
         if parent:

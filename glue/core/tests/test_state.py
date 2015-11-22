@@ -115,6 +115,7 @@ def test_data_factory():
 
     np.testing.assert_array_equal(d['PRIMARY'], d2['PRIMARY'])
 
+
 @requires_astropy
 def test_data_factory_include_data():
     with make_file(TEST_FITS_DATA, '.fits', decompress=True) as infile:

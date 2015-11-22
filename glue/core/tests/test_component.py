@@ -330,10 +330,10 @@ def test_units():
 
     from astropy import units as u
 
-    comp = Component([1,2,3], units='m')
+    comp = Component([1, 2, 3], units='m')
     assert comp.units == 'm'
     assert isinstance(comp.units, six.string_types)
 
-    comp = Component([1,2,3], units=u.m)
+    comp = Component([1, 2, 3], units=u.m)
     assert comp.units == 'm'
     assert isinstance(comp.units, six.string_types)

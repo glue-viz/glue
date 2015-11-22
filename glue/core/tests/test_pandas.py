@@ -10,7 +10,7 @@ from pandas.util.testing import (assert_series_equal,
 from ..data import Data
 from ..component_id import ComponentID
 from ..component import (Component, DerivedComponent, CoordinateComponent,
-                        CategoricalComponent)
+                         CategoricalComponent)
 from ... import core
 
 

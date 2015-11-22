@@ -52,13 +52,13 @@ def test_pick():
     tree = NewickTree('((0,1)4,(2,3)5)6;')
     layout = tl.TreeLayout(tree)
 
-    #exact match
+    # exact match
     assert layout.pick(0, 0) is tree
 
-    #closest match, below
+    # closest match, below
     assert layout.pick(0, -1) is tree
 
-    #only pick if y position is <= node
+    # only pick if y position is <= node
     assert layout.pick(-.01, .01) is tree.children[0]
     assert layout.pick(0, 2.1) is None
 

@@ -8,6 +8,7 @@ from matplotlib.cm import gray
 from ..util import facet_subsets, colorize_subsets
 from .. import Data, DataCollection
 
+
 class TestRelim(object):
     pass
 
@@ -106,6 +107,3 @@ def test_colorize_subsets_clip():
     colorize_subsets(grps, gray, lo=0.5)
     assert grps[0].style.color == '#808080'
     assert grps[1].style.color == '#ffffff'
-
-
-

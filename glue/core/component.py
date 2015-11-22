@@ -373,4 +373,3 @@ class CategoricalComponent(Component):
 
         return pd.Series(self._categorical_data.ravel(),
                          dtype=np.object, **kwargs)
-

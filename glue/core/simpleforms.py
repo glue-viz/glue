@@ -107,7 +107,7 @@ class FloatOption(Option):
 
         if value < self.min or value > self.max:
             raise ValueError("%s must be between %e and %e" % (self.label,
-                             self.min, self.max))
+                                                               self.min, self.max))
         return value
 
 

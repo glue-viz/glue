@@ -400,7 +400,6 @@ class TestCategorical(object):
         np.testing.assert_array_equal(roi.categories,
                                       np.array(['a', 'b']))
 
-
     def test_applies_components(self):
 
         roi = CategoricalRoi()
@@ -412,12 +411,11 @@ class TestCategorical(object):
 
     def test_from_range(self):
 
-        comp = CategoricalComponent(np.array(list('abcdefghijklmnopqrstuvwxyz')*2))
+        comp = CategoricalComponent(np.array(list('abcdefghijklmnopqrstuvwxyz') * 2))
 
         roi = CategoricalRoi.from_range(comp, 6, 10)
         np.testing.assert_array_equal(roi.categories,
                                       np.array(list('ghij')))
-
 
 
 class DummyEvent(object):

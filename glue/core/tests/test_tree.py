@@ -106,7 +106,7 @@ class TestTree(object):
         t1 = DendroMerge(m1)
         t2 = DendroMerge(m2)
 
-        #invalid merge lists
+        # invalid merge lists
         m3 = np.array([[0, 1], [5, 2], [5, 3]])
         m4 = np.array([[-1, 1], [4, 2], [5, 3]])
         m5 = np.array([[0, 1], [1, 2], [5, 3]])

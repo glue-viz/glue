@@ -131,4 +131,3 @@ class ComponentID(object):
 
     def __rpow__(self, other):
         return BinaryComponentLink(other, self, operator.pow)
-
