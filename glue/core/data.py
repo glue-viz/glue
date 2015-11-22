@@ -38,11 +38,11 @@ class Data(object):
     """The basic data container in Glue.
 
     The data object stores data as a collection of
-    :class:`~glue.core.data.Component` objects.  Each component stored in a
+    :class:`~glue.core.component.Component` objects.  Each component stored in a
     dataset must have the same shape.
 
     Catalog data sets are stored such that each column is a distinct
-    1-dimensional :class:`~glue.core.data.Component`.
+    1-dimensional :class:`~glue.core.component.Component`.
 
     There are several ways to extract the actual numerical data stored in a
     :class:`~glue.core.data.Data` object::
@@ -164,7 +164,7 @@ class Data(object):
         """ Remove a component from a data set
 
         :param component_id: the component to remove
-        :type component_id: :class:`~glue.core.data.ComponentID`
+        :type component_id: :class:`~glue.core.component_id.ComponentID`
         """
         if component_id in self._components:
             self._components.pop(component_id)
@@ -180,8 +180,8 @@ class Data(object):
         This join allows any subsets defined on `other` to be
         propagated to self.
 
-        :param other: :class:`Data` to join with
-        :param cid: str or :class:`ComponentID` in this dataset to use as a key
+        :param other: :class:`~glue.core.data.Data` to join with
+        :param cid: str or :class:`glue.core.component_id.ComponentID` in this dataset to use as a key
         :param cid_other: ComponentID in the other dataset to use as a key
 
         :example:
@@ -226,12 +226,12 @@ class Data(object):
 
         :param label:
               The label. If this is a string,
-              a new :class:`ComponentID` with this label will be
+              a new :class:`glue.core.component_id.ComponentID` with this label will be
               created and associated with the Component
 
-        :type component: :class:`~glue.core.data.Component` or
+        :type component: :class:`~glue.core.component.Component` or
                          array-like
-        :type label: :class:`str` or :class:`~glue.core.data.ComponentID`
+        :type label: :class:`str` or :class:`~glue.core.component_id.ComponentID`
 
         :raises:
 
@@ -285,15 +285,15 @@ class Data(object):
               label='cid_like|None',
               returns=DerivedComponent)
     def add_component_link(self, link, label=None):
-        """ Shortcut method for generating a new :class:`DerivedComponent`
+        """ Shortcut method for generating a new :class:`~glue.core.component.DerivedComponent`
         from a ComponentLink object, and adding it to a data set.
 
         :param link: :class:`~glue.core.component_link.ComponentLink`
         :param label: The ComponentID or label to attach to.
-        :type label: :class:`~glue.core.data.ComponentID` or str
+        :type label: :class:`~glue.core.component_id.ComponentID` or str
 
         :returns:
-            The :class:`DerivedComponent` that was added
+            The :class:`~glue.core.component.DerivedComponent` that was added
         """
         if label is not None:
             if not isinstance(label, ComponentID):
@@ -324,7 +324,7 @@ class Data(object):
 
     @property
     def components(self):
-        """ All :class:`ComponentIDs <ComponentID>` in the Data
+        """ All :class:`ComponentIDs <glue.core.component_id.ComponentID>` in the Data
 
         :rtype: list
         """
@@ -332,7 +332,7 @@ class Data(object):
 
     @property
     def visible_components(self):
-        """ :class:`ComponentIDs <ComponentID>` for all non-hidden components.
+        """ :class:`ComponentIDs <glue.core.component_id.ComponentID>` for all non-hidden components.
 
         :rtype: list
         """
@@ -341,7 +341,7 @@ class Data(object):
 
     @property
     def primary_components(self):
-        """The ComponentIDs not associated with a :class:`DerivedComponent`
+        """The ComponentIDs not associated with a :class:`~glue.core.component.DerivedComponent`
 
         :rtype: list
         """
@@ -350,7 +350,7 @@ class Data(object):
 
     @property
     def derived_components(self):
-        """The ComponentIDs for each :class:`DerivedComponent`
+        """The ComponentIDs for each :class:`~glue.core.component.DerivedComponent`
 
         :rtype: list
         """
@@ -360,14 +360,14 @@ class Data(object):
     @property
     def pixel_component_ids(self):
         """
-        The :class:`ComponentIDs <ComponentID>` for each pixel coordinate.
+        The :class:`ComponentIDs <glue.core.component_id.ComponentID>` for each pixel coordinate.
         """
         return self._pixel_component_ids
 
     @property
     def world_component_ids(self):
         """
-        The :class:`ComponentIDs <ComponentID>` for each world coordinate.
+        The :class:`ComponentIDs <glue.core.component_id.ComponentID>` for each world coordinate.
         """
         return self._world_component_ids
 
@@ -428,13 +428,13 @@ class Data(object):
 
     @contract(axis=int, returns=ComponentID)
     def get_pixel_component_id(self, axis):
-        """Return the pixel :class:`ComponentID` associated with a given axis
+        """Return the pixel :class:`glue.core.component_id.ComponentID` associated with a given axis
         """
         return self._pixel_component_ids[axis]
 
     @contract(axis=int, returns=ComponentID)
     def get_world_component_id(self, axis):
-        """Return the world :class:`ComponentID` associated with a given axis
+        """Return the world :class:`glue.core.component_id.ComponentID` associated with a given axis
         """
         return self._world_component_ids[axis]
 
@@ -536,10 +536,10 @@ class Data(object):
 
     @contract(old=ComponentID, new=ComponentID)
     def update_id(self, old, new):
-        """Reassign a component to a different :class:`ComponentID`
+        """Reassign a component to a different :class:`glue.core.component_id.ComponentID`
 
-        :param old: The old :class:`ComponentID`.
-        :param new: The new :class:`ComponentID`.
+        :param old: The old :class:`glue.core.component_id.ComponentID`.
+        :param new: The new :class:`glue.core.component_id.ComponentID`.
         """
 
         if new is old:
@@ -600,7 +600,7 @@ class Data(object):
         :param key:
           The component to fetch data from
 
-        :type key: :class:`~glue.core.data.ComponentID`
+        :type key: :class:`~glue.core.component_id.ComponentID`
 
         :returns: :class:`~numpy.ndarray`
         """

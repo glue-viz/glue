@@ -24,7 +24,7 @@ class DataCollection(HubListener):
        * Providing a way to retrieve and store data
        * Broadcasting messages when data are added or removed
        * Keeping each managed data set's list of
-         :class:`~glue.core.data.DerivedComponent` instances up-to-date
+         :class:`~glue.core.component.DerivedComponent` instances up-to-date
        * Creating the hub that all other objects should use to communicate
          with one another (stored in ``self.hub``)
     """

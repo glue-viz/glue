@@ -54,7 +54,7 @@ This will send this data to Glue, label it ``xyz`` and start the UI.
 
 .. note::
 
-   Terminology reminder: In Glue, :class:`~glue.core.data.Data` sets are collections of one or more :class:`~glue.core.data.Component` objects.
+   Terminology reminder: In Glue, :class:`~glue.core.data.Data` sets are collections of one or more :class:`~glue.core.component.Component` objects.
    Components in a dataset are bascially arrays of the same shape. For more information, see :ref:`data_tutorial`
 
 

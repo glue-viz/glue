@@ -28,7 +28,7 @@ class ComponentLink(object):
     """ ComponentLinks represent transformation logic between ComponentIDs
 
     ComponentLinks are be used to derive one
-    :class:`~glue.core.data.ComponentID` from another:
+    :class:`~glue.core.component_id.ComponentID` from another:
 
     Example::
 
@@ -50,10 +50,10 @@ class ComponentLink(object):
     def __init__(self, comp_from, comp_to, using=None, inverse=None):
         """
         :param comp_from: The input ComponentIDs
-        :type comp_from: list of :class:`~glue.core.data.ComponentID`
+        :type comp_from: list of :class:`~glue.core.component_id.ComponentID`
 
         :param comp_to: The target component ID
-        :type comp_from: :class:`~glue.core.data.ComponentID`
+        :type comp_from: :class:`~glue.core.component_id.ComponentID`
 
         :pram using: The translation function which maps data from
                      comp_from to comp_to (optional)

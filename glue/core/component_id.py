@@ -29,7 +29,7 @@ class ComponentIDDict(object):
 
 class ComponentID(object):
 
-    """ References a :class:`Component` object within a :class:`Data` object.
+    """ References a :class:`glue.core.component.Component` object within a :class:`~glue.core.data.Data` object.
 
     ComponentIDs behave as keys::
 

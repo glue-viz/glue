@@ -321,7 +321,10 @@ class GlueApplication(Application, QMainWindow):
 
     def add_widget(self, new_widget, label=None, tab=None,
                    hold_position=False):
-        """ Add a widget to one of the tabs
+        """
+        Add a widget to one of the tabs.
+        
+        Returns the window that this widget is wrapped in.
 
         :param new_widget: new QWidget to add
 
@@ -335,8 +338,6 @@ class GlueApplication(Application, QMainWindow):
                               placement and retain the original position
                               of new_widget
         :type hold_position: bool
-
-        :rtype: The window that this widget is wrapped in
         """
         page = self.tab(tab)
         pos = getattr(new_widget, 'position', None)
@@ -771,7 +772,7 @@ class GlueApplication(Application, QMainWindow):
 
         Returns
         -------
-        app : :class:`GlueApplication`
+        app : :class:`glue.qt.glue_application.GlueApplication`
             The loaded application
         """
         ga = Application.restore_session(path)

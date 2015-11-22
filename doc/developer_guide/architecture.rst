@@ -9,12 +9,12 @@ Glue is built around a publish/subscribe paradigm that allows
 individual components to remain synchronized without knowing about
 each other. The central data objects in the Glue framework are:
 
- * :class:`~data.Data`: Stores the actual data
- * :class:`~subset.Subset`: Defines regions of interest in the data
- * :class:`~data_collection.DataCollection`: Holds one or more data objects
- * :class:`~hub.Hub`: Relays messages to other interested objects about changes in state to the data and subsets
- * :class:`~client.Client`: Does something interesting with the data and subsets (make a plot, manipulate subsets, etc.)
- * :class:`~message.Message`: A notice that something interesting has happened.
+ * :class:`~glue.core.data.Data`: Stores the actual data
+ * :class:`~glue.core.subset.Subset`: Defines regions of interest in the data
+ * :class:`~glue.core.data_collection.DataCollection`: Holds one or more data objects
+ * :class:`~glue.core.hub.Hub`: Relays messages to other interested objects about changes in state to the data and subsets
+ * :class:`~glue.core.client.Client`: Does something interesting with the data and subsets (make a plot, manipulate subsets, etc.)
+ * :class:`~glue.core.message.Message`: A notice that something interesting has happened.
 
 The typical lifecycle of these objects is as follows:
 
