@@ -24,7 +24,10 @@ from .message import (DataUpdateMessage,
                       SubsetCreateMessage, ComponentsChangedMessage,
                       ComponentReplacedMessage)
 
-from .component import Component, DerivedComponent, CoordinateComponent
+# Note: leave all the following imports for component and component_id since
+# they are here for backward-compatibility (the code used to live in this 
+# file)
+from .component import Component, DerivedComponent, CoordinateComponent, CategoricalComponent
 from .component_id import ComponentID, ComponentIDDict
 
 __all__ = ['Data']
