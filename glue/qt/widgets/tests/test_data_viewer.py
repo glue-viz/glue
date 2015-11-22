@@ -94,3 +94,6 @@ def test_viewer_size(widget, tmpdir):
 
     for viewer in app2.viewers:
         assert viewer[0].viewer_size == (300, 400)
+
+    app.close()
+    app2.close()
