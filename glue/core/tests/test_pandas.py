@@ -7,9 +7,10 @@ import pandas as pd
 from pandas.util.testing import (assert_series_equal,
                                  assert_frame_equal)
 
-from ..data import (Component, ComponentID, Data,
-                    DerivedComponent, CoordinateComponent,
-                    CategoricalComponent)
+from ..data import Data
+from ..component_id import ComponentID
+from ..component import (Component, DerivedComponent, CoordinateComponent,
+                         CategoricalComponent)
 from ... import core
 
 

@@ -16,6 +16,7 @@ __all__ = ["identity", "relim", "split_component_view", "join_component_view",
            "facet_subsets", "colorize_subsets", "defer", "disambiguate",
            "row_lookup", "PropertySetMixin", "CallbackMixin", "Pointer"]
 
+
 def identity(x):
     return x
 
@@ -92,7 +93,7 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
     :type data: :class:`~glue.core.data_collection.DataCollection`
 
     :param cid: ComponentID to facet on
-    :type data: :class:`~glue.core.data.ComponentID`
+    :type data: :class:`~glue.core.component_id.ComponentID`
 
     :param lo: The lower bound for the faceting. Defaults to minimum value
                in data

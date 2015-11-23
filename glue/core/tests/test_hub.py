@@ -170,6 +170,7 @@ class TestHub(object):
 
 class TestHubListener(object):
     """This is a dumb test, I know. Fixated on code coverage"""
+
     def test_unimplemented(self):
         hl = HubListener()
         with pytest.raises(NotImplementedError):

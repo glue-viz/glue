@@ -5,6 +5,15 @@ API
 Core Data
 =========
 
+.. automodapi:: glue.core.component
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.core.component_id
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.core.component_link
+   :no-inheritance-diagram:
+
 .. automodapi:: glue.core.data
    :no-inheritance-diagram:
 
@@ -32,35 +41,30 @@ Core Data
 .. automodapi:: glue.core.fitters
    :no-inheritance-diagram:
 
-.. automodapi:: glue.core.component_link
-   :no-inheritance-diagram:
 
 User Interface
 ==============
 
-.. automodsumm:: glue.qt.widgets.image_widget
-    :toctree: ../api/
+.. automodapi:: glue.core.application_base
+   :no-inheritance-diagram:
 
-.. automodsumm:: glue.core.application_base
-    :toctree: ../api/
+.. automodapi:: glue.qt.widgets.data_viewer
+   :no-inheritance-diagram:
 
-.. automodsumm:: glue.core.application_base
-    :toctree: ../api/
+.. automodapi:: glue.qt.widgets.scatter_widget
+   :no-inheritance-diagram:
 
-.. automodsumm:: glue.qt.widgets.data_viewer
-    :toctree: ../api/
+.. automodapi:: glue.qt.widgets.image_widget
+   :no-inheritance-diagram:
 
-.. automodsumm:: glue.qt.widgets.scatter_widget
-    :toctree: ../api/
+.. automodapi:: glue.qt.widgets.histogram_widget
+   :no-inheritance-diagram:
 
-.. automodsumm:: glue.qt.widgets.histogram_widget
-    :toctree: ../api/
+.. automodapi:: glue.qt.glue_application
+   :no-inheritance-diagram:
 
-.. automodsumm:: glue.qt.glue_application
-    :toctree: ../api/
-
-.. automodsumm:: glue.qglue
-    :toctree: ../api/
+.. automodapi:: glue.qglue
+   :no-inheritance-diagram:
 
 .. automodapi:: glue.qt.custom_viewer
    :no-inheritance-diagram:

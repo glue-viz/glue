@@ -1,516 +1,36 @@
 from __future__ import absolute_import, division, print_function
 
-import operator
-import logging
-import warnings
-
 import numpy as np
 import pandas as pd
+
+from ..config import settings
+from ..compat.collections import OrderedDict
+from ..external import six
+from ..utils import view_shape
 
 from .contracts import contract
 from .coordinates import Coordinates
 from .visual import VisualAttributes
 from .exceptions import IncompatibleAttribute
-from .component_link import (ComponentLink, CoordinateComponentLink,
-                             BinaryComponentLink)
-from .subset import Subset, InequalitySubsetState, SubsetState
+
+from .component_link import ComponentLink, CoordinateComponentLink
+
+from .subset import Subset, SubsetState
 from .hub import Hub
-from .util import split_component_view, row_lookup
-from ..utils import unique, shape_to_string, view_shape, coerce_numeric, check_sorted
+from .util import split_component_view
 from .decorators import clear_cache
 from .message import (DataUpdateMessage,
                       DataAddComponentMessage, NumericalDataChangedMessage,
                       SubsetCreateMessage, ComponentsChangedMessage,
                       ComponentReplacedMessage)
 
-from ..config import settings
-from ..compat.collections import OrderedDict
-from ..external import six
-
-__all__ = ['Data', 'ComponentID', 'Component', 'DerivedComponent',
-           'CategoricalComponent', 'CoordinateComponent']
-
-# access to ComponentIDs via .item[name]
-
-
-class ComponentIDDict(object):
-
-    def __init__(self, data, **kwargs):
-        self.data = data
-
-    def __getitem__(self, key):
-        result = self.data.find_component_id(key)
-        if result is None:
-            raise KeyError("ComponentID not found or not unique: %s"
-                           % key)
-        return result
-
-
-class ComponentID(object):
-
-    """ References a :class:`Component` object within a :class:`Data` object.
-
-    ComponentIDs behave as keys::
-
-       component_id = data.id[name]
-       data[component_id] -> numpy array
-
-    """
-
-    def __init__(self, label, hidden=False):
-        """:param label: Name for the ID
-           :type label: str"""
-        self._label = str(label)
-        self._hidden = hidden
-
-    @property
-    def label(self):
-        return self._label
-
-    @label.setter
-    def label(self, value):
-        """Change label.
-
-        .. warning::
-            Label changes are not currently tracked by client
-            classes. Label's should only be changd before creating other
-            client objects
-        """
-        self._label = str(value)
-
-    @property
-    def hidden(self):
-        """Whether to hide the component by default"""
-        return self._hidden
-
-    def __str__(self):
-        return str(self._label)
-
-    def __repr__(self):
-        return str(self._label)
-
-    def __eq__(self, other):
-        if np.issubsctype(type(other), np.number):
-            return InequalitySubsetState(self, other, operator.eq)
-        return other is self
-
-    # In Python 3, if __eq__ is defined, then __hash__ has to be re-defined
-    if six.PY3:
-        __hash__ = object.__hash__
-
-    def __ne__(self, other):
-        if np.issubsctype(type(other), np.number):
-            return InequalitySubsetState(self, other, operator.ne)
-        return other is not self
-
-    def __gt__(self, other):
-        return InequalitySubsetState(self, other, operator.gt)
-
-    def __ge__(self, other):
-        return InequalitySubsetState(self, other, operator.ge)
-
-    def __lt__(self, other):
-        return InequalitySubsetState(self, other, operator.lt)
-
-    def __le__(self, other):
-        return InequalitySubsetState(self, other, operator.le)
-
-    def __add__(self, other):
-        return BinaryComponentLink(self, other, operator.add)
-
-    def __radd__(self, other):
-        return BinaryComponentLink(other, self, operator.add)
-
-    def __sub__(self, other):
-        return BinaryComponentLink(self, other, operator.sub)
-
-    def __rsub__(self, other):
-        return BinaryComponentLink(other, self, operator.sub)
-
-    def __mul__(self, other):
-        return BinaryComponentLink(self, other, operator.mul)
-
-    def __rmul__(self, other):
-        return BinaryComponentLink(other, self, operator.mul)
-
-    def __div__(self, other):
-        return BinaryComponentLink(self, other, operator.div)
-
-    def __rdiv__(self, other):
-        return BinaryComponentLink(other, self, operator.div)
-
-    def __truediv__(self, other):
-        return BinaryComponentLink(self, other, operator.truediv)
-
-    def __rtruediv__(self, other):
-        return BinaryComponentLink(other, self, operator.truediv)
-
-    def __pow__(self, other):
-        return BinaryComponentLink(self, other, operator.pow)
-
-    def __rpow__(self, other):
-        return BinaryComponentLink(other, self, operator.pow)
-
-
-class Component(object):
-
-    """ Stores the actual, numerical information for a particular quantity
-
-    Data objects hold one or more components, accessed via
-    ComponentIDs. All Components in a data set must have the same
-    shape and number of dimensions
-
-    Notes
-    -----
-    Instead of instantiating Components directly, consider using
-    :meth:`Component.autotyped`, which chooses a subclass most appropriate
-    for the data type.
-    """
-
-    def __init__(self, data, units=None):
-        """
-        :param data: The data to store
-        :type data: :class:`numpy.ndarray`
-
-        :param units: Optional unit label
-        :type units: str
-        """
-
-        # The physical units of the data
-        self.units = units
-
-        # The actual data
-        # subclasses may pass non-arrays here as placeholders.
-        if isinstance(data, np.ndarray):
-            data = coerce_numeric(data)
-            data.setflags(write=False)  # data is read-only
-
-        self._data = data
-
-    @property
-    def units(self):
-        return self._units
-
-    @units.setter
-    def units(self, value):
-        self._units = str(value)
-
-    @property
-    def hidden(self):
-        """Whether the Component is hidden by default"""
-        return False
-
-    @property
-    def data(self):
-        """ The underlying :class:`numpy.ndarray` """
-        return self._data
-
-    @property
-    def shape(self):
-        """ Tuple of array dimensions """
-        return self._data.shape
-
-    @property
-    def ndim(self):
-        """ The number of dimensions """
-        return len(self._data.shape)
-
-    def __getitem__(self, key):
-        logging.debug("Using %s to index data of shape %s", key, self.shape)
-        return self._data[key]
-
-    @property
-    def numeric(self):
-        """
-        Whether or not the datatype is numeric
-        """
-        return np.can_cast(self.data[0], np.complex)
-
-    @property
-    def categorical(self):
-        """
-        Whether or not the datatype is categorical
-        """
-        return False
-
-    def __str__(self):
-        return "Component with shape %s" % shape_to_string(self.shape)
-
-    def jitter(self, method=None):
-        raise NotImplementedError
-
-    def to_series(self, **kwargs):
-        """ Convert into a pandas.Series object.
-
-        :param kwargs: All kwargs are passed to the Series constructor.
-        :return: pandas.Series
-        """
-
-        return pd.Series(self.data.ravel(), **kwargs)
-
-    @classmethod
-    def autotyped(cls, data, units=None):
-        """
-        Automatically choose between Component and CategoricalComponent,
-        based on the input data type.
-
-        :param data: The data to pack into a Component (array-like)
-        :param units: Optional units
-        :type units: str
-
-        :returns: A Component (or subclass)
-        """
-        data = np.asarray(data)
-
-        if np.issubdtype(data.dtype, np.object_):
-            return CategoricalComponent(data, units=units)
-
-        n = coerce_numeric(data)
-        thresh = 0.5
-        try:
-            use_categorical = np.issubdtype(data.dtype, np.character) and \
-                np.isfinite(n).mean() <= thresh
-        except TypeError:  # isfinite not supported. non-numeric dtype
-            use_categorical = True
-
-        if use_categorical:
-            return CategoricalComponent(data, units=units)
-        else:
-            return Component(n, units=units)
-
-
-class DerivedComponent(Component):
-
-    """ A component which derives its data from a function """
-
-    def __init__(self, data, link, units=None):
-        """
-        :param data: The data object to use for calculation
-        :type data: :class:`~glue.core.data.Data`
-
-        :param link: The link that carries out the function
-        :type link: :class:`~glue.core.component_link.ComponentLink`
-
-        :param units: Optional unit description
-        """
-        super(DerivedComponent, self).__init__(data, units=units)
-        self._link = link
-
-    def set_parent(self, data):
-        """ Reassign the Data object that this DerivedComponent operates on """
-        self._data = data
-
-    @property
-    def hidden(self):
-        return self._link.hidden
-
-    @property
-    def data(self):
-        """ Return the numerical data as a numpy array """
-        return self._link.compute(self._data)
-
-    @property
-    def link(self):
-        """ Return the component link """
-        return self._link
-
-    def __getitem__(self, key):
-        return self._link.compute(self._data, key)
-
-
-class CoordinateComponent(Component):
-
-    """
-    Components associated with pixel or world coordinates
-
-    The numerical values are computed on the fly.
-    """
-
-    def __init__(self, data, axis, world=False):
-        super(CoordinateComponent, self).__init__(None, None)
-        self.world = world
-        self._data = data
-        self.axis = axis
-
-    @property
-    def data(self):
-        return self._calculate()
-
-    def _calculate(self, view=None):
-        slices = [slice(0, s, 1) for s in self.shape]
-        grids = np.broadcast_arrays(*np.ogrid[slices])
-        if view is not None:
-            grids = [g[view] for g in grids]
-
-        if self.world:
-            world = self._data.coords.pixel2world(*grids[::-1])[::-1]
-            return world[self.axis]
-        else:
-            return grids[self.axis]
-
-    @property
-    def shape(self):
-        """ Tuple of array dimensions. """
-        return self._data.shape
-
-    @property
-    def ndim(self):
-        """ Number of dimensions """
-        return len(self._data.shape)
-
-    def __getitem__(self, key):
-        return self._calculate(key)
-
-    def __lt__(self, other):
-        if self.world == other.world:
-            return self.axis < other.axis
-        return self.world
-
-    def __gluestate__(self, context):
-        return dict(axis=self.axis, world=self.world)
-
-    @classmethod
-    def __setgluestate__(cls, rec, context):
-        return cls(None, rec['axis'], rec['world'])
-
-
-class CategoricalComponent(Component):
-
-    """
-    Container for categorical data.
-    """
-
-    def __init__(self, categorical_data, categories=None, jitter=None, units=None):
-        """
-        :param categorical_data: The underlying :class:`numpy.ndarray`
-        :param categories: List of unique values in the data
-        :jitter: Strategy for jittering the data
-        """
-
-        super(CategoricalComponent, self).__init__(None, units)
-
-        self._categorical_data = np.asarray(categorical_data)
-        if self._categorical_data.ndim > 1:
-            raise ValueError("Categorical Data must be 1-dimensional")
-
-        # Disable changing of categories
-        self._categorical_data.setflags(write=False)
-
-        self._categories = categories
-        self._jitter_method = jitter
-        self._is_jittered = False
-        self._data = None
-        if self._categories is None:
-            self._update_categories()
-        else:
-            self._update_data()
-
-    @property
-    def codes(self):
-        """
-        The index of the category for each value in the array.
-        """
-        return self._data
-
-    @property
-    def labels(self):
-        """
-        The original categorical data.
-        """
-        return self._categorical_data
-
-    @property
-    def categories(self):
-        """
-        The categories.
-        """
-        return self._categories
-
-    @property
-    def data(self):
-        warnings.warn("The 'data' attribute is deprecated. Use 'codes' "
-                      "instead to access the underlying index of the "
-                      "categories")
-        return self.codes
-
-    @property
-    def numeric(self):
-        return False
-
-    @property
-    def categorical(self):
-        return True
-
-    def _update_categories(self, categories=None):
-        """
-        :param categories: A sorted array of categories to find in the dataset.
-        If None the categories are the unique items in the data.
-        :return: None
-        """
-        if categories is None:
-            categories, inv = unique(self._categorical_data)
-            self._categories = categories
-            self._data = inv.astype(np.float)
-            self._data.setflags(write=False)
-            self.jitter(method=self._jitter_method)
-        else:
-            if check_sorted(categories):
-                self._categories = categories
-                self._update_data()
-            else:
-                raise ValueError("Provided categories must be Sorted")
-
-    def _update_data(self):
-        """
-        Converts the categorical data into the numeric representations given
-        self._categories
-        """
-        self._is_jittered = False
-
-        self._data = row_lookup(self._categorical_data, self._categories)
-        self.jitter(method=self._jitter_method)
-        self._data.setflags(write=False)
-
-    def jitter(self, method=None):
-        """
-        Jitter the data so the density of points can be easily seen in a
-        scatter plot.
-
-        :param method: None | 'uniform':
-
-        * None: No jittering is done (or any jittering is undone).
-        * uniform: A unformly distributed random variable (-0.5, 0.5)
-            is applied to each point.
-
-        :return: None
-        """
-
-        if method not in set(['uniform', None]):
-            raise ValueError('%s jitter not supported' % method)
-        self._jitter_method = method
-        seed = 1234567890
-        rand_state = np.random.RandomState(seed)
-
-        if (self._jitter_method is None) and self._is_jittered:
-            self._update_data()
-        elif (self._jitter_method is 'uniform') and not self._is_jittered:
-            iswrite = self._data.flags['WRITEABLE']
-            self._data.setflags(write=True)
-            self._data += rand_state.uniform(-0.5, 0.5, size=self._data.shape)
-            self._is_jittered = True
-            self._data.setflags(write=iswrite)
-
-    def to_series(self, **kwargs):
-        """ Convert into a pandas.Series object.
-
-        This will be converted as a dtype=np.object!
-
-        :param kwargs: All kwargs are passed to the Series constructor.
-        :return: pandas.Series
-        """
-
-        return pd.Series(self._categorical_data.ravel(),
-                         dtype=np.object, **kwargs)
+# Note: leave all the following imports for component and component_id since
+# they are here for backward-compatibility (the code used to live in this 
+# file)
+from .component import Component, DerivedComponent, CoordinateComponent, CategoricalComponent
+from .component_id import ComponentID, ComponentIDDict
+
+__all__ = ['Data']
 
 
 class Data(object):
@@ -518,11 +38,11 @@ class Data(object):
     """The basic data container in Glue.
 
     The data object stores data as a collection of
-    :class:`~glue.core.data.Component` objects.  Each component stored in a
+    :class:`~glue.core.component.Component` objects.  Each component stored in a
     dataset must have the same shape.
 
     Catalog data sets are stored such that each column is a distinct
-    1-dimensional :class:`~glue.core.data.Component`.
+    1-dimensional :class:`~glue.core.component.Component`.
 
     There are several ways to extract the actual numerical data stored in a
     :class:`~glue.core.data.Data` object::
@@ -644,7 +164,7 @@ class Data(object):
         """ Remove a component from a data set
 
         :param component_id: the component to remove
-        :type component_id: :class:`~glue.core.data.ComponentID`
+        :type component_id: :class:`~glue.core.component_id.ComponentID`
         """
         if component_id in self._components:
             self._components.pop(component_id)
@@ -660,8 +180,8 @@ class Data(object):
         This join allows any subsets defined on `other` to be
         propagated to self.
 
-        :param other: :class:`Data` to join with
-        :param cid: str or :class:`ComponentID` in this dataset to use as a key
+        :param other: :class:`~glue.core.data.Data` to join with
+        :param cid: str or :class:`glue.core.component_id.ComponentID` in this dataset to use as a key
         :param cid_other: ComponentID in the other dataset to use as a key
 
         :example:
@@ -706,12 +226,12 @@ class Data(object):
 
         :param label:
               The label. If this is a string,
-              a new :class:`ComponentID` with this label will be
+              a new :class:`glue.core.component_id.ComponentID` with this label will be
               created and associated with the Component
 
-        :type component: :class:`~glue.core.data.Component` or
+        :type component: :class:`~glue.core.component.Component` or
                          array-like
-        :type label: :class:`str` or :class:`~glue.core.data.ComponentID`
+        :type label: :class:`str` or :class:`~glue.core.component_id.ComponentID`
 
         :raises:
 
@@ -765,15 +285,15 @@ class Data(object):
               label='cid_like|None',
               returns=DerivedComponent)
     def add_component_link(self, link, label=None):
-        """ Shortcut method for generating a new :class:`DerivedComponent`
+        """ Shortcut method for generating a new :class:`~glue.core.component.DerivedComponent`
         from a ComponentLink object, and adding it to a data set.
 
         :param link: :class:`~glue.core.component_link.ComponentLink`
         :param label: The ComponentID or label to attach to.
-        :type label: :class:`~glue.core.data.ComponentID` or str
+        :type label: :class:`~glue.core.component_id.ComponentID` or str
 
         :returns:
-            The :class:`DerivedComponent` that was added
+            The :class:`~glue.core.component.DerivedComponent` that was added
         """
         if label is not None:
             if not isinstance(label, ComponentID):
@@ -804,7 +324,7 @@ class Data(object):
 
     @property
     def components(self):
-        """ All :class:`ComponentIDs <ComponentID>` in the Data
+        """ All :class:`ComponentIDs <glue.core.component_id.ComponentID>` in the Data
 
         :rtype: list
         """
@@ -812,7 +332,7 @@ class Data(object):
 
     @property
     def visible_components(self):
-        """ :class:`ComponentIDs <ComponentID>` for all non-hidden components.
+        """ :class:`ComponentIDs <glue.core.component_id.ComponentID>` for all non-hidden components.
 
         :rtype: list
         """
@@ -821,7 +341,7 @@ class Data(object):
 
     @property
     def primary_components(self):
-        """The ComponentIDs not associated with a :class:`DerivedComponent`
+        """The ComponentIDs not associated with a :class:`~glue.core.component.DerivedComponent`
 
         :rtype: list
         """
@@ -830,7 +350,7 @@ class Data(object):
 
     @property
     def derived_components(self):
-        """The ComponentIDs for each :class:`DerivedComponent`
+        """The ComponentIDs for each :class:`~glue.core.component.DerivedComponent`
 
         :rtype: list
         """
@@ -840,14 +360,14 @@ class Data(object):
     @property
     def pixel_component_ids(self):
         """
-        The :class:`ComponentIDs <ComponentID>` for each pixel coordinate.
+        The :class:`ComponentIDs <glue.core.component_id.ComponentID>` for each pixel coordinate.
         """
         return self._pixel_component_ids
 
     @property
     def world_component_ids(self):
         """
-        The :class:`ComponentIDs <ComponentID>` for each world coordinate.
+        The :class:`ComponentIDs <glue.core.component_id.ComponentID>` for each world coordinate.
         """
         return self._world_component_ids
 
@@ -908,13 +428,13 @@ class Data(object):
 
     @contract(axis=int, returns=ComponentID)
     def get_pixel_component_id(self, axis):
-        """Return the pixel :class:`ComponentID` associated with a given axis
+        """Return the pixel :class:`glue.core.component_id.ComponentID` associated with a given axis
         """
         return self._pixel_component_ids[axis]
 
     @contract(axis=int, returns=ComponentID)
     def get_world_component_id(self, axis):
-        """Return the world :class:`ComponentID` associated with a given axis
+        """Return the world :class:`glue.core.component_id.ComponentID` associated with a given axis
         """
         return self._world_component_ids[axis]
 
@@ -1016,10 +536,10 @@ class Data(object):
 
     @contract(old=ComponentID, new=ComponentID)
     def update_id(self, old, new):
-        """Reassign a component to a different :class:`ComponentID`
+        """Reassign a component to a different :class:`glue.core.component_id.ComponentID`
 
-        :param old: The old :class:`ComponentID`.
-        :param new: The new :class:`ComponentID`.
+        :param old: The old :class:`glue.core.component_id.ComponentID`.
+        :param new: The new :class:`glue.core.component_id.ComponentID`.
         """
 
         if new is old:
@@ -1080,7 +600,7 @@ class Data(object):
         :param key:
           The component to fetch data from
 
-        :type key: :class:`~glue.core.data.ComponentID`
+        :type key: :class:`~glue.core.component_id.ComponentID`
 
         :returns: :class:`~numpy.ndarray`
         """

@@ -2,7 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from ..data import Data, Component, CategoricalComponent
+from ..data import Data
+from ..component import Component, CategoricalComponent
 
 from .helpers import has_extension
 

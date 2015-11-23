@@ -8,7 +8,7 @@ import numpy as np
 from .. import link_helpers as lh
 from ..link_helpers import (LinkTwoWay, MultiLink,
                             LinkSame, LinkAligned)
-from ...core import ComponentID, ComponentLink, Data, Component, DataCollection
+from ...core import ComponentID, Data, Component, DataCollection
 
 R, D, L, B = (ComponentID('ra'), ComponentID('dec'),
               ComponentID('lon'), ComponentID('lat'))
@@ -80,7 +80,7 @@ def test_multilink_nofunc():
 
 def test_linksame_string():
     """String inputs auto-converted to component IDs"""
-    #ComponentLink does type checking to ensure conversion happens
+    # ComponentLink does type checking to ensure conversion happens
     links = LinkSame('a', 'b')
 
 
@@ -109,7 +109,7 @@ def test_link_aligned(ndata, ndim):
         d.add_component(c, 'test')
         ds.append(d)
 
-    #assert that all componentIDs are interchangeable
+    # assert that all componentIDs are interchangeable
     links = LinkAligned(ds)
     dc = DataCollection(ds)
     dc.add_link(links)

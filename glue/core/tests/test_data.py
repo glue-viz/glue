@@ -6,11 +6,12 @@ import pytest
 import numpy as np
 from mock import MagicMock
 
-from ..data import (ComponentID, Component, Data,
-                    DerivedComponent, pixel_label, CategoricalComponent)
+from ..data import Data, pixel_label
+from ..component_id import ComponentID
+from ..component import Component, DerivedComponent, CategoricalComponent
 from ..coordinates import Coordinates
 from ..subset import Subset, SubsetState
-from ..hub import Hub, HubListener
+from ..hub import Hub
 from ..exceptions import IncompatibleAttribute
 from ..component_link import ComponentLink
 from ..registry import Registry
@@ -327,7 +328,7 @@ class TestData(object):
         assert not d['gender'].flags['WRITEABLE']
 
     def test_update_clears_subset_cache(self):
-        from glue.core.roi import RectangularROI
+        from ..roi import RectangularROI
 
         d = Data(x=[1, 2, 3], y=[1, 2, 3])
         s = d.new_subset()

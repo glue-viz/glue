@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.config import qt_client, data_factory, link_function
+from .config import qt_client, data_factory, link_function
 
 
 """Declare any extra link functions like this"""

@@ -6,7 +6,6 @@ import numpy as np
 from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
 from matplotlib.ticker import (LogFormatterMathtext, ScalarFormatter,
                                FuncFormatter)
-from ..core.data import CategoricalComponent
 
 
 def small_view(data, attribute):

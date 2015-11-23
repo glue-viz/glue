@@ -4,7 +4,6 @@ from mock import MagicMock
 
 from ..application_base import Application
 from .. import Data
-from ...external.six.moves import cPickle as pickle
 
 
 class MockApplication(Application):
@@ -60,4 +59,4 @@ def test_session(tmpdir):
     session_file = tmpdir.join('test.glu').strpath
     app = MockApplication()
     app.save_session(session_file)
-    app2 = MockApplication.restore_session(session_file)
+    MockApplication.restore_session(session_file)

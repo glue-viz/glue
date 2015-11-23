@@ -3,8 +3,11 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
+from matplotlib.cm import gray
 
 from ..util import facet_subsets, colorize_subsets
+from .. import Data, DataCollection
+
 
 class TestRelim(object):
     pass
@@ -13,7 +16,7 @@ class TestRelim(object):
 class TestFacetSubsets(object):
 
     def setup_method(self, method):
-        from glue.core import Data, DataCollection
+        from .. import Data, DataCollection
         self.data = Data(label='data', x=[1, 2, 3, 4, 5, 6, 7])
         self.collect = DataCollection([self.data])
 
@@ -82,8 +85,6 @@ class TestFacetSubsets(object):
 
 
 def test_colorize_subsets():
-    from glue.core import Data, DataCollection
-    from matplotlib.cm import gray
 
     data = Data(label='test', x=[1, 2, 3])
     dc = DataCollection(data)
@@ -95,8 +96,6 @@ def test_colorize_subsets():
 
 
 def test_colorize_subsets_clip():
-    from glue.core import Data, DataCollection
-    from matplotlib.cm import gray
 
     data = Data(label='test', x=[1, 2, 3])
     grps = facet_subsets(DataCollection(data), data.id['x'], steps=2)
@@ -108,6 +107,3 @@ def test_colorize_subsets_clip():
     colorize_subsets(grps, gray, lo=0.5)
     assert grps[0].style.color == '#808080'
     assert grps[1].style.color == '#ffffff'
-
-
-

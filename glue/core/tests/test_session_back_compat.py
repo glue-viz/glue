@@ -41,8 +41,8 @@ def test_load_simple_tables_04():
     assert dc[2].label == 'double_tables_auto'
     assert dc[3].label == 'double_tables'
 
-    np.testing.assert_equal(dc[0]['a'], [1,2,3])
-    np.testing.assert_equal(dc[0]['b'], [4,5,6])
+    np.testing.assert_equal(dc[0]['a'], [1, 2, 3])
+    np.testing.assert_equal(dc[0]['b'], [4, 5, 6])
     np.testing.assert_equal(dc[0]['a'], dc[1]['a'])
     np.testing.assert_equal(dc[0]['b'], dc[1]['b'])
     np.testing.assert_equal(dc[0]['a'], dc[2]['a'])

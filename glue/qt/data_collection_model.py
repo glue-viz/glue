@@ -525,9 +525,10 @@ class LabeledDelegate(QStyledItemDelegate):
 
 
 if __name__ == "__main__":
-    from glue.qt import get_qapp
-    from glue.external.qt.QtGui import QTreeView
-    from glue.core import Data, DataCollection
+    
+    from . import get_qapp
+    from ..external.qt.QtGui import QTreeView
+    from ..core import Data, DataCollection
 
     app = get_qapp()
 

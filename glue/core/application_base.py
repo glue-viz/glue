@@ -351,17 +351,15 @@ class ViewerBase(HubListener, PropertySetMixin):
 
     @property
     def position(self):
-        """ Return the location of the viewer
-
-        :rtype: (x, y). Tuple of 2 integers
+        """
+        Return the location of the viewer as a tuple of ``(x, y)``
         """
         raise NotImplementedError()
 
     @property
     def viewer_size(self):
-        """ Return the size of the viewer
-
-        :rtype: (width, height). Tuple of 2 ints
+        """
+        Return the size of the viewer as a tuple of ``(width, height)``
         """
         raise NotImplementedError()
 

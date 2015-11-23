@@ -7,7 +7,6 @@ except ImportError:
     plotly = None
 
 from ..qt.widgets import ScatterWidget, HistogramWidget
-from ..core.data import CategoricalComponent
 from ..core.layout import Rectangle, snap_to_grid
 
 
@@ -24,7 +23,7 @@ def _data(layer, component):
     """
     result = layer[component]
     comp = layer.data.get_component(component)
-    if isinstance(comp, CategoricalComponent):
+    if comp.categorical:
         result = comp.categories[result.astype(np.int)]
     return result
 
@@ -155,8 +154,8 @@ def export_scatter(viewer):
         if not layer.visible:
             continue
         l = layer.layer
-        xcat |= isinstance(l.data.get_component(xatt), CategoricalComponent)
-        ycat |= isinstance(l.data.get_component(yatt), CategoricalComponent)
+        xcat |= l.data.get_component(xatt).categorical
+        ycat |= l.data.get_component(yatt).categorical
 
         marker = dict(symbol=SYM.get(l.style.marker, 'circle'),
                       color=_color(l.style),

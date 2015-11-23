@@ -211,7 +211,7 @@ def qglue(**kwargs):
     :returns: A :class:`~glue.qt.glue_application.GlueApplication` object
     """
     from .core import DataCollection
-    from glue.qt.glue_application import GlueApplication
+    from .qt.glue_application import GlueApplication
 
     links = kwargs.pop('links', None)
 

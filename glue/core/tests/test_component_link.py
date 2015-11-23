@@ -23,12 +23,12 @@ class TestComponentLink(object):
         return data, from_comp, to_comp
 
     def test_valid_init(self):
-        link = ComponentLink([ComponentID('from')], ComponentID('to'))
+        ComponentLink([ComponentID('from')], ComponentID('to'))
 
     def test_valid_init_using(self):
         data, from_, to_ = self.toy_data()
         using = lambda x: x
-        link = ComponentLink([ComponentID('from')], ComponentID('to'), using)
+        ComponentLink([ComponentID('from')], ComponentID('to'), using)
 
     def test_invalid_init_multi_from_no_using(self):
         with pytest.raises(TypeError) as exc:
@@ -132,11 +132,11 @@ def test_inequality_overload(a, b):
 
 def test_link_bad_input():
     with pytest.raises(TypeError) as exc:
-        l = BinaryComponentLink(ComponentID('x'), None, None)
+        BinaryComponentLink(ComponentID('x'), None, None)
     assert exc.value.args[0] == 'Cannot create BinaryComponentLink using None'
 
     with pytest.raises(TypeError) as exc:
-        l = BinaryComponentLink(None, ComponentID('x'), None)
+        BinaryComponentLink(None, ComponentID('x'), None)
     assert exc.value.args[0] == 'Cannot create BinaryComponentLink using None'
 
 

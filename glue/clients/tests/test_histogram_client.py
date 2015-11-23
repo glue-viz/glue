@@ -12,7 +12,9 @@ from ..layer_artist import HistogramLayerArtist
 
 from ...core.data_collection import DataCollection
 from ...core.exceptions import IncompatibleDataException
-from ...core.data import Data, CategoricalComponent, ComponentID
+from ...core.data import Data
+from ...core.component import CategoricalComponent
+from ...core.component_id import ComponentID
 from ...core.subset import RangeSubsetState, CategoricalRoiSubsetState
 
 from .util import renderless_figure

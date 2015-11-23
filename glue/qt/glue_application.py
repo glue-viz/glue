@@ -321,7 +321,10 @@ class GlueApplication(Application, QMainWindow):
 
     def add_widget(self, new_widget, label=None, tab=None,
                    hold_position=False):
-        """ Add a widget to one of the tabs
+        """
+        Add a widget to one of the tabs.
+        
+        Returns the window that this widget is wrapped in.
 
         :param new_widget: new QWidget to add
 
@@ -335,8 +338,6 @@ class GlueApplication(Application, QMainWindow):
                               placement and retain the original position
                               of new_widget
         :type hold_position: bool
-
-        :rtype: The window that this widget is wrapped in
         """
         page = self.tab(tab)
         pos = getattr(new_widget, 'position', None)
@@ -589,7 +590,7 @@ class GlueApplication(Application, QMainWindow):
         self._actions['data_new'] = a
 
         # We now populate the "Import data" menu
-        from glue.config import importer
+        from ..config import importer
 
         acts = []
 
@@ -608,7 +609,7 @@ class GlueApplication(Application, QMainWindow):
 
         self._actions['data_importers'] = acts
 
-        from glue.config import exporters
+        from ..config import exporters
         if len(exporters) > 0:
             acts = []
             for e in exporters:
@@ -647,7 +648,7 @@ class GlueApplication(Application, QMainWindow):
         self._actions['redo'] = a
 
         # Create actions for menubar plugins
-        from glue.config import menubar_plugin
+        from ..config import menubar_plugin
         acts = []
         for label, function in menubar_plugin:
             a = act(label, self, tip=label)
@@ -771,7 +772,7 @@ class GlueApplication(Application, QMainWindow):
 
         Returns
         -------
-        app : :class:`GlueApplication`
+        app : :class:`glue.qt.glue_application.GlueApplication`
             The loaded application
         """
         ga = Application.restore_session(path)

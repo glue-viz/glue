@@ -3,10 +3,11 @@ linked components"""
 
 from __future__ import absolute_import, division, print_function
 
-from glue.core import Data, DataCollection
-from glue.core.link_helpers import LinkSame
 import numpy as np
 from numpy.random import random as r
+
+from .. import Data, DataCollection
+from ..link_helpers import LinkSame
 
 
 def test_1d_world_link():

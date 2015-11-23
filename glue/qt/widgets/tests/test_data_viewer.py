@@ -44,7 +44,7 @@ def test_single_draw_call_on_create(widget):
     app = GlueApplication(dc)
 
     try:
-        from glue.qt.widgets.mpl_widget import MplCanvas
+        from ..mpl_widget import MplCanvas
         draw = MplCanvas.draw
         MplCanvas.draw = MagicMock()
 
@@ -94,3 +94,6 @@ def test_viewer_size(widget, tmpdir):
 
     for viewer in app2.viewers:
         assert viewer[0].viewer_size == (300, 400)
+
+    app.close()
+    app2.close()

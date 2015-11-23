@@ -8,12 +8,12 @@ import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
 
 from ... import data_factories as df
-from ...data import CategoricalComponent, Data
+from ...data import Data
+from ...component import CategoricalComponent
 from ...tests.util import make_file
 
 from ....tests.helpers import (requires_astropy, requires_astropy_ge_03,
-                               requires_astropy_ge_04, requires_pil_or_skimage,
-                               requires_astrodendro, requires_h5py)
+                               requires_pil_or_skimage)
 
 from ....config import data_factory
 

@@ -7,13 +7,12 @@ import pytest
 import numpy as np
 from numpy.testing import assert_almost_equal
 from matplotlib.figure import Figure
-from glue.core.data import CategoricalComponent
 from mock import MagicMock
 
+from ..component import CategoricalComponent
 from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI, CategoricalRoi,
                    MplCircularROI, MplRectangularROI, MplPolygonalROI, MplPickROI, PointROI,
                    XRangeROI, MplXRangeROI, YRangeROI, MplYRangeROI, RangeROI)
-
 from .. import roi as r
 
 FIG = Figure()
@@ -401,7 +400,6 @@ class TestCategorical(object):
         np.testing.assert_array_equal(roi.categories,
                                       np.array(['a', 'b']))
 
-
     def test_applies_components(self):
 
         roi = CategoricalRoi()
@@ -413,12 +411,11 @@ class TestCategorical(object):
 
     def test_from_range(self):
 
-        comp = CategoricalComponent(np.array(list('abcdefghijklmnopqrstuvwxyz')*2))
+        comp = CategoricalComponent(np.array(list('abcdefghijklmnopqrstuvwxyz') * 2))
 
         roi = CategoricalRoi.from_range(comp, 6, 10)
         np.testing.assert_array_equal(roi.categories,
                                       np.array(list('ghij')))
-
 
 
 class DummyEvent(object):
@@ -884,9 +881,6 @@ class TestPickMpl(TestMpl):
         """No patch to test for."""
 
     def test_patch_shown_on_start(self):
-        """No patch to test for."""
-
-    def test_patch_hidden_on_finalise(self):
         """No patch to test for."""
 
     def test_patch_hidden_on_finalise(self):

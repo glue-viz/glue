@@ -88,7 +88,7 @@ def find_dependents(data, link):
     :param link: The `ComponentLink` object to consider
 
     :rtype: set
-    A `set` of `DerivedComponent` IDs that cannot be
+    A `set` of `glue.core.component.DerivedComponent` IDs that cannot be
     calculated without the input `Link`
     """
     dependents = set()

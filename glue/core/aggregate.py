@@ -33,7 +33,7 @@ class Aggregate(object):
     def __init__(self, data, attribute, zax, slc, zlim):
         """
         :param data: :class:`~glue.core.data.Data` object
-        :param attribute: :class:`~glue.core.data.ComponentID`
+        :param attribute: :class:`~glue.core.component_id.ComponentID`
         :param zax: integer. Which axis to collapse over
         :param slc: tuple of integers, 'x', or 'y'. Describes the
                     current 2D slice through the image. Used to

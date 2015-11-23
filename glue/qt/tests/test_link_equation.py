@@ -6,6 +6,7 @@ import pytest
 from ..link_equation import (function_label, helper_label,
                              LinkEquation, ArgumentWidget)
 from ...config import link_function, link_helper
+from ...core import ComponentID
 
 
 @link_function('testing function', ['y'])
@@ -46,7 +47,6 @@ class TestArgumentWidget(object):
         assert a.label == 'b'
 
     def test_drop(self):
-        from glue.core import ComponentID
         target_id = ComponentID('test')
         event = MagicMock()
         event.mimeData().data.return_value = target_id
@@ -63,7 +63,6 @@ class TestArgumentWidget(object):
         assert a.component_id is None
 
     def test_clear(self):
-        from glue.core import ComponentID
         target_id = ComponentID('test')
         event = MagicMock()
         event.mimeData().data.return_value = target_id
@@ -112,7 +111,6 @@ class TestLinkEquation(object):
         assert exc.value.args[0].startswith('No function or helper found')
 
     def test_make_link_function(self):
-        from glue.core import ComponentID
         widget = LinkEquation()
         f1 = [f for f in link_function if f[0] is func1][0]
         widget.function = f1
@@ -125,7 +123,6 @@ class TestLinkEquation(object):
         assert links[0].get_using() is func1
 
     def test_make_link_helper(self):
-        from glue.core import ComponentID
         widget = LinkEquation()
         f1 = [f for f in link_helper if f[0] is helper][0]
         widget.function = f1
@@ -145,7 +142,6 @@ class TestLinkEquation(object):
         assert widget.links() == []
 
     def test_clear_inputs(self):
-        from glue.core import ComponentID
         widget = LinkEquation()
         f1 = [f for f in link_helper if f[0] is helper][0]
         widget.function = f1

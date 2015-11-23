@@ -15,7 +15,7 @@ from .exceptions import UndefinedROI
 __all__ = ['Roi', 'RectangularROI', 'CircularROI', 'PolygonalROI',
            'AbstractMplRoi', 'MplRectangularROI', 'MplCircularROI',
            'MplPolygonalROI', 'MplXRangeROI', 'MplYRangeROI',
-           'XRangeROI', 'RangeROI', 'YRangeROI','VertexROIBase']
+           'XRangeROI', 'RangeROI', 'YRangeROI', 'VertexROIBase']
 
 PATCH_COLOR = '#FFFF00'
 SCRUBBING_KEY = 'control'
@@ -1207,7 +1207,7 @@ class CategoricalRoi(Roi):
 
         check = self._categorical_helper(x)
         index = np.minimum(np.searchsorted(self.categories, check),
-                           len(self.categories)-1)
+                           len(self.categories) - 1)
         return self.categories[index] == check
 
     def update_categories(self, categories):

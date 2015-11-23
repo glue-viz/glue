@@ -32,7 +32,7 @@ def _diagnostics():
     """
     Return a some system informaton useful for debugging
     """
-    from glue.external.qt import QtCore
+    from ..external.qt import QtCore
     from matplotlib import __version__ as mplversion
     from numpy import __version__ as npversion
     from astropy import __version__ as apversion

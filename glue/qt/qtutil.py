@@ -113,7 +113,7 @@ class GlueDataDialog(object):
 
     def __init__(self, parent=None):
         self._fd = QtGui.QFileDialog(parent)
-        from glue.config import data_factory
+        from ..config import data_factory
         self.filters = [(f, self._filter(f))
                         for f in data_factory.members if not f.deprecated]
         self.setNameFilter()
@@ -164,7 +164,7 @@ class GlueDataDialog(object):
 
         :rtype: A list of constructed data objects
         """
-        from glue.core.data_factories import data_label, load_data
+        from ..core.data_factories import data_label, load_data
         paths, fac = self._get_paths_and_factory()
         result = []
 
@@ -895,7 +895,8 @@ def cache_axes(axes, toolbar):
 
 
 if __name__ == "__main__":
-    from glue.qt import get_qapp
+
+    from . import get_qapp
 
     class Foo(object):
         layer_visible = {}

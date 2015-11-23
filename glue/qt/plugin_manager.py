@@ -61,7 +61,7 @@ class QtPluginManager(object):
         except Exception:
             import traceback
             detail = str(traceback.format_exc())
-            from glue.utils.qt import QMessageBoxPatched as QMessageBox
+            from ..utils.qt import QMessageBoxPatched as QMessageBox
             message = QMessageBox(QMessageBox.Critical,
                                   "Error",
                                   "Could not save plugin configuration")
