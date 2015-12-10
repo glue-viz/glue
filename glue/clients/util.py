@@ -14,7 +14,7 @@ def small_view(data, attribute):
     statistical summaries
     """
     shp = data.shape
-    view = tuple([slice(None, None, max(s / 50, 1)) for s in shp])
+    view = tuple([slice(None, None, np.int64(max(s / 50, 1))) for s in shp])
     return data[attribute, view]
 
 
@@ -23,7 +23,7 @@ def small_view_array(data):
     Same as small_view, except using a numpy array as input
     """
     shp = data.shape
-    view = tuple([slice(None, None, max(s / 50, 1)) for s in shp])
+    view = tuple([slice(None, None, np.int64(max(s / 50, 1))) for s in shp])
     return np.asarray(data)[view]
 
 

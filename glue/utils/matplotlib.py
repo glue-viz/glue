@@ -103,7 +103,7 @@ def fast_limits(data, plo, phi):
     """
 
     shp = data.shape
-    view = tuple([slice(None, None, max(s / 50, 1)) for s in shp])
+    view = tuple([slice(None, None, np.int64(max(s / 50, 1))) for s in shp])
     values = np.asarray(data)[view]
     if ~np.isfinite(values).any():
         return (0.0, 1.0)
