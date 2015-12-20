@@ -4,12 +4,14 @@ Load files created by the astrodendro package.
 astrodendro must be installed in order to use this loader
 """
 import numpy as np
-from astrodendro import Dendrogram
-from ..data import Data
-from ...config import data_factory
 
-from .fits import is_fits
-from .hdf5 import is_hdf5
+from astrodendro import Dendrogram
+
+from ...core.data import Data
+from ...core.data_factories.fits import is_fits
+from ...core.data_factories.hdf5 import is_hdf5
+
+from ...config import data_factory
 
 __all__ = ['load_dendro', 'is_dendro']
 

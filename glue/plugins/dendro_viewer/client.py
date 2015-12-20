@@ -1,17 +1,18 @@
 """
 A plot to visualize trees
 """
+
 import numpy as np
 
-from ..core.data import IncompatibleAttribute
-from ..core.callback_property import CallbackProperty, add_callback, delay_callback
-from ..core.roi import PointROI
-from ..utils import nonpartial
+from ...core.data import IncompatibleAttribute
+from ...core.callback_property import CallbackProperty, add_callback, delay_callback
+from ...core.roi import PointROI
+from ...core.subset import CategorySubsetState
+from ...core.edit_subset_mode import EditSubsetMode
+from ...utils import nonpartial
+from ...clients.viz_client import GenericMplClient
 
 from .layer_artist import DendroLayerArtist
-from ..core.subset import CategorySubsetState
-from ..core.edit_subset_mode import EditSubsetMode
-from .viz_client import GenericMplClient
 
 
 class DendroClient(GenericMplClient):

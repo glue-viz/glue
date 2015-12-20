@@ -1,15 +1,16 @@
 from ... import core
 from ...external.qt import QtGui
 
-from .data_viewer import DataViewer
-from ..widget_properties import (ButtonProperty, CurrentComboProperty,
+from ...qt.widgets.data_viewer import DataViewer
+from ...qt.widgets.mpl_widget import MplWidget, defer_draw
+from ...qt.widget_properties import (ButtonProperty, CurrentComboProperty,
                                  connect_bool_button, connect_current_combo)
-from ...clients.dendro_client import DendroClient
-from .mpl_widget import MplWidget, defer_draw
-from ..glue_toolbar import GlueToolbar
+from ...qt.glue_toolbar import GlueToolbar
 
-from ..qtutil import load_ui, nonpartial
-from ..mouse_mode import PickMode
+from ...qt.qtutil import load_ui, nonpartial
+from ...qt.mouse_mode import PickMode
+
+from .client import DendroClient
 
 
 class DendroWidget(DataViewer):
