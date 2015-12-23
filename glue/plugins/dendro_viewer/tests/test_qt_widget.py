@@ -42,8 +42,4 @@ class TestDendroWidget(object):
 
 class TestDataViewerDendro(BaseTestDataViewer):
     # A few additional tests common to all data viewers
-
     widget_cls = DendroWidget
-    
-    def test_viewer_size(self):
-        pytest.xfail()
