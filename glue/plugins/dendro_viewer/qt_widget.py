@@ -86,7 +86,9 @@ class DendroWidget(DataViewer):
         if data is None:
             return
 
-        for combo in [self.ui.heightCombo, self.ui.parentCombo, self.ui.orderCombo]:
+        for combo in [self.ui.heightCombo,
+                      self.ui.parentCombo,
+                      self.ui.orderCombo]:
             combo.blockSignals(True)
             ids = []
             idx = combo.currentIndex()
@@ -139,3 +141,15 @@ class DendroWidget(DataViewer):
 
     def options_widget(self):
         return self.option_widget
+
+    @defer_draw
+    def restore_layers(self, rec, context):
+
+        from ...core.callback_property import delay_callback
+
+
+        with delay_callback(self.client, 'height_attr',
+                                         'parent_attr',
+                                         'order_attr'):
+            self.client.restore_layers(rec, context)
+            self._update_combos()
