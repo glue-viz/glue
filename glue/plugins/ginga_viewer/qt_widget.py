@@ -58,7 +58,10 @@ class GingaWidget(ImageWidgetBase):
         self.canvas = ImageViewCanvas(self.logger, render='widget')
 
         # prevent widget from grabbing focus
-        self.canvas.set_follow_focus(False)
+        try:
+            self.canvas.set_enter_focus(False)
+        except AttributeError:
+            self.canvas.set_follow_focus(False)
 
         # enable interactive features
         bindings = self.canvas.get_bindings()
