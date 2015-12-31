@@ -27,7 +27,7 @@ class DataViewer(ViewerBase, QMainWindow):
        * An automatic call to unregister on window close
        * Drag and drop support for adding data
     """
-    _container_cls = QtLayerArtistContainer
+    _layer_artist_container_cls = QtLayerArtistContainer
     LABEL = 'Override this'
 
     def __init__(self, session, parent=None):
@@ -38,7 +38,7 @@ class DataViewer(ViewerBase, QMainWindow):
         ViewerBase.__init__(self, session)
         self.setWindowIcon(get_qapp().windowIcon())
         self._view = LayerArtistView()
-        self._view.setModel(self._container.model)
+        self._view.setModel(self._layer_artist_container.model)
         self._tb_vis = {}  # store whether toolbars are enabled
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.setAcceptDrops(True)
@@ -50,11 +50,11 @@ class DataViewer(ViewerBase, QMainWindow):
         self.statusBar().setStyleSheet("QStatusBar{font-size:10px}")
 
         # close window when last plot layer deleted
-        self._container.on_empty(lambda: self.close(warn=False))
-        self._container.on_changed(self.update_window_title)
+        self._layer_artist_container.on_empty(lambda: self.close(warn=False))
+        self._layer_artist_container.on_changed(self.update_window_title)
 
     def remove_layer(self, layer):
-        self._container.pop(layer)
+        self._layer_artist_container.pop(layer)
 
     def dragEnterEvent(self, event):
         """ Accept the event if it has data layers"""

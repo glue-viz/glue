@@ -103,7 +103,7 @@ class GingaWidget(ImageWidgetBase):
         return []
 
     def make_client(self):
-        return GingaClient(self._data, self.canvas, self._container)
+        return GingaClient(self._data, self.canvas, self._layer_artist_container)
 
     def make_central_widget(self):
 

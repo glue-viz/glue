@@ -261,7 +261,7 @@ class ViewerBase(HubListener, PropertySetMixin):
 
     # the glue.clients.layer_artist.LayerArtistContainer
     # class/subclass to use
-    _container_cls = None
+    _layer_artist_container_cls = None
 
     def __init__(self, session):
 
@@ -271,7 +271,7 @@ class ViewerBase(HubListener, PropertySetMixin):
         self._session = session
         self._data = session.data_collection
         self._hub = None
-        self._container = self._container_cls()
+        self._layer_artist_container = self._layer_artist_container_cls()
 
     def register_to_hub(self, hub):
         self._hub = hub
@@ -393,7 +393,7 @@ class ViewerBase(HubListener, PropertySetMixin):
 
         A layer is a visual representation of a dataset or subset within
         the viewer"""
-        return tuple(self._container)
+        return tuple(self._layer_artist_container)
 
     def __gluestate__(self, context):
         return dict(session=context.id(self._session),

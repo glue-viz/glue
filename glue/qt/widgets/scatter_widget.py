@@ -58,7 +58,7 @@ class ScatterWidget(DataViewer):
 
         self.client = ScatterClient(self._data,
                                     self.central_widget.canvas.fig,
-                                    artist_container=self._container)
+                                    layer_artist_container=self._layer_artist_container)
 
         self._connect()
         self.unique_fields = set()

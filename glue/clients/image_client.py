@@ -41,11 +41,11 @@ class ImageClient(VizClient):
     display_attribute = CallbackProperty(None)
     display_aspect = CallbackProperty('equal')
 
-    def __init__(self, data, artist_container=None):
+    def __init__(self, data, layer_artist_container=None):
 
         VizClient.__init__(self, data)
 
-        self.artists = artist_container
+        self.artists = layer_artist_container
         if self.artists is None:
             self.artists = LayerArtistContainer()
 
@@ -705,8 +705,8 @@ class ImageClient(VizClient):
 
 class MplImageClient(ImageClient):
 
-    def __init__(self, data, figure=None, axes=None, artist_container=None):
-        super(MplImageClient, self).__init__(data, artist_container)
+    def __init__(self, data, figure=None, axes=None, layer_artist_container=None):
+        super(MplImageClient, self).__init__(data, layer_artist_container)
 
         if axes is not None:
             raise ValueError("ImageClient does not accept an axes")

@@ -177,13 +177,13 @@ class GenericMplClient(Client):
     """
 
     def __init__(self, data=None, figure=None, axes=None,
-                 artist_container=None, axes_factory=None):
+                 layer_artist_container=None, axes_factory=None):
 
         super(GenericMplClient, self).__init__(data=data)
         if axes_factory is None:
             axes_factory = self.create_axes
         figure, self.axes = init_mpl(figure, axes, axes_factory=axes_factory)
-        self.artists = artist_container
+        self.artists = layer_artist_container
         if self.artists is None:
             self.artists = LayerArtistContainer()
 
