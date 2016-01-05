@@ -9,10 +9,11 @@ notifications:
 
 env:
   matrix:
-    - PYTHON_VERSION=2.7 MPL_VERSION=1.4 ASTROPY_VERSION=1.0
-    - PYTHON_VERSION=3.4 MPL_VERSION=1.4 ASTROPY_VERSION=1.0
+    - PYTHON_VERSION=2.7 ASTROPY_VERSION=1.0
+    - PYTHON_VERSION=3.4 ASTROPY_VERSION=1.0
   global:
     - PYTEST_ARGS="--cov glue"
+    - MPL_VERSION=1.5
     - NUMPY_VERSION=1.9
     - IPYTHON_VERSION=4
     - NO_CFG_FILES=false
@@ -34,17 +35,17 @@ matrix:
         # Astropy dev
         - os: linux
           env:
-            - PYTHON_VERSION=2.7 MPL_VERSION=1.4 ASTROPY_VERSION=dev
+            - PYTHON_VERSION=2.7 ASTROPY_VERSION=dev
 
         # Numpy dev
         - os: linux
           env:
-            - PYTHON_VERSION=2.7 MPL_VERSION=1.4 NUMPY_VERSION=dev
+            - PYTHON_VERSION=2.7 NUMPY_VERSION=dev
 
         # PyQt5
         - os: linux
           env:
-            - PYTHON_VERSION=2.7 MPL_VERSION=1.5 NUMPY_VERSION=1.10 ASTROPY_VERSION=1.0 QT_PKG=pyqt5
+            - PYTHON_VERSION=2.7 NUMPY_VERSION=1.10 ASTROPY_VERSION=1.0 QT_PKG=pyqt5
             # We don't test ginga with PyQt5 due to a bug in ginga with QT_API
             - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli"
 
@@ -58,13 +59,11 @@ matrix:
             - CONDA_DEPENDENCIES="pytz pyparsing cycler python-dateutil freetype libpng sip qt pip setuptools=7.0 pandas mock pbr six funcsigs --no-deps"
             - IPYTHON_VERSION=None
             - ASTROPY_VERSION=''
-            - MPL_VERSION=1.4
             - PIP_DEPENDENCIES="pytest-cov coveralls"
 
         - os: linux
           env:
             - PYTHON_VERSION=2.7
-            - MPL_VERSION=1.4
             - ASTROPY_VERSION=1.0
             - DOC_TRIGGER=1
             - APP_TRIGGER=1
@@ -85,10 +84,10 @@ matrix:
         # Test with PySide, but due to segmentation faults, mark as an
         # allowed failure.
         - os: linux
-          env: PYTHON_VERSION=2.7 MPL_VERSION=1.4 ASTROPY_VERSION=1.0 QT_PKG=pyside
+          env: PYTHON_VERSION=2.7 ASTROPY_VERSION=1.0 QT_PKG=pyside
 
     allow_failures:
-      - env: PYTHON_VERSION=2.7 MPL_VERSION=1.4 ASTROPY_VERSION=1.0 QT_PKG=pyside
+      - env: PYTHON_VERSION=2.7 ASTROPY_VERSION=1.0 QT_PKG=pyside
 
 before_install:
 
