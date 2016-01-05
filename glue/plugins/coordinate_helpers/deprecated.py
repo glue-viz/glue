@@ -16,26 +16,6 @@ def gal2fk5(l, b):
     return out.ra.degree, out.dec.degree
 
 
-
-class Galactic2Equatorial(MultiLink):
-
-    """
-    Instantiate a ComponentList with four ComponentLinks that map galactic
-    and equatorial coordinates
-
-    :param l: ComponentID for galactic longitude
-    :param b: ComponentID for galactic latitude
-    :param ra: ComponentID for J2000 Right Ascension
-    :param dec: ComponentID for J2000 Declination
-
-    Returns a :class:`LinkCollection` object which links
-    these ComponentIDs
-    """
-
-    def __init__(self, l, b, ra, dec):
-        MultiLink.__init__(self, [ra, dec], [l, b], fk52gal, gal2fk5)
-
-
 def radec2glon(ra, dec):
     """
     Compute galactic longitude from right ascension and declination.

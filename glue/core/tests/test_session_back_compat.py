@@ -79,3 +79,19 @@ def test_load_hdf5_grids_04():
     np.testing.assert_equal(dc[0]['/array1'].shape, (2, 3, 4))
 
     ga.close()
+
+
+@requires_astropy
+def test_load_link_helpers_04():
+
+    # This loads a session file made with Glue v0.4. In this session, we have
+    # two tables, and we use all the celestial link functions that were present
+    # in Glue v0.4. We now check that the paths are patched when loading the
+    # session (since the functions have been moved to a deprecated location)
+
+    with open(os.path.join(DATA, 'session_links.glu'), 'r') as f:
+        content = f.read()
+
+    state = GlueUnSerializer.loads(content)
+
+    print(type(state))

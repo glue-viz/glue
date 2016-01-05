@@ -58,19 +58,19 @@ def lookup_class(ref):
 
     :param ref: reference
     :type ref: str
-    :rtype: object, or None if not found
+    :rtype: object
     """
     mod = ref.rsplit('.', 1)[0]
     try:
         result = __import__(mod)
     except ImportError:
-        return None
+        raise ValueError("Module '{0}' not found".format(mod))
     try:
         for attr in ref.split('.')[1:]:
             result = getattr(result, attr)
         return result
     except AttributeError:
-        return None
+        raise ValueError("Object '{0}' not found".format(ref))
 
 
 def as_variable_name(x):

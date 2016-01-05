@@ -4,9 +4,6 @@ from ...config import data_factory
 
 from .helpers import has_extension
 
-# Backward-compatibility
-from .astropy_table import astropy_tabular_data
-
 __all__ = ['tabular_data']
 
 
@@ -16,6 +13,7 @@ __all__ = ['tabular_data']
                                        'dat.gz'),
               priority=1)
 def tabular_data(path, **kwargs):
+    from .astropy_table import astropy_tabular_data
     from .pandas import pandas_read_table
     for fac in [astropy_tabular_data, pandas_read_table]:
         try:

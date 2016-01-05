@@ -1,3 +1,5 @@
+import pytest
+
 from ..misc import as_variable_name, file_format, DeferredMethod, nonpartial, lookup_class, as_list
 
 
@@ -72,9 +74,16 @@ def test_nonpartial():
 
 
 def test_lookup_class():
+
     lookup_class('glue.utils.misc.DeferredMethod') is DeferredMethod
-    lookup_class('gluh.utils.misc.DeferredMethod') is None
-    lookup_class('glue.utils.misc.DeferredMethods') is None
+
+    with pytest.raises(ValueError) as exc:
+        lookup_class('gluh.utils.misc.DeferredMethod') is None
+    assert exc.value.args[0] == "Module 'gluh.utils.misc' not found"
+
+    with pytest.raises(ValueError) as exc:
+        lookup_class('glue.utils.misc.DeferredMethods') is None
+    assert exc.value.args[0] == "Object 'glue.utils.misc.DeferredMethods' not found"
 
 
 def test_as_list():

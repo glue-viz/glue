@@ -53,6 +53,7 @@ starting from 1.
 
 from __future__ import absolute_import, division, print_function
 
+import os
 from itertools import count
 from collections import defaultdict
 import json
@@ -85,7 +86,23 @@ if six.PY2:
     literals += (long,)
 literals += (np.ScalarType,)
 
-_lookup = lookup_class
+# We need to make sure that we don't break backward-compatibility when we move
+# classes/functions around in Glue, so we have a file that maps the old paths to
+# the new location, and we read this in to PATH_PATCHES.
+PATH_PATCHES = {}
+for line in open(os.path.join(os.path.dirname(__file__), 'state_path_patches.txt')):
+    before, after = line.strip().split(' -> ')
+    PATH_PATCHES[before.strip()] = after.strip()
+
+
+def _lookup(name):
+    """
+    A wrapper to lookup_class that also patches paths to ensure
+    backward-compatibility when functions/classes are moved around.
+    """
+    while name in PATH_PATCHES:
+        name = PATH_PATCHES[name]
+    return lookup_class(name)
 
 
 class GlueSerializeError(RuntimeError):
