@@ -36,6 +36,11 @@ matrix:
           env:
             - PYTHON_VERSION=2.7 MPL_VERSION=1.4 ASTROPY_VERSION=dev
 
+        # Numpy dev
+        - os: linux
+          env:
+            - PYTHON_VERSION=2.7 MPL_VERSION=1.4 NUMPY_VERSION=dev
+
         # PyQt5
         - os: linux
           env:
