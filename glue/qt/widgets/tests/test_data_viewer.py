@@ -16,8 +16,7 @@ from . import simple_session
 import pytest
 from mock import MagicMock, patch
 
-# TODO: the above used to also test DendroWidget but this has now been moved
-# to a plugin folder. We should maybe consider running these tests for all
+# TODO: We should maybe consider running these tests for all
 # registered Qt viewers.
 
 
