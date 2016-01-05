@@ -174,6 +174,7 @@ def _load_pyqt5():
     for widget in dir(QtWidgets):
         if widget.startswith('Q'):
             setattr(QtGui, widget, getattr(QtWidgets, widget))
+    QtGui.QItemSelection = QtCore.QItemSelection
     QtGui.QItemSelectionModel = QtCore.QItemSelectionModel
 
     register_module(QtCore, 'QtCore')
