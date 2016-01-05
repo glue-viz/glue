@@ -16,7 +16,7 @@ def is_fits(filename):
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            with fits.open(filename):
+            with fits.open(filename, ignore_missing_end=True):
                 return True
     except IOError:
         return False
@@ -52,7 +52,7 @@ def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
 
     exclude_exts = exclude_exts or []
     if not isinstance(source, fits.hdu.hdulist.HDUList):
-        hdulist = fits.open(source)
+        hdulist = fits.open(source, ignore_missing_end=True)
         hdulist.verify('fix')
     else:
         hdulist = source
@@ -147,7 +147,7 @@ def is_casalike(filename, **kwargs):
 
     if not is_fits(filename):
         return False
-    with fits.open(filename) as hdulist:
+    with fits.open(filename, ignore_missing_end=True) as hdulist:
         if len(hdulist) != 1:
             return False
         if hdulist[0].header['NAXIS'] != 4:
@@ -172,7 +172,7 @@ def casalike_cube(filename, **kwargs):
     from ...external.astro import fits
 
     result = Data()
-    with fits.open(filename, **kwargs) as hdulist:
+    with fits.open(filename, ignore_missing_end=True, **kwargs) as hdulist:
         array = hdulist[0].data
         header = hdulist[0].header
     result.coords = coordinates_from_header(header)
