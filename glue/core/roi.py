@@ -1239,8 +1239,8 @@ class CategoricalRoi(Roi):
         # Note that we used ceil for lo, because if lo is 0.9 then we should
         # only select 1 and above.
 
-        lo = np.ceil(lo) if lo > 0 else 0
-        hi = np.ceil(hi) if hi > 0 else 0
+        lo = np.intp(np.ceil(lo) if lo > 0 else 0)
+        hi = np.intp(np.ceil(hi) if hi > 0 else 0)
 
         roi = CategoricalRoi()
         cat_data = cat_comp.categories

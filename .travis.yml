@@ -41,6 +41,8 @@ matrix:
         - os: linux
           env:
             - PYTHON_VERSION=2.7 NUMPY_VERSION=dev
+            # We don't test ginga with Numpy dev due to a bug in ginga
+            - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli"
 
         # PyQt5
         - os: linux
