@@ -176,6 +176,7 @@ def _load_pyqt5():
             setattr(QtGui, widget, getattr(QtWidgets, widget))
     QtGui.QItemSelection = QtCore.QItemSelection
     QtGui.QItemSelectionModel = QtCore.QItemSelectionModel
+    QtGui.QSortFilterProxyModel = QtCore.QSortFilterProxyModel
 
     register_module(QtCore, 'QtCore')
     register_module(QtGui, 'QtGui')
