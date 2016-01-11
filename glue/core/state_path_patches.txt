@@ -1,0 +1,8 @@
+glue.external.aplpy.gal2fk5 -> glue.plugins.coordinate_helpers.deprecated.gal2fk5
+glue.external.aplpy.fk52gal -> glue.plugins.coordinate_helpers.deprecated.fk52gal
+glue.core.link_helpers.radec2glon -> glue.plugins.coordinate_helpers.deprecated.radec2glon
+glue.core.link_helpers.radec2glat -> glue.plugins.coordinate_helpers.deprecated.radec2glat
+glue.core.link_helpers.lb2ra -> glue.plugins.coordinate_helpers.deprecated.lb2ra
+glue.core.link_helpers.lb2dec -> glue.plugins.coordinate_helpers.deprecated.lb2dec
+glue.core.data_factories.gridded_data -> glue.core.data_factories.deprecated.gridded_data
+glue.core.data_factories.tables.astropy_tabular_data -> glue.core.data_factories.astropy_table.astropy_tabular_data

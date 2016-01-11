@@ -159,17 +159,3 @@ class LinkAligned(LinkCollection):
             for j in range(ndim):
                 self.extend(LinkSame(data[0].get_pixel_component_id(j),
                                      data[i + 1].get_pixel_component_id(j)))
-
-
-# DEPRECATED: for backward-compatibility we import the following celestial
-# conversions. This is needed because glue saved sessions will refer to the
-# functions at this location. We can only remove this if we are ok with
-# breaking compatibility with glue session files at some point.
-try:
-    import astropy
-except:
-    pass
-else:
-    from ..plugins.coordinate_helpers.deprecated import (Galactic2Equatorial,
-                                                         radec2glon, radec2glat,
-                                                         lb2ra, lb2dec)
