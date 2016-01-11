@@ -1,10 +1,11 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import pytest
 
-from . import simple_session
-from ..dendro_widget import DendroWidget
+from ....qt.widgets.tests import simple_session
 from .... import core
 
+from ..qt_widget import DendroWidget
+from ....qt.widgets.tests.test_data_viewer import BaseTestDataViewer
 
 def mock_data():
     return core.Data(label='d1', x=[1, 2, 3], y=[2, 3, 4])
@@ -37,3 +38,8 @@ class TestDendroWidget(object):
         self.w.add_subset(s)
         assert self.data in self.w.client
         assert s in self.w.client
+
+
+class TestDataViewerDendro(BaseTestDataViewer):
+    # A few additional tests common to all data viewers
+    widget_cls = DendroWidget

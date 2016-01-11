@@ -24,7 +24,7 @@ from ..glue_toolbar import GlueToolbar
 from .mpl_widget import MplWidget, defer_draw
 
 from ..qtutil import cmap2pixmap, load_ui, get_icon, nonpartial, update_combobox
-from ..widget_properties import CurrentComboProperty, ButtonProperty, connect_current_combo
+from ..widget_properties import CurrentComboProperty, ButtonProperty, connect_current_combo, _find_combo_data
 from .glue_mdi_area import GlueMdiSubWindow
 
 WARN_THRESH = 10000000  # warn when contouring large images
@@ -155,11 +155,10 @@ class ImageWidgetBase(DataViewer):
         if not self.client.can_image_data(data):
             return
         combo = self.ui.displayDataCombo
-        label = data.label
-        pos = combo.findText(label)
-        if pos == -1:
-            combo.addItem(label, userData=data)
-        assert combo.findText(label) >= 0
+        try:
+            pos = _find_combo_data(combo, data)
+        except ValueError:
+            combo.addItem(data.label, userData=data)
 
     @property
     def ratt(self):

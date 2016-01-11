@@ -192,9 +192,9 @@ def callback_property(getter):
     return CallbackProperty(getter=getter)
 
 
-@contextmanager
-def delay_callback(instance, *props):
-    """Delay any callback functions from one or more callback properties
+class delay_callback(object):
+    """
+    Delay any callback functions from one or more callback properties
 
     This is a context manager. Within the context block, no callbacks
     will be issued. Each callback will be called once on exit
@@ -212,23 +212,51 @@ def delay_callback(instance, *props):
             f.bar = 10
         print 'done'  # callbacks triggered at this point, if needed
     """
-    vals = []
-    for prop in props:
-        p = getattr(type(instance), prop)
-        if not isinstance(p, CallbackProperty):
-            raise TypeError("%s is not a CallbackProperty" % prop)
-        vals.append(p.__get__(instance))
-        p.disable(instance)
 
-    yield
+    # Class-level registry of properties and how many times the callbacks have
+    # been delayed. The idea is that when nesting calls to delay_callback, the
+    # delay count is increased, and every time __exit__ is called, the count is
+    # decreased, and once the count reaches zero, the callback is triggered.
+    delay_count = {}
+    old_values = {}
 
-    for old, prop in zip(vals, props):
-        p = getattr(type(instance), prop)
-        assert isinstance(p, CallbackProperty)
-        p.enable(instance)
-        new = p.__get__(instance)
-        if old != new:
-            p.notify(instance, old, new)
+    def __init__(self, instance, *props):
+        self.instance = instance
+        self.props = props
+
+    def __enter__(self):
+
+        for prop in self.props:
+
+            p = getattr(type(self.instance), prop)
+            if not isinstance(p, CallbackProperty):
+                raise TypeError("%s is not a CallbackProperty" % prop)
+
+            if (self.instance, prop) not in self.delay_count:
+                self.delay_count[self.instance, prop] = 1
+                self.old_values[self.instance, prop] = p.__get__(self.instance)
+            else:
+                self.delay_count[self.instance, prop] += 1
+
+            p.disable(self.instance)
+
+    def __exit__(self, *args):
+
+        for prop in self.props:
+
+            p = getattr(type(self.instance), prop)
+            if not isinstance(p, CallbackProperty):  # pragma: no cover
+                raise TypeError("%s is not a CallbackProperty" % prop)
+
+            if self.delay_count[self.instance, prop] > 1:
+                self.delay_count[self.instance, prop] -= 1
+            else:
+                self.delay_count.pop((self.instance, prop))
+                old = self.old_values.pop((self.instance, prop))
+                p.enable(self.instance)
+                new = p.__get__(self.instance)
+                if old != new:
+                    p.notify(self.instance, old, new)
 
 
 @contextmanager

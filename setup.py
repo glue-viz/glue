@@ -74,6 +74,7 @@ export_plotly = glue.plugins.export_plotly:setup
 pv_slicer = glue.plugins.tools.pv_slicer:setup
 spectrum_tool = glue.plugins.tools.spectrum_tool:setup
 coordinate_helpers = glue.plugins.coordinate_helpers:setup
+dendro_viewer = glue.plugins.dendro_viewer:setup
 
 [console_scripts]
 glue-config = glue.config_gen:main

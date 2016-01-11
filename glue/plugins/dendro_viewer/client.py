@@ -1,20 +1,22 @@
 """
 A plot to visualize trees
 """
+
 import numpy as np
 
-from ..core.data import IncompatibleAttribute
-from ..core.callback_property import CallbackProperty, add_callback, delay_callback
-from ..core.roi import PointROI
-from ..utils import nonpartial
+from ...core.data import IncompatibleAttribute, Data
+from ...core.callback_property import CallbackProperty, add_callback, delay_callback
+from ...core.roi import PointROI
+from ...core.subset import CategorySubsetState
+from ...core.edit_subset_mode import EditSubsetMode
+from ...utils import nonpartial, lookup_class
+from ...clients.viz_client import GenericMplClient
 
 from .layer_artist import DendroLayerArtist
-from ..core.subset import CategorySubsetState
-from ..core.edit_subset_mode import EditSubsetMode
-from .viz_client import GenericMplClient
 
 
 class DendroClient(GenericMplClient):
+
     height_attr = CallbackProperty()
     parent_attr = CallbackProperty()
     order_attr = CallbackProperty()
@@ -41,6 +43,7 @@ class DendroClient(GenericMplClient):
         fallback = self.display_data.components[0]
         with delay_callback(self, 'height_attr', 'parent_attr',
                             'order_attr'):
+
             if self.height_attr is None:
                 comp = self.display_data.find_component_id('height') or fallback
                 self.height_attr = comp
@@ -128,12 +131,32 @@ class DendroClient(GenericMplClient):
         self.axes.set_ylim(*ylim)
 
     def add_layer(self, layer):
+
         if layer.data.ndim != 1:
             return
 
-        super(DendroClient, self).add_layer(layer)
+        if layer.data not in self.data:
+            raise TypeError("Layer not in data collection")
+
+        if layer in self.artists:
+            return self.artists[layer][0]
+
         self.display_data = self.display_data or layer.data
+
+        result = DendroLayerArtist(layer, self.axes)
+        self.artists.append(result)
+        self._update_layer(layer)
+        self._ensure_subsets_added(layer)
+
         self._default_attributes()
+
+        return result
+
+    def _ensure_subsets_added(self, layer):
+        if not isinstance(layer, Data):
+            return
+        for subset in layer.subsets:
+            self.add_layer(subset)
 
     def _update_layer(self, layer):
 
@@ -178,6 +201,7 @@ class DendroClient(GenericMplClient):
         return np.array(result, dtype=np.int)
 
     def apply_roi(self, roi):
+
         if not isinstance(roi, PointROI):
             raise NotImplementedError("Only PointROI supported")
 
@@ -208,6 +232,19 @@ class DendroClient(GenericMplClient):
 
         EditSubsetMode().update(self.collect, state,
                                 focus_data=self.display_data)
+
+    def restore_layers(self, layers, context):
+        """
+        Re-generate a list of plot layers from a glue-serialized list
+        """
+        for l in layers:
+            cls = lookup_class(l.pop('_type'))
+            if cls != DendroLayerArtist:
+                raise ValueError("Dendrogram client cannot restore layer of type "
+                                 "%s" % cls)
+            props = dict((k, context.object(v)) for k, v in l.items())
+            layer = self.add_layer(props['layer'])
+            layer.properties = props
 
 
 def _dendro_children(parent):
