@@ -57,10 +57,10 @@ class HistogramClient(Client):
     xmin = UpdateProperty(None, relim=True)
     xmax = UpdateProperty(None, relim=True)
 
-    def __init__(self, data, figure, artist_container=None):
+    def __init__(self, data, figure, layer_artist_container=None):
         super(HistogramClient, self).__init__(data)
 
-        self._artists = artist_container or LayerArtistContainer()
+        self._artists = layer_artist_container or LayerArtistContainer()
         self._figure, self._axes = init_mpl(figure=figure, axes=None)
         self._component = None
         self._saved_nbins = None

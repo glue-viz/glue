@@ -38,7 +38,7 @@ class DendroWidget(DataViewer):
         self.ui = load_ui('dendrowidget', self.option_widget)
         self.client = DendroClient(self._data,
                                    self.central_widget.canvas.fig,
-                                   artist_container=self._container)
+                                   layer_artist_container=self._layer_artist_container)
 
         self._connect()
 

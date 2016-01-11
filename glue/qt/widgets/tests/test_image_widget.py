@@ -163,7 +163,7 @@ class TestImageWidget(_TestImageWidgetBase):
             assert False
 
         self.widget.add_data(self.im)
-        self.widget._container.on_empty(fail)
+        self.widget._layer_artist_container.on_empty(fail)
         self.widget.rgb_mode = True
         self.widget.rgb_mode = False
 

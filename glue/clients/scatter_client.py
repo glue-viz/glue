@@ -37,7 +37,7 @@ class ScatterClient(Client):
     jitter = CallbackProperty()
 
     def __init__(self, data=None, figure=None, axes=None,
-                 artist_container=None):
+                 layer_artist_container=None):
         """
         Create a new ScatterClient object
 
@@ -52,7 +52,7 @@ class ScatterClient(Client):
         """
         Client.__init__(self, data=data)
         figure, axes = init_mpl(figure, axes)
-        self.artists = artist_container
+        self.artists = layer_artist_container
         if self.artists is None:
             self.artists = LayerArtistContainer()
 

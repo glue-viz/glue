@@ -616,7 +616,7 @@ class CustomViewer(object):
         for k in sorted(self.ui):
             v = self.ui[k]
             w = FormElement.auto(v)
-            w.container = self.widget._container
+            w.container = self.widget._layer_artist_container
             w.add_callback(callback)
             self._settings[k] = w
             if w.ui is not None:
@@ -876,7 +876,7 @@ class CustomWidgetBase(DataViewer):
         self.option_widget = self._build_ui()
         self.client = CustomClient(self._data,
                                    self.central_widget.canvas.fig,
-                                   artist_container=self._container,
+                                   layer_artist_container=self._layer_artist_container,
                                    coordinator=self._coordinator)
 
         self.make_toolbar()

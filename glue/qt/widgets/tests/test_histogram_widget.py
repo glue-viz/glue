@@ -40,7 +40,7 @@ class TestHistogramWidget(object):
         combo = widget.ui.attributeCombo
         row = 0
         for data in dc:
-            if data not in widget._container:
+            if data not in widget._layer_artist_container:
                 continue
             assert combo.itemText(row) == data.label
             assert combo.itemData(row) == _hash(data)

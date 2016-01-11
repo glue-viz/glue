@@ -6,6 +6,12 @@ v0.7 (unreleased)
 
 * Python 2.6 is no longer supported. [#804]
 
+* The ``artist_container`` argument to client classes has been renamed to
+  ``layer_artist_container``. [#814]
+
+* Added documentation about how to use layer artists in custom Qt data viewers.
+  [#814]
+
 v0.6 (2015-11-20)
 -----------------
 

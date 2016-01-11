@@ -391,7 +391,7 @@ class ImageWidget(ImageWidgetBase):
     def make_client(self):
         return MplImageClient(self._data,
                               self.central_widget.canvas.fig,
-                              artist_container=self._container)
+                              layer_artist_container=self._layer_artist_container)
 
     def make_central_widget(self):
         return MplWidget()

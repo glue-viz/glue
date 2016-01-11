@@ -52,7 +52,7 @@ class HistogramWidget(DataViewer):
         self._tweak_geometry()
         self.client = HistogramClient(self._data,
                                       self.central_widget.canvas.fig,
-                                      artist_container=self._container)
+                                      layer_artist_container=self._layer_artist_container)
         self._init_limits()
         self.make_toolbar()
         self._connect()
@@ -130,7 +130,7 @@ class HistogramWidget(DataViewer):
 
         found = False
         for d in self._data:
-            if d not in self._container:
+            if d not in self._layer_artist_container:
                 continue
             item = QtGui.QStandardItem(d.label)
             item.setData(_hash(d), role=Qt.UserRole)
@@ -225,7 +225,7 @@ class HistogramWidget(DataViewer):
         pass
 
     def data_present(self, data):
-        return data in self._container
+        return data in self._layer_artist_container
 
     def register_to_hub(self, hub):
         super(HistogramWidget, self).register_to_hub(hub)

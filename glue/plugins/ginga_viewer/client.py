@@ -22,8 +22,8 @@ from ginga import AstroImage, BaseImage
 
 class GingaClient(ImageClient):
 
-    def __init__(self, data, canvas=None, artist_container=None):
-        super(GingaClient, self).__init__(data, artist_container)
+    def __init__(self, data, canvas=None, layer_artist_container=None):
+        super(GingaClient, self).__init__(data, layer_artist_container)
         self._setup_ginga(canvas)
 
     def _setup_ginga(self, canvas):

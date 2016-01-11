@@ -110,12 +110,10 @@ dashboard, where different data viewers can include options for controlling
 the appearance or content of visualizations (this is the area indicated as C
 in :doc:getting-started). You can add any widget to the two available spaces.
 
-In your wrapper class, ``MyGlueWidget`` in the example above, you will need
-to define two methods called ``layer_view`` and ``options_widget``, which
-each return an instantiated widget that should be included in the dashboard.
-These names are because the top space is usually used for showing which
-layers are included in a plot, and the bottom space is used for options (such
-as the number of bins in histograms).
+In your wrapper class, ``MyGlueWidget`` in the example above, you will need to
+define a method called ``options_widget``, which returns an instantiated widget
+that should be included in the dashboard on the bottom left of the glue window,
+and can contain options to control the data viewer.
 
 For example, you could do::
 
@@ -125,20 +123,21 @@ For example, you could do::
 
         def __init__(self, session, parent=None):
             ...
-            self._layer_view = UsefulWidget(...)
             self._options_widget = AnotherWidget(...)
 
         ...
 
-        def layer_view(self):
-            return self._layer_view
-
         def options_widget(self):
             return self._options_widget
 
-Note that despite the name, you can actually set the widgets to what you
-want, and the important thing is that ``layer_view`` is the top one, and
-``options_widget`` the bottom one.
+Note that despite the name, you can actually use the options widget to what you
+want, and the important thing is that ``options_widget`` is the bottom left
+pane in the dashboard on the left.
+
+Note that you can also similarly define (via a method) ``layer_view``, which
+sets the widget for the middle widget in the dashboard. However, this will
+default to a list of layers which can normally be used as-is (see `Using
+Layers`_)
 
 Setting up a client
 -------------------
@@ -164,3 +163,56 @@ Once the data viewer has been instantiated, the main glue application will call 
         def _update_data(self, msg):
 
             # Process DataUpdateMessage here
+            
+Using layers
+------------
+
+By default, any sub-class of `~glue.qt.widgets.data_viewer.DataViewer` will
+also include a list of layers in the central panel in the dashboard. Layers can
+be thought of as specific components of visualizations - for example, in a
+scatter plot, the main dataset will be a layer, while each individual subset
+will have its own layer. The 'vertical' order of the layers (i.e. which one
+appears in front of which) can then be set by dragging the layers around, and
+the color/style of the layers can also be set from this list of layers (by
+control-clicking on any layer).
+
+Conceptually, layer artists can be used to carry out the actual drawing and
+include any logic about how to convert data into visualizations. If you are
+using Matplotlib for your visualization, there are a number of pre-existing
+layer artists in `glue.client.layer_artist`, but otherwise you will need to
+create your own classes.
+
+The minimal layer artist class looks like the following::
+
+    from glue.clients.layer_artist import LayerArtistBase
+    
+    class MyLayerArtist(LayerArtistBase):
+    
+        def clear(self):
+            pass
+
+        def redraw(self):
+            pass
+
+        def update(self):
+            pass
+
+Essentially, each layer artist has to define the three methods shown above. The
+``clear`` method should remove the layer from the visualization, the ``redraw``
+method should redraw the entire visualization, and ``update``, should update
+the apparance of the layer as necessary before redrawing.
+
+In the data viewer, when the user adds a dataset or a subset, the list of
+layers should then be updated. The layers are kept in a list in the
+``_container`` attribute of the data viewer, and layers can be added and
+removed with ``append`` and ``remove`` (both take one argument, which is a
+specific layer artist). So when the user adds a dataset, the viewer should do
+something along the lines of:
+
+    layer_artist = MyLayerArtist(data, ...)
+    self._container.append(layer_artist)
+    layer_artist.redraw()
+
+If the user removes a layer from the list of layers by e.g. hitting the
+backspace key, the ``clear`` method is called, followed by the ``redraw``
+method.
