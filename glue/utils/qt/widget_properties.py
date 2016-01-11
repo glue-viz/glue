@@ -264,7 +264,8 @@ def connect_current_combo(client, prop, widget):
                 raise
         widget.setCurrentIndex(idx)
 
-    def _pull_combo(idx):
+    def _pull_combo():
+        idx = widget.currentIndex()
         if idx == -1:
             setattr(client, prop, None)
         else:

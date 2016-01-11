@@ -60,7 +60,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QComboBox" name="displayDataCombo">
+         <widget class="QComboBoxRecent" name="displayDataCombo">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -76,7 +76,7 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QComboBox" name="attributeComboBox">
+         <widget class="QComboBoxRecent" name="attributeComboBox">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -179,6 +179,11 @@
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>QComboBoxRecent</class>
+   <extends>QComboBox</extends>
+   <header>glue.utils.qt</header>
+  </customwidget>
   <customwidget>
    <class>RGBEdit</class>
    <extends>QWidget</extends>
