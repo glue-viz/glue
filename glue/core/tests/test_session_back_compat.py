@@ -93,5 +93,3 @@ def test_load_link_helpers_04():
         content = f.read()
 
     state = GlueUnSerializer.loads(content)
-
-    print(type(state))
