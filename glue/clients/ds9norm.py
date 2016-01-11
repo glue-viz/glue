@@ -123,8 +123,8 @@ class DS9Normalize(Normalize, object):
         self.stretch = 'linear'
         self.bias = 0.5
         self.contrast = 1.0
-        self.clip_lo = 5.
-        self.clip_hi = 95.
+        self.clip_lo = 0.
+        self.clip_hi = 100.
 
     @property
     def stretch(self):

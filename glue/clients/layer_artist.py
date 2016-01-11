@@ -410,14 +410,9 @@ class ImageLayerArtist(LayerArtist, ImageLayerBase):
             a.set_cmap(value)
 
     def _default_norm(self, layer):
-        vals = np.sort(layer.ravel())
-        vals = vals[np.isfinite(vals)]
         result = DS9Normalize()
-        result.stretch = 'arcsinh'
         result.clip = True
-        if vals.size > 0:
-            result.vmin = vals[.01 * vals.size]
-            result.vmax = vals[.99 * vals.size]
+        result.update_clip(layer)
         return result
 
     def override_image(self, image):
@@ -463,7 +458,6 @@ class ImageLayerArtist(LayerArtist, ImageLayerBase):
         artists = []
 
         lr0 = self._extract_view(views[0], transpose)
-        self.norm = self.norm or self._default_norm(lr0)
         self.norm = self.norm or self._default_norm(lr0)
         self._update_clip(views[0][0])
 
