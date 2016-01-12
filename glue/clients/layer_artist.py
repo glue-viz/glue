@@ -416,8 +416,8 @@ class ImageLayerArtist(LayerArtist, ImageLayerBase):
         result.stretch = 'arcsinh'
         result.clip = True
         if vals.size > 0:
-            result.vmin = vals[.01 * vals.size]
-            result.vmax = vals[.99 * vals.size]
+            result.vmin = vals[np.intp(.01 * vals.size)]
+            result.vmax = vals[np.intp(.99 * vals.size)]
         return result
 
     def override_image(self, image):

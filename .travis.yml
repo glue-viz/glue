@@ -13,7 +13,7 @@ env:
     - PYTHON_VERSION=3.4 ASTROPY_VERSION=1.0
   global:
     - PYTEST_ARGS="--cov glue"
-    - MPL_VERSION=1.5
+    - MPL_VERSION=1.5.0
     - NUMPY_VERSION=1.10
     - IPYTHON_VERSION=4
     - NO_CFG_FILES=false
@@ -41,6 +41,8 @@ matrix:
         - os: linux
           env:
             - PYTHON_VERSION=2.7 NUMPY_VERSION=dev
+            # We don't test ginga with Numpy dev due to a bug in ginga
+            - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli"
 
         # PyQt5
         - os: linux
