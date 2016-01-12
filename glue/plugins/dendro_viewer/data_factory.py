@@ -30,7 +30,7 @@ def is_dendro(file, **kwargs):
 
         from ...external.astro import fits
 
-        hdulist = fits.open(file)
+        hdulist = fits.open(file, ignore_missing_end=True)
 
         # In recent versions of Astropy, we could do 'DATA' in hdulist etc. but
         # this doesn't work with Astropy 0.3, so we use the following method
