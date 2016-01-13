@@ -645,58 +645,9 @@ class RGBEdit(QWidget):
         self.artist.redraw()
 
 
-class GlueComboBox(QtGui.QComboBox):
-
-    """ Modification of QComboBox, that sidesteps PySide
-    sefgaults when storing some python objects as user data
-    """
-
-    def __init__(self, parent=None):
-        super(GlueComboBox, self).__init__(parent)
-        self._data = []
-
-    def addItem(self, text, userData=None):
-        # set before super, since super may trigger signals
-        self._data.append(userData)
-        super(GlueComboBox, self).addItem(text)
-
-    def addItems(self, items):
-        self._data.extend(None for _ in items)
-        super(GlueComboBox, self).addItems(items)
-
-    def itemData(self, index, role=Qt.UserRole):
-        assert len(self._data) == self.count()
-        if role != Qt.UserRole:
-            return super(GlueComboBox, self).itemData(index, role)
-        return self._data[index]
-
-    def setItemData(self, index, value, role=Qt.UserRole):
-        if role != Qt.UserRole:
-            return super(GlueComboBox, self).setItemData(index, value, role)
-        self._data[index] = value
-
-    def clear(self):
-        self._data = []
-        return super(GlueComboBox, self).clear()
-
-    def insertItem(self, *args):
-        raise NotImplementedError()
-
-    def insertItems(self, *args):
-        raise NotImplementedError()
-
-    def insertSeparator(self, index):
-        raise NotImplementedError()
-
-    def removeItem(self, index):
-        self._data.pop(index)
-        return super(GlueComboBox, self).removeItem(index)
-
-
 def _custom_widgets():
     # iterate over custom widgets referenced in .ui files
     yield GlueListWidget
-    yield GlueComboBox
     yield GlueActionButton
     yield RGBEdit
 
