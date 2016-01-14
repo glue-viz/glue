@@ -1,9 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
 import os
-
 import warnings
-from ...compat.collections import OrderedDict
+from collections import OrderedDict
+
 from ..data import Component, Data
 from ...config import data_factory
 

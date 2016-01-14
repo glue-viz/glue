@@ -1,8 +1,9 @@
 from functools import partial
-from ...compat.collections import Counter
+from collections import Counter
 
 from ...external.qt.QtGui import (QWidget, QSlider, QLabel, QComboBox, QFrame,
-                                  QHBoxLayout, QVBoxLayout, QPushButton, QLineEdit)
+                                  QHBoxLayout, QVBoxLayout, QPushButton, 
+                                  QLineEdit)
 from ...external.qt.QtCore import Qt, Signal
 
 from ..widget_properties import (TextProperty,

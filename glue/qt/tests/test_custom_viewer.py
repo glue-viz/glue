@@ -1,10 +1,11 @@
+from collections import OrderedDict
+
 import pytest
 from mock import MagicMock, patch
 from numpy.testing import assert_array_equal
 from matplotlib.axes import Axes
 import numpy as np
 
-from ...compat.collections import OrderedDict
 from ... import custom_viewer
 from ...core import Data
 from ...core.subset import SubsetState
