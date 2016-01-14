@@ -1,10 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
+from collections import OrderedDict
+
 import numpy as np
 import pandas as pd
 
 from ..config import settings
-from ..compat.collections import OrderedDict
 from ..external import six
 from ..utils import view_shape
 
