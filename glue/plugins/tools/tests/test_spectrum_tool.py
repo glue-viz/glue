@@ -241,7 +241,7 @@ class TestCollapseContextWCS(TestCollapseContext):
 
     def setup_data(self):
         from ....core.coordinates import coordinates_from_wcs
-        from ....external.astro import WCS
+        from astropy.wcs import WCS
         wcs = WCS(naxis=3)
 
         self.data = Data(x=np.zeros((3, 3, 3)))

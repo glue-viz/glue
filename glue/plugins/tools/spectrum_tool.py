@@ -355,7 +355,7 @@ class CollapseContext(SpectrumContext):
            Path to write to
         """
 
-        from ...external.astro import fits
+        from astropy.io import fits
 
         data = self.client.display_data
         if data is None:

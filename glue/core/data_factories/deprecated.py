@@ -69,7 +69,7 @@ def filter_hdulist_by_shape(hdulist, use_hdu='all'):
     -------
     a new HDUList
     """
-    from ...external.astro import fits
+    from astropy.io import fits
 
     # If only a subset are requested, extract those
     if use_hdu != 'all':
@@ -101,7 +101,7 @@ def extract_data_fits(filename, use_hdu='all'):
     integers). If the requested HDUs do not have the same dimensions, an
     Exception is raised.
     '''
-    from ...external.astro import fits
+    from astropy.io import fits
 
     # Read in all HDUs
     hdulist = fits.open(filename, ignore_blank=True)
@@ -121,7 +121,7 @@ def is_gridded_data(filename, **kwargs):
         return True
 
     if is_fits(filename):
-        from ...external.astro import fits
+        from astropy.io import fits
         with fits.open(filename) as hdulist:
             return is_image_hdu(hdulist[0])
 
@@ -141,7 +141,7 @@ def gridded_data(filename, format='auto', **kwargs):
 
     # Read in the data
     if is_fits(filename):
-        from ...external.astro import fits
+        from astropy.io import fits
         arrays = extract_data_fits(filename, **kwargs)
         header = fits.getheader(filename)
         result.coords = coordinates_from_header(header)

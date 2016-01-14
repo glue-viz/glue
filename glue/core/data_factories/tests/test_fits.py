@@ -29,7 +29,7 @@ def _assert_equal_expected(actual, expected):
 @requires_astropy
 def test_container_fits():
 
-    from ....external.astro import fits
+    from astropy.io import fits
 
     expected = {
         'generic[ATAB]': Expected(
@@ -84,7 +84,7 @@ def test_container_fits():
 @requires_astropy
 def test_auto_merge_fits():
 
-    from ....external.astro import fits
+    from astropy.io import fits
 
     expected = {
         'HDUList[A]': Expected(

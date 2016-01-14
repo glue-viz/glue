@@ -20,7 +20,7 @@ from ...tests.helpers import requires_astropy
 class TestWcsCoordinates(object):
 
     def default_header(self):
-        from ...external.astro import fits
+        from astropy.io import fits
         hdr = fits.Header()
         hdr.update('NAXIS', 2)
         hdr.update('CRVAL1', 0)

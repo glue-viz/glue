@@ -36,7 +36,7 @@ def test_identifier_heuristics(tmpdir):
 
     from ..data_factory import is_dendro
 
-    from ....external.astro import fits
+    from astropy.io import fits
 
     hdulist = fits.HDUList()
     hdulist.append(fits.PrimaryHDU())

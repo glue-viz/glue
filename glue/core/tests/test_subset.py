@@ -315,7 +315,7 @@ class TestSubsetIo(object):
         fobj, tmp = tempfile.mkstemp()
 
         self.subset.write_mask(tmp)
-        from ...external.astro import fits
+        from astropy.io import fits
         data = fits.open(tmp)[0].data
         expected = np.array([[0, 1, 1, 1],
                              [0, 0, 0, 0],
