@@ -59,7 +59,7 @@ class WCSCoordinates(Coordinates):
 
     def __init__(self, header, wcs=None):
         super(WCSCoordinates, self).__init__()
-        from ..external.astro import WCS
+        from astropy.wcs import WCS
 
         self._header = header
         wcs = wcs or WCS(header)
@@ -114,7 +114,7 @@ class WCSCoordinates(Coordinates):
     def __setstate__(self, state):
         self.__dict__ = state
         # wcs object doesn't seem to unpickle properly. reconstruct it
-        from ..external.astro import WCS
+        from astropy.wcs import WCS
         self._wcs = WCS(self._header)
 
     def pixel2world(self, *pixel):
@@ -183,7 +183,7 @@ class WCSCoordinates(Coordinates):
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        from ..external.astro import fits
+        from astropy.io import fits
         return cls(fits.Header.fromstring(rec['header']))
 
 
@@ -221,7 +221,7 @@ def coordinates_from_wcs(wcs):
     :param wcs: The WCS object to use
     :rtype: :class:`~glue.core.coordinates.Coordinates`
     """
-    from ..external.astro import fits
+    from astropy.io import fits
     hdr_str = wcs.wcs.to_header()
     hdr = fits.Header.fromstring(hdr_str)
     try:
@@ -235,7 +235,7 @@ def header_from_string(string):
     """
     Convert a string to a FITS header
     """
-    from ..external.astro import fits
+    from astropy.io import fits
     cards = []
     for s in string.splitlines():
         try:
