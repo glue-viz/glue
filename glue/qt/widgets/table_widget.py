@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from .data_viewer import DataViewer
 
 from ...external.qt.QtGui import QTableView, QAbstractItemView, QItemSelectionModel, QItemSelection, QSortFilterProxyModel
-from ...external.qt.QtCore import Qt, QAbstractTableModel, QAbstractItemModel, SIGNAL, QObject
+from ...external.qt.QtCore import Qt, QAbstractTableModel, QAbstractItemModel, QObject
 
 from ...core import message as msg
 from ...core.edit_subset_mode import EditSubsetMode
