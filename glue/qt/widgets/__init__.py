@@ -5,5 +5,6 @@ from .layer_tree_widget import LayerTreeWidget
 from .message_widget import MessageWidget
 from .mpl_widget import MplWidget
 from .scatter_widget import ScatterWidget
+from .table_widget import TableWidget
 
 default_widgets = [ScatterWidget, HistogramWidget, ImageWidget]

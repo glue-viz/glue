@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import pytest
+
 from ..table_widget import DataTableModel
 from ....core import Data
 
@@ -38,6 +40,7 @@ class TestDataTableModel(object):
                 result = self.model.data(idx, Qt.DisplayRole)
                 assert float(result) == self.data[c, j]
 
+    @pytest.mark.xfail
     def test_data_2d(self):
         self.data = Data(x=[[1, 2], [3, 4]], y=[[2, 3], [4, 5]])
         self.model = DataTableModel(self.data)
