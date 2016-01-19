@@ -17,9 +17,9 @@ from glue.config import tool_registry
 from glue.plugins.ginga_viewer.client import GingaClient
 from glue.plugins.tools.pv_slicer import PVSlicerTool
 from glue.plugins.tools.spectrum_tool import SpectrumTool
-from glue.qt.qtutil import get_icon, nonpartial
+from glue.qt.qtutil import get_icon
 from glue.qt.widgets.image_widget import ImageWidgetBase
-
+from glue.utils import nonpartial
 
 try:
     from ginga.gw import Readout

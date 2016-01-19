@@ -14,6 +14,7 @@ from glue.qt.widget_properties import (connect_int_spin, ButtonProperty,
                                        ValueProperty, connect_bool_button)
 from glue.qt.widgets.data_viewer import DataViewer
 from glue.qt.widgets.mpl_widget import MplWidget, defer_draw
+from glue.utils.array import pretty_number
 
 
 __all__ = ['HistogramWidget']

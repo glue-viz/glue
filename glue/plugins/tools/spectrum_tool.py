@@ -19,12 +19,13 @@ from glue.qt.decorators import messagebox_on_error
 from glue.qt.glue_toolbar import GlueToolbar
 from glue.qt.mime import LAYERS_MIME_TYPE
 from glue.qt.mouse_mode import SpectrumExtractorMode
-from glue.qt.qtutil import load_ui, nonpartial, Worker
+from glue.qt.qtutil import load_ui
 from glue.qt.simpleforms import build_form_item
 from glue.qt.widget_properties import CurrentComboProperty
 from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow
 from glue.qt.widgets.mpl_widget import MplWidget
-
+from glue.utils import nonpartial
+from glue.utils.qt import Worker
 
 def setup():
     from glue.config import tool_registry

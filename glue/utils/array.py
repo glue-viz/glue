@@ -10,6 +10,8 @@ __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
            'coerce_numeric', 'check_sorted']
 
 
+# TODO: update docstrings
+
 def unique(array):
     """
     Return the unique elements of the array U, as well as
@@ -95,3 +97,32 @@ def check_sorted(array):
     # otherwise, it will miss things at nan/finite boundaries
     array = np.asarray(array)
     return not (array[:-1] > array[1:]).any()
+
+
+def pretty_number(numbers):
+    """
+    Convert a list/array of numbers into a nice list of strings
+
+    :param numbers: Numbers to convert
+    :type numbers: List or other iterable of numbers
+
+    :rtype: A list of strings
+    """
+    try:
+        return [pretty_number(n) for n in numbers]
+    except TypeError:
+        pass
+
+    n = numbers
+    if n == 0:
+        result = '0'
+    elif (abs(n) < 1e-3) or (abs(n) > 1e3):
+        result = "%0.3e" % n
+    elif abs(int(n) - n) < 1e-3 and int(n) != 0:
+        result = "%i" % n
+    else:
+        result = "%0.3f" % n
+    if result.find('.') != -1:
+        result = result.rstrip('0')
+
+    return result
