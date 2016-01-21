@@ -14,9 +14,9 @@ from ..component import (Component, DerivedComponent, CoordinateComponent,
                          CategoricalComponent)
 from ..component_id import ComponentID
 
-from ... import core
-from ...tests.helpers import requires_astropy
-from ...external import six
+from glue import core
+from glue.tests.helpers import requires_astropy
+from glue.external import six
 
 
 VIEWS = (np.s_[:], np.s_[1], np.s_[::-1], np.s_[0, :])

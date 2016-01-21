@@ -2,18 +2,18 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from ...external.qt.QtGui import (
+from glue.external.qt.QtGui import (
     QMainWindow, QMessageBox, QWidget)
 
-from ...external.qt.QtCore import Qt
+from glue.external.qt.QtCore import Qt
 
-from ...core.application_base import ViewerBase
-from ..decorators import set_cursor
+from glue.core.application_base import ViewerBase
+from glue.qt.decorators import set_cursor
 
-from ..layer_artist_model import QtLayerArtistContainer, LayerArtistView
-from .. import get_qapp
-from ..mime import LAYERS_MIME_TYPE, LAYER_MIME_TYPE
-from .glue_mdi_area import GlueMdiSubWindow
+from glue.qt.layer_artist_model import QtLayerArtistContainer, LayerArtistView
+from glue.qt import get_qapp
+from glue.qt.mime import LAYERS_MIME_TYPE, LAYER_MIME_TYPE
+from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow
 
 __all__ = ['DataViewer']
 

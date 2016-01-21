@@ -1,6 +1,6 @@
-from ..backends import TimerBase
+from glue.backends import TimerBase
 
-from ..external.qt.QtCore import QTimer
+from glue.external.qt.QtCore import QTimer
 
 
 class Timer(TimerBase):

@@ -10,7 +10,7 @@ import copy
 
 np.seterr(all='ignore')
 
-from .exceptions import UndefinedROI
+from glue.core.exceptions import UndefinedROI
 
 __all__ = ['Roi', 'RectangularROI', 'CircularROI', 'PolygonalROI',
            'AbstractMplRoi', 'MplRectangularROI', 'MplCircularROI',

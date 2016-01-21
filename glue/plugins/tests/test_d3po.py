@@ -7,9 +7,9 @@ from shutil import rmtree
 import numpy as np
 
 from ..export_d3po import make_data_file
-from ...core import Data, Subset
+from glue.core import Data, Subset
 
-from ...tests.helpers import requires_astropy
+from glue.tests.helpers import requires_astropy
 
 
 @requires_astropy

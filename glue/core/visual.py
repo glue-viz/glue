@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from ..config import settings
+from glue.config import settings
 
 # Define acceptable line styles
 VALID_LINESTYLES = ['solid', 'dashed', 'dash-dot', 'dotted', 'none']

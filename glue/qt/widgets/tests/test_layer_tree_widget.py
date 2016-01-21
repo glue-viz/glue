@@ -2,17 +2,17 @@
 
 from __future__ import absolute_import, division, print_function
 
-from ....external.qt.QtGui import QMainWindow
-from ....external.qt.QtTest import QTest
-from ....external.qt.QtCore import Qt
+from glue.external.qt.QtGui import QMainWindow
+from glue.external.qt.QtTest import QTest
+from glue.external.qt.QtCore import Qt
 
 from mock import MagicMock, patch
 
 from ..layer_tree_widget import (LayerTreeWidget, Clipboard,
                                  save_subset, PlotAction)
 
-from ....tests import example_data
-from .... import core
+from glue.tests import example_data
+from glue import core
 
 
 class TestLayerTree(object):

@@ -1,31 +1,31 @@
 from __future__ import absolute_import, division, print_function
 
-from ...external.qt.QtGui import (QAction, QLabel, QCursor, QMainWindow,
+from glue.external.qt.QtGui import (QAction, QLabel, QCursor, QMainWindow,
                                   QToolButton, QIcon, QMessageBox
                                   )
 
-from ...external.qt.QtCore import Qt, QRect, Signal
+from glue.external.qt.QtCore import Qt, QRect, Signal
 
-from .data_viewer import DataViewer
-from ... import core
+from glue.qt.widgets.data_viewer import DataViewer
+from glue import core
 
-from ...clients.image_client import MplImageClient
-from ...clients.ds9norm import DS9Normalize
-from ...external.modest_image import imshow
+from glue.clients.image_client import MplImageClient
+from glue.clients.ds9norm import DS9Normalize
+from glue.external.modest_image import imshow
 
-from ...clients.layer_artist import Pointer
-from ...core.callback_property import add_callback, delay_callback
+from glue.clients.layer_artist import Pointer
+from glue.core.callback_property import add_callback, delay_callback
 
-from .data_slice_widget import DataSlice
+from glue.qt.widgets.data_slice_widget import DataSlice
 
-from ..mouse_mode import (RectangleMode, CircleMode, PolyMode,
+from glue.qt.mouse_mode import (RectangleMode, CircleMode, PolyMode,
                           ContrastMode)
-from ..glue_toolbar import GlueToolbar
-from .mpl_widget import MplWidget, defer_draw
+from glue.qt.glue_toolbar import GlueToolbar
+from glue.qt.widgets.mpl_widget import MplWidget, defer_draw
 
-from ..qtutil import cmap2pixmap, load_ui, get_icon, nonpartial, update_combobox
-from ..widget_properties import CurrentComboProperty, ButtonProperty, connect_current_combo, _find_combo_data
-from .glue_mdi_area import GlueMdiSubWindow
+from glue.qt.qtutil import cmap2pixmap, load_ui, get_icon, nonpartial, update_combobox
+from glue.qt.widget_properties import CurrentComboProperty, ButtonProperty, connect_current_combo, _find_combo_data
+from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow
 
 WARN_THRESH = 10000000  # warn when contouring large images
 
@@ -99,7 +99,7 @@ class ImageWidgetBase(DataViewer):
         """
         Set up additional tools for this widget
         """
-        from ... import config
+        from glue import config
         self._tools = []
         for tool in config.tool_registry.members[self.__class__]:
             self._tools.append(tool(self))
@@ -478,7 +478,7 @@ class ColormapAction(QAction):
 
 def _colormap_mode(parent, on_trigger):
 
-    from ... import config
+    from glue import config
 
     # actions for each colormap
     acts = []
@@ -528,7 +528,7 @@ class StandaloneImageWidget(QMainWindow):
             self.set_image(image=image, wcs=wcs, **kwargs)
 
     def _setup_axes(self):
-        from ...clients.viz_client import init_mpl
+        from glue.clients.viz_client import init_mpl
         _, self._axes = init_mpl(self.central_widget.canvas.fig, axes=None, wcs=True)
         self._axes.set_aspect('equal', adjustable='datalim')
 

@@ -31,12 +31,12 @@ class PluginConfig(object):
 
         # Import at runtime because some tests change this value. We also don't
         # just import the variable directly otherwise it is cached.
-        from . import config
+        from glue import config
         cfg_dir = config.CFG_DIR
 
         plugin_cfg =  os.path.join(cfg_dir, 'plugins.cfg')
 
-        from .external.six.moves import configparser
+        from glue.external.six.moves import configparser
 
         config = configparser.ConfigParser()
         read = config.read(plugin_cfg)
@@ -56,12 +56,12 @@ class PluginConfig(object):
 
         # Import at runtime because some tests change this value. We also don't
         # just import the variable directly otherwise it is cached.
-        from . import config
+        from glue import config
         cfg_dir = config.CFG_DIR
 
         plugin_cfg =  os.path.join(cfg_dir, 'plugins.cfg')
 
-        from .external.six.moves import configparser
+        from glue.external.six.moves import configparser
 
         config = configparser.ConfigParser()
         config.add_section('plugins')

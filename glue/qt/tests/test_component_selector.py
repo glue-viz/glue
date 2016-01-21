@@ -5,8 +5,8 @@ from __future__ import absolute_import, division, print_function
 from numpy import array
 
 from ..component_selector import ComponentSelector
-from ... import core
-from ...core.data import ComponentID
+from glue import core
+from glue.core.data import ComponentID
 
 
 def data_collection():

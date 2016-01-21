@@ -8,7 +8,7 @@ help with using custom fitting utilities in Glue.
 
 import numpy as np
 
-from .simpleforms import IntOption, Option
+from glue.core.simpleforms import IntOption, Option
 
 
 __all__ = ['BaseFitter1D',

@@ -2,18 +2,18 @@ import pytest
 import numpy as np
 from mock import MagicMock
 
-from ....core.tests.util import simple_session
-from ....core import Data, Coordinates
-from ....core.roi import RectangularROI
-from ....qt.widgets import ImageWidget
-from ....tests.helpers import requires_astropy
+from glue.core.tests.util import simple_session
+from glue.core import Data, Coordinates
+from glue.core.roi import RectangularROI
+from glue.qt.widgets import ImageWidget
+from glue.tests.helpers import requires_astropy
 
 from ..spectrum_tool import Extractor, ConstraintsWidget, FitSettingsWidget, SpectrumTool, CollapseContext
-from ....core.fitters import PolynomialFitter
+from glue.core.fitters import PolynomialFitter
 
 needs_modeling = lambda x: x
 try:
-    from ....core.fitters import SimpleAstropyGaussianFitter
+    from glue.core.fitters import SimpleAstropyGaussianFitter
 except ImportError:
     needs_modeling = pytest.mark.skipif(True, reason='Needs astropy >= 0.3')
 
@@ -240,7 +240,7 @@ class TestCollapseContext(BaseTestSpectrumTool):
 class TestCollapseContextWCS(TestCollapseContext):
 
     def setup_data(self):
-        from ....core.coordinates import coordinates_from_wcs
+        from glue.core.coordinates import coordinates_from_wcs
         from astropy.wcs import WCS
         wcs = WCS(naxis=3)
 

@@ -25,11 +25,11 @@ from distutils.version import LooseVersion
 from contextlib import contextmanager
 
 # must import these first, to set up Qt properly
-from ...external.qt import QtCore
-from ...external.qt.QtGui import QInputDialog
-from ...version import __version__
-from ...utils import as_variable_name
-from .glue_mdi_area import GlueMdiSubWindow
+from glue.external.qt import QtCore
+from glue.external.qt.QtGui import QInputDialog
+from glue.version import __version__
+from glue.utils import as_variable_name
+from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow
 
 from zmq import ZMQError
 from zmq.eventloop.zmqstream import ZMQStream

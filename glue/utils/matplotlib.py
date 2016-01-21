@@ -7,7 +7,7 @@ from functools import wraps
 import numpy as np
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
-from .misc import DeferredMethod
+from glue.utils.misc import DeferredMethod
 
 __all__ = ['all_artists', 'new_artists', 'remove_artists', 'get_extent',
            'view_cascade', 'fast_limits', 'defer_draw',

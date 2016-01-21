@@ -7,10 +7,10 @@ import pytest
 from mock import MagicMock
 import numpy as np
 
-from ...tests import example_data
-from ... import core
-from ...core.exceptions import IncompatibleAttribute
-from ...core.link_helpers import LinkSame
+from glue.tests import example_data
+from glue import core
+from glue.core.exceptions import IncompatibleAttribute
+from glue.core.link_helpers import LinkSame
 
 from ..layer_artist import RGBImageLayerArtist, ImageLayerArtist
 from ..image_client import MplImageClient

@@ -1,5 +1,5 @@
-from ...external.qt.QtCore import Qt
-from ...core import DataCollection, Data
+from glue.external.qt.QtCore import Qt
+from glue.core import DataCollection, Data
 from ..data_collection_model import DataCollectionModel
 from ..qtutil import LAYERS_MIME_TYPE
 

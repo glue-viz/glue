@@ -75,20 +75,20 @@ from copy import copy
 
 import numpy as np
 
-from ..clients import LayerArtist, GenericMplClient
-from ..core import Data
-from ..core.edit_subset_mode import EditSubsetMode
-from ..utils import nonpartial, as_list, all_artists, new_artists, remove_artists
-from .. import core
+from glue.clients import LayerArtist, GenericMplClient
+from glue.core import Data
+from glue.core.edit_subset_mode import EditSubsetMode
+from glue.utils import nonpartial, as_list, all_artists, new_artists, remove_artists
+from glue import core
 
-from .widgets.data_viewer import DataViewer
-from . import widget_properties as wp
-from ..external import six
-from ..external.qt import QtGui
-from ..external.qt.QtCore import Qt
-from .widgets import MplWidget
-from .glue_toolbar import GlueToolbar
-from .mouse_mode import PolyMode, RectangleMode
+from glue.qt.widgets.data_viewer import DataViewer
+from glue.qt import widget_properties as wp
+from glue.external import six
+from glue.external.qt import QtGui
+from glue.external.qt.QtCore import Qt
+from glue.qt.widgets import MplWidget
+from glue.qt.glue_toolbar import GlueToolbar
+from glue.qt.mouse_mode import PolyMode, RectangleMode
 
 CUSTOM_WIDGETS = []
 

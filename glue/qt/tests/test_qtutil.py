@@ -7,12 +7,12 @@ from mock import MagicMock, patch
 
 import matplotlib.pyplot as plt
 
-from ...external.qt import QtGui
-from ...external.qt.QtCore import Qt
+from glue.external.qt import QtGui
+from glue.external.qt.QtCore import Qt
 
-from ...config import data_factory
-from ...core import Data, Subset
-from ...clients.layer_artist import RGBImageLayerArtist
+from glue.config import data_factory
+from glue.core import Data, Subset
+from glue.clients.layer_artist import RGBImageLayerArtist
 
 from .. import qtutil
 from ..qtutil import GlueDataDialog

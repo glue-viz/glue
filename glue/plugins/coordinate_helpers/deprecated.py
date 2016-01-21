@@ -1,7 +1,7 @@
 from astropy import units as u
 from astropy.coordinates import FK5, Galactic
 
-from ...core.link_helpers import MultiLink
+from glue.core.link_helpers import MultiLink
 
 
 def fk52gal(ra, dec):

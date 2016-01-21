@@ -2,11 +2,11 @@ from __future__ import absolute_import, division, print_function
 
 from time import ctime
 
-from ...external.qt.QtGui import QWidget, QTableWidgetItem
+from glue.external.qt.QtGui import QWidget, QTableWidgetItem
 
-from ... import core
+from glue import core
 
-from ..qtutil import load_ui
+from glue.qt.qtutil import load_ui
 
 
 class MessageWidget(QWidget, core.hub.HubListener):

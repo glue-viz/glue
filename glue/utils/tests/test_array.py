@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from ...external.six import string_types, PY2
+from glue.external.six import string_types, PY2
 
 from ..array import view_shape, coerce_numeric, stack_view, unique, shape_to_string, check_sorted
 

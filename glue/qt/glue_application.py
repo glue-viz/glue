@@ -7,34 +7,34 @@ import sys
 import warnings
 import webbrowser
 
-from ..external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
+from glue.external.qt.QtGui import (QKeySequence, QMainWindow, QGridLayout,
                                  QMenu, QAction,
                                  QFileDialog, QInputDialog,
                                  QToolButton, QVBoxLayout, QWidget, QPixmap,
                                  QBrush, QPainter, QLabel, QHBoxLayout,
                                  QTextEdit, QTextCursor, QPushButton,
                                  QListWidgetItem, QIcon)
-from ..external.qt.QtCore import Qt, QSize, QSettings, Signal
-from ..utils.qt import QMessageBoxPatched as QMessageBox
+from glue.external.qt.QtCore import Qt, QSize, QSettings, Signal
+from glue.utils.qt import QMessageBoxPatched as QMessageBox
 
-from ..core import command, Data
-from .. import env
-from ..main import load_plugins
-from ..qt import get_qapp
-from .decorators import set_cursor, messagebox_on_error
-from ..core.application_base import Application
+from glue.core import command, Data
+from glue import env
+from glue.main import load_plugins
+from glue.qt import get_qapp
+from glue.qt.decorators import set_cursor, messagebox_on_error
+from glue.core.application_base import Application
 
-from .actions import act
-from .qtutil import (pick_class, data_wizard,
+from glue.qt.actions import act
+from glue.qt.qtutil import (pick_class, data_wizard,
                      GlueTabBar, load_ui, get_icon, nonpartial)
-from .widgets.glue_mdi_area import GlueMdiArea, GlueMdiSubWindow
-from .widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
-from .widgets.layer_tree_widget import PlotAction, LayerTreeWidget
-from .widgets.data_viewer import DataViewer
-from .widgets.settings_editor import SettingsEditor
-from .widgets.mpl_widget import defer_draw
-from .feedback import submit_bug_report
-from .plugin_manager import QtPluginManager
+from glue.qt.widgets.glue_mdi_area import GlueMdiArea, GlueMdiSubWindow
+from glue.qt.widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
+from glue.qt.widgets.layer_tree_widget import PlotAction, LayerTreeWidget
+from glue.qt.widgets.data_viewer import DataViewer
+from glue.qt.widgets.settings_editor import SettingsEditor
+from glue.qt.widgets.mpl_widget import defer_draw
+from glue.qt.feedback import submit_bug_report
+from glue.qt.plugin_manager import QtPluginManager
 
 __all__ = ['GlueApplication']
 DOCS_URL = 'http://www.glueviz.org'
@@ -590,7 +590,7 @@ class GlueApplication(Application, QMainWindow):
         self._actions['data_new'] = a
 
         # We now populate the "Import data" menu
-        from ..config import importer
+        from glue.config import importer
 
         acts = []
 
@@ -609,7 +609,7 @@ class GlueApplication(Application, QMainWindow):
 
         self._actions['data_importers'] = acts
 
-        from ..config import exporters
+        from glue.config import exporters
         if len(exporters) > 0:
             acts = []
             for e in exporters:
@@ -648,7 +648,7 @@ class GlueApplication(Application, QMainWindow):
         self._actions['redo'] = a
 
         # Create actions for menubar plugins
-        from ..config import menubar_plugin
+        from glue.config import menubar_plugin
         acts = []
         for label, function in menubar_plugin:
             a = act(label, self, tip=label)
@@ -667,8 +667,8 @@ class GlueApplication(Application, QMainWindow):
         """ Create a new visualization window in the current tab
         """
 
-        from ..config import qt_client
-        from .widgets import ScatterWidget, ImageWidget
+        from glue.config import qt_client
+        from glue.qt.widgets import ScatterWidget, ImageWidget
 
         if data and data.ndim == 1 and ScatterWidget in qt_client.members:
             default = qt_client.members.index(ScatterWidget)
@@ -803,7 +803,7 @@ class GlueApplication(Application, QMainWindow):
         self._ui.layerWidget.button_row.addWidget(self._terminal_button)
 
         try:
-            from .widgets.terminal import glue_terminal
+            from glue.qt.widgets.terminal import glue_terminal
             widget = glue_terminal(data_collection=self._data,
                                    dc=self._data,
                                    hub=self._hub,
@@ -917,7 +917,7 @@ class GlueApplication(Application, QMainWindow):
         qmb.exec_()
 
     def plugin_manager(self):
-        from ..main import _installed_plugins
+        from glue.main import _installed_plugins
         pm = QtPluginManager(installed=_installed_plugins)
         pm.ui.exec_()
 

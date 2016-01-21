@@ -63,19 +63,19 @@ from inspect import isgeneratorfunction
 
 import numpy as np
 
-from .subset import (OPSYM, SYMOP, CompositeSubsetState,
+from glue.core.subset import (OPSYM, SYMOP, CompositeSubsetState,
                      SubsetState, Subset, RoiSubsetState,
                      InequalitySubsetState, RangeSubsetState)
-from .data import (Data, Component, ComponentID, DerivedComponent,
+from glue.core.data import (Data, Component, ComponentID, DerivedComponent,
                    CoordinateComponent)
-from . import (VisualAttributes, ComponentLink, DataCollection)
-from .component_link import CoordinateComponentLink
-from ..utils import lookup_class
-from .roi import Roi
-from . import glue_pickle as gp
-from .. import core
-from .subset_group import coerce_subset_groups
-from ..external import six
+from glue.core import (VisualAttributes, ComponentLink, DataCollection)
+from glue.core.component_link import CoordinateComponentLink
+from glue.utils import lookup_class
+from glue.core.roi import Roi
+from glue.core import glue_pickle as gp
+from glue import core
+from glue.core.subset_group import coerce_subset_groups
+from glue.external import six
 from io import BytesIO
 from base64 import b64encode, b64decode
 

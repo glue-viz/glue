@@ -1,9 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
-from ..external.qt import QtGui, QtCore
-from .._plugin_helpers import PluginConfig
+from glue.external.qt import QtGui, QtCore
+from glue._plugin_helpers import PluginConfig
 
-from .qtutil import load_ui
+from glue.qt.qtutil import load_ui
 
 __all__ = ["QtPluginManager"]
 
@@ -61,7 +61,7 @@ class QtPluginManager(object):
         except Exception:
             import traceback
             detail = str(traceback.format_exc())
-            from ..utils.qt import QMessageBoxPatched as QMessageBox
+            from glue.utils.qt import QMessageBoxPatched as QMessageBox
             message = QMessageBox(QMessageBox.Critical,
                                   "Error",
                                   "Could not save plugin configuration")

@@ -1,15 +1,15 @@
 from __future__ import absolute_import, division, print_function
 
-from .data_viewer import DataViewer
+from glue.qt.widgets.data_viewer import DataViewer
 
-from ...external.qt.QtGui import QTableView, QAbstractItemView, QItemSelectionModel, QItemSelection, QSortFilterProxyModel
-from ...external.qt.QtCore import Qt, QAbstractTableModel, QAbstractItemModel, QObject
+from glue.external.qt.QtGui import QTableView, QAbstractItemView, QItemSelectionModel, QItemSelection, QSortFilterProxyModel
+from glue.external.qt.QtCore import Qt, QAbstractTableModel, QAbstractItemModel, QObject
 
-from ...core import message as msg
-from ...core.edit_subset_mode import EditSubsetMode
-from ...core.subset import ElementSubsetState
+from glue.core import message as msg
+from glue.core.edit_subset_mode import EditSubsetMode
+from glue.core.subset import ElementSubsetState
 
-from ..qtutil import load_ui
+from glue.qt.qtutil import load_ui
 
 import numpy as np
 
@@ -191,7 +191,7 @@ class TableWidget(DataViewer):
         if the data set is big. To sidestep that,
         we swap out with a tiny data set before closing
         """
-        from ...core import Data
+        from glue.core import Data
         d = Data(x=[0])
         self.ui.table.setModel(DataTableModel(d))
         event.accept()

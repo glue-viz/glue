@@ -21,7 +21,7 @@ from ..message import SubsetDeleteMessage
 from ..registry import Registry
 from .test_state import clone
 
-from ...tests.helpers import requires_astropy
+from glue.tests.helpers import requires_astropy
 
 
 class TestSubset(object):

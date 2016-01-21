@@ -1,5 +1,5 @@
-from ...external.qt.QtGui import QTableWidget, QTableWidgetItem
-from ...external.qt.QtCore import Qt
+from glue.external.qt.QtGui import QTableWidget, QTableWidgetItem
+from glue.external.qt.QtCore import Qt
 
 
 class SettingsEditor(object):

@@ -1,6 +1,6 @@
-from ...external.qt import QtCore, QtGui, is_pyqt5
-from ..data_collection_model import DataCollectionView
-from ..qtutil import GlueActionButton, get_icon
+from glue.external.qt import QtCore, QtGui, is_pyqt5
+from glue.qt.data_collection_model import DataCollectionView
+from glue.qt.qtutil import GlueActionButton, get_icon
 
 
 class Ui_LayerTree(object):

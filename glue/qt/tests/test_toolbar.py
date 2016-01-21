@@ -3,7 +3,7 @@
 from __future__ import absolute_import, division, print_function
 
 import matplotlib.pyplot as plt
-from ...external.qt.QtGui import QMainWindow, QIcon
+from glue.external.qt.QtGui import QMainWindow, QIcon
 from ..widgets import MplWidget
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import MouseMode
@@ -30,7 +30,7 @@ class MouseModeTest(MouseMode):
 class TestToolbar(object):
 
     def setup_method(self, method):
-        from ...external.qt.QtGui import QApplication
+        from glue.external.qt.QtGui import QApplication
         assert QApplication.instance() is not None
         self.win = QMainWindow()
         widget, axes = self._make_plot_widget(self.win)

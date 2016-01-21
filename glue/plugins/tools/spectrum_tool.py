@@ -3,8 +3,8 @@ import logging
 
 import numpy as np
 
-from ...external.qt.QtCore import Qt, Signal
-from ...external.qt.QtGui import (QMainWindow, QWidget,
+from glue.external.qt.QtCore import Qt, Signal
+from glue.external.qt.QtGui import (QMainWindow, QWidget,
                                  QHBoxLayout, QTabWidget,
                                  QComboBox, QFormLayout, QPushButton,
                                  QAction, QTextEdit, QFont, QDialog,
@@ -13,28 +13,28 @@ from ...external.qt.QtGui import (QMainWindow, QWidget,
                                  QLabel, QFileDialog)
 
 
-from ...clients.profile_viewer import ProfileViewer
-from ...qt.widgets.mpl_widget import MplWidget
-from ...qt.mouse_mode import SpectrumExtractorMode
-from ...core.callback_property import add_callback, ignore_callback
-from ...core.util import Pointer
-from ...core import Subset
-from ...core.exceptions import IncompatibleAttribute
-from ...qt.glue_toolbar import GlueToolbar
-from ...qt.qtutil import load_ui, nonpartial, Worker
-from ...qt.widget_properties import CurrentComboProperty
-from ...core.aggregate import Aggregate
-from ...qt.mime import LAYERS_MIME_TYPE
-from ...qt.simpleforms import build_form_item
-from ...config import fit_plugin
-from ...external.six.moves import range as xrange
-from ...qt.widgets.glue_mdi_area import GlueMdiSubWindow
-from ...qt.decorators import messagebox_on_error
+from glue.clients.profile_viewer import ProfileViewer
+from glue.qt.widgets.mpl_widget import MplWidget
+from glue.qt.mouse_mode import SpectrumExtractorMode
+from glue.core.callback_property import add_callback, ignore_callback
+from glue.core.util import Pointer
+from glue.core import Subset
+from glue.core.exceptions import IncompatibleAttribute
+from glue.qt.glue_toolbar import GlueToolbar
+from glue.qt.qtutil import load_ui, nonpartial, Worker
+from glue.qt.widget_properties import CurrentComboProperty
+from glue.core.aggregate import Aggregate
+from glue.qt.mime import LAYERS_MIME_TYPE
+from glue.qt.simpleforms import build_form_item
+from glue.config import fit_plugin
+from glue.external.six.moves import range as xrange
+from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow
+from glue.qt.decorators import messagebox_on_error
 
 
 def setup():
-    from ...config import tool_registry
-    from ...qt.widgets import ImageWidget
+    from glue.config import tool_registry
+    from glue.qt.widgets import ImageWidget
     tool_registry.add(SpectrumTool, widget_cls=ImageWidget)
 
 

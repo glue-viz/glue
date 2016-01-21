@@ -3,8 +3,8 @@ from __future__ import absolute_import, division, print_function
 import json
 import os
 
-from ..qt.widgets import ScatterWidget, HistogramWidget
-from ..core import Subset
+from glue.qt.widgets import ScatterWidget, HistogramWidget
+from glue.core import Subset
 
 
 def save_page(page, page_number, label, subset):
@@ -247,7 +247,7 @@ def launch(path):
 
 
 def setup():
-    from ..config import exporters
+    from glue.config import exporters
     exporters.add('D3PO', save_d3po, can_save_d3po, outmode='directory')
 
 

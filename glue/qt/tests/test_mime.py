@@ -1,8 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
-from ...external.qt.QtGui import QWidget, QDrag
-from ...external.qt.QtCore import QMimeData, Qt
-from ...external.qt.QtTest import QTest
+from glue.external.qt.QtGui import QWidget, QDrag
+from glue.external.qt.QtCore import QMimeData, Qt
+from glue.external.qt.QtTest import QTest
 
 from .. import mime
 

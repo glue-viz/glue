@@ -2,10 +2,10 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
 
-from ... import data_factories as df
+from glue.core import data_factories as df
 from ..helpers import auto_data
-from ...tests.util import make_file
-from ....tests.helpers import requires_h5py, requires_astropy
+from glue.core.tests.util import make_file
+from glue.tests.helpers import requires_h5py, requires_astropy
 
 
 @requires_h5py

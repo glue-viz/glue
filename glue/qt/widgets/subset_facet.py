@@ -1,13 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
-from ...external.qt.QtGui import (QDialog, QDoubleValidator, QIcon)
+from glue.external.qt.QtGui import (QDialog, QDoubleValidator, QIcon)
 import numpy as np
 from matplotlib import cm
 
 
-from ..qtutil import pretty_number, cmap2pixmap, load_ui
-from ...core.util import colorize_subsets, facet_subsets, Pointer
-from ..widget_properties import (ButtonProperty, FloatLineProperty,
+from glue.qt.qtutil import pretty_number, cmap2pixmap, load_ui
+from glue.core.util import colorize_subsets, facet_subsets, Pointer
+from glue.qt.widget_properties import (ButtonProperty, FloatLineProperty,
                                  ValueProperty)
 
 

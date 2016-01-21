@@ -1,8 +1,8 @@
-from ..external.qt.QtGui import QSpinBox, QDoubleSpinBox, QCheckBox
-from ..external.qt.QtCore import QObject, Signal
+from glue.external.qt.QtGui import QSpinBox, QDoubleSpinBox, QCheckBox
+from glue.external.qt.QtCore import QObject, Signal
 
-from ..core.simpleforms import IntOption, FloatOption, BoolOption
-from .qtutil import nonpartial
+from glue.core.simpleforms import IntOption, FloatOption, BoolOption
+from glue.qt.qtutil import nonpartial
 
 _dispatch = {}
 

@@ -3,7 +3,7 @@ from matplotlib import rcParams, rcdefaults
 # standardize mpl setup
 rcdefaults()
 
-from ..external.qt import is_pyqt5
+from glue.external.qt import is_pyqt5
 if is_pyqt5():
     rcParams['backend'] = 'Qt5Agg'
 else:

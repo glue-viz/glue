@@ -6,17 +6,17 @@ from numpy.testing import assert_array_equal
 from matplotlib.axes import Axes
 import numpy as np
 
-from ... import custom_viewer
-from ...core import Data
-from ...core.subset import SubsetState
-from ...core.tests.util import simple_session
+from glue import custom_viewer
+from glue.core import Data
+from glue.core.subset import SubsetState
+from glue.core.tests.util import simple_session
 from ..custom_viewer import FormElement, NumberElement, \
     ChoiceElement, CustomViewer, \
     CustomSubsetState, AttributeInfo, \
     FloatElement, TextBoxElement, SettingsOracle, \
     MissingSettingError, FrozenSettings
 from ..glue_application import GlueApplication
-from ...core.tests.test_state import check_clone_app, clone
+from glue.core.tests.test_state import check_clone_app, clone
 
 
 def _make_widget(viewer):

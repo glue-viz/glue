@@ -1,12 +1,12 @@
 import numpy as np
-from ...qt.mouse_mode import PathMode
-from ...qt.widgets.image_widget import StandaloneImageWidget
-from ...qt.widgets.mpl_widget import defer_draw
+from glue.qt.mouse_mode import PathMode
+from glue.qt.widgets.image_widget import StandaloneImageWidget
+from glue.qt.widgets.mpl_widget import defer_draw
 
 
 def setup():
-    from ...config import tool_registry
-    from ...qt.widgets import ImageWidget
+    from glue.config import tool_registry
+    from glue.qt.widgets import ImageWidget
     tool_registry.add(PVSlicerTool, widget_cls=ImageWidget)
 
 
@@ -180,7 +180,7 @@ def _slice_from_path(x, y, data, attribute, slc):
     :note: For >3D cubes, the "V-axis" of the PV slice is the longest
            cube axis ignoring the x/y axes of `slc`
     """
-    from ...external.pvextractor import Path, extract_pv_slice
+    from glue.external.pvextractor import Path, extract_pv_slice
     p = Path(list(zip(x, y)))
 
     cube = data[attribute]

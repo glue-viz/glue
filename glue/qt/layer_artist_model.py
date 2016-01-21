@@ -11,19 +11,19 @@ these layers, and provides GUI access to the model
 
 from __future__ import absolute_import, division, print_function
 
-from ..external.qt.QtGui import (QColor,
+from glue.external.qt.QtGui import (QColor,
                                  QListView, QAbstractItemView, QAction,
                                  QPalette, QKeySequence)
 
-from ..external.qt.QtCore import (Qt, QAbstractListModel, QModelIndex,
+from glue.external.qt.QtCore import (Qt, QAbstractListModel, QModelIndex,
                                   QSize, QTimer)
 
-from .qtutil import (layer_artist_icon, nonpartial, PythonListModel)
+from glue.qt.qtutil import (layer_artist_icon, nonpartial, PythonListModel)
 
-from .mime import PyMimeData, LAYERS_MIME_TYPE
-from ..clients.layer_artist import LayerArtistBase, LayerArtistContainer
+from glue.qt.mime import PyMimeData, LAYERS_MIME_TYPE
+from glue.clients.layer_artist import LayerArtistBase, LayerArtistContainer
 
-from .widgets.style_dialog import StyleDialog
+from glue.qt.widgets.style_dialog import StyleDialog
 
 
 class LayerArtistModel(PythonListModel):

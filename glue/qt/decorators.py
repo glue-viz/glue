@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from functools import wraps
 import traceback
-from ..utils.qt import QMessageBoxPatched as QMessageBox
+from glue.utils.qt import QMessageBoxPatched as QMessageBox
 
 
 def set_cursor(shape):
@@ -13,7 +13,7 @@ def set_cursor(shape):
     def wrapper(func):
         @wraps(func)
         def result(*args, **kwargs):
-            from . import get_qapp
+            from glue.qt import get_qapp
             app = get_qapp()
             app.setOverrideCursor(shape)
             try:

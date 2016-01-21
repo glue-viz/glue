@@ -14,13 +14,13 @@ import sys
 import numpy as np
 
 try:
-    from .core import Data
+    from glue.core import Data
 except ImportError:
     # let qglue import, even though this won't work
     # qglue will throw an ImportError
     Data = None
 
-from .external import six
+from glue.external import six
 
 __all__ = ['qglue']
 
@@ -81,7 +81,7 @@ def _parse_data_numpy(data, label):
 
 
 def _parse_data_path(path, label):
-    from .core.data_factories import load_data, as_list
+    from glue.core.data_factories import load_data, as_list
 
     data = load_data(path)
     for d in as_list(data):
@@ -90,7 +90,7 @@ def _parse_data_path(path, label):
 
 
 def _parse_data_hdulist(data, label):
-    from .core.data_factories.fits import fits_reader
+    from glue.core.data_factories.fits import fits_reader
     return fits_reader(data, label=label)
 
 
@@ -132,8 +132,8 @@ except ImportError:
 
 
 def _parse_links(dc, links):
-    from .core.link_helpers import MultiLink
-    from .core import ComponentLink
+    from glue.core.link_helpers import MultiLink
+    from glue.core import ComponentLink
 
     data = dict((d.label, d) for d in dc)
     result = []
@@ -210,8 +210,8 @@ def qglue(**kwargs):
 
     :returns: A :class:`~glue.qt.glue_application.GlueApplication` object
     """
-    from .core import DataCollection
-    from .qt.glue_application import GlueApplication
+    from glue.core import DataCollection
+    from glue.qt.glue_application import GlueApplication
 
     links = kwargs.pop('links', None)
 

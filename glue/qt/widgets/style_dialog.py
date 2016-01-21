@@ -1,14 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
-from ..qtutil import (mpl_to_qt4_color, symbol_icon, POINT_ICONS,
+from glue.qt.qtutil import (mpl_to_qt4_color, symbol_icon, POINT_ICONS,
                       qt4_to_mpl_color)
 
-from ...external.qt.QtGui import (QFormLayout, QDialogButtonBox, QColorDialog,
+from glue.external.qt.QtGui import (QFormLayout, QDialogButtonBox, QColorDialog,
                                   QWidget, QLineEdit, QListWidget,
                                   QListWidgetItem, QPixmap, QDialog, QLabel,
                                   QSpinBox, QComboBox)
 
-from ...external.qt.QtCore import QSize, Signal, Qt
+from glue.external.qt.QtCore import QSize, Signal, Qt
 
 
 class ColorWidget(QLabel):
@@ -146,7 +146,7 @@ class StyleDialog(QDialog):
 
 if __name__ == "__main__":
     
-    from ..core import Data
+    from glue.qt.core import Data
 
     d = Data(label='data label', x=[1, 2, 3, 4])
     StyleDialog.edit_style(d)

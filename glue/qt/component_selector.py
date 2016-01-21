@@ -1,9 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
-from ..external.qt.QtGui import QWidget, QListWidgetItem
-from ..external.qt.QtCore import Signal
+from glue.external.qt.QtGui import QWidget, QListWidgetItem
+from glue.external.qt.QtCore import Signal
 
-from .qtutil import load_ui
+from glue.qt.qtutil import load_ui
 
 
 class ComponentSelector(QWidget):
@@ -125,8 +125,8 @@ class ComponentSelector(QWidget):
 def main():  # pragma: no cover
     import glue
     import numpy as np
-    from . import get_qapp
-    from ..external.qt.QtGui import QApplication
+    from glue.qt import get_qapp
+    from glue.external.qt.QtGui import QApplication
 
     d = glue.core.Data(label="hi")
     d2 = glue.core.Data(label="there")

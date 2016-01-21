@@ -3,8 +3,8 @@
 
 # Coordinate transforms (requires Astropy>)
 
-from ...config import link_function, link_helper
-from ...core.link_helpers import MultiLink
+from glue.config import link_function, link_helper
+from glue.core.link_helpers import MultiLink
 
 from astropy import units as u
 from astropy.coordinates import ICRS, FK5, FK4, Galactic

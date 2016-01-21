@@ -1,21 +1,21 @@
 import os
 import pytest
 from mock import patch
-from ...external.qt import QtCore
+from glue.external.qt import QtCore
 
 from ..plugin_manager import QtPluginManager
-from ... import _plugin_helpers as ph
-from ...utils.qt import QMessageBoxPatched
-from ...main import load_plugins
+from glue import _plugin_helpers as ph
+from glue.utils.qt import QMessageBoxPatched
+from glue.main import load_plugins
 
 
 def setup_function(func):
-    from ... import config
+    from glue import config
     func.CFG_DIR_ORIG = config.CFG_DIR
 
 
 def teardown_function(func):
-    from ... import config
+    from glue import config
     config.CFG_DIR = func.CFG_DIR_ORIG
 
 
@@ -23,7 +23,7 @@ def test_basic_empty(tmpdir):
 
     # Test that things work when the plugin cfg file is empty
 
-    from ... import config
+    from glue import config
     config.CFG_DIR = tmpdir.join('.glue').strpath
 
     w = QtPluginManager()
@@ -36,7 +36,7 @@ def test_basic(tmpdir):
 
     # Test that things work when the plugin cfg file is populated
 
-    from ... import config
+    from glue import config
     config.CFG_DIR = tmpdir.join('.glue').strpath
 
     load_plugins()
@@ -58,7 +58,7 @@ def test_basic(tmpdir):
 
 def test_permission_fail(tmpdir):
 
-    from ... import config
+    from glue import config
     config.CFG_DIR = tmpdir.join('.glue').strpath
 
     # Make a *file* at that location so that reading the plugin file will fail

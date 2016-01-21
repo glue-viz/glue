@@ -11,11 +11,11 @@ from __future__ import absolute_import, division, print_function
 
 import logging
 
-from .decorators import singleton
-from .data import Data
-from .data_collection import DataCollection
-from ..utils import as_list
-from .contracts import contract
+from glue.core.decorators import singleton
+from glue.core.data import Data
+from glue.core.data_collection import DataCollection
+from glue.utils import as_list
+from glue.core.contracts import contract
 
 
 @singleton

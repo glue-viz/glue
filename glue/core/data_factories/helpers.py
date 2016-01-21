@@ -27,11 +27,11 @@ from __future__ import absolute_import, division, print_function
 import os
 import warnings
 
-from ..data import Component, Data
-from ...utils import as_list
-from ...backends import get_backend
-from ...config import auto_refresh, data_factory
-from ..contracts import contract
+from glue.core.data import Component, Data
+from glue.utils import as_list
+from glue.backends import get_backend
+from glue.config import auto_refresh, data_factory
+from glue.core.contracts import contract
 
 __all__ = ['FileWatcher', 'LoadLog',
            'auto_data', 'data_label', 'find_factory',
@@ -218,7 +218,7 @@ def load_data(path, factory=None, **kwargs):
 
     Extra keywords are passed through to factory functions
     """
-    from ...qglue import parse_data
+    from glue.qglue import parse_data
 
     def as_data_objects(ds, lbl):
         # pack other container types like astropy tables
@@ -272,7 +272,7 @@ def get_default_factory(extension):  # pragma: no cover
 @contract(filename='string')
 def find_factory(filename, **kwargs):
 
-    from ...config import data_factory
+    from glue.config import data_factory
 
     # We no longer try the 'default' factory first because we actually need to
     # try all identifiers and select the one to use based on the priority. This

@@ -7,8 +7,8 @@ import zlib
 
 from mock import MagicMock
 
-from ... import core
-from ...core.application_base import Application
+from glue import core
+from glue.core.application_base import Application
 
 
 @contextmanager

@@ -2,9 +2,9 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from ...clients.layer_artist import LayerArtist, ChangedTrigger
-from ...core.subset import Subset
-from ...core.exceptions import IncompatibleAttribute
+from glue.clients.layer_artist import LayerArtist, ChangedTrigger
+from glue.core.subset import Subset
+from glue.core.exceptions import IncompatibleAttribute
 
 
 class DendroLayerArtist(LayerArtist):

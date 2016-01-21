@@ -5,12 +5,12 @@ from time import time
 
 import numpy as np
 
-from ...core.exceptions import IncompatibleAttribute
-from ...core.util import Pointer, split_component_view
-from ...utils import view_shape, stack_view, color2rgb
+from glue.core.exceptions import IncompatibleAttribute
+from glue.core.util import Pointer, split_component_view
+from glue.utils import view_shape, stack_view, color2rgb
 
-from ...clients.image_client import ImageClient
-from ...clients.layer_artist import (LayerArtistBase,
+from glue.clients.image_client import ImageClient
+from glue.clients.layer_artist import (LayerArtistBase,
                                     ImageLayerBase, SubsetImageLayerBase)
 
 from ginga.util import wcsmod

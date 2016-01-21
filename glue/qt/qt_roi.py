@@ -1,9 +1,9 @@
 import numpy as np
 
-from ..core import roi
-from ..external.qt import QtGui, QtCore
-from ..external.qt.QtCore import Qt
-from .qtutil import mpl_to_qt4_color
+from glue.core import roi
+from glue.external.qt import QtGui, QtCore
+from glue.external.qt.QtCore import Qt
+from glue.qt.qtutil import mpl_to_qt4_color
 
 
 class QtROI(object):

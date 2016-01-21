@@ -10,10 +10,10 @@ from mock import MagicMock
 
 from ..image_widget import ImageWidget
 
-from .... import core
-from ....core.tests.test_state import TestApplication
-from ...glue_application import GlueApplication
-from ....external.qt import get_qapp
+from glue import core
+from glue.core.tests.test_state import TestApplication
+from glue.qt.glue_application import GlueApplication
+from glue.external.qt import get_qapp
 
 from . import simple_session
 

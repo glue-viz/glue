@@ -17,11 +17,11 @@ by chaining x2y and y2z.
 """
 import logging
 
-from .data import DerivedComponent, Data, ComponentID
-from .component_link import ComponentLink
-from .link_helpers import LinkCollection
-from ..external import six
-from .contracts import contract
+from glue.core.data import DerivedComponent, Data, ComponentID
+from glue.core.component_link import ComponentLink
+from glue.core.link_helpers import LinkCollection
+from glue.external import six
+from glue.core.contracts import contract
 
 
 def accessible_links(cids, links):

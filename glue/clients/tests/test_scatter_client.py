@@ -11,14 +11,14 @@ from mock import MagicMock
 from timeit import timeit
 from functools import partial
 
-from ...tests import example_data
-from ...core.subset import RangeSubsetState, CategoricalRoiSubsetState, AndState
-from ...core.roi import RectangularROI, XRangeROI, YRangeROI
-from ...core.data import Data
-from ...core.data_collection import DataCollection
-from ...core.component import Component, CategoricalComponent
-from ...core.component_id import ComponentID
-from ...core.edit_subset_mode import EditSubsetMode
+from glue.tests import example_data
+from glue.core.subset import RangeSubsetState, CategoricalRoiSubsetState, AndState
+from glue.core.roi import RectangularROI, XRangeROI, YRangeROI
+from glue.core.data import Data
+from glue.core.data_collection import DataCollection
+from glue.core.component import Component, CategoricalComponent
+from glue.core.component_id import ComponentID
+from glue.core.edit_subset_mode import EditSubsetMode
 from ..scatter_client import ScatterClient
 from .util import renderless_figure
 
