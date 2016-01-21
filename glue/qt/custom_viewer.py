@@ -75,6 +75,10 @@ from copy import copy
 
 import numpy as np
 
+from glue.external import six
+from glue.external.qt import QtGui, QtCore
+from glue.external.qt.QtCore import Qt
+
 from glue.clients import LayerArtist, GenericMplClient
 from glue.core import Data
 from glue.core.edit_subset_mode import EditSubsetMode
@@ -83,9 +87,6 @@ from glue import core
 
 from glue.qt.widgets.data_viewer import DataViewer
 from glue.qt import widget_properties as wp
-from glue.external import six
-from glue.external.qt import QtGui
-from glue.external.qt.QtCore import Qt
 from glue.qt.widgets import MplWidget
 from glue.qt.glue_toolbar import GlueToolbar
 from glue.qt.mouse_mode import PolyMode, RectangleMode

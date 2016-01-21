@@ -11,12 +11,8 @@ these layers, and provides GUI access to the model
 
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt.QtGui import (QColor,
-                                 QListView, QAbstractItemView, QAction,
-                                 QPalette, QKeySequence)
-
-from glue.external.qt.QtCore import (Qt, QAbstractListModel, QModelIndex,
-                                  QSize, QTimer)
+from glue.external.qt import QtGui, QtCore
+from glue.external.qt.QtCore import Qt
 
 from glue.qt.qtutil import (layer_artist_icon, nonpartial, PythonListModel)
 
@@ -127,8 +123,8 @@ class LayerArtistModel(PythonListModel):
             return
 
         dest = row
-        if not self.beginMoveRows(QModelIndex(), loc, loc,
-                                  QModelIndex(), dest):
+        if not self.beginMoveRows(QtCore.QModelIndex(), loc, loc,
+                                  QtCore.QModelIndex(), dest):
             return
         if dest >= loc:
             row -= 1
@@ -163,7 +159,7 @@ class LayerArtistModel(PythonListModel):
 
     def add_artist(self, row, artist):
         """Add a new artist"""
-        self.beginInsertRows(QModelIndex(), row, row)
+        self.beginInsertRows(QtCore.QModelIndex(), row, row)
         self.artists.insert(row, artist)
         self.endInsertRows()
         self.rowsInserted.emit(self.index(row), row, row)
@@ -172,7 +168,7 @@ class LayerArtistModel(PythonListModel):
         return self.artists[row]
 
 
-class LayerArtistView(QListView):
+class LayerArtistView(QtGui.QListView):
 
     """A list view into an artist model. The zorder
     of each artist can be shuffled by dragging and dropping
@@ -182,10 +178,10 @@ class LayerArtistView(QListView):
         super(LayerArtistView, self).__init__(parent)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
-        self.setDragDropMode(QAbstractItemView.InternalMove)
-        self.setIconSize(QSize(15, 15))
-        self.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
+        self.setIconSize(QtCore.QSize(15, 15))
+        self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
         self.setEditTriggers(self.NoEditTriggers)
 
@@ -193,7 +189,7 @@ class LayerArtistView(QListView):
         self._actions = {}
         self._create_actions()
 
-        self._timer = QTimer(self)
+        self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(self.viewport().update)
         self._timer.start(1000)
 
@@ -224,9 +220,9 @@ class LayerArtistView(QListView):
 
     def _set_palette(self):
         p = self.palette()
-        c = QColor(240, 240, 240)
-        p.setColor(QPalette.Highlight, c)
-        p.setColor(QPalette.HighlightedText, QColor(Qt.black))
+        c = QtGui.QColor(240, 240, 240)
+        p.setColor(QtGui.QPalette.Highlight, c)
+        p.setColor(QtGui.QPalette.HighlightedText, QtGui.QColor(Qt.black))
         self.setPalette(p)
 
     def _update_actions(self):
@@ -249,12 +245,12 @@ class LayerArtistView(QListView):
         StyleDialog.dropdown_editor(item, pos, edit_label=False)
 
     def _create_actions(self):
-        act = QAction('Edit style', self)
+        act = QtGui.QAction('Edit style', self)
         act.triggered.connect(nonpartial(self._edit_style))
         self.addAction(act)
 
-        act = QAction('Remove', self)
-        act.setShortcut(QKeySequence(Qt.Key_Backspace))
+        act = QtGui.QAction('Remove', self)
+        act.setShortcut(QtGui.QKeySequence(Qt.Key_Backspace))
         act.setShortcutContext(Qt.WidgetShortcut)
         act.triggered.connect(
             lambda *args: self.model().removeRow(self.current_row()))

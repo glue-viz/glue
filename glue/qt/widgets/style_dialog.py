@@ -3,23 +3,19 @@ from __future__ import absolute_import, division, print_function
 from glue.qt.qtutil import (mpl_to_qt4_color, symbol_icon, POINT_ICONS,
                       qt4_to_mpl_color)
 
-from glue.external.qt.QtGui import (QFormLayout, QDialogButtonBox, QColorDialog,
-                                  QWidget, QLineEdit, QListWidget,
-                                  QListWidgetItem, QPixmap, QDialog, QLabel,
-                                  QSpinBox, QComboBox)
-
-from glue.external.qt.QtCore import QSize, Signal, Qt
+from glue.external.qt import QtGui, QtCore
+from glue.external.qt.QtCore import Qt
 
 
-class ColorWidget(QLabel):
-    mousePressed = Signal()
+class ColorWidget(QtGui.QLabel):
+    mousePressed = QtCore.Signal()
 
     def mousePressEvent(self, event):
         self.mousePressed.emit()
         event.accept()
 
 
-class StyleDialog(QDialog):
+class StyleDialog(QtGui.QDialog):
 
     """Dialog which edits the style of a layer (Data or Subset)
 
@@ -37,24 +33,24 @@ class StyleDialog(QDialog):
         self._connect()
 
     def _setup_widgets(self):
-        self.layout = QFormLayout()
+        self.layout = QtGui.QFormLayout()
 
-        self.size_widget = QSpinBox()
+        self.size_widget = QtGui.QSpinBox()
         self.size_widget.setMinimum(1)
         self.size_widget.setMaximum(40)
         self.size_widget.setValue(self.layer.style.markersize)
 
-        self.label_widget = QLineEdit()
+        self.label_widget = QtGui.QLineEdit()
         self.label_widget.setText(self.layer.label)
         self.label_widget.selectAll()
 
-        self.symbol_widget = QComboBox()
+        self.symbol_widget = QtGui.QComboBox()
         for idx, symbol in enumerate(self._symbols):
             icon = symbol_icon(symbol)
             self.symbol_widget.addItem(icon, '')
             if symbol is self.layer.style.marker:
                 self.symbol_widget.setCurrentIndex(idx)
-        self.symbol_widget.setIconSize(QSize(20, 20))
+        self.symbol_widget.setIconSize(QtCore.QSize(20, 20))
         self.symbol_widget.setMinimumSize(10, 32)
 
         self.color_widget = ColorWidget()
@@ -63,8 +59,8 @@ class StyleDialog(QDialog):
         color = mpl_to_qt4_color(color, alpha=self.layer.style.alpha)
         self.set_color(color)
 
-        self.okcancel = QDialogButtonBox(QDialogButtonBox.Ok |
-                                         QDialogButtonBox.Cancel)
+        self.okcancel = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok |
+                                         QtGui.QDialogButtonBox.Cancel)
 
         if self._edit_label:
             self.layout.addRow("Label", self.label_widget)
@@ -86,9 +82,9 @@ class StyleDialog(QDialog):
         self.setFocusPolicy(Qt.StrongFocus)
 
     def query_color(self, *args):
-        color = QColorDialog.getColor(self._color, self.color_widget,
+        color = QtGui.QColorDialog.getColor(self._color, self.color_widget,
                                       "",
-                                      QColorDialog.ShowAlphaChannel)
+                                      QtGui.QColorDialog.ShowAlphaChannel)
         if color.isValid():
             self.set_color(color)
 

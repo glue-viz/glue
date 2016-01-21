@@ -5,7 +5,7 @@ from glue.external.six.moves.urllib.request import Request, urlopen
 from glue.external.six.moves.urllib.parse import urlencode
 import sys
 
-from glue.external.qt.QtGui import QTextCursor
+from glue.external.qt import QtGui
 from glue.qt.qtutil import load_ui
 
 __all__ = ['submit_bug_report']
@@ -66,7 +66,7 @@ class FeedbackWidget(object):
                               feedback,
                               _diagnostics()])
         self._ui.report_area.insertPlainText('\n' + feedback)
-        self._ui.report_area.moveCursor(QTextCursor.Start)
+        self._ui.report_area.moveCursor(QtGui.QTextCursor.Start)
 
     def exec_(self):
         """

@@ -1,9 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt.QtCore import QMimeData, QByteArray
+from glue.external.qt import QtCore
 
 
-class PyMimeData(QMimeData):
+class PyMimeData(QtCore.QMimeData):
     """
     A custom MimeData object that stores live python objects
 
@@ -37,14 +37,14 @@ class PyMimeData(QMimeData):
         return fmt in self._instances or super(PyMimeData, self).hasFormat(fmt)
 
     def setData(self, mime, data):
-        super(PyMimeData, self).setData(mime, QByteArray('1'))
+        super(PyMimeData, self).setData(mime, QtCore.QByteArray('1'))
         self._instances[mime] = data
 
     def data(self, mime_type):
         """ Retrieve the data stored at the specified mime_type
 
         If mime_type is application/py_instance, a python object
-        is returned. Otherwise, a QByteArray is returned """
+        is returned. Otherwise, a QtCore.QByteArray is returned """
         if str(mime_type) in self._instances:
             return self._instances[mime_type]
 

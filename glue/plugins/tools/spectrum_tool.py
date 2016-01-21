@@ -4,13 +4,7 @@ import logging
 import numpy as np
 
 from glue.external.qt.QtCore import Qt, Signal
-from glue.external.qt.QtGui import (QMainWindow, QWidget,
-                                 QHBoxLayout, QTabWidget,
-                                 QComboBox, QFormLayout, QPushButton,
-                                 QAction, QTextEdit, QFont, QDialog,
-                                 QDialogButtonBox, QLineEdit,
-                                 QDoubleValidator, QCheckBox, QGridLayout,
-                                 QLabel, QFileDialog)
+from glue.external.qt import QtGui
 
 
 from glue.clients.profile_viewer import ProfileViewer
@@ -260,7 +254,7 @@ class NavContext(SpectrumContext):
         pass
 
     def _setup_widget(self):
-        self.widget = QTextEdit()
+        self.widget = QtGui.QTextEdit()
         self.widget.setHtml("To <b> slide </b> through the cube, "
                             "drag the handle or double-click<br><br><br>"
                             "To make a <b> new profile </b>, "
@@ -280,21 +274,21 @@ class CollapseContext(SpectrumContext):
         self.grip = self.main.profile.new_range_grip()
 
     def _setup_widget(self):
-        w = QWidget()
-        l = QFormLayout()
+        w = QtGui.QWidget()
+        l = QtGui.QFormLayout()
         w.setLayout(l)
 
-        combo = QComboBox()
+        combo = QtGui.QComboBox()
         combo.addItem("Mean", userData=Aggregate.mean)
         combo.addItem("Median", userData=Aggregate.median)
         combo.addItem("Max", userData=Aggregate.max)
         combo.addItem("Centroid", userData=Aggregate.mom1)
         combo.addItem("Linewidth", userData=Aggregate.mom2)
 
-        run = QPushButton("Collapse")
-        save = QPushButton("Save as FITS file")
+        run = QtGui.QPushButton("Collapse")
+        save = QtGui.QPushButton("Save as FITS file")
 
-        buttons = QHBoxLayout()
+        buttons = QtGui.QHBoxLayout()
         buttons.addWidget(run)
         buttons.addWidget(save)
 
@@ -339,7 +333,7 @@ class CollapseContext(SpectrumContext):
     @messagebox_on_error("Failed to export projection")
     def _choose_save(self):
 
-        out, _ = QFileDialog.getSaveFileName(filter='FITS Files (*.fits)')
+        out, _ = QtGui.QFileDialog.getSaveFileName(filter='FITS Files (*.fits)')
         if out is None:
             return
 
@@ -385,7 +379,7 @@ class CollapseContext(SpectrumContext):
         fits.writeto(pth, self._agg, header, clobber=True)
 
 
-class ConstraintsWidget(QWidget):
+class ConstraintsWidget(QtGui.QWidget):
 
     """
     A widget to display and tweak the constraints of a :class:`~glue.core.fitters.BaseFitter1D`
@@ -398,56 +392,56 @@ class ConstraintsWidget(QWidget):
         constraints : dict
             The `contstraints` property of a :class:`~glue.core.fitters.BaseFitter1D`
             object
-        parent : QWidget (optional)
+        parent : QtGui.QWidget (optional)
             The parent of this widget
         """
         super(ConstraintsWidget, self).__init__(parent)
         self.constraints = constraints
 
-        self.layout = QGridLayout()
+        self.layout = QtGui.QGridLayout()
         self.layout.setContentsMargins(2, 2, 2, 2)
         self.layout.setSpacing(4)
 
         self.setLayout(self.layout)
 
-        self.layout.addWidget(QLabel("Estimate"), 0, 1)
-        self.layout.addWidget(QLabel("Fixed"), 0, 2)
-        self.layout.addWidget(QLabel("Bounded"), 0, 3)
-        self.layout.addWidget(QLabel("Lower Bound"), 0, 4)
-        self.layout.addWidget(QLabel("Upper Bound"), 0, 5)
+        self.layout.addWidget(QtGui.QLabel("Estimate"), 0, 1)
+        self.layout.addWidget(QtGui.QLabel("Fixed"), 0, 2)
+        self.layout.addWidget(QtGui.QLabel("Bounded"), 0, 3)
+        self.layout.addWidget(QtGui.QLabel("Lower Bound"), 0, 4)
+        self.layout.addWidget(QtGui.QLabel("Upper Bound"), 0, 5)
 
         self._widgets = {}
         names = sorted(list(self.constraints.keys()))
 
         for k in names:
             row = []
-            w = QLabel(k)
+            w = QtGui.QLabel(k)
             row.append(w)
 
-            v = QDoubleValidator()
-            e = QLineEdit()
+            v = QtGui.QDoubleValidator()
+            e = QtGui.QLineEdit()
             e.setValidator(v)
             e.setText(str(constraints[k]['value'] or ''))
             row.append(e)
 
-            w = QCheckBox()
+            w = QtGui.QCheckBox()
             w.setChecked(constraints[k]['fixed'])
             fix = w
             row.append(w)
 
-            w = QCheckBox()
+            w = QtGui.QCheckBox()
             limits = constraints[k]['limits']
             w.setChecked(limits is not None)
             bound = w
             row.append(w)
 
-            e = QLineEdit()
+            e = QtGui.QLineEdit()
             e.setValidator(v)
             if limits is not None:
                 e.setText(str(limits[0]))
             row.append(e)
 
-            e = QLineEdit()
+            e = QtGui.QLineEdit()
             e.setValidator(v)
             if limits is not None:
                 e.setText(str(limits[1]))
@@ -490,7 +484,7 @@ class ConstraintsWidget(QWidget):
             fitter.set_constraint(name, **s)
 
 
-class FitSettingsWidget(QDialog):
+class FitSettingsWidget(QtGui.QDialog):
 
     def __init__(self, fitter, parent=None):
         super(FitSettingsWidget, self).__init__(parent)
@@ -503,7 +497,7 @@ class FitSettingsWidget(QDialog):
     def _build_form(self):
         fitter = self.fitter
 
-        l = QFormLayout()
+        l = QtGui.QFormLayout()
         options = fitter.options
         self.widgets = {}
         self.forms = {}
@@ -521,8 +515,8 @@ class FitSettingsWidget(QDialog):
         else:
             self.constraints = None
 
-        self.okcancel = QDialogButtonBox(QDialogButtonBox.Ok |
-                                         QDialogButtonBox.Cancel)
+        self.okcancel = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok |
+                                         QtGui.QDialogButtonBox.Cancel)
         l.addRow(self.okcancel)
         self.setLayout(l)
 
@@ -556,7 +550,7 @@ class FitContext(SpectrumContext):
         self.ui = load_ui('spectrum_fit_panel')
         self.ui.uncertainty_combo.hide()
         self.ui.uncertainty_label.hide()
-        font = QFont("Courier")
+        font = QtGui.QFont("Courier")
         font.setStyleHint(font.Monospace)
         self.ui.results_box.document().setDefaultFont(font)
         self.ui.results_box.setLineWrapMode(self.ui.results_box.NoWrap)
@@ -621,7 +615,7 @@ class FitContext(SpectrumContext):
         self.canvas.draw()
 
 
-class SpectrumMainWindow(QMainWindow):
+class SpectrumMainWindow(QtGui.QMainWindow):
 
     """
     The main window that the spectrum viewer is embedded in.
@@ -708,8 +702,8 @@ class SpectrumTool(object):
         self.widget = SpectrumMainWindow()
         self.widget.window_closed.connect(self.reset)
 
-        w = QWidget()
-        l = QHBoxLayout()
+        w = QtGui.QWidget()
+        l = QtGui.QHBoxLayout()
         l.setSpacing(2)
         l.setContentsMargins(2, 2, 2, 2)
         w.setLayout(l)
@@ -727,7 +721,7 @@ class SpectrumTool(object):
                           FitContext(self),
                           CollapseContext(self)]
 
-        tabs = QTabWidget()
+        tabs = QtGui.QTabWidget()
         tabs.addTab(self._contexts[0].widget, 'Navigate')
         tabs.addTab(self._contexts[1].widget, 'Fit')
         tabs.addTab(self._contexts[2].widget, 'Collapse')
@@ -766,7 +760,7 @@ class SpectrumTool(object):
         tb.mode_activated.connect(self.profile.disconnect)
         tb.mode_deactivated.connect(self.profile.connect)
 
-        self._menu_toggle_action = QAction("Options", tb)
+        self._menu_toggle_action = QtGui.QAction("Options", tb)
         self._menu_toggle_action.setCheckable(True)
         self._menu_toggle_action.toggled.connect(self._toggle_menu)
 

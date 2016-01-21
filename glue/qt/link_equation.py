@@ -3,10 +3,7 @@ from __future__ import absolute_import, division, print_function
 from inspect import getargspec
 from collections import OrderedDict
 
-from glue.external.qt.QtGui import (QWidget, QHBoxLayout, QVBoxLayout,
-                                 QLabel, QLineEdit)
-
-from glue.external.qt.QtGui import QSpacerItem, QSizePolicy
+from glue.external.qt import QtGui
 
 from glue import core
 from glue.qt.qtutil import load_ui, is_pyside
@@ -34,18 +31,18 @@ def helper_label(helper):
     return helper.info
 
 
-class ArgumentWidget(QWidget):
+class ArgumentWidget(QtGui.QWidget):
 
     def __init__(self, argument, parent=None):
         super(ArgumentWidget, self).__init__(parent)
-        self.layout = QHBoxLayout()
+        self.layout = QtGui.QHBoxLayout()
         self.layout.setContentsMargins(1, 0, 1, 1)
         self.setLayout(self.layout)
-        label = QLabel(argument)
+        label = QtGui.QLabel(argument)
         self._label = label
         self._component_id = None
         self.layout.addWidget(label)
-        self.editor = QLineEdit()
+        self.editor = QtGui.QLineEdit()
         self.editor.setReadOnly(True)
         try:
             self.editor.setPlaceholderText("Drag a component from above")
@@ -96,7 +93,7 @@ class ArgumentWidget(QWidget):
         event.accept()
 
 
-class LinkEquation(QWidget):
+class LinkEquation(QtGui.QWidget):
 
     """ Interactively define ComponentLinks from existing functions
 
@@ -133,7 +130,7 @@ class LinkEquation(QWidget):
         # pyqt4 can't take self as second argument here
         # for some reason. Manually embed
         self._ui = load_ui('link_equation', None)
-        l = QHBoxLayout()
+        l = QtGui.QHBoxLayout()
         l.addWidget(self._ui)
         self.setLayout(l)
 
@@ -155,14 +152,14 @@ class LinkEquation(QWidget):
             type(self.function).__name__ == 'LinkFunction'
 
     def _init_widgets(self):
-        layout = QVBoxLayout()
+        layout = QtGui.QVBoxLayout()
         layout.setSpacing(1)
         self._ui.input_canvas.setLayout(layout)
-        layout = QVBoxLayout()
+        layout = QtGui.QVBoxLayout()
         layout.setContentsMargins(1, 0, 1, 1)
         self._ui.output_canvas.setLayout(layout)
         layout.addWidget(self._output_widget)
-        spacer = QSpacerItem(5, 5, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        spacer = QtGui.QSpacerItem(5, 5, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         layout.addItem(spacer)
 
     @property
@@ -268,8 +265,8 @@ class LinkEquation(QWidget):
         for a in args:
             self._add_argument_widget(a)
 
-        self.spacer = QSpacerItem(5, 5, QSizePolicy.Minimum,
-                                  QSizePolicy.Expanding)
+        self.spacer = QtGui.QSpacerItem(5, 5, QtGui.QSizePolicy.Minimum,
+                                  QtGui.QSizePolicy.Expanding)
         self._ui.input_canvas.layout().addItem(self.spacer)
 
     def _setup_editor_helper(self):
@@ -284,8 +281,8 @@ class LinkEquation(QWidget):
         for a in args:
             self._add_argument_widget(a)
 
-        self.spacer = QSpacerItem(5, 5, QSizePolicy.Minimum,
-                                  QSizePolicy.Expanding)
+        self.spacer = QtGui.QSpacerItem(5, 5, QtGui.QSizePolicy.Minimum,
+                                  QtGui.QSizePolicy.Expanding)
         self._ui.input_canvas.layout().addItem(self.spacer)
 
     def _add_argument_widget(self, argument):

@@ -19,7 +19,7 @@ The basic usage pattern is thus:
 
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt.QtGui import QAction, QDoubleValidator
+from glue.external.qt import QtGui
 
 from glue.core import util
 from glue.core import roi
@@ -130,7 +130,7 @@ class MouseMode(object):
             self._key_callback(self)
 
     def menu_actions(self):
-        """ List of QActions to be attached to this mode as a context menu """
+        """ List of QtGui.QActions to be attached to this mode as a context menu """
         return []
 
 
@@ -472,7 +472,7 @@ class ContrastMode(MouseMode):
 
     def choose_vmin_vmax(self):
         dialog = load_ui('contrastlimits', None)
-        v = QDoubleValidator()
+        v = QtGui.QDoubleValidator()
         dialog.vmin.setValidator(v)
         dialog.vmax.setValidator(v)
 
@@ -514,51 +514,51 @@ class ContrastMode(MouseMode):
     def menu_actions(self):
         result = []
 
-        a = QAction("minmax", None)
+        a = QtGui.QAction("minmax", None)
         a.triggered.connect(nonpartial(self.set_clip_percentile, 0, 100))
         result.append(a)
 
-        a = QAction("99%", None)
+        a = QtGui.QAction("99%", None)
         a.triggered.connect(nonpartial(self.set_clip_percentile, 1, 99))
         result.append(a)
 
-        a = QAction("95%", None)
+        a = QtGui.QAction("95%", None)
         a.triggered.connect(nonpartial(self.set_clip_percentile, 5, 95))
         result.append(a)
 
-        a = QAction("90%", None)
+        a = QtGui.QAction("90%", None)
         a.triggered.connect(nonpartial(self.set_clip_percentile, 10, 90))
         result.append(a)
 
-        rng = QAction("Set range...", None)
+        rng = QtGui.QAction("Set range...", None)
         rng.triggered.connect(nonpartial(self.choose_vmin_vmax))
         result.append(rng)
 
-        a = QAction("", None)
+        a = QtGui.QAction("", None)
         a.setSeparator(True)
         result.append(a)
 
-        a = QAction("linear", None)
+        a = QtGui.QAction("linear", None)
         a.triggered.connect(nonpartial(setattr, self, 'stretch', 'linear'))
         result.append(a)
 
-        a = QAction("log", None)
+        a = QtGui.QAction("log", None)
         a.triggered.connect(nonpartial(setattr, self, 'stretch', 'log'))
         result.append(a)
 
-        a = QAction("power", None)
+        a = QtGui.QAction("power", None)
         a.triggered.connect(nonpartial(setattr, self, 'stretch', 'power'))
         result.append(a)
 
-        a = QAction("square root", None)
+        a = QtGui.QAction("square root", None)
         a.triggered.connect(nonpartial(setattr, self, 'stretch', 'sqrt'))
         result.append(a)
 
-        a = QAction("squared", None)
+        a = QtGui.QAction("squared", None)
         a.triggered.connect(nonpartial(setattr, self, 'stretch', 'squared'))
         result.append(a)
 
-        a = QAction("asinh", None)
+        a = QtGui.QAction("asinh", None)
         a.triggered.connect(nonpartial(setattr, self, 'stretch', 'arcsinh'))
         result.append(a)
 

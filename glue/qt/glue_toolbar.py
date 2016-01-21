@@ -4,7 +4,7 @@ import os
 import matplotlib
 
 from glue.external.qt import QtCore, QtGui, is_pyqt5
-from glue.external.qt.QtGui import QMenu
+from glue.external.qt import QtGui
 from glue.external.qt.QtCore import Qt, Signal
 
 if is_pyqt5():
@@ -182,7 +182,7 @@ class GlueToolbar(NavigationToolbar2QT):
 
         menu_actions = mode.menu_actions()
         if len(menu_actions) > 0:
-            menu = QMenu(self)
+            menu = QtGui.QMenu(self)
             for ma in mode.menu_actions():
                 ma.setParent(self)
                 menu.addAction(ma)

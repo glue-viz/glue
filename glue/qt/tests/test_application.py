@@ -18,7 +18,7 @@ except:
     ipy_version = '0.0'
 
 from ..glue_application import GlueApplication
-from glue.external.qt.QtCore import QMimeData, QUrl
+from glue.external.qt import QtCore
 from ..widgets.scatter_widget import ScatterWidget
 from ..widgets.image_widget import ImageWidget
 from glue.core import Data
@@ -49,7 +49,7 @@ class TestGlueApplication(object):
 
     def test_save_session(self):
         self.app.save_session = MagicMock()
-        with patch('glue.qt.glue_application.QFileDialog') as fd:
+        with patch('glue.qt.glue_application.QtGui.QFileDialog') as fd:
             fd.getSaveFileName.return_value = '/tmp/junk', 'jnk'
             self.app._choose_save_session()
             self.app.save_session.assert_called_once_with('/tmp/junk.glu', include_data=False)
@@ -57,14 +57,14 @@ class TestGlueApplication(object):
     def test_save_session_cancel(self):
         """shouldnt try to save file if no file name provided"""
         self.app.save_session = MagicMock()
-        with patch('glue.qt.glue_application.QFileDialog') as fd:
+        with patch('glue.qt.glue_application.QtGui.QFileDialog') as fd:
             fd.getSaveFileName.return_value = '', 'jnk'
             self.app._choose_save_session()
             assert self.app.save_session.call_count == 0
 
     def test_choose_save_session_ioerror(self):
         """should show box on ioerror"""
-        with patch('glue.qt.glue_application.QFileDialog') as fd:
+        with patch('glue.qt.glue_application.QtGui.QFileDialog') as fd:
             if sys.version_info[0] == 2:
                 mock_open = '__builtin__.open'
             else:
@@ -194,8 +194,8 @@ class TestGlueApplication(object):
             assert qt_client.members[kwargs['default']] == ImageWidget
 
     def test_drop_load_data(self):
-        m = QMimeData()
-        m.setUrls([QUrl('test.fits')])
+        m = QtCore.QMimeData()
+        m.setUrls([QtCore.QUrl('test.fits')])
         e = MagicMock()
         e.mimeData.return_value = m
         load = MagicMock()

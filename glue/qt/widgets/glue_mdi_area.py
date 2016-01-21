@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt import QtGui
-from glue.external.qt.QtCore import Qt, Signal
+from glue.external.qt import QtGui, QtCore
+from glue.external.qt.QtCore import Qt
 
 from glue import core
 from glue.qt.mime import LAYER_MIME_TYPE, LAYERS_MIME_TYPE
@@ -88,7 +88,7 @@ class GlueMdiArea(QtGui.QMdiArea):
 
 
 class GlueMdiSubWindow(QtGui.QMdiSubWindow):
-    closed = Signal()
+    closed = QtCore.Signal()
 
     def closeEvent(self, event):
         super(GlueMdiSubWindow, self).closeEvent(event)

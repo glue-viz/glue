@@ -149,7 +149,7 @@ def test_qt4_to_mpl_color():
 
 
 def test_edit_color():
-    with patch('glue.qt.qtutil.QColorDialog') as d:
+    with patch('glue.qt.qtutil.QtGui.QColorDialog') as d:
         d.getColor.return_value = QtGui.QColor(0, 1, 0)
         d.isValid.return_value = True
         s = Subset(None)
@@ -158,14 +158,14 @@ def test_edit_color():
 
 
 def test_edit_color_cancel():
-    with patch('glue.qt.qtutil.QColorDialog') as d:
+    with patch('glue.qt.qtutil.QtGui.QColorDialog') as d:
         d.getColor.return_value = QtGui.QColor(0, -1, 0)
         s = Subset(None)
         qtutil.edit_layer_color(s)
 
 
 def test_edit_symbol():
-    with patch('glue.qt.qtutil.QInputDialog') as d:
+    with patch('glue.qt.qtutil.QtGui.QInputDialog') as d:
         d.getItem.return_value = ('*', True)
         s = Subset(None)
         qtutil.edit_layer_symbol(s)
@@ -173,7 +173,7 @@ def test_edit_symbol():
 
 
 def test_edit_symbol_cancel():
-    with patch('glue.qt.qtutil.QInputDialog') as d:
+    with patch('glue.qt.qtutil.QtGui.QInputDialog') as d:
         d.getItem.return_value = ('*', False)
         s = Subset(None)
         qtutil.edit_layer_symbol(s)
@@ -181,7 +181,7 @@ def test_edit_symbol_cancel():
 
 
 def test_edit_point_size():
-    with patch('glue.qt.qtutil.QInputDialog') as d:
+    with patch('glue.qt.qtutil.QtGui.QInputDialog') as d:
         d.getInt.return_value = 123, True
         s = Subset(None)
         qtutil.edit_layer_point_size(s)
@@ -189,7 +189,7 @@ def test_edit_point_size():
 
 
 def test_edit_point_size_cancel():
-    with patch('glue.qt.qtutil.QInputDialog') as d:
+    with patch('glue.qt.qtutil.QtGui.QInputDialog') as d:
         d.getInt.return_value = 123, False
         s = Subset(None)
         qtutil.edit_layer_point_size(s)
@@ -197,7 +197,7 @@ def test_edit_point_size_cancel():
 
 
 def test_edit_layer_label():
-    with patch('glue.qt.qtutil.QInputDialog') as d:
+    with patch('glue.qt.qtutil.QtGui.QInputDialog') as d:
         d.getText.return_value = ('accepted label', True)
         s = Subset(None)
         qtutil.edit_layer_label(s)
@@ -205,7 +205,7 @@ def test_edit_layer_label():
 
 
 def test_edit_layer_label_cancel():
-    with patch('glue.qt.qtutil.QInputDialog') as d:
+    with patch('glue.qt.qtutil.QtGui.QInputDialog') as d:
         d.getText.return_value = ('rejected label', False)
         s = Subset(None)
         qtutil.edit_layer_label(s)
@@ -215,7 +215,7 @@ def test_edit_layer_label_cancel():
 def test_pick_item():
     items = ['a', 'b', 'c']
     labels = ['1', '2', '3']
-    with patch('glue.qt.qtutil.QInputDialog') as d:
+    with patch('glue.qt.qtutil.QtGui.QInputDialog') as d:
         d.getItem.return_value = '1', True
         assert qtutil.pick_item(items, labels) == 'a'
         d.getItem.return_value = '2', True
@@ -239,7 +239,7 @@ def test_pick_class():
 
 
 def test_get_text():
-    with patch('glue.qt.qtutil.QInputDialog') as d:
+    with patch('glue.qt.qtutil.QtGui.QInputDialog') as d:
         d.getText.return_value = 'abc', True
         assert qtutil.get_text() == 'abc'
 

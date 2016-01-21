@@ -1,9 +1,7 @@
 # pylint: disable=E1101,F0401
-from glue.external.qt.QtCore import (QAbstractItemModel, QModelIndex,
-                                  QObject, Qt, QTimer, Signal, QSize)
-from glue.external.qt.QtGui import (QFont, QTreeView, QItemSelectionModel,
-                                 QAbstractItemView, QStyledItemDelegate)
-from glue.external.qt import is_pyqt5
+
+from glue.external.qt import QtGui, QtCore, is_pyqt5
+from glue.external.qt.QtCore import Qt
 
 from glue.qt.qtutil import layer_icon
 from glue.qt.mime import LAYERS_MIME_TYPE, PyMimeData
@@ -32,7 +30,7 @@ class Item(object):
     tooltip = None
 
     def font(self):
-        return QFont()
+        return QtGui.QFont()
 
     def icon(self):
         return None
@@ -80,7 +78,7 @@ class DataListItem(Item):
         return len(self.dc)
 
     def font(self):
-        result = QFont()
+        result = QtGui.QFont()
         result.setBold(True)
         return result
 
@@ -140,7 +138,7 @@ class SubsetListItem(Item):
         return len(self.dc.subset_groups)
 
     def font(self):
-        result = QFont()
+        result = QtGui.QFont()
         result.setBold(True)
         return result
 
@@ -231,11 +229,11 @@ class SubsetItem(Item):
         return self.subset
 
 
-class DataCollectionModel(QAbstractItemModel, HubListener):
-    new_item = Signal(QModelIndex)
+class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
+    new_item = QtCore.Signal(QtCore.QModelIndex)
 
     def __init__(self, data_collection, parent=None):
-        QAbstractItemModel.__init__(self, parent)
+        QtCore.QAbstractItemModel.__init__(self, parent)
         HubListener.__init__(self)
 
         self.data_collection = data_collection
@@ -250,22 +248,22 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
     def supportedDragActions(self):
         return Qt.CopyAction
 
-    def index(self, row, column, parent=QModelIndex()):
+    def index(self, row, column, parent=QtCore.QModelIndex()):
         if column != 0:
-            return QModelIndex()
+            return QtCore.QModelIndex()
 
         if not parent.isValid():
             parent_item = self.root
         else:
             parent_item = self._get_item(parent)
             if parent_item is None:
-                return QModelIndex()
+                return QtCore.QModelIndex()
 
         child_item = parent_item.child(row)
         if child_item:
             return self._make_index(row, column, child_item)
         else:
-            return QModelIndex()
+            return QtCore.QModelIndex()
 
     def _get_item(self, index):
         if not index.isValid():
@@ -301,7 +299,7 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
             result.append(idx)
         return result
 
-    def flags(self, index=QModelIndex()):
+    def flags(self, index=QtCore.QModelIndex()):
         item = self._get_item(index)
         if item is None:
             return Qt.NoItemFlags
@@ -353,7 +351,7 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
 
     def data_index(self, data_number=None):
         """
-        Fetch the QModelIndex for a given data index,
+        Fetch the QtCore.QModelIndex for a given data index,
         or the index for the parent data item
 
         :param data_number: position of data set to fetch, or None
@@ -365,7 +363,7 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
 
     def subsets_index(self, subset_number=None):
         """
-        Fetch the QModelIndex for a given subset,
+        Fetch the QtCore.QModelIndex for a given subset,
         or the index for the parent subset item
 
         :param data_number: position of subset group to fetch, or None
@@ -376,7 +374,7 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
             return base
         return self.index(subset_number, 0, base)
 
-    def rowCount(self, index=QModelIndex()):
+    def rowCount(self, index=QtCore.QModelIndex()):
         item = self._get_item(index)
 
         if item is None:
@@ -386,12 +384,12 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
 
     def parent(self, index=None):
 
-        if index is None:  # overloaded QObject.parent()
-            return QObject.parent(self)
+        if index is None:  # overloaded QtCore.QObject.parent()
+            return QtCore.QObject.parent(self)
 
         item = self._get_item(index)
         if item is None:
-            return QModelIndex()
+            return QtCore.QModelIndex()
 
         return self._make_index(item.row, item.column, item.parent)
 
@@ -441,8 +439,8 @@ class DataCollectionModel(QAbstractItemModel, HubListener):
         return [LAYERS_MIME_TYPE]
 
 
-class DataCollectionView(QTreeView):
-    selection_changed = Signal()
+class DataCollectionView(QtGui.QTreeView):
+    selection_changed = QtCore.Signal()
 
     def __init__(self, parent=None):
         super(DataCollectionView, self).__init__(parent)
@@ -455,7 +453,7 @@ class DataCollectionView(QTreeView):
         self.setItemDelegate(LabeledDelegate())
         self.setEditTriggers(self.NoEditTriggers)
 
-        self._timer = QTimer(self)
+        self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(self.viewport().update)
         self._timer.start(1000)
 
@@ -478,7 +476,7 @@ class DataCollectionView(QTreeView):
         self._model = DataCollectionModel(data_collection)
         self.setModel(self._model)
 
-        sm = QItemSelectionModel(self._model)
+        sm = QtGui.QItemSelectionModel(self._model)
         sm.selectionChanged.connect(lambda *args:
                                     self.selection_changed.emit())
         self.setSelectionModel(sm)
@@ -491,11 +489,11 @@ class DataCollectionView(QTreeView):
         self._model.new_item.connect(self.select_indices)
         self._model.new_item.connect(self.edit_label)
 
-        self.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.setDragEnabled(True)
         self.setDropIndicatorShown(True)
-        self.setDragDropMode(QAbstractItemView.DragOnly)
+        self.setDragDropMode(QtGui.QAbstractItemView.DragOnly)
 
     def edit_label(self, index):
         if not (self._model.flags(index) & Qt.ItemIsEditable):
@@ -513,7 +511,7 @@ class DataCollectionView(QTreeView):
         item.edit_factory(pos)
 
 
-class LabeledDelegate(QStyledItemDelegate):
+class LabeledDelegate(QtGui.QStyledItemDelegate):
 
     """ Add placeholder text to default delegate """
 
@@ -527,7 +525,7 @@ class LabeledDelegate(QStyledItemDelegate):
 if __name__ == "__main__":
     
     from glue.qt import get_qapp
-    from glue.external.qt.QtGui import QTreeView
+    from glue.external.qt import QtGui
     from glue.core import Data, DataCollection
 
     app = get_qapp()

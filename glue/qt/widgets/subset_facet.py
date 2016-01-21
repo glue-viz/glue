@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt.QtGui import (QDialog, QDoubleValidator, QIcon)
+from glue.external.qt import QtGui
 import numpy as np
 from matplotlib import cm
 
@@ -33,12 +33,12 @@ class SubsetFacet(object):
         if default is not None:
             self.ui.component_selector.data = default
 
-        val = QDoubleValidator(-1e100, 1e100, 4, None)
+        val = QtGui.QDoubleValidator(-1e100, 1e100, 4, None)
         self.ui.component_selector.component_changed.connect(self._set_limits)
 
         combo = self.ui.color_scale
         for cmap in [cm.cool, cm.RdYlBu, cm.RdYlGn, cm.RdBu, cm.Purples]:
-            combo.addItem(QIcon(cmap2pixmap(cmap)), cmap.name, cmap)
+            combo.addItem(QtGui.QIcon(cmap2pixmap(cmap)), cmap.name, cmap)
 
     def _set_limits(self):
         data = self.ui.component_selector.data
@@ -81,5 +81,5 @@ class SubsetFacet(object):
         self = cls(collect, parent=parent, default=default)
         value = self.exec_()
 
-        if value == QDialog.Accepted:
+        if value == QtGui.QDialog.Accepted:
             self._apply()

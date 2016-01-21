@@ -5,11 +5,9 @@ editing the data collection
 
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt.QtGui import (QWidget, QMenu,
-                                  QAction, QKeySequence, QFileDialog)
+from glue.external.qt import QtGui, QtCore
+from glue.external.qt.QtCore import Qt
 
-
-from glue.external.qt.QtCore import Qt, Signal, QObject
 from glue.external.six.moves import reduce
 
 from glue.qt.ui.layertree import Ui_LayerTree
@@ -33,7 +31,7 @@ class Clipboard(object):
         self.contents = None
 
 
-class LayerAction(QAction):
+class LayerAction(QtGui.QAction):
     _title = ''
     _icon = None
     _tooltip = None
@@ -140,7 +138,7 @@ class NewAction(LayerAction):
     _title = "New Subset"
     _tooltip = "Create a new subset"
     _icon = "glue_subset"
-    _shortcut = QKeySequence('Ctrl+Shift+N')
+    _shortcut = QtGui.QKeySequence('Ctrl+Shift+N')
 
     def _can_trigger(self):
         return len(self.data_collection) > 0
@@ -153,7 +151,7 @@ class NewAction(LayerAction):
 class ClearAction(LayerAction):
     _title = "Clear subset"
     _tooltip = "Clear current subset"
-    _shortcut = QKeySequence('Ctrl+K')
+    _shortcut = QtGui.QKeySequence('Ctrl+K')
 
     def _can_trigger(self):
         return self.single_selection_subset_group()
@@ -167,7 +165,7 @@ class ClearAction(LayerAction):
 class DeleteAction(LayerAction):
     _title = "Delete Layer"
     _tooltip = "Delete the selected data and/or subset Groups"
-    _shortcut = QKeySequence(Qt.Key_Backspace)
+    _shortcut = QtGui.QKeySequence(Qt.Key_Backspace)
 
     def _can_trigger(self):
         selection = self.selected_layers()
@@ -232,7 +230,7 @@ class SaveAction(LayerAction):
 class CopyAction(LayerAction):
     _title = "Copy subset"
     _tooltip = "Copy the definition for the selected subset"
-    _shortcut = QKeySequence.Copy
+    _shortcut = QtGui.QKeySequence.Copy
 
     def _can_trigger(self):
         return self.single_selection_subset_group()
@@ -246,7 +244,7 @@ class CopyAction(LayerAction):
 class PasteAction(LayerAction):
     _title = "Paste subset"
     _tooltip = "Overwrite selected subset with contents from clipboard"
-    _shortcut = QKeySequence.Paste
+    _shortcut = QtGui.QKeySequence.Paste
 
     def _can_trigger(self):
         if not self.single_selection_subset_group():
@@ -272,24 +270,24 @@ class PasteSpecialAction(PasteAction):
         self.setMenu(self.menu())
 
     def menu(self):
-        m = QMenu()
+        m = QtGui.QMenu()
 
-        a = QAction("Or", m)
+        a = QtGui.QAction("Or", m)
         a.setIcon(get_icon('glue_or'))
         a.triggered.connect(nonpartial(self._paste, OrMode))
         m.addAction(a)
 
-        a = QAction("And", m)
+        a = QtGui.QAction("And", m)
         a.setIcon(get_icon('glue_and'))
         a.triggered.connect(nonpartial(self._paste, AndMode))
         m.addAction(a)
 
-        a = QAction("XOR", m)
+        a = QtGui.QAction("XOR", m)
         a.setIcon(get_icon('glue_xor'))
         a.triggered.connect(nonpartial(self._paste, XorMode))
         m.addAction(a)
 
-        a = QAction("Not", m)
+        a = QtGui.QAction("Not", m)
         a.setIcon(get_icon('glue_andnot'))
         a.triggered.connect(nonpartial(self._paste, AndNotMode))
         m.addAction(a)
@@ -371,11 +369,11 @@ class SingleSubsetUserAction(UserAction):
         return self._callback(subset, self.data_collection)
 
 
-class LayerCommunicator(QObject):
-    layer_check_changed = Signal(object, bool)
+class LayerCommunicator(QtCore.QObject):
+    layer_check_changed = QtCore.Signal(object, bool)
 
 
-class LayerTreeWidget(QWidget, Ui_LayerTree):
+class LayerTreeWidget(QtGui.QWidget, Ui_LayerTree):
 
     """The layertree widget provides a way to visualize the various
     data and subset layers in a Glue session.
@@ -387,7 +385,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
 
     def __init__(self, parent=None):
         Ui_LayerTree.__init__(self)
-        QWidget.__init__(self, parent)
+        QtGui.QWidget.__init__(self, parent)
 
         self._signals = LayerCommunicator()
         self._is_checkable = True
@@ -472,7 +470,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
     def _create_actions(self):
         tree = self.layerTree
 
-        sep = QAction("", tree)
+        sep = QtGui.QAction("", tree)
         sep.setSeparator(True)
         tree.addAction(sep)
 
@@ -489,7 +487,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
         self._actions['maskify'] = MaskifySubsetAction(self)
 
         # new component definer
-        separator = QAction("sep", tree)
+        separator = QtGui.QAction("sep", tree)
         separator.setSeparator(True)
         tree.addAction(separator)
 
@@ -542,7 +540,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
 
 def save_subset(subset):
     assert isinstance(subset, core.subset.Subset)
-    fname, fltr = QFileDialog.getSaveFileName(caption="Select an output name",
+    fname, fltr = QtGui.QFileDialog.getSaveFileName(caption="Select an output name",
                                               filter='FITS mask (*.fits);; Fits mask (*.fits)')
     fname = str(fname)
     if not fname:

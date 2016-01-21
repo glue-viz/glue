@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from glue.qt.widgets.data_viewer import DataViewer
 
-from glue.external.qt.QtGui import QTableView, QAbstractItemView, QItemSelectionModel, QItemSelection, QSortFilterProxyModel
+from glue.external.qt import QtGui
 from glue.external.qt.QtCore import Qt, QAbstractTableModel, QAbstractItemModel, QObject
 
 from glue.core import message as msg
@@ -146,7 +146,7 @@ class TableWidget(DataViewer):
 
         self.ui.table.clearSelection()
         selection_mode = self.ui.table.selectionMode()
-        self.ui.table.setSelectionMode(QAbstractItemView.MultiSelection);
+        self.ui.table.setSelectionMode(QtGui.QAbstractItemView.MultiSelection);
 
         # The following is more efficient than just calling selectRow
         model = self.ui.table.selectionModel()
@@ -154,7 +154,7 @@ class TableWidget(DataViewer):
             index = self.model.order[index]
             model_index = self.model.createIndex(index, 0)
             model.select(model_index,
-                         QItemSelectionModel.Select | QItemSelectionModel.Rows)
+                         QtGui.QItemSelectionModel.Select | QtGui.QItemSelectionModel.Rows)
 
         self.ui.table.setSelectionMode(selection_mode)
 

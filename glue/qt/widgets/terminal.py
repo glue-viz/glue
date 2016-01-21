@@ -25,8 +25,7 @@ from distutils.version import LooseVersion
 from contextlib import contextmanager
 
 # must import these first, to set up Qt properly
-from glue.external.qt import QtCore
-from glue.external.qt.QtGui import QInputDialog
+from glue.external.qt import QtGui, QtCore
 from glue.version import __version__
 from glue.utils import as_variable_name
 from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow
@@ -191,7 +190,7 @@ class DragAndDropTerminal(RichIPythonWidget):
         except (IndexError, AttributeError):
             lbl = 'x'
         lbl = as_variable_name(lbl)
-        var, ok = QInputDialog.getText(self, "Choose a variable name",
+        var, ok = QtGui.QInputDialog.getText(self, "Choose a variable name",
                                        "Choose a variable name", text=lbl)
         if ok:
             # unpack single-item lists for convenience

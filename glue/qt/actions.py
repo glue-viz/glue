@@ -1,12 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt.QtGui import QAction
+from glue.external.qt import QtGui
 from glue.qt.qtutil import get_icon
 
 
 def act(name, parent, tip='', icon=None, shortcut=None):
     """ Factory for making a new action """
-    a = QAction(name, parent)
+    a = QtGui.QAction(name, parent)
     a.setToolTip(tip)
     if icon:
         a.setIcon(get_icon(icon))
