@@ -1,7 +1,4 @@
-import os
-import pytest
 from mock import patch
-from glue.external.qt import QtCore
 
 from ..plugin_manager import QtPluginManager
 from glue import _plugin_helpers as ph

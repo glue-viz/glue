@@ -7,7 +7,7 @@ if not GINGA_INSTALLED:
     pytest.skip()
 
 import numpy as np
-from numpy.testing import assert_allclose, assert_array_equal
+from numpy.testing import assert_array_equal
 
 from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
 from ginga.misc import log

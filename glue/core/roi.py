@@ -1,12 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
-from functools import wraps
+
+import copy
 
 import numpy as np
-from matplotlib.patches import Polygon, Rectangle, Ellipse, PathPatch
-from matplotlib.patches import Path as mplPath
+
+from matplotlib.patches import Ellipse, Polygon, Rectangle, Path as mplPath
 from matplotlib.transforms import IdentityTransform, blended_transform_factory
-import copy
 
 np.seterr(all='ignore')
 

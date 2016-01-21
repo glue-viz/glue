@@ -2,8 +2,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import matplotlib.pyplot as plt
-from glue.external.qt import QtGui
 from ..widgets import MplWidget
 from ..glue_toolbar import GlueToolbar
 from ..mouse_mode import MouseMode

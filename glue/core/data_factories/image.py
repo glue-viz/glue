@@ -4,7 +4,7 @@ import numpy as np
 
 from glue.core.data import Data
 
-from glue.core.data_factories.helpers import has_extension, set_default_factory
+from glue.core.data_factories.helpers import has_extension
 from glue.core.coordinates import coordinates_from_wcs
 from glue.config import data_factory
 

@@ -1,9 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
+import numpy as np
+
 from glue.qt.widgets.data_viewer import DataViewer
 
-from glue.external.qt import QtGui
-from glue.external.qt.QtCore import Qt, QAbstractTableModel, QAbstractItemModel, QObject
+from glue.external.qt import QtGui, QtCore
+from glue.external.qt.QtCore import Qt
 
 from glue.core import message as msg
 from glue.core.edit_subset_mode import EditSubsetMode
@@ -11,10 +13,8 @@ from glue.core.subset import ElementSubsetState
 
 from glue.qt.qtutil import load_ui
 
-import numpy as np
 
-
-class DataTableModel(QAbstractTableModel):
+class DataTableModel(QtCore.QAbstractTableModel):
 
     def __init__(self, data):
         super(DataTableModel, self).__init__()

@@ -685,7 +685,6 @@ class InequalitySubsetState(SubsetState):
 
     @memoize
     def to_mask(self, data, view=None):
-        from glue.core.data import ComponentID
         left = self._left
         if not isinstance(self._left, numbers.Number):
             left = data[self._left, view]

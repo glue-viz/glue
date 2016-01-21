@@ -28,7 +28,7 @@ from glue.core.message import (DataUpdateMessage,
 # Note: leave all the following imports for component and component_id since
 # they are here for backward-compatibility (the code used to live in this 
 # file)
-from glue.core.component import Component, DerivedComponent, CoordinateComponent, CategoricalComponent
+from glue.core.component import Component, CoordinateComponent, DerivedComponent
 from glue.core.component_id import ComponentID, ComponentIDDict
 
 __all__ = ['Data']

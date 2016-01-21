@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import re
 
-from glue.external.qt import QtGui, QtCore
+from glue.external.qt import QtGui
 
 from glue import core
 from glue.core import parse

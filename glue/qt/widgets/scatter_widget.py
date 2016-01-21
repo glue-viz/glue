@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt import QtGui, QtCore
+from glue.external.qt import QtGui
 from glue.external.qt.QtCore import Qt
 
 from glue import core

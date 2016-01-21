@@ -17,7 +17,7 @@ by chaining x2y and y2z.
 """
 import logging
 
-from glue.core.data import DerivedComponent, Data, ComponentID
+from glue.core.data import Data, DerivedComponent
 from glue.core.component_link import ComponentLink
 from glue.core.link_helpers import LinkCollection
 from glue.external import six

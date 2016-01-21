@@ -1,5 +1,4 @@
 from glue.external.qt import QtCore
-from glue.external.qt.QtGui import QMainWindow
 from glue.core import Data
 
 from . import simple_session
