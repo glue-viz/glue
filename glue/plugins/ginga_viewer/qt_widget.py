@@ -5,6 +5,7 @@ import os.path
 import numpy as np
 
 from glue.external.qt import QtGui, QtCore
+from glue.external.qt.QtCore import Qt
 
 from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
 from ginga.qtw import ColorBar
