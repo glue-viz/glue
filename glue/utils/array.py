@@ -10,16 +10,22 @@ __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
            'coerce_numeric', 'check_sorted']
 
 
-# TODO: update docstrings
-
 def unique(array):
     """
     Return the unique elements of the array U, as well as
     the index array I such that U[I] == array
 
-    :param array: The array to use
-    :returns: U, I
-    :rtype: tuple of arrays
+    Parameters
+    ----------
+    array : `numpy.ndarray`
+        The array to use
+
+    Returns
+    -------
+    U : `numpy.ndarray`
+        The unique elements of the array
+    I : `numpy.ndarray`
+        The indices such that ``U[I] == array``
     """
     # numpy.unique doesn't handle mixed-types on python3,
     # so we use pandas
@@ -37,12 +43,17 @@ def shape_to_string(shape):
 
 
 def view_shape(shape, view):
-    """Return the shape of a view of an array
+    """
+    Return the shape of a view of an array.
 
-    :param shape: Tuple describing shape of the array
-    :param view: View object -- a valid index into a numpy array, or None
+    Returns equivalent of ``np.zeros(shape)[view].shape``
 
-    Returns equivalent of np.zeros(shape)[view].shape
+    Parameters
+    ----------
+    shape : tuple
+        The shape of the array
+    view : slice
+        A valid index into a Numpy array, or None
     """
     if view is None:
         return shape
@@ -67,16 +78,16 @@ def stack_view(shape, *views):
 
 
 def coerce_numeric(arr):
-    """Coerce an array into a numeric array, replacing
-       non-numeric elements with nans.
+    """
+    Coerce an array into a numeric array, replacing non-numeric elements with
+    nans.
 
-       If the array is already a numeric type, it is returned
-       unchanged
+    If the array is already a numeric type, it is returned unchanged
 
-       :param arr: array to coerce
-       :type arr: :class:`numpy.ndarray`
-
-       :returns: array.
+    Parameters
+    ----------
+    arr : `numpy.ndarray`
+        The array to coerce
     """
     # already numeric type
     if np.issubdtype(arr.dtype, np.number):
@@ -90,7 +101,8 @@ def coerce_numeric(arr):
 
 
 def check_sorted(array):
-    """ Return True if the array is sorted, False otherwise.
+    """
+    Return `True` if the array is sorted, `False` otherwise.
     """
     # this ignores NANs, and does the right thing if nans
     # are concentrated at beginning or end of array
@@ -103,10 +115,10 @@ def pretty_number(numbers):
     """
     Convert a list/array of numbers into a nice list of strings
 
-    :param numbers: Numbers to convert
-    :type numbers: List or other iterable of numbers
-
-    :rtype: A list of strings
+    Parameters
+    ----------
+    numbers : list
+        The numbers to convert
     """
     try:
         return [pretty_number(n) for n in numbers]

@@ -312,5 +312,5 @@ import astropy_helpers
 
 # coax Sphinx into treating descriptors as attributes
 # see https://bitbucket.org/birkenfeld/sphinx/issue/1254/#comment-7587063
-from glue.qt.widget_properties import WidgetProperty
+from glue.utils.qt.widget_properties import WidgetProperty
 WidgetProperty.__get__ = lambda self, *args, **kwargs: self

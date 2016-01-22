@@ -68,13 +68,16 @@ def get_extent(view, transpose=False):
 
 
 def view_cascade(data, view):
-    """ Return a set of views progressively zoomed out of input at roughly
-    constant pixel count
+    """
+    Return a set of views progressively zoomed out of input at roughly constant
+    pixel count
 
-    :param data: Data object to view
-    :param view: Original view into data
-
-    :rtype: tuple of views
+    Parameters
+    ----------
+    data : array-like
+        The array to view
+    view :
+        The original view into the data
     """
     shp = data.shape
     v2 = list(view)
@@ -102,15 +105,20 @@ def _scoreatpercentile(values, percentile, limit=None):
 
 
 def fast_limits(data, plo, phi):
-    """Quickly estimate percentiles in an array,
-    using a downsampled version
+    """
+    Quickly estimate percentiles in an array, using a downsampled version
 
-    :param data: array-like
-    :param plo: Lo percentile
-    :param phi: High percentile
+    Parameters
+    ----------
+    data : `numpy.ndarray`
+        The array to estimate the percentiles for
+    plo, phi : float
+        The percentile values
 
-    :rtype: Tuple of floats. Approximate values of each percentile in
-            data[component]
+    Returns
+    -------
+    lo, hi : float
+        The percentile values
     """
 
     shp = data.shape
@@ -247,16 +255,20 @@ def freeze_margins(axes, margins=[1, 1, 1, 1]):
 
 
 def cache_axes(axes, toolbar):
-    """ Setup an caching for an axes object
+    """
+    Set up caching for an axes object.
 
-    After this, cached renders will be used to quickly
-    re-render an axes during window resizing or
-    interactive pan/zooming.
+    After this, cached renders will be used to quickly re-render an axes during
+    window resizing or interactive pan/zooming.
 
-    :param axes: The matplotlib Axes object to cache
-    :param toolbar: The GlueToolbar managing the axes' canvas
+    This function returns an AxesCache instance.
 
-    :rtype: The AxesCache instance
+    Parameters
+    ----------
+    axes : `~matplotlib.axes.Axes`
+        The axes to cache
+    toolbar : `~glue.qt.glue_toolbar.GlueToolbar`
+        The toolbar managing the axes' canvas
     """
     canvas = axes.figure.canvas
     cache = AxesCache(axes)

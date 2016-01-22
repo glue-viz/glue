@@ -14,10 +14,9 @@ __all__ = ['DeferredMethod', 'nonpartial', 'lookup_class', 'as_variable_name',
 
 class DeferredMethod(object):
     """
-    This class stubs out a method, and provides a
-    callable interface that logs its calls. These
-    can later be actually executed on the original (non-stubbed)
-    method by calling executed_deferred_calls
+    This class stubs out a method, and provides a callable interface that logs
+    its calls. These can later be actually executed on the original
+    (non-stubbed) method by calling executed_deferred_calls
     """
 
     def __init__(self, method):
@@ -43,14 +42,16 @@ class DeferredMethod(object):
 
 
 def nonpartial(func, *args, **kwargs):
-    """Like functools.partial, this returns a function which,
-    when called, calls func(*args, **kwargs). Unlike functools.partial,
-    extra arguments passed to the returned function are *not* passed
-    to the input function.
+    """
+    Like functools.partial, this returns a function which, when called, calls
+    ``func(*args, **kwargs)``.
 
-    This is used when connecting slots to QAction.triggered signals,
-    which appear to have different signatures, which seem to add
-    and extra argument in PyQt4 but not PySide
+    Unlike functools.partial, extra arguments passed to the returned function
+    are *not* passed to the input function.
+
+    This is used when connecting slots to ``QAction.triggered`` signals, which
+    appear to have different signatures, which seem to add and extra argument
+    in PyQt4 but not PySide
     """
     def result(*a, **k):
         return func(*args, **kwargs)
@@ -59,11 +60,13 @@ def nonpartial(func, *args, **kwargs):
 
 
 def lookup_class(ref):
-    """ Look up an object via its module string (e.g., 'glue.core.Data')
+    """
+    Look up an object via its module string (e.g., 'glue.core.Data')
 
-    :param ref: reference
-    :type ref: str
-    :rtype: object
+    Parameters
+    ----------
+    ref : str
+        The module string
     """
     mod = ref.rsplit('.', 1)[0]
     try:
@@ -82,8 +85,15 @@ def as_variable_name(x):
     """
     Convert a string to a legal python variable name
 
-    :param x: A string to (possibly) rename
-    :returns: A legal python variable name
+    Parameters
+    ----------
+    x : str
+        A string to (possibly) rename
+
+    Returns
+    -------
+    variable_name : str
+        A legal Python variable name
     """
     allowed = string.ascii_letters + string.digits + '_'
     result = [letter if letter in allowed else '_' for letter in x or 'x']

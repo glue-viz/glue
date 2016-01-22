@@ -102,3 +102,14 @@ Utilities
 
 .. automodapi:: glue.core.visual
    :no-inheritance-diagram:
+
+.. automodapi:: glue.utils.array
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.utils.matplotlib
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.utils.misc
+   :no-inheritance-diagram:
+
+
