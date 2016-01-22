@@ -24,8 +24,10 @@ from glue.utils import lookup_class, defer_draw
 
 
 def requires_data(func):
-    """Decorator that checks an ImageClient for a non-null display_data
-    attribute. Only executes decorated function if present"""
+    """
+    Decorator that checks an ImageClient for a non-null display_data
+    attribute. Only executes decorated function if present.
+    """
     @wraps(func)
     def result(*args, **kwargs):
         if args[0].display_data is None:
@@ -96,21 +98,20 @@ class ImageClient(VizClient):
         return dict(pix=pix, world=world, labels=labels, value=value)
 
     def coordinate_labels(self, pix):
-        """ Return human-readable labels for a position in pixel coords
+        """
+        Return human-readable labels for a position in pixel coords
 
         Parameters
         ----------
         pix : tuple of int
-            Pixel coordiante of point in the data
+            Pixel coordinates of point in the data. Note that pix describes a
+            position in the *data*, not necessarily the image display.
 
         Returns
         -------
-        list of str
-            One string for each coordinate axis, of the form
-            "axis_lable_name=world_coordinate_value"
-
-        .. note:: pix describes a position in the *data*, not necessarily the
-        image display
+        list
+            A list of strings for each coordinate axis, of the form
+            ``axis_label_name=world_coordinate_value``
         """
         data = self.display_data
         if data is None:
@@ -130,9 +131,9 @@ class ImageClient(VizClient):
         The tuple has length equal to the dimensionality of the display
         data. Each entry is either:
 
-        'x' if the dimension is mapped to the X image axis
-        'y' if the dimension is mapped to the Y image axis
-        a number, indicating which fixed slice the dimension is restricted to
+        * 'x' if the dimension is mapped to the X image axis
+        * 'y' if the dimension is mapped to the Y image axis
+        * a number, indicating which fixed slice the dimension is restricted to
         """
         if self._slice is not None:
             return self._slice
@@ -172,7 +173,8 @@ class ImageClient(VizClient):
     @property
     def is_3D(self):
         """
-        Returns True if the display data has 3 dimensions """
+        Returns True if the display data has 3 dimensions
+        """
         if not self.display_data:
             return False
         return len(self.display_data.shape) == 3
@@ -181,7 +183,7 @@ class ImageClient(VizClient):
     def slice_ind(self):
         """
         For 3D data, returns the pixel index of the current slice.
-        Otherwise, returns None
+        Otherwise, returns `None`.
         """
         if self.is_3D:
             for s in self.slice:
@@ -195,8 +197,9 @@ class ImageClient(VizClient):
 
     @requires_data
     def override_image(self, image):
-        """Temporarily override the current slice view with another
-        image (i.e., an aggregate)
+        """
+        Temporarily override the current slice view with another image (i.e.,
+        an aggregate).
         """
         self._override_image = image
         for a in self.artists[self.display_data]:
@@ -269,7 +272,7 @@ class ImageClient(VizClient):
 
     def _redraw(self):
         """
-        Re-render the screen
+        Re-render the screen.
         """
         pass
 
@@ -321,7 +324,7 @@ class ImageClient(VizClient):
     @requires_data
     def _update_data_plot(self, relim=False, force=False):
         """
-        Re-sync the main image and its subsets
+        Re-sync the main image and its subsets.
         """
 
         if relim:
@@ -350,12 +353,12 @@ class ImageClient(VizClient):
 
     def _update_subset_single(self, s, redraw=False, force=False):
         """
-        Update the location and visual properties
-        of each point in a single subset
+        Update the location and visual properties of each point in a single
+        subset.
 
         Parameters
         ----------
-        s: Subset
+        s: `~glue.core.subset.Subset`
             The subset to refresh.
         """
         logging.getLogger(__name__).debug("update subset single: %s", s)
@@ -439,19 +442,20 @@ class ImageClient(VizClient):
         self.add_layer(layer)
 
     def rgb_mode(self, enable=None):
-        """ Query whether RGB mode is enabled, or toggle RGB mode
+        """
+        Query whether RGB mode is enabled, or toggle RGB mode.
 
         Parameters
         ----------
         enable : bool or None
-            If True or False, explicitly enable/disable RGB mode.
-            If None, check if RGB mode is enabled
+            If `True` or `False`, explicitly enable/disable RGB mode.
+            If `None`, check if RGB mode is enabled
 
         Returns
         -------
         LayerArtist or None
-            If RGB mode is enabled, returns an RGBImageLayerBase
-            If enable=False, return the new ImageLayerArtist
+            If RGB mode is enabled, returns an ``RGBImageLayerBase``.
+            If ``enable`` is `False`, return the new ``ImageLayerArtist``
         """
         # XXX need to better handle case where two RGBImageLayerArtists
         #    are created
@@ -573,12 +577,12 @@ class ImageClient(VizClient):
         return ids[x], ids[y]
 
     def _pixel_coords(self, x, y):
-        """ From a slice coordinate (x,y), return the full (possibly
-        >2D) numpy index into the full data
+        """
+        From a slice coordinate (x,y), return the full (possibly >2D) numpy
+        index into the full data.
 
         .. note:: The inputs to this function are the reverse of numpy
-        convention (horizontal axis first, then vertical)
-
+                  convention (horizontal axis first, then vertical)
 
         Returns
         -------
@@ -610,7 +614,9 @@ class ImageClient(VizClient):
             raise ValueError("Orientation must be 0, 1, or 2")
 
     def restore_layers(self, layers, context):
-        """ Restore a list of glue-serialized layer dicts """
+        """
+        Restore a list of glue-serialized layer dicts.
+        """
         for layer in layers:
             c = lookup_class(layer.pop('_type'))
             props = dict((k, v if k == 'stretch' else context.object(v))
@@ -653,7 +659,7 @@ class ImageClient(VizClient):
 
         Parameters
         ----------
-        layer : Data or Subset
+        layer : :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
             Which object to visualize
         """
         raise NotImplementedError()
@@ -664,7 +670,7 @@ class ImageClient(VizClient):
 
         Parameters
         ----------
-        layer : Data or Subset
+        layer : :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
             Which object to visualize
         """
         raise NotImplementedError()
@@ -675,7 +681,7 @@ class ImageClient(VizClient):
 
         Parameters
         ----------
-        layer : Data or Subset
+        layer : :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
             Which object to visualize
         """
         raise NotImplementedError()
@@ -686,15 +692,15 @@ class ImageClient(VizClient):
 
         Parameters
         ----------
-        layer : Data or Subset
+        layer : :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
             Which object to visualize
         """
         raise NotImplementedError()
 
     def _update_axis_labels(self):
         """
-        Sync the displays for labels on X/Y axes, because
-        the data or slice has changed
+        Sync the displays for labels on X/Y axes, because the data or slice has
+        changed
         """
         raise NotImplementedError()
 
@@ -757,7 +763,7 @@ class MplImageClient(ImageClient):
 
     def check_update(self, *args):
         """
-        For the MPL client, see if the view window has changed enough
+        For the Matplotlib client, see if the view window has changed enough
         such that the images should be resampled
         """
         logging.getLogger(__name__).debug("check update")
@@ -839,7 +845,8 @@ class MplImageClient(ImageClient):
 
 
 def _2d_shape(shape, slc):
-    """Return the shape of the 2D slice through a 2 or 3D image
+    """
+    Return the shape of the 2D slice through a 2 or 3D image.
     """
     # - numpy ordering here
     return shape[slc.index('y')], shape[slc.index('x')]
@@ -847,16 +854,16 @@ def _2d_shape(shape, slc):
 
 def _slice_axis(shape, slc):
     """
-    Return a 2-tuple of which axes in a dataset lie along the
-    x and y axes of the image
+    Return a 2-tuple of which axes in a dataset lie along the x and y axes of
+    the image.
 
     Parameters
     ----------
-    shape : tuple of int
+    shape : tuple
         Shape of original data.
-    slc : tuple of int
+    slc : tuple
         Slice through the data, 'x', and 'y'
-    """ # TODO: Did I get the slc type right?
+    """
     return slc.index('x'), slc.index('y')
 
 
@@ -868,7 +875,8 @@ def _axis_labels(data, slc):
 
 
 def _view_window(ax):
-    """ Return a tuple describing the view window of an axes object.
+    """
+    Return a tuple describing the view window of an axes object.
 
     The contents should not be used directly, Rather, several
     return values should be compared with == to determine if the
@@ -882,13 +890,9 @@ def _view_window(ax):
 
 
 def _default_component(data):
-    """Choose a default ComponentID to display for data
-
-    Returns
-    -------
-    ComponentID
-        PRIMARY if present
-    """ # TODO: Not sure about the return type
+    """
+    Choose a default ComponentID to display for data
+    """
     cid = data.find_component_id('PRIMARY')
     if cid is not None:
         return cid

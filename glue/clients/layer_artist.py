@@ -76,7 +76,7 @@ class LayerArtistBase(PropertySetMixin):
 
         Parameters
         ----------
-        layer : Data or Subset
+        layer : :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
             Data or Subset to draw
         layer : :class:`~glue.core.data.Data` or `glue.core.subset.Subset`
         """

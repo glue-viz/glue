@@ -133,7 +133,7 @@ class AttributeInfo(np.ndarray):
 
         Parameters
         ----------
-        layer : Data or Subset
+        layer : :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
             The data to use
         cid : ComponentID
             The ComponentID to use
