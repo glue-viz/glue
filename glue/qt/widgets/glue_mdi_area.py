@@ -11,7 +11,7 @@ class GlueMdiArea(QtGui.QMdiArea):
     """Glue's MdiArea implementation.
 
     Drop events with :class:`~glue.core.data.Data` objects in
-    :class:`~glue.qt.mime.PyMimeData` load these objects into new
+    :class:`~glue.utils.qt.PyMimeData` load these objects into new
     data viewers
     """
 

@@ -5,5 +5,7 @@ from .qmessagebox_widget import *
 from .colors import *
 from .dialogs import *
 from .helpers import *
+from .mixins import *
+from .mime import *
 from .python_list_model import *
 from .threading import *

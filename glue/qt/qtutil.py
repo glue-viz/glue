@@ -15,9 +15,10 @@ from glue.external.axescache import AxesCache
 from glue import core
 from glue.qt import ui, icons
 from glue.qt.decorators import set_cursor
-from glue.qt.mime import PyMimeData, LAYERS_MIME_TYPE
+from glue.qt.mime import LAYERS_MIME_TYPE
 from glue.utils.qt import (QMessageBoxPatched as QMessageBox, mpl_to_qt4_color,
-                           qt4_to_mpl_color, tint_pixmap, get_text)
+                           qt4_to_mpl_color, tint_pixmap, get_text, PyMimeData,
+                           GlueItemWidget)
 
 # We import nonpartial here for convenience
 from glue.utils import nonpartial
@@ -168,61 +169,6 @@ def edit_layer_label(layer):
         layer.label = str(label)
 
 
-class GlueItemWidget(object):
-
-    """ A mixin for QtGui.QListWidget/GlueTreeWidget subclasses, that
-    provides drag+drop funtionality.
-    """
-    # Implementation detail: QXXWidgetItems are unhashable in PySide,
-    # and cannot be used as dictionary keys. we hash on IDs instead
-
-    def __init__(self, parent=None):
-        super(GlueItemWidget, self).__init__(parent)
-        self._mime_data = {}
-        self.setDragEnabled(True)
-
-    def mimeTypes(self):
-        """Return the list of MIME Types supported for this object"""
-        types = [LAYERS_MIME_TYPE]
-        return types
-
-    def mimeData(self, selected_items):
-        """Return a list of MIME data associated with the each selected item
-
-        :param selected_items: List of QtGui.QListWidgetItems or QtGui.QTreeWidgetItems
-        :rtype: List of MIME objects
-        """
-        try:
-            data = [self.get_data(i) for i in selected_items]
-        except KeyError:
-            data = None
-        result = PyMimeData(data, **{LAYERS_MIME_TYPE: data})
-
-        # apparent bug in pyside garbage collects custom mime
-        # data, and crashes. Save result here to avoid
-        self._mime = result
-
-        return result
-
-    def get_data(self, item):
-        """Convenience method to fetch the data associated with a
-        QxxWidgetItem"""
-        # return item.data(Qt.UserRole)
-        return self._mime_data[id(item)]
-
-    def set_data(self, item, data):
-        """Convenience method to set data associated with a QxxWidgetItem"""
-        #item.setData(Qt.UserRole, data)
-        self._mime_data[id(item)] = data
-
-    def drop_data(self, item):
-        self._mime_data.pop(id(item))
-
-    @property
-    def data(self):
-        return self._mime_data
-
-
 POINT_ICONS = {'o': 'glue_circle_point',
                's': 'glue_box_point',
                '^': 'glue_triangle_up',
@@ -274,11 +220,7 @@ def layer_artist_icon(artist):
 
 
 class GlueListWidget(GlueItemWidget, QtGui.QListWidget):
-    pass
-
-
-class GlueTreeWidget(GlueItemWidget, QtGui.QTreeWidget):
-    pass
+    SUPPORTED_MIME_TYPE = LAYERS_MIME_TYPE
 
 
 class GlueActionButton(QtGui.QPushButton):
