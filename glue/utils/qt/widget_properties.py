@@ -23,7 +23,7 @@ from functools import partial
 
 from glue.external.six.moves import reduce
 from glue.external.qt import QtGui
-from glue.core.callback_property import add_callback
+from glue.external.echo import add_callback
 from glue.utils.array import pretty_number
 
 

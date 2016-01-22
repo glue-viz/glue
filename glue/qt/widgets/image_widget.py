@@ -11,7 +11,7 @@ from glue.qt.glue_toolbar import GlueToolbar
 from glue.qt.mouse_mode import (RectangleMode, CircleMode, PolyMode,
                                 ContrastMode)
 from glue.qt.qtutil import load_ui, get_icon
-from glue.qt.widget_properties import CurrentComboProperty, ButtonProperty, connect_current_combo, _find_combo_data
+from glue.utils.qt.widget_properties import CurrentComboProperty, ButtonProperty, connect_current_combo, _find_combo_data
 from glue.qt.widgets.data_slice_widget import DataSlice
 from glue.qt.widgets.data_viewer import DataViewer
 from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow

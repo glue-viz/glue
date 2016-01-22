@@ -5,7 +5,7 @@ from collections import Counter
 
 from glue.external.qt import QtGui, QtCore
 from glue.qt.qtutil import load_ui
-from glue.qt.widget_properties import (TextProperty,
+from glue.utils.qt.widget_properties import (TextProperty,
                                        ValueProperty,
                                        CurrentComboProperty)
 from glue.utils import nonpartial

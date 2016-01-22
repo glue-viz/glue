@@ -8,7 +8,7 @@ from glue.qt.glue_toolbar import GlueToolbar
 from glue.qt.mouse_mode import (RectangleMode, CircleMode,
                                 PolyMode, HRangeMode, VRangeMode)
 from glue.qt.qtutil import load_ui
-from glue.qt.widget_properties import (ButtonProperty, FloatLineProperty,
+from glue.utils.qt.widget_properties import (ButtonProperty, FloatLineProperty,
                                        CurrentComboProperty,
                                        connect_bool_button, connect_float_edit)
 from glue.qt.widgets.data_viewer import DataViewer
