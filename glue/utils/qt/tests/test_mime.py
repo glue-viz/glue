@@ -63,50 +63,49 @@ class TestMime():
         assert d.data('not-a-format').size() == 0
 
 
-class TestWidget(QtGui.QWidget):
-    def __init__(self, out_mime, parent=None):
-        super(TestWidget, self).__init__(parent)
-        self.setAcceptDrops(True)
-
-        self.last_mime = None
-        self.out_mime = out_mime
-
-    def dragEnterEvent(self, event):
-        print('drag enter')
-        event.accept()
-
-    def dropEvent(self, event):
-        print('drop')
-        self.last_mime = event.mimeData()
-
-    def mousePressEvent(self, event):
-        print('mouse event')
-        drag = QtGui.QDrag(self)
-        drag.setMimeData(self.out_mime)
-        drop_action = drag.exec_()
-        print(drop_action)
-        event.accept()
-
-
-class TestMimeDragAndDrop(object):
-
-    def setup_method(self, method):
-
-        m1 = mime.PyMimeData(1, **{'text/plain': 'hi', 'test': 4})
-        m2 = mime.PyMimeData(1, **{'test': 5})
-
-        w1 = TestWidget(m1)
-        w2 = TestWidget(m2)
-
-        self.w1 = w1
-        self.w2 = w2
-        self.m1 = m1
-        self.m2 = m2
-
-    @pytest.mark.xfail
-    def test_drag_drop(self):
-        QTest.mousePress(self.w1, Qt.LeftButton)
-        QTest.mouseMove(self.w2)
-        QTest.mouseRelease(self.w2, Qt.LeftButton)
-
-        assert self.w2.last_mime == self.m1
+# class TestWidget(QtGui.QWidget):
+#     def __init__(self, out_mime, parent=None):
+#         super(TestWidget, self).__init__(parent)
+#         self.setAcceptDrops(True)
+#
+#         self.last_mime = None
+#         self.out_mime = out_mime
+#
+#     def dragEnterEvent(self, event):
+#         print('drag enter')
+#         event.accept()
+#
+#     def dropEvent(self, event):
+#         print('drop')
+#         self.last_mime = event.mimeData()
+#
+#     def mousePressEvent(self, event):
+#         print('mouse event')
+#         drag = QtGui.QDrag(self)
+#         drag.setMimeData(self.out_mime)
+#         drop_action = drag.exec_()
+#         print(drop_action)
+#         event.accept()
+#
+#
+# class TestMimeDragAndDrop(object):
+#
+#     def setup_method(self, method):
+#
+#         m1 = mime.PyMimeData(1, **{'text/plain': 'hi', 'test': 4})
+#         m2 = mime.PyMimeData(1, **{'test': 5})
+#
+#         w1 = TestWidget(m1)
+#         w2 = TestWidget(m2)
+#
+#         self.w1 = w1
+#         self.w2 = w2
+#         self.m1 = m1
+#         self.m2 = m2
+#
+#     def test_drag_drop(self):
+#         QTest.mousePress(self.w1, Qt.LeftButton)
+#         QTest.mouseMove(self.w2)
+#         QTest.mouseRelease(self.w2, Qt.LeftButton)
+#
+#         assert self.w2.last_mime == self.m1
