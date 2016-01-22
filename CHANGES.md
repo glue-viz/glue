@@ -12,6 +12,8 @@ v0.7 (unreleased)
 * Added documentation about how to use layer artists in custom Qt data viewers.
   [#814]
 
+* Internal re-organization of code. [#827, #828, #829, #830, #831]
+
 v0.6 (2015-11-20)
 -----------------
 
