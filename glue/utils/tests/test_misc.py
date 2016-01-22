@@ -91,3 +91,6 @@ def test_lookup_class():
 def test_as_list():
     as_list(1) == [1]
     as_list([2, 3]) == [2, 3]
+
+
+# TODO: add test for PropertySetMixin

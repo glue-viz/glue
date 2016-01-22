@@ -21,11 +21,11 @@ from matplotlib.cm import gray
 
 from glue.external import six
 from glue.core.subset import Subset
-from glue.core.util import PropertySetMixin
 from glue.core.exceptions import IncompatibleAttribute
 from glue.clients.ds9norm import DS9Normalize
 from glue.clients.util import small_view, small_view_array
-from glue.utils import view_cascade, get_extent, color2rgb, Pointer
+from glue.utils import (view_cascade, get_extent, color2rgb, Pointer,
+                        PropertySetMixin)
 
 
 __all__ = ['LayerArtistBase', 'LayerArtist',

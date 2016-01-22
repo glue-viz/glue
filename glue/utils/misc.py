@@ -2,12 +2,14 @@ from __future__ import absolute_import, division, print_function
 
 import string
 from functools import partial
+from contextlib import contextmanager
 
 from glue.external.six.moves import reduce
 
 
 __all__ = ['DeferredMethod', 'nonpartial', 'lookup_class', 'as_variable_name',
-           'as_list', 'file_format', 'CallbackMixin', 'Pointer']
+           'as_list', 'file_format', 'CallbackMixin', 'PropertySetMixin',
+           'Pointer', 'defer']
 
 
 class DeferredMethod(object):
@@ -127,6 +129,38 @@ class CallbackMixin(object):
             func(*args, **kwargs)
 
 
+class PropertySetMixin(object):
+
+    """An object that provides a set of properties that
+    are meant to encapsulate state information
+
+    This class exposes a properties attribute, which is a dict
+    of all properties. Similarly, assigning to the properties dict
+    will update the individual properties
+    """
+    _property_set = []
+
+    @property
+    def properties(self):
+        """ A dict mapping property names to values """
+        return dict((p, getattr(self, p)) for p in self._property_set)
+
+    @properties.setter
+    def properties(self, value):
+        """ Update the properties with a new dict.
+
+        Keys in the new dict must be valid property names defined in
+        the _property_set class level attribute"""
+        invalid = set(value.keys()) - set(self._property_set)
+        if invalid:
+            raise ValueError("Invalid property values: %s" % invalid)
+
+        for k in self._property_set:
+            if k not in value:
+                continue
+            setattr(self, k, value[k])
+
+
 class Pointer(object):
 
     def __init__(self, key):
@@ -142,3 +176,40 @@ class Pointer(object):
         v = self.key.split('.')
         attr = reduce(getattr, [instance] + v[:-1])
         setattr(attr, v[-1], value)
+
+
+# TODO: defer can be removed since it doesn't appear to be used anywhere
+
+@contextmanager
+def defer(instance, method):
+    """
+    Defer the calling of a method inside a context manager,
+    and then call it 0 or 1 times afterwards.
+
+    :param instance: The instance of the method to defer
+    :param method: The name of the method to defer
+    :type method: str
+
+    Within the context block, calls to the method will be
+    intercepted, logged, and skipped.
+
+    Upon exiting the context block, the method will be
+    invoked a single time, with the arguments of the
+    most recent invokation inside the context block.
+
+    If the method is never invoked in the context block,
+    it is not called when leaving that block.
+    """
+    history = []
+
+    def log(*a, **k):
+        history.append((a, k))
+
+    orig = getattr(instance, method)
+    setattr(instance, method, log)
+    try:
+        yield
+    finally:
+        setattr(instance, method, orig)
+        for a, k in history[-1:]:
+            orig(*a, **k)
