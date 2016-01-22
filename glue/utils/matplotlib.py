@@ -4,8 +4,9 @@ import logging
 from functools import wraps
 
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_agg import FigureCanvasAgg
+
+# We avoid importing matplotlib up here otherwise Matplotlib and therefore Qt
+# get imported as soon as glue.utils is imported.
 
 from glue.external.axescache import AxesCache
 from glue.utils.misc import DeferredMethod
@@ -19,6 +20,7 @@ __all__ = ['renderless_figure', 'all_artists', 'new_artists', 'remove_artists',
 def renderless_figure():
     # Matplotlib figure that skips the render step, for test speed
     from mock import MagicMock
+    import matplotlib.pyplot as plt
     fig = plt.figure()
     fig.canvas.draw = MagicMock()
     plt.close('all')
@@ -143,6 +145,8 @@ def defer_draw(func):
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
+
+        from matplotlib.backends.backend_agg import FigureCanvasAgg
 
         # don't recursively defer draws
         if isinstance(FigureCanvasAgg.draw, DeferredMethod):
