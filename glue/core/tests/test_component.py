@@ -2,21 +2,21 @@
 
 from __future__ import absolute_import, division, print_function
 
+import warnings
 import operator
 
-import warnings
-from mock import MagicMock
 import pytest
 import numpy as np
+from mock import MagicMock
 
-from ..data import Data
+from glue.external import six
+from glue import core
+from glue.tests.helpers import requires_astropy
+
 from ..component import (Component, DerivedComponent, CoordinateComponent,
                          CategoricalComponent)
 from ..component_id import ComponentID
-
-from glue import core
-from glue.tests.helpers import requires_astropy
-from glue.external import six
+from ..data import Data
 
 
 VIEWS = (np.s_[:], np.s_[1], np.s_[::-1], np.s_[0, :])

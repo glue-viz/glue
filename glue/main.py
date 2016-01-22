@@ -4,9 +4,9 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 import optparse
-from glue.logger import logger
 
 from glue import __version__
+from glue.logger import logger
 
 
 def parse(argv):
@@ -178,10 +178,10 @@ def start_glue(gluefile=None, config=None, datafiles=None):
 
     session = glue.core.Session(data_collection=data, hub=hub)
     ga = GlueApplication(session=session)
-    #ga.show()
-    #splash.close()
-    #ga.raise_()
-    #QApplication.instance().processEvents()
+    # ga.show()
+    # splash.close()
+    # ga.raise_()
+    # QApplication.instance().processEvents()
     return ga.start()
 
 

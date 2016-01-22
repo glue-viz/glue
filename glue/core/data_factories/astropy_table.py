@@ -2,10 +2,10 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
+from glue.core.data_factories.helpers import has_extension
 from glue.core.data import Component, Data
 from glue.config import data_factory
 
-from glue.core.data_factories.helpers import has_extension
 
 __all__ = ['astropy_tabular_data', 'sextractor_factory', 'cds_factory',
            'daophot_factory', 'ipac_factory', 'aastex_factory',
@@ -18,7 +18,7 @@ __all__ = ['astropy_tabular_data', 'sextractor_factory', 'cds_factory',
 def is_readable_by_astropy(filename, **kwargs):
     # This identifier is not efficient, because it involves actually trying
     # to read in the table. However, we only use this as the identifier for
-    # the astropy_tabular_data factory which has a priority of 0 and is 
+    # the astropy_tabular_data factory which has a priority of 0 and is
     # therefore only used as a last attempt if all else fails.
     try:
         astropy_table_read(filename, **kwargs)
@@ -29,7 +29,7 @@ def is_readable_by_astropy(filename, **kwargs):
 
 
 def astropy_table_read(*args, **kwargs):
-    
+
     from astropy.table import Table
 
     # In Python 3, as of Astropy 0.4, if the format is not specified, the
@@ -37,7 +37,7 @@ def astropy_table_read(*args, **kwargs):
     # This is only a problem for ASCII formats however, because it is due
     # to the fact that the file object in io.ascii does not rewind to the
     # start between guesses (due to a bug), so here we can explicitly try
-    # the ASCII format if the format keyword was not already present. But 
+    # the ASCII format if the format keyword was not already present. But
     # also more generally, we should first try the ASCII readers.
     if 'format' not in kwargs:
         try:

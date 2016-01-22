@@ -1,28 +1,23 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt import QtGui, QtCore
-from glue.external.qt.QtCore import Qt
-
-from glue.qt.widgets.data_viewer import DataViewer
-from glue import core
-
-from glue.clients.image_client import MplImageClient
-from glue.clients.ds9norm import DS9Normalize
 from glue.external.modest_image import imshow
-
-from glue.clients.layer_artist import Pointer
+from glue.external.qt.QtCore import Qt
+from glue.external.qt import QtGui, QtCore
 from glue.core.callback_property import add_callback, delay_callback
-
-from glue.qt.widgets.data_slice_widget import DataSlice
-
-from glue.qt.mouse_mode import (RectangleMode, CircleMode, PolyMode,
-                          ContrastMode)
+from glue import core
+from glue.clients.ds9norm import DS9Normalize
+from glue.clients.image_client import MplImageClient
+from glue.clients.layer_artist import Pointer
 from glue.qt.glue_toolbar import GlueToolbar
-from glue.qt.widgets.mpl_widget import MplWidget, defer_draw
-
+from glue.qt.mouse_mode import (RectangleMode, CircleMode, PolyMode,
+                                ContrastMode)
 from glue.qt.qtutil import cmap2pixmap, load_ui, get_icon, nonpartial, update_combobox
 from glue.qt.widget_properties import CurrentComboProperty, ButtonProperty, connect_current_combo, _find_combo_data
+from glue.qt.widgets.data_slice_widget import DataSlice
+from glue.qt.widgets.data_viewer import DataViewer
 from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow
+from glue.qt.widgets.mpl_widget import MplWidget, defer_draw
+
 
 WARN_THRESH = 10000000  # warn when contouring large images
 
@@ -123,13 +118,13 @@ class ImageWidgetBase(DataViewer):
             # datasets (tables/catalogs) to the image widget yet.
             if data.data.ndim == 1 and self.client.display_data is None:
                 QtGui.QMessageBox.information(self.window(), "Note",
-                                        "Cannot create image viewer from a 1-D "
-                                        "dataset. You will need to first "
-                                        "create an image viewer using data "
-                                        "with 2 or more dimensions, after "
-                                        "which you will be able to overlay 1-D "
-                                        "data as a scatter plot.",
-                                        buttons=QtGui.QMessageBox.Ok)
+                                              "Cannot create image viewer from a 1-D "
+                                              "dataset. You will need to first "
+                                              "create an image viewer using data "
+                                              "with 2 or more dimensions, after "
+                                              "which you will be able to overlay 1-D "
+                                              "data as a scatter plot.",
+                                              buttons=QtGui.QMessageBox.Ok)
                 return
 
             r = self.client.add_layer(data)
@@ -351,8 +346,8 @@ class ImageWidgetBase(DataViewer):
         cancel = QtGui.QMessageBox.Cancel
         buttons = ok | cancel
         result = QtGui.QMessageBox.question(self, title, warn_msg,
-                                      buttons=buttons,
-                                      defaultButton=cancel)
+                                            buttons=buttons,
+                                            defaultButton=cancel)
         return result == ok
 
     def options_widget(self):

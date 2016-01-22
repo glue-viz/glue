@@ -5,22 +5,18 @@ editing the data collection
 
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt import QtGui, QtCore
 from glue.external.qt.QtCore import Qt
-
-
-from glue.qt.ui.layertree import Ui_LayerTree
-
-from glue import core
-
-from glue.qt.link_editor import LinkEditor
-from glue.qt import qtutil
-from glue.qt.qtutil import get_icon, nonpartial
-from glue.qt.widgets.custom_component_widget import CustomComponentWidget
-from glue.qt.actions import act as _act
+from glue.external.qt import QtGui, QtCore
 from glue.core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode
-from glue.qt.widgets.subset_facet import SubsetFacet
 from glue.config import single_subset_action
+from glue import core
+from glue.qt import qtutil
+from glue.qt.actions import act as _act
+from glue.qt.link_editor import LinkEditor
+from glue.qt.qtutil import get_icon, nonpartial
+from glue.qt.ui.layertree import Ui_LayerTree
+from glue.qt.widgets.custom_component_widget import CustomComponentWidget
+from glue.qt.widgets.subset_facet import SubsetFacet
 
 
 @core.decorators.singleton
@@ -540,7 +536,7 @@ class LayerTreeWidget(QtGui.QWidget, Ui_LayerTree):
 def save_subset(subset):
     assert isinstance(subset, core.subset.Subset)
     fname, fltr = QtGui.QFileDialog.getSaveFileName(caption="Select an output name",
-                                              filter='FITS mask (*.fits);; Fits mask (*.fits)')
+                                                    filter='FITS mask (*.fits);; Fits mask (*.fits)')
     fname = str(fname)
     if not fname:
         return

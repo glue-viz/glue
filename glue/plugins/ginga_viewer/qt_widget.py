@@ -1,37 +1,33 @@
-from __future__ import print_function, division
+from __future__ import absolute_import, division, print_function
 
 import sys
 import os.path
+
 import numpy as np
-
-from glue.external.qt import QtGui, QtCore
-from glue.external.qt.QtCore import Qt
-
-from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
+from ginga.misc import log
 from ginga.qtw import ColorBar
+from ginga import cmap as ginga_cmap
+from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
+
+from glue.external.qt.QtCore import Qt
+from glue.external.qt import QtGui, QtCore
+from glue.core.callback_property import add_callback
+from glue.core import roi as roimod
+from glue.config import tool_registry
+from glue.plugins.ginga_viewer.client import GingaClient
+from glue.plugins.tools.pv_slicer import PVSlicerTool
+from glue.plugins.tools.spectrum_tool import SpectrumTool
+from glue.qt.qtutil import get_icon, nonpartial
+from glue.qt.widgets.image_widget import ImageWidgetBase
+
 
 try:
     from ginga.gw import Readout
 except ImportError:  # older versions of ginga
     from ginga.qtw import Readout
 
-from ginga.misc import log
-from ginga import cmap as ginga_cmap
 # ginga_cmap.add_matplotlib_cmaps()
 
-from glue.qt.widgets.image_widget import ImageWidgetBase
-
-from glue.plugins.ginga_viewer.client import GingaClient
-
-from glue.core import roi as roimod
-from glue.core.callback_property import add_callback
-
-from glue.qt.qtutil import get_icon, nonpartial
-
-from glue.plugins.tools.pv_slicer import PVSlicerTool
-from glue.plugins.tools.spectrum_tool import SpectrumTool
-
-from glue.config import tool_registry
 
 # Find out location of ginga module so we can some of its icons
 ginga_home = os.path.split(sys.modules['ginga'].__file__)[0]
@@ -48,7 +44,7 @@ class GingaWidget(ImageWidgetBase):
 
         self.logger = log.get_logger(name='ginga', level=20, null=True,
                                      # uncomment for debugging
-                                     #log_stderr=True
+                                     # log_stderr=True
                                      )
 
         self.canvas = ImageViewCanvas(self.logger, render='widget')
@@ -432,7 +428,7 @@ def cmap2pixmap(cmap, steps=50):
     n = len(cmap.clst) - 1
     tups = [cmap.clst[int(x * n)] for x in inds]
     rgbas = [QtGui.QColor(int(r * 255), int(g * 255),
-                    int(b * 255), 255).rgba() for r, g, b in tups]
+                          int(b * 255), 255).rgba() for r, g, b in tups]
     im = QtGui.QImage(steps, 1, QtGui.QImage.Format_Indexed8)
     im.setColorTable(rgbas)
     for i in range(steps):

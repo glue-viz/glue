@@ -1,14 +1,16 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 
 from __future__ import absolute_import, division, print_function
 
 import pytest
 import numpy as np
 
+from glue.core import ComponentID, Data, Component, DataCollection
+
 from .. import link_helpers as lh
 from ..link_helpers import (LinkTwoWay, MultiLink,
                             LinkSame, LinkAligned)
-from glue.core import ComponentID, Data, Component, DataCollection
+
 
 R, D, L, B = (ComponentID('ra'), ComponentID('dec'),
               ComponentID('lon'), ComponentID('lat'))

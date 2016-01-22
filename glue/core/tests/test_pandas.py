@@ -1,13 +1,14 @@
+from __future__ import absolute_import, division, print_function
 
-from mock import MagicMock
 import numpy as np
 import pandas as pd
+from mock import MagicMock
 from pandas.util.testing import (assert_series_equal,
                                  assert_frame_equal)
 
-from ..data import Data
 from ..component import (Component, DerivedComponent, CoordinateComponent,
                          CategoricalComponent)
+from ..data import Data
 
 
 class TestPandasConversion(object):

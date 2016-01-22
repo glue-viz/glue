@@ -4,14 +4,14 @@ from __future__ import absolute_import, division, print_function
 
 import itertools
 
-import numpy as np
 import pytest
+import numpy as np
 
+from ..data import Component, Data
+from ..data_collection import DataCollection
 from ..edit_subset_mode import (EditSubsetMode, ReplaceMode, OrMode, AndMode,
                                 XorMode, AndNotMode)
 from ..subset import ElementSubsetState, SubsetState
-from ..data import Component, Data
-from ..data_collection import DataCollection
 
 
 class TestEditSubsetMode(object):

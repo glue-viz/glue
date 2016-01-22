@@ -1,15 +1,15 @@
 from __future__ import absolute_import, division, print_function
 
-from tempfile import mkdtemp
 import os
 from shutil import rmtree
+from tempfile import mkdtemp
 
 import numpy as np
 
-from ..export_d3po import make_data_file
 from glue.core import Data
-
 from glue.tests.helpers import requires_astropy
+
+from ..export_d3po import make_data_file
 
 
 @requires_astropy

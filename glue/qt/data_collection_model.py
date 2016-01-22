@@ -1,15 +1,17 @@
 # pylint: disable=E1101,F0401
 
-from glue.external.qt import QtGui, QtCore, is_pyqt5
-from glue.external.qt.QtCore import Qt
+from __future__ import absolute_import, division, print_function
 
-from glue.qt.qtutil import layer_icon
-from glue.qt.mime import LAYERS_MIME_TYPE, PyMimeData
-from glue.core.decorators import memoize
-from glue.core import message as m
+from glue.external.qt.QtCore import Qt
+from glue.external.qt import QtGui, QtCore, is_pyqt5
 from glue.core.hub import HubListener
+from glue.core import message as m
+from glue.core.decorators import memoize
 from glue import core
+from glue.qt.mime import LAYERS_MIME_TYPE, PyMimeData
+from glue.qt.qtutil import layer_icon
 from glue.qt.widgets.style_dialog import StyleDialog
+
 
 DATA_IDX = 0
 SUBSET_IDX = 1
@@ -523,7 +525,7 @@ class LabeledDelegate(QtGui.QStyledItemDelegate):
 
 
 if __name__ == "__main__":
-    
+
     from glue.qt import get_qapp
     from glue.external.qt import QtGui
     from glue.core import Data, DataCollection

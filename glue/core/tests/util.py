@@ -1,14 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
-import tempfile
-from contextlib import contextmanager
 import os
 import zlib
+import tempfile
+from contextlib import contextmanager
 
 from mock import MagicMock
 
-from glue import core
 from glue.core.application_base import Application
+from glue import core
 
 
 @contextmanager

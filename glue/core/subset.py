@@ -1,22 +1,22 @@
 from __future__ import absolute_import, division, print_function
 
-import operator
 import numbers
+import operator
 
 import numpy as np
 
-from glue.core.visual import VisualAttributes
-from glue.core.decorators import memoize
-from glue.core.message import SubsetDeleteMessage, SubsetUpdateMessage
-from glue.core.exceptions import IncompatibleAttribute
-from glue.core.registry import Registry
-from glue.core.util import split_component_view
-from glue.utils import view_shape
 from glue.external.six import PY3
-from glue.core.contracts import contract
 from glue.core.roi import CategoricalRoi
-
+from glue.core.contracts import contract
+from glue.core.util import split_component_view
+from glue.core.registry import Registry
+from glue.core.exceptions import IncompatibleAttribute
+from glue.core.message import SubsetDeleteMessage, SubsetUpdateMessage
+from glue.core.decorators import memoize
+from glue.core.visual import VisualAttributes
 from glue.config import settings
+from glue.utils import view_shape
+
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState',

@@ -8,10 +8,13 @@ Utility function to load a variety of python objects into glue
 
 from __future__ import absolute_import, division, print_function
 
-from contextlib import contextmanager
 import sys
+from contextlib import contextmanager
 
 import numpy as np
+
+from glue.external import six
+
 
 try:
     from glue.core import Data
@@ -20,7 +23,6 @@ except ImportError:
     # qglue will throw an ImportError
     Data = None
 
-from glue.external import six
 
 __all__ = ['qglue']
 

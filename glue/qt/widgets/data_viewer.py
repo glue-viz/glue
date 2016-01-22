@@ -2,16 +2,15 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from glue.external.qt import QtGui
 from glue.external.qt.QtCore import Qt
-
+from glue.external.qt import QtGui
 from glue.core.application_base import ViewerBase
-from glue.qt.decorators import set_cursor
-
-from glue.qt.layer_artist_model import QtLayerArtistContainer, LayerArtistView
 from glue.qt import get_qapp
+from glue.qt.decorators import set_cursor
+from glue.qt.layer_artist_model import QtLayerArtistContainer, LayerArtistView
 from glue.qt.mime import LAYERS_MIME_TYPE, LAYER_MIME_TYPE
 from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow
+
 
 __all__ = ['DataViewer']
 
@@ -165,9 +164,9 @@ class DataViewer(ViewerBase, QtGui.QMainWindow):
         if self._warn_close and (not os.environ.get('GLUE_TESTING')) and self.isVisible():
             buttons = QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel
             dialog = QtGui.QMessageBox.warning(self, "Confirm Close",
-                                         "Do you want to close this window?",
-                                         buttons=buttons,
-                                         defaultButton=QtGui.QMessageBox.Cancel)
+                                               "Do you want to close this window?",
+                                               buttons=buttons,
+                                               defaultButton=QtGui.QMessageBox.Cancel)
             return dialog == QtGui.QMessageBox.Ok
         return True
 
@@ -179,8 +178,8 @@ class DataViewer(ViewerBase, QtGui.QMainWindow):
         cancel = QtGui.QMessageBox.Cancel
         buttons = ok | cancel
         result = QtGui.QMessageBox.question(self, title, warn_msg,
-                                      buttons=buttons,
-                                      defaultButton=cancel)
+                                            buttons=buttons,
+                                            defaultButton=cancel)
         return result == ok
 
     def layer_view(self):

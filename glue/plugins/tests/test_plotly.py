@@ -1,8 +1,11 @@
+from __future__ import absolute_import, division, print_function
+
 import numpy as np
 
 from glue.core import Data, DataCollection
 from glue.qt.glue_application import GlueApplication
 from glue.qt.widgets import HistogramWidget, ScatterWidget
+
 from ..export_plotly import build_plotly_call
 
 

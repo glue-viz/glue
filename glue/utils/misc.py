@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import string
 from functools import partial
 
+
 __all__ = ['DeferredMethod', 'nonpartial', 'lookup_class', 'as_variable_name',
            'as_list', 'file_format']
 

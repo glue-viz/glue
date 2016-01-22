@@ -4,12 +4,13 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from ..data import Data, Component
 from ..component_link import ComponentLink
+from ..data import ComponentID, DerivedComponent
+from ..data import Data, Component
+from ..data_collection import DataCollection
 from ..link_manager import (LinkManager, accessible_links, discover_links,
                             find_dependents)
-from ..data import ComponentID, DerivedComponent
-from ..data_collection import DataCollection
+
 
 comp = Component(data=np.array([1, 2, 3]))
 

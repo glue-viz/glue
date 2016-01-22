@@ -1,15 +1,19 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 
-from glue.qt.widgets.tests import simple_session
+from __future__ import absolute_import, division, print_function
+
+import os
+
 from glue import core
+from glue.qt.widgets.tests import simple_session
+from glue.qt.widgets.tests.test_data_viewer import BaseTestDataViewer
 
 from ..qt_widget import DendroWidget
-from glue.qt.widgets.tests.test_data_viewer import BaseTestDataViewer
+
 
 def mock_data():
     return core.Data(label='d1', x=[1, 2, 3], y=[2, 3, 4])
 
-import os
 os.environ['GLUE_TESTING'] = 'True'
 
 

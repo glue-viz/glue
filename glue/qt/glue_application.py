@@ -7,29 +7,27 @@ import sys
 import warnings
 import webbrowser
 
-from glue.external.qt import QtGui, QtCore
 from glue.external.qt.QtCore import Qt
-
-from glue.utils.qt import QMessageBoxPatched as QMessageBox
-
+from glue.external.qt import QtGui, QtCore
+from glue.core.application_base import Application
 from glue.core import command, Data
 from glue import env
 from glue.main import load_plugins
 from glue.qt import get_qapp
-from glue.qt.decorators import set_cursor, messagebox_on_error
-from glue.core.application_base import Application
-
 from glue.qt.actions import act
-from glue.qt.qtutil import (pick_class, data_wizard,
-                     GlueTabBar, load_ui, get_icon, nonpartial)
-from glue.qt.widgets.glue_mdi_area import GlueMdiArea, GlueMdiSubWindow
-from glue.qt.widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
-from glue.qt.widgets.layer_tree_widget import PlotAction, LayerTreeWidget
-from glue.qt.widgets.data_viewer import DataViewer
-from glue.qt.widgets.settings_editor import SettingsEditor
-from glue.qt.widgets.mpl_widget import defer_draw
+from glue.qt.decorators import set_cursor, messagebox_on_error
 from glue.qt.feedback import submit_bug_report
 from glue.qt.plugin_manager import QtPluginManager
+from glue.qt.qtutil import (pick_class, data_wizard,
+                            GlueTabBar, load_ui, get_icon, nonpartial)
+from glue.qt.widgets.data_viewer import DataViewer
+from glue.qt.widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
+from glue.qt.widgets.glue_mdi_area import GlueMdiArea, GlueMdiSubWindow
+from glue.qt.widgets.layer_tree_widget import PlotAction, LayerTreeWidget
+from glue.qt.widgets.mpl_widget import defer_draw
+from glue.qt.widgets.settings_editor import SettingsEditor
+from glue.utils.qt import QMessageBoxPatched as QMessageBox
+
 
 __all__ = ['GlueApplication']
 DOCS_URL = 'http://www.glueviz.org'
@@ -318,7 +316,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
                    hold_position=False):
         """
         Add a widget to one of the tabs.
-        
+
         Returns the window that this widget is wrapped in.
 
         :param new_widget: new QtGui.QWidget to add
@@ -690,7 +688,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
 
         # include file filter twice, so it shows up in Dialog
         outfile, file_filter = QtGui.QFileDialog.getSaveFileName(self,
-                                                           filter="Glue Session (*.glu);; Glue Session including data (*.glu)")
+                                                                 filter="Glue Session (*.glu);; Glue Session including data (*.glu)")
 
         # This indicates that the user cancelled
         if not outfile:
@@ -713,7 +711,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
         else:
             assert outmode == 'label'
             label, ok = QtGui.QInputDialog.getText(self, 'Choose a label:',
-                                             'Choose a label:')
+                                                   'Choose a label:')
             if not ok:
                 return
             return saver(self, label)
@@ -724,7 +722,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
         """ Load a previously-saved state, and restart the session """
         fltr = "Glue sessions (*.glu)"
         file_name, file_filter = QtGui.QFileDialog.getOpenFileName(self,
-                                                             filter=fltr)
+                                                                   filter=fltr)
         if not file_name:
             return
 

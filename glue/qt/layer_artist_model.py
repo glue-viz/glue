@@ -11,9 +11,8 @@ these layers, and provides GUI access to the model
 
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt import QtGui, QtCore
 from glue.external.qt.QtCore import Qt
-
+from glue.external.qt import QtGui, QtCore
 from glue.qt.qtutil import (layer_artist_icon, nonpartial, PythonListModel)
 
 from glue.qt.mime import PyMimeData, LAYERS_MIME_TYPE

@@ -21,10 +21,10 @@ from __future__ import absolute_import, division, print_function
 
 from functools import partial
 
-from glue.qt.qtutil import pretty_number
-from glue.external.qt import QtGui
 from glue.external.six.moves import reduce
+from glue.external.qt import QtGui
 from glue.core.callback_property import add_callback
+from glue.qt.qtutil import pretty_number
 
 
 class WidgetProperty(object):
@@ -93,7 +93,7 @@ class CurrentComboDataProperty(WidgetProperty):
         except ValueError:
             if value is None:
                 idx = -1
-            else:            
+            else:
                 raise ValueError("Cannot find data '{0}' in combo box".format(value))
         widget.setCurrentIndex(idx)
 
@@ -247,7 +247,7 @@ def connect_current_combo(client, prop, widget):
     """
 
     def _push_combo(value):
-        # NOTE: we can't use findData here because if the data is not a 
+        # NOTE: we can't use findData here because if the data is not a
         # string, PySide will crash
         try:
             idx = _find_combo_data(widget, value)

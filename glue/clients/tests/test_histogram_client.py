@@ -4,20 +4,19 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 import numpy as np
-
 from mock import MagicMock
+
+from glue.core.subset import RangeSubsetState, CategoricalRoiSubsetState
+from glue.core.component_id import ComponentID
+from glue.core.component import CategoricalComponent
+from glue.core.data import Data
+from glue.core.exceptions import IncompatibleDataException
+from glue.core.data_collection import DataCollection
 
 from ..histogram_client import HistogramClient
 from ..layer_artist import HistogramLayerArtist
-
-from glue.core.data_collection import DataCollection
-from glue.core.exceptions import IncompatibleDataException
-from glue.core.data import Data
-from glue.core.component import CategoricalComponent
-from glue.core.component_id import ComponentID
-from glue.core.subset import RangeSubsetState, CategoricalRoiSubsetState
-
 from .util import renderless_figure
+
 
 FIGURE = renderless_figure()
 
@@ -383,7 +382,6 @@ class TestCategoricalHistogram(TestHistogramClient):
         assert isinstance(state, CategoricalRoiSubsetState)
         np.testing.assert_equal(self.data.subsets[0].subset_state.roi.categories,
                                 np.array(['b', 'c', 'd', 'e']))
-
 
     # REMOVED TESTS
     def test_xlog_axes_labels(self):

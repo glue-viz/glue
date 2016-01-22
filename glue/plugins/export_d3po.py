@@ -1,10 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-import json
 import os
+import json
 
-from glue.qt.widgets import ScatterWidget, HistogramWidget
 from glue.core import Subset
+from glue.qt.widgets import ScatterWidget, HistogramWidget
 
 
 def save_page(page, page_number, label, subset):

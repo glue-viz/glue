@@ -1,19 +1,18 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 
 from __future__ import absolute_import, division, print_function
 
 import pytest
-
-from mock import patch
 import numpy as np
+from mock import patch
 from numpy.testing import assert_almost_equal
+
+from glue.tests.helpers import requires_astropy
 
 from ..coordinates import (coordinates_from_header,
                            WCSCoordinates,
                            Coordinates,
                            header_from_string)
-
-from glue.tests.helpers import requires_astropy
 
 
 @requires_astropy

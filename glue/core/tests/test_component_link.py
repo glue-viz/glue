@@ -3,15 +3,14 @@
 from __future__ import absolute_import, division, print_function
 
 import pytest
-
 import numpy as np
 from numpy.testing import assert_array_equal
 
-from ..data import ComponentID, Data, Component
 from ..component_link import ComponentLink, BinaryComponentLink
-from ..subset import InequalitySubsetState
-from ..link_helpers import LinkSame
+from ..data import ComponentID, Data, Component
 from ..data_collection import DataCollection
+from ..link_helpers import LinkSame
+from ..subset import InequalitySubsetState
 
 
 class TestComponentLink(object):

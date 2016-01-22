@@ -1,23 +1,22 @@
-from __future__ import print_function, division
+from __future__ import absolute_import, division, print_function
 
 import logging
 from time import time
 
 import numpy as np
+from ginga.misc import Bunch
+from ginga.util import wcsmod
+from ginga import AstroImage, BaseImage
 
-from glue.core.exceptions import IncompatibleAttribute
 from glue.core.util import Pointer, split_component_view
-from glue.utils import view_shape, stack_view, color2rgb
-
+from glue.core.exceptions import IncompatibleAttribute
 from glue.clients.image_client import ImageClient
 from glue.clients.layer_artist import (LayerArtistBase,
-                                    ImageLayerBase, SubsetImageLayerBase)
+                                       ImageLayerBase, SubsetImageLayerBase)
+from glue.utils import view_shape, stack_view, color2rgb
 
-from ginga.util import wcsmod
-from ginga.misc import Bunch
 
 wcsmod.use('astropy')
-from ginga import AstroImage, BaseImage
 
 
 class GingaClient(ImageClient):

@@ -1,9 +1,12 @@
-import pytest
 
+
+from __future__ import absolute_import, division, print_function
+
+import pytest
 import numpy as np
-from numpy.testing import assert_allclose
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
+from numpy.testing import assert_allclose
 
 from glue.tests.helpers import requires_scipy
 
@@ -98,9 +101,9 @@ def test_color2rgb(color, rgb):
 
 def test_freeze_margins():
 
-    fig = plt.figure(figsize=(4,4))
+    fig = plt.figure(figsize=(4, 4))
 
-    ax = fig.add_subplot(1,1,1)
+    ax = fig.add_subplot(1, 1, 1)
     freeze_margins(ax, margins=[1, 1, 1, 1])
 
     bbox = ax.get_position()
@@ -117,7 +120,7 @@ def test_freeze_margins():
     np.testing.assert_allclose(bbox.x1, 0.75)
     np.testing.assert_allclose(bbox.y1, 0.75)
 
-    fig.set_size_inches(8,8)
+    fig.set_size_inches(8, 8)
     fig.canvas.resize_event()
 
     bbox = ax.get_position()

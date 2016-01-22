@@ -1,8 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt import QtGui
 from glue.external.qt.QtCore import Signal
-
+from glue.external.qt import QtGui
 from glue.qt.qtutil import load_ui
 
 
@@ -34,7 +33,7 @@ class ComponentSelector(QtGui.QWidget):
         self._ui.setMinimumWidth(300)
 
     def _connect(self):
-        #attach Qt signals
+        # attach Qt signals
         ds = self._ui.data_selector
         ds.currentIndexChanged.connect(self._set_components)
         self._ui.component_selector.currentItemChanged.connect(

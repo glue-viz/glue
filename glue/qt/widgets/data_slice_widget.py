@@ -1,12 +1,13 @@
+from __future__ import absolute_import, division, print_function
+
 from functools import partial
 from collections import Counter
 
 from glue.external.qt import QtGui, QtCore
-
-from glue.qt.widget_properties import (TextProperty,
-                                 ValueProperty,
-                                 CurrentComboProperty)
 from glue.qt.qtutil import nonpartial, load_ui
+from glue.qt.widget_properties import (TextProperty,
+                                       ValueProperty,
+                                       CurrentComboProperty)
 
 
 class SliceWidget(QtGui.QWidget):
@@ -52,7 +53,7 @@ class SliceWidget(QtGui.QWidget):
         slider.slider.setMaximum(hi)
         slider.slider.setValue((lo + hi) / 2)
         slider.slider.valueChanged.connect(lambda x:
-                                                  self.slice_changed.emit(self.mode))
+                                           self.slice_changed.emit(self.mode))
         slider.slider.valueChanged.connect(lambda x: slider.label.setText(str(x)))
 
         slider.label.setMinimumWidth(50)

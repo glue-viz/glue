@@ -1,8 +1,12 @@
+from __future__ import absolute_import, division, print_function
+
 from mock import patch
 from matplotlib import cm
 
-from ..subset_facet import SubsetFacet
 from glue.core import Data, DataCollection
+
+from ..subset_facet import SubsetFacet
+
 
 patched_facet = patch('glue.qt.widgets.subset_facet.facet_subsets')
 

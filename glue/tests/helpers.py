@@ -1,8 +1,10 @@
 # Define decorators that can be used for pytest tests
 
-import pytest
+from __future__ import absolute_import, division, print_function
 
 from distutils.version import LooseVersion
+
+import pytest
 
 
 def make_skipper(module, label=None, version=None):

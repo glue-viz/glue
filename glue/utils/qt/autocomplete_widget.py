@@ -6,6 +6,8 @@
 #
 # http://qt-project.org/doc/qt-4.8/tools-customcompleter.html
 
+from __future__ import absolute_import, division, print_function
+
 from glue.external.qt import QtGui
 
 

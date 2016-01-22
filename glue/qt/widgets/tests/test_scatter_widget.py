@@ -6,13 +6,13 @@ from distutils.version import LooseVersion  # pylint:disable=W0611
 
 import pytest
 from mock import patch
-
-from ..scatter_widget import ScatterWidget
-from ..mpl_widget import MplCanvas
-from glue import core
-from . import simple_session
-
 from matplotlib import __version__ as mpl_version  # pylint:disable=W0611
+
+from glue import core
+
+from . import simple_session
+from ..mpl_widget import MplCanvas
+from ..scatter_widget import ScatterWidget
 
 
 class TestScatterWidget(object):

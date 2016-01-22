@@ -2,6 +2,9 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
+from glue.external.echo import CallbackProperty
+from glue.external.qt import QtGui
+
 from ..widget_properties import (CurrentComboDataProperty,
                                  CurrentComboTextProperty,
                                  CurrentTabProperty,
@@ -13,10 +16,6 @@ from ..widget_properties import (CurrentComboDataProperty,
                                  connect_current_combo,
                                  connect_float_edit,
                                  connect_int_spin)
-
-from glue.external.qt import QtGui
-
-from glue.external.echo import CallbackProperty
 
 
 def test_combo_data():
@@ -79,6 +78,7 @@ def test_text():
 
     class TestClass(object):
         lab = TextProperty('_label')
+
         def __init__(self):
             self._label = QtGui.QLabel()
 
@@ -92,6 +92,7 @@ def test_button():
 
     class TestClass(object):
         but = ButtonProperty('_button')
+
         def __init__(self):
             self._button = QtGui.QCheckBox()
 
@@ -116,6 +117,7 @@ def test_float():
 
     class TestClass(object):
         flt = FloatLineProperty('_float')
+
         def __init__(self):
             self._float = QtGui.QLineEdit()
 
@@ -135,6 +137,7 @@ def test_value():
 
     class TestClass(object):
         val = ValueProperty('_slider')
+
         def __init__(self):
             self._slider = QtGui.QSlider()
 
@@ -150,6 +153,7 @@ def test_value_mapping():
     class TestClass(object):
         val = ValueProperty('_slider', mapping=(lambda x: 2 * x,
                                                 lambda x: 0.5 * x))
+
         def __init__(self):
             self._slider = QtGui.QSlider()
 
@@ -164,6 +168,7 @@ def test_tab():
 
     class TestClass(object):
         tab = CurrentTabProperty('_tab')
+
         def __init__(self):
             self._tab = QtGui.QTabWidget()
             self._tab.addTab(QtGui.QWidget(), 'tab1')

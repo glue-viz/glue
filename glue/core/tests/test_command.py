@@ -1,15 +1,16 @@
 from __future__ import absolute_import, division, print_function
 
-from mock import MagicMock
 import pytest
 import numpy as np
+from mock import MagicMock
 
+from glue.external.six.moves import range as xrange
 from glue import core
-from .. import roi
+
 from .. import command as c
+from .. import roi
 from ..data_factories import tabular_data
 from .util import simple_session, simple_catalog
-from glue.external.six.moves import range as xrange
 
 
 class TestCommandStack(object):

@@ -1,10 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
 import matplotlib.pyplot as plt
-from glue.core.client import Client
+
 from glue.core import Data
-from glue.utils.matplotlib import freeze_margins
+from glue.core.client import Client
 from glue.clients.layer_artist import LayerArtistContainer
+from glue.utils.matplotlib import freeze_margins
+
 
 __all__ = ['VizClient', 'GenericMplClient']
 

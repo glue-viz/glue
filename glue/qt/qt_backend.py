@@ -1,6 +1,7 @@
-from glue.backends import TimerBase
+from __future__ import absolute_import, division, print_function
 
 from glue.external.qt import QtCore
+from glue.backends import TimerBase
 
 
 class Timer(TimerBase):

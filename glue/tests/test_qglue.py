@@ -1,17 +1,15 @@
 from __future__ import absolute_import, division, print_function
 
+import pytest
 import numpy as np
 import pandas as pd
-
 from mock import MagicMock
-import pytest
 
 from .. import qglue
-from ..core.registry import Registry
-from ..core.exceptions import IncompatibleAttribute
 from ..core import Data
+from ..core.exceptions import IncompatibleAttribute
+from ..core.registry import Registry
 from ..qt.glue_application import GlueApplication
-
 from .helpers import requires_astropy
 
 

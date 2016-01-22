@@ -20,12 +20,11 @@ The basic usage pattern is thus:
 from __future__ import absolute_import, division, print_function
 
 from glue.external.qt import QtGui
-
-from glue.core import roi
 from glue.core.callback_property import CallbackProperty
+from glue.core import roi
 from glue.qt import get_qapp
-from glue.qt.qtutil import get_icon, nonpartial, load_ui
 from glue.qt import qt_roi
+from glue.qt.qtutil import get_icon, nonpartial, load_ui
 
 
 class MouseMode(object):
@@ -229,8 +228,9 @@ class RoiMode(RoiModeBase):
             self._roi_tool.abort_selection(event)
             self._drag = False
             self._drawing = False
-            self._start_event  = None
+            self._start_event = None
         super(RoiMode, self).key(event)
+
 
 class PersistentRoiMode(RoiMode):
 

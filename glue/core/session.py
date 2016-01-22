@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.core import DataCollection, CommandStack
+from glue.core.command import CommandStack
+from glue.core.data_collection import DataCollection
 
 
 class Session(object):

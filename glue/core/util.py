@@ -1,8 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
 import logging
-from contextlib import contextmanager
 from itertools import count
+from contextlib import contextmanager
 
 import numpy as np
 import pandas as pd

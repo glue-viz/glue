@@ -1,22 +1,26 @@
+from __future__ import absolute_import, division, print_function
+
 from collections import OrderedDict
 
 import pytest
+import numpy as np
+from matplotlib.axes import Axes
 from mock import MagicMock, patch
 from numpy.testing import assert_array_equal
-from matplotlib.axes import Axes
-import numpy as np
 
-from glue import custom_viewer
-from glue.core import Data
-from glue.core.subset import SubsetState
-from glue.core.tests.util import simple_session
-from ..custom_viewer import FormElement, NumberElement, \
-    ChoiceElement, CustomViewer, \
-    CustomSubsetState, AttributeInfo, \
-    FloatElement, TextBoxElement, SettingsOracle, \
-    MissingSettingError, FrozenSettings
-from ..glue_application import GlueApplication
 from glue.core.tests.test_state import check_clone_app, clone
+from glue.core.tests.util import simple_session
+from glue.core.subset import SubsetState
+from glue.core import Data
+from glue import custom_viewer
+
+from ..custom_viewer import (FormElement, NumberElement,
+                             ChoiceElement, CustomViewer,
+                             CustomSubsetState, AttributeInfo,
+                             FloatElement, TextBoxElement, SettingsOracle,
+                             MissingSettingError, FrozenSettings)
+
+from ..glue_application import GlueApplication
 
 
 def _make_widget(viewer):
@@ -382,10 +386,7 @@ class TestAttributeInfo(object):
         assert v._component == comp
 
 
-
 class TestSettingsOracle(object):
-
-
 
     def test_oracle_raises_original_error(self):
         class BadFormElement(TextBoxElement):
@@ -412,7 +413,6 @@ class TestSettingsOracle(object):
         with pytest.raises(MissingSettingError):
             oracle.value('missing')
 
-
     def test_load_reserved_words(self):
 
         _self = MagicMock()
@@ -420,19 +420,17 @@ class TestSettingsOracle(object):
         style = layer.style
         extra = MagicMock()
         oracle = SettingsOracle({}, _self=_self,
-                                    layer=layer,
-                                    extra=extra)
+                                layer=layer,
+                                extra=extra)
         assert oracle('self') == _self
         assert oracle('layer') == layer
         assert oracle('style') == style
         assert oracle('extra') == extra
 
-
     def test_setting_names(self):
 
         oracle = SettingsOracle({'Form': TextBoxElement('_text')})
         assert sorted(oracle.setting_names()) == sorted(['style', 'layer', 'Form'])
-
 
     def test_raises_if_overlapping_reserved_words(self):
 

@@ -1,9 +1,12 @@
+from __future__ import absolute_import, division, print_function
+
 from mock import patch
 
-from ..plugin_manager import QtPluginManager
 from glue import _plugin_helpers as ph
-from glue.utils.qt import QMessageBoxPatched
 from glue.main import load_plugins
+from glue.utils.qt import QMessageBoxPatched
+
+from ..plugin_manager import QtPluginManager
 
 
 def setup_function(func):

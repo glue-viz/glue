@@ -1,5 +1,7 @@
-from mock import MagicMock, patch
+from __future__ import absolute_import, division, print_function
+
 import numpy as np
+from mock import MagicMock, patch
 
 from .. import DataCollection, Data, SubsetGroup
 from .. import subset

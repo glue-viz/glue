@@ -2,22 +2,22 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
 import time
 
 import pytest
 import numpy as np
 from mock import MagicMock
 
-from ..image_widget import ImageWidget
-
-from glue import core
-from glue.core.tests.test_state import TestApplication
-from glue.qt.glue_application import GlueApplication
 from glue.external.qt import get_qapp
+from glue.core.tests.test_state import TestApplication
+from glue import core
+from glue.qt.glue_application import GlueApplication
 
 from . import simple_session
+from ..image_widget import ImageWidget
 
-import os
+
 os.environ['GLUE_TESTING'] = 'True'
 
 CI = os.environ.get('CI', 'false').lower() == 'true'
@@ -343,12 +343,12 @@ def test_combo_box_updates():
     dc = session.data_collection
 
     data1 = core.Data(label='im1',
-                        x=[[1, 2], [3, 4]],
-                        y=[[2, 3], [4, 5]])
+                      x=[[1, 2], [3, 4]],
+                      y=[[2, 3], [4, 5]])
 
     data2 = core.Data(label='im2',
-                        a=[[1, 2], [3, 4]],
-                        b=[[2, 3], [4, 5]])
+                      a=[[1, 2], [3, 4]],
+                      b=[[2, 3], [4, 5]])
 
     dc.append(data1)
     dc.append(data2)
@@ -373,7 +373,7 @@ def test_combo_box_updates():
     widget.attribute = data2.find_component_id('b')
 
     with pytest.raises(ValueError) as exc:
-        widget.attribute =  data1.find_component_id('x')
+        widget.attribute = data1.find_component_id('x')
     assert exc.value.args[0] == "Cannot find data 'x' in combo box"
 
     widget.data = data1
@@ -382,7 +382,7 @@ def test_combo_box_updates():
     widget.attribute = data1.find_component_id('y')
 
     with pytest.raises(ValueError) as exc:
-        widget.attribute =  data2.find_component_id('a')
+        widget.attribute = data2.find_component_id('a')
     assert exc.value.args[0] == "Cannot find data 'a' in combo box"
 
     assert widget.client.display_data is data1

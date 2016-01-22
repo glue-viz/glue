@@ -4,12 +4,13 @@ import os
 
 from numpy.testing import assert_array_equal
 
+from glue.core.tests.util import make_file
+from glue.core import data_factories as df
 from glue.tests.helpers import requires_xlrd
 
-from glue.core import data_factories as df
-from glue.core.tests.util import make_file
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
+
 
 @requires_xlrd
 def test_load_data():

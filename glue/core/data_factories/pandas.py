@@ -2,13 +2,12 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.core.data import Data
-from glue.core.component import Component, CategoricalComponent
-
-from glue.core.data_factories.helpers import has_extension
-
 from glue.external import six
+from glue.core.data_factories.helpers import has_extension
+from glue.core.component import Component, CategoricalComponent
+from glue.core.data import Data
 from glue.config import data_factory
+
 
 __all__ = ['pandas_read_table']
 
@@ -89,4 +88,3 @@ def pandas_read_table(path, **kwargs):
     if fallback is not None:
         return panda_process(fallback)
     raise IOError("Could not parse %s using pandas" % path)
-

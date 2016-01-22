@@ -1,12 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt import QtGui
-from glue.external.qt.QtCore import Qt
+import pytest
+
 from glue.external.qt.QtTest import QTest
+from glue.external.qt.QtCore import Qt
+from glue.external.qt import QtGui
 
 from .. import mime
-
-import pytest
 
 
 class TestWidget(QtGui.QWidget):

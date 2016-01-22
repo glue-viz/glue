@@ -1,29 +1,29 @@
-import traceback
+from __future__ import absolute_import, division, print_function
+
 import logging
+import traceback
 
 import numpy as np
 
-from glue.external.qt.QtCore import Qt, Signal
-from glue.external.qt import QtGui
-
-
-from glue.clients.profile_viewer import ProfileViewer
-from glue.qt.widgets.mpl_widget import MplWidget
-from glue.qt.mouse_mode import SpectrumExtractorMode
-from glue.core.callback_property import add_callback, ignore_callback
-from glue.core.util import Pointer
-from glue.core import Subset
-from glue.core.exceptions import IncompatibleAttribute
-from glue.qt.glue_toolbar import GlueToolbar
-from glue.qt.qtutil import load_ui, nonpartial, Worker
-from glue.qt.widget_properties import CurrentComboProperty
-from glue.core.aggregate import Aggregate
-from glue.qt.mime import LAYERS_MIME_TYPE
-from glue.qt.simpleforms import build_form_item
-from glue.config import fit_plugin
 from glue.external.six.moves import range as xrange
-from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow
+from glue.external.qt import QtGui
+from glue.external.qt.QtCore import Qt, Signal
+from glue.core.aggregate import Aggregate
+from glue.core.exceptions import IncompatibleAttribute
+from glue.core import Subset
+from glue.core.util import Pointer
+from glue.core.callback_property import add_callback, ignore_callback
+from glue.config import fit_plugin
+from glue.clients.profile_viewer import ProfileViewer
 from glue.qt.decorators import messagebox_on_error
+from glue.qt.glue_toolbar import GlueToolbar
+from glue.qt.mime import LAYERS_MIME_TYPE
+from glue.qt.mouse_mode import SpectrumExtractorMode
+from glue.qt.qtutil import load_ui, nonpartial, Worker
+from glue.qt.simpleforms import build_form_item
+from glue.qt.widget_properties import CurrentComboProperty
+from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow
+from glue.qt.widgets.mpl_widget import MplWidget
 
 
 def setup():
@@ -516,7 +516,7 @@ class FitSettingsWidget(QtGui.QDialog):
             self.constraints = None
 
         self.okcancel = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok |
-                                         QtGui.QDialogButtonBox.Cancel)
+                                               QtGui.QDialogButtonBox.Cancel)
         l.addRow(self.okcancel)
         self.setLayout(l)
 

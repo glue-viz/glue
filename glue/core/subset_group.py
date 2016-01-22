@@ -13,20 +13,21 @@ Client code should *only* create Subset Groups via
 DataCollection.new_subset_group. It should *not* call Data.add_subset
 or Data.new_subset directly
 """
+from __future__ import absolute_import, division, print_function
+
 from warnings import warn
 
-from glue.core import Subset
-from glue.core.subset import SubsetState
-from glue.core.util import Pointer
-from glue.core.hub import HubListener
-from glue.core.visual import VisualAttributes
-from glue.core.message import (DataCollectionAddMessage,
-                      DataCollectionDeleteMessage
-                      )
-from glue.core.contracts import contract
-
-from glue.config import settings
 from glue.external import six
+from glue.core.contracts import contract
+from glue.core.message import (DataCollectionAddMessage,
+                               DataCollectionDeleteMessage)
+from glue.core.visual import VisualAttributes
+from glue.core.hub import HubListener
+from glue.core.util import Pointer
+from glue.core.subset import SubsetState
+from glue.core import Subset
+from glue.config import settings
+
 
 __all__ = ['GroupedSubset', 'SubsetGroup']
 

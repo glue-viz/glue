@@ -6,8 +6,11 @@
 # evaluated at compile time rather than at runtime, so the patched version
 # wouldn't be used.
 
+from __future__ import absolute_import, division, print_function
+
 import os
 from collections import defaultdict
+
 
 def iter_plugin_entry_points():
     from pkg_resources import iter_entry_points
@@ -34,7 +37,7 @@ class PluginConfig(object):
         from glue import config
         cfg_dir = config.CFG_DIR
 
-        plugin_cfg =  os.path.join(cfg_dir, 'plugins.cfg')
+        plugin_cfg = os.path.join(cfg_dir, 'plugins.cfg')
 
         from glue.external.six.moves import configparser
 
@@ -59,7 +62,7 @@ class PluginConfig(object):
         from glue import config
         cfg_dir = config.CFG_DIR
 
-        plugin_cfg =  os.path.join(cfg_dir, 'plugins.cfg')
+        plugin_cfg = os.path.join(cfg_dir, 'plugins.cfg')
 
         from glue.external.six.moves import configparser
 

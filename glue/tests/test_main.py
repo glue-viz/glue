@@ -3,10 +3,9 @@ from __future__ import absolute_import, division, print_function
 import pytest
 from mock import patch
 
+from ..core import Data
 from ..main import (die_on_error, restore_session, load_data_files,
                     main, start_glue)
-
-from ..core import Data
 
 
 def test_die_on_error_exception():

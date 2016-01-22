@@ -1,7 +1,10 @@
+from __future__ import absolute_import, division, print_function
+
 import numpy as np
 from mock import MagicMock
 
 from glue import core
+
 from ..data_slice_widget import SliceWidget, DataSlice
 
 

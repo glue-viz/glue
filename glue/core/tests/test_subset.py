@@ -9,19 +9,19 @@ import pytest
 import numpy as np
 from mock import MagicMock
 
+from glue.tests.helpers import requires_astropy
+
 from .. import DataCollection, ComponentLink
 from ..data import Data, Component
-from ..subset import (Subset, SubsetState,
-                      ElementSubsetState, RoiSubsetState, RangeSubsetState)
-from ..subset import OrState
-from ..subset import AndState
-from ..subset import XorState
-from ..subset import InvertState
 from ..message import SubsetDeleteMessage
 from ..registry import Registry
+from ..subset import (Subset, SubsetState,
+                      ElementSubsetState, RoiSubsetState, RangeSubsetState)
+from ..subset import AndState
+from ..subset import InvertState
+from ..subset import OrState
+from ..subset import XorState
 from .test_state import clone
-
-from glue.tests.helpers import requires_astropy
 
 
 class TestSubset(object):
