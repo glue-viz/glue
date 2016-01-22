@@ -4,7 +4,6 @@ import logging
 from functools import wraps
 
 import numpy as np
-from mock import MagicMock
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
@@ -19,6 +18,7 @@ __all__ = ['renderless_figure', 'all_artists', 'new_artists', 'remove_artists',
 
 def renderless_figure():
     # Matplotlib figure that skips the render step, for test speed
+    from mock import MagicMock
     fig = plt.figure()
     fig.canvas.draw = MagicMock()
     plt.close('all')
