@@ -15,7 +15,34 @@ v0.7 (unreleased)
 * A large fraction of the code has been re-organized, which may lead to some
   imports in ``config.py`` files no longer working. However, no functionality
   has been removed, so this can be fixed by updating the imports to reflect the
-  new locations. [#827, #828, #829, #830, #831]
+  new locations.
+
+  In particular, the following utilities have been moved:
+
+  ``glue.qt.widget_properties``                 | ``glue.utils.qt.widget_properties``
+  ``glue.qt.decorators``                        | ``glue.utils.qt.decorators``
+  ``glue.qt.qtutil.mpl_to_qt4_color``           | ``glue.utils.qt.colors.mpl_to_qt4_color``
+  ``glue.qt.qtutil.qt4_to_mpl_color``           | ``glue.utils.qt.colors.qt4_to_mpl_color``
+  ``glue.qt.qtutil.pick_item``                  | ``glue.utils.qt.dialogs.pick_item``
+  ``glue.qt.qtutil.pick_class``                 | ``glue.utils.qt.dialogs.pick_class``
+  ``glue.qt.qtutil.get_text``                   | ``glue.utils.qt.dialogs.get_text``
+  ``glue.qt.qtutil.tint_pixmap``                | ``glue.utils.qt.colors.tint_pixmap``
+  ``glue.qt.qtutil.cmap2pixmap``                | ``glue.utils.qt.colors.cmap2pixmap``
+  ``glue.qt.qtutil.pretty_number``              | ``glue.utils.qt.PropertySetMixin``
+  ``glue.qt.qtutil.Worker``                     | ``glue.utils.qt.threading.Worker``
+  ``glue.qt.qtutil.update_combobox``            | ``glue.utils.qt.helpers.update_combobox``
+  ``glue.qt.qtutil.PythonListModel``            | ``glue.utils.qt.python_list_model.PythonListModel``
+  ``glue.clients.tests.util.renderless_figure`` | ``glue.utils.matplotlib.renderless_figure``
+  ``glue.core.util.CallbackMixin``              | ``glue.utils.misc.CallbackMixin``
+  ``glue.core.util.Pointer``                    | ``glue.utils.misc.Pointer``
+  ``glue.core.util.PropertySetMixin``           | ``glue.utils.misc.PropertySetMixin``
+  ``glue.core.util.defer``                      | ``glue.utils.misc.defer``
+  ``glue.qt.mime.PyMimeData``                   | ``glue.utils.qt.mime.PyMimeData``
+  ``glue.qt.qtutil.GlueItemWidget``             | ``glue.utils.qt.mixins.GlueItemWidget``
+  ``glue.qt.qtutil.cache_axes``                 | ``glue.utils.matplotlib.cache_axes``
+  ``glue.qt.qtutil.GlueTabBar``                 | ``glue.utils.qt.helpers.GlueTabBar``
+
+  [#827, #828, #829, #830, #831]
 
 v0.6 (2015-11-20)
 -----------------
