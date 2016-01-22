@@ -1,5 +1,8 @@
-from .. import QMessageBoxPatched as QMessageBox
+from __future__ import absolute_import, division, print_function
+
 from glue.qt import get_qapp
+
+from .. import QMessageBoxPatched as QMessageBox
 
 
 def test_main():

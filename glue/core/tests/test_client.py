@@ -1,10 +1,10 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103,W0612
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103,W0612
 
 from __future__ import absolute_import, division, print_function
 
+import pytest
 from mock import MagicMock
 
-import pytest
 from ..client import Client, BasicClient
 from ..data import Data
 from ..data_collection import DataCollection

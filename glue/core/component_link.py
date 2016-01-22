@@ -1,15 +1,16 @@
 from __future__ import absolute_import, division, print_function
 
+import numbers
 import logging
 import operator
-import numbers
 
 import numpy as np
 
-from glue.core.util import join_component_view
-from glue.core.subset import InequalitySubsetState
-from glue.core.contracts import contract, ContractsMeta
 from glue.external.six import add_metaclass
+from glue.core.contracts import contract, ContractsMeta
+from glue.core.subset import InequalitySubsetState
+from glue.core.util import join_component_view
+
 
 __all__ = ['ComponentLink', 'BinaryComponentLink']
 

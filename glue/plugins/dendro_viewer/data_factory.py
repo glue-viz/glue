@@ -3,15 +3,17 @@ Load files created by the astrodendro package.
 
 astrodendro must be installed in order to use this loader
 """
-import numpy as np
 
+from __future__ import absolute_import, division, print_function
+
+import numpy as np
 from astrodendro import Dendrogram
 
-from glue.core.data import Data
-from glue.core.data_factories.fits import is_fits
 from glue.core.data_factories.hdf5 import is_hdf5
-
+from glue.core.data_factories.fits import is_fits
+from glue.core.data import Data
 from glue.config import data_factory
+
 
 __all__ = ['load_dendro', 'is_dendro']
 
@@ -107,5 +109,3 @@ def load_dendro(file):
     im = Data(intensity=dg.data, structure=dg.index_map)
     im.join_on_key(dendro, 'structure', dendro.pixel_component_ids[0])
     return [dendro, im]
-
-

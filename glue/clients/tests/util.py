@@ -1,5 +1,7 @@
-import matplotlib.pyplot as plt
+from __future__ import absolute_import, division, print_function
+
 from mock import MagicMock
+import matplotlib.pyplot as plt
 
 
 def renderless_figure():

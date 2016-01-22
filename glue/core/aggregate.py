@@ -1,6 +1,9 @@
 """
 Classes to perform aggregations over cubes
 """
+
+from __future__ import absolute_import, division, print_function
+
 try:
     from itertools import izip
 except ImportError:  # python3
@@ -9,6 +12,7 @@ except ImportError:  # python3
 from functools import wraps
 
 import numpy as np
+
 from glue.external.six.moves import range as xrange
 
 

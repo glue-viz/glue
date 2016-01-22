@@ -15,27 +15,24 @@ Since v1.0dev, IPython implements embeddable in-process terminal widgets.
 This functionality doesn't exist in v0.12 and v0.13 -- this module provides
 a fallback implmentation for older IPython versions
 """
-from __future__ import print_function
 
 from __future__ import absolute_import, division, print_function
 
 import sys
 import atexit
-from distutils.version import LooseVersion
 from contextlib import contextmanager
+from distutils.version import LooseVersion
 
 # must import these first, to set up Qt properly
 from glue.external.qt import QtGui, QtCore
-from glue.version import __version__
-from glue.utils import as_variable_name
-from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow
-
-from zmq import ZMQError
-from zmq.eventloop.zmqstream import ZMQStream
-from zmq.eventloop import ioloop
 
 import IPython
 from IPython.core.usage import default_banner
+from zmq import ZMQError
+from zmq.eventloop import ioloop
+from zmq.eventloop.zmqstream import ZMQStream
+
+from glue.version import __version__
 
 IPYTHON_VERSION = LooseVersion(IPython.__version__)
 
@@ -84,6 +81,9 @@ else:
         from IPython.zmq.iostream import OutStream
         from IPython.frontend.qt.kernelmanager import QtKernelManager
         from IPython.frontend.qt.console.rich_ipython_widget import RichIPythonWidget
+
+from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow
+from glue.utils import as_variable_name
 
 
 def in_process_console(console_class=RichIPythonWidget, **kwargs):
@@ -191,7 +191,7 @@ class DragAndDropTerminal(RichIPythonWidget):
             lbl = 'x'
         lbl = as_variable_name(lbl)
         var, ok = QtGui.QInputDialog.getText(self, "Choose a variable name",
-                                       "Choose a variable name", text=lbl)
+                                             "Choose a variable name", text=lbl)
         if ok:
             # unpack single-item lists for convenience
             if isinstance(obj, list) and len(obj) == 1:

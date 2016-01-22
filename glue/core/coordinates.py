@@ -4,6 +4,7 @@ import logging
 
 import numpy as np
 
+
 __all__ = ['Coordinates', 'WCSCoordinates']
 
 

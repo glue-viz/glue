@@ -6,9 +6,9 @@ import pytest
 import numpy as np
 from mock import MagicMock
 
+from .. import parse
 from ..data import ComponentID, Component, Data
 from ..subset import Subset
-from .. import parse
 
 
 class TestParse(object):

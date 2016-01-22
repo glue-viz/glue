@@ -1,15 +1,17 @@
+
+
+from __future__ import absolute_import, division, print_function
+
 import pytest
-
-from mock import MagicMock
 import numpy as np
+from mock import MagicMock
 
-needs_modeling = pytest.mark.skipif("False", reason='')
-
+from glue.tests.helpers import requires_scipy, requires_astropy_ge_03, ASTROPY_GE_03_INSTALLED
 
 from ..fitters import (PolynomialFitter, IntOption,
                        BasicGaussianFitter)
+needs_modeling = pytest.mark.skipif("False", reason='')
 
-from glue.tests.helpers import requires_scipy, requires_astropy_ge_03, ASTROPY_GE_03_INSTALLED
 
 if ASTROPY_GE_03_INSTALLED:
     from astropy.modeling.models import Gaussian1D

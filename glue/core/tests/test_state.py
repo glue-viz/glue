@@ -1,23 +1,23 @@
 from __future__ import absolute_import, division, print_function
 
-import numpy as np
 import json
-import pytest
-
-from ..state import (GlueSerializer, GlueUnSerializer,
-                     saver, loader, VersionedDict)
-from glue.external import six
-
-from glue import core
-from glue.qt.glue_application import GlueApplication
-from glue.qt.widgets.scatter_widget import ScatterWidget
-from glue.qt.widgets.histogram_widget import HistogramWidget
-from .util import make_file
-from ..data_factories import load_data
-from ..data_factories.tests.test_fits import TEST_FITS_DATA
 from io import BytesIO
 
+import pytest
+import numpy as np
+
+from glue.external import six
+from glue import core
+from glue.qt.glue_application import GlueApplication
+from glue.qt.widgets.histogram_widget import HistogramWidget
+from glue.qt.widgets.scatter_widget import ScatterWidget
 from glue.tests.helpers import requires_astropy
+
+from ..data_factories import load_data
+from ..data_factories.tests.test_fits import TEST_FITS_DATA
+from ..state import (GlueSerializer, GlueUnSerializer,
+                     saver, loader, VersionedDict)
+from .util import make_file
 
 
 def clone(object, include_data=False):

@@ -5,6 +5,7 @@ import pandas as pd
 
 from glue.external.six import string_types
 
+
 __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
            'coerce_numeric', 'check_sorted']
 

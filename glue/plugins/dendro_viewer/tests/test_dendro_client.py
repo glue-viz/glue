@@ -1,12 +1,15 @@
-from numpy.testing import assert_array_equal
-from mock import MagicMock
+from __future__ import absolute_import, division, print_function
 
-from glue.clients.tests.util import renderless_figure
-from glue.core import Data, DataCollection
-from glue.core.roi import PointROI
+from mock import MagicMock
+from numpy.testing import assert_array_equal
+
 from glue.core.edit_subset_mode import EditSubsetMode
+from glue.core.roi import PointROI
+from glue.core import Data, DataCollection
+from glue.clients.tests.util import renderless_figure
 
 from ..client import DendroClient
+
 
 # share matplotlib instance, and disable rendering, for speed
 FIGURE = renderless_figure()

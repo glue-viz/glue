@@ -2,25 +2,27 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pytest
-
-import numpy as np
-from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
-from matplotlib.ticker import LogFormatterMathtext, ScalarFormatter, FuncFormatter
-from mock import MagicMock
 from timeit import timeit
 from functools import partial
 
-from glue.tests import example_data
-from glue.core.subset import RangeSubsetState, CategoricalRoiSubsetState, AndState
-from glue.core.roi import RectangularROI, XRangeROI, YRangeROI
-from glue.core.data import Data
-from glue.core.data_collection import DataCollection
-from glue.core.component import Component, CategoricalComponent
-from glue.core.component_id import ComponentID
+import pytest
+import numpy as np
+from mock import MagicMock
+from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
+from matplotlib.ticker import LogFormatterMathtext, ScalarFormatter, FuncFormatter
+
 from glue.core.edit_subset_mode import EditSubsetMode
+from glue.core.component_id import ComponentID
+from glue.core.component import Component, CategoricalComponent
+from glue.core.data_collection import DataCollection
+from glue.core.data import Data
+from glue.core.roi import RectangularROI, XRangeROI, YRangeROI
+from glue.core.subset import RangeSubsetState, CategoricalRoiSubsetState, AndState
+from glue.tests import example_data
+
 from ..scatter_client import ScatterClient
 from .util import renderless_figure
+
 
 # share matplotlib instance, and disable rendering, for speed
 FIGURE = renderless_figure()

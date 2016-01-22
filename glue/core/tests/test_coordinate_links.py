@@ -2,12 +2,13 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
+from glue.tests.helpers import requires_astropy, ASTROPY_INSTALLED
+
 from .. import Data, DataCollection
 from ..coordinates import coordinates_from_header
 from ..link_helpers import LinkSame
 from .util import make_file
 
-from glue.tests.helpers import requires_astropy, ASTROPY_INSTALLED
 
 if ASTROPY_INSTALLED:
     from astropy.io import fits

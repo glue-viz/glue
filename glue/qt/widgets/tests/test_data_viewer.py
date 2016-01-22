@@ -3,17 +3,17 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
+from mock import MagicMock, patch
 
 from glue.core import Data, DataCollection
-from ..data_viewer import DataViewer
-from ..histogram_widget import HistogramWidget
-from ..scatter_widget import ScatterWidget
-from ..image_widget import ImageWidget
 from glue.qt.glue_application import GlueApplication
 
 from . import simple_session
+from ..data_viewer import DataViewer
+from ..histogram_widget import HistogramWidget
+from ..image_widget import ImageWidget
+from ..scatter_widget import ScatterWidget
 
-from mock import MagicMock, patch
 
 # TODO: We should maybe consider running these tests for all
 # registered Qt viewers.
@@ -47,7 +47,7 @@ class BaseTestDataViewer(object):
             from ..mpl_widget import MplCanvas
             draw = MplCanvas.draw
             MplCanvas.draw = MagicMock()
-        
+
             app.new_data_viewer(self.widget_cls, data=d)
 
             # each Canvas instance gives at most 1 draw call
@@ -58,7 +58,7 @@ class BaseTestDataViewer(object):
 
     def test_close_on_last_layer_remove(self):
         # regression test for 391
-        
+
         d1 = Data(x=np.random.random((2,) * self.ndim))
         d2 = Data(y=np.random.random((2,) * self.ndim))
         dc = DataCollection([d1, d2])

@@ -1,15 +1,16 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.core.hub import HubListener
-from glue.core.data import Data
-from glue.core.subset import Subset
-from glue.core.data_collection import DataCollection
 from glue.core.message import (DataUpdateMessage,
-                      SubsetUpdateMessage,
-                      SubsetCreateMessage,
-                      SubsetDeleteMessage,
-                      DataCollectionDeleteMessage,
-                      NumericalDataChangedMessage)
+                               SubsetUpdateMessage,
+                               SubsetCreateMessage,
+                               SubsetDeleteMessage,
+                               DataCollectionDeleteMessage,
+                               NumericalDataChangedMessage)
+from glue.core.data_collection import DataCollection
+from glue.core.subset import Subset
+from glue.core.data import Data
+from glue.core.hub import HubListener
+
 
 __all__ = ['Client', 'BasicClient']
 

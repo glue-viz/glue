@@ -1,16 +1,16 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 
 from __future__ import absolute_import, division, print_function
 
 import pytest
 from mock import MagicMock
 
-from ..exceptions import InvalidSubscriber, InvalidMessage
-from ..message import SubsetMessage, Message
-from ..hub import Hub, HubListener
-from ..subset import Subset
 from ..data import Data
 from ..data_collection import DataCollection
+from ..exceptions import InvalidSubscriber, InvalidMessage
+from ..hub import Hub, HubListener
+from ..message import SubsetMessage, Message
+from ..subset import Subset
 
 
 class TestHub(object):

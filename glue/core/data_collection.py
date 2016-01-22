@@ -1,16 +1,16 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.core.hub import Hub, HubListener
-from glue.core.data import Data
-from glue.core.link_manager import LinkManager
-from glue.core.registry import Registry
-from glue.core.message import (DataCollectionAddMessage,
-                      DataCollectionDeleteMessage,
-                      DataAddComponentMessage)
 from glue.core.util import disambiguate
-
+from glue.core.message import (DataCollectionAddMessage,
+                               DataCollectionDeleteMessage,
+                               DataAddComponentMessage)
+from glue.core.registry import Registry
+from glue.core.link_manager import LinkManager
+from glue.core.data import Data
+from glue.core.hub import Hub, HubListener
 from glue.config import settings
 from glue.utils import as_list
+
 
 __all__ = ['DataCollection']
 

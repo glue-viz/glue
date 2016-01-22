@@ -1,19 +1,18 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+
 import matplotlib
 
-from glue.external.qt import QtCore, QtGui, is_pyqt5
-from glue.external.qt import QtGui
 from glue.external.qt.QtCore import Qt, Signal
+from glue.external.qt import QtCore, QtGui, is_pyqt5
+from glue.core.callback_property import add_callback
+from glue.qt.qtutil import get_icon, nonpartial
 
 if is_pyqt5():
     from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 else:
     from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
-
-from glue.core.callback_property import add_callback
-from glue.qt.qtutil import get_icon, nonpartial
 
 
 class GlueToolbar(NavigationToolbar2QT):

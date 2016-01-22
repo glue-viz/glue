@@ -1,22 +1,19 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt import QtGui
 from glue.external.qt.QtCore import Qt
-
+from glue.external.qt import QtGui
 from glue import core
-
 from glue.clients.scatter_client import ScatterClient
 from glue.qt.glue_toolbar import GlueToolbar
 from glue.qt.mouse_mode import (RectangleMode, CircleMode,
-                          PolyMode, HRangeMode, VRangeMode)
-
+                                PolyMode, HRangeMode, VRangeMode)
+from glue.qt.qtutil import load_ui, cache_axes, nonpartial
+from glue.qt.widget_properties import (ButtonProperty, FloatLineProperty,
+                                       CurrentComboProperty,
+                                       connect_bool_button, connect_float_edit)
 from glue.qt.widgets.data_viewer import DataViewer
 from glue.qt.widgets.mpl_widget import MplWidget, defer_draw
-from glue.qt.widget_properties import (ButtonProperty, FloatLineProperty,
-                                 CurrentComboProperty,
-                                 connect_bool_button, connect_float_edit)
 
-from glue.qt.qtutil import load_ui, cache_axes, nonpartial
 
 __all__ = ['ScatterWidget']
 

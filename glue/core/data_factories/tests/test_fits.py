@@ -1,17 +1,18 @@
 from __future__ import absolute_import, division, print_function
 
 import os
-from collections import namedtuple
 from copy import deepcopy
+from collections import namedtuple
 
 import numpy as np
 from numpy.testing import assert_array_equal
 
+from glue.core import data_factories as df
 from glue.core.tests.util import make_file
 from glue.tests.helpers import requires_astropy, requires_astropy_ge_04
 
-from glue.core import data_factories as df
 from ..fits import fits_reader
+
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 

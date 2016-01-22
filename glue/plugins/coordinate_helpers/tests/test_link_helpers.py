@@ -1,34 +1,37 @@
-import numpy as np
+from __future__ import absolute_import, division, print_function
 
 import pytest
+import numpy as np
+
+from glue.core import ComponentID
+from glue.core.tests.test_link_helpers import check_link, check_using
 from glue.tests.helpers import ASTROPY_GE_04_INSTALLED
+
+from ..link_helpers import (Galactic_to_FK5, FK4_to_FK5, ICRS_to_FK5,
+                            Galactic_to_FK4, ICRS_to_FK4, ICRS_to_Galactic)
 
 if not ASTROPY_GE_04_INSTALLED:
     pytest.skip()
 
-from glue.core.tests.test_link_helpers import check_link, check_using
-from glue.core import ComponentID
-
-from ..link_helpers import (Galactic_to_FK5, FK4_to_FK5, ICRS_to_FK5,
-                            Galactic_to_FK4, ICRS_to_FK4, ICRS_to_Galactic)
 
 # We now store for each class the expected result of the conversion of (45,50)
 # from the input frame to output frame and then from the output frame to the
 # input frame.
 EXPECTED = {
-    Galactic_to_FK5: [(238.23062386,27.96352696),(143.12136866,-7.76422226)],
-    FK4_to_FK5: [(45.87780898,50.19529421),(44.12740884,49.80169907)],
-    ICRS_to_FK5: [(45.00001315,49.99999788),(44.99998685,50.00000212)],
-    Galactic_to_FK4: [(237.71557513,28.11113265),(143.52337155,-7.32105993)],
-    ICRS_to_FK4: [(44.12742195,49.801697),(45.87779583,50.19529642)],
-    ICRS_to_Galactic: [(143.12137717,-7.76422008),(238.23062019,27.96352359)],
+    Galactic_to_FK5: [(238.23062386, 27.96352696), (143.12136866, -7.76422226)],
+    FK4_to_FK5: [(45.87780898, 50.19529421), (44.12740884, 49.80169907)],
+    ICRS_to_FK5: [(45.00001315, 49.99999788), (44.99998685, 50.00000212)],
+    Galactic_to_FK4: [(237.71557513, 28.11113265), (143.52337155, -7.32105993)],
+    ICRS_to_FK4: [(44.12742195, 49.801697), (45.87779583, 50.19529642)],
+    ICRS_to_Galactic: [(143.12137717, -7.76422008), (238.23062019, 27.96352359)],
 }
 
 
 lon1, lat1, lon2, lat2 = (ComponentID('lon_in'), ComponentID('lat_in'),
                           ComponentID('lon_out'), ComponentID('lat_out'))
 
-@pytest.mark.parametrize(('conv_class', 'expected'),list(EXPECTED.items()))
+
+@pytest.mark.parametrize(('conv_class', 'expected'), list(EXPECTED.items()))
 def test_conversion(conv_class, expected):
 
     result = conv_class(lon1, lat1, lon2, lat2)

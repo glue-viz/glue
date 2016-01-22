@@ -7,21 +7,20 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-import pkg_resources
-from matplotlib.colors import ColorConverter
-from matplotlib import cm
 import numpy as np
+import pkg_resources
+from matplotlib import cm
+from matplotlib.colors import ColorConverter
 
-from glue.external.axescache import AxesCache
-from glue.external.qt import QtGui, QtCore, is_pyside
 from glue.external.qt.QtCore import Qt
-
-from glue.utils.qt import QMessageBoxPatched as QMessageBox
-
-from glue.qt.decorators import set_cursor
-from glue.qt.mime import PyMimeData, LAYERS_MIME_TYPE
+from glue.external.qt import QtGui, QtCore, is_pyside
+from glue.external.axescache import AxesCache
 from glue import core
 from glue.qt import ui, icons
+from glue.qt.decorators import set_cursor
+from glue.qt.mime import PyMimeData, LAYERS_MIME_TYPE
+from glue.utils.qt import QMessageBoxPatched as QMessageBox
+
 
 # We import nonpartial here for convenience
 from glue.utils import nonpartial
@@ -175,7 +174,7 @@ def edit_layer_color(layer):
     """ Interactively edit a layer's color """
     initial = mpl_to_qt4_color(layer.style.color, alpha=layer.style.alpha)
     color = QtGui.QColorDialog.getColor(initial, None, "Change layer color",
-                                  options=QtGui.QColorDialog.ShowAlphaChannel)
+                                        options=QtGui.QColorDialog.ShowAlphaChannel)
     if color.isValid():
         layer.style.color = qt4_to_mpl_color(color)
         layer.style.alpha = color.alpha() / 256.
@@ -189,8 +188,8 @@ def edit_layer_symbol(layer):
     except IndexError:
         initial = 0
     symb, isok = QtGui.QInputDialog.getItem(None, 'Pick a Symbol',
-                                      'Pick a Symbol',
-                                      options, current=initial)
+                                            'Pick a Symbol',
+                                            options, current=initial)
     if isok and symb != layer.style.marker:
         layer.style.marker = symb
 
@@ -198,8 +197,8 @@ def edit_layer_symbol(layer):
 def edit_layer_point_size(layer):
     """ Interactively edit a layer's point size """
     size, isok = QtGui.QInputDialog.getInt(None, 'Point Size', 'Point Size',
-                                     value=layer.style.markersize,
-                                     min=1, max=1000, step=1)
+                                           value=layer.style.markersize,
+                                           min=1, max=1000, step=1)
     if isok and size != layer.style.markersize:
         layer.style.markersize = size
 
@@ -207,7 +206,7 @@ def edit_layer_point_size(layer):
 def edit_layer_label(layer):
     """ Interactively edit a layer's label """
     label, isok = QtGui.QInputDialog.getText(None, 'New Label:', 'New Label:',
-                                       text=layer.label)
+                                             text=layer.label)
     if isok and str(label) != layer.label:
         layer.label = str(label)
 
@@ -224,8 +223,8 @@ def pick_item(items, labels, title="Pick an item", label="Pick an item",
     Returns the selected item, or None
     """
     choice, isok = QtGui.QInputDialog.getItem(None, title, label,
-                                        labels, current=default,
-                                        editable=False)
+                                              labels, current=default,
+                                              editable=False)
     if isok:
         index = labels.index(str(choice))
         return items[index]
@@ -361,7 +360,7 @@ def layer_artist_icon(artist):
         bm = QtGui.QBitmap(icon_path('glue_image'))
     else:
         bm = QtGui.QBitmap(icon_path(POINT_ICONS.get(artist.layer.style.marker,
-                                               'glue_circle_point')))
+                                                     'glue_circle_point')))
     color = mpl_to_qt4_color(artist.layer.style.color)
 
     pm = tint_pixmap(bm, color)
@@ -452,7 +451,7 @@ def cmap2pixmap(cmap, steps=50):
     inds = np.linspace(0, 1, steps)
     rgbas = sm.to_rgba(inds)
     rgbas = [QtGui.QColor(int(r * 255), int(g * 255),
-                    int(b * 255), int(a * 255)).rgba() for r, g, b, a in rgbas]
+                          int(b * 255), int(a * 255)).rgba() for r, g, b, a in rgbas]
     im = QtGui.QImage(steps, 1, QtGui.QImage.Format_Indexed8)
     im.setColorTable(rgbas)
     for i in range(steps):

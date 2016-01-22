@@ -3,11 +3,14 @@
 
 # Coordinate transforms (requires Astropy>)
 
-from glue.config import link_helper
-from glue.core.link_helpers import MultiLink
+from __future__ import absolute_import, division, print_function
 
 from astropy import units as u
 from astropy.coordinates import ICRS, FK5, FK4, Galactic
+
+from glue.core.link_helpers import MultiLink
+from glue.config import link_helper
+
 
 __all__ = ["BaseCelestialMultiLink", "Galactic_to_FK5", "FK4_to_FK5",
            "ICRS_to_FK5", "Galactic_to_FK4", "ICRS_to_FK4",
@@ -22,8 +25,8 @@ class BaseCelestialMultiLink(MultiLink):
 
     def __init__(self, in_lon, in_lat, out_lon, out_lat):
         MultiLink.__init__(self, [in_lon, in_lat],
-                                 [out_lon, out_lat],
-                                 self.forward, self.backward)
+                           [out_lon, out_lat],
+                           self.forward, self.backward)
 
     def forward(self, in_lon, in_lat):
         c = self.frame_in(in_lon * u.deg, in_lat * u.deg)
@@ -58,6 +61,7 @@ class ICRS_to_FK5(BaseCelestialMultiLink):
     display = "Celestial Coordinates: ICRS <-> FK5 (J2000)"
     frame_in = ICRS
     frame_out = FK5
+
 
 @link_helper('Link Galactic and FK4 (B1950) Equatorial coordinates',
              input_labels=['l', 'b', 'ra (fk4)', 'dec (fk4)'])

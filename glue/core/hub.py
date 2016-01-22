@@ -4,8 +4,9 @@ import logging
 from inspect import getmro
 from collections import defaultdict
 
-from glue.core.message import Message
 from glue.core.exceptions import InvalidSubscriber, InvalidMessage
+from glue.core.message import Message
+
 
 __all__ = ['Hub', 'HubListener']
 

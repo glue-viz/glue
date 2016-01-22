@@ -1,10 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.qt.qtutil import (mpl_to_qt4_color, symbol_icon, POINT_ICONS,
-                      qt4_to_mpl_color)
-
-from glue.external.qt import QtGui, QtCore
 from glue.external.qt.QtCore import Qt
+from glue.external.qt import QtGui, QtCore
+from glue.qt.qtutil import (mpl_to_qt4_color, symbol_icon, POINT_ICONS,
+                            qt4_to_mpl_color)
 
 
 class ColorWidget(QtGui.QLabel):
@@ -60,7 +59,7 @@ class StyleDialog(QtGui.QDialog):
         self.set_color(color)
 
         self.okcancel = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok |
-                                         QtGui.QDialogButtonBox.Cancel)
+                                               QtGui.QDialogButtonBox.Cancel)
 
         if self._edit_label:
             self.layout.addRow("Label", self.label_widget)
@@ -83,8 +82,8 @@ class StyleDialog(QtGui.QDialog):
 
     def query_color(self, *args):
         color = QtGui.QColorDialog.getColor(self._color, self.color_widget,
-                                      "",
-                                      QtGui.QColorDialog.ShowAlphaChannel)
+                                            "",
+                                            QtGui.QColorDialog.ShowAlphaChannel)
         if color.isValid():
             self.set_color(color)
 
@@ -141,7 +140,7 @@ class StyleDialog(QtGui.QDialog):
 
 
 if __name__ == "__main__":
-    
+
     from glue.qt.core import Data
 
     d = Data(label='data label', x=[1, 2, 3, 4])

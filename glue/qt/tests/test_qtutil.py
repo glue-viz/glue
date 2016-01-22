@@ -3,15 +3,13 @@
 from __future__ import absolute_import, division, print_function
 
 import pytest
+import matplotlib.pyplot as plt
 from mock import MagicMock, patch
 
-import matplotlib.pyplot as plt
-
-from glue.external.qt import QtGui
 from glue.external.qt.QtCore import Qt
-
-from glue.config import data_factory
+from glue.external.qt import QtGui
 from glue.core import Data, Subset
+from glue.config import data_factory
 from glue.clients.layer_artist import RGBImageLayerArtist
 
 from .. import qtutil
@@ -273,7 +271,7 @@ class TestRGBEdit(object):
     def setup_method(self, method):
         d = Data()
         self.fig = plt.figure()
-        self.ax = self.fig.add_subplot(1,1,1)
+        self.ax = self.fig.add_subplot(1, 1, 1)
         self.artist = RGBImageLayerArtist(d, self.ax)
         self.w = qtutil.RGBEdit(artist=self.artist)
 

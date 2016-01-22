@@ -3,19 +3,17 @@ from __future__ import absolute_import, division, print_function
 import warnings
 
 import pytest
-from mock import MagicMock
 import numpy as np
+from mock import MagicMock
 from numpy.testing import assert_allclose, assert_array_equal
 
-from glue.core import data_factories as df
-from glue.core.data import Data
-from glue.core.component import CategoricalComponent
 from glue.core.tests.util import make_file
-
-from glue.tests.helpers import (requires_astropy, requires_astropy_ge_03,
-                               requires_pil_or_skimage)
-
+from glue.core.component import CategoricalComponent
+from glue.core.data import Data
+from glue.core import data_factories as df
 from glue.config import data_factory
+from glue.tests.helpers import (requires_astropy, requires_astropy_ge_03,
+                                requires_pil_or_skimage)
 
 
 def test_load_data_auto_assigns_label():

@@ -3,13 +3,10 @@ from __future__ import absolute_import, division, print_function
 import re
 
 from glue.external.qt import QtGui
-
-from glue import core
 from glue.core import parse
-from glue.utils.qt import CompletionTextEdit
-
+from glue import core
 from glue.qt.qtutil import load_ui
-
+from glue.utils.qt import CompletionTextEdit
 
 
 def disambiguate(label, labels):
@@ -81,7 +78,6 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
         tc.setPosition(pos)
         self.setTextCursor(tc)
         self.setAlignment(Qt.AlignCenter)
-
 
 
 class CustomComponentWidget(object):
@@ -169,6 +165,7 @@ class CustomComponentWidget(object):
         # To maintain backward compatibility with previous versions of glue,
         # we add curly brackets around the components in the expression.
         pattern = '[^\\s]*:[^\\s]*'
+
         def add_curly(m):
             return "{" + m.group(0) + "}"
         expression = re.sub(pattern, add_curly, expression)
@@ -212,13 +209,13 @@ class CustomComponentWidget(object):
             if widget.ui.exec_() == QtGui.QDialog.Accepted:
                 if len(str(widget.ui.expression.toPlainText())) == 0:
                     QtGui.QMessageBox.critical(widget.ui, "Error", "No expression set",
-                                         buttons=QtGui.QMessageBox.Ok)
+                                               buttons=QtGui.QMessageBox.Ok)
                 elif widget._number_targets == 0:
                     QtGui.QMessageBox.critical(widget.ui, "Error", "Please specify the target dataset(s)",
-                                         buttons=QtGui.QMessageBox.Ok)
+                                               buttons=QtGui.QMessageBox.Ok)
                 elif len(widget.ui.new_label.text()) == 0:
                     QtGui.QMessageBox.critical(widget.ui, "Error", "Please specify the new component name",
-                                         buttons=QtGui.QMessageBox.Ok)
+                                               buttons=QtGui.QMessageBox.Ok)
                 else:
                     link = widget._create_link()
                     if link:
@@ -226,6 +223,7 @@ class CustomComponentWidget(object):
                     break
             else:
                 break
+
 
 def main():
     from glue.core.data import Data

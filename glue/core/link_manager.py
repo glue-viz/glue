@@ -1,4 +1,3 @@
-from __future__ import absolute_import, division, print_function
 """
 The LinkManager class is responsible for maintaining the conistency
 of the "web of links" in a DataCollection. It discovers how to
@@ -15,13 +14,16 @@ Link:        <---x2y---><--y2z-->
 The LinkManager autocreates a link from D1.id['x'] to D3.id['z']
 by chaining x2y and y2z.
 """
+
+from __future__ import absolute_import, division, print_function
+
 import logging
 
-from glue.core.data import Data, DerivedComponent
-from glue.core.component_link import ComponentLink
-from glue.core.link_helpers import LinkCollection
 from glue.external import six
 from glue.core.contracts import contract
+from glue.core.link_helpers import LinkCollection
+from glue.core.component_link import ComponentLink
+from glue.core.data import Data, DerivedComponent
 
 
 def accessible_links(cids, links):

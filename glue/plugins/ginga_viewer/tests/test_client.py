@@ -1,20 +1,18 @@
-from __future__ import print_function, division
+from __future__ import absolute_import, division, print_function
 
 import pytest
+import numpy as np
+from numpy.testing import assert_array_equal
+
+from glue.core import Data
+from glue.clients.tests.test_image_client import _TestImageClientBase
 from glue.tests.helpers import GINGA_INSTALLED
 
 if not GINGA_INSTALLED:
     pytest.skip()
 
-import numpy as np
-from numpy.testing import assert_array_equal
-
-from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
 from ginga.misc import log
-
-from glue.core import Data
-
-from glue.clients.tests.test_image_client import _TestImageClientBase
+from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
 
 from ..client import GingaClient, SubsetImage, BaseImage
 

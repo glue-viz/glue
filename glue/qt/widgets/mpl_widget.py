@@ -4,8 +4,12 @@ from __future__ import absolute_import, division, print_function
 
 from functools import wraps
 
-from glue.external.qt import QtGui, QtCore, is_pyqt5
+import matplotlib
+from matplotlib.figure import Figure
+
 from glue.external.qt.QtCore import Qt
+from glue.external.qt import QtGui, QtCore, is_pyqt5
+from glue.utils import DeferredMethod
 
 if is_pyqt5():
     from matplotlib.backends.backend_qt5 import FigureManagerQT as FigureManager
@@ -16,11 +20,6 @@ else:
     except ImportError:  # mpl < 1.4
         from matplotlib.backends.backend_qt4agg import FigureManagerQTAgg as FigureManager
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-
-import matplotlib
-from matplotlib.figure import Figure
-
-from glue.utils import DeferredMethod
 
 
 def defer_draw(func):

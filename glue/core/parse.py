@@ -2,9 +2,10 @@ from __future__ import absolute_import, division, print_function
 
 import re
 
-from glue.core.data import ComponentID
-from glue.core.subset import Subset, SubsetState
 from glue.core.component_link import ComponentLink
+from glue.core.subset import Subset, SubsetState
+from glue.core.data import ComponentID
+
 
 TAG_RE = re.compile('\{\s*(?P<tag>\S+)\s*\}')
 

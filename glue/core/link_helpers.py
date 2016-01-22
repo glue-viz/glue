@@ -14,9 +14,9 @@ multiple ComponentLinks easily. They are meant to be passed to
 
 from __future__ import absolute_import, division, print_function
 
-from glue.core.component_link import ComponentLink
-from glue.core.data import ComponentID
 from glue.external import six
+from glue.core.data import ComponentID
+from glue.core.component_link import ComponentLink
 
 
 __all__ = ['LinkCollection', 'LinkSame', 'LinkTwoWay', 'MultiLink',

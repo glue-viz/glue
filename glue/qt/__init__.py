@@ -1,4 +1,7 @@
+from __future__ import absolute_import, division, print_function
+
 import os
+import atexit
 
 # For backward compatibility, we import get_qapp here
 from glue.external.qt import get_qapp
@@ -11,5 +14,4 @@ def teardown():
         app.exit()
 
 _app = get_qapp()
-import atexit
 atexit.register(teardown)

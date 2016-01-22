@@ -1,11 +1,14 @@
+from __future__ import absolute_import, division, print_function
+
 from collections import namedtuple
 
-from mock import MagicMock
 import pytest
 import numpy as np
+from mock import MagicMock
 
 from ..profile_viewer import ProfileViewer
 from .util import renderless_figure
+
 
 FIG = renderless_figure()
 Event = namedtuple('Event', 'xdata ydata inaxes button dblclick')

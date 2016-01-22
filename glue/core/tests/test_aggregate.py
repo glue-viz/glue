@@ -1,10 +1,11 @@
+from __future__ import absolute_import, division, print_function
+
+import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 
-import pytest
-
-from ..aggregate import Aggregate
 from .. import Data
+from ..aggregate import Aggregate
 
 
 class TestFunctions(object):

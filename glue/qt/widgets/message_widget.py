@@ -3,15 +3,14 @@ from __future__ import absolute_import, division, print_function
 from time import ctime
 
 from glue.external.qt import QtGui
-
 from glue import core
-
 from glue.qt.qtutil import load_ui
 
 
 class MessageWidget(QtGui.QWidget, core.hub.HubListener):
     """ This simple class displays all messages broadcast
     by a hub. It is mainly intended for debugging """
+
     def __init__(self):
         QtGui.QWidget.__init__(self)
         self.ui = load_ui('messagewidget', self)

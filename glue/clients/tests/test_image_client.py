@@ -3,19 +3,18 @@
 from __future__ import absolute_import, division, print_function
 
 import pytest
-
-from mock import MagicMock
 import numpy as np
+from mock import MagicMock
 
-from glue.tests import example_data
-from glue import core
-from glue.core.exceptions import IncompatibleAttribute
 from glue.core.link_helpers import LinkSame
+from glue.core.exceptions import IncompatibleAttribute
+from glue import core
+from glue.tests import example_data
 
-from ..layer_artist import RGBImageLayerArtist, ImageLayerArtist
 from ..image_client import MplImageClient
-
+from ..layer_artist import RGBImageLayerArtist, ImageLayerArtist
 from .util import renderless_figure
+
 
 FIGURE = renderless_figure()
 

@@ -2,16 +2,13 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.qt.widgets.data_viewer import DataViewer
-
-from glue.external.qt import QtGui, QtCore
 from glue.external.qt.QtCore import Qt
-
-from glue.core import message as msg
-from glue.core.edit_subset_mode import EditSubsetMode
+from glue.external.qt import QtGui, QtCore
 from glue.core.subset import ElementSubsetState
-
+from glue.core.edit_subset_mode import EditSubsetMode
+from glue.core import message as msg
 from glue.qt.qtutil import load_ui
+from glue.qt.widgets.data_viewer import DataViewer
 
 
 class DataTableModel(QtCore.QAbstractTableModel):
@@ -35,7 +32,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
         return len(self.columns)
 
     def rowCount(self, index=None):
-        #Qt bug: Crashes on tables bigger than this
+        # Qt bug: Crashes on tables bigger than this
         return min(self._data.size, 71582788)
 
     def headerData(self, section, orientation, role):
@@ -146,7 +143,7 @@ class TableWidget(DataViewer):
 
         self.ui.table.clearSelection()
         selection_mode = self.ui.table.selectionMode()
-        self.ui.table.setSelectionMode(QtGui.QAbstractItemView.MultiSelection);
+        self.ui.table.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)
 
         # The following is more efficient than just calling selectRow
         model = self.ui.table.selectionModel()

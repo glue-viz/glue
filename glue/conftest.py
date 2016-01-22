@@ -1,4 +1,8 @@
+from __future__ import absolute_import, division, print_function
+
 import os
+
+from glue.config import CFG_DIR as CFG_DIR_ORIG
 
 
 def pytest_addoption(parser):
@@ -32,8 +36,6 @@ def pytest_report_header(config):
     from glue._deps import get_status
     return os.linesep + glue_version + os.linesep + os.linesep + get_status()
 
-
-from glue.config import CFG_DIR as CFG_DIR_ORIG
 
 def pytest_unconfigure(config):
     from glue import config

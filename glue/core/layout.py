@@ -3,6 +3,8 @@ This module provides some routines for performing layout
 calculations to organize rectangular windows in a larger canvas
 """
 
+from __future__ import absolute_import, division, print_function
+
 from collections import Counter
 
 from glue.external import six

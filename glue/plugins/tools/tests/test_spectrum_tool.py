@@ -1,15 +1,17 @@
+from __future__ import absolute_import, division, print_function
+
 import pytest
 import numpy as np
 from mock import MagicMock
 
-from glue.core.tests.util import simple_session
-from glue.core import Data, Coordinates
+from glue.core.fitters import PolynomialFitter
 from glue.core.roi import RectangularROI
+from glue.core import Data, Coordinates
+from glue.core.tests.util import simple_session
 from glue.qt.widgets import ImageWidget
 from glue.tests.helpers import requires_astropy
 
 from ..spectrum_tool import Extractor, ConstraintsWidget, FitSettingsWidget, SpectrumTool, CollapseContext
-from glue.core.fitters import PolynomialFitter
 
 needs_modeling = lambda x: x
 try:

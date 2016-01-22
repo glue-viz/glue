@@ -6,17 +6,18 @@ import pytest
 import numpy as np
 from mock import MagicMock
 
-from ..data import Data, pixel_label
-from ..component_id import ComponentID
-from ..component import Component, DerivedComponent, CategoricalComponent
-from ..coordinates import Coordinates
-from ..subset import Subset, SubsetState
-from ..hub import Hub
-from ..exceptions import IncompatibleAttribute
-from ..component_link import ComponentLink
-from ..registry import Registry
-from glue import core
 from glue.external import six
+from glue import core
+
+from ..component import Component, DerivedComponent, CategoricalComponent
+from ..component_id import ComponentID
+from ..component_link import ComponentLink
+from ..coordinates import Coordinates
+from ..data import Data, pixel_label
+from ..exceptions import IncompatibleAttribute
+from ..hub import Hub
+from ..registry import Registry
+from ..subset import Subset, SubsetState
 
 
 class _TestCoordinates(Coordinates):

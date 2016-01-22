@@ -1,14 +1,16 @@
+from __future__ import absolute_import, division, print_function
+
 import logging
 
 import numpy as np
+
 try:
     from plotly import plotly
 except ImportError:
     plotly = None
 
-from glue.qt.widgets import ScatterWidget, HistogramWidget
 from glue.core.layout import Rectangle, snap_to_grid
-
+from glue.qt.widgets import ScatterWidget, HistogramWidget
 
 SYM = {'o': 'circle', 's': 'square', '+': 'cross', '^': 'triangle-up',
        '*': 'cross'}
@@ -302,6 +304,7 @@ def save_plotly(application, label):
 
     plotly.sign_in(user, apikey)
     plotly.plot(*args, **kwargs)
+
 
 def setup():
     from glue.config import exporters, settings

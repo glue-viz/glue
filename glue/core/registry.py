@@ -1,10 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-from collections import defaultdict
 from functools import wraps
+from collections import defaultdict
 
-from glue.core.decorators import singleton
 from glue.core.util import disambiguate
+from glue.core.decorators import singleton
 
 
 @singleton

@@ -4,7 +4,6 @@ from inspect import getargspec
 from collections import OrderedDict
 
 from glue.external.qt import QtGui
-
 from glue import core
 from glue.qt.qtutil import load_ui, is_pyside
 
@@ -266,7 +265,7 @@ class LinkEquation(QtGui.QWidget):
             self._add_argument_widget(a)
 
         self.spacer = QtGui.QSpacerItem(5, 5, QtGui.QSizePolicy.Minimum,
-                                  QtGui.QSizePolicy.Expanding)
+                                        QtGui.QSizePolicy.Expanding)
         self._ui.input_canvas.layout().addItem(self.spacer)
 
     def _setup_editor_helper(self):
@@ -282,7 +281,7 @@ class LinkEquation(QtGui.QWidget):
             self._add_argument_widget(a)
 
         self.spacer = QtGui.QSpacerItem(5, 5, QtGui.QSizePolicy.Minimum,
-                                  QtGui.QSizePolicy.Expanding)
+                                        QtGui.QSizePolicy.Expanding)
         self._ui.input_canvas.layout().addItem(self.spacer)
 
     def _add_argument_widget(self, argument):

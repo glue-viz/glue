@@ -18,13 +18,14 @@ from abc import ABCMeta, abstractproperty, abstractmethod
 
 import numpy as np
 from matplotlib.cm import gray
+
 from glue.external import six
-from glue.core.exceptions import IncompatibleAttribute
-from glue.core.util import PropertySetMixin, Pointer
 from glue.core.subset import Subset
+from glue.core.util import PropertySetMixin, Pointer
+from glue.core.exceptions import IncompatibleAttribute
+from glue.clients.ds9norm import DS9Normalize
 from glue.clients.util import small_view, small_view_array
 from glue.utils import view_cascade, get_extent, color2rgb
-from glue.clients.ds9norm import DS9Normalize
 
 
 __all__ = ['LayerArtistBase', 'LayerArtist',

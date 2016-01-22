@@ -1,12 +1,14 @@
 # Make sure that session files can be read in a backward-compatible manner
 
+from __future__ import absolute_import, division, print_function
+
 import os
+
 import numpy as np
 
 from glue.tests.helpers import requires_astropy, requires_h5py
 
 from ..state import GlueUnSerializer
-
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 
 

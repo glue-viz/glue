@@ -1,5 +1,6 @@
-from glue.external.qt.QtCore import Qt
+from __future__ import absolute_import, division, print_function
 
+from glue.external.qt.QtCore import Qt
 from glue.core import DataCollection, Data
 
 from ..data_collection_model import DataCollectionModel

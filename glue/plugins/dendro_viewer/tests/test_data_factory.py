@@ -1,4 +1,4 @@
-from __future__ import print_function, division
+from __future__ import absolute_import, division, print_function
 
 import os
 
@@ -6,11 +6,11 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
 
-from glue.core import data_factories as df
-
-from glue.core.data_factories.helpers import find_factory
 from glue.core.tests.util import make_file
+from glue.core.data_factories.helpers import find_factory
+from glue.core import data_factories as df
 from glue.tests.helpers import requires_astrodendro
+
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 
@@ -57,20 +57,20 @@ def test_identifier_heuristics(tmpdir):
     assert not is_dendro(filename)
 
     hdulist[1].name = ''
-    hdulist[0].data = np.array([1,2,3])
+    hdulist[0].data = np.array([1, 2, 3])
 
     hdulist.writeto(filename, clobber=True)
     assert not is_dendro(filename)
 
     hdulist[0].data = None
-    hdulist[1].data = np.ones((3,4))
-    hdulist[2].data = np.ones((2,4))
-    hdulist[3].data = np.ones((3,5))
+    hdulist[1].data = np.ones((3, 4))
+    hdulist[2].data = np.ones((2, 4))
+    hdulist[3].data = np.ones((3, 5))
 
     hdulist.writeto(filename, clobber=True)
     assert not is_dendro(filename)
 
-    hdulist[2].data = np.ones((3,4))
+    hdulist[2].data = np.ones((3, 4))
 
     hdulist.writeto(filename, clobber=True)
     assert not is_dendro(filename)

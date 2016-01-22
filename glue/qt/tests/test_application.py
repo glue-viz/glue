@@ -5,24 +5,25 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 
-from mock import patch, MagicMock
 import numpy as np
+from mock import patch, MagicMock
 
 try:
     from IPython import __version__ as ipy_version
 except:
     ipy_version = '0.0'
 
-from ..glue_application import GlueApplication
 from glue.external.qt import QtCore
-from ..widgets.scatter_widget import ScatterWidget
-from ..widgets.image_widget import ImageWidget
 from glue.core import Data
-
-
 from glue.tests.helpers import requires_ipython_ge_012
 
+from ..glue_application import GlueApplication
+from ..widgets.image_widget import ImageWidget
+from ..widgets.scatter_widget import ScatterWidget
+
+
 os.environ['GLUE_TESTING'] = 'True'
+
 
 def tab_count(app):
     return app.tab_bar.count()

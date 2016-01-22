@@ -1,19 +1,19 @@
-#pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 
 from __future__ import absolute_import, division, print_function
 
 import pytest
-
 import numpy as np
-from numpy.testing import assert_almost_equal
-from matplotlib.figure import Figure
 from mock import MagicMock
+from matplotlib.figure import Figure
+from numpy.testing import assert_almost_equal
 
+from .. import roi as r
 from ..component import CategoricalComponent
 from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI, CategoricalRoi,
                    MplCircularROI, MplRectangularROI, MplPolygonalROI, MplPickROI, PointROI,
                    XRangeROI, MplXRangeROI, YRangeROI, MplYRangeROI, RangeROI)
-from .. import roi as r
+
 
 FIG = Figure()
 AXES = FIG.add_subplot(111)

@@ -51,7 +51,7 @@ class PyMimeData(QtCore.QMimeData):
         return super(PyMimeData, self).data(mime_type)
 
 
-#some standard glue mime types
+# some standard glue mime types
 LAYER_MIME_TYPE = 'glue/layer'
 LAYERS_MIME_TYPE = 'glue/layers'
 INSTANCE_MIME_TYPE = PyMimeData.MIME_TYPE

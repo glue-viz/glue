@@ -1,4 +1,7 @@
+from __future__ import absolute_import, division, print_function
+
 import numpy as np
+
 from glue.qt.mouse_mode import PathMode
 from glue.qt.widgets.image_widget import StandaloneImageWidget
 from glue.qt.widgets.mpl_widget import defer_draw

@@ -1,6 +1,7 @@
-from __future__ import print_function, division
+from __future__ import absolute_import, division, print_function
 
 import pytest
+
 from glue.tests.helpers import GINGA_INSTALLED
 
 if not GINGA_INSTALLED:

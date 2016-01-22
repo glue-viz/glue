@@ -1,5 +1,7 @@
-from numpy.testing import assert_array_equal
+from __future__ import absolute_import, division, print_function
+
 import pytest
+from numpy.testing import assert_array_equal
 
 from .. import Data, DataCollection
 from ..exceptions import IncompatibleAttribute

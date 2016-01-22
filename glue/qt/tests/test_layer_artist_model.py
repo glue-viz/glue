@@ -2,11 +2,10 @@ from __future__ import absolute_import, division, print_function
 
 from mock import MagicMock
 
-from glue.external.qt import is_pyqt5
 from glue.external.qt.QtCore import Qt
-
-from glue.clients.layer_artist import LayerArtist as _LayerArtist
+from glue.external.qt import is_pyqt5
 from glue.core import Data
+from glue.clients.layer_artist import LayerArtist as _LayerArtist
 
 from ..layer_artist_model import LayerArtistModel, LayerArtistView
 

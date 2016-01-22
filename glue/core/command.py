@@ -1,10 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
-from abc import ABCMeta, abstractmethod
 import logging
+from abc import ABCMeta, abstractmethod
 
-from glue.core.data_factories import load_data
 from glue.core.util import CallbackMixin
+from glue.core.data_factories import load_data
+
 
 MAX_UNDO = 50
 """

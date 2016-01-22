@@ -54,30 +54,30 @@ starting from 1.
 from __future__ import absolute_import, division, print_function
 
 import os
-from itertools import count
-from collections import defaultdict
 import json
 import types
 import logging
+from io import BytesIO
+from itertools import count
+from collections import defaultdict
+from base64 import b64encode, b64decode
 from inspect import isgeneratorfunction
 
 import numpy as np
 
-from glue.core.subset import (OPSYM, SYMOP, CompositeSubsetState,
-                     SubsetState, Subset, RoiSubsetState,
-                     InequalitySubsetState, RangeSubsetState)
+from glue.external import six
+from glue import core
 from glue.core.data import (Data, Component, ComponentID, DerivedComponent,
-                   CoordinateComponent)
+                            CoordinateComponent)
+from glue.core.subset import (OPSYM, SYMOP, CompositeSubsetState,
+                              SubsetState, Subset, RoiSubsetState,
+                              InequalitySubsetState, RangeSubsetState)
 from glue.core import (VisualAttributes, ComponentLink, DataCollection)
 from glue.core.component_link import CoordinateComponentLink
-from glue.utils import lookup_class
 from glue.core.roi import Roi
 from glue.core import glue_pickle as gp
-from glue import core
 from glue.core.subset_group import coerce_subset_groups
-from glue.external import six
-from io import BytesIO
-from base64 import b64encode, b64decode
+from glue.utils import lookup_class
 
 
 literals = tuple([type(None), float, int, bytes, bool, list, tuple])

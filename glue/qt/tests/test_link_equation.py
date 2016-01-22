@@ -1,12 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
-from mock import MagicMock
 import pytest
+from mock import MagicMock
+
+from glue.core import ComponentID
+from glue.config import link_function, link_helper
 
 from ..link_equation import (function_label, helper_label,
                              LinkEquation, ArgumentWidget)
-from glue.config import link_function, link_helper
-from glue.core import ComponentID
 
 
 @link_function('testing function', ['y'])
@@ -154,7 +155,7 @@ class TestLinkEquation(object):
         assert widget.signature == ([None, None], None)
 
     def test_signal_connections(self):
-        #testing that signal-slot connections don't crash
+        # testing that signal-slot connections don't crash
         widget = LinkEquation()
 
         signal = widget._ui.function.currentIndexChanged

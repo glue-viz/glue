@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from functools import wraps
 
+
 __all__ = ['memoize', 'singleton', 'memoize_attr_check']
 
 

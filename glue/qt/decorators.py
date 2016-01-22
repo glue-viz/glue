@@ -1,7 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
-from functools import wraps
 import traceback
+from functools import wraps
+
 from glue.utils.qt import QMessageBoxPatched as QMessageBox
 
 

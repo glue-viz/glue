@@ -4,6 +4,7 @@ from mock import MagicMock, patch
 
 from glue.tests.helpers import requires_ipython_ge_012, IPYTHON_GE_012_INSTALLED
 
+
 if IPYTHON_GE_012_INSTALLED:
     from ..terminal import glue_terminal
 

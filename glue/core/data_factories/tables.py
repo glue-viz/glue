@@ -1,8 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
+from glue.core.data_factories.helpers import has_extension
 from glue.config import data_factory
 
-from glue.core.data_factories.helpers import has_extension
 
 __all__ = ['tabular_data']
 
@@ -22,4 +22,3 @@ def tabular_data(path, **kwargs):
             pass
     else:
         raise IOError("Could not parse file: %s" % path)
-

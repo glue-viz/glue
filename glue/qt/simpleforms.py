@@ -1,8 +1,10 @@
-from glue.external.qt import QtGui
-from glue.external.qt.QtCore import QObject, Signal
+from __future__ import absolute_import, division, print_function
 
+from glue.external.qt.QtCore import QObject, Signal
+from glue.external.qt import QtGui
 from glue.core.simpleforms import IntOption, FloatOption, BoolOption
 from glue.qt.qtutil import nonpartial
+
 
 _dispatch = {}
 

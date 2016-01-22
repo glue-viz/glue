@@ -5,8 +5,8 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 from matplotlib.cm import gray
 
-from ..util import facet_subsets, colorize_subsets
 from .. import Data, DataCollection
+from ..util import facet_subsets, colorize_subsets
 
 
 class TestRelim(object):

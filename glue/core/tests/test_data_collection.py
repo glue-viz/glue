@@ -2,18 +2,18 @@
 
 from __future__ import absolute_import, division, print_function
 
-import numpy as np
-from numpy.testing import assert_array_equal
-from mock import MagicMock
 import pytest
+import numpy as np
+from mock import MagicMock
+from numpy.testing import assert_array_equal
 
+from ..component_link import ComponentLink
 from ..data import Data, Component, ComponentID, DerivedComponent
-from ..hub import HubListener
 from ..data_collection import DataCollection
+from ..hub import HubListener
 from ..message import (Message, DataCollectionAddMessage,
                        DataCollectionDeleteMessage,
                        ComponentsChangedMessage)
-from ..component_link import ComponentLink
 
 
 class HubLog(HubListener):

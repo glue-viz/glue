@@ -27,11 +27,12 @@ from __future__ import absolute_import, division, print_function
 import os
 import warnings
 
-from glue.core.data import Component, Data
-from glue.utils import as_list
-from glue.backends import get_backend
-from glue.config import auto_refresh, data_factory
 from glue.core.contracts import contract
+from glue.core.data import Component, Data
+from glue.config import auto_refresh, data_factory
+from glue.backends import get_backend
+from glue.utils import as_list
+
 
 __all__ = ['FileWatcher', 'LoadLog',
            'auto_data', 'data_label', 'find_factory',

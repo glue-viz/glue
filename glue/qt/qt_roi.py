@@ -1,8 +1,10 @@
+from __future__ import absolute_import, division, print_function
+
 import numpy as np
 
-from glue.core import roi
-from glue.external.qt import QtGui, QtCore
 from glue.external.qt import QtCore
+from glue.external.qt import QtGui, QtCore
+from glue.core import roi
 from glue.qt.qtutil import mpl_to_qt4_color
 
 
