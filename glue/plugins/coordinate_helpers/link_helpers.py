@@ -3,7 +3,7 @@
 
 # Coordinate transforms (requires Astropy>)
 
-from glue.config import link_function, link_helper
+from glue.config import link_helper
 from glue.core.link_helpers import MultiLink
 
 from astropy import units as u

@@ -10,9 +10,8 @@ from glue.core.exceptions import IncompatibleDataException, IncompatibleAttribut
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.clients.layer_artist import HistogramLayerArtist, LayerArtistContainer
 from glue.clients.util import update_ticks, visible_limits
-from glue.core.callback_property import CallbackProperty, add_callback
+from glue.core.callback_property import CallbackProperty
 from glue.utils import lookup_class
-from glue.utils.matplotlib import freeze_margins
 from glue.clients.viz_client import init_mpl
 
 class UpdateProperty(CallbackProperty):

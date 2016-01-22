@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from functools import partial
 
-from glue.external.qt import QtGui, QtCore
+from glue.external.qt import QtGui
 from glue.external.qt.QtCore import Qt
 
 from glue.core import message as msg
@@ -14,7 +14,7 @@ from glue.qt.glue_toolbar import GlueToolbar
 from glue.qt.mouse_mode import HRangeMode
 from glue.qt.widgets.data_viewer import DataViewer
 from glue.qt.widgets.mpl_widget import MplWidget, defer_draw
-from glue.qt.qtutil import pretty_number, load_ui
+from glue.qt.qtutil import load_ui
 
 __all__ = ['HistogramWidget']
 

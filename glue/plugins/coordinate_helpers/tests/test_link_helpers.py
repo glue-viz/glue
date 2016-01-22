@@ -7,7 +7,7 @@ if not ASTROPY_GE_04_INSTALLED:
     pytest.skip()
 
 from glue.core.tests.test_link_helpers import check_link, check_using
-from glue.core import ComponentLink, ComponentID
+from glue.core import ComponentID
 
 from ..link_helpers import (Galactic_to_FK5, FK4_to_FK5, ICRS_to_FK5,
                             Galactic_to_FK4, ICRS_to_FK4, ICRS_to_Galactic)

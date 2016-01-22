@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.external.qt import QtGui
-from glue.external.qt.QtCore import QMimeData, Qt
+from glue.external.qt.QtCore import Qt
 from glue.external.qt.QtTest import QTest
 
 from .. import mime

@@ -126,7 +126,6 @@ def main():  # pragma: no cover
     import glue
     import numpy as np
     from glue.qt import get_qapp
-    from glue.external.qt import QtGui
 
     d = glue.core.Data(label="hi")
     d2 = glue.core.Data(label="there")

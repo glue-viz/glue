@@ -1,17 +1,13 @@
-import operator
 
 from mock import MagicMock
-import pytest
 import numpy as np
 import pandas as pd
 from pandas.util.testing import (assert_series_equal,
                                  assert_frame_equal)
 
 from ..data import Data
-from ..component_id import ComponentID
 from ..component import (Component, DerivedComponent, CoordinateComponent,
                          CategoricalComponent)
-from glue import core
 
 
 class TestPandasConversion(object):

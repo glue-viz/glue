@@ -2,13 +2,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-from distutils.version import LooseVersion
-import tempfile
-import io
 import os
 import sys
 
-import pytest
 from mock import patch, MagicMock
 import numpy as np
 
@@ -23,7 +19,6 @@ from ..widgets.scatter_widget import ScatterWidget
 from ..widgets.image_widget import ImageWidget
 from glue.core import Data
 
-from glue.external.six import PY3
 
 from glue.tests.helpers import requires_ipython_ge_012
 

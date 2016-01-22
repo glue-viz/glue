@@ -76,7 +76,7 @@ from copy import copy
 import numpy as np
 
 from glue.external import six
-from glue.external.qt import QtGui, QtCore
+from glue.external.qt import QtGui
 from glue.external.qt.QtCore import Qt
 
 from glue.clients import LayerArtist, GenericMplClient

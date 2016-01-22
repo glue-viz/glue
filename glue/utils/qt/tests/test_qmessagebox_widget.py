@@ -1,6 +1,5 @@
 from .. import QMessageBoxPatched as QMessageBox
 from glue.qt import get_qapp
-from glue.external.qt import QtGui
 
 
 def test_main():

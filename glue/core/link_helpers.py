@@ -18,7 +18,6 @@ from glue.core.component_link import ComponentLink
 from glue.core.data import ComponentID
 from glue.external import six
 
-import numpy as np
 
 __all__ = ['LinkCollection', 'LinkSame', 'LinkTwoWay', 'MultiLink',
            'LinkAligned']

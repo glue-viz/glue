@@ -1,10 +1,8 @@
-import pytest
-import numpy as np
 from numpy.testing import assert_array_equal
 from mock import MagicMock
 
 from glue.clients.tests.util import renderless_figure
-from glue.core import Data, Subset, DataCollection, Hub
+from glue.core import Data, DataCollection
 from glue.core.roi import PointROI
 from glue.core.edit_subset_mode import EditSubsetMode
 

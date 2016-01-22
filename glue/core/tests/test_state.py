@@ -11,7 +11,6 @@ from glue.external import six
 from glue import core
 from glue.qt.glue_application import GlueApplication
 from glue.qt.widgets.scatter_widget import ScatterWidget
-from glue.qt.widgets.image_widget import ImageWidget
 from glue.qt.widgets.histogram_widget import HistogramWidget
 from .util import make_file
 from ..data_factories import load_data

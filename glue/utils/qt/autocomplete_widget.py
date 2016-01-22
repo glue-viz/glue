@@ -6,7 +6,7 @@
 #
 # http://qt-project.org/doc/qt-4.8/tools-customcompleter.html
 
-from glue.external.qt import QtGui, QtCore
+from glue.external.qt import QtGui
 
 
 __all__ = ["CompletionTextEdit"]

@@ -21,7 +21,6 @@ from __future__ import absolute_import, division, print_function
 
 from glue.external.qt import QtGui
 
-from glue.core import util
 from glue.core import roi
 from glue.core.callback_property import CallbackProperty
 from glue.qt import get_qapp

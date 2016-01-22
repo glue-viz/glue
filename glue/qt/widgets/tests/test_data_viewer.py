@@ -13,7 +13,6 @@ from glue.qt.glue_application import GlueApplication
 
 from . import simple_session
 
-import pytest
 from mock import MagicMock, patch
 
 # TODO: We should maybe consider running these tests for all

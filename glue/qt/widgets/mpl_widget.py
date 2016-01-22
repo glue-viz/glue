@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-from functools import partial, wraps
+from functools import wraps
 
 from glue.external.qt import QtGui, QtCore, is_pyqt5
 from glue.external.qt.QtCore import Qt
