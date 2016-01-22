@@ -15,7 +15,6 @@ from glue import env
 from glue.main import load_plugins
 from glue.qt import get_qapp
 from glue.qt.actions import act
-from glue.qt.decorators import set_cursor, messagebox_on_error
 from glue.qt.feedback import submit_bug_report
 from glue.qt.plugin_manager import QtPluginManager
 from glue.qt.qtutil import data_wizard, load_ui, get_icon
@@ -26,7 +25,8 @@ from glue.qt.widgets.layer_tree_widget import PlotAction, LayerTreeWidget
 from glue.qt.widgets.mpl_widget import defer_draw
 from glue.qt.widgets.settings_editor import SettingsEditor
 from glue.utils import nonpartial
-from glue.utils.qt import pick_class, GlueTabBar, QMessageBoxPatched as QMessageBox
+from glue.utils.qt import (pick_class, GlueTabBar, QMessageBoxPatched as
+                           QMessageBox, set_cursor, messagebox_on_error)
 
 
 __all__ = ['GlueApplication']

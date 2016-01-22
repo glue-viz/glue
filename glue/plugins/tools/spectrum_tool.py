@@ -14,7 +14,6 @@ from glue.core import Subset
 from glue.core.callback_property import add_callback, ignore_callback
 from glue.config import fit_plugin
 from glue.clients.profile_viewer import ProfileViewer
-from glue.qt.decorators import messagebox_on_error
 from glue.qt.glue_toolbar import GlueToolbar
 from glue.qt.mime import LAYERS_MIME_TYPE
 from glue.qt.mouse_mode import SpectrumExtractorMode
@@ -24,7 +23,8 @@ from glue.utils.qt.widget_properties import CurrentComboProperty
 from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow
 from glue.qt.widgets.mpl_widget import MplWidget
 from glue.utils import nonpartial, Pointer
-from glue.utils.qt import Worker
+from glue.utils.qt import Worker, messagebox_on_error
+
 
 def setup():
     from glue.config import tool_registry

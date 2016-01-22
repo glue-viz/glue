@@ -5,6 +5,8 @@ from functools import wraps
 
 from glue.utils.qt import QMessageBoxPatched as QMessageBox
 
+__all__ = ['set_cursor', 'messagebox_on_error']
+
 
 def set_cursor(shape):
     """Set the Qt cursor for the duration of a function call, and unset
