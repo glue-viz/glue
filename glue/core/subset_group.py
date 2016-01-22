@@ -23,7 +23,7 @@ from glue.core.message import (DataCollectionAddMessage,
                                DataCollectionDeleteMessage)
 from glue.core.visual import VisualAttributes
 from glue.core.hub import HubListener
-from glue.core.util import Pointer
+from glue.utils import Pointer
 from glue.core.subset import SubsetState
 from glue.core import Subset
 from glue.config import settings

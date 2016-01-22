@@ -11,7 +11,6 @@ from glue.external.qt.QtCore import Qt, Signal
 from glue.core.aggregate import Aggregate
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core import Subset
-from glue.core.util import Pointer
 from glue.core.callback_property import add_callback, ignore_callback
 from glue.config import fit_plugin
 from glue.clients.profile_viewer import ProfileViewer
@@ -24,7 +23,7 @@ from glue.qt.simpleforms import build_form_item
 from glue.qt.widget_properties import CurrentComboProperty
 from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow
 from glue.qt.widgets.mpl_widget import MplWidget
-from glue.utils import nonpartial
+from glue.utils import nonpartial, Pointer
 from glue.utils.qt import Worker
 
 def setup():

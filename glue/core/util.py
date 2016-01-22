@@ -7,12 +7,10 @@ from contextlib import contextmanager
 import numpy as np
 import pandas as pd
 
-from glue.external.six.moves import reduce
-
 
 __all__ = ["relim", "split_component_view", "join_component_view",
            "facet_subsets", "colorize_subsets", "defer", "disambiguate",
-           "row_lookup", "PropertySetMixin", "Pointer"]
+           "row_lookup", "PropertySetMixin"]
 
 
 
@@ -226,23 +224,6 @@ class PropertySetMixin(object):
             if k not in value:
                 continue
             setattr(self, k, value[k])
-
-
-class Pointer(object):
-
-    def __init__(self, key):
-        self.key = key
-
-    def __get__(self, instance, type=None):
-        val = instance
-        for k in self.key.split('.'):
-            val = getattr(val, k, None)
-        return val
-
-    def __set__(self, instance, value):
-        v = self.key.split('.')
-        attr = reduce(getattr, [instance] + v[:-1])
-        setattr(attr, v[-1], value)
 
 
 @contextmanager

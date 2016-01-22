@@ -4,11 +4,12 @@ import numpy as np
 from matplotlib import cm
 
 from glue.external.qt import QtGui
-from glue.core.util import colorize_subsets, facet_subsets, Pointer
+from glue.core.util import colorize_subsets, facet_subsets
 from glue.qt.qtutil import load_ui
 from glue.qt.widget_properties import (ButtonProperty, FloatLineProperty,
                                        ValueProperty)
 from glue.utils.array import pretty_number
+from glue.utils import Pointer
 from glue.utils.qt import cmap2pixmap
 
 

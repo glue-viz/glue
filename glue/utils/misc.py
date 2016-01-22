@@ -3,9 +3,11 @@ from __future__ import absolute_import, division, print_function
 import string
 from functools import partial
 
+from glue.external.six.moves import reduce
+
 
 __all__ = ['DeferredMethod', 'nonpartial', 'lookup_class', 'as_variable_name',
-           'as_list', 'file_format', 'CallbackMixin']
+           'as_list', 'file_format', 'CallbackMixin', 'Pointer']
 
 
 class DeferredMethod(object):
@@ -123,3 +125,20 @@ class CallbackMixin(object):
     def notify(self, *args, **kwargs):
         for func in self._callbacks:
             func(*args, **kwargs)
+
+
+class Pointer(object):
+
+    def __init__(self, key):
+        self.key = key
+
+    def __get__(self, instance, type=None):
+        val = instance
+        for k in self.key.split('.'):
+            val = getattr(val, k, None)
+        return val
+
+    def __set__(self, instance, value):
+        v = self.key.split('.')
+        attr = reduce(getattr, [instance] + v[:-1])
+        setattr(attr, v[-1], value)
