@@ -4,8 +4,8 @@ from __future__ import absolute_import, division, print_function
 
 from functools import partial, wraps
 
-from ...external.qt import QtGui, is_pyqt5
-from ...external.qt.QtCore import Signal, Qt, QTimer
+from glue.external.qt import QtGui, is_pyqt5
+from glue.external.qt.QtCore import Signal, Qt, QTimer
 
 if is_pyqt5():
     from matplotlib.backends.backend_qt5 import FigureManagerQT as FigureManager
@@ -20,7 +20,7 @@ else:
 import matplotlib
 from matplotlib.figure import Figure
 
-from ...utils import DeferredMethod
+from glue.utils import DeferredMethod
 
 
 def defer_draw(func):

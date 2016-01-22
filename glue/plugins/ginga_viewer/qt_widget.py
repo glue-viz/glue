@@ -4,12 +4,12 @@ import sys
 import os.path
 import numpy as np
 
-from ...external.qt.QtGui import (QAction,
+from glue.external.qt.QtGui import (QAction,
                                   QToolButton, QToolBar, QIcon,
                                   QActionGroup, QWidget,
                                   QVBoxLayout, QColor, QImage, QPixmap)
 
-from ...external.qt.QtCore import Qt, QSize
+from glue.external.qt.QtCore import Qt, QSize
 
 from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
 from ginga.qtw import ColorBar
@@ -23,19 +23,19 @@ from ginga.misc import log
 from ginga import cmap as ginga_cmap
 # ginga_cmap.add_matplotlib_cmaps()
 
-from ...qt.widgets.image_widget import ImageWidgetBase
+from glue.qt.widgets.image_widget import ImageWidgetBase
 
-from .client import GingaClient
+from glue.plugins.ginga_viewer.client import GingaClient
 
-from ...core import roi as roimod
-from ...core.callback_property import add_callback
+from glue.core import roi as roimod
+from glue.core.callback_property import add_callback
 
-from ...qt.qtutil import get_icon, nonpartial
+from glue.qt.qtutil import get_icon, nonpartial
 
-from ..tools.pv_slicer import PVSlicerTool
-from ..tools.spectrum_tool import SpectrumTool
+from glue.plugins.tools.pv_slicer import PVSlicerTool
+from glue.plugins.tools.spectrum_tool import SpectrumTool
 
-from ...config import tool_registry
+from glue.config import tool_registry
 
 # Find out location of ginga module so we can some of its icons
 ginga_home = os.path.split(sys.modules['ginga'].__file__)[0]

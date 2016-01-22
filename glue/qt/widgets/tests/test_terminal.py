@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from mock import MagicMock, patch
 
-from ....tests.helpers import requires_ipython_ge_012, IPYTHON_GE_012_INSTALLED
+from glue.tests.helpers import requires_ipython_ge_012, IPYTHON_GE_012_INSTALLED
 
 if IPYTHON_GE_012_INSTALLED:
     from ..terminal import glue_terminal

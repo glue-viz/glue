@@ -1,12 +1,12 @@
 """
 Widgets for sending feedback reports
 """
-from ..external.six.moves.urllib.request import Request, urlopen
-from ..external.six.moves.urllib.parse import urlencode
+from glue.external.six.moves.urllib.request import Request, urlopen
+from glue.external.six.moves.urllib.parse import urlencode
 import sys
 
-from ..external.qt.QtGui import QTextCursor
-from .qtutil import load_ui
+from glue.external.qt.QtGui import QTextCursor
+from glue.qt.qtutil import load_ui
 
 __all__ = ['submit_bug_report']
 
@@ -32,7 +32,7 @@ def _diagnostics():
     """
     Return a some system informaton useful for debugging
     """
-    from ..external.qt import QtCore
+    from glue.external.qt import QtCore
     from matplotlib import __version__ as mplversion
     from numpy import __version__ as npversion
     from astropy import __version__ as apversion

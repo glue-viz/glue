@@ -6,7 +6,7 @@ import pytest
 
 from . import simple_session
 from ..histogram_widget import HistogramWidget, _hash
-from .... import core
+from glue import core
 
 
 def mock_data():

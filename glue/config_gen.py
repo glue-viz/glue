@@ -26,7 +26,7 @@ def main():
 
     # Import at runtime because some tests change this value. We also don't
     # just import the function directly otherwise it is cached.
-    from . import config
+    from glue import config
     dest = config.CFG_DIR
 
     if not os.path.exists(dest):

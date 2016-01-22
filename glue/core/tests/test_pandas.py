@@ -11,7 +11,7 @@ from ..data import Data
 from ..component_id import ComponentID
 from ..component import (Component, DerivedComponent, CoordinateComponent,
                          CategoricalComponent)
-from ... import core
+from glue import core
 
 
 class TestPandasConversion(object):

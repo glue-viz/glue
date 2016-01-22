@@ -2,10 +2,10 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from ..data import Component, Data
-from ...config import data_factory
+from glue.core.data import Component, Data
+from glue.config import data_factory
 
-from .helpers import has_extension
+from glue.core.data_factories.helpers import has_extension
 
 __all__ = ['astropy_tabular_data', 'sextractor_factory', 'cds_factory',
            'daophot_factory', 'ipac_factory', 'aastex_factory',

@@ -3,13 +3,13 @@ from __future__ import absolute_import, division, print_function
 from inspect import getargspec
 from collections import OrderedDict
 
-from ..external.qt.QtGui import (QWidget, QHBoxLayout, QVBoxLayout,
+from glue.external.qt.QtGui import (QWidget, QHBoxLayout, QVBoxLayout,
                                  QLabel, QLineEdit)
 
-from ..external.qt.QtGui import QSpacerItem, QSizePolicy
+from glue.external.qt.QtGui import QSpacerItem, QSizePolicy
 
-from .. import core
-from .qtutil import load_ui, is_pyside
+from glue import core
+from glue.qt.qtutil import load_ui, is_pyside
 
 
 def function_label(function):
@@ -115,7 +115,7 @@ class LinkEquation(QWidget):
 
     def __init__(self, parent=None):
         super(LinkEquation, self).__init__(parent)
-        from ..config import link_function, link_helper
+        from glue.config import link_function, link_helper
 
         # Set up mapping of function/helper name -> function/helper tuple. For the helpers, we use the 'display' name if available.
         def get_name(item):

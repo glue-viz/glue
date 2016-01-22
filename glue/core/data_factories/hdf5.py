@@ -4,8 +4,8 @@ import os
 import warnings
 from collections import OrderedDict
 
-from ..data import Component, Data
-from ...config import data_factory
+from glue.core.data import Component, Data
+from glue.config import data_factory
 
 __all__ = ['is_hdf5', 'hdf5_reader']
 

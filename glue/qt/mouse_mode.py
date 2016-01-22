@@ -19,14 +19,14 @@ The basic usage pattern is thus:
 
 from __future__ import absolute_import, division, print_function
 
-from ..external.qt.QtGui import QAction, QDoubleValidator
+from glue.external.qt.QtGui import QAction, QDoubleValidator
 
-from ..core import util
-from ..core import roi
-from ..core.callback_property import CallbackProperty
-from . import get_qapp
-from .qtutil import get_icon, nonpartial, load_ui
-from . import qt_roi
+from glue.core import util
+from glue.core import roi
+from glue.core.callback_property import CallbackProperty
+from glue.qt import get_qapp
+from glue.qt.qtutil import get_icon, nonpartial, load_ui
+from glue.qt import qt_roi
 
 
 class MouseMode(object):

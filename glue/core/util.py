@@ -8,8 +8,8 @@ from itertools import count
 import numpy as np
 import pandas as pd
 
-from ..external.six.moves import reduce
-from ..external.six import string_types
+from glue.external.six.moves import reduce
+from glue.external.six import string_types
 
 
 __all__ = ["identity", "relim", "split_component_view", "join_component_view",
@@ -132,7 +132,7 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
     Labels the subsets ``m_1`` and ``m_2``
 
     """
-    from .exceptions import IncompatibleAttribute
+    from glue.core.exceptions import IncompatibleAttribute
     if lo is None or hi is None:
         for data in data_collection:
             try:

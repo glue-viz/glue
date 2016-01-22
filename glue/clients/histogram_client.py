@@ -2,18 +2,18 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from ..core.client import Client
-from ..core import message as msg
-from ..core.data import Data
-from ..core.subset import RangeSubsetState, CategoricalRoiSubsetState
-from ..core.exceptions import IncompatibleDataException, IncompatibleAttribute
-from ..core.edit_subset_mode import EditSubsetMode
-from .layer_artist import HistogramLayerArtist, LayerArtistContainer
-from .util import update_ticks, visible_limits
-from ..core.callback_property import CallbackProperty, add_callback
-from ..utils import lookup_class
-from ..utils.matplotlib import freeze_margins
-from .viz_client import init_mpl
+from glue.core.client import Client
+from glue.core import message as msg
+from glue.core.data import Data
+from glue.core.subset import RangeSubsetState, CategoricalRoiSubsetState
+from glue.core.exceptions import IncompatibleDataException, IncompatibleAttribute
+from glue.core.edit_subset_mode import EditSubsetMode
+from glue.clients.layer_artist import HistogramLayerArtist, LayerArtistContainer
+from glue.clients.util import update_ticks, visible_limits
+from glue.core.callback_property import CallbackProperty, add_callback
+from glue.utils import lookup_class
+from glue.utils.matplotlib import freeze_margins
+from glue.clients.viz_client import init_mpl
 
 class UpdateProperty(CallbackProperty):
 

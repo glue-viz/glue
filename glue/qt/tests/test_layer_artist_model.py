@@ -1,13 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
-from ...external.qt.QtCore import Qt
+from glue.external.qt.QtCore import Qt
 
 from mock import MagicMock
 
 from ..layer_artist_model import LayerArtistModel, LayerArtistView
-from ...clients.layer_artist import LayerArtist as _LayerArtist
-from ...core import Data
-from ...external.qt import is_pyqt5
+from glue.clients.layer_artist import LayerArtist as _LayerArtist
+from glue.core import Data
+from glue.external.qt import is_pyqt5
 
 
 class LayerArtist(_LayerArtist):

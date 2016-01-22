@@ -4,15 +4,15 @@ A plot to visualize trees
 
 import numpy as np
 
-from ...core.data import IncompatibleAttribute, Data
-from ...core.callback_property import CallbackProperty, add_callback, delay_callback
-from ...core.roi import PointROI
-from ...core.subset import CategorySubsetState
-from ...core.edit_subset_mode import EditSubsetMode
-from ...utils import nonpartial, lookup_class
-from ...clients.viz_client import GenericMplClient
+from glue.core.data import IncompatibleAttribute, Data
+from glue.core.callback_property import CallbackProperty, add_callback, delay_callback
+from glue.core.roi import PointROI
+from glue.core.subset import CategorySubsetState
+from glue.core.edit_subset_mode import EditSubsetMode
+from glue.utils import nonpartial, lookup_class
+from glue.clients.viz_client import GenericMplClient
 
-from .layer_artist import DendroLayerArtist
+from glue.plugins.dendro_viewer.layer_artist import DendroLayerArtist
 
 
 class DendroClient(GenericMplClient):

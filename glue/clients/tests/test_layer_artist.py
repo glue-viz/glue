@@ -1,6 +1,6 @@
 from .util import renderless_figure
 from ..layer_artist import ScatterLayerArtist
-from ...core import Data
+from glue.core import Data
 
 FIGURE = renderless_figure()
 

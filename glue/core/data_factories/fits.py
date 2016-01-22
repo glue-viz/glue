@@ -4,9 +4,9 @@ import warnings
 from os.path import basename
 from collections import OrderedDict
 
-from ...config import data_factory
-from ..data import Component, Data
-from ..coordinates import coordinates_from_header
+from glue.config import data_factory
+from glue.core.data import Component, Data
+from glue.core.coordinates import coordinates_from_header
 
 __all__ = ['is_fits', 'fits_reader', 'is_casalike', 'casalike_cube']
 

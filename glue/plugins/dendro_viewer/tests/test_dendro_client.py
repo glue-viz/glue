@@ -3,10 +3,10 @@ import numpy as np
 from numpy.testing import assert_array_equal
 from mock import MagicMock
 
-from ....clients.tests.util import renderless_figure
-from ....core import Data, Subset, DataCollection, Hub
-from ....core.roi import PointROI
-from ....core.edit_subset_mode import EditSubsetMode
+from glue.clients.tests.util import renderless_figure
+from glue.core import Data, Subset, DataCollection, Hub
+from glue.core.roi import PointROI
+from glue.core.edit_subset_mode import EditSubsetMode
 
 from ..client import DendroClient
 

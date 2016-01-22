@@ -2,14 +2,14 @@ from __future__ import absolute_import, division, print_function
 
 import re
 
-from ...external.qt.QtGui import QDialog, QMessageBox
-from ...external.qt import QtCore
+from glue.external.qt.QtGui import QDialog, QMessageBox
+from glue.external.qt import QtCore
 
-from ... import core
-from ...core import parse
-from ...utils.qt import CompletionTextEdit
+from glue import core
+from glue.core import parse
+from glue.utils.qt import CompletionTextEdit
 
-from ..qtutil import load_ui
+from glue.qt.qtutil import load_ui
 
 
 
@@ -229,8 +229,8 @@ class CustomComponentWidget(object):
                 break
 
 def main():
-    from ...core.data import Data
-    from ...core.data_collection import DataCollection
+    from glue.core.data import Data
+    from glue.core.data_collection import DataCollection
     import numpy as np
 
     x = np.random.random((5, 5))

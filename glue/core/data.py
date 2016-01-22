@@ -5,22 +5,22 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 
-from ..config import settings
-from ..external import six
-from ..utils import view_shape
+from glue.config import settings
+from glue.external import six
+from glue.utils import view_shape
 
-from .contracts import contract
-from .coordinates import Coordinates
-from .visual import VisualAttributes
-from .exceptions import IncompatibleAttribute
+from glue.core.contracts import contract
+from glue.core.coordinates import Coordinates
+from glue.core.visual import VisualAttributes
+from glue.core.exceptions import IncompatibleAttribute
 
-from .component_link import ComponentLink, CoordinateComponentLink
+from glue.core.component_link import ComponentLink, CoordinateComponentLink
 
-from .subset import Subset, SubsetState
-from .hub import Hub
-from .util import split_component_view
-from .decorators import clear_cache
-from .message import (DataUpdateMessage,
+from glue.core.subset import Subset, SubsetState
+from glue.core.hub import Hub
+from glue.core.util import split_component_view
+from glue.core.decorators import clear_cache
+from glue.core.message import (DataUpdateMessage,
                       DataAddComponentMessage, NumericalDataChangedMessage,
                       SubsetCreateMessage, ComponentsChangedMessage,
                       ComponentReplacedMessage)
@@ -28,8 +28,8 @@ from .message import (DataUpdateMessage,
 # Note: leave all the following imports for component and component_id since
 # they are here for backward-compatibility (the code used to live in this 
 # file)
-from .component import Component, DerivedComponent, CoordinateComponent, CategoricalComponent
-from .component_id import ComponentID, ComponentIDDict
+from glue.core.component import Component, DerivedComponent, CoordinateComponent, CategoricalComponent
+from glue.core.component_id import ComponentID, ComponentIDDict
 
 __all__ = ['Data']
 

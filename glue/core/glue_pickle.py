@@ -1,5 +1,5 @@
 import logging
-from ..external.six.moves.cPickle import dumps, loads
+from glue.external.six.moves.cPickle import dumps, loads
 
 try:
     from dill import dumps, loads

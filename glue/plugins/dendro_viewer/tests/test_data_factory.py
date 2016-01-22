@@ -6,11 +6,11 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
 
-from ....core import data_factories as df
+from glue.core import data_factories as df
 
-from ....core.data_factories.helpers import find_factory
-from ....core.tests.util import make_file
-from ....tests.helpers import requires_astrodendro
+from glue.core.data_factories.helpers import find_factory
+from glue.core.tests.util import make_file
+from glue.tests.helpers import requires_astrodendro
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 

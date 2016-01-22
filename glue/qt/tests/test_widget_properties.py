@@ -14,7 +14,7 @@ from ..widget_properties import (CurrentComboDataProperty,
                                  connect_float_edit,
                                  connect_int_spin)
 
-from ...external.qt.QtGui import (QCheckBox,
+from glue.external.qt.QtGui import (QCheckBox,
                                   QLineEdit,
                                   QComboBox,
                                   QLabel,
@@ -22,7 +22,7 @@ from ...external.qt.QtGui import (QCheckBox,
                                   QTabWidget,
                                   QWidget)
 
-from ...external.echo import CallbackProperty
+from glue.external.echo import CallbackProperty
 
 
 def test_combo_data():

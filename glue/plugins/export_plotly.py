@@ -6,8 +6,8 @@ try:
 except ImportError:
     plotly = None
 
-from ..qt.widgets import ScatterWidget, HistogramWidget
-from ..core.layout import Rectangle, snap_to_grid
+from glue.qt.widgets import ScatterWidget, HistogramWidget
+from glue.core.layout import Rectangle, snap_to_grid
 
 
 SYM = {'o': 'circle', 's': 'square', '+': 'cross', '^': 'triangle-up',
@@ -304,7 +304,7 @@ def save_plotly(application, label):
     plotly.plot(*args, **kwargs)
 
 def setup():
-    from ..config import exporters, settings
+    from glue.config import exporters, settings
     exporters.add('Plotly', save_plotly, can_save_plotly, outmode='label')
     settings.add('PLOTLY_USER', 'Glue')
     settings.add('PLOTLY_APIKEY', 't24aweai14')

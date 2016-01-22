@@ -6,10 +6,10 @@ import numbers
 
 import numpy as np
 
-from .util import join_component_view
-from .subset import InequalitySubsetState
-from .contracts import contract, ContractsMeta
-from ..external.six import add_metaclass
+from glue.core.util import join_component_view
+from glue.core.subset import InequalitySubsetState
+from glue.core.contracts import contract, ContractsMeta
+from glue.external.six import add_metaclass
 
 __all__ = ['ComponentLink', 'BinaryComponentLink']
 
@@ -73,7 +73,7 @@ class ComponentLink(object):
             numpy arrays
 
         """
-        from .data import ComponentID
+        from glue.core.data import ComponentID
 
         self._from = comp_from
         self._to = comp_to
@@ -307,7 +307,7 @@ class BinaryComponentLink(ComponentLink):
     """
 
     def __init__(self, left, right, op):
-        from .data import ComponentID
+        from glue.core.data import ComponentID
 
         self._left = left
         self._right = right

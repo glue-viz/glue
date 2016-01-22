@@ -14,9 +14,9 @@ multiple ComponentLinks easily. They are meant to be passed to
 
 from __future__ import absolute_import, division, print_function
 
-from .component_link import ComponentLink
-from .data import ComponentID
-from ..external import six
+from glue.core.component_link import ComponentLink
+from glue.core.data import ComponentID
+from glue.external import six
 
 import numpy as np
 

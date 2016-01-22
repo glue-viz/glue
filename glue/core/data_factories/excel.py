@@ -2,10 +2,10 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from ...config import data_factory
+from glue.config import data_factory
 
-from .pandas import panda_process
-from .helpers import has_extension
+from glue.core.data_factories.pandas import panda_process
+from glue.core.data_factories.helpers import has_extension
 
 __all__ = []
 

@@ -15,8 +15,8 @@ from ..hub import Hub
 from ..exceptions import IncompatibleAttribute
 from ..component_link import ComponentLink
 from ..registry import Registry
-from ... import core
-from ...external import six
+from glue import core
+from glue.external import six
 
 
 class _TestCoordinates(Coordinates):

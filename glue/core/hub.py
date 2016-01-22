@@ -4,8 +4,8 @@ import logging
 from inspect import getmro
 from collections import defaultdict
 
-from .message import Message
-from .exceptions import InvalidSubscriber, InvalidMessage
+from glue.core.message import Message
+from glue.core.exceptions import InvalidSubscriber, InvalidMessage
 
 __all__ = ['Hub', 'HubListener']
 
@@ -38,9 +38,9 @@ class Hub(object):
         # Dictionary of subscriptions
         self._subscriptions = defaultdict(dict)
 
-        from .data import Data
-        from .subset import Subset
-        from .data_collection import DataCollection
+        from glue.core.data import Data
+        from glue.core.subset import Subset
+        from glue.core.data_collection import DataCollection
 
         listeners = set(filter(lambda x: isinstance(x, HubListener), args))
         data = set(filter(lambda x: isinstance(x, Data), args))

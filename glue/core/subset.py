@@ -5,18 +5,18 @@ import numbers
 
 import numpy as np
 
-from .visual import VisualAttributes
-from .decorators import memoize
-from .message import SubsetDeleteMessage, SubsetUpdateMessage
-from .exceptions import IncompatibleAttribute
-from .registry import Registry
-from .util import split_component_view
-from ..utils import view_shape
-from ..external.six import PY3
-from .contracts import contract
-from .roi import CategoricalRoi
+from glue.core.visual import VisualAttributes
+from glue.core.decorators import memoize
+from glue.core.message import SubsetDeleteMessage, SubsetUpdateMessage
+from glue.core.exceptions import IncompatibleAttribute
+from glue.core.registry import Registry
+from glue.core.util import split_component_view
+from glue.utils import view_shape
+from glue.external.six import PY3
+from glue.core.contracts import contract
+from glue.core.roi import CategoricalRoi
 
-from ..config import settings
+from glue.config import settings
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState',
@@ -648,10 +648,10 @@ class ElementSubsetState(SubsetState):
 class InequalitySubsetState(SubsetState):
 
     def __init__(self, left, right, op):
-        from .component_link import ComponentLink
+        from glue.core.component_link import ComponentLink
 
         super(InequalitySubsetState, self).__init__()
-        from .data import ComponentID
+        from glue.core.data import ComponentID
         valid_ops = [operator.gt, operator.ge,
                      operator.lt, operator.le,
                      operator.eq, operator.ne]
@@ -685,7 +685,7 @@ class InequalitySubsetState(SubsetState):
 
     @memoize
     def to_mask(self, data, view=None):
-        from .data import ComponentID
+        from glue.core.data import ComponentID
         left = self._left
         if not isinstance(self._left, numbers.Number):
             left = data[self._left, view]

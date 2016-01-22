@@ -2,7 +2,7 @@ from mock import patch
 from matplotlib import cm
 
 from ..subset_facet import SubsetFacet
-from ....core import Data, DataCollection
+from glue.core import Data, DataCollection
 
 patched_facet = patch('glue.qt.widgets.subset_facet.facet_subsets')
 

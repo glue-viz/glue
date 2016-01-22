@@ -1,11 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
-from ...external.qt import QtGui
+from glue.external.qt import QtGui
 
-from ...core.edit_subset_mode import (EditSubsetMode, OrMode, AndNotMode,
+from glue.core.edit_subset_mode import (EditSubsetMode, OrMode, AndNotMode,
                                       AndMode, XorMode, ReplaceMode)
-from ..actions import act
-from ..qtutil import nonpartial
+from glue.qt.actions import act
+from glue.qt.qtutil import nonpartial
 
 
 def set_mode(mode):

@@ -15,18 +15,18 @@ or Data.new_subset directly
 """
 from warnings import warn
 
-from . import Subset
-from .subset import SubsetState
-from .util import Pointer
-from .hub import HubListener
-from .visual import VisualAttributes
-from .message import (DataCollectionAddMessage,
+from glue.core import Subset
+from glue.core.subset import SubsetState
+from glue.core.util import Pointer
+from glue.core.hub import HubListener
+from glue.core.visual import VisualAttributes
+from glue.core.message import (DataCollectionAddMessage,
                       DataCollectionDeleteMessage
                       )
-from .contracts import contract
+from glue.core.contracts import contract
 
-from ..config import settings
-from ..external import six
+from glue.config import settings
+from glue.external import six
 
 __all__ = ['GroupedSubset', 'SubsetGroup']
 

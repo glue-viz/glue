@@ -12,26 +12,26 @@ from matplotlib.colors import ColorConverter
 from matplotlib import cm
 import numpy as np
 
-from ..external.axescache import AxesCache
-from ..external.qt import QtGui
-from ..external.qt.QtCore import (Qt, QThread, QAbstractListModel, QModelIndex)
-from ..external.qt.QtGui import (QColor, QInputDialog, QColorDialog,
+from glue.external.axescache import AxesCache
+from glue.external.qt import QtGui
+from glue.external.qt.QtCore import (Qt, QThread, QAbstractListModel, QModelIndex)
+from glue.external.qt.QtGui import (QColor, QInputDialog, QColorDialog,
                                  QListWidget, QTreeWidget, QPushButton,
                                  QTabBar, QBitmap, QIcon, QPixmap, QImage,
                                  QWidget,
                                  QLabel, QGridLayout,
                                  QRadioButton, QButtonGroup, QCheckBox)
-from ..utils.qt import QMessageBoxPatched as QMessageBox
+from glue.utils.qt import QMessageBoxPatched as QMessageBox
 
-from .decorators import set_cursor
-from .mime import PyMimeData, LAYERS_MIME_TYPE
-from ..external.qt import is_pyside
-from ..external.qt.QtCore import Signal
-from .. import core
-from . import ui, icons
+from glue.qt.decorators import set_cursor
+from glue.qt.mime import PyMimeData, LAYERS_MIME_TYPE
+from glue.external.qt import is_pyside
+from glue.external.qt.QtCore import Signal
+from glue import core
+from glue.qt import ui, icons
 
 # We import nonpartial here for convenience
-from ..utils import nonpartial
+from glue.utils import nonpartial
 
 
 def mpl_to_qt4_color(color, alpha=1.0):
@@ -113,7 +113,7 @@ class GlueDataDialog(object):
 
     def __init__(self, parent=None):
         self._fd = QtGui.QFileDialog(parent)
-        from ..config import data_factory
+        from glue.config import data_factory
         self.filters = [(f, self._filter(f))
                         for f in data_factory.members if not f.deprecated]
         self.setNameFilter()
@@ -164,7 +164,7 @@ class GlueDataDialog(object):
 
         :rtype: A list of constructed data objects
         """
-        from ..core.data_factories import data_label, load_data
+        from glue.core.data_factories import data_label, load_data
         paths, fac = self._get_paths_and_factory()
         result = []
 
@@ -360,7 +360,7 @@ def layer_icon(layer):
 
 def layer_artist_icon(artist):
     """Create a QIcon for a LayerArtist instance"""
-    from ..clients.layer_artist import ImageLayerArtist
+    from glue.clients.layer_artist import ImageLayerArtist
 
     if not artist.enabled:
         bm = QBitmap(icon_path('glue_delete'))
@@ -651,10 +651,10 @@ def _custom_widgets():
     yield GlueActionButton
     yield RGBEdit
 
-    from .component_selector import ComponentSelector
+    from glue.qt.component_selector import ComponentSelector
     yield ComponentSelector
 
-    from .link_equation import LinkEquation
+    from glue.qt.link_equation import LinkEquation
     yield LinkEquation
 
 
@@ -682,7 +682,7 @@ def load_ui(path, parent=None):
     if not os.path.exists(path):
         path = global_ui_path(path)
 
-    from ..external.qt import load_ui
+    from glue.external.qt import load_ui
     return load_ui(path, parent, custom_widgets=_custom_widgets())
 
 
@@ -847,7 +847,7 @@ def cache_axes(axes, toolbar):
 
 if __name__ == "__main__":
 
-    from . import get_qapp
+    from glue.qt import get_qapp
 
     class Foo(object):
         layer_visible = {}

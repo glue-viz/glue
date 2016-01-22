@@ -1,16 +1,16 @@
-from ... import core
-from ...external.qt import QtGui
+from glue import core
+from glue.external.qt import QtGui
 
-from ...qt.widgets.data_viewer import DataViewer
-from ...qt.widgets.mpl_widget import MplWidget, defer_draw
-from ...qt.widget_properties import (ButtonProperty, CurrentComboProperty,
+from glue.qt.widgets.data_viewer import DataViewer
+from glue.qt.widgets.mpl_widget import MplWidget, defer_draw
+from glue.qt.widget_properties import (ButtonProperty, CurrentComboProperty,
                                  connect_bool_button, connect_current_combo)
-from ...qt.glue_toolbar import GlueToolbar
+from glue.qt.glue_toolbar import GlueToolbar
 
-from ...qt.qtutil import load_ui, nonpartial
-from ...qt.mouse_mode import PickMode
+from glue.qt.qtutil import load_ui, nonpartial
+from glue.qt.mouse_mode import PickMode
 
-from .client import DendroClient
+from glue.plugins.dendro_viewer.client import DendroClient
 
 
 class DendroWidget(DataViewer):
@@ -145,7 +145,7 @@ class DendroWidget(DataViewer):
     @defer_draw
     def restore_layers(self, rec, context):
 
-        from ...core.callback_property import delay_callback
+        from glue.core.callback_property import delay_callback
 
 
         with delay_callback(self.client, 'height_attr',

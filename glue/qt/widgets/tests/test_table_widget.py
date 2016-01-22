@@ -3,9 +3,9 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from ..table_widget import DataTableModel
-from ....core import Data
+from glue.core import Data
 
-from ....external.qt.QtCore import Qt
+from glue.external.qt.QtCore import Qt
 
 
 class TestDataTableModel(object):

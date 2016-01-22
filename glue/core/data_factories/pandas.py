@@ -2,13 +2,13 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from ..data import Data
-from ..component import Component, CategoricalComponent
+from glue.core.data import Data
+from glue.core.component import Component, CategoricalComponent
 
-from .helpers import has_extension
+from glue.core.data_factories.helpers import has_extension
 
-from ...external import six
-from ...config import data_factory
+from glue.external import six
+from glue.config import data_factory
 
 __all__ = ['pandas_read_table']
 

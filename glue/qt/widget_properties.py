@@ -21,10 +21,10 @@ from __future__ import absolute_import, division, print_function
 
 from functools import partial
 
-from .qtutil import pretty_number
-from ..external.qt import QtGui
-from ..external.six.moves import reduce
-from ..core.callback_property import add_callback
+from glue.qt.qtutil import pretty_number
+from glue.external.qt import QtGui
+from glue.external.six.moves import reduce
+from glue.core.callback_property import add_callback
 
 
 class WidgetProperty(object):

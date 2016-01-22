@@ -6,9 +6,9 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from ..utils import unique, shape_to_string, coerce_numeric, check_sorted
+from glue.utils import unique, shape_to_string, coerce_numeric, check_sorted
 
-from .util import row_lookup
+from glue.core.util import row_lookup
 
 __all__ = ['Component', 'DerivedComponent',
            'CategoricalComponent', 'CoordinateComponent']

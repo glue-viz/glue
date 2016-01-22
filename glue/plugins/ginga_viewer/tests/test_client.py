@@ -1,7 +1,7 @@
 from __future__ import print_function, division
 
 import pytest
-from ....tests.helpers import GINGA_INSTALLED
+from glue.tests.helpers import GINGA_INSTALLED
 
 if not GINGA_INSTALLED:
     pytest.skip()
@@ -12,9 +12,9 @@ from numpy.testing import assert_allclose, assert_array_equal
 from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
 from ginga.misc import log
 
-from ....core import Data
+from glue.core import Data
 
-from ....clients.tests.test_image_client import _TestImageClientBase
+from glue.clients.tests.test_image_client import _TestImageClientBase
 
 from ..client import GingaClient, SubsetImage, BaseImage
 
@@ -22,7 +22,7 @@ from ..client import GingaClient, SubsetImage, BaseImage
 class TestGingaClient(_TestImageClientBase):
 
     def new_client(self, dc=None, canvas=None):
-        from ....qt import get_qapp
+        from glue.qt import get_qapp
         get_qapp()
         dc = dc or self.collect
         l = log.get_logger(name='ginga', log_stderr=True)

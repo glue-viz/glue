@@ -2,19 +2,19 @@ from __future__ import absolute_import, division, print_function
 
 from functools import partial
 
-from ...external.qt import QtGui
-from ...external.qt.QtCore import Qt
+from glue.external.qt import QtGui
+from glue.external.qt.QtCore import Qt
 
-from ...core import message as msg
-from ...clients.histogram_client import HistogramClient
-from ..widget_properties import (connect_int_spin, ButtonProperty,
+from glue.core import message as msg
+from glue.clients.histogram_client import HistogramClient
+from glue.qt.widget_properties import (connect_int_spin, ButtonProperty,
                                  FloatLineProperty, connect_float_edit,
                                  ValueProperty, connect_bool_button)
-from ..glue_toolbar import GlueToolbar
-from ..mouse_mode import HRangeMode
-from .data_viewer import DataViewer
-from .mpl_widget import MplWidget, defer_draw
-from ..qtutil import pretty_number, load_ui
+from glue.qt.glue_toolbar import GlueToolbar
+from glue.qt.mouse_mode import HRangeMode
+from glue.qt.widgets.data_viewer import DataViewer
+from glue.qt.widgets.mpl_widget import MplWidget, defer_draw
+from glue.qt.qtutil import pretty_number, load_ui
 
 __all__ = ['HistogramWidget']
 

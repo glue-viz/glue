@@ -9,7 +9,7 @@ needs_modeling = pytest.mark.skipif("False", reason='')
 from ..fitters import (PolynomialFitter, IntOption,
                        BasicGaussianFitter)
 
-from ...tests.helpers import requires_scipy, requires_astropy_ge_03, ASTROPY_GE_03_INSTALLED
+from glue.tests.helpers import requires_scipy, requires_astropy_ge_03, ASTROPY_GE_03_INSTALLED
 
 if ASTROPY_GE_03_INSTALLED:
     from astropy.modeling.models import Gaussian1D

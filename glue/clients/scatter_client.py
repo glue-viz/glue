@@ -4,18 +4,18 @@ from functools import partial
 
 import numpy as np
 
-from ..core.client import Client
-from ..core.data import Data, IncompatibleAttribute, ComponentID
-from ..core.subset import RoiSubsetState, RangeSubsetState, CategoricalRoiSubsetState, AndState
-from ..core.roi import PolygonalROI, RangeROI, RectangularROI
-from ..core.util import relim
-from ..core.edit_subset_mode import EditSubsetMode
-from ..core.message import ComponentReplacedMessage
-from ..utils import lookup_class
-from .viz_client import init_mpl
-from .layer_artist import ScatterLayerArtist, LayerArtistContainer
-from .util import update_ticks, visible_limits
-from ..core.callback_property import (CallbackProperty, add_callback,
+from glue.core.client import Client
+from glue.core.data import Data, IncompatibleAttribute, ComponentID
+from glue.core.subset import RoiSubsetState, RangeSubsetState, CategoricalRoiSubsetState, AndState
+from glue.core.roi import PolygonalROI, RangeROI, RectangularROI
+from glue.core.util import relim
+from glue.core.edit_subset_mode import EditSubsetMode
+from glue.core.message import ComponentReplacedMessage
+from glue.utils import lookup_class
+from glue.clients.viz_client import init_mpl
+from glue.clients.layer_artist import ScatterLayerArtist, LayerArtistContainer
+from glue.clients.util import update_ticks, visible_limits
+from glue.core.callback_property import (CallbackProperty, add_callback,
                                       delay_callback)
 
 

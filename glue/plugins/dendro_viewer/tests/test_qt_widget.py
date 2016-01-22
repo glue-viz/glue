@@ -1,11 +1,11 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 import pytest
 
-from ....qt.widgets.tests import simple_session
-from .... import core
+from glue.qt.widgets.tests import simple_session
+from glue import core
 
 from ..qt_widget import DendroWidget
-from ....qt.widgets.tests.test_data_viewer import BaseTestDataViewer
+from glue.qt.widgets.tests.test_data_viewer import BaseTestDataViewer
 
 def mock_data():
     return core.Data(label='d1', x=[1, 2, 3], y=[2, 3, 4])

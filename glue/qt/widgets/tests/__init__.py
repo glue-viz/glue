@@ -1,1 +1,1 @@
-from ....core.tests.util import simple_session
+from glue.core.tests.util import simple_session

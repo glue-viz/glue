@@ -71,7 +71,7 @@ class Registry(object):
         self._lazy_members.append(value)
 
     def _load_lazy_members(self):
-        from .plugins import load_plugin
+        from glue.plugins import load_plugin
         while self._lazy_members:
             plugin = self._lazy_members.pop()
             load_plugin(plugin)
@@ -351,8 +351,8 @@ class QtClientRegistry(Registry):
 
     def default_members(self):
         try:
-            from .qt.widgets import default_widgets
-            from .qt.custom_viewer import CUSTOM_WIDGETS
+            from glue.qt.widgets import default_widgets
+            from glue.qt.custom_viewer import CUSTOM_WIDGETS
             return default_widgets + CUSTOM_WIDGETS
         except ImportError as e:
             logging.getLogger(__name__).warning(
@@ -406,7 +406,7 @@ class LinkFunctionRegistry(Registry):
     item = namedtuple('LinkFunction', 'function info output_labels')
 
     def default_members(self):
-        from .core import link_helpers
+        from glue.core import link_helpers
         return list(self.item(l, "", l.output_args)
                     for l in link_helpers.__LINK_FUNCTIONS__)
 
@@ -457,7 +457,7 @@ class LinkHelperRegistry(Registry):
     item = namedtuple('LinkHelper', 'helper info input_labels')
 
     def default_members(self):
-        from .core.link_helpers import __LINK_HELPERS__ as helpers
+        from glue.core.link_helpers import __LINK_HELPERS__ as helpers
         return list(self.item(l, l.info_text, l.input_args)
                     for l in helpers)
 
@@ -478,7 +478,7 @@ class ProfileFitterRegistry(Registry):
         self.members.append(cls)
 
     def default_members(self):
-        from .core.fitters import __FITTERS__
+        from glue.core.fitters import __FITTERS__
         return list(__FITTERS__)
 
 
@@ -553,7 +553,7 @@ def _default_search_order():
        * Glue's own default config
     """
 
-    from . import config
+    from glue import config
 
     search_order = [os.path.join(os.getcwd(), 'config.py')]
     if 'GLUERC' in os.environ:

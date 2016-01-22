@@ -7,15 +7,15 @@ from mock import MagicMock
 import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
 
-from ... import data_factories as df
-from ...data import Data
-from ...component import CategoricalComponent
-from ...tests.util import make_file
+from glue.core import data_factories as df
+from glue.core.data import Data
+from glue.core.component import CategoricalComponent
+from glue.core.tests.util import make_file
 
-from ....tests.helpers import (requires_astropy, requires_astropy_ge_03,
+from glue.tests.helpers import (requires_astropy, requires_astropy_ge_03,
                                requires_pil_or_skimage)
 
-from ....config import data_factory
+from glue.config import data_factory
 
 
 def test_load_data_auto_assigns_label():

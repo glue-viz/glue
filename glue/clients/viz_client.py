@@ -1,10 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
 import matplotlib.pyplot as plt
-from ..core.client import Client
-from ..core import Data
-from ..utils.matplotlib import freeze_margins
-from .layer_artist import LayerArtistContainer
+from glue.core.client import Client
+from glue.core import Data
+from glue.utils.matplotlib import freeze_margins
+from glue.clients.layer_artist import LayerArtistContainer
 
 __all__ = ['VizClient', 'GenericMplClient']
 
@@ -143,7 +143,7 @@ def init_mpl(figure=None, axes=None, wcs=False, axes_factory=None):
         raise ValueError("Axes and figure are incompatible")
 
     try:
-        from ..external.wcsaxes import WCSAxesSubplot
+        from glue.external.wcsaxes import WCSAxesSubplot
     except ImportError:
         WCSAxesSubplot = None
 

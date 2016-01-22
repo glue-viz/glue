@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib.transforms import blended_transform_factory
 
-from ..core.callback_property import CallbackProperty, add_callback
+from glue.core.callback_property import CallbackProperty, add_callback
 
 
 PICK_THRESH = 30  # pixel distance threshold for picking

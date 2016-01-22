@@ -1,15 +1,15 @@
 from functools import partial
 from collections import Counter
 
-from ...external.qt.QtGui import (QWidget, QSlider, QLabel, QComboBox, QFrame,
+from glue.external.qt.QtGui import (QWidget, QSlider, QLabel, QComboBox, QFrame,
                                   QHBoxLayout, QVBoxLayout, QPushButton, 
                                   QLineEdit)
-from ...external.qt.QtCore import Qt, Signal
+from glue.external.qt.QtCore import Qt, Signal
 
-from ..widget_properties import (TextProperty,
+from glue.qt.widget_properties import (TextProperty,
                                  ValueProperty,
                                  CurrentComboProperty)
-from ..qtutil import nonpartial, load_ui
+from glue.qt.qtutil import nonpartial, load_ui
 
 
 class SliceWidget(QWidget):

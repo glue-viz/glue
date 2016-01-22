@@ -4,10 +4,10 @@ import os
 
 from numpy.testing import assert_array_equal
 
-from ....tests.helpers import requires_xlrd
+from glue.tests.helpers import requires_xlrd
 
-from ... import data_factories as df
-from ...tests.util import make_file
+from glue.core import data_factories as df
+from glue.core.tests.util import make_file
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 

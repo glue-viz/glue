@@ -5,25 +5,25 @@ editing the data collection
 
 from __future__ import absolute_import, division, print_function
 
-from ...external.qt.QtGui import (QWidget, QMenu,
+from glue.external.qt.QtGui import (QWidget, QMenu,
                                   QAction, QKeySequence, QFileDialog)
 
 
-from ...external.qt.QtCore import Qt, Signal, QObject
-from ...external.six.moves import reduce
+from glue.external.qt.QtCore import Qt, Signal, QObject
+from glue.external.six.moves import reduce
 
-from ..ui.layertree import Ui_LayerTree
+from glue.qt.ui.layertree import Ui_LayerTree
 
-from ... import core
+from glue import core
 
-from ..link_editor import LinkEditor
-from .. import qtutil
-from ..qtutil import get_icon, nonpartial
-from .custom_component_widget import CustomComponentWidget
-from ..actions import act as _act
-from ...core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode
-from .subset_facet import SubsetFacet
-from ...config import single_subset_action
+from glue.qt.link_editor import LinkEditor
+from glue.qt import qtutil
+from glue.qt.qtutil import get_icon, nonpartial
+from glue.qt.widgets.custom_component_widget import CustomComponentWidget
+from glue.qt.actions import act as _act
+from glue.core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode
+from glue.qt.widgets.subset_facet import SubsetFacet
+from glue.config import single_subset_action
 
 
 @core.decorators.singleton
@@ -520,7 +520,7 @@ class LayerTreeWidget(QWidget, Ui_LayerTree):
     def _load_data(self):
         """ Interactively loads data from a data set. Adds
         as new layer """
-        from ..glue_application import GlueApplication
+        from glue.qt.glue_application import GlueApplication
 
         layers = qtutil.data_wizard()
         GlueApplication.add_datasets(self.data_collection, layers)

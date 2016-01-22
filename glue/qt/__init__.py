@@ -1,7 +1,7 @@
 import os
 
 # For backward compatibility, we import get_qapp here
-from ..external.qt import get_qapp
+from glue.external.qt import get_qapp
 
 
 def teardown():

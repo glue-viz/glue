@@ -2,11 +2,11 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from ..data import Data
+from glue.core.data import Data
 
-from .helpers import has_extension, set_default_factory
-from ..coordinates import coordinates_from_wcs
-from ...config import data_factory
+from glue.core.data_factories.helpers import has_extension, set_default_factory
+from glue.core.coordinates import coordinates_from_wcs
+from glue.config import data_factory
 
 IMG_FMT = ['jpg', 'jpeg', 'bmp', 'png', 'tiff', 'tif']
 

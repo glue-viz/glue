@@ -3,8 +3,8 @@ from __future__ import absolute_import, division, print_function
 from abc import ABCMeta, abstractmethod
 import logging
 
-from .data_factories import load_data
-from .util import CallbackMixin
+from glue.core.data_factories import load_data
+from glue.core.util import CallbackMixin
 
 MAX_UNDO = 50
 """

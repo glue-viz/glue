@@ -2,9 +2,9 @@ from __future__ import absolute_import, division, print_function
 
 import re
 
-from .data import ComponentID
-from .subset import Subset, SubsetState
-from .component_link import ComponentLink
+from glue.core.data import ComponentID
+from glue.core.subset import Subset, SubsetState
+from glue.core.component_link import ComponentLink
 
 TAG_RE = re.compile('\{\s*(?P<tag>\S+)\s*\}')
 
@@ -136,7 +136,7 @@ class ParsedCommand(object):
         return _reference_list(self._cmd, self._references)
 
     def evaluate(self, data, view=None):
-        from .. import env
+        from glue import env
         # pylint: disable=W0613, W0612
         references = self._references
         cmd = _dereference(self._cmd, self._references)

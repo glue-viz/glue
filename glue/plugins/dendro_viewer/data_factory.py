@@ -7,11 +7,11 @@ import numpy as np
 
 from astrodendro import Dendrogram
 
-from ...core.data import Data
-from ...core.data_factories.fits import is_fits
-from ...core.data_factories.hdf5 import is_hdf5
+from glue.core.data import Data
+from glue.core.data_factories.fits import is_fits
+from glue.core.data_factories.hdf5 import is_hdf5
 
-from ...config import data_factory
+from glue.config import data_factory
 
 __all__ = ['load_dendro', 'is_dendro']
 

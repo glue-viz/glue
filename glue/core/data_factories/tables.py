@@ -1,8 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
-from ...config import data_factory
+from glue.config import data_factory
 
-from .helpers import has_extension
+from glue.core.data_factories.helpers import has_extension
 
 __all__ = ['tabular_data']
 
@@ -13,8 +13,8 @@ __all__ = ['tabular_data']
                                        'dat.gz'),
               priority=1)
 def tabular_data(path, **kwargs):
-    from .astropy_table import astropy_tabular_data
-    from .pandas import pandas_read_table
+    from glue.core.data_factories.astropy_table import astropy_tabular_data
+    from glue.core.data_factories.pandas import pandas_read_table
     for fac in [astropy_tabular_data, pandas_read_table]:
         try:
             return fac(path, **kwargs)

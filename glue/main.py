@@ -4,9 +4,9 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 import optparse
-from .logger import logger
+from glue.logger import logger
 
-from . import __version__
+from glue import __version__
 
 
 def parse(argv):
@@ -96,8 +96,8 @@ def die_on_error(msg):
                 return func(*args, **kwargs)
             except Exception as e:
                 import traceback
-                from . import qt
-                from .utils.qt import QMessageBoxPatched as QMessageBox
+                from glue import qt
+                from glue.utils.qt import QMessageBoxPatched as QMessageBox
                 m = "%s\n%s" % (msg, e)
                 detail = str(traceback.format_exc())
                 if len(m) > 500:
@@ -117,15 +117,15 @@ def die_on_error(msg):
 @die_on_error("Error restoring Glue session")
 def restore_session(gluefile):
     """Load a .glu file and return a DataCollection, Hub tuple"""
-    from .qt.glue_application import GlueApplication
+    from glue.qt.glue_application import GlueApplication
     return GlueApplication.restore_session(gluefile)
 
 
 @die_on_error("Error reading data file")
 def load_data_files(datafiles):
     """Load data files and return a DataCollection"""
-    from .core.data_collection import DataCollection
-    from .core.data_factories import auto_data, load_data
+    from glue.core.data_collection import DataCollection
+    from glue.core.data_factories import auto_data, load_data
 
     dc = DataCollection()
     for df in datafiles:
@@ -134,7 +134,7 @@ def load_data_files(datafiles):
 
 
 def run_tests():
-    from . import test
+    from glue import test
     test()
 
 
@@ -151,7 +151,7 @@ def start_glue(gluefile=None, config=None, datafiles=None):
     :type datafiles: list of str
     """
     import glue
-    from .qt.glue_application import GlueApplication
+    from glue.qt.glue_application import GlueApplication
 
     # Start off by loading plugins. We need to do this before restoring
     # the session or loading the configuration since these may use existing
@@ -199,8 +199,8 @@ def execute_script(script):
 
 def get_splash():
     """Instantiate a splash screen"""
-    from .external.qt.QtGui import QSplashScreen, QPixmap
-    from .external.qt.QtCore import Qt
+    from glue.external.qt.QtGui import QSplashScreen, QPixmap
+    from glue.external.qt.QtCore import Qt
     import os
 
     pth = os.path.join(os.path.dirname(__file__), 'logo.png')
@@ -264,7 +264,7 @@ def load_plugins():
     import setuptools
     logger.info("Loading external plugins using setuptools=={0}".format(setuptools.__version__))
 
-    from ._plugin_helpers import iter_plugin_entry_points, PluginConfig
+    from glue._plugin_helpers import iter_plugin_entry_points, PluginConfig
     config = PluginConfig.load()
 
     for item in iter_plugin_entry_points():

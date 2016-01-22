@@ -5,19 +5,19 @@ from functools import wraps
 
 import numpy as np
 
-from ..external.modest_image import extract_matched_slices
-from ..core.exceptions import IncompatibleAttribute
-from ..core.data import Data
-from ..core.subset import Subset, RoiSubsetState
-from ..core.roi import PolygonalROI
-from ..core.message import ComponentReplacedMessage
-from ..core.callback_property import (
+from glue.external.modest_image import extract_matched_slices
+from glue.core.exceptions import IncompatibleAttribute
+from glue.core.data import Data
+from glue.core.subset import Subset, RoiSubsetState
+from glue.core.roi import PolygonalROI
+from glue.core.message import ComponentReplacedMessage
+from glue.core.callback_property import (
     callback_property, CallbackProperty)
-from ..core.edit_subset_mode import EditSubsetMode
-from ..utils import lookup_class, defer_draw
+from glue.core.edit_subset_mode import EditSubsetMode
+from glue.utils import lookup_class, defer_draw
 
-from .viz_client import VizClient, init_mpl
-from .layer_artist import (ScatterLayerArtist, LayerArtistContainer,
+from glue.clients.viz_client import VizClient, init_mpl
+from glue.clients.layer_artist import (ScatterLayerArtist, LayerArtistContainer,
                            ImageLayerArtist, SubsetImageLayerArtist,
                            RGBImageLayerArtist,
                            ImageLayerBase, RGBImageLayerBase,

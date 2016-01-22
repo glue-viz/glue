@@ -1,12 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
-from ..data import Component, Data
-from ...utils import file_format
-from ..coordinates import coordinates_from_header
-from ...config import data_factory
+from glue.core.data import Component, Data
+from glue.utils import file_format
+from glue.core.coordinates import coordinates_from_header
+from glue.config import data_factory
 
-from .fits import is_fits, is_image_hdu
-from .hdf5 import is_hdf5, extract_hdf5_datasets
+from glue.core.data_factories.fits import is_fits, is_image_hdu
+from glue.core.data_factories.hdf5 import is_hdf5, extract_hdf5_datasets
 
 __all__ = ['is_gridded_data', 'gridded_data']
 

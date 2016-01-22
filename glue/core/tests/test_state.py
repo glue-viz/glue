@@ -6,19 +6,19 @@ import pytest
 
 from ..state import (GlueSerializer, GlueUnSerializer,
                      saver, loader, VersionedDict)
-from ...external import six
+from glue.external import six
 
-from ... import core
-from ...qt.glue_application import GlueApplication
-from ...qt.widgets.scatter_widget import ScatterWidget
-from ...qt.widgets.image_widget import ImageWidget
-from ...qt.widgets.histogram_widget import HistogramWidget
+from glue import core
+from glue.qt.glue_application import GlueApplication
+from glue.qt.widgets.scatter_widget import ScatterWidget
+from glue.qt.widgets.image_widget import ImageWidget
+from glue.qt.widgets.histogram_widget import HistogramWidget
 from .util import make_file
 from ..data_factories import load_data
 from ..data_factories.tests.test_fits import TEST_FITS_DATA
 from io import BytesIO
 
-from ...tests.helpers import requires_astropy
+from glue.tests.helpers import requires_astropy
 
 
 def clone(object, include_data=False):

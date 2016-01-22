@@ -3,16 +3,16 @@ from __future__ import absolute_import, division, print_function
 from functools import wraps, partial
 import traceback
 
-from .data_collection import DataCollection
-from .data_factories import load_data
-from . import command
-from . import Data, Subset
-from .hub import HubListener
-from .util import PropertySetMixin
-from ..utils import as_list
-from .edit_subset_mode import EditSubsetMode
-from .session import Session
-from ..config import settings
+from glue.core.data_collection import DataCollection
+from glue.core.data_factories import load_data
+from glue.core import command
+from glue.core import Data, Subset
+from glue.core.hub import HubListener
+from glue.core.util import PropertySetMixin
+from glue.utils import as_list
+from glue.core.edit_subset_mode import EditSubsetMode
+from glue.core.session import Session
+from glue.config import settings
 
 __all__ = ['Application', 'ViewerBase']
 
@@ -89,7 +89,7 @@ class Application(HubListener):
         Note: Saving of client is not currently supported. Thus,
         restoring this session will lose all current viz windows
         """
-        from .state import GlueSerializer
+        from glue.core.state import GlueSerializer
         gs = GlueSerializer(self, include_data=include_data)
         state = gs.dumps(indent=2)
         with open(path, 'w') as out:
@@ -110,7 +110,7 @@ class Application(HubListener):
         app : :class:`Application`
             The loaded application
         """
-        from ..core.state import GlueUnSerializer
+        from glue.core.state import GlueUnSerializer
 
         with open(path) as infile:
             state = GlueUnSerializer.load(infile)
@@ -236,7 +236,7 @@ class Application(HubListener):
     def __gluestate__(self, context):
         viewers = [list(map(context.id, tab)) for tab in self.viewers]
         data = self.session.data_collection
-        from ..main import _loaded_plugins
+        from glue.main import _loaded_plugins
         return dict(session=context.id(self.session), viewers=viewers,
                     data=context.id(data), plugins=_loaded_plugins)
 

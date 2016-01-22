@@ -1,17 +1,17 @@
 # pylint: disable=E1101,F0401
-from ..external.qt.QtCore import (QAbstractItemModel, QModelIndex,
+from glue.external.qt.QtCore import (QAbstractItemModel, QModelIndex,
                                   QObject, Qt, QTimer, Signal, QSize)
-from ..external.qt.QtGui import (QFont, QTreeView, QItemSelectionModel,
+from glue.external.qt.QtGui import (QFont, QTreeView, QItemSelectionModel,
                                  QAbstractItemView, QStyledItemDelegate)
-from ..external.qt import is_pyqt5
+from glue.external.qt import is_pyqt5
 
-from .qtutil import layer_icon
-from .mime import LAYERS_MIME_TYPE, PyMimeData
-from ..core.decorators import memoize
-from ..core import message as m
-from ..core.hub import HubListener
-from .. import core
-from .widgets.style_dialog import StyleDialog
+from glue.qt.qtutil import layer_icon
+from glue.qt.mime import LAYERS_MIME_TYPE, PyMimeData
+from glue.core.decorators import memoize
+from glue.core import message as m
+from glue.core.hub import HubListener
+from glue import core
+from glue.qt.widgets.style_dialog import StyleDialog
 
 DATA_IDX = 0
 SUBSET_IDX = 1
@@ -526,9 +526,9 @@ class LabeledDelegate(QStyledItemDelegate):
 
 if __name__ == "__main__":
     
-    from . import get_qapp
-    from ..external.qt.QtGui import QTreeView
-    from ..core import Data, DataCollection
+    from glue.qt import get_qapp
+    from glue.external.qt.QtGui import QTreeView
+    from glue.core import Data, DataCollection
 
     app = get_qapp()
 

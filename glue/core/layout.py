@@ -5,7 +5,7 @@ calculations to organize rectangular windows in a larger canvas
 
 from collections import Counter
 
-from ..external import six
+from glue.external import six
 
 
 class Rectangle(object):

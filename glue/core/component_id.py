@@ -4,10 +4,10 @@ import operator
 
 import numpy as np
 
-from ..external import six
+from glue.external import six
 
-from .subset import InequalitySubsetState
-from .component_link import BinaryComponentLink
+from glue.core.subset import InequalitySubsetState
+from glue.core.component_link import BinaryComponentLink
 
 __all__ = ['ComponentID', 'ComponentIDDict']
 

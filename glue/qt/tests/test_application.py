@@ -18,14 +18,14 @@ except:
     ipy_version = '0.0'
 
 from ..glue_application import GlueApplication
-from ...external.qt.QtCore import QMimeData, QUrl
+from glue.external.qt.QtCore import QMimeData, QUrl
 from ..widgets.scatter_widget import ScatterWidget
 from ..widgets.image_widget import ImageWidget
-from ...core import Data
+from glue.core import Data
 
-from ...external.six import PY3
+from glue.external.six import PY3
 
-from ...tests.helpers import requires_ipython_ge_012
+from glue.tests.helpers import requires_ipython_ge_012
 
 os.environ['GLUE_TESTING'] = 'True'
 
@@ -177,7 +177,7 @@ class TestGlueApplication(object):
         assert viewer.viewer_size == (100, 200)
 
     def test_new_data_defaults(self):
-        from ...config import qt_client
+        from glue.config import qt_client
 
         with patch('glue.qt.glue_application.pick_class') as pc:
             pc.return_value = None

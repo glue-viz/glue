@@ -10,12 +10,12 @@ from mock import MagicMock
 from ..histogram_client import HistogramClient
 from ..layer_artist import HistogramLayerArtist
 
-from ...core.data_collection import DataCollection
-from ...core.exceptions import IncompatibleDataException
-from ...core.data import Data
-from ...core.component import CategoricalComponent
-from ...core.component_id import ComponentID
-from ...core.subset import RangeSubsetState, CategoricalRoiSubsetState
+from glue.core.data_collection import DataCollection
+from glue.core.exceptions import IncompatibleDataException
+from glue.core.data import Data
+from glue.core.component import CategoricalComponent
+from glue.core.component_id import ComponentID
+from glue.core.subset import RangeSubsetState, CategoricalRoiSubsetState
 
 from .util import renderless_figure
 

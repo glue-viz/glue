@@ -4,12 +4,12 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from ....core import Data, DataCollection
+from glue.core import Data, DataCollection
 from ..data_viewer import DataViewer
 from ..histogram_widget import HistogramWidget
 from ..scatter_widget import ScatterWidget
 from ..image_widget import ImageWidget
-from ...glue_application import GlueApplication
+from glue.qt.glue_application import GlueApplication
 
 from . import simple_session
 

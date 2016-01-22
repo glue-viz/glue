@@ -1,16 +1,16 @@
 from __future__ import absolute_import, division, print_function
 
-from .hub import Hub, HubListener
-from .data import Data
-from .link_manager import LinkManager
-from .registry import Registry
-from .message import (DataCollectionAddMessage,
+from glue.core.hub import Hub, HubListener
+from glue.core.data import Data
+from glue.core.link_manager import LinkManager
+from glue.core.registry import Registry
+from glue.core.message import (DataCollectionAddMessage,
                       DataCollectionDeleteMessage,
                       DataAddComponentMessage)
-from .util import disambiguate
+from glue.core.util import disambiguate
 
-from ..config import settings
-from ..utils import as_list
+from glue.config import settings
+from glue.utils import as_list
 
 __all__ = ['DataCollection']
 
@@ -187,7 +187,7 @@ class DataCollection(HubListener):
 
         :returns: A new :class:`~glue.core.subset_group.SubsetGroup`
         """
-        from .subset_group import SubsetGroup
+        from glue.core.subset_group import SubsetGroup
         color = settings.SUBSET_COLORS[self._sg_count % len(settings.SUBSET_COLORS)]
         self._sg_count += 1
         label = label or "%i" % (self._sg_count)

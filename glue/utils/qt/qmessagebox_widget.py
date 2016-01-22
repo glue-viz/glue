@@ -1,7 +1,7 @@
 # A patched version of QMessageBox that allows copying the error
 
 import os
-from ...external.qt import QtGui
+from glue.external.qt import QtGui
 
 __all__ = ['QMessageBoxPatched']
 

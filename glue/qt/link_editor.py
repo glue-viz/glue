@@ -1,10 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-from ..external.qt.QtGui import QDialog, QListWidgetItem, QWidget
+from glue.external.qt.QtGui import QDialog, QListWidgetItem, QWidget
 
-from .. import core
+from glue import core
 
-from .qtutil import load_ui
+from glue.qt.qtutil import load_ui
 
 
 class LinkEditor(object):
@@ -116,7 +116,7 @@ class LinkEditor(object):
 
 def main():
     import numpy as np
-    from ..core import Data, DataCollection
+    from glue.core import Data, DataCollection
 
     x = np.array([1, 2, 3])
     d = Data(label='data', x=x, y=x * 2)

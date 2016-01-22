@@ -2,8 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from ..core.data import Data
-from ..core.component import Component, CategoricalComponent
+from glue.core.data import Data
+from glue.core.component import Component, CategoricalComponent
 
 def test_histogram_data():
     data = Data(label="Test Data")

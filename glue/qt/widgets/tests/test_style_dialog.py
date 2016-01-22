@@ -1,6 +1,6 @@
-from ....external.qt.QtCore import QPoint
-from ....external.qt.QtGui import QMainWindow
-from ....core import Data
+from glue.external.qt.QtCore import QPoint
+from glue.external.qt.QtGui import QMainWindow
+from glue.core import Data
 
 from . import simple_session
 from ..style_dialog import StyleDialog

@@ -5,7 +5,7 @@ from numpy.testing import assert_allclose
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 
-from ...tests.helpers import requires_scipy
+from glue.tests.helpers import requires_scipy
 
 from ..matplotlib import (point_contour, fast_limits, all_artists, new_artists,
                           remove_artists, view_cascade, get_extent, color2rgb,

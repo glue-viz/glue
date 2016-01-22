@@ -3,7 +3,7 @@
 import os
 import numpy as np
 
-from ...tests.helpers import requires_astropy, requires_h5py
+from glue.tests.helpers import requires_astropy, requires_h5py
 
 from ..state import GlueUnSerializer
 

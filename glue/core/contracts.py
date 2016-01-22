@@ -20,8 +20,8 @@ and never directly from the contracts package.
 from numpy import ndarray, s_
 from pandas import Series
 
-from ..config import enable_contracts
-from ..external.six import string_types
+from glue.config import enable_contracts
+from glue.external.six import string_types
 
 
 def _build_custom_contracts():
@@ -35,12 +35,12 @@ def _build_custom_contracts():
         """
         Value is a ComponentID or a string
         """
-        from . import ComponentID
+        from glue.core import ComponentID
         return isinstance(value, (ComponentID, string_types))
 
     @new_contract
     def component_like(value):
-        from . import Component, ComponentLink
+        from glue.core import Component, ComponentLink
         return isinstance(value, (Component, ComponentLink,
                                   ndarray, list, Series))
 
@@ -65,7 +65,7 @@ def _build_custom_contracts():
 
     @new_contract
     def data_view(value):
-        from . import ComponentID
+        from glue.core import ComponentID
 
         if value is None:
             return

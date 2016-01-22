@@ -5,8 +5,8 @@ import pytest
 
 from ..link_equation import (function_label, helper_label,
                              LinkEquation, ArgumentWidget)
-from ...config import link_function, link_helper
-from ...core import ComponentID
+from glue.config import link_function, link_helper
+from glue.core import ComponentID
 
 
 @link_function('testing function', ['y'])

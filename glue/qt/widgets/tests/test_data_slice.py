@@ -1,7 +1,7 @@
 import numpy as np
 from mock import MagicMock
 
-from .... import core
+from glue import core
 from ..data_slice_widget import SliceWidget, DataSlice
 
 

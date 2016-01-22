@@ -13,7 +13,7 @@ from ..coordinates import (coordinates_from_header,
                            Coordinates,
                            header_from_string)
 
-from ...tests.helpers import requires_astropy
+from glue.tests.helpers import requires_astropy
 
 
 @requires_astropy
