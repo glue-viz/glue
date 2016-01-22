@@ -5,7 +5,7 @@ from functools import partial
 
 
 __all__ = ['DeferredMethod', 'nonpartial', 'lookup_class', 'as_variable_name',
-           'as_list', 'file_format']
+           'as_list', 'file_format', 'CallbackMixin']
 
 
 class DeferredMethod(object):
@@ -102,3 +102,24 @@ def file_format(filename):
     else:
         result = filename.lower().rsplit('.', 1)[1]
     return result
+
+
+class CallbackMixin(object):
+
+    """
+    A mixin that provides a utility for attaching callback
+    functions to methods
+    """
+
+    def __init__(self):
+        self._callbacks = []
+
+    def add_callback(self, function):
+        self._callbacks.append(function)
+
+    def remove_callback(self, function):
+        self._callbacks.remove(function)
+
+    def notify(self, *args, **kwargs):
+        for func in self._callbacks:
+            func(*args, **kwargs)

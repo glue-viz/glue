@@ -10,13 +10,10 @@ import pandas as pd
 from glue.external.six.moves import reduce
 
 
-__all__ = ["identity", "relim", "split_component_view", "join_component_view",
+__all__ = ["relim", "split_component_view", "join_component_view",
            "facet_subsets", "colorize_subsets", "defer", "disambiguate",
-           "row_lookup", "PropertySetMixin", "CallbackMixin", "Pointer"]
+           "row_lookup", "PropertySetMixin", "Pointer"]
 
-
-def identity(x):
-    return x
 
 
 def relim(lo, hi, log=False):
@@ -229,27 +226,6 @@ class PropertySetMixin(object):
             if k not in value:
                 continue
             setattr(self, k, value[k])
-
-
-class CallbackMixin(object):
-
-    """
-    A mixin that provides a utility for attaching callback
-    functions to methods
-    """
-
-    def __init__(self):
-        self._callbacks = []
-
-    def add_callback(self, function):
-        self._callbacks.append(function)
-
-    def remove_callback(self, function):
-        self._callbacks.remove(function)
-
-    def notify(self, *args, **kwargs):
-        for func in self._callbacks:
-            func(*args, **kwargs)
 
 
 class Pointer(object):
