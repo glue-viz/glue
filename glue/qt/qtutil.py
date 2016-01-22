@@ -13,20 +13,13 @@ from matplotlib import cm
 import numpy as np
 
 from glue.external.axescache import AxesCache
-from glue.external.qt import QtGui
-from glue.external.qt.QtCore import (Qt, QThread, QAbstractListModel, QModelIndex)
-from glue.external.qt.QtGui import (QColor, QInputDialog, QColorDialog,
-                                 QListWidget, QTreeWidget, QPushButton,
-                                 QTabBar, QBitmap, QIcon, QPixmap, QImage,
-                                 QWidget,
-                                 QLabel, QGridLayout,
-                                 QRadioButton, QButtonGroup, QCheckBox)
+from glue.external.qt import QtGui, QtCore, is_pyside
+from glue.external.qt.QtCore import Qt
+
 from glue.utils.qt import QMessageBoxPatched as QMessageBox
 
 from glue.qt.decorators import set_cursor
 from glue.qt.mime import PyMimeData, LAYERS_MIME_TYPE
-from glue.external.qt import is_pyside
-from glue.external.qt.QtCore import Signal
 from glue import core
 from glue.qt import ui, icons
 
@@ -35,7 +28,7 @@ from glue.utils import nonpartial
 
 
 def mpl_to_qt4_color(color, alpha=1.0):
-    """ Convert a matplotlib color stirng into a Qt QColor object
+    """ Convert a matplotlib color stirng into a Qt QtGui.QColor object
 
     :param color:
        A color specification that matplotlib understands
@@ -46,26 +39,26 @@ def mpl_to_qt4_color(color, alpha=1.0):
     :type alpha: float
 
     * Returns *
-    A QColor object representing color
+    A QtGui.QColor object representing color
 
-    :rtype: QColor
+    :rtype: QtGui.QColor
     """
     if color in [None, 'none', 'None']:
-        return QColor(0, 0, 0, 0)
+        return QtGui.QColor(0, 0, 0, 0)
 
     cc = ColorConverter()
     r, g, b = cc.to_rgb(color)
     alpha = max(0, min(255, int(256 * alpha)))
-    return QColor(r * 255, g * 255, b * 255, alpha)
+    return QtGui.QColor(r * 255, g * 255, b * 255, alpha)
 
 
 def qt4_to_mpl_color(color):
     """
-    Convert a QColor object into a string that matplotlib understands
+    Convert a QtGui.QColor object into a string that matplotlib understands
 
     Note: This ignores opacity
 
-    :param color: QColor instance
+    :param color: QtGui.QColor instance
 
     *Returns*
         A hex string describing that color
@@ -181,8 +174,8 @@ class GlueDataDialog(object):
 def edit_layer_color(layer):
     """ Interactively edit a layer's color """
     initial = mpl_to_qt4_color(layer.style.color, alpha=layer.style.alpha)
-    color = QColorDialog.getColor(initial, None, "Change layer color",
-                                  options=QColorDialog.ShowAlphaChannel)
+    color = QtGui.QColorDialog.getColor(initial, None, "Change layer color",
+                                  options=QtGui.QColorDialog.ShowAlphaChannel)
     if color.isValid():
         layer.style.color = qt4_to_mpl_color(color)
         layer.style.alpha = color.alpha() / 256.
@@ -195,7 +188,7 @@ def edit_layer_symbol(layer):
         initial = options.index(layer.style.marker)
     except IndexError:
         initial = 0
-    symb, isok = QInputDialog.getItem(None, 'Pick a Symbol',
+    symb, isok = QtGui.QInputDialog.getItem(None, 'Pick a Symbol',
                                       'Pick a Symbol',
                                       options, current=initial)
     if isok and symb != layer.style.marker:
@@ -204,7 +197,7 @@ def edit_layer_symbol(layer):
 
 def edit_layer_point_size(layer):
     """ Interactively edit a layer's point size """
-    size, isok = QInputDialog.getInt(None, 'Point Size', 'Point Size',
+    size, isok = QtGui.QInputDialog.getInt(None, 'Point Size', 'Point Size',
                                      value=layer.style.markersize,
                                      min=1, max=1000, step=1)
     if isok and size != layer.style.markersize:
@@ -213,7 +206,7 @@ def edit_layer_point_size(layer):
 
 def edit_layer_label(layer):
     """ Interactively edit a layer's label """
-    label, isok = QInputDialog.getText(None, 'New Label:', 'New Label:',
+    label, isok = QtGui.QInputDialog.getText(None, 'New Label:', 'New Label:',
                                        text=layer.label)
     if isok and str(label) != layer.label:
         layer.label = str(label)
@@ -230,7 +223,7 @@ def pick_item(items, labels, title="Pick an item", label="Pick an item",
 
     Returns the selected item, or None
     """
-    choice, isok = QInputDialog.getItem(None, title, label,
+    choice, isok = QtGui.QInputDialog.getItem(None, title, label,
                                         labels, current=default,
                                         editable=False)
     if isok:
@@ -265,14 +258,14 @@ def get_text(title='Enter a label'):
     *Returns*
        The text the user typed, or None
     """
-    result, isok = QInputDialog.getText(None, title, title)
+    result, isok = QtGui.QInputDialog.getText(None, title, title)
     if isok:
         return str(result)
 
 
 class GlueItemWidget(object):
 
-    """ A mixin for QListWidget/GlueTreeWidget subclasses, that
+    """ A mixin for QtGui.QListWidget/GlueTreeWidget subclasses, that
     provides drag+drop funtionality.
     """
     # Implementation detail: QXXWidgetItems are unhashable in PySide,
@@ -291,7 +284,7 @@ class GlueItemWidget(object):
     def mimeData(self, selected_items):
         """Return a list of MIME data associated with the each selected item
 
-        :param selected_items: List of QListWidgetItems or QTreeWidgetItems
+        :param selected_items: List of QtGui.QListWidgetItems or QtGui.QTreeWidgetItems
         :rtype: List of MIME objects
         """
         try:
@@ -333,76 +326,76 @@ POINT_ICONS = {'o': 'glue_circle_point',
 
 
 def symbol_icon(symbol, color=None):
-    bm = QBitmap(icon_path(POINT_ICONS.get(symbol, 'glue_circle')))
+    bm = QtGui.QBitmap(icon_path(POINT_ICONS.get(symbol, 'glue_circle')))
 
     if color is not None:
-        return QIcon(tint_pixmap(bm, color))
+        return QtGui.QIcon(tint_pixmap(bm, color))
 
-    return QIcon(bm)
+    return QtGui.QIcon(bm)
 
 
 def layer_icon(layer):
-    """Create a QIcon for a Data or Subset instance
+    """Create a QtGui.QIcon for a Data or Subset instance
 
     :type layer: :class:`~glue.core.data.Data`,
                  :class:`~glue.core.subset.Subset`,
                  or object with a .style attribute
 
-    :rtype: QIcon
+    :rtype: QtGui.QIcon
     """
     icon = POINT_ICONS.get(layer.style.marker, 'circle_point')
-    bm = QBitmap(icon_path(icon))
+    bm = QtGui.QBitmap(icon_path(icon))
     color = mpl_to_qt4_color(layer.style.color)
     pm = tint_pixmap(bm, color)
     pm = pm.scaledToHeight(15, Qt.SmoothTransformation)
-    return QIcon(pm)
+    return QtGui.QIcon(pm)
 
 
 def layer_artist_icon(artist):
-    """Create a QIcon for a LayerArtist instance"""
+    """Create a QtGui.QIcon for a LayerArtist instance"""
     from glue.clients.layer_artist import ImageLayerArtist
 
     if not artist.enabled:
-        bm = QBitmap(icon_path('glue_delete'))
+        bm = QtGui.QBitmap(icon_path('glue_delete'))
     elif isinstance(artist, ImageLayerArtist):
-        bm = QBitmap(icon_path('glue_image'))
+        bm = QtGui.QBitmap(icon_path('glue_image'))
     else:
-        bm = QBitmap(icon_path(POINT_ICONS.get(artist.layer.style.marker,
+        bm = QtGui.QBitmap(icon_path(POINT_ICONS.get(artist.layer.style.marker,
                                                'glue_circle_point')))
     color = mpl_to_qt4_color(artist.layer.style.color)
 
     pm = tint_pixmap(bm, color)
-    return QIcon(pm)
+    return QtGui.QIcon(pm)
 
 
 def tint_pixmap(bm, color):
     """Re-color a monochrome pixmap object using `color`
 
-    :param bm: QBitmap instance
-    :param color: QColor instance
+    :param bm: QtGui.QBitmap instance
+    :param color: QtGui.QColor instance
 
-    :rtype: QPixmap. The new pixma;
+    :rtype: QtGui.QPixmap. The new pixma;
     """
     if bm.depth() != 1:
         raise TypeError("Input pixmap must have a depth of 1: %i" % bm.depth())
 
     image = bm.toImage()
     image.setColor(1, color.rgba())
-    image.setColor(0, QColor(0, 0, 0, 0).rgba())
+    image.setColor(0, QtGui.QColor(0, 0, 0, 0).rgba())
 
-    result = QPixmap.fromImage(image)
+    result = QtGui.QPixmap.fromImage(image)
     return result
 
 
-class GlueListWidget(GlueItemWidget, QListWidget):
+class GlueListWidget(GlueItemWidget, QtGui.QListWidget):
     pass
 
 
-class GlueTreeWidget(GlueItemWidget, QTreeWidget):
+class GlueTreeWidget(GlueItemWidget, QtGui.QTreeWidget):
     pass
 
 
-class GlueActionButton(QPushButton):
+class GlueActionButton(QtGui.QPushButton):
 
     def set_action(self, action, text=True):
         self._text = text
@@ -420,7 +413,7 @@ class GlueActionButton(QPushButton):
         self.setEnabled(self._action.isEnabled())
 
 
-class GlueTabBar(QTabBar):
+class GlueTabBar(QtGui.QTabBar):
 
     def __init__(self, *args, **kwargs):
         super(GlueTabBar, self).__init__(*args, **kwargs)
@@ -444,28 +437,28 @@ class GlueTabBar(QTabBar):
 
 
 def cmap2pixmap(cmap, steps=50):
-    """Convert a maplotlib colormap into a QPixmap
+    """Convert a maplotlib colormap into a QtGui.QPixmap
 
     :param cmap: The colormap to use
     :type cmap: Matplotlib colormap instance (e.g. matplotlib.cm.gray)
     :param steps: The number of color steps in the output. Default=50
     :type steps: int
 
-    :rtype: QPixmap
+    :rtype: QtGui.QPixmap
     """
     sm = cm.ScalarMappable(cmap=cmap)
     sm.norm.vmin = 0.0
     sm.norm.vmax = 1.0
     inds = np.linspace(0, 1, steps)
     rgbas = sm.to_rgba(inds)
-    rgbas = [QColor(int(r * 255), int(g * 255),
+    rgbas = [QtGui.QColor(int(r * 255), int(g * 255),
                     int(b * 255), int(a * 255)).rgba() for r, g, b, a in rgbas]
-    im = QImage(steps, 1, QImage.Format_Indexed8)
+    im = QtGui.QImage(steps, 1, QtGui.QImage.Format_Indexed8)
     im.setColorTable(rgbas)
     for i in range(steps):
         im.setPixel(i, 0, i)
     im = im.scaled(100, 100)
-    pm = QPixmap.fromImage(im)
+    pm = QtGui.QPixmap.fromImage(im)
     return pm
 
 
@@ -497,7 +490,7 @@ def pretty_number(numbers):
     return result
 
 
-class RGBEdit(QWidget):
+class RGBEdit(QtGui.QWidget):
 
     """A widget to set the contrast for individual layers in an RGB image
 
@@ -512,17 +505,17 @@ class RGBEdit(QWidget):
     adjustments from a :class:`~glue.clients.image_client` affect
     a particular RGB slice
     """
-    current_changed = Signal(str)
-    colors_changed = Signal()
+    current_changed = QtCore.Signal(str)
+    colors_changed = QtCore.Signal()
 
     def __init__(self, parent=None, artist=None):
         super(RGBEdit, self).__init__(parent)
         self._artist = artist
 
-        l = QGridLayout()
+        l = QtGui.QGridLayout()
 
-        current = QLabel("Contrast")
-        visible = QLabel("Visible")
+        current = QtGui.QLabel("Contrast")
+        visible = QtGui.QLabel("Visible")
         l.addWidget(current, 0, 2, 1, 1)
         l.addWidget(visible, 0, 3, 1, 1)
         l.setColumnStretch(0, 0)
@@ -536,20 +529,20 @@ class RGBEdit(QWidget):
         l.setRowStretch(3, 0)
         l.setRowStretch(4, 10)
 
-        curr_grp = QButtonGroup()
+        curr_grp = QtGui.QButtonGroup()
         self.current = {}
         self.vis = {}
         self.cid = {}
 
         for row, color in enumerate(['red', 'green', 'blue'], 1):
-            lbl = QLabel(color.title())
+            lbl = QtGui.QLabel(color.title())
 
             cid = ComponentIDCombo()
 
-            curr = QRadioButton()
+            curr = QtGui.QRadioButton()
             curr_grp.addButton(curr)
 
-            vis = QCheckBox()
+            vis = QtGui.QCheckBox()
             vis.setChecked(True)
 
             l.addWidget(lbl, row, 0, 1, 1)
@@ -675,7 +668,7 @@ def load_ui(path, parent=None):
 
     Returns
     -------
-    w : QWidget
+    w : QtGui.QWidget
       The new widget
     """
 
@@ -745,7 +738,7 @@ def icon_path(icon_name):
 
 def get_icon(icon_name):
     """
-    Build a QIcon from an image name
+    Build a QtGui.QIcon from an image name
 
     Parameters
     ----------
@@ -755,9 +748,9 @@ def get_icon(icon_name):
 
     Returns
     -------
-    A QIcon object
+    A QtGui.QIcon object
     """
-    return QIcon(icon_path(icon_name))
+    return QtGui.QIcon(icon_path(icon_name))
 
 
 class ComponentIDCombo(QtGui.QComboBox, core.HubListener):
@@ -870,13 +863,13 @@ if __name__ == "__main__":
     print(f.contrast_layer)
 
 
-class Worker(QThread):
-    result = Signal(object)
-    error = Signal(object)
+class Worker(QtCore.QThread):
+    result = QtCore.Signal(object)
+    error = QtCore.Signal(object)
 
     def __init__(self, func, *args, **kwargs):
         """
-        Execute a function call on a different QThread
+        Execute a function call on a different QtCore.QThread
 
         :param func: The function object to call
         :param args: arguments to pass to the function
@@ -926,7 +919,7 @@ def update_combobox(combo, labeldata):
     any of labeldata, that selection will be retained.
     Otherwise, the first item will be selected.
 
-    Signals are disabled while the combo box is updated
+    QtCore.Signals are disabled while the combo box is updated
 
     combo is modified inplace
     """
@@ -955,7 +948,7 @@ def update_combobox(combo, labeldata):
     return combo
 
 
-class PythonListModel(QAbstractListModel):
+class PythonListModel(QtCore.QAbstractListModel):
 
     """
     A Qt Model that wraps a python list, and exposes a list-like interface
@@ -1007,7 +1000,7 @@ class PythonListModel(QAbstractListModel):
 
         Parameters
         ----------
-        index : QModelIndex
+        index : QtCore.QModelIndex
             The location of the change
         value : object
             The new value
@@ -1041,7 +1034,7 @@ class PythonListModel(QAbstractListModel):
         if row < 0 or row >= len(self.items):
             return False
 
-        self.beginRemoveRows(QModelIndex(), row, row)
+        self.beginRemoveRows(QtCore.QModelIndex(), row, row)
         self._remove_row(row)
         self.endRemoveRows()
         return True
@@ -1080,7 +1073,7 @@ class PythonListModel(QAbstractListModel):
         return len(self.items)
 
     def insert(self, row, value):
-        self.beginInsertRows(QModelIndex(), row, row)
+        self.beginInsertRows(QtCore.QModelIndex(), row, row)
         self.items.insert(row, value)
         self.endInsertRows()
         self.rowsInserted.emit(self.index(row), row, row)

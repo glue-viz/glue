@@ -39,7 +39,7 @@ class CompletionTextEdit(QtGui.QTextEdit):
 
         self.completer.setWidget(self)
         self.completer.setCompletionMode(QtGui.QCompleter.PopupCompletion)
-        self.completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.completer.activated.connect(self.insert_completion)
 
     def insert_completion(self, completion):
@@ -71,16 +71,16 @@ class CompletionTextEdit(QtGui.QTextEdit):
 
         if self.completer and self.completer.popup().isVisible():
             if event.key() in (
-                    QtCore.Qt.Key_Enter,
-                    QtCore.Qt.Key_Return,
-                    QtCore.Qt.Key_Escape,
-                    QtCore.Qt.Key_Tab,
-                    QtCore.Qt.Key_Backtab):
+                    Qt.Key_Enter,
+                    Qt.Key_Return,
+                    Qt.Key_Escape,
+                    Qt.Key_Tab,
+                    Qt.Key_Backtab):
                 event.ignore()
                 return
 
         # Check if TAB has been pressed
-        is_shortcut = event.key() == QtCore.Qt.Key_Tab
+        is_shortcut = event.key() == Qt.Key_Tab
 
         if not self.completer or not is_shortcut:
             QtGui.QTextEdit.keyPressEvent(self, event)

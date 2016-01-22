@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt.QtGui import QDialog, QListWidgetItem, QWidget
+from glue.external.qt import QtGui
 
 from glue import core
 
@@ -76,7 +76,7 @@ class LinkEditor(object):
 
     def _add_link(self, link):
         current = self._ui.current_links
-        item = QListWidgetItem(str(link))
+        item = QtGui.QListWidgetItem(str(link))
         current.addItem(item)
         item.setHidden(link.hidden)
         current.set_data(item, link)

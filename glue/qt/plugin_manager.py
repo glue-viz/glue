@@ -1,6 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt import QtGui, QtCore
+from glue.external.qt import QtGui
+from glue.external.qt.QtCore import Qt
+
 from glue._plugin_helpers import PluginConfig
 
 from glue.qt.qtutil import load_ui
@@ -36,11 +38,11 @@ class QtPluginManager(object):
         for plugin in sorted(config.plugins):
             check = QtGui.QTreeWidgetItem(self.ui.tree.invisibleRootItem(),
                                           ["", plugin])
-            check.setFlags(check.flags() | QtCore.Qt.ItemIsUserCheckable)
+            check.setFlags(check.flags() | Qt.ItemIsUserCheckable)
             if config.plugins[plugin]:
-                check.setCheckState(0, QtCore.Qt.Checked)
+                check.setCheckState(0, Qt.Checked)
             else:
-                check.setCheckState(0, QtCore.Qt.Unchecked)
+                check.setCheckState(0, Qt.Unchecked)
             self._checkboxes[plugin] = check
 
         self.ui.tree.resizeColumnToContents(0)

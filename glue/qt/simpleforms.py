@@ -1,4 +1,4 @@
-from glue.external.qt.QtGui import QSpinBox, QDoubleSpinBox, QCheckBox
+from glue.external.qt import QtGui
 from glue.external.qt.QtCore import QObject, Signal
 
 from glue.core.simpleforms import IntOption, FloatOption, BoolOption
@@ -40,11 +40,11 @@ class NumberFormItem(FormItem):
 
 
 class IntFormItem(NumberFormItem):
-    widget_cls = QSpinBox
+    widget_cls = QtGui.QSpinBox
 
 
 class FloatFormItem(NumberFormItem):
-    widget_cls = QDoubleSpinBox
+    widget_cls = QtGui.QDoubleSpinBox
 
 
 class BoolFormItem(FormItem):
@@ -53,7 +53,7 @@ class BoolFormItem(FormItem):
         super(BoolFormItem, self).__init__(instance, option)
 
         value = option.__get__(instance)
-        self.widget = QCheckBox()
+        self.widget = QtGui.QCheckBox()
         self.widget.setChecked(value)
         self.widget.clicked.connect(nonpartial(self.changed.emit))
 

@@ -4,12 +4,8 @@ import sys
 import os.path
 import numpy as np
 
-from glue.external.qt.QtGui import (QAction,
-                                  QToolButton, QToolBar, QIcon,
-                                  QActionGroup, QWidget,
-                                  QVBoxLayout, QColor, QImage, QPixmap)
-
-from glue.external.qt.QtCore import Qt, QSize
+from glue.external.qt import QtGui, QtCore
+from glue.external.qt.QtCore import Qt
 
 from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
 from ginga.qtw import ColorBar
@@ -107,8 +103,8 @@ class GingaWidget(ImageWidgetBase):
 
     def make_central_widget(self):
 
-        topw = QWidget()
-        layout = QVBoxLayout()
+        topw = QtGui.QWidget()
+        layout = QtGui.QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         layout.addWidget(self.canvas.get_widget(), stretch=1)
@@ -134,12 +130,12 @@ class GingaWidget(ImageWidgetBase):
         self.colorbar.set_range(loval, hival)
 
     def make_toolbar(self):
-        tb = QToolBar(parent=self)
-        tb.setIconSize(QSize(25, 25))
+        tb = QtGui.QToolBar(parent=self)
+        tb.setIconSize(QtCore.QSize(25, 25))
         tb.layout().setSpacing(1)
         tb.setFocusPolicy(Qt.StrongFocus)
 
-        agroup = QActionGroup(tb)
+        agroup = QtGui.QActionGroup(tb)
         agroup.setExclusive(True)
         for (mode_text, mode_icon, mode_cb) in self._mouse_modes():
             # TODO: add icons similar to the Matplotlib toolbar
@@ -153,13 +149,13 @@ class GingaWidget(ImageWidgetBase):
         action.setCheckable(True)
         action.toggled.connect(lambda tf: self.mode_cb('pan', tf))
         agroup.addAction(action)
-        icon = QIcon(os.path.join(ginga_icon_dir, 'hand_48.png'))
+        icon = QtGui.QIcon(os.path.join(ginga_icon_dir, 'hand_48.png'))
         action = tb.addAction(icon, "Free Pan")
         self.mode_actns['freepan'] = action
         action.setCheckable(True)
         action.toggled.connect(lambda tf: self.mode_cb('freepan', tf))
         agroup.addAction(action)
-        icon = QIcon(os.path.join(ginga_icon_dir, 'rotate_48.png'))
+        icon = QtGui.QIcon(os.path.join(ginga_icon_dir, 'rotate_48.png'))
         action = tb.addAction(icon, "Rotate")
         self.mode_actns['rotate'] = action
         action.setCheckable(True)
@@ -170,7 +166,7 @@ class GingaWidget(ImageWidgetBase):
         action.setCheckable(True)
         action.toggled.connect(lambda tf: self.mode_cb('contrast', tf))
         agroup.addAction(action)
-        icon = QIcon(os.path.join(ginga_icon_dir, 'cuts_48.png'))
+        icon = QtGui.QIcon(os.path.join(ginga_icon_dir, 'cuts_48.png'))
         action = tb.addAction(icon, "Cuts")
         self.mode_actns['cuts'] = action
         action.setCheckable(True)
@@ -284,13 +280,13 @@ class GingaWidget(ImageWidgetBase):
         return True
 
 
-class ColormapAction(QAction):
+class ColormapAction(QtGui.QAction):
 
     def __init__(self, label, cmap, parent):
         super(ColormapAction, self).__init__(label, parent)
         self.cmap = cmap
         pm = cmap2pixmap(cmap)
-        self.setIcon(QIcon(pm))
+        self.setIcon(QtGui.QIcon(pm))
 
 
 def _colormap_mode(parent, on_trigger):
@@ -305,12 +301,12 @@ def _colormap_mode(parent, on_trigger):
         acts.append(a)
 
     # Toolbar button
-    tb = QToolButton()
+    tb = QtGui.QToolButton()
     tb.setWhatsThis("Set color scale")
     tb.setToolTip("Set color scale")
     icon = get_icon('glue_rainbow')
     tb.setIcon(icon)
-    tb.setPopupMode(QToolButton.InstantPopup)
+    tb.setPopupMode(QtGui.QToolButton.InstantPopup)
     tb.addActions(acts)
 
     return tb
@@ -423,24 +419,24 @@ tool_registry.add(GingaSpectrumTool, GingaWidget)
 
 
 def cmap2pixmap(cmap, steps=50):
-    """Convert a Ginga colormap into a QPixmap
+    """Convert a Ginga colormap into a QtGui.QPixmap
 
     :param cmap: The colormap to use
     :type cmap: Ginga colormap instance (e.g. ginga.cmap.get_cmap('gray'))
     :param steps: The number of color steps in the output. Default=50
     :type steps: int
 
-    :rtype: QPixmap
+    :rtype: QtGui.QPixmap
     """
     inds = np.linspace(0, 1, steps)
     n = len(cmap.clst) - 1
     tups = [cmap.clst[int(x * n)] for x in inds]
-    rgbas = [QColor(int(r * 255), int(g * 255),
+    rgbas = [QtGui.QColor(int(r * 255), int(g * 255),
                     int(b * 255), 255).rgba() for r, g, b in tups]
-    im = QImage(steps, 1, QImage.Format_Indexed8)
+    im = QtGui.QImage(steps, 1, QtGui.QImage.Format_Indexed8)
     im.setColorTable(rgbas)
     for i in range(steps):
         im.setPixel(i, 0, i)
     im = im.scaled(128, 32)
-    pm = QPixmap.fromImage(im)
+    pm = QtGui.QPixmap.fromImage(im)
     return pm

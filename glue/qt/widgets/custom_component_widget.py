@@ -2,8 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import re
 
-from glue.external.qt.QtGui import QDialog, QMessageBox
-from glue.external.qt import QtCore
+from glue.external.qt import QtGui, QtCore
 
 from glue import core
 from glue.core import parse
@@ -81,7 +80,7 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
 
         tc.setPosition(pos)
         self.setTextCursor(tc)
-        self.setAlignment(QtCore.Qt.AlignCenter)
+        self.setAlignment(Qt.AlignCenter)
 
 
 
@@ -99,7 +98,7 @@ class CustomComponentWidget(object):
         # because we want to use a custom widget that supports auto-complete.
         self.ui.expression = ColorizedCompletionTextEdit()
         self.ui.verticalLayout_3.addWidget(self.ui.expression)
-        self.ui.expression.setAlignment(QtCore.Qt.AlignCenter)
+        self.ui.expression.setAlignment(Qt.AlignCenter)
         self.ui.expression.setObjectName("expression")
         self.ui.expression.setToolTip("Define a new component. You can either "
                                       "type out the full name of a component\n"
@@ -210,16 +209,16 @@ class CustomComponentWidget(object):
         widget = CustomComponentWidget(collection)
         while True:
             widget.ui.show()
-            if widget.ui.exec_() == QDialog.Accepted:
+            if widget.ui.exec_() == QtGui.QDialog.Accepted:
                 if len(str(widget.ui.expression.toPlainText())) == 0:
-                    QMessageBox.critical(widget.ui, "Error", "No expression set",
-                                         buttons=QMessageBox.Ok)
+                    QtGui.QMessageBox.critical(widget.ui, "Error", "No expression set",
+                                         buttons=QtGui.QMessageBox.Ok)
                 elif widget._number_targets == 0:
-                    QMessageBox.critical(widget.ui, "Error", "Please specify the target dataset(s)",
-                                         buttons=QMessageBox.Ok)
+                    QtGui.QMessageBox.critical(widget.ui, "Error", "Please specify the target dataset(s)",
+                                         buttons=QtGui.QMessageBox.Ok)
                 elif len(widget.ui.new_label.text()) == 0:
-                    QMessageBox.critical(widget.ui, "Error", "Please specify the new component name",
-                                         buttons=QMessageBox.Ok)
+                    QtGui.QMessageBox.critical(widget.ui, "Error", "Please specify the new component name",
+                                         buttons=QtGui.QMessageBox.Ok)
                 else:
                     link = widget._create_link()
                     if link:

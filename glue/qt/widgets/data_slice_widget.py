@@ -1,10 +1,7 @@
 from functools import partial
 from collections import Counter
 
-from glue.external.qt.QtGui import (QWidget, QSlider, QLabel, QComboBox, QFrame,
-                                  QHBoxLayout, QVBoxLayout, QPushButton, 
-                                  QLineEdit)
-from glue.external.qt.QtCore import Qt, Signal
+from glue.external.qt import QtGui, QtCore
 
 from glue.qt.widget_properties import (TextProperty,
                                  ValueProperty,
@@ -12,13 +9,13 @@ from glue.qt.widget_properties import (TextProperty,
 from glue.qt.qtutil import nonpartial, load_ui
 
 
-class SliceWidget(QWidget):
+class SliceWidget(QtGui.QWidget):
     label = TextProperty('_ui_label')
     slice_center = ValueProperty('_ui_slider.slider')
     mode = CurrentComboProperty('_ui_mode')
 
-    slice_changed = Signal(int)
-    mode_changed = Signal(str)
+    slice_changed = QtCore.Signal(int)
+    mode_changed = QtCore.Signal(str)
 
     def __init__(self, label='', pix2world=None, lo=0, hi=10,
                  parent=None, aggregation=None):
@@ -28,16 +25,16 @@ class SliceWidget(QWidget):
         if pix2world is not None:
             raise NotImplemented("Pix2world option not implemented")
 
-        layout = QVBoxLayout()
+        layout = QtGui.QVBoxLayout()
         layout.setContentsMargins(3, 1, 3, 1)
         layout.setSpacing(0)
 
-        top = QHBoxLayout()
+        top = QtGui.QHBoxLayout()
         top.setContentsMargins(3, 3, 3, 3)
-        label = QLabel(label)
+        label = QtGui.QLabel(label)
         top.addWidget(label)
 
-        mode = QComboBox()
+        mode = QtGui.QComboBox()
         mode.addItem('x', 'x')
         mode.addItem('y', 'y')
         mode.addItem('slice', 'slice')
@@ -110,17 +107,17 @@ class SliceWidget(QWidget):
         return self._frozen
 
 
-class DataSlice(QWidget):
+class DataSlice(QtGui.QWidget):
 
     """
     A DatSlice widget provides an inteface for selection
     slices through an N-dimensional dataset
 
-    Signals
+    QtCore.Signals
     -------
     slice_changed : triggered when the slice through the data changes
     """
-    slice_changed = Signal()
+    slice_changed = QtCore.Signal()
 
     def __init__(self, data=None, parent=None):
         """
@@ -130,7 +127,7 @@ class DataSlice(QWidget):
         self._slices = []
         self._data = None
 
-        layout = QVBoxLayout()
+        layout = QtGui.QVBoxLayout()
         layout.setSpacing(4)
         layout.setContentsMargins(0, 3, 0, 3)
         self.layout = layout
@@ -195,9 +192,9 @@ class DataSlice(QWidget):
         for s in self._slices[::-1]:
             self.layout.addWidget(s)
             if s is not self._slices[0]:
-                line = QFrame()
-                line.setFrameShape(QFrame.HLine)
-                line.setFrameShadow(QFrame.Sunken)
+                line = QtGui.QFrame()
+                line.setFrameShape(QtGui.QFrame.HLine)
+                line.setFrameShadow(QtGui.QFrame.Sunken)
                 self.layout.addWidget(line)
             s.show()  # this somehow fixes #342
 

@@ -1,12 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt.QtGui import QWidget, QListWidgetItem
+from glue.external.qt import QtGui
 from glue.external.qt.QtCore import Signal
 
 from glue.qt.qtutil import load_ui
 
 
-class ComponentSelector(QWidget):
+class ComponentSelector(QtGui.QWidget):
     """ An interface to view the components and data of a DataCollection
 
     Components can be draged and dropped.
@@ -76,7 +76,7 @@ class ComponentSelector(QWidget):
         c_list = self._ui.component_selector
         c_list.clear()
         for c in cids:
-            item = QListWidgetItem(c.label)
+            item = QtGui.QListWidgetItem(c.label)
             c_list.addItem(item)
             c_list.set_data(item, c)
 
@@ -126,7 +126,7 @@ def main():  # pragma: no cover
     import glue
     import numpy as np
     from glue.qt import get_qapp
-    from glue.external.qt.QtGui import QApplication
+    from glue.external.qt import QtGui
 
     d = glue.core.Data(label="hi")
     d2 = glue.core.Data(label="there")

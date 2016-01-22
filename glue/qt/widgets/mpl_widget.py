@@ -4,8 +4,8 @@ from __future__ import absolute_import, division, print_function
 
 from functools import partial, wraps
 
-from glue.external.qt import QtGui, is_pyqt5
-from glue.external.qt.QtCore import Signal, Qt, QTimer
+from glue.external.qt import QtGui, QtCore, is_pyqt5
+from glue.external.qt.QtCore import Qt
 
 if is_pyqt5():
     from matplotlib.backends.backend_qt5 import FigureManagerQT as FigureManager
@@ -48,11 +48,11 @@ class MplCanvas(FigureCanvas):
 
     """Class to represent the FigureCanvas widget"""
 
-    rightDrag = Signal(float, float)
-    leftDrag = Signal(float, float)
-    homeButton = Signal()
-    resize_begin = Signal()
-    resize_end = Signal()
+    rightDrag = QtCore.Signal(float, float)
+    leftDrag = QtCore.Signal(float, float)
+    homeButton = QtCore.Signal()
+    resize_begin = QtCore.Signal()
+    resize_end = QtCore.Signal()
 
     def __init__(self):
         self._draw_count = 0
@@ -71,7 +71,7 @@ class MplCanvas(FigureCanvas):
         self.manager = FigureManager(self, 0)
         matplotlib.interactive(interactive)
 
-        self._resize_timer = QTimer()
+        self._resize_timer = QtCore.QTimer()
         self._resize_timer.setInterval(250)
         self._resize_timer.setSingleShot(True)
         self._resize_timer.timeout.connect(self._on_timeout)
@@ -129,8 +129,8 @@ class MplWidget(QtGui.QWidget):
     """Widget defined in Qt Designer"""
 
     # signals
-    rightDrag = Signal(float, float)
-    leftDrag = Signal(float, float)
+    rightDrag = QtCore.Signal(float, float)
+    leftDrag = QtCore.Signal(float, float)
 
     def __init__(self, parent=None):
         # initialization of Qt MainWindow widget

@@ -1,17 +1,17 @@
-from glue.external.qt.QtGui import QTableWidget, QTableWidgetItem
+from glue.external.qt import QtGui
 from glue.external.qt.QtCore import Qt
 
 
 class SettingsEditor(object):
 
     def __init__(self, app):
-        w = QTableWidget(parent=None)
+        w = QtGui.QTableWidget(parent=None)
         w.setColumnCount(2)
         w.setRowCount(len(list(app.settings)))
         w.setHorizontalHeaderLabels(["Setting", "Value"])
         for row, (key, value) in enumerate(app.settings):
-            k = QTableWidgetItem(key)
-            v = QTableWidgetItem(str(value))
+            k = QtGui.QTableWidgetItem(key)
+            v = QtGui.QTableWidgetItem(str(value))
             k.setFlags(k.flags() ^ (Qt.ItemIsEditable | Qt.ItemIsSelectable))
             w.setItem(row, 0, k)
             w.setItem(row, 1, v)

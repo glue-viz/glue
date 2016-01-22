@@ -199,13 +199,13 @@ def execute_script(script):
 
 def get_splash():
     """Instantiate a splash screen"""
-    from glue.external.qt.QtGui import QSplashScreen, QPixmap
+    from glue.external.qt import QtGui
     from glue.external.qt.QtCore import Qt
     import os
 
     pth = os.path.join(os.path.dirname(__file__), 'logo.png')
-    pm = QPixmap(pth)
-    splash = QSplashScreen(pm, Qt.WindowStaysOnTopHint)
+    pm = QtGui.QPixmap(pth)
+    splash = QtGui.QSplashScreen(pm, Qt.WindowStaysOnTopHint)
     splash.show()
 
     return splash

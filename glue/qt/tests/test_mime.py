@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt.QtGui import QWidget, QDrag
+from glue.external.qt import QtGui
 from glue.external.qt.QtCore import QMimeData, Qt
 from glue.external.qt.QtTest import QTest
 
@@ -9,7 +9,7 @@ from .. import mime
 import pytest
 
 
-class TestWidget(QWidget):
+class TestWidget(QtGui.QWidget):
     def __init__(self, out_mime, parent=None):
         super(TestWidget, self).__init__(parent)
         self.setAcceptDrops(True)
@@ -27,7 +27,7 @@ class TestWidget(QWidget):
 
     def mousePressEvent(self, event):
         print('mouse event')
-        drag = QDrag(self)
+        drag = QtGui.QDrag(self)
         drag.setMimeData(self.out_mime)
         drop_action = drag.exec_()
         print(drop_action)

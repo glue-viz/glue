@@ -2,10 +2,10 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from ..table_widget import DataTableModel
+from glue.external.qt.QtCore import Qt
 from glue.core import Data
 
-from glue.external.qt.QtCore import Qt
+from ..table_widget import DataTableModel
 
 
 class TestDataTableModel(object):

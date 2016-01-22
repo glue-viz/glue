@@ -1,4 +1,4 @@
-from glue.external.qt.QtCore import QPoint
+from glue.external.qt import QtCore
 from glue.external.qt.QtGui import QMainWindow
 from glue.core import Data
 
@@ -24,5 +24,5 @@ def test_style_dialog():
                  x=[[1, 2], [3, 4]],
                  y=[[2, 3], [4, 5]])
 
-    pos = QPoint(10, 10)
+    pos = QtCore.QPoint(10, 10)
     st = NonBlockingStyleDialog.dropdown_editor(image, pos)
