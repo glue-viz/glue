@@ -8,12 +8,13 @@ from mock import MagicMock
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
+from glue.external.axescache import AxesCache
 from glue.utils.misc import DeferredMethod
 
 
 __all__ = ['renderless_figure', 'all_artists', 'new_artists', 'remove_artists',
            'get_extent', 'view_cascade', 'fast_limits', 'defer_draw',
-           'color2rgb', 'point_contour']
+           'color2rgb', 'point_contour', 'cache_axes']
 
 
 def renderless_figure():
@@ -243,3 +244,24 @@ def freeze_margins(axes, margins=[1, 1, 1, 1]):
 
     axes.resizer = AxesResizer(axes, margins)
     axes.figure.canvas.mpl_connect('resize_event', axes.resizer.on_resize)
+
+
+def cache_axes(axes, toolbar):
+    """ Setup an caching for an axes object
+
+    After this, cached renders will be used to quickly
+    re-render an axes during window resizing or
+    interactive pan/zooming.
+
+    :param axes: The matplotlib Axes object to cache
+    :param toolbar: The GlueToolbar managing the axes' canvas
+
+    :rtype: The AxesCache instance
+    """
+    canvas = axes.figure.canvas
+    cache = AxesCache(axes)
+    canvas.resize_begin.connect(cache.enable)
+    canvas.resize_end.connect(cache.disable)
+    toolbar.pan_begin.connect(cache.enable)
+    toolbar.pan_end.connect(cache.disable)
+    return cache

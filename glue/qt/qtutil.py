@@ -11,7 +11,6 @@ import pkg_resources
 
 from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui, QtCore
-from glue.external.axescache import AxesCache
 from glue import core
 from glue.qt import ui, icons
 from glue.qt.decorators import set_cursor
@@ -589,27 +588,6 @@ class ComponentIDCombo(QtGui.QComboBox, core.HubListener):
                       core.message.ComponentsChangedMessage,
                       handler=lambda x: self.refresh_components,
                       filter=lambda x: x.data is self._data)
-
-
-def cache_axes(axes, toolbar):
-    """ Setup an caching for an axes object
-
-    After this, cached renders will be used to quickly
-    re-render an axes during window resizing or
-    interactive pan/zooming.
-
-    :param axes: The matplotlib Axes object to cache
-    :param toolbar: The GlueToolbar managing the axes' canvas
-
-    :rtype: The AxesCache instance
-    """
-    canvas = axes.figure.canvas
-    cache = AxesCache(axes)
-    canvas.resize_begin.connect(cache.enable)
-    canvas.resize_end.connect(cache.disable)
-    toolbar.pan_begin.connect(cache.enable)
-    toolbar.pan_end.connect(cache.disable)
-    return cache
 
 
 if __name__ == "__main__":
