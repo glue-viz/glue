@@ -18,9 +18,6 @@ from glue.qt.mime import LAYERS_MIME_TYPE
 from glue.utils.qt import (QMessageBoxPatched as QMessageBox, mpl_to_qt4_color,
                            qt4_to_mpl_color, tint_pixmap, GlueItemWidget)
 
-# We import nonpartial here for convenience
-from glue.utils import nonpartial
-
 
 def data_wizard():
     """ QT Dialog to load a file into a new data object
