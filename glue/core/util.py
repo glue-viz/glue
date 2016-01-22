@@ -12,7 +12,6 @@ __all__ = ["relim", "split_component_view", "join_component_view",
            "row_lookup"]
 
 
-
 def relim(lo, hi, log=False):
     logging.getLogger(__name__).debug("Inputs to relim: %r %r", lo, hi)
     x, y = lo, hi

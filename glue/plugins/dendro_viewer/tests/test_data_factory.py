@@ -6,7 +6,8 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
 
-from glue.core.tests.util import make_file
+from glue.tests.helpers import make_file
+
 from glue.core.data_factories.helpers import find_factory
 from glue.core import data_factories as df
 from glue.tests.helpers import requires_astrodendro

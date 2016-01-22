@@ -4,9 +4,8 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
 
-from glue.core.tests.util import make_file
 from glue.core import data_factories as df
-from glue.tests.helpers import requires_h5py, requires_astropy
+from glue.tests.helpers import requires_h5py, requires_astropy, make_file
 
 from ..helpers import auto_data
 

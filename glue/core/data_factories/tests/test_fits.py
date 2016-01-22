@@ -8,8 +8,9 @@ import numpy as np
 from numpy.testing import assert_array_equal
 
 from glue.core import data_factories as df
-from glue.core.tests.util import make_file
-from glue.tests.helpers import requires_astropy, requires_astropy_ge_04
+
+from glue.tests.helpers import (requires_astropy, requires_astropy_ge_04,
+                                make_file)
 
 from ..fits import fits_reader
 
