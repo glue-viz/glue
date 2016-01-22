@@ -1,5 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
+from glue.external.qt import QtGui
+from glue.external.qt.QtCore import Qt
+from glue.utils.qt import get_text
+
+__all__ = ['update_combobox', 'GlueTabBar']
+
+
 def update_combobox(combo, labeldata):
     """
     Redefine the items in a QComboBox
@@ -50,3 +57,26 @@ def update_combobox(combo, labeldata):
     # called.
     if idx == index or idx == -1:
         combo.currentIndexChanged.emit(index)
+
+
+class GlueTabBar(QtGui.QTabBar):
+
+    def __init__(self, *args, **kwargs):
+        super(GlueTabBar, self).__init__(*args, **kwargs)
+
+    def rename_tab(self, index=None):
+        """ Prompt user to rename a tab
+        :param index: integer. Index of tab to edit. Defaults to current index
+        """
+        index = index or self.currentIndex()
+        label = get_text("New Tab Label")
+        if not label:
+            return
+        self.setTabText(index, label)
+
+    def mouseDoubleClickEvent(self, event):
+        if event.button() != Qt.LeftButton:
+            return
+        index = self.tabAt(event.pos())
+        if index >= 0:
+            self.rename_tab(index)

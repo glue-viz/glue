@@ -16,8 +16,7 @@ from glue.qt import ui, icons
 from glue.qt.decorators import set_cursor
 from glue.qt.mime import LAYERS_MIME_TYPE
 from glue.utils.qt import (QMessageBoxPatched as QMessageBox, mpl_to_qt4_color,
-                           qt4_to_mpl_color, tint_pixmap, get_text, PyMimeData,
-                           GlueItemWidget)
+                           qt4_to_mpl_color, tint_pixmap, GlueItemWidget)
 
 # We import nonpartial here for convenience
 from glue.utils import nonpartial
@@ -238,29 +237,6 @@ class GlueActionButton(QtGui.QPushButton):
         self.setToolTip(self._action.toolTip())
         self.setWhatsThis(self._action.whatsThis())
         self.setEnabled(self._action.isEnabled())
-
-
-class GlueTabBar(QtGui.QTabBar):
-
-    def __init__(self, *args, **kwargs):
-        super(GlueTabBar, self).__init__(*args, **kwargs)
-
-    def rename_tab(self, index=None):
-        """ Prompt user to rename a tab
-        :param index: integer. Index of tab to edit. Defaults to current index
-        """
-        index = index or self.currentIndex()
-        label = get_text("New Tab Label")
-        if not label:
-            return
-        self.setTabText(index, label)
-
-    def mouseDoubleClickEvent(self, event):
-        if event.button() != Qt.LeftButton:
-            return
-        index = self.tabAt(event.pos())
-        if index >= 0:
-            self.rename_tab(index)
 
 
 class RGBEdit(QtGui.QWidget):
