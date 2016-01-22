@@ -4,14 +4,24 @@ import logging
 from functools import wraps
 
 import numpy as np
+from mock import MagicMock
+import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 from glue.utils.misc import DeferredMethod
 
 
-__all__ = ['all_artists', 'new_artists', 'remove_artists', 'get_extent',
-           'view_cascade', 'fast_limits', 'defer_draw',
+__all__ = ['renderless_figure', 'all_artists', 'new_artists', 'remove_artists',
+           'get_extent', 'view_cascade', 'fast_limits', 'defer_draw',
            'color2rgb', 'point_contour']
+
+
+def renderless_figure():
+    # Matplotlib figure that skips the render step, for test speed
+    fig = plt.figure()
+    fig.canvas.draw = MagicMock()
+    plt.close('all')
+    return fig
 
 
 def all_artists(fig):
