@@ -2,6 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 from ...external.qt import QtCore
 
+__all__ = ['Worker']
+
 
 class Worker(QtCore.QThread):
     result = QtCore.Signal(object)

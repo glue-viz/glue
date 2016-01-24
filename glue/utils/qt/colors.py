@@ -7,22 +7,24 @@ from glue.external.qt import QtGui
 
 from matplotlib import cm
 
+__all__ = ['mpl_to_qt4_color', 'qt4_to_mpl_color', 'cmap2pixmap', 'tint_pixmap']
+
 
 def mpl_to_qt4_color(color, alpha=1.0):
-    """ Convert a matplotlib color stirng into a Qt QColor object
+    """
+    Convert a matplotlib color stirng into a Qt QColor object
 
-    :param color:
+    Parameters
+    ----------
+    color : str
        A color specification that matplotlib understands
-    :type color: str
+    alpha : float
+        Optional opacity. Float in range [0,1]
 
-    :param alpha:
-       Optional opacity. Float in range [0,1]
-    :type alpha: float
-
-    * Returns *
-    A QColor object representing color
-
-    :rtype: QColor
+    Returns
+    -------
+    qcolor : ``QColor``
+        A QColor object representing the converted color
     """
     if color in [None, 'none', 'None']:
         return QtGui.QColor(0, 0, 0, 0)
@@ -33,30 +35,41 @@ def mpl_to_qt4_color(color, alpha=1.0):
     return QtGui.QColor(r * 255, g * 255, b * 255, alpha)
 
 
-def qt4_to_mpl_color(color):
+def qt4_to_mpl_color(qcolor):
     """
     Convert a QColor object into a string that matplotlib understands
 
     Note: This ignores opacity
 
-    :param color: QColor instance
-
-    *Returns*
+    Parameters
+    ----------
+    qcolor : ``QColor``
+        The Qt color
+        
+    Returns
+    -------
+    color : str
         A hex string describing that color
     """
-    hexid = color.name()
+    hexid = qcolor.name()
     return str(hexid)
 
 
 def cmap2pixmap(cmap, steps=50):
-    """Convert a maplotlib colormap into a QPixmap
+    """
+    Convert a maplotlib colormap into a QPixmap
 
-    :param cmap: The colormap to use
-    :type cmap: Matplotlib colormap instance (e.g. matplotlib.cm.gray)
-    :param steps: The number of color steps in the output. Default=50
-    :type steps: int
+    Parameters
+    ----------
+    cmap : `~matplotlib.colors.Colormap`
+        The colormap to use
+    steps : int
+        The number of color steps in the output. Default=50
 
-    :rtype: QPixmap
+    Returns
+    -------
+    pixmap : ``QPixmap``
+        The QPixmap instance
     """
     sm = cm.ScalarMappable(cmap=cmap)
     sm.norm.vmin = 0.0
@@ -75,12 +88,20 @@ def cmap2pixmap(cmap, steps=50):
     
     
 def tint_pixmap(bm, color):
-    """Re-color a monochrome pixmap object using `color`
+    """
+    Re-color a monochrome pixmap object using `color`
 
-    :param bm: QBitmap instance
-    :param color: QColor instance
+    Parameters
+    ----------
+    bm : ``QBitmap``
+        The Pixmap object
+    color : ``QColor``
+        The Qt color
 
-    :rtype: QPixmap. The new pixma;
+    Returns
+    -------
+    pixmap : ``QPixmap``
+        The new pixmap
     """
     if bm.depth() != 1:
         raise TypeError("Input pixmap must have a depth of 1: %i" % bm.depth())

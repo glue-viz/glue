@@ -16,8 +16,9 @@ from glue.utils import lookup_class
 
 
 class UpdateProperty(CallbackProperty):
-
-    """Descriptor that calls client's sync_all() method when changed"""
+    """
+    Descriptor that calls client's sync_all() method when changed
+    """
 
     def __init__(self, default, relim=False):
         super(UpdateProperty, self).__init__(default)
@@ -43,10 +44,10 @@ def update_on_true(func):
 
 
 class HistogramClient(Client):
-
     """
     A client class to display histograms
     """
+
     normed = UpdateProperty(False)
     cumulative = UpdateProperty(False)
     autoscale = UpdateProperty(True)
@@ -71,9 +72,10 @@ class HistogramClient(Client):
 
     @property
     def bins(self):
-        """ An array of bin edges for the histogram.
+        """
+        An array of bin edges for the histogram.
 
-        Returns None if no histogram has been computed yet.
+        This returns `None` if no histogram has been computed yet.
         """
         for art in self._artists:
             if not isinstance(art, HistogramLayerArtist):
@@ -314,7 +316,7 @@ class HistogramClient(Client):
 
         Parameters
         ----------
-        component: ComponentID
+        component: `~glue.core.component_id.ComponentID`
             The new component to plot
         """
 

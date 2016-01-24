@@ -36,15 +36,20 @@ class Aggregate(object):
 
     def __init__(self, data, attribute, zax, slc, zlim):
         """
-        :param data: :class:`~glue.core.data.Data` object
-        :param attribute: :class:`~glue.core.component_id.ComponentID`
-        :param zax: integer. Which axis to collapse over
-        :param slc: tuple of integers, 'x', or 'y'. Describes the
-                    current 2D slice through the image. Used to
-                    define the orientation, as well as axis values
-                    for remaining dimensions of >3D cubes
-        :param zlim: tuple of [lo, hi), describing the limits
-                     of the slab to collapse over
+        Parameters
+        ----------
+        data : :class:`~glue.core.data.Data`
+        attribute : :class:`~glue.core.component_id.ComponentID`
+        zax : int
+            Which axis to collapse over.
+        slc : tuple of int
+            Describes the
+            current 2D slice through the image. Used to
+            define the orientation, as well as axis values
+            for remaining dimensions of >3D cubes
+        zlim : tuple of float
+            Float values of [lo, hi), describing the limits
+            of the slab to collapse over
         """
         self.data = data
         self.attribute = attribute

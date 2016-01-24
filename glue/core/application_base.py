@@ -157,11 +157,12 @@ class Application(HubListener):
         """ Report an error message to the user.
         Must be implemented in a subclass
 
-        :param message: the message to display
-        :type message: str
-
-        :detail: Longer context about the error
-        :type message: str
+        Parameters
+        ----------
+        message : str
+            The message to display
+        detail : str
+            Longer context about the error
         """
         raise NotImplementedError()
 
@@ -185,12 +186,14 @@ class Application(HubListener):
 
     @classmethod
     def add_datasets(cls, data_collection, datasets):
-        """
-        Utility method to interactively add datasets to a
+        """ Utility method to interactively add datasets to a
         data_collection
 
-        :param data_collection: :class:`~glue.core.data_collection.DataCollection`
-        :param datasets: one or more :class:`~glue.core.data.Data` instances
+        Parameters
+        ----------
+        data_collection : :class:`~glue.core.data_collection.DataCollection`
+        datasets : :class:`~glue.core.data.Data` or list of Data
+            One or more :class:`~glue.core.data.Data` instances
 
         Adds datasets to the collection
         """
@@ -297,8 +300,10 @@ class ViewerBase(HubListener, PropertySetMixin):
 
         This must be overridden by a subclass
 
-        :param data: Data object to add
-        :type data: :class:`~glue.core.data.Data`
+        Parameters
+        ----------
+        data : :class:`~glue.core.data.Data`
+            Data object to add.
         """
         raise NotImplementedError
 
@@ -307,17 +312,20 @@ class ViewerBase(HubListener, PropertySetMixin):
 
         This must be overridden by a subclass
 
-        :param subset: Subset instance to add
-        :type subset: :class:`~glue.core.subset.Subset`
+        Parameters
+        ----------
+        subset : :class:`~glue.core.subset.Subset`
+            Subset instance to add.
         """
         raise NotImplementedError
 
     def apply_roi(self, roi):
-        """
-        Apply an ROI to the client
+        """ Apply an ROI to the client
 
-        :param roi: The ROI to apply
-        :type roi: :class:`~glue.core.roi.Roi`
+        Parameters
+        ----------
+        roi : :class:`~glue.core.roi.Roi`
+            The ROI to apply.
         """
         cmd = command.ApplyROI(client=self.client, roi=roi)
         self._session.command_stack.do(cmd)
@@ -339,13 +347,12 @@ class ViewerBase(HubListener, PropertySetMixin):
     def move(self, x=None, y=None):
         """ Reposition a viewer within the application.
 
-        :param x: Offset of viewer's left edge from the left edge
-                  of the parent window. Optional
-        :type x: int
-
-        :param y: Offset of the viewer's top edge from the top edge
-                  of the parent window. Optional
-        :type y: int
+        x : int, optional
+            Offset of viewer's left edge from the left edge of the parent
+            window.
+        y : int, optional
+            Offset of the viewer's top edge from the top edge of the parent
+            window.
         """
         raise NotImplementedError()
 
@@ -367,13 +374,14 @@ class ViewerBase(HubListener, PropertySetMixin):
     def viewer_size(self, value):
         """ Resize the width and/or height of the viewer
 
-        :param value: (width, height)
-
-        :param width: new width. Optional.
-        :type width: int
-
-        :param height: new height. Optional.
-        :type height: int
+        Parameters
+        ----------
+        value : tuple of int
+            The width and height of the viewer.
+        width : int, optional
+            New width.
+        height : int, optional
+            New height.
         """
         raise NotImplementedError()
 

@@ -40,18 +40,16 @@ def norm(x, vmin, vmax):
 
 def cscale(x, bias, contrast):
     """
-    Apply bias and contrast scaling. Overwrite input
+    Apply bias and contrast scaling in-place.
 
     Parameters
     ----------
     x : array
-      Values between 0 and 1
+        The input values, scaled to the [0:1] range.
     bias : float
+        The bias to apply to the data
     contrast : float
-
-    Returns
-    -------
-    The input x, scaled inplace
+        The contrast to apply to the data
     """
     x = np.subtract(x, bias, out=x)
     x = np.multiply(x, contrast, out=x)

@@ -74,8 +74,11 @@ class LayerArtistBase(PropertySetMixin):
     def __init__(self, layer):
         """Create a new LayerArtist
 
-        :param layer: Data or subset to draw
-        :type layer: :class:`~glue.core.data.Data` or `glue.core.subset.Subset`
+        Parameters
+        ----------
+        layer : :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
+            Data or Subset to draw
+        layer : :class:`~glue.core.data.Data` or `glue.core.subset.Subset`
         """
         self._visible = True
         self._zorder = 0
@@ -220,7 +223,10 @@ class ScatterLayerBase(object):
     @abstractmethod
     def get_data(self):
         """
-        Return the scatterpoint data as an (N, 2) array
+        Returns
+        -------
+        array
+            The scatterpoint data as an (N, 2) array
         """
         pass
 

@@ -112,4 +112,7 @@ Utilities
 .. automodapi:: glue.utils.misc
    :no-inheritance-diagram:
 
+.. automodapi:: glue.utils.qt
+   :no-inheritance-diagram:
+
 

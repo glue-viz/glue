@@ -8,8 +8,9 @@ __all__ = ['GlueItemWidget']
 
 class GlueItemWidget(object):
 
-    """ A mixin for QtGui.QListWidget/GlueTreeWidget subclasses, that
-    provides drag+drop funtionality.
+    """
+    A mixin for QtGui.QListWidget/GlueTreeWidget subclasses, that provides
+    drag+drop funtionality.
     """
     # Implementation detail: QXXWidgetItems are unhashable in PySide,
     # and cannot be used as dictionary keys. we hash on IDs instead
@@ -22,15 +23,25 @@ class GlueItemWidget(object):
         self.setDragEnabled(True)
 
     def mimeTypes(self):
-        """Return the list of MIME Types supported for this object"""
+        """
+        Return the list of MIME Types supported for this object.
+        """
         types = [self.SUPPORTED_MIME_TYPE]
         return types
 
     def mimeData(self, selected_items):
-        """Return a list of MIME data associated with the each selected item
+        """
+        Return a list of MIME data associated with the each selected item.
 
-        :param selected_items: List of QtGui.QListWidgetItems or QtGui.QTreeWidgetItems
-        :rtype: List of MIME objects
+        Parameters
+        ----------
+        selected_items : list
+            A list of ``QtGui.QListWidgetItems`` or ``QtGui.QTreeWidgetItems`` instances
+            
+        Returns
+        -------
+        result : list
+            A list of MIME objects
         """
         try:
             data = [self.get_data(i) for i in selected_items]
@@ -45,13 +56,16 @@ class GlueItemWidget(object):
         return result
 
     def get_data(self, item):
-        """Convenience method to fetch the data associated with a
-        QxxWidgetItem"""
+        """
+        Convenience method to fetch the data associated with a ``QxxWidgetItem``.
+        """
         # return item.data(Qt.UserRole)
         return self._mime_data[id(item)]
 
     def set_data(self, item, data):
-        """Convenience method to set data associated with a QxxWidgetItem"""
+        """
+        Convenience method to set data associated with a ``QxxWidgetItem``.
+        """
         #item.setData(Qt.UserRole, data)
         self._mime_data[id(item)] = data
 
