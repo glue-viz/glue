@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from glue.core import Data
 
 from ..layer_artist import ScatterLayerArtist
-from .util import renderless_figure
+from glue.utils import renderless_figure
 
 FIGURE = renderless_figure()
 

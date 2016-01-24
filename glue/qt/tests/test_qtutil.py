@@ -14,7 +14,9 @@ from glue.clients.layer_artist import RGBImageLayerArtist
 
 from .. import qtutil
 from ..qtutil import GlueDataDialog
-from ..qtutil import pretty_number, PythonListModel, update_combobox
+
+from ...utils.array import pretty_number
+from ...utils.qt import PythonListModel, update_combobox
 
 
 def test_glue_action_button():
@@ -124,27 +126,6 @@ def test_data_wizard_error_cancel():
             assert qtutil.data_wizard() == []
 
 
-class TestPrettyNumber(object):
-
-    def test_single(self):
-        assert pretty_number([1]) == ['1']
-        assert pretty_number([0]) == ['0']
-        assert pretty_number([-1]) == ['-1']
-        assert pretty_number([1.0001]) == ['1']
-        assert pretty_number([1.01]) == ['1.01']
-        assert pretty_number([1e-5]) == ['1.000e-05']
-        assert pretty_number([1e5]) == ['1.000e+05']
-        assert pretty_number([3.3]) == ['3.3']
-
-    def test_list(self):
-        assert pretty_number([1, 2, 3.3, 1e5]) == ['1', '2', '3.3',
-                                                   '1.000e+05']
-
-
-def test_qt4_to_mpl_color():
-    assert qtutil.qt4_to_mpl_color(QtGui.QColor(255, 0, 0)) == '#ff0000'
-    assert qtutil.qt4_to_mpl_color(QtGui.QColor(255, 255, 255)) == '#ffffff'
-
 
 def test_edit_color():
     with patch('glue.qt.qtutil.QtGui.QColorDialog') as d:
@@ -210,41 +191,6 @@ def test_edit_layer_label_cancel():
         assert s.label != 'rejected label'
 
 
-def test_pick_item():
-    items = ['a', 'b', 'c']
-    labels = ['1', '2', '3']
-    with patch('glue.qt.qtutil.QtGui.QInputDialog') as d:
-        d.getItem.return_value = '1', True
-        assert qtutil.pick_item(items, labels) == 'a'
-        d.getItem.return_value = '2', True
-        assert qtutil.pick_item(items, labels) == 'b'
-        d.getItem.return_value = '3', True
-        assert qtutil.pick_item(items, labels) == 'c'
-        d.getItem.return_value = '3', False
-        assert qtutil.pick_item(items, labels) is None
-
-
-def test_pick_class():
-    class Foo:
-        pass
-
-    class Bar:
-        pass
-    Bar.LABEL = 'Baz'
-    with patch('glue.qt.qtutil.pick_item') as d:
-        qtutil.pick_class([Foo, Bar])
-        d.assert_called_once_with([Foo, Bar], ['Foo', 'Baz'])
-
-
-def test_get_text():
-    with patch('glue.qt.qtutil.QtGui.QInputDialog') as d:
-        d.getText.return_value = 'abc', True
-        assert qtutil.get_text() == 'abc'
-
-        d.getText.return_value = 'abc', False
-        assert qtutil.get_text() is None
-
-
 class TestGlueListWidget(object):
 
     def setup_method(self, method):
@@ -290,117 +236,3 @@ class TestRGBEdit(object):
             assert self.artist.contrast_layer == color
 
 
-class TestListModel(object):
-
-    def test_row_count(self):
-        assert PythonListModel([]).rowCount() == 0
-        assert PythonListModel([1]).rowCount() == 1
-        assert PythonListModel([1, 2]).rowCount() == 2
-
-    def test_data_display(self):
-        m = PythonListModel([1, 'a'])
-        i = m.index(0)
-        assert m.data(i, role=Qt.DisplayRole) == '1'
-
-        i = m.index(1)
-        assert m.data(i, role=Qt.DisplayRole) == 'a'
-
-    def test_data_edit(self):
-        m = PythonListModel([1, 'a'])
-        i = m.index(0)
-        assert m.data(i, role=Qt.EditRole) == '1'
-
-        i = m.index(1)
-        assert m.data(i, role=Qt.EditRole) == 'a'
-
-    def test_data_user(self):
-        m = PythonListModel([1, 'a'])
-        i = m.index(0)
-        assert m.data(i, role=Qt.UserRole) == 1
-
-        i = m.index(1)
-        assert m.data(i, role=Qt.UserRole) == 'a'
-
-    def test_itemget(self):
-        m = PythonListModel([1, 'a'])
-        assert m[0] == 1
-        assert m[1] == 'a'
-
-    def test_itemset(self):
-        m = PythonListModel([1, 'a'])
-        m[0] = 'b'
-        assert m[0] == 'b'
-
-    @pytest.mark.parametrize('items', ([], [1, 2, 3], [1]))
-    def test_len(self, items):
-        assert len(PythonListModel(items)) == len(items)
-
-    def test_pop(self):
-        m = PythonListModel([1, 2, 3])
-        assert m.pop() == 3
-        assert len(m) == 2
-        assert m.pop(0) == 1
-        assert len(m) == 1
-        assert m[0] == 2
-
-    def test_append(self):
-        m = PythonListModel([])
-        m.append(2)
-        assert m[0] == 2
-        m.append(3)
-        assert m[1] == 3
-        m.pop()
-        m.append(4)
-        assert m[1] == 4
-
-    def test_extend(self):
-        m = PythonListModel([])
-        m.extend([2, 3])
-        assert m[0] == 2
-        assert m[1] == 3
-
-    def test_insert(self):
-        m = PythonListModel([1, 2, 3])
-        m.insert(1, 5)
-        assert m[1] == 5
-
-    def test_iter(self):
-        m = PythonListModel([1, 2, 3])
-        assert list(m) == [1, 2, 3]
-
-
-def test_update_combobox():
-    combo = QtGui.QComboBox()
-    update_combobox(combo, [('a', 1), ('b', 2)])
-    update_combobox(combo, [('c', 3)])
-
-
-def test_update_combobox_indexchanged():
-    # Regression test for bug that caused currentIndexChanged to not be
-    # emitted if the new index happened to be the same as the old one but the
-    # label data was different.
-
-    class MyComboBox(QtGui.QComboBox):
-
-        def __init__(self, *args, **kwargs):
-            self.change_count = 0
-            super(MyComboBox, self).__init__(*args, **kwargs)
-            self.currentIndexChanged.connect(self.changed)
-
-        def changed(self):
-            self.change_count += 1
-
-    combo = MyComboBox()
-    update_combobox(combo, [('a', 1), ('b', 2)])
-    update_combobox(combo, [('c', 3)])
-
-    assert combo.change_count == 2
-    assert combo.currentIndex() == 0
-
-    combo = MyComboBox()
-    update_combobox(combo, [('a', 1), ('b', 2)])
-    update_combobox(combo, [('a', 1), ('b', 3)])
-    update_combobox(combo, [('a', 3), ('b', 1)])
-
-    assert combo.change_count == 3
-    assert combo.currentIndex() == 1

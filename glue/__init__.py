@@ -12,6 +12,10 @@ else:
     setapi('QString', 2)
     setapi('QVariant', 2)
 
+import sys
+from ._mpl_backend import MatplotlibBackendSetter
+sys.meta_path.append(MatplotlibBackendSetter())
+
 import logging
 from logging import NullHandler
 

@@ -4,7 +4,7 @@ from glue.external.qt import QtGui
 from glue.core.edit_subset_mode import (EditSubsetMode, OrMode, AndNotMode,
                                         AndMode, XorMode, ReplaceMode)
 from glue.qt.actions import act
-from glue.qt.qtutil import nonpartial
+from glue.utils import nonpartial
 
 
 def set_mode(mode):

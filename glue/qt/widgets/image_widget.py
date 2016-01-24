@@ -7,17 +7,17 @@ from glue.core.callback_property import add_callback, delay_callback
 from glue import core
 from glue.clients.ds9norm import DS9Normalize
 from glue.clients.image_client import MplImageClient
-from glue.clients.layer_artist import Pointer
 from glue.qt.glue_toolbar import GlueToolbar
 from glue.qt.mouse_mode import (RectangleMode, CircleMode, PolyMode,
                                 ContrastMode)
-from glue.qt.qtutil import cmap2pixmap, load_ui, get_icon, nonpartial, update_combobox
-from glue.qt.widget_properties import CurrentComboProperty, ButtonProperty, connect_current_combo, _find_combo_data
+from glue.qt.qtutil import load_ui, get_icon
+from glue.utils.qt.widget_properties import CurrentComboProperty, ButtonProperty, connect_current_combo, _find_combo_data
 from glue.qt.widgets.data_slice_widget import DataSlice
 from glue.qt.widgets.data_viewer import DataViewer
 from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow
 from glue.qt.widgets.mpl_widget import MplWidget, defer_draw
-
+from glue.utils import nonpartial, Pointer
+from glue.utils.qt import cmap2pixmap, update_combobox
 
 WARN_THRESH = 10000000  # warn when contouring large images
 

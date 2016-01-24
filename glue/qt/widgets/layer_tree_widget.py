@@ -13,10 +13,11 @@ from glue import core
 from glue.qt import qtutil
 from glue.qt.actions import act as _act
 from glue.qt.link_editor import LinkEditor
-from glue.qt.qtutil import get_icon, nonpartial
+from glue.qt.qtutil import get_icon
 from glue.qt.ui.layertree import Ui_LayerTree
 from glue.qt.widgets.custom_component_widget import CustomComponentWidget
 from glue.qt.widgets.subset_facet import SubsetFacet
+from glue.utils import nonpartial
 
 
 @core.decorators.singleton

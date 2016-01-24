@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import logging
 from abc import ABCMeta, abstractmethod
 
-from glue.core.util import CallbackMixin
+from glue.utils import CallbackMixin
 from glue.core.data_factories import load_data
 
 

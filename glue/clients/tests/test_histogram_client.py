@@ -15,7 +15,7 @@ from glue.core.data_collection import DataCollection
 
 from ..histogram_client import HistogramClient
 from ..layer_artist import HistogramLayerArtist
-from .util import renderless_figure
+from glue.utils import renderless_figure
 
 
 FIGURE = renderless_figure()

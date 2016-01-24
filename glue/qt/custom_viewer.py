@@ -86,7 +86,8 @@ from glue.utils import nonpartial, as_list, all_artists, new_artists, remove_art
 from glue import core
 
 from glue.qt.widgets.data_viewer import DataViewer
-from glue.qt import widget_properties as wp
+from glue.utils.qt.widget_properties import (ValueProperty, ButtonProperty,
+                                             CurrentComboProperty)
 from glue.qt.widgets import MplWidget
 from glue.qt.glue_toolbar import GlueToolbar
 from glue.qt.mouse_mode import PolyMode, RectangleMode
@@ -1089,7 +1090,7 @@ class NumberElement(FormElement):
 
         e = FormElement.auto((0., 1.))
     """
-    state = wp.ValueProperty('ui')
+    state = ValueProperty('ui')
 
     @classmethod
     def recognizes(cls, params):
@@ -1119,7 +1120,7 @@ class TextBoxElement(FormElement):
 
     Everything after the underscore is taken as the default value.
     """
-    state = wp.ValueProperty('ui')
+    state = ValueProperty('ui')
 
     def _build_ui(self):
         self._widget = GenericTextBox()
@@ -1152,7 +1153,7 @@ class FloatElement(FormElement):
 
     The number itself is taken as the default value.
     """
-    state = wp.ValueProperty('ui')
+    state = ValueProperty('ui')
 
     def _build_ui(self):
         self._widget = GenericTextBox()
@@ -1284,7 +1285,7 @@ class BoolElement(FormElement):
 
         e = FormElement.auto(False)
     """
-    state = wp.ButtonProperty('ui')
+    state = ButtonProperty('ui')
 
     @classmethod
     def recognizes(cls, params):
@@ -1348,7 +1349,7 @@ class ComponenentElement(FormElement, core.hub.HubListener):
 
         e = FormElement.auto('att')
     """
-    _component = wp.CurrentComboProperty('ui')
+    _component = CurrentComboProperty('ui')
 
     @property
     def state(self):
@@ -1426,7 +1427,7 @@ class ChoiceElement(FormElement):
         e = FormElement.auto({'a':1, 'b':2})
         e = FormElement.auto(['a', 'b', 'c'])
     """
-    state = wp.CurrentComboProperty('ui')
+    state = CurrentComboProperty('ui')
 
     @classmethod
     def recognizes(cls, params):

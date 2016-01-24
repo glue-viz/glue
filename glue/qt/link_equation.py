@@ -3,9 +3,9 @@ from __future__ import absolute_import, division, print_function
 from inspect import getargspec
 from collections import OrderedDict
 
-from glue.external.qt import QtGui
+from glue.external.qt import QtGui, is_pyside
 from glue import core
-from glue.qt.qtutil import load_ui, is_pyside
+from glue.qt.qtutil import load_ui
 
 
 def function_label(function):

@@ -13,7 +13,7 @@ from glue.tests import example_data
 
 from ..image_client import MplImageClient
 from ..layer_artist import RGBImageLayerArtist, ImageLayerArtist
-from .util import renderless_figure
+from glue.utils import renderless_figure
 
 
 FIGURE = renderless_figure()

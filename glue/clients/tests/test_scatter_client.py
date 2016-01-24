@@ -21,7 +21,7 @@ from glue.core.subset import RangeSubsetState, CategoricalRoiSubsetState, AndSta
 from glue.tests import example_data
 
 from ..scatter_client import ScatterClient
-from .util import renderless_figure
+from glue.utils import renderless_figure
 
 
 # share matplotlib instance, and disable rendering, for speed

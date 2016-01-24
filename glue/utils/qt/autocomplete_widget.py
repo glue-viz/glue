@@ -9,6 +9,7 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.external.qt import QtGui
+from glue.external.qt.QtCore import Qt
 
 
 __all__ = ["CompletionTextEdit"]

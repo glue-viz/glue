@@ -2,6 +2,10 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
+import zlib
+import tempfile
+from contextlib import contextmanager
 from distutils.version import LooseVersion
 
 import pytest
@@ -55,3 +59,26 @@ requires_pil_or_skimage = pytest.mark.skipif(str(not SKIMAGE_INSTALLED and not P
 GINGA_INSTALLED, requires_ginga = make_skipper('ginga')
 
 H5PY_INSTALLED, requires_h5py = make_skipper('h5py')
+
+
+@contextmanager
+def make_file(contents, suffix, decompress=False):
+    """Context manager to write data to a temporary file,
+    and delete on exit
+
+    :param contents: Data to write. string
+    :param suffix: File suffix. string
+    """
+    if decompress:
+        contents = zlib.decompress(contents)
+
+    try:
+        _, fname = tempfile.mkstemp(suffix=suffix)
+        with open(fname, 'wb') as outfile:
+            outfile.write(contents)
+        yield fname
+    finally:
+        try:
+            os.unlink(fname)
+        except WindowsError:  # on Windows the unlink can fail
+            pass

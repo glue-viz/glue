@@ -24,7 +24,8 @@ from glue.core.callback_property import CallbackProperty
 from glue.core import roi
 from glue.qt import get_qapp
 from glue.qt import qt_roi
-from glue.qt.qtutil import get_icon, nonpartial, load_ui
+from glue.qt.qtutil import get_icon, load_ui
+from glue.utils import nonpartial
 
 
 class MouseMode(object):

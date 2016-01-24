@@ -8,12 +8,12 @@ from ginga.misc import Bunch
 from ginga.util import wcsmod
 from ginga import AstroImage, BaseImage
 
-from glue.core.util import Pointer, split_component_view
+from glue.core.util import split_component_view
 from glue.core.exceptions import IncompatibleAttribute
 from glue.clients.image_client import ImageClient
 from glue.clients.layer_artist import (LayerArtistBase,
                                        ImageLayerBase, SubsetImageLayerBase)
-from glue.utils import view_shape, stack_view, color2rgb
+from glue.utils import view_shape, stack_view, color2rgb, Pointer
 
 
 wcsmod.use('astropy')

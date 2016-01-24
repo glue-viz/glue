@@ -5,7 +5,8 @@ import numpy as np
 
 from glue.external.six import string_types, PY2
 
-from ..array import view_shape, coerce_numeric, stack_view, unique, shape_to_string, check_sorted
+from ..array import (view_shape, coerce_numeric, stack_view, unique,
+                     shape_to_string, check_sorted, pretty_number)
 
 
 @pytest.mark.parametrize(('before', 'ref_after', 'ref_indices'),
@@ -77,3 +78,20 @@ def test_stack_view(shape, views):
                          (([1, 3, 4, 3], False), ([1, 2, np.nan, 3], True), ([1, 3, 4, 4.1], True)))
 def test_check_sorted(array, is_sorted):
     assert check_sorted(array) is is_sorted
+
+
+class TestPrettyNumber(object):
+
+    def test_single(self):
+        assert pretty_number([1]) == ['1']
+        assert pretty_number([0]) == ['0']
+        assert pretty_number([-1]) == ['-1']
+        assert pretty_number([1.0001]) == ['1']
+        assert pretty_number([1.01]) == ['1.01']
+        assert pretty_number([1e-5]) == ['1.000e-05']
+        assert pretty_number([1e5]) == ['1.000e+05']
+        assert pretty_number([3.3]) == ['3.3']
+
+    def test_list(self):
+        assert pretty_number([1, 2, 3.3, 1e5]) == ['1', '2', '3.3',
+                                                   '1.000e+05']

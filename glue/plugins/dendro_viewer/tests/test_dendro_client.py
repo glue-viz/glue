@@ -6,7 +6,7 @@ from numpy.testing import assert_array_equal
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.roi import PointROI
 from glue.core import Data, DataCollection
-from glue.clients.tests.util import renderless_figure
+from glue.utils import renderless_figure
 
 from ..client import DendroClient
 

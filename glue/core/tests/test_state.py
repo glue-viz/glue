@@ -11,13 +11,13 @@ from glue import core
 from glue.qt.glue_application import GlueApplication
 from glue.qt.widgets.histogram_widget import HistogramWidget
 from glue.qt.widgets.scatter_widget import ScatterWidget
-from glue.tests.helpers import requires_astropy
+from glue.tests.helpers import requires_astropy, make_file
 
 from ..data_factories import load_data
 from ..data_factories.tests.test_fits import TEST_FITS_DATA
 from ..state import (GlueSerializer, GlueUnSerializer,
                      saver, loader, VersionedDict)
-from .util import make_file
+
 
 
 def clone(object, include_data=False):

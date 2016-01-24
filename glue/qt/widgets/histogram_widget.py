@@ -9,11 +9,12 @@ from glue.clients.histogram_client import HistogramClient
 from glue.qt.glue_toolbar import GlueToolbar
 from glue.qt.mouse_mode import HRangeMode
 from glue.qt.qtutil import load_ui
-from glue.qt.widget_properties import (connect_int_spin, ButtonProperty,
+from glue.utils.qt.widget_properties import (connect_int_spin, ButtonProperty,
                                        FloatLineProperty, connect_float_edit,
                                        ValueProperty, connect_bool_button)
 from glue.qt.widgets.data_viewer import DataViewer
 from glue.qt.widgets.mpl_widget import MplWidget, defer_draw
+from glue.utils.array import pretty_number
 
 
 __all__ = ['HistogramWidget']

@@ -5,14 +5,13 @@ from functools import wraps, partial
 
 from glue.core.session import Session
 from glue.core.edit_subset_mode import EditSubsetMode
-from glue.core.util import PropertySetMixin
 from glue.core.hub import HubListener
 from glue.core import Data, Subset
 from glue.core import command
 from glue.core.data_factories import load_data
 from glue.core.data_collection import DataCollection
 from glue.config import settings
-from glue.utils import as_list
+from glue.utils import as_list, PropertySetMixin
 
 
 __all__ = ['Application', 'ViewerBase']

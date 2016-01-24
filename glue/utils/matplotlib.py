@@ -4,14 +4,27 @@ import logging
 from functools import wraps
 
 import numpy as np
-from matplotlib.backends.backend_agg import FigureCanvasAgg
 
+# We avoid importing matplotlib up here otherwise Matplotlib and therefore Qt
+# get imported as soon as glue.utils is imported.
+
+from glue.external.axescache import AxesCache
 from glue.utils.misc import DeferredMethod
 
 
-__all__ = ['all_artists', 'new_artists', 'remove_artists', 'get_extent',
-           'view_cascade', 'fast_limits', 'defer_draw',
-           'color2rgb', 'point_contour']
+__all__ = ['renderless_figure', 'all_artists', 'new_artists', 'remove_artists',
+           'get_extent', 'view_cascade', 'fast_limits', 'defer_draw',
+           'color2rgb', 'point_contour', 'cache_axes']
+
+
+def renderless_figure():
+    # Matplotlib figure that skips the render step, for test speed
+    from mock import MagicMock
+    import matplotlib.pyplot as plt
+    fig = plt.figure()
+    fig.canvas.draw = MagicMock()
+    plt.close('all')
+    return fig
 
 
 def all_artists(fig):
@@ -57,13 +70,16 @@ def get_extent(view, transpose=False):
 
 
 def view_cascade(data, view):
-    """ Return a set of views progressively zoomed out of input at roughly
-    constant pixel count
+    """
+    Return a set of views progressively zoomed out of input at roughly constant
+    pixel count
 
-    :param data: Data object to view
-    :param view: Original view into data
-
-    :rtype: tuple of views
+    Parameters
+    ----------
+    data : array-like
+        The array to view
+    view :
+        The original view into the data
     """
     shp = data.shape
     v2 = list(view)
@@ -91,15 +107,20 @@ def _scoreatpercentile(values, percentile, limit=None):
 
 
 def fast_limits(data, plo, phi):
-    """Quickly estimate percentiles in an array,
-    using a downsampled version
+    """
+    Quickly estimate percentiles in an array, using a downsampled version
 
-    :param data: array-like
-    :param plo: Lo percentile
-    :param phi: High percentile
+    Parameters
+    ----------
+    data : `numpy.ndarray`
+        The array to estimate the percentiles for
+    plo, phi : float
+        The percentile values
 
-    :rtype: Tuple of floats. Approximate values of each percentile in
-            data[component]
+    Returns
+    -------
+    lo, hi : float
+        The percentile values
     """
 
     shp = data.shape
@@ -124,6 +145,8 @@ def defer_draw(func):
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
+
+        from matplotlib.backends.backend_agg import FigureCanvasAgg
 
         # don't recursively defer draws
         if isinstance(FigureCanvasAgg.draw, DeferredMethod):
@@ -233,3 +256,28 @@ def freeze_margins(axes, margins=[1, 1, 1, 1]):
 
     axes.resizer = AxesResizer(axes, margins)
     axes.figure.canvas.mpl_connect('resize_event', axes.resizer.on_resize)
+
+
+def cache_axes(axes, toolbar):
+    """
+    Set up caching for an axes object.
+
+    After this, cached renders will be used to quickly re-render an axes during
+    window resizing or interactive pan/zooming.
+
+    This function returns an AxesCache instance.
+
+    Parameters
+    ----------
+    axes : `~matplotlib.axes.Axes`
+        The axes to cache
+    toolbar : `~glue.qt.glue_toolbar.GlueToolbar`
+        The toolbar managing the axes' canvas
+    """
+    canvas = axes.figure.canvas
+    cache = AxesCache(axes)
+    canvas.resize_begin.connect(cache.enable)
+    canvas.resize_end.connect(cache.disable)
+    toolbar.pan_begin.connect(cache.enable)
+    toolbar.pan_end.connect(cache.disable)
+    return cache

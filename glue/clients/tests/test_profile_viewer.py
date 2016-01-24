@@ -7,7 +7,7 @@ import numpy as np
 from mock import MagicMock
 
 from ..profile_viewer import ProfileViewer
-from .util import renderless_figure
+from glue.utils import renderless_figure
 
 
 FIG = renderless_figure()
