@@ -95,3 +95,16 @@ def test_load_link_helpers_04():
         content = f.read()
 
     state = GlueUnSerializer.loads(content)
+
+
+@requires_astropy
+def test_load_viewers_04():
+
+    # This loads a session file made with Glue v0.4. In this session, we have
+    # three viewers: one scatter viewer, one image viewer, and one histogram
+    # viewer.
+
+    with open(os.path.join(DATA, 'simple_viewers.glu'), 'r') as f:
+        content = f.read()
+
+    state = GlueUnSerializer.loads(content)
