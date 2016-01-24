@@ -586,9 +586,9 @@ class ImageClient(VizClient):
 
         Returns
         -------
-        tuple of int
-            Either (x,y) or (x,y,z)
-        """ # TODO: Numpydoc is really bad at specifying such things
+        coords : tuple
+            Either a tuple of (x,y) or (x,y,z)
+        """
         result = list(self.slice)
         result[result.index('x')] = x
         result[result.index('y')] = y

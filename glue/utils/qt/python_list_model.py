@@ -3,6 +3,8 @@ from __future__ import absolute_import, division, print_function
 from ...external.qt import QtCore
 from ...external.qt.QtCore import Qt
 
+__all__ = ['PythonListModel']
+
 
 class PythonListModel(QtCore.QAbstractListModel):
 

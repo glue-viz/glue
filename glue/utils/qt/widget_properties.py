@@ -26,6 +26,12 @@ from glue.external.qt import QtGui
 from glue.external.echo import add_callback
 from glue.utils.array import pretty_number
 
+__all__ = ['WidgetProperty', 'CurrentComboDataProperty',
+           'CurrentComboTextProperty', 'CurrentTabProperty', 'TextProperty',
+           'ButtonProperty', 'FloatLineProperty', 'ValueProperty',
+           'connect_bool_button', 'connect_current_combo',
+           'connect_float_edit', 'connect_int_spin']
+
 
 class WidgetProperty(object):
     """

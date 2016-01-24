@@ -2,7 +2,10 @@ from __future__ import absolute_import, division, print_function
 
 from glue.external.qt import QtGui
 
+__all__ = ['pick_item', 'pick_class', 'get_text']
+
 # TODO: update docstrings
+
 
 def pick_item(items, labels, title="Pick an item", label="Pick an item",
               default=0):
