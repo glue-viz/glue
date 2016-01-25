@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from glue.core.subset import (RoiSubsetState, RangeSubsetState,
-                              CategoricalRoiSubsetState, AndState)
+                              CategoricalROISubsetState, AndState)
 from glue.core.roi import (PolygonalROI, CategoricalROI, RangeROI, XRangeROI,
                            YRangeROI, RectangularROI)
 from glue.core.util import row_lookup
@@ -440,7 +440,7 @@ class CategoricalComponent(Component):
             # RangeRoi and its subclasses
             assert roi.ori in set('xy')
             if roi.ori == coord:
-                return CategoricalRoiSubsetState.from_range(self, att, roi.min, roi.max)
+                return CategoricalROISubsetState.from_range(self, att, roi.min, roi.max)
             elif roi.ori != coord:
                 other_coord = 'y' if coord == 'x' else 'x'
                 return other_comp.subset_from_roi(other_att, roi,
@@ -450,13 +450,13 @@ class CategoricalComponent(Component):
             else:
                 raise AssertionError
         elif isinstance(roi, CategoricalROI):
-            return CategoricalRoiSubsetState(roi=roi, att=att)
+            return CategoricalROISubsetState(roi=roi, att=att)
         else:
             x, y = roi.to_polygon()
             if is_nested:
                 x, y = y, x
 
-            cat_subset = CategoricalRoiSubsetState.from_range(self, att,
+            cat_subset = CategoricalROISubsetState.from_range(self, att,
                                                               min(x), max(x))
             cont_subset = RangeSubsetState(min(y), max(y), other_att)
             return AndState(cat_subset, cont_subset)

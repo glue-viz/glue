@@ -449,10 +449,10 @@ class RoiSubsetState(SubsetState):
         return result
 
 
-class CategoricalRoiSubsetState(SubsetState):
+class CategoricalROISubsetState(SubsetState):
 
     def __init__(self, att=None, roi=None):
-        super(CategoricalRoiSubsetState, self).__init__()
+        super(CategoricalROISubsetState, self).__init__()
         self.att = att
         self.roi = roi
 
@@ -469,7 +469,7 @@ class CategoricalRoiSubsetState(SubsetState):
         return result.ravel()
 
     def copy(self):
-        result = CategoricalRoiSubsetState()
+        result = CategoricalROISubsetState()
         result.att = self.att
         result.roi = self.roi
         return result
@@ -478,7 +478,7 @@ class CategoricalRoiSubsetState(SubsetState):
     def from_range(component, att, lo, hi):
 
         roi = CategoricalROI.from_range(component, lo, hi)
-        subset = CategoricalRoiSubsetState(roi=roi,
+        subset = CategoricalROISubsetState(roi=roi,
                                            att=att)
         return subset
 

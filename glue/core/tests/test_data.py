@@ -17,7 +17,7 @@ from ..data import Data, pixel_label
 from ..exceptions import IncompatibleAttribute
 from ..hub import Hub
 from ..registry import Registry
-from ..subset import (Subset, CategoricalRoiSubsetState, SubsetState,
+from ..subset import (Subset, CategoricalROISubsetState, SubsetState,
                       RoiSubsetState, RangeSubsetState, AndState)
 from ..roi import PolygonalROI, CategoricalROI, RangeROI, RectangularROI
 
@@ -371,13 +371,13 @@ class TestROICreation(object):
         comp = d.get_component(d.id['x'])
         roi = CategoricalROI(['b', 'c'])
         s = comp.subset_from_roi('x', roi)
-        assert isinstance(s, CategoricalRoiSubsetState)
+        assert isinstance(s, CategoricalROISubsetState)
         np.testing.assert_array_equal((s.roi.contains(['a', 'b', 'c'], None)),
                                       [False, True, True])
 
         roi = RangeROI('x', min=1, max=3)
         s = comp.subset_from_roi('x', roi)
-        assert isinstance(s, CategoricalRoiSubsetState)
+        assert isinstance(s, CategoricalROISubsetState)
         np.testing.assert_array_equal((s.roi.contains(['a', 'b', 'c'], None)),
                                       [False, True, True])
 

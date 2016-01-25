@@ -6,7 +6,7 @@ import pytest
 import numpy as np
 from mock import MagicMock
 
-from glue.core.subset import RangeSubsetState, CategoricalRoiSubsetState
+from glue.core.subset import RangeSubsetState, CategoricalROISubsetState
 from glue.core.component_id import ComponentID
 from glue.core.component import CategoricalComponent
 from glue.core.data import Data
@@ -377,7 +377,7 @@ class TestCategoricalHistogram(TestHistogramClient):
 
         self.client.apply_roi(roi)
         state = self.data.subsets[0].subset_state
-        assert isinstance(state, CategoricalRoiSubsetState)
+        assert isinstance(state, CategoricalROISubsetState)
         np.testing.assert_equal(self.data.subsets[0].subset_state.roi.categories,
                                 np.array(['b', 'c', 'd', 'e']))
 

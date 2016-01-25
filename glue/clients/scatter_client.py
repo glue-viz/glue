@@ -10,7 +10,7 @@ from glue.core.message import ComponentReplacedMessage
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.util import relim
 from glue.core.roi import PolygonalROI, RangeROI, CategoricalROI, RectangularROI
-from glue.core.subset import RoiSubsetState, RangeSubsetState, CategoricalRoiSubsetState, AndState
+from glue.core.subset import RoiSubsetState, RangeSubsetState, CategoricalROISubsetState, AndState
 from glue.core.data import Data, IncompatibleAttribute, ComponentID
 from glue.core.client import Client
 from glue.clients.layer_artist import ScatterLayerArtist, LayerArtistContainer
@@ -265,7 +265,7 @@ class ScatterClient(Client):
                 comp = list(self._get_data_components(coord))
                 if comp:
                     if comp[0].categorical:
-                        subset = CategoricalRoiSubsetState.from_range(comp[0], self._get_attribute(coord), lo, hi)
+                        subset = CategoricalROISubsetState.from_range(comp[0], self._get_attribute(coord), lo, hi)
                     else:
                         subset = RangeSubsetState(lo, hi, self._get_attribute(coord))
                 else:

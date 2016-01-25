@@ -17,7 +17,7 @@ from glue.core.component import Component, CategoricalComponent
 from glue.core.data_collection import DataCollection
 from glue.core.data import Data
 from glue.core.roi import RectangularROI, XRangeROI, YRangeROI
-from glue.core.subset import RangeSubsetState, CategoricalRoiSubsetState, AndState
+from glue.core.subset import RangeSubsetState, CategoricalROISubsetState, AndState
 from glue.tests import example_data
 
 from ..scatter_client import ScatterClient
@@ -698,7 +698,7 @@ class TestCategoricalScatterClient(TestScatterClient):
         roi.set_range(1, 2)
         self.client.apply_roi(roi)
         assert isinstance(data.edit_subset.subset_state,
-                          CategoricalRoiSubsetState)
+                          CategoricalROISubsetState)
         assert data.edit_subset.subset_state.att == self.client.xatt
 
         roi = YRangeROI()
