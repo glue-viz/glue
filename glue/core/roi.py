@@ -7,6 +7,7 @@ from matplotlib.patches import Ellipse, Polygon, Rectangle, Path as mplPath
 from matplotlib.transforms import IdentityTransform, blended_transform_factory
 
 from glue.core.exceptions import UndefinedROI
+from glue.utils import points_inside_poly
 
 
 np.seterr(all='ignore')
@@ -20,15 +21,6 @@ __all__ = ['Roi', 'RectangularROI', 'CircularROI', 'PolygonalROI',
 
 PATCH_COLOR = '#FFFF00'
 SCRUBBING_KEY = 'control'
-
-try:
-    from matplotlib.nxutils import points_inside_poly
-except ImportError:  # nxutils removed in MPL v1.3
-    from matplotlib.path import Path as mplPath
-
-    def points_inside_poly(xypts, xyvts):
-        p = mplPath(xyvts)
-        return p.contains_points(xypts)
 
 
 def aspect_ratio(axes):
@@ -524,10 +516,8 @@ class PolygonalROI(VertexROIBase):
         if not isinstance(y, np.ndarray):
             y = np.asarray(y)
 
-        xypts = np.column_stack((x.flat, y.flat))
-        xyvts = np.column_stack((self.vx, self.vy))
-        result = points_inside_poly(xypts, xyvts)
-        good = np.isfinite(xypts).all(axis=1)
+        result = points_inside_poly(x.flat, y.flat, self.vx, self.vy)
+        good = np.isfinite(x.flat) & np.isfinite(y.flat)
         result[~good] = False
         result.shape = x.shape
         return result

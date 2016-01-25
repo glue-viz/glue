@@ -418,7 +418,7 @@ class TestROICreation(object):
         d = Data(x=[1, 1.3, 3, 10], y=['a', 'b', 'c', 'd'])
         x_comp = d.get_component(d.id['x'])
         y_comp = d.get_component(d.id['y'])
-        roi = RectangularROI(xmin=0, xmax=2, ymin=0, ymax=2)
+        roi = RectangularROI(xmin=-0.1, xmax=2.1, ymin=-0.1, ymax=2.1)
         s = x_comp.subset_from_roi('x', roi, other_comp=y_comp, other_att='y')
         assert isinstance(s, OrState)
 

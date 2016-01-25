@@ -2,7 +2,13 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-__all__ = ['polygon_line_intersections']
+__all__ = ['points_inside_poly', 'polygon_line_intersections']
+
+
+def points_inside_poly(x, y, vx, vy):
+    from matplotlib.path import Path
+    p = Path(np.column_stack((vx, vy)))
+    return p.contains_points(np.column_stack((x, y)))
 
 
 def polygon_line_intersections(px, py, xval=None, yval=None):
@@ -10,7 +16,9 @@ def polygon_line_intersections(px, py, xval=None, yval=None):
     Find all the segments of intersection between a polygon and an infinite
     horizontal/vertical line.
 
-    The polygon is assumed to be closed
+    The polygon is assumed to be closed. Due to numerical precision, the
+    behavior at the edges of polygons is not always predictable, i.e. a point
+    on the edge of a polygon may be considered inside or outside the polygon.
 
     Parameters
     ----------
@@ -44,36 +52,27 @@ def polygon_line_intersections(px, py, xval=None, yval=None):
         px = np.hstack([px, px[0]])
         py = np.hstack([py, py[0]])
 
-    # TODO: vectorize this later, but need to get the logic for corner cases
-    # right first.
+    # For convenience
+    x1, x2 = px[:-1], px[1:]
+    y1, y2 = py[:-1], py[1:]
 
-    vertex = px == xval
+    # Vertices that intersect
+    keep1 = (px == xval)
+    points1 = py[keep1]
 
-    points = []
-
-    for i in range(len(px) - 1):
-
-        if vertex[i] and vertex[i+1]:
-
-            # Special case where both vertices are on the line
-
-            points.append(py[i])
-            points.append(py[i+1])
-
-        elif vertex[i]:
-
-            # First vertex is on the line
-
-            points.append(py[i])
-
-        elif (px[i] < xval and px[i+1] > xval) or (px[i+1] < xval and px[i] > xval):
-
-            y = py[i] + (py[i+1] - py[i]) * (xval - px[i]) / (px[i+1] - px[i])
-
-            points.append(y)
+    # Segments (excluding vertices) that intersect
+    keep2 = ((x1 < xval) & (x2 > xval)) | ((x2 < xval) & (x1 > xval))
+    points2 = (y1 + (y2 - y1) * (xval - x1) / (x2 - x1))[keep2]
 
     # Make unique and sort
-    points = sorted(set(points))
+    points = np.array(np.sort(np.unique(np.hstack([points1, points2]))))
 
-    # Make into a list of tuples
-    return list(zip(points[::2], points[1::2]))
+    # Because of various corner cases, we don't actually know which pairs of
+    # points are inside the polygon, so we check this using the mid-points
+    ymid = 0.5 * (points[:-1] + points[1:])
+    xmid = np.repeat(xval, len(ymid))
+    keep = points_inside_poly(xmid, ymid, px, py)
+
+    segments = list(zip(points[:-1][keep], points[1:][keep]))
+
+    return segments
