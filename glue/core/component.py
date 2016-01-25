@@ -474,17 +474,37 @@ class CategoricalComponent(Component):
         else:
 
             # The selection is polygon-like, which requires special care.
-            
+
             if isinstance(other_comp, CategoricalComponent):
-                
-                raise NotImplementedError()
-                
+
+                # For each category, we check which categories along the other
+                # axis fall inside the polygon.
+                n_other = len(other_comp.categories)
+                total_subset = None
+                for code, label in enumerate(self.categories):
+                    y = np.arange(n_other)
+                    x = np.repeat(code, n_other)
+                    if coord == 'y':
+                        x, y = y, x
+                    in_poly = roi.contains(x, y)
+                    categories = other_comp.categories[in_poly]
+                    if len(categories) > 0:
+                        cat_roi_1 = CategoricalROI([label])
+                        cat_subset_1 = CategoricalROISubsetState(att=att, roi=cat_roi_1)
+                        cat_roi_2 = CategoricalROI(categories)
+                        cat_subset_2 = CategoricalROISubsetState(att=other_att, roi=cat_roi_2)
+                        subset = AndState(cat_subset_1, cat_subset_2)
+                        if total_subset is None:
+                            total_subset = subset
+                        else:
+                            total_subset = OrState(total_subset, subset)
+
             else:
-            
+
                 # If the other component is not categorical, we treat this as if
-                # each categorical component was mapped to a numerical value, 
+                # each categorical component was mapped to a numerical value,
                 # and at each value, we keep track of the polygon intersection
-                # with the component. This will result in zero, one, or 
+                # with the component. This will result in zero, one, or
                 # multiple separate numerical ranges for each categorical value.
 
                 # TODO: if we ever allow the category order to be changed, we
@@ -494,10 +514,10 @@ class CategoricalComponent(Component):
 
                 if is_nested:
                     x, y = y, x
-                    
+
                 # We loop over each category and for each one we find the
                 # numerical ranges
-                
+
                 total_subset = None
                 for code, label in zip(self.codes, self.labels):
                     segments = polygon_line_intersections(x, y, xval=code)
@@ -509,7 +529,7 @@ class CategoricalComponent(Component):
                         total_subset = subset
                     else:
                         total_subset = OrState(total_subset, subset)
-                    
+
             return total_subset
 
     def to_series(self, **kwargs):
