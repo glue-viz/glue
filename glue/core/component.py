@@ -8,8 +8,7 @@ import pandas as pd
 
 from glue.core.subset import (RoiSubsetState, RangeSubsetState,
                               CategoricalROISubsetState, AndState)
-from glue.core.roi import (PolygonalROI, CategoricalROI, RangeROI, XRangeROI,
-                           YRangeROI, RectangularROI)
+from glue.core.roi import PolygonalROI, CategoricalROI, RangeROI
 from glue.core.util import row_lookup
 from glue.utils import unique, shape_to_string, coerce_numeric, check_sorted
 
@@ -123,34 +122,34 @@ class Component(object):
 
         assert coord in set('xy')
 
-        if hasattr(roi, 'min') and hasattr(roi, 'ori'):
-            # RangeROI and its subclasses
-            assert roi.ori in set('xy')
-            lo, hi = roi.range()
+        if isinstance(roi, RangeROI):
+
+            if not roi.ori in set('xy'):
+                raise ValueError("roi.ori should be 'x' or 'y'")
+
             if roi.ori == coord:
+                lo, hi = roi.range()
                 subset_state = RangeSubsetState(lo, hi, att)
-            elif (roi.ori != coord) and isinstance(other_comp, CategoricalComponent):
+            else:
                 other_coord = 'y' if coord == 'x' else 'x'
                 return other_comp.subset_from_roi(other_att, roi,
                                                   other_comp=self,
                                                   other_att=att,
                                                   coord=other_coord)
-            elif roi.ori != coord:
-                subset_state = RangeSubsetState(lo, hi, other_att)
-            else:
-                raise AssertionError
+
         else:
+
             if isinstance(other_comp, CategoricalComponent):
                 return other_comp.subset_from_roi(other_att, roi,
                                                   other_comp=self,
                                                   other_att=att,
                                                   is_nested=True)
-
-            subset_state = RoiSubsetState()
-            subset_state.xatt = att
-            subset_state.yatt = other_att
-            x, y = roi.to_polygon()
-            subset_state.roi = PolygonalROI(x, y)
+            else:
+                subset_state = RoiSubsetState()
+                subset_state.xatt = att
+                subset_state.yatt = other_att
+                x, y = roi.to_polygon()
+                subset_state.roi = PolygonalROI(x, y)
 
         return subset_state
 
@@ -418,7 +417,8 @@ class CategoricalComponent(Component):
     def subset_from_roi(self, att, roi, other_comp=None,
                         other_att=None, coord='x',
                         is_nested=False):
-        """ Create a SubsetState object from an ROI.
+        """
+        Create a SubsetState object from an ROI.
 
         This encapsulates the logic for creating subset states with
         CategoricalComponents. There is an important caveat, only RangeROIs
@@ -434,24 +434,26 @@ class CategoricalComponent(Component):
         :return: A SubsetState (or subclass) object
         """
 
-        assert coord in set('xy')
+        if isinstance(roi, RangeROI):
 
-        if hasattr(roi, 'min') and hasattr(roi, 'ori'):
-            # RangeRoi and its subclasses
-            assert roi.ori in set('xy')
+            if not roi.ori in set('xy'):
+                raise ValueError("roi.ori should be 'x' or 'y'")
+
             if roi.ori == coord:
                 return CategoricalROISubsetState.from_range(self, att, roi.min, roi.max)
-            elif roi.ori != coord:
+            else:
                 other_coord = 'y' if coord == 'x' else 'x'
                 return other_comp.subset_from_roi(other_att, roi,
                                                   other_comp=self,
                                                   other_att=att,
                                                   coord=other_coord)
-            else:
-                raise AssertionError
+
         elif isinstance(roi, CategoricalROI):
+
             return CategoricalROISubsetState(roi=roi, att=att)
+
         else:
+
             x, y = roi.to_polygon()
             if is_nested:
                 x, y = y, x

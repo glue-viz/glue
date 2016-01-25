@@ -9,8 +9,8 @@ from glue.core.callback_property import (CallbackProperty, add_callback,
 from glue.core.message import ComponentReplacedMessage
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.util import relim
-from glue.core.roi import PolygonalROI, RangeROI, CategoricalROI, RectangularROI
-from glue.core.subset import RoiSubsetState, RangeSubsetState, CategoricalROISubsetState, AndState
+from glue.core.roi import RectangularROI
+from glue.core.subset import RangeSubsetState, CategoricalROISubsetState, AndState
 from glue.core.data import Data, IncompatibleAttribute, ComponentID
 from glue.core.client import Client
 from glue.clients.layer_artist import ScatterLayerArtist, LayerArtistContainer

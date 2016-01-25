@@ -5,7 +5,6 @@ import numpy as np
 from glue.core.callback_property import CallbackProperty
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.exceptions import IncompatibleDataException, IncompatibleAttribute
-from glue.core.subset import RangeSubsetState, CategoricalROISubsetState
 from glue.core.data import Data
 from glue.core import message as msg
 from glue.core.client import Client
@@ -430,6 +429,7 @@ class HistogramClient(Client):
         if self.xlog:
             lo = 10 ** lo
             hi = 10 ** hi
+
         nroi = RangeROI(min=lo, max=hi, orientation='x')
         for comp in self._get_data_components('x'):
             state = comp.subset_from_roi(self.component, nroi, coord='x')
