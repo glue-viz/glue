@@ -20,7 +20,7 @@ from glue.utils import view_shape
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState',
-           'ElementSubsetState', 'RangeSubsetState']
+           'ElementSubsetState', 'RangeSubsetState', 'combine_multiple']
 
 OPSYM = {operator.ge: '>=', operator.gt: '>',
          operator.le: '<=', operator.lt: '<',
@@ -743,3 +743,13 @@ def _combine(subsets, operator):
     result = Subset(None)
     result.subset_state = state
     return result
+
+
+def combine_multiple(subsets, operator):
+    if len(subsets) == 0:
+        return SubsetState()
+    else:
+        combined = subsets[0]
+        for subset in subsets[1:]:
+            combined = operator(combined, subset)
+        return combined

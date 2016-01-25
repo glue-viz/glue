@@ -440,6 +440,17 @@ class TestROICreation(object):
 
         np.testing.assert_array_equal(s.to_mask(d), [False, True, True, False, True, False])
 
+    def test_polygon_both_categorical_empty(self):
+
+        d = Data(x=['a', 'b', 'c', 'd', 'b', 'c'], y=['p', 'q', 'r', 's', 's', 'q'])
+        x_comp = d.get_component(d.id['x'])
+        y_comp = d.get_component(d.id['y'])
+        roi = PolygonalROI([0.5, 0.6, 0.6, 0.5], [0.5, 0.5, 0.6, 0.5])
+        s = x_comp.subset_from_roi('x', roi, other_comp=y_comp, other_att='y')
+        assert isinstance(s, SubsetState)
+
+        np.testing.assert_array_equal(s.to_mask(d), [False, False, False, False, False, False])
+
 
 def test_component_id_item_access():
 
