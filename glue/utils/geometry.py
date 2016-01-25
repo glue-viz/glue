@@ -70,13 +70,10 @@ def polygon_line_intersections(px, py, xval=None, yval=None):
 
             y = py[i] + (py[i+1] - py[i]) * (xval - px[i]) / (px[i+1] - px[i])
 
-            print(px[i], px[i+1], py[i], py[i+1])
-            print(y)
-
             points.append(y)
 
     # Make unique and sort
     points = sorted(set(points))
 
     # Make into a list of tuples
-    return zip(points[::2], points[1::2])
+    return list(zip(points[::2], points[1::2]))
