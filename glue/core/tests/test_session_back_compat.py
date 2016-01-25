@@ -95,3 +95,48 @@ def test_load_link_helpers_04():
         content = f.read()
 
     state = GlueUnSerializer.loads(content)
+
+    ga = state.object('__main__')
+
+@requires_astropy
+def test_load_viewers_04():
+
+    # This loads a session file made with Glue v0.4. In this session, we have
+    # three viewers: one scatter viewer, one image viewer, and one histogram
+    # viewer.
+
+    with open(os.path.join(DATA, 'simple_viewers.glu'), 'r') as f:
+        content = f.read()
+
+    state = GlueUnSerializer.loads(content)
+
+    ga = state.object('__main__')
+
+    assert len(ga.viewers[0]) == 3
+    labels = sorted([x.LABEL for x in ga.viewers[0]])
+
+    assert labels == ['Histogram', 'Image Viewer', 'Scatter Plot']
+
+    viewers = {}
+    for x in ga.viewers[0]:
+        viewers[x.LABEL] = x
+
+    h = viewers['Histogram']
+    assert h.viewer_size == (1235, 531)
+    assert h.position == (0, 535)
+    assert h.component.label == 'b'
+
+    i = viewers['Image Viewer']
+    assert i.viewer_size == (562, 513)
+    assert i.position == (672, 0)
+    assert i.attribute.label == "image"
+
+    s = viewers['Scatter Plot']
+    assert s.viewer_size == (670, 512)
+    assert s.position == (0, 0)
+    assert s.xatt.label == 'b'
+    assert s.yatt.label == 'a'
+    assert s.xlog
+    assert not s.ylog
+    assert not s.xflip
+    assert s.yflip
