@@ -18,7 +18,7 @@ from ..exceptions import IncompatibleAttribute
 from ..hub import Hub
 from ..registry import Registry
 from ..subset import (Subset, CategoricalROISubsetState, SubsetState,
-                      RoiSubsetState, RangeSubsetState, AndState)
+                      RoiSubsetState, RangeSubsetState, AndState, OrState)
 from ..roi import PolygonalROI, CategoricalROI, RangeROI, RectangularROI
 
 
@@ -391,14 +391,27 @@ class TestROICreation(object):
         assert isinstance(s, RoiSubsetState)
         np.testing.assert_array_equal(s.to_mask(d), [True, True, False, False])
 
-    def test_polygon_categorical(self):
+    def test_polygon_categorical_rectangular(self):
 
         d = Data(x=[1, 1.3, 3, 10], y=['a', 'b', 'c', 'd'])
         x_comp = d.get_component(d.id['x'])
         y_comp = d.get_component(d.id['y'])
         roi = PolygonalROI([0, 0, 2, 2], [0, 2, 2, 0])
         s = x_comp.subset_from_roi('x', roi, other_comp=y_comp, other_att='y')
-        assert isinstance(s, AndState)
+        assert isinstance(s, OrState)
+
+        np.testing.assert_array_equal(s.to_mask(d), [True, True, False, False])
+
+    def test_polygon_categorical_arbitrary(self):
+
+        d = Data(x=[1, 1.3, 3, 10], y=['a', 'b', 'c', 'd'])
+        x_comp = d.get_component(d.id['x'])
+        y_comp = d.get_component(d.id['y'])
+        roi = PolygonalROI([0, 4, 4, 1, 0], [-0.5, 3.5, 0, -1, -0.5])
+        s = x_comp.subset_from_roi('x', roi, other_comp=y_comp, other_att='y')
+        assert isinstance(s, OrState)
+
+        np.testing.assert_array_equal(s.to_mask(d), [True, False, True, False])
 
     def test_rectangular_categorical(self):
 
@@ -407,12 +420,12 @@ class TestROICreation(object):
         y_comp = d.get_component(d.id['y'])
         roi = RectangularROI(xmin=0, xmax=2, ymin=0, ymax=2)
         s = x_comp.subset_from_roi('x', roi, other_comp=y_comp, other_att='y')
-        assert isinstance(s, AndState)
+        assert isinstance(s, OrState)
 
         np.testing.assert_array_equal(s.to_mask(d), [True, True, False, False])
 
         s = y_comp.subset_from_roi('y', roi, other_comp=x_comp, other_att='x')
-        assert isinstance(s, AndState)
+        assert isinstance(s, OrState)
 
         np.testing.assert_array_equal(s.to_mask(d), [True, True, False, False])
 

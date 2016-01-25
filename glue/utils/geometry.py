@@ -1,9 +1,16 @@
+from __future__ import absolute_import, division, print_function
+
+import numpy as np
+
+__all__ = ['polygon_line_intersections']
+
+
 def polygon_line_intersections(px, py, xval=None, yval=None):
     """
     Find all the segments of intersection between a polygon and an infinite
     horizontal/vertical line.
 
-    The polygon is assumed to be closed.
+    The polygon is assumed to be closed
 
     Parameters
     ----------
@@ -29,20 +36,47 @@ def polygon_line_intersections(px, py, xval=None, yval=None):
     if yval is not None:
         return polygon_line_intersections(py, px, xval=yval)
 
-    # Find sections that intersect with the infinite vertical line
-    keep = (px[1:] > xval) == (px[:-1] < xval)
+    px = np.asarray(px, dtype=float)
+    py = np.asarray(py, dtype=float)
 
-    # Extract intersecting segments
-    x1 = px[:-1][keep]
-    x2 = px[1:][keep]
-    y1 = py[:-1][keep]
-    y2 = py[1:][keep]
+    # Make sure that the polygon is closed
+    if px[0] != px[-1] or py[0] != py[-1]:
+        px = np.hstack([px, px[0]])
+        py = np.hstack([py, py[0]])
 
-    # Determine intersection points
-    y = y1 + (y2 - y1) * (xval - x1) / (x2 - x1)
+    # TODO: vectorize this later, but need to get the logic for corner cases
+    # right first.
 
-    # Sort intersection points and group into pairs
-    y.sort()
-    pairs = y.reshape((-1, 2)).tolist()
+    vertex = px == xval
 
-    return pairs
+    points = []
+
+    for i in range(len(px) - 1):
+
+        if vertex[i] and vertex[i+1]:
+
+            # Special case where both vertices are on the line
+
+            points.append(py[i])
+            points.append(py[i+1])
+
+        elif vertex[i]:
+
+            # First vertex is on the line
+
+            points.append(py[i])
+
+        elif (px[i] < xval and px[i+1] > xval) or (px[i+1] < xval and px[i] > xval):
+
+            y = py[i] + (py[i+1] - py[i]) * (xval - px[i]) / (px[i+1] - px[i])
+
+            print(px[i], px[i+1], py[i], py[i+1])
+            print(y)
+
+            points.append(y)
+
+    # Make unique and sort
+    points = sorted(set(points))
+
+    # Make into a list of tuples
+    return zip(points[::2], points[1::2])

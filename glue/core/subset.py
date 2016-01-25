@@ -505,6 +505,37 @@ class RangeSubsetState(SubsetState):
         return RangeSubsetState(self.lo, self.hi, self.att)
 
 
+class MultiRangeSubsetState(SubsetState):
+    """
+    A subset state defined by multiple discontinuous ranges
+
+    Parameters
+    ----------
+    pairs : list
+        A list of (lo, hi) tuples
+    """
+
+    def __init__(self, pairs, att=None):
+        super(MultiRangeSubsetState, self).__init__()
+        self.pairs = pairs
+        self.att = att
+
+    @property
+    def attributes(self):
+        return (self.att,)
+
+    @contract(data='isinstance(Data)', view='array_view')
+    def to_mask(self, data, view=None):
+        x = data[self.att, view]
+        result = np.zeros_like(x, dtype=bool)
+        for lo, hi in self.pairs:
+            result |= (x >= lo) & (x <= hi)
+        return result
+
+    def copy(self):
+        return MultiRangeSubsetState(self.pairs, self.att)
+
+
 class CompositeSubsetState(SubsetState):
     op = None
 
