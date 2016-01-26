@@ -351,9 +351,12 @@ class QtClientRegistry(Registry):
 
     def default_members(self):
         try:
-            from glue.qt.widgets import default_widgets
+            # TODO: These should be registered not hard-coded
+            from glue.viewers.image.qt import ImageWidget
+            from glue.viewers.scatter.qt import ScatterWidget
+            from glue.viewers.histogram.qt import HistogramWidget
             from glue.qt.custom_viewer import CUSTOM_WIDGETS
-            return default_widgets + CUSTOM_WIDGETS
+            return [ImageWidget, ScatterWidget, HistogramWidget] + CUSTOM_WIDGETS
         except ImportError as e:
             logging.getLogger(__name__).warning(
                 "could not import glue.qt in ConfigObject")

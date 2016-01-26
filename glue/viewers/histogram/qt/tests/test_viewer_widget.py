@@ -7,9 +7,9 @@ import os
 import pytest
 
 from glue import core
+from glue.qt.widgets.tests import simple_session
 
-from . import simple_session
-from ..histogram_widget import HistogramWidget, _hash
+from ..viewer_widget import HistogramWidget, _hash
 
 
 def mock_data():

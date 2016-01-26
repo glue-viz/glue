@@ -8,8 +8,8 @@ from glue.core.fitters import PolynomialFitter
 from glue.core.roi import RectangularROI
 from glue.core import Data, Coordinates
 from glue.core.tests.util import simple_session
-from glue.qt.widgets import ImageWidget
 from glue.tests.helpers import requires_astropy
+from glue.viewers.image.qt import ImageWidget
 
 from ..spectrum_tool import Extractor, ConstraintsWidget, FitSettingsWidget, SpectrumTool, CollapseContext
 

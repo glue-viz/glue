@@ -9,8 +9,8 @@ import numpy as np
 from glue.external import six
 from glue import core
 from glue.qt.glue_application import GlueApplication
-from glue.qt.widgets.histogram_widget import HistogramWidget
-from glue.qt.widgets.scatter_widget import ScatterWidget
+from glue.viewers.histogram.qt import HistogramWidget
+from glue.viewers.scatter.qt import ScatterWidget
 from glue.tests.helpers import requires_astropy, make_file
 
 from ..data_factories import load_data

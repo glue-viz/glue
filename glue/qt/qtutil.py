@@ -397,7 +397,7 @@ def _custom_widgets():
     yield LinkEquation
 
 
-def load_ui(path, parent=None):
+def load_ui(path, parent=None, directory=None):
     """
     Load a UI file, given its name.
 
@@ -418,11 +418,13 @@ def load_ui(path, parent=None):
       The new widget
     """
 
-    if not os.path.exists(path):
-        path = global_ui_path(path)
+    if directory is not None:
+        full_path = os.path.join(directory, path)
+    elif not os.path.exists(path):
+        full_path = global_ui_path(path)
 
     from glue.external.qt import load_ui
-    return load_ui(path, parent, custom_widgets=_custom_widgets())
+    return load_ui(full_path, parent, custom_widgets=_custom_widgets())
 
 
 def global_ui_path(ui_name):

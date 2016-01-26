@@ -28,7 +28,7 @@ from .profile_viewer import ProfileViewer
 
 def setup():
     from glue.config import tool_registry
-    from glue.qt.widgets import ImageWidget
+    from glue.viewers.image.qt import ImageWidget
     tool_registry.add(SpectrumTool, widget_cls=ImageWidget)
 
 

@@ -16,10 +16,10 @@ except:
 from glue.external.qt import QtCore
 from glue.core import Data
 from glue.tests.helpers import requires_ipython_ge_012
+from glue.viewers.image.qt import ImageWidget
+from glue.viewers.scatter.qt import ScatterWidget
 
 from ..glue_application import GlueApplication
-from ..widgets.image_widget import ImageWidget
-from ..widgets.scatter_widget import ScatterWidget
 
 
 os.environ['GLUE_TESTING'] = 'True'

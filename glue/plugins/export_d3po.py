@@ -4,7 +4,9 @@ import os
 import json
 
 from glue.core import Subset
-from glue.qt.widgets import ScatterWidget, HistogramWidget
+
+from glue.viewers.scatter.qt import ScatterWidget
+from glue.viewers.histogram.qt import HistogramWidget
 
 
 def save_page(page, page_number, label, subset):
@@ -58,7 +60,7 @@ def save_scatter(plot, index):
     """ Convert a single glue scatter plot to a D3PO plot
 
     :param plot: Glue scatter plot
-    :class:`~glue.qt.widgets.scatter_widget.ScatterWidget`
+    :class:`~glue.viewers.scatter.qt.ScatterWidget`
     :param index: 1D index of plot on the page
     :type index: int
 
@@ -79,7 +81,7 @@ def save_histogram(plot, index):
     """ Convert a single histogram to a D3PO plot
 
     :param plot: Glue histogram
-    :type plot: :class:`~glue.qt.widgets.histogram_widget.HistogramWidget`
+    :type plot: :class:`~glue.viewers.histogram.qt.HistogramWidget`
 
     :param index: 1D index of plot on the page
     :type index: int

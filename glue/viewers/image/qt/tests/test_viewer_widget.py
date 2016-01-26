@@ -14,8 +14,8 @@ from glue.core.tests.test_state import TestApplication
 from glue import core
 from glue.qt.glue_application import GlueApplication
 
-from . import simple_session
-from ..image_widget import ImageWidget
+from glue.qt.widgets.tests import simple_session
+from ..viewer_widget import ImageWidget
 
 
 os.environ['GLUE_TESTING'] = 'True'

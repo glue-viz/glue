@@ -9,10 +9,10 @@ from mock import patch
 from matplotlib import __version__ as mpl_version  # pylint:disable=W0611
 
 from glue import core
+from glue.qt.widgets.tests import simple_session
+from glue.qt.widgets.mpl_widget import MplCanvas
 
-from . import simple_session
-from ..mpl_widget import MplCanvas
-from ..scatter_widget import ScatterWidget
+from ..viewer_widget import ScatterWidget
 
 
 class TestScatterWidget(object):

@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import os
+
 from glue.external.modest_image import imshow
 from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui, QtCore
@@ -21,7 +23,7 @@ from glue.utils.qt import cmap2pixmap, update_combobox
 
 WARN_THRESH = 10000000  # warn when contouring large images
 
-__all__ = ['ImageWidget']
+__all__ = ['ImageWidget', 'StandaloneImageWidget', 'ImageWidgetBase']
 
 
 class ImageWidgetBase(DataViewer):
@@ -62,8 +64,9 @@ class ImageWidgetBase(DataViewer):
         self.central_widget = self.make_central_widget()
         self.label_widget = QtGui.QLabel("", self.central_widget)
         self.setCentralWidget(self.central_widget)
-        self.ui = load_ui('imagewidget', None)
-        self.option_widget = self.ui
+        self.option_widget = QtGui.QWidget()
+        self.ui = load_ui('options_widget.ui', self.option_widget,
+                          directory=os.path.dirname(__file__))
         self.ui.slice = DataSlice()
         self.ui.slice_layout.addWidget(self.ui.slice)
         self._tweak_geometry()

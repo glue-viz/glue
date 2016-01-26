@@ -59,6 +59,9 @@ v0.7 (unreleased)
   ``glue.clients.util.visible_limits``               | ``glue.core.util.visible_limits``
   ``glue.clients.util.tick_linker``                  | ``glue.core.util.tick_linker``
   ``glue.clients.util.update_ticks``                 | ``glue.core.util.update_ticks``
+  ``glue.qt.widgets.histogram_widget``               | ``glue.viewers.histogram.qt``
+  ``glue.qt.widgets.scatter_widget``                 | ``glue.viewers.scatter.qt``
+  ``glue.qt.widgets.histogram_widget``               | ``glue.viewers.image.qt``
 
 * Improved under-the-hood creation of ROIs for Scatter and Histogram Clients. [#676]
 

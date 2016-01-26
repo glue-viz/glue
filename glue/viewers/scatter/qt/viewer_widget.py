@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import os
+
 from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui
 from glue import core
@@ -8,12 +10,13 @@ from glue.qt.glue_toolbar import GlueToolbar
 from glue.qt.mouse_mode import (RectangleMode, CircleMode,
                                 PolyMode, HRangeMode, VRangeMode)
 from glue.qt.qtutil import load_ui
-from glue.utils.qt.widget_properties import (ButtonProperty, FloatLineProperty,
-                                       CurrentComboProperty,
-                                       connect_bool_button, connect_float_edit)
 from glue.qt.widgets.data_viewer import DataViewer
 from glue.qt.widgets.mpl_widget import MplWidget, defer_draw
+
 from glue.utils import nonpartial, cache_axes
+from glue.utils.qt.widget_properties import (ButtonProperty, FloatLineProperty,
+                                             CurrentComboProperty,
+                                             connect_bool_button, connect_float_edit)
 
 __all__ = ['ScatterWidget']
 
@@ -51,7 +54,8 @@ class ScatterWidget(DataViewer):
 
         self.setCentralWidget(self.central_widget)
 
-        self.ui = load_ui('scatterwidget', self.option_widget)
+        self.ui = load_ui('options_widget.ui', self.option_widget,
+                          directory=os.path.dirname(__file__))
         self._tweak_geometry()
 
         self.client = ScatterClient(self._data,

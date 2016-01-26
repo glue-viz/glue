@@ -10,7 +10,8 @@ except ImportError:
     plotly = None
 
 from glue.core.layout import Rectangle, snap_to_grid
-from glue.qt.widgets import ScatterWidget, HistogramWidget
+from glue.viewers.scatter.qt import ScatterWidget
+from glue.viewers.histogram.qt import HistogramWidget
 
 SYM = {'o': 'circle', 's': 'square', '+': 'cross', '^': 'triangle-up',
        '*': 'cross'}
