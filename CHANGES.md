@@ -44,6 +44,8 @@ v0.7 (unreleased)
 
   [#827, #828, #829, #830, #831]
 
+* Improved under-the-hood creation of ROIs for Scatter and Histogram Clients. [#676]
+
 v0.6 (2015-11-20)
 -----------------
 

@@ -17,7 +17,9 @@ from ..data import Data, pixel_label
 from ..exceptions import IncompatibleAttribute
 from ..hub import Hub
 from ..registry import Registry
-from ..subset import Subset, SubsetState
+from ..subset import (Subset, CategoricalROISubsetState, SubsetState,
+                      RoiSubsetState, RangeSubsetState, AndState, OrState)
+from ..roi import PolygonalROI, CategoricalROI, RangeROI, RectangularROI
 
 
 class _TestCoordinates(Coordinates):
@@ -342,6 +344,112 @@ class TestData(object):
         np.testing.assert_array_equal(s.to_mask(), [False, True, False])
         d.update_components({d.id['x']: [10, 20, 30]})
         np.testing.assert_array_equal(s.to_mask(), [False, False, False])
+
+class TestROICreation(object):
+
+    def test_range_roi(self):
+
+        d = Data(xdata=[1, 2, 3], ydata=[1, 2, 3])
+        comp = d.get_component(d.id['xdata'])
+        roi = RangeROI('x', min=2,max=3)
+        s = comp.subset_from_roi('xdata', roi)
+        assert isinstance(s, RangeSubsetState)
+        np.testing.assert_array_equal((s.lo, s.hi),
+                                      [2, 3])
+
+        roi = RangeROI('y', min=2,max=3)
+        s = comp.subset_from_roi('xdata', roi, other_att='ydata',
+                                 other_comp=d.get_component(d.id['ydata']))
+        assert isinstance(s, RangeSubsetState)
+        assert s.att == 'ydata'
+
+
+
+    def test_range_roi_categorical(self):
+
+        d = Data(x=['a', 'b', 'c'], y=[1, 2, 3])
+        comp = d.get_component(d.id['x'])
+        roi = CategoricalROI(['b', 'c'])
+        s = comp.subset_from_roi('x', roi)
+        assert isinstance(s, CategoricalROISubsetState)
+        np.testing.assert_array_equal((s.roi.contains(['a', 'b', 'c'], None)),
+                                      [False, True, True])
+
+        roi = RangeROI('x', min=1, max=3)
+        s = comp.subset_from_roi('x', roi)
+        assert isinstance(s, CategoricalROISubsetState)
+        np.testing.assert_array_equal((s.roi.contains(['a', 'b', 'c'], None)),
+                                      [False, True, True])
+
+    def test_polygon_roi(self):
+
+        d = Data(x=[1, 1.3, 3, 10], y=[1, 1.5, 3, 10])
+        x_comp = d.get_component(d.id['x'])
+        y_comp = d.get_component(d.id['y'])
+        roi = PolygonalROI([0, 0, 2, 2], [0, 2, 2, 0])
+        s = x_comp.subset_from_roi('x', roi, other_comp=y_comp, other_att='y')
+        assert isinstance(s, RoiSubsetState)
+        np.testing.assert_array_equal(s.to_mask(d), [True, True, False, False])
+
+    def test_polygon_categorical_rectangular(self):
+
+        d = Data(x=[1, 1.3, 3, 10], y=['a', 'b', 'c', 'd'])
+        x_comp = d.get_component(d.id['x'])
+        y_comp = d.get_component(d.id['y'])
+        roi = PolygonalROI([0, 0, 2, 2], [0, 2, 2, 0])
+        s = x_comp.subset_from_roi('x', roi, other_comp=y_comp, other_att='y')
+        assert isinstance(s, OrState)
+
+        np.testing.assert_array_equal(s.to_mask(d), [True, True, False, False])
+
+    def test_polygon_categorical_arbitrary(self):
+
+        d = Data(x=[1, 1.3, 3, 10], y=['a', 'b', 'c', 'd'])
+        x_comp = d.get_component(d.id['x'])
+        y_comp = d.get_component(d.id['y'])
+        roi = PolygonalROI([0, 4, 4, 1, 0], [-0.5, 3.5, 0, -1, -0.5])
+        s = x_comp.subset_from_roi('x', roi, other_comp=y_comp, other_att='y')
+        assert isinstance(s, OrState)
+
+        np.testing.assert_array_equal(s.to_mask(d), [True, False, True, False])
+
+    def test_rectangular_categorical(self):
+
+        d = Data(x=[1, 1.3, 3, 10], y=['a', 'b', 'c', 'd'])
+        x_comp = d.get_component(d.id['x'])
+        y_comp = d.get_component(d.id['y'])
+        roi = RectangularROI(xmin=-0.1, xmax=2.1, ymin=-0.1, ymax=2.1)
+        s = x_comp.subset_from_roi('x', roi, other_comp=y_comp, other_att='y')
+        assert isinstance(s, OrState)
+
+        np.testing.assert_array_equal(s.to_mask(d), [True, True, False, False])
+
+        s = y_comp.subset_from_roi('y', roi, other_comp=x_comp, other_att='x')
+        assert isinstance(s, OrState)
+
+        np.testing.assert_array_equal(s.to_mask(d), [True, True, False, False])
+
+    def test_polygon_both_categorical_arbitrary(self):
+
+        d = Data(x=['a', 'b', 'c', 'd', 'b', 'c'], y=['p', 'q', 'r', 's', 's', 'q'])
+        x_comp = d.get_component(d.id['x'])
+        y_comp = d.get_component(d.id['y'])
+        roi = PolygonalROI([0.5, 1.5, 2.5, 1, 0.5], [0.5, 0.5, 2.5, 3.5, 0.5])
+        s = x_comp.subset_from_roi('x', roi, other_comp=y_comp, other_att='y')
+        assert isinstance(s, OrState)
+
+        np.testing.assert_array_equal(s.to_mask(d), [False, True, True, False, True, False])
+
+    def test_polygon_both_categorical_empty(self):
+
+        d = Data(x=['a', 'b', 'c', 'd', 'b', 'c'], y=['p', 'q', 'r', 's', 's', 'q'])
+        x_comp = d.get_component(d.id['x'])
+        y_comp = d.get_component(d.id['y'])
+        roi = PolygonalROI([0.5, 0.6, 0.6, 0.5], [0.5, 0.5, 0.6, 0.5])
+        s = x_comp.subset_from_roi('x', roi, other_comp=y_comp, other_att='y')
+        assert isinstance(s, SubsetState)
+
+        np.testing.assert_array_equal(s.to_mask(d), [False, False, False, False, False, False])
 
 
 def test_component_id_item_access():

@@ -5,10 +5,10 @@ import numpy as np
 from glue.core.callback_property import CallbackProperty
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.exceptions import IncompatibleDataException, IncompatibleAttribute
-from glue.core.subset import RangeSubsetState, CategoricalRoiSubsetState
 from glue.core.data import Data
 from glue.core import message as msg
 from glue.core.client import Client
+from glue.core.roi import RangeROI
 from glue.clients.layer_artist import HistogramLayerArtist, LayerArtistContainer
 from glue.clients.util import update_ticks, visible_limits
 from glue.clients.viz_client import init_mpl
@@ -430,15 +430,9 @@ class HistogramClient(Client):
             lo = 10 ** lo
             hi = 10 ** hi
 
-        comp = list(self._get_data_components('x'))
-        if comp:
-            comp = comp[0]
-            if comp.categorical:
-                state = CategoricalRoiSubsetState.from_range(comp, self.component,
-                                                             lo, hi)
-            else:
-                state = RangeSubsetState(lo, hi)
-                state.att = self.component
+        nroi = RangeROI(min=lo, max=hi, orientation='x')
+        for comp in self._get_data_components('x'):
+            state = comp.subset_from_roi(self.component, nroi, coord='x')
             mode = EditSubsetMode()
             visible = [d for d in self.data if self.is_layer_visible(d)]
             focus = visible[0] if len(visible) > 0 else None

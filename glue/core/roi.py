@@ -7,6 +7,7 @@ from matplotlib.patches import Ellipse, Polygon, Rectangle, Path as mplPath
 from matplotlib.transforms import IdentityTransform, blended_transform_factory
 
 from glue.core.exceptions import UndefinedROI
+from glue.utils import points_inside_poly
 
 
 np.seterr(all='ignore')
@@ -15,19 +16,11 @@ np.seterr(all='ignore')
 __all__ = ['Roi', 'RectangularROI', 'CircularROI', 'PolygonalROI',
            'AbstractMplRoi', 'MplRectangularROI', 'MplCircularROI',
            'MplPolygonalROI', 'MplXRangeROI', 'MplYRangeROI',
-           'XRangeROI', 'RangeROI', 'YRangeROI', 'VertexROIBase']
+           'XRangeROI', 'RangeROI', 'YRangeROI', 'VertexROIBase',
+           'CategoricalROI']
 
 PATCH_COLOR = '#FFFF00'
 SCRUBBING_KEY = 'control'
-
-try:
-    from matplotlib.nxutils import points_inside_poly
-except ImportError:  # nxutils removed in MPL v1.3
-    from matplotlib.path import Path as mplPath
-
-    def points_inside_poly(xypts, xyvts):
-        p = mplPath(xyvts)
-        return p.contains_points(xypts)
 
 
 def aspect_ratio(axes):
@@ -165,6 +158,16 @@ class RectangularROI(Roi):
         self.ymin += dy
         self.ymax += dy
 
+    def transpose(self, copy=True):
+        if copy:
+            new = self.copy()
+            new.xmin, new.xmax = self.ymin, self.ymax
+            new.ymin, new.ymax = self.xmin, self.xmax
+            return new
+
+        self.xmin, self.ymin = self.ymin, self.xmin
+        self.xmax, self.ymax = self.ymax, self.xmax
+
     def corner(self):
         return (self.xmin, self.ymin)
 
@@ -235,12 +238,21 @@ class RangeROI(Roi):
     def __init__(self, orientation, min=None, max=None):
         """:param orientation: 'x' or 'y'. Sets which axis to range"""
         super(RangeROI, self).__init__()
-        if orientation not in ['x', 'y']:
-            raise ValueError("Orientation must be one of 'x', 'y'")
 
         self.min = min
         self.max = max
         self.ori = orientation
+
+    @property
+    def ori(self):
+        return self._ori
+
+    @ori.setter
+    def ori(self, value):
+        if value in set('xy'):
+            self._ori = value
+        else:
+            raise ValueError("Orientation must be one of 'x', 'y'")
 
     def __str__(self):
         if self.defined():
@@ -504,10 +516,8 @@ class PolygonalROI(VertexROIBase):
         if not isinstance(y, np.ndarray):
             y = np.asarray(y)
 
-        xypts = np.column_stack((x.flat, y.flat))
-        xyvts = np.column_stack((self.vx, self.vy))
-        result = points_inside_poly(xypts, xyvts)
-        good = np.isfinite(xypts).all(axis=1)
+        result = points_inside_poly(x.flat, y.flat, self.vx, self.vy)
+        good = np.isfinite(x.flat) & np.isfinite(y.flat)
         result[~good] = False
         result.shape = x.shape
         return result
@@ -1161,7 +1171,7 @@ class MplPathROI(MplPolygonalROI):
         self._axes.figure.canvas.draw()
 
 
-class CategoricalRoi(Roi):
+class CategoricalROI(Roi):
 
     """
     A ROI abstraction to represent selections of categorical data.
@@ -1172,6 +1182,11 @@ class CategoricalRoi(Roi):
             self.categories = None
         else:
             self.update_categories(categories)
+
+    def to_polygon(self):
+        """ Just not possible.
+        """
+        raise NotImplementedError
 
     def _categorical_helper(self, indata):
         """
@@ -1229,7 +1244,7 @@ class CategoricalRoi(Roi):
         :param cat_comp: Anything understood by ._categorical_helper ... array, list or component
         :param lo: lower bound of the range
         :param hi: upper bound of the range
-        :return: CategoricalRoi object
+        :return: CategoricalROI object
         """
 
         # Convert lo and hi to integers. Note that if lo or hi are negative,
@@ -1242,7 +1257,7 @@ class CategoricalRoi(Roi):
         lo = np.intp(np.ceil(lo) if lo > 0 else 0)
         hi = np.intp(np.ceil(hi) if hi > 0 else 0)
 
-        roi = CategoricalRoi()
+        roi = CategoricalROI()
         cat_data = cat_comp.categories
         roi.update_categories(cat_data[lo:hi])
 

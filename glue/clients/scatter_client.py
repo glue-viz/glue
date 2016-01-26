@@ -9,8 +9,8 @@ from glue.core.callback_property import (CallbackProperty, add_callback,
 from glue.core.message import ComponentReplacedMessage
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.util import relim
-from glue.core.roi import PolygonalROI, RangeROI, RectangularROI
-from glue.core.subset import RoiSubsetState, RangeSubsetState, CategoricalRoiSubsetState, AndState
+from glue.core.roi import RectangularROI
+from glue.core.subset import RangeSubsetState, CategoricalROISubsetState, AndState
 from glue.core.data import Data, IncompatibleAttribute, ComponentID
 from glue.core.client import Client
 from glue.clients.layer_artist import ScatterLayerArtist, LayerArtistContainer
@@ -265,7 +265,7 @@ class ScatterClient(Client):
                 comp = list(self._get_data_components(coord))
                 if comp:
                     if comp[0].categorical:
-                        subset = CategoricalRoiSubsetState.from_range(comp[0], self._get_attribute(coord), lo, hi)
+                        subset = CategoricalROISubsetState.from_range(comp[0], self._get_attribute(coord), lo, hi)
                     else:
                         subset = RangeSubsetState(lo, hi, self._get_attribute(coord))
                 else:
@@ -279,31 +279,16 @@ class ScatterClient(Client):
         # every editable subset is updated
         # using specified ROI
 
-        if isinstance(roi, RangeROI):
-            lo, hi = roi.range()
-            att = self.xatt if roi.ori == 'x' else self.yatt
-            if self._check_categorical(att):
-                comp = list(self._get_data_components(roi.ori))
-                if comp:
-                    subset_state = CategoricalRoiSubsetState.from_range(comp[0], att, lo, hi)
-                else:
-                    subset_state = None
-            else:
-                subset_state = RangeSubsetState(lo, hi, att)
-        else:
-            if self._check_categorical(self.xatt) or self._check_categorical(self.yatt):
-                subset_state = self._process_categorical_roi(roi)
-            else:
-                subset_state = RoiSubsetState()
-                subset_state.xatt = self.xatt
-                subset_state.yatt = self.yatt
-                x, y = roi.to_polygon()
-                subset_state.roi = PolygonalROI(x, y)
-
-        mode = EditSubsetMode()
-        visible = [d for d in self._data if self.is_visible(d)]
-        focus = visible[0] if len(visible) > 0 else None
-        mode.update(self._data, subset_state, focus_data=focus)
+        for x_comp, y_comp in zip(self._get_data_components('x'),
+                                  self._get_data_components('y')):
+            subset_state = x_comp.subset_from_roi(self.xatt, roi,
+                                                  other_comp=y_comp,
+                                                  other_att=self.yatt,
+                                                  coord='x')
+            mode = EditSubsetMode()
+            visible = [d for d in self._data if self.is_visible(d)]
+            focus = visible[0] if len(visible) > 0 else None
+            mode.update(self._data, subset_state, focus_data=focus)
 
     def _set_xlog(self, state):
         """ Set the x axis scaling

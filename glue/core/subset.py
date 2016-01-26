@@ -6,7 +6,7 @@ import operator
 import numpy as np
 
 from glue.external.six import PY3
-from glue.core.roi import CategoricalRoi
+from glue.core.roi import CategoricalROI
 from glue.core.contracts import contract
 from glue.core.util import split_component_view
 from glue.core.registry import Registry
@@ -20,7 +20,7 @@ from glue.utils import view_shape
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState',
-           'ElementSubsetState', 'RangeSubsetState']
+           'ElementSubsetState', 'RangeSubsetState', 'combine_multiple']
 
 OPSYM = {operator.ge: '>=', operator.gt: '>',
          operator.le: '<=', operator.lt: '<',
@@ -449,10 +449,10 @@ class RoiSubsetState(SubsetState):
         return result
 
 
-class CategoricalRoiSubsetState(SubsetState):
+class CategoricalROISubsetState(SubsetState):
 
     def __init__(self, att=None, roi=None):
-        super(CategoricalRoiSubsetState, self).__init__()
+        super(CategoricalROISubsetState, self).__init__()
         self.att = att
         self.roi = roi
 
@@ -469,7 +469,7 @@ class CategoricalRoiSubsetState(SubsetState):
         return result.ravel()
 
     def copy(self):
-        result = CategoricalRoiSubsetState()
+        result = CategoricalROISubsetState()
         result.att = self.att
         result.roi = self.roi
         return result
@@ -477,8 +477,8 @@ class CategoricalRoiSubsetState(SubsetState):
     @staticmethod
     def from_range(component, att, lo, hi):
 
-        roi = CategoricalRoi.from_range(component, lo, hi)
-        subset = CategoricalRoiSubsetState(roi=roi,
+        roi = CategoricalROI.from_range(component, lo, hi)
+        subset = CategoricalROISubsetState(roi=roi,
                                            att=att)
         return subset
 
@@ -503,6 +503,37 @@ class RangeSubsetState(SubsetState):
 
     def copy(self):
         return RangeSubsetState(self.lo, self.hi, self.att)
+
+
+class MultiRangeSubsetState(SubsetState):
+    """
+    A subset state defined by multiple discontinuous ranges
+
+    Parameters
+    ----------
+    pairs : list
+        A list of (lo, hi) tuples
+    """
+
+    def __init__(self, pairs, att=None):
+        super(MultiRangeSubsetState, self).__init__()
+        self.pairs = pairs
+        self.att = att
+
+    @property
+    def attributes(self):
+        return (self.att,)
+
+    @contract(data='isinstance(Data)', view='array_view')
+    def to_mask(self, data, view=None):
+        x = data[self.att, view]
+        result = np.zeros_like(x, dtype=bool)
+        for lo, hi in self.pairs:
+            result |= (x >= lo) & (x <= hi)
+        return result
+
+    def copy(self):
+        return MultiRangeSubsetState(self.pairs, self.att)
 
 
 class CompositeSubsetState(SubsetState):
@@ -712,3 +743,13 @@ def _combine(subsets, operator):
     result = Subset(None)
     result.subset_state = state
     return result
+
+
+def combine_multiple(subsets, operator):
+    if len(subsets) == 0:
+        return SubsetState()
+    else:
+        combined = subsets[0]
+        for subset in subsets[1:]:
+            combined = operator(combined, subset)
+        return combined

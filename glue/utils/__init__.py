@@ -11,3 +11,4 @@ from __future__ import absolute_import, division, print_function
 from .array import *
 from .matplotlib import *
 from .misc import *
+from .geometry import *
