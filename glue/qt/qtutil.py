@@ -199,7 +199,10 @@ def layer_icon(layer):
 
 def layer_artist_icon(artist):
     """Create a QtGui.QIcon for a LayerArtist instance"""
-    from glue.core.layer_artist import ImageLayerArtist
+
+    # TODO: need a test for this
+
+    from glue.viewers.image.layer_artist import ImageLayerArtist
 
     if not artist.enabled:
         bm = QtGui.QBitmap(icon_path('glue_delete'))
