@@ -3,7 +3,8 @@ from __future__ import absolute_import, division, print_function
 import pytest
 import numpy as np
 
-from ..ds9norm import *
+from ..ds9norm import (log_warp, sqrt_warp, pow_warp, squared_warp, asinh_warp,
+                       linear_warp, cscale, DS9Normalize)
 
 
 def test_log_warp():

@@ -11,7 +11,7 @@ from glue.core.subset import CategorySubsetState
 from glue.core.roi import PointROI
 from glue.core.callback_property import CallbackProperty, add_callback, delay_callback
 from glue.core.data import IncompatibleAttribute, Data
-from glue.clients.viz_client import GenericMplClient
+from glue.viewers.common.viz_client import GenericMplClient
 from glue.plugins.dendro_viewer.layer_artist import DendroLayerArtist
 from glue.utils import nonpartial, lookup_class
 

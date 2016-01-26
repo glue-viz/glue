@@ -78,7 +78,7 @@ Clients
 .. automodapi:: glue.clients.layer_artist
    :no-inheritance-diagram:
 
-.. automodapi:: glue.clients.viz_client
+.. automodapi:: glue.viewers.common.viz_client
    :no-inheritance-diagram:
 
 

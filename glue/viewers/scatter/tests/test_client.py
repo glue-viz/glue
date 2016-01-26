@@ -17,11 +17,11 @@ from glue.core.component import Component, CategoricalComponent
 from glue.core.data_collection import DataCollection
 from glue.core.data import Data
 from glue.core.roi import RectangularROI, XRangeROI, YRangeROI
-from glue.core.subset import RangeSubsetState, CategoricalROISubsetState, AndState, OrState
+from glue.core.subset import RangeSubsetState, CategoricalROISubsetState, OrState
 from glue.tests import example_data
-
-from ..scatter_client import ScatterClient
 from glue.utils import renderless_figure
+
+from ..client import ScatterClient
 
 
 # share matplotlib instance, and disable rendering, for speed

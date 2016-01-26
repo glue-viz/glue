@@ -520,7 +520,7 @@ class StandaloneImageWidget(QtGui.QMainWindow):
             self.set_image(image=image, wcs=wcs, **kwargs)
 
     def _setup_axes(self):
-        from glue.clients.viz_client import init_mpl
+        from glue.viewers.common.viz_client import init_mpl
         _, self._axes = init_mpl(self.central_widget.canvas.fig, axes=None, wcs=True)
         self._axes.set_aspect('equal', adjustable='datalim')
 

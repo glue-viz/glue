@@ -14,13 +14,15 @@ from glue.core.roi import PolygonalROI
 from glue.core.subset import Subset, RoiSubsetState
 from glue.core.data import Data
 from glue.core.exceptions import IncompatibleAttribute
-from glue.clients.layer_artist import (ScatterLayerArtist, LayerArtistContainer,
-                                       ImageLayerArtist, SubsetImageLayerArtist,
-                                       RGBImageLayerArtist,
-                                       ImageLayerBase, RGBImageLayerBase,
-                                       SubsetImageLayerBase, ScatterLayerBase)
-from glue.clients.viz_client import VizClient, init_mpl
+from glue.clients.layer_artist import LayerArtistContainer
 from glue.utils import lookup_class, defer_draw
+
+from glue.viewers.common.viz_client import VizClient, init_mpl
+from glue.viewers.scatter.layer_artist import ScatterLayerBase, ScatterLayerArtist
+
+from .layer_artist import (ImageLayerArtist, SubsetImageLayerArtist,
+                           RGBImageLayerArtist, ImageLayerBase,
+                           RGBImageLayerBase, SubsetImageLayerBase)
 
 
 def requires_data(func):

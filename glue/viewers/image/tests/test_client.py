@@ -10,10 +10,10 @@ from glue.core.link_helpers import LinkSame
 from glue.core.exceptions import IncompatibleAttribute
 from glue import core
 from glue.tests import example_data
-
-from ..image_client import MplImageClient
-from ..layer_artist import RGBImageLayerArtist, ImageLayerArtist
 from glue.utils import renderless_figure
+
+from ..client import MplImageClient
+from ..layer_artist import RGBImageLayerArtist, ImageLayerArtist
 
 
 FIGURE = renderless_figure()

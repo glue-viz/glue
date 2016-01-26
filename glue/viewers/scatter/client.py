@@ -13,10 +13,13 @@ from glue.core.roi import RectangularROI
 from glue.core.subset import RangeSubsetState, CategoricalROISubsetState, AndState
 from glue.core.data import Data, IncompatibleAttribute, ComponentID
 from glue.core.client import Client
-from glue.clients.layer_artist import ScatterLayerArtist, LayerArtistContainer
+from glue.clients.layer_artist import LayerArtistContainer
 from glue.clients.util import update_ticks, visible_limits
-from glue.clients.viz_client import init_mpl
 from glue.utils import lookup_class
+
+from glue.viewers.common.viz_client import init_mpl
+
+from .layer_artist import ScatterLayerArtist
 
 
 class ScatterClient(Client):

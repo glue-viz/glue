@@ -13,10 +13,10 @@ from glue.core.data import Data
 from glue.core.exceptions import IncompatibleDataException
 from glue.core.data_collection import DataCollection
 from glue.core.roi import PolygonalROI
-
-from ..histogram_client import HistogramClient
-from ..layer_artist import HistogramLayerArtist
 from glue.utils import renderless_figure
+
+from ..client import HistogramClient
+from ..layer_artist import HistogramLayerArtist
 
 
 FIGURE = renderless_figure()

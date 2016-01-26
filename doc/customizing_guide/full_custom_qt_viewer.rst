@@ -179,7 +179,7 @@ control-clicking on any layer).
 Conceptually, layer artists can be used to carry out the actual drawing and
 include any logic about how to convert data into visualizations. If you are
 using Matplotlib for your visualization, there are a number of pre-existing
-layer artists in `glue.client.layer_artist`, but otherwise you will need to
+layer artists in `glue.clients.layer_artist`, but otherwise you will need to
 create your own classes.
 
 The minimal layer artist class looks like the following::
