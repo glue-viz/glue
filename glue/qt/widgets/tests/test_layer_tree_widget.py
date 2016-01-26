@@ -38,8 +38,7 @@ class TestLayerTree(object):
     def remove_layer(self, layer):
         """ Remove a layer via the widget remove button """
         self.select_layers(layer)
-        QTest.mousePress(self.widget.layerRemoveButton, Qt.LeftButton)
-        QTest.mouseRelease(self.widget.layerRemoveButton, Qt.LeftButton)
+        QTest.mouseClick(self.widget.layerRemoveButton, Qt.LeftButton)
 
     def add_layer(self, layer=None):
         """ Add a layer through a hub message """
@@ -76,8 +75,7 @@ class TestLayerTree(object):
         mock = MagicMock()
         self.select_layers(grp)
         self.widget.layerTree.selection_changed.connect(mock)
-        QTest.mousePress(self.widget.layerRemoveButton, Qt.LeftButton)
-        QTest.mouseRelease(self.widget.layerRemoveButton, Qt.LeftButton)
+        QTest.mouseClick(self.widget.layerRemoveButton, Qt.LeftButton)
         assert mock.call_count > 0
 
     def test_remove_subset_layer(self):
@@ -92,7 +90,7 @@ class TestLayerTree(object):
         """ Make sure widgets are only removed when selected """
         layer = self.add_layer()
         self.widget.layerTree.clearSelection()
-        QTest.mousePress(self.widget.layerRemoveButton, Qt.LeftButton)
+        QTest.mouseClick(self.widget.layerRemoveButton, Qt.LeftButton)
         assert self.layer_present(layer)
 
     @patch('glue.qt.widgets.layer_tree_widget.LinkEditor')
