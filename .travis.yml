@@ -134,6 +134,8 @@ install:
       export QT_DEBUG_PLUGINS=1;
     fi
 
+  # We need to install glue in order to make sure that the entry points are
+  # installed
   - python setup.py install
 
 script:
