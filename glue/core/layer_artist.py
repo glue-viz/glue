@@ -22,7 +22,7 @@ from glue.core.subset import Subset
 from glue.utils import Pointer, PropertySetMixin
 
 
-__all__ = ['LayerArtistBase', 'LayerArtist', 'LayerArtistContainer']
+__all__ = ['LayerArtistBase', 'MatplotlibLayerArtist', 'LayerArtistContainer']
 
 
 class ChangedTrigger(object):
@@ -198,26 +198,14 @@ class LayerArtistBase(PropertySetMixin):
     __repr__ = __str__
 
 
-"""
-Base-class mixin interfaces for different visualizations.
-"""
-
-
-
-
-"""
-Matplotlib-specific implementations follow
-"""
-
-
-class LayerArtist(LayerArtistBase):
+class MatplotlibLayerArtist(LayerArtistBase):
 
     """
     MPL-specific layer artist base class, that uses an Axes object
     """
 
     def __init__(self, layer, axes):
-        super(LayerArtist, self).__init__(layer)
+        super(MatplotlibLayerArtist, self).__init__(layer)
         self._axes = axes
         self.artists = []
 
@@ -273,6 +261,7 @@ class LayerArtist(LayerArtistBase):
             except ValueError:  # already removed
                 pass
         self.artists = []
+
 
 class LayerArtistContainer(object):
 
@@ -370,7 +359,7 @@ class LayerArtistContainer(object):
         return iter(sorted(self.artists, key=lambda x: x.zorder))
 
     def __contains__(self, item):
-        if isinstance(item, LayerArtist):
+        if isinstance(item, MatplotlibLayerArtist):
             return item in self.artists
         return any(item is a.layer for a in self.artists)
 

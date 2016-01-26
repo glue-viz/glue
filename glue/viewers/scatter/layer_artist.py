@@ -7,7 +7,7 @@ import numpy as np
 from glue.external import six
 from glue.core.subset import Subset
 from glue.core.exceptions import IncompatibleAttribute
-from glue.clients.layer_artist import LayerArtist, ChangedTrigger
+from glue.core.layer_artist import MatplotlibLayerArtist, ChangedTrigger
 
 
 __all__ = ['ScatterLayerArtist']
@@ -33,10 +33,10 @@ class ScatterLayerBase(object):
         pass
 
 
-class ScatterLayerArtist(LayerArtist, ScatterLayerBase):
+class ScatterLayerArtist(MatplotlibLayerArtist, ScatterLayerBase):
     xatt = ChangedTrigger()
     yatt = ChangedTrigger()
-    _property_set = LayerArtist._property_set + ['xatt', 'yatt']
+    _property_set = MatplotlibLayerArtist._property_set + ['xatt', 'yatt']
 
     def __init__(self, layer, ax):
         super(ScatterLayerArtist, self).__init__(layer, ax)

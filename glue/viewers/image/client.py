@@ -14,7 +14,7 @@ from glue.core.roi import PolygonalROI
 from glue.core.subset import Subset, RoiSubsetState
 from glue.core.data import Data
 from glue.core.exceptions import IncompatibleAttribute
-from glue.clients.layer_artist import LayerArtistContainer
+from glue.core.layer_artist import LayerArtistContainer
 from glue.utils import lookup_class, defer_draw
 
 from glue.viewers.common.viz_client import VizClient, init_mpl

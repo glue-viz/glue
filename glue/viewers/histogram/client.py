@@ -9,7 +9,7 @@ from glue.core.data import Data
 from glue.core import message as msg
 from glue.core.client import Client
 from glue.core.roi import RangeROI
-from glue.clients.layer_artist import LayerArtistContainer
+from glue.core.layer_artist import LayerArtistContainer
 from glue.clients.util import update_ticks, visible_limits
 from glue.utils import lookup_class
 

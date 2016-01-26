@@ -6,7 +6,7 @@ import numpy as np
 
 from glue.external import six
 from glue.core.exceptions import IncompatibleAttribute
-from glue.clients.layer_artist import LayerArtist, ChangedTrigger
+from glue.core.layer_artist import MatplotlibLayerArtist, ChangedTrigger
 
 __all__ = ['HistogramLayerArtist']
 
@@ -26,8 +26,8 @@ class HistogramLayerBase(object):
         pass
 
 
-class HistogramLayerArtist(LayerArtist, HistogramLayerBase):
-    _property_set = LayerArtist._property_set + 'lo hi nbins xlog'.split()
+class HistogramLayerArtist(MatplotlibLayerArtist, HistogramLayerBase):
+    _property_set = MatplotlibLayerArtist._property_set + 'lo hi nbins xlog'.split()
 
     lo = ChangedTrigger(0)
     hi = ChangedTrigger(1)

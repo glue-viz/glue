@@ -8,7 +8,7 @@ from matplotlib.cm import gray
 
 from glue.external import six
 from glue.core.exceptions import IncompatibleAttribute
-from glue.clients.layer_artist import LayerArtist, ChangedTrigger
+from glue.core.layer_artist import MatplotlibLayerArtist, ChangedTrigger
 from glue.clients.util import small_view, small_view_array
 from glue.utils import view_cascade, get_extent, color2rgb, Pointer
 
@@ -88,8 +88,8 @@ class SubsetImageLayerBase(object):
     pass
 
 
-class ImageLayerArtist(LayerArtist, ImageLayerBase):
-    _property_set = LayerArtist._property_set + ['norm']
+class ImageLayerArtist(MatplotlibLayerArtist, ImageLayerBase):
+    _property_set = MatplotlibLayerArtist._property_set + ['norm']
 
     def __init__(self, layer, ax):
         super(ImageLayerArtist, self).__init__(layer, ax)
@@ -315,7 +315,7 @@ class RGBImageLayerArtist(ImageLayerArtist, RGBImageLayerBase):
         self._sync_style()
 
 
-class SubsetImageLayerArtist(LayerArtist, SubsetImageLayerBase):
+class SubsetImageLayerArtist(MatplotlibLayerArtist, SubsetImageLayerBase):
 
     def __init__(self, *args, **kwargs):
         super(SubsetImageLayerArtist, self).__init__(*args, **kwargs)

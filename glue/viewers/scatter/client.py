@@ -13,7 +13,7 @@ from glue.core.roi import RectangularROI
 from glue.core.subset import RangeSubsetState, CategoricalROISubsetState, AndState
 from glue.core.data import Data, IncompatibleAttribute, ComponentID
 from glue.core.client import Client
-from glue.clients.layer_artist import LayerArtistContainer
+from glue.core.layer_artist import LayerArtistContainer
 from glue.clients.util import update_ticks, visible_limits
 from glue.utils import lookup_class
 
