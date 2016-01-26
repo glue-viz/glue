@@ -75,7 +75,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="xAxisComboBox">
+         <widget class="QComboBoxRecent" name="xAxisComboBox">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -125,7 +125,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="yAxisComboBox">
+         <widget class="QComboBoxRecent" name="yAxisComboBox">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -339,6 +339,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QComboBoxRecent</class>
+   <extends>QComboBox</extends>
+   <header>glue.utils.qt</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

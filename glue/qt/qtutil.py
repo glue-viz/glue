@@ -396,6 +396,9 @@ def _custom_widgets():
     from glue.qt.link_equation import LinkEquation
     yield LinkEquation
 
+    from glue.utils.qt.qcombobox_recent import QComboBoxRecent
+    yield QComboBoxRecent
+
 
 def load_ui(path, parent=None):
     """
