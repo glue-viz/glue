@@ -4,7 +4,3 @@ from .custom_component_widget import CustomComponentWidget
 from .layer_tree_widget import LayerTreeWidget
 from .message_widget import MessageWidget
 from .mpl_widget import MplWidget
-from .table_widget import TableWidget
-
-# default_widgets = [ScatterWidget, HistogramWidget, ImageWidget]
-default_widgets = []

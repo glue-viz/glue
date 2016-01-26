@@ -5,7 +5,7 @@ import pytest
 from glue.external.qt.QtCore import Qt
 from glue.core import Data
 
-from ..table_widget import DataTableModel
+from ..viewer_widget import DataTableModel
 
 
 class TestDataTableModel(object):

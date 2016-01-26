@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import os
 import numpy as np
 
 from glue.external.qt.QtCore import Qt
@@ -82,7 +83,8 @@ class TableWidget(DataViewer):
 
         super(TableWidget, self).__init__(session, parent)
 
-        self.ui = load_ui('table_widget')
+        self.ui = load_ui('viewer_widget.ui',
+                          directory=os.path.dirname(__file__))
         self.setCentralWidget(self.ui)
 
         hdr = self.ui.table.horizontalHeader()
