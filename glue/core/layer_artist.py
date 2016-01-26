@@ -310,7 +310,7 @@ class LayerArtistContainer(object):
         """Remove a LayerArtist from this collection
 
         :param artist: The artist to remove
-        :type artist: :class:`LayerArtist`
+        :type artist: :class:`MatplotlibLayerArtist`
         """
         try:
             self.artists.remove(artist)

@@ -36,7 +36,7 @@ Plot Options
 
 Here are the settings associated with each data viewer:
 
-.. currentmodule:: glue.qt.widgets.scatter_widget
+.. currentmodule:: glue.viewers.scatter.qt.viewer_widget
 
 :class:`Scatter Plots <ScatterWidget>`
 --------------------------------------
@@ -54,7 +54,7 @@ Here are the settings associated with each data viewer:
     ~ScatterWidget.xatt
     ~ScatterWidget.yatt
 
-.. currentmodule:: glue.qt.widgets.image_widget
+.. currentmodule:: glue.viewers.image.qt.viewer_widget
 
 :class:`Image Viewer <ImageWidget>`
 ------------------------------------
@@ -65,7 +65,7 @@ Here are the settings associated with each data viewer:
     ~ImageWidget.rgb_mode
     ~ImageWidget.slice
 
-.. currentmodule:: glue.qt.widgets.histogram_widget
+.. currentmodule:: glue.viewers.histogram.qt.viewer_widget
 
 :class:`Histogram Viewer <HistogramWidget>`
 ---------------------------------------------

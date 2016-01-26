@@ -262,17 +262,18 @@ def small_view_array(data):
 
 
 def visible_limits(artists, axis):
-    """Determines the data limits for the data in a set of artists
+    """
+    Determines the data limits for the data in a set of artists.
 
     Ignores non-visible artists
 
     Assumes each artist as a get_data method wich returns a tuple of x,y
 
+    Returns a tuple of min, max for the requested axis, or None if no data
+    present
+
     :param artists: An iterable collection of artists
     :param axis: Which axis to compute. 0=xaxis, 1=yaxis
-
-    :rtype: A tuple of min, max for the requested axis, or None if
-            no data present
     """
     data = []
     for art in artists:
@@ -310,8 +311,10 @@ def tick_linker(all_categories, pos, *args):
 
 
 def update_ticks(axes, coord, components, is_log):
-    """ Changes the axes to have the proper tick formatting based on the
-     type of component.
+    """
+    Changes the axes to have the proper tick formatting based on the type of
+    component.
+
     :param axes: A matplotlib axis object to alter
     :param coord: 'x' or 'y'
     :param components: A list() of components that are plotted along this axis
