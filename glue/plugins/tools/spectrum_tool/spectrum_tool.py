@@ -13,7 +13,6 @@ from glue.core.exceptions import IncompatibleAttribute
 from glue.core import Subset
 from glue.core.callback_property import add_callback, ignore_callback
 from glue.config import fit_plugin
-from glue.clients.profile_viewer import ProfileViewer
 from glue.qt.glue_toolbar import GlueToolbar
 from glue.qt.mime import LAYERS_MIME_TYPE
 from glue.qt.mouse_mode import SpectrumExtractorMode
@@ -25,6 +24,7 @@ from glue.qt.widgets.mpl_widget import MplWidget
 from glue.utils import nonpartial, Pointer
 from glue.utils.qt import Worker, messagebox_on_error
 
+from .profile_viewer import ProfileViewer
 
 def setup():
     from glue.config import tool_registry
@@ -162,7 +162,7 @@ class SpectrumContext(object):
         self._connect()
 
     def _setup_grip(self):
-        """ Create a :class:`~glue.clients.profile_viewer.Grip` object
+        """ Create a :class:`~glue.plugins.tools.spectrum_tool.profile_viewer.Grip` object
             to interact with the plot. Assign to self.grip
         """
         raise NotImplementedError()

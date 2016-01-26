@@ -53,6 +53,7 @@ v0.7 (unreleased)
   ``glue.clients.layer_artist.ChangedTrigger``       | ``glue.clients.layer_artist.ChangedTrigger``
   ``glue.clients.layer_artist.LayerArtistContainer`` | ``glue.clients.layer_artist.LayerArtistContainer``
   ``glue.clients.ds9norm``                           | ``glue.viewers.image.ds9norm``
+  ``glue.clients.profile_viewer``                    | ``glue.plugins.tools.spectrum_viewer.profile_viewer``
 
 * Improved under-the-hood creation of ROIs for Scatter and Histogram Clients. [#676]
 
