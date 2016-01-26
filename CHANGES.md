@@ -64,6 +64,8 @@ v0.7 (unreleased)
   ``glue.qt.widgets.histogram_widget``               | ``glue.viewers.image.qt``
   ``glue.qt.widgets.table_widget_``                  | ``glue.viewers.table.qt``
 
+  [#835]
+
 * Improved under-the-hood creation of ROIs for Scatter and Histogram Clients. [#676]
 
 v0.6 (2015-11-20)
