@@ -11,7 +11,7 @@ from glue.core.client import Client
 from glue.core.roi import RangeROI
 from glue.core.state import lookup_class_with_patches
 from glue.core.layer_artist import LayerArtistContainer
-from glue.clients.util import update_ticks, visible_limits
+from glue.core.util import update_ticks, visible_limits
 
 from glue.viewers.common.viz_client import init_mpl
 

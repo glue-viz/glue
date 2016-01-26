@@ -9,7 +9,7 @@ from matplotlib.cm import gray
 from glue.external import six
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.layer_artist import MatplotlibLayerArtist, ChangedTrigger
-from glue.clients.util import small_view, small_view_array
+from glue.core.util import small_view, small_view_array
 from glue.utils import view_cascade, get_extent, color2rgb, Pointer
 
 from .ds9norm import DS9Normalize

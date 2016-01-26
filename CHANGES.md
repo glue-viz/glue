@@ -54,6 +54,11 @@ v0.7 (unreleased)
   ``glue.clients.layer_artist.LayerArtistContainer`` | ``glue.clients.layer_artist.LayerArtistContainer``
   ``glue.clients.ds9norm``                           | ``glue.viewers.image.ds9norm``
   ``glue.clients.profile_viewer``                    | ``glue.plugins.tools.spectrum_viewer.profile_viewer``
+  ``glue.clients.util.small_view``                   | ``glue.core.util.small_view``
+  ``glue.clients.util.small_view_array``             | ``glue.core.util.small_view_array``
+  ``glue.clients.util.visible_limits``               | ``glue.core.util.visible_limits``
+  ``glue.clients.util.tick_linker``                  | ``glue.core.util.tick_linker``
+  ``glue.clients.util.update_ticks``                 | ``glue.core.util.update_ticks``
 
 * Improved under-the-hood creation of ROIs for Scatter and Histogram Clients. [#676]
 

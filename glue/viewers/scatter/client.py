@@ -8,14 +8,13 @@ from glue.core.callback_property import (CallbackProperty, add_callback,
                                          delay_callback)
 from glue.core.message import ComponentReplacedMessage
 from glue.core.edit_subset_mode import EditSubsetMode
-from glue.core.util import relim
 from glue.core.roi import RectangularROI
 from glue.core.subset import RangeSubsetState, CategoricalROISubsetState, AndState
 from glue.core.data import Data, IncompatibleAttribute, ComponentID
 from glue.core.client import Client
 from glue.core.layer_artist import LayerArtistContainer
 from glue.core.state import lookup_class_with_patches
-from glue.clients.util import update_ticks, visible_limits
+from glue.core.util import relim, update_ticks, visible_limits
 
 from glue.viewers.common.viz_client import init_mpl
 
