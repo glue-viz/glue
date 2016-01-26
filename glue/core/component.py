@@ -124,7 +124,8 @@ class Component(object):
         :return: A SubsetState (or subclass) object
         """
 
-        assert coord in set('xy')
+        if coord not in ('x', 'y'):
+            raise ValueError('coord should be one of x/y')
 
         if isinstance(roi, RangeROI):
 
@@ -447,6 +448,9 @@ class CategoricalComponent(Component):
         :param is_nested: True if this was passed from another Component.
         :return: A SubsetState (or subclass) object
         """
+
+        if coord not in ('x', 'y'):
+            raise ValueError('coord should be one of x/y')
 
         if isinstance(roi, RangeROI):
 
