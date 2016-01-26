@@ -72,15 +72,14 @@ User Interface
 .. automodapi:: glue
    :no-inheritance-diagram:
 
-Clients
-=======
-
-.. automodapi:: glue.clients.layer_artist
+.. automodapi:: glue.core.layer_artist
    :no-inheritance-diagram:
+
+Viewers
+=======
 
 .. automodapi:: glue.viewers.common.viz_client
    :no-inheritance-diagram:
-
 
 Utilities
 =========

@@ -292,18 +292,18 @@ nitpick_ignore = [('py:class', 'object'), ('py:class', 'str'),
                   ('py:class', 'builtins.object'),
                   ('py:class', 'builtins.list'),
                   ('py:class', 'builtins.type'),
-                  ('py:class', 'glue.clients.layer_artist.HistogramLayerBase'),
-                  ('py:class', 'glue.clients.layer_artist.ScatterLayerBase'),
-                  ('py:class', 'glue.clients.layer_artist.ImageLayerBase'),
-                  ('py:class', 'glue.clients.layer_artist.RGBImageLayerBase'),
-                  ('py:class', 'glue.qt.widgets.image_widget.ImageWidgetBase'),
+                  ('py:class', 'glue.viewers.histogram.layer_artist.HistogramLayerBase'),
+                  ('py:class', 'glue.viewers.scatter.layer_artist.ScatterLayerBase'),
+                  ('py:class', 'glue.viewers.image.layer_artist.ImageLayerBase'),
+                  ('py:class', 'glue.viewers.image.layer_artist.RGBImageLayerBase'),
+                  ('py:class', 'glue.viewers.image.qt.ImageWidgetBase'),
                   ('py:class', 'PyQt4.QtGui.QMainWindow'),
                   ('py:class', 'PyQt4.QtGui.QWidget'),
                   # TODO: the next four should be fixable
-                  ('py:obj', 'glue.qt.widgets.image_widget.ImageWidget.data'),
-                  ('py:obj', 'glue.qt.widgets.image_widget.ImageWidget.attribute'),
-                  ('py:obj', 'glue.qt.widgets.image_widget.ImageWidget.rgb_mode'),
-                  ('py:obj', 'glue.qt.widgets.image_widget.ImageWidget.slice')
+                  ('py:obj', 'glue.viewers.image.qt.ImageWidget.data'),
+                  ('py:obj', 'glue.viewers.image.qt.ImageWidget.attribute'),
+                  ('py:obj', 'glue.viewers.image.qt.ImageWidget.rgb_mode'),
+                  ('py:obj', 'glue.viewers.image.qt.ImageWidget.slice')
               ]
 
 
