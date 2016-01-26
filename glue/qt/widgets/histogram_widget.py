@@ -5,7 +5,7 @@ from functools import partial
 from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui
 from glue.core import message as msg
-from glue.clients.histogram_client import HistogramClient
+from glue.viewers.histogram.client import HistogramClient
 from glue.qt.glue_toolbar import GlueToolbar
 from glue.qt.mouse_mode import HRangeMode
 from glue.qt.qtutil import load_ui

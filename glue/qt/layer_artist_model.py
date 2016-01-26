@@ -13,7 +13,7 @@ from __future__ import absolute_import, division, print_function
 
 from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui, QtCore
-from glue.clients.layer_artist import LayerArtistBase, LayerArtistContainer
+from glue.core.layer_artist import LayerArtistBase, LayerArtistContainer
 from glue.qt.qtutil import layer_artist_icon
 from glue.qt.mime import LAYERS_MIME_TYPE
 from glue.qt.widgets.style_dialog import StyleDialog

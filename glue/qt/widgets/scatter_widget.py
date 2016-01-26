@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui
 from glue import core
-from glue.clients.scatter_client import ScatterClient
+from glue.viewers.scatter.client import ScatterClient
 from glue.qt.glue_toolbar import GlueToolbar
 from glue.qt.mouse_mode import (RectangleMode, CircleMode,
                                 PolyMode, HRangeMode, VRangeMode)

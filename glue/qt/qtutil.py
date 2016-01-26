@@ -199,7 +199,7 @@ def layer_icon(layer):
 
 def layer_artist_icon(artist):
     """Create a QtGui.QIcon for a LayerArtist instance"""
-    from glue.clients.layer_artist import ImageLayerArtist
+    from glue.core.layer_artist import ImageLayerArtist
 
     if not artist.enabled:
         bm = QtGui.QBitmap(icon_path('glue_delete'))
@@ -242,13 +242,13 @@ class RGBEdit(QtGui.QWidget):
 
     Based off the ds9 RGB Frame widget
 
-    :param artist: A :class:`~glue.clients.layer_artists.RGBLayerArtist`
+    :param artist: A :class:`~glue.viewers.image.layer_artist.RGBArtistLayerArtist`
                    instance to control
 
     :param parent: Optional widget parent
 
     This widget sets the state of the artist object, such that contrast
-    adjustments from a :class:`~glue.clients.image_client` affect
+    adjustments from a :class:`~glue.viewers.image.client` affect
     a particular RGB slice
     """
     current_changed = QtCore.Signal(str)

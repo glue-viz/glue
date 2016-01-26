@@ -9,9 +9,9 @@ from glue.core.data import Data
 from glue.core import message as msg
 from glue.core.client import Client
 from glue.core.roi import RangeROI
+from glue.core.state import lookup_class_with_patches
 from glue.core.layer_artist import LayerArtistContainer
 from glue.clients.util import update_ticks, visible_limits
-from glue.utils import lookup_class
 
 from glue.viewers.common.viz_client import init_mpl
 
@@ -473,7 +473,7 @@ class HistogramClient(Client):
 
     def restore_layers(self, layers, context):
         for layer in layers:
-            lcls = lookup_class(layer.pop('_type'))
+            lcls = lookup_class_with_patches(layer.pop('_type'))
             if lcls != HistogramLayerArtist:
                 raise ValueError("Cannot restore layers of type %s" % lcls)
             data_or_subset = context.object(layer.pop('layer'))

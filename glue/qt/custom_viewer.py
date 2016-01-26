@@ -79,11 +79,13 @@ from glue.external import six
 from glue.external.qt import QtGui
 from glue.external.qt.QtCore import Qt
 
-from glue.clients import LayerArtist, GenericMplClient
+from glue.core.layer_artist import MatplotlibLayerArtist
 from glue.core import Data
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.utils import nonpartial, as_list, all_artists, new_artists, remove_artists
 from glue import core
+
+from glue.viewers.common.viz_client import GenericMplClient
 
 from glue.qt.widgets.data_viewer import DataViewer
 from glue.utils.qt.widget_properties import (ValueProperty, ButtonProperty,
@@ -781,7 +783,7 @@ class CustomViewer(object):
         return result
 
 
-class CustomArtist(LayerArtist):
+class CustomArtist(MatplotlibLayerArtist):
 
     """
     LayerArtist for custom viewers

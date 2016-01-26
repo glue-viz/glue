@@ -4,10 +4,10 @@ import numpy as np
 
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.subset import Subset
-from glue.clients.layer_artist import LayerArtist, ChangedTrigger
+from glue.core.layer_artist import MatplotlibLayerArtist, ChangedTrigger
 
 
-class DendroLayerArtist(LayerArtist):
+class DendroLayerArtist(MatplotlibLayerArtist):
     # X vertices of structure i are in layout[0][3*i: 3*i+3]
     layout = ChangedTrigger()
 

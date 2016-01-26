@@ -14,8 +14,8 @@ from glue.core.subset import RangeSubsetState, CategoricalROISubsetState, AndSta
 from glue.core.data import Data, IncompatibleAttribute, ComponentID
 from glue.core.client import Client
 from glue.core.layer_artist import LayerArtistContainer
+from glue.core.state import lookup_class_with_patches
 from glue.clients.util import update_ticks, visible_limits
-from glue.utils import lookup_class
 
 from glue.viewers.common.viz_client import init_mpl
 
@@ -439,7 +439,7 @@ class ScatterClient(Client):
     def restore_layers(self, layers, context):
         """ Re-generate a list of plot layers from a glue-serialized list"""
         for l in layers:
-            cls = lookup_class(l.pop('_type'))
+            cls = lookup_class_with_patches(l.pop('_type'))
             if cls != ScatterLayerArtist:
                 raise ValueError("Scatter client cannot restore layer of type "
                                  "%s" % cls)

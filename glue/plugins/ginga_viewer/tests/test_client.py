@@ -5,7 +5,7 @@ import numpy as np
 from numpy.testing import assert_array_equal
 
 from glue.core import Data
-from glue.clients.tests.test_image_client import _TestImageClientBase
+from glue.viewers.image.tests.test_client import _TestImageClientBase
 from glue.tests.helpers import GINGA_INSTALLED
 
 if not GINGA_INSTALLED:

@@ -44,6 +44,16 @@ v0.7 (unreleased)
 
   [#827, #828, #829, #830, #831]
 
+  The following sub-modules/classes have moved:
+
+  ``glue.clients.histogram_client``                  | ``glue.viewers.histogram.client``
+  ``glue.clients.image_client``                      | ``glue.viewers.image.client``
+  ``glue.clients.scatter_client``                    | ``glue.viewers.scatter.client``
+  ``glue.clients.layer_artist.LayerArtist``          | ``glue.clients.layer_artist.MatplotlibLayerArtist``
+  ``glue.clients.layer_artist.ChangedTrigger``       | ``glue.clients.layer_artist.ChangedTrigger``
+  ``glue.clients.layer_artist.LayerArtistContainer`` | ``glue.clients.layer_artist.LayerArtistContainer``
+  ``glue.clients.ds9norm``                           | ``glue.viewers.image.ds9norm``
+
 * Improved under-the-hood creation of ROIs for Scatter and Histogram Clients. [#676]
 
 v0.6 (2015-11-20)

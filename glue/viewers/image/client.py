@@ -15,7 +15,8 @@ from glue.core.subset import Subset, RoiSubsetState
 from glue.core.data import Data
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.layer_artist import LayerArtistContainer
-from glue.utils import lookup_class, defer_draw
+from glue.core.state import lookup_class_with_patches
+from glue.utils import defer_draw
 
 from glue.viewers.common.viz_client import VizClient, init_mpl
 from glue.viewers.scatter.layer_artist import ScatterLayerBase, ScatterLayerArtist
@@ -620,7 +621,7 @@ class ImageClient(VizClient):
         Restore a list of glue-serialized layer dicts.
         """
         for layer in layers:
-            c = lookup_class(layer.pop('_type'))
+            c = lookup_class_with_patches(layer.pop('_type'))
             props = dict((k, v if k == 'stretch' else context.object(v))
                          for k, v in layer.items())
             l = props['layer']

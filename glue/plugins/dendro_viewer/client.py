@@ -7,13 +7,14 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 
 from glue.core.edit_subset_mode import EditSubsetMode
+from glue.core.state import lookup_class_with_patches
 from glue.core.subset import CategorySubsetState
 from glue.core.roi import PointROI
 from glue.core.callback_property import CallbackProperty, add_callback, delay_callback
 from glue.core.data import IncompatibleAttribute, Data
 from glue.viewers.common.viz_client import GenericMplClient
 from glue.plugins.dendro_viewer.layer_artist import DendroLayerArtist
-from glue.utils import nonpartial, lookup_class
+from glue.utils import nonpartial
 
 
 class DendroClient(GenericMplClient):
@@ -245,7 +246,7 @@ class DendroClient(GenericMplClient):
         Re-generate a list of plot layers from a glue-serialized list
         """
         for l in layers:
-            cls = lookup_class(l.pop('_type'))
+            cls = lookup_class_with_patches(l.pop('_type'))
             if cls != DendroLayerArtist:
                 raise ValueError("Dendrogram client cannot restore layer of type "
                                  "%s" % cls)

@@ -5,8 +5,8 @@ from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui, QtCore
 from glue.core.callback_property import add_callback, delay_callback
 from glue import core
-from glue.clients.ds9norm import DS9Normalize
-from glue.clients.image_client import MplImageClient
+from glue.viewers.image.ds9norm import DS9Normalize
+from glue.viewers.image.client import MplImageClient
 from glue.qt.glue_toolbar import GlueToolbar
 from glue.qt.mouse_mode import (RectangleMode, CircleMode, PolyMode,
                                 ContrastMode)

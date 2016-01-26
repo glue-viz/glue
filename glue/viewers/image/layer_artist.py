@@ -54,7 +54,7 @@ class ImageLayerBase(object):
     def set_norm(self, **kwargs):
         """
         Adjust the normalization instance parameters.
-        See :class:`glue.clients.ds9norm.DS9Normalize attributes for valid
+        See :class:`glue.viewers.image.ds9norm.DS9Normalize attributes for valid
         kwargs for this function
         """
         pass
