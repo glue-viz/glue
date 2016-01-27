@@ -8,11 +8,11 @@ from mock import MagicMock, patch
 from glue.core import Data, DataCollection
 from glue.qt.glue_application import GlueApplication
 
-from . import simple_session
+from glue.qt.widgets.tests import simple_session
 from ..data_viewer import DataViewer
-from ..histogram_widget import HistogramWidget
-from ..image_widget import ImageWidget
-from ..scatter_widget import ScatterWidget
+from glue.viewers.histogram.qt import HistogramWidget
+from glue.viewers.image.qt import ImageWidget
+from glue.viewers.scatter.qt import ScatterWidget
 
 
 # TODO: We should maybe consider running these tests for all
@@ -44,7 +44,7 @@ class BaseTestDataViewer(object):
         app = GlueApplication(dc)
 
         try:
-            from ..mpl_widget import MplCanvas
+            from glue.qt.widgets.mpl_widget import MplCanvas
             draw = MplCanvas.draw
             MplCanvas.draw = MagicMock()
 

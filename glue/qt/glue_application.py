@@ -24,6 +24,8 @@ from glue.qt.widgets.glue_mdi_area import GlueMdiArea, GlueMdiSubWindow
 from glue.qt.widgets.layer_tree_widget import PlotAction, LayerTreeWidget
 from glue.qt.widgets.mpl_widget import defer_draw
 from glue.qt.widgets.settings_editor import SettingsEditor
+from glue.viewers.image.qt import ImageWidget
+from glue.viewers.scatter.qt import ScatterWidget
 from glue.utils import nonpartial
 from glue.utils.qt import (pick_class, GlueTabBar, QMessageBoxPatched as
                            QMessageBox, set_cursor, messagebox_on_error)
@@ -661,7 +663,6 @@ class GlueApplication(Application, QtGui.QMainWindow):
         """
 
         from glue.config import qt_client
-        from glue.qt.widgets import ScatterWidget, ImageWidget
 
         if data and data.ndim == 1 and ScatterWidget in qt_client.members:
             default = qt_client.members.index(ScatterWidget)

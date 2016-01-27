@@ -5,7 +5,7 @@ from mock import MagicMock
 from numpy.testing import assert_allclose
 
 from glue.core import Data
-from glue.qt.widgets.image_widget import StandaloneImageWidget
+from glue.viewers.image.qt import StandaloneImageWidget
 from glue.tests.helpers import requires_astropy, requires_scipy
 
 from ..pv_slicer import _slice_from_path, _slice_label, _slice_index, PVSliceWidget

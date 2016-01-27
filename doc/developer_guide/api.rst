@@ -51,13 +51,13 @@ User Interface
 .. automodapi:: glue.qt.widgets.data_viewer
    :no-inheritance-diagram:
 
-.. automodapi:: glue.qt.widgets.scatter_widget
+.. automodapi:: glue.viewers.scatter.qt.viewer_widget
    :no-inheritance-diagram:
 
-.. automodapi:: glue.qt.widgets.image_widget
+.. automodapi:: glue.viewers.image.qt.viewer_widget
    :no-inheritance-diagram:
 
-.. automodapi:: glue.qt.widgets.histogram_widget
+.. automodapi:: glue.viewers.histogram.qt.viewer_widget
    :no-inheritance-diagram:
 
 .. automodapi:: glue.qt.glue_application
@@ -72,15 +72,14 @@ User Interface
 .. automodapi:: glue
    :no-inheritance-diagram:
 
-Clients
+.. automodapi:: glue.core.layer_artist
+   :no-inheritance-diagram:
+
+Viewers
 =======
 
-.. automodapi:: glue.clients.layer_artist
+.. automodapi:: glue.viewers.common.viz_client
    :no-inheritance-diagram:
-
-.. automodapi:: glue.clients.viz_client
-   :no-inheritance-diagram:
-
 
 Utilities
 =========

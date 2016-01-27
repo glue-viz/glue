@@ -10,7 +10,8 @@ from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui
 from glue.core import Data, Subset
 from glue.config import data_factory
-from glue.clients.layer_artist import RGBImageLayerArtist
+
+from glue.viewers.image.layer_artist import RGBImageLayerArtist
 
 from .. import qtutil
 from ..qtutil import GlueDataDialog

@@ -199,7 +199,10 @@ def layer_icon(layer):
 
 def layer_artist_icon(artist):
     """Create a QtGui.QIcon for a LayerArtist instance"""
-    from glue.clients.layer_artist import ImageLayerArtist
+
+    # TODO: need a test for this
+
+    from glue.viewers.image.layer_artist import ImageLayerArtist
 
     if not artist.enabled:
         bm = QtGui.QBitmap(icon_path('glue_delete'))
@@ -242,13 +245,13 @@ class RGBEdit(QtGui.QWidget):
 
     Based off the ds9 RGB Frame widget
 
-    :param artist: A :class:`~glue.clients.layer_artists.RGBLayerArtist`
+    :param artist: A :class:`~glue.viewers.image.layer_artist.RGBArtistLayerArtist`
                    instance to control
 
     :param parent: Optional widget parent
 
     This widget sets the state of the artist object, such that contrast
-    adjustments from a :class:`~glue.clients.image_client` affect
+    adjustments from a :class:`~glue.viewers.image.client` affect
     a particular RGB slice
     """
     current_changed = QtCore.Signal(str)
@@ -397,7 +400,7 @@ def _custom_widgets():
     yield LinkEquation
 
 
-def load_ui(path, parent=None):
+def load_ui(path, parent=None, directory=None):
     """
     Load a UI file, given its name.
 
@@ -418,11 +421,13 @@ def load_ui(path, parent=None):
       The new widget
     """
 
-    if not os.path.exists(path):
-        path = global_ui_path(path)
+    if directory is not None:
+        full_path = os.path.join(directory, path)
+    elif not os.path.exists(path):
+        full_path = global_ui_path(path)
 
     from glue.external.qt import load_ui
-    return load_ui(path, parent, custom_widgets=_custom_widgets())
+    return load_ui(full_path, parent, custom_widgets=_custom_widgets())
 
 
 def global_ui_path(ui_name):

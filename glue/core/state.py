@@ -95,7 +95,7 @@ for line in open(os.path.join(os.path.dirname(__file__), 'state_path_patches.txt
     PATH_PATCHES[before.strip()] = after.strip()
 
 
-def _lookup(name):
+def lookup_class_with_patches(name):
     """
     A wrapper to lookup_class that also patches paths to ensure
     backward-compatibility when functions/classes are moved around.
@@ -389,7 +389,7 @@ class GlueUnSerializer(object):
 
     def _dispatch(self, rec):
 
-        typ = _lookup(rec['_type'])
+        typ = lookup_class_with_patches(rec['_type'])
 
         if typ is None:
             raise GlueSerializeError("Unkonwn type %s" % rec['_type'])
@@ -477,7 +477,7 @@ def _save_composite_subset_state(state, context):
 
 @loader(CompositeSubsetState)
 def _load_composite_subset_state(rec, context):
-    cls = _lookup(rec['_type'])
+    cls = lookup_class_with_patches(rec['_type'])
     result = cls(context.object(rec['state1']),
                  context.object(rec['state2']))
     return result
@@ -770,8 +770,8 @@ def _load_coordinate_component_link(rec, context):
 @saver(types.FunctionType)
 def _save_function(function, context):
     ref = "%s.%s" % (function.__module__, function.__name__)
-    if _lookup(ref) is function:
-        l = _lookup(ref)
+    if lookup_class_with_patches(ref) is function:
+        l = lookup_class_with_patches(ref)
         return {'function': ref}
     return {'pickle': gp.dumps(function).encode('base64')}
 
@@ -780,7 +780,7 @@ def _save_function(function, context):
 def _load_function(rec, context):
     if 'pickle' in rec:
         return gp.loads(rec['pickle'].decode('base64'))
-    return _lookup(rec['function'])
+    return lookup_class_with_patches(rec['function'])
 
 
 @saver(core.Session)

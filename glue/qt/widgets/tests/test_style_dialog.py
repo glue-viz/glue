@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from glue.external.qt import QtCore
 from glue.core import Data
 
-from . import simple_session
+from glue.qt.widgets.tests import simple_session
 from ..style_dialog import StyleDialog
 
 

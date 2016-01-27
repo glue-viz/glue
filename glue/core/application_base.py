@@ -262,7 +262,7 @@ class ViewerBase(HubListener, PropertySetMixin):
 
     """ Base class for data viewers in an application """
 
-    # the glue.clients.layer_artist.LayerArtistContainer
+    # the glue.core.layer_artist.LayerArtistContainer
     # class/subclass to use
     _layer_artist_container_cls = None
 

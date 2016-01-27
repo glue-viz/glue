@@ -5,9 +5,9 @@ from ..config import qt_client, link_function, data_factory
 
 def test_default_clients():
 
-    from ..qt.widgets.image_widget import ImageWidget
-    from ..qt.widgets.scatter_widget import ScatterWidget
-    from ..qt.widgets.histogram_widget import HistogramWidget
+    from glue.viewers.image.qt import ImageWidget
+    from glue.viewers.scatter.qt import ScatterWidget
+    from glue.viewers.histogram.qt import HistogramWidget
 
     assert ImageWidget in qt_client
     assert ScatterWidget in qt_client
