@@ -18,7 +18,7 @@ class GlueMdiArea(QtGui.QMdiArea):
     def __init__(self, application, parent=None):
         """
         :param application: The Glue application to which this is attached
-        :type application: :class:`~glue.qt.glue_application.GlueApplication`
+        :type application: :class:`~glue.app.qt.application.GlueApplication`
         """
         super(GlueMdiArea, self).__init__(parent)
         self._application = application

@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 
 from glue.core import Data, DataCollection
-from glue.qt.glue_application import GlueApplication
+from glue.app.qt import GlueApplication
 
 from glue.viewers.scatter.qt import ScatterWidget
 from glue.viewers.histogram.qt import HistogramWidget

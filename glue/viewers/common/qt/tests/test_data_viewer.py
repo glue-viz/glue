@@ -6,7 +6,7 @@ import numpy as np
 from mock import MagicMock, patch
 
 from glue.core import Data, DataCollection
-from glue.qt.glue_application import GlueApplication
+from glue.app.qt import GlueApplication
 
 from glue.qt.widgets.tests import simple_session
 from ..data_viewer import DataViewer

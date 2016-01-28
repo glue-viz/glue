@@ -14,12 +14,17 @@ except:
     ipy_version = '0.0'
 
 from glue.external.qt import QtCore
-from glue.core import Data
+from glue.core.data import Data
+from glue.core.component_link import ComponentLink
+from glue.core.data_collection import DataCollection
+from glue.core.tests.test_state import Cloner, containers_equal, doubler, clone
 from glue.tests.helpers import requires_ipython_ge_012
 from glue.viewers.image.qt import ImageWidget
 from glue.viewers.scatter.qt import ScatterWidget
+from glue.viewers.histogram.qt import HistogramWidget
 
-from ..glue_application import GlueApplication
+
+from ..application import GlueApplication
 
 
 os.environ['GLUE_TESTING'] = 'True'
@@ -45,7 +50,7 @@ class TestGlueApplication(object):
 
     def test_save_session(self):
         self.app.save_session = MagicMock()
-        with patch('glue.qt.glue_application.QtGui.QFileDialog') as fd:
+        with patch('glue.app.qt.application.QtGui.QFileDialog') as fd:
             fd.getSaveFileName.return_value = '/tmp/junk', 'jnk'
             self.app._choose_save_session()
             self.app.save_session.assert_called_once_with('/tmp/junk.glu', include_data=False)
@@ -53,14 +58,14 @@ class TestGlueApplication(object):
     def test_save_session_cancel(self):
         """shouldnt try to save file if no file name provided"""
         self.app.save_session = MagicMock()
-        with patch('glue.qt.glue_application.QtGui.QFileDialog') as fd:
+        with patch('glue.app.qt.application.QtGui.QFileDialog') as fd:
             fd.getSaveFileName.return_value = '', 'jnk'
             self.app._choose_save_session()
             assert self.app.save_session.call_count == 0
 
     def test_choose_save_session_ioerror(self):
         """should show box on ioerror"""
-        with patch('glue.qt.glue_application.QtGui.QFileDialog') as fd:
+        with patch('glue.app.qt.application.QtGui.QFileDialog') as fd:
             if sys.version_info[0] == 2:
                 mock_open = '__builtin__.open'
             else:
@@ -68,7 +73,7 @@ class TestGlueApplication(object):
             with patch(mock_open) as op:
                 op.side_effect = IOError
                 fd.getSaveFileName.return_value = '/tmp/junk', '/tmp/junk'
-                with patch('glue.qt.glue_application.QMessageBox') as mb:
+                with patch('glue.app.qt.application.QMessageBox') as mb:
                     self.app._choose_save_session()
                     assert mb.call_count == 1
 
@@ -96,7 +101,7 @@ class TestGlueApplication(object):
     def test_messagebox_on_disabled_terminal(self):
         """Clicking on the terminal toggle button raises messagebox on error"""
         app = self.app_without_terminal()
-        with patch('glue.qt.glue_application.QMessageBox') as qmb:
+        with patch('glue.app.qt.application.QMessageBox') as qmb:
             app._terminal_button.click()
             assert qmb.call_count == 1
 
@@ -144,7 +149,7 @@ class TestGlueApplication(object):
         assert self.app.tab_bar.tabText(1) == 'Tab 3'
 
     def test_new_data_viewer_cancel(self):
-        with patch('glue.qt.glue_application.pick_class') as pc:
+        with patch('glue.app.qt.application.pick_class') as pc:
             pc.return_value = None
 
             ct = len(self.app.current_tab.subWindowList())
@@ -153,7 +158,7 @@ class TestGlueApplication(object):
             assert len(self.app.current_tab.subWindowList()) == ct
 
     def test_new_data_viewer(self):
-        with patch('glue.qt.glue_application.pick_class') as pc:
+        with patch('glue.app.qt.application.pick_class') as pc:
 
             pc.return_value = ScatterWidget
 
@@ -175,7 +180,7 @@ class TestGlueApplication(object):
     def test_new_data_defaults(self):
         from glue.config import qt_client
 
-        with patch('glue.qt.glue_application.pick_class') as pc:
+        with patch('glue.app.qt.application.pick_class') as pc:
             pc.return_value = None
 
             d2 = Data(x=np.array([[1, 2, 3], [4, 5, 6]]))
@@ -206,3 +211,137 @@ class TestGlueApplication(object):
         self.app.data_collection.append(Data(x=[1, 2, 3]))
         with patch('glue.qt.widgets.subset_facet.SubsetFacet.exec_'):
             act._do_action()
+
+
+def check_clone_app(app):
+    c = Cloner(app)
+    copy = c.us.object('__main__')
+
+    hub1 = app.session.hub
+    hub2 = copy.session.hub
+
+    assert len(hub1._subscriptions) == len(hub2._subscriptions)
+
+    # data collections are the same
+    for d1, d2 in zip(app.session.data_collection,
+                      copy.session.data_collection):
+        assert d1.label == d2.label
+        for cid1, cid2 in zip(d1.components, d2.components):
+            assert cid1.label == cid2.label
+
+            # order of components unspecified if label collisions
+            cid2 = c.get(cid1)
+            np.testing.assert_array_almost_equal(d1[cid1, 0:1],
+                                                 d2[cid2, 0:1], 3)
+
+    # same data viewers, in the same tabs
+    for tab1, tab2 in zip(app.viewers, copy.viewers):
+        assert len(tab1) == len(tab2)
+        for v1, v2 in zip(tab1, tab2):
+            assert type(v1) == type(v2)
+            # same window properties
+            assert v1.viewer_size == v2.viewer_size
+            assert v1.position == v2.position
+
+            # same viewer-level properties (axis label, scaling, etc)
+            assert set(v1.properties.keys()) == set(v2.properties.keys())
+            for k in v1.properties:
+                if hasattr(v1.properties[k], 'label'):
+                    assert v1.properties[k].label == v2.properties[k].label
+                else:
+                    assert v1.properties[k] == v2.properties[k] or \
+                        containers_equal(v1.properties[k], v2.properties[k])
+
+            assert len(v1.layers) == len(v2.layers)
+            for l1, l2 in zip(v1.layers, v2.layers):
+                assert l1.layer.label == l2.layer.label  # same data/subset
+                assert l1.layer.style == l2.layer.style
+
+    return copy
+
+
+class TestApplicationSession(object):
+
+    def check_clone(self, app):
+        return check_clone_app(app)
+
+    def test_bare_application(self):
+        app = GlueApplication()
+        self.check_clone(app)
+
+    def test_data_application(self):
+        dc = DataCollection([Data(label='test',
+                                            x=[1, 2, 3], y=[2, 3, 4])])
+        app = GlueApplication(dc)
+        self.check_clone(app)
+
+    def test_links(self):
+        d1 = Data(label='x', x=[1, 2, 3])
+        d2 = Data(label='y', y=[3, 4, 8])
+        dc = DataCollection([d1, d2])
+        link = ComponentLink([d1.id['x']], d2.id['y'], doubler)
+        dc.add_link(link)
+
+        np.testing.assert_array_equal(d1['y'], [2, 4, 6])
+
+        app = GlueApplication(dc)
+        self.check_clone(app)
+
+    def test_scatter_viewer(self):
+        d = Data(label='x', x=[1, 2, 3, 4, 5], y=[2, 3, 4, 5, 6])
+        dc = DataCollection([d])
+        app = GlueApplication(dc)
+        w = app.new_data_viewer(ScatterWidget, data=d)
+        self.check_clone(app)
+
+        s1 = dc.new_subset_group()
+        s2 = dc.new_subset_group()
+        assert len(w.layers) == 3
+        l1, l2, l3 = w.layers
+        l1.zorder, l2.zorder = l2.zorder, l1.zorder
+        l3.visible = False
+        assert l3.visible is False
+        copy = self.check_clone(app)
+        assert copy.viewers[0][0].layers[-1].visible is False
+
+    def test_multi_tab(self):
+        d = Data(label='hist', x=[[1, 2], [2, 3]])
+        dc = DataCollection([d])
+
+        app = GlueApplication(dc)
+        w1 = app.new_data_viewer(HistogramWidget, data=d)
+        app.new_tab()
+        w2 = app.new_data_viewer(HistogramWidget, data=d)
+        assert app.viewers == ((w1,), (w2,))
+
+        self.check_clone(app)
+
+    def test_histogram(self):
+        d = Data(label='hist', x=[[1, 2], [2, 3]])
+        dc = DataCollection([d])
+
+        app = GlueApplication(dc)
+        w = app.new_data_viewer(HistogramWidget, data=d)
+        self.check_clone(app)
+
+        dc.new_subset_group()
+        assert len(w.layers) == 2
+        self.check_clone(app)
+
+        w.nbins = 7
+        self.check_clone(app)
+
+    def test_subset_groups_remain_synced_after_restore(self):
+        # regrssion test for 352
+        d = Data(label='hist', x=[[1, 2], [2, 3]])
+        dc = DataCollection([d])
+        dc.new_subset_group()
+        app = GlueApplication(dc)
+
+        app2 = clone(app)
+        sg = app2.data_collection.subset_groups[0]
+        assert sg.style.parent is sg
+
+        sg.style.color = '#112233'
+        assert sg.subsets[0].style.color == '#112233'
+

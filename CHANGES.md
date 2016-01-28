@@ -71,6 +71,8 @@ v0.7 (unreleased)
 
   [#835]
 
+  ``glue.qt.glue_application``                       | ``glue.app.qt.application``
+
 * Improved under-the-hood creation of ROIs for Scatter and Histogram Clients. [#676]
 
 v0.6 (2015-11-20)

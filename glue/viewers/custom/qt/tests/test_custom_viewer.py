@@ -8,19 +8,20 @@ from matplotlib.axes import Axes
 from mock import MagicMock, patch
 from numpy.testing import assert_array_equal
 
-from glue.core.tests.test_state import check_clone_app, clone
+from glue.core.tests.test_state import clone
 from glue.core.tests.util import simple_session
 from glue.core.subset import SubsetState
 from glue.core import Data
 from glue import custom_viewer
-from glue.qt.glue_application import GlueApplication
+
+from glue.app.qt import GlueApplication
+from glue.app.qt.tests.test_application import check_clone_app
 
 from ..custom_viewer import (FormElement, NumberElement,
                              ChoiceElement, CustomViewer,
                              CustomSubsetState, AttributeInfo,
                              FloatElement, TextBoxElement, SettingsOracle,
                              MissingSettingError, FrozenSettings)
-
 
 
 def _make_widget(viewer):
