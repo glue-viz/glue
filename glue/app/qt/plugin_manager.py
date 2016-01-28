@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import os
+
 from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui
 from glue._plugin_helpers import PluginConfig
@@ -13,7 +15,8 @@ class QtPluginManager(object):
 
     def __init__(self, installed=None):
 
-        self.ui = load_ui('plugin_manager.ui', None)
+        self.ui = load_ui('plugin_manager.ui', None,
+                           directory=os.path.dirname(__file__))
 
         self.ui.cancel.clicked.connect(self.reject)
         self.ui.confirm.clicked.connect(self.finalize)

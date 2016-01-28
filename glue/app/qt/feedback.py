@@ -3,6 +3,7 @@ Widgets for sending feedback reports
 """
 from __future__ import absolute_import, division, print_function
 
+import os
 import sys
 
 from glue.external.qt import QtGui
@@ -64,7 +65,8 @@ class FeedbackWidget(object):
         Feedback will be supplemented with diagnostic system information.
         The user can modify or add to any of this
         """
-        self._ui = load_ui('feedbackwidget', None)
+        self._ui = load_ui('feedback.ui', None,
+                           directory=os.path.dirname(__file__))        
         feedback = '\n'.join(['-' * 80,
                               feedback,
                               _diagnostics()])

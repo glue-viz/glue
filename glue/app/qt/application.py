@@ -14,21 +14,21 @@ from glue.core import command, Data
 from glue import env
 from glue.main import load_plugins
 from glue.qt import get_qapp
-from glue.qt.actions import act
-from glue.qt.feedback import submit_bug_report
-from glue.qt.plugin_manager import QtPluginManager
-from glue.qt.qtutil import data_wizard, load_ui, get_icon
-from glue.viewers.common.qt.data_viewer import DataViewer
+from glue.qt.qtutil import data_wizard, load_ui, get_icon, action
 from glue.qt.widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from glue.qt.widgets.glue_mdi_area import GlueMdiArea, GlueMdiSubWindow
 from glue.qt.widgets.layer_tree_widget import PlotAction, LayerTreeWidget
-from glue.viewers.common.qt.mpl_widget import defer_draw
 from glue.qt.widgets.settings_editor import SettingsEditor
+from glue.viewers.common.qt.mpl_widget import defer_draw
+from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.image.qt import ImageWidget
 from glue.viewers.scatter.qt import ScatterWidget
 from glue.utils import nonpartial
 from glue.utils.qt import (pick_class, GlueTabBar, QMessageBoxPatched as
                            QMessageBox, set_cursor, messagebox_on_error)
+
+from glue.app.qt.feedback import submit_bug_report
+from glue.app.qt.plugin_manager import QtPluginManager
 
 
 __all__ = ['GlueApplication']
@@ -222,7 +222,8 @@ class GlueApplication(Application, QtGui.QMainWindow):
         self._load_settings()
 
     def _setup_ui(self):
-        self._ui = load_ui('glue_application', None)
+        self._ui = load_ui('application.ui', None,
+                           directory=os.path.dirname(__file__))
         self.setCentralWidget(self._ui)
         self._ui.tabWidget.setTabBar(GlueTabBar())
 
@@ -546,39 +547,39 @@ class GlueApplication(Application, QtGui.QMainWindow):
         """ Create and connect actions, store in _actions dict """
         self._actions = {}
 
-        a = act("&New Data Viewer", self,
+        a = action("&New Data Viewer", self,
                 tip="Open a new visualization window in the current tab",
                 shortcut=QtGui.QKeySequence.New
                 )
         a.triggered.connect(nonpartial(self.choose_new_data_viewer))
         self._actions['viewer_new'] = a
 
-        a = act('New &Tab', self,
+        a = action('New &Tab', self,
                 shortcut=QtGui.QKeySequence.AddTab,
                 tip='Add a new tab')
         a.triggered.connect(nonpartial(self.new_tab))
         self._actions['tab_new'] = a
 
-        a = act('&Rename Tab', self,
+        a = action('&Rename Tab', self,
                 shortcut="Ctrl+R",
                 tip='Set a new label for the current tab')
         a.triggered.connect(nonpartial(self.tab_bar.rename_tab))
         self._actions['tab_rename'] = a
 
-        a = act('&Gather Windows', self,
+        a = action('&Gather Windows', self,
                 tip='Gather plot windows side-by-side',
                 shortcut='Ctrl+G')
         a.triggered.connect(nonpartial(self.gather_current_tab))
         self._actions['gather'] = a
 
-        a = act('&Save Session', self,
+        a = action('&Save Session', self,
                 tip='Save the current session')
         a.triggered.connect(nonpartial(self._choose_save_session))
         self._actions['session_save'] = a
 
         # Add file loader as first item in File menu for convenience. We then
         # also add it again below in the Import menu for consistency.
-        a = act("&Open Data Set", self, tip="Open a new data set",
+        a = action("&Open Data Set", self, tip="Open a new data set",
                 shortcut=QtGui.QKeySequence.Open)
         a.triggered.connect(nonpartial(self._choose_load_data,
                                        data_wizard))
@@ -590,14 +591,14 @@ class GlueApplication(Application, QtGui.QMainWindow):
         acts = []
 
         # Add default file loader (later we can add this to the registry)
-        a = act("Import from file", self, tip="Import from file")
+        a = action("Import from file", self, tip="Import from file")
         a.triggered.connect(nonpartial(self._choose_load_data,
                                        data_wizard))
         acts.append(a)
 
         for i in importer:
             label, data_importer = i
-            a = act(label, self, tip=label)
+            a = action(label, self, tip=label)
             a.triggered.connect(nonpartial(self._choose_load_data,
                                            data_importer))
             acts.append(a)
@@ -609,7 +610,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
             acts = []
             for e in exporters:
                 label, saver, checker, mode = e
-                a = act(label, self,
+                a = action(label, self,
                         tip='Export the current session to %s format' %
                         label)
                 a.triggered.connect(nonpartial(self._choose_export_session,
@@ -618,24 +619,24 @@ class GlueApplication(Application, QtGui.QMainWindow):
 
             self._actions['session_export'] = acts
 
-        a = act('Open S&ession', self,
+        a = action('Open S&ession', self,
                 tip='Restore a saved session')
         a.triggered.connect(nonpartial(self._restore_session))
         self._actions['session_restore'] = a
 
-        a = act('Reset S&ession', self,
+        a = action('Reset S&ession', self,
                 tip='Reset session to clean state')
         a.triggered.connect(nonpartial(self._reset_session))
         self._actions['session_reset'] = a
 
-        a = act("Undo", self,
+        a = action("Undo", self,
                 tip='Undo last action',
                 shortcut=QtGui.QKeySequence.Undo)
         a.triggered.connect(nonpartial(self.undo))
         a.setEnabled(False)
         self._actions['undo'] = a
 
-        a = act("Redo", self,
+        a = action("Redo", self,
                 tip='Redo last action',
                 shortcut=QtGui.QKeySequence.Redo)
         a.triggered.connect(nonpartial(self.redo))
@@ -646,14 +647,14 @@ class GlueApplication(Application, QtGui.QMainWindow):
         from glue.config import menubar_plugin
         acts = []
         for label, function in menubar_plugin:
-            a = act(label, self, tip=label)
+            a = action(label, self, tip=label)
             a.triggered.connect(nonpartial(function,
                                            self.session,
                                            self.data_collection))
             acts.append(a)
         self._actions['plugins'] = acts
 
-        a = act('&Plugin Manager', self,
+        a = action('&Plugin Manager', self,
                 tip='Open plugin manager')
         a.triggered.connect(nonpartial(self.plugin_manager))
         self._actions['plugin_manager'] = a
