@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import os
+
 from glue.external.qt import QtGui
 from glue import core
 from glue.plugins.dendro_viewer.client import DendroClient
@@ -36,7 +38,8 @@ class DendroWidget(DataViewer):
         self.option_widget = QtGui.QWidget()
         self.setCentralWidget(self.central_widget)
 
-        self.ui = load_ui('dendrowidget', self.option_widget)
+        self.ui = load_ui('qt_widget.ui', self.option_widget,
+                          directory=os.path.dirname(__file__))
         self.client = DendroClient(self._data,
                                    self.central_widget.canvas.fig,
                                    layer_artist_container=self._layer_artist_container)
