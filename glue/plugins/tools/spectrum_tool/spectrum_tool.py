@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import os
 import logging
 import traceback
 
@@ -547,7 +548,8 @@ class FitContext(SpectrumContext):
         self.grip = self.main.profile.new_range_grip()
 
     def _setup_widget(self):
-        self.ui = load_ui('spectrum_fit_panel')
+        self.ui = load_ui('spectrum_fit_panel.ui', None,
+                          directory=os.path.dirname(__file__))
         self.ui.uncertainty_combo.hide()
         self.ui.uncertainty_label.hide()
         font = QtGui.QFont("Courier")
