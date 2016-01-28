@@ -6,7 +6,7 @@ import os
 
 from glue import core
 from glue.qt.widgets.tests import simple_session
-from glue.qt.widgets.tests.test_data_viewer import BaseTestDataViewer
+from glue.viewers.common.qt.tests.test_data_viewer import BaseTestDataViewer
 
 from ..qt_widget import DendroWidget
 

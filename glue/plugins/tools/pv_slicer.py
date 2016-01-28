@@ -4,7 +4,7 @@ import numpy as np
 
 from glue.qt.mouse_mode import PathMode
 from glue.viewers.image.qt import StandaloneImageWidget
-from glue.qt.widgets.mpl_widget import defer_draw
+from glue.viewers.common.qt.mpl_widget import defer_draw
 
 
 def setup():

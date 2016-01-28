@@ -351,7 +351,7 @@ class QtClientRegistry(Registry):
 
     def default_members(self):
         try:
-            from glue.qt.custom_viewer import CUSTOM_WIDGETS
+            from glue.viewers.custom.qt import CUSTOM_WIDGETS
             return CUSTOM_WIDGETS
         except ImportError as e:
             logging.getLogger(__name__).warning(

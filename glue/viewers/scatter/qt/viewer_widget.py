@@ -6,12 +6,12 @@ from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui
 from glue import core
 from glue.viewers.scatter.client import ScatterClient
-from glue.qt.glue_toolbar import GlueToolbar
+from glue.viewers.common.qt.toolbar import GlueToolbar
 from glue.qt.mouse_mode import (RectangleMode, CircleMode,
                                 PolyMode, HRangeMode, VRangeMode)
 from glue.qt.qtutil import load_ui
-from glue.qt.widgets.data_viewer import DataViewer
-from glue.qt.widgets.mpl_widget import MplWidget, defer_draw
+from glue.viewers.common.qt.data_viewer import DataViewer
+from glue.viewers.common.qt.mpl_widget import MplWidget, defer_draw
 
 from glue.utils import nonpartial, cache_axes
 from glue.utils.qt.widget_properties import (ButtonProperty, FloatLineProperty,

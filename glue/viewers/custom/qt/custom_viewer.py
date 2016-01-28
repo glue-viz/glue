@@ -30,7 +30,7 @@ def plot_data(x, checked, axes):
 
 or
 
-from glue.qt.custom_viewer import CustomViewer
+from glue.viewers.custom.qt import CustomViewer
 class MyViewer(CustomViewer):
 
     checked = True
@@ -87,11 +87,11 @@ from glue import core
 
 from glue.viewers.common.viz_client import GenericMplClient
 
-from glue.qt.widgets.data_viewer import DataViewer
+from glue.viewers.common.qt.mpl_widget import MplWidget
+from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.utils.qt.widget_properties import (ValueProperty, ButtonProperty,
                                              CurrentComboProperty)
-from glue.qt.widgets import MplWidget
-from glue.qt.glue_toolbar import GlueToolbar
+from glue.viewers.common.qt.toolbar import GlueToolbar
 from glue.qt.mouse_mode import PolyMode, RectangleMode
 
 CUSTOM_WIDGETS = []

@@ -271,7 +271,7 @@ def cache_axes(axes, toolbar):
     ----------
     axes : `~matplotlib.axes.Axes`
         The axes to cache
-    toolbar : `~glue.qt.glue_toolbar.GlueToolbar`
+    toolbar : `~glue.viewers.common.qt.toolbar.GlueToolbar`
         The toolbar managing the axes' canvas
     """
     canvas = axes.figure.canvas

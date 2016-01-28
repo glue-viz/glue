@@ -13,6 +13,7 @@ from glue.core.tests.util import simple_session
 from glue.core.subset import SubsetState
 from glue.core import Data
 from glue import custom_viewer
+from glue.qt.glue_application import GlueApplication
 
 from ..custom_viewer import (FormElement, NumberElement,
                              ChoiceElement, CustomViewer,
@@ -20,7 +21,6 @@ from ..custom_viewer import (FormElement, NumberElement,
                              FloatElement, TextBoxElement, SettingsOracle,
                              MissingSettingError, FrozenSettings)
 
-from ..glue_application import GlueApplication
 
 
 def _make_widget(viewer):
@@ -194,7 +194,7 @@ class TestCustomViewer(object):
         assert 'state' in k
 
     def test_register(self):
-        with patch('glue.qt.custom_viewer.FormElement.register_to_hub') as r:
+        with patch('glue.viewers.custom.qt.FormElement.register_to_hub') as r:
             w = self.build()
         assert r.call_count > 0
 

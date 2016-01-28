@@ -9,7 +9,7 @@ from glue.core.subset import ElementSubsetState
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core import message as msg
 from glue.qt.qtutil import load_ui
-from glue.qt.widgets.data_viewer import DataViewer
+from glue.viewers.common.qt.data_viewer import DataViewer
 
 
 class DataTableModel(QtCore.QAbstractTableModel):

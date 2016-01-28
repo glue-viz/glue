@@ -10,7 +10,7 @@ from matplotlib import __version__ as mpl_version  # pylint:disable=W0611
 
 from glue import core
 from glue.qt.widgets.tests import simple_session
-from glue.qt.widgets.mpl_widget import MplCanvas
+from glue.viewers.common.qt.mpl_widget import MplCanvas
 
 from ..viewer_widget import ScatterWidget
 
@@ -324,7 +324,7 @@ class TestScatterWidget(object):
 class TestDrawCount(TestScatterWidget):
 
     def patch_draw(self):
-        return patch('glue.qt.widgets.mpl_widget.MplCanvas.draw')
+        return patch('glue.viewers.common.qt.mpl_widget.MplCanvas.draw')
 
     def test_xatt_redraws_once(self):
         self.add_layer_via_method()
