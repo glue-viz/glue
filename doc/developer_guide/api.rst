@@ -48,7 +48,7 @@ User Interface
 .. automodapi:: glue.core.application_base
    :no-inheritance-diagram:
 
-.. automodapi:: glue.qt.widgets.data_viewer
+.. automodapi:: glue.viewers.common.qt.data_viewer
    :no-inheritance-diagram:
 
 .. automodapi:: glue.viewers.scatter.qt.viewer_widget
@@ -66,7 +66,7 @@ User Interface
 .. automodapi:: glue.qglue
    :no-inheritance-diagram:
 
-.. automodapi:: glue.qt.custom_viewer
+.. automodapi:: glue.viewers.custom.qt.custom_viewer
    :no-inheritance-diagram:
 
 .. automodapi:: glue

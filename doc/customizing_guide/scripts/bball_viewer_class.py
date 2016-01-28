@@ -1,4 +1,4 @@
-from glue.qt.custom_viewer import CustomViewer
+from glue.viewers.custom.qt import CustomViewer
 
 from glue.core.subset import RoiSubsetState
 
