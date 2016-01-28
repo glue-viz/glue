@@ -1,7 +1,7 @@
 from glue.core.data_factories import load_data
 from glue.core import DataCollection
 from glue.core.link_helpers import LinkSame
-from glue.qt.glue_application import GlueApplication
+from glue.app.qt.application import GlueApplication
 
 #load 2 datasets from files
 image = load_data('w5.fits')

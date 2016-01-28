@@ -176,7 +176,7 @@ by default (these are also listed when you open the terminal):
 
   * ``hub`` is the communication :ref:`hub <hub>` object.
 
-  * ``application`` is the top level :class:`~glue.qt.glue_application.GlueApplication`, which has access to plot windows (among other things)
+  * ``application`` is the top level :class:`~glue.app.qt.application.GlueApplication`, which has access to plot windows (among other things)
 
 Additionally, you can drag datasets and subsets into the terminal
 window, to easily assign them new variable names.
@@ -194,7 +194,7 @@ Notebook integration
 As described above, the IPython notebook can be configured so that
 Glue runs without blocking. When launched via :func:`~glue.qglue.qglue`,
 that function immediately returns a reference to the
-:class:`~glue.qt.glue_application.GlueApplication` object.
+:class:`~glue.app.qt.application.GlueApplication` object.
 
 Usage Examples
 --------------
