@@ -1,6 +1,6 @@
 """MouseModes define various mouse gestures.
 
-The :class:`~glue.qt.glue_toolbar.GlueToolbar` maintains a list of
+The :class:`~glue.viewers.common.qt.toolbar.GlueToolbar` maintains a list of
 MouseModes from the visualization it is assigned to, and sees to it
 that only one MouseMode is active at a time.
 

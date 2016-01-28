@@ -13,7 +13,7 @@ from glue.core.exceptions import IncompatibleAttribute
 from glue.core import Subset
 from glue.core.callback_property import add_callback, ignore_callback
 from glue.config import fit_plugin
-from glue.qt.glue_toolbar import GlueToolbar
+from glue.viewers.common.qt.toolbar import GlueToolbar
 from glue.qt.mime import LAYERS_MIME_TYPE
 from glue.qt.mouse_mode import SpectrumExtractorMode
 from glue.qt.qtutil import load_ui

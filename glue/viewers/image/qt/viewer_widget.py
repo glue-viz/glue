@@ -9,7 +9,7 @@ from glue.core.callback_property import add_callback, delay_callback
 from glue import core
 from glue.viewers.image.ds9norm import DS9Normalize
 from glue.viewers.image.client import MplImageClient
-from glue.qt.glue_toolbar import GlueToolbar
+from glue.viewers.common.qt.toolbar import GlueToolbar
 from glue.qt.mouse_mode import (RectangleMode, CircleMode, PolyMode,
                                 ContrastMode)
 from glue.qt.qtutil import load_ui, get_icon

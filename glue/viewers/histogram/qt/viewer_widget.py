@@ -7,7 +7,7 @@ from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui
 from glue.core import message as msg
 from glue.viewers.histogram.client import HistogramClient
-from glue.qt.glue_toolbar import GlueToolbar
+from glue.viewers.common.qt.toolbar import GlueToolbar
 from glue.qt.mouse_mode import HRangeMode
 from glue.qt.qtutil import load_ui
 from glue.utils.qt.widget_properties import (connect_int_spin, ButtonProperty,

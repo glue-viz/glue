@@ -91,7 +91,7 @@ from glue.viewers.common.qt.mpl_widget import MplWidget
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.utils.qt.widget_properties import (ValueProperty, ButtonProperty,
                                              CurrentComboProperty)
-from glue.qt.glue_toolbar import GlueToolbar
+from glue.viewers.common.qt.toolbar import GlueToolbar
 from glue.qt.mouse_mode import PolyMode, RectangleMode
 
 CUSTOM_WIDGETS = []

@@ -66,6 +66,7 @@ v0.7 (unreleased)
   ``glue.qt.widgets.data_viewer``                    | ``glue.viewers.common.qt.data_viewer``
   ``glue.qt.widgets.mpl_widget``                     | ``glue.viewers.common.qt.mpl_widget``
   ``glue.qt.widgets.MplWidget``                      | ``glue.viewers.common.qt.mpl_widget.MplWidget``
+  ``glue.qt.glue_toolbar``                           | ``glue.viewers.common.qt.toolbar``
   ``glue.qt.custom_viewer``                          | ``glue.viewers.custom.qt``
 
   [#835]
