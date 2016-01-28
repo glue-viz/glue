@@ -8,7 +8,6 @@ from glue.core.application_base import ViewerBase
 from glue.qt import get_qapp
 from glue.qt.layer_artist_model import QtLayerArtistContainer, LayerArtistView
 from glue.qt.mime import LAYERS_MIME_TYPE, LAYER_MIME_TYPE
-from glue.app.qt.mdi_area import GlueMdiSubWindow
 from glue.utils.qt import set_cursor
 
 
@@ -88,6 +87,7 @@ class DataViewer(ViewerBase, QtGui.QMainWindow):
 
     def mdi_wrap(self):
         """Wrap this object in a GlueMdiSubWindow"""
+        from glue.app.qt.mdi_area import GlueMdiSubWindow
         sub = GlueMdiSubWindow()
         sub.setWidget(self)
         self.destroyed.connect(sub.close)

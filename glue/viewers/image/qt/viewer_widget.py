@@ -16,7 +16,6 @@ from glue.qt.qtutil import load_ui, get_icon
 from glue.utils.qt.widget_properties import CurrentComboProperty, ButtonProperty, connect_current_combo, _find_combo_data
 from glue.qt.widgets.data_slice_widget import DataSlice
 from glue.viewers.common.qt.data_viewer import DataViewer
-from glue.app.qt.mdi_area import GlueMdiSubWindow
 from glue.viewers.common.qt.mpl_widget import MplWidget, defer_draw
 from glue.utils import nonpartial, Pointer
 from glue.utils.qt import cmap2pixmap, update_combobox
@@ -566,6 +565,7 @@ class StandaloneImageWidget(QtGui.QMainWindow):
         """
         Embed this widget in a GlueMdiSubWindow
         """
+        from glue.app.qt.mdi_area import GlueMdiSubWindow
         sub = GlueMdiSubWindow()
         sub.setWidget(self)
         self.destroyed.connect(sub.close)
