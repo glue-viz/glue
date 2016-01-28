@@ -82,7 +82,7 @@ else:
         from IPython.frontend.qt.kernelmanager import QtKernelManager
         from IPython.frontend.qt.console.rich_ipython_widget import RichIPythonWidget
 
-from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow
+from glue.app.qt.mdi_area import GlueMdiSubWindow
 from glue.utils import as_variable_name
 
 

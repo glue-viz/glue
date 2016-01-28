@@ -8,7 +8,7 @@ from glue.core.application_base import ViewerBase
 from glue.qt import get_qapp
 from glue.qt.layer_artist_model import QtLayerArtistContainer, LayerArtistView
 from glue.qt.mime import LAYERS_MIME_TYPE, LAYER_MIME_TYPE
-from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow
+from glue.app.qt.mdi_area import GlueMdiSubWindow
 from glue.utils.qt import set_cursor
 
 

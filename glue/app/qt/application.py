@@ -16,7 +16,7 @@ from glue.main import load_plugins
 from glue.qt import get_qapp
 from glue.qt.qtutil import data_wizard, load_ui, get_icon, action
 from glue.qt.widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
-from glue.qt.widgets.glue_mdi_area import GlueMdiArea, GlueMdiSubWindow
+from glue.app.qt.mdi_area import GlueMdiArea, GlueMdiSubWindow
 from glue.qt.widgets.layer_tree_widget import PlotAction, LayerTreeWidget
 from glue.qt.widgets.settings_editor import SettingsEditor
 from glue.viewers.common.qt.mpl_widget import defer_draw
