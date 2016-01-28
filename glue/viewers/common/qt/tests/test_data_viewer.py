@@ -44,7 +44,7 @@ class BaseTestDataViewer(object):
         app = GlueApplication(dc)
 
         try:
-            from glue.qt.widgets.mpl_widget import MplCanvas
+            from glue.viewers.common.qt.mpl_widget import MplCanvas
             draw = MplCanvas.draw
             MplCanvas.draw = MagicMock()
 

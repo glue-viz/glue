@@ -18,11 +18,11 @@ from glue.qt.actions import act
 from glue.qt.feedback import submit_bug_report
 from glue.qt.plugin_manager import QtPluginManager
 from glue.qt.qtutil import data_wizard, load_ui, get_icon
-from glue.qt.widgets.data_viewer import DataViewer
+from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.qt.widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from glue.qt.widgets.glue_mdi_area import GlueMdiArea, GlueMdiSubWindow
 from glue.qt.widgets.layer_tree_widget import PlotAction, LayerTreeWidget
-from glue.qt.widgets.mpl_widget import defer_draw
+from glue.viewers.common.qt.mpl_widget import defer_draw
 from glue.qt.widgets.settings_editor import SettingsEditor
 from glue.viewers.image.qt import ImageWidget
 from glue.viewers.scatter.qt import ScatterWidget

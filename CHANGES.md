@@ -62,7 +62,10 @@ v0.7 (unreleased)
   ``glue.qt.widgets.histogram_widget``               | ``glue.viewers.histogram.qt``
   ``glue.qt.widgets.scatter_widget``                 | ``glue.viewers.scatter.qt``
   ``glue.qt.widgets.histogram_widget``               | ``glue.viewers.image.qt``
-  ``glue.qt.widgets.table_widget_``                  | ``glue.viewers.table.qt``
+  ``glue.qt.widgets.table_widget``                   | ``glue.viewers.table.qt``
+  ``glue.qt.widgets.data_viewer``                    | ``glue.viewers.common.qt.data_viewer``
+  ``glue.qt.widgets.mpl_widget``                     | ``glue.viewers.common.qt.mpl_widget``
+  ``glue.qt.widgets.MplWidget``                      | ``glue.viewers.common.qt.mpl_widget.MplWidget``
 
   [#835]
 

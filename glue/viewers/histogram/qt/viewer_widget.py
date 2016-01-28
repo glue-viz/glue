@@ -13,8 +13,8 @@ from glue.qt.qtutil import load_ui
 from glue.utils.qt.widget_properties import (connect_int_spin, ButtonProperty,
                                        FloatLineProperty, connect_float_edit,
                                        ValueProperty, connect_bool_button)
-from glue.qt.widgets.data_viewer import DataViewer
-from glue.qt.widgets.mpl_widget import MplWidget, defer_draw
+from glue.viewers.common.qt.data_viewer import DataViewer
+from glue.viewers.common.qt.mpl_widget import MplWidget, defer_draw
 from glue.utils.array import pretty_number
 
 
