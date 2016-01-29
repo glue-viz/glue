@@ -92,7 +92,7 @@ matrix:
         # sub-directories to be removed, to make sure that no non-Qt code has
         # any dependence on Qt code.
         - os: linux
-          env: PYTHON_VERSION=2.7 QT_PKG=False
+          env: PYTHON_VERSION=2.7 ASTROPY_VERSION=1.0 QT_PKG=False
 
     allow_failures:
       - env: PYTHON_VERSION=2.7 ASTROPY_VERSION=1.0 QT_PKG=pyside
@@ -172,7 +172,7 @@ script:
 after_success:
 
   # Coverage testing
-  - coveralls
+  - if [[ $QT_PKG != False ]]; then coveralls; fi
 
   # Trigger the building of the MacOS X app in the Travis-MacGlue repo
   - if [ $APP_TRIGGER ]; then ./.trigger_app_build.sh; fi
