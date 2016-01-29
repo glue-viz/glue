@@ -4,7 +4,7 @@ import os
 
 from glue.external.qt import QtGui
 from glue import core
-from glue.qt.qtutil import load_ui
+from glue.utils.qt import load_ui
 
 __all__ = ['LinkEditor']
 

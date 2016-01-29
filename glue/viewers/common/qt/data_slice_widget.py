@@ -6,7 +6,7 @@ from functools import partial
 from collections import Counter
 
 from glue.external.qt import QtGui, QtCore
-from glue.qt.qtutil import load_ui
+from glue.utils.qt import load_ui
 from glue.utils.qt.widget_properties import (TextProperty,
                                        ValueProperty,
                                        CurrentComboProperty)

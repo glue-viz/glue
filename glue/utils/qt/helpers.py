@@ -1,10 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt import QtGui
+import os
+
+from glue.external.qt import QtGui 
 from glue.external.qt.QtCore import Qt
 from glue.utils.qt import get_text
 
-__all__ = ['update_combobox', 'GlueTabBar']
+__all__ = ['update_combobox', 'GlueTabBar', 'load_ui', 'CUSTOM_QWIDGETS']
 
 
 def update_combobox(combo, labeldata):
@@ -35,7 +37,7 @@ def update_combobox(combo, labeldata):
 
     The QComboBox is modified inplace
     """
-    
+
     combo.blockSignals(True)
     idx = combo.currentIndex()
     if idx >= 0:
@@ -80,3 +82,36 @@ class GlueTabBar(QtGui.QTabBar):
         index = self.tabAt(event.pos())
         if index >= 0:
             self.rename_tab(index)
+
+
+CUSTOM_QWIDGETS = []
+
+def load_ui(path, parent=None, directory=None):
+    """
+    Load a .ui file
+
+    Parameters
+    ----------
+    path : str
+        Name of ui file to load
+
+    parent : QObject
+        Object to use as the parent of this widget
+
+    Returns
+    -------
+    w : QtGui.QWidget
+        The new widget
+    """
+
+    if directory is not None:
+        full_path = os.path.join(directory, path)
+    else:
+        full_path = os.path.abspath(path)
+
+    if not os.path.exists(full_path) and 'site-packages.zip' in full_path:
+        # Workaround for Mac app
+        full_path = os.path.join(full_path.replace('site-packages.zip', 'glue'))
+
+    from glue.external.qt import load_ui 
+    return load_ui(full_path, parent, custom_widgets=CUSTOM_QWIDGETS)

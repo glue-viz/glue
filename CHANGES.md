@@ -93,7 +93,8 @@ v0.7 (unreleased)
   ``glue.qt.mime``                                   | ``glue.core.qt.mime``
   ``glue.qt.qtutil.ComponentIDCombo``                | ``glue.core.qt.component_id_combo``
   ``glue.qt.qtutil.RGBEdit``                         | ``glue.viewers.image.qt.rgb_edit.RGBEdit``
-  ``glue.qt.qtutil.GlueListWidget``              | ``glue.core.qt.mime.GlueMimeListWidget``
+  ``glue.qt.qtutil.GlueListWidget``                  | ``glue.core.qt.mime.GlueMimeListWidget``
+  ``glue.qt.qtutil.load_ui``                         | ``glue.utils.qt.helpers.load_ui``
 
 * Improved under-the-hood creation of ROIs for Scatter and Histogram Clients. [#676]
 

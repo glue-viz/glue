@@ -7,7 +7,7 @@ from glue import core
 from glue.plugins.dendro_viewer.client import DendroClient
 from glue.viewers.common.qt.toolbar import GlueToolbar
 from glue.viewers.common.qt.mouse_mode import PickMode
-from glue.qt.qtutil import load_ui
+from glue.utils.qt import load_ui
 from glue.utils.qt.widget_properties import (ButtonProperty, CurrentComboProperty,
                                        connect_bool_button, connect_current_combo)
 from glue.viewers.common.qt.data_viewer import DataViewer

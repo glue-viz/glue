@@ -2,6 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 from glue.external.qt import QtGui, QtCore
 from glue.core.qt.component_id_combo import ComponentIDCombo
+from glue.utils.qt import CUSTOM_QWIDGETS
+
 
 class RGBEdit(QtGui.QWidget):
 
@@ -149,3 +151,5 @@ class RGBEdit(QtGui.QWidget):
         self.artist.layer_visible['blue'] = self.vis['blue'].isChecked()
         self.artist.update()
         self.artist.redraw()
+
+CUSTOM_QWIDGETS.append(RGBEdit)

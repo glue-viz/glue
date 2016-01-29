@@ -9,7 +9,7 @@ import sys
 from glue.external.qt import QtGui
 from glue.external.six.moves.urllib.parse import urlencode
 from glue.external.six.moves.urllib.request import Request, urlopen
-from glue.qt.qtutil import load_ui
+from glue.utils.qt import load_ui
 
 
 __all__ = ['submit_bug_report']

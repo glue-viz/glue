@@ -6,7 +6,7 @@ from collections import OrderedDict
 
 from glue.external.qt import QtGui, is_pyside
 from glue import core
-from glue.qt.qtutil import load_ui
+from glue.utils.qt import load_ui, CUSTOM_QWIDGETS
 
 __all__ = ['LinkEquation']
 
@@ -315,3 +315,5 @@ class LinkEquation(QtGui.QWidget):
         self._ui.function.clear()
         for f in self._functions:
             self._ui.function.addItem(f)
+
+CUSTOM_QWIDGETS.append(LinkEquation)

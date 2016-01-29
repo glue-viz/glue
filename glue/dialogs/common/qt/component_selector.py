@@ -4,7 +4,7 @@ import os
 
 from glue.external.qt.QtCore import Signal
 from glue.external.qt import QtGui
-from glue.qt.qtutil import load_ui
+from glue.utils.qt import load_ui, CUSTOM_QWIDGETS
 
 
 class ComponentSelector(QtGui.QWidget):
@@ -122,6 +122,8 @@ class ComponentSelector(QtGui.QWidget):
                 return
         else:
             raise ValueError("Data is not part of the DataCollection")
+
+CUSTOM_QWIDGETS.append(ComponentSelector)
 
 
 def main():  # pragma: no cover

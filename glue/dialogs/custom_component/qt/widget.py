@@ -6,7 +6,7 @@ import re
 from glue.external.qt import QtGui
 from glue.core import parse
 from glue import core
-from glue.qt.qtutil import load_ui
+from glue.utils.qt import load_ui
 from glue.utils.qt import CompletionTextEdit
 
 __all__ = ['CustomComponentWidget']

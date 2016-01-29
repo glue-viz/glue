@@ -14,7 +14,7 @@ from glue.core import command, Data
 from glue import env
 from glue.main import load_plugins
 from glue.qt import get_qapp
-from glue.qt.qtutil import load_ui, get_icon, action
+from glue.qt.qtutil import get_icon, action
 from glue.dialogs.data_wizard.qt import data_wizard
 from glue.app.qt.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from glue.app.qt.mdi_area import GlueMdiArea, GlueMdiSubWindow
@@ -26,7 +26,7 @@ from glue.viewers.image.qt import ImageWidget
 from glue.viewers.scatter.qt import ScatterWidget
 from glue.utils import nonpartial
 from glue.utils.qt import (pick_class, GlueTabBar, QMessageBoxPatched as
-                           QMessageBox, set_cursor, messagebox_on_error)
+                           QMessageBox, set_cursor, messagebox_on_error, load_ui)
 
 from glue.app.qt.feedback import submit_bug_report
 from glue.app.qt.plugin_manager import QtPluginManager

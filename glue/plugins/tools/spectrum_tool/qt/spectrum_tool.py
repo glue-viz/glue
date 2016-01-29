@@ -17,7 +17,7 @@ from glue.config import fit_plugin
 from glue.viewers.common.qt.toolbar import GlueToolbar
 from glue.core.qt.mime import LAYERS_MIME_TYPE
 from glue.viewers.common.qt.mouse_mode import SpectrumExtractorMode
-from glue.qt.qtutil import load_ui
+from glue.utils.qt import load_ui
 from glue.core.qt.simpleforms import build_form_item
 from glue.utils.qt.widget_properties import CurrentComboProperty
 from glue.app.qt.mdi_area import GlueMdiSubWindow

@@ -13,7 +13,7 @@ from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui
 from glue.qt import ui, icons
 from glue.core.qt.mime import LAYERS_MIME_TYPE
-from glue.utils.qt import mpl_to_qt4_color, tint_pixmap, GlueItemWidget
+from glue.utils.qt import mpl_to_qt4_color, tint_pixmap, GlueItemWidget, CUSTOM_QWIDGETS
 
 POINT_ICONS = {'o': 'glue_circle_point',
                's': 'glue_box_point',
@@ -85,81 +85,7 @@ class GlueActionButton(QtGui.QPushButton):
         self.setWhatsThis(self._action.whatsThis())
         self.setEnabled(self._action.isEnabled())
 
-
-def _custom_widgets():
-    # iterate over custom widgets referenced in .ui files
-
-    from glue.core.qt.mime import GlueMimeListWidget
-    yield GlueMimeListWidget
-    
-    yield GlueActionButton
-
-    from glue.viewers.image.qt.rgb_edit import RGBEdit
-    yield RGBEdit
-
-    from glue.dialogs.common.qt.component_selector import ComponentSelector
-    yield ComponentSelector
-
-    from glue.dialogs.link_editor.qt.link_equation import LinkEquation
-    yield LinkEquation
-
-
-def load_ui(path, parent=None, directory=None):
-    """
-    Load a UI file, given its name.
-
-    This will first check if `path` exists, and if not it will assume it is the
-    name of a ui file to search for in the global glue ui directory.
-
-    Parameters
-    ----------
-    name : str
-      Name of ui file to load (without .ui extension)
-
-    parent : QObject
-      Object to use as the parent of this widget
-
-    Returns
-    -------
-    w : QtGui.QWidget
-      The new widget
-    """
-
-    if directory is not None:
-        full_path = os.path.join(directory, path)
-    elif not os.path.exists(path):
-        full_path = global_ui_path(path)
-
-    from glue.external.qt import load_ui
-    return load_ui(full_path, parent, custom_widgets=_custom_widgets())
-
-
-def global_ui_path(ui_name):
-    """
-    Return the absolute path to a .ui file bundled with glue.
-
-    Parameters
-    ----------
-    ui_name : str
-      The name of a ui_file to load (without directory prefix or
-      file extensions)
-
-    Returns
-    -------
-    path : str
-      Path of a file
-    """
-    if not ui_name.endswith('.ui'):
-        ui_name = ui_name + '.ui'
-
-    try:
-        result = pkg_resources.resource_filename('glue.qt.ui', ui_name)
-        return result
-    except NotImplementedError:
-        # workaround for mac app
-        result = os.path.dirname(ui.__file__)
-        return os.path.join(result.replace('site-packages.zip', 'glue'),
-                            ui_name)
+CUSTOM_QWIDGETS.append(GlueActionButton)
 
 
 def icon_path(icon_name):
