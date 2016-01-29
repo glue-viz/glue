@@ -13,5 +13,10 @@ def teardown():
         app = get_qapp()
         app.exit()
 
-_app = get_qapp()
-atexit.register(teardown)
+# On ReadTheDocs, we don't want to start up the QApplication instance, since it
+# does not support X11 or Xvfb
+ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
+
+if not ON_RTD:
+    _app = get_qapp()
+    atexit.register(teardown)
