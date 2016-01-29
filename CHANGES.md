@@ -84,6 +84,7 @@ v0.7 (unreleased)
   ``glue.qt.widgets.custom_component_widget``        | ``glue.dialogs.custom_component.qt``
   ``glue.qt.link_editor``                            | ``glue.dialogs.link_editor.qt``
   ``glue.qt.widgets.subset_facet``                   | ``glue.dialogs.subset_facet.qt``
+  ``glue.qt.mouse_mode``                             | ``glue.viewers.common.qt.mouse_mode``
   
 * Improved under-the-hood creation of ROIs for Scatter and Histogram Clients. [#676]
 
