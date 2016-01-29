@@ -2,22 +2,12 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pytest
-import matplotlib.pyplot as plt
-from mock import MagicMock, patch
+from mock import patch
 
-from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui
-from glue.core import Data, Subset
-from glue.config import data_factory
-
-from glue.viewers.image.layer_artist import RGBImageLayerArtist
+from glue.core import Subset
 
 from .. import qtutil
-from ..qtutil import GlueDataDialog
-
-from ...utils.array import pretty_number
-from ...utils.qt import PythonListModel, update_combobox
 
 
 def test_glue_action_button():
@@ -37,70 +27,6 @@ def test_glue_action_button():
     #stays in sync
     a.setText('test2')
     assert b.text() == 'test2'
-
-
-def test_edit_color():
-    with patch('glue.qt.qtutil.QtGui.QColorDialog') as d:
-        d.getColor.return_value = QtGui.QColor(0, 1, 0)
-        d.isValid.return_value = True
-        s = Subset(None)
-        qtutil.edit_layer_color(s)
-        assert s.style.color == '#000100'
-
-
-def test_edit_color_cancel():
-    with patch('glue.qt.qtutil.QtGui.QColorDialog') as d:
-        d.getColor.return_value = QtGui.QColor(0, -1, 0)
-        s = Subset(None)
-        qtutil.edit_layer_color(s)
-
-
-def test_edit_symbol():
-    with patch('glue.qt.qtutil.QtGui.QInputDialog') as d:
-        d.getItem.return_value = ('*', True)
-        s = Subset(None)
-        qtutil.edit_layer_symbol(s)
-        assert s.style.marker == '*'
-
-
-def test_edit_symbol_cancel():
-    with patch('glue.qt.qtutil.QtGui.QInputDialog') as d:
-        d.getItem.return_value = ('*', False)
-        s = Subset(None)
-        qtutil.edit_layer_symbol(s)
-        assert s.style.marker != '*'
-
-
-def test_edit_point_size():
-    with patch('glue.qt.qtutil.QtGui.QInputDialog') as d:
-        d.getInt.return_value = 123, True
-        s = Subset(None)
-        qtutil.edit_layer_point_size(s)
-        assert s.style.markersize == 123
-
-
-def test_edit_point_size_cancel():
-    with patch('glue.qt.qtutil.QtGui.QInputDialog') as d:
-        d.getInt.return_value = 123, False
-        s = Subset(None)
-        qtutil.edit_layer_point_size(s)
-        assert s.style.markersize != 123
-
-
-def test_edit_layer_label():
-    with patch('glue.qt.qtutil.QtGui.QInputDialog') as d:
-        d.getText.return_value = ('accepted label', True)
-        s = Subset(None)
-        qtutil.edit_layer_label(s)
-        assert s.label == 'accepted label'
-
-
-def test_edit_layer_label_cancel():
-    with patch('glue.qt.qtutil.QtGui.QInputDialog') as d:
-        d.getText.return_value = ('rejected label', False)
-        s = Subset(None)
-        qtutil.edit_layer_label(s)
-        assert s.label != 'rejected label'
 
 
 class TestGlueListWidget(object):

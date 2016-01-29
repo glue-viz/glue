@@ -10,53 +10,10 @@ import os
 import pkg_resources
 
 from glue.external.qt.QtCore import Qt
-from glue.external.qt import QtGui, QtCore
-from glue import core
+from glue.external.qt import QtGui
 from glue.qt import ui, icons
-from glue.utils.qt import (QMessageBoxPatched as QMessageBox, mpl_to_qt4_color,
-                           qt4_to_mpl_color, tint_pixmap, GlueItemWidget,
-                           set_cursor)
-
-def edit_layer_color(layer):
-    """ Interactively edit a layer's color """
-    initial = mpl_to_qt4_color(layer.style.color, alpha=layer.style.alpha)
-    color = QtGui.QColorDialog.getColor(initial, None, "Change layer color",
-                                        options=QtGui.QColorDialog.ShowAlphaChannel)
-    if color.isValid():
-        layer.style.color = qt4_to_mpl_color(color)
-        layer.style.alpha = color.alpha() / 256.
-
-
-def edit_layer_symbol(layer):
-    """ Interactively edit a layer's symbol """
-    options = ['o', '^', '*', 's']
-    try:
-        initial = options.index(layer.style.marker)
-    except IndexError:
-        initial = 0
-    symb, isok = QtGui.QInputDialog.getItem(None, 'Pick a Symbol',
-                                            'Pick a Symbol',
-                                            options, current=initial)
-    if isok and symb != layer.style.marker:
-        layer.style.marker = symb
-
-
-def edit_layer_point_size(layer):
-    """ Interactively edit a layer's point size """
-    size, isok = QtGui.QInputDialog.getInt(None, 'Point Size', 'Point Size',
-                                           value=layer.style.markersize,
-                                           min=1, max=1000, step=1)
-    if isok and size != layer.style.markersize:
-        layer.style.markersize = size
-
-
-def edit_layer_label(layer):
-    """ Interactively edit a layer's label """
-    label, isok = QtGui.QInputDialog.getText(None, 'New Label:', 'New Label:',
-                                             text=layer.label)
-    if isok and str(label) != layer.label:
-        layer.label = str(label)
-
+from glue.core.qt.mime import LAYERS_MIME_TYPE
+from glue.utils.qt import mpl_to_qt4_color, tint_pixmap, GlueItemWidget
 
 POINT_ICONS = {'o': 'glue_circle_point',
                's': 'glue_box_point',
@@ -94,7 +51,6 @@ def layer_icon(layer):
 def layer_artist_icon(artist):
     """Create a QtGui.QIcon for a LayerArtist instance"""
 
-    from glue.viewers.image.qt.rgb_edit import RGBEdit
     # TODO: need a test for this
 
     from glue.viewers.image.layer_artist import ImageLayerArtist
@@ -138,6 +94,8 @@ def _custom_widgets():
     # iterate over custom widgets referenced in .ui files
     yield GlueListWidget
     yield GlueActionButton
+
+    from glue.viewers.image.qt.rgb_edit import RGBEdit
     yield RGBEdit
 
     from glue.dialogs.common.qt.component_selector import ComponentSelector
@@ -260,28 +218,3 @@ def action(name, parent, tip='', icon=None, shortcut=None):
     if shortcut:
         a.setShortcut(shortcut)
     return a
-
-
-if __name__ == "__main__":
-
-    from glue.qt import get_qapp
-
-    class Foo(object):
-        layer_visible = {}
-        layer = None
-
-        def update(self):
-            print('update', self.layer_visible)
-
-        def redraw(self):
-            print('draw')
-
-    app = get_qapp()
-    f = Foo()
-
-    rgb = RGBEdit()
-    rgb.show()
-    app.exec_()
-
-    print(f.layer_visible)
-    print(f.contrast_layer)
