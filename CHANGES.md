@@ -89,6 +89,7 @@ v0.7 (unreleased)
   ``glue.qt.widgets.layer_tree_widget``              | ``glue.app.qt.layer_tree_widget``
   ``glue.qt.widgets.message_widget``                 | ``glue.core.qt.message_widget``
   ``glue.qt.widgets.settings_editor``                | ``glue.app.qt.settings_editor``
+  ``glue.qt.mime``                                   | ``glue.core.qt.mime``
 
 * Improved under-the-hood creation of ROIs for Scatter and Histogram Clients. [#676]
 

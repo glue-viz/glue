@@ -15,7 +15,7 @@ from glue.core import Subset
 from glue.core.callback_property import add_callback, ignore_callback
 from glue.config import fit_plugin
 from glue.viewers.common.qt.toolbar import GlueToolbar
-from glue.qt.mime import LAYERS_MIME_TYPE
+from glue.core.qt.mime import LAYERS_MIME_TYPE
 from glue.viewers.common.qt.mouse_mode import SpectrumExtractorMode
 from glue.qt.qtutil import load_ui
 from glue.core.qt.simpleforms import build_form_item

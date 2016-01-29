@@ -8,7 +8,7 @@ from glue.core.hub import HubListener
 from glue.core import message as m
 from glue.core.decorators import memoize
 from glue import core
-from glue.qt.mime import LAYERS_MIME_TYPE
+from glue.core.qt.mime import LAYERS_MIME_TYPE
 from glue.qt.qtutil import layer_icon
 from glue.core.qt.style_dialog import StyleDialog
 from glue.utils.qt import PyMimeData

@@ -13,7 +13,6 @@ from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui, QtCore
 from glue import core
 from glue.qt import ui, icons
-from glue.qt.mime import LAYERS_MIME_TYPE
 from glue.utils.qt import (QMessageBoxPatched as QMessageBox, mpl_to_qt4_color,
                            qt4_to_mpl_color, tint_pixmap, GlueItemWidget,
                            set_cursor)
