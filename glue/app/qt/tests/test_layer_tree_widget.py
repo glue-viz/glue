@@ -179,8 +179,7 @@ class TestLayerTree(object):
         assert not self.widget.is_checkable()
 
     def test_load_data(self):
-        pth = 'glue.app.qt.layer_tree_widget.qtutil.data_wizard'
-        with patch(pth) as wizard:
+        with patch('glue.app.qt.layer_tree_widget.data_wizard') as wizard:
             d = core.Data(x=[1])
             assert not self.layer_present(d)
             wizard.return_value = [d]

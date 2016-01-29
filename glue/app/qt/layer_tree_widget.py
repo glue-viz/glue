@@ -15,6 +15,7 @@ from glue.dialogs.link_editor.qt import LinkEditor
 from glue.qt.qtutil import get_icon, action
 from glue.dialogs.custom_component.qt import CustomComponentWidget
 from glue.dialogs.subset_facet.qt import SubsetFacet
+from glue.dialogs.data_wizard.qt import data_wizard
 from glue.utils import nonpartial
 
 # TODO: make into .ui file
@@ -517,7 +518,7 @@ class LayerTreeWidget(QtGui.QWidget, Ui_LayerTree):
         as new layer """
         from glue.app.qt import GlueApplication
 
-        layers = qtutil.data_wizard()
+        layers = data_wizard()
         GlueApplication.add_datasets(self.data_collection, layers)
 
     def __getitem__(self, key):
