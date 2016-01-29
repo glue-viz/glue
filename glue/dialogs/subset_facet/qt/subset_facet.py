@@ -12,6 +12,8 @@ from glue.utils.array import pretty_number
 from glue.utils import Pointer
 from glue.utils.qt import cmap2pixmap
 
+__all__ = ['SubsetFacet']
+
 
 class SubsetFacet(object):
     log = ButtonProperty('ui.log')
@@ -27,7 +29,8 @@ class SubsetFacet(object):
         :param collect: The :class:`~glue.core.data_collection.DataCollection` to use
         :param default: The default dataset in the collection (optional)
         """
-        self.ui = load_ui('subset_facet', None)
+        self.ui = load_ui('subset_facet.ui', None,
+                          dirname=os.path.dirname(__file__))
         self.ui.setWindowTitle("Subset Facet")
         self._collect = collect
 

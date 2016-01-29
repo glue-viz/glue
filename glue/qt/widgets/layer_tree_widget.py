@@ -15,7 +15,7 @@ from glue.dialogs.link_editor.qt import LinkEditor
 from glue.qt.qtutil import get_icon, action
 from glue.qt.ui.layertree import Ui_LayerTree
 from glue.dialogs.custom_component.qt import CustomComponentWidget
-from glue.qt.widgets.subset_facet import SubsetFacet
+from glue.dialogs.subset_facet.qt import SubsetFacet
 from glue.utils import nonpartial
 
 
@@ -541,3 +541,13 @@ def save_subset(subset):
     if not fname:
         return
     subset.write_mask(fname)
+
+if __name__ == "__main__":
+    from glue.core.data_collection import DataCollection
+    collection = DataCollection()
+    from glue.external.qt import get_qapp
+    app = get_qapp()
+    widget = LayerTreeWidget()
+    widget.setup(collection)
+    widget.show()
+    app.exec_()

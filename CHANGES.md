@@ -83,6 +83,7 @@ v0.7 (unreleased)
   ``glue.qt.layer_artist_model``                     | ``glue.core.qt.layer_artist_model``
   ``glue.qt.widgets.custom_component_widget``        | ``glue.dialogs.custom_component.qt``
   ``glue.qt.link_editor``                            | ``glue.dialogs.link_editor.qt``
+  ``glue.qt.widgets.subset_facet``                   | ``glue.dialogs.subset_facet.qt``
   
 * Improved under-the-hood creation of ROIs for Scatter and Histogram Clients. [#676]
 
