@@ -14,9 +14,9 @@ from __future__ import absolute_import, division, print_function
 from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui, QtCore
 from glue.core.layer_artist import LayerArtistBase, LayerArtistContainer
+from glue.core.qt.style_dialog import StyleDialog
 from glue.qt.qtutil import layer_artist_icon
 from glue.qt.mime import LAYERS_MIME_TYPE
-from glue.qt.widgets.style_dialog import StyleDialog
 from glue.utils import nonpartial
 from glue.utils.qt import PythonListModel, PyMimeData
 

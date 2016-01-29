@@ -10,7 +10,7 @@ from glue.core.decorators import memoize
 from glue import core
 from glue.qt.mime import LAYERS_MIME_TYPE
 from glue.qt.qtutil import layer_icon
-from glue.qt.widgets.style_dialog import StyleDialog
+from glue.core.qt.style_editor import StyleDialog
 from glue.utils.qt import PyMimeData
 
 DATA_IDX = 0
