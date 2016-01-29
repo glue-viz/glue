@@ -47,6 +47,7 @@ class TestQGlue(object):
         GlueApplication.start = MagicMock()
 
     def teardown_method(self, method):
+        from glue.app.qt import GlueApplication
         GlueApplication.start = self._start
 
     def check_setup(self, dc, expected):
