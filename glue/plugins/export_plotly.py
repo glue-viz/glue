@@ -11,15 +11,6 @@ except ImportError:
 
 from glue.core.layout import Rectangle, snap_to_grid
 
-try:
-    from glue.viewers.scatter.qt import ScatterWidget
-    from glue.viewers.histogram.qt import HistogramWidget
-except ImportError:
-    pass
-else:
-    DISPATCH[ScatterWidget] = export_scatter
-    DISPATCH[HistogramWidget] = export_histogram
-
 SYM = {'o': 'circle', 's': 'square', '+': 'cross', '^': 'triangle-up',
        '*': 'cross'}
 
@@ -316,3 +307,15 @@ def setup():
     exporters.add('Plotly', save_plotly, can_save_plotly, outmode='label')
     settings.add('PLOTLY_USER', 'Glue')
     settings.add('PLOTLY_APIKEY', 't24aweai14')
+
+
+DISPATCH = {}
+
+try:
+    from glue.viewers.scatter.qt import ScatterWidget
+    from glue.viewers.histogram.qt import HistogramWidget
+except ImportError:
+    pass
+else:
+    DISPATCH[ScatterWidget] = export_scatter
+    DISPATCH[HistogramWidget] = export_histogram

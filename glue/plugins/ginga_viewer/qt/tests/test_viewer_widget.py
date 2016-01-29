@@ -9,7 +9,7 @@ if not GINGA_INSTALLED:
 
 from glue.viewers.image.qt.tests.test_viewer_widget import _TestImageWidgetBase
 
-from ..qt_widget import GingaWidget
+from ..viewer_widget import GingaWidget
 
 
 class TestGingaWidget(_TestImageWidgetBase):

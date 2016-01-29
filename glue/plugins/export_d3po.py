@@ -9,15 +9,6 @@ from glue.core import Subset
 
 DISPATCH = {}
 
-try:
-    from glue.viewers.scatter.qt import ScatterWidget
-    from glue.viewers.histogram.qt import HistogramWidget
-except ImportError:
-    pass
-else:
-    DISPATCH[ScatterWidget] = save_scatter
-    DISPATCH[HistogramWidget] = save_histogram  
-
 
 def save_page(page, page_number, label, subset):
     """ Convert a tab of a glue session into a D3PO page
@@ -310,3 +301,12 @@ initialize('states.json', 'data.csv');
 </body>
 </html>
 """
+
+try:
+    from glue.viewers.scatter.qt import ScatterWidget
+    from glue.viewers.histogram.qt import HistogramWidget
+except ImportError:
+    pass
+else:
+    DISPATCH[ScatterWidget] = save_scatter
+    DISPATCH[HistogramWidget] = save_histogram

@@ -8,7 +8,7 @@ from glue import core
 from glue.qt.widgets.tests import simple_session
 from glue.viewers.common.qt.tests.test_data_viewer import BaseTestDataViewer
 
-from ..qt_widget import DendroWidget
+from ..viewer_widget import DendroWidget
 
 
 def mock_data():
