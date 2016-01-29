@@ -4,8 +4,8 @@ import time
 
 from glue.external.qt import QtCore
 from glue.core import Data
+from glue.core.tests.util import simple_session
 
-from glue.qt.widgets.tests import simple_session
 from ..style_dialog import StyleDialog
 
 

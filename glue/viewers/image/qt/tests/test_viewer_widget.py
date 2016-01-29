@@ -14,7 +14,7 @@ from glue.app.qt.tests.test_application import TestApplicationSession
 from glue import core
 from glue.app.qt import GlueApplication
 
-from glue.qt.widgets.tests import simple_session
+from glue.core.tests.util import simple_session
 from ..viewer_widget import ImageWidget
 
 

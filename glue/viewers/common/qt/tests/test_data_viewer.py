@@ -8,7 +8,7 @@ from mock import MagicMock, patch
 from glue.core import Data, DataCollection
 from glue.app.qt import GlueApplication
 
-from glue.qt.widgets.tests import simple_session
+from glue.core.tests.util import simple_session
 from ..data_viewer import DataViewer
 from glue.viewers.histogram.qt import HistogramWidget
 from glue.viewers.image.qt import ImageWidget

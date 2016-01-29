@@ -7,7 +7,7 @@ import os
 import pytest
 
 from glue import core
-from glue.qt.widgets.tests import simple_session
+from glue.core.tests.util import simple_session
 
 from ..viewer_widget import HistogramWidget, _hash
 
