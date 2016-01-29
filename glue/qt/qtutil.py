@@ -11,9 +11,8 @@ import pkg_resources
 
 from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui
-from glue.qt import ui, icons
-from glue.core.qt.mime import LAYERS_MIME_TYPE
-from glue.utils.qt import mpl_to_qt4_color, tint_pixmap, GlueItemWidget, CUSTOM_QWIDGETS
+from glue.qt import icons
+from glue.utils.qt import mpl_to_qt4_color, tint_pixmap, CUSTOM_QWIDGETS
 
 POINT_ICONS = {'o': 'glue_circle_point',
                's': 'glue_box_point',
