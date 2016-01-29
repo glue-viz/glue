@@ -149,6 +149,7 @@ install:
       conda remove qt || true;
       conda remove qt5 || true;
       find . -name "qt" -type d -exec rm -r {} \; || true;
+      rm glue/external/qt.py || true;
     fi
 
   # We need to install glue in order to make sure that the entry points are
