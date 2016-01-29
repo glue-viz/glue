@@ -27,11 +27,6 @@ from glue.utils.qt import Worker, messagebox_on_error
 
 from .profile_viewer import ProfileViewer
 
-def setup():
-    from glue.config import tool_registry
-    from glue.viewers.image.qt import ImageWidget
-    tool_registry.add(SpectrumTool, widget_cls=ImageWidget)
-
 
 class Extractor(object):
     # Warning:

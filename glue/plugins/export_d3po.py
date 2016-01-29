@@ -5,8 +5,9 @@ import json
 
 from glue.core import Subset
 
-from glue.viewers.scatter.qt import ScatterWidget
-from glue.viewers.histogram.qt import HistogramWidget
+
+
+DISPATCH = {}
 
 
 def save_page(page, page_number, label, subset):
@@ -50,10 +51,8 @@ def save_plot_base(plot, index):
 
 
 def save_plot(plot, index):
-    dispatch = {ScatterWidget: save_scatter,
-                HistogramWidget: save_histogram}
     typ = type(plot)
-    return dispatch[typ](plot, index)
+    return DISPATCH[typ](plot, index)
 
 
 def save_scatter(plot, index):
@@ -137,7 +136,7 @@ def can_save_d3po(application):
 
     for tab in application.viewers:
         for viewer in tab:
-            if not isinstance(viewer, (ScatterWidget, HistogramWidget)):
+            if not isinstance(viewer, DISPATCH.keys()):
                 raise ValueError("D3PO Export only supports scatter "
                                  "and histogram plots")
     if sum(len(tab) for tab in application.viewers) == 0:
@@ -302,3 +301,12 @@ initialize('states.json', 'data.csv');
 </body>
 </html>
 """
+
+try:
+    from glue.viewers.scatter.qt import ScatterWidget
+    from glue.viewers.histogram.qt import HistogramWidget
+except ImportError:
+    pass
+else:
+    DISPATCH[ScatterWidget] = save_scatter
+    DISPATCH[HistogramWidget] = save_histogram

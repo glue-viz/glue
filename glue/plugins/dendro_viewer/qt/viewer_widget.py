@@ -38,7 +38,7 @@ class DendroWidget(DataViewer):
         self.option_widget = QtGui.QWidget()
         self.setCentralWidget(self.central_widget)
 
-        self.ui = load_ui('qt_widget.ui', self.option_widget,
+        self.ui = load_ui('options_widget.ui', self.option_widget,
                           directory=os.path.dirname(__file__))
         self.client = DendroClient(self._data,
                                    self.central_widget.canvas.fig,

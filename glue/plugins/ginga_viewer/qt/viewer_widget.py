@@ -14,12 +14,13 @@ from glue.external.qt import QtGui, QtCore
 from glue.core.callback_property import add_callback
 from glue.core import roi as roimod
 from glue.config import tool_registry
-from glue.plugins.ginga_viewer.client import GingaClient
-from glue.plugins.tools.pv_slicer import PVSlicerTool
-from glue.plugins.tools.spectrum_tool import SpectrumTool
+from glue.plugins.ginga_viewer.qt.client import GingaClient
+from glue.plugins.tools.spectrum_tool.qt import SpectrumTool
 from glue.qt.qtutil import get_icon
 from glue.viewers.image.qt import ImageWidgetBase
 from glue.utils import nonpartial
+
+from glue.plugins.tools.pv_slicer.qt import PVSlicerTool
 
 try:
     from ginga.gw import Readout

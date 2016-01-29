@@ -5,6 +5,8 @@ import sys
 
 from mock import patch
 
+from glue.tests.helpers import requires_qt
+
 from .._deps import Dependency, categories
 
 
@@ -54,6 +56,7 @@ class TestDependency(object):
         assert str(d) == "                asdf:\tFAILED (info)"
 
 
+@requires_qt
 def test_optional_dependency_not_imported():
     """
     Ensure that a GlueApplication instance can be created without

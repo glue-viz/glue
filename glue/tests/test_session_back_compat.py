@@ -6,12 +6,13 @@ import os
 
 import numpy as np
 
-from glue.tests.helpers import requires_astropy, requires_h5py
+from glue.tests.helpers import requires_astropy, requires_h5py, requires_qt
+from glue.core.state import GlueUnSerializer
 
-from ..state import GlueUnSerializer
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 
 
+@requires_qt
 @requires_astropy
 def test_load_simple_tables_04():
 
@@ -55,6 +56,7 @@ def test_load_simple_tables_04():
     ga.close()
 
 
+@requires_qt
 @requires_h5py
 def test_load_hdf5_grids_04():
 
@@ -83,6 +85,7 @@ def test_load_hdf5_grids_04():
     ga.close()
 
 
+@requires_qt
 @requires_astropy
 def test_load_link_helpers_04():
 
@@ -98,6 +101,8 @@ def test_load_link_helpers_04():
 
     ga = state.object('__main__')
 
+
+@requires_qt
 @requires_astropy
 def test_load_viewers_04():
 

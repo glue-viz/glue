@@ -1,6 +1,6 @@
 def setup():
     try:
-        from .qt_widget import GingaWidget
+        from .qt.viewer_widget import GingaWidget
     except ImportError:
         raise ImportError("ginga is required")
     else:

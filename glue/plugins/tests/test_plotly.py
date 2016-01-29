@@ -1,10 +1,16 @@
 from __future__ import absolute_import, division, print_function
 
+import pytest
 import numpy as np
 
 from glue.core import Data, DataCollection
-from glue.app.qt import GlueApplication
 
+from glue.tests.helpers import QT_INSTALLED
+
+if not QT_INSTALLED:
+    pytest.skip()
+
+from glue.app.qt import GlueApplication
 from glue.viewers.scatter.qt import ScatterWidget
 from glue.viewers.histogram.qt import HistogramWidget
 

@@ -5,19 +5,20 @@ import numpy as np
 import pandas as pd
 from mock import MagicMock
 
-from glue.app.qt import GlueApplication
-
 from .. import qglue
 from ..core import Data
 from ..core.exceptions import IncompatibleAttribute
 from ..core.registry import Registry
-from .helpers import requires_astropy
+from .helpers import requires_astropy, requires_qt
 
 
+@requires_qt
 @requires_astropy
 class TestQGlue(object):
 
     def setup_method(self, method):
+
+        from glue.app.qt import GlueApplication
 
         from astropy.table import Table
         from astropy.io.fits import HDUList, ImageHDU
@@ -46,6 +47,7 @@ class TestQGlue(object):
         GlueApplication.start = MagicMock()
 
     def teardown_method(self, method):
+        from glue.app.qt import GlueApplication
         GlueApplication.start = self._start
 
     def check_setup(self, dc, expected):
