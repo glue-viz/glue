@@ -1,11 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
+import os
 from inspect import getargspec
 from collections import OrderedDict
 
 from glue.external.qt import QtGui, is_pyside
 from glue import core
 from glue.qt.qtutil import load_ui
+
+__all__ = ['LinkEquation']
 
 
 def function_label(function):
@@ -128,7 +131,8 @@ class LinkEquation(QtGui.QWidget):
 
         # pyqt4 can't take self as second argument here
         # for some reason. Manually embed
-        self._ui = load_ui('link_equation', None)
+        self._ui = load_ui('link_equation.ui', None,
+                           directory=os.path.dirname(__file__))
         l = QtGui.QHBoxLayout()
         l.addWidget(self._ui)
         self.setLayout(l)

@@ -1,8 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
+import os
+
 from glue.external.qt import QtGui
 from glue import core
 from glue.qt.qtutil import load_ui
+
+__all__ = ['LinkEditor']
 
 
 class LinkEditor(object):
@@ -10,7 +14,8 @@ class LinkEditor(object):
     def __init__(self, collection, functions=None, parent=None):
         self._collection = collection
 
-        self._ui = load_ui('link_editor', parent)
+        self._ui = load_ui('link_editor.ui', parent,
+                           directory=os.path.dirname(__file__))
         self._init_widgets()
         self._connect()
         if len(collection) > 1:

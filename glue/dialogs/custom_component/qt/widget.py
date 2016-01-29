@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import os
 import re
 
 from glue.external.qt import QtGui
@@ -7,6 +8,8 @@ from glue.core import parse
 from glue import core
 from glue.qt.qtutil import load_ui
 from glue.utils.qt import CompletionTextEdit
+
+__all__ = ['CustomComponentWidget']
 
 
 def disambiguate(label, labels):
@@ -88,7 +91,8 @@ class CustomComponentWidget(object):
     def __init__(self, collection, parent=None):
 
         # Load in ui file to set up widget
-        self.ui = load_ui('custom_component_widget', parent)
+        self.ui = load_ui('widget.ui', parent,
+                          directory=os.path.dirname(__file__))
 
         # In the ui file we do not create the text field for the expression
         # because we want to use a custom widget that supports auto-complete.
