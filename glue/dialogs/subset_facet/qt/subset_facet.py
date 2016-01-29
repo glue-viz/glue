@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import os
 import numpy as np
 from matplotlib import cm
 
@@ -30,7 +31,7 @@ class SubsetFacet(object):
         :param default: The default dataset in the collection (optional)
         """
         self.ui = load_ui('subset_facet.ui', None,
-                          dirname=os.path.dirname(__file__))
+                          directory=os.path.dirname(__file__))
         self.ui.setWindowTitle("Subset Facet")
         self._collect = collect
 

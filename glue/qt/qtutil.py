@@ -393,10 +393,10 @@ def _custom_widgets():
     yield GlueActionButton
     yield RGBEdit
 
-    from glue.qt.component_selector import ComponentSelector
+    from glue.dialogs.common.qt.component_selector import ComponentSelector
     yield ComponentSelector
 
-    from glue.qt.link_equation import LinkEquation
+    from glue.dialogs.link_editor.qt.link_equation import LinkEquation
     yield LinkEquation
 
 

@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import os
+
 from glue.external.qt.QtCore import Signal
 from glue.external.qt import QtGui
 from glue.qt.qtutil import load_ui
@@ -24,7 +26,8 @@ class ComponentSelector(QtGui.QWidget):
     def __init__(self, parent=None):
         super(ComponentSelector, self).__init__(parent)
         self._data = None
-        self._ui = load_ui('component_selector', self)
+        self._ui = load_ui('component_selector.ui', self,
+                           directory=os.path.dirname(__file__))
         self._init_widgets()
         self._connect()
 

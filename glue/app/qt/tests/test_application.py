@@ -209,7 +209,7 @@ class TestGlueApplication(object):
 
         act = self.app._ui.layerWidget._actions['facet']
         self.app.data_collection.append(Data(x=[1, 2, 3]))
-        with patch('glue.qt.widgets.subset_facet.SubsetFacet.exec_'):
+        with patch('glue.dialogs.subset_facet.qt.SubsetFacet.exec_'):
             act._do_action()
 
 

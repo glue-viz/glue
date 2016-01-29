@@ -8,7 +8,7 @@ from glue.core import Data, DataCollection
 from ..subset_facet import SubsetFacet
 
 
-patched_facet = patch('glue.qt.widgets.subset_facet.facet_subsets')
+patched_facet = patch('glue.dialogs.subset_facet.qt.subset_facet.facet_subsets')
 
 
 class TestSubsetFacet(object):
