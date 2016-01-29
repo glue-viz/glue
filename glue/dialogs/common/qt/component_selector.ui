@@ -52,7 +52,7 @@
       </widget>
      </item>
      <item>
-      <widget class="GlueListWidget" name="component_selector">
+      <widget class="GlueMimeListWidget" name="component_selector">
        <property name="toolTip">
         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -68,9 +68,9 @@ p, li { white-space: pre-wrap; }
  </widget>
  <customwidgets>
   <customwidget>
-   <class>GlueListWidget</class>
+   <class>GlueMimeListWidget</class>
    <extends>QListWidget</extends>
-   <header>glue.qt.qtutil</header>
+   <header>glue.core.qt.mime</header>
   </customwidget>
  </customwidgets>
  <resources/>

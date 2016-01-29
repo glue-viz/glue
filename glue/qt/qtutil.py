@@ -68,10 +68,6 @@ def layer_artist_icon(artist):
     return QtGui.QIcon(pm)
 
 
-class GlueListWidget(GlueItemWidget, QtGui.QListWidget):
-    SUPPORTED_MIME_TYPE = LAYERS_MIME_TYPE
-
-
 class GlueActionButton(QtGui.QPushButton):
 
     def set_action(self, action, text=True):
@@ -92,7 +88,10 @@ class GlueActionButton(QtGui.QPushButton):
 
 def _custom_widgets():
     # iterate over custom widgets referenced in .ui files
-    yield GlueListWidget
+
+    from glue.core.qt.mime import GlueMimeListWidget
+    yield GlueMimeListWidget
+    
     yield GlueActionButton
 
     from glue.viewers.image.qt.rgb_edit import RGBEdit

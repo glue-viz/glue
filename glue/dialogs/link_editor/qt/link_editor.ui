@@ -87,7 +87,7 @@
           </widget>
          </item>
          <item>
-          <widget class="GlueListWidget" name="current_links">
+          <widget class="GlueMimeListWidget" name="current_links">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -230,9 +230,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>GlueListWidget</class>
+   <class>GlueMimeListWidget</class>
    <extends>QListWidget</extends>
-   <header>glue.qt.qtutil</header>
+   <header>glue.core.qt.mime</header>
   </customwidget>
  </customwidgets>
  <resources/>
