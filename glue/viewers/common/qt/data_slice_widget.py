@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import os
+
 from functools import partial
 from collections import Counter
 
@@ -47,7 +49,8 @@ class SliceWidget(QtGui.QWidget):
 
         layout.addLayout(top)
 
-        slider = load_ui('cube_slider')
+        slider = load_ui('data_slice_widget.ui', None,
+                         directory=os.path.dirname(__file__))
         slider.slider
 
         slider.slider.setMinimum(lo)

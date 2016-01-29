@@ -4,7 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 from glue.viewers.common.qt.mpl_widget import MplWidget
 
-from glue.qt.mouse_mode import MouseMode
+from glue.viewers.common.qt.mouse_mode import MouseMode
 from glue.qt.qtutil import get_icon
 
 from ..toolbar import GlueToolbar

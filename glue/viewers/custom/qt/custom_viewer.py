@@ -92,7 +92,7 @@ from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.utils.qt.widget_properties import (ValueProperty, ButtonProperty,
                                              CurrentComboProperty)
 from glue.viewers.common.qt.toolbar import GlueToolbar
-from glue.qt.mouse_mode import PolyMode, RectangleMode
+from glue.viewers.common.qt.mouse_mode import PolyMode, RectangleMode
 
 CUSTOM_WIDGETS = []
 

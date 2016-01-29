@@ -85,7 +85,8 @@ v0.7 (unreleased)
   ``glue.qt.link_editor``                            | ``glue.dialogs.link_editor.qt``
   ``glue.qt.widgets.subset_facet``                   | ``glue.dialogs.subset_facet.qt``
   ``glue.qt.mouse_mode``                             | ``glue.viewers.common.qt.mouse_mode``
-  
+  ``glue.qt.data_slice_widget``                      | ``glue.viewers.common.qt.data_slice_widget``
+
 * Improved under-the-hood creation of ROIs for Scatter and Histogram Clients. [#676]
 
 v0.6 (2015-11-20)
