@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import time
+
 from glue.external.qt import QtCore
 from glue.core import Data
 
@@ -10,6 +12,8 @@ from ..style_dialog import StyleDialog
 class NonBlockingStyleDialog(StyleDialog):
     def exec_(self, *args):
         self.show()
+        time.sleep(0.1)
+        self.accept()
 
 
 def test_style_dialog():
