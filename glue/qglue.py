@@ -210,10 +210,10 @@ def qglue(**kwargs):
         links = [(['balls.kg'], ['cones.lbs'], lb2kg, kg2lb)]
         qglue(balls=balls, cones=cones, links=links)
 
-    :returns: A :class:`~glue.qt.glue_application.GlueApplication` object
+    :returns: A :class:`~glue.app.qt.application.GlueApplication` object
     """
     from glue.core import DataCollection
-    from glue.qt.glue_application import GlueApplication
+    from glue.app.qt import GlueApplication
 
     links = kwargs.pop('links', None)
 

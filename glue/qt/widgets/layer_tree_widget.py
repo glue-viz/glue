@@ -11,9 +11,8 @@ from glue.core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode
 from glue.config import single_subset_action
 from glue import core
 from glue.qt import qtutil
-from glue.qt.actions import act as _act
 from glue.qt.link_editor import LinkEditor
-from glue.qt.qtutil import get_icon
+from glue.qt.qtutil import get_icon, action
 from glue.qt.ui.layertree import Ui_LayerTree
 from glue.qt.widgets.custom_component_widget import CustomComponentWidget
 from glue.qt.widgets.subset_facet import SubsetFacet
@@ -487,7 +486,7 @@ class LayerTreeWidget(QtGui.QWidget, Ui_LayerTree):
         separator.setSeparator(True)
         tree.addAction(separator)
 
-        a = _act("Define new component", self,
+        a = action("Define new component", self,
                  tip="Define a new component using python expressions")
         tree.addAction(a)
         a.triggered.connect(nonpartial(self._create_component))
@@ -514,7 +513,7 @@ class LayerTreeWidget(QtGui.QWidget, Ui_LayerTree):
     def _load_data(self):
         """ Interactively loads data from a data set. Adds
         as new layer """
-        from glue.qt.glue_application import GlueApplication
+        from glue.app.qt import GlueApplication
 
         layers = qtutil.data_wizard()
         GlueApplication.add_datasets(self.data_collection, layers)

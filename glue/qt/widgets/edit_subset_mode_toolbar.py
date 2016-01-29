@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from glue.external.qt import QtGui
 from glue.core.edit_subset_mode import (EditSubsetMode, OrMode, AndNotMode,
                                         AndMode, XorMode, ReplaceMode)
-from glue.qt.actions import act
+from glue.qt.qtutil import action
 from glue.utils import nonpartial
 
 
@@ -23,7 +23,7 @@ class EditSubsetModeToolBar(QtGui.QToolBar):
         self._backup_mode = None
 
     def _make_mode(self, name, tip, icon, mode):
-        a = act(name, self, tip, icon)
+        a = action(name, self, tip, icon)
         a.setCheckable(True)
         a.triggered.connect(nonpartial(set_mode, mode))
         self._group.addAction(a)

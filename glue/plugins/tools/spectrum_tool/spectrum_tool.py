@@ -20,7 +20,7 @@ from glue.qt.mouse_mode import SpectrumExtractorMode
 from glue.qt.qtutil import load_ui
 from glue.qt.simpleforms import build_form_item
 from glue.utils.qt.widget_properties import CurrentComboProperty
-from glue.qt.widgets.glue_mdi_area import GlueMdiSubWindow
+from glue.app.qt.mdi_area import GlueMdiSubWindow
 from glue.viewers.common.qt.mpl_widget import MplWidget
 from glue.utils import nonpartial, Pointer
 from glue.utils.qt import Worker, messagebox_on_error

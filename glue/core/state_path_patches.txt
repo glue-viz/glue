@@ -13,3 +13,4 @@ glue.clients.ds9norm.DS9Normalize -> glue.viewers.image.ds9norm.DS9Normalize
 glue.qt.widgets.scatter_widget.ScatterWidget -> glue.viewers.scatter.qt.ScatterWidget
 glue.qt.widgets.image_widget.ImageWidget -> glue.viewers.image.qt.ImageWidget
 glue.qt.widgets.histogram_widget.HistogramWidget -> glue.viewers.histogram.qt.HistogramWidget
+glue.qt.glue_application.GlueApplication -> glue.app.qt.application.GlueApplication

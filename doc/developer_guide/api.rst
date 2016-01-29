@@ -60,7 +60,7 @@ User Interface
 .. automodapi:: glue.viewers.histogram.qt.viewer_widget
    :no-inheritance-diagram:
 
-.. automodapi:: glue.qt.glue_application
+.. automodapi:: glue.app.qt.application
    :no-inheritance-diagram:
 
 .. automodapi:: glue.qglue

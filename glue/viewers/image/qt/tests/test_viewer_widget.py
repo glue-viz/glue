@@ -10,9 +10,9 @@ import numpy as np
 from mock import MagicMock
 
 from glue.external.qt import get_qapp
-from glue.core.tests.test_state import TestApplication
+from glue.app.qt.tests.test_application import TestApplicationSession
 from glue import core
-from glue.qt.glue_application import GlueApplication
+from glue.app.qt import GlueApplication
 
 from glue.qt.widgets.tests import simple_session
 from ..viewer_widget import ImageWidget
@@ -258,7 +258,7 @@ class TestImageWidget(_TestImageWidgetBase):
         self.widget.close()
 
 
-class TestStateSave(TestApplication):
+class TestStateSave(TestApplicationSession):
 
     def setup_method(self, method):
         LinkSame = core.link_helpers.LinkSame
@@ -388,4 +388,4 @@ def test_combo_box_updates():
     assert widget.client.display_data is data1
 
 
-del TestApplication
+del TestApplicationSession

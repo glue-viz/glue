@@ -568,6 +568,17 @@ class ComponentIDCombo(QtGui.QComboBox, core.HubListener):
                       filter=lambda x: x.data is self._data)
 
 
+def action(name, parent, tip='', icon=None, shortcut=None):
+    """ Factory for making a new action """
+    a = QtGui.QAction(name, parent)
+    a.setToolTip(tip)
+    if icon:
+        a.setIcon(get_icon(icon))
+    if shortcut:
+        a.setShortcut(shortcut)
+    return a
+
+
 if __name__ == "__main__":
 
     from glue.qt import get_qapp
