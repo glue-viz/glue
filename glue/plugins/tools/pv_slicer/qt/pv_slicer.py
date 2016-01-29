@@ -7,12 +7,6 @@ from glue.viewers.image.qt import StandaloneImageWidget
 from glue.viewers.common.qt.mpl_widget import defer_draw
 
 
-def setup():
-    from glue.config import tool_registry
-    from glue.viewers.image.qt import ImageWidget
-    tool_registry.add(PVSlicerTool, widget_cls=ImageWidget)
-
-
 class PVSlicerTool(object):
 
     def __init__(self, widget=None):

@@ -1,12 +1,16 @@
 from __future__ import absolute_import, division, print_function
 
+import pytest
 import numpy as np
 
 from glue.core import Data, DataCollection
-from glue.app.qt import GlueApplication
 
-from glue.viewers.scatter.qt import ScatterWidget
-from glue.viewers.histogram.qt import HistogramWidget
+try:
+    from glue.app.qt import GlueApplication
+    from glue.viewers.scatter.qt import ScatterWidget
+    from glue.viewers.histogram.qt import HistogramWidget
+except ImportError:
+    pytest.skip()
 
 from ..export_plotly import build_plotly_call
 
