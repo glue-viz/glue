@@ -93,7 +93,7 @@ class TestLayerTree(object):
         QTest.mouseClick(self.widget.layerRemoveButton, Qt.LeftButton)
         assert self.layer_present(layer)
 
-    @patch('glue.qt.widgets.layer_tree_widget.LinkEditor')
+    @patch('glue.app.qt.layer_tree_widget.LinkEditor')
     def test_link_data(self, le):
         layer = self.add_layer()
         self.select_layers(layer)
@@ -179,7 +179,7 @@ class TestLayerTree(object):
         assert not self.widget.is_checkable()
 
     def test_load_data(self):
-        pth = 'glue.qt.widgets.layer_tree_widget.qtutil.data_wizard'
+        pth = 'glue.app.qt.layer_tree_widget.qtutil.data_wizard'
         with patch(pth) as wizard:
             d = core.Data(x=[1])
             assert not self.layer_present(d)
@@ -228,14 +228,14 @@ class TestLayerTree(object):
 
     def test_save_subset(self):
         subset = MagicMock(core.Subset)
-        with patch('glue.qt.widgets.layer_tree_widget.QtGui.QFileDialog') as d:
+        with patch('glue.app.qt.layer_tree_widget.QtGui.QFileDialog') as d:
             d.getSaveFileName.return_value = ('test.fits', None)
             save_subset(subset)
         subset.write_mask.assert_called_once_with('test.fits')
 
     def test_save_subset_cancel(self):
         subset = MagicMock(core.Subset)
-        with patch('glue.qt.widgets.layer_tree_widget.QtGui.QFileDialog') as d:
+        with patch('glue.app.qt.layer_tree_widget.QtGui.QFileDialog') as d:
             d.getSaveFileName.return_value = ('', '')
             save_subset(subset)
         assert subset.write_mask.call_count == 0

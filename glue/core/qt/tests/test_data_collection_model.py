@@ -4,7 +4,7 @@ from glue.external.qt.QtCore import Qt
 from glue.core import DataCollection, Data
 
 from ..data_collection_model import DataCollectionModel
-from ..qtutil import LAYERS_MIME_TYPE
+from glue.qt.mime import LAYERS_MIME_TYPE
 
 
 class TestDataCollectionModel(object):

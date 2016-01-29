@@ -86,6 +86,9 @@ v0.7 (unreleased)
   ``glue.qt.widgets.subset_facet``                   | ``glue.dialogs.subset_facet.qt``
   ``glue.qt.mouse_mode``                             | ``glue.viewers.common.qt.mouse_mode``
   ``glue.qt.data_slice_widget``                      | ``glue.viewers.common.qt.data_slice_widget``
+  ``glue.qt.widgets.layer_tree_widget``              | ``glue.app.qt.layer_tree_widget``
+  ``glue.qt.widgets.message_widget``                 | ``glue.core.qt.message_widget``
+  ``glue.qt.widgets.settings_editor``                | ``glue.app.qt.settings_editor``
 
 * Improved under-the-hood creation of ROIs for Scatter and Histogram Clients. [#676]
 

@@ -13,10 +13,12 @@ from glue import core
 from glue.qt import qtutil
 from glue.dialogs.link_editor.qt import LinkEditor
 from glue.qt.qtutil import get_icon, action
-from glue.qt.ui.layertree import Ui_LayerTree
 from glue.dialogs.custom_component.qt import CustomComponentWidget
 from glue.dialogs.subset_facet.qt import SubsetFacet
 from glue.utils import nonpartial
+
+# TODO: make into .ui file
+from glue.app.qt.layer_tree_widget_ui import Ui_LayerTree
 
 
 @core.decorators.singleton

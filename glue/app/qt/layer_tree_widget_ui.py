@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.external.qt import QtCore, QtGui, is_pyqt5
-from glue.qt.data_collection_model import DataCollectionView
+from glue.core.qt.data_collection_model import DataCollectionView
 from glue.qt.qtutil import GlueActionButton, get_icon
 
 
