@@ -80,6 +80,7 @@ v0.7 (unreleased)
   ``glue.qt.qt_roi``                                 | ``glue.core.qt.roi``
   ``glue.core.qt.simpleforms``                       | ``glue.core.qt.simpleforms``
   ``glue.qt.widgets.style_dialog``                   | ``glue.core.qt.style_dialog``
+  ``glue.qt.layer_artist_model``             | ``glue.core.qt.layer_artist_model``
 
 * Improved under-the-hood creation of ROIs for Scatter and Histogram Clients. [#676]
 
