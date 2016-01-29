@@ -32,7 +32,7 @@ class TestTerminal(object):
 
     def test_drops_update_namespace(self):
         """DnD adds variable name to namespace"""
-        with patch('glue.qt.widgets.terminal.QtGui.QInputDialog') as dialog:
+        with patch('glue.app.qt.terminal.QtGui.QInputDialog') as dialog:
             dialog.getText.return_value = 'accept_var', True
 
             gt = glue_terminal()
@@ -45,7 +45,7 @@ class TestTerminal(object):
     def test_cancel_drop(self):
         """Drop not added if user cancels dialog box"""
 
-        with patch('glue.qt.widgets.terminal.QtGui.QInputDialog') as dialog:
+        with patch('glue.app.qt.terminal.QtGui.QInputDialog') as dialog:
             dialog.getText.return_value = 'cancel_var', False
 
             gt = glue_terminal()

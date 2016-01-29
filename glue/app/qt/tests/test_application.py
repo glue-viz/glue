@@ -88,7 +88,7 @@ class TestGlueApplication(object):
         if not self.app.has_terminal():
             return self.app
 
-        with patch('glue.qt.widgets.terminal.glue_terminal') as terminal:
+        with patch('glue.app.qt.terminal.glue_terminal') as terminal:
             terminal.side_effect = Exception("disabled")
             app = GlueApplication()
             app._create_terminal()

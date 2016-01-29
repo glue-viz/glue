@@ -798,7 +798,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
         self._ui.layerWidget.button_row.addWidget(self._terminal_button)
 
         try:
-            from glue.qt.widgets.terminal import glue_terminal
+            from glue.app.qt.terminal import glue_terminal
             widget = glue_terminal(data_collection=self._data,
                                    dc=self._data,
                                    hub=self._hub,

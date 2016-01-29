@@ -76,6 +76,8 @@ v0.7 (unreleased)
   ``glue.qt.feedback.FeedbackWidget``                | ``glue.app.qt.feedback.FeedbackWidget``
   ``glue.qt.widgets.glue_mdi_area``                  | ``glue.app.qt.mdi_area``
 
+  ``glue.qt.widgets.terminal``                       | ``glue.app.qt.terminal``
+
 * Improved under-the-hood creation of ROIs for Scatter and Histogram Clients. [#676]
 
 v0.6 (2015-11-20)
