@@ -122,29 +122,3 @@ class TestGlueListWidget(object):
         self.w.set_data(4, 'also pick')
         mime = self.w.mimeData([3, 4])
         mime.data(qtutil.LAYERS_MIME_TYPE) == ['test data', 'also pick']
-
-
-class TestRGBEdit(object):
-
-    def setup_method(self, method):
-        d = Data()
-        self.fig = plt.figure()
-        self.ax = self.fig.add_subplot(1, 1, 1)
-        self.artist = RGBImageLayerArtist(d, self.ax)
-        self.w = qtutil.RGBEdit(artist=self.artist)
-
-    def teardown_method(self, method):
-        plt.close(self.fig)
-
-    def test_update_visible(self):
-        for color in ['red', 'green', 'blue']:
-            state = self.artist.layer_visible[color]
-            self.w.vis[color].click()
-            assert self.artist.layer_visible[color] != state
-
-    def test_update_current(self):
-        for color in ['red', 'green', 'blue']:
-            self.w.current[color].click()
-            assert self.artist.contrast_layer == color
-
-
