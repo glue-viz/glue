@@ -60,6 +60,15 @@ GINGA_INSTALLED, requires_ginga = make_skipper('ginga')
 
 H5PY_INSTALLED, requires_h5py = make_skipper('h5py')
 
+PYQT4_INSTALLED, requires_pyqt4 = make_skipper('PyQt4')
+PYQT5_INSTALLED, requires_pyqt5 = make_skipper('PyQt5')
+PYSIDE_INSTALLED, requires_pyside = make_skipper('PySide')
+
+requires_qt = pytest.mark.skipif(str(not PYQT4_INSTALLED and
+                                     not PYQT5_INSTALLED and
+                                     not PYQT5_INSTALLED),
+                                 reason='An installation of Qt is required')
+
 
 @contextmanager
 def make_file(contents, suffix, decompress=False):

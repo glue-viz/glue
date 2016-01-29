@@ -3,11 +3,14 @@ from __future__ import absolute_import, division, print_function
 import pytest
 from mock import patch
 
+from glue.tests.helpers import requires_qt
+
 from ..core import Data
 from ..main import (die_on_error, restore_session, load_data_files,
                     main, start_glue)
 
 
+@requires_qt
 def test_die_on_error_exception():
     """Decorator should spawn a QMessageBox and exit"""
     with pytest.raises(SystemExit):
@@ -97,6 +100,7 @@ def test_invalid(cmd):
         main(cmd.split())
 
 
+@requires_qt
 @pytest.mark.parametrize(('glue', 'config', 'data'),
                          [('test.glu', None, None),
                           (None, 'test.py', None),

@@ -1,8 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
 from ..config import qt_client, link_function, data_factory
+from glue.tests.helpers import requires_qt
 
 
+@requires_qt
 def test_default_clients():
 
     from glue.viewers.image.qt import ImageWidget
