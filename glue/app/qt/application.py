@@ -15,7 +15,7 @@ from glue import env
 from glue.main import load_plugins
 from glue.icons.qt import get_icon
 from glue.qt import get_qapp
-from glue.qt.qtutil import action
+from glue.app.qt.actions import action
 from glue.dialogs.data_wizard.qt import data_wizard
 from glue.app.qt.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from glue.app.qt.mdi_area import GlueMdiArea, GlueMdiSubWindow

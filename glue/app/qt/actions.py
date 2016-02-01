@@ -1,12 +1,6 @@
-"""
-Various standalone utility code for
-working with Qt
-"""
-
 from __future__ import absolute_import, division, print_function
 
 from glue.external.qt import QtGui
-from glue.utils.qt import CUSTOM_QWIDGETS
 from glue.icons.qt import get_icon
 
 
@@ -26,8 +20,6 @@ class GlueActionButton(QtGui.QPushButton):
         self.setToolTip(self._action.toolTip())
         self.setWhatsThis(self._action.whatsThis())
         self.setEnabled(self._action.isEnabled())
-
-CUSTOM_QWIDGETS.append(GlueActionButton)
 
 
 def action(name, parent, tip='', icon=None, shortcut=None):

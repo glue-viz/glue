@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from glue.external.qt import QtCore, QtGui, is_pyqt5
 from glue.core.qt.data_collection_model import DataCollectionView
 from glue.icons.qt import get_icon
-from glue.qt.qtutil import GlueActionButton
+from glue.app.qt.actions import GlueActionButton
 
 
 class Ui_LayerTree(object):

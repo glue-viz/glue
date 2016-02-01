@@ -10,10 +10,9 @@ from glue.external.qt import QtGui, QtCore
 from glue.core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode
 from glue.config import single_subset_action
 from glue import core
-from glue.qt import qtutil
 from glue.dialogs.link_editor.qt import LinkEditor
 from glue.icons.qt import get_icon
-from glue.qt.qtutil import action
+from glue.app.qt.actions import action
 from glue.dialogs.custom_component.qt import CustomComponentWidget
 from glue.dialogs.subset_facet.qt import SubsetFacet
 from glue.dialogs.data_wizard.qt import data_wizard

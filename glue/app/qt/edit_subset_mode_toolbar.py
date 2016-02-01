@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from glue.external.qt import QtGui
 from glue.core.edit_subset_mode import (EditSubsetMode, OrMode, AndNotMode,
                                         AndMode, XorMode, ReplaceMode)
-from glue.qt.qtutil import action
+from glue.app.qt.actions import action
 from glue.utils import nonpartial
 
 

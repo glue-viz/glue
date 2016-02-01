@@ -2,12 +2,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-from mock import patch
-
 from glue.external.qt import QtGui
-from glue.core import Subset
 
-from .. import qtutil
+from ..actions import GlueActionButton
 
 
 def test_glue_action_button():
@@ -16,7 +13,7 @@ def test_glue_action_button():
     a.setWhatsThis("testwhatsthis")
     a.setIcon(QtGui.QIcon("dummy_file"))
     a.setText('testtext')
-    b = qtutil.GlueActionButton()
+    b = GlueActionButton()
     b.set_action(a)
 
     # assert b.icon() == a.icon() icons are copied, apparently
