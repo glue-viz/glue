@@ -14,7 +14,7 @@ from glue.core import command, Data
 from glue import env
 from glue.main import load_plugins
 from glue.icons.qt import get_icon
-from glue.qt import get_qapp
+from glue.external.qt import get_qapp
 from glue.app.qt.actions import action
 from glue.dialogs.data_wizard.qt import data_wizard
 from glue.app.qt.edit_subset_mode_toolbar import EditSubsetModeToolBar
@@ -182,11 +182,13 @@ class GlueApplication(Application, QtGui.QMainWindow):
     """ The main GUI application for the Qt frontend"""
 
     def __init__(self, data_collection=None, session=None):
+
+        self.app = get_qapp()
+
         QtGui.QMainWindow.__init__(self)
         Application.__init__(self, data_collection=data_collection,
                              session=session)
 
-        self.app = get_qapp()
         self.app.setQuitOnLastWindowClosed(True)
         pth = os.path.abspath(os.path.dirname(__file__))
         pth = os.path.join(pth, 'icons', 'app_icon.png')

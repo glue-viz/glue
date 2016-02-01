@@ -527,7 +527,7 @@ class LabeledDelegate(QtGui.QStyledItemDelegate):
 
 if __name__ == "__main__":
 
-    from glue.qt import get_qapp
+    from glue.external.qt import get_qapp
     from glue.external.qt import QtGui
     from glue.core import Data, DataCollection
 

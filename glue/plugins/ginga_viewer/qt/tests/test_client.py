@@ -20,7 +20,7 @@ from ..client import GingaClient, SubsetImage, BaseImage
 class TestGingaClient(_TestImageClientBase):
 
     def new_client(self, dc=None, canvas=None):
-        from glue.qt import get_qapp
+        from glue.external.qt import get_qapp
         get_qapp()
         dc = dc or self.collect
         l = log.get_logger(name='ginga', log_stderr=True)

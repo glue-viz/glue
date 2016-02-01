@@ -24,6 +24,29 @@ class TimerBase(object):
         pass
 
 
+class QtTimer(TimerBase):
+
+    def __init__(self, interval, callback):
+        from glue.external.qt import QtCore
+        self._timer = QtCore.QTimer()
+        self._timer.setInterval(interval)
+        self._timer.timeout.connect(callback)
+
+    def start(self):
+        self._timer.start()
+
+    def stop(self):
+        self._timer.stop()
+
+
+def get_timer(backend='qt'):
+
+    if backend == 'qt':
+        return QtTimer
+    else:
+        raise ValueError("Only QT Backend supported")
+
+
 def get_backend(backend='qt'):
     global _backend
 

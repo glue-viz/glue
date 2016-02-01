@@ -16,7 +16,7 @@ def set_cursor(shape):
     def wrapper(func):
         @wraps(func)
         def result(*args, **kwargs):
-            from glue.qt import get_qapp
+            from glue.external.qt import get_qapp
             app = get_qapp()
             app.setOverrideCursor(shape)
             try:
