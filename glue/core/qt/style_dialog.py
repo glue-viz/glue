@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui, QtCore
-from glue.qt.qtutil import POINT_ICONS, symbol_icon
+from glue.icons.qt import POINT_ICONS, symbol_icon
 from glue.utils.qt import mpl_to_qt4_color, qt4_to_mpl_color
 
 

@@ -7,7 +7,7 @@ import matplotlib
 from glue.external.qt.QtCore import Qt, Signal
 from glue.external.qt import QtCore, QtGui, is_pyqt5
 from glue.core.callback_property import add_callback
-from glue.qt.qtutil import get_icon
+from glue.icons.qt import get_icon
 from glue.utils import nonpartial
 
 if is_pyqt5():

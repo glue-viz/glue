@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 from glue.viewers.common.qt.mpl_widget import MplWidget
 
 from glue.viewers.common.qt.mouse_mode import MouseMode
-from glue.qt.qtutil import get_icon
+from glue.icons.qt import get_icon
 
 from ..toolbar import GlueToolbar
 
@@ -14,7 +14,7 @@ class MouseModeTest(MouseMode):
 
     def __init__(self, axes, release_callback=None):
         super(MouseModeTest, self).__init__(axes, release_callback=release_callback)
-        self.icon = get_icon('square')
+        self.icon = get_icon('glue_square')
         self.mode_id = 'TEST'
         self.action_text = 'test text'
         self.tool_tip = 'just testing'

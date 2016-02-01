@@ -24,7 +24,7 @@ from glue.core.callback_property import CallbackProperty
 from glue.core import roi
 from glue.core.qt import roi as qt_roi
 from glue.qt import get_qapp
-from glue.qt.qtutil import get_icon
+from glue.icons.qt import get_icon
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui
 

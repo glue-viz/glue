@@ -16,7 +16,7 @@ from glue.core import roi as roimod
 from glue.config import tool_registry
 from glue.plugins.ginga_viewer.qt.client import GingaClient
 from glue.plugins.tools.spectrum_tool.qt import SpectrumTool
-from glue.qt.qtutil import get_icon
+from glue.icons.qt import get_icon
 from glue.viewers.image.qt import ImageWidgetBase
 from glue.utils import nonpartial
 
