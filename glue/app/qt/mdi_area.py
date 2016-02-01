@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui, QtCore
 from glue import core
-from glue.qt.mime import LAYER_MIME_TYPE, LAYERS_MIME_TYPE
+from glue.core.qt.mime import LAYER_MIME_TYPE, LAYERS_MIME_TYPE
 
 
 class GlueMdiArea(QtGui.QMdiArea):

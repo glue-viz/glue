@@ -10,15 +10,15 @@ from glue import core
 from glue.viewers.image.ds9norm import DS9Normalize
 from glue.viewers.image.client import MplImageClient
 from glue.viewers.common.qt.toolbar import GlueToolbar
-from glue.qt.mouse_mode import (RectangleMode, CircleMode, PolyMode,
+from glue.viewers.common.qt.mouse_mode import (RectangleMode, CircleMode, PolyMode,
                                 ContrastMode)
-from glue.qt.qtutil import load_ui, get_icon
+from glue.qt.qtutil import get_icon
 from glue.utils.qt.widget_properties import CurrentComboProperty, ButtonProperty, connect_current_combo, _find_combo_data
-from glue.qt.widgets.data_slice_widget import DataSlice
+from glue.viewers.common.qt.data_slice_widget import DataSlice
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.mpl_widget import MplWidget, defer_draw
 from glue.utils import nonpartial, Pointer
-from glue.utils.qt import cmap2pixmap, update_combobox
+from glue.utils.qt import cmap2pixmap, update_combobox, load_ui
 
 WARN_THRESH = 10000000  # warn when contouring large images
 

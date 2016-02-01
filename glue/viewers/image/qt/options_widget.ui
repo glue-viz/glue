@@ -182,7 +182,7 @@
   <customwidget>
    <class>RGBEdit</class>
    <extends>QWidget</extends>
-   <header>glue.qt.qtutil</header>
+   <header>glue.viewers.image.qt.rgb_edit</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

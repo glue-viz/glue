@@ -14,7 +14,7 @@ from glue.app.qt.tests.test_application import TestApplicationSession
 from glue import core
 from glue.app.qt import GlueApplication
 
-from glue.qt.widgets.tests import simple_session
+from glue.core.tests.util import simple_session
 from ..viewer_widget import ImageWidget
 
 
@@ -230,10 +230,6 @@ class TestImageWidget(_TestImageWidgetBase):
         self.widget.resize(300, 300)
         time.sleep(0.5)
         app.processEvents()
-
-        if self.widget.client._view_window is None:
-            if not CI or not TRAVIS_LINUX:
-                pytest.xfail('Only works reliably on Travis with Linux')
 
         extx0, exty0 = self.widget.client._view_window[4:]
 

@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.qt.mouse_mode import PathMode
+from glue.viewers.common.qt.mouse_mode import PathMode
 from glue.viewers.image.qt import StandaloneImageWidget
 from glue.viewers.common.qt.mpl_widget import defer_draw
 

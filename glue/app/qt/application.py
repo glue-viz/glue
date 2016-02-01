@@ -14,18 +14,19 @@ from glue.core import command, Data
 from glue import env
 from glue.main import load_plugins
 from glue.qt import get_qapp
-from glue.qt.qtutil import data_wizard, load_ui, get_icon, action
-from glue.qt.widgets.edit_subset_mode_toolbar import EditSubsetModeToolBar
+from glue.qt.qtutil import get_icon, action
+from glue.dialogs.data_wizard.qt import data_wizard
+from glue.app.qt.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from glue.app.qt.mdi_area import GlueMdiArea, GlueMdiSubWindow
-from glue.qt.widgets.layer_tree_widget import PlotAction, LayerTreeWidget
-from glue.qt.widgets.settings_editor import SettingsEditor
+from glue.app.qt.layer_tree_widget import PlotAction, LayerTreeWidget
+from glue.app.qt.settings_editor import SettingsEditor
 from glue.viewers.common.qt.mpl_widget import defer_draw
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.image.qt import ImageWidget
 from glue.viewers.scatter.qt import ScatterWidget
 from glue.utils import nonpartial
 from glue.utils.qt import (pick_class, GlueTabBar, QMessageBoxPatched as
-                           QMessageBox, set_cursor, messagebox_on_error)
+                           QMessageBox, set_cursor, messagebox_on_error, load_ui)
 
 from glue.app.qt.feedback import submit_bug_report
 from glue.app.qt.plugin_manager import QtPluginManager
@@ -798,7 +799,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
         self._ui.layerWidget.button_row.addWidget(self._terminal_button)
 
         try:
-            from glue.qt.widgets.terminal import glue_terminal
+            from glue.app.qt.terminal import glue_terminal
             widget = glue_terminal(data_collection=self._data,
                                    dc=self._data,
                                    hub=self._hub,

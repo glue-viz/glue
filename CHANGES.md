@@ -76,6 +76,26 @@ v0.7 (unreleased)
   ``glue.qt.feedback.FeedbackWidget``                | ``glue.app.qt.feedback.FeedbackWidget``
   ``glue.qt.widgets.glue_mdi_area``                  | ``glue.app.qt.mdi_area``
 
+  ``glue.qt.widgets.terminal``                       | ``glue.app.qt.terminal``
+  ``glue.qt.qt_roi``                                 | ``glue.core.qt.roi``
+  ``glue.core.qt.simpleforms``                       | ``glue.core.qt.simpleforms``
+  ``glue.qt.widgets.style_dialog``                   | ``glue.core.qt.style_dialog``
+  ``glue.qt.layer_artist_model``                     | ``glue.core.qt.layer_artist_model``
+  ``glue.qt.widgets.custom_component_widget``        | ``glue.dialogs.custom_component.qt``
+  ``glue.qt.link_editor``                            | ``glue.dialogs.link_editor.qt``
+  ``glue.qt.widgets.subset_facet``                   | ``glue.dialogs.subset_facet.qt``
+  ``glue.qt.mouse_mode``                             | ``glue.viewers.common.qt.mouse_mode``
+  ``glue.qt.data_slice_widget``                      | ``glue.viewers.common.qt.data_slice_widget``
+  ``glue.qt.widgets.layer_tree_widget``              | ``glue.app.qt.layer_tree_widget``
+  ``glue.qt.widgets.message_widget``                 | ``glue.core.qt.message_widget``
+  ``glue.qt.widgets.settings_editor``                | ``glue.app.qt.settings_editor``
+  ``glue.qt.qtutil.data_wizard``                     | ``glue.dialogs.data_wizard.qt.data_wizard``
+  ``glue.qt.mime``                                   | ``glue.core.qt.mime``
+  ``glue.qt.qtutil.ComponentIDCombo``                | ``glue.core.qt.component_id_combo``
+  ``glue.qt.qtutil.RGBEdit``                         | ``glue.viewers.image.qt.rgb_edit.RGBEdit``
+  ``glue.qt.qtutil.GlueListWidget``                  | ``glue.core.qt.mime.GlueMimeListWidget``
+  ``glue.qt.qtutil.load_ui``                         | ``glue.utils.qt.helpers.load_ui``
+
 * Improved under-the-hood creation of ROIs for Scatter and Histogram Clients. [#676]
 
 v0.6 (2015-11-20)

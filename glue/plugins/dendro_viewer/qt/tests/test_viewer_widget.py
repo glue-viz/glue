@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from glue import core
-from glue.qt.widgets.tests import simple_session
+from glue.core.tests.util import simple_session
 from glue.viewers.common.qt.tests.test_data_viewer import BaseTestDataViewer
 
 from ..viewer_widget import DendroWidget
