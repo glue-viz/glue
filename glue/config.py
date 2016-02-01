@@ -337,8 +337,8 @@ class DataFactoryRegistry(Registry):
 
 
 class QtClientRegistry(Registry):
-
-    """Stores QT widgets to visualize data.
+    """
+    Stores QT widgets to visualize data.
 
     The members property is a list of Qt widget classes
 
@@ -348,15 +348,6 @@ class QtClientRegistry(Registry):
         class CustomWidget(QMainWindow):
             ...
     """
-
-    def default_members(self):
-        try:
-            from glue.viewers.custom.qt import CUSTOM_WIDGETS
-            return CUSTOM_WIDGETS
-        except ImportError as e:
-            logging.getLogger(__name__).warning(
-                "could not import glue.qt in ConfigObject")
-            return []
 
 
 class QtToolRegistry(DictRegistry):
