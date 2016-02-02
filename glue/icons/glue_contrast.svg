@@ -29,10 +29,10 @@
          style="stop-color:#ffffff;stop-opacity:1"
          offset="0" /><stop
          id="stop28"
-         style="stop-color:#373535;stop-opacity:1"
+         style="stop-color:#000000;stop-opacity:1"
          offset="0.907974" /><stop
          id="stop30"
-         style="stop-color:#373535;stop-opacity:1"
+         style="stop-color:#000000;stop-opacity:1"
          offset="1" /></linearGradient></defs><g
      transform="matrix(1.25,0,0,-1.25,0,37.5)"
      id="g10"><g
@@ -47,4 +47,4 @@
        d="m 27.167,3.333 -24.333,0 0,23.333 24.333,0 0,-23.333 z"
        inkscape:connector-curvature="0"
        id="path34"
-       style="fill:none;stroke:#373535;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none" /></g></svg>
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none" /></g></svg>
