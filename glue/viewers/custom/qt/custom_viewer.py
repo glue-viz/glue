@@ -80,6 +80,7 @@ from glue.external.qt import QtGui
 from glue.external.qt.QtCore import Qt
 
 from glue.core.layer_artist import MatplotlibLayerArtist
+from glue.config import qt_client
 from glue.core import Data
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.utils import nonpartial, as_list, all_artists, new_artists, remove_artists
@@ -93,8 +94,6 @@ from glue.utils.qt.widget_properties import (ValueProperty, ButtonProperty,
                                              CurrentComboProperty)
 from glue.viewers.common.qt.toolbar import GlueToolbar
 from glue.viewers.common.qt.mouse_mode import PolyMode, RectangleMode
-
-CUSTOM_WIDGETS = []
 
 __all__ = ["AttributeInfo", "ViewerState", "UserDefinedFunction",
            "CustomViewer", "SettingsOracleInterface", "SettingsOracle",
@@ -577,7 +576,7 @@ class CustomViewer(object):
                           widget_dict)
 
         cls._widget_cls = widget_cls
-        CUSTOM_WIDGETS.append(widget_cls)
+        qt_client.add(widget_cls)
 
         # add new classes to module namespace
         # needed for proper state saving/restoring
