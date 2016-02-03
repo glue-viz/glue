@@ -19,6 +19,8 @@ The basic usage pattern is thus:
 
 from __future__ import absolute_import, division, print_function
 
+import os
+
 from glue.external.qt import QtGui
 from glue.core.callback_property import CallbackProperty
 from glue.core import roi
@@ -472,7 +474,8 @@ class ContrastMode(MouseMode):
         self._vmax = vmax
 
     def choose_vmin_vmax(self):
-        dialog = load_ui('contrastlimits', None)
+        dialog = load_ui('contrastlimits.ui', None,
+                         directory=os.path.dirname(__file__))
         v = QtGui.QDoubleValidator()
         dialog.vmin.setValidator(v)
         dialog.vmax.setValidator(v)
@@ -497,6 +500,8 @@ class ContrastMode(MouseMode):
         bb.button(bb.Apply).clicked.connect(_apply)
         dialog.accepted.connect(_apply)
         dialog.show()
+        dialog.raise_()
+        dialog.exec_()
 
     def move(self, event):
         """ MoveEvent. Update bias and contrast on Right Mouse button drag """

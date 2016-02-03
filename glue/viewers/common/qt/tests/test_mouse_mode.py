@@ -4,6 +4,8 @@ from __future__ import absolute_import, division, print_function
 
 from mock import MagicMock
 
+from glue.utils.qt import process_dialog
+
 from ..mouse_mode import (MouseMode, RectangleMode, CircleMode, PolyMode,
                           ContrastMode, LassoMode)
 
@@ -216,6 +218,31 @@ class TestContrastMode(TestMouseMode):
         self.mode.move(e)
         count = self.mode._axes.figure.canvas.get_width_height.call_count
         assert count == 0
+
+    def test_clip_percentile(self):
+        assert self.mode.get_clip_percentile() == (1, 99)
+        self.mode.set_clip_percentile(2, 33)
+        assert self.mode.get_clip_percentile() == (2, 33)
+
+    def test_vmin_vmax(self):
+        assert self.mode.get_vmin_vmax() == (None, None)
+        self.mode.set_vmin_vmax(3, 4)
+        assert self.mode.get_vmin_vmax() == (3, 4)
+        assert self.mode.get_clip_percentile() == (None, None)
+
+    def test_choose_vmin_vmax(self):
+
+        assert self.mode.get_vmin_vmax() == (None, None)
+
+        def fill_apply(dialog):
+            dialog.vmin.setText('5')
+            dialog.vmax.setText('7')
+            dialog.accept()
+
+        with process_dialog(delay=500, function=fill_apply):
+            self.mode.choose_vmin_vmax()
+
+        assert self.mode.get_vmin_vmax() == (5, 7)
 
 
 del TestRoiMode  # prevents test discovery from running abstract test
