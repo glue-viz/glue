@@ -9,7 +9,8 @@ from glue.core import message as m
 from glue.core.decorators import memoize
 from glue import core
 from glue.core.qt.mime import LAYERS_MIME_TYPE
-from glue.qt.qtutil import layer_icon
+from glue.icons.qt import layer_icon
+
 from glue.core.qt.style_dialog import StyleDialog
 from glue.utils.qt import PyMimeData
 
@@ -526,7 +527,7 @@ class LabeledDelegate(QtGui.QStyledItemDelegate):
 
 if __name__ == "__main__":
 
-    from glue.qt import get_qapp
+    from glue.external.qt import get_qapp
     from glue.external.qt import QtGui
     from glue.core import Data, DataCollection
 

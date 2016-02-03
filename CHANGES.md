@@ -96,6 +96,17 @@ v0.7 (unreleased)
   ``glue.qt.qtutil.GlueListWidget``                  | ``glue.core.qt.mime.GlueMimeListWidget``
   ``glue.qt.qtutil.load_ui``                         | ``glue.utils.qt.helpers.load_ui``
 
+  ``glue.qt.qtutil.icon_path``                       | ``glue.icons.icon_path``
+  ``glue.qt.qtutil.load_icon``                       | ``glue.icons.qt.load_icon``
+  ``glue.qt.qtutil.symbol_icon``                     | ``glue.icons.qt.symbol_icon``
+  ``glue.qt.qtutil.layer_icon``                      | ``glue.icons.qt.layer_icon``
+  ``glue.qt.qtutil.layer_artist_icon``               | ``glue.icons.qt.layer_artist_icon``
+  ``glue.qt.qtutil.GlueActionButton``                | ``glue.app.qt.actions.GlueActionButton``
+  ``glue.qt.qtutil.action``                          | ``glue.app.qt.actions.action``
+  ``glue.qt.qt_backend.Timer``                       | ``glue.backends.QtTimer``
+
+  [#845]
+
 * Improved under-the-hood creation of ROIs for Scatter and Histogram Clients. [#676]
 
 v0.6 (2015-11-20)

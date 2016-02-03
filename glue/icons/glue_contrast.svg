@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   width="37.5"
+   height="37.5"
+   id="svg2"
+   xml:space="preserve"><metadata
+     id="metadata8"><rdf:RDF><cc:Work
+         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+     id="defs6"><linearGradient
+       x1="0"
+       y1="0"
+       x2="1"
+       y2="0"
+       id="linearGradient24"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(24.950851,-19.406235,-19.406235,-24.950851,1.3276367,25.633789)"
+       spreadMethod="pad"><stop
+         id="stop26"
+         style="stop-color:#ffffff;stop-opacity:1"
+         offset="0" /><stop
+         id="stop28"
+         style="stop-color:#000000;stop-opacity:1"
+         offset="0.907974" /><stop
+         id="stop30"
+         style="stop-color:#000000;stop-opacity:1"
+         offset="1" /></linearGradient></defs><g
+     transform="matrix(1.25,0,0,-1.25,0,37.5)"
+     id="g10"><g
+       id="g12"><g
+         id="g14"><g
+           id="g20"><g
+             id="g22"><path
+               d="m 27.167,3.333 -24.333,0 0,23.333 24.333,0 0,-23.333 z"
+               inkscape:connector-curvature="0"
+               id="path32"
+               style="fill:url(#linearGradient24);stroke:none" /></g></g></g></g><path
+       d="m 27.167,3.333 -24.333,0 0,23.333 24.333,0 0,-23.333 z"
+       inkscape:connector-curvature="0"
+       id="path34"
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none" /></g></svg>

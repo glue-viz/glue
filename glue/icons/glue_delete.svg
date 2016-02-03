@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   width="37.5"
+   height="37.5"
+   id="svg2"
+   xml:space="preserve"><metadata
+     id="metadata8"><rdf:RDF><cc:Work
+         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+     id="defs6"><clipPath
+       id="clipPath16"><path
+         d="M 0,30 30,30 30,0 0,0 0,30 z"
+         inkscape:connector-curvature="0"
+         id="path18" /></clipPath></defs><g
+     transform="matrix(1.25,0,0,-1.25,0,37.5)"
+     id="g10"><g
+       id="g12"><g
+         clip-path="url(#clipPath16)"
+         id="g14"><g
+           transform="translate(21.5728,7.4922)"
+           id="g20"><path
+             d="M 0,0 -3.448,3.751 C -4.835,5.187 -5.667,6.118 -6.499,7.1 l -0.079,0 C -7.331,6.118 -8.124,5.211 -9.471,3.726 L -12.681,0 l -3.963,0 8.164,8.585 -7.847,8.384 4.003,0 3.527,-3.978 c 0.99,-1.108 1.743,-1.964 2.457,-2.87 l 0.118,0 c 0.753,1.007 1.427,1.787 2.418,2.87 l 3.606,3.978 4.002,0 L -4.32,8.711 4.002,0 0,0 z"
+             inkscape:connector-curvature="0"
+             id="path22"
+             style="fill:#ba3125;fill-opacity:1;fill-rule:nonzero;stroke:none" /></g><g
+           transform="translate(21.5728,7.4922)"
+           id="g24"><path
+             d="M 0,0 -3.448,3.751 C -4.835,5.187 -5.667,6.118 -6.499,7.1 l -0.079,0 C -7.331,6.118 -8.124,5.211 -9.471,3.726 L -12.681,0 l -3.963,0 8.164,8.585 -7.847,8.384 4.003,0 3.527,-3.978 c 0.99,-1.108 1.743,-1.964 2.457,-2.87 l 0.118,0 c 0.753,1.007 1.427,1.787 2.418,2.87 l 3.606,3.978 4.002,0 L -4.32,8.711 4.002,0 0,0 z"
+             inkscape:connector-curvature="0"
+             id="path26"
+             style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" /></g></g></g></g></svg>

@@ -30,7 +30,7 @@ import warnings
 from glue.core.contracts import contract
 from glue.core.data import Component, Data
 from glue.config import auto_refresh, data_factory
-from glue.backends import get_backend
+from glue.backends import get_timer
 from glue.utils import as_list
 
 
@@ -177,8 +177,8 @@ class FileWatcher(object):
         self.path = path
         self.callback = callback
         self.poll_interval = poll_interval
-        self.watcher = get_backend().Timer(poll_interval,
-                                           self.check_for_changes)
+        self.watcher = get_timer()(poll_interval,
+                                   self.check_for_changes)
 
         try:
             self.stat_cache = os.stat(path).st_mtime

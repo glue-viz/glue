@@ -25,6 +25,14 @@ def pytest_configure(config):
     from glue import config
     config.CFG_DIR = tempfile.mkdtemp()
 
+    # Start up QApplication, if the Qt code is present
+    try:
+        from glue.external.qt import get_qapp
+    except ImportError:
+        pass
+    else:
+        app = get_qapp()
+
     # Force loading of plugins
     from glue.main import load_plugins
     load_plugins()
