@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import os
 from time import ctime
 
 from glue.external.qt import QtGui
@@ -13,7 +14,8 @@ class MessageWidget(QtGui.QWidget, core.hub.HubListener):
 
     def __init__(self):
         QtGui.QWidget.__init__(self)
-        self.ui = load_ui('messagewidget', self)
+        self.ui = load_ui('message_widget.ui', self,
+                          directory=os.path.dirname(__file__))
         self.ui.messageTable.setColumnCount(3)
         labels = ['Time', 'Message', 'Sender']
         self.ui.messageTable.setHorizontalHeaderLabels(labels)

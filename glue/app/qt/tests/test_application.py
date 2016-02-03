@@ -19,6 +19,7 @@ from glue.core.component_link import ComponentLink
 from glue.core.data_collection import DataCollection
 from glue.core.tests.test_state import Cloner, containers_equal, doubler, clone
 from glue.tests.helpers import requires_ipython_ge_012
+from glue.utils.qt import process_dialog
 from glue.viewers.image.qt import ImageWidget
 from glue.viewers.scatter.qt import ScatterWidget
 from glue.viewers.histogram.qt import HistogramWidget
@@ -212,6 +213,22 @@ class TestGlueApplication(object):
         with patch('glue.dialogs.subset_facet.qt.SubsetFacet.exec_'):
             act._do_action()
 
+    def test_suggest_merge(self):
+
+        x = Data(x=[1, 2, 3], label='x')
+        y = Data(y=[4, 5, 6, 7], label='y')
+        z = Data(z=[8, 9, 10], label='z')
+
+        self.app.data_collection.append(x)
+        self.app.data_collection.append(y)
+
+        with process_dialog(delay=500, accept=True):
+            result = self.app.add_datasets(self.app.data_collection, z)
+
+        np.testing.assert_equal(self.app.data_collection[0]['x'], [1, 2, 3])
+        np.testing.assert_equal(self.app.data_collection[0]['z'], [8, 9, 10])
+        np.testing.assert_equal(self.app.data_collection[1]['y'], [4, 5, 6, 7])
+
 
 def check_clone_app(app):
     c = Cloner(app)
@@ -344,4 +361,3 @@ class TestApplicationSession(object):
 
         sg.style.color = '#112233'
         assert sg.subsets[0].style.color == '#112233'
-

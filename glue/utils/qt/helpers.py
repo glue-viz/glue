@@ -1,12 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+from contextlib import contextmanager
 
-from glue.external.qt import QtGui 
+from glue.external.qt import QtGui, QtCore
 from glue.external.qt.QtCore import Qt
 from glue.utils.qt import get_text
 
-__all__ = ['update_combobox', 'GlueTabBar', 'load_ui', 'CUSTOM_QWIDGETS']
+__all__ = ['update_combobox', 'GlueTabBar', 'load_ui', 'CUSTOM_QWIDGETS', 'process_dialog']
 
 
 def update_combobox(combo, labeldata):
@@ -113,5 +114,63 @@ def load_ui(path, parent=None, directory=None):
         # Workaround for Mac app
         full_path = os.path.join(full_path.replace('site-packages.zip', 'glue'))
 
-    from glue.external.qt import load_ui 
+    from glue.external.qt import load_ui
     return load_ui(full_path, parent, custom_widgets=CUSTOM_QWIDGETS)
+
+
+@contextmanager
+def process_dialog(delay=0, accept=False, reject=False, function=None):
+    """
+    Context manager to automatically capture the active dialog and carry out
+    certain actions.
+
+    Note that only one of ``accept``, ``reject``, or ``function`` should be
+    specified.
+
+    Parameters
+    ----------
+    delay : int, optional
+        The delay in ms before acting on the dialog (since it may not yet exist
+        when the context manager is called).
+    accept : bool, optional
+        If `True`, accept the dialog after the specified delay.
+    reject : bool, optional
+        If `False`, reject the dialog after the specified delay
+    function : func, optional
+        For more complex user actions, specify a function that takes the dialog
+        as the first and only argument.
+    """
+
+    def _accept(dialog):
+        dialog.accept()
+
+    def _reject(dialog):
+        dialog.reject()
+
+    n_args = sum((accept, reject, function is not None))
+
+    if n_args > 1:
+        raise ValueError("Only one of ``accept``, ``reject``, or "
+                         "``function`` should be specified")
+    elif n_args == 0:
+        raise ValueError("One of ``accept``, ``reject``, or "
+                         "``function`` should be specified")
+
+    if accept:
+        function = _accept
+    elif reject:
+        function = _reject
+
+    def wrapper():
+        from glue.external.qt import get_qapp
+        app = get_qapp()
+        dialog = app.focusWidget().window()
+        function(dialog)
+
+    timer = QtCore.QTimer()
+    timer.setInterval(delay)
+    timer.setSingleShot(True)
+    timer.timeout.connect(wrapper)
+    timer.start()
+
+    yield
