@@ -19,6 +19,7 @@ from glue.core.component_link import ComponentLink
 from glue.core.data_collection import DataCollection
 from glue.core.tests.test_state import Cloner, containers_equal, doubler, clone
 from glue.tests.helpers import requires_ipython_ge_012
+from glue.utils.qt import process_dialog
 from glue.viewers.image.qt import ImageWidget
 from glue.viewers.scatter.qt import ScatterWidget
 from glue.viewers.histogram.qt import HistogramWidget
@@ -221,7 +222,6 @@ class TestGlueApplication(object):
         self.app.data_collection.append(x)
         self.app.data_collection.append(y)
 
-        from glue.utils.qt import process_dialog
         with process_dialog(delay=500, accept=True):
             result = self.app.add_datasets(self.app.data_collection, z)
 
