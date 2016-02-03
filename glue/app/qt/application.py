@@ -957,7 +957,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
     @staticmethod
     def _choose_merge(data, others):
 
-        w = load_ui('merge')
+        w = load_ui('merge.ui', None, directory=os.path.dirname(__file__))
         w.show()
         w.raise_()
 
