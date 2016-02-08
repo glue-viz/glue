@@ -5,9 +5,12 @@ editing the data collection
 
 from __future__ import absolute_import, division, print_function
 
+import os
+
 from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui, QtCore
 from glue.core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode
+from glue.core.qt.data_collection_model import DataCollectionView
 from glue.config import single_subset_action
 from glue import core
 from glue.dialogs.link_editor.qt import LinkEditor
@@ -17,9 +20,7 @@ from glue.dialogs.custom_component.qt import CustomComponentWidget
 from glue.dialogs.subset_facet.qt import SubsetFacet
 from glue.dialogs.data_wizard.qt import data_wizard
 from glue.utils import nonpartial
-
-# TODO: make into .ui file
-from glue.app.qt.layer_tree_widget_ui import Ui_LayerTree
+from glue.utils.qt import load_ui
 
 
 @core.decorators.singleton
@@ -371,7 +372,7 @@ class LayerCommunicator(QtCore.QObject):
     layer_check_changed = QtCore.Signal(object, bool)
 
 
-class LayerTreeWidget(QtGui.QWidget, Ui_LayerTree):
+class LayerTreeWidget(QtGui.QWidget):
 
     """The layertree widget provides a way to visualize the various
     data and subset layers in a Glue session.
@@ -382,8 +383,13 @@ class LayerTreeWidget(QtGui.QWidget, Ui_LayerTree):
     """
 
     def __init__(self, parent=None):
-        Ui_LayerTree.__init__(self)
+
         QtGui.QWidget.__init__(self, parent)
+
+        self.ui = load_ui('layer_tree_widget.ui', self, directory=os.path.dirname(__file__))
+
+        self.layerAddButton.setIcon(get_icon('glue_open'))
+        self.layerRemoveButton.setIcon(get_icon('glue_delete'))
 
         self._signals = LayerCommunicator()
         self._is_checkable = True
@@ -392,7 +398,6 @@ class LayerTreeWidget(QtGui.QWidget, Ui_LayerTree):
 
         self._actions = {}
 
-        self.setupUi(self)
         self._create_actions()
         self._connect()
         self._data_collection = None
