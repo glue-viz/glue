@@ -298,7 +298,10 @@ def _load_ui_pyqt5(path, parent):
     return loadUi(path, parent)
 
 
+qapp = None
+
 def get_qapp(icon_path=None):
+    global qapp
     qapp = QtGui.QApplication.instance()
     if qapp is None:
         qapp = QtGui.QApplication([''])
