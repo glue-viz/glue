@@ -384,7 +384,7 @@ class LayerTreeWidget(QtGui.QMainWindow):
 
     def __init__(self, parent=None):
 
-        QtGui.QWidget.__init__(self, parent)
+        super(LayerTreeWidget, self).__init__(parent)
 
         self.ui = load_ui('layer_tree_widget.ui', None, directory=os.path.dirname(__file__))
         self.setCentralWidget(self.ui)
