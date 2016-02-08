@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import pytest
 from mock import MagicMock
 
 from glue.utils.qt import process_dialog
@@ -230,20 +231,19 @@ class TestContrastMode(TestMouseMode):
         assert self.mode.get_vmin_vmax() == (3, 4)
         assert self.mode.get_clip_percentile() == (None, None)
 
-    def test_choose_vmin_vmax(self):
-
-        assert self.mode.get_vmin_vmax() == (None, None)
-
-        def fill_apply(dialog):
-            dialog.vmin.setText('5')
-            dialog.vmax.setText('7')
-            dialog.accept()
-
-        with process_dialog(delay=500, function=fill_apply):
-            self.mode.choose_vmin_vmax()
-
-        # TODO: at the moment, this doesn't work because the dialog is non-modal
-        # assert self.mode.get_vmin_vmax() == (5, 7)
+    # TODO: at the moment, this doesn't work because the dialog is non-modal
+    # assert self.mode.get_vmin_vmax() == (5, 7)
+    # def test_choose_vmin_vmax(self):
+    #
+    #     assert self.mode.get_vmin_vmax() == (None, None)
+    #
+    #     def fill_apply(dialog):
+    #         dialog.vmin.setText('5')
+    #         dialog.vmax.setText('7')
+    #         dialog.accept()
+    #
+    #     with process_dialog(delay=500, function=fill_apply):
+    #         self.mode.choose_vmin_vmax()
 
 
 del TestRoiMode  # prevents test discovery from running abstract test
