@@ -289,13 +289,11 @@ class LayerArtistWidget(QtGui.QWidget):
         if self.layer_style_widget_cls is None:
             return
 
-        layer = layer_artist.layer
+        if layer_artist not in self.layout_style_widgets:
+            self.layout_style_widgets[layer_artist] = self.layer_style_widget_cls(layer_artist)
+            self.layer_options_layout.addWidget(self.layout_style_widgets[layer_artist])
 
-        if layer not in self.layout_style_widgets:
-            self.layout_style_widgets[layer] = self.layer_style_widget_cls(layer)
-            self.layer_options_layout.addWidget(self.layout_style_widgets[layer])
-
-        self.layer_options_layout.setCurrentWidget(self.layout_style_widgets[layer])
+        self.layer_options_layout.setCurrentWidget(self.layout_style_widgets[layer_artist])
 
 
 class QtLayerArtistContainer(LayerArtistContainer):
