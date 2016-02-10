@@ -19,7 +19,7 @@ from glue.icons.qt import layer_artist_icon
 from glue.core.qt.mime import LAYERS_MIME_TYPE
 from glue.utils import nonpartial
 from glue.utils.qt import PythonListModel, PyMimeData
-from glue.core.qt.style_options import StyleOptions
+
 
 class LayerArtistModel(PythonListModel):
 
