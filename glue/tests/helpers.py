@@ -39,7 +39,7 @@ ASTRODENDRO_INSTALLED, requires_astrodendro = make_skipper('astrodendro')
 SCIPY_INSTALLED, requires_scipy = make_skipper('scipy',
                                                label='SciPy')
 
-PIL_INSTALLED, requires_pil = make_skipper('pil', label='PIL')
+PIL_INSTALLED, requires_pil = make_skipper('PIL', label='PIL')
 
 SKIMAGE_INSTALLED, requires_skimage = make_skipper('skimage',
                                                    label='scikit-image')

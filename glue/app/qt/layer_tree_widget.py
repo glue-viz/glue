@@ -5,9 +5,12 @@ editing the data collection
 
 from __future__ import absolute_import, division, print_function
 
+import os
+
 from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui, QtCore
 from glue.core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode
+from glue.core.qt.data_collection_model import DataCollectionView
 from glue.config import single_subset_action
 from glue import core
 from glue.dialogs.link_editor.qt import LinkEditor
@@ -17,9 +20,7 @@ from glue.dialogs.custom_component.qt import CustomComponentWidget
 from glue.dialogs.subset_facet.qt import SubsetFacet
 from glue.dialogs.data_wizard.qt import data_wizard
 from glue.utils import nonpartial
-
-# TODO: make into .ui file
-from glue.app.qt.layer_tree_widget_ui import Ui_LayerTree
+from glue.utils.qt import load_ui
 
 
 @core.decorators.singleton
@@ -38,7 +39,7 @@ class LayerAction(QtGui.QAction):
     _shortcut_context = Qt.WidgetShortcut
 
     def __init__(self, layer_tree_widget):
-        self._parent = layer_tree_widget.layerTree
+        self._parent = layer_tree_widget.ui.layerTree
         super(LayerAction, self).__init__(self._title.title(), self._parent)
         self._layer_tree = layer_tree_widget
         if self._icon:
@@ -371,7 +372,7 @@ class LayerCommunicator(QtCore.QObject):
     layer_check_changed = QtCore.Signal(object, bool)
 
 
-class LayerTreeWidget(QtGui.QWidget, Ui_LayerTree):
+class LayerTreeWidget(QtGui.QMainWindow):
 
     """The layertree widget provides a way to visualize the various
     data and subset layers in a Glue session.
@@ -382,8 +383,13 @@ class LayerTreeWidget(QtGui.QWidget, Ui_LayerTree):
     """
 
     def __init__(self, parent=None):
-        Ui_LayerTree.__init__(self)
-        QtGui.QWidget.__init__(self, parent)
+
+        super(LayerTreeWidget, self).__init__(parent)
+
+        self.ui = load_ui('layer_tree_widget.ui', None, directory=os.path.dirname(__file__))
+        self.setCentralWidget(self.ui)
+        self.ui.layerAddButton.setIcon(get_icon('glue_open'))
+        self.ui.layerRemoveButton.setIcon(get_icon('glue_delete'))
 
         self._signals = LayerCommunicator()
         self._is_checkable = True
@@ -392,12 +398,11 @@ class LayerTreeWidget(QtGui.QWidget, Ui_LayerTree):
 
         self._actions = {}
 
-        self.setupUi(self)
         self._create_actions()
         self._connect()
         self._data_collection = None
         self._hub = None
-        self.layerTree.setDragEnabled(True)
+        self.ui.layerTree.setDragEnabled(True)
 
     @property
     def data_collection(self):
@@ -406,23 +411,23 @@ class LayerTreeWidget(QtGui.QWidget, Ui_LayerTree):
     def setup(self, collection):
         self._data_collection = collection
         self._hub = collection.hub
-        self.layerTree.set_data_collection(collection)
+        self.ui.layerTree.set_data_collection(collection)
 
     def unregister(self, hub):
         """Unsubscribe from hub"""
-        self.layerTree.unregister(hub)
+        self.ui.layerTree.unregister(hub)
 
     def is_checkable(self):
         """ Return whether checkboxes appear next o layers"""
-        return self.layerTree.checkable
+        return self.ui.layerTree.checkable
 
     def set_checkable(self, state):
         """ Setw hether checkboxes appear next o layers"""
-        self.layerTree.checkable = state
+        self.ui.layerTree.checkable = state
 
     def selected_layers(self):
         """ Return a list of selected layers (subsets and data objects) """
-        return self.layerTree.selected_layers()
+        return self.ui.layerTree.selected_layers()
 
     def current_layer(self):
         """Return the layer if a single item is selected, else None """
@@ -432,24 +437,24 @@ class LayerTreeWidget(QtGui.QWidget, Ui_LayerTree):
 
     def actions(self):
         """ Return the list of actions attached to this widget """
-        return self.layerTree.actions()
+        return self.ui.layerTree.actions()
 
     def _connect(self):
         """ Connect widget signals to methods """
         self._actions['link'] = LinkAction(self)
-        self.layerAddButton.clicked.connect(nonpartial(self._load_data))
-        self.layerRemoveButton.clicked.connect(self._actions['delete'].trigger)
-        self.linkButton.set_action(self._actions['link'])
-        self.newSubsetButton.set_action(self._actions['new'], text=False)
+        self.ui.layerAddButton.clicked.connect(nonpartial(self._load_data))
+        self.ui.layerRemoveButton.clicked.connect(self._actions['delete'].trigger)
+        self.ui.linkButton.set_action(self._actions['link'])
+        self.ui.newSubsetButton.set_action(self._actions['new'], text=False)
 
-        rbut = self.layerRemoveButton
+        rbut = self.ui.layerRemoveButton
 
         def update_enabled():
             return rbut.setEnabled(self._actions['delete'].isEnabled())
-        self.layerTree.selection_changed.connect(update_enabled)
+        self.ui.layerTree.selection_changed.connect(update_enabled)
 
     def bind_selection_to_edit_subset(self):
-        self.layerTree.selection_changed.connect(
+        self.ui.layerTree.selection_changed.connect(
             self._update_editable_subset)
 
     def _update_editable_subset(self):
@@ -466,7 +471,7 @@ class LayerTreeWidget(QtGui.QWidget, Ui_LayerTree):
         CustomComponentWidget.create_component(self.data_collection)
 
     def _create_actions(self):
-        tree = self.layerTree
+        tree = self.ui.layerTree
 
         sep = QtGui.QAction("", tree)
         sep.setSeparator(True)
@@ -523,17 +528,17 @@ class LayerTreeWidget(QtGui.QWidget, Ui_LayerTree):
 
     def __getitem__(self, key):
         raise NotImplementedError()
-        return self.layerTree[key]
+        return self.ui.layerTree[key]
 
     def __setitem__(self, key, value):
         raise NotImplementedError()
-        self.layerTree[key] = value
+        self.ui.layerTree[key] = value
 
     def __contains__(self, obj):
-        return obj in self.layerTree
+        return obj in self.ui.layerTree
 
     def __len__(self):
-        return len(self.layerTree)
+        return len(self.ui.layerTree)
 
 
 def save_subset(subset):

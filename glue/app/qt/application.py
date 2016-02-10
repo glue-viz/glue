@@ -213,7 +213,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
 
         lwidget = self._ui.layerWidget
         a = PlotAction(lwidget, self)
-        lwidget.layerTree.addAction(a)
+        lwidget.ui.layerTree.addAction(a)
         lwidget.bind_selection_to_edit_subset()
 
         self._tweak_geometry()
@@ -799,7 +799,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
         self._terminal_button.setIcon(i)
         self._terminal_button.setIconSize(QtCore.QSize(25, 25))
 
-        self._ui.layerWidget.button_row.addWidget(self._terminal_button)
+        self._ui.layerWidget.ui.button_row.addWidget(self._terminal_button)
 
         try:
             from glue.app.qt.terminal import glue_terminal
