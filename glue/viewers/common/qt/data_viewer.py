@@ -5,7 +5,7 @@ import os
 from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui
 from glue.core.application_base import ViewerBase
-from glue.core.qt.layer_artist_model import QtLayerArtistContainer, LayerArtistView
+from glue.core.qt.layer_artist_model import QtLayerArtistContainer, LayerArtistWidget
 from glue.external.qt import get_qapp
 from glue.core.qt.mime import LAYERS_MIME_TYPE, LAYER_MIME_TYPE
 from glue.utils.qt import set_cursor
@@ -33,8 +33,8 @@ class DataViewer(ViewerBase, QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self, parent)
         ViewerBase.__init__(self, session)
         self.setWindowIcon(get_qapp().windowIcon())
-        self._view = LayerArtistView()
-        self._view.setModel(self._layer_artist_container.model)
+        self._view = LayerArtistWidget()
+        self._view.layer_list.setModel(self._layer_artist_container.model)
         self._tb_vis = {}  # store whether toolbars are enabled
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.setAcceptDrops(True)

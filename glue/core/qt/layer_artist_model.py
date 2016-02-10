@@ -195,6 +195,7 @@ class LayerArtistView(QtGui.QListView):
     def selectionChanged(self, selected, deselected):
         super(LayerArtistView, self).selectionChanged(selected, deselected)
         self._update_actions()
+        self.parent().on_selection_change(self.current_artist())
 
     def current_artist(self):
         model = self.selectionModel()
@@ -254,6 +255,34 @@ class LayerArtistView(QtGui.QListView):
         act.triggered.connect(
             lambda *args: self.model().removeRow(self.current_row()))
         self.addAction(act)
+
+
+class LayerArtistWidget(QtGui.QWidget):
+    """
+    A widget that includes a list of artists (LayerArtistView) and the visual
+    options for the layer artists.
+    """
+
+    def __init__(self, parent=None):
+
+        super(LayerArtistWidget, self).__init__(parent=parent)
+
+        layout = QtGui.QVBoxLayout()
+
+        self.layer_list = LayerArtistView(parent=self)
+
+        layout.addWidget(self.layer_list)
+
+        self.layer_options = QtGui.QWidget()
+        self.layer_options_layout = QtGui.QStackedLayout()
+        self.layer_options.setLayout(self.layer_options_layout)
+
+        layout.addWidget(self.layer_options)
+
+        self.setLayout(layout)
+
+    def on_selection_change(self, layer_artist):
+        print(layer_artist)
 
 
 class QtLayerArtistContainer(LayerArtistContainer):
