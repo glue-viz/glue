@@ -52,7 +52,10 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
 
     def set_color(self, color):
         self._color = color
-        pm = symbol_icon(self.symbol, color).pixmap(30, 30)
+        
+        im = QtGui.QImage(80, 20, QtGui.QImage.Format_RGB32)
+        im.fill(color)
+        pm = QtGui.QPixmap.fromImage(im)
         self.label_color.setPixmap(pm)
         self.layer.style.color = qt4_to_mpl_color(self._color)
 
