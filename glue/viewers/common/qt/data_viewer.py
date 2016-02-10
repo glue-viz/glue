@@ -24,6 +24,8 @@ class DataViewer(ViewerBase, QtGui.QMainWindow):
        * Drag and drop support for adding data
     """
     _layer_artist_container_cls = QtLayerArtistContainer
+    _layer_style_widget_cls = None
+
     LABEL = 'Override this'
 
     def __init__(self, session, parent=None):
@@ -33,7 +35,7 @@ class DataViewer(ViewerBase, QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self, parent)
         ViewerBase.__init__(self, session)
         self.setWindowIcon(get_qapp().windowIcon())
-        self._view = LayerArtistWidget()
+        self._view = LayerArtistWidget(layer_style_widget_cls=self._layer_style_widget_cls)
         self._view.layer_list.setModel(self._layer_artist_container.model)
         self._tb_vis = {}  # store whether toolbars are enabled
         self.setAttribute(Qt.WA_DeleteOnClose)

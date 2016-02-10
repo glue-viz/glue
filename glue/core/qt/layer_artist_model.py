@@ -19,7 +19,7 @@ from glue.icons.qt import layer_artist_icon
 from glue.core.qt.mime import LAYERS_MIME_TYPE
 from glue.utils import nonpartial
 from glue.utils.qt import PythonListModel, PyMimeData
-
+from glue.core.qt.style_options import StyleOptions
 
 class LayerArtistModel(PythonListModel):
 
@@ -263,26 +263,39 @@ class LayerArtistWidget(QtGui.QWidget):
     options for the layer artists.
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, layer_style_widget_cls=None):
 
         super(LayerArtistWidget, self).__init__(parent=parent)
 
-        layout = QtGui.QVBoxLayout()
+        self.layout = QtGui.QVBoxLayout()
+
+        self.layer_style_widget_cls = layer_style_widget_cls
 
         self.layer_list = LayerArtistView(parent=self)
-
-        layout.addWidget(self.layer_list)
+        self.layout.addWidget(self.layer_list)
 
         self.layer_options = QtGui.QWidget()
         self.layer_options_layout = QtGui.QStackedLayout()
         self.layer_options.setLayout(self.layer_options_layout)
 
-        layout.addWidget(self.layer_options)
+        self.layout.addWidget(self.layer_options)
 
-        self.setLayout(layout)
+        self.setLayout(self.layout)
+
+        self.layout_style_widgets = {}
 
     def on_selection_change(self, layer_artist):
-        print(layer_artist)
+
+        if self.layer_style_widget_cls is None:
+            return
+
+        layer = layer_artist.layer
+
+        if layer not in self.layout_style_widgets:
+            self.layout_style_widgets[layer] = self.layer_style_widget_cls(layer)
+            self.layer_options_layout.addWidget(self.layout_style_widgets[layer])
+
+        self.layer_options_layout.setCurrentWidget(self.layout_style_widgets[layer])
 
 
 class QtLayerArtistContainer(LayerArtistContainer):

@@ -1,7 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.config import settings
-
+from glue.external.echo import CallbackProperty
+from glue.external import six
 
 # Define acceptable line styles
 VALID_LINESTYLES = ['solid', 'dashed', 'dash-dot', 'dotted', 'none']
@@ -25,37 +26,45 @@ class VisualAttributes(object):
 
     '''
 
+    # Color can be specified using Matplotlib notation. Specifically, it
+    # can be:
+    #  * A string with a common color (e.g. 'black', 'red', 'orange')
+    #  * A string containing a float in the rng [0:1] for a shade of
+    #    gray ('0.0' = black,'1.0' = white)
+    #  * A tuple of three floats in the rng [0:1] for (R, G, B)
+    # * An HTML hexadecimal string (e.g. '#eeefff')
+    color = CallbackProperty(settings.DATA_COLOR)
+    alpha = CallbackProperty(0.5)
+
+    # Line width in points (float or int)
+    linewidth = CallbackProperty(1.)
+
+    # Line style, which can be one of 'solid', 'dashed', 'dash-dot',
+    # 'dotted', or 'none'
+    linestyle = CallbackProperty('solid')
+
+    marker = CallbackProperty('o')
+    markersize = CallbackProperty(3)
+
     def __init__(self, parent=None, washout=False, color=settings.DATA_COLOR):
-
-        # Color can be specified using Matplotlib notation. Specifically, it
-        # can be:
-        #  * A string with a common color (e.g. 'black', 'red', 'orange')
-        #  * A string containing a float in the rng [0:1] for a shade of
-        #    gray ('0.0' = black,'1.0' = white)
-        #  * A tuple of three floats in the rng [0:1] for (R, G, B)
-        # * An HTML hexadecimal string (e.g. '#eeefff')
-        self.color = color
-        self.alpha = .5
-
-        # Line width in points (float or int)
-        self.linewidth = 1
-
-        # Line style, which can be one of 'solid', 'dashed', 'dash-dot',
-        # 'dotted', or 'none'
-        self.linestyle = 'solid'
-
-        self.marker = 'o'
-        self.markersize = 3
-
         self.parent = parent
-
         self._atts = ['color', 'alpha', 'linewidth', 'linestyle', 'marker',
                       'markersize']
+        self.color = color
+
+    # TODO: fix equality comparison
 
     def __eq__(self, other):
         if not isinstance(other, VisualAttributes):
             return False
-        return all(getattr(self, a) == getattr(other, a) for a in self._atts)
+        elif self is other:
+            return True
+        else:
+            return all(getattr(self, a) == getattr(other, a) for a in self._atts)
+
+    # In Python 3, if __eq__ is defined, then __hash__ has to be re-defined
+    if six.PY3:
+        __hash__ = object.__hash__
 
     def set(self, other):
         """
@@ -73,10 +82,6 @@ class VisualAttributes(object):
         if new_parent is not None:
             result.parent = new_parent
         return result
-
-    def __eq__(self, other):
-        return all(getattr(self, att) == getattr(other, att)
-                   for att in self._atts)
 
     def __setattr__(self, attribute, value):
 
