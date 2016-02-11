@@ -192,6 +192,14 @@ class LayerArtistView(QtGui.QListView):
         self._timer.timeout.connect(self.viewport().update)
         self._timer.start(1000)
 
+    def rowsInserted(self, index, start, end):
+        super(LayerArtistView, self).rowsInserted(index, start, end)
+        # If no rows are currently selected, make sure we select one. We do 
+        # this to make sure the layer style editor is visible to users straight 
+        # away.
+        if self.current_row() is None:
+            self.setCurrentIndex(self.model().index(0))
+
     def selectionChanged(self, selected, deselected):
         super(LayerArtistView, self).selectionChanged(selected, deselected)
         self._update_actions()
