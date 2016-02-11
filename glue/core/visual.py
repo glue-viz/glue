@@ -33,18 +33,20 @@ class VisualAttributes(object):
     #    gray ('0.0' = black,'1.0' = white)
     #  * A tuple of three floats in the rng [0:1] for (R, G, B)
     # * An HTML hexadecimal string (e.g. '#eeefff')
-    color = CallbackProperty(settings.DATA_COLOR)
-    alpha = CallbackProperty(0.5)
+    color = CallbackProperty(settings.DATA_COLOR,
+                             docstring="Color using Matplotlib notation.")
+    alpha = CallbackProperty(0.5, docstring=("Transparency, given as a floating "
+                                             "point value between 0 and 1."))
 
     # Line width in points (float or int)
-    linewidth = CallbackProperty(1.)
+    linewidth = CallbackProperty(1., docstring="Line width in points.")
 
     # Line style, which can be one of 'solid', 'dashed', 'dash-dot',
     # 'dotted', or 'none'
-    linestyle = CallbackProperty('solid')
+    linestyle = CallbackProperty('solid', docstring="Line style.")
 
-    marker = CallbackProperty('o')
-    markersize = CallbackProperty(3)
+    marker = CallbackProperty('o', docstring="Marker symbol.")
+    markersize = CallbackProperty(3, docstring="Marker size.")
 
     def __init__(self, parent=None, washout=False, color=settings.DATA_COLOR):
         self.parent = parent
