@@ -29,7 +29,7 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
 
         self.layer = layer_artist.layer
         self.set_color(mpl_to_qt4_color(self.layer.style.color))
-        connect_value(self.layer.style, 'alpha', self.ui.slider_alpha, scaling=1./255.)
+        connect_value(self.layer.style, 'alpha', self.ui.slider_alpha, scaling=1./100.)
         connect_current_combo(self.layer.style, 'marker', self.ui.combo_symbol)
         connect_value(self.layer.style, 'markersize', self.ui.value_size)
 
