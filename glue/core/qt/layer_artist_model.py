@@ -195,7 +195,9 @@ class LayerArtistView(QtGui.QListView):
     def selectionChanged(self, selected, deselected):
         super(LayerArtistView, self).selectionChanged(selected, deselected)
         self._update_actions()
-        self.parent().on_selection_change(self.current_artist())
+        parent = self.parent()
+        if parent is not None:
+            parent.on_selection_change(self.current_artist())
 
     def current_artist(self):
         model = self.selectionModel()
