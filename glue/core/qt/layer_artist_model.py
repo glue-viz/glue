@@ -194,8 +194,8 @@ class LayerArtistView(QtGui.QListView):
 
     def rowsInserted(self, index, start, end):
         super(LayerArtistView, self).rowsInserted(index, start, end)
-        # If no rows are currently selected, make sure we select one. We do 
-        # this to make sure the layer style editor is visible to users straight 
+        # If no rows are currently selected, make sure we select one. We do
+        # this to make sure the layer style editor is visible to users straight
         # away.
         if self.current_row() is None:
             self.setCurrentIndex(self.model().index(0))
@@ -297,6 +297,9 @@ class LayerArtistWidget(QtGui.QWidget):
     def on_selection_change(self, layer_artist):
 
         if self.layer_style_widget_cls is None:
+            return
+
+        if layer_artist is None:
             return
 
         if layer_artist not in self.layout_style_widgets:
