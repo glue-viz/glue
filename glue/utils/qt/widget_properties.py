@@ -19,6 +19,7 @@ Example Use::
 
 from __future__ import absolute_import, division, print_function
 
+import warnings
 from functools import partial
 
 from glue.external.six.moves import reduce
@@ -56,8 +57,15 @@ class WidgetProperty(object):
         self._att = att.split('.')
 
     def __get__(self, instance, type=None):
-        widget = reduce(getattr, [instance] + self._att)
-        return self.getter(widget)
+        # Under certain circumstances, PyQt will try and access these properties
+        # while loading the ui file, so we have to be robust to failures. 
+        # However, we print out a warning if things fail.
+        try:
+            widget = reduce(getattr, [instance] + self._att)
+            return self.getter(widget)
+        except Exception:
+            warnings.warn("An error occured when accessing attribute {0} of {1}. Returning None.".format('.'.join(self._att), instance))
+            return None
 
     def __set__(self, instance, value):
         widget = reduce(getattr, [instance] + self._att)
