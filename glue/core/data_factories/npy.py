@@ -70,7 +70,7 @@ def npz_reader(filename, format='auto', auto_merge=False, **kwargs):
     npy_data = np.load(filename)
 
     groups = []
-    for groupname in npy_data.files:
+    for groupname in sorted(npy_data.files):
         d = Data(label=groupname)
         arr = npy_data[groupname]
 
