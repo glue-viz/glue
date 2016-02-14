@@ -15,6 +15,7 @@ from glue.utils.qt.widget_properties import (connect_int_spin, ButtonProperty,
                                        ValueProperty, connect_bool_button)
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.mpl_widget import MplWidget, defer_draw
+from glue.viewers.histogram.qt.layer_style_widget import HistogramLayerStyleWidget
 from glue.utils.array import pretty_number
 
 
@@ -43,6 +44,8 @@ class HistogramWidget(DataViewer):
     nbins = ValueProperty('ui.binSpinBox', 'Number of bins')
     xlog = ButtonProperty('ui.xlog_box', 'Log-scale the x axis?')
     ylog = ButtonProperty('ui.ylog_box', 'Log-scale the y axis?')
+
+    _layer_style_widget_cls = HistogramLayerStyleWidget
 
     def __init__(self, session, parent=None):
         super(HistogramWidget, self).__init__(session, parent)
