@@ -6,6 +6,8 @@ from glue.core.data_factories.helpers import has_extension
 
 __all__ = ['is_npy', 'npy_reader', 'is_npz', 'npz_reader']
 
+# TODO: implement support for regular arrays, e.g., not just structured arrays?
+
 def is_npy(filename):
     """
     The first bytes are: x93NUMPY
@@ -28,6 +30,10 @@ def npy_reader(filename, format='auto', auto_merge=False, **kwargs):
 
     import numpy as np
     npy_data = np.load(filename)
+
+    if not hasattr(npy_data.dtype, 'names'):
+        raise ValueError("Numpy save file loading currently only supports structured"
+                         " arrays, e.g., with specified names.")
 
     d = Data()
     for name in npy_data.dtype.names:
@@ -67,6 +73,11 @@ def npz_reader(filename, format='auto', auto_merge=False, **kwargs):
     for groupname in npy_data.files:
         d = Data(label=groupname)
         arr = npy_data[groupname]
+
+        if not hasattr(arr.dtype, 'names'):
+            raise ValueError("Numpy save file loading currently only supports structured"
+                             " arrays, e.g., with specified names.")
+
         for name in arr.dtype.names:
             comp = Component(arr[name])
             d.add_component(comp, label=name)
