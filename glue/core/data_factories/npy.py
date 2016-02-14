@@ -6,8 +6,6 @@ from glue.core.data_factories.helpers import has_extension
 
 __all__ = ['is_npy', 'npy_reader', 'is_npz', 'npz_reader']
 
-# TODO: should support npy and npz
-
 def is_npy(filename):
     """
     The first bytes are: x93NUMPY
