@@ -10,11 +10,11 @@ from numpy.testing import assert_array_equal
 # Package
 from glue.core import data_factories as df
 
-def test_npy_load():
+def test_npy_load(tmpdir):
     data = np.array([("a",152.2352,-21.513), ("b",21.412,35.1341)],
                     dtype=[('name','|S1'),('ra','f8'),('dec','f8')])
 
-    with tempfile.NamedTemporaryFile(suffix='.npy') as f:
+    with tempfile.NamedTemporaryFile(suffix='.npy', dir=tmpdir.strpath) as f:
         np.save(f, data)
         f.seek(0)
 
@@ -22,13 +22,13 @@ def test_npy_load():
         for name in data.dtype.names:
             assert_array_equal(data[name], data2[name])
 
-def test_npz_load():
+def test_npz_load(tmpdir):
     data1 = np.array([("a",152.2352,-21.513), ("b",21.412,35.1341)],
                      dtype=[('name','|S1'),('ra','f8'),('dec','f8')])
     data2 = np.array([("c",15.2352,-2.513), ("d",2.412,3.1341)],
                      dtype=[('name','|S1'),('l','f8'),('b','f8')])
 
-    with tempfile.NamedTemporaryFile(suffix='.npz') as f:
+    with tempfile.NamedTemporaryFile(suffix='.npz', dir=tmpdir.strpath) as f:
         np.savez(f, data1=data1, data2=data2)
         f.seek(0)
 
