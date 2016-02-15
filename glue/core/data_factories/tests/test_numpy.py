@@ -1,8 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-# Standard library
-import tempfile
-
 # Third-party
 import numpy as np
 from numpy.testing import assert_array_equal
@@ -14,7 +11,7 @@ def test_npy_load(tmpdir):
     data = np.array([("a",152.2352,-21.513), ("b",21.412,35.1341)],
                     dtype=[('name','|S1'),('ra','f8'),('dec','f8')])
 
-    with tempfile.NamedTemporaryFile(suffix='.npy', dir=tmpdir.strpath) as f:
+    with open(tmpdir.join('test.npy').strpath, 'wb') as f:
         np.save(f, data)
         f.seek(0)
 
@@ -28,7 +25,7 @@ def test_npz_load(tmpdir):
     data2 = np.array([("c",15.2352,-2.513), ("d",2.412,3.1341)],
                      dtype=[('name','|S1'),('l','f8'),('b','f8')])
 
-    with tempfile.NamedTemporaryFile(suffix='.npz', dir=tmpdir.strpath) as f:
+    with open(tmpdir.join('test.npz').strpath, 'wb') as f:
         np.savez(f, data1=data1, data2=data2)
         f.seek(0)
 
