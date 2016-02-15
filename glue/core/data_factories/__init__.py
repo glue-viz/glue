@@ -7,6 +7,7 @@ from .fits import *
 from .hdf5 import *
 from .helpers import *
 from .image import *
+from .npy import *
 from .pandas import *
 from .tables import *
 
