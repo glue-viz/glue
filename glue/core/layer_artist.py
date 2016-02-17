@@ -320,6 +320,21 @@ class LayerArtistContainer(object):
 
         self._notify()
 
+    def clear(self):
+        """
+        Remove all layer artists from this collection
+        """
+        for artist in self.artists:
+            artist.clear()
+        self.artists.clear()
+
+    def clear_callbacks(self):
+        """
+        Remove all callbacks
+        """
+        self.empty_callbacks.clear()
+        self.change_callbacks.clear()
+
     def _notify(self):
         if self._ignore_callbacks:
             return
@@ -367,5 +382,3 @@ class LayerArtistContainer(object):
         if isinstance(layer, int):
             return self.artists[layer]
         return [a for a in self.artists if a.layer is layer]
-
-
