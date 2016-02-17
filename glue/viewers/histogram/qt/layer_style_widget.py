@@ -22,7 +22,7 @@ class HistogramLayerStyleWidget(QtGui.QWidget):
 
         self.layer = layer_artist.layer
         self.set_color(mpl_to_qt4_color(self.layer.style.color))
-        connect_value(self.layer.style, 'alpha', self.ui.slider_alpha, scaling=1./100.)
+        connect_value(self.layer.style, 'alpha', self.ui.slider_alpha, value_range=(0, 1))
 
     def _setup_color_label(self):
         self.label_color.mousePressed.connect(self.query_color)

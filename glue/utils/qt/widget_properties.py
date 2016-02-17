@@ -19,6 +19,7 @@ Example Use::
 
 from __future__ import absolute_import, division, print_function
 
+import math
 import warnings
 from functools import partial
 
@@ -309,23 +310,41 @@ def connect_float_edit(client, prop, widget):
     update_widget(getattr(client, prop))
 
 
-def connect_value(client, prop, widget, scaling=1):
+def connect_value(client, prop, widget, value_range=None, log=False):
     """
     Connect client.prop to widget.valueChanged
 
     client.prop should be a callback property
 
-    If ``scaling`` is set, the Qt value is multiplied by the scaling before
-    being passed to the callback property, and conversely the callback property
-    is divided by the scaling.
+    If ``value_range`` is set, the slider values are mapped to that range. If
+    ``log`` is set, the mapping is assumed to be logarithmic instead of linear.
     """
+
+    if log:
+        if value_range is None:
+            raise ValueError("log option can only be set if value_range is given")
+        else:
+            value_range = math.log10(value_range[0]), math.log10(value_range[1])
 
     def update_prop():
         val = widget.value()
-        setattr(client, prop, val * scaling)
+        if value_range is not None:
+            imin, imax = widget.minimum(), widget.maximum()
+            val = (val - imin) / (imax - imin) * (value_range[1] - value_range[0]) + value_range[0]
+        if log:
+            val = 10 ** val
+        setattr(client, prop, val)
 
     def update_widget(val):
-        widget.setValue((val or 0.) / scaling)
+        if val is None:
+            widget.setValue(0)
+            return
+        if log:
+            val = math.log10(val)
+        if value_range is not None:
+            imin, imax = widget.minimum(), widget.maximum()
+            val = (val - value_range[0]) / (value_range[1] - value_range[0]) * (imax - imin) + imin
+        widget.setValue(val)
 
     add_callback(client, prop, update_widget)
     widget.valueChanged.connect(update_prop)
