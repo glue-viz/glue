@@ -312,7 +312,11 @@ class LayerArtistWidget(QtGui.QWidget):
         if layer_artist is None:
             return
 
-        self.layer_options_layout.setCurrentWidget(self.layout_style_widgets[layer_artist])
+        if layer_artist in self.layout_style_widgets:
+            self.layer_options_layout.setEnabled(True)
+            self.layer_options_layout.setCurrentWidget(self.layout_style_widgets[layer_artist])
+        else:
+            self.layer_options_layout.setEnabled(False)
 
 
 class QtLayerArtistContainer(LayerArtistContainer):
