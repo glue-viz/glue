@@ -155,6 +155,10 @@ class DataViewer(ViewerBase, QtGui.QMainWindow):
 
         if self._hub is not None:
             self.unregister(self._hub)
+
+        self._layer_artist_container.clear_callbacks()
+        self._layer_artist_container.clear()
+
         super(DataViewer, self).closeEvent(event)
         event.accept()
 
