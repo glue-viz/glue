@@ -326,14 +326,21 @@ class LayerArtistContainer(object):
         """
         for artist in self.artists:
             artist.clear()
-        self.artists.clear()
+        if six.PY2:
+            self.artists[:] = []
+        else:
+            self.artists.clear()
 
     def clear_callbacks(self):
         """
         Remove all callbacks
         """
-        self.empty_callbacks.clear()
-        self.change_callbacks.clear()
+        if six.PY2:
+            self.empty_callbacks[:] = []
+            self.change_callbacks[:] = []
+        else:
+            self.empty_callbacks.clear()
+            self.change_callbacks.clear()
 
     def _notify(self):
         if self._ignore_callbacks:
