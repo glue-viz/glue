@@ -6,6 +6,7 @@ from matplotlib.colors import ColorConverter
 from glue.external.qt import QtCore, QtGui
 from glue.external.echo import add_callback
 from glue.utils import nonpartial
+from glue.utils.qt import CUSTOM_QWIDGETS
 
 from matplotlib import cm
 
@@ -162,6 +163,8 @@ class QColorBox(QtGui.QLabel):
         image.fill(self._qcolor)
         pixmap = QtGui.QPixmap.fromImage(image)
         self.setPixmap(pixmap)
+
+CUSTOM_QWIDGETS.append(QColorBox)
 
 
 if __name__ == "__main__":
