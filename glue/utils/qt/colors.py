@@ -6,7 +6,7 @@ from matplotlib.colors import ColorConverter
 from glue.external.qt import QtCore, QtGui
 from glue.external.echo import add_callback
 from glue.utils import nonpartial
-from glue.utils.qt import CUSTOM_QWIDGETS
+from glue.utils.qt.helpers import CUSTOM_QWIDGETS
 
 from matplotlib import cm
 
