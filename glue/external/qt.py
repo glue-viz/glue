@@ -80,20 +80,16 @@ def is_pyqt5():
 is_pyqt = is_pyqt4
 QT_API_PYQT = QT_API_PYQT4
 
-_forbidden = set()
-
-
-def deny_module(module):
-    _forbidden.add(module)
-
 
 class ImportDenier(object):
     """
     Import hook to protect importing of both PySide and PyQt.
     """
 
+    _forbidden = set()
+
     def find_module(self, mod_name, pth):
-        if pth or not mod_name in _forbidden:
+        if pth or not mod_name in self._forbidden:
             return
         else:
             return self
@@ -102,6 +98,8 @@ class ImportDenier(object):
         raise ImportError("Importing %s forbidden by %s"
                           % (mod_name, __name__))
 
+    def deny_module(self, module):
+        self._forbidden.add(module)
 
 _import_hook = ImportDenier()
 sys.meta_path.append(_import_hook)
@@ -154,8 +152,8 @@ def _load_pyqt4():
     global QT_API
     QT_API = QT_API_PYQT4
 
-    deny_module('PySide')
-    deny_module('PyQt5')
+    _import_hook.deny_module('PySide')
+    _import_hook.deny_module('PyQt5')
 
 
 def _load_pyqt5():
@@ -185,8 +183,8 @@ def _load_pyqt5():
     global QT_API
     QT_API = QT_API_PYQT5
 
-    deny_module('PySide')
-    deny_module('PyQt4')
+    _import_hook.deny_module('PySide')
+    _import_hook.deny_module('PyQt4')
 
 
 def _load_pyside():
@@ -208,8 +206,8 @@ def _load_pyside():
     global QT_API
     QT_API = QT_API_PYSIDE
 
-    deny_module('PyQt4')
-    deny_module('PyQt5')
+    _import_hook.deny_module('PyQt4')
+    _import_hook.deny_module('PyQt5')
 
 
 QtCore = None
@@ -227,7 +225,14 @@ def reload_qt():
     e.g. PySide if PyQt4 is loaded).
     """
 
-    _forbidden.clear()
+    # Clear any forbidden modules
+    _import_hook._forbidden.clear()
+
+    # Quit app if active
+    global qapp
+    if qapp is not None:
+        qapp.quit()
+        qapp = None
 
     global QtCore
     global QtGui
