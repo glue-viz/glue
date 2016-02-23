@@ -20,7 +20,7 @@ class CallbackProperty(object):
     a specific instance of a class with CallbackProperties
     """
 
-    def __init__(self, default=None, getter=None, setter=None):
+    def __init__(self, default=None, getter=None, setter=None, docstring=None):
         """
         :param default: The initial value for the property
         """
@@ -39,6 +39,9 @@ class CallbackProperty(object):
         self._getter = getter
         self._setter = setter
 
+        if docstring is not None:
+            self.__doc__ = docstring
+
     def _default_getter(self, instance, owner=None):
         return self._values.get(instance, self._default)
 
@@ -51,7 +54,10 @@ class CallbackProperty(object):
         return self._getter(instance)
 
     def __set__(self, instance, value):
-        old = self.__get__(instance)
+        try:
+            old = self.__get__(instance)
+        except AttributeError:
+            old = None
         self._setter(instance, value)
         new = self.__get__(instance)
         if old != new:
@@ -189,7 +195,10 @@ def callback_property(getter):
         class Foo(object);
             x = CallbackProperty(initial_value)
     """
-    return CallbackProperty(getter=getter)
+
+    cb = CallbackProperty(getter=getter)
+    cb.__doc__ = getter.__doc__
+    return cb
 
 
 class delay_callback(object):
