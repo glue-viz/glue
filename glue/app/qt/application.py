@@ -96,10 +96,10 @@ class GlueLogger(QtGui.QWidget):
         self._text.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
         clear = QtGui.QPushButton("Clear")
-        clear.clicked.connect(self._clear)
+        clear.clicked.connect(nonpartial(self._clear))
 
         report = QtGui.QPushButton("Send Bug Report")
-        report.clicked.connect(self._send_report)
+        report.clicked.connect(nonpartial(self._send_report))
 
         self.stderr = sys.stderr
         sys.stderr = self

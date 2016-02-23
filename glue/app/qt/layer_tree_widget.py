@@ -55,8 +55,7 @@ class LayerAction(QtGui.QAction):
         self._connect()
 
     def _connect(self):
-        self._parent.selection_changed.connect(
-            self.update_enabled)
+        self._parent.selection_changed.connect(nonpartial(self.update_enabled))
         self.triggered.connect(nonpartial(self._do_action))
 
     def selected_layers(self):

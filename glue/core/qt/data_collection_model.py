@@ -12,7 +12,9 @@ from glue.core.qt.mime import LAYERS_MIME_TYPE
 from glue.icons.qt import layer_icon
 
 from glue.core.qt.style_dialog import StyleDialog
+from glue.utils import nonpartial
 from glue.utils.qt import PyMimeData
+from glue.utils.qt.helpers import CUSTOM_QWIDGETS
 
 DATA_IDX = 0
 SUBSET_IDX = 1
@@ -450,14 +452,14 @@ class DataCollectionView(QtGui.QTreeView):
         self.doubleClicked.connect(self._edit)
 
         # this keeps the full-row of the selection bar in-sync
-        self.pressed.connect(lambda x: self.viewport().update())
+        self.pressed.connect(nonpartial(self.viewport().update))
 
         # only edit label on model.new_item
         self.setItemDelegate(LabeledDelegate())
         self.setEditTriggers(self.NoEditTriggers)
 
         self._timer = QtCore.QTimer(self)
-        self._timer.timeout.connect(self.viewport().update)
+        self._timer.timeout.connect(nonpartial(self.viewport().update))
         self._timer.start(1000)
 
     def selected_layers(self):
@@ -512,6 +514,8 @@ class DataCollectionView(QtGui.QTreeView):
         pos = self.mapToGlobal(rect.bottomLeft())
         pos.setY(pos.y() + 1)
         item.edit_factory(pos)
+
+CUSTOM_QWIDGETS.append(DataCollectionView)
 
 
 class LabeledDelegate(QtGui.QStyledItemDelegate):

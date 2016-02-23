@@ -264,9 +264,9 @@ class QtLayerArtistContainer(LayerArtistContainer):
     def __init__(self):
         super(QtLayerArtistContainer, self).__init__()
         self.model = LayerArtistModel(self.artists)
-        self.model.rowsInserted.connect(self._notify)
-        self.model.rowsRemoved.connect(self._notify)
-        self.model.modelReset.connect(self._notify)
+        self.model.rowsInserted.connect(nonpartial(self._notify))
+        self.model.rowsRemoved.connect(nonpartial(self._notify))
+        self.model.modelReset.connect(nonpartial(self._notify))
 
     def append(self, artist):
         self._check_duplicate(artist)
