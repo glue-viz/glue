@@ -37,9 +37,6 @@ class VisualAttributes(object):
         self.marker = 'o'
         self.markersize = 3
 
-
-    # TODO: fix equality comparison
-
     def __eq__(self, other):
         if not isinstance(other, VisualAttributes):
             return False

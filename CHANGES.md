@@ -117,9 +117,9 @@ v0.7 (unreleased)
 
 * Properties of the VisualAttributes class are now callback properties. [#852]
 
-* ``glue.utils.qt.widget_properties.connect_value`` can now take an optional
-  value_range and log option, to scale the Qt slider values to a custom range
-  of values (optionally in log space). [#852]
+* Add ``glue.utils.qt.widget_properties.connect_value`` function which can take
+  an optional value_range and log option to scale the Qt values to a custom
+  range of values (optionally in log space). [#852]
 
 v0.6 (2015-11-20)
 -----------------
