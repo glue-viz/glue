@@ -13,6 +13,9 @@ from glue.utils.array import pretty_number
 from glue.utils import Pointer
 from glue.utils.qt import cmap2pixmap
 
+# We do the following import to register the custom Qt Widget there
+from glue.dialogs.common.qt import component_selector  # pylint: disable=W0611
+
 __all__ = ['SubsetFacet']
 
 
