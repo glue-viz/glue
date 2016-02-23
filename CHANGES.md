@@ -6,6 +6,9 @@ v0.7 (unreleased)
 
 * Python 2.6 is no longer supported. [#804]
 
+* Added a generic QColorBox widget to pick colors, and an associated
+  connect_color helper for callback properties. [#864]
+
 * The ``artist_container`` argument to client classes has been renamed to
   ``layer_artist_container``. [#814]
 
