@@ -12,7 +12,7 @@ from glue.viewers.common.qt.mouse_mode import (RectangleMode, CircleMode,
 from glue.utils.qt import load_ui
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.mpl_widget import MplWidget, defer_draw
-
+from glue.viewers.scatter.qt.layer_style_widget import ScatterLayerStyleWidget
 from glue.utils import nonpartial, cache_axes
 from glue.utils.qt.widget_properties import (ButtonProperty, FloatLineProperty,
                                              CurrentComboProperty,
@@ -47,15 +47,19 @@ class ScatterWidget(DataViewer):
     yatt = CurrentComboProperty('ui.yAxisComboBox',
                                 'Attribute to plot on y axis')
 
-    def __init__(self, session, parent=None):
-        super(ScatterWidget, self).__init__(session, parent)
-        self.central_widget = MplWidget()
-        self.option_widget = QtGui.QWidget()
+    _layer_style_widget_cls = ScatterLayerStyleWidget
 
+    def __init__(self, session, parent=None):
+
+        super(ScatterWidget, self).__init__(session, parent)
+
+        self.central_widget = MplWidget()
         self.setCentralWidget(self.central_widget)
 
+        self.option_widget = QtGui.QWidget()
         self.ui = load_ui('options_widget.ui', self.option_widget,
                           directory=os.path.dirname(__file__))
+
         self._tweak_geometry()
 
         self.client = ScatterClient(self._data,

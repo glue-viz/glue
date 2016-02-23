@@ -192,9 +192,23 @@ class LayerArtistView(QtGui.QListView):
         self._timer.timeout.connect(self.viewport().update)
         self._timer.start(1000)
 
+    def rowsInserted(self, index, start, end):
+        super(LayerArtistView, self).rowsInserted(index, start, end)
+        # If no rows are currently selected, make sure we select one. We do
+        # this to make sure the layer style editor is visible to users straight
+        # away.
+        parent = self.parent()
+        if parent is not None:
+            parent.on_artist_add(self.model().artists)
+        if self.current_row() is None:
+            self.setCurrentIndex(self.model().index(0))
+
     def selectionChanged(self, selected, deselected):
         super(LayerArtistView, self).selectionChanged(selected, deselected)
         self._update_actions()
+        parent = self.parent()
+        if parent is not None:
+            parent.on_selection_change(self.current_artist())
 
     def current_artist(self):
         model = self.selectionModel()
@@ -254,6 +268,55 @@ class LayerArtistView(QtGui.QListView):
         act.triggered.connect(
             lambda *args: self.model().removeRow(self.current_row()))
         self.addAction(act)
+
+
+class LayerArtistWidget(QtGui.QWidget):
+    """
+    A widget that includes a list of artists (LayerArtistView) and the visual
+    options for the layer artists.
+    """
+
+    def __init__(self, parent=None, layer_style_widget_cls=None):
+
+        super(LayerArtistWidget, self).__init__(parent=parent)
+
+        self.layout = QtGui.QVBoxLayout()
+
+        self.layer_style_widget_cls = layer_style_widget_cls
+
+        self.layer_list = LayerArtistView(parent=self)
+        self.layout.addWidget(self.layer_list)
+
+        self.layer_options = QtGui.QWidget()
+        self.layer_options_layout = QtGui.QStackedLayout()
+        self.layer_options.setLayout(self.layer_options_layout)
+
+        self.layout.addWidget(self.layer_options)
+
+        self.setLayout(self.layout)
+
+        self.layout_style_widgets = {}
+
+    def on_artist_add(self, layer_artists):
+
+        if self.layer_style_widget_cls is None:
+            return
+
+        for layer_artist in layer_artists:
+            if layer_artist not in self.layout_style_widgets:
+                self.layout_style_widgets[layer_artist] = self.layer_style_widget_cls(layer_artist)
+                self.layer_options_layout.addWidget(self.layout_style_widgets[layer_artist])
+
+    def on_selection_change(self, layer_artist):
+
+        if layer_artist is None:
+            return
+
+        if layer_artist in self.layout_style_widgets:
+            self.layer_options_layout.setEnabled(True)
+            self.layer_options_layout.setCurrentWidget(self.layout_style_widgets[layer_artist])
+        else:
+            self.layer_options_layout.setEnabled(False)
 
 
 class QtLayerArtistContainer(LayerArtistContainer):

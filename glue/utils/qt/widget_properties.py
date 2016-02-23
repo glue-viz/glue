@@ -19,6 +19,8 @@ Example Use::
 
 from __future__ import absolute_import, division, print_function
 
+import math
+import warnings
 from functools import partial
 
 from glue.external.six.moves import reduce
@@ -56,8 +58,15 @@ class WidgetProperty(object):
         self._att = att.split('.')
 
     def __get__(self, instance, type=None):
-        widget = reduce(getattr, [instance] + self._att)
-        return self.getter(widget)
+        # Under certain circumstances, PyQt will try and access these properties
+        # while loading the ui file, so we have to be robust to failures. 
+        # However, we print out a warning if things fail.
+        try:
+            widget = reduce(getattr, [instance] + self._att)
+            return self.getter(widget)
+        except Exception:
+            warnings.warn("An error occured when accessing attribute {0} of {1}. Returning None.".format('.'.join(self._att), instance))
+            return None
 
     def __set__(self, instance, value):
         widget = reduce(getattr, [instance] + self._att)
@@ -252,9 +261,7 @@ def connect_current_combo(client, prop, widget):
     client.prop should be a callback property
     """
 
-    def _push_combo(value):
-        # NOTE: we can't use findData here because if the data is not a
-        # string, PySide will crash
+    def update_widget(value):
         try:
             idx = _find_combo_data(widget, value)
         except ValueError:
@@ -264,18 +271,20 @@ def connect_current_combo(client, prop, widget):
                 raise
         widget.setCurrentIndex(idx)
 
-    def _pull_combo(idx):
+    def update_prop(idx):
         if idx == -1:
             setattr(client, prop, None)
         else:
             setattr(client, prop, widget.itemData(idx))
 
-    add_callback(client, prop, _push_combo)
-    widget.currentIndexChanged.connect(_pull_combo)
+    add_callback(client, prop, update_widget)
+    widget.currentIndexChanged.connect(update_prop)
+    update_widget(getattr(client, prop))
 
 
 def connect_float_edit(client, prop, widget):
-    """ Connect widget.setText and client.prop
+    """
+    Connect widget.setText and client.prop
     Also pretty-print the number
 
     client.prop should be a callback property
@@ -301,15 +310,48 @@ def connect_float_edit(client, prop, widget):
     update_widget(getattr(client, prop))
 
 
-def connect_int_spin(client, prop, widget):
+def connect_value(client, prop, widget, value_range=None, log=False):
     """
     Connect client.prop to widget.valueChanged
 
     client.prop should be a callback property
-    """
-    add_callback(client, prop, widget.setValue)
-    widget.valueChanged.connect(partial(setattr, client, prop))
 
+    If ``value_range`` is set, the slider values are mapped to that range. If
+    ``log`` is set, the mapping is assumed to be logarithmic instead of linear.
+    """
+
+    if log:
+        if value_range is None:
+            raise ValueError("log option can only be set if value_range is given")
+        else:
+            value_range = math.log10(value_range[0]), math.log10(value_range[1])
+
+    def update_prop():
+        val = widget.value()
+        if value_range is not None:
+            imin, imax = widget.minimum(), widget.maximum()
+            val = (val - imin) / (imax - imin) * (value_range[1] - value_range[0]) + value_range[0]
+        if log:
+            val = 10 ** val
+        setattr(client, prop, val)
+
+    def update_widget(val):
+        if val is None:
+            widget.setValue(0)
+            return
+        if log:
+            val = math.log10(val)
+        if value_range is not None:
+            imin, imax = widget.minimum(), widget.maximum()
+            val = (val - value_range[0]) / (value_range[1] - value_range[0]) * (imax - imin) + imin
+        widget.setValue(val)
+
+    add_callback(client, prop, update_widget)
+    widget.valueChanged.connect(update_prop)
+    update_widget(getattr(client, prop))
+
+
+connect_int_spin = connect_value
 
 def _find_combo_data(widget, value):
     """

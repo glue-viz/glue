@@ -1,7 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.config import settings
-
+from glue.external.echo import callback_property
+from glue.external import six
 
 # Define acceptable line styles
 VALID_LINESTYLES = ['solid', 'dashed', 'dash-dot', 'dotted', 'none']
@@ -26,36 +27,27 @@ class VisualAttributes(object):
     '''
 
     def __init__(self, parent=None, washout=False, color=settings.DATA_COLOR):
-
-        # Color can be specified using Matplotlib notation. Specifically, it
-        # can be:
-        #  * A string with a common color (e.g. 'black', 'red', 'orange')
-        #  * A string containing a float in the rng [0:1] for a shade of
-        #    gray ('0.0' = black,'1.0' = white)
-        #  * A tuple of three floats in the rng [0:1] for (R, G, B)
-        # * An HTML hexadecimal string (e.g. '#eeefff')
-        self.color = color
-        self.alpha = .5
-
-        # Line width in points (float or int)
-        self.linewidth = 1
-
-        # Line style, which can be one of 'solid', 'dashed', 'dash-dot',
-        # 'dotted', or 'none'
-        self.linestyle = 'solid'
-
-        self.marker = 'o'
-        self.markersize = 3
-
         self.parent = parent
-
         self._atts = ['color', 'alpha', 'linewidth', 'linestyle', 'marker',
                       'markersize']
+        self.color = color
+        self.alpha = 0.5
+        self.linewidth = 1
+        self.linestyle = 'solid'
+        self.marker = 'o'
+        self.markersize = 3
 
     def __eq__(self, other):
         if not isinstance(other, VisualAttributes):
             return False
-        return all(getattr(self, a) == getattr(other, a) for a in self._atts)
+        elif self is other:
+            return True
+        else:
+            return all(getattr(self, a) == getattr(other, a) for a in self._atts)
+
+    # In Python 3, if __eq__ is defined, then __hash__ has to be re-defined
+    if six.PY3:
+        __hash__ = object.__hash__
 
     def set(self, other):
         """
@@ -74,35 +66,101 @@ class VisualAttributes(object):
             result.parent = new_parent
         return result
 
-    def __eq__(self, other):
-        return all(getattr(self, att) == getattr(other, att)
-                   for att in self._atts)
+    @callback_property
+    def color(self):
+        """
+        Color specified using Matplotlib notation
+
+        Specifically, it can be:
+
+         * A string with a common color (e.g. 'black', 'red', 'orange')
+         * A string containing a float in the rng [0:1] for a shade of
+           gray ('0.0' = black,'1.0' = white)
+         * A tuple of three floats in the rng [0:1] for (R, G, B)
+         * An HTML hexadecimal string (e.g. '#eeefff')
+        """
+        return self._color
+
+    @color.setter
+    def color(self, value):
+        if isinstance(value, six.string_types):
+            self._color = value.lower()
+        else:
+            self._color = value
+
+    @callback_property
+    def alpha(self):
+        """
+        Transparency, given as a floating point value between 0 and 1.
+        """
+        return self._alpha
+
+    @alpha.setter
+    def alpha(self, value):
+        self._alpha = value
+
+    @callback_property
+    def linestyle(self):
+        """
+        The line style, which can be one of 'solid', 'dashed', 'dash-dot',
+        'dotted', or 'none'.
+        """
+        return self._linestyle
+
+    @linestyle.setter
+    def linestyle(self, value):
+        if value not in VALID_LINESTYLES:
+            raise Exception("Line style should be one of %s" %
+                            '/'.join(VALID_LINESTYLES))
+        self._linestyle = value
+
+    @callback_property
+    def linewidth(self):
+        """
+        The line width, in points.
+        """
+        return self._linewidth
+
+    @linewidth.setter
+    def linewidth(self, value):
+        if type(value) not in [float, int]:
+            raise Exception("Line width should be a float or an int")
+        if value < 0:
+            raise Exception("Line width should be positive")
+        self._linewidth = value
+
+    @callback_property
+    def marker(self):
+        """
+        The marker symbol.
+        """
+        return self._marker
+
+    @marker.setter
+    def marker(self, value):
+        self._marker = value
+
+    @callback_property
+    def markersize(self):
+        return self._markersize
+
+    @markersize.setter
+    def markersize(self, value):
+        self._markersize = int(value)
 
     def __setattr__(self, attribute, value):
 
-        # Check that line style is valid
-        if attribute == 'linestyle' and value not in VALID_LINESTYLES:
-            raise Exception("Line style should be one of %s" %
-                            '/'.join(VALID_LINESTYLES))
-
-        # Check that line width is valid
-        if attribute == 'linewidth':
-            if type(value) not in [float, int]:
-                raise Exception("Line width should be a float or an int")
-            if value < 0:
-                raise Exception("Line width should be positive")
-
         # Check that the attribute exists (don't allow new attributes)
         allowed = set(['color', 'linewidth', 'linestyle',
-                       'alpha', 'parent', 'marker', 'markersize', '_atts'])
-        if attribute not in allowed:
+                       'alpha', 'parent', 'marker', 'markersize'])
+        if attribute not in allowed and not attribute.startswith('_'):
             raise Exception("Attribute %s does not exist" % attribute)
 
         changed = getattr(self, attribute, None) != value
-        object.__setattr__(self, attribute, value)
+        super(VisualAttributes, self).__setattr__(attribute, value)
 
         # if parent has a broadcast method, broadcast the change
         if (changed and hasattr(self, 'parent') and
             hasattr(self.parent, 'broadcast') and
-                attribute != 'parent'):
+                attribute != 'parent' and not attribute.startswith('_')):
             self.parent.broadcast('style')
