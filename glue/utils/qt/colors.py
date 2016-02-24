@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 from matplotlib.colors import ColorConverter
 
+from glue import config
 from glue.external.qt import QtCore, QtGui
 from glue.external.echo import add_callback
 from glue.utils import nonpartial
@@ -165,6 +166,18 @@ class QColorBox(QtGui.QLabel):
         self.setPixmap(pixmap)
 
 CUSTOM_QWIDGETS.append(QColorBox)
+
+
+class QColormapCombo(QtGui.QComboBox):
+
+    def __init__(self, *args, **kwargs):
+        super(QColormapCombo, self).__init__(*args, **kwargs)
+        self.setIconSize(QtCore.QSize(100, 15))
+        for label, cmap in config.colormaps:
+            icon = QtGui.QIcon(cmap2pixmap(cmap, size=(100,15)))
+            self.addItem(icon, "")
+
+CUSTOM_QWIDGETS.append(QColormapCombo)
 
 
 if __name__ == "__main__":

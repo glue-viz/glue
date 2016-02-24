@@ -6,7 +6,7 @@ from glue.external.echo import CallbackProperty
 from glue.external.qt import QtGui
 
 from ..helpers import process_dialog
-from ..colors import qt4_to_mpl_color, QColorBox, connect_color
+from ..colors import qt4_to_mpl_color, QColorBox, connect_color, QColormapCombo
 
 def test_colors():
     assert qt4_to_mpl_color(QtGui.QColor(255, 0, 0)) == '#ff0000'
@@ -49,3 +49,8 @@ def test_connect_color():
     c.color = '#012345'
 
     assert label.color() == '#012345'
+
+
+def test_colormap_combo():
+
+    combo = QColormapCombo()
