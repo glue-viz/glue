@@ -121,6 +121,8 @@ v0.7 (unreleased)
   an optional value_range and log option to scale the Qt values to a custom
   range of values (optionally in log space). [#852]
 
+* Make list of data viewers sorted alphabetically. [#866]
+
 v0.6 (2015-11-20)
 -----------------
 
