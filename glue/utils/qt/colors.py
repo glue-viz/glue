@@ -12,7 +12,7 @@ from glue.utils.qt.helpers import CUSTOM_QWIDGETS
 from matplotlib import cm
 
 __all__ = ['mpl_to_qt4_color', 'qt4_to_mpl_color', 'cmap2pixmap',
-           'tint_pixmap', 'QColorBox', 'connect_color']
+           'tint_pixmap', 'QColorBox', 'connect_color', 'QColormapCombo']
 
 
 def mpl_to_qt4_color(color, alpha=1.0):
