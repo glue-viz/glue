@@ -31,6 +31,7 @@ from glue.utils.qt import (pick_class, GlueTabBar, QMessageBoxPatched as
 
 from glue.app.qt.feedback import submit_bug_report
 from glue.app.qt.plugin_manager import QtPluginManager
+from glue.app.qt.versions import show_glue_info
 
 
 __all__ = ['GlueApplication']
@@ -464,7 +465,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
             for a in self._actions['session_export']:
                 submenu.addAction(a)
         menu.addSeparator()
-        menu.addAction("Edit &Settings", self._edit_settings)
+        # menu.addAction("Edit &Settings", self._edit_settings)
         mbar.addMenu(menu)
 
         menu = QtGui.QMenu(mbar)
@@ -527,6 +528,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
 
         # trigger inclusion of Mac Native "Help" tool
         menu = mbar.addMenu("&Help")
+
         a = QtGui.QAction("&Online Documentation", menu)
         a.triggered.connect(nonpartial(webbrowser.open, DOCS_URL))
         menu.addAction(a)
@@ -534,6 +536,10 @@ class GlueApplication(Application, QtGui.QMainWindow):
         a = QtGui.QAction("Send &Feedback", menu)
         a.triggered.connect(nonpartial(submit_bug_report))
         menu.addAction(a)
+
+        menu.addSeparator()
+        menu.addAction("Version information", show_glue_info)
+
 
     def _choose_load_data(self, data_importer=None):
         if data_importer is None:

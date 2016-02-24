@@ -6,12 +6,13 @@ Guide users through installing Glue's dependencies
 from __future__ import absolute_import, division, print_function
 
 import os
+from collections import OrderedDict
 
 # Unfortunately, we can't rely on setuptools' install_requires
 # keyword, because matplotlib doesn't properly install its dependencies
 from subprocess import check_call, CalledProcessError
 import sys
-from imp import find_module
+import importlib
 
 
 class Dependency(object):
@@ -26,7 +27,7 @@ class Dependency(object):
     @property
     def installed(self):
         try:
-            find_module(self.module)
+            importlib.import_module(self.module)
             return True
         except ImportError:
             return False
@@ -128,6 +129,7 @@ gui_framework = (
 )
 
 required = (
+    Dependency('setuptools', 'Required'),
     Dependency('numpy', 'Required', min_version='1.4'),
     Dependency('matplotlib', 'Required for plotting', min_version='1.1'),
     Dependency(
@@ -183,6 +185,17 @@ def get_status():
             s += str(dep) + os.linesep
         s += os.linesep
     return s
+
+
+def get_status_as_odict():
+    status = OrderedDict()
+    for category, deps in categories:
+        for dep in deps:
+            if dep.installed:
+                status[dep.module] = dep.version
+            else:
+                status[dep.module] = "Not installed"
+    return status
 
 
 def show_status():
