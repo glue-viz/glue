@@ -40,7 +40,8 @@ def pick_class(classes, **kwargs):
             return c.LABEL
         except AttributeError:
             return c.__name__
-
+            
+    classes = sorted(classes, key=lambda x: _label(x))
     choices = [_label(c) for c in classes]
     return pick_item(classes, choices, **kwargs)
 
