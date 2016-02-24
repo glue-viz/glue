@@ -26,7 +26,7 @@ def pick_item(items, labels, title="Pick an item", label="Pick an item",
         return items[index]
 
 
-def pick_class(classes, **kwargs):
+def pick_class(classes, sort=False, **kwargs):
     """Prompt the user to pick from a list of classes using QT
 
     :param classes: list of class objects
@@ -41,7 +41,8 @@ def pick_class(classes, **kwargs):
         except AttributeError:
             return c.__name__
             
-    classes = sorted(classes, key=lambda x: _label(x))
+    if sort:
+        classes = sorted(classes, key=lambda x: _label(x))
     choices = [_label(c) for c in classes]
     return pick_item(classes, choices, **kwargs)
 

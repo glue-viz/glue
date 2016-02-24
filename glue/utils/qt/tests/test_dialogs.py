@@ -33,6 +33,10 @@ def test_pick_class():
         pick_class([Foo, Bar])
         d.assert_called_once_with([Foo, Bar], ['Foo', 'Baz'])
 
+    with mock.patch('glue.utils.qt.dialogs.pick_item') as d:
+        pick_class([Foo, Bar], sort=True)
+        d.assert_called_once_with([Bar, Foo], ['Baz', 'Foo'])
+
 
 def test_get_text():
 
