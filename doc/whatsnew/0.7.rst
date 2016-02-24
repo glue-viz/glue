@@ -1,0 +1,28 @@
+:orphan:
+
+.. _whatsnew_07:
+
+What's new in Glue v0.7?
+========================
+
+Below we list some of the main changes in Glue v0.7. As a reminder, you can
+easily update glue if you are using Anaconda/Miniconda, by doing::
+
+    conda install glueviz
+
+If instead you installed glue with pip, you can update with::
+
+    pip install glueviz --upgrade
+
+Code reorganization
+-------------------
+
+In this release, a large fraction of the code has been reorganized, and imports
+may need to be updated if you are using glue from scripts. Please see
+:doc:`this <0.7_code_reorganization>` page for more details!
+
+Full list of Changes
+--------------------
+
+A full list of changes can be found in the
+`CHANGES.md <https://github.com/glue-viz/glue/blob/master/CHANGES.md>`_ file
