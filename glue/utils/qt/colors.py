@@ -172,10 +172,20 @@ class QColormapCombo(QtGui.QComboBox):
 
     def __init__(self, *args, **kwargs):
         super(QColormapCombo, self).__init__(*args, **kwargs)
-        self.setIconSize(QtCore.QSize(100, 15))
         for label, cmap in config.colormaps:
-            icon = QtGui.QIcon(cmap2pixmap(cmap, size=(100,15)))
-            self.addItem(icon, "")
+            self.addItem("", userData=cmap)
+        self._update_icons()
+        
+    def _update_icons(self):
+        self.setIconSize(QtCore.QSize(self.width(), 15))
+        for index in range(self.count()):
+            cmap = self.itemData(index)
+            icon = QtGui.QIcon(cmap2pixmap(cmap, size=(self.width(), 15), steps=200))
+            self.setItemIcon(index, icon)
+            
+    def resizeEvent(self, *args, **kwargs):
+        super(QColormapCombo, self).resizeEvent(*args, **kwargs)
+        self._update_icons()
 
 CUSTOM_QWIDGETS.append(QColormapCombo)
 
