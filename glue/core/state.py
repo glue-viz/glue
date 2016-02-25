@@ -89,8 +89,15 @@ literals += (np.ScalarType,)
 # We need to make sure that we don't break backward-compatibility when we move
 # classes/functions around in Glue, so we have a file that maps the old paths to
 # the new location, and we read this in to PATH_PATCHES.
+PATCH_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                             'state_path_patches.txt'))
+
+# For Mac app, need to get file from source directory
+if not os.path.exists(PATCH_FILE) and 'site-packages.zip' in PATCH_FILE:
+    PATCH_FILE = PATCH_FILE.replace('site-packages.zip', 'glue')
+
 PATH_PATCHES = {}
-for line in open(os.path.join(os.path.dirname(__file__), 'state_path_patches.txt')):
+for line in open(PATCH_FILE):
     before, after = line.strip().split(' -> ')
     PATH_PATCHES[before.strip()] = after.strip()
 
