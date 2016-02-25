@@ -465,7 +465,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
             for a in self._actions['session_export']:
                 submenu.addAction(a)
         menu.addSeparator()
-        # menu.addAction("Edit &Settings", self._edit_settings)
+        menu.addAction("Edit &Settings", self._edit_settings)
         mbar.addMenu(menu)
 
         menu = QtGui.QMenu(mbar)
