@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 from matplotlib.colors import ColorConverter
 
+from glue import config
 from glue.external.qt import QtCore, QtGui
 from glue.external.echo import add_callback
 from glue.utils import nonpartial
@@ -11,7 +12,7 @@ from glue.utils.qt.helpers import CUSTOM_QWIDGETS
 from matplotlib import cm
 
 __all__ = ['mpl_to_qt4_color', 'qt4_to_mpl_color', 'cmap2pixmap',
-           'tint_pixmap', 'QColorBox', 'connect_color']
+           'tint_pixmap', 'QColorBox', 'connect_color', 'QColormapCombo']
 
 
 def mpl_to_qt4_color(color, alpha=1.0):
@@ -165,6 +166,28 @@ class QColorBox(QtGui.QLabel):
         self.setPixmap(pixmap)
 
 CUSTOM_QWIDGETS.append(QColorBox)
+
+
+class QColormapCombo(QtGui.QComboBox):
+
+    def __init__(self, *args, **kwargs):
+        super(QColormapCombo, self).__init__(*args, **kwargs)
+        for label, cmap in config.colormaps:
+            self.addItem("", userData=cmap)
+        self._update_icons()
+        
+    def _update_icons(self):
+        self.setIconSize(QtCore.QSize(self.width(), 15))
+        for index in range(self.count()):
+            cmap = self.itemData(index)
+            icon = QtGui.QIcon(cmap2pixmap(cmap, size=(self.width(), 15), steps=200))
+            self.setItemIcon(index, icon)
+            
+    def resizeEvent(self, *args, **kwargs):
+        super(QColormapCombo, self).resizeEvent(*args, **kwargs)
+        self._update_icons()
+
+CUSTOM_QWIDGETS.append(QColormapCombo)
 
 
 if __name__ == "__main__":

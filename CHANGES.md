@@ -9,6 +9,8 @@ v0.7 (unreleased)
 * Added a generic QColorBox widget to pick colors, and an associated
   connect_color helper for callback properties. [#864]
 
+* Added a generic QColormapCombo widget to pick colormaps.
+
 * The ``artist_container`` argument to client classes has been renamed to
   ``layer_artist_container``. [#814]
 
