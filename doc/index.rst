@@ -60,6 +60,10 @@ Developer guide
 .. toctree::
    :maxdepth: 1
 
+   developer_guide/getting_started.rst
+   developer_guide/data.rst
+   developer_guide/selection.rst
+   developer_guide/communication.rst
    developer_guide/architecture.rst
    developer_guide/api.rst
 

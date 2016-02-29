@@ -75,6 +75,14 @@ uses the framework from the :mod:`glue.core` package and the dialogs don't need
 to know anything about the rest of the state of the design of the Glue
 application.
 
+``glue.data_factories``
+^^^^^^^^^^^^^^^^^^^^^^^
+
+While the core package defines the basic infrastructure for reading/writing
+files, specific implementations of readers/writers live in
+:mod:`glue.data_factories`. If you want to add a new reader or writer, this is
+the place to put it!
+
 ``glue.app``
 ^^^^^^^^^^^^
 
@@ -121,5 +129,3 @@ developing a GUI front-end for Glue that is not based on Qt, you can re-use a
 lot of the existing code that is not in the Qt directories. If we were to add
 the code for another GUI framework into the Glue package, we could simply
 create directories parallel to the ``qt`` directories but for the new framework.
-
-Read on about the core Glue architecture in :ref:`architecture`
