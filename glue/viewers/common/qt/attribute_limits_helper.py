@@ -14,18 +14,18 @@ __all__ = ['AttributeLimitsHelper']
 class AttributeLimitsHelper(object):
     """
     This class is a helper for attribute-dependent min/max level values.
-    
+
     Given an attribute combo as well as line edit widgets for the min/max
     values, this helper takes care of populating the attribute combo, setting
     the initial values of the min/max values, and keeping a cache of the
     min/max values as a function of attribute. This means that if the user
     edits the min/max values and then changes attribute then changes back, the
     original min/max values will be retained.
-    
+
     In addition, this helper class can optionally link a combo for the scale
     mode, for example using the min/max values or percentile values, as well as
     a button for flipping the min/max values.
-    
+
     Parameters
     ----------
     attribute_combo : ``QComboBox`` instance
@@ -42,31 +42,31 @@ class AttributeLimitsHelper(object):
         The dataset to attach to the helper - this will be used to populate the
         attribute combo as well as determine the limits automatically given the
         scale mode preset.
-        
+
     Notes
     -----
-    
+
     Once the helper is instantiated, the data associated with the helper can be
     set/changed with:
-    
+
     >>> helper = AttributeLimitsHelper(...)
     >>> helper.data = data
-    
+
     The data can also be passed to the initializer as described in the list of
     parameters above.
     """
-    
+
     attribute = CurrentComboProperty('attribute_combo')
-    scale_mode = CurrentComboTextProperty('combo_mode')
-    percentile = CurrentComboProperty('combo_mode')
+    scale_mode = CurrentComboTextProperty('mode_combo')
+    percentile = CurrentComboProperty('mode_combo')
     vlo = FloatLineProperty('lower_value')
     vhi = FloatLineProperty('upper_value')
 
     def __init__(self, attribute_combo, lower_value, upper_value,
-                       combo_mode=None, flip_button=None, data=None):
+                       mode_combo=None, flip_button=None, data=None):
 
         self.attribute_combo = attribute_combo
-        self.combo_mode = combo_mode
+        self.mode_combo = mode_combo
         self.lower_value = lower_value
         self.upper_value = upper_value
         self.flip_button = flip_button
@@ -76,13 +76,13 @@ class AttributeLimitsHelper(object):
         self.lower_value.editingFinished.connect(self._manual_edit)
         self.upper_value.editingFinished.connect(self._manual_edit)
 
-        if self.combo_mode is None:
+        if self.mode_combo is None:
             # Make hidden combo box to avoid having to always figure out if the
             # combo mode exists. This will then always be set to Min/Max.
-            self.combo_mode = QtGui.QComboBox()
+            self.mode_combo = QtGui.QComboBox()
 
         self._setup_mode_combo()
-        self.combo_mode.currentIndexChanged.connect(self._update_mode)
+        self.mode_combo.currentIndexChanged.connect(self._update_mode)
 
         if self.flip_button is not None:
             self.flip_button.clicked.connect(self._flip_limits)
@@ -109,14 +109,14 @@ class AttributeLimitsHelper(object):
         update_combobox(self.attribute_combo, label_data)
 
     def _setup_mode_combo(self):
-        self.combo_mode.clear()
-        self.combo_mode.addItem("Min/Max", userData=100)
-        self.combo_mode.addItem("99.5%", userData=99.5)
-        self.combo_mode.addItem("99%", userData=99)
-        self.combo_mode.addItem("95%", userData=95)
-        self.combo_mode.addItem("90%", userData=90)
-        self.combo_mode.addItem("Custom", userData=None)
-        self.combo_mode.setCurrentIndex(-1)
+        self.mode_combo.clear()
+        self.mode_combo.addItem("Min/Max", userData=100)
+        self.mode_combo.addItem("99.5%", userData=99.5)
+        self.mode_combo.addItem("99%", userData=99)
+        self.mode_combo.addItem("95%", userData=95)
+        self.mode_combo.addItem("90%", userData=90)
+        self.mode_combo.addItem("Custom", userData=None)
+        self.mode_combo.setCurrentIndex(-1)
 
     def _flip_limits(self):
         self.vlo, self.vhi = self.vhi, self.vlo
@@ -153,10 +153,3 @@ class AttributeLimitsHelper(object):
         exclude = (100 - self.percentile) / 2.
         self.vlo = np.nanpercentile(self.data[self.attribute], exclude)
         self.vhi = np.nanpercentile(self.data[self.attribute], 100 - exclude)
-
-    def connect(self, function):
-        self._callbacks.append(function)
-
-    def notify_callbacks(self):
-        for func in self._callbacks:
-            func()
