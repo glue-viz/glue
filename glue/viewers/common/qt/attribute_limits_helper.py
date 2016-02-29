@@ -66,7 +66,7 @@ class AttributeLimitsHelper(object):
     vhi = FloatLineProperty('upper_value')
 
     def __init__(self, attribute_combo, lower_value, upper_value,
-                       mode_combo=None, flip_button=None, data=None):
+                 mode_combo=None, flip_button=None, data=None):
 
         self.attribute_combo = attribute_combo
         self.mode_combo = mode_combo

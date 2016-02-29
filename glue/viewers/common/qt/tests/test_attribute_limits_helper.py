@@ -13,6 +13,7 @@ from ..attribute_limits_helper import AttributeLimitsHelper
 from glue.external.qt import get_qapp
 get_qapp()
 
+
 class TestAttributeLimitsHelper():
 
     def setup_method(self, method):
