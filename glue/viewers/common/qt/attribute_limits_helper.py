@@ -120,11 +120,9 @@ class AttributeLimitsHelper(object):
 
     def _flip_limits(self):
         self.vlo, self.vhi = self.vhi, self.vlo
-        self.notify_callbacks()
 
     def _manual_edit(self):
         self._cache_limits()
-        self.notify_callbacks()
 
     def _update_mode(self):
         if self.scale_mode == 'Custom':
@@ -135,7 +133,6 @@ class AttributeLimitsHelper(object):
             self.upper_value.setEnabled(False)
             self._auto_limits()
             self._cache_limits()
-            self.notify_callbacks()
 
     def _cache_limits(self):
         self._limits[self.attribute] = self.scale_mode, self.vlo, self.vhi
@@ -150,6 +147,15 @@ class AttributeLimitsHelper(object):
             self._update_mode()
 
     def _auto_limits(self):
+
         exclude = (100 - self.percentile) / 2.
-        self.vlo = np.nanpercentile(self.data[self.attribute], exclude)
-        self.vhi = np.nanpercentile(self.data[self.attribute], 100 - exclude)
+
+        # For subsets, we want to compute the limits based on the full dataset,
+        # not just the subset.
+        if isinstance(self.data, Subset):
+            data_values = self.data.data[self.attribute]
+        else:
+            data_values = self.data[self.attribute]
+
+        self.vlo = np.nanpercentile(data_values, exclude)
+        self.vhi = np.nanpercentile(data_values, 100 - exclude)
