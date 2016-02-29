@@ -139,9 +139,7 @@ class AttributeLimitsHelper(object):
 
     def _update_limits(self):
         if self.attribute in self._limits:
-            self.lower_value.blockSignals(True)
             self.scale_mode, self.vlo, self.vhi = self._limits[self.attribute]
-            self.lower_value.blockSignals(False)
         else:
             self.scale_mode = 'Min/Max'
             self._update_mode()
