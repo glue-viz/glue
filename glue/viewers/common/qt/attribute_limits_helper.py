@@ -7,6 +7,9 @@ from glue.utils.qt.widget_properties import (CurrentComboTextProperty,
                                              CurrentComboProperty,
                                              FloatLineProperty)
 
+# TODO: there is room for optimization here, in particular to ensure that
+# signals are emitted the absolute minimum of times.
+
 
 __all__ = ['AttributeLimitsHelper']
 
@@ -96,8 +99,23 @@ class AttributeLimitsHelper(object):
 
     @data.setter
     def data(self, value):
+        self._invalidate_cache()
         self._data = value
+        if isinstance(value, Subset):
+            self.subset_mode = 'data'
+        else:
+            self.subset_mode = None
         self._setup_attribute_combo()
+
+    def set_limits(self, vlo, vhi):
+        self.lower_value.blockSignals(True)
+        self.upper_value.blockSignals(True)
+        self.vlo = vlo
+        self.vhi = vhi
+        self.lower_value.blockSignals(False)
+        self.upper_value.blockSignals(False)
+        self.lower_value.editingFinished.emit()
+        self.upper_value.editingFinished.emit()
 
     def _setup_attribute_combo(self):
         self.attribute_combo.clear()
@@ -119,41 +137,99 @@ class AttributeLimitsHelper(object):
         self.mode_combo.setCurrentIndex(-1)
 
     def _flip_limits(self):
-        self.vlo, self.vhi = self.vhi, self.vlo
+        self.set_limits(self.vhi, self.vlo)
 
     def _manual_edit(self):
         self._cache_limits()
 
     def _update_mode(self):
-        if self.scale_mode == 'Custom':
-            self.lower_value.setEnabled(True)
-            self.upper_value.setEnabled(True)
-        else:
-            self.lower_value.setEnabled(False)
-            self.upper_value.setEnabled(False)
+        if self.scale_mode != 'Custom':
             self._auto_limits()
             self._cache_limits()
 
+    def _invalidate_cache(self):
+        self._limits.clear()
+
     def _cache_limits(self):
-        self._limits[self.attribute] = self.scale_mode, self.vlo, self.vhi
+        if self.subset_mode != 'outline':
+            self._limits[self.attribute] = self.scale_mode, self.vlo, self.vhi
 
     def _update_limits(self):
-        if self.attribute in self._limits:
-            self.scale_mode, self.vlo, self.vhi = self._limits[self.attribute]
+        if self.subset_mode == 'outline':
+            self.set_limits(0, 2)
+        elif self.attribute in self._limits:
+            self.scale_mode, lower, upper = self._limits[self.attribute]
+            self.set_limits(lower, upper)
         else:
+            self.mode_combo.blockSignals(True)
             self.scale_mode = 'Min/Max'
-            self._update_mode()
+            self.mode_combo.blockSignals(False)
+            self._auto_limits()
 
     def _auto_limits(self):
 
+        if self.data is None:
+            return
+
+        if self.attribute is None:
+            return
+
+        if self.subset_mode == 'outline':
+            self.set_limits(0, 2)
+            return
+
         exclude = (100 - self.percentile) / 2.
 
-        # For subsets, we want to compute the limits based on the full dataset,
-        # not just the subset.
-        if isinstance(self.data, Subset):
+        # For subsets in 'data' mode, we want to compute the limits based on
+        # the full dataset, not just the subset.
+        if self.subset_mode == 'data':
             data_values = self.data.data[self.attribute]
         else:
             data_values = self.data[self.attribute]
 
-        self.vlo = np.nanpercentile(data_values, exclude)
-        self.vhi = np.nanpercentile(data_values, 100 - exclude)
+        lower = np.nanpercentile(data_values, exclude)
+        upper = np.nanpercentile(data_values, 100 - exclude)
+
+        if self.subset_mode == 'data':
+            self.set_limits(0, upper)
+        else:
+            self.set_limits(lower, upper)
+
+    @property
+    def subset_mode(self):
+        return self._subset_mode
+
+    @subset_mode.setter
+    def subset_mode(self, value):
+
+        if isinstance(self.data, Subset):
+            if value not in ['outline', 'data']:
+                raise ValueError("subset_mode should either be 'outline', 'data' when data is a subset")
+
+            self.lower_value.setEnabled(False)
+
+            if value == 'outline':
+                self.attribute_combo.setEnabled(False)
+                self.mode_combo.setEnabled(False)
+                self.upper_value.setEnabled(False)
+            else:
+                self.attribute_combo.setEnabled(True)
+                self.mode_combo.setEnabled(True)
+                self.upper_value.setEnabled(True)
+
+            self.flip_button.setEnabled(False)
+
+        else:
+
+            if value is not None:
+                raise ValueError("subset_mode should be set to None when data is not a subset")
+
+            self.attribute_combo.setEnabled(True)
+            self.mode_combo.setEnabled(True)
+            self.lower_value.setEnabled(True)
+            self.upper_value.setEnabled(True)
+            self.flip_button.setEnabled(True)
+
+        self._subset_mode = value
+
+        self._update_limits()

@@ -1,7 +1,11 @@
+import operator
+
+import pytest
 import numpy as np
 
 from glue.external.qt import QtGui
 from glue.core.data import Data
+from glue.core.subset import InequalitySubsetState
 
 from ..attribute_limits_helper import AttributeLimitsHelper
 
@@ -108,3 +112,34 @@ class TestAttributeLimitsHelper():
         self.helper.attribute = self.x_id
         assert self.helper.vlo == -122
         assert self.helper.vhi == 234
+
+    def test_subset_mode(self):
+
+        with pytest.raises(ValueError) as exc:
+            self.helper.subset_mode = 'data'
+        assert exc.value.args[0] == "subset_mode should be set to None when data is not a subset"
+
+        subset_state = InequalitySubsetState(self.x_id, 10, operator.gt)
+
+        self.data.new_subset(subset_state)
+
+        subset = self.data.subsets[0]
+
+        self.helper.data = subset
+
+        with pytest.raises(ValueError) as exc:
+            self.helper.subset_mode = None
+        assert exc.value.args[0] == "subset_mode should either be 'outline', 'data' when data is a subset"
+
+        self.helper.subset_mode = 'data'
+        assert self.helper.vlo == 0
+        assert self.helper.vhi == 100
+        self.helper.vhi = 56
+
+        self.helper.subset_mode = 'outline'
+        assert self.helper.vlo == 0
+        assert self.helper.vhi == 2
+
+        self.helper.subset_mode = 'data'
+        assert self.helper.vlo == 0
+        assert self.helper.vhi == 56
