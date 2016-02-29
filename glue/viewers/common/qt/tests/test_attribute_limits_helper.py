@@ -139,7 +139,7 @@ class TestAttributeLimitsHelper():
 
         self.helper.subset_mode = 'outline'
         assert self.helper.vlo == 0
-        assert self.helper.vhi == 2
+        assert self.helper.vhi == 1
 
         self.helper.subset_mode = 'data'
         assert self.helper.vlo == 0

@@ -29,6 +29,14 @@ class AttributeLimitsHelper(object):
     mode, for example using the min/max values or percentile values, as well as
     a button for flipping the min/max values.
 
+    Finally, this helper is aware of the differences between Data and Subset -
+    for subsets, the ``subset_mode`` attribute can be set to either 'outline'
+    or 'data'. For 'outline', the limits are frozen to (0, 1), since in this
+    mode, the mask of subsets is meant to be shown directly, with values either
+    0 (False) or 1 (True). For 'data', the lower limit is frozen to 0 while the
+    upper limit is computed as for data - this mode is intended for use when
+    showing data * subset_mask, hence why the lower limit is set to 0.
+
     Parameters
     ----------
     attribute_combo : ``QComboBox`` instance
@@ -156,7 +164,7 @@ class AttributeLimitsHelper(object):
 
     def _update_limits(self):
         if self.subset_mode == 'outline':
-            self.set_limits(0, 2)
+            self.set_limits(0, 1)
         elif self.attribute in self._limits:
             self.scale_mode, lower, upper = self._limits[self.attribute]
             self.set_limits(lower, upper)
@@ -175,7 +183,7 @@ class AttributeLimitsHelper(object):
             return
 
         if self.subset_mode == 'outline':
-            self.set_limits(0, 2)
+            self.set_limits(0, 1)
             return
 
         exclude = (100 - self.percentile) / 2.
