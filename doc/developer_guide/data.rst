@@ -1,6 +1,8 @@
 The data framework
 ==================
 
+.. _data_classes:
+
 Data classes
 ------------
 
@@ -18,8 +20,16 @@ collected inside a :class:`~glue.core.data_collection.DataCollection`. This
 class deals not only with adding/removing datasets, but also will notify other
 components of glue about these datasets being added/removed (using the :ref:`publish_subscribe`).
 
-For examples of how to create :class:`~glue.core.data.Data` objects and access
-components, see :ref:`data_tutorial` in the user guide.
+Inside :class:`~glue.core.data.Data` objects, each
+:class:`~glue.core.component.Component` is assigned a
+:class:`~glue.core.component_id.ComponentID`. Hoever, this is not necesarily a
+unique ID for each component and across the data collection - instead,
+different components representing the same conceptual quantity can be given the
+same component ID. Component IDs are central to the linking framework,
+described in :doc:`linking`.
+
+For more examples of how to create :class:`~glue.core.data.Data` objects and
+access components, see :ref:`data_tutorial` in the user guide.
 
 Each :class:`~glue.core.data.Data` object can optionally contain one or more subsets. These are described in more detail in :doc:`selection`.
 
@@ -32,5 +42,3 @@ factories by following the example in :ref:`custom_data_factory`. If the data
 factory you have developed is general enough for other people to use, you can
 consider adding it to the :mod:`glue.data_factories`, in which each format
 should correspond to one file (e.g. ``glue/data_factories/fits.py``).
-
-Linking?

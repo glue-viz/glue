@@ -41,7 +41,7 @@ a function to find whether points are inside a polygon, or
 into a Qt ``QPixmap`` instance. This is one of the easiest sub-packages to
 approach -- it is just a collection of small helper functions and classes and
 doesn't require understanding any other parts of Glue.
-  
+
 ``glue.core``
 ^^^^^^^^^^^^^
 
