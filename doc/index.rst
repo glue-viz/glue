@@ -105,10 +105,11 @@ and would be useful, please let us know!
 .. toctree::
    :maxdepth: 1
 
-   developer_guide/data.rst
    developer_guide/selection.rst
    developer_guide/communication.rst
    developer_guide/linking.rst
+
+Information on the Data framework is available in :ref:`data_tutorial` and is not repeated here.
 
 Developing Glue
 ---------------

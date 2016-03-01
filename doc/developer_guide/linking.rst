@@ -9,7 +9,7 @@ are set up programmatically.
 Creating component links programmatically
 -----------------------------------------
 
-As described in :ref:`data_classes`, components are identified by
+As described in :ref:`data_tutorial`, components are identified by
 :class:`~glue.core.component_id.ComponentID` instances. We can then use these
 to create links across datasets. Note that links are not defined between
 :class:`~glue.core.data.Data` or :class:`~glue.core.component.Component`
