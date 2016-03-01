@@ -242,7 +242,7 @@ This selects objects with H band magnitudes between 10 and 15:
 .. image:: images/subset_03.png
    :width: 60%
 
-  .. _data_creation:
+.. _data_creation:
 
 Accessing subset data
 ---------------------

@@ -3,7 +3,7 @@ How the MacOS X app is built
 
 While we recommend that you use Glue by installing the ``glueviz`` package in
 Conda, we also make available an all-in-one app for MacOS X users (see `here
-<mac.glueviz.org>`_ for the most recent versions of the app).
+<http://mac.glueviz.org>`__ for the most recent versions of the app).
 
 When Travis runs (see :doc:`testing`), one of the builds triggers the following
 `script <https://github.com/glue-viz/glue/blob/master/.trigger_app_build.sh>`_.

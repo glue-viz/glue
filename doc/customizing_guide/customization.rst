@@ -16,7 +16,7 @@ allow users to easily register new data viewers, tools, exporters, and more.
 Registering such components can be done via *registries* located in the
 ``glue.config`` sub-package. Registries include for example ``link_function``,
 ``data_factory``, ``colormaps``, and so on. As demonstrated below, some
-registries can be used as decorators (see e.g. `Adding Custom Link Functions`_)
+registries can be used as decorators (see e.g. `Custom Link Functions`_)
 and for others you can add items using the ``add`` method (see e.g. `Custom
 Colormaps`_).
 

@@ -35,7 +35,7 @@ them.
 This is a sub-package that contains various Python, Matplotlib, and Qt-related
 utilities that do not depend on any other parts of Glue. These utilities don't
 know about Glue data objects, subsets, or specific data viewers. Instead, this
-sub-package includes utilities such as :func:`~glue.utils.points_inside_poly`,
+sub-package includes utilities such as :func:`~glue.utils.geometry.points_inside_poly`,
 a function to find whether points are inside a polygon, or
 :func:`~glue.utils.qt.cmap2pixmap`, a function to convert a Matplotlib colormap
 into a Qt ``QPixmap`` instance. This is one of the easiest sub-packages to
@@ -75,12 +75,12 @@ uses the framework from the :mod:`glue.core` package and the dialogs don't need
 to know anything about the rest of the state of the design of the Glue
 application.
 
-``glue.data_factories``
-^^^^^^^^^^^^^^^^^^^^^^^
+``glue.core.data_factories``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 While the core package defines the basic infrastructure for reading/writing
 files, specific implementations of readers/writers live in
-:mod:`glue.data_factories`. If you want to add a new reader or writer, this is
+:mod:`glue.core.data_factories`. If you want to add a new reader or writer, this is
 the place to put it!
 
 ``glue.app``

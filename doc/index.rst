@@ -46,14 +46,13 @@ capabilities.
 In the following sections, we cover the different ways of using Glue from the
 Glue application to the more advanced ways of interacting with Glue from Python.
 
-For instructions on installing Glue, head over to :doc:`installation`.
-
 Using the Glue application
 --------------------------
 
 .. toctree::
    :maxdepth: 2
 
+   installation.rst
    getting_started/index.rst
    gui_guide/index.rst
 

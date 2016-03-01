@@ -127,6 +127,12 @@ so the reverse function is not provided). These links would enable the following
 #. Define a region in a plot of mass vs area for data 2, and apply that filter
    to dataset 1
 
+.. note:: If you start Glue from a non-notebook IPython session, you will
+          encounter an error like ``Multiple incompatible subclass instances of
+          IPKernelApp are being created``. The solution to this is to start
+          Glue from a non-IPython shell, or from the notebook (see next
+          section).
+
 Using qglue with the IPython Notebook
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

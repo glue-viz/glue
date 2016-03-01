@@ -45,9 +45,9 @@ Data factories
 --------------
 
 In order to read data into Glue, a number of built-in *data factories* are
-available in the :mod:`glue.data_factories` module. You can easily create new
+available in the :mod:`glue.core.data_factories` module. You can easily create new
 data factories by following :ref:`this <custom_data_factory>` example in the
 Hacking guide . If the data factory you have developed is general enough for
 other people to use, you can consider adding it to the
-:mod:`glue.data_factories` module, in which each format should correspond to
+:mod:`glue.core.data_factories` module, in which each format should correspond to
 one file (e.g. ``glue/data_factories/fits.py``).

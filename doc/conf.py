@@ -305,11 +305,17 @@ nitpick_ignore = [('py:class', 'object'), ('py:class', 'str'),
                   ('py:class', 'glue.viewers.image.qt.ImageWidgetBase'),
                   ('py:class', 'PyQt4.QtGui.QMainWindow'),
                   ('py:class', 'PyQt4.QtGui.QWidget'),
-                  # TODO: the next four should be fixable
+                  # TODO: the next ones should be fixable
                   ('py:obj', 'glue.viewers.image.qt.viewer_widget.ImageWidget.data'),
                   ('py:obj', 'glue.viewers.image.qt.viewer_widget.ImageWidget.attribute'),
                   ('py:obj', 'glue.viewers.image.qt.viewer_widget.ImageWidget.rgb_mode'),
-                  ('py:obj', 'glue.viewers.image.qt.viewer_widget.ImageWidget.slice')
+                  ('py:obj', 'glue.viewers.image.qt.viewer_widget.ImageWidget.slice'),
+                  ('py:mod', 'glue.core'),
+                  ('py:mod', 'glue.viewers'),
+                  ('py:mod', 'glue.viewers.scatter'),
+                  ('py:mod', 'glue.viewers.common'),
+                  ('py:mod', 'glue.viewers.common.qt.mouse_mode'),
+                  ('py:mod', 'glue.dialogs.custom_component')
               ]
 
 

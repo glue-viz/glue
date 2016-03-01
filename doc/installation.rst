@@ -138,7 +138,7 @@ Many dependencies can be reliably installed with::
 
 For information about using MacPorts to manage your Python
 installation, see `here
-<http://astrofrog.github.com/macports-python/>`_
+<http://astrofrog.github.com/macports-python/>`__
 
 Running Glue
 ------------
