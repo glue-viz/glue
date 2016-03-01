@@ -1,15 +1,15 @@
-Getting started with developing Glue
-====================================
-
-So you want to help develop Glue? Let's get started!
-
 Code organization
------------------
+=================
 
 The Glue code base is intended to be organized in a modular way, such that you
 will never need to understand *all* the code in Glue, and the aim is for it to
 be easy for you to identify where to make specific changes to implement the
-functionality you need or fix issues. The code is organized into the following
+functionality you need or fix issues.
+
+Glue sub-packages
+-----------------
+
+The code is organized into the following
 top-level sub-packages (starting with some of the easy ones):
 
 ``glue.external``
@@ -105,6 +105,8 @@ term some of these will be moved into top-level sub-packages such as
 
 This contains various icons used in Glue, both in the vector SVG form, and in
 rasterized PNG format.
+
+.. _qt_code:
 
 Qt-specific code
 ----------------
