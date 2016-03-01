@@ -35,9 +35,10 @@ In the following sections, we show a few examples of registering new
 functionality, and a full list of available registries is given in `Complete
 list of registries`_.
 
+.. _custom_links:
+
 Adding Custom Link Functions
 ----------------------------
-.. _custom_links:
 
 From the :ref:`Link Data Dialog <getting_started_link>`, you inform Glue how
 to convert between quantities among different data sets. You do this by
@@ -62,9 +63,10 @@ available in the ``Link Data`` dialog:
 This would allow you to link between two datasets with different conventions
 for specifying angles.
 
+.. _custom_data_factory:
+
 Custom Data Loaders
 -------------------
-.. _custom_data_factory:
 
 Glue lets you create custom data loader functions,
 to use from within the GUI.

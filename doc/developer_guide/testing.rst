@@ -5,16 +5,16 @@ Writing tests
 -------------
 
 In order to make sure that everything works as expected, and that we don't
-introduce any regressions, Glue includes a number of tests. All tests are
-contained inside the ``tests/`` directories in each sub-package of Glue. For
-example, the tests for the ``glue.core`` functionality are in
+introduce any regressions when making changes, Glue includes a number of tests.
+All tests are contained inside the ``tests/`` directories in each sub-package
+of Glue. For example, the tests for the ``glue.core`` functionality are in
 ``glue/core/tests``. The tests for the ``glue.utils.qt`` functionality are in
 ``glue/utils/qt/tests``. Tests should always live close to the code they are
 testing.
 
 In general, we try and make tests as specific as possible to the code being tested - so for example if we create a new dialog, and we want to check that various widgets in the tests are working correctly, we don't need to launch the whole Glue application. Instead, we can create a test data collection with some example data, and simply launch the dialog in question.
 
-We run tests using `py.test <http://www.pytest.org>`, and tests are therefore written using this framework. The syntax for a basic test is actually very simple and not py.test-specific - it is simply a function whose name starts with ``test_``. If the function crashes, the test fails, and if the function runs without crashing, the test passes:: 
+We run tests using `py.test <http://www.pytest.org>`_, and tests are therefore written using this framework. The syntax for a basic test is actually very simple and not py.test-specific -- it is simply a function whose name starts with ``test_``. If the function crashes, the test fails, and if the function runs without crashing, the test passes:: 
 
     def test_functionality():
         # This is an example of a test that passes
@@ -48,9 +48,7 @@ Continuous integration
 Every time someone opens a pull request to the Glue repository, and every time
 we merge changes into the code base, all the tests are run on `Travis
 <http://travis-ci.org>`_ and `AppVeyor <http://www.appveyor.com/>`_. This is
-referred to as *Continuous Integration*.
-
-One of the nice things about continuous integration is that it allows us to
+referred to as *Continuous Integration*. One of the nice things about continuous integration is that it allows us to
 automatically run the tests for different operating systems, Python versions,
 versions of Numpy, and Qt frameworks (PyQt4, PyQt5, and PySide).
 
@@ -63,10 +61,3 @@ will look something like this:
 
 In this example, the tests failed on Travis, but passed on Windows. You can
 then get more information about which set-ups failed by clicking on 'Details'.
-
-
-
-
-        
-        
-        

@@ -9,7 +9,7 @@ subset from the command-line. In order to go from a selection on the screen to
 defining a subset from a dataset, Glue includes the following concepts:
 
 * **Region of interests** (ROIs), which are an abstract representation of a
-  geometrical region
+  geometrical region or selection.
 
 * **Subset states**, which is a descriptions of the subset selection.
 
@@ -33,8 +33,8 @@ dimensions::
     >>> from glue.core.roi import RectangularROI
     >>> roi = RectangularROI(xmin=1, xmax=3, ymin=2, ymax=5)
 
-Note that this is not related to any particular dataset - it is an abstract
-representation of a rectangular region. It also doesn't even specify which
+Note that this is not related to any particular dataset -- it is an abstract
+representation of a rectangular region. It also doesn't specify which
 components the rectangle is drawn in. All ROIs have a
 :meth:`glue.core.roi.RectangularROI.contains` method that can be used to check
 if a point or a set of points lies inside the region::
@@ -52,12 +52,13 @@ if a point or a set of points lies inside the region::
 Subset states
 -------------
 
-While regions of interest simply define geometrical regions, subset states,
-which are sub-classes of :class:`~glue.core.subset.SubsetState`, describe a
-selection as a function of data component IDs. Note that this is different from
-:class:`~glue.core.subset.Subset` instances, which describe the subset
-*resulting* from the selection (see `Subsets`_). The following simple example
-shows how to easily create a :class:`~glue.core.subset.SubsetState`::
+While regions of interest define geometrical regions, subset states, which are
+sub-classes of :class:`~glue.core.subset.SubsetState`, describe a selection as
+a function of Glue :class:`~glue.core.component_id.ComponentID` objects. Note
+that this is different from :class:`~glue.core.subset.Subset` instances, which
+describe the subset *resulting* from the selection (see `Subsets`_). The
+following simple example shows how to easily create a
+:class:`~glue.core.subset.SubsetState`::
 
 
     >>> from glue.core import Data
@@ -79,8 +80,10 @@ states. To do this, the :class:`~glue.core.component.Component` class includes
 a :meth:`~glue.core.component.Component.subset_from_roi` method that takes a
 ROI and returns a subset state. At the moment this method works for 1- and 2-d
 ROIs. In the case of 2-d ROIs, the method should be given a reference to the
-second :class:`~glue.core.component.Component`. See the documentation of
-:meth:`~glue.core.component.Component.subset_from_roi` for more details.
+second :class:`~glue.core.component.Component`. In more complex cases, you can
+also define your own logic for converting ROIs into subset states. See the
+documentation of :meth:`~glue.core.component.Component.subset_from_roi` for
+more details.
 
 Subset states can be combined using logical operations:
 
@@ -99,16 +102,17 @@ and ``not``.
 Subsets
 -------
 
-A subset is what we normally think of as part of a dataset. Subsets are
+A subset is what we normally think of as sub-part of a dataset. Subsets are
 typically created by making `Subset states`_ first. There are then different
-ways of applying this subset to a dataset to actually create a subset. The
+ways of applying this subset state to a :class:`~glue.core.data.Data` object to actually create a subset. The
 easiest way of doing this is to simply call the
 :meth:`~glue.core.data.Data.new_subset` method with the
 :class:`~glue.core.subset.SubsetState` and optionally a label describing that
 subset::
 
    >>> subset = data.new_subset(state, label='x > 1.5')
-   >>> Subset: x > 1.5 (data: )
+   >>> subset
+   Subset: x > 1.5 (data: )
 
 The resulting subset can then be used in a similar way to a
 :class:`~glue.core.data.Data` object, but it will return only the values in the
@@ -120,13 +124,13 @@ subset::
     >>> subset['y']
     array([3, 4])
 
-You can also get the mask from a subset::
+Finally, you can also get the mask from a subset::
 
     >>> subset.to_mask()
     array([False,  True,  True], dtype=bool)
 
 One of the benefits of subset states is that they can be applied to multiple
-data objects, and if the different data objects have linked components, this
+data objects, and if the different data objects have linked components (as described in :doc:`linking`), this
 may produce several valid subsets in different datasets. We can apply a :class:`~glue.core.subset.SubsetState` to all datasets in a data collection by using the  :meth:`~glue.core.data_collection.DataCollection.new_subset_group` method with
 the :class:`~glue.core.subset.SubsetState` and a label describing that subset, similarly to :meth:`~glue.core.data.Data.new_subset`
 
