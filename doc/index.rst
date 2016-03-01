@@ -47,13 +47,13 @@ In the following sections, we cover the different ways of using Glue from the
 Glue application to the more advanced ways of interacting with Glue from Python.
 
 For instructions on installing Glue, head over to :doc:`installation`.
- 
+
 Using the Glue application
 --------------------------
 
 .. toctree::
    :maxdepth: 2
-   
+
    getting_started/index.rst
    gui_guide/index.rst
 
@@ -74,32 +74,58 @@ Customizing/Hacking Glue
    :maxdepth: 1
 
    python_guide/data_viewer_options.rst
-
    customizing_guide/configuration.rst
    customizing_guide/customization.rst
    customizing_guide/custom_viewer.rst
-   customizing_guide/full_custom_qt_viewer.rst
-
    python_guide/liveupdate.rst
+   customizing_guide/full_custom_qt_viewer.rst
 
 Getting help
 ------------
 
 .. toctree::
    :maxdepth: 1
-   
+
    videos.rst
    faq.rst
    help.rst
-   
-Developer guide
----------------
+
+.. _architecture:
+
+The Glue architecture
+---------------------
+
+The pages below take you through the main infrastructure in Glue, and in
+particular how selections, linking, and communications are handled internally.
+You don't need to understand all of this in order to get started with
+contributing, but in order to tackle some of the more in-depth issues, this
+will become important. This is not meant to be a completely exhaustive guide,
+but if there are areas that you feel could be explained better, or are missing
+and would be useful, please let us know!
 
 .. toctree::
    :maxdepth: 1
 
+   developer_guide/data.rst
+   developer_guide/selection.rst
+   developer_guide/communication.rst
+   developer_guide/linking.rst
+
+Developing Glue
+---------------
+
+.. toctree::
+   :maxdepth: 2
+
    developer_guide/developer_guide.rst
 
+API
+---
+
+.. toctree::
+   :maxdepth: 1
+
+   developer_guide/api.rst
 
 Indices and tables
 ==================

@@ -71,7 +71,7 @@ Let's now try and use a custom linking function that is not simply identity::
     >>> link = ComponentLink([d1.id['x1']], d2.id['x2'],
     ...                      using=lambda x: 2*x)
     >>> dc.add_link(link)
-    
+
 This time, if we look at the list of components on the :class:`~glue.core.data.Data`
 objects, we see that ``d1`` now has an additional component, ``x2``::
 
@@ -79,7 +79,7 @@ objects, we see that ``d1`` now has an additional component, ``x2``::
     [Pixel Axis 0, World 0, x1, x2]
     >>> print(d2.components)
     [Pixel Axis 0, World 0, x2]
-    
+
 We can take a look at the values of all the components::
 
     >>> print(d1['x1'])
@@ -105,7 +105,7 @@ Creating simple component links can also be done using arithmetic operations on
     >>> d3['diff']
     array([ 0, -1, -2])
 
-.. note:: This is different from using comparison operators such as ``>`` or 
+.. note:: This is different from using comparison operators such as ``>`` or
           ``<=`` on :class:`~glue.core.component_id.ComponentID` instances,
           which produces :class:`~glue.core.subset.SubsetState` objects.
 
@@ -119,7 +119,7 @@ It is also possible to add a component link to just one particular
     <glue.core.component.DerivedComponent object at 0x107b2c828>
     >>> print(d4['xa_double_1'])
     [2 4 6]
-    
+
 is equivalent to creating a derived component::
 
     >>> d4['xa_double_2'] = d4.id['xa'] * 2

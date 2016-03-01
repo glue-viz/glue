@@ -95,16 +95,16 @@ How do I make a scatterplot between two images?
 -------------------------------------------------------------------
 :ref:`Merge <merging>` the two datasets into a single object, like you do for catalogs. This will only work if the two images have exactly the same shape (although it does not check if the WCS is the same).  You can then drag the merged object into the visualization area to view an image of the first attribute. Repeat a second time to view the second image, and finally create a scatterplot comparing the image intensities at each pixel. You can then select regions in any of the three plots, and the corresponding selections in the other plots will be highlighted. Another interesting way to visualize your two related images is drop a 4th object using **Image Viewer**, but this time select the RGB instead of Monochrome, and put each image into one of the colors. Right mouse down will change the *Contrast* selected color after you have selected the *bias/contrast button* on the top row. Obviously with three images  this is a great way to create a colorful RGB image.
 
-     
+
 
 A note on brushing in the image. If you want to just highlight a single pixel (pretty easy once you zoom in), you need to make sure your rectangular selection has its top right selection in that pixel. You cannot just highlight inside the pixel, it needs to cross boundaries between pixels.
 
 .. figure:: images/two_images.png
-   :align: center	    
+   :align: center	
    :width: 400
 
    The intensity in image SUM1 and image SUM2 are correllated in the scatter plot. A second image of SUM1 is zoomed in around two *warm* pixels to see where they show up in the scatter plot (in yellow). In this particular diagram one can see that warm pixels follow the same relationship between SUM1 and SUM2 and the colder pixels.
-	   
+	
 I have some other question...?
 ------------------------------
 Ask us a question on the `mailing list <https://groups.google.com/forum/#!forum/glue-viz>`_!

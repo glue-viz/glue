@@ -1,4 +1,4 @@
-.. _selection:
+.. _dev_selection:
 
 The selection/subset framework
 ==============================

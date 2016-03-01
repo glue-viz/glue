@@ -1,21 +1,11 @@
-from kapteyn import celestial
+from glue.config import link_function
 
-def radec2glat(ra, dec):
-    lonlat = celestial.sky2sky( (celestial.eq, celestial.fk5), celestial.gal,
-                               ra.flat, dec.flat).A
-    return lonlat[:,0].ravel()
+@link_function(info="Celsius to Fahrenheit",
+               output_labels=['F'])
+def celsius2farhenheit(c):
+    return c  * 9. / 5. + 32
 
-def radec2glon(ra, dec):
-    lonlat = celestial.sky2sky( (celestial.eq, celestial.fk5), celestial.gal,
-                               ra.flat, dec.flat).A
-    return lonlat[:, 1].ravel()
-
-def lonlat2ra(lon, lat):
-    radec = celestial.sky2sky( (celestial.eq, celestial.fk5), celestial.gal,
-                               lon.flat, lat.flat).A
-    return radec[:, 0].ravel()
-
-def lonlat2dec(lon, lat):
-    radec = celestial.sky2sky( (celestial.eq, celestial.fk5), celestial.gal,
-                               ra.flat, dec.flat).A
-    return radec[:, 1].ravel()
+@link_function(info="Fahrenheit to Celsius",
+               output_labels=['C'])
+def farhenheit2celsius(f):
+    return (f - 32) * 5. / 9.

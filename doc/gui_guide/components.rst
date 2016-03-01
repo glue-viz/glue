@@ -5,7 +5,7 @@ Defining New Components
 
 New components of data items can be easily created from mathematical
 operations on existing components. In this section, we define new
-components for the W5 Point Source catalog from the 
+components for the W5 Point Source catalog from the
 :ref:`tutorial <getting_started>`.
 
 Right-click on the ``w5_psc`` item in the Data Collection window and

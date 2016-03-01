@@ -8,7 +8,7 @@ as a library from Python. There are (at least) two good reasons to do this:
 
 #. You are working with multidimensional data in python, and want to use Glue
    for quick interactive visualization.
-#. You find yourself repeatedly loading the same sets of data each time you 
+#. You find yourself repeatedly loading the same sets of data each time you
    run Glue. You want to write a startup script to automate this process.
 
 Quickly send data to Glue with qglue
@@ -29,7 +29,7 @@ For example, say you are working with a `Pandas <http://pandas.pydata.org/>`_ Da
     y    500  non-null values
     z    500  non-null values
     dtypes: float64(3)
-    
+
 You can easily start up Glue with this data using::
 
     >>> qglue(xyz=df)
@@ -72,7 +72,7 @@ This will send this data to Glue, and label it ``xyz``.
    doesn't work, because the two components ``x`` and ``u`` have
    different shapes.
 
-.. note:: Reminder: in Glue, :class:`~glue.core.data.Data` sets are collections 
+.. note:: Reminder: in Glue, :class:`~glue.core.data.Data` sets are collections
           of one or more :class:`~glue.core.component.Component` objects.
           Components in a dataset are bascially arrays of the same shape. For
           more information, see :ref:`data_tutorial`
@@ -149,13 +149,13 @@ Here's a simple script to load data and pass it to Glue:
 
 Some remarks:
 
- * :func:`~glue.core.data_factories.load_data` constructs Glue Data objects 
+ * :func:`~glue.core.data_factories.load_data` constructs Glue Data objects
    from files. It uses the file extension as a hint for file type
  * Individual data objects are bundled inside a
    :class:`~glue.core.data_collection.DataCollection`
- * The :class:`~glue.core.link_helpers.LinkSame` function indicates that two 
+ * The :class:`~glue.core.link_helpers.LinkSame` function indicates that two
    attributes in different data sets descirbe the same quantity
- * ``GlueApplication`` takes a ``DataCollection`` as input, and starts the GUI 
+ * ``GlueApplication`` takes a ``DataCollection`` as input, and starts the GUI
    via ``start()``
 
 Starting Glue from a script

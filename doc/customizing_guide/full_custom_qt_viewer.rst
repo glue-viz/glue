@@ -163,7 +163,7 @@ Once the data viewer has been instantiated, the main glue application will call 
         def _update_data(self, msg):
 
             # Process DataUpdateMessage here
-            
+
 Using layers
 ------------
 
@@ -185,9 +185,9 @@ to create your own classes.
 The minimal layer artist class looks like the following::
 
     from glue.core.layer_artist import LayerArtistBase
-    
+
     class MyLayerArtist(LayerArtistBase):
-    
+
         def clear(self):
             pass
 
