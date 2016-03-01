@@ -39,8 +39,8 @@ interact with Glue via Python in different ways:
 
 Glue thus blurs the boundary between GUI-centric and code-centric data
 exploration. In addition, it is also possible to develop your own plugin
-packages for Glue that you can distribute to users, and you can also make use
-of the Glue framework in your own application to provide data linking
+packages for Glue that you can distribute to users separately, and you can also
+make use of the Glue framework in your own application to provide data linking
 capabilities.
 
 In the following sections, we cover the different ways of using Glue from the
@@ -72,9 +72,9 @@ Customizing/Hacking Glue
 .. toctree::
    :maxdepth: 1
 
-   python_guide/data_viewer_options.rst
    customizing_guide/configuration.rst
    customizing_guide/customization.rst
+   python_guide/data_viewer_options.rst
    customizing_guide/custom_viewer.rst
    python_guide/liveupdate.rst
    customizing_guide/full_custom_qt_viewer.rst

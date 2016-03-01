@@ -207,7 +207,7 @@ layers should then be updated. The layers are kept in a list in the
 ``_layer_artist_container`` attribute of the data viewer, and layers can be added and
 removed with ``append`` and ``remove`` (both take one argument, which is a
 specific layer artist). So when the user adds a dataset, the viewer should do
-something along the lines of:
+something along the lines of::
 
     layer_artist = MyLayerArtist(data, ...)
     self._container.append(layer_artist)
