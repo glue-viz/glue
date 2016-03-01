@@ -549,3 +549,20 @@ def test_add_binary_component():
     d.add_component(z, label='z')
 
     np.testing.assert_array_equal(d['z'], [3, 5, 7])
+
+
+EXPECTED_STR = """
+Data Set: mydata
+Number of dimensions: 1
+Shape: 3
+Components:
+ 0) x
+ 1) Pixel Axis 0
+ 2) World 0
+ 3) y
+""".strip()
+
+def test_data_str():
+    # Regression test for Data.__str__
+    d = Data(x=[1,2,3], y=[2,3,4], label='mydata')
+    assert str(d) == EXPECTED_STR
