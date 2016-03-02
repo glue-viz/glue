@@ -212,7 +212,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
         # same if a tab is removed then a new one added again)
         self._total_tab_count = 0
 
-        lwidget = self._ui.layerWidget
+        lwidget = self._layer_widget
         a = PlotAction(lwidget, self)
         lwidget.ui.layerTree.addAction(a)
         lwidget.bind_selection_to_edit_subset()
@@ -234,11 +234,11 @@ class GlueApplication(Application, QtGui.QMainWindow):
 
         lw = LayerTreeWidget()
         lw.set_checkable(False)
-        vb = QtGui.QVBoxLayout()
-        vb.setContentsMargins(0, 0, 0, 0)
-        vb.addWidget(lw)
-        self._ui.data_layers.setLayout(vb)
-        self._ui.layerWidget = lw
+        self._vb = QtGui.QVBoxLayout()
+        self._vb.setContentsMargins(0, 0, 0, 0)
+        self._vb.addWidget(lw)
+        self._ui.data_layers.setLayout(self._vb)
+        self._layer_widget = lw
 
         # log window + status light
         self._log = GlueLogger()
@@ -442,7 +442,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
 
     def _connect(self):
         self.setAcceptDrops(True)
-        self._ui.layerWidget.setup(self._data)
+        self._layer_widget.setup(self._data)
 
         self.tab_widget.tabCloseRequested.connect(self.close_tab)
 
@@ -493,7 +493,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
 
         menu = QtGui.QMenu(mbar)
         menu.setTitle("Data &Manager")
-        menu.addActions(self._ui.layerWidget.actions())
+        menu.addActions(self._layer_widget.actions())
 
         mbar.addMenu(menu)
 
@@ -805,7 +805,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
         self._terminal_button.setIcon(i)
         self._terminal_button.setIconSize(QtCore.QSize(25, 25))
 
-        self._ui.layerWidget.ui.button_row.addWidget(self._terminal_button)
+        self._layer_widget.ui.button_row.addWidget(self._terminal_button)
 
         try:
             from glue.app.qt.terminal import glue_terminal
