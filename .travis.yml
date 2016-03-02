@@ -4,6 +4,8 @@ os:
     - linux
     - osx
 
+sudo: false
+
 notifications:
   email: false
 
@@ -116,7 +118,7 @@ before_install:
   - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
 
   # Deal with issue on Travis builders
-  - if [[ $TRAVIS_OS_NAME == linux ]]; then sudo rm -rf /dev/shm; sudo ln -s /run/shm /dev/shm; fi
+  # - if [[ $TRAVIS_OS_NAME == linux ]]; then sudo rm -rf /dev/shm; sudo ln -s /run/shm /dev/shm; fi
 
   # setup tools to trigger mac buildbot
   - if [ $APP_TRIGGER ]; then source .setup_app_trigger.sh; fi
