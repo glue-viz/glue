@@ -52,8 +52,7 @@ messages, layer artists, and other Glue concepts. On the other hand it does
 not concerned with specific graphical user interface (GUI) representations, and
 you could in principle develop a completely different GUI than the main Glue
 one making use of the Glue core code. You could even use :mod:`glue.core` to
-give glue-like functionality to other existing applications. We will take a
-closer look at the core Glue code in :ref:`architecture`.
+give glue-like functionality to other existing applications.
 
 ``glue.viewers``
 ^^^^^^^^^^^^^^^^
