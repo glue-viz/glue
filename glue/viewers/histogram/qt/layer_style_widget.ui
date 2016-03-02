@@ -6,14 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>388</width>
-    <height>176</height>
+    <width>232</width>
+    <height>48</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <property name="verticalSpacing">
+    <number>10</number>
+   </property>
+   <property name="margin">
+    <number>0</number>
+   </property>
    <item row="1" column="2">
     <widget class="QColorBox" name="label_color">
      <property name="sizePolicy">

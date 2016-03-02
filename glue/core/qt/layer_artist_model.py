@@ -307,6 +307,12 @@ class LayerArtistWidget(QtGui.QWidget):
                 self.layout_style_widgets[layer_artist] = self.layer_style_widget_cls(layer_artist)
                 self.layer_options_layout.addWidget(self.layout_style_widgets[layer_artist])
 
+                # In PySide, these widgets don't resize automatically, so we
+                # have to do it manually.
+                self.layout_style_widgets[layer_artist].setSizePolicy(QtGui.QSizePolicy.Minimum,
+                                                                      QtGui.QSizePolicy.Preferred)
+                self.layout_style_widgets[layer_artist].adjustSize()
+
     def on_selection_change(self, layer_artist):
 
         if layer_artist is None:
@@ -315,8 +321,11 @@ class LayerArtistWidget(QtGui.QWidget):
         if layer_artist in self.layout_style_widgets:
             self.layer_options_layout.setEnabled(True)
             self.layer_options_layout.setCurrentWidget(self.layout_style_widgets[layer_artist])
+            self.layer_options.setMinimumHeight(self.layout_style_widgets[layer_artist].height())
         else:
             self.layer_options_layout.setEnabled(False)
+            self.layer_options.setMinimumHeight(0)
+
 
 
 class QtLayerArtistContainer(LayerArtistContainer):
