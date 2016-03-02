@@ -208,7 +208,7 @@ class TestGlueApplication(object):
     def test_subset_facet(self):
         # regression test for 335
 
-        act = self.app._ui.layerWidget._actions['facet']
+        act = self.app._layer_widget._actions['facet']
         self.app.data_collection.append(Data(x=[1, 2, 3]))
         with patch('glue.dialogs.subset_facet.qt.SubsetFacet.exec_'):
             act._do_action()
