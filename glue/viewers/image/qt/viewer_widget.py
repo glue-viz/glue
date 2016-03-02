@@ -20,6 +20,9 @@ from glue.viewers.common.qt.mpl_widget import MplWidget, defer_draw
 from glue.utils import nonpartial, Pointer
 from glue.utils.qt import cmap2pixmap, update_combobox, load_ui
 
+# We do the following import to register the custom Qt Widget there
+from glue.viewers.image.qt.rgb_edit import RGBEdit  # pylint: disable=W0611
+
 WARN_THRESH = 10000000  # warn when contouring large images
 
 __all__ = ['ImageWidget', 'StandaloneImageWidget', 'ImageWidgetBase']
