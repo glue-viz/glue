@@ -241,10 +241,10 @@ class GlueApplication(Application, QtGui.QMainWindow):
         self._ui.layerWidget = lw
 
         # log window + status light
-        self._ui.log = GlueLogger()
-        self._ui.log.window().setWindowTitle("Console Log")
-        self._ui.log.resize(550, 550)
-        self.statusBar().addPermanentWidget(self._ui.log.status_light)
+        self._log = GlueLogger()
+        self._log.window().setWindowTitle("Console Log")
+        self._log.resize(550, 550)
+        self.statusBar().addPermanentWidget(self._log.status_light)
         self.statusBar().setContentsMargins(2, 0, 20, 2)
         self.statusBar().setSizeGripEnabled(False)
 
@@ -478,7 +478,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
         menu.setTitle("&View ")
 
         a = QtGui.QAction("&Console Log", menu)
-        a.triggered.connect(self._ui.log._show)
+        a.triggered.connect(self._log._show)
         menu.addAction(a)
         mbar.addMenu(menu)
 
