@@ -6,6 +6,11 @@ os:
 
 sudo: false
 
+addons:
+  apt:
+    packages:
+      - rubygems
+
 notifications:
   email: false
 
@@ -116,9 +121,6 @@ before_install:
   # Install ci-helpers and set up conda
   - git clone git://github.com/astropy/ci-helpers.git
   - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
-
-  # Deal with issue on Travis builders
-  # - if [[ $TRAVIS_OS_NAME == linux ]]; then sudo rm -rf /dev/shm; sudo ln -s /run/shm /dev/shm; fi
 
   # setup tools to trigger mac buildbot
   - if [ $APP_TRIGGER ]; then source .setup_app_trigger.sh; fi

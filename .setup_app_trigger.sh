@@ -1,7 +1,6 @@
 #!/bin/bash -x
 
-sudo apt-get install rubygems
-rvmsudo gem install travis -v 1.6.11
+gem install travis -v 1.6.11
 gem environment
 export PATH=`gem environment | grep "EXECUTABLE DIRECTORY" | cut -d":" -f2 | cut -c 2-`:$PATH
 
