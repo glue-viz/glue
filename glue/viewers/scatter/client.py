@@ -254,29 +254,6 @@ class ScatterClient(Client):
         self._pull_properties()
         self._redraw()
 
-    def _process_categorical_roi(self, roi):
-        """ Returns a RoiSubsetState object.
-        """
-
-        if isinstance(roi, RectangularROI):
-            subsets = []
-            axes = [('x', roi.xmin, roi.xmax),
-                    ('y', roi.ymin, roi.ymax)]
-
-            for coord, lo, hi in axes:
-                comp = list(self._get_data_components(coord))
-                if comp:
-                    if comp[0].categorical:
-                        subset = CategoricalROISubsetState.from_range(comp[0], self._get_attribute(coord), lo, hi)
-                    else:
-                        subset = RangeSubsetState(lo, hi, self._get_attribute(coord))
-                else:
-                    subset = None
-                subsets.append(subset)
-        else:
-            raise AssertionError
-        return AndState(*subsets)
-
     def apply_roi(self, roi):
         # every editable subset is updated
         # using specified ROI
