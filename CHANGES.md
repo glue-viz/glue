@@ -17,6 +17,8 @@ v0.7 (unreleased)
 * Added documentation about how to use layer artists in custom Qt data viewers.
   [#814]
 
+* Fixed missing newline in Data.__str__. [#877]
+
 * A large fraction of the code has been re-organized, which may lead to some
   imports in ``config.py`` files no longer working. However, no functionality
   has been removed, so this can be fixed by updating the imports to reflect the

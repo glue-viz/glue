@@ -572,7 +572,7 @@ class Data(object):
             self.hub.broadcast(msg)
 
     def __str__(self):
-        s = "Data Set: %s" % self.label
+        s = "Data Set: %s\n" % self.label
         s += "Number of dimensions: %i\n" % self.ndim
         s += "Shape: %s\n" % ' x '.join([str(x) for x in self.shape])
         s += "Components:\n"
