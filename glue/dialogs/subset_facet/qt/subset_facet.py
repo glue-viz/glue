@@ -19,11 +19,12 @@ from glue.dialogs.common.qt import component_selector  # pylint: disable=W0611
 __all__ = ['SubsetFacet']
 
 
-class SubsetFacet(object):
-    log = ButtonProperty('ui.log')
-    vmin = FloatLineProperty('ui.min')
-    vmax = FloatLineProperty('ui.max')
-    steps = ValueProperty('ui.num')
+class SubsetFacet(QtGui.QDialog):
+
+    log = ButtonProperty('ui.checkbox_log')
+    vmin = FloatLineProperty('ui.value_min')
+    vmax = FloatLineProperty('ui.value_max')
+    steps = ValueProperty('ui.value_n_subsets')
     data = Pointer('ui.component_selector.data')
     component = Pointer('ui.component_selector.component')
 
@@ -33,7 +34,10 @@ class SubsetFacet(object):
         :param collect: The :class:`~glue.core.data_collection.DataCollection` to use
         :param default: The default dataset in the collection (optional)
         """
-        self.ui = load_ui('subset_facet.ui', None,
+
+        super(SubsetFacet, self).__init__(parent=parent)
+
+        self.ui = load_ui('subset_facet.ui', self,
                           directory=os.path.dirname(__file__))
         self.ui.setWindowTitle("Subset Facet")
         self._collect = collect
@@ -55,8 +59,8 @@ class SubsetFacet(object):
 
         vals = data[cid]
 
-        wmin = self.ui.min
-        wmax = self.ui.max
+        wmin = self.ui.value_min
+        wmax = self.ui.value_max
 
         wmin.setText(pretty_number(np.nanmin(vals)))
         wmax.setText(pretty_number(np.nanmax(vals)))
@@ -78,9 +82,6 @@ class SubsetFacet(object):
         subsets = facet_subsets(self._collect, self.component, lo=lo, hi=hi,
                                 steps=self.steps, log=self.log)
         colorize_subsets(subsets, self.cmap)
-
-    def exec_(self):
-        return self.ui.exec_()
 
     @classmethod
     def facet(cls, collect, default=None, parent=None):

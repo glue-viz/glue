@@ -52,7 +52,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QSpinBox" name="num">
+      <widget class="QSpinBox" name="value_n_subsets">
        <property name="maximum">
         <number>100</number>
        </property>
@@ -75,7 +75,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="min"/>
+        <widget class="QLineEdit" name="value_min"/>
        </item>
       </layout>
      </item>
@@ -89,10 +89,10 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="max"/>
+        <widget class="QLineEdit" name="value_max"/>
        </item>
        <item>
-        <widget class="QCheckBox" name="log">
+        <widget class="QCheckBox" name="checkbox_log">
          <property name="text">
           <string>Log spacing</string>
          </property>
