@@ -4,6 +4,7 @@ import os
 import re
 
 from glue.external.qt import QtGui
+from glue.external.qt.QtCore import Qt
 from glue.core import parse
 from glue import core
 from glue.utils.qt import load_ui
