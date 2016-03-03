@@ -189,8 +189,13 @@ class LayerArtistView(QtGui.QListView):
         self._create_actions()
 
         self._timer = QtCore.QTimer(self)
-        self._timer.timeout.connect(self.viewport().update)
+        self._timer.timeout.connect(nonpartial(self._update_viewport))
         self._timer.start(1000)
+
+    def _update_viewport(self):
+        # We have to do this here to make sure we always get the latest
+        # viewport instance.
+        self.viewport().update()
 
     def rowsInserted(self, index, start, end):
         super(LayerArtistView, self).rowsInserted(index, start, end)
