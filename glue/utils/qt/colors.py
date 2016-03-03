@@ -161,7 +161,11 @@ class QColorBox(QtGui.QLabel):
     def on_color_change(self):
         self._qcolor = mpl_to_qt4_color(self.color())
         image = QtGui.QImage(70, 22, QtGui.QImage.Format_RGB32)
-        image.fill(self._qcolor)
+        try:
+            image.fill(self._qcolor)
+        except TypeError:
+            # PySide and old versions of PyQt require a RGBA integer
+            image.fill(self._qcolor.rgba())
         pixmap = QtGui.QPixmap.fromImage(image)
         self.setPixmap(pixmap)
 
@@ -175,14 +179,14 @@ class QColormapCombo(QtGui.QComboBox):
         for label, cmap in config.colormaps:
             self.addItem("", userData=cmap)
         self._update_icons()
-        
+
     def _update_icons(self):
         self.setIconSize(QtCore.QSize(self.width(), 15))
         for index in range(self.count()):
             cmap = self.itemData(index)
             icon = QtGui.QIcon(cmap2pixmap(cmap, size=(self.width(), 15), steps=200))
             self.setItemIcon(index, icon)
-            
+
     def resizeEvent(self, *args, **kwargs):
         super(QColormapCombo, self).resizeEvent(*args, **kwargs)
         self._update_icons()

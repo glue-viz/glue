@@ -452,15 +452,20 @@ class DataCollectionView(QtGui.QTreeView):
         self.doubleClicked.connect(self._edit)
 
         # this keeps the full-row of the selection bar in-sync
-        self.pressed.connect(nonpartial(self.viewport().update))
+        self.pressed.connect(nonpartial(self._update_viewport))
 
         # only edit label on model.new_item
         self.setItemDelegate(LabeledDelegate())
         self.setEditTriggers(self.NoEditTriggers)
 
         self._timer = QtCore.QTimer(self)
-        self._timer.timeout.connect(nonpartial(self.viewport().update))
+        self._timer.timeout.connect(nonpartial(self._update_viewport))
         self._timer.start(1000)
+
+    def _update_viewport(self):
+        # We have to do this here to make sure we always get the latest
+        # viewport instance.
+        self.viewport().update()
 
     def selected_layers(self):
         idxs = self.selectedIndexes()
