@@ -52,41 +52,36 @@
         <bool>false</bool>
        </property>
       </widget>
-      <widget class="QSplitter" name="plot_splitter">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
+      <widget class="QGroupBox" name="plot_layers">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
-       <widget class="QGroupBox" name="plot_layers">
-        <property name="font">
-         <font>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="title">
-         <string>Plot Layers</string>
-        </property>
-        <property name="flat">
-         <bool>false</bool>
-        </property>
-       </widget>
-       <widget class="QGroupBox" name="plot_options">
-        <property name="font">
-         <font>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="title">
-         <string>Plot Options</string>
-        </property>
-        <property name="flat">
-         <bool>false</bool>
-        </property>
-        <property name="checkable">
-         <bool>false</bool>
-        </property>
-       </widget>
+       <property name="title">
+        <string>Plot Layers</string>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QGroupBox" name="plot_options">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="title">
+        <string>Plot Options</string>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
       </widget>
      </widget>
      <widget class="QTabWidget" name="tabWidget">

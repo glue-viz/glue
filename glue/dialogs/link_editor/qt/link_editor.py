@@ -6,6 +6,13 @@ from glue.external.qt import QtGui
 from glue import core
 from glue.utils.qt import load_ui
 
+# FIXME: at the moment we need to make sure that custom widgets are imported,
+# otherwise they don't get appended to CUSTOM_QWIDGETS. We need to find a
+# better long-term solution.
+from glue.dialogs.common.qt.component_selector import ComponentSelector
+from glue.core.qt.mime import GlueMimeListWidget
+from glue.dialogs.link_editor.qt.link_equation import LinkEquation
+
 __all__ = ['LinkEditor']
 
 
@@ -119,7 +126,10 @@ class LinkEditor(object):
 
 def main():
     import numpy as np
+    from glue.external.qt import get_qapp
     from glue.core import Data, DataCollection
+
+    app = get_qapp()
 
     x = np.array([1, 2, 3])
     d = Data(label='data', x=x, y=x * 2)
