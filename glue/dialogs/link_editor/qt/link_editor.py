@@ -16,13 +16,17 @@ from glue.dialogs.link_editor.qt.link_equation import LinkEquation
 __all__ = ['LinkEditor']
 
 
-class LinkEditor(object):
+class LinkEditor(QtGui.QDialog):
 
     def __init__(self, collection, functions=None, parent=None):
+
+        super(LinkEditor, self).__init__(parent=parent)
+
         self._collection = collection
 
-        self._ui = load_ui('link_editor.ui', parent,
+        self._ui = load_ui('link_editor.ui', self,
                            directory=os.path.dirname(__file__))
+
         self._init_widgets()
         self._connect()
         if len(collection) > 1:
