@@ -6,6 +6,8 @@ from glue.external.qt.QtCore import Signal
 from glue.external.qt import QtGui
 from glue.utils.qt import load_ui, CUSTOM_QWIDGETS
 
+# FIXME: required for custom widget
+from glue.core.qt.mime import GlueMimeListWidget
 
 class ComponentSelector(QtGui.QWidget):
     """ An interface to view the components and data of a DataCollection
