@@ -18,12 +18,12 @@ If instead you installed glue with pip, you can update with::
 Code and development reorganization
 -----------------------------------
 
-Since the v0.6.x releases, a lot of work has gone into reorganizing the glue
+Since the v0.6.x releases, a lot of work has gone into reorganizing the Glue
 code base to make it more modular and more accessible for new developers. The
 documentation has also been completely reorganized and expanded, and now
 includes a description of some aspects of the :ref:`Glue architecture
-<architecture>`_ and some documentation for anyone interested in getting
-involved in :ref:`Glue development <devdocs>`_.
+<architecture>` and information for anyone interested in getting
+involved in :ref:`Glue development <devdocs>`.
 
 We also have a new mailing list `glue-viz-dev
 <https://groups.google.com/forum/#!forum/glue-viz-dev>`_ for anyone interested
@@ -43,7 +43,7 @@ the style of these layers via a contextual menu previously, we have now made
 the options more visible below the list:
 
 .. image:: layer_options.png
-   :width: 600px
+   :width: 300px
    :align: center
 
 This is currently implemented for the scatter and histogram viewers, and will
