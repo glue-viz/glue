@@ -74,13 +74,13 @@ uses the framework from the :mod:`glue.core` package and the dialogs don't need
 to know anything about the rest of the state of the design of the Glue
 application.
 
-``glue.core.data_factories``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-While the core package defines the basic infrastructure for reading/writing
-files, specific implementations of readers/writers live in
-:mod:`glue.core.data_factories`. If you want to add a new reader or writer, this is
-the place to put it!
+.. ``glue.core.data_factories``
+.. ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..
+.. While the core package defines the basic infrastructure for reading/writing
+.. files, specific implementations of readers/writers live in
+.. :mod:`glue.core.data_factories`. If you want to add a new reader or writer, this is
+.. the place to put it!
 
 ``glue.app``
 ^^^^^^^^^^^^

@@ -19,7 +19,7 @@ Glue is a Python library to explore relationships within and among related datas
 
 For more demos, check out the :ref:`videos <demo_videos>` page.
 
-**The latest version of glue is v0.6** - see our :ref:`overview of changes in 0.6 <whatsnew_06>`
+**The latest version of glue is v0.7** - see our :ref:`overview of changes in v0.7 <whatsnew_07>`
 
 Getting started
 ---------------
@@ -110,6 +110,8 @@ and would be useful, please let us know!
    developer_guide/linking.rst
 
 Information on the Data framework is available in :ref:`data_tutorial` and is not repeated here.
+
+.. _devdocs:
 
 Developing Glue
 ---------------
