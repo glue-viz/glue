@@ -20,9 +20,9 @@ Example Use::
 from __future__ import absolute_import, division, print_function
 
 import math
-import warnings
 from functools import partial
 
+from glue.logger import logger
 from glue.external.six.moves import reduce
 from glue.external.qt import QtGui
 from glue.external.echo import add_callback
@@ -65,7 +65,7 @@ class WidgetProperty(object):
             widget = reduce(getattr, [instance] + self._att)
             return self.getter(widget)
         except Exception:
-            warnings.warn("An error occured when accessing attribute {0} of {1}. Returning None.".format('.'.join(self._att), instance))
+            logger.info("An error occured when accessing attribute {0} of {1}. Returning None.".format('.'.join(self._att), instance))
             return None
 
     def __set__(self, instance, value):

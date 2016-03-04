@@ -3,8 +3,9 @@ from __future__ import absolute_import, division, print_function
 import os
 import imp
 import sys
-import logging
 from collections import namedtuple
+from glue.logger import logger
+
 """
 Objects used to configure Glue at runtime.
 """
@@ -358,8 +359,7 @@ class QtToolRegistry(DictRegistry):
             try:
                 defaults[viewer] = viewer._get_default_tools()
             except AttributeError:
-                logging.getLogger(__name__).warning(
-                    "could not get default tools for {0}".format(viewer.__name__))
+                logger.info("could not get default tools for {0}".format(viewer.__name__))
                 defaults[viewer] = []
 
         return defaults

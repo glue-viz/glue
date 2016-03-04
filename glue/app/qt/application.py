@@ -191,15 +191,14 @@ class GlueApplication(Application, QtGui.QMainWindow):
                              session=session)
 
         self.app.setQuitOnLastWindowClosed(True)
-        pth = os.path.abspath(os.path.dirname(__file__))
-        pth = os.path.join(pth, 'icons', 'app_icon.png')
-        self.app.setWindowIcon(QtGui.QIcon(pth))
+        icon = get_icon('app_icon')
+        self.app.setWindowIcon(icon)
 
         # Even though we loaded the plugins in start_glue, we re-load them here
         # in case glue was started directly by initializing this class.
         load_plugins()
 
-        self.setWindowIcon(self.app.windowIcon())
+        self.setWindowIcon(icon)
         self.setAttribute(Qt.WA_DeleteOnClose)
         self._actions = {}
         self._terminal = None
