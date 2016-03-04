@@ -195,8 +195,13 @@ class AttributeLimitsHelper(object):
         else:
             data_values = self.data[self.attribute]
 
-        lower = np.nanpercentile(data_values, exclude)
-        upper = np.nanpercentile(data_values, 100 - exclude)
+        try:
+            lower = np.nanpercentile(data_values, exclude)
+            upper = np.nanpercentile(data_values, 100 - exclude)
+        except AttributeError:  # Numpy < 1.9
+            data_values = data_values[~np.isnan(data_values)]
+            lower = np.percentile(data_values, exclude)
+            upper = np.percentile(data_values, 100 - exclude)
 
         if self.subset_mode == 'data':
             self.set_limits(0, upper)
