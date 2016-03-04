@@ -21,9 +21,33 @@ For more demos, check out the :ref:`videos <demo_videos>` page.
 
 **The latest version of glue is v0.6** - see our :ref:`overview of changes in 0.6 <whatsnew_06>`
 
+Getting started
+---------------
 
-Using glue
-----------
+Glue is designed with "data-hacking" workflows in mind, and can be used in
+different ways. For instance, you can simply make use of the graphical Glue
+application as is, and never type a line of code. However, you can also
+interact with Glue via Python in different ways:
+
+* Using the IPython terminal built-in to the Glue application
+* Sending data in the form of NumPy arrays or Pandas DataFrames
+  to Glue for exploration from a Python or IPython session.
+* Customizing/hacking your Glue setup using ``config.py`` files, including
+  automatically loading and clean data before starting Glue, writing custom
+  functions to parse files in your favorite file format, writing custom
+  functions to link datasets, or creating your own data viewers.
+
+Glue thus blurs the boundary between GUI-centric and code-centric data
+exploration. In addition, it is also possible to develop your own plugin
+packages for Glue that you can distribute to users separately, and you can also
+make use of the Glue framework in your own application to provide data linking
+capabilities.
+
+In the following sections, we cover the different ways of using Glue from the
+Glue application to the more advanced ways of interacting with Glue from Python.
+
+Using the Glue application
+--------------------------
 
 .. toctree::
    :maxdepth: 2
@@ -31,36 +55,76 @@ Using glue
    installation.rst
    getting_started/index.rst
    gui_guide/index.rst
-   python_guide/index.rst
-   videos.rst
 
-Customizing glue
-----------------
+Interacting with data from Python
+---------------------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   python_guide/ipython_terminal.rst
+   python_guide/data_tutorial.rst
+   python_guide/glue_from_python.rst
+
+Customizing/Hacking Glue
+------------------------
 
 .. toctree::
    :maxdepth: 1
 
    customizing_guide/configuration.rst
    customizing_guide/customization.rst
+   python_guide/data_viewer_options.rst
    customizing_guide/custom_viewer.rst
+   python_guide/liveupdate.rst
    customizing_guide/full_custom_qt_viewer.rst
 
 Getting help
 ------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
+   videos.rst
    faq.rst
    help.rst
 
-Developer guide
----------------
+.. _architecture:
+
+The Glue architecture
+---------------------
+
+The pages below take you through the main infrastructure in Glue, and in
+particular how selections, linking, and communications are handled internally.
+You don't need to understand all of this in order to get started with
+contributing, but in order to tackle some of the more in-depth issues, this
+will become important. This is not meant to be a completely exhaustive guide,
+but if there are areas that you feel could be explained better, or are missing
+and would be useful, please let us know!
 
 .. toctree::
    :maxdepth: 1
 
-   developer_guide/architecture.rst
+   developer_guide/selection.rst
+   developer_guide/communication.rst
+   developer_guide/linking.rst
+
+Information on the Data framework is available in :ref:`data_tutorial` and is not repeated here.
+
+Developing Glue
+---------------
+
+.. toctree::
+   :maxdepth: 2
+
+   developer_guide/developer_guide.rst
+
+API
+---
+
+.. toctree::
+   :maxdepth: 1
+
    developer_guide/api.rst
 
 Indices and tables

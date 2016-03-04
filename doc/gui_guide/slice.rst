@@ -52,5 +52,5 @@ an on-the-fly cross section of a brain tumor MRI:
     </center>
     <br>
 
-The script used to load this data into Glue can be found `here <https://gist.github.com/ChrisBeaumont/e97d4efdc9c472836214>`_.
+The script used to load this data into Glue can be found `here <https://gist.github.com/ChrisBeaumont/e97d4efdc9c472836214>`__.
 

@@ -50,7 +50,7 @@ directory, and the configuration is preserved from one session to the next:
 .. image:: plugin_manager.png
    :width: 50%
    :align: center
-   
+
 Improvements to image viewer
 ----------------------------
 

@@ -104,6 +104,6 @@ backward-compatibility is provided for these:
   ``glue.qt.widgets.table_widget``                    ``glue.viewers.table.qt``
   ``glue.qt.widgets.terminal``                        ``glue.app.qt.terminal``
 ====================================================  ===============================================================
-  
+
 If it would be helpful for us to add back backward-compatibility for any of
 these, please let us know!

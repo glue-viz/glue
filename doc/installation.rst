@@ -23,12 +23,12 @@ can install glue using::
 You can then install any additional (optional) Glue dependencies by running::
 
     glue-deps install
-    
+
 on the command line. For more information on ``glue-deps``, see :ref:`below <glue-deps>`
 
 .. note :: Anaconda installs its own version of Python
 
-.. note :: There is currently a known issue when running Anaconda's Qt on 
+.. note :: There is currently a known issue when running Anaconda's Qt on
            certain Linux distributions (including Kubuntu). See
            `Issue with PyQt4 from conda`_ for more details.
 
@@ -138,7 +138,7 @@ Many dependencies can be reliably installed with::
 
 For information about using MacPorts to manage your Python
 installation, see `here
-<http://astrofrog.github.com/macports-python/>`_
+<http://astrofrog.github.com/macports-python/>`__
 
 Running Glue
 ------------
@@ -148,7 +148,7 @@ that should be in your path. Running ``glue`` from the command line will
 start the program. Glue accepts a variety of command-line
 arguments. See ``glue --help`` for examples.
 
-.. note:: On Windows, installation creates an executable ``glue.exe`` file 
+.. note:: On Windows, installation creates an executable ``glue.exe`` file
           within the python script directory (e.g., ``C:\Python27\Scripts``).
           Windows users can create a desktop shortcut for this file, and run
           Glue by double clicking on the icon.

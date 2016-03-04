@@ -1,43 +1,33 @@
 .. _customization:
 
-Customizing Glue
-================
+Customizing your Glue environment
+=================================
 
-There are a few ways to customize the Glue UI with configuration files and
-plugins.
-
-Configuration Files
--------------------
-
-Each time Glue starts, it looks for and executes a configuration file. This
-is a normal python script into which users can define or import new functions
-to link data, plug in their own visualization modules, set up logging, etc.
-
-The glue configuration file is called ``config.py``. Glue looks for this file
-in the following locations, in order:
-
- * The current working directory
- * The path specified in the ``GLUERC`` environment variable, if present
- * The path ``.glue/config.py`` within the user's home directory
+Using a ``config.py`` file as described in :ref:`configuration`, you can
+customize many aspects of your Glue environment, which are described in the
+following sections.
 
 Registries
 ----------
 
-Glue is written so as to allow users to easily register new plug-in data
-viewers, tools, exporters, and more. Registering such plug-ins can be done
-via *registries* located in the ``glue.config`` sub-package. Registries
-include for example ``link_function``, ``data_factory``, ``colormaps``, and
-so on. As demonstrated below, some registries can be used as decorators (see
-e.g. `Adding Custom Link Functions`_) and for others you can add items using
-the ``add`` method (see e.g. `Custom Colormaps`_).
+Before we talk about the different components of the Glue environment that you
+can customize, we first need to look at registries. Glue is written so as to
+allow users to easily register new data viewers, tools, exporters, and more.
+Registering such components can be done via *registries* located in the
+``glue.config`` sub-package. Registries include for example ``link_function``,
+``data_factory``, ``colormaps``, and so on. As demonstrated below, some
+registries can be used as decorators (see e.g. `Custom Link Functions`_)
+and for others you can add items using the ``add`` method (see e.g. `Custom
+Colormaps`_).
 
 In the following sections, we show a few examples of registering new
 functionality, and a full list of available registries is given in `Complete
 list of registries`_.
 
-Adding Custom Link Functions
-----------------------------
 .. _custom_links:
+
+Custom Link Functions
+---------------------
 
 From the :ref:`Link Data Dialog <getting_started_link>`, you inform Glue how
 to convert between quantities among different data sets. You do this by
@@ -62,9 +52,10 @@ available in the ``Link Data`` dialog:
 This would allow you to link between two datasets with different conventions
 for specifying angles.
 
+.. _custom_data_factory:
+
 Custom Data Loaders
 -------------------
-.. _custom_data_factory:
 
 Glue lets you create custom data loader functions,
 to use from within the GUI.
@@ -225,8 +216,8 @@ Registry name                  Registry class
 Deferring loading of plug-in functionality (advanced)
 -----------------------------------------------------
 
-In some cases, you may want to defer the loading of your plugin until it is
-actually needed. To do this:
+In some cases, you may want to defer the loading of your
+component/functionality until it is actually needed. To do this:
 
 * Place the code for your plugin in a file or package that could be imported
   from the ``config.py`` (but don't import it directly - it just has to be
