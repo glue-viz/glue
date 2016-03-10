@@ -40,5 +40,6 @@ convert temperatures in Celsius to Farenheit::
 More details about this are provided in :ref:`customization`, but for now, let's just assume this is how we make custom linking functions. We can copy this code into ``~/.glue/config.py`` file. Next time we start up Glue, the link functions now appear in the Link Dialog:
 
 .. image:: images/link_functions.png
+   :align: center
 
 

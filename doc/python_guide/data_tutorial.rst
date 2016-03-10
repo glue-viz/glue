@@ -174,10 +174,10 @@ returns a :class:`~glue.core.component_id.ComponentID`, which you can use as a
 lightweight proxy object that you can use to build simple arithmetic
 expressions::
 
-    In [4]: jmh_lazy = catalog.id['Jmag'] - catalog.id['Hmag']
-    In [5]: jmh_lazy
+    >>> jmh_lazy = catalog.id['Jmag'] - catalog.id['Hmag']
+    >>> jmh_lazy
     <BinaryComponentLink: (Jmag - Hmag)>
-    In [6]: catalog['jmh2'] = jmh_lazy
+    >>> catalog['jmh2'] = jmh_lazy
 
 This new component is computed as needed on the fly, and can be more memory
 efficient for particular applications.
@@ -290,10 +290,10 @@ It is also possible to create :class:`~glue.core.data.Data` objects completely m
       >>> from glue.core import Data
       >>> data = Data(x=[1, 2, 3], y=[2, 3, 4], label="first dataset")
 
-  The arguments to the class are the components you want to create, as well as
-  a label/name for the dataset. Each component can be given using the
-  ``name=values`` syntax. The above example creates a
-  :class:`~glue.core.data.Data` with two components ``x`` and ``y``.
+The arguments to the class are the components you want to create, as well as
+a label/name for the dataset. Each component can be given using the
+``name=values`` syntax. The above example creates a
+:class:`~glue.core.data.Data` with two components ``x`` and ``y``.
 
 You can then add the data object to the data collection using::
 
