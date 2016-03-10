@@ -15,11 +15,11 @@ if [ $TRAVIS_PULL_REQUEST != 'false' ]; then
     exit 0
 fi
 
-travis login --github-token=$GITHUB_TOKEN --skip-version-check
+travis login --github-token=$GITHUB_TOKEN --skip-version-check --skip-completion-check
 echo "Travis MacGlue Branch Summary"
-travis branches -r glue-viz/Travis-MacGlue --skip-version-check
+travis branches -r glue-viz/Travis-MacGlue --skip-version-check --skip-completion-check
 
-job_id=`travis branches -r glue-viz/Travis-MacGlue --skip-version-check | grep $TRAVIS_BRANCH | cut -d"#" -f 2 | cut -d" " -f 1`
+job_id=`travis branches -r glue-viz/Travis-MacGlue --skip-version-check --skip-completion-check | grep $TRAVIS_BRANCH | cut -d"#" -f 2 | cut -d" " -f 1`
 
 echo "job_id is $job_id"
 
@@ -28,4 +28,4 @@ if ! [ $job_id ]; then
    exit 0
 fi
 
-travis restart $job_id -r glue-viz/Travis-MacGlue --skip-version-check
+travis restart $job_id -r glue-viz/Travis-MacGlue --skip-version-check --skip-completion-check
