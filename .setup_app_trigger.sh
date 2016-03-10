@@ -6,6 +6,6 @@
 yes | gem install travis -v 1.6.11
 yes | gem environment
 
-export PATH=`gem environment | grep "EXECUTABLE DIRECTORY" | cut -d":" -f2 | cut -c 2-`:$PATH
+export PATH=`yes | gem environment | grep "EXECUTABLE DIRECTORY" | cut -d":" -f2 | cut -c 2-`:$PATH
 
 yes | travis branches -r glue-viz/Travis-MacGlue --skip-version-check
