@@ -30,7 +30,7 @@ class ComponentIDComboHelper(HubListener):
         self.refresh()
 
     def append(self, data):
-
+        
         if self.hub is None:
             if data.hub is None:
                 raise ValueError("Hub is not set on Data object")
@@ -101,7 +101,63 @@ class ComponentIDComboHelper(HubListener):
         return component_ids
 
 
-class DataComboHelper(HubListener):
+class BaseDataComboHelper(HubListener):
+    """
+
+    """
+
+    _data = CurrentComboDataProperty('_data_combo')
+
+    def __init__(self, data_combo):
+        super(BaseDataComboHelper, self).__init__()
+        self._data_combo = data_combo
+        self._component_id_helpers = []
+        self._data_combo.currentIndexChanged.connect(self.refresh_component_ids)
+
+    def refresh(self):
+        label_data = [(data.label, data) for data in self._datasets]
+        update_combobox(self._data_combo, label_data)
+        self.refresh_component_ids()
+
+    def refresh_component_ids(self):
+        for helper in self._component_id_helpers:
+            helper.clear()
+            if self._data is not None:
+                helper.append(self._data)
+            helper.refresh()
+
+    def register_to_hub(self, hub):
+        dc_filt = lambda msg: msg.sender is self.data_collection
+        hub.subscribe(self, DataUpdateMessage,
+                      handler=nonpartial(self.refresh),
+                      filter=lambda x: x.data in self._datasets)
+
+    def add_component_id_combo(self, combo):
+        helper = ComponentIDComboHelper(combo)
+        self._component_id_helpers.append(helper)
+        if self._data is not None:
+            helper.append(self._data)
+
+
+class ManualDataComboHelper(BaseDataComboHelper):
+    """
+
+    """
+
+    def __init__(self, data_combo):
+        super(ManualDataComboHelper, self).__init__(data_combo)
+        self._datasets = []
+
+    def append(self, data):
+        self._datasets.append(data)
+        self.refresh()
+
+    def remove(self, data):
+        self._datasets.remove(data)
+        self.refresh()
+
+
+class DataCollectionComboHelper(BaseDataComboHelper):
     """
     The purpose of this class is to set up a combo box showing data objects in
     sync with a DataCollection, and optionally a combo box showing ComponentIDs
@@ -116,50 +172,24 @@ class DataComboHelper(HubListener):
         The component ID combo to set up
     """
 
-    _data = CurrentComboDataProperty('_data_combo')
-
     def __init__(self, data_combo, data_collection, component_id_combo=None):
-
-        super(DataComboHelper, self).__init__()
+        super(DataCollectionComboHelper, self).__init__(data_combo)
 
         if data_collection.hub is None:
             raise ValueError("Hub on data collection is not set")
 
-        self._data_combo = data_combo
-        self._data_collection = data_collection
-        self._component_id_helpers = []
-
+        self._datasets = data_collection
         self.register_to_hub(data_collection.hub)
-
         self.refresh()
 
-        self._data_combo.currentIndexChanged.connect(self.refresh_component_ids)
-
-    def refresh(self):
-        datasets = list(self._data_collection)
-        label_data = [(data.label, data) for data in datasets]
-        update_combobox(self._data_combo, label_data)
-        self.refresh_component_ids()
-
-    def refresh_component_ids(self):
-        for helper in self._component_id_helpers:
-            helper.clear()
-            helper.append(self._data)
-            helper.refresh()
-
-    def add_component_id_widget(self, combo):
-        helper = ComponentIDComboHelper(combo)
-        self._component_id_helpers.append(helper)
-        helper.append(self._data)
-
     def register_to_hub(self, hub):
-        dc_filt = lambda msg: msg.sender is self.data_collection
+        super(DataCollectionComboHelper, self).register_to_hub(hub)
         hub.subscribe(self,DataCollectionAddMessage,
-                      handler=nonpartial(self.refresh), filter=dc_filt)
+                      handler=nonpartial(self.refresh),
+                      filter=lambda msg: msg.sender is self._datasets)
         hub.subscribe(self, DataCollectionDeleteMessage,
-                      handler=nonpartial(self.refresh), filter=dc_filt)
-        hub.subscribe(self, DataUpdateMessage,
-                      handler=nonpartial(self.refresh))
+                      handler=nonpartial(self.refresh),
+                      filter=lambda msg: msg.sender is self._datasets)
 
 
 if __name__ == "__main__":
@@ -187,10 +217,10 @@ if __name__ == "__main__":
     d2 = Data(a=[0,1,1], b=[2,1,1], label='apple')
     dc = DataCollection([d1, d2])
 
-    helper = DataComboHelper(data_combo, dc)
+    helper = DataCollectionComboHelper(data_combo, dc)
 
-    helper.add_component_id_widget(cid1_combo)
-    helper.add_component_id_widget(cid2_combo)
+    helper.add_component_id_combo(cid1_combo)
+    helper.add_component_id_combo(cid2_combo)
 
     window.show()
     window.raise_()
