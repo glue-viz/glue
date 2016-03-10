@@ -1,7 +1,5 @@
 #!/bin/bash -x
 
-set -x
-
 # We have to include "yes |" since sometimes, gem asks about installing the
 # shell completion tool.
 
