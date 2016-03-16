@@ -74,7 +74,7 @@ class AttributeLimitsHelper(object):
     vhi = FloatLineProperty('upper_value')
 
     def __init__(self, attribute_combo, lower_value, upper_value,
-                 mode_combo=None, flip_button=None, data=None):
+                 mode_combo=None, flip_button=None, data=None, limits_cache=None):
 
         self.attribute_combo = attribute_combo
         self.mode_combo = mode_combo
@@ -98,7 +98,10 @@ class AttributeLimitsHelper(object):
         if self.flip_button is not None:
             self.flip_button.clicked.connect(self._flip_limits)
 
-        self._limits = {}
+        if limits_cache is None:
+            limits_cache = {}
+
+        self._limits = limits_cache
         self._callbacks = []
 
     @property
