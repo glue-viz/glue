@@ -21,6 +21,8 @@ For more demos, check out the :ref:`videos <demo_videos>` page.
 
 **The latest version of glue is v0.7** - see our :ref:`overview of changes in v0.7 <whatsnew_07>`
 
+If you are interested in trying out **experimental 3D viewers** for Glue, please see :ref:`this page <experimental_3d>`!
+
 Getting started
 ---------------
 
