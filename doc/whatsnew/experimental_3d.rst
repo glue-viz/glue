@@ -22,6 +22,8 @@ Once VisPy is installed, you can install the plugin with::
 
     pip install glue-vispy-viewers
 
+Note that this functionality requires Glue v0.7 or later.
+
 With the plugin installed, you will now have access to three new data
 viewers in Glue:
 
