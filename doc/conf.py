@@ -76,6 +76,15 @@ master_doc = 'index'
 project = u'Glue'
 copyright = u'2012-2016, Chris Beaumont, Thomas Robitaille, Michelle Borkin'
 
+# Currently, astropy-helpers sets the Matplotlib backend explicitly. However,
+# since matplotlib is imported during the glue import below, the
+# astropy-helpers call to matplotlib.use emits a warning which causes the
+# Sphinx Travis build to fail. Therefore, we pre-emptively impor
+# astropy-helpers here. This can be removed in future once astropy-helpers no
+# longer sets the backend explicitly (this is a workaround itself for a
+# matplotlib issue).
+import astropy_helpers
+
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
@@ -318,16 +327,6 @@ nitpick_ignore = [('py:class', 'object'), ('py:class', 'str'),
                   ('py:mod', 'glue.viewers.common.qt.mouse_mode'),
                   ('py:mod', 'glue.dialogs.custom_component')
               ]
-
-
-# Currently, astropy-helpers sets the Matplotlib backend explicitly. However,
-# since matplotlib is imported during the glue import below, the
-# astropy-helpers call to matplotlib.use emits a warning which causes the
-# Sphinx Travis build to fail. Therefore, we pre-emptively impor
-# astropy-helpers here. This can be removed in future once astropy-helpers no
-# longer sets the backend explicitly (this is a workaround itself for a
-# matplotlib issue).
-import astropy_helpers
 
 # coax Sphinx into treating descriptors as attributes
 # see https://bitbucket.org/birkenfeld/sphinx/issue/1254/#comment-7587063
