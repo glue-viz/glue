@@ -5,7 +5,8 @@ from glue.core import Subset
 from glue.utils.qt import update_combobox
 from glue.utils.qt.widget_properties import (CurrentComboTextProperty,
                                              CurrentComboProperty,
-                                             FloatLineProperty)
+                                             FloatLineProperty,
+                                             ButtonProperty)
 
 # TODO: there is room for optimization here, in particular to ensure that
 # signals are emitted the absolute minimum of times.
@@ -49,6 +50,8 @@ class AttributeLimitsHelper(object):
         Min/Max, various percentile levels, and Custom.
     flip_button : ``QToolButton`` instance, optional
         The flip button
+    log_button : ``QToolButton`` instance, optional
+        A button indicating whether the attribute should be shown in log space
     data : :class:`glue.core.data.Data`
         The dataset to attach to the helper - this will be used to populate the
         attribute combo as well as determine the limits automatically given the
@@ -72,20 +75,28 @@ class AttributeLimitsHelper(object):
     percentile = CurrentComboProperty('mode_combo')
     vlo = FloatLineProperty('lower_value')
     vhi = FloatLineProperty('upper_value')
+    vlog = ButtonProperty('log_button')
 
     def __init__(self, attribute_combo, lower_value, upper_value,
-                 mode_combo=None, flip_button=None, data=None, limits_cache=None):
+                 mode_combo=None, flip_button=None, log_button=None,
+                 data=None, limits_cache=None):
 
         self.attribute_combo = attribute_combo
         self.mode_combo = mode_combo
         self.lower_value = lower_value
         self.upper_value = upper_value
         self.flip_button = flip_button
+        self.log_button = log_button
 
         self.attribute_combo.currentIndexChanged.connect(self._update_limits)
 
         self.lower_value.editingFinished.connect(self._manual_edit)
         self.upper_value.editingFinished.connect(self._manual_edit)
+
+        if self.log_button is None:
+            self.log_button = QtGui.QToolButton()
+
+        self.log_button.toggled.connect(self._manual_edit)
 
         if self.mode_combo is None:
             # Make hidden combo box to avoid having to always figure out if the
@@ -163,19 +174,21 @@ class AttributeLimitsHelper(object):
 
     def _cache_limits(self):
         if self.subset_mode != 'outline':
-            self._limits[self.attribute] = self.scale_mode, self.vlo, self.vhi
+            self._limits[self.attribute] = self.scale_mode, self.vlo, self.vhi, self.vlog
 
     def _update_limits(self):
         if self.subset_mode == 'outline':
             self.set_limits(0, 1)
+            self.vlog = False
         elif self.attribute in self._limits:
-            self.scale_mode, lower, upper = self._limits[self.attribute]
+            self.scale_mode, lower, upper, self.vlog = self._limits[self.attribute]
             self.set_limits(lower, upper)
         else:
             self.mode_combo.blockSignals(True)
             self.scale_mode = 'Min/Max'
             self.mode_combo.blockSignals(False)
             self._auto_limits()
+            self.vlog = False
 
     def _auto_limits(self):
 

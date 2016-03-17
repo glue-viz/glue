@@ -24,10 +24,16 @@ class TestAttributeLimitsHelper():
         self.mode_combo = QtGui.QComboBox()
         self.flip_button = QtGui.QToolButton()
 
+        self.log_button = QtGui.QToolButton()
+        self.log_button.setCheckable(True)
+        
+        # TODO: Need to make log button checkable here for test to work
+
         self.helper = AttributeLimitsHelper(self.attribute_combo,
                                             self.lower_value, self.upper_value,
                                             mode_combo=self.mode_combo,
-                                            flip_button=self.flip_button)
+                                            flip_button=self.flip_button,
+                                            log_button=self.log_button)
 
         self.data = Data(x=np.linspace(-100, 100, 10000),
                          y=np.linspace(2, 3, 10000), label='test_data')
@@ -104,15 +110,25 @@ class TestAttributeLimitsHelper():
     def test_manual_edit(self):
 
         # Make sure that values are re-cached when edited manually
-        self.helper.mode_combo = 'Custom'
+        print(self.helper.mode_combo)
+        self.helper.scale_mode = 'Custom'
+        print(self.helper.mode_combo)
         self.lower_value.setText('-122')
         self.upper_value.setText('234')
+        print("CHANGING")
+        self.helper.vlog = True
+        print("DONE")
         assert self.helper.vlo == -122
         assert self.helper.vhi == 234
+        assert self.helper.vlog
         self.helper.attribute = self.y_id
+        assert self.helper.vlo == 2
+        assert self.helper.vhi == 3
+        assert not self.helper.vlog
         self.helper.attribute = self.x_id
         assert self.helper.vlo == -122
         assert self.helper.vhi == 234
+        assert self.helper.vlog
 
     def test_subset_mode(self):
 
