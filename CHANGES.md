@@ -4,7 +4,9 @@ Full changelog
 v0.8 (unreleased)
 -----------------
 
-* No changes yet
+* Added a new helper class ``AttributeLimitsHelper`` to link widgets related to
+  setting limits and handle the caching of the limits as a function of
+  attribute. [#872]
 
 v0.7 (2016-03-10)
 -----------------
