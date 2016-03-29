@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.external.qt import QtCore
+from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui, QtCore
 from glue.core import roi
 from glue.utils.qt import mpl_to_qt4_color
