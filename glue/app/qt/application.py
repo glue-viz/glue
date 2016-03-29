@@ -397,14 +397,14 @@ class GlueApplication(Application, QtGui.QMainWindow):
 
         if layer_view not in self._layer_views:
             layer_view_scroll = QtGui.QScrollArea()
-            layer_view_scroll.setFrameShape(0)
+            layer_view_scroll.setFrameShape(QtGui.QFrame.NoFrame)
             layer_view_scroll.setWidgetResizable(True)
             layer_view_scroll.setWidget(layer_view)
             self._layer_views[layer_view] = layer_view_scroll
 
         if options_widget not in self._options_widgets:
             options_widget_scroll = QtGui.QScrollArea()
-            options_widget_scroll.setFrameShape(0)
+            options_widget_scroll.setFrameShape(QtGui.QFrame.NoFrame)
             options_widget_scroll.setWidgetResizable(True)
             options_widget_scroll.setWidget(options_widget)
             self._options_widgets[options_widget] = options_widget_scroll
