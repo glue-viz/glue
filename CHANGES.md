@@ -1,6 +1,11 @@
 Full changelog
 ==============
 
+v0.7.1 (2016-03-29)
+-------------------
+
+* Fixed a failure due to a missing Qt import in glue.core.roi. [#901]
+
 v0.7 (2016-03-10)
 -----------------
 
