@@ -8,6 +8,11 @@ v0.8 (unreleased)
   setting limits and handle the caching of the limits as a function of
   attribute. [#872]
 
+v0.7.1 (2016-03-29)
+-------------------
+
+* Fixed a failure due to a missing Qt import in glue.core.roi. [#901]
+
 v0.7 (2016-03-10)
 -----------------
 
