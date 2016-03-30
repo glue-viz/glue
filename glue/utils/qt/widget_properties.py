@@ -59,7 +59,7 @@ class WidgetProperty(object):
 
     def __get__(self, instance, type=None):
         # Under certain circumstances, PyQt will try and access these properties
-        # while loading the ui file, so we have to be robust to failures. 
+        # while loading the ui file, so we have to be robust to failures.
         # However, we print out a warning if things fail.
         try:
             widget = reduce(getattr, [instance] + self._att)
@@ -228,21 +228,30 @@ class ValueProperty(WidgetProperty):
         non-linear mapping for sliders.
     """
 
-    def __init__(self, att, docstring='', mapping=None):
+    def __init__(self, att, docstring='', mapping=None, value_range=None):
         super(ValueProperty, self).__init__(att, docstring=docstring)
         self.mapping = mapping
+        self.value_range = value_range
 
     def getter(self, widget):
-        if self.mapping is None:
-            return widget.value()
-        else:
+        if self.mapping is not None:
             return self.mapping[0](widget.value())
+        elif self.value_range is not None:
+            imin, imax = widget.minimum(), widget.maximum()
+            vmin, vmax = self.value_range
+            return (widget.value() - imin) / (imax - imin) * (vmax - vmin) + vmin
+        else:
+            return widget.value()
 
     def setter(self, widget, value):
-        if self.mapping is None:
-            widget.setValue(value)
-        else:
+        if self.mapping is not None:
             widget.setValue(self.mapping[1](value))
+        elif self.value_range is not None:
+            imin, imax = widget.minimum(), widget.maximum()
+            vmin, vmax = self.value_range
+            widget.setValue((value - vmin) / (vmax - vmin) * (imax - imin) + imin)
+        else:
+            widget.setValue(value)
 
 
 def connect_bool_button(client, prop, widget):

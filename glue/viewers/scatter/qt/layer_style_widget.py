@@ -12,7 +12,7 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
 
     size = ValueProperty('ui.value_size')
     symbol = CurrentComboProperty('ui.combo_symbol')
-    alpha = ValueProperty('ui.slider_alpha')
+    alpha = ValueProperty('ui.slider_alpha', value_range=(0, 1))
 
     def __init__(self, layer_artist):
 
@@ -24,10 +24,21 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         self._setup_symbol_combo()
 
         self.layer = layer_artist.layer
-        connect_color(self.layer.style, 'color', self.ui.label_color)
-        connect_value(self.layer.style, 'alpha', self.ui.slider_alpha, value_range=(0, 1))
+
+        # Set up connections
+        self._connect_global()
+
+        # Set initial values
+        self.symbol = self.layer.style.marker
+        self.size = self.layer.style.markersize
+        self.ui.label_color.setColor(self.layer.style.color)        
+        self.alpha = self.layer.style.alpha
+
+    def _connect_global(self):
         connect_current_combo(self.layer.style, 'marker', self.ui.combo_symbol)
         connect_value(self.layer.style, 'markersize', self.ui.value_size)
+        connect_color(self.layer.style, 'color', self.ui.label_color)
+        connect_value(self.layer.style, 'alpha', self.ui.slider_alpha, value_range=(0, 1))
 
     def _setup_symbol_combo(self):
         self._symbols = list(POINT_ICONS.keys())
