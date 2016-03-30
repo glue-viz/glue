@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import warnings
 from copy import deepcopy
 from collections import namedtuple
 
@@ -189,3 +190,12 @@ def test_fits_compressed():
     d = df.load_data(os.path.join(DATA, 'compressed_image.fits'),
                      factory=df.fits_reader)
     assert d.ndim == 2
+
+
+@requires_astropy
+def test_fits_vector():
+    # Regression test for bug that caused tables with vector columns to not load
+    with warnings.catch_warnings(record=True) as w:
+        df.load_data(os.path.join(DATA, 'events.fits'), factory=df.fits_reader)
+    assert len(w) == 1
+    assert str(w[0].message) == "Dropping column 'status' since it is not 1-dimensional"

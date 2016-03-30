@@ -12,6 +12,8 @@ v0.7.1 (2016-03-29)
 * Fixed a bug that caused an abort trap if the filename specified on the
   command line did not exist. [#903]
 
+* Gracefully skip vector columnns when reading in FITS files. [#896]
+
 v0.7 (2016-03-10)
 -----------------
 
