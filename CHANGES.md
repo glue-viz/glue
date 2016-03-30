@@ -14,6 +14,8 @@ v0.7.1 (2016-03-29)
 
 * Gracefully skip vector columnns when reading in FITS files. [#896]
 
+* Change default gray color to work on black and white backgrounds. [#906]
+
 v0.7 (2016-03-10)
 -----------------
 
