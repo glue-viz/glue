@@ -223,9 +223,6 @@ class GlueApplication(Application, QtGui.QMainWindow):
         self.new_tab()
         self._update_plot_dashboard(None)
 
-        self._layer_views = {}
-        self._options_widgets = {}
-
         self._load_settings()
 
     def _setup_ui(self):
@@ -395,21 +392,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
         layer_view = widget.layer_view()
         options_widget = widget.options_widget()
 
-        if layer_view not in self._layer_views:
-            layer_view_scroll = QtGui.QScrollArea()
-            layer_view_scroll.setFrameShape(QtGui.QFrame.NoFrame)
-            layer_view_scroll.setWidgetResizable(True)
-            layer_view_scroll.setWidget(layer_view)
-            self._layer_views[layer_view] = layer_view_scroll
-
-        if options_widget not in self._options_widgets:
-            options_widget_scroll = QtGui.QScrollArea()
-            options_widget_scroll.setFrameShape(QtGui.QFrame.NoFrame)
-            options_widget_scroll.setWidgetResizable(True)
-            options_widget_scroll.setWidget(options_widget)
-            self._options_widgets[options_widget] = options_widget_scroll
-
-        return self._layer_views[layer_view], self._options_widgets[options_widget], str(widget)
+        return layer_view, options_widget, str(widget)
 
     def _clear_dashboard(self):
 
