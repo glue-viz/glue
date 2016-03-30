@@ -9,7 +9,7 @@ from glue.utils.qt.widget_properties import ValueProperty, connect_value
 
 class HistogramLayerStyleWidget(QtGui.QWidget):
 
-    alpha = ValueProperty('ui.slider_alpha')
+    alpha = ValueProperty('ui.slider_alpha', value_range=(0, 1))
 
     def __init__(self, layer_artist):
 
@@ -19,5 +19,14 @@ class HistogramLayerStyleWidget(QtGui.QWidget):
                           directory=os.path.dirname(__file__))
 
         self.layer = layer_artist.layer
+
+        # Set up connections
+        self._connect_global()
+
+        # Set initial values
+        self.ui.label_color.setColor(self.layer.style.color)
+        self.alpha = self.layer.style.alpha
+
+    def _connect_global(self):
         connect_color(self.layer.style, 'color', self.ui.label_color)
         connect_value(self.layer.style, 'alpha', self.ui.slider_alpha, value_range=(0, 1))

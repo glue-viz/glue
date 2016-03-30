@@ -16,6 +16,9 @@ v0.7.1 (2016-03-29)
 
 * Change default gray color to work on black and white backgrounds. [#906]
 
+* Fixed a bug that caused the color in the scatter and histogram style
+  editors to not show the correct initial color. [#907]
+
 v0.7 (2016-03-10)
 -----------------
 
