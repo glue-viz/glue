@@ -116,6 +116,9 @@ def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
                 groups[hdu_name] = data
                 for column_name in table.columns:
                     column = table[column_name]
+                    if column.ndim != 1:
+                        warnings.warn("Dropping column '{0}' since it is not 1-dimensional".format(column_name))
+                        continue
                     component = Component(column, units=column.unit)
                     data.add_component(component=component,
                                        label=column_name)
