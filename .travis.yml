@@ -113,7 +113,7 @@ before_install:
   - if [[ $QT_PKG != False ]]; then export CONDA_DEPENDENCIES="$QT_PKG "$CONDA_DEPENDENCIES; fi
 
   # Special cases depending on IPython version
-  - if [[ $IPYTHON_VERSION == 4 ]]; then export CONDA_DEPENDENCIES="qtconsole ipykernel "$CONDA_DEPENDENCIES; fi
+  - if [[ $IPYTHON_VERSION == 4 ]]; then export CONDA_DEPENDENCIES="traitlets=4.2.0 qtconsole ipykernel "$CONDA_DEPENDENCIES; fi
 
   # Documentation dependencies
   - if [ $DOC_TRIGGER ]; then export PIP_DEPENDENCIES="astropy-helpers linkchecker "$PIP_DEPENDENCIES; fi
