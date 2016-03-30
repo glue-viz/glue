@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.7.1 (2016-03-29)
+v0.7.1 (2016-03-30)
 -------------------
 
 * Fix issue with small screens and layer and viewer options by adding
