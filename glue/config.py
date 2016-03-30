@@ -554,7 +554,7 @@ def _default_search_order():
 
 ###### Now define global settings ######
 
-GRAY = '#373737'
+GRAY = '#7F7F7F'
 BLUE = "#1F78B4"
 GREEN = "#33A02C"
 RED = "#E31A1C"
