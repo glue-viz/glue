@@ -95,7 +95,13 @@ def die_on_error(msg):
             try:
                 return func(*args, **kwargs)
             except Exception as e:
+
                 import traceback
+
+                # Make sure application has been started
+                from glue.external.qt import get_qapp
+                get_qapp()
+
                 from glue.utils.qt import QMessageBoxPatched as QMessageBox
                 m = "%s\n%s" % (msg, e)
                 detail = str(traceback.format_exc())
