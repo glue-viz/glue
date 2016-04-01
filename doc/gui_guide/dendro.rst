@@ -6,16 +6,6 @@ Visualizing Astronomical Dendrograms
 You can use Glue to visualize dendrograms created by the
 `astrodendro <http://dendrograms.org/>`_ package.
 
-Enabling Dendrogram Visualization
----------------------------------
-
-Because dendrogram visualization is still experimental, you
-must enable it before using it. To do so, add the following
-line to your :ref:`~/.glue/config.py <configuration>` file::
-
-    from glue.qt.widgets import enable_dendrograms
-    enable_dendrograms()
-
 Building a dendrogram
 ---------------------
 
