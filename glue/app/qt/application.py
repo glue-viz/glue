@@ -198,6 +198,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
         # in case glue was started directly by initializing this class.
         load_plugins()
 
+        self.setWindowTitle("Glue")
         self.setWindowIcon(icon)
         self.setAttribute(Qt.WA_DeleteOnClose)
         self._actions = {}
