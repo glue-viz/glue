@@ -117,6 +117,12 @@ class DataItem(Item):
         self.data.label = value
 
     @property
+    def tooltip(self):
+        # Return the label as the tooltip - this is useful if filenames are
+        # really long and don't fit in the window.
+        return self.label
+
+    @property
     def style(self):
         return self.data.style
 

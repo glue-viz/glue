@@ -4,6 +4,9 @@ Full changelog
 v0.8 (unreleased)
 -----------------
 
+* Add tooltip for data labels so that long labels can be more easily
+  inspected. [#912]
+
 * Added a new helper class ``AttributeLimitsHelper`` to link widgets related to
   setting limits and handle the caching of the limits as a function of
   attribute. [#872]
