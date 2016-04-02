@@ -8,6 +8,11 @@ v0.8 (unreleased)
   setting limits and handle the caching of the limits as a function of
   attribute. [#872]
 
+v0.7.2 (unreleased)
+-------------------
+
+* Make sure main window title is set. [#914]
+
 v0.7.1 (2016-03-29)
 -------------------
 
