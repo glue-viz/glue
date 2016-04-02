@@ -1,6 +1,11 @@
 Full changelog
 ==============
 
+v0.7.2 (unreleased)
+-------------------
+
+* Make sure main window title is set. [#914]
+
 v0.7.1 (2016-03-30)
 -------------------
 
