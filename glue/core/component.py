@@ -195,13 +195,17 @@ class Component(object):
         if np.issubdtype(data.dtype, np.object_):
             return CategoricalComponent(data, units=units)
 
-        n = coerce_numeric(data)
-        thresh = 0.5
         try:
-            use_categorical = np.issubdtype(data.dtype, np.character) and \
-                np.isfinite(n).mean() <= thresh
-        except TypeError:  # isfinite not supported. non-numeric dtype
+            n = coerce_numeric(data)
+        except ValueError:
             use_categorical = True
+        else:
+            thresh = 0.5
+            try:
+                use_categorical = np.issubdtype(data.dtype, np.character) and \
+                    np.isfinite(n).mean() <= thresh
+            except TypeError:  # isfinite not supported. non-numeric dtype
+                use_categorical = True
 
         if use_categorical:
             return CategoricalComponent(data, units=units)
