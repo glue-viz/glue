@@ -162,6 +162,8 @@ install:
 
 script:
 
+  - if [[ $QT_PKG == False ]]; then glue --version; fi
+
   - python setup.py test -a "$PYTEST_ARGS";
 
   # In the following, we use separate if statements for each line, to make
