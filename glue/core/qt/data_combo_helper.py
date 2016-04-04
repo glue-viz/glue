@@ -12,6 +12,8 @@ from glue.utils import nonpartial
 from glue.utils.qt import update_combobox
 from glue.utils.qt.widget_properties import CurrentComboDataProperty
 
+__all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
+           'DataCollectionComboHelper']
 
 class ComponentIDComboHelper(HubListener):
     """
