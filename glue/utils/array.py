@@ -97,7 +97,7 @@ def coerce_numeric(arr):
         return arr.astype(np.int)
 
     # a string dtype, or anything else
-    return pd.to_numeric(arr)
+    return pd.to_numeric(arr, errors='coerce')
 
 
 def check_sorted(array):
