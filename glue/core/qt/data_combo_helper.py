@@ -206,6 +206,19 @@ class BaseDataComboHelper(HubListener):
         if self._data is not None:
             helper.append(self._data)
 
+    @property
+    def hub(self):
+        return self._hub
+
+    @hub.setter
+    def hub(self, value):
+        self._hub = value
+        if value is not None:
+            self.register_to_hub(value)
+
+    def register_to_hub(self, hub):
+        pass
+
 
 class ManualDataComboHelper(BaseDataComboHelper):
     """
@@ -234,6 +247,7 @@ class ManualDataComboHelper(BaseDataComboHelper):
 
         self._data_collection = data_collection
         self._datasets = []
+        self.hub = data_collection.hub
 
     def append(self, data):
         self._datasets.append(data)
@@ -244,12 +258,14 @@ class ManualDataComboHelper(BaseDataComboHelper):
         self.refresh()
 
     def register_to_hub(self, hub):
+
         super(ManualDataComboHelper, self).register_to_hub(hub)
+
         hub.subscribe(self, DataUpdateMessage,
                       handler=nonpartial(self.refresh),
-                      filter=lambda msg: msg.sender is self._data_collection)
+                      filter=lambda msg: msg.sender in self._datasets)
         hub.subscribe(self, DataCollectionDeleteMessage,
-                      handler=nonpartial(self.refresh),
+                      handler=lambda msg: self.remove(msg.data),
                       filter=lambda msg: msg.sender is self._data_collection)
 
 
@@ -280,7 +296,7 @@ class DataCollectionComboHelper(BaseDataComboHelper):
         super(DataCollectionComboHelper, self).register_to_hub(hub)
         hub.subscribe(self, DataUpdateMessage,
                       handler=nonpartial(self.refresh),
-                      filter=lambda msg: msg.sender is self._datasets)
+                      filter=lambda msg: msg.sender in self._datasets)
         hub.subscribe(self,DataCollectionAddMessage,
                       handler=nonpartial(self.refresh),
                       filter=lambda msg: msg.sender is self._datasets)

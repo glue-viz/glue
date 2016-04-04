@@ -55,8 +55,58 @@ def test_component_id_combo_helper():
 
     assert _items_as_string(combo) == "x:y"
 
+    # TODO: check that renaming a component updates the combo
+    # data1.id['x'].label = 'z'
+    # assert _items_as_string(combo) == "z:y"
+
     helper.remove(data1)
 
     assert _items_as_string(combo) == ""
 
 
+def test_manual_data_combo_helper():
+
+    combo = QtGui.QComboBox()
+
+    dc = DataCollection([])
+
+    helper = ManualDataComboHelper(combo, dc)
+
+    data1 = Data(x=[1,2,3], y=[2,3,4], label='data1')
+
+    dc.append(data1)
+
+    assert _items_as_string(combo) == ""
+
+    helper.append(data1)
+
+    assert _items_as_string(combo) == "data1"
+
+    data1.label = 'mydata1'
+    assert _items_as_string(combo) == "mydata1"
+
+    dc.remove(data1)
+
+    assert _items_as_string(combo) == ""
+
+
+def test_data_collection_combo_helper():
+
+    combo = QtGui.QComboBox()
+
+    dc = DataCollection([])
+
+    helper = DataCollectionComboHelper(combo, dc)
+
+    data1 = Data(x=[1,2,3], y=[2,3,4], label='data1')
+
+    dc.append(data1)
+
+    assert _items_as_string(combo) == "data1"
+
+    data1.label = 'mydata1'
+    assert _items_as_string(combo) == "mydata1"
+
+    dc.remove(data1)
+
+    assert _items_as_string(combo) == ""
