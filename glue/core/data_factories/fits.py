@@ -176,7 +176,11 @@ def casalike_cube(filename, **kwargs):
     from astropy.io import fits
 
     result = Data()
-    with fits.open(filename, ignore_missing_end=True, **kwargs) as hdulist:
+
+    if 'ignore_missing_end' not in kwargs:
+        kwargs['ignore_missing_end'] = True
+
+    with fits.open(filename, **kwargs) as hdulist:
         array = hdulist[0].data
         header = hdulist[0].header
     result.coords = coordinates_from_header(header)
