@@ -97,7 +97,10 @@ def coerce_numeric(arr):
         return arr.astype(np.int)
 
     # a string dtype, or anything else
-    return pd.Series(arr).convert_objects(convert_numeric=True).values
+    try:
+        return pd.to_numeric(arr, errors='coerce')
+    except AttributeError:  # older versions of pandas
+        return pd.Series(arr).convert_objects(convert_numeric=True).values
 
 
 def check_sorted(array):

@@ -4,6 +4,10 @@ Full changelog
 v0.7.2 (unreleased)
 -------------------
 
+* Fix a bug that caused string columns in FITS files to not be read
+  correctly, and updated coerce_numeric to give a ValueError for string
+  columns that can't be convered.
+
 * Make sure main window title is set. [#914]
 
 * Fix issue with FITS files that are missing an END card. [#915]
