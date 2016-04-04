@@ -196,6 +196,7 @@ class Component(object):
             return CategoricalComponent(data, units=units)
 
         n = coerce_numeric(data)
+
         thresh = 0.5
         try:
             use_categorical = np.issubdtype(data.dtype, np.character) and \
