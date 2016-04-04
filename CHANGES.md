@@ -6,6 +6,8 @@ v0.7.2 (unreleased)
 
 * Make sure main window title is set. [#914]
 
+* Fix issue with FITS files that are missing an END card. [#915]
+
 v0.7.1 (2016-03-30)
 -------------------
 
