@@ -15,9 +15,25 @@ from glue.utils.qt.widget_properties import CurrentComboDataProperty
 
 class ComponentIDComboHelper(HubListener):
     """
-    The purpose of this class is to set up a combo showing componentIDs for one
-    or more datasets, and to update these componentIDs if needed, for example
-    if new componnts are added to a dataset, or if componentIDs are renamed.
+    The purpose of this class is to set up a combo showing componentIDs for
+    one or more datasets, and to update these componentIDs if needed, for
+    example if new components are added to a dataset, or if componentIDs are
+    renamed.
+
+    Parameters
+    ----------
+    component_id_combo : Qt combo widget
+        The Qt widget for the component ID combo box
+    data_collection : :class:`~glue.core.DataCollection`
+        The data collection to which the datasets belong - this is needed
+        because if a dataset is removed from the data collection, we want to
+        remove it here.
+    visible : bool, optional
+        Only show visible components
+    numeric : bool, optional
+        Show numeric components
+    categorical : bool, optional
+        Show categorical components
     """
 
     def __init__(self, component_id_combo, data_collection, visible=True,
@@ -110,7 +126,7 @@ class ComponentIDComboHelper(HubListener):
             if self.visible:
                 all_component_ids = data.visible_components
             else:
-                all_component_ids = data.visible_components
+                all_component_ids = data.components
 
             component_ids = []
             for cid in all_component_ids:
@@ -153,7 +169,13 @@ class ComponentIDComboHelper(HubListener):
 
 class BaseDataComboHelper(HubListener):
     """
+    This is a base class for helpers for combo boxes that need to show a list
+    of data objects.
 
+    Parameters
+    ----------
+    data_combo : Qt combo widget
+        The Qt widget for the data combo box
     """
 
     _data = CurrentComboDataProperty('_data_combo')
@@ -185,7 +207,21 @@ class BaseDataComboHelper(HubListener):
 
 class ManualDataComboHelper(BaseDataComboHelper):
     """
+    This is a helper for combo boxes that need to show a list of data objects
+    that is manually curated.
 
+    Datasets are added and removed using the
+    :meth:`~ManualDataComboHelper.append` and
+    :meth:`~ManualDataComboHelper.remove` methods.
+
+    Parameters
+    ----------
+    data_combo : Qt combo widget
+        The Qt widget for the data combo box
+    data_collection : :class:`~glue.core.DataCollection`
+        The data collection to which the datasets belong - this is needed
+        because if a dataset is removed from the data collection, we want to
+        remove it here.
     """
 
     def __init__(self, data_combo, data_collection):
@@ -217,17 +253,15 @@ class ManualDataComboHelper(BaseDataComboHelper):
 
 class DataCollectionComboHelper(BaseDataComboHelper):
     """
-    The purpose of this class is to set up a combo box showing data objects in
-    sync with a DataCollection, and optionally a combo box showing ComponentIDs
-    for one or more datasets, and keep those in sync (in case new ComponentIDs
-    are added or existing ones are renamed).
+    This is a helper for combo boxes that need to show a list of data objects
+    that is always in sync with a :class:`~glue.core.DataCollection`.
 
     Parameters
     ----------
-    data_combo : ``QComboBox`` instance
-        The data combo to set up
-    component_id_combo : ``QComboBox`` instance
-        The component ID combo to set up
+    data_combo : Qt combo widget
+        The Qt widget for the data combo box
+    data_collection : :class:`~glue.core.DataCollection`
+        The data collection with which to stay in sync
     """
 
     def __init__(self, data_combo, data_collection):
