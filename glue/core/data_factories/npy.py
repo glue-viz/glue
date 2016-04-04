@@ -37,7 +37,7 @@ def npy_reader(filename, format='auto', auto_merge=False, **kwargs):
 
     d = Data()
     for name in npy_data.dtype.names:
-        comp = Component(npy_data[name])
+        comp = Component.autotyped(npy_data[name])
         d.add_component(comp, label=name)
 
     return d
@@ -79,7 +79,7 @@ def npz_reader(filename, format='auto', auto_merge=False, **kwargs):
                              " arrays, e.g., with specified names.")
 
         for name in arr.dtype.names:
-            comp = Component(arr[name])
+            comp = Component.autotyped(arr[name])
             d.add_component(comp, label=name)
 
         groups.append(d)

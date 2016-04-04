@@ -16,8 +16,9 @@ def test_npy_load(tmpdir):
         f.seek(0)
 
         data2 = df.load_data(f.name)
-        for name in data.dtype.names:
-            assert_array_equal(data[name], data2[name])
+        assert_array_equal(data['name'], data2.get_component('name').labels)
+        assert_array_equal(data['ra'], data2['ra'])
+        assert_array_equal(data['dec'], data2['dec'])
 
 def test_npz_load(tmpdir):
     data1 = np.array([("a",152.2352,-21.513), ("b",21.412,35.1341)],
@@ -26,15 +27,18 @@ def test_npz_load(tmpdir):
                      dtype=[('name','|S1'),('l','f8'),('b','f8')])
 
     with open(tmpdir.join('test.npz').strpath, 'wb') as f:
+
         np.savez(f, data1=data1, data2=data2)
         f.seek(0)
 
         data_loaded = df.load_data(f.name)
 
         arr = data_loaded[0]
-        for name in data1.dtype.names:
-            assert_array_equal(data1[name], arr[name])
+        assert_array_equal(data1['name'], arr.get_component('name').labels)
+        assert_array_equal(data1['ra'], arr['ra'])
+        assert_array_equal(data1['dec'], arr['dec'])
 
         arr = data_loaded[1]
-        for name in data2.dtype.names:
-            assert_array_equal(data2[name], arr[name])
+        assert_array_equal(data2['name'], arr.get_component('name').labels)
+        assert_array_equal(data2['l'], arr['l'])
+        assert_array_equal(data2['b'], arr['b'])
