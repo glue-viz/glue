@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.7.2 (unreleased)
+v0.7.2 (2016-04-05)
 -------------------
 
 * Fix a bug that caused string columns in FITS files to not be read
