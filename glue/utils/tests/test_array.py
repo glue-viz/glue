@@ -91,6 +91,15 @@ class TestPrettyNumber(object):
         assert pretty_number([1e-5]) == ['1.000e-05']
         assert pretty_number([1e5]) == ['1.000e+05']
         assert pretty_number([3.3]) == ['3.3']
+        assert pretty_number([1.]) == ['1']
+        assert pretty_number([1.200]) == ['1.2']
+
+    def test_large(self):
+        # Regression test or a bug that caused trailing zeros in exponent to
+        # be removed.
+        assert pretty_number([1e9]) == ['1.000e+09']
+        assert pretty_number([2e10]) == ['2.000e+10']
+        assert pretty_number([3e11]) == ['3.000e+11']
 
     def test_list(self):
         assert pretty_number([1, 2, 3.3, 1e5]) == ['1', '2', '3.3',

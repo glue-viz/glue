@@ -137,7 +137,7 @@ def pretty_number(numbers):
         result = "%i" % n
     else:
         result = "%0.3f" % n
-    if result.find('.') != -1:
-        result = result.rstrip('0')
+        if result.find('.') != -1:
+            result = result.rstrip('0')
 
     return result
