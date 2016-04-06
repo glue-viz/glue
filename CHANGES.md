@@ -25,7 +25,7 @@ v0.7.2 (unreleased)
 * Fix a bug that caused values in exponential notation in text fields to lose
   a trailing zero (e.g. 1.000e+10 would become 1.000e+1). [#925]
 
-v0.7.1 (2016-03-29)
+v0.7.1 (2016-03-30)
 -------------------
 
 * Fix issue with small screens and layer and viewer options by adding
