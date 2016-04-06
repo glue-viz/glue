@@ -12,6 +12,9 @@ v0.7.2 (unreleased)
 
 * Fix issue with FITS files that are missing an END card. [#915]
 
+* Fix a bug that caused values in exponential notation in text fields to lose
+  a trailing zero (e.g. 1.000e+10 would become 1.000e+1). [#925]
+
 v0.7.1 (2016-03-30)
 -------------------
 
