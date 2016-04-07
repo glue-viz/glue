@@ -469,6 +469,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
                 submenu.addAction(a)
         menu.addSeparator()
         menu.addAction("Edit &Settings", self._edit_settings)
+        menu.addAction("&Quit", QtGui.qApp.quit)
         mbar.addMenu(menu)
 
         menu = QtGui.QMenu(mbar)

@@ -11,6 +11,8 @@ v0.8 (unreleased)
   setting limits and handle the caching of the limits as a function of
   attribute. [#872]
 
+* Add Quit menu item for Linux and Windows. [#926]
+
 v0.7.3 (unreleased)
 -------------------
 
