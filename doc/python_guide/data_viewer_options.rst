@@ -9,7 +9,7 @@ For example::
 
     from glue.core import Data, DataCollection
     from glue.app.qt.application import GlueApplication
-    from glue.qt.widgets import ScatterWidget
+    from glue.viewers.scatter.qt import ScatterWidget
     import numpy as np
 
     # create some data
