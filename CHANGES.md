@@ -11,6 +11,12 @@ v0.8 (unreleased)
   setting limits and handle the caching of the limits as a function of
   attribute. [#872]
 
+v0.7.3 (unreleased)
+-------------------
+
+* Add missing find_spec for import hook, to avoid issues when trying to set
+  colormap. [#930]
+
 v0.7.2 (2016-04-05)
 -------------------
 
