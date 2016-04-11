@@ -11,7 +11,7 @@ v0.8 (unreleased)
   setting limits and handle the caching of the limits as a function of
   attribute. [#872]
 
-v0.7.2 (unreleased)
+v0.7.2 (2016-04-05)
 -------------------
 
 * Fix a bug that caused string columns in FITS files to not be read
