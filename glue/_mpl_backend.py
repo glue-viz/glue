@@ -10,8 +10,9 @@ class MatplotlibBackendSetter(object):
         if self.enabled and 'matplotlib' in mod_name:
             self.enabled = False
             set_mpl_backend()
-        return
 
+    def find_spec(self, name, import_path, target_module=None):
+        pass
 
 def set_mpl_backend():
 
