@@ -1,6 +1,12 @@
 Full changelog
 ==============
 
+v0.7.3 (unreleased)
+-------------------
+
+* Add missing find_spec for import hook, to avoid issues when trying to set
+  colormap. [#930]
+
 v0.7.2 (2016-04-05)
 -------------------
 
