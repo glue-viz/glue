@@ -63,7 +63,13 @@ class WCSCoordinates(Coordinates):
         from astropy.wcs import WCS
 
         self._header = header
-        wcs = wcs or WCS(header, naxis=header['NAXIS'])
+
+        try:
+            naxis = header['NAXIS']
+        except (KeyError, TypeError):
+            naxis = None
+
+        wcs = wcs or WCS(header, naxis=naxis)
 
         # update WCS interface if using old API
         mapping = {'wcs_pix2world': 'wcs_pix2sky',
@@ -116,7 +122,11 @@ class WCSCoordinates(Coordinates):
         self.__dict__ = state
         # wcs object doesn't seem to unpickle properly. reconstruct it
         from astropy.wcs import WCS
-        self._wcs = WCS(self._header, naxis=self._header['NAXIS'])
+        try:
+            naxis = self._header['NAXIS']
+        except (KeyError, TypeError):
+            naxis = None
+        self._wcs = WCS(self._header, naxis=naxis)
 
     def pixel2world(self, *pixel):
         '''
