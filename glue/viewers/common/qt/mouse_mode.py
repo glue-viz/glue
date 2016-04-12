@@ -351,6 +351,8 @@ class PolyMode(ClickRoiMode):
         self.mode_id = 'Polygon'
         self.action_text = 'Polygonal ROI'
         self.tool_tip = ('Lasso a region of interest\n'
+                         '  CLICK multiple times to draw a polygon\n'
+                         '  DRAG to draw a continuous path\n'
                          '  ENTER accepts the path\n'
                          '  ESCAPE clears the path')
         self._roi_tool = qt_roi.QtPolygonalROI(self._axes)

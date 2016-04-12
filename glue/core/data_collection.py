@@ -190,7 +190,7 @@ class DataCollection(HubListener):
         from glue.core.subset_group import SubsetGroup
         color = settings.SUBSET_COLORS[self._sg_count % len(settings.SUBSET_COLORS)]
         self._sg_count += 1
-        label = label or "%i" % (self._sg_count)
+        label = label or 'subset %i' % self._sg_count
 
         result = SubsetGroup(color=color, label=label, subset_state=subset_state)
         self._subset_groups.append(result)
