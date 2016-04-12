@@ -198,7 +198,7 @@ class RoiMode(RoiModeBase):
     """
 
     def __init__(self, viewer, **kwargs):
-        
+
         super(RoiMode, self).__init__(viewer, **kwargs)
 
         self._start_event = None
