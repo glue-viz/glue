@@ -158,9 +158,13 @@ class QColorBox(QtGui.QLabel):
     def color(self):
         return self._color
 
+    def resizeEvent(self, event):
+        super(QColorBox, self).resizeEvent(event)
+        self.on_color_change()
+
     def on_color_change(self):
         self._qcolor = mpl_to_qt4_color(self.color())
-        image = QtGui.QImage(70, 22, QtGui.QImage.Format_RGB32)
+        image = QtGui.QImage(self.width(), 22, QtGui.QImage.Format_RGB32)
         try:
             image.fill(self._qcolor)
         except TypeError:
