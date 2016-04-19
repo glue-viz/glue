@@ -286,6 +286,7 @@ class LayerArtistWidget(QtGui.QWidget):
         super(LayerArtistWidget, self).__init__(parent=parent)
 
         self.layout = QtGui.QVBoxLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)
 
         self.layer_style_widget_cls = layer_style_widget_cls
 
