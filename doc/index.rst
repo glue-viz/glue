@@ -48,6 +48,10 @@ capabilities.
 In the following sections, we cover the different ways of using Glue from the
 Glue application to the more advanced ways of interacting with Glue from Python.
 
+.. note:: For any questions or help with using glue, you can always join the
+          `user support mailing list <https://groups.google.com/forum/#!forum/glue-viz>`_
+          or ask questions on our `Gitter channel <https://gitter.im/glue-viz/glue>`_!
+
 Using the Glue application
 --------------------------
 
