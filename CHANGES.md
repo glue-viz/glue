@@ -13,6 +13,10 @@ v0.8 (unreleased)
 
 * Add Quit menu item for Linux and Windows. [#926]
 
+* Refactored the window for sending feedback to include more version
+  information, and also to have a separate form for feedback and crash
+  reports. [#955]
+
 v0.7.3 (unreleased)
 -------------------
 

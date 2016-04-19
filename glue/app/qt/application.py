@@ -29,7 +29,7 @@ from glue.utils import nonpartial
 from glue.utils.qt import (pick_class, GlueTabBar, QMessageBoxPatched as
                            QMessageBox, set_cursor, messagebox_on_error, load_ui)
 
-from glue.app.qt.feedback import submit_bug_report
+from glue.app.qt.feedback import submit_bug_report, submit_feedback
 from glue.app.qt.plugin_manager import QtPluginManager
 from glue.app.qt.versions import show_glue_info
 
@@ -152,8 +152,7 @@ class GlueLogger(QtGui.QWidget):
         Send the contents of the log as a bug report
         """
         text = self._text.document().toPlainText()
-        if submit_bug_report(text):
-            self._clear()
+        submit_bug_report(text)
 
     def _clear(self):
         """
@@ -538,7 +537,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
         menu.addAction(a)
 
         a = QtGui.QAction("Send &Feedback", menu)
-        a.triggered.connect(nonpartial(submit_bug_report))
+        a.triggered.connect(nonpartial(submit_feedback))
         menu.addAction(a)
 
         menu.addSeparator()

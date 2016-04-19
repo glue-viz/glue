@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>654</width>
-    <height>420</height>
+    <width>418</width>
+    <height>474</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,9 +32,9 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="label_comments">
        <property name="text">
-        <string>Add any comments below. Thank you for your feedback!</string>
+        <string>Please include any feedback below!</string>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
@@ -42,11 +42,30 @@
       </widget>
      </item>
      <item>
-      <widget class="QPlainTextEdit" name="report_area">
-       <property name="documentTitle">
-        <string>Submit Feedback</string>
+      <widget class="QPlainTextEdit" name="area_comments"/>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkbox_system_info">
+       <property name="text">
+        <string>Include information on glue and dependency versions</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_email">
+       <property name="text">
+        <string>Optionally provide your email address if you want us to be able to respond to your feedback!</string>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="value_email"/>
      </item>
      <item>
       <widget class="QDialogButtonBox" name="buttons">

@@ -4,60 +4,122 @@ Widgets for sending feedback reports
 from __future__ import absolute_import, division, print_function
 
 import os
-import sys
 
 from glue.external.qt import QtGui
 from glue.external.six.moves.urllib.parse import urlencode
 from glue.external.six.moves.urllib.request import Request, urlopen
 from glue.utils.qt import load_ui
+from glue._deps import get_status_as_odict
 
 
-__all__ = ['submit_bug_report']
+__all__ = ['submit_bug_report', 'submit_feedback']
 
 
-def _send_feedback(report):
-    """
-    Send a report to bugs.glueviz.org
-
-    :param report: Report message to send
-    :type report: str
-    """
-
-    # website expects a post request with a report and specific key
-    url = 'http://bugs.glueviz.org'
-    values = dict(report=report, key='72z29Q9BzM8sgATeQdu4')
-
-    data = urlencode(values)
-    req = Request(url, data)
-    urlopen(req)
-
-
-def _diagnostics():
+def diagnostics():
     """
     Return a some system informaton useful for debugging
     """
-    from glue.external.qt import QtCore
-    from matplotlib import __version__ as mplversion
-    from numpy import __version__ as npversion
-    from astropy import __version__ as apversion
-
-    result = []
-    result.append('Platform: %s' % sys.platform)
-    result.append('Version: %s' % sys.version)
-    result.append('Qt Binding: %s' % QtCore.__name__.split('.')[0])
-    result.append('Matplotlib version: %s' % mplversion)
-    result.append('Numpy version: %s' % npversion)
-    result.append('AstroPy version: %s' % apversion)
-    return '\n'.join(result)
+    versions = ""
+    for package, version in get_status_as_odict().items():
+        versions += "{0}: {1}\n".format(package, version)
+    return versions.strip()
 
 
-class FeedbackWidget(object):
+class BaseReportWidget(QtGui.QDialog):
 
+    def accept(self):
+        """
+        Send a report to bugs.glueviz.org
+        """
+
+        # website expects a post request with a report and specific key
+        url = 'http://bugs.glueviz.org'
+
+        values = dict(report=self.content, key='72z29Q9BzM8sgATeQdu4')
+
+        data = urlencode(values)
+
+        req = Request(url, data.encode('utf-8'))
+        urlopen(req)
+
+        self.close()
+
+    @property
+    def comments(self):
+        return self.ui.area_comments.document().toPlainText() or "No comments"
+
+    @property
+    def email(self):
+        return self.ui.value_email.text() or "Not provided"
+
+
+FEEDBACK_TEMPLATE = """
+Email address: {email}
+
+Comments
+--------
+
+{comments}
+
+System information
+------------------
+
+{report}
+"""
+
+
+class FeedbackWidget(BaseReportWidget):
     """
     A Dialog to enter and send feedback
     """
 
-    def __init__(self, feedback='', parent=None):
+    def __init__(self, parent=None):
+
+        super(FeedbackWidget, self).__init__(parent=parent)
+
+        self.ui = load_ui('report_feedback.ui', self,
+                          directory=os.path.dirname(__file__))
+
+        self.ui.area_comments.moveCursor(QtGui.QTextCursor.Start)
+
+    @property
+    def report(self):
+        if self.ui.checkbox_system_info.isChecked():
+            return diagnostics()
+        else:
+            return "No version information provided"
+
+    @property
+    def content(self):
+        """
+        The contents of the feedback window
+        """
+        return FEEDBACK_TEMPLATE.format(email=self.email,
+                                        comments=self.comments,
+                                        report=self.report)
+
+
+REPORT_TEMPLATE = """
+Email address: {email}
+
+Comments
+--------
+
+{comments}
+
+Report
+------
+
+{report}
+"""
+
+
+class CrashReportWidget(BaseReportWidget):
+    """
+    A dialog to report crashes/errors
+    """
+
+    def __init__(self, crash_report='', parent=None):
         """
         :param feedback: The default feedback report
         :type feedback: str
@@ -65,43 +127,53 @@ class FeedbackWidget(object):
         Feedback will be supplemented with diagnostic system information.
         The user can modify or add to any of this
         """
-        self._ui = load_ui('feedback.ui', None,
-                           directory=os.path.dirname(__file__))        
-        feedback = '\n'.join(['-' * 80,
-                              feedback,
-                              _diagnostics()])
-        self._ui.report_area.insertPlainText('\n' + feedback)
-        self._ui.report_area.moveCursor(QtGui.QTextCursor.Start)
 
-    def exec_(self):
-        """
-        Show and execute the dialog.
+        super(CrashReportWidget, self).__init__(parent=parent)
 
-        :returns: True if the user clicked "OK"
-        """
-        self._ui.show()
-        self._ui.raise_()
-        return self._ui.exec_() == self._ui.Accepted
+        self.ui = load_ui('report_crash.ui', self,
+                          directory=os.path.dirname(__file__))
+
+        self.ui.area_report.insertPlainText(diagnostics() + "\n\n" + crash_report)
+        self.ui.area_comments.moveCursor(QtGui.QTextCursor.Start)
 
     @property
     def report(self):
+        return self.ui.area_report.document().toPlainText() or "No report"
+
+    @property
+    def content(self):
         """
-        The contents of the report window
+        The contents of the feedback window
         """
-        return self._ui.report_area.document().toPlainText()
+        return REPORT_TEMPLATE.format(email=self.email,
+                                      comments=self.comments,
+                                      report=self.report)
 
 
 def submit_bug_report(report=''):
     """
-    Present a user interface for modifying and sending a feedback message
+    Present a user interface for sending a crash report
 
-    :param report: A default report message
-    :type report: str
-
-    :returns: True if a report was submitted
+    Parameters
+    ----------
+    report : str
+        The crash report/trackback
     """
-    widget = FeedbackWidget(report)
-    if widget.exec_():
-        _send_feedback(widget.report)
-        return True
-    return False
+    widget = CrashReportWidget(crash_report=report)
+    widget.exec_()
+
+
+def submit_feedback():
+    """
+    Present a user interface for modifying and sending a feedback message
+    """
+    widget = FeedbackWidget()
+    widget.exec_()
+
+
+if __name__ == "__main__":
+
+    from glue.external.qt import get_qapp
+    app = get_qapp()
+    submit_bug_report(report="Crash log here")
+    submit_feedback()
