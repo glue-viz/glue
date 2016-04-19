@@ -16,6 +16,8 @@ v0.8 (unreleased)
 v0.7.3 (unreleased)
 -------------------
 
+* Fix QColorBox so that it resizes correctly. [#952]
+
 * Add missing find_spec for import hook, to avoid issues when trying to set
   colormap. [#930]
 
