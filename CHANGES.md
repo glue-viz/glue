@@ -10,6 +10,9 @@ v0.7.3 (unreleased)
 * Ignore extra dimensions in WCS (for instance, if the data is 3D and the
   header is 4D, ignore the 4th dimension in the WCS).
 
+* Remove the scrollbars added in v0.7.1 since they cause issues on certain
+  systems. [#953]
+
 v0.7.2 (2016-04-05)
 -------------------
 
