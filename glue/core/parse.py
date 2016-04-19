@@ -141,9 +141,22 @@ class ParsedCommand(object):
         # pylint: disable=W0613, W0612
         references = self._references
         cmd = _dereference(self._cmd, self._references)
+
         scope = vars(env)
         scope['__view'] = view
-        return eval(cmd, vars(env), locals())  # careful!
+
+        global_variables = vars(env)
+
+        # We now import math modules if not already defined in local or
+        # global variables
+        if 'numpy' not in global_variables and 'numpy' not in locals():
+            import numpy
+        if 'np' not in global_variables and 'np' not in locals():
+            import numpy as np
+        if 'math' not in global_variables and 'math' not in locals():
+            import math
+
+        return eval(cmd, global_variables, locals())  # careful!
 
     def __gluestate__(self, context):
         return dict(cmd=self._cmd,

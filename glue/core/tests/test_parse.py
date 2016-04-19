@@ -111,6 +111,29 @@ class TestParsedCommand(object):
         assert pc.evaluate(data) == 100
         data.__getitem__.assert_called_once_with((c1, None))
 
+    def test_evaluate_math(self):
+
+        # If numpy, np, and math aren't defined in the config.py file, they
+        # are added to the local variables available.
+
+        data = MagicMock()
+        c1 = ComponentID('c1')
+        data.__getitem__.return_value = 10
+        refs = {'comp1': c1}
+
+        cmd = 'numpy.log10({comp1})'
+        pc = parse.ParsedCommand(cmd, refs)
+        assert pc.evaluate(data) == 1
+
+        cmd = 'np.log10({comp1})'
+        pc = parse.ParsedCommand(cmd, refs)
+        assert pc.evaluate(data) == 1
+
+        cmd = 'math.log10({comp1})'
+        pc = parse.ParsedCommand(cmd, refs)
+        assert pc.evaluate(data) == 1
+
+
 
 class TestParsedComponentLink(object):
 

@@ -9,6 +9,7 @@ from glue.core import parse
 from glue import core
 from glue.utils.qt import load_ui
 from glue.utils.qt import CompletionTextEdit
+from glue.utils.qt.helpers import CUSTOM_QWIDGETS
 
 __all__ = ['CustomComponentWidget']
 
@@ -83,6 +84,8 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
         self.setTextCursor(tc)
         self.setAlignment(Qt.AlignCenter)
 
+CUSTOM_QWIDGETS.append(ColorizedCompletionTextEdit)
+
 
 class CustomComponentWidget(object):
     """
@@ -97,17 +100,7 @@ class CustomComponentWidget(object):
 
         # In the ui file we do not create the text field for the expression
         # because we want to use a custom widget that supports auto-complete.
-        self.ui.expression = ColorizedCompletionTextEdit()
-        self.ui.verticalLayout_3.addWidget(self.ui.expression)
         self.ui.expression.setAlignment(Qt.AlignCenter)
-        self.ui.expression.setObjectName("expression")
-        self.ui.expression.setToolTip("Define a new component. You can either "
-                                      "type out the full name of a component\n"
-                                      "with the data:component syntax, or "
-                                      "start typing and press TAB to use "
-                                      "tab-completion.\n Blue-colored "
-                                      "components are valid, while "
-                                      "Red-colored components are invalid.")
 
         self._labels = {}
         self._data = {}
@@ -246,4 +239,6 @@ def main():
             print('\t%s' % c)
 
 if __name__ == "__main__":
+    from glue.external.qt import get_qapp
+    app = get_qapp()
     main()
