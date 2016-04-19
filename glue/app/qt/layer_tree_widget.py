@@ -95,8 +95,8 @@ class LayerAction(QtGui.QAction):
 class PlotAction(LayerAction):
 
     """Visualize the selection. Requires GlueApplication"""
-    _title = "Plot Data"
-    _tooltip = "Make a plot of this selection"
+    _title = "Create new viewer"
+    _tooltip = "Create a new viewer from this object"
 
     def __init__(self, tree, app):
         super(PlotAction, self).__init__(tree)
@@ -135,7 +135,6 @@ class FacetAction(LayerAction):
 class NewAction(LayerAction):
     _title = "New Subset"
     _tooltip = "Create a new subset"
-    _icon = "glue_subset"
     _shortcut = QtGui.QKeySequence('Ctrl+Shift+N')
 
     def _can_trigger(self):
@@ -185,12 +184,9 @@ class LinkAction(LayerAction):
     _title = "Link Data"
     _tooltip = "Define links between data sets"
     _data_link_message = "Define links between data sets"
-    _icon = "glue_link"
 
     def __init__(self, *args, **kwargs):
         super(LinkAction, self).__init__(*args, **kwargs)
-        self._link_icon = get_icon(self._icon)
-        self._unlink_icon = get_icon('glue_unlink')
 
     def _can_trigger(self):
         return len(self.data_collection) > 0
@@ -303,8 +299,7 @@ class PasteSpecialAction(PasteAction):
 
 
 class Inverter(LayerAction):
-    _title = "Invert"
-    _icon = "glue_not"
+    _title = "Invert Subset"
     _tooltip = "Invert selected subset"
 
     def _can_trigger(self):
