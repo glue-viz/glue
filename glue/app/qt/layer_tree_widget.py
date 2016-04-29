@@ -464,7 +464,8 @@ class LayerTreeWidget(QtGui.QMainWindow):
             data.edit_subset = [s for s in data.subsets if s in layers]
 
     def _create_component(self):
-        CustomComponentWidget.create_component(self.data_collection)
+        dialog = CustomComponentWidget(self.data_collection)
+        dialog.exec_()
 
     def _create_actions(self):
         tree = self.ui.layerTree
