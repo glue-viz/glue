@@ -60,7 +60,7 @@ class TestParse(object):
         parse._validate('{a} + {b}', ref)
         parse._validate('{a}', ref)
         parse._validate('3 + 4', ref)
-        with pytest.raises(TypeError) as exc:
+        with pytest.raises(parse.InvalidTagError) as exc:
             parse._validate('{c}', ref)
         assert exc.value.args[0] == ("Tag c not in reference mapping: "
                                      "['a', 'b']")

@@ -121,13 +121,13 @@ def _dereference_random(cmd):
     return TAG_RE.sub(sub_func, cmd)
 
 
-class InvalidTag(ValueError):
+class InvalidTagError(ValueError):
     def __init__(self, tag, references):
         msg = ("Tag %s not in reference mapping: %s" %
                (tag, sorted(references.keys())))
         self.tag = tag
         self.references = references
-        super(InvalidTag, self).__init__(msg)
+        super(InvalidTagError, self).__init__(msg)
 
 
 def _validate(cmd, references):
@@ -140,7 +140,7 @@ def _validate(cmd, references):
     for match in TAG_RE.finditer(cmd):
         tag = match.group('tag')
         if tag not in references:
-            raise InvalidTag(tag, references)
+            raise InvalidTagError(tag, references)
 
 
 class ParsedCommand(object):

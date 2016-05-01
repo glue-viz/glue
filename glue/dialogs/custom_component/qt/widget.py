@@ -143,7 +143,7 @@ class CustomComponentWidget(QtGui.QDialog):
                 self.ui.label_status.setStyleSheet('color: red')
                 self.ui.label_status.setText("Incomplete or invalid syntax")
                 self.ui.button_ok.setEnabled(False)
-            except parse.InvalidTag as exc:
+            except parse.InvalidTagError as exc:
                 self.ui.label_status.setStyleSheet('color: red')
                 self.ui.label_status.setText("Invalid component: {0}".format(exc.tag))
                 self.ui.button_ok.setEnabled(False)
