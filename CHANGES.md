@@ -23,6 +23,10 @@ v0.8 (unreleased)
 
 * Added helper classes for ComponentID and Data combo boxes. [#891]
 
+* Improved new component window: expressions can now include math or numpy
+  functions by default, and expressions are tested on-the-fly to check that
+  there are no issues with syntax or undefined variables. [#956]
+
 v0.7.3 (unreleased)
 -------------------
 
