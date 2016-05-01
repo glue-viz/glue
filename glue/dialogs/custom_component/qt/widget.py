@@ -20,13 +20,16 @@ def disambiguate(label, labels):
 
     Parameters
     ----------
-    label : string
-    labels : collection of strings
+    label : str
+        The label to change the name of
+    labels : iterable
+        A list of all labels
 
     Returns
     -------
-    label, perhaps appended with a suffix "_{number}". The output
-    does not appear in labels
+    label : str
+        If needed, appended with a suffix "_{number}". The output does not
+        appear in labels
     """
     label = label.replace(' ', '_')
     if label not in labels:
@@ -158,14 +161,18 @@ class CustomComponentWidget(QtGui.QDialog):
         cl.itemDoubleClicked.connect(self._add_to_expression)
 
     def _init_widgets(self):
-        """ Set up default state of widget """
+        """
+        Set up default state of widget
+        """
         comps = self.ui.component_list
         comps.addItems(sorted(self._labels.keys()))
         data = self.ui.data_list
         data.addItems(sorted(self._data.keys()))
 
     def _gather_components(self):
-        """ Build a mapping from unique labels -> componentIDs """
+        """
+        Build a mapping from unique labels -> componentIDs
+        """
         comps = set()
         for data in self._collection:
             for c in data.components:
@@ -177,14 +184,18 @@ class CustomComponentWidget(QtGui.QDialog):
                 comps.add(c)
 
     def _gather_data(self):
-        """ Build a mapping from unique labels -> data objects """
+        """
+        Build a mapping from unique labels -> data objects
+        """
         for data in self._collection:
             label = data.label
             label = disambiguate(label, self._data)
             self._data[label] = data
 
     def _selected_data(self):
-        """ Yield all data objects that are selected in the DataList """
+        """
+        Yield all data objects that are selected in the DataList
+        """
         for items in self.ui.data_list.selectedItems():
             yield self._data[str(items.text())]
 
@@ -216,7 +227,6 @@ class CustomComponentWidget(QtGui.QDialog):
 
         return parse.ParsedCommand(expression, self._labels)
 
-
     @property
     def _number_targets(self):
         """
@@ -225,21 +235,22 @@ class CustomComponentWidget(QtGui.QDialog):
         return len(self.ui.data_list.selectedItems())
 
     def _add_link_to_targets(self, link):
-        """ Add a link to all the selected data """
+        """
+        Add a link to all the selected data
+        """
         for target in self._selected_data():
             target.add_component_link(link)
 
     def _add_to_expression(self, item):
-        """ Add a component list item to the expression editor """
+        """
+        Add a component list item to the expression editor
+        """
         addition = '%s ' % item.text()
         expression = self.ui.expression
         expression.insertPlainText(addition)
 
     def accept(self):
-        if len(str(self.ui.expression.toPlainText())) == 0:
-            QtGui.QMessageBox.critical(self.ui, "Error", "No expression set",
-                                       buttons=QtGui.QMessageBox.Ok)
-        elif self._number_targets == 0:
+        if self._number_targets == 0:
             QtGui.QMessageBox.critical(self.ui, "Error", "Please specify the target dataset(s)",
                                        buttons=QtGui.QMessageBox.Ok)
         elif len(self.ui.new_label.text()) == 0:
