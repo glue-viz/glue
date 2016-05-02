@@ -17,6 +17,8 @@ v0.8 (unreleased)
   information, and also to have a separate form for feedback and crash
   reports. [#955]
 
+* Add log= option to ValueProperty and remove mapping= option. [#965]
+
 v0.7.3 (unreleased)
 -------------------
 
