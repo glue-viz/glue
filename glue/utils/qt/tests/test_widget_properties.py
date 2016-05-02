@@ -15,7 +15,8 @@ from ..widget_properties import (CurrentComboDataProperty,
                                  connect_bool_button,
                                  connect_current_combo,
                                  connect_float_edit,
-                                 connect_int_spin)
+                                 connect_int_spin,
+                                 connect_value)
 
 
 def test_combo_data():
@@ -136,32 +137,28 @@ def test_float():
 def test_value():
 
     class TestClass(object):
-        val1 = ValueProperty('_slider1')
-        val2 = ValueProperty('_slider2', value_range=(0, 10))
-        val3 = ValueProperty('_slider3', value_range=(0.01, 100), log=True)
+        val1 = ValueProperty('_slider')
+        val2 = ValueProperty('_slider', value_range=(0, 10))
+        val3 = ValueProperty('_slider', value_range=(0.01, 100), log=True)
 
         def __init__(self):
-            self._slider1 = QtGui.QSlider()
-            self._slider2 = QtGui.QSlider()
-            self._slider2.setMinimum(0)
-            self._slider2.setMaximum(100)
-            self._slider3 = QtGui.QSlider()
-            self._slider3.setMinimum(0)
-            self._slider3.setMaximum(100)
+            self._slider = QtGui.QSlider()
+            self._slider.setMinimum(0)
+            self._slider.setMaximum(100)
 
     tc = TestClass()
 
     tc.val1 = 2.0
     assert tc.val1 == 2.0
-    assert tc._slider1.value() == 2.0
+    assert tc._slider.value() == 2.0
 
     tc.val2 = 3.2
     assert tc.val2 == 3.2
-    assert tc._slider2.value() == 32
+    assert tc._slider.value() == 32
 
     tc.val3 = 10
     assert tc.val3 == 10
-    assert tc._slider3.value() == 75
+    assert tc._slider.value() == 75
 
 
 def test_tab():
@@ -288,3 +285,35 @@ def test_connect_int_spin():
 
     t.a = 3.0
     assert slider.value() == 3.0
+
+
+def test_connect_value():
+
+    class Test(object):
+        a = CallbackProperty()
+        b = CallbackProperty()
+        c = CallbackProperty()
+
+    t = Test()
+
+    slider = QtGui.QSlider()
+    slider.setMinimum(0)
+    slider.setMaximum(100)
+
+    connect_value(t, 'a', slider)
+    connect_value(t, 'b', slider, value_range=(0, 10))
+    connect_value(t, 'c', slider, value_range=(0.01, 100), log=True)
+
+    slider.setValue(25)
+    assert t.a == 25
+    assert t.b == 2.5
+    assert t.c == 0.1
+
+    t.a = 30
+    assert slider.value() == 30
+
+    t.b = 8.5
+    assert slider.value() == 85
+
+    t.c = 10
+    assert slider.value() == 75
