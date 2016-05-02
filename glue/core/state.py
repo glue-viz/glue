@@ -64,6 +64,8 @@ from base64 import b64encode, b64decode
 from inspect import isgeneratorfunction
 
 import numpy as np
+from matplotlib.colors import Colormap
+from matplotlib import cm
 
 from glue.external import six
 from glue import core
@@ -808,3 +810,11 @@ def _save_numpy(obj, context):
     np.save(f, obj)
     data = b64encode(f.getvalue()).decode('ascii')
     return dict(data=data)
+
+@saver(Colormap)
+def _save_cmap(cmap, context):
+    return {'cmap':cmap.name}
+
+@loader(Colormap)
+def _load_cmap(rec, context):
+    return cm.get_cmap(rec['cmap'])
