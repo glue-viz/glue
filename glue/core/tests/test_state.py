@@ -227,6 +227,12 @@ def test_polygonal_roi():
     assert r2.vx == [0, 0, 1]
     assert r2.vy == [0, 1, 0]
 
+
+def test_matplotlib_cmap():
+    from matplotlib import cm
+    assert clone(cm.gist_heat) is cm.gist_heat
+
+
 class DummyClass(object):
     pass
 
