@@ -168,9 +168,12 @@ class Subset(object):
         return np.where(self._to_mask_join(None).flat)[0]
 
     def _to_mask_join(self, view):
-        """Conver the subset to a mask through an entity join
-           to another dataset. """
+        """
+        Convert the subset to a mask through an entity join to another
+        dataset.
+        """
         for other, (cid1, cid2) in self.data._key_joins.items():
+
             if getattr(other, '_recursing', False):
                 continue
 
@@ -184,11 +187,23 @@ class Subset(object):
             finally:
                 self.data._recursing = False
 
-            key_left = self.data[cid1, view]
-            result = np.in1d(key_left.ravel(),
-                             other[cid2, key_right])
+            key_left_all = []
+            key_right_all = []
 
-            return result.reshape(key_left.shape)
+            for cid1_i, cid2_i in zip(cid1, cid2):
+                key_left_all.append(self.data[cid1_i, view].ravel())
+                key_right_all.append(other[cid2_i, key_right].ravel())
+
+            # TODO: The following is slow because we switch to pure Python.
+            # This is just for now, to check that the concept works, but this
+            # should be optimized once we know we want to start using it.
+            key_left_all = zip(*key_left_all)
+            key_right_all = set(zip(*key_right_all))
+
+            result = [key in key_right_all for key in key_left_all]
+            result = np.array(result)
+
+            return result.reshape(self.data[cid1_i, view].shape)
 
         raise IncompatibleAttribute
 

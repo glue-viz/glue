@@ -203,15 +203,22 @@ class Data(object):
         key values k1 of 1 and 2. Thus, the selected items in d2
         are the elements where k2 = 1 or 2.
         """
-        _i1, _i2 = cid, cid_other
-        cid = self.find_component_id(cid)
-        cid_other = other.find_component_id(cid_other)
-        if cid is None:
-            raise ValueError("ComponentID not found in %s: %s" %
-                             (self.label, _i1))
-        if cid_other is None:
-            raise ValueError("ComponentID not found in %s: %s" %
-                             (other.label, _i2))
+
+        # To make things easier, we transform all component inputs to a tuple
+        if isinstance(cid, six.string_types):
+            cid = (cid,)
+        if isinstance(cid_other, six.string_types):
+            cid_other = (cid_other,)
+
+        def get_component_id(data, name):
+            cid = data.find_component_id(name)
+            if cid is None:
+                raise ValueError("ComponentID not found in %s: %s" %
+                                 (data.label, name))
+            return cid
+
+        cid = tuple(get_component_id(self, name) for name in cid)
+        cid_other = tuple(get_component_id(other, name) for name in cid_other)
 
         self._key_joins[other] = (cid, cid_other)
         other._key_joins[self] = (cid_other, cid)
