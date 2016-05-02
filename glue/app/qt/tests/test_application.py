@@ -189,11 +189,11 @@ class TestGlueApplication(object):
 
             self.app.choose_new_data_viewer(data=d1)
             args, kwargs = pc.call_args
-            assert qt_client.members[kwargs['default']] == ScatterWidget
+            assert kwargs['default'] is ScatterWidget
 
             self.app.choose_new_data_viewer(data=d2)
             args, kwargs = pc.call_args
-            assert qt_client.members[kwargs['default']] == ImageWidget
+            assert kwargs['default'] is ImageWidget
 
     def test_drop_load_data(self):
         m = QtCore.QMimeData()

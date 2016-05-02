@@ -23,6 +23,8 @@ v0.7.3 (unreleased)
 * Add missing find_spec for import hook, to avoid issues when trying to set
   colormap. [#930]
 
+* Fix the selection of the default viewer based on the data shape. [#968]
+
 * Ignore extra dimensions in WCS (for instance, if the data is 3D and the
   header is 4D, ignore the 4th dimension in the WCS).
 

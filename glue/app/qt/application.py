@@ -679,11 +679,11 @@ class GlueApplication(Application, QtGui.QMainWindow):
         from glue.config import qt_client
 
         if data and data.ndim == 1 and ScatterWidget in qt_client.members:
-            default = qt_client.members.index(ScatterWidget)
+            default = ScatterWidget
         elif data and data.ndim > 1 and ImageWidget in qt_client.members:
-            default = qt_client.members.index(ImageWidget)
+            default = ImageWidget
         else:
-            default = 0
+            default = None
 
         client = pick_class(list(qt_client.members), title='Data Viewer',
                             label="Choose a new data viewer",
