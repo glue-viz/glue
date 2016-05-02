@@ -439,7 +439,9 @@ class LayerTreeWidget(QtGui.QMainWindow):
         self.ui.layerAddButton.clicked.connect(nonpartial(self._load_data))
         self.ui.layerRemoveButton.clicked.connect(self._actions['delete'].trigger)
         self.ui.linkButton.set_action(self._actions['link'])
+        self.ui.linkButton.setIcon(get_icon('glue_link'))
         self.ui.newSubsetButton.set_action(self._actions['new'], text=False)
+        self.ui.newSubsetButton.setIcon(get_icon('glue_subset'))
 
         rbut = self.ui.layerRemoveButton
 
