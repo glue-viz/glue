@@ -30,8 +30,8 @@ def test_pick_class():
     Bar.LABEL = 'Baz'
 
     with mock.patch('glue.utils.qt.dialogs.pick_item') as d:
-        pick_class([Foo, Bar])
-        d.assert_called_once_with([Foo, Bar], ['Foo', 'Baz'])
+        pick_class([Foo, Bar], default=Foo)
+        d.assert_called_once_with([Foo, Bar], ['Foo', 'Baz'], default=Foo)
 
     with mock.patch('glue.utils.qt.dialogs.pick_item') as d:
         pick_class([Foo, Bar], sort=True)

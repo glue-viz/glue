@@ -8,7 +8,7 @@ __all__ = ['pick_item', 'pick_class', 'get_text']
 
 
 def pick_item(items, labels, title="Pick an item", label="Pick an item",
-              default=0):
+              default=None):
     """ Prompt the user to choose an item
 
     :param items: List of items to choose
@@ -18,8 +18,14 @@ def pick_item(items, labels, title="Pick an item", label="Pick an item",
 
     Returns the selected item, or None
     """
+
+    if default in items:
+        current = items.index(default)
+    else:
+        current = 0
+
     choice, isok = QtGui.QInputDialog.getItem(None, title, label,
-                                        labels, current=default,
+                                        labels, current=current,
                                         editable=False)
     if isok:
         index = labels.index(str(choice))
@@ -40,7 +46,7 @@ def pick_class(classes, sort=False, **kwargs):
             return c.LABEL
         except AttributeError:
             return c.__name__
-            
+
     if sort:
         classes = sorted(classes, key=lambda x: _label(x))
     choices = [_label(c) for c in classes]
