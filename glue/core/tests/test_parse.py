@@ -133,6 +133,22 @@ class TestParsedCommand(object):
         pc = parse.ParsedCommand(cmd, refs)
         assert pc.evaluate(data) == 1
 
+    def test_evaluate_test(self):
+
+        data = MagicMock()
+        c1 = ComponentID('c1')
+        data.__getitem__.return_value = 10
+        refs = {'comp1': c1}
+
+        cmd = 'numpy.log10({comp1}) + 3.4 - {comp1}'
+        pc = parse.ParsedCommand(cmd, refs)
+        pc.evaluate_test()
+
+        cmd = 'nump.log10({comp1}) + 3.4 - {comp1}'
+        pc = parse.ParsedCommand(cmd, refs)
+        with pytest.raises(NameError) as exc:
+            pc.evaluate_test()
+        assert exc.value.args[0] == "name 'nump' is not defined"
 
 
 class TestParsedComponentLink(object):
