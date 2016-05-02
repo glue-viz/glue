@@ -615,3 +615,11 @@ class TestAttributes(object):
         s = d.new_subset()
         s.subset_state = RangeSubsetState(0, 1, att=d.id['x'])
         assert s.attributes == (d.id['x'],)
+
+
+def test_save_element_subset_state():
+    # Regression test to make sure that element subset states are saved
+    # correctly.
+    state1 = ElementSubsetState(indices=[1, 3, 4])
+    state2 = clone(state1)
+    assert state2._indices == [1, 3, 4]

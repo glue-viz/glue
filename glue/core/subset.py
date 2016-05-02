@@ -675,6 +675,13 @@ class ElementSubsetState(SubsetState):
     def copy(self):
         return ElementSubsetState(self._indices)
 
+    def __gluestate__(self, context):
+        return dict(indices=context.do(self._indices))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(indices=context.object(rec['indices']))
+
 
 class InequalitySubsetState(SubsetState):
 
