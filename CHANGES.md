@@ -16,6 +16,8 @@ v0.7.3 (unreleased)
 * Remove icons for actions that appear in contextual menus, since these
   appear too large due to a Qt bug. [#911]
 
+* Fix saving of ElementSubsetState to session files. [#966]
+
 v0.7.2 (2016-04-05)
 -------------------
 
