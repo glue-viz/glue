@@ -13,6 +13,8 @@ v0.7.3 (unreleased)
 * Remove the scrollbars added in v0.7.1 since they cause issues on certain
   systems. [#953]
 
+* Fix saving of Matplotlib colormaps to session files. [#967]
+
 * Remove icons for actions that appear in contextual menus, since these
   appear too large due to a Qt bug. [#911]
 
