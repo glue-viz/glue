@@ -221,37 +221,43 @@ class ValueProperty(WidgetProperty):
     docstring : str, optional
         Optional short summary for the property. Used by sphinx. Should be 1
         sentence or less.
-    mapping : tuple, optional
-        If specified, should be a tuple of two functions - the first to map
-        from Qt widget values to Python values, and the second to map from
-        Python values to Qt widget values. This can be used for to specify a
-        non-linear mapping for sliders.
+    value_range : tuple, optional
+        If set, the slider values are mapped to this range.
+    log : bool, optional
+        If `True`, the mapping is assumed to be logarithmic instead of
+        linear.
     """
 
-    def __init__(self, att, docstring='', mapping=None, value_range=None):
+    def __init__(self, att, docstring='',value_range=None, log=False):
         super(ValueProperty, self).__init__(att, docstring=docstring)
-        self.mapping = mapping
+
+        if log:
+            if value_range is None:
+                raise ValueError("log option can only be set if value_range is given")
+            else:
+                value_range = math.log10(value_range[0]), math.log10(value_range[1])
+
+        self.log = log
         self.value_range = value_range
 
     def getter(self, widget):
-        if self.mapping is not None:
-            return self.mapping[0](widget.value())
-        elif self.value_range is not None:
+        val = widget.value()
+        if self.value_range is not None:
             imin, imax = widget.minimum(), widget.maximum()
             vmin, vmax = self.value_range
-            return (widget.value() - imin) / (imax - imin) * (vmax - vmin) + vmin
-        else:
-            return widget.value()
+            val = (val - imin) / (imax - imin) * (vmax - vmin) + vmin
+        if self.log:
+            val = 10 ** val
+        return val
 
-    def setter(self, widget, value):
-        if self.mapping is not None:
-            widget.setValue(self.mapping[1](value))
-        elif self.value_range is not None:
+    def setter(self, widget, val):
+        if self.log:
+            val = math.log10(val)
+        if self.value_range is not None:
             imin, imax = widget.minimum(), widget.maximum()
             vmin, vmax = self.value_range
-            widget.setValue((value - vmin) / (vmax - vmin) * (imax - imin) + imin)
-        else:
-            widget.setValue(value)
+            val = (val - vmin) / (vmax - vmin) * (imax - imin) + imin
+        widget.setValue(val)
 
 
 def connect_bool_button(client, prop, widget):
