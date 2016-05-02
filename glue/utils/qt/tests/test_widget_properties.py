@@ -136,32 +136,32 @@ def test_float():
 def test_value():
 
     class TestClass(object):
-        val = ValueProperty('_slider')
+        val1 = ValueProperty('_slider1')
+        val2 = ValueProperty('_slider2', value_range=(0, 10))
+        val3 = ValueProperty('_slider3', value_range=(0.01, 100), log=True)
 
         def __init__(self):
-            self._slider = QtGui.QSlider()
+            self._slider1 = QtGui.QSlider()
+            self._slider2 = QtGui.QSlider()
+            self._slider2.setMinimum(0)
+            self._slider2.setMaximum(100)
+            self._slider3 = QtGui.QSlider()
+            self._slider3.setMinimum(0)
+            self._slider3.setMaximum(100)
 
     tc = TestClass()
 
-    tc.val = 2.0
-    assert tc.val == 2.0
-    assert tc._slider.value() == 2.0
+    tc.val1 = 2.0
+    assert tc.val1 == 2.0
+    assert tc._slider1.value() == 2.0
 
+    tc.val2 = 3.2
+    assert tc.val2 == 3.2
+    assert tc._slider2.value() == 32
 
-def test_value_mapping():
-
-    class TestClass(object):
-        val = ValueProperty('_slider', mapping=(lambda x: 2 * x,
-                                                lambda x: 0.5 * x))
-
-        def __init__(self):
-            self._slider = QtGui.QSlider()
-
-    tc = TestClass()
-
-    tc.val = 2.0
-    assert tc.val == 2.0
-    assert tc._slider.value() == 1.0
+    tc.val3 = 10
+    assert tc.val3 == 10
+    assert tc._slider3.value() == 75
 
 
 def test_tab():
