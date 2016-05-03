@@ -200,34 +200,34 @@ class Application(HubListener):
 
         datasets = as_list(datasets)
         data_collection.extend(datasets)
+
+        # We now check whether any of the datasets can be merged. We need to
+        # make sure that datasets are only ever shown once, as we don't want
+        # to repeat the menu multiple times.
+
+        suggested = []
+
         for data in datasets:
-            # If we add multiple datasets with the same shape, they will all
-            # get included in the merge suggestions, and so after the first
-            # merge, some of the datasets won't be in the data collection
-            # any longer, so it doesn't make sense to check for merges for
-            # these.
-            if data in data_collection:
-                cls._suggest_mergers(data_collection, data)
 
-    @classmethod
-    def _suggest_mergers(cls, data_collection, data):
-        """
-        When loading a new dataset, check if any existing
-        data has the same shape. If so, offer to
-        merge the two datasets
-        """
+            # If the data was already suggested, we skip over it
+            if data in suggested:
+                continue
 
-        shp = data.shape
-        other = [d for d in data_collection
-                 if d.shape == shp and d is not data]
+            shp = data.shape
+            other = [d for d in data_collection
+                     if d.shape == shp and d is not data]
 
-        if not other:
-            return
+            # If no other datasets have the same shape, we go to the next one
+            if not other:
+                continue
 
-        merges, label = cls._choose_merge(data, other)
+            merges, label = cls._choose_merge(data, other)
 
-        if merges:
-            data_collection.merge(*merges, label=label)
+            if merges:
+                data_collection.merge(*merges, label=label)
+
+            suggested.append(data)
+            suggested.extend(other)
 
     @staticmethod
     def _choose_merge(data, other):
