@@ -53,6 +53,7 @@ class LayerAction(QtGui.QAction):
             self.setShortcut(self._shortcut)
         self._parent.addAction(self)
         self._connect()
+        self.setIconVisibleInMenu(False)
 
     def _connect(self):
         self._parent.selection_changed.connect(nonpartial(self.update_enabled))
@@ -136,6 +137,7 @@ class NewAction(LayerAction):
     _title = "New Subset"
     _tooltip = "Create a new subset"
     _shortcut = QtGui.QKeySequence('Ctrl+Shift+N')
+    _icon = 'glue_subset'
 
     def _can_trigger(self):
         return len(self.data_collection) > 0
@@ -184,6 +186,7 @@ class LinkAction(LayerAction):
     _title = "Link Data"
     _tooltip = "Define links between data sets"
     _data_link_message = "Define links between data sets"
+    _icon = 'glue_link'
 
     def __init__(self, *args, **kwargs):
         super(LinkAction, self).__init__(*args, **kwargs)
@@ -439,9 +442,7 @@ class LayerTreeWidget(QtGui.QMainWindow):
         self.ui.layerAddButton.clicked.connect(nonpartial(self._load_data))
         self.ui.layerRemoveButton.clicked.connect(self._actions['delete'].trigger)
         self.ui.linkButton.set_action(self._actions['link'])
-        self.ui.linkButton.setIcon(get_icon('glue_link'))
         self.ui.newSubsetButton.set_action(self._actions['new'], text=False)
-        self.ui.newSubsetButton.setIcon(get_icon('glue_subset'))
 
         rbut = self.ui.layerRemoveButton
 
