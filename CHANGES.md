@@ -30,6 +30,9 @@ v0.8 (unreleased)
 v0.7.3 (unreleased)
 -------------------
 
+* Make sure that no combo boxes get resized based on the content (unless
+  strictly needed).
+
 * Fix a bug that caused the merge window to appear multiple times, make sure
   that all components named PRIMARY get renamed after merging, and make sure
   that the merge mechanism is also triggered when opening datasets from the
