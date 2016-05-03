@@ -112,7 +112,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="color_scale"/>
+      <widget class="QComboBox" name="color_scale">
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

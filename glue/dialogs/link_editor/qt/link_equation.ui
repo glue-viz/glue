@@ -50,6 +50,9 @@
        <property name="toolTip">
         <string>Select a translation function to use</string>
        </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+       </property>
       </widget>
      </item>
      <item>
