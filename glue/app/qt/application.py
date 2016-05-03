@@ -969,7 +969,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
         w = load_ui('merge.ui', None, directory=os.path.dirname(__file__))
         w.show()
         w.raise_()
-        
+
         # Add the main dataset to the list. Some of the 'others' may also be
         # new ones, so it doesn't really make sense to distinguish between
         # the two here. The main point is that some datasets, including at
@@ -988,10 +988,12 @@ class GlueApplication(Application, QtGui.QMainWindow):
             w.choices.addItem(item)
 
         if not w.exec_():
-            return None
+            return None, None
 
         result = [layer for layer, entry in zip(others, entries)
                   if entry.checkState() == Qt.Checked]
 
         if result:
             return result, str(w.merged_label.text())
+
+        return None, None

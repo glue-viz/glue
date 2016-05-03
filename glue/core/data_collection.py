@@ -211,7 +211,7 @@ class DataCollection(HubListener):
             s.delete()
         subset_grp.unregister(self.hub)
 
-    def merge(self, label, *data):
+    def merge(self, *data, **kwargs):
         """
         Merge two or more datasets into a single dataset.
 
@@ -233,6 +233,9 @@ class DataCollection(HubListener):
         for d in data:
             if d.shape != shp:
                 raise ValueError("All arguments must have the same shape")
+
+
+        label = kwargs.get('label', data[0].label)
 
         master = Data(label=label)
         self.append(master)

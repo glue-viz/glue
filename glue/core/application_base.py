@@ -224,10 +224,12 @@ class Application(HubListener):
         if not other:
             return
 
+        result = cls._choose_merge(data, other)
+
         merges, label = cls._choose_merge(data, other)
 
         if merges:
-            data_collection.merge(label, *merges)
+            data_collection.merge(*merges, label=label)
 
     @staticmethod
     def _choose_merge(data, other):
