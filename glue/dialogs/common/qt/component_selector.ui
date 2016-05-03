@@ -36,7 +36,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="data_selector"/>
+      <widget class="QComboBox" name="data_selector">
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_2">

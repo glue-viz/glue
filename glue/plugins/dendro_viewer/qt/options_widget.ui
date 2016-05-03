@@ -35,7 +35,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="heightCombo"/>
+        <widget class="QComboBox" name="heightCombo">
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -52,7 +56,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="parentCombo"/>
+        <widget class="QComboBox" name="parentCombo">
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -69,7 +77,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="orderCombo"/>
+        <widget class="QComboBox" name="orderCombo">
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
