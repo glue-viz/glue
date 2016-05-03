@@ -11,6 +11,7 @@ from glue.utils.qt.widget_properties import (TextProperty,
                                        ValueProperty,
                                        CurrentComboProperty)
 from glue.utils import nonpartial
+from glue.icons.qt import get_icon
 
 
 class SliceWidget(QtGui.QWidget):
@@ -23,7 +24,9 @@ class SliceWidget(QtGui.QWidget):
 
     def __init__(self, label='', pix2world=None, lo=0, hi=10,
                  parent=None, aggregation=None):
+
         super(SliceWidget, self).__init__(parent)
+
         if aggregation is not None:
             raise NotImplemented("Aggregation option not implemented")
         if pix2world is not None:
@@ -53,6 +56,21 @@ class SliceWidget(QtGui.QWidget):
                          directory=os.path.dirname(__file__))
         slider.slider
 
+        slider.button_first.setStyleSheet('border: 0px')
+        slider.button_first.setIcon(get_icon('playback_first'))
+        slider.button_prev.setStyleSheet('border: 0px')
+        slider.button_prev.setIcon(get_icon('playback_prev'))
+        slider.button_back.setStyleSheet('border: 0px')
+        slider.button_back.setIcon(get_icon('playback_back'))
+        slider.button_stop.setStyleSheet('border: 0px')
+        slider.button_stop.setIcon(get_icon('playback_stop'))
+        slider.button_forw.setStyleSheet('border: 0px')
+        slider.button_forw.setIcon(get_icon('playback_forw'))
+        slider.button_next.setStyleSheet('border: 0px')
+        slider.button_next.setIcon(get_icon('playback_next'))
+        slider.button_last.setStyleSheet('border: 0px')
+        slider.button_last.setIcon(get_icon('playback_last'))
+
         slider.slider.setMinimum(lo)
         slider.slider.setMaximum(hi)
         slider.slider.setValue((lo + hi) / 2)
@@ -64,10 +82,17 @@ class SliceWidget(QtGui.QWidget):
         slider.label.setText(str(slider.slider.value()))
         slider.label.textChanged.connect(lambda x: slider.slider.setValue(int(x)))
 
-        slider.first.clicked.connect(nonpartial(self._browse_slice, 'first'))
-        slider.prev.clicked.connect(nonpartial(self._browse_slice, 'prev'))
-        slider.next.clicked.connect(nonpartial(self._browse_slice, 'next'))
-        slider.last.clicked.connect(nonpartial(self._browse_slice, 'last'))
+        self._play_timer = QtCore.QTimer()
+        self._play_timer.setInterval(500)
+        self._play_timer.timeout.connect(nonpartial(self._play_slice))
+
+        slider.button_first.clicked.connect(nonpartial(self._browse_slice, 'first'))
+        slider.button_prev.clicked.connect(nonpartial(self._browse_slice, 'prev'))
+        slider.button_back.clicked.connect(nonpartial(self._adjust_play, 'back'))
+        slider.button_stop.clicked.connect(nonpartial(self._adjust_play, 'stop'))
+        slider.button_forw.clicked.connect(nonpartial(self._adjust_play, 'forw'))
+        slider.button_next.clicked.connect(nonpartial(self._browse_slice, 'next'))
+        slider.button_last.clicked.connect(nonpartial(self._browse_slice, 'last'))
 
         layout.addWidget(slider)
 
@@ -79,25 +104,65 @@ class SliceWidget(QtGui.QWidget):
         self._update_mode()
         self._frozen = False
 
-    def _browse_slice(self, action):
+        self._play_speed = 0
+
+    def _adjust_play(self, action):
+        if action == 'stop':
+            self._play_speed = 0
+        elif action == 'back':
+            if self._play_speed > 0:
+                self._play_speed = -1
+            else:
+                self._play_speed -= 1
+        elif action == 'forw':
+            if self._play_speed < 0:
+                self._play_speed = +1
+            else:
+                self._play_speed += 1
+        if self._play_speed == 0:
+            self._play_timer.stop()
+        else:
+            self._play_timer.start()
+            self._play_timer.setInterval(500 / abs(self._play_speed))
+
+    def _play_slice(self):
+        if self._play_speed > 0:
+            self._browse_slice('next', play=True)
+        elif self._play_speed < 0:
+            self._browse_slice('prev', play=True)
+
+    def _browse_slice(self, action, play=False):
+
         imin = self._ui_slider.slider.minimum()
         imax = self._ui_slider.slider.maximum()
         value = self._ui_slider.slider.value()
+
+        # If this was not called from _play_slice, we should stop the
+        # animation.
+        if not play:
+            self._adjust_play('stop')
+
         if action == 'first':
             value = imin
         elif action == 'last':
             value = imax
         elif action == 'prev':
-            value = max(value - 1, imin)
+            value = value - 1
+            if value < imin:
+                value = imax
         elif action == 'next':
-            value = min(value + 1, imax)
+            value = value + 1
+            if value > imax:
+                value = imin
         else:
             raise ValueError("Action should be one of first/prev/next/last")
+
         self._ui_slider.slider.setValue(value)
 
     def _update_mode(self, *args):
         if self.mode != 'slice':
             self._ui_slider.hide()
+            self._adjust_play('stop')
         else:
             self._ui_slider.show()
 
@@ -264,3 +329,14 @@ class DataSlice(QtGui.QWidget):
             else:
                 s.mode = 'slice'
                 s.slice_center = v
+
+if __name__ == "__main__":
+
+    from glue.external.qt import get_qapp
+
+    app = get_qapp()
+
+    widget = SliceWidget()
+    widget.show()
+
+    app.exec_()

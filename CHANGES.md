@@ -4,6 +4,8 @@ Full changelog
 v0.8 (unreleased)
 -----------------
 
+* Add playback controls to slice widget. [#971]
+
 * Add tooltip for data labels so that long labels can be more easily
   inspected. [#912]
 

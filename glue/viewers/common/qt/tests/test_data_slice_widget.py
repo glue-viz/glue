@@ -17,20 +17,24 @@ class TestSliceWidget(object):
     def test_browse_slice(self):
         s = SliceWidget(lo=0, hi=10)
         assert s.slice_center == 5
-        s._ui_slider.prev.click()
+        s._ui_slider.button_prev.click()
         assert s.slice_center == 4
-        s._ui_slider.next.click()
-        s._ui_slider.next.click()
+        s._ui_slider.button_next.click()
+        s._ui_slider.button_next.click()
         assert s.slice_center == 6
-        s._ui_slider.first.click()
+        s._ui_slider.button_first.click()
         assert s.slice_center == 0
-        s._ui_slider.prev.click()
+        s._ui_slider.button_prev.click()
+        assert s.slice_center == 10
+        s._ui_slider.button_next.click()
         assert s.slice_center == 0
-        s._ui_slider.last.click()
+        s._ui_slider.button_last.click()
         assert s.slice_center == 10
-        s._ui_slider.next.click()
+        s._ui_slider.button_next.click()
+        assert s.slice_center == 0
+        s._ui_slider.button_prev.click()
         assert s.slice_center == 10
-        s._ui_slider.prev.click()
+        s._ui_slider.button_prev.click()
         assert s.slice_center == 9
 
 
