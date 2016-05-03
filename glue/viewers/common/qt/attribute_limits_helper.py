@@ -2,9 +2,8 @@ import numpy as np
 
 from glue.external.qt import QtGui
 from glue.core import Subset
-from glue.utils.qt import update_combobox
 from glue.utils.qt.widget_properties import (CurrentComboTextProperty,
-                                             CurrentComboProperty,
+                                             CurrentComboDataProperty,
                                              FloatLineProperty,
                                              ButtonProperty)
 
@@ -29,14 +28,6 @@ class AttributeLimitsHelper(object):
     In addition, this helper class can optionally link a combo for the scale
     mode, for example using the min/max values or percentile values, as well as
     a button for flipping the min/max values.
-
-    Finally, this helper is aware of the differences between Data and Subset -
-    for subsets, the ``subset_mode`` attribute can be set to either 'outline'
-    or 'data'. For 'outline', the limits are frozen to (0, 1), since in this
-    mode, the mask of subsets is meant to be shown directly, with values either
-    0 (False) or 1 (True). For 'data', the lower limit is frozen to 0 while the
-    upper limit is computed as for data - this mode is intended for use when
-    showing data * subset_mask, hence why the lower limit is set to 0.
 
     Parameters
     ----------
@@ -70,9 +61,9 @@ class AttributeLimitsHelper(object):
     parameters above.
     """
 
-    attribute = CurrentComboProperty('attribute_combo')
+    component_data = CurrentComboDataProperty('component_id_combo')
     scale_mode = CurrentComboTextProperty('mode_combo')
-    percentile = CurrentComboProperty('mode_combo')
+    percentile = CurrentComboDataProperty('mode_combo')
     vlo = FloatLineProperty('lower_value')
     vhi = FloatLineProperty('upper_value')
     vlog = ButtonProperty('log_button')
@@ -81,14 +72,14 @@ class AttributeLimitsHelper(object):
                  mode_combo=None, flip_button=None, log_button=None,
                  data=None, limits_cache=None):
 
-        self.attribute_combo = attribute_combo
+        self.component_id_combo = attribute_combo
         self.mode_combo = mode_combo
         self.lower_value = lower_value
         self.upper_value = upper_value
         self.flip_button = flip_button
         self.log_button = log_button
 
-        self.attribute_combo.currentIndexChanged.connect(self._update_limits)
+        self.component_id_combo.currentIndexChanged.connect(self._update_limits)
 
         self.lower_value.editingFinished.connect(self._manual_edit)
         self.upper_value.editingFinished.connect(self._manual_edit)
@@ -115,20 +106,6 @@ class AttributeLimitsHelper(object):
         self._limits = limits_cache
         self._callbacks = []
 
-    @property
-    def data(self):
-        return self._data
-
-    @data.setter
-    def data(self, value):
-        self._invalidate_cache()
-        self._data = value
-        if isinstance(value, Subset):
-            self.subset_mode = 'data'
-        else:
-            self.subset_mode = None
-        self._setup_attribute_combo()
-
     def set_limits(self, vlo, vhi):
         self.lower_value.blockSignals(True)
         self.upper_value.blockSignals(True)
@@ -138,15 +115,6 @@ class AttributeLimitsHelper(object):
         self.upper_value.blockSignals(False)
         self.lower_value.editingFinished.emit()
         self.upper_value.editingFinished.emit()
-
-    def _setup_attribute_combo(self):
-        self.attribute_combo.clear()
-        if isinstance(self.data, Subset):
-            components = self.data.data.visible_components
-        else:
-            components = self.data.visible_components
-        label_data = [(comp.label, comp) for comp in components]
-        update_combobox(self.attribute_combo, label_data)
 
     def _setup_mode_combo(self):
         self.mode_combo.clear()
@@ -173,15 +141,11 @@ class AttributeLimitsHelper(object):
         self._limits.clear()
 
     def _cache_limits(self):
-        if self.subset_mode != 'outline':
-            self._limits[self.attribute] = self.scale_mode, self.vlo, self.vhi, self.vlog
+        self._limits[self.component_id] = self.scale_mode, self.vlo, self.vhi, self.vlog
 
     def _update_limits(self):
-        if self.subset_mode == 'outline':
-            self.set_limits(0, 1)
-            self.vlog = False
-        elif self.attribute in self._limits:
-            self.scale_mode, lower, upper, self.vlog = self._limits[self.attribute]
+        if self.component_id in self._limits:
+            self.scale_mode, lower, upper, self.vlog = self._limits[self.component_id]
             self.set_limits(lower, upper)
         else:
             self.mode_combo.blockSignals(True)
@@ -190,26 +154,33 @@ class AttributeLimitsHelper(object):
             self._auto_limits()
             self.vlog = False
 
+    @property
+    def component_id(self):
+        if self.component_data is not None:
+            return self.component_data[0]
+        else:
+            return None
+
+    @property
+    def data(self):
+        if self.component_data is not None:
+            return self.component_data[1]
+        else:
+            return None
+
     def _auto_limits(self):
 
-        if self.data is None:
-            return
-
-        if self.attribute is None:
-            return
-
-        if self.subset_mode == 'outline':
-            self.set_limits(0, 1)
+        if self.component_data is None:
             return
 
         exclude = (100 - self.percentile) / 2.
 
         # For subsets in 'data' mode, we want to compute the limits based on
         # the full dataset, not just the subset.
-        if self.subset_mode == 'data':
-            data_values = self.data.data[self.attribute]
+        if isinstance(self.data, Subset):
+            data_values = self.data.data[self.component_id]
         else:
-            data_values = self.data[self.attribute]
+            data_values = self.data[self.component_id]
 
         try:
             lower = np.nanpercentile(data_values, exclude)
@@ -219,46 +190,7 @@ class AttributeLimitsHelper(object):
             lower = np.percentile(data_values, exclude)
             upper = np.percentile(data_values, 100 - exclude)
 
-        if self.subset_mode == 'data':
-            self.set_limits(0, upper)
-        else:
-            self.set_limits(lower, upper)
-
-    @property
-    def subset_mode(self):
-        return self._subset_mode
-
-    @subset_mode.setter
-    def subset_mode(self, value):
-
         if isinstance(self.data, Subset):
-            if value not in ['outline', 'data']:
-                raise ValueError("subset_mode should either be 'outline', 'data' when data is a subset")
+            lower = 0
 
-            self.lower_value.setEnabled(False)
-
-            if value == 'outline':
-                self.attribute_combo.setEnabled(False)
-                self.mode_combo.setEnabled(False)
-                self.upper_value.setEnabled(False)
-            else:
-                self.attribute_combo.setEnabled(True)
-                self.mode_combo.setEnabled(True)
-                self.upper_value.setEnabled(True)
-
-            self.flip_button.setEnabled(False)
-
-        else:
-
-            if value is not None:
-                raise ValueError("subset_mode should be set to None when data is not a subset")
-
-            self.attribute_combo.setEnabled(True)
-            self.mode_combo.setEnabled(True)
-            self.lower_value.setEnabled(True)
-            self.upper_value.setEnabled(True)
-            self.flip_button.setEnabled(True)
-
-        self._subset_mode = value
-
-        self._update_limits()
+        self.set_limits(lower, upper)
