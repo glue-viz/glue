@@ -4,8 +4,9 @@ import pytest
 import numpy as np
 
 from glue.external.qt import QtGui
-from glue.core.data import Data
+from glue.core import Data, DataCollection
 from glue.core.subset import InequalitySubsetState
+from glue.core.qt.data_combo_helper import ComponentIDComboHelper
 
 from ..attribute_limits_helper import AttributeLimitsHelper
 
@@ -26,8 +27,11 @@ class TestAttributeLimitsHelper():
 
         self.log_button = QtGui.QToolButton()
         self.log_button.setCheckable(True)
-        
-        # TODO: Need to make log button checkable here for test to work
+
+        self.data = Data(x=np.linspace(-100, 100, 10000),
+                         y=np.linspace(2, 3, 10000), label='test_data')
+
+        self.data_collection = DataCollection([self.data])
 
         self.helper = AttributeLimitsHelper(self.attribute_combo,
                                             self.lower_value, self.upper_value,
@@ -35,10 +39,9 @@ class TestAttributeLimitsHelper():
                                             flip_button=self.flip_button,
                                             log_button=self.log_button)
 
-        self.data = Data(x=np.linspace(-100, 100, 10000),
-                         y=np.linspace(2, 3, 10000), label='test_data')
+        self.component_helper = ComponentIDComboHelper(self.attribute_combo, self.data_collection)
 
-        self.helper.data = self.data
+        self.component_helper.append(self.data)
 
         self.x_id = self.data.visible_components[0]
         self.y_id = self.data.visible_components[1]
@@ -46,19 +49,21 @@ class TestAttributeLimitsHelper():
     def test_attributes(self):
         assert self.attribute_combo.count() == 2
         assert self.attribute_combo.itemText(0) == 'x'
-        assert self.attribute_combo.itemData(0) is self.x_id
+        assert self.attribute_combo.itemData(0)[0] is self.x_id
+        assert self.attribute_combo.itemData(0)[1] is self.data
         assert self.attribute_combo.itemText(1) == 'y'
-        assert self.attribute_combo.itemData(1) is self.y_id
+        assert self.attribute_combo.itemData(1)[0] is self.y_id
+        assert self.attribute_combo.itemData(1)[1] is self.data
 
     def test_minmax(self):
         assert self.helper.vlo == -100
         assert self.helper.vhi == +100
 
     def test_change_attribute(self):
-        self.helper.attribute = self.y_id
+        self.attribute_combo.setCurrentIndex(1)
         assert self.helper.vlo == 2
         assert self.helper.vhi == 3
-        self.helper.attribute = self.x_id
+        self.attribute_combo.setCurrentIndex(0)
         assert self.helper.vlo == -100
         assert self.helper.vhi == +100
 
@@ -84,12 +89,12 @@ class TestAttributeLimitsHelper():
         # Make sure that if we change scale and change attribute, the scale
         # modes are cached on a per-attribute basis.
         self.helper.scale_mode = '99.5%'
-        self.helper.attribute = self.y_id
+        self.attribute_combo.setCurrentIndex(1)
         assert self.helper.scale_mode == 'Min/Max'
         self.helper.scale_mode = '99%'
-        self.helper.attribute = self.x_id
+        self.attribute_combo.setCurrentIndex(0)
         assert self.helper.scale_mode == '99.5%'
-        self.helper.attribute = self.y_id
+        self.attribute_combo.setCurrentIndex(1)
         assert self.helper.scale_mode == '99%'
 
     def test_flip_button(self):
@@ -100,63 +105,28 @@ class TestAttributeLimitsHelper():
         assert self.helper.vhi == -100
 
         # Make sure that values were re-cached when flipping
-        self.helper.attribute = self.y_id
+        self.attribute_combo.setCurrentIndex(1)
         assert self.helper.vlo == 2
         assert self.helper.vhi == 3
-        self.helper.attribute = self.x_id
+        self.attribute_combo.setCurrentIndex(0)
         assert self.helper.vlo == +100
         assert self.helper.vhi == -100
 
     def test_manual_edit(self):
 
         # Make sure that values are re-cached when edited manually
-        print(self.helper.mode_combo)
         self.helper.scale_mode = 'Custom'
-        print(self.helper.mode_combo)
         self.lower_value.setText('-122')
         self.upper_value.setText('234')
-        print("CHANGING")
         self.helper.vlog = True
-        print("DONE")
         assert self.helper.vlo == -122
         assert self.helper.vhi == 234
         assert self.helper.vlog
-        self.helper.attribute = self.y_id
+        self.attribute_combo.setCurrentIndex(1)
         assert self.helper.vlo == 2
         assert self.helper.vhi == 3
         assert not self.helper.vlog
-        self.helper.attribute = self.x_id
+        self.attribute_combo.setCurrentIndex(0)
         assert self.helper.vlo == -122
         assert self.helper.vhi == 234
         assert self.helper.vlog
-
-    def test_subset_mode(self):
-
-        with pytest.raises(ValueError) as exc:
-            self.helper.subset_mode = 'data'
-        assert exc.value.args[0] == "subset_mode should be set to None when data is not a subset"
-
-        subset_state = InequalitySubsetState(self.x_id, 10, operator.gt)
-
-        self.data.new_subset(subset_state)
-
-        subset = self.data.subsets[0]
-
-        self.helper.data = subset
-
-        with pytest.raises(ValueError) as exc:
-            self.helper.subset_mode = None
-        assert exc.value.args[0] == "subset_mode should either be 'outline', 'data' when data is a subset"
-
-        self.helper.subset_mode = 'data'
-        assert self.helper.vlo == 0
-        assert self.helper.vhi == 100
-        self.helper.vhi = 56
-
-        self.helper.subset_mode = 'outline'
-        assert self.helper.vlo == 0
-        assert self.helper.vhi == 1
-
-        self.helper.subset_mode = 'data'
-        assert self.helper.vlo == 0
-        assert self.helper.vhi == 56
