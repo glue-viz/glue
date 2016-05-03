@@ -139,9 +139,7 @@ class SliceWidget(QtGui.QWidget):
 
         # If this was not called from _play_slice, we should stop the
         # animation.
-        if not play:
-            self._play_speed = 0
-            self._play_timer.stop()
+        self._adjust_play('stop')
 
         if action == 'first':
             value = imin
@@ -163,6 +161,7 @@ class SliceWidget(QtGui.QWidget):
     def _update_mode(self, *args):
         if self.mode != 'slice':
             self._ui_slider.hide()
+            self._adjust_play('stop')
         else:
             self._ui_slider.show()
 
