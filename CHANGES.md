@@ -28,7 +28,7 @@ v0.7.3 (unreleased)
 * Fix the selection of the default viewer based on the data shape. [#968]
 
 * Ignore extra dimensions in WCS (for instance, if the data is 3D and the
-  header is 4D, ignore the 4th dimension in the WCS).
+  header is 4D, ignore the 4th dimension in the WCS). [#935]
 
 * Remove the scrollbars added in v0.7.1 since they cause issues on certain
   systems. [#953]
@@ -45,7 +45,7 @@ v0.7.2 (2016-04-05)
 
 * Fix a bug that caused string columns in FITS files to not be read
   correctly, and updated coerce_numeric to give a ValueError for string
-  columns that can't be convered.
+  columns that can't be convered. [#919]
 
 * Make sure main window title is set. [#914]
 
