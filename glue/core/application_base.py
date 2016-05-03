@@ -200,7 +200,14 @@ class Application(HubListener):
 
         datasets = as_list(datasets)
         data_collection.extend(datasets)
-        list(map(partial(cls._suggest_mergers, data_collection), datasets))
+        for data in datasets:
+            # If we add multiple datasets with the same shape, they will all
+            # get included in the merge suggestions, and so after the first
+            # merge, some of the datasets won't be in the data collection
+            # any longer, so it doesn't make sense to check for merges for
+            # these.
+            if data in data_collection:
+                cls._suggest_mergers(data_collection, data)
 
     @classmethod
     def _suggest_mergers(cls, data_collection, data):
@@ -209,16 +216,18 @@ class Application(HubListener):
         data has the same shape. If so, offer to
         merge the two datasets
         """
+
         shp = data.shape
         other = [d for d in data_collection
                  if d.shape == shp and d is not data]
+
         if not other:
             return
 
-        merges = cls._choose_merge(data, other)
+        merges, label = cls._choose_merge(data, other)
 
         if merges:
-            data_collection.merge(*merges)
+            data_collection.merge(label, *merges)
 
     @staticmethod
     def _choose_merge(data, other):

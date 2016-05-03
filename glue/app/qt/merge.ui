@@ -20,7 +20,7 @@
    <item>
     <widget class="QLabel" name="instructions">
      <property name="text">
-      <string>The following datasets have the same shape as the new dataset. Do you want to merge them?</string>
+      <string>Several of the datasets (including at least one that you have added) have the same shape. Do you want to merge them?</string>
      </property>
      <property name="scaledContents">
       <bool>false</bool>

@@ -128,14 +128,14 @@ def restore_session(gluefile):
 
 @die_on_error("Error reading data file")
 def load_data_files(datafiles):
-    """Load data files and return a DataCollection"""
+    """Load data files and return a list of datasets"""
     from glue.core.data_collection import DataCollection
     from glue.core.data_factories import auto_data, load_data
 
-    dc = DataCollection()
+    datasets = []
     for df in datafiles:
-        dc.append(load_data(df, auto_data))
-    return dc
+        datasets.append(load_data(df, auto_data))
+    return datasets
 
 
 def run_tests():
@@ -174,16 +174,16 @@ def start_glue(gluefile=None, config=None, datafiles=None):
     if config is not None:
         glue.env = glue.config.load_configuration(search_path=[config])
 
-    if datafiles:
-        data = load_data_files(datafiles)
+    data_collection = glue.core.DataCollection()
+    hub = data_collection.hub
 
-    if not data:
-        data = glue.core.DataCollection()
-
-    hub = data.hub
-
-    session = glue.core.Session(data_collection=data, hub=hub)
+    session = glue.core.Session(data_collection=data_collection, hub=hub)
     ga = GlueApplication(session=session)
+
+    if datafiles:
+        datasets = load_data_files(datafiles)
+        ga.add_datasets(data_collection, datasets)
+
     # ga.show()
     # splash.close()
     # ga.raise_()
