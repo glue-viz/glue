@@ -19,6 +19,8 @@ v0.8 (unreleased)
 
 * Add log= option to ValueProperty and remove mapping= option. [#965]
 
+* Added helper classes for ComponentID and Data combo boxes. [#891]
+
 v0.7.3 (unreleased)
 -------------------
 
