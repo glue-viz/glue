@@ -139,7 +139,8 @@ class SliceWidget(QtGui.QWidget):
 
         # If this was not called from _play_slice, we should stop the
         # animation.
-        self._adjust_play('stop')
+        if not play:
+            self._adjust_play('stop')
 
         if action == 'first':
             value = imin
