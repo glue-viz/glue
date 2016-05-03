@@ -17,10 +17,11 @@ from glue.core.visual import VisualAttributes
 from glue.config import settings
 from glue.utils import view_shape
 
+__all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CategoricalROISubsetState',
+           'RangeSubsetState', 'MultiRangeSubsetState', 'CompositeSubsetState',
+           'OrState', 'AndState', 'XorState', 'InvertState', 'MaskSubsetState', 'CategorySubsetState',
+           'ElementSubsetState', 'InequalitySubsetState', 'combine_multiple']
 
-__all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CompositeSubsetState',
-           'OrState', 'AndState', 'XorState', 'InvertState',
-           'ElementSubsetState', 'RangeSubsetState', 'combine_multiple']
 
 OPSYM = {operator.ge: '>=', operator.gt: '>',
          operator.le: '<=', operator.lt: '<',
