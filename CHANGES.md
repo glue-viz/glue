@@ -4,6 +4,11 @@ Full changelog
 v0.7.3 (unreleased)
 -------------------
 
+* Fix a bug that caused the merge window to appear multiple times, make sure
+  that all components named PRIMARY get renamed after merging, and make sure
+  that the merge mechanism is also triggered when opening datasets from the
+  command-line. [#936]
+
 * Add missing find_spec for import hook, to avoid issues when trying to set
   colormap. [#930]
 

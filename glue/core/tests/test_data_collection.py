@@ -232,8 +232,11 @@ class TestDataCollection(object):
 
         dc.merge(x, y)
 
+        assert x not in dc
         assert y not in dc
-        assert_array_equal(x['y'], [2, 3, 4])
+
+        assert_array_equal(dc[0]['x'], [1, 2, 3])
+        assert_array_equal(dc[0]['y'], [2, 3, 4])
 
     def test_merge_discards_duplicate_pixel_components(self):
         x = Data(x=[1, 2, 3])
@@ -266,8 +269,8 @@ class TestDataCollection(object):
         dc = DataCollection([x, y])
         dc.merge(x, y)
 
-        print(x.components)
-        new = list(set(x.components) - old)[0]
+        z = dc[0]
+        new = list(set(z.components) - old)[0]
 
         assert new.label != 'x'
 

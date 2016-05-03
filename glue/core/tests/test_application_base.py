@@ -40,7 +40,7 @@ class TestApplicationBase(object):
         z = Data(z=[1, 2, 3])
 
         Application._choose_merge = MagicMock()
-        Application._choose_merge.return_value = [x]
+        Application._choose_merge.return_value = ([x], 'mydata')
         self.app.data_collection.merge = MagicMock()
 
         self.app.data_collection.append(x)

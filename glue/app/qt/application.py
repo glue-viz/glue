@@ -967,10 +967,19 @@ class GlueApplication(Application, QtGui.QMainWindow):
     def _choose_merge(data, others):
 
         w = load_ui('merge.ui', None, directory=os.path.dirname(__file__))
+        w.button_yes.clicked.connect(w.accept)
+        w.button_no.clicked.connect(w.reject)
         w.show()
         w.raise_()
 
-        label = others[0].label if len(others) > 0 else data.label
+        # Add the main dataset to the list. Some of the 'others' may also be
+        # new ones, so it doesn't really make sense to distinguish between
+        # the two here. The main point is that some datasets, including at
+        # least one new one, have a common shape.
+        others.append(data)
+        others.sort(key=lambda x: x.label)
+
+        label = others[0].label
         w.merged_label.setText(label)
 
         entries = [QtGui.QListWidgetItem(other.label) for other in others]
@@ -979,12 +988,14 @@ class GlueApplication(Application, QtGui.QMainWindow):
 
         for d, item in zip(others, entries):
             w.choices.addItem(item)
+
         if not w.exec_():
-            return None
+            return None, None
 
         result = [layer for layer, entry in zip(others, entries)
                   if entry.checkState() == Qt.Checked]
 
         if result:
-            result[0].label = str(w.merged_label.text())
-            return result + [data]
+            return result, str(w.merged_label.text())
+
+        return None, None
