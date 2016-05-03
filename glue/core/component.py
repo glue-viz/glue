@@ -92,7 +92,7 @@ class Component(object):
         """
         Whether or not the datatype is numeric
         """
-        return np.can_cast(self.data[0], np.complex)
+        return np.can_cast(self.data.dtype, np.complex)
 
     @property
     def categorical(self):
