@@ -3,12 +3,14 @@ from __future__ import absolute_import, division, print_function
 import os
 import re
 
-from glue.external.qt import QtGui
+from glue.external.qt import QtGui, QtCore
 from glue.external.qt.QtCore import Qt
 from glue.core import parse
 from glue import core
+from glue.utils import nonpartial
 from glue.utils.qt import load_ui
 from glue.utils.qt import CompletionTextEdit
+from glue.utils.qt.helpers import CUSTOM_QWIDGETS
 
 __all__ = ['CustomComponentWidget']
 
@@ -18,13 +20,16 @@ def disambiguate(label, labels):
 
     Parameters
     ----------
-    label : string
-    labels : collection of strings
+    label : str
+        The label to change the name of
+    labels : iterable
+        A list of all labels
 
     Returns
     -------
-    label, perhaps appended with a suffix "_{number}". The output
-    does not appear in labels
+    label : str
+        If needed, appended with a suffix "_{number}". The output does not
+        appear in labels
     """
     label = label.replace(' ', '_')
     if label not in labels:
@@ -37,13 +42,17 @@ def disambiguate(label, labels):
 
 class ColorizedCompletionTextEdit(CompletionTextEdit):
 
+    updated = QtCore.Signal()
+
     def insertPlainText(self, *args):
         super(ColorizedCompletionTextEdit, self).insertPlainText(*args)
         self.reformat_text()
+        self.updated.emit()
 
     def keyReleaseEvent(self, event):
         super(ColorizedCompletionTextEdit, self).keyReleaseEvent(event)
         self.reformat_text()
+        self.updated.emit()
 
     def reformat_text(self):
 
@@ -83,31 +92,25 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
         self.setTextCursor(tc)
         self.setAlignment(Qt.AlignCenter)
 
+CUSTOM_QWIDGETS.append(ColorizedCompletionTextEdit)
 
-class CustomComponentWidget(object):
+
+class CustomComponentWidget(QtGui.QDialog):
     """
     Dialog to add derived components to data via parsed commands.
     """
 
     def __init__(self, collection, parent=None):
 
+        super(CustomComponentWidget, self).__init__(parent=parent)
+
         # Load in ui file to set up widget
-        self.ui = load_ui('widget.ui', parent,
+        self.ui = load_ui('widget.ui', self,
                           directory=os.path.dirname(__file__))
 
         # In the ui file we do not create the text field for the expression
         # because we want to use a custom widget that supports auto-complete.
-        self.ui.expression = ColorizedCompletionTextEdit()
-        self.ui.verticalLayout_3.addWidget(self.ui.expression)
         self.ui.expression.setAlignment(Qt.AlignCenter)
-        self.ui.expression.setObjectName("expression")
-        self.ui.expression.setToolTip("Define a new component. You can either "
-                                      "type out the full name of a component\n"
-                                      "with the data:component syntax, or "
-                                      "start typing and press TAB to use "
-                                      "tab-completion.\n Blue-colored "
-                                      "components are valid, while "
-                                      "Red-colored components are invalid.")
 
         self._labels = {}
         self._data = {}
@@ -122,19 +125,54 @@ class CustomComponentWidget(object):
         # the auto_completer straight off.
         self.ui.expression.set_word_list(list(self._labels.keys()))
 
+        self.ui.button_ok.clicked.connect(self.accept)
+        self.ui.button_cancel.clicked.connect(self.reject)
+
+        self.ui.expression.updated.connect(self._update_status)
+        self._update_status()
+
+    def _update_status(self):
+        if str(self.ui.expression.toPlainText()) == "":
+            self.ui.label_status.setText("")
+            self.ui.button_ok.setEnabled(False)
+        else:
+            try:
+                pc = self._get_parsed_command()
+                pc.evaluate_test()
+            except SyntaxError:
+                self.ui.label_status.setStyleSheet('color: red')
+                self.ui.label_status.setText("Incomplete or invalid syntax")
+                self.ui.button_ok.setEnabled(False)
+            except parse.InvalidTagError as exc:
+                self.ui.label_status.setStyleSheet('color: red')
+                self.ui.label_status.setText("Invalid component: {0}".format(exc.tag))
+                self.ui.button_ok.setEnabled(False)
+            except Exception as exc:
+                self.ui.label_status.setStyleSheet('color: red')
+                self.ui.label_status.setText(str(exc))
+                self.ui.button_ok.setEnabled(False)
+            else:
+                self.ui.label_status.setStyleSheet('color: green')
+                self.ui.label_status.setText("Valid expression")
+                self.ui.button_ok.setEnabled(True)
+
     def _connect(self):
         cl = self.ui.component_list
         cl.itemDoubleClicked.connect(self._add_to_expression)
 
     def _init_widgets(self):
-        """ Set up default state of widget """
+        """
+        Set up default state of widget
+        """
         comps = self.ui.component_list
         comps.addItems(sorted(self._labels.keys()))
         data = self.ui.data_list
         data.addItems(sorted(self._data.keys()))
 
     def _gather_components(self):
-        """ Build a mapping from unique labels -> componentIDs """
+        """
+        Build a mapping from unique labels -> componentIDs
+        """
         comps = set()
         for data in self._collection:
             for c in data.components:
@@ -146,24 +184,36 @@ class CustomComponentWidget(object):
                 comps.add(c)
 
     def _gather_data(self):
-        """ Build a mapping from unique labels -> data objects """
+        """
+        Build a mapping from unique labels -> data objects
+        """
         for data in self._collection:
             label = data.label
             label = disambiguate(label, self._data)
             self._data[label] = data
 
     def _selected_data(self):
-        """ Yield all data objects that are selected in the DataList """
+        """
+        Yield all data objects that are selected in the DataList
+        """
         for items in self.ui.data_list.selectedItems():
             yield self._data[str(items.text())]
 
     def _create_link(self):
-        """ Create a ComponentLink form the state of the GUI
+        """
+        Create a ComponentLink from the state of the GUI
 
         Returns
         -------
         A new component link
         """
+        pc = self._get_parsed_command()
+        label = str(self.ui.new_label.text()) or 'new component'
+        new_id = core.data.ComponentID(label)
+        link = parse.ParsedComponentLink(new_id, pc)
+        return link
+
+    def _get_parsed_command(self):
 
         expression = str(self.ui.expression.toPlainText())
 
@@ -175,11 +225,7 @@ class CustomComponentWidget(object):
             return "{" + m.group(0) + "}"
         expression = re.sub(pattern, add_curly, expression)
 
-        pc = parse.ParsedCommand(expression, self._labels)
-        label = str(self.ui.new_label.text()) or 'new component'
-        new_id = core.data.ComponentID(label)
-        link = parse.ParsedComponentLink(new_id, pc)
-        return link
+        return parse.ParsedCommand(expression, self._labels)
 
     @property
     def _number_targets(self):
@@ -189,45 +235,32 @@ class CustomComponentWidget(object):
         return len(self.ui.data_list.selectedItems())
 
     def _add_link_to_targets(self, link):
-        """ Add a link to all the selected data """
+        """
+        Add a link to all the selected data
+        """
         for target in self._selected_data():
             target.add_component_link(link)
 
     def _add_to_expression(self, item):
-        """ Add a component list item to the expression editor """
+        """
+        Add a component list item to the expression editor
+        """
         addition = '%s ' % item.text()
         expression = self.ui.expression
         expression.insertPlainText(addition)
 
-    @staticmethod
-    def create_component(collection):
-        """Present user with a dialog to define and add new components.
-
-        Parameters
-        ----------
-        collection : A `DataCollection` to edit
-        """
-        # pylint: disable=W0212
-        widget = CustomComponentWidget(collection)
-        while True:
-            widget.ui.show()
-            if widget.ui.exec_() == QtGui.QDialog.Accepted:
-                if len(str(widget.ui.expression.toPlainText())) == 0:
-                    QtGui.QMessageBox.critical(widget.ui, "Error", "No expression set",
-                                               buttons=QtGui.QMessageBox.Ok)
-                elif widget._number_targets == 0:
-                    QtGui.QMessageBox.critical(widget.ui, "Error", "Please specify the target dataset(s)",
-                                               buttons=QtGui.QMessageBox.Ok)
-                elif len(widget.ui.new_label.text()) == 0:
-                    QtGui.QMessageBox.critical(widget.ui, "Error", "Please specify the new component name",
-                                               buttons=QtGui.QMessageBox.Ok)
-                else:
-                    link = widget._create_link()
-                    if link:
-                        widget._add_link_to_targets(link)
-                    break
-            else:
-                break
+    def accept(self):
+        if self._number_targets == 0:
+            QtGui.QMessageBox.critical(self.ui, "Error", "Please specify the target dataset(s)",
+                                       buttons=QtGui.QMessageBox.Ok)
+        elif len(self.ui.new_label.text()) == 0:
+            QtGui.QMessageBox.critical(self.ui, "Error", "Please specify the new component name",
+                                       buttons=QtGui.QMessageBox.Ok)
+        else:
+            link = self._create_link()
+            if link:
+                self._add_link_to_targets(link)
+            super(CustomComponentWidget, self).accept()
 
 
 def main():
@@ -239,11 +272,15 @@ def main():
     y = x * 3
     data = DataCollection(Data(label='test', x=x, y=y))
 
-    CustomComponentWidget.create_component(data)
+    widget = CustomComponentWidget(data)
+    widget.exec_()
+
     for d in data:
         print(d.label)
         for c in d.components:
             print('\t%s' % c)
 
 if __name__ == "__main__":
+    from glue.external.qt import get_qapp
+    app = get_qapp()
     main()

@@ -60,7 +60,7 @@ class TestParse(object):
         parse._validate('{a} + {b}', ref)
         parse._validate('{a}', ref)
         parse._validate('3 + 4', ref)
-        with pytest.raises(TypeError) as exc:
+        with pytest.raises(parse.InvalidTagError) as exc:
             parse._validate('{c}', ref)
         assert exc.value.args[0] == ("Tag c not in reference mapping: "
                                      "['a', 'b']")
@@ -110,6 +110,45 @@ class TestParsedCommand(object):
         pc = parse.ParsedCommand(cmd, refs)
         assert pc.evaluate(data) == 100
         data.__getitem__.assert_called_once_with((c1, None))
+
+    def test_evaluate_math(self):
+
+        # If numpy, np, and math aren't defined in the config.py file, they
+        # are added to the local variables available.
+
+        data = MagicMock()
+        c1 = ComponentID('c1')
+        data.__getitem__.return_value = 10
+        refs = {'comp1': c1}
+
+        cmd = 'numpy.log10({comp1})'
+        pc = parse.ParsedCommand(cmd, refs)
+        assert pc.evaluate(data) == 1
+
+        cmd = 'np.log10({comp1})'
+        pc = parse.ParsedCommand(cmd, refs)
+        assert pc.evaluate(data) == 1
+
+        cmd = 'math.log10({comp1})'
+        pc = parse.ParsedCommand(cmd, refs)
+        assert pc.evaluate(data) == 1
+
+    def test_evaluate_test(self):
+
+        data = MagicMock()
+        c1 = ComponentID('c1')
+        data.__getitem__.return_value = 10
+        refs = {'comp1': c1}
+
+        cmd = 'numpy.log10({comp1}) + 3.4 - {comp1}'
+        pc = parse.ParsedCommand(cmd, refs)
+        pc.evaluate_test()
+
+        cmd = 'nump.log10({comp1}) + 3.4 - {comp1}'
+        pc = parse.ParsedCommand(cmd, refs)
+        with pytest.raises(NameError) as exc:
+            pc.evaluate_test()
+        assert exc.value.args[0] == "name 'nump' is not defined"
 
 
 class TestParsedComponentLink(object):

@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import re
+import random
 
 from glue.core.component_link import ComponentLink
 from glue.core.subset import Subset, SubsetState
@@ -99,6 +100,36 @@ def _dereference(cmd, references):
     return TAG_RE.sub(sub_func, cmd)
 
 
+def _dereference_random(cmd):
+    """
+    Dereference references in the template command, to refer
+    to random floating-point values. This is used to quickly test that the
+    command evaluates without errors.
+
+    Parameters
+    ----------
+    cmd : str
+        Command string
+
+    Returns
+    -------
+    A new command, where all the tags have been subsituted by floating point values
+    """
+    def sub_func(match):
+        tag = match.group('tag')
+        return str(random.random())
+    return TAG_RE.sub(sub_func, cmd)
+
+
+class InvalidTagError(ValueError):
+    def __init__(self, tag, references):
+        msg = ("Tag %s not in reference mapping: %s" %
+               (tag, sorted(references.keys())))
+        self.tag = tag
+        self.references = references
+        super(InvalidTagError, self).__init__(msg)
+
+
 def _validate(cmd, references):
     """ Make sure all references in the command are in the reference mapping
 
@@ -109,8 +140,7 @@ def _validate(cmd, references):
     for match in TAG_RE.finditer(cmd):
         tag = match.group('tag')
         if tag not in references:
-            raise TypeError("Tag %s not in reference mapping: %s" %
-                            (tag, sorted(references.keys())))
+            raise InvalidTagError(tag, references)
 
 
 class ParsedCommand(object):
@@ -141,10 +171,43 @@ class ParsedCommand(object):
         # pylint: disable=W0613, W0612
         references = self._references
         cmd = _dereference(self._cmd, self._references)
+
         scope = vars(env)
         scope['__view'] = view
-        return eval(cmd, vars(env), locals())  # careful!
 
+        global_variables = vars(env)
+
+        # We now import math modules if not already defined in local or
+        # global variables
+        if 'numpy' not in global_variables and 'numpy' not in locals():
+            import numpy
+        if 'np' not in global_variables and 'np' not in locals():
+            import numpy as np
+        if 'math' not in global_variables and 'math' not in locals():
+            import math
+
+        return eval(cmd, global_variables, locals())  # careful!
+
+    def evaluate_test(self, view=None):
+        from glue import env
+        cmd = _dereference_random(self._cmd)
+
+        scope = vars(env)
+        scope['__view'] = view
+
+        global_variables = vars(env)
+
+        # We now import math modules if not already defined in local or
+        # global variables
+        if 'numpy' not in global_variables and 'numpy' not in locals():
+            import numpy
+        if 'np' not in global_variables and 'np' not in locals():
+            import numpy as np
+        if 'math' not in global_variables and 'math' not in locals():
+            import math
+
+        return eval(cmd, global_variables, locals())  # careful!
+        
     def __gluestate__(self, context):
         return dict(cmd=self._cmd,
                     references=dict((k, context.id(v))
