@@ -4,31 +4,31 @@ Full changelog
 v0.7.3 (unreleased)
 -------------------
 
-* Make sure that no combo boxes get resized based on the content (unless
-  strictly needed).
+* Remove icons for actions that appear in contextual menus, since these
+  appear too large due to a Qt bug. [#911]
+
+* Add missing find_spec for import hook, to avoid issues when trying to set
+  colormap. [#930]
+
+* Ignore extra dimensions in WCS (for instance, if the data is 3D and the
+  header is 4D, ignore the 4th dimension in the WCS). [#935]
 
 * Fix a bug that caused the merge window to appear multiple times, make sure
   that all components named PRIMARY get renamed after merging, and make sure
   that the merge mechanism is also triggered when opening datasets from the
   command-line. [#936]
 
-* Add missing find_spec for import hook, to avoid issues when trying to set
-  colormap. [#930]
-
-* Fix the selection of the default viewer based on the data shape. [#968]
-
-* Ignore extra dimensions in WCS (for instance, if the data is 3D and the
-  header is 4D, ignore the 4th dimension in the WCS). [#935]
-
 * Remove the scrollbars added in v0.7.1 since they cause issues on certain
   systems. [#953]
 
+* Fix saving of ElementSubsetState to session files. [#966]
+
 * Fix saving of Matplotlib colormaps to session files. [#967]
 
-* Remove icons for actions that appear in contextual menus, since these
-  appear too large due to a Qt bug. [#911]
+* Fix the selection of the default viewer based on the data shape. [#968]
 
-* Fix saving of ElementSubsetState to session files. [#966]
+* Make sure that no combo boxes get resized based on the content (unless
+  strictly needed). [#978]
 
 v0.7.2 (2016-04-05)
 -------------------
