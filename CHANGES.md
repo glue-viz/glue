@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.7.3 (unreleased)
+v0.7.3 (2015-05-04)
 -------------------
 
 * Remove icons for actions that appear in contextual menus, since these

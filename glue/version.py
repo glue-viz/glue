@@ -1,4 +1,4 @@
-__version__ = '0.7.2'
+__version__ = '0.7.3'
 
 try:
     from glue._githash import __githash__, __dev_value__
