@@ -12,17 +12,19 @@ Experimental 3D viewers in Glue
 
 A plugin with experimental 3D viewers for Glue, powered by `VisPy
 <http://www.vispy.org>`_, is now available. To install this plugin, you will
-first need to make sure that the VisPy package is installed. If you are using
-`Anaconda <https://www.continuum.io/downloads>`_ to manage your Python
-distribution, you can do this with::
+first need to make sure that the VisPy package is installed.
 
-    conda install vispy
+If you are using
+`Anaconda <https://www.continuum.io/downloads>`_ to manage your Python
+distribution, you can install or update VisPy and the 3D plugin using:
+
+    conda install -c conda-forge glue-vispy-viewers
     
-Once VisPy is installed, you can install the plugin with::
+If you don't use Anaconda, you can install the plugin using:
 
     pip install glue-vispy-viewers
 
-Note that this functionality requires Glue v0.7 or later.
+Note that this functionality requires Glue v0.7.3 or later.
 
 With the plugin installed, you will now have access to three new data
 viewers in Glue:
@@ -104,9 +106,6 @@ General limitations/known issues
 --------------------------------
 
 * At the moment there are no axis labels on the white rectangular box
-
-* It is not yet possible to select data in the 3D viewers, only highlight
-  subsets from other viewers.
 
 * At the moment, the 3D viewers show the data on a black background, as opposed
   to the standard Glue viewers which show the data on a white background.
