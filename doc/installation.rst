@@ -10,23 +10,41 @@ Recommended: Anaconda Python Distribution
 
 **Platforms:** MacOS X, Linux, and Windows
 
-We recommend using the `Anaconda <http://continuum.io/downloads.html>`_
-Python distribution from Continuum Analytics (or the related Miniconda
-distribution). Anaconda includes all of Glue's main dependencies.
+We recommend using the `Anaconda <http://continuum.io/downloads.html>`_ Python
+distribution from Continuum Analytics (or the related Miniconda distribution).
+Anaconda includes all of Glue's main dependencies. There are two ways of
+installing Glue with the Anaconda Python Distribution: graphically using the
+`launcher <Graphical installation>`_, or using the `command-line <Command-line
+installation>`_, both of which are described below.
 
-Once Anaconda or Miniconda are `installed
-<http://continuum.io/downloads.html>`_ for your operating system, you
-can install glue using::
+Graphical installation
+^^^^^^^^^^^^^^^^^^^^^^
 
-    conda install glueviz
+Once you have installed the Anaconda Python Distribution, open the Anaconda Launcher, and you will be presented with a window that looks like the following:
 
-You can then install any additional (optional) Glue dependencies by running::
+.. image:: images/anaconda_launcher.jpg
+   :align: center
+   :width: 100%
 
-    glue-deps install
+As you can see, glue is already in the list (under the name **glueviz**).
+However, we need to tell Anaconda to get the latest version of glue from the
+**conda-forge** channel (the default version available is otherwise not the
+most recent). To do this, click on **Manage Channels** in the top right of the
+window, which will bring up a small window - type **conda-forge** into the
+field and click on **Add Channel**, then **Submit**:
 
-on the command line. For more information on ``glue-deps``, see :ref:`below <glue-deps>`
+.. image:: images/manage_conda_channels.jpg
+   :align: center
+   :width: 50%
+   
+Once you have done this, you can install glue by clicking on the **Install** button corresponding to the **glueviz** entry. If you have already installed glue, and want to update, you can click on the **Update** button.
 
-.. note :: Anaconda installs its own version of Python
+Command-line installation
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To install or update glue on the command-line, simply do::
+
+    conda install -c conda-forge glueviz
 
 .. note :: There is currently a known issue when running Anaconda's Qt on
            certain Linux distributions (including Kubuntu). See
