@@ -1,0 +1,50 @@
+:orphan:
+
+.. _whatsnew_08:
+
+What's new in Glue v0.8?
+========================
+
+Below we list some of the main changes in Glue v0.8. As a reminder, you can
+easily update glue if you are using Anaconda/Miniconda, by doing::
+
+    conda install -c conda-forge glueviz
+
+If instead you installed glue with pip, you can update with::
+
+    pip install glueviz --upgrade
+
+Playback controls for image slicing
+-----------------------------------
+
+When using the image viewer to view datasets with more than two dimensions, the sliders snow include playback controls that you can use to animate the slicing. 
+
+.. image:: cube_playback_controls.png
+   :align: center
+
+By clicking multiple times on the play forward or play back button (the buttons on either side of the stop button), you can speed up the animation.
+
+Improved new component window
+-----------------------------
+
+The *Define New Component* window has now been significantly improved. The syntax of the expression for the new component is now validated on-the-fly, and the component cannot be created until the expression validates:
+
+.. image:: new_component.png
+   :align: center
+
+Improved feedback window
+------------------------
+
+The *Send Feedback* functionality available through the Help menu and the windo
+to send crash reports to the developers now also provide the option to specify
+an email address in case you want to be contacted about the feedback/bug report:
+
+.. image:: feedback.png
+   :align: center
+
+Full list of Changes
+--------------------
+
+In addition to the above features, a number of bugs has been fixed since the
+last release. A full list of changes can be found in the
+`CHANGES.md <https://github.com/glue-viz/glue/blob/master/CHANGES.md>`_ file
