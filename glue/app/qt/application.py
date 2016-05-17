@@ -7,6 +7,7 @@ import sys
 import warnings
 import webbrowser
 
+from glue.config import settings
 from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui, QtCore
 from glue.core.application_base import Application
@@ -20,7 +21,7 @@ from glue.dialogs.data_wizard.qt import data_wizard
 from glue.app.qt.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from glue.app.qt.mdi_area import GlueMdiArea, GlueMdiSubWindow
 from glue.app.qt.layer_tree_widget import PlotAction, LayerTreeWidget
-from glue.app.qt.settings_editor import SettingsEditor
+from glue.app.qt.preferences import PreferencesDialog
 from glue.viewers.common.qt.mpl_widget import defer_draw
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.image.qt import ImageWidget
@@ -223,8 +224,6 @@ class GlueApplication(Application, QtGui.QMainWindow):
         self.new_tab()
         self._update_plot_dashboard(None)
 
-        self._load_settings()
-
     def _setup_ui(self):
         self._ui = load_ui('application.ui', None,
                            directory=os.path.dirname(__file__))
@@ -352,29 +351,9 @@ class GlueApplication(Application, QtGui.QMainWindow):
             new_widget.move(pos[0], pos[1])
         return sub
 
-    def set_setting(self, key, value):
-        """
-        Update a persistent setting in the application.
-
-        :param key: Name of a setting in the ``settings`` registry
-        :type key: str
-        :param value: New value for the setting
-        :type value: str
-        """
-        super(GlueApplication, self).set_setting(key, value)
-        settings = QtCore.QSettings('glue-viz', 'glue')
-        settings.setValue(key, value)
-
-    def _load_settings(self, path=None):
-        settings = QtCore.QSettings('glue-viz', 'glue')
-        for k, v in self.settings:
-            if settings.contains(k):
-                super(GlueApplication, self).set_setting(k, settings.value(k))
-
     def _edit_settings(self):
-        # save it to prevent garbage collection
-        self._editor = SettingsEditor(self)
-        self._editor.widget.show()
+        self._editor = PreferencesDialog()
+        self._editor.show()
 
     def gather_current_tab(self):
         """Arrange windows in current tab via tiling"""

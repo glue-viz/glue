@@ -26,12 +26,13 @@ class VisualAttributes(object):
 
     '''
 
-    def __init__(self, parent=None, washout=False, color=settings.DATA_COLOR):
+    def __init__(self, parent=None, washout=False, color=None, alpha=None):
+
         self.parent = parent
         self._atts = ['color', 'alpha', 'linewidth', 'linestyle', 'marker',
                       'markersize']
         self.color = color
-        self.alpha = 0.5
+        self.alpha = alpha
         self.linewidth = 1
         self.linestyle = 'solid'
         self.marker = 'o'
@@ -79,7 +80,10 @@ class VisualAttributes(object):
          * A tuple of three floats in the rng [0:1] for (R, G, B)
          * An HTML hexadecimal string (e.g. '#eeefff')
         """
-        return self._color
+        if self._color is None:
+            return settings.DATA_COLOR
+        else:
+            return self._color
 
     @color.setter
     def color(self, value):
@@ -93,7 +97,10 @@ class VisualAttributes(object):
         """
         Transparency, given as a floating point value between 0 and 1.
         """
-        return self._alpha
+        if self._alpha is None:
+            return float(settings.DATA_ALPHA)
+        else:
+            return self._alpha
 
     @alpha.setter
     def alpha(self, value):

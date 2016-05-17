@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import matplotlib.pyplot as plt
 
+from glue.config import settings
 from glue.core import Data
 from glue.core.client import Client
 from glue.core.layer_artist import LayerArtistContainer
@@ -138,6 +139,24 @@ class VizClient(Client):
         raise NotImplementedError()
 
 
+def set_background_color(axes, color):
+    axes.patch.set_facecolor(settings.BACKGROUND_COLOR)
+
+def set_foreground_color(axes, color):
+    if hasattr(axes, 'coords'):
+        axes.coords.frame.set_color(color)
+        for coord in axes.coords:
+            coord.set_ticks(color=color)
+            coord.set_ticklabel(color=color)
+            coord.axislabels.set_color(color)
+    else:
+        for spine in axes.spines.values():
+            spine.set_color(color)
+        axes.tick_params(color=color,
+                          labelcolor=color)
+        axes.xaxis.label.set_color(color)
+        axes.yaxis.label.set_color(color)
+
 def init_mpl(figure=None, axes=None, wcs=False, axes_factory=None):
 
     if (axes is not None and figure is not None and
@@ -164,6 +183,27 @@ def init_mpl(figure=None, axes=None, wcs=False, axes_factory=None):
                 _axes = _figure.add_subplot(1, 1, 1)
 
     freeze_margins(_axes, margins=[1, 0.25, 0.50, 0.25])
+
+    set_background_color(_axes, settings.BACKGROUND_COLOR)
+    set_foreground_color(_axes, settings.FOREGROUND_COLOR)
+
+    def _update_theme(setting):
+
+        if setting == 'BACKGROUND_COLOR':
+            set_background_color(_axes, settings.BACKGROUND_COLOR)
+        elif setting == 'FOREGROUND_COLOR':
+            set_foreground_color(_axes, settings.FOREGROUND_COLOR)
+        else:
+            return
+
+        try:
+            _axes.figure.canvas.draw()
+        except RuntimeError:  # figure has been deleted
+            return False
+
+        return True
+
+    settings.add_callback(_update_theme)
 
     return _figure, _axes
 

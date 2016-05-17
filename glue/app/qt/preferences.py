@@ -4,29 +4,28 @@ import os
 
 from matplotlib.colors import ColorConverter
 
-from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui
 from glue.config import settings
-from glue._plugin_helpers import PluginConfig
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui, ColorProperty
-from glue.utils.qt.widget_properties import CurrentComboTextProperty
+from glue.utils.qt.widget_properties import CurrentComboTextProperty, ValueProperty
 
-__all__ = ["Preferences"]
+__all__ = ["PreferencesDialog"]
 
-color_to_rgb = ColorConverter.to_rgb
+rgb = ColorConverter().to_rgb
 
 
-class Preferences(QtGui.QDialog):
+class PreferencesDialog(QtGui.QDialog):
 
     theme = CurrentComboTextProperty('ui.combo_theme')
     background = ColorProperty('ui.color_background')
     foreground = ColorProperty('ui.color_foreground')
     data_color = ColorProperty('ui.color_default_data')
+    data_alpha = ValueProperty('ui.slider_alpha', value_range=(0, 1))
 
     def __init__(self, parent=None):
 
-        super(Preferences, self).__init__(parent=parent)
+        super(PreferencesDialog, self).__init__(parent=parent)
 
         self.ui = load_ui('preferences.ui', self,
                            directory=os.path.dirname(__file__))
@@ -42,13 +41,14 @@ class Preferences(QtGui.QDialog):
         self.background = settings.BACKGROUND_COLOR
         self.foreground = settings.FOREGROUND_COLOR
         self.data_color = settings.DATA_COLOR
+        self.data_alpha = float(settings.DATA_ALPHA)
 
         self._update_theme_from_colors()
 
     def _update_theme_from_colors(self):
-        if self.ui.color_background.to_rgb() == (1,1,1) and self.ui.color_foreground.to_rgb() == (0,0,0):
+        if rgb(self.background) == (1,1,1) and rgb(self.foreground) == (0,0,0):
             self.theme = 'Black on White'
-        elif self.ui.color_background.to_rgb() == (0,0,0) and self.ui.color_foreground.to_rgb() == (1,1,1):
+        elif rgb(self.background) == (0,0,0) and rgb(self.foreground) == (1,1,1):
             self.theme = 'White on Black'
         else:
             self.theme = 'Custom'
@@ -57,13 +57,22 @@ class Preferences(QtGui.QDialog):
         if self.theme == 'Black on White':
             self.foreground = 'black'
             self.background = 'white'
+            self.data_color = '0.25'
+            self.data_alpha = 0.75
         elif self.theme == 'White on Black':
             self.foreground = 'white'
             self.background = 'black'
+            self.data_color = '0.75'
+            self.data_alpha = 0.75
         elif self.theme != 'Custom':
             raise ValueError("Unknown theme: {0}".format(self.theme))
 
     def finalize(self):
+
+        settings.FOREGROUND_COLOR = self.foreground
+        settings.BACKGROUND_COLOR = self.background
+        settings.DATA_COLOR = self.data_color
+        settings.DATA_ALPHA = self.data_alpha
 
         self.ui.accept()
 
@@ -72,7 +81,7 @@ if __name__ == "__main__":
 
     from glue.external.qt import get_qapp
     app = get_qapp()
-    widget = Preferences()
+    widget = PreferencesDialog()
     widget.show()
     widget.raise_()
     app.exec_()

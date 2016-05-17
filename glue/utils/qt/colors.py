@@ -169,9 +169,6 @@ class QColorBox(QtGui.QLabel):
     def color(self):
         return self._color
 
-    def to_rgb(self):
-        return ColorConverter().to_rgb(self._color)
-
     def on_color_change(self):
         self._qcolor = mpl_to_qt4_color(self.color())
         image = QtGui.QImage(70, 22, QtGui.QImage.Format_RGB32)
