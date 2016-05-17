@@ -571,3 +571,5 @@ LIGHT_PURPLE = "#CAB2D6"
 
 settings.add('SUBSET_COLORS', [RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK], validator=list)
 settings.add('DATA_COLOR', GRAY)
+settings.add('BACKGROUND_COLOR', '#FFFFFF')
+settings.add('FOREGROUND_COLOR', '#000000')
