@@ -136,7 +136,7 @@ def can_save_d3po(application):
 
     for tab in application.viewers:
         for viewer in tab:
-            if not isinstance(viewer, DISPATCH.keys()):
+            if not isinstance(viewer, (ScatterWidget, HistogramWidget)):
                 raise ValueError("D3PO Export only supports scatter "
                                  "and histogram plots")
     if sum(len(tab) for tab in application.viewers) == 0:
@@ -303,8 +303,8 @@ initialize('states.json', 'data.csv');
 """
 
 try:
-    from glue.viewers.scatter.qt import ScatterWidget
-    from glue.viewers.histogram.qt import HistogramWidget
+    from glue.viewers.scatter.qt.viewer_widget import ScatterWidget
+    from glue.viewers.histogram.qt.viewer_widget import HistogramWidget
 except ImportError:
     pass
 else:
