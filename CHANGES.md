@@ -27,6 +27,10 @@ v0.8 (unreleased)
   functions by default, and expressions are tested on-the-fly to check that
   there are no issues with syntax or undefined variables. [#956]
 
+* Fixed D3PO export when using Python 3. [#989]
+
+* Fixed display of certain error messages when using Python 3. [#989]
+
 v0.7.3 (2015-05-04)
 -------------------
 

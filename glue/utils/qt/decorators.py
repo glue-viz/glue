@@ -37,7 +37,7 @@ def messagebox_on_error(msg):
             try:
                 return func(*args, **kwargs)
             except Exception as e:
-                m = "%s\n%s" % (msg, e.message)
+                m = "%s\n%s" % (msg, e.args[0])
                 detail = str(traceback.format_exc())
                 qmb = QMessageBox(QMessageBox.Critical, "Error", m)
                 qmb.setDetailedText(detail)
