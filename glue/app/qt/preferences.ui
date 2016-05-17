@@ -56,7 +56,7 @@
     </layout>
    </item>
    <item row="0" column="0">
-    <widget class="QTabWidget" name="tabWidget">
+    <widget class="QTabWidget" name="tab_widget">
      <property name="currentIndex">
       <number>0</number>
      </property>

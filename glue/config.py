@@ -235,6 +235,22 @@ class MenubarPluginRegistry(Registry):
         return adder
 
 
+class PreferencePaneRegistry(DictRegistry):
+    """
+    Stores preference panes
+
+    The members property is a list of tuples of Qt widget classes that can have
+    their own tab in the preferences window.
+    """
+
+    def add(self, label, widget_cls):
+        self._members[label] = widget_cls
+
+    def __iter__(self):
+        for label in self._members:
+            yield label, self._members[label]
+
+
 class ExporterRegistry(Registry):
 
     """Stores functions which can export an applocation to an output file
@@ -515,6 +531,7 @@ settings = SettingRegistry()
 fit_plugin = ProfileFitterRegistry()
 single_subset_action = SingleSubsetLayerActionRegistry()
 menubar_plugin = MenubarPluginRegistry()
+preference_panes = PreferencePaneRegistry()
 
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)

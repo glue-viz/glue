@@ -5,7 +5,7 @@ import os
 from matplotlib.colors import ColorConverter
 
 from glue.external.qt import QtGui
-from glue.config import settings
+from glue.config import settings, preference_panes
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui, ColorProperty
 from glue.utils.qt.widget_properties import CurrentComboTextProperty, ValueProperty
@@ -45,6 +45,13 @@ class PreferencesDialog(QtGui.QDialog):
 
         self._update_theme_from_colors()
 
+        self.panes = []
+
+        for label, widget_cls in preference_panes:
+            pane = widget_cls()
+            self.ui.tab_widget.addTab(pane, label)
+            self.panes.append(pane)
+
     def _update_theme_from_colors(self):
         if rgb(self.background) == (1,1,1) and rgb(self.foreground) == (0,0,0):
             self.theme = 'Black on White'
@@ -73,6 +80,9 @@ class PreferencesDialog(QtGui.QDialog):
         settings.BACKGROUND_COLOR = self.background
         settings.DATA_COLOR = self.data_color
         settings.DATA_ALPHA = self.data_alpha
+
+        for pane in self.panes:
+            pane.finalize()
 
         self.ui.accept()
 
