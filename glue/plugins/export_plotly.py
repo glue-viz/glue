@@ -312,8 +312,8 @@ def setup():
 DISPATCH = {}
 
 try:
-    from glue.viewers.scatter.qt import ScatterWidget
-    from glue.viewers.histogram.qt import HistogramWidget
+    from glue.viewers.scatter.qt.viewer_widget import ScatterWidget
+    from glue.viewers.histogram.qt.viewer_widget import HistogramWidget
 except ImportError:
     pass
 else:
