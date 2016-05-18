@@ -352,7 +352,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
         return sub
 
     def _edit_settings(self):
-        self._editor = PreferencesDialog()
+        self._editor = PreferencesDialog(self)
         self._editor.show()
 
     def gather_current_tab(self):

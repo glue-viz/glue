@@ -137,7 +137,6 @@ class SettingRegistry(DictRegistry):
     def __init__(self):
         super(SettingRegistry, self).__init__()
         self._validators = {}
-        self._callbacks = []
 
     def add(self, key, value, validator=str):
         self._members[key] = validator(value)
@@ -157,7 +156,6 @@ class SettingRegistry(DictRegistry):
             object.__setattr__(self, attr, value)
         elif attr in self._members:
             self._members[attr] = self._validators[attr](value)
-            self.notify_callbacks(attr)
         else:
             raise AttributeError("No such setting: {0}".format(attr))
 
@@ -167,18 +165,6 @@ class SettingRegistry(DictRegistry):
     def __iter__(self):
         for key in self._members:
             yield key, self._members[key], self._validators[key]
-
-    def add_callback(self, func):
-        self._callbacks.append(func)
-
-    def notify_callbacks(self, attr):
-        remove = []
-        for callback in self._callbacks:
-            success = callback(attr)
-            if not success:
-                remove.append(callback)
-        for callback in remove:
-            self._callbacks.remove(callback)
 
 
 class DataImportRegistry(Registry):
@@ -605,6 +591,6 @@ LIGHT_PURPLE = "#CAB2D6"
 
 settings.add('SUBSET_COLORS', [RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK], validator=list)
 settings.add('DATA_COLOR', '0.35')
-settings.add('DATA_ALPHA', 0.8)
+settings.add('DATA_ALPHA', 0.8, validator=float)
 settings.add('BACKGROUND_COLOR', '#FFFFFF')
 settings.add('FOREGROUND_COLOR', '#000000')

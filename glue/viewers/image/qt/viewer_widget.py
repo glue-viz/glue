@@ -62,6 +62,9 @@ class ImageWidgetBase(DataViewer):
 
         self._connect()
 
+    def update_appearance_from_settings(self):
+        self.client.update_appearance_from_settings()
+
     def _setup_widgets(self):
         self.central_widget = self.make_central_widget()
         self.label_widget = QtGui.QLabel("", self.central_widget)

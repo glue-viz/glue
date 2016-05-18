@@ -79,17 +79,6 @@ class MplCanvas(FigureCanvas):
 
         self.renderer = None
 
-        settings.add_callback(self._update_colors)
-
-    def _update_colors(self, setting):
-        if setting == 'BACKGROUND_COLOR':
-            self.fig.set_facecolor(settings.BACKGROUND_COLOR)
-            try:
-                self.fig.canvas.draw()
-            except RuntimeError:
-                return False
-        return True
-
     def _on_timeout(self):
         buttons = QtGui.QApplication.instance().mouseButtons()
         if buttons != Qt.NoButton:

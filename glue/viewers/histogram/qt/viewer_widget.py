@@ -65,6 +65,9 @@ class HistogramWidget(DataViewer):
         # maps _hash(componentID) -> componentID
         self._component_hashes = {}
 
+    def update_appearance_from_settings(self):
+        self.client.update_appearance_from_settings()
+
     @staticmethod
     def _get_default_tools():
         return []

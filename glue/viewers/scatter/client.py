@@ -16,7 +16,7 @@ from glue.core.layer_artist import LayerArtistContainer
 from glue.core.state import lookup_class_with_patches
 from glue.core.util import relim, update_ticks, visible_limits
 
-from glue.viewers.common.viz_client import init_mpl
+from glue.viewers.common.viz_client import init_mpl, update_appearance_from_settings
 
 from .layer_artist import ScatterLayerArtist
 
@@ -65,6 +65,10 @@ class ScatterClient(Client):
 
         self._connect()
         self._set_limits()
+
+    def update_appearance_from_settings(self):
+        update_appearance_from_settings(self.axes)
+        self._redraw()
 
     def is_layer_present(self, layer):
         """ True if layer is plotted """

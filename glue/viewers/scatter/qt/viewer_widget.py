@@ -73,6 +73,9 @@ class ScatterWidget(DataViewer):
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
 
+    def update_appearance_from_settings(self):
+        self.client.update_appearance_from_settings()
+
     @staticmethod
     def _get_default_tools():
         return []

@@ -157,6 +157,13 @@ def set_foreground_color(axes, color):
         axes.xaxis.label.set_color(color)
         axes.yaxis.label.set_color(color)
 
+
+def update_appearance_from_settings(axes):
+    axes.figure.set_facecolor(settings.BACKGROUND_COLOR)
+    set_background_color(axes, settings.BACKGROUND_COLOR)
+    set_foreground_color(axes, settings.FOREGROUND_COLOR)
+
+
 def init_mpl(figure=None, axes=None, wcs=False, axes_factory=None):
 
     if (axes is not None and figure is not None and
@@ -184,26 +191,7 @@ def init_mpl(figure=None, axes=None, wcs=False, axes_factory=None):
 
     freeze_margins(_axes, margins=[1, 0.25, 0.50, 0.25])
 
-    set_background_color(_axes, settings.BACKGROUND_COLOR)
-    set_foreground_color(_axes, settings.FOREGROUND_COLOR)
-
-    def _update_theme(setting):
-
-        if setting == 'BACKGROUND_COLOR':
-            set_background_color(_axes, settings.BACKGROUND_COLOR)
-        elif setting == 'FOREGROUND_COLOR':
-            set_foreground_color(_axes, settings.FOREGROUND_COLOR)
-        else:
-            return
-
-        try:
-            _axes.figure.canvas.draw()
-        except RuntimeError:  # figure has been deleted
-            return False
-
-        return True
-
-    settings.add_callback(_update_theme)
+    update_appearance_from_settings(_axes)
 
     return _figure, _axes
 
@@ -230,6 +218,10 @@ class GenericMplClient(Client):
             self.artists = LayerArtistContainer()
 
         self._connect()
+
+    def update_appearance_from_settings(self):
+        update_appearance_from_settings(self.axes)
+        self._redraw()
 
     def create_axes(self, figure):
         return figure.add_subplot(1, 1, 1)

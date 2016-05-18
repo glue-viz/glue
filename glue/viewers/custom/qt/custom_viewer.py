@@ -887,6 +887,9 @@ class CustomWidgetBase(DataViewer):
         self._update_artists = []
         self.settings_changed()
 
+    def update_appearance_from_settings(self):
+        self.client.update_appearance_from_settings()
+
     def options_widget(self):
         return self.option_widget
 
@@ -1251,7 +1254,7 @@ class LabeledSlider(QtGui.QWidget):
     def valueChanged(self):
         """
         Pointer to valueChanged signal.
-        
+
         .. warning:: the value emitted by this signal is unscaled,
                      and shouldn't be used directly. Use .value() instead
         """

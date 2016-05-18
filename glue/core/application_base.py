@@ -272,6 +272,19 @@ class Application(HubListener):
         """
         return []
 
+    def update_viewer_appearance_from_settings(self):
+        for tab in self.viewers:
+            for viewer in tab:
+                viewer.update_appearance_from_settings()
+
+    def set_data_color(self, color, alpha):
+        """
+        Reset all the data colors to that specified.
+        """
+        for data in self.data_collection:
+            data.style.color = color
+            data.style.alpha = alpha
+
     def __gluestate__(self, context):
         viewers = [list(map(context.id, tab)) for tab in self.viewers]
         data = self.session.data_collection

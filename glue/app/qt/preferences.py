@@ -2,13 +2,15 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
+import numpy as np
 from matplotlib.colors import ColorConverter
 
 from glue.external.qt import QtGui
 from glue.config import settings, preference_panes
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui, ColorProperty
-from glue.utils.qt.widget_properties import CurrentComboTextProperty, ValueProperty
+from glue.utils.qt.widget_properties import (CurrentComboTextProperty,
+                                             ValueProperty, ButtonProperty)
 
 __all__ = ["PreferencesDialog"]
 
@@ -22,10 +24,13 @@ class PreferencesDialog(QtGui.QDialog):
     foreground = ColorProperty('ui.color_foreground')
     data_color = ColorProperty('ui.color_default_data')
     data_alpha = ValueProperty('ui.slider_alpha', value_range=(0, 1))
+    data_apply = ButtonProperty('ui.checkbox_apply')
 
-    def __init__(self, parent=None):
+    def __init__(self, application, parent=None):
 
         super(PreferencesDialog, self).__init__(parent=parent)
+
+        self.app = application
 
         self.ui = load_ui('preferences.ui', self,
                            directory=os.path.dirname(__file__))
@@ -41,7 +46,7 @@ class PreferencesDialog(QtGui.QDialog):
         self.background = settings.BACKGROUND_COLOR
         self.foreground = settings.FOREGROUND_COLOR
         self.data_color = settings.DATA_COLOR
-        self.data_alpha = float(settings.DATA_ALPHA)
+        self.data_alpha = settings.DATA_ALPHA
 
         self._update_theme_from_colors()
 
@@ -53,9 +58,11 @@ class PreferencesDialog(QtGui.QDialog):
             self.panes.append(pane)
 
     def _update_theme_from_colors(self):
-        if rgb(self.background) == (1,1,1) and rgb(self.foreground) == (0,0,0):
+        if (rgb(self.background) == (1,1,1) and rgb(self.foreground) == (0,0,0)
+            and rgb(self.data_color) == (0.35, 0.35, 0.35) and np.allclose(self.data_alpha, 0.8)):
             self.theme = 'Black on White'
-        elif rgb(self.background) == (0,0,0) and rgb(self.foreground) == (1,1,1):
+        elif (rgb(self.background) == (0,0,0) and rgb(self.foreground) == (1,1,1)
+              and rgb(self.data_color) == (0.75, 0.75, 0.75) and np.allclose(self.data_alpha, 0.8)):
             self.theme = 'White on Black'
         else:
             self.theme = 'Custom'
@@ -64,22 +71,33 @@ class PreferencesDialog(QtGui.QDialog):
         if self.theme == 'Black on White':
             self.foreground = 'black'
             self.background = 'white'
-            self.data_color = '0.25'
-            self.data_alpha = 0.75
+            self.data_color = '0.35'
+            self.data_alpha = 0.8
         elif self.theme == 'White on Black':
             self.foreground = 'white'
             self.background = 'black'
             self.data_color = '0.75'
-            self.data_alpha = 0.75
+            self.data_alpha = 0.8
         elif self.theme != 'Custom':
             raise ValueError("Unknown theme: {0}".format(self.theme))
 
     def finalize(self):
 
+        # Update default settings
+
         settings.FOREGROUND_COLOR = self.foreground
         settings.BACKGROUND_COLOR = self.background
         settings.DATA_COLOR = self.data_color
         settings.DATA_ALPHA = self.data_alpha
+
+        # Trigger viewers to update defaults
+
+        self.app.update_viewer_appearance_from_settings()
+
+        # If requested, trigger data to update color
+
+        if self.data_apply:
+            self.app.set_data_color(settings.DATA_COLOR, settings.DATA_ALPHA)
 
         for pane in self.panes:
             pane.finalize()

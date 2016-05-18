@@ -18,7 +18,7 @@ from glue.core.layer_artist import LayerArtistContainer
 from glue.core.state import lookup_class_with_patches
 from glue.utils import defer_draw
 
-from glue.viewers.common.viz_client import VizClient, init_mpl
+from glue.viewers.common.viz_client import VizClient, init_mpl, update_appearance_from_settings
 from glue.viewers.scatter.layer_artist import ScatterLayerBase, ScatterLayerArtist
 
 from .layer_artist import (ImageLayerArtist, SubsetImageLayerArtist,
@@ -763,6 +763,10 @@ class MplImageClient(ImageClient):
     @property
     def axes(self):
         return self._axes
+
+    def update_appearance_from_settings(self):
+        update_appearance_from_settings(self.axes)
+        self._redraw()
 
     def check_update(self, *args):
         """
