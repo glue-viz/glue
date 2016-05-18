@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import pytest
 import numpy as np
 
+from glue.config import settings
 from glue.core import Data, DataCollection
 
 from glue.tests.helpers import QT_INSTALLED
@@ -113,7 +114,7 @@ class TestPlotly(object):
             name='data',
             type='bar',
             marker=dict(
-                color='rgba(0, 0, 0, 0.5)'
+                color='rgba(0, 0, 0, {0:0.1f})'.format(float(settings.DATA_ALPHA))
             ),
         )
         data = args[0]['data']
