@@ -176,3 +176,18 @@ class DataCollectionDeleteMessage(DataCollectionMessage):
     def __init__(self, sender, data, tag=None):
         DataCollectionMessage.__init__(self, sender, tag=tag)
         self.data = data
+
+
+class SettingsChangeMessage(Message):
+    """
+    Indicates that some of the application-wide settings have changed
+
+    Parameters
+    ----------
+    settings : iterable
+        An iterable of the settings that have changed.
+    """
+
+    def __init__(self, sender, settings, tag=None):
+        super(SettingsChangeMessage, self).__init__(sender=sender, tag=tag)
+        self.settings = settings

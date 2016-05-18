@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 
 from glue.config import settings
 from glue.core import Data
+from glue.core.message import SettingsChangeMessage
 from glue.core.client import Client
 from glue.core.layer_artist import LayerArtistContainer
 from glue.utils.matplotlib import freeze_margins
@@ -219,10 +220,6 @@ class GenericMplClient(Client):
 
         self._connect()
 
-    def update_appearance_from_settings(self):
-        update_appearance_from_settings(self.axes)
-        self._redraw()
-
     def create_axes(self, figure):
         return figure.add_subplot(1, 1, 1)
 
@@ -314,6 +311,22 @@ class GenericMplClient(Client):
 
     def _remove_data(self, message):
         self.remove_layer(message.data)
+
+    def register_to_hub(self, hub):
+
+        super(GenericMplClient, self).register_to_hub(hub)
+
+        def is_appearance_settings(msg):
+            return ('BACKGROUND_COLOR' in msg.settings
+                    or 'FOREGROUND_COLOR' in msg.settings)
+
+        hub.subscribe(self, SettingsChangeMessage,
+                      self._update_appearance_from_settings,
+                      filter=is_appearance_settings)
+
+    def _update_appearance_from_settings(self, message):
+        update_appearance_from_settings(self.axes)
+        self._redraw()
 
     def restore_layers(self, layers, context):
         """ Re-generate plot layers from a glue-serialized list"""

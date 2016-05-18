@@ -89,10 +89,6 @@ class HistogramClient(Client):
     def axes(self):
         return self._axes
 
-    def update_appearance_from_settings(self):
-        update_appearance_from_settings(self.axes)
-        self._redraw()
-
     @property
     def xlimits(self):
         return self.xmin, self.xmax
@@ -474,6 +470,18 @@ class HistogramClient(Client):
         hub.subscribe(self,
                       msg.ComponentReplacedMessage,
                       handler=self._on_component_replaced)
+
+        def is_appearance_settings(msg):
+            return ('BACKGROUND_COLOR' in msg.settings
+                    or 'FOREGROUND_COLOR' in msg.settings)
+
+        hub.subscribe(self, msg.SettingsChangeMessage,
+                      self._update_appearance_from_settings,
+                      filter=is_appearance_settings)
+
+    def _update_appearance_from_settings(self, message):
+        update_appearance_from_settings(self.axes)
+        self._redraw()
 
     def restore_layers(self, layers, context):
         for layer in layers:

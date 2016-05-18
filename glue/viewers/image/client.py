@@ -9,7 +9,7 @@ from glue.external.modest_image import extract_matched_slices
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.callback_property import (
     callback_property, CallbackProperty)
-from glue.core.message import ComponentReplacedMessage
+from glue.core.message import ComponentReplacedMessage, SettingsChangeMessage
 from glue.core.roi import PolygonalROI
 from glue.core.subset import Subset, RoiSubsetState
 from glue.core.data import Data
@@ -764,10 +764,6 @@ class MplImageClient(ImageClient):
     def axes(self):
         return self._axes
 
-    def update_appearance_from_settings(self):
-        update_appearance_from_settings(self.axes)
-        self._redraw()
-
     def check_update(self, *args):
         """
         For the Matplotlib client, see if the view window has changed enough
@@ -849,6 +845,23 @@ class MplImageClient(ImageClient):
         if self._crosshairs is not None:
             self._crosshairs.remove()
             self._crosshairs = None
+
+    def register_to_hub(self, hub):
+
+        super(MplImageClient, self).register_to_hub(hub)
+
+        def is_appearance_settings(msg):
+            return ('BACKGROUND_COLOR' in msg.settings
+                    or 'FOREGROUND_COLOR' in msg.settings)
+
+        hub.subscribe(self, SettingsChangeMessage,
+                      self._update_appearance_from_settings,
+                      filter=is_appearance_settings)
+
+    def _update_appearance_from_settings(self, message):
+        update_appearance_from_settings(self.axes)
+        self._redraw()
+
 
 
 def _2d_shape(shape, slc):

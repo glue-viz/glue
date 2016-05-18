@@ -7,6 +7,7 @@ from matplotlib.colors import ColorConverter
 
 from glue.external.qt import QtGui
 from glue.config import settings, preference_panes
+from glue.core.message import SettingsChangeMessage
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui, ColorProperty
 from glue.utils.qt.widget_properties import (CurrentComboTextProperty,
@@ -92,7 +93,7 @@ class PreferencesDialog(QtGui.QDialog):
 
         # Trigger viewers to update defaults
 
-        self.app.update_viewer_appearance_from_settings()
+        self.app._hub.broadcast(SettingsChangeMessage(self, ('FOREGROUND_COLOR', 'BACKGROUND_COLOR')))
 
         # If requested, trigger data to update color
 

@@ -272,11 +272,6 @@ class Application(HubListener):
         """
         return []
 
-    def update_viewer_appearance_from_settings(self):
-        for tab in self.viewers:
-            for viewer in tab:
-                viewer.update_appearance_from_settings()
-
     def set_data_color(self, color, alpha):
         """
         Reset all the data colors to that specified.
