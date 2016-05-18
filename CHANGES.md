@@ -35,6 +35,11 @@ v0.8 (unreleased)
 
 * Fixed display of certain error messages when using Python 3. [#989]
 
+* Add an extensible preferences window. [#988]
+
+* Add the ability to change the foreground and background color for viewers.
+  [#988]
+
 v0.7.3 (2015-05-04)
 -------------------
 
