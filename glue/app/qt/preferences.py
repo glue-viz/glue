@@ -37,12 +37,9 @@ class PreferencesDialog(QtGui.QDialog):
                            directory=os.path.dirname(__file__))
 
         self.ui.cancel.clicked.connect(self.reject)
-        self.ui.ok.clicked.connect(self.finalize)
+        self.ui.ok.clicked.connect(self.accept)
 
         self.ui.combo_theme.currentIndexChanged.connect(nonpartial(self._update_colors_from_theme))
-
-        self.ui.color_foreground.mousePressed.connect(nonpartial(self._update_theme_from_colors))
-        self.ui.color_background.mousePressed.connect(nonpartial(self._update_theme_from_colors))
 
         self.background = settings.BACKGROUND_COLOR
         self.foreground = settings.FOREGROUND_COLOR
@@ -82,7 +79,7 @@ class PreferencesDialog(QtGui.QDialog):
         elif self.theme != 'Custom':
             raise ValueError("Unknown theme: {0}".format(self.theme))
 
-    def finalize(self):
+    def accept(self):
 
         # Update default settings
 
@@ -103,7 +100,7 @@ class PreferencesDialog(QtGui.QDialog):
         for pane in self.panes:
             pane.finalize()
 
-        self.ui.accept()
+        super(PreferencesDialog, self).accept()
 
 
 if __name__ == "__main__":
