@@ -136,7 +136,7 @@ def can_save_d3po(application):
 
     for tab in application.viewers:
         for viewer in tab:
-            if not isinstance(viewer, DISPATCH.keys()):
+            if not isinstance(viewer, tuple(DISPATCH.keys())):
                 raise ValueError("D3PO Export only supports scatter "
                                  "and histogram plots")
     if sum(len(tab) for tab in application.viewers) == 0:
@@ -219,8 +219,8 @@ def launch(path):
 
     :param path: The TLD of the bundle
     """
-    from SocketServer import TCPServer
-    from SimpleHTTPServer import SimpleHTTPRequestHandler
+    from glue.external.six.moves.socketserver import TCPServer
+    from glue.external.six.moves.SimpleHTTPServer import SimpleHTTPRequestHandler
     from random import randrange
     from socket import error
     import webbrowser
