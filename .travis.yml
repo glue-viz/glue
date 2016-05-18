@@ -123,7 +123,7 @@ before_install:
   - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
 
   # setup tools to trigger mac buildbot
-  - if [ $APP_TRIGGER ]; then source .setup_app_trigger.sh; fi
+  - if [ $TRAVIS_PULL_REQUEST == false && $APP_TRIGGER ]; then source .setup_app_trigger.sh; fi
   - if [ $TRAVIS_BRANCH = master ]; then export S3_DIR=latest; else export S3_DIR=$TRAVIS_BRANCH; fi
 
   # now set up a plugin configuration file with some plugins disabled. This is
@@ -181,4 +181,4 @@ after_success:
   - if [[ $QT_PKG != False ]]; then coveralls; fi
 
   # Trigger the building of the MacOS X app in the Travis-MacGlue repo
-  - if [ $APP_TRIGGER ]; then ./.trigger_app_build.sh; fi
+  - if [ $TRAVIS_PULL_REQUEST == false && $APP_TRIGGER ]; then ./.trigger_app_build.sh; fi
