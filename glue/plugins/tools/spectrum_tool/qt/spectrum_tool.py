@@ -24,6 +24,8 @@ from glue.app.qt.mdi_area import GlueMdiSubWindow
 from glue.viewers.common.qt.mpl_widget import MplWidget
 from glue.utils import nonpartial, Pointer
 from glue.utils.qt import Worker, messagebox_on_error
+from glue.core import roi as core_roi
+from matplotlib.path import Path
 
 from .profile_viewer import ProfileViewer
 
@@ -46,35 +48,62 @@ class Extractor(object):
         yaxis = slc.index('y')
         ndim, nz = data.ndim, data.shape[zaxis]
 
-        l, r, b, t = roi.xmin, roi.xmax, roi.ymin, roi.ymax
-        shp = data.shape
-        # The 'or 0' is because Numpy in Python 3 cannot deal with 'None'
-        l, r = np.round(np.clip([l or 0, r or 0], 0, shp[xaxis])).astype(int)
-        b, t = np.round(np.clip([b or 0, t or 0], 0, shp[yaxis])).astype(int)
+        if isinstance(roi, core_roi.RectangularROI):
+            l, r, b, t = roi.xmin, roi.xmax, roi.ymin, roi.ymax
+            shp = data.shape
+            # The 'or 0' is because Numpy in Python 3 cannot deal with 'None'
+            l, r = np.round(np.clip([l or 0, r or 0], 0, shp[xaxis])).astype(int)
+            b, t = np.round(np.clip([b or 0, t or 0], 0, shp[yaxis])).astype(int)
 
-        # extract sub-slice, without changing dimension
-        slc = [slice(s, s + 1)
-               if s not in ['x', 'y'] else slice(None)
-               for s in slc]
-        slc[xaxis] = slice(l, r)
-        slc[yaxis] = slice(b, t)
-        slc[zaxis] = slice(None)
-        x = Extractor.abcissa(data, zaxis)
+            # extract sub-slice, without changing dimension
+            slc = [slice(s, s + 1)
+                   if s not in ['x', 'y'] else slice(None)
+                   for s in slc]
+            slc[xaxis] = slice(l, r)
+            slc[yaxis] = slice(b, t)
+            slc[zaxis] = slice(None)
+            x = Extractor.abcissa(data, zaxis)
 
-        data = data[attribute, tuple(slc)]
-        finite = np.isfinite(data)
+            data = data[attribute, tuple(slc)]   # attribute is Primary,
+            finite = np.isfinite(data)
 
-        assert data.ndim == ndim
+            assert data.ndim == ndim
 
-        for i in reversed(list(range(ndim))):
-            if i != zaxis:
-                data = np.nansum(data, axis=i)
-                finite = finite.sum(axis=i)
+            for i in reversed(list(range(ndim))):
+                if i != zaxis:  # index of the zaxis in dataset
+                    data = np.nansum(data, axis=i)
+                    finite = finite.sum(axis=i)
 
-        assert data.ndim == 1
-        assert data.size == nz
+            assert data.ndim == 1
+            assert data.size == nz
 
-        data = (1. * data / finite).ravel()
+            data = (1. * data / finite).ravel()
+
+        if isinstance(roi, core_roi.PolygonalROI):
+            # both circular and polygonal selection will call here
+            x = Extractor.abcissa(data, zaxis)
+            data = data[attribute]
+
+            slice_shape = []
+            for i in range(ndim):
+                if i != zaxis:
+                    slice_shape.append(data.shape[i])
+            slice_data = np.ones(slice_shape)
+            posdata = np.argwhere(slice_data)
+
+            # mask for each slice
+            mask = roi.contains(posdata[:, 0], posdata[:, 1])
+
+            return_data = []
+            for i in range(nz):
+                select_data = np.take(data, i, axis=zaxis).ravel()[mask]
+                finite = np.isfinite(select_data).sum()
+                return_data.append(1.*np.nansum(select_data)/finite)
+
+            data = np.array(return_data)
+            assert data.ndim == 1
+            assert data.size == nz
+
         return x, data
 
     @staticmethod
