@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+from matplotlib.colors import ColorConverter
+
 from glue.config import settings
 from glue.external.echo import callback_property
 from glue.external import six
@@ -105,6 +107,11 @@ class VisualAttributes(object):
     @alpha.setter
     def alpha(self, value):
         self._alpha = value
+
+    @property
+    def rgba(self):
+        r, g, b = ColorConverter().to_rgb(self.color)
+        return (r, g, b, self.alpha)
 
     @callback_property
     def linestyle(self):

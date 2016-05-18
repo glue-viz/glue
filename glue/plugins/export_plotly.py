@@ -139,11 +139,10 @@ def _fix_legend_duplicates(traces, layout):
 
 
 def _color(style):
-    color = int(style.color[1:], base=16)
-    r = color / 256 / 256
-    g = color / 256 % 256
-    b = color % 256
-    a = style.alpha
+    r, g, b, a = style.rgba
+    r = int(r * 255)
+    g = int(g * 255)
+    b = int(b * 255)
     return 'rgba(%i, %i, %i, %0.1f)' % (r, g, b, a)
 
 
