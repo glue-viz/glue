@@ -2,6 +2,8 @@ from mock import patch, MagicMock
 
 from matplotlib.colors import ColorConverter
 
+from glue.core import HubListener, Application
+from glue.core.message import SettingsChangeMessage
 from glue.external.qt import QtGui
 from glue.app.qt.preferences import PreferencesDialog
 from glue.utils.qt.helpers import process_dialog
@@ -12,7 +14,7 @@ class TestPreferences():
 
 
     def setup_method(self, method):
-        self.app = MagicMock()
+        self.app = Application()
 
     def test_no_change(self):
 
@@ -179,3 +181,35 @@ class TestPreferences():
 
             assert settings.OPTION1 == "Monty"
             assert settings.OPTION2 == "Python"
+
+    def test_settings_change_message(self):
+
+        # Make sure that a SettingsChangeMessage gets emitted when settings
+        # change in the dialog
+
+        class TestListener(HubListener):
+
+            def __init__(self, hub):
+                hub.subscribe(self, SettingsChangeMessage,
+                              handler=self.receive_message)
+                self.received = []
+
+            def receive_message(self, message):
+                self.received.append(message)
+
+        listener = TestListener(self.app._hub)
+
+        with patch('glue.app.qt.preferences.settings') as settings:
+
+            settings.FOREGROUND_COLOR = 'red'
+            settings.BACKGROUND_COLOR = (0, 0.5, 1)
+            settings.DATA_COLOR = (1, 0.5, 0.25)
+            settings.DATA_ALPHA = 0.3
+
+            dialog = PreferencesDialog(self.app)
+            dialog.show()
+            dialog.foreground = (0,1,1)
+            dialog.accept()
+
+        assert len(listener.received) == 1
+        assert listener.received[0].settings == ('FOREGROUND_COLOR', 'BACKGROUND_COLOR')
