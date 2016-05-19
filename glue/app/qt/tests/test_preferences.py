@@ -1,12 +1,12 @@
-from mock import patch, MagicMock
+import os
 
+from mock import patch, MagicMock
 from matplotlib.colors import ColorConverter
 
 from glue.core import HubListener, Application
 from glue.core.message import SettingsChangeMessage
 from glue.external.qt import QtGui
 from glue.app.qt.preferences import PreferencesDialog
-from glue.utils.qt.helpers import process_dialog
 
 rgb = ColorConverter().to_rgb
 
@@ -213,3 +213,27 @@ class TestPreferences():
 
         assert len(listener.received) == 1
         assert listener.received[0].settings == ('FOREGROUND_COLOR', 'BACKGROUND_COLOR')
+
+    def test_save_to_disk(self, tmpdir):
+
+        with patch('glue.app.qt.preferences.settings') as settings:
+            with patch('glue.config.CFG_DIR', tmpdir.strpath):
+
+                settings.FOREGROUND_COLOR = 'red'
+                settings.BACKGROUND_COLOR = (0, 0.5, 1)
+                settings.DATA_COLOR = (1, 0.5, 0.25)
+                settings.DATA_ALPHA = 0.3
+
+                dialog = PreferencesDialog(self.app)
+                dialog.show()
+                dialog.save_to_disk = False
+                dialog.accept()
+
+                assert not os.path.exists(os.path.join(tmpdir.strpath, 'settings.cfg'))
+
+                dialog = PreferencesDialog(self.app)
+                dialog.show()
+                dialog.save_to_disk = True
+                dialog.accept()
+
+                assert os.path.exists(os.path.join(tmpdir.strpath, 'settings.cfg'))
