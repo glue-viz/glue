@@ -5,6 +5,7 @@ import imp
 import sys
 from collections import namedtuple
 from glue.logger import logger
+from glue._settings_helpers import load_settings
 
 """
 Objects used to configure Glue at runtime.
@@ -594,3 +595,5 @@ settings.add('DATA_COLOR', '0.35')
 settings.add('DATA_ALPHA', 0.8, validator=float)
 settings.add('BACKGROUND_COLOR', '#FFFFFF')
 settings.add('FOREGROUND_COLOR', '#000000')
+
+load_settings()

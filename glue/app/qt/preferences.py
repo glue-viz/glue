@@ -12,6 +12,7 @@ from glue.utils import nonpartial
 from glue.utils.qt import load_ui, ColorProperty
 from glue.utils.qt.widget_properties import (CurrentComboTextProperty,
                                              ValueProperty, ButtonProperty)
+from glue._settings_helpers import save_settings
 
 __all__ = ["PreferencesDialog"]
 
@@ -26,6 +27,7 @@ class PreferencesDialog(QtGui.QDialog):
     data_color = ColorProperty('ui.color_default_data')
     data_alpha = ValueProperty('ui.slider_alpha', value_range=(0, 1))
     data_apply = ButtonProperty('ui.checkbox_apply')
+    save_to_disk = ButtonProperty('ui.checkbox_save')
 
     def __init__(self, application, parent=None):
 
@@ -87,6 +89,10 @@ class PreferencesDialog(QtGui.QDialog):
         settings.BACKGROUND_COLOR = self.background
         settings.DATA_COLOR = self.data_color
         settings.DATA_ALPHA = self.data_alpha
+
+        # Save to disk if requested
+        if self.save_to_disk:
+            save_settings()
 
         # Trigger viewers to update defaults
 
