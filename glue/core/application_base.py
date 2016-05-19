@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import traceback
-from functools import wraps, partial
+from functools import wraps
 
 from glue.core.session import Session
 from glue.core.edit_subset_mode import EditSubsetMode
@@ -152,6 +152,33 @@ class Application(HubListener):
     def load_data(self, path):
         d = load_data(path)
         self.add_datasets(self.data_collection, d)
+
+    @catch_error("Could not add data")
+    def add_data(self, *args, **kwargs):
+        """
+        Add data to the session.
+
+        Positional arguments are interpreted using the data factories, while
+        keyword arguments are interpreted using the same infrastructure as the
+        `qglue` command.
+        """
+
+        datasets = []
+
+        for path in args:
+            datasets.append(load_data(path))
+
+        links = kwargs.pop('links', None)
+
+        from glue.qglue import parse_data, parse_links
+
+        for label, data in kwargs.items():
+            datasets.extend(parse_data(data, label))
+
+        self.add_datasets(self.data_collection, datasets)
+
+        if links is not None:
+            self.data_collection.add_link(parse_links(self.data_collection, links))
 
     def report_error(self, message, detail):
         """ Report an error message to the user.

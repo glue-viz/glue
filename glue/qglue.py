@@ -133,7 +133,7 @@ except ImportError:
     pass
 
 
-def _parse_links(dc, links):
+def parse_links(dc, links):
     from glue.core.link_helpers import MultiLink
     from glue.core import ComponentLink
 
@@ -222,7 +222,7 @@ def qglue(**kwargs):
         dc.extend(parse_data(data, label))
 
     if links is not None:
-        dc.add_link(_parse_links(dc, links))
+        dc.add_link(parse_links(dc, links))
 
     with restore_io():
         ga = GlueApplication(dc)
