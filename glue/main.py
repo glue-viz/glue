@@ -298,5 +298,11 @@ def load_plugins():
     except Exception as e:
         logger.warn("Failed to load plugin configuration")
 
+    # Reload the settings now that we have loaded plugins, since some plugins
+    # may have added some settings. Note that this will not re-read settings
+    # that were previously read.
+    from glue._settings_helpers import load_settings
+    load_settings()
+
 if __name__ == "__main__":
     sys.exit(main(sys.argv))  # prama: no cover

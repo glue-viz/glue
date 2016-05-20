@@ -138,26 +138,31 @@ class SettingRegistry(DictRegistry):
     def __init__(self):
         super(SettingRegistry, self).__init__()
         self._validators = {}
+        self._defaults = {}
 
-    def add(self, key, value, validator=str):
+    def add(self, key, default=None, validator=None):
+
         if validator is None:
             validator = lambda x: x
-        self._members[key] = validator(value)
+
+        self._defaults[key] = validator(default)
         self._validators[key] = validator
 
     def __getattr__(self, attr):
         if attr.startswith('_'):
             raise AttributeError("No such setting: {0}".format(attr))
         else:
-            try:
+            if attr in self._members:
                 return self._members[attr]
-            except KeyError:
+            elif attr in self._defaults:
+                return self._defaults[attr]
+            else:
                 raise AttributeError("No such setting: {0}".format(attr))
 
     def __setattr__(self, attr, value):
         if attr.startswith('_'):
             object.__setattr__(self, attr, value)
-        elif attr in self._members:
+        elif attr in self:
             self._members[attr] = self._validators[attr](value)
         else:
             raise AttributeError("No such setting: {0}".format(attr))
@@ -165,9 +170,19 @@ class SettingRegistry(DictRegistry):
     def __dir__(self):
         return sorted(self._members.keys())
 
+    def __contains__(self, setting):
+        return setting in self._defaults
+
     def __iter__(self):
-        for key in self._members:
-            yield key, self._members[key], self._validators[key]
+        for key in self._defaults:
+            value = self._members.get(key, self._defaults[key])
+            yield key, value, self._validators[key]
+
+    def reset_defaults(self):
+        self._members.clear()
+
+    def is_default(self, setting):
+        return setting in self._defaults and not setting in self._members
 
 
 class DataImportRegistry(Registry):
@@ -593,7 +608,7 @@ LIGHT_ORANGE = "#FDBF6F"
 LIGHT_PURPLE = "#CAB2D6"
 
 settings.add('SUBSET_COLORS', [RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK], validator=list)
-settings.add('DATA_COLOR', '0.35', validator=None)
+settings.add('DATA_COLOR', '0.35')
 settings.add('DATA_ALPHA', 0.8, validator=float)
-settings.add('BACKGROUND_COLOR', '#FFFFFF', validator=None)
-settings.add('FOREGROUND_COLOR', '#000000', validator=None)
+settings.add('BACKGROUND_COLOR', '#FFFFFF')
+settings.add('FOREGROUND_COLOR', '#000000')
