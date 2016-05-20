@@ -31,7 +31,7 @@ def test_roundtrip(tmpdir):
             settings.FLOAT = 4.5
             settings.LIST = ['DDD', 'EE', 'F']
 
-            load_settings()
+            load_settings(force=True)
 
             assert settings.STRING == 'blue'
             assert settings.INT == 4
