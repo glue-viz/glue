@@ -16,7 +16,8 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'SingleSubsetLayerActionRegistry', 'ProfileFitterRegistry',
            'qt_client', 'data_factory', 'link_function', 'link_helper',
            'colormaps', 'exporters', 'settings', 'fit_plugin',
-           'auto_refresh', 'importer', 'DictRegistry']
+           'auto_refresh', 'importer', 'DictRegistry', 'preference_panes',
+           'PreferencePanesRegistry']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -139,6 +140,8 @@ class SettingRegistry(DictRegistry):
         self._validators = {}
 
     def add(self, key, value, validator=str):
+        if validator is None:
+            validator = lambda x: x
         self._members[key] = validator(value)
         self._validators[key] = validator
 
@@ -158,6 +161,9 @@ class SettingRegistry(DictRegistry):
             self._members[attr] = self._validators[attr](value)
         else:
             raise AttributeError("No such setting: {0}".format(attr))
+
+    def __dir__(self):
+        return sorted(self._members.keys())
 
     def __iter__(self):
         for key in self._members:
@@ -216,6 +222,22 @@ class MenubarPluginRegistry(Registry):
             self.add(label, func)
             return func
         return adder
+
+
+class PreferencePanesRegistry(DictRegistry):
+    """
+    Stores preference panes
+
+    The members property is a list of tuples of Qt widget classes that can have
+    their own tab in the preferences window.
+    """
+
+    def add(self, label, widget_cls):
+        self._members[label] = widget_cls
+
+    def __iter__(self):
+        for label in self._members:
+            yield label, self._members[label]
 
 
 class ExporterRegistry(Registry):
@@ -498,6 +520,7 @@ settings = SettingRegistry()
 fit_plugin = ProfileFitterRegistry()
 single_subset_action = SingleSubsetLayerActionRegistry()
 menubar_plugin = MenubarPluginRegistry()
+preference_panes = PreferencePanesRegistry()
 
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)
@@ -570,4 +593,7 @@ LIGHT_ORANGE = "#FDBF6F"
 LIGHT_PURPLE = "#CAB2D6"
 
 settings.add('SUBSET_COLORS', [RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK], validator=list)
-settings.add('DATA_COLOR', GRAY)
+settings.add('DATA_COLOR', '0.35', validator=None)
+settings.add('DATA_ALPHA', 0.8, validator=float)
+settings.add('BACKGROUND_COLOR', '#FFFFFF', validator=None)
+settings.add('FOREGROUND_COLOR', '#000000', validator=None)

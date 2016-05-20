@@ -9,7 +9,10 @@ try:
 except ImportError:
     plotly = None
 
+from glue.config import settings
+from glue.external.qt import QtGui
 from glue.core.layout import Rectangle, snap_to_grid
+from glue.utils.qt.widget_properties import TextProperty
 
 SYM = {'o': 'circle', 's': 'square', '+': 'cross', '^': 'triangle-up',
        '*': 'cross'}
@@ -136,11 +139,10 @@ def _fix_legend_duplicates(traces, layout):
 
 
 def _color(style):
-    color = int(style.color[1:], base=16)
-    r = color / 256 / 256
-    g = color / 256 % 256
-    b = color % 256
-    a = style.alpha
+    r, g, b, a = style.rgba
+    r = int(r * 255)
+    g = int(g * 255)
+    b = int(b * 255)
     return 'rgba(%i, %i, %i, %0.1f)' % (r, g, b, a)
 
 
@@ -255,8 +257,8 @@ def can_save_plotly(application):
         raise ValueError("Plotly Export requires the plotly python library. "
                          "Please install first")
 
-    user = application.get_setting('PLOTLY_USER')
-    apikey = application.get_setting('PLOTLY_APIKEY')
+    user = settings.PLOTLY_USER
+    apikey = settings.PLOTLY_APIKEY
     if not user or not apikey:
         raise ValueError("Plotly username and API Key required. "
                          "Please enter them in File->Edit Settings")
@@ -302,11 +304,58 @@ def save_plotly(application, label):
     plotly.plot(*args, **kwargs)
 
 
+class PlotlyPreferences(QtGui.QWidget):
+
+    user = TextProperty('text_user')
+    apikey = TextProperty('text_apikey')
+
+    def __init__(self, parent=None):
+
+        super(PlotlyPreferences, self).__init__(parent=parent)
+
+        self.layout = QtGui.QFormLayout()
+
+        self.text_user = QtGui.QLineEdit()
+        self.text_apikey = QtGui.QLineEdit()
+
+        self.layout.addRow("Plotly username", self.text_user)
+        self.layout.addRow("Plotly API key", self.text_apikey)
+
+        self.setLayout(self.layout)
+
+        self.user = settings.PLOTLY_USER
+        self.apikey = settings.PLOTLY_APIKEY
+
+
+    def finalize(self):
+        settings.PLOTLY_USER = self.user
+        settings.PLOTLY_APIKEY = self.apikey
+
+
 def setup():
-    from glue.config import exporters, settings
+
+    from glue.config import exporters, settings, preference_panes
+
+    if not 'PLOTLY_USER' in settings:
+        settings.add('PLOTLY_USER', 'Glue')
+
+    if not 'PLOTLY_APIKEY' in settings:
+        settings.add('PLOTLY_APIKEY', 't24aweai14')
+
     exporters.add('Plotly', save_plotly, can_save_plotly, outmode='label')
-    settings.add('PLOTLY_USER', 'Glue')
-    settings.add('PLOTLY_APIKEY', 't24aweai14')
+
+    preference_panes.add("Plotly", PlotlyPreferences)
+
+
+if __name__ == "__main__":
+
+    from glue.external.qt import get_qapp
+    app = get_qapp()
+    setup()
+    widget = PlotlyPreferences()
+    widget.show()
+    widget.raise_()
+    app.exec_()
 
 
 DISPATCH = {}

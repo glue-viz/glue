@@ -60,3 +60,26 @@ def test_session(tmpdir):
     app = MockApplication()
     app.save_session(session_file)
     MockApplication.restore_session(session_file)
+
+
+def test_set_data_color():
+
+    x = Data(x=[1, 2, 3])
+    y = Data(y=[1, 2, 3, 4])
+
+    x.style.color = 'blue'
+    x.style.alpha = 0.4
+    y.style.color = 'purple'
+    y.style.alpha = 0.5
+
+    app = Application()
+    app.data_collection.append(x)
+    app.data_collection.append(y)
+
+    app.set_data_color('red', alpha=0.3)
+
+    assert x.style.color == 'red'
+    assert x.style.alpha == 0.3
+
+    assert y.style.color == 'red'
+    assert y.style.alpha == 0.3

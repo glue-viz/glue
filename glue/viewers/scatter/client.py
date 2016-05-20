@@ -6,7 +6,7 @@ import numpy as np
 
 from glue.core.callback_property import (CallbackProperty, add_callback,
                                          delay_callback)
-from glue.core.message import ComponentReplacedMessage
+from glue.core.message import ComponentReplacedMessage, SettingsChangeMessage
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.roi import RectangularROI
 from glue.core.subset import RangeSubsetState, CategoricalROISubsetState, AndState
@@ -16,7 +16,7 @@ from glue.core.layer_artist import LayerArtistContainer
 from glue.core.state import lookup_class_with_patches
 from glue.core.util import relim, update_ticks, visible_limits
 
-from glue.viewers.common.viz_client import init_mpl
+from glue.viewers.common.viz_client import init_mpl, update_appearance_from_settings
 
 from .layer_artist import ScatterLayerArtist
 
@@ -469,5 +469,19 @@ class ScatterClient(Client):
             self.yatt = new
 
     def register_to_hub(self, hub):
+
         super(ScatterClient, self).register_to_hub(hub)
+
         hub.subscribe(self, ComponentReplacedMessage, self._on_component_replace)
+
+        def is_appearance_settings(msg):
+            return ('BACKGROUND_COLOR' in msg.settings
+                    or 'FOREGROUND_COLOR' in msg.settings)
+
+        hub.subscribe(self, SettingsChangeMessage,
+                      self._update_appearance_from_settings,
+                      filter=is_appearance_settings)
+
+    def _update_appearance_from_settings(self, message):
+        update_appearance_from_settings(self.axes)
+        self._redraw()

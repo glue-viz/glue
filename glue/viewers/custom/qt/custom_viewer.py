@@ -1251,7 +1251,7 @@ class LabeledSlider(QtGui.QWidget):
     def valueChanged(self):
         """
         Pointer to valueChanged signal.
-        
+
         .. warning:: the value emitted by this signal is unscaled,
                      and shouldn't be used directly. Use .value() instead
         """

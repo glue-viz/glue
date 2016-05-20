@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+from matplotlib.colors import ColorConverter
+
 from glue.config import settings
 from glue.external.echo import callback_property
 from glue.external import six
@@ -26,12 +28,18 @@ class VisualAttributes(object):
 
     '''
 
-    def __init__(self, parent=None, washout=False, color=settings.DATA_COLOR):
+    def __init__(self, parent=None, washout=False, color=None, alpha=None):
+
+        # We have to set the defaults here, otherwise the settings are fixed
+        # once the class is defined.
+        color = color or settings.DATA_COLOR
+        alpha = alpha or settings.DATA_ALPHA
+
         self.parent = parent
         self._atts = ['color', 'alpha', 'linewidth', 'linestyle', 'marker',
                       'markersize']
         self.color = color
-        self.alpha = 0.5
+        self.alpha = alpha
         self.linewidth = 1
         self.linestyle = 'solid'
         self.marker = 'o'
@@ -98,6 +106,11 @@ class VisualAttributes(object):
     @alpha.setter
     def alpha(self, value):
         self._alpha = value
+
+    @property
+    def rgba(self):
+        r, g, b = ColorConverter().to_rgb(self.color)
+        return (r, g, b, self.alpha)
 
     @callback_property
     def linestyle(self):

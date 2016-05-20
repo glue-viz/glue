@@ -10,6 +10,7 @@ from matplotlib.figure import Figure
 from glue.external.qt.QtCore import Qt
 from glue.external.qt import QtGui, QtCore, is_pyqt5
 from glue.utils import DeferredMethod
+from glue.config import settings
 
 if is_pyqt5():
     from matplotlib.backends.backend_qt5 import FigureManagerQT as FigureManager
@@ -54,12 +55,13 @@ class MplCanvas(FigureCanvas):
     resize_end = QtCore.Signal()
 
     def __init__(self):
+
         self._draw_count = 0
         interactive = matplotlib.is_interactive()
         matplotlib.interactive(False)
         self.roi_callback = None
 
-        self.fig = Figure(facecolor='#ffffff')
+        self.fig = Figure(facecolor=settings.BACKGROUND_COLOR)
 
         FigureCanvas.__init__(self, self.fig)
         FigureCanvas.setSizePolicy(self,

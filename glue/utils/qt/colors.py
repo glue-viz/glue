@@ -8,11 +8,13 @@ from glue.external.qt import QtCore, QtGui
 from glue.external.echo import add_callback
 from glue.utils import nonpartial
 from glue.utils.qt.helpers import CUSTOM_QWIDGETS
+from glue.utils.qt.widget_properties import WidgetProperty
 
 from matplotlib import cm
 
 __all__ = ['mpl_to_qt4_color', 'qt4_to_mpl_color', 'cmap2pixmap',
-           'tint_pixmap', 'QColorBox', 'connect_color', 'QColormapCombo']
+           'tint_pixmap', 'QColorBox', 'ColorProperty', 'connect_color',
+           'QColormapCombo']
 
 
 def mpl_to_qt4_color(color, alpha=1.0):
@@ -117,6 +119,15 @@ def tint_pixmap(bm, color):
 
     result = QtGui.QPixmap.fromImage(image)
     return result
+
+
+class ColorProperty(WidgetProperty):
+
+    def getter(self, widget):
+        return widget.color()
+
+    def setter(self, widget, value):
+        widget.setColor(value)
 
 
 def connect_color(client, prop, widget):

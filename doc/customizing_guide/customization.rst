@@ -175,18 +175,65 @@ Custom Subset Actions
 ---------------------
 
 You can add menu items to run custom functions on subsets. Use the following
-pattern in ``config..py``::
+pattern in ``config.py``::
 
     from glue.config import single_subset_action
 
     def callback(subset, data_collection):
-        print "Called with %s, %s" % (subset, data_collection)
+        print("Called with %s, %s" % (subset, data_collection))
 
     single_subset_action('Menu title', callback)
 
 This menu item is available by right clicking on a subset when a single
 subset is selected in the Data Collection window. Note that you must select
 the subset specific to a particular Data set, and not the parent Subset Group.
+
+Custom Preference Panes
+-----------------------
+
+You can also add custom panes in the Qt preferences dialog. To do this, you
+should create a Qt widget that encapsulates the preferences you want to
+include, and you should make sure that this widget has a ``finalize`` method
+that will get called when the preferences dialog is closed. This method should
+then set any settings appropriately in the application state. The following is
+an example of a custom preference pane::
+
+    from glue.config import settings, preference_panes
+    from glue.external.qt import QtGui
+
+
+    class MyPreferences(QtGui.QWidget):
+
+        def __init__(self, parent=None):
+
+            super(MyPreferences, self).__init__(parent=parent)
+
+            self.layout = QtGui.QFormLayout()
+
+            self.option1 = QtGui.QLineEdit()
+            self.option2 = QtGui.QCheckBox()
+
+            self.layout.addRow("Option 1", self.option1)
+            self.layout.addRow("Option 2", self.option2)
+
+            self.setLayout(self.layout)
+
+            self.option1.setText(settings.OPTION1)
+            self.option2.setChecked(settings.OPTION2)
+
+        def finalize(self):
+            settings.OPTION1 = self.option1.text()
+            settings.OPTION2 = self.option2.isChecked()
+
+
+    settings.add('OPTION1', '')
+    settings.add('OPTION2', False, bool)
+    preference_panes.add('My preferences', MyPreferences)
+
+This example then looks this the following once glue is loaded:
+
+.. image:: images/preferences.png
+   :align: center
 
 Complete list of registries
 ---------------------------
@@ -207,6 +254,7 @@ Registry name                  Registry class
 ``colormaps``                :class:`glue.config.ColormapRegistry`
 ``exporters``                :class:`glue.config.ExporterRegistry`
 ``settings``                 :class:`glue.config.SettingRegistry`
+``preference_panes``                 :class:`glue.config.PreferencePanesRegistry`
 ``fit_plugin``               :class:`glue.config.ProfileFitterRegistry`
 ``single_subset_action``     :class:`glue.config.SingleSubsetLayerActionRegistry`
 ========================== =======================================================
