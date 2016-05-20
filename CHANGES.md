@@ -4,6 +4,10 @@ Full changelog
 v0.8 (unreleased)
 -----------------
 
+* Add a new method ``add_data`` to application instances. This allows for
+  example additional data to be passed to glue after being launched by
+  ``qglue``. [#993]
+
 * Add playback controls to slice widget. [#971]
 
 * Add tooltip for data labels so that long labels can be more easily
