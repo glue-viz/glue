@@ -35,7 +35,7 @@ class PreferencesDialog(QtGui.QDialog):
         self.app = application
 
         self.ui = load_ui('preferences.ui', self,
-                           directory=os.path.dirname(__file__))
+                          directory=os.path.dirname(__file__))
 
         self.ui.cancel.clicked.connect(self.reject)
         self.ui.ok.clicked.connect(self.accept)
@@ -59,10 +59,10 @@ class PreferencesDialog(QtGui.QDialog):
             self.panes.append(pane)
 
     def _update_theme_from_colors(self):
-        if (rgb(self.background) == (1,1,1) and rgb(self.foreground) == (0,0,0)
-            and rgb(self.data_color) == (0.35, 0.35, 0.35) and np.allclose(self.data_alpha, 0.8)):
+        if (rgb(self.background) == (1, 1, 1) and rgb(self.foreground) == (0, 0, 0)
+                and rgb(self.data_color) == (0.35, 0.35, 0.35) and np.allclose(self.data_alpha, 0.8)):
             self.theme = 'Black on White'
-        elif (rgb(self.background) == (0,0,0) and rgb(self.foreground) == (1,1,1)
+        elif (rgb(self.background) == (0, 0, 0) and rgb(self.foreground) == (1, 1, 1)
               and rgb(self.data_color) == (0.75, 0.75, 0.75) and np.allclose(self.data_alpha, 0.8)):
             self.theme = 'White on Black'
         else:

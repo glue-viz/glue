@@ -17,8 +17,8 @@ from glue.plugins.dendro_viewer.qt.viewer_widget import DendroWidget
 
 rgb = ColorConverter().to_rgb
 
-class TestPreferences():
 
+class TestPreferences():
 
     def setup_method(self, method):
         self.app = Application()
@@ -116,7 +116,7 @@ class TestPreferences():
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
-            dialog.foreground = (0,1,1)
+            dialog.foreground = (0, 1, 1)
             dialog.accept()
 
             assert rgb(settings.FOREGROUND_COLOR) == (0, 1, 1)
@@ -126,7 +126,7 @@ class TestPreferences():
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
-            dialog.background = (1,0,1)
+            dialog.background = (1, 0, 1)
             dialog.accept()
 
             assert rgb(settings.FOREGROUND_COLOR) == (0, 1, 1)
@@ -136,7 +136,7 @@ class TestPreferences():
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
-            dialog.data_color = (1,1,0.5)
+            dialog.data_color = (1, 1, 0.5)
             dialog.accept()
 
             assert rgb(settings.FOREGROUND_COLOR) == (0, 1, 1)
@@ -215,7 +215,7 @@ class TestPreferences():
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
-            dialog.foreground = (0,1,1)
+            dialog.foreground = (0, 1, 1)
             dialog.accept()
 
         assert len(listener.received) == 1
@@ -249,6 +249,7 @@ class TestPreferences():
 def assert_axes_background(axes, color):
     assert axes.patch.get_facecolor() == color
     assert axes.figure.get_facecolor() == color
+
 
 def assert_axes_foreground(axes, color):
 
@@ -297,7 +298,7 @@ def _generate_custom_viewer():
 def test_foreground_background_settings():
 
     d_1d = Data(x=np.random.random(100), y=np.random.random(100), label='Data 1d')
-    d_2d = Data(x=np.random.random((100,100)), y=np.random.random((100,100)), label='Data 2d')
+    d_2d = Data(x=np.random.random((100, 100)), y=np.random.random((100, 100)), label='Data 2d')
 
     dc = DataCollection([d_1d, d_2d])
 
