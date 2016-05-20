@@ -12,6 +12,7 @@ from glue.app.qt import GlueApplication
 from glue.viewers.scatter.qt import ScatterWidget
 from glue.viewers.image.qt import ImageWidget
 from glue.viewers.histogram.qt import HistogramWidget
+from glue.plugins.dendro_viewer.qt.viewer_widget import DendroWidget
 
 rgb = ColorConverter().to_rgb
 
@@ -290,6 +291,8 @@ def test_foreground_background_settings():
     histogram1 = app.new_data_viewer(HistogramWidget)
     histogram1.add_data(d_1d)
 
+    dendrogram1 = app.new_data_viewer(DendroWidget)
+
     RED = (1, 0, 0, 0.5)
     GREEN = (0, 1, 0, 0.6)
 
@@ -311,10 +314,12 @@ def test_foreground_background_settings():
         assert_axes_background(scatter1.axes, RED)
         assert_axes_background(image1.axes, RED)
         assert_axes_background(histogram1.axes, RED)
+        assert_axes_background(dendrogram1.axes, RED)
 
         assert_axes_foreground(scatter1.axes, GREEN)
         assert_axes_foreground(image1.axes, GREEN)
         assert_axes_foreground(histogram1.axes, GREEN)
+        assert_axes_foreground(dendrogram1.axes, GREEN)
 
         # Now make sure that new viewers also inherit these settings
 
@@ -327,10 +332,14 @@ def test_foreground_background_settings():
         histogram2 = app.new_data_viewer(HistogramWidget)
         histogram2.add_data(d_1d)
 
+        dendrogram2 = app.new_data_viewer(DendroWidget)
+
         assert_axes_background(scatter2.axes, RED)
         assert_axes_background(image2.axes, RED)
         assert_axes_background(histogram2.axes, RED)
+        assert_axes_background(dendrogram2.axes, RED)
 
         assert_axes_foreground(scatter2.axes, GREEN)
         assert_axes_foreground(image2.axes, GREEN)
         assert_axes_foreground(histogram2.axes, GREEN)
+        assert_axes_foreground(dendrogram2.axes, GREEN)
