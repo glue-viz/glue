@@ -1,12 +1,17 @@
 import os
 
+import numpy as np
 from mock import patch, MagicMock
 from matplotlib.colors import ColorConverter
 
-from glue.core import HubListener, Application
+from glue.core import HubListener, Application, Data, DataCollection
 from glue.core.message import SettingsChangeMessage
 from glue.external.qt import QtGui
 from glue.app.qt.preferences import PreferencesDialog
+from glue.app.qt import GlueApplication
+from glue.viewers.scatter.qt import ScatterWidget
+from glue.viewers.image.qt import ImageWidget
+from glue.viewers.histogram.qt import HistogramWidget
 
 rgb = ColorConverter().to_rgb
 
@@ -20,7 +25,7 @@ class TestPreferences():
 
         # If we don't change anything, settings should be preserved
 
-        with patch('glue.app.qt.preferences.settings') as settings:
+        with patch('glue.config.settings') as settings:
 
             settings.FOREGROUND_COLOR = 'red'
             settings.BACKGROUND_COLOR = (0, 0.5, 1)
@@ -43,7 +48,7 @@ class TestPreferences():
 
         # If we don't change anything, settings should be preserved
 
-        with patch('glue.app.qt.preferences.settings') as settings:
+        with patch('glue.config.settings') as settings:
 
             settings.FOREGROUND_COLOR = 'white'
             settings.BACKGROUND_COLOR = 'black'
@@ -69,7 +74,7 @@ class TestPreferences():
 
         # Check that themes work
 
-        with patch('glue.app.qt.preferences.settings') as settings:
+        with patch('glue.config.settings') as settings:
 
             settings.FOREGROUND_COLOR = 'red'
             settings.BACKGROUND_COLOR = (0, 0.5, 1)
@@ -100,7 +105,7 @@ class TestPreferences():
 
         # Check that themes work
 
-        with patch('glue.app.qt.preferences.settings') as settings:
+        with patch('glue.config.settings') as settings:
 
             settings.FOREGROUND_COLOR = 'red'
             settings.BACKGROUND_COLOR = (0, 0.5, 1)
@@ -173,7 +178,7 @@ class TestPreferences():
 
         preference_panes = [('Custom', CustomPreferences)]
 
-        with patch('glue.app.qt.preferences.preference_panes', preference_panes):
+        with patch('glue.config.preference_panes', preference_panes):
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -199,7 +204,7 @@ class TestPreferences():
 
         listener = TestListener(self.app._hub)
 
-        with patch('glue.app.qt.preferences.settings') as settings:
+        with patch('glue.config.settings') as settings:
 
             settings.FOREGROUND_COLOR = 'red'
             settings.BACKGROUND_COLOR = (0, 0.5, 1)
@@ -216,7 +221,7 @@ class TestPreferences():
 
     def test_save_to_disk(self, tmpdir):
 
-        with patch('glue.app.qt.preferences.settings') as settings:
+        with patch('glue.config.settings') as settings:
             with patch('glue.config.CFG_DIR', tmpdir.strpath):
 
                 settings.FOREGROUND_COLOR = 'red'
@@ -237,3 +242,95 @@ class TestPreferences():
                 dialog.accept()
 
                 assert os.path.exists(os.path.join(tmpdir.strpath, 'settings.cfg'))
+
+
+def assert_axes_background(axes, color):
+    assert axes.patch.get_facecolor() == color
+    assert axes.figure.get_facecolor() == color
+
+def assert_axes_foreground(axes, color):
+
+    if hasattr(axes, 'coords'):
+        # TODO: fix this in WCSAxes
+        assert axes.coords.frame._color == color
+        for coord in axes.coords:
+            assert coord.ticks.get_color() == color
+            assert coord.ticklabels.get_color() == color
+            assert coord.axislabels.get_color() == color
+    else:
+        for spine in axes.spines.values():
+            assert spine.get_edgecolor() == color
+        for tick in axes.xaxis.get_ticklines() + axes.yaxis.get_ticklines():
+            assert tick.get_color() == color
+        for label in axes.xaxis.get_ticklabels() + axes.yaxis.get_ticklabels():
+            assert label.get_color() == color
+        assert axes.xaxis.label.get_color() == color
+        assert axes.yaxis.label.get_color() == color
+
+
+
+def test_foreground_background_settings():
+
+    d_1d = Data(x=np.random.random(100), y=np.random.random(100), label='Data 1d')
+    d_2d = Data(x=np.random.random((100,100)), y=np.random.random((100,100)), label='Data 2d')
+
+    dc = DataCollection([d_1d, d_2d])
+
+    app = GlueApplication(dc)
+
+    # Make sure that settings change existing viewers, so we create a bunch of
+    # viewers here.
+
+    scatter1 = app.new_data_viewer(ScatterWidget)
+    scatter1.add_data(d_1d)
+
+    image1 = app.new_data_viewer(ImageWidget)
+    image1.add_data(d_2d)
+
+    histogram1 = app.new_data_viewer(HistogramWidget)
+    histogram1.add_data(d_1d)
+
+    RED = (1, 0, 0, 0.5)
+    GREEN = (0, 1, 0, 0.6)
+
+    app.show()
+
+    with patch('glue.config.settings') as settings:
+
+        settings.FOREGROUND_COLOR = 'black'
+        settings.BACKGROUND_COLOR = 'white'
+        settings.DATA_COLOR = '0.5'
+        settings.DATA_ALPHA = 0.5
+
+        dialog = PreferencesDialog(app)
+        dialog.show()
+        dialog.background = RED
+        dialog.foreground = GREEN
+        dialog.accept()
+
+        assert_axes_background(scatter1.axes, RED)
+        assert_axes_background(image1.axes, RED)
+        assert_axes_background(histogram1.axes, RED)
+
+        assert_axes_foreground(scatter1.axes, GREEN)
+        assert_axes_foreground(image1.axes, GREEN)
+        assert_axes_foreground(histogram1.axes, GREEN)
+
+        # Now make sure that new viewers also inherit these settings
+
+        scatter2 = app.new_data_viewer(ScatterWidget)
+        scatter2.add_data(d_1d)
+
+        image2 = app.new_data_viewer(ImageWidget)
+        image2.add_data(d_2d)
+
+        histogram2 = app.new_data_viewer(HistogramWidget)
+        histogram2.add_data(d_1d)
+
+        assert_axes_background(scatter2.axes, RED)
+        assert_axes_background(image2.axes, RED)
+        assert_axes_background(histogram2.axes, RED)
+
+        assert_axes_foreground(scatter2.axes, GREEN)
+        assert_axes_foreground(image2.axes, GREEN)
+        assert_axes_foreground(histogram2.axes, GREEN)
