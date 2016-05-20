@@ -140,6 +140,8 @@ class SettingRegistry(DictRegistry):
         self._validators = {}
 
     def add(self, key, value, validator=str):
+        if validator is None:
+            validator = lambda x: x
         self._members[key] = validator(value)
         self._validators[key] = validator
 
@@ -591,9 +593,9 @@ LIGHT_ORANGE = "#FDBF6F"
 LIGHT_PURPLE = "#CAB2D6"
 
 settings.add('SUBSET_COLORS', [RED, GREEN, BLUE, BROWN, ORANGE, PURPLE, PINK], validator=list)
-settings.add('DATA_COLOR', '0.35')
+settings.add('DATA_COLOR', '0.35', validator=None)
 settings.add('DATA_ALPHA', 0.8, validator=float)
-settings.add('BACKGROUND_COLOR', '#FFFFFF')
-settings.add('FOREGROUND_COLOR', '#000000')
+settings.add('BACKGROUND_COLOR', '#FFFFFF', validator=None)
+settings.add('FOREGROUND_COLOR', '#000000', validator=None)
 
 load_settings()
