@@ -5,7 +5,6 @@ import imp
 import sys
 from collections import namedtuple
 from glue.logger import logger
-from glue._settings_helpers import load_settings
 
 """
 Objects used to configure Glue at runtime.
@@ -17,7 +16,8 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'SingleSubsetLayerActionRegistry', 'ProfileFitterRegistry',
            'qt_client', 'data_factory', 'link_function', 'link_helper',
            'colormaps', 'exporters', 'settings', 'fit_plugin',
-           'auto_refresh', 'importer', 'DictRegistry']
+           'auto_refresh', 'importer', 'DictRegistry', 'preference_panes',
+           'PreferencePanesRegistry']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -224,7 +224,7 @@ class MenubarPluginRegistry(Registry):
         return adder
 
 
-class PreferencePaneRegistry(DictRegistry):
+class PreferencePanesRegistry(DictRegistry):
     """
     Stores preference panes
 
@@ -520,7 +520,7 @@ settings = SettingRegistry()
 fit_plugin = ProfileFitterRegistry()
 single_subset_action = SingleSubsetLayerActionRegistry()
 menubar_plugin = MenubarPluginRegistry()
-preference_panes = PreferencePaneRegistry()
+preference_panes = PreferencePanesRegistry()
 
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)
@@ -597,5 +597,3 @@ settings.add('DATA_COLOR', '0.35', validator=None)
 settings.add('DATA_ALPHA', 0.8, validator=float)
 settings.add('BACKGROUND_COLOR', '#FFFFFF', validator=None)
 settings.add('FOREGROUND_COLOR', '#000000', validator=None)
-
-load_settings()

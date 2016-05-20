@@ -53,7 +53,7 @@ class PreferencesDialog(QtGui.QDialog):
         self.panes = []
 
         from glue.config import preference_panes
-        for label, widget_cls in preference_panes:
+        for label, widget_cls in sorted(preference_panes):
             pane = widget_cls()
             self.ui.tab_widget.addTab(pane, label)
             self.panes.append(pane)
@@ -92,6 +92,9 @@ class PreferencesDialog(QtGui.QDialog):
         settings.DATA_COLOR = self.data_color
         settings.DATA_ALPHA = self.data_alpha
 
+        for pane in self.panes:
+            pane.finalize()
+
         # Save to disk if requested
         if self.save_to_disk:
             save_settings()
@@ -104,9 +107,6 @@ class PreferencesDialog(QtGui.QDialog):
 
         if self.data_apply:
             self.app.set_data_color(settings.DATA_COLOR, settings.DATA_ALPHA)
-
-        for pane in self.panes:
-            pane.finalize()
 
         super(PreferencesDialog, self).accept()
 

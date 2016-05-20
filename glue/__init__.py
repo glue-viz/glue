@@ -135,3 +135,6 @@ def test(no_optional_skip=False):
     if no_optional_skip:
         args.append('--no-optional-skip')
     main(args=args)
+
+from glue._settings_helpers import load_settings
+load_settings()
