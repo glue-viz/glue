@@ -6,7 +6,6 @@ import numpy as np
 from matplotlib.colors import ColorConverter
 
 from glue.external.qt import QtGui
-from glue.config import settings, preference_panes
 from glue.core.message import SettingsChangeMessage
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui, ColorProperty
@@ -43,6 +42,7 @@ class PreferencesDialog(QtGui.QDialog):
 
         self.ui.combo_theme.currentIndexChanged.connect(nonpartial(self._update_colors_from_theme))
 
+        from glue.config import settings
         self.background = settings.BACKGROUND_COLOR
         self.foreground = settings.FOREGROUND_COLOR
         self.data_color = settings.DATA_COLOR
@@ -52,6 +52,7 @@ class PreferencesDialog(QtGui.QDialog):
 
         self.panes = []
 
+        from glue.config import preference_panes
         for label, widget_cls in preference_panes:
             pane = widget_cls()
             self.ui.tab_widget.addTab(pane, label)
@@ -85,6 +86,7 @@ class PreferencesDialog(QtGui.QDialog):
 
         # Update default settings
 
+        from glue.config import settings
         settings.FOREGROUND_COLOR = self.foreground
         settings.BACKGROUND_COLOR = self.background
         settings.DATA_COLOR = self.data_color

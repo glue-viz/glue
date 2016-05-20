@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import matplotlib.pyplot as plt
 
-from glue.config import settings
 from glue.core import Data
 from glue.core.message import SettingsChangeMessage
 from glue.core.client import Client
@@ -141,7 +140,8 @@ class VizClient(Client):
 
 
 def set_background_color(axes, color):
-    axes.patch.set_facecolor(settings.BACKGROUND_COLOR)
+    axes.figure.set_facecolor(color)
+    axes.patch.set_facecolor(color)
 
 def set_foreground_color(axes, color):
     if hasattr(axes, 'coords'):
@@ -160,7 +160,7 @@ def set_foreground_color(axes, color):
 
 
 def update_appearance_from_settings(axes):
-    axes.figure.set_facecolor(settings.BACKGROUND_COLOR)
+    from glue.config import settings
     set_background_color(axes, settings.BACKGROUND_COLOR)
     set_foreground_color(axes, settings.FOREGROUND_COLOR)
 
