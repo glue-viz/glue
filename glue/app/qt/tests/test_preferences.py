@@ -4,6 +4,7 @@ import numpy as np
 from mock import patch, MagicMock
 from matplotlib.colors import ColorConverter
 
+from glue import custom_viewer
 from glue.core import HubListener, Application, Data, DataCollection
 from glue.core.message import SettingsChangeMessage
 from glue.external.qt import QtGui
@@ -269,6 +270,29 @@ def assert_axes_foreground(axes, color):
         assert axes.yaxis.label.get_color() == color
 
 
+def _generate_custom_viewer():
+
+    example = custom_viewer('Test Plot', x='att(x)', y='att(y)')
+
+    @example.plot_data
+    def plot_data(axes, x, y, style):
+        axes.plot(x, y)
+
+    @example.plot_subset
+    def plot_subset(axes, x, y, style):
+        axes.plot(x, y)
+
+    @example.setup
+    def setup(axes):
+        pass
+
+    from glue.config import qt_client
+    for viewer in qt_client.members:
+        if viewer.LABEL == 'Test Plot':
+            return viewer
+
+    raise Exception("Failed to find custom viewer in qt_client")
+
 
 def test_foreground_background_settings():
 
@@ -293,6 +317,10 @@ def test_foreground_background_settings():
 
     dendrogram1 = app.new_data_viewer(DendroWidget)
 
+    example_custom = _generate_custom_viewer()
+
+    custom1 = app.new_data_viewer(example_custom)
+
     RED = (1, 0, 0, 0.5)
     GREEN = (0, 1, 0, 0.6)
 
@@ -315,11 +343,13 @@ def test_foreground_background_settings():
         assert_axes_background(image1.axes, RED)
         assert_axes_background(histogram1.axes, RED)
         assert_axes_background(dendrogram1.axes, RED)
+        assert_axes_background(custom1.axes, RED)
 
         assert_axes_foreground(scatter1.axes, GREEN)
         assert_axes_foreground(image1.axes, GREEN)
         assert_axes_foreground(histogram1.axes, GREEN)
         assert_axes_foreground(dendrogram1.axes, GREEN)
+        assert_axes_foreground(custom1.axes, GREEN)
 
         # Now make sure that new viewers also inherit these settings
 
@@ -333,13 +363,16 @@ def test_foreground_background_settings():
         histogram2.add_data(d_1d)
 
         dendrogram2 = app.new_data_viewer(DendroWidget)
+        custom2 = app.new_data_viewer(example_custom)
 
         assert_axes_background(scatter2.axes, RED)
         assert_axes_background(image2.axes, RED)
         assert_axes_background(histogram2.axes, RED)
         assert_axes_background(dendrogram2.axes, RED)
+        assert_axes_background(custom2.axes, RED)
 
         assert_axes_foreground(scatter2.axes, GREEN)
         assert_axes_foreground(image2.axes, GREEN)
         assert_axes_foreground(histogram2.axes, GREEN)
         assert_axes_foreground(dendrogram2.axes, GREEN)
+        assert_axes_foreground(custom2.axes, GREEN)
