@@ -40,7 +40,7 @@ v0.8 (unreleased)
 * Add the ability to change the foreground and background color for viewers.
   [#988]
 
-v0.7.3 (2015-05-04)
+v0.7.3 (2016-05-04)
 -------------------
 
 * Remove icons for actions that appear in contextual menus, since these
