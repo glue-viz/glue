@@ -9,6 +9,7 @@ from glue._settings_helpers import load_settings, save_settings
 def test_roundtrip(tmpdir):
 
     settings = SettingRegistry()
+
     settings.add('STRING', 'green', str)
     settings.add('INT', 3, int)
     settings.add('FLOAT', 5.5, float)
@@ -22,16 +23,38 @@ def test_roundtrip(tmpdir):
             settings.FLOAT = 3.5
             settings.LIST = ['A', 'BB', 'CCC']
 
+            settings.reset_defaults()
+
+            assert settings.STRING == 'green'
+            assert settings.INT == 3
+            assert settings.FLOAT == 5.5
+            assert settings.LIST == [1, 2, 3]
+
+            settings.STRING = 'blue'
+            settings.INT = 4
+            settings.FLOAT = 3.5
+            settings.LIST = ['A', 'BB', 'CCC']
+
             save_settings()
 
             assert os.path.exists(os.path.join(tmpdir.strpath, 'settings.cfg'))
 
-            settings.STRING = 'red'
-            settings.INT = 3
-            settings.FLOAT = 4.5
-            settings.LIST = ['DDD', 'EE', 'F']
+            settings.reset_defaults()
 
+            settings.STRING = 'red'
+            settings.INT = 5
+
+            # Loading settings will only change settings that have not been 
+            # changed from the defaults...
             load_settings()
+
+            assert settings.STRING == 'red'
+            assert settings.INT == 5
+            assert settings.FLOAT == 3.5
+            assert settings.LIST == ['A', 'BB', 'CCC']
+
+            # ... unless the ``force=True`` option is passed
+            load_settings(force=True)
 
             assert settings.STRING == 'blue'
             assert settings.INT == 4
