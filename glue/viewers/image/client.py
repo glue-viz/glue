@@ -777,8 +777,17 @@ class MplImageClient(ImageClient):
             self._view_window = vw
 
     def _update_and_redraw(self):
+
+        # We need to make sure we reapply the aspect ratio manually here,
+        # because at this point, if the user has zoomed in to a region with a
+        # different aspect ratio than the original view, Matplotlib has not yet
+        # enforced computed the final limits. This is an issue if we have
+        # requested square pixels.
+        self.axes.apply_aspect()
+
         self._update_data_plot()
         self._update_subset_plots()
+
         self._redraw()
 
     @requires_data
