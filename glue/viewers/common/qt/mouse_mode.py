@@ -592,9 +592,42 @@ class SpectrumExtractorMode(RoiMode):
         self.mode_id = 'Spectrum'
         self.action_text = 'Spectrum'
         self.tool_tip = 'Extract a spectrum from the selection'
-        self._roi_tool = qt_roi.QtRectangularROI(self._axes)
+
+        self._roi_tool = qt_roi.QtRectangularROI(self._axes) # default
+        self.shortcut = 'S'
+
+    def menu_actions(self):
+        result = []
+
+        a = QtGui.QAction('Rectangle', None)
+        a.triggered.connect(nonpartial(self.set_roi_tool, 'Rectangle'))
+        result.append(a)
+
+        a = QtGui.QAction('Circle', None)
+        a.triggered.connect(nonpartial(self.set_roi_tool, 'Circle'))
+        result.append(a)
+
+        a = QtGui.QAction('Polygon', None)
+        a.triggered.connect(nonpartial(self.set_roi_tool, 'Polygon'))
+        result.append(a)
+
+        for r in result:
+            if self._move_callback is not None:
+                r.triggered.connect(nonpartial(self._move_callback, self))
+
+        return result
+
+    def set_roi_tool(self, mode):
+        if mode is 'Rectangle':
+            self._roi_tool = qt_roi.QtRectangularROI(self._axes)
+
+        if mode is 'Circle':
+            self._roi_tool = qt_roi.QtCircularROI(self._axes)
+
+        if mode is 'Polygon':
+            self._roi_tool = qt_roi.QtPolygonalROI(self._axes)
+
         self._roi_tool.plot_opts.update(edgecolor='#c51b7d',
                                         facecolor=None,
                                         edgewidth=3,
                                         alpha=1.0)
-        self.shortcut = 'S'

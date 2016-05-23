@@ -68,6 +68,12 @@ an email address in case you want to be contacted about the feedback/bug report:
 .. image:: feedback.png
    :align: center
 
+Circular and polygonal profile extraction
+------------------------------------------
+
+The spectrum/profile extraction tool for the image viewer now supports
+extraction using circular and polygonal regions.
+
 Full list of Changes
 --------------------
 
