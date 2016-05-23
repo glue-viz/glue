@@ -4,6 +4,9 @@ Full changelog
 v0.8 (unreleased)
 -----------------
 
+* Fix compatibility with latest developer version of Numpy which does not allow
+  non-integer indices for arrays. [#1002]
+
 * Add a new method ``add_data`` to application instances. This allows for
   example additional data to be passed to glue after being launched by
   ``qglue``. [#993]

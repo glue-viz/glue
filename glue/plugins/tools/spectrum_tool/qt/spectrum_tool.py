@@ -49,8 +49,8 @@ class Extractor(object):
         l, r, b, t = roi.xmin, roi.xmax, roi.ymin, roi.ymax
         shp = data.shape
         # The 'or 0' is because Numpy in Python 3 cannot deal with 'None'
-        l, r = np.clip([l or 0, r or 0], 0, shp[xaxis])
-        b, t = np.clip([b or 0, t or 0], 0, shp[yaxis])
+        l, r = np.round(np.clip([l or 0, r or 0], 0, shp[xaxis])).astype(int)
+        b, t = np.round(np.clip([b or 0, t or 0], 0, shp[yaxis])).astype(int)
 
         # extract sub-slice, without changing dimension
         slc = [slice(s, s + 1)
