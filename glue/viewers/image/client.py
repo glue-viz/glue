@@ -769,16 +769,28 @@ class MplImageClient(ImageClient):
         For the Matplotlib client, see if the view window has changed enough
         such that the images should be resampled
         """
+
         logging.getLogger(__name__).debug("check update")
+
+        # We need to make sure we reapply the aspect ratio manually here,
+        # because at this point, if the user has zoomed in to a region with a
+        # different aspect ratio than the original view, Matplotlib has not yet
+        # enforced computed the final limits. This is an issue if we have
+        # requested square pixels.
+        self.axes.apply_aspect()
+
         vw = _view_window(self._axes)
+
         if vw != self._view_window:
             logging.getLogger(__name__).debug("updating")
             self._update_and_redraw()
             self._view_window = vw
 
     def _update_and_redraw(self):
+
         self._update_data_plot()
         self._update_subset_plots()
+
         self._redraw()
 
     @requires_data

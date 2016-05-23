@@ -34,6 +34,10 @@ ASTROPY_GE_04_INSTALLED, requires_astropy_ge_04 = make_skipper('astropy',
                                                                label='Astropy >= 0.4',
                                                                version='0.4')
 
+MATPLOTLIB_GE_14_INSTALLED, requires_matplotlib_ge_14 = make_skipper('matplotlib',
+                                                               label='Matplotlib >= 1.4',
+                                                               version='1.4')
+
 ASTRODENDRO_INSTALLED, requires_astrodendro = make_skipper('astrodendro')
 
 SCIPY_INSTALLED, requires_scipy = make_skipper('scipy',
