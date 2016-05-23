@@ -32,7 +32,7 @@ For example, say you are working with a `Pandas <http://pandas.pydata.org/>`_ Da
 
 You can easily start up Glue with this data using::
 
-    >>> qglue(xyz=df)
+    >>> app = qglue(xyz=df)
 
 This will send this data to Glue, and label it ``xyz``.
 
@@ -117,11 +117,12 @@ Here's an example::
    link2 = (['data1.width', 'data1.height'], ['data2.area'], lengths_to_area)
    qglue(data1=data1, data2=data2, links=[link1, link2])
 
-The first link converts between the masses in two different data sets,
-recorded in different units. The second link is a 1-way link that computes
-the area of items in dataset 1, based on their width and height (there is
-no way to compute the width and height from the area measurements in dataset 2,
-so the reverse function is not provided). These links would enable the following interaction, for example:
+The first link converts between the masses in two different data sets, recorded
+in different units. The second link is a 1-way link that computes the area of
+items in dataset 1, based on their width and height (there is no way to compute
+the width and height from the area measurements in dataset 2, so the reverse
+function is not provided). These links would enable the following interaction,
+for example:
 
 #. Overplot histograms of the mass distribution of both datasets
 #. Define a region in a plot of mass vs area for data 2, and apply that filter
@@ -133,15 +134,32 @@ so the reverse function is not provided). These links would enable the following
           Glue from a non-IPython shell, or from the notebook (see next
           section).
 
-Using qglue with the IPython Notebook
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Using qglue with the IPython/Jupyter Notebook
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can call :func:`~glue.qglue.qglue` from the IPython notebook normally. However, the default behavior is for Glue to block the execution of the
-notebook while the UI is running. If you would like to be able to use the notebook and Glue at the same time, run this cell before starting glue::
+You can call :func:`~glue.qglue.qglue` from the IPython/Jupyter notebook
+normally. However, the default behavior is for Glue to block the execution of
+the notebook while the UI is running. If you would like to be able to use the
+notebook and Glue at the same time, run this cell before starting glue::
 
     %gui qt
 
 This must be executed in a separate cell, before starting Glue.
+
+.. _add_data_qglue:
+
+Adding data to glue when started using qglue
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Once glue has been launched, you can continue to add data to it using the
+:meth:`~glue.core.application_base.Application.add_data` method::
+
+    >>> app = qglue(data1=array1)
+    >>> app.add_data(data2=array2)
+
+You can also pass filenames to :meth:`~glue.core.application_base.Application.add_data`::
+
+    >>> app.add_data('myimage.fits')
 
 Manual data construction
 ------------------------

@@ -5,7 +5,7 @@
 Experimental 3D viewers in Glue
 ===============================
 
-.. important:: The functionality described on this page is highly experimental 
+.. important:: The functionality described on this page is highly experimental
                and is not feature-complete. If you do try it out, let us know if
                you have any feedback, or are interested in helping develop it
                further!
@@ -16,11 +16,11 @@ first need to make sure that the VisPy package is installed.
 
 If you are using
 `Anaconda <https://www.continuum.io/downloads>`_ to manage your Python
-distribution, you can install or update VisPy and the 3D plugin using:
+distribution, you can install or update VisPy and the 3D plugin using::
 
     conda install -c conda-forge glue-vispy-viewers
-    
-If you don't use Anaconda, you can install the plugin using:
+
+If you don't use Anaconda, you can install the plugin using::
 
     pip install glue-vispy-viewers
 
@@ -47,7 +47,7 @@ All 3D viewers share a similar panel in the bottom left:
 .. image:: common_options.jpg
    :align: center
    :width: 300px
-   
+
 In addition, all viewers will show a white rectangular 3D box, which by default
 is a cube. The edges of the cube correspond to the min/max values in the
 options panel above. If these values are changed, the data is renormalized
@@ -90,7 +90,7 @@ made in other viewers:
 .. image:: 3d_volume.jpg
    :align: center
    :width: 600px
-   
+
 At the moment, the 3D viewer is only able to show multiple datasets if they are
 on the same grid. Note that for this viewer, the limits in the options panel in
 the bottom left are in pixel coordinates, not world coordinates.
