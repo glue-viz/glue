@@ -631,14 +631,3 @@ class SpectrumExtractorMode(RoiMode):
                                         facecolor=None,
                                         edgewidth=3,
                                         alpha=1.0)
-    # TODO: cheange the spectrum extractor solution
-    '''
-    File "/Users/penny/Works/Gluedev/glue/glue/glue/plugins/tools/spectrum_tool/qt/spectrum_tool.py", line 826, in _update_from_roi
-    x, y = Extractor.spectrum(data, att, roi, slc, zax)
-    File "/Users/penny/Works/Gluedev/glue/glue/glue/plugins/tools/spectrum_tool/qt/spectrum_tool.py", line 49, in spectrum
-    l, r, b, t = roi.xmin, roi.xmax, roi.ymin, roi.ymax
-    AttributeError: 'PolygonalROI' object has no attribute 'xmin'
-    '''
-
-
-
