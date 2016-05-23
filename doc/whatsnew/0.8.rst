@@ -17,25 +17,51 @@ If instead you installed glue with pip, you can update with::
 Playback controls for image slicing
 -----------------------------------
 
-When using the image viewer to view datasets with more than two dimensions, the sliders snow include playback controls that you can use to animate the slicing. 
+When using the image viewer to view datasets with more than two dimensions, the
+sliders snow include playback controls that you can use to animate the slicing.
 
 .. image:: cube_playback_controls.png
    :align: center
 
-By clicking multiple times on the play forward or play back button (the buttons on either side of the stop button), you can speed up the animation.
+By clicking multiple times on the play forward or play back button (the buttons
+on either side of the stop button), you can speed up the animation.
 
 Improved new component window
 -----------------------------
 
-The *Define New Component* window has now been significantly improved. The syntax of the expression for the new component is now validated on-the-fly, and the component cannot be created until the expression validates:
+The *Define New Component* window has now been significantly improved. The
+syntax of the expression for the new component is now validated on-the-fly, and
+the component cannot be created until the expression validates:
 
 .. image:: new_component.png
+   :align: center
+
+Adding data to glue from Python
+-------------------------------
+
+If you make use of the :func:`~glue.qglue` function to launch glue from IPython
+or the Jupyter notebook, you can now easily continue to add data to glue from
+that Python session, by doing e.g.::
+
+    >>> app = qglue(data1=array1)
+    >>> app.add_data(data2=array2)
+
+More details can be found :ref:`here <add_data_qglue>`.
+
+New preferences dialog
+----------------------
+
+A new dialog for preferences is now available via **File -> Edit Preferences**,
+and allows you to change the settings for the foreground/background color of
+viewers, as well as the default data color and transparency:
+
+.. image :: preferences.png
    :align: center
 
 Improved feedback window
 ------------------------
 
-The *Send Feedback* functionality available through the Help menu and the windo
+The *Send Feedback* functionality available through the Help menu and the window
 to send crash reports to the developers now also provide the option to specify
 an email address in case you want to be contacted about the feedback/bug report:
 
