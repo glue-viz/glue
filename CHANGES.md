@@ -4,6 +4,8 @@ Full changelog
 v0.8 (unreleased)
 -----------------
 
+* Add support for circular and polygonal spectrum extraction. [#994, #1003]
+
 * Fix compatibility with latest developer version of Numpy which does not allow
   non-integer indices for arrays. [#1002]
 
