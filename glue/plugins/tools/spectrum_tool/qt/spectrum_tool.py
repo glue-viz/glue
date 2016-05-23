@@ -25,7 +25,6 @@ from glue.viewers.common.qt.mpl_widget import MplWidget
 from glue.utils import nonpartial, Pointer
 from glue.utils.qt import Worker, messagebox_on_error
 from glue.core import roi as core_roi
-from matplotlib.path import Path
 
 from .profile_viewer import ProfileViewer
 
@@ -48,7 +47,10 @@ class Extractor(object):
         yaxis = slc.index('y')
         ndim, nz = data.ndim, data.shape[zaxis]
 
+        x = Extractor.abcissa(data, zaxis)
+
         if isinstance(roi, core_roi.RectangularROI):
+
             l, r, b, t = roi.xmin, roi.xmax, roi.ymin, roi.ymax
             shp = data.shape
             # The 'or 0' is because Numpy in Python 3 cannot deal with 'None'
@@ -62,7 +64,6 @@ class Extractor(object):
             slc[xaxis] = slice(l, r)
             slc[yaxis] = slice(b, t)
             slc[zaxis] = slice(None)
-            x = Extractor.abcissa(data, zaxis)
 
             data = data[attribute, tuple(slc)]   # attribute is Primary,
             finite = np.isfinite(data)
@@ -79,9 +80,9 @@ class Extractor(object):
 
             data = (1. * data / finite).ravel()
 
-        if isinstance(roi, core_roi.PolygonalROI):
+        elif isinstance(roi, core_roi.PolygonalROI):
+
             # both circular and polygonal selection will call here
-            x = Extractor.abcissa(data, zaxis)
             data = data[attribute]
 
             slice_shape = []
@@ -98,11 +99,16 @@ class Extractor(object):
             for i in range(nz):
                 select_data = np.take(data, i, axis=zaxis).ravel()[mask]
                 finite = np.isfinite(select_data).sum()
-                return_data.append(1.*np.nansum(select_data)/finite)
+                return_data.append(1. * np.nansum(select_data) / finite)
 
             data = np.array(return_data)
+
             assert data.ndim == 1
             assert data.size == nz
+
+        else:
+
+            raise TypeError("Unexpected ROI type: {0}".format(type(roi)))
 
         return x, data
 
