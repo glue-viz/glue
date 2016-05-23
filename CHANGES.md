@@ -40,6 +40,9 @@ v0.8 (unreleased)
 * Add the ability to change the foreground and background color for viewers.
   [#988]
 
+* Fixed a bug that caused images to appear over-pixellated on the edges when
+  zooming in. [#1000]
+
 v0.7.3 (2016-05-04)
 -------------------
 
