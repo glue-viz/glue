@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.8 (unreleased)
+v0.8 (2016-05-23)
 -----------------
 
 * Add support for circular and polygonal spectrum extraction. [#994, #1003]
