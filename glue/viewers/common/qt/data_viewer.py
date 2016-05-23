@@ -178,7 +178,7 @@ class DataViewer(ViewerBase, QtGui.QMainWindow):
         return True
 
     def _confirm_large_data(self, data):
-        if settings.SUPPRESS_LARGE_DATA_WARNING:
+        if not settings.SHOW_LARGE_DATA_WARNING:
             # Ignoring large data warning
             return True
         else:

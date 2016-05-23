@@ -26,7 +26,7 @@ class PreferencesDialog(QtGui.QDialog):
     data_color = ColorProperty('ui.color_default_data')
     data_alpha = ValueProperty('ui.slider_alpha', value_range=(0, 1))
     data_apply = ButtonProperty('ui.checkbox_apply')
-    suppress_large_data = ButtonProperty('ui.checkbox_suppress_large_data_warning')
+    show_large_data_warning = ButtonProperty('ui.checkbox_show_large_data_warning')
     save_to_disk = ButtonProperty('ui.checkbox_save')
 
     def __init__(self, application, parent=None):
@@ -48,7 +48,7 @@ class PreferencesDialog(QtGui.QDialog):
         self.foreground = settings.FOREGROUND_COLOR
         self.data_color = settings.DATA_COLOR
         self.data_alpha = settings.DATA_ALPHA
-        self.suppress_large_data = settings.SUPPRESS_LARGE_DATA_WARNING
+        self.show_large_data_warning = settings.SHOW_LARGE_DATA_WARNING
 
         self._update_theme_from_colors()
 
@@ -93,7 +93,7 @@ class PreferencesDialog(QtGui.QDialog):
         settings.BACKGROUND_COLOR = self.background
         settings.DATA_COLOR = self.data_color
         settings.DATA_ALPHA = self.data_alpha
-        settings.SUPPRESS_LARGE_DATA_WARNING = self.suppress_large_data
+        settings.SHOW_LARGE_DATA_WARNING = self.show_large_data_warning
 
         for pane in self.panes:
             pane.finalize()

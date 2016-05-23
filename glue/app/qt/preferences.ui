@@ -160,7 +160,7 @@
         </spacer>
        </item>
        <item row="8" column="1">
-        <widget class="QCheckBox" name="checkbox_suppress_large_data_warning">
+        <widget class="QCheckBox" name="checkbox_show_large_data_warning">
          <property name="text">
           <string/>
          </property>
@@ -169,7 +169,7 @@
        <item row="8" column="0">
         <widget class="QLabel" name="label_7">
          <property name="text">
-          <string>Suppress large data warning</string>
+          <string>Show warnings for large data</string>
          </property>
         </widget>
        </item>
