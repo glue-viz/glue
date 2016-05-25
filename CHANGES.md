@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.8.1 (unreleased)
+v0.8.1 (2016-05-25)
 -------------------
 
 * Fixed a bug in the memoize function that caused selections using
