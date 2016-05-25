@@ -10,6 +10,10 @@ v0.8.1 (unreleased)
 * Explicitly set the icon size for the slicing playback controls to avoid
   issues when using a mix of retina and non-retina displays. [#1005]
 
+* Fixed a bug that caused add_datasets to crash if ``datasets`` was a list of
+  lists of data, which is possible if a data factory returns more than one data
+  object. [#1006]
+
 v0.8 (2016-05-23)
 -----------------
 
