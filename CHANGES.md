@@ -7,6 +7,9 @@ v0.8.1 (unreleased)
 * Fixed a bug in the memoize function that caused selections using
   ElementSubsetState to fail when using views on the data. [#1004]
 
+* Explicitly set the icon size for the slicing playback controls to avoid
+  issues when using a mix of retina and non-retina displays. [#1005]
+
 v0.8 (2016-05-23)
 -----------------
 
