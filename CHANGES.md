@@ -6,7 +6,7 @@ v0.9.0 (unreleased)
 
 * No changes yet.
 
-v0.8.1 (unreleased)
+v0.8.1 (2016-05-25)
 -------------------
 
 * Fixed a bug in the memoize function that caused selections using
