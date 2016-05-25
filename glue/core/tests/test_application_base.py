@@ -83,3 +83,31 @@ def test_set_data_color():
 
     assert y.style.color == 'red'
     assert y.style.alpha == 0.3
+
+
+def test_nested_data():
+
+    # Regression test that caused add_datasets to crash if datasets included
+    # lists of lists of data, which is possible if a data factory returns more
+    # than one data object.
+
+    x = Data(x=[1, 2])
+    y = Data(x=[1, 2, 3])
+    z = Data(y=[1, 2, 3, 4])
+    a = Data(y=[1, 2, 3, 4, 5])
+    b = Data(y=[1, 2, 3, 4, 5, 6])
+    c = Data(y=[1, 2, 3, 4, 5, 6, 7])
+
+    datasets = [x, [[[y, z]], a], [[[[b, c]]]]]
+
+
+    app = Application()
+
+    app.add_datasets(app.data_collection, datasets)
+
+    assert x in app.data_collection
+    assert y in app.data_collection
+    assert z in app.data_collection
+    assert a in app.data_collection
+    assert b in app.data_collection
+    assert c in app.data_collection

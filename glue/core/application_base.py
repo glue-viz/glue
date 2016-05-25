@@ -32,6 +32,16 @@ def catch_error(msg):
     return decorator
 
 
+def as_flat_data_list(data):
+    datasets = []
+    if isinstance(data, Data):
+        datasets.append(data)
+    else:
+        for d in data:
+            datasets.extend(as_flat_data_list(d))
+    return datasets
+
+
 class Application(HubListener):
 
     def __init__(self, data_collection=None, session=None):
@@ -225,7 +235,7 @@ class Application(HubListener):
         Adds datasets to the collection
         """
 
-        datasets = as_list(datasets)
+        datasets = as_flat_data_list(datasets)
         data_collection.extend(datasets)
 
         # We now check whether any of the datasets can be merged. We need to
