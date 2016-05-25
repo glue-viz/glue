@@ -56,6 +56,16 @@ def test_memoize():
     assert func(b) == 5  # should return memoized func
 
 
+def test_memoize_unhashable():
+
+    @memoize
+    def func(x, view=None):
+        return 2 * x
+
+    assert func(1, view=slice(1,2,3)) == 2
+    assert func(1, view=slice(1,2,3)) == 2
+
+
 def test_memoize_attribute():
     f = MemoAtt()
     assert f.test() == 1

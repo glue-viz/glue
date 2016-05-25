@@ -16,7 +16,16 @@ def memoize(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        key = _make_key(args, kwargs)
+
+        # Note that here we have two separate try...except statements, because
+        # we want to make sure that we catch only TypeError on the first
+        # statement, and both TypeError and KeyError on the second.
+
+        try:
+            key = _make_key(args, kwargs)
+        except TypeError:  # unhashable input
+            return func(*args, **kwargs)
+
         try:
             return memo[key]
         except KeyError:
