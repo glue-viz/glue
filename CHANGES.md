@@ -9,7 +9,8 @@ v0.9.0 (unreleased)
 v0.8.1 (unreleased)
 -------------------
 
-* No changes yet.
+* Fixed a bug in the memoize function that caused selections using
+  ElementSubsetState to fail when using views on the data. [#1004]
 
 v0.8 (2016-05-23)
 -----------------
