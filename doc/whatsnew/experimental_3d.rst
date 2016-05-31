@@ -26,6 +26,12 @@ If you don't use Anaconda, you can install the plugin using::
 
 Note that this functionality requires Glue v0.7.3 or later.
 
+If you are interested in recording animations from the 3D viewers, you will
+also need to install the `imageio <https://pypi.python.org/pypi/imageio>`_
+package::
+
+    pip install imageio
+
 With the plugin installed, you will now have access to three new data
 viewers in Glue:
 
