@@ -3,6 +3,10 @@
 Installing Glue
 ===============
 
+.. note:: If you are interested in installing the experimental 3D viewers, see
+          the :ref:`experimental_3d` page after following the instructions
+          below.
+
 There are several ways to install Glue on your computer:
 
 Recommended: Anaconda Python Distribution
@@ -45,10 +49,10 @@ To install or update glue on the command-line, simply do::
 
     conda install -c conda-forge glueviz
 
-.. note :: There is currently a known issue when running Anaconda's Qt on
-           certain Linux distributions (including Kubuntu). See
-           `Issue with PyQt4 from conda`_ for more details.
-
+.. note:: There is currently a known issue when running Anaconda's Qt on
+          certain Linux distributions (including Kubuntu). See
+          `Issue with PyQt4 from conda`_ for more details.
+           
 Enthought Canopy
 ----------------
 
