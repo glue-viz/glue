@@ -9,7 +9,8 @@ v0.9.0 (unreleased)
 v0.8.2 (unreleased)
 -------------------
 
-* No changes yet.
+* Make sure histograms are updated if only the attribute changes and the
+  limits and number of bins stay the same. [#1012]
 
 v0.8.1 (2016-05-25)
 -------------------
