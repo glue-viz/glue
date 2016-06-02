@@ -71,6 +71,8 @@ v0.8 (2016-05-23)
 * Fixed a bug that caused images to appear over-pixellated on the edges when
   zooming in. [#1000]
 
+* Added an option to control whether warnings are shown when passing large data objects to viewers. [#999]
+
 v0.7.3 (2016-05-04)
 -------------------
 
