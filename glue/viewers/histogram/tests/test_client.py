@@ -323,6 +323,32 @@ class TestHistogramClient(object):
         self.data.update_id(self.client.component, test)
         assert self.client.component is test
 
+    def test_update_when_limits_unchanged(self):
+
+        # Regression test for glue-viz/glue#1010 - this bug caused histograms
+        # to not be recomputed if the attribute changed but the limits and
+        # number of bins did not.
+
+        self.client.add_layer(self.data)
+
+        self.client.set_component(self.data.id['y'])
+        self.client.xlimits = -20, 20
+        self.client.nbins = 12
+
+        y1 = self.client._artists[0]._y
+
+        self.client.set_component(self.data.id['x'])
+        self.client.xlimits = -20, 20
+        self.client.nbins = 12
+
+        y2 = self.client._artists[0]._y
+        assert not np.allclose(y1, y2)
+
+        self.client.set_component(self.data.id['y'])
+
+        y3 = self.client._artists[0]._y
+        np.testing.assert_allclose(y1, y3)
+
 
 class TestCategoricalHistogram(TestHistogramClient):
 
