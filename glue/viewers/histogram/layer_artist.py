@@ -33,6 +33,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist, HistogramLayerBase):
     hi = ChangedTrigger(1)
     nbins = ChangedTrigger(10)
     xlog = ChangedTrigger(False)
+    att = ChangedTrigger()
 
     def __init__(self, layer, axes):
         super(HistogramLayerArtist, self).__init__(layer, axes)
