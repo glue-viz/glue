@@ -884,9 +884,21 @@ class GlueApplication(Application, QtGui.QMainWindow):
             event.ignore()
 
     def dropEvent(self, event):
+
         urls = event.mimeData().urls()
+
         for url in urls:
-            self.load_data(url.path())
+
+            # Get path to file
+            path = url.path()
+
+            # Workaround for a Qt bug that causes paths to start with a /
+            # on Windows: https://bugreports.qt.io/browse/QTBUG-46417
+            if sys.platform.startswith('win'):
+                if path.startswith('/') and path[2] == ':':
+                    path = path[1:]
+
+            self.load_data(path)
         event.accept()
 
     def report_error(self, message, detail):

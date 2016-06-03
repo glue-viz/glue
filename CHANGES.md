@@ -7,6 +7,9 @@ v0.8.2 (unreleased)
 * Make sure histograms are updated if only the attribute changes and the
   limits and number of bins stay the same. [#1012]
 
+* Fix a bug on Windows that caused drag and dropping files onto the glue
+  application to not work. [#1007]
+
 v0.8.1 (2016-05-25)
 -------------------
 
