@@ -89,10 +89,10 @@ class TableWidget(DataViewer):
 
         hdr = self.ui.table.horizontalHeader()
         hdr.setStretchLastSection(True)
-        hdr.setResizeMode(hdr.Interactive)
+        hdr.setSectionResizeMode(hdr.Interactive)
 
         hdr = self.ui.table.verticalHeader()
-        hdr.setResizeMode(hdr.Interactive)
+        hdr.setSectionResizeMode(hdr.Interactive)
 
         self.ui.table.clicked.connect(self._clicked)
 
