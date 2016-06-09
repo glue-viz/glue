@@ -15,6 +15,8 @@ v0.8.2 (unreleased)
 * Fix a bug on Windows that caused drag and dropping files onto the glue
   application to not work. [#1007]
 
+* Fix compatibility with PyQt5. [#1015]
+
 v0.8.1 (2016-05-25)
 -------------------
 
