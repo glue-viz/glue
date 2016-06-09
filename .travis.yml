@@ -114,8 +114,8 @@ matrix:
 
 before_install:
 
-  # The PyQt5 package is in the astrofrog channel
-  - if [[ $QT_PKG == pyqt5 ]]; then export CONDA_CHANNELS="astropy-ci-extras astrofrog"; fi
+  # The PyQt5 package is in the spyder-ide channel
+  - if [[ $QT_PKG == pyqt5 ]]; then export CONDA_CHANNELS="astropy-ci-extras spyder-ide"; fi
 
   # Prepare dependency list
   - if [[ $QT_PKG != False ]]; then export CONDA_DEPENDENCIES="$QT_PKG "$CONDA_DEPENDENCIES; fi
