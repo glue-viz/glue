@@ -1,4 +1,9 @@
-# qt-helpers - a common front-end to various Qt modules
+# This file was originally from qt-helpers, for which the license is below. 
+# However, it now mainly uses QtPy and provides some additional patches. Once
+# these are in QtPy, we can remove this file altogether (and move the remaining)
+# functions to ``glue.utils.qt``.
+# 
+# Original license for qt-helpers:
 #
 # Copyright (c) 2015, Chris Beaumont and Thomas Robitaille
 #
