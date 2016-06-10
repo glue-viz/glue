@@ -63,6 +63,34 @@ def test_component_id_combo_helper():
 
     assert _items_as_string(combo) == ""
 
+def test_component_id_combo_helper_init():
+
+    # Regression test to make sure that the numeric and categorical options
+    # in the __init__ are taken into account properly
+
+    combo = QtGui.QComboBox()
+
+    dc = DataCollection([])
+
+    data = Data(a=[1,2,3], b=['a','b','c'], label='data2')
+    dc.append(data)
+
+    helper = ComponentIDComboHelper(combo, dc)
+    helper.append(data)
+    assert _items_as_string(combo) == "a:b"
+
+    helper = ComponentIDComboHelper(combo, dc, numeric=False)
+    helper.append(data)
+    assert _items_as_string(combo) == "b"
+
+    helper = ComponentIDComboHelper(combo, dc, categorical=False)
+    helper.append(data)
+    assert _items_as_string(combo) == "a"
+
+    helper = ComponentIDComboHelper(combo, dc, numeric=False, categorical=False)
+    helper.append(data)
+    assert _items_as_string(combo) == ""
+
 
 def test_manual_data_combo_helper():
 

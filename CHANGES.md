@@ -17,6 +17,9 @@ v0.8.2 (unreleased)
 
 * Fix compatibility with PyQt5. [#1015]
 
+* Fix a bug that caused ComponentIDComboHelper to not take into account the
+  numeric and categorical options in __init__. [#1014]
+
 v0.8.1 (2016-05-25)
 -------------------
 
