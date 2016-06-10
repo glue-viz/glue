@@ -47,8 +47,8 @@ class ComponentIDComboHelper(HubListener):
             raise ValueError("Hub on data collection is not set")
 
         self._visible = visible
-        self._numeric = True
-        self._categorical = True
+        self._numeric = numeric
+        self._categorical = categorical
         self._component_id_combo = component_id_combo
         self._data = []
         self._data_collection = data_collection
