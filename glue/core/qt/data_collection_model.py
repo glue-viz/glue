@@ -2,9 +2,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-from qtpy import QtCore, QtGui, QtWidgets
+from qtpy import QtCore, QtGui, QtWidgets, PYQT5
 from qtpy.QtCore import Qt
-from glue.external.qt import is_pyqt5
 from glue.core.hub import HubListener
 from glue.core import message as m
 from glue.core.decorators import memoize
@@ -254,7 +253,7 @@ class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
         # without this reference, PySide clobbers instance
         # data of model items
         self.register_to_hub(self.data_collection.hub)
-        if not is_pyqt5():
+        if not PYQT5:
             self.setSupportedDragActions(Qt.CopyAction)
 
     def supportedDragActions(self):
@@ -429,7 +428,7 @@ class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
     def invalidate(self):
         self.root = DataCollectionItem(self.data_collection)
         self._items.clear()
-        if not is_pyqt5():
+        if not PYQT5:
             self.reset()
         self.layoutChanged.emit()
 

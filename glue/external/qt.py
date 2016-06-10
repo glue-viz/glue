@@ -44,28 +44,15 @@
 
 from __future__ import absolute_import, division, print_function
 
-__all__ = ['is_pyside', 'is_pyqt4', 'is_pyqt5', 'get_qapp']
+__all__ = ['get_qapp', 'load_ui']
 
-from qtpy import API, PYSIDE_API, PYQT4_API, PYQT5_API
-from qtpy import QtCore, QtGui, QtWidgets
-
-
-def is_pyside():
-    return API in PYSIDE_API
-
-
-def is_pyqt4():
-    return API in PYQT4_API
-
-
-def is_pyqt5():
-    return API in PYQT5_API
+from qtpy import QtCore, QtGui, QtWidgets, PYSIDE, PYQT4, PYQT5
 
 
 def load_ui(path, parent=None, custom_widgets=None):
-    if is_pyside():
+    if PYSIDE:
         return _load_ui_pyside(path, parent, custom_widgets=custom_widgets)
-    elif is_pyqt5():
+    elif PYQT5:
         return _load_ui_pyqt5(path, parent)
     else:
         return _load_ui_pyqt4(path, parent)
@@ -101,7 +88,7 @@ def get_qapp(icon_path=None):
 
     # Make sure we use high resolution icons with PyQt5 for HDPI
     # displays. TODO: check impact on non-HDPI displays.
-    if is_pyqt5():
+    if PYQT5:
         qapp.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
 
     return qapp
@@ -318,9 +305,9 @@ def patch_loadui():
 
 
 # We patch this only now, once QtCore and QtGui are defined
-if is_pyside() or is_pyqt4():
+if PYSIDE or PYQT4:
     patch_qcombobox()
 
 # For PySide, we need to create a loadUi function
-if is_pyside():
+if PYSIDE:
     patch_loadui()

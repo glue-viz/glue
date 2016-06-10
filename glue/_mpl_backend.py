@@ -21,8 +21,9 @@ def set_mpl_backend():
     # standardize mpl setup
     rcdefaults()
 
-    from glue.external.qt import is_pyqt5
-    if is_pyqt5():
+    from qtpy import PYQT5
+
+    if PYQT5:
         rcParams['backend'] = 'Qt5Agg'
     else:
         rcParams['backend'] = 'Qt4Agg'

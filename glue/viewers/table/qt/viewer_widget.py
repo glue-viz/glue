@@ -5,7 +5,7 @@ import numpy as np
 
 from qtpy.QtCore import Qt
 from qtpy import QtGui, QtCore
-from glue.external.qt import is_pyqt5
+from qtpy import PYQT5
 from glue.core.subset import ElementSubsetState
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core import message as msg
@@ -91,14 +91,14 @@ class TableWidget(DataViewer):
         hdr = self.ui.table.horizontalHeader()
         hdr.setStretchLastSection(True)
 
-        if is_pyqt5():
+        if PYQT5:
             hdr.setSectionResizeMode(hdr.Interactive)
         else:
             hdr.setResizeMode(hdr.Interactive)
 
         hdr = self.ui.table.verticalHeader()
 
-        if is_pyqt5():
+        if PYQT5:
             hdr.setSectionResizeMode(hdr.Interactive)
         else:
             hdr.setResizeMode(hdr.Interactive)

@@ -9,11 +9,11 @@ from matplotlib.figure import Figure
 
 from qtpy import QtCore, QtWidgets
 from qtpy.QtCore import Qt
-from glue.external.qt import is_pyqt5
+from qtpy import PYQT5
 from glue.utils import DeferredMethod
 from glue.config import settings
 
-if is_pyqt5():
+if PYQT5:
     from matplotlib.backends.backend_qt5 import FigureManagerQT as FigureManager
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 else:

@@ -6,12 +6,12 @@ import matplotlib
 
 from qtpy import QtCore, QtWidgets
 from qtpy.QtCore import Qt
-from glue.external.qt import is_pyqt5
+from qtpy import PYQT5
 from glue.core.callback_property import add_callback
 from glue.icons.qt import get_icon
 from glue.utils import nonpartial
 
-if is_pyqt5():
+if PYQT5:
     from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 else:
     from matplotlib.backends.backend_qt4 import NavigationToolbar2QT

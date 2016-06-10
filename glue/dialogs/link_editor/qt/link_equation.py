@@ -5,7 +5,7 @@ from inspect import getargspec
 from collections import OrderedDict
 
 from qtpy import QtWidgets
-from glue.external.qt import is_pyside
+from qtpy import PYSIDE
 from glue import core
 from glue.utils.qt import load_ui, CUSTOM_QWIDGETS
 
@@ -305,7 +305,7 @@ class LinkEquation(QtWidgets.QWidget):
             layout.removeWidget(a)
             a.close()
 
-        if not is_pyside():
+        if not PYSIDE:
             # PySide crashing here
             layout.removeItem(self.spacer)
 
