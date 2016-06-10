@@ -113,7 +113,7 @@ def patch_qcombobox():
             super(userDataWrapper, self).__init__(parent)
             self.data = data
 
-    _addItem = QtGui.QComboBox.addItem
+    _addItem = QtWidgets.QComboBox.addItem
 
     def addItem(self, *args, **kwargs):
         if len(args) == 3 or (not isinstance(args[0], QtGui.QIcon)
@@ -124,7 +124,7 @@ def patch_qcombobox():
                                                  parent=self)
         _addItem(self, *args, **kwargs)
 
-    _insertItem = QtGui.QComboBox.insertItem
+    _insertItem = QtWidgets.QComboBox.insertItem
 
     def insertItem(self, *args, **kwargs):
         if len(args) == 4 or (not isinstance(args[1], QtGui.QIcon)
@@ -135,13 +135,13 @@ def patch_qcombobox():
                                                  parent=self)
         _insertItem(self, *args, **kwargs)
 
-    _setItemData = QtGui.QComboBox.setItemData
+    _setItemData = QtWidgets.QComboBox.setItemData
 
     def setItemData(self, index, value, role=QtCore.Qt.UserRole):
         value = userDataWrapper(value, parent=self)
         _setItemData(self, index, value, role=role)
 
-    _itemData = QtGui.QComboBox.itemData
+    _itemData = QtWidgets.QComboBox.itemData
 
     def itemData(self, index, role=QtCore.Qt.UserRole):
         userData = _itemData(self, index, role=role)
@@ -155,11 +155,11 @@ def patch_qcombobox():
                 return i
         return -1
 
-    QtGui.QComboBox.addItem = addItem
-    QtGui.QComboBox.insertItem = insertItem
-    QtGui.QComboBox.setItemData = setItemData
-    QtGui.QComboBox.itemData = itemData
-    QtGui.QComboBox.findData = findData
+    QtWidgets.QComboBox.addItem = addItem
+    QtWidgets.QComboBox.insertItem = insertItem
+    QtWidgets.QComboBox.setItemData = setItemData
+    QtWidgets.QComboBox.itemData = itemData
+    QtWidgets.QComboBox.findData = findData
 
 
 def patch_loadui():
