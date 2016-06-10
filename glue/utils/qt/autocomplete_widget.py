@@ -8,14 +8,14 @@
 
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt import QtGui
-from glue.external.qt.QtCore import Qt
+from qtpy import QtWidgets
+from qtpy.QtCore import Qt
 
 
 __all__ = ["CompletionTextEdit"]
 
 
-class CompletionTextEdit(QtGui.QTextEdit):
+class CompletionTextEdit(QtWidgets.QTextEdit):
 
     def __init__(self, parent=None):
 
@@ -29,7 +29,7 @@ class CompletionTextEdit(QtGui.QTextEdit):
 
     def set_word_list(self, word_list):
         self.word_list = word_list
-        self.set_completer(QtGui.QCompleter(word_list))
+        self.set_completer(QtWidgets.QCompleter(word_list))
 
     def set_completer(self, completer):
 
@@ -41,7 +41,7 @@ class CompletionTextEdit(QtGui.QTextEdit):
         self.completer = completer
 
         self.completer.setWidget(self)
-        self.completer.setCompletionMode(QtGui.QCompleter.PopupCompletion)
+        self.completer.setCompletionMode(QtWidgets.QCompleter.PopupCompletion)
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.completer.activated.connect(self.insert_completion)
 
@@ -68,7 +68,7 @@ class CompletionTextEdit(QtGui.QTextEdit):
     def focusInEvent(self, event):
         if self.completer:
             self.completer.setWidget(self)
-        QtGui.QTextEdit.focusInEvent(self, event)
+        QtWidgets.QTextEdit.focusInEvent(self, event)
 
     def keyPressEvent(self, event):
 
@@ -86,7 +86,7 @@ class CompletionTextEdit(QtGui.QTextEdit):
         is_shortcut = event.key() == Qt.Key_Tab
 
         if not self.completer or not is_shortcut:
-            QtGui.QTextEdit.keyPressEvent(self, event)
+            QtWidgets.QTextEdit.keyPressEvent(self, event)
             return
 
         eow = "~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-="

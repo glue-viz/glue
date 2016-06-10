@@ -7,8 +7,9 @@ from functools import wraps
 import matplotlib
 from matplotlib.figure import Figure
 
-from glue.external.qt.QtCore import Qt
-from glue.external.qt import QtGui, QtCore, is_pyqt5
+from qtpy import QtCore, QtWidgets
+from qtpy.QtCore import Qt
+from glue.external.qt import is_pyqt5
 from glue.utils import DeferredMethod
 from glue.config import settings
 
@@ -65,8 +66,8 @@ class MplCanvas(FigureCanvas):
 
         FigureCanvas.__init__(self, self.fig)
         FigureCanvas.setSizePolicy(self,
-                                   QtGui.QSizePolicy.Expanding,
-                                   QtGui.QSizePolicy.Expanding)
+                                   QtWidgets.QSizePolicy.Expanding,
+                                   QtWidgets.QSizePolicy.Expanding)
 
         FigureCanvas.updateGeometry(self)
         self.manager = FigureManager(self, 0)
@@ -80,7 +81,7 @@ class MplCanvas(FigureCanvas):
         self.renderer = None
 
     def _on_timeout(self):
-        buttons = QtGui.QApplication.instance().mouseButtons()
+        buttons = QtWidgets.QApplication.instance().mouseButtons()
         if buttons != Qt.NoButton:
             self._resize_timer.start()
         else:
@@ -107,7 +108,7 @@ class MplCanvas(FigureCanvas):
             except TypeError:  # mpl 1.4
                 x, y, w, h = drawRect
             p = QtGui.QPainter(self)
-            p.setPen(QtGui.QPen(Qt.red, 2, Qt.DotLine))
+            p.setPen(QtWidgets.QPen(Qt.red, 2, Qt.DotLine))
             p.drawRect(x, y, w, h)
             p.end()
 
@@ -125,7 +126,7 @@ class MplCanvas(FigureCanvas):
         return super(MplCanvas, self).draw(*args, **kwargs)
 
 
-class MplWidget(QtGui.QWidget):
+class MplWidget(QtWidgets.QWidget):
 
     """Widget defined in Qt Designer"""
 
@@ -135,11 +136,11 @@ class MplWidget(QtGui.QWidget):
 
     def __init__(self, parent=None):
         # initialization of Qt MainWindow widget
-        QtGui.QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
         # set the canvas to the Matplotlib widget
         self.canvas = MplCanvas()
         # create a vertical box layout
-        self.vbl = QtGui.QVBoxLayout()
+        self.vbl = QtWidgets.QVBoxLayout()
         self.vbl.setContentsMargins(0, 0, 0, 0)
         self.vbl.setSpacing(0)
         # add mpl widget to the vertical box

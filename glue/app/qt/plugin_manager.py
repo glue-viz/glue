@@ -2,8 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from glue.external.qt.QtCore import Qt
-from glue.external.qt import QtGui
+from qtpy.QtCore import Qt
+from qtpy import QtWidgets
 from glue._plugin_helpers import PluginConfig
 from glue.utils.qt import load_ui
 
@@ -38,7 +38,7 @@ class QtPluginManager(object):
             config.filter(installed)
 
         for plugin in sorted(config.plugins):
-            check = QtGui.QTreeWidgetItem(self.ui.tree.invisibleRootItem(),
+            check = QtWidgets.QTreeWidgetItem(self.ui.tree.invisibleRootItem(),
                                           ["", plugin])
             check.setFlags(check.flags() | Qt.ItemIsUserCheckable)
             if config.plugins[plugin]:

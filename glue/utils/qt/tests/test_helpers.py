@@ -1,9 +1,9 @@
-from ....external.qt import QtGui
+from qtpy import QtWidgets
 from ..helpers import update_combobox
 
 
 def test_update_combobox():
-    combo = QtGui.QComboBox()
+    combo = QtWidgets.QComboBox()
     update_combobox(combo, [('a', 1), ('b', 2)])
     update_combobox(combo, [('c', 3)])
 
@@ -14,7 +14,7 @@ def test_update_combobox_indexchanged():
     # emitted if the new index happened to be the same as the old one but the
     # label data was different.
 
-    class MyComboBox(QtGui.QComboBox):
+    class MyComboBox(QtWidgets.QComboBox):
 
         def __init__(self, *args, **kwargs):
             self.change_count = 0

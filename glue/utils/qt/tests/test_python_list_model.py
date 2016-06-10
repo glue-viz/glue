@@ -1,6 +1,6 @@
 import pytest
 
-from ....external.qt.QtCore import Qt
+from qtpy.QtCore import Qt
 
 from ..python_list_model import PythonListModel
 

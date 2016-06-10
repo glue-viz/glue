@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from glue.external.qt import QtGui
+from qtpy import QtWidgets
 from glue import core
 from glue.utils.qt import load_ui
 
@@ -16,7 +16,7 @@ from glue.dialogs.link_editor.qt.link_equation import LinkEquation
 __all__ = ['LinkEditor']
 
 
-class LinkEditor(QtGui.QDialog):
+class LinkEditor(QtWidgets.QDialog):
 
     def __init__(self, collection, functions=None, parent=None):
 
@@ -90,7 +90,7 @@ class LinkEditor(QtGui.QDialog):
 
     def _add_link(self, link):
         current = self._ui.current_links
-        item = QtGui.QListWidgetItem(str(link))
+        item = QtWidgets.QListWidgetItem(str(link))
         current.addItem(item)
         item.setHidden(link.hidden)
         current.set_data(item, link)

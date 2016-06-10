@@ -7,7 +7,7 @@ from matplotlib.colors import ColorConverter
 from glue import custom_viewer
 from glue.core import HubListener, Application, Data, DataCollection
 from glue.core.message import SettingsChangeMessage
-from glue.external.qt import QtGui
+from qtpy import QtWidgets
 from glue.app.qt.preferences import PreferencesDialog
 from glue.app.qt import GlueApplication
 from glue.viewers.scatter.qt import ScatterWidget
@@ -158,16 +158,16 @@ class TestPreferences():
 
         settings = MagicMock()
 
-        class CustomPreferences(QtGui.QWidget):
+        class CustomPreferences(QtWidgets.QWidget):
 
             def __init__(self, parent=None):
 
                 super(CustomPreferences, self).__init__(parent=parent)
 
-                self.layout = QtGui.QFormLayout()
+                self.layout = QtWidgets.QFormLayout()
 
-                self.option1 = QtGui.QLineEdit()
-                self.option2 = QtGui.QLineEdit()
+                self.option1 = QtWidgets.QLineEdit()
+                self.option2 = QtWidgets.QLineEdit()
 
                 self.layout.addRow("Option 1", self.option1)
                 self.layout.addRow("Option 2", self.option2)

@@ -2,8 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.external.qt.QtCore import Qt
-from glue.external.qt import QtGui, QtCore
+from qtpy.QtCore import Qt
+from qtpy import QtCore, QtWidgets
 from glue.core import roi
 from glue.utils.qt import mpl_to_qt4_color
 
@@ -46,7 +46,7 @@ class QtROI(object):
 
     def draw_polygon(self, canvas, x, y):
         x, y = self._transform(x, y)
-        poly = QtGui.QPolygon()
+        poly = QtWidgets.QPolygon()
         points = [QtCore.QPoint(xx, yy) for xx, yy in zip(x, y)]
         for p in points:
             poly.append(p)
@@ -70,7 +70,7 @@ class QtROI(object):
         edgecolor = mpl_to_qt4_color(self.plot_opts['edgecolor'],
                                      self.plot_opts['alpha'])
 
-        pen = QtGui.QPen(edgecolor)
+        pen = QtWidgets.QPen(edgecolor)
         pen.setWidth(self.plot_opts.get('edgewidth', 0))
         p.setPen(pen)
 
@@ -89,7 +89,7 @@ class QtPathROI(QtROI, roi.MplPathROI):
 
     def draw_polygon(self, canvas, x, y):
         x, y = self._transform(x, y)
-        poly = QtGui.QPolygon()
+        poly = QtWidgets.QPolygon()
         points = [QtCore.QPoint(xx, yy) for xx, yy in zip(x, y)]
         for p in points:
             poly.append(p)

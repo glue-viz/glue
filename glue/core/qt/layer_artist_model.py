@@ -11,8 +11,8 @@ these layers, and provides GUI access to the model
 
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt.QtCore import Qt
-from glue.external.qt import QtGui, QtCore
+from qtpy.QtCore import Qt
+from qtpy import QtCore, QtWidgets, QtGui
 from glue.core.layer_artist import LayerArtistBase, LayerArtistContainer
 from glue.core.qt.style_dialog import StyleDialog
 from glue.icons.qt import layer_artist_icon
@@ -167,7 +167,7 @@ class LayerArtistModel(PythonListModel):
         return self.artists[row]
 
 
-class LayerArtistView(QtGui.QListView):
+class LayerArtistView(QtWidgets.QListView):
 
     """A list view into an artist model. The zorder
     of each artist can be shuffled by dragging and dropping
@@ -177,10 +177,10 @@ class LayerArtistView(QtGui.QListView):
         super(LayerArtistView, self).__init__(parent)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
-        self.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
+        self.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
         self.setIconSize(QtCore.QSize(15, 15))
-        self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
         self.setEditTriggers(self.NoEditTriggers)
 
@@ -263,11 +263,11 @@ class LayerArtistView(QtGui.QListView):
         StyleDialog.dropdown_editor(item, pos, edit_label=False)
 
     def _create_actions(self):
-        act = QtGui.QAction('Edit style', self)
+        act = QtWidgets.QAction('Edit style', self)
         act.triggered.connect(nonpartial(self._edit_style))
         self.addAction(act)
 
-        act = QtGui.QAction('Remove', self)
+        act = QtWidgets.QAction('Remove', self)
         act.setShortcut(QtGui.QKeySequence(Qt.Key_Backspace))
         act.setShortcutContext(Qt.WidgetShortcut)
         act.triggered.connect(
@@ -275,7 +275,7 @@ class LayerArtistView(QtGui.QListView):
         self.addAction(act)
 
 
-class LayerArtistWidget(QtGui.QWidget):
+class LayerArtistWidget(QtWidgets.QWidget):
     """
     A widget that includes a list of artists (LayerArtistView) and the visual
     options for the layer artists.
@@ -285,7 +285,7 @@ class LayerArtistWidget(QtGui.QWidget):
 
         super(LayerArtistWidget, self).__init__(parent=parent)
 
-        self.layout = QtGui.QVBoxLayout()
+        self.layout = QtWidgets.QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
 
         self.layer_style_widget_cls = layer_style_widget_cls
@@ -293,8 +293,8 @@ class LayerArtistWidget(QtGui.QWidget):
         self.layer_list = LayerArtistView(parent=self)
         self.layout.addWidget(self.layer_list)
 
-        self.layer_options = QtGui.QWidget()
-        self.layer_options_layout = QtGui.QStackedLayout()
+        self.layer_options = QtWidgets.QWidget()
+        self.layer_options_layout = QtWidgets.QStackedLayout()
         self.layer_options.setLayout(self.layer_options_layout)
 
         self.layout.addWidget(self.layer_options)

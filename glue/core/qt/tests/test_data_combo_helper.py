@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.core import Data, DataCollection
-from glue.external.qt import QtGui
+from qtpy import QtGui, QtWidgets
 
 from ..data_combo_helper import (ComponentIDComboHelper, ManualDataComboHelper,
                                  DataCollectionComboHelper)
@@ -14,7 +14,7 @@ def _items_as_string(combo):
 
 def test_component_id_combo_helper():
 
-    combo = QtGui.QComboBox()
+    combo = QtWidgets.QComboBox()
 
     dc = DataCollection([])
 
@@ -94,7 +94,7 @@ def test_component_id_combo_helper_init():
 
 def test_manual_data_combo_helper():
 
-    combo = QtGui.QComboBox()
+    combo = QtWidgets.QComboBox()
 
     dc = DataCollection([])
 
@@ -120,7 +120,7 @@ def test_manual_data_combo_helper():
 
 def test_data_collection_combo_helper():
 
-    combo = QtGui.QComboBox()
+    combo = QtWidgets.QComboBox()
 
     dc = DataCollection([])
 

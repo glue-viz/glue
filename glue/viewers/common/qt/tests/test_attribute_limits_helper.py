@@ -3,7 +3,7 @@ import operator
 import pytest
 import numpy as np
 
-from glue.external.qt import QtGui
+from qtpy import QtWidgets
 from glue.core import Data, DataCollection
 from glue.core.subset import InequalitySubsetState
 from glue.core.qt.data_combo_helper import ComponentIDComboHelper
@@ -19,13 +19,13 @@ class TestAttributeLimitsHelper():
 
     def setup_method(self, method):
 
-        self.attribute_combo = QtGui.QComboBox()
-        self.lower_value = QtGui.QLineEdit()
-        self.upper_value = QtGui.QLineEdit()
-        self.mode_combo = QtGui.QComboBox()
-        self.flip_button = QtGui.QToolButton()
+        self.attribute_combo = QtWidgets.QComboBox()
+        self.lower_value = QtWidgets.QLineEdit()
+        self.upper_value = QtWidgets.QLineEdit()
+        self.mode_combo = QtWidgets.QComboBox()
+        self.flip_button = QtWidgets.QToolButton()
 
-        self.log_button = QtGui.QToolButton()
+        self.log_button = QtWidgets.QToolButton()
         self.log_button.setCheckable(True)
 
         self.data = Data(x=np.linspace(-100, 100, 10000),

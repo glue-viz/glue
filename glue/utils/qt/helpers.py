@@ -3,8 +3,8 @@ from __future__ import absolute_import, division, print_function
 import os
 from contextlib import contextmanager
 
-from glue.external.qt import QtGui, QtCore
-from glue.external.qt.QtCore import Qt
+from qtpy import QtCore, QtWidgets
+from qtpy.QtCore import Qt
 from glue.utils.qt import get_text
 
 __all__ = ['update_combobox', 'GlueTabBar', 'load_ui', 'CUSTOM_QWIDGETS', 'process_dialog']
@@ -62,7 +62,7 @@ def update_combobox(combo, labeldata):
         combo.currentIndexChanged.emit(index)
 
 
-class GlueTabBar(QtGui.QTabBar):
+class GlueTabBar(QtWidgets.QTabBar):
 
     def __init__(self, *args, **kwargs):
         super(GlueTabBar, self).__init__(*args, **kwargs)
@@ -101,7 +101,7 @@ def load_ui(path, parent=None, directory=None):
 
     Returns
     -------
-    w : QtGui.QWidget
+    w : QtWidgets.QWidget
         The new widget
     """
 

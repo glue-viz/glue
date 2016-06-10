@@ -21,7 +21,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from glue.external.qt import QtGui
+from qtpy import QtWidgets
 from glue.core.callback_property import CallbackProperty
 from glue.core import roi
 from glue.core.qt import roi as qt_roi
@@ -132,7 +132,7 @@ class MouseMode(object):
             self._key_callback(self)
 
     def menu_actions(self):
-        """ List of QtGui.QActions to be attached to this mode as a context menu """
+        """ List of QtWidgets.QActions to be attached to this mode as a context menu """
         return []
 
 
@@ -520,51 +520,51 @@ class ContrastMode(MouseMode):
     def menu_actions(self):
         result = []
 
-        a = QtGui.QAction("minmax", None)
+        a = QtWidgets.QAction("minmax", None)
         a.triggered.connect(nonpartial(self.set_clip_percentile, 0, 100))
         result.append(a)
 
-        a = QtGui.QAction("99%", None)
+        a = QtWidgets.QAction("99%", None)
         a.triggered.connect(nonpartial(self.set_clip_percentile, 1, 99))
         result.append(a)
 
-        a = QtGui.QAction("95%", None)
+        a = QtWidgets.QAction("95%", None)
         a.triggered.connect(nonpartial(self.set_clip_percentile, 5, 95))
         result.append(a)
 
-        a = QtGui.QAction("90%", None)
+        a = QtWidgets.QAction("90%", None)
         a.triggered.connect(nonpartial(self.set_clip_percentile, 10, 90))
         result.append(a)
 
-        rng = QtGui.QAction("Set range...", None)
+        rng = QtWidgets.QAction("Set range...", None)
         rng.triggered.connect(nonpartial(self.choose_vmin_vmax))
         result.append(rng)
 
-        a = QtGui.QAction("", None)
+        a = QtWidgets.QAction("", None)
         a.setSeparator(True)
         result.append(a)
 
-        a = QtGui.QAction("linear", None)
+        a = QtWidgets.QAction("linear", None)
         a.triggered.connect(nonpartial(setattr, self, 'stretch', 'linear'))
         result.append(a)
 
-        a = QtGui.QAction("log", None)
+        a = QtWidgets.QAction("log", None)
         a.triggered.connect(nonpartial(setattr, self, 'stretch', 'log'))
         result.append(a)
 
-        a = QtGui.QAction("power", None)
+        a = QtWidgets.QAction("power", None)
         a.triggered.connect(nonpartial(setattr, self, 'stretch', 'power'))
         result.append(a)
 
-        a = QtGui.QAction("square root", None)
+        a = QtWidgets.QAction("square root", None)
         a.triggered.connect(nonpartial(setattr, self, 'stretch', 'sqrt'))
         result.append(a)
 
-        a = QtGui.QAction("squared", None)
+        a = QtWidgets.QAction("squared", None)
         a.triggered.connect(nonpartial(setattr, self, 'stretch', 'squared'))
         result.append(a)
 
-        a = QtGui.QAction("asinh", None)
+        a = QtWidgets.QAction("asinh", None)
         a.triggered.connect(nonpartial(setattr, self, 'stretch', 'arcsinh'))
         result.append(a)
 
@@ -599,15 +599,15 @@ class SpectrumExtractorMode(RoiMode):
     def menu_actions(self):
         result = []
 
-        a = QtGui.QAction('Rectangle', None)
+        a = QtWidgets.QAction('Rectangle', None)
         a.triggered.connect(nonpartial(self.set_roi_tool, 'Rectangle'))
         result.append(a)
 
-        a = QtGui.QAction('Circle', None)
+        a = QtWidgets.QAction('Circle', None)
         a.triggered.connect(nonpartial(self.set_roi_tool, 'Circle'))
         result.append(a)
 
-        a = QtGui.QAction('Polygon', None)
+        a = QtWidgets.QAction('Polygon', None)
         a.triggered.connect(nonpartial(self.set_roi_tool, 'Polygon'))
         result.append(a)
 

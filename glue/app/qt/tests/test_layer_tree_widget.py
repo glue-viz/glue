@@ -4,9 +4,9 @@ from __future__ import absolute_import, division, print_function
 
 from mock import MagicMock, patch
 
-from glue.external.qt.QtCore import Qt
-from glue.external.qt.QtTest import QTest
-from glue.external.qt import QtGui
+from qtpy.QtCore import Qt
+from qtpy.QtTest import QTest
+from qtpy import QtWidgets
 from glue import core
 from glue.tests import example_data
 
@@ -23,7 +23,7 @@ class TestLayerTree(object):
         self.collect = core.data_collection.DataCollection(list(self.data))
         self.hub = self.collect.hub
         self.widget = LayerTreeWidget()
-        self.win = QtGui.QMainWindow()
+        self.win = QtWidgets.QMainWindow()
         self.win.setCentralWidget(self.widget)
         self.widget.setup(self.collect)
         for key, value in self.widget._actions.items():
@@ -227,14 +227,14 @@ class TestLayerTree(object):
 
     def test_save_subset(self):
         subset = MagicMock(core.Subset)
-        with patch('glue.app.qt.layer_tree_widget.QtGui.QFileDialog') as d:
+        with patch('glue.app.qt.layer_tree_widget.QtWidgets.QFileDialog') as d:
             d.getSaveFileName.return_value = ('test.fits', None)
             save_subset(subset)
         subset.write_mask.assert_called_once_with('test.fits')
 
     def test_save_subset_cancel(self):
         subset = MagicMock(core.Subset)
-        with patch('glue.app.qt.layer_tree_widget.QtGui.QFileDialog') as d:
+        with patch('glue.app.qt.layer_tree_widget.QtWidgets.QFileDialog') as d:
             d.getSaveFileName.return_value = ('', '')
             save_subset(subset)
         assert subset.write_mask.call_count == 0

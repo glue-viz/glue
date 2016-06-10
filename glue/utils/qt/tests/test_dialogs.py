@@ -8,7 +8,7 @@ def test_pick_item():
     items = ['a', 'b', 'c']
     labels = ['1', '2', '3']
 
-    with mock.patch('glue.external.qt.QtGui.QInputDialog') as d:
+    with mock.patch('qtpy.QtWidgets.QInputDialog') as d:
         d.getItem.return_value = '1', True
         assert pick_item(items, labels) == 'a'
         d.getItem.return_value = '2', True
@@ -40,7 +40,7 @@ def test_pick_class():
 
 def test_get_text():
 
-    with mock.patch('glue.external.qt.QtGui.QInputDialog') as d:
+    with mock.patch('qtpy.QtWidgets.QInputDialog') as d:
 
         d.getText.return_value = 'abc', True
         assert get_text() == 'abc'

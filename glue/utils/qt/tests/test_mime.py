@@ -2,9 +2,9 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from glue.external.qt.QtTest import QTest
-from glue.external.qt.QtCore import Qt
-from glue.external.qt import QtGui
+from qtpy.QtTest import QTest
+from qtpy.QtCore import Qt
+from qtpy import QtWidgets
 
 from .. import mime
 
@@ -63,7 +63,7 @@ class TestMime():
         assert d.data('not-a-format').size() == 0
 
 
-# class TestWidget(QtGui.QWidget):
+# class TestWidget(QtWidgets.QWidget):
 #     def __init__(self, out_mime, parent=None):
 #         super(TestWidget, self).__init__(parent)
 #         self.setAcceptDrops(True)
@@ -81,7 +81,7 @@ class TestMime():
 #
 #     def mousePressEvent(self, event):
 #         print('mouse event')
-#         drag = QtGui.QDrag(self)
+#         drag = QtWidgets.QDrag(self)
 #         drag.setMimeData(self.out_mime)
 #         drop_action = drag.exec_()
 #         print(drop_action)

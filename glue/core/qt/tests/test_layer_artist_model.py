@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from mock import MagicMock
 
-from glue.external.qt.QtCore import Qt
+from qtpy.QtCore import Qt
 from glue.external.qt import is_pyqt5
 from glue.core import Data
 from glue.core.layer_artist import MatplotlibLayerArtist as _LayerArtist

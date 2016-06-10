@@ -8,7 +8,7 @@ from collections import Counter
 import numpy as np
 
 from glue.core import Coordinates
-from glue.external.qt import QtGui, QtCore
+from qtpy import QtCore, QtWidgets
 from glue.utils.qt import load_ui
 from glue.utils.qt.widget_properties import (TextProperty,
                                              ButtonProperty,
@@ -18,7 +18,7 @@ from glue.utils import nonpartial
 from glue.icons.qt import get_icon
 
 
-class SliceWidget(QtGui.QWidget):
+class SliceWidget(QtWidgets.QWidget):
 
     label = TextProperty('_ui_label')
     slider_label = TextProperty('_ui_slider.label')
@@ -40,16 +40,16 @@ class SliceWidget(QtGui.QWidget):
         self._world = np.asarray(world)
         self._world_warning = world_warning
 
-        layout = QtGui.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         layout.setContentsMargins(3, 1, 3, 1)
         layout.setSpacing(0)
 
-        top = QtGui.QHBoxLayout()
+        top = QtWidgets.QHBoxLayout()
         top.setContentsMargins(3, 3, 3, 3)
-        label = QtGui.QLabel(label)
+        label = QtWidgets.QLabel(label)
         top.addWidget(label)
 
-        mode = QtGui.QComboBox()
+        mode = QtWidgets.QComboBox()
         mode.addItem('x', 'x')
         mode.addItem('y', 'y')
         mode.addItem('slice', 'slice')
@@ -217,7 +217,7 @@ class SliceWidget(QtGui.QWidget):
         return self._frozen
 
 
-class DataSlice(QtGui.QWidget):
+class DataSlice(QtWidgets.QWidget):
 
     """
     A DatSlice widget provides an inteface for selection
@@ -237,7 +237,7 @@ class DataSlice(QtGui.QWidget):
         self._slices = []
         self._data = None
 
-        layout = QtGui.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         layout.setSpacing(4)
         layout.setContentsMargins(0, 3, 0, 3)
         self.layout = layout
@@ -314,9 +314,9 @@ class DataSlice(QtGui.QWidget):
         for s in self._slices[::-1]:
             self.layout.addWidget(s)
             if s is not self._slices[0]:
-                line = QtGui.QFrame()
-                line.setFrameShape(QtGui.QFrame.HLine)
-                line.setFrameShadow(QtGui.QFrame.Sunken)
+                line = QtWidgets.QFrame()
+                line.setFrameShape(QtWidgets.QFrame.HLine)
+                line.setFrameShadow(QtWidgets.QFrame.Sunken)
                 self.layout.addWidget(line)
             s.show()  # this somehow fixes #342
 

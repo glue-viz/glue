@@ -1,12 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt.QtCore import Qt
-from glue.external.qt import QtGui, QtCore
+from qtpy.QtCore import Qt
+from qtpy import QtCore, QtGui, QtWidgets
 from glue import core
 from glue.core.qt.mime import LAYER_MIME_TYPE, LAYERS_MIME_TYPE
 
 
-class GlueMdiArea(QtGui.QMdiArea):
+class GlueMdiArea(QtWidgets.QMdiArea):
 
     """Glue's MdiArea implementation.
 
@@ -86,7 +86,7 @@ class GlueMdiArea(QtGui.QMdiArea):
                          "Drag Data To Plot")
 
 
-class GlueMdiSubWindow(QtGui.QMdiSubWindow):
+class GlueMdiSubWindow(QtWidgets.QMdiSubWindow):
     closed = QtCore.Signal()
 
     def closeEvent(self, event):

@@ -2,8 +2,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt.QtCore import Qt
-from glue.external.qt import QtGui, QtCore, is_pyqt5
+from qtpy import QtCore, QtGui, QtWidgets
+from qtpy.QtCore import Qt
+from glue.external.qt import is_pyqt5
 from glue.core.hub import HubListener
 from glue.core import message as m
 from glue.core.decorators import memoize
@@ -450,7 +451,7 @@ class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
         return [LAYERS_MIME_TYPE]
 
 
-class DataCollectionView(QtGui.QTreeView):
+class DataCollectionView(QtWidgets.QTreeView):
     selection_changed = QtCore.Signal()
 
     def __init__(self, parent=None):
@@ -494,7 +495,7 @@ class DataCollectionView(QtGui.QTreeView):
         self._model = DataCollectionModel(data_collection)
         self.setModel(self._model)
 
-        sm = QtGui.QItemSelectionModel(self._model)
+        sm = QtCore.QItemSelectionModel(self._model)
         sm.selectionChanged.connect(lambda *args:
                                     self.selection_changed.emit())
         self.setSelectionModel(sm)
@@ -507,11 +508,11 @@ class DataCollectionView(QtGui.QTreeView):
         self._model.new_item.connect(self.select_indices)
         self._model.new_item.connect(self.edit_label)
 
-        self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.setDragEnabled(True)
         self.setDropIndicatorShown(True)
-        self.setDragDropMode(QtGui.QAbstractItemView.DragOnly)
+        self.setDragDropMode(QtWidgets.QAbstractItemView.DragOnly)
 
     def edit_label(self, index):
         if not (self._model.flags(index) & Qt.ItemIsEditable):
@@ -531,7 +532,7 @@ class DataCollectionView(QtGui.QTreeView):
 CUSTOM_QWIDGETS.append(DataCollectionView)
 
 
-class LabeledDelegate(QtGui.QStyledItemDelegate):
+class LabeledDelegate(QtWidgets.QStyledItemDelegate):
 
     """ Add placeholder text to default delegate """
 
@@ -545,7 +546,7 @@ class LabeledDelegate(QtGui.QStyledItemDelegate):
 if __name__ == "__main__":
 
     from glue.external.qt import get_qapp
-    from glue.external.qt import QtGui
+    from qtpy import QtWidgets
     from glue.core import Data, DataCollection
 
     app = get_qapp()

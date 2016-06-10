@@ -4,7 +4,8 @@ import os
 from inspect import getargspec
 from collections import OrderedDict
 
-from glue.external.qt import QtGui, is_pyside
+from qtpy import QtWidgets
+from glue.external.qt import is_pyside
 from glue import core
 from glue.utils.qt import load_ui, CUSTOM_QWIDGETS
 
@@ -33,18 +34,18 @@ def helper_label(helper):
     return helper.info
 
 
-class ArgumentWidget(QtGui.QWidget):
+class ArgumentWidget(QtWidgets.QWidget):
 
     def __init__(self, argument, parent=None):
         super(ArgumentWidget, self).__init__(parent)
-        self.layout = QtGui.QHBoxLayout()
+        self.layout = QtWidgets.QHBoxLayout()
         self.layout.setContentsMargins(1, 0, 1, 1)
         self.setLayout(self.layout)
-        label = QtGui.QLabel(argument)
+        label = QtWidgets.QLabel(argument)
         self._label = label
         self._component_id = None
         self.layout.addWidget(label)
-        self.editor = QtGui.QLineEdit()
+        self.editor = QtWidgets.QLineEdit()
         self.editor.setReadOnly(True)
         try:
             self.editor.setPlaceholderText("Drag a component from above")
@@ -95,7 +96,7 @@ class ArgumentWidget(QtGui.QWidget):
         event.accept()
 
 
-class LinkEquation(QtGui.QWidget):
+class LinkEquation(QtWidgets.QWidget):
 
     """ Interactively define ComponentLinks from existing functions
 
@@ -133,7 +134,7 @@ class LinkEquation(QtGui.QWidget):
         # for some reason. Manually embed
         self._ui = load_ui('link_equation.ui', None,
                            directory=os.path.dirname(__file__))
-        l = QtGui.QHBoxLayout()
+        l = QtWidgets.QHBoxLayout()
         l.addWidget(self._ui)
         self.setLayout(l)
 
@@ -155,14 +156,14 @@ class LinkEquation(QtGui.QWidget):
             type(self.function).__name__ == 'LinkFunction'
 
     def _init_widgets(self):
-        layout = QtGui.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         layout.setSpacing(1)
         self._ui.input_canvas.setLayout(layout)
-        layout = QtGui.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         layout.setContentsMargins(1, 0, 1, 1)
         self._ui.output_canvas.setLayout(layout)
         layout.addWidget(self._output_widget)
-        spacer = QtGui.QSpacerItem(5, 5, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacer = QtWidgets.QSpacerItem(5, 5, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         layout.addItem(spacer)
 
     @property
@@ -268,8 +269,8 @@ class LinkEquation(QtGui.QWidget):
         for a in args:
             self._add_argument_widget(a)
 
-        self.spacer = QtGui.QSpacerItem(5, 5, QtGui.QSizePolicy.Minimum,
-                                        QtGui.QSizePolicy.Expanding)
+        self.spacer = QtWidgets.QSpacerItem(5, 5, QtWidgets.QSizePolicy.Minimum,
+                                        QtWidgets.QSizePolicy.Expanding)
         self._ui.input_canvas.layout().addItem(self.spacer)
 
     def _setup_editor_helper(self):
@@ -284,8 +285,8 @@ class LinkEquation(QtGui.QWidget):
         for a in args:
             self._add_argument_widget(a)
 
-        self.spacer = QtGui.QSpacerItem(5, 5, QtGui.QSizePolicy.Minimum,
-                                        QtGui.QSizePolicy.Expanding)
+        self.spacer = QtWidgets.QSpacerItem(5, 5, QtWidgets.QSizePolicy.Minimum,
+                                        QtWidgets.QSizePolicy.Expanding)
         self._ui.input_canvas.layout().addItem(self.spacer)
 
     def _add_argument_widget(self, argument):

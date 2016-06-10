@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from glue.external.echo import CallbackProperty
-from glue.external.qt import QtGui
+from qtpy import QtWidgets
 
 from ..widget_properties import (CurrentComboDataProperty,
                                  CurrentComboTextProperty,
@@ -26,7 +26,7 @@ def test_combo_data():
         co = CurrentComboDataProperty('_combo')
 
         def __init__(self):
-            self._combo = QtGui.QComboBox()
+            self._combo = QtWidgets.QComboBox()
             self._combo.addItem('a', 'a')
             self._combo.addItem('b', 'b')
 
@@ -52,7 +52,7 @@ def test_combo_text():
         co = CurrentComboTextProperty('_combo')
 
         def __init__(self):
-            self._combo = QtGui.QComboBox()
+            self._combo = QtWidgets.QComboBox()
             self._combo.addItem('a')
             self._combo.addItem('b')
 
@@ -81,7 +81,7 @@ def test_text():
         lab = TextProperty('_label')
 
         def __init__(self):
-            self._label = QtGui.QLabel()
+            self._label = QtWidgets.QLabel()
 
     tc = TestClass()
     tc.lab = 'hello'
@@ -95,7 +95,7 @@ def test_button():
         but = ButtonProperty('_button')
 
         def __init__(self):
-            self._button = QtGui.QCheckBox()
+            self._button = QtWidgets.QCheckBox()
 
     tc = TestClass()
 
@@ -120,7 +120,7 @@ def test_float():
         flt = FloatLineProperty('_float')
 
         def __init__(self):
-            self._float = QtGui.QLineEdit()
+            self._float = QtWidgets.QLineEdit()
 
     tc = TestClass()
 
@@ -142,7 +142,7 @@ def test_value():
         val3 = ValueProperty('_slider', value_range=(0.01, 100), log=True)
 
         def __init__(self):
-            self._slider = QtGui.QSlider()
+            self._slider = QtWidgets.QSlider()
             self._slider.setMinimum(0)
             self._slider.setMaximum(100)
 
@@ -167,9 +167,9 @@ def test_tab():
         tab = CurrentTabProperty('_tab')
 
         def __init__(self):
-            self._tab = QtGui.QTabWidget()
-            self._tab.addTab(QtGui.QWidget(), 'tab1')
-            self._tab.addTab(QtGui.QWidget(), 'tab2')
+            self._tab = QtWidgets.QTabWidget()
+            self._tab.addTab(QtWidgets.QWidget(), 'tab1')
+            self._tab.addTab(QtWidgets.QWidget(), 'tab2')
 
     tc = TestClass()
 
@@ -193,7 +193,7 @@ def test_connect_bool_button():
 
     t = Test()
 
-    box = QtGui.QCheckBox()
+    box = QtWidgets.QCheckBox()
     connect_bool_button(t, 'a', box)
 
     box.setChecked(True)
@@ -216,7 +216,7 @@ def test_connect_current_combo():
 
     t = Test()
 
-    combo = QtGui.QComboBox()
+    combo = QtWidgets.QComboBox()
     combo.addItem('a', 'a')
     combo.addItem('b', 'b')
 
@@ -253,7 +253,7 @@ def test_connect_float_edit():
 
     t = Test()
 
-    line = QtGui.QLineEdit()
+    line = QtWidgets.QLineEdit()
 
     connect_float_edit(t, 'a', line)
 
@@ -276,7 +276,7 @@ def test_connect_int_spin():
 
     t = Test()
 
-    slider = QtGui.QSlider()
+    slider = QtWidgets.QSlider()
 
     connect_int_spin(t, 'a', slider)
 
@@ -296,7 +296,7 @@ def test_connect_value():
 
     t = Test()
 
-    slider = QtGui.QSlider()
+    slider = QtWidgets.QSlider()
     slider.setMinimum(0)
     slider.setMaximum(100)
 

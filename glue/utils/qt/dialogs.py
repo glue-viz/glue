@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt import QtGui
+from qtpy import QtWidgets
 
 __all__ = ['pick_item', 'pick_class', 'get_text']
 
@@ -24,7 +24,7 @@ def pick_item(items, labels, title="Pick an item", label="Pick an item",
     else:
         current = 0
 
-    choice, isok = QtGui.QInputDialog.getItem(None, title, label,
+    choice, isok = QtWidgets.QInputDialog.getItem(None, title, label,
                                         labels, current=current,
                                         editable=False)
     if isok:
@@ -61,6 +61,6 @@ def get_text(title='Enter a label'):
     *Returns*
        The text the user typed, or None
     """
-    result, isok = QtGui.QInputDialog.getText(None, title, title)
+    result, isok = QtWidgets.QInputDialog.getText(None, title, title)
     if isok:
         return str(result)

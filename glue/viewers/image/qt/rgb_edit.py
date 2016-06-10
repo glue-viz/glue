@@ -1,11 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt import QtGui, QtCore
+from qtpy import QtCore, QtWidgets
 from glue.core.qt.component_id_combo import ComponentIDCombo
 from glue.utils.qt import CUSTOM_QWIDGETS
 
 
-class RGBEdit(QtGui.QWidget):
+class RGBEdit(QtWidgets.QWidget):
 
     """A widget to set the contrast for individual layers in an RGB image
 
@@ -27,10 +27,10 @@ class RGBEdit(QtGui.QWidget):
         super(RGBEdit, self).__init__(parent)
         self._artist = artist
 
-        l = QtGui.QGridLayout()
+        l = QtWidgets.QGridLayout()
 
-        current = QtGui.QLabel("Contrast")
-        visible = QtGui.QLabel("Visible")
+        current = QtWidgets.QLabel("Contrast")
+        visible = QtWidgets.QLabel("Visible")
         l.addWidget(current, 0, 2, 1, 1)
         l.addWidget(visible, 0, 3, 1, 1)
         l.setColumnStretch(0, 0)
@@ -44,20 +44,20 @@ class RGBEdit(QtGui.QWidget):
         l.setRowStretch(3, 0)
         l.setRowStretch(4, 10)
 
-        curr_grp = QtGui.QButtonGroup()
+        curr_grp = QtWidgets.QButtonGroup()
         self.current = {}
         self.vis = {}
         self.cid = {}
 
         for row, color in enumerate(['red', 'green', 'blue'], 1):
-            lbl = QtGui.QLabel(color.title())
+            lbl = QtWidgets.QLabel(color.title())
 
             cid = ComponentIDCombo()
 
-            curr = QtGui.QRadioButton()
+            curr = QtWidgets.QRadioButton()
             curr_grp.addButton(curr)
 
-            vis = QtGui.QCheckBox()
+            vis = QtWidgets.QCheckBox()
             vis.setChecked(True)
 
             l.addWidget(lbl, row, 0, 1, 1)

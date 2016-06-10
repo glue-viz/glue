@@ -2,13 +2,14 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from glue.external.qt import QtCore, QtGui, get_qapp
+from qtpy import QtCore, QtWidgets
+from glue.external.qt import get_qapp
 from glue.utils.qt import load_ui, connect_color
 from glue.utils.qt.widget_properties import CurrentComboProperty, ValueProperty, connect_value, connect_current_combo
 from glue.icons.qt import POINT_ICONS, symbol_icon
 
 
-class ScatterLayerStyleWidget(QtGui.QWidget):
+class ScatterLayerStyleWidget(QtWidgets.QWidget):
 
     size = ValueProperty('ui.value_size')
     symbol = CurrentComboProperty('ui.combo_symbol')

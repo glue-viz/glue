@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt import QtGui
+from qtpy import QtWidgets
 from glue.utils.qt.mime import PyMimeData
 
 __all__ = ['GlueItemWidget']
@@ -9,7 +9,7 @@ __all__ = ['GlueItemWidget']
 class GlueItemWidget(object):
 
     """
-    A mixin for QtGui.QListWidget/GlueTreeWidget subclasses, that provides
+    A mixin for QtWidgets.QListWidget/GlueTreeWidget subclasses, that provides
     drag+drop funtionality.
     """
     # Implementation detail: QXXWidgetItems are unhashable in PySide,
@@ -36,7 +36,7 @@ class GlueItemWidget(object):
         Parameters
         ----------
         selected_items : list
-            A list of ``QtGui.QListWidgetItems`` or ``QtGui.QTreeWidgetItems`` instances
+            A list of ``QtWidgets.QListWidgetItems`` or ``QtWidgets.QTreeWidgetItems`` instances
             
         Returns
         -------

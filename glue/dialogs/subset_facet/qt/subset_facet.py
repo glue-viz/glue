@@ -4,7 +4,7 @@ import os
 import numpy as np
 from matplotlib import cm
 
-from glue.external.qt import QtGui
+from qtpy import QtWidgets, QtGui
 from glue.core.util import colorize_subsets, facet_subsets
 from glue.utils.qt import load_ui
 from glue.utils.qt.widget_properties import (ButtonProperty, FloatLineProperty,
@@ -19,7 +19,7 @@ from glue.dialogs.common.qt import component_selector  # pylint: disable=W0611
 __all__ = ['SubsetFacet']
 
 
-class SubsetFacet(QtGui.QDialog):
+class SubsetFacet(QtWidgets.QDialog):
 
     log = ButtonProperty('ui.checkbox_log')
     vmin = FloatLineProperty('ui.value_min')
@@ -91,5 +91,5 @@ class SubsetFacet(QtGui.QDialog):
         self = cls(collect, parent=parent, default=default)
         value = self.exec_()
 
-        if value == QtGui.QDialog.Accepted:
+        if value == QtWidgets.QDialog.Accepted:
             self._apply()

@@ -2,8 +2,8 @@ import os
 
 from glue import __version__
 
-from glue.external.qt import QtGui
-from glue.external.qt.QtCore import Qt, QRect
+from qtpy import QtWidgets
+from qtpy.QtCore import Qt
 
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui
@@ -12,7 +12,7 @@ from glue._deps import get_status_as_odict
 __all__ = ['show_glue_info', 'QVersionsDialog']
 
 
-class QVersionsDialog(QtGui.QDialog):
+class QVersionsDialog(QtWidgets.QDialog):
 
     def __init__(self, *args, **kwargs):
 
@@ -27,7 +27,7 @@ class QVersionsDialog(QtGui.QDialog):
 
         self._update_deps()
 
-        self._clipboard = QtGui.QApplication.clipboard()
+        self._clipboard = QtWidgets.QApplication.clipboard()
         self.ui.button_copy.clicked.connect(nonpartial(self._copy))
 
 
@@ -36,7 +36,7 @@ class QVersionsDialog(QtGui.QDialog):
         status = get_status_as_odict()
         self._text = ""
         for name, version in [('Glue', __version__)] + list(status.items()):            
-            check = QtGui.QTreeWidgetItem(self.ui.version_tree.invisibleRootItem(),
+            check = QtWidgets.QTreeWidgetItem(self.ui.version_tree.invisibleRootItem(),
                                           [name, version])
             self._text += "{0}: {1}\n".format(name, version)
 
@@ -47,8 +47,8 @@ class QVersionsDialog(QtGui.QDialog):
         # Adapted from StackOverflow
         # http://stackoverflow.com/questions/20243637/pyqt4-center-window-on-active-screen
         frameGm = self.frameGeometry()
-        screen = QtGui.QApplication.desktop().screenNumber(QtGui.QApplication.desktop().cursor().pos())
-        centerPoint = QtGui.QApplication.desktop().screenGeometry(screen).center()
+        screen = QtWidgets.QApplication.desktop().screenNumber(QtWidgets.QApplication.desktop().cursor().pos())
+        centerPoint = QtWidgets.QApplication.desktop().screenGeometry(screen).center()
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 

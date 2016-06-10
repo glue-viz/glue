@@ -3,8 +3,8 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from glue.external.modest_image import imshow
-from glue.external.qt.QtCore import Qt
-from glue.external.qt import QtGui, QtCore
+from qtpy.QtCore import Qt
+from qtpy import QtCore, QtWidgets, QtGui
 from glue.core.callback_property import add_callback, delay_callback
 from glue import core
 from glue.viewers.image.ds9norm import DS9Normalize
@@ -64,9 +64,9 @@ class ImageWidgetBase(DataViewer):
 
     def _setup_widgets(self):
         self.central_widget = self.make_central_widget()
-        self.label_widget = QtGui.QLabel("", self.central_widget)
+        self.label_widget = QtWidgets.QLabel("", self.central_widget)
         self.setCentralWidget(self.central_widget)
-        self.option_widget = QtGui.QWidget()
+        self.option_widget = QtWidgets.QWidget()
         self.ui = load_ui('options_widget.ui', self.option_widget,
                           directory=os.path.dirname(__file__))
         self.ui.slice = DataSlice()
@@ -122,14 +122,14 @@ class ImageWidgetBase(DataViewer):
             # If there is not already any image data set, we can't add 1-D
             # datasets (tables/catalogs) to the image widget yet.
             if data.data.ndim == 1 and self.client.display_data is None:
-                QtGui.QMessageBox.information(self.window(), "Note",
+                QtWidgets.QMessageBox.information(self.window(), "Note",
                                               "Cannot create image viewer from a 1-D "
                                               "dataset. You will need to first "
                                               "create an image viewer using data "
                                               "with 2 or more dimensions, after "
                                               "which you will be able to overlay 1-D "
                                               "data as a scatter plot.",
-                                              buttons=QtGui.QMessageBox.Ok)
+                                              buttons=QtWidgets.QMessageBox.Ok)
                 return
 
             r = self.client.add_layer(data)
@@ -347,10 +347,10 @@ class ImageWidgetBase(DataViewer):
         warn_msg = ("WARNING: Image has %i pixels, and may render slowly."
                     " Continue?" % data.size)
         title = "Contour large image?"
-        ok = QtGui.QMessageBox.Ok
-        cancel = QtGui.QMessageBox.Cancel
+        ok = QtWidgets.QMessageBox.Ok
+        cancel = QtWidgets.QMessageBox.Cancel
         buttons = ok | cancel
-        result = QtGui.QMessageBox.question(self, title, warn_msg,
+        result = QtWidgets.QMessageBox.question(self, title, warn_msg,
                                             buttons=buttons,
                                             defaultButton=cancel)
         return result == ok
@@ -464,7 +464,7 @@ class ImageWidget(ImageWidgetBase):
         self.central_widget.canvas.resize_end.connect(self.client.check_update)
 
 
-class ColormapAction(QtGui.QAction):
+class ColormapAction(QtWidgets.QAction):
 
     def __init__(self, label, cmap, parent):
         super(ColormapAction, self).__init__(label, parent)
@@ -485,18 +485,18 @@ def _colormap_mode(parent, on_trigger):
         acts.append(a)
 
     # Toolbar button
-    tb = QtGui.QToolButton()
+    tb = QtWidgets.QToolButton()
     tb.setWhatsThis("Set color scale")
     tb.setToolTip("Set color scale")
     icon = get_icon('glue_rainbow')
     tb.setIcon(icon)
-    tb.setPopupMode(QtGui.QToolButton.InstantPopup)
+    tb.setPopupMode(QtWidgets.QToolButton.InstantPopup)
     tb.addActions(acts)
 
     return tb
 
 
-class StandaloneImageWidget(QtGui.QMainWindow):
+class StandaloneImageWidget(QtWidgets.QMainWindow):
 
     """
     A simplified image viewer, without any brushing or linking,

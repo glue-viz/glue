@@ -1,6 +1,6 @@
 import numpy as np
 
-from glue.external.qt import QtGui
+from qtpy import QtWidgets
 from glue.core import Subset
 from glue.utils.qt.widget_properties import (CurrentComboTextProperty,
                                              CurrentComboDataProperty,
@@ -85,14 +85,14 @@ class AttributeLimitsHelper(object):
         self.upper_value.editingFinished.connect(self._manual_edit)
 
         if self.log_button is None:
-            self.log_button = QtGui.QToolButton()
+            self.log_button = QtWidgets.QToolButton()
 
         self.log_button.toggled.connect(self._manual_edit)
 
         if self.mode_combo is None:
             # Make hidden combo box to avoid having to always figure out if the
             # combo mode exists. This will then always be set to Min/Max.
-            self.mode_combo = QtGui.QComboBox()
+            self.mode_combo = QtWidgets.QComboBox()
 
         self._setup_mode_combo()
         self.mode_combo.currentIndexChanged.connect(self._update_mode)

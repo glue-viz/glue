@@ -3,8 +3,8 @@ from __future__ import absolute_import, division, print_function
 import os
 import re
 
-from glue.external.qt import QtGui, QtCore
-from glue.external.qt.QtCore import Qt
+from qtpy import QtCore, QtWidgets
+from qtpy.QtCore import Qt
 from glue.core import parse
 from glue import core
 from glue.utils import nonpartial
@@ -95,7 +95,7 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
 CUSTOM_QWIDGETS.append(ColorizedCompletionTextEdit)
 
 
-class CustomComponentWidget(QtGui.QDialog):
+class CustomComponentWidget(QtWidgets.QDialog):
     """
     Dialog to add derived components to data via parsed commands.
     """
@@ -251,11 +251,11 @@ class CustomComponentWidget(QtGui.QDialog):
 
     def accept(self):
         if self._number_targets == 0:
-            QtGui.QMessageBox.critical(self.ui, "Error", "Please specify the target dataset(s)",
-                                       buttons=QtGui.QMessageBox.Ok)
+            QtWidgets.QMessageBox.critical(self.ui, "Error", "Please specify the target dataset(s)",
+                                       buttons=QtWidgets.QMessageBox.Ok)
         elif len(self.ui.new_label.text()) == 0:
-            QtGui.QMessageBox.critical(self.ui, "Error", "Please specify the new component name",
-                                       buttons=QtGui.QMessageBox.Ok)
+            QtWidgets.QMessageBox.critical(self.ui, "Error", "Please specify the new component name",
+                                       buttons=QtWidgets.QMessageBox.Ok)
         else:
             link = self._create_link()
             if link:
