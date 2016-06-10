@@ -37,7 +37,6 @@ def layer_icon(layer):
     bm = QtGui.QBitmap(icon_path(icon))
     color = mpl_to_qt4_color(layer.style.color)
     pm = tint_pixmap(bm, color)
-    pm = pm.scaledToHeight(15, Qt.SmoothTransformation)
     return QtGui.QIcon(pm)
 
 

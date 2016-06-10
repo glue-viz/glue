@@ -2,13 +2,13 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
+from glue.core import Data, DataCollection, Session
 from glue.external.qt.QtCore import Qt
-from glue.core import Data
 
-from ..viewer_widget import DataTableModel
+from ..viewer_widget import DataTableModel, TableWidget
 
 
-class TestDataTableModel(object):
+class TestDataTableModel():
 
     def setup_method(self, method):
         self.data = Data(x=[1, 2, 3, 4], y=[2, 3, 4, 5])
@@ -49,3 +49,14 @@ class TestDataTableModel(object):
                 idx = self.model.index(j, i)
                 result = self.model.data(idx, Qt.DisplayRole)
                 assert float(result) == self.data[c].ravel()[j]
+
+
+def test_table_widget():
+
+    d = Data(a=[1,2,3,4,5], b=[1.2, 3.3, 4.5, 3.2, 2.2], c=['a','b','c','d','e'])
+    dc = DataCollection([d])
+    session = Session(dc, hub=dc.hub)
+
+    widget = TableWidget(session)
+    widget.add_data(d)
+    widget.show()
