@@ -13,8 +13,9 @@ else:
     setapi('QVariant', 2)
 
 import sys
-from ._mpl_backend import MatplotlibBackendSetter
-sys.meta_path.append(MatplotlibBackendSetter())
+# from ._mpl_backend import MatplotlibBackendSetter
+# sys.meta_path.insert(0, MatplotlibBackendSetter())
+os.environ['MPLBACKEND'] = 'Qt5Agg'
 
 import logging
 from logging import NullHandler
