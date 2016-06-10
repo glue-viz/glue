@@ -42,234 +42,24 @@
 # http://qt-project.org/wiki/Differences_Between_PySide_and_PyQt
 
 
-"""
-This module provides a way to import from Python Qt wrappers in a uniform
-way, regardless of whether PySide or PyQt is used.
-
-Do not use this if you need PyQt with the old QString/QVariant API.
-"""
-
 from __future__ import absolute_import, division, print_function
 
-import os
-import sys
+__all__ = ['is_pyside', 'is_pyqt4', 'is_pyqt5', 'get_qapp']
 
-__all__ = ['QtCore', 'QtGui', 'is_pyside', 'is_pyqt4', 'is_pyqt5', 'load_ui',
-           'QT_API_PYQT4', 'QT_API_PYQT5', 'QT_API_PYSIDE']
-
-# Available APIs.
-QT_API_PYQT4 = 'pyqt'
-QT_API_PYSIDE = 'pyside'
-QT_API_PYQT5 = 'pyqt5'
-QT_API = None
+from qtpy import API, PYSIDE_API, PYQT4_API, PYQT5_API
+from qtpy import QtCore, QtGui, QtWidgets
 
 
 def is_pyside():
-    return QT_API == QT_API_PYSIDE
+    return API in PYSIDE_API
 
 
 def is_pyqt4():
-    return QT_API == QT_API_PYQT4
+    return API in PYQT4_API
 
 
 def is_pyqt5():
-    return QT_API == QT_API_PYQT5
-
-
-# Backward-compatibility
-is_pyqt = is_pyqt4
-QT_API_PYQT = QT_API_PYQT4
-
-
-class ImportDenier(object):
-    """
-    Import hook to protect importing of both PySide and PyQt.
-    """
-
-    _forbidden = set()
-
-    def find_module(self, mod_name, pth):
-        if pth or not mod_name in self._forbidden:
-            return
-        else:
-            return self
-
-    def load_module(self, mod_name):
-        raise ImportError("Importing %s forbidden by %s"
-                          % (mod_name, __name__))
-
-    def deny_module(self, module):
-        self._forbidden.add(module)
-
-_import_hook = ImportDenier()
-sys.meta_path.append(_import_hook)
-
-
-def prepare_pyqt4():
-    # For PySide compatibility, use the new-style string API that
-    # automatically converts QStrings to Unicode Python strings. Also,
-    # automatically unpack QVariants to their underlying objects.
-    import sip
-    sip.setapi('QString', 2)
-    sip.setapi('QVariant', 2)
-
-prepare_pyqt5 = prepare_pyqt4
-
-
-def register_module(module, modlabel):
-    """
-    Register an imported module into a submodule of qt_helpers.
-
-    This enables syntax such as:
-
-        >>> from qt_helpers.QtGui import QMessageBox
-    """
-    sys.modules[__name__ + '.' + modlabel] = module
-
-
-def _load_pyqt4():
-
-    prepare_pyqt4()
-
-    from PyQt4 import QtCore, QtGui, QtTest
-    from distutils.version import LooseVersion
-
-    if LooseVersion(QtCore.PYQT_VERSION_STR) < LooseVersion('4.8'):
-        raise ImportError("Glue Requires PyQt4 >= 4.8")
-
-    QtCore.Signal = QtCore.pyqtSignal
-    QtCore.Slot = QtCore.pyqtSlot
-    QtCore.Property = QtCore.pyqtProperty
-
-    from PyQt4.QtGui import QFileDialog
-    QFileDialog.getOpenFileName = QFileDialog.getOpenFileNameAndFilter
-    QFileDialog.getSaveFileName = QFileDialog.getSaveFileNameAndFilter
-
-    register_module(QtCore, 'QtCore')
-    register_module(QtGui, 'QtGui')
-    register_module(QtTest, 'QtTest')
-
-    global QT_API
-    QT_API = QT_API_PYQT4
-
-    _import_hook.deny_module('PySide')
-    _import_hook.deny_module('PyQt5')
-
-
-def _load_pyqt5():
-
-    prepare_pyqt5()
-
-    from PyQt5 import QtCore, QtGui, QtTest, QtWidgets
-    from distutils.version import LooseVersion
-
-    QtCore.Signal = QtCore.pyqtSignal
-    QtCore.Slot = QtCore.pyqtSlot
-    QtCore.Property = QtCore.pyqtProperty
-
-    # In PyQt5, some widgets such as QMessageBox have moved from QtGui to
-    # QWidgets so we add backward-compatibility hooks here for now
-    for widget in dir(QtWidgets):
-        if widget.startswith('Q'):
-            setattr(QtGui, widget, getattr(QtWidgets, widget))
-    QtGui.QItemSelection = QtCore.QItemSelection
-    QtGui.QItemSelectionModel = QtCore.QItemSelectionModel
-    QtGui.QSortFilterProxyModel = QtCore.QSortFilterProxyModel
-
-    register_module(QtCore, 'QtCore')
-    register_module(QtGui, 'QtGui')
-    register_module(QtTest, 'QtTest')
-
-    global QT_API
-    QT_API = QT_API_PYQT5
-
-    _import_hook.deny_module('PySide')
-    _import_hook.deny_module('PyQt4')
-
-
-def _load_pyside():
-
-    from PySide import QtCore, QtGui, __version__, QtTest
-
-    if __version__ < '1.0.3':
-        # old PySide, fallback on PyQt
-        raise ImportError("Glue requires PySide >= 1.0.3")
-
-    register_module(QtCore, 'QtCore')
-    register_module(QtGui, 'QtGui')
-    register_module(QtTest, 'QtTest')
-
-    def setMargin(self, x):
-        self.setContentsMargins(x, x, x, x)
-    QtGui.QLayout.setMargin = setMargin
-
-    global QT_API
-    QT_API = QT_API_PYSIDE
-
-    _import_hook.deny_module('PyQt4')
-    _import_hook.deny_module('PyQt5')
-
-
-QtCore = None
-QtGui = None
-
-
-def reload_qt():
-    """
-    Reload the Qt bindings.
-
-    If the QT_API environment variable has been updated, this will load the
-    new Qt bindings given by this variable. This should be used instead of
-    the build-in ``reload`` function because the latter can in some cases
-    cause issues with the ImportDenier (which prevents users from importing
-    e.g. PySide if PyQt4 is loaded).
-    """
-
-    # Clear any forbidden modules
-    _import_hook._forbidden.clear()
-
-    # Quit app if active
-    global qapp
-    if qapp is not None:
-        qapp.quit()
-        qapp = None
-
-    global QtCore
-    global QtGui
-
-    if os.environ.get('QT_API') == QT_API_PYQT5:
-        loaders = [_load_pyqt5]
-    elif os.environ.get('QT_API') == QT_API_PYSIDE:
-        loaders = [_load_pyside, _load_pyqt4]
-    else:
-        loaders = [_load_pyqt4, _load_pyside, _load_pyqt5]
-
-    msgs = []
-
-    # acutally do the loading
-    for loader in loaders:
-        try:
-            loader()
-            # we set this env var, since IPython also looks for it
-            os.environ['QT_API'] = QT_API
-            QtCore = sys.modules[__name__ + '.QtCore']
-            QtGui = sys.modules[__name__ + '.QtGui']
-            break
-        except ImportError as e:
-            msgs.append(str(e))
-            pass
-    else:
-        raise ImportError("Could not find a suitable QT installation."
-                          " Encountered the following errors: %s" %
-                          '\n'.join(msgs))
-
-    # We patch this only now, once QtCore and QtGui are defined
-    if is_pyside() or is_pyqt4():
-        patch_qcombobox()
-
-    # For PySide, we need to create a loadUi function
-    if is_pyside():
-        patch_loadui()
+    return API in PYQT5_API
 
 
 def load_ui(path, parent=None, custom_widgets=None):
@@ -302,9 +92,9 @@ qapp = None
 
 def get_qapp(icon_path=None):
     global qapp
-    qapp = QtGui.QApplication.instance()
+    qapp = QtWidgets.QApplication.instance()
     if qapp is None:
-        qapp = QtGui.QApplication([''])
+        qapp = QtWidgets.QApplication([''])
         qapp.setQuitOnLastWindowClosed(True)
         if icon_path is not None:
             qapp.setWindowIcon(QIcon(icon_path))
@@ -527,6 +317,10 @@ def patch_loadui():
     PySide.loadUi = loadUi
 
 
+# We patch this only now, once QtCore and QtGui are defined
+if is_pyside() or is_pyqt4():
+    patch_qcombobox()
 
-# Now load default Qt
-reload_qt()
+# For PySide, we need to create a loadUi function
+if is_pyside():
+    patch_loadui()
