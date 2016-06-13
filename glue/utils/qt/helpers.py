@@ -115,7 +115,7 @@ def load_ui(path, parent=None, directory=None):
         full_path = os.path.join(full_path.replace('site-packages.zip', 'glue'))
 
     from glue.external.qt import load_ui
-    return load_ui(full_path, parent, custom_widgets=CUSTOM_QWIDGETS)
+    return load_ui(full_path, parent)
 
 
 @contextmanager
