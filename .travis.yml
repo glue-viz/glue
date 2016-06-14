@@ -22,6 +22,7 @@ env:
     - PYTEST_ARGS="--cov glue"
     - MATPLOTLIB_VERSION=1.5.0
     - NUMPY_VERSION=1.10
+    - ASTROPY_VERSION=stable
     - IPYTHON_VERSION=4
     - NO_CFG_FILES=false
     - QT_PKG=pyqt
