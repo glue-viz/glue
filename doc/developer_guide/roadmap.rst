@@ -13,10 +13,10 @@ Support for big/complex data: an abstract data and computation interface
 
 Glue currently provides ways of importing data from different sources, but
 ultimately, the data is essentially loaded in memory. In principle, the
-:class:`~glue.core.Data` class can be subclassed in order to provide for
+:class:`~glue.core.data.Data` class can be subclassed in order to provide for
 example a object where data is only accessed on-the-fly as needed (in fact,
 this also happens if a memory-mapped Numpy array is passed to
-:class:`~glue.core.Data`). Computations such as calculating histograms or
+:class:`~glue.core.data.Data`). Computations such as calculating histograms or
 selections is left up to the rest of the glue, and viewers are responsible
 for figuring out which subsets of data to access, if needed, and how to stride
 over the data when only a subset is needed. In addition, a lot of the glue code
@@ -52,14 +52,16 @@ Things that would need to be done in order to achieve this:
 #. Define what belongs inside the Data abstraction and what doesn't
 #. Define an API for data/subset access and computations
 #. Refactor glue to use this data access API with the built-in
-   :class:`~glue.core.Data` objects.
+   :class:`~glue.core.data.Data` objects.
 #. Develop new data objects based e.g. on yt
 #. Develop a way for the data API calls to be passed over the network
+
+Related GitHub issues: `#708 <https://github.com/glue-viz/glue/issues/708>`_
 
 Glue in the browser
 -------------------
 
-It is currently already possible to launch glue from an IPython notebook and
+It is currently already possible to :ref:`launch glue from an IPython/Jupyter notebook <notebook>` and
 access the data and viewers using the returned application object. However, the
 next step would be to implement actual viewers that are not based on Qt, but
 instead can be used inside the notebook directly. One promising avenue would be
@@ -69,6 +71,8 @@ The glue code base is designed so that the core representation of data objects,
 subsets, and so on in glue.core is completely independent of the visualization
 framework. Therefore, this would just require developing new viewers, not
 re-writing large sections of already existing code.
+
+Related GitHub issues: `#801 <https://github.com/glue-viz/glue/issues/801>`_
 
 Efficient scatter plots
 -----------------------
@@ -86,7 +90,7 @@ particular, we could explore methods that rasterize the points extremely
 efficiently, or methods that sub-sample the points in smart ways (for example,
 neighbouring points could be replaced by a slightly larger point).
 
-
+Related GitHub issues: `#722 <https://github.com/glue-viz/glue/issues/722>`_
 
 
 
