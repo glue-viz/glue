@@ -100,7 +100,11 @@ class TestAttributeLimitsHelper():
     def test_flip_button(self):
 
         # Flipping should swap lower and upper value
-        self.flip_button.clicked.emit(True)
+        try:
+            self.flip_button.clicked.emit(True)
+        except TypeError:  # PySide
+            self.flip_button.clicked.emit()
+
         assert self.helper.vlo == +100
         assert self.helper.vhi == -100
 
