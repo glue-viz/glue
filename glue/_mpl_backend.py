@@ -16,12 +16,17 @@ class MatplotlibBackendSetter(object):
 
 def set_mpl_backend():
 
+    try:
+        from qtpy import PYQT5
+    except:
+        # If Qt isn't available, we don't have to worry about
+        # setting the backend
+        return
+
     from matplotlib import rcParams, rcdefaults
 
     # standardize mpl setup
     rcdefaults()
-
-    from qtpy import PYQT5
 
     if PYQT5:
         rcParams['backend'] = 'Qt5Agg'
