@@ -8,6 +8,13 @@ are, please join the friendly
 `glue-viz-dev <https://groups.google.com/forum/#!forum/glue-viz-dev>`_ list and
 let us know!
 
+There are many more ways you can contribute to glue that are not mentioned
+below - these are just the tip of the iceberg, but are here to give you an idea
+of places you might be able to contribute. You can also search the issue
+tracker on glue for all issues related to `enhancements
+<https://github.com/glue-viz/glue/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement>`_
+for example.
+
 Support for big/complex data: an abstract data and computation interface
 ------------------------------------------------------------------------
 
@@ -58,6 +65,24 @@ Things that would need to be done in order to achieve this:
 
 Related GitHub issues: `#708 <https://github.com/glue-viz/glue/issues/708>`_
 
+Support for big data: more efficient viewers
+--------------------------------------------
+
+`Matplotlib <http://matplotlib.org/>`_ and `VisPy <http://vispy.org/>`_ both
+start becoming slow when the limit of a million points/markers is reached. This
+severely limits the size of the largest datasets that can be visualized in the
+scatter plot viewers, because the visualization will be slow even if the data
+contains only two components of a million elements each. In addition to large
+tables, this can easily happen if the user makes a scatter plot of one image
+versus another.
+
+We therefore need to work on more efficient ways to show scatter plot data. In
+particular, we could explore methods that rasterize the points extremely
+efficiently, or methods that sub-sample the points in smart ways (for example,
+neighbouring points could be replaced by a slightly larger point).
+
+Related GitHub issues: `#722 <https://github.com/glue-viz/glue/issues/722>`_
+
 Glue in the browser
 -------------------
 
@@ -74,23 +99,7 @@ re-writing large sections of already existing code.
 
 Related GitHub issues: `#801 <https://github.com/glue-viz/glue/issues/801>`_
 
-Efficient scatter plots
------------------------
 
-`Matplotlib <http://matplotlib.org/>`_ and `VisPy <http://vispy.org/>`_ both
-start becoming slow when the limit of a million points/markers is reached. This
-severely limits the size of the largest datasets that can be visualized in the
-scatter plot viewers, because the visualization will be slow even if the data
-contains only two components of a million elements each. In addition to large
-tables, this can easily happen if the user makes a scatter plot of one image
-versus another.
-
-We therefore need to work on more efficient ways to show scatter plot data. In
-particular, we could explore methods that rasterize the points extremely
-efficiently, or methods that sub-sample the points in smart ways (for example,
-neighbouring points could be replaced by a slightly larger point).
-
-Related GitHub issues: `#722 <https://github.com/glue-viz/glue/issues/722>`_
 
 
 
