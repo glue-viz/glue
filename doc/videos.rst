@@ -4,12 +4,12 @@ Demo Videos
 ===========
 
 Quick Introduction to Glue (2 minutes)
--------------------------------------
+--------------------------------------
 
 .. raw:: html
 
  <center>
- <iframe width="640" height="480" src="https://www.youtube.com/embed/qO3RQiRjWA4?rel=0" frameborder="0" allowfullscreen></iframe>
+ <iframe width="640" height="376" src="https://www.youtube.com/embed/qO3RQiRjWA4?rel=0" frameborder="0" allowfullscreen></iframe>
  </center>
 
 2013 SciPy Conference Talk (20 minutes)
