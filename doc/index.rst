@@ -14,7 +14,7 @@ Glue is a Python library to explore relationships within and among related datas
 .. raw:: html
 
  <center>
- <iframe src="http://player.vimeo.com/video/53378575?badge=0"  width="500" height="275" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
+ <iframe width="640" height="390" src="https://www.youtube.com/embed/qO3RQiRjWA4?rel=0" frameborder="0" allowfullscreen></iframe>
  </center>
 
 For more demos, check out the :ref:`videos <demo_videos>` page.
