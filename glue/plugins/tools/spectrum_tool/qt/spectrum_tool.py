@@ -68,18 +68,6 @@ class Extractor(object):
             data = data[attribute, tuple(slc)]   # attribute is Primary,
             finite = np.isfinite(data)
 
-            assert data.ndim == ndim
-
-            for i in reversed(list(range(ndim))):
-                if i != zaxis:  # index of the zaxis in dataset
-                    data = np.nansum(data, axis=i)
-                    finite = finite.sum(axis=i)
-
-            assert data.ndim == 1
-            assert data.size == nz
-
-            data = (1. * data / finite).ravel()
-
         elif isinstance(roi, core_roi.PolygonalROI):
 
             # both circular and polygonal selection will call here
@@ -92,25 +80,33 @@ class Extractor(object):
             slice_data = np.ones(slice_shape)
             posdata = np.argwhere(slice_data)
 
-            # mask for each slice
-            mask = roi.contains(posdata[:, 0], posdata[:, 1])
+            # mask for each slice and expand to all
+            mask = roi.contains(posdata[:, 0], posdata[:, 1]).reshape(slice_data.shape)
+            mask = np.expand_dims(mask, axis=zaxis).repeat(nz, zaxis)
 
-            return_data = []
-            for i in range(nz):
-                select_data = np.take(data, i, axis=zaxis).ravel()[mask]
-                finite = np.isfinite(select_data).sum()
-                return_data.append(1. * np.nansum(select_data) / finite)
+            # make sure data.ndim == ndim
+            new_shape = np.ones(ndim)
+            new_shape[zaxis] = nz
+            new_shape[xaxis] = -1
+            data = data[mask].reshape(new_shape)  # data[mask].shape is (n, )
+            finite = np.isfinite(data)
+            print('data', data)
 
-            data = np.array(return_data)
+        assert data.ndim == ndim
 
-            assert data.ndim == 1
-            assert data.size == nz
+        for i in reversed(list(range(ndim))):
+            if i != zaxis:  # index of the zaxis in dataset
+                data = np.nansum(data, axis=i)
+                finite = finite.sum(axis=i)
 
-        else:
+        assert data.ndim == 1
+        assert data.size == nz
+        print('data and finite', data, finite)
 
-            raise TypeError("Unexpected ROI type: {0}".format(type(roi)))
-
+        data = (1. * data / finite).ravel()
+        print('after sum data is', data)
         return x, data
+
 
     @staticmethod
     def world2pixel(data, axis, value):
