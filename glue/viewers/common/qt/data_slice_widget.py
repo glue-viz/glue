@@ -22,7 +22,7 @@ class SliceWidget(QtGui.QWidget):
     slice_changed = QtCore.Signal(int)
     mode_changed = QtCore.Signal(str)
 
-    def __init__(self, label='', pix2world=None, lo=0, hi=10,
+    def __init__(self, axis_value=None, axis_label='', pix2world=None, lo=0, hi=10,
                  parent=None, aggregation=None):
 
         super(SliceWidget, self).__init__(parent)
@@ -38,13 +38,13 @@ class SliceWidget(QtGui.QWidget):
 
         top = QtGui.QHBoxLayout()
         top.setContentsMargins(3, 3, 3, 3)
-        label = QtGui.QLabel(label)
+        label = QtGui.QLabel(axis_label)
         top.addWidget(label)
 
         mode = QtGui.QComboBox()
-        mode.addItem('x', 'x')
-        mode.addItem('y', 'y')
-        mode.addItem('slice', 'slice')
+        mode.addItem(axis_value[0], 'x')
+        mode.addItem(axis_value[1], 'y')
+        mode.addItem(axis_value[2], 'slice')
         mode.currentIndexChanged.connect(lambda x:
                                          self.mode_changed.emit(self.mode))
         mode.currentIndexChanged.connect(self._update_mode)
@@ -236,17 +236,23 @@ class DataSlice(QtGui.QWidget):
         if data is None or data.ndim < 3:
             return
 
+        label = []
+        for i in range(self.ndim):
+            label.append(data.get_world_component_id(self.ndim-1-i).label)
+
         # create slider widget for each dimension...
         for i, s in enumerate(data.shape):
-            slider = SliceWidget(data.get_world_component_id(i).label,
-                                 hi=s - 1)
-
             if i == self.ndim - 1:
-                slider.mode = 'x'
+                slider_m = 'x'
             elif i == self.ndim - 2:
-                slider.mode = 'y'
+                slider_m = 'y'
             else:
-                slider.mode = 'slice'
+                slider_m = 'slice'
+
+            slider = SliceWidget(axis_value=label, axis_label=slider_m,
+                                 hi=s - 1)
+            slider.mode = slider_m
+
             self._slices.append(slider)
 
             # save ref to prevent PySide segfault
