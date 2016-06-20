@@ -13,6 +13,7 @@ from glue.utils.qt.widget_properties import (TextProperty,
 from glue.utils import nonpartial
 from glue.icons.qt import get_icon
 
+# TODO: the mode_index_change (slider_change) doesn't work for the 4th dim
 
 class SliceWidget(QtGui.QWidget):
     label = TextProperty('_ui_label')
@@ -39,14 +40,18 @@ class SliceWidget(QtGui.QWidget):
         top = QtGui.QHBoxLayout()
         top.setContentsMargins(3, 3, 3, 3)
         label = QtGui.QLabel(axis_label)
+        print('axis_label', axis_label)
         top.addWidget(label)
 
         mode = QtGui.QComboBox()
         mode.addItem(axis_value[0], 'x')
         mode.addItem(axis_value[1], 'y')
         mode.addItem(axis_value[2], 'slice')
+        if len(axis_value) == 4:
+            mode.addItem(axis_value[3], '4th_dim')
         mode.currentIndexChanged.connect(lambda x:
                                          self.mode_changed.emit(self.mode))
+        print('self.mode and label', self.mode, self.label)
         mode.currentIndexChanged.connect(self._update_mode)
         top.addWidget(mode)
 
@@ -160,12 +165,15 @@ class SliceWidget(QtGui.QWidget):
         self._ui_slider.slider.setValue(value)
 
     def _update_mode(self, *args):
-        if self.mode != 'slice':
+        if self.mode != 'slice' and self.mode != '4th_dim':
             self._ui_slider.hide()
             self._adjust_play('stop')
         else:
             self._ui_slider.show()
+        print('self.mode and label', self.mode, self.label)
 
+
+# TODO: not sure about 'slice'
     def freeze(self):
         self.mode = 'slice'
         self._ui_mode.setEnabled(False)
@@ -242,15 +250,19 @@ class DataSlice(QtGui.QWidget):
 
         # create slider widget for each dimension...
         for i, s in enumerate(data.shape):
+            print('i and ndim', i, self.ndim)
             if i == self.ndim - 1:
                 slider_m = 'x'
             elif i == self.ndim - 2:
                 slider_m = 'y'
-            else:
+            elif i == self.ndim - 3:
                 slider_m = 'slice'
-
+            elif self.ndim == 4 and i == self.ndim - 4:
+                slider_m = '4th_dim'
+            print('why label is 4th_dim?', slider_m)
             slider = SliceWidget(axis_value=label, axis_label=slider_m,
                                  hi=s - 1)
+
             slider.mode = slider_m
 
             self._slices.append(slider)
@@ -297,7 +309,11 @@ class DataSlice(QtGui.QWidget):
             if self._slices[i].frozen:
                 continue
 
-            for mode in 'x', 'y', 'slice':
+            if self.ndim == 4:
+                mode_pool = ['x', 'y', 'slice', '4th_dim']
+            else:
+                mode_pool = ['x', 'y', 'slice']
+            for mode in mode_pool:
                 if self._slices[i].mode == mode:
                     continue
 
@@ -324,7 +340,7 @@ class DataSlice(QtGui.QWidget):
         if self.ndim < 3:
             return {0: tuple(), 1: ('x',), 2: ('y', 'x')}[self.ndim]
 
-        return tuple(s.mode if s.mode != 'slice' else s.slice_center
+        return tuple(s.mode if s.mode != 'slice' and s.mode != '4th_dim' else s.slice_center
                      for s in self._slices)
 
     @slice.setter
@@ -332,8 +348,11 @@ class DataSlice(QtGui.QWidget):
         for v, s in zip(value, self._slices):
             if v in ['x', 'y']:
                 s.mode = v
-            else:
+            elif v == 'slice':
                 s.mode = 'slice'
+                s.slice_center = v
+            elif v == '4th_dim':
+                s.mode = '4th_dim'
                 s.slice_center = v
 
 if __name__ == "__main__":
