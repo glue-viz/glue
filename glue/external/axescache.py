@@ -135,7 +135,8 @@ class AxesCache(object):
     def draw(self, renderer, *args, **kwargs):
         if self._capture is None or not self._enabled:
             Axes.draw(self.axes, renderer, *args, **kwargs)
-            self._capture = RenderCapture(self.axes, renderer)
+            if hasattr(renderer, 'buffer_rgba'):
+                self._capture = RenderCapture(self.axes, renderer)
         else:
             self.axes.axesPatch.draw(renderer, *args, **kwargs)
             self._capture.draw(renderer, *args, **kwargs)
