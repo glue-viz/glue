@@ -320,6 +320,12 @@ class TestScatterWidget(object):
         self.widget.remove_layer(l2)
         assert self.widget.windowTitle() == n1
 
+    def test_save_svg(self, tmpdir):
+        # Regression test for a bug in AxesCache that caused SVG saving to
+        # fail (because renderer.buffer_rgba did not exist)
+        filename = tmpdir.join('test.svg').strpath
+        self.widget.client.axes.figure.savefig(filename)
+
 
 class TestDrawCount(TestScatterWidget):
 

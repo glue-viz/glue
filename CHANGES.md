@@ -15,6 +15,8 @@ v0.8.2 (unreleased)
 * Fix a bug that caused ComponentIDComboHelper to not take into account the
   numeric and categorical options in __init__. [#1014]
 
+* Fix a bug that caused saving of scatter plots to SVG files to crash. [#984]
+
 v0.8.1 (2016-05-25)
 -------------------
 
