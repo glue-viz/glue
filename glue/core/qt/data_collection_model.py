@@ -464,6 +464,8 @@ class DataCollectionView(QtGui.QTreeView):
         self.setItemDelegate(LabeledDelegate())
         self.setEditTriggers(self.NoEditTriggers)
 
+        self.setIconSize(QtCore.QSize(16, 16))
+
         self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(nonpartial(self._update_viewport))
         self._timer.start(1000)
