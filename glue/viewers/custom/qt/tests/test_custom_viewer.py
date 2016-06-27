@@ -436,4 +436,29 @@ class TestSettingsOracle(object):
     def test_raises_if_overlapping_reserved_words(self):
 
         with pytest.raises(AssertionError):
-            oracle = SettingsOracle({'self': TextBoxElement('_text')})
+            SettingsOracle({'self': TextBoxElement('_text')})
+
+
+def test_two_custom_viewer_classes():
+
+    class MyWidget1(CustomViewer):
+
+        text_box1_Widget1 = '_Hello'
+
+        def setup(self, text_box1_Widget1):
+            pass
+
+    class MyWidget2(CustomViewer):
+
+        text_box1_Widget2 = '_Hello'
+        text_box2_Widget2 = '_world'
+
+        def setup(self, text_box1_Widget2, text_box2_Widget2):
+            pass
+
+    app = GlueApplication()
+    dc = app.data_collection
+    d = Data(x=[1, 2, 3], label='test')
+    dc.append(d)
+    app.new_data_viewer(MyWidget1._widget_cls)
+    app.new_data_viewer(MyWidget2._widget_cls)

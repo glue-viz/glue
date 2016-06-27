@@ -9,6 +9,10 @@ v0.9.0 (unreleased)
 v0.8.2 (unreleased)
 -------------------
 
+* Fix a bug that caused multiple custom viewer classes to not work properly
+  if the user did not override ``_custom_functions`` (which was private).
+  [#810]
+
 * Make sure histograms are updated if only the attribute changes and the
   limits and number of bins stay the same. [#1012]
 
