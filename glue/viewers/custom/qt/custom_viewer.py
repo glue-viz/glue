@@ -357,6 +357,7 @@ class CustomViewerMeta(type):
                 udfs[nm] = attrs.pop(nm)
 
         result = type.__new__(cls, name, bases, attrs)
+        result._custom_functions = {}
 
         # now wrap the custom UDFs using the descriptors
         for k, v in udfs.items():
@@ -528,8 +529,8 @@ class CustomViewer(object):
     # hold user descriptions of desired FormElements to create
     ui = {}
 
-    # map, e.g., 'plot_data' -> user defined function
-    # subclasses must override this dict!
+    # map, e.g., 'plot_data' -> user defined function - we also make sure we
+    # override this in sub-classes in CustomViewerMeta
     _custom_functions = {}
 
     def __init__(self, widget_instance):
