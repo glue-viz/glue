@@ -45,7 +45,7 @@ class ScatterLayerStyleWidget(QtGui.QWidget):
         for idx, symbol in enumerate(self._symbols):
             icon = symbol_icon(symbol)
             self.ui.combo_symbol.addItem(icon, '', userData=symbol)
-        self.ui.combo_symbol.setMinimumSize(10, 32)
+        self.ui.combo_symbol.setIconSize(QtCore.QSize(16, 16))
 
 if __name__ == "__main__":
     app = get_qapp()
