@@ -73,15 +73,24 @@ class Extractor(object):
             # both circular and polygonal selection will call here
             data = data[attribute]
 
-            slice_shape = []
+            # slice_data_shape is identical with data shape for getting masked data
+            slice_data_shape = []
             for i in range(ndim):
                 if i != zaxis:
-                    slice_shape.append(data.shape[i])
-            slice_data = np.ones(slice_shape)
-            posdata = np.argwhere(slice_data)
+                    slice_data_shape.append(data.shape[i])
+
+            # slice_roi_shape is relevant with xyz_axis order for defining roi region
+            slice_roi_shape = np.ones(len(slice_data_shape))
+            slice_roi_shape[0] = data.shape[xaxis]
+            slice_roi_shape[1] = data.shape[yaxis]
+            # for 4th dim
+            for j in range(ndim):
+                if j not in [xaxis, yaxis, zaxis]:
+                    slice_roi_shape[2] = data.shape[j]
+            posdata = np.argwhere(np.ones(slice_roi_shape))
 
             # mask for each slice and expand to all
-            mask = roi.contains(posdata[:, 0], posdata[:, 1]).reshape(slice_data.shape)
+            mask = roi.contains(posdata[:, 0], posdata[:, 1]).reshape(slice_data_shape)
             mask = np.expand_dims(mask, axis=zaxis).repeat(nz, zaxis)
 
             # make sure data.ndim == ndim
@@ -90,7 +99,6 @@ class Extractor(object):
             new_shape[xaxis] = -1
             data = data[mask].reshape(new_shape)  # data[mask].shape is (n, )
             finite = np.isfinite(data)
-            print('data', data)
 
         assert data.ndim == ndim
 
@@ -101,10 +109,8 @@ class Extractor(object):
 
         assert data.ndim == 1
         assert data.size == nz
-        print('data and finite', data, finite)
 
         data = (1. * data / finite).ravel()
-        print('after sum data is', data)
         return x, data
 
 
