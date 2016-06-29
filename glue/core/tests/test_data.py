@@ -476,13 +476,13 @@ def test_component_id_item_access_missing():
 class TestPixelLabel(object):
 
     def test(self):
-        assert pixel_label(0, 2) == "y"
-        assert pixel_label(1, 2) == "x"
-        assert pixel_label(0, 3) == "z"
-        assert pixel_label(1, 3) == "y"
-        assert pixel_label(2, 3) == "x"
-        assert pixel_label(1, 0) == "Axis 1"
-        assert pixel_label(1, 4) == "Axis 1"
+        assert pixel_label(0, 2) == "0 [y]"
+        assert pixel_label(1, 2) == "1 [x]"
+        assert pixel_label(0, 3) == "0 [z]"
+        assert pixel_label(1, 3) == "1 [y]"
+        assert pixel_label(2, 3) == "2 [x]"
+        assert pixel_label(1, 0) == "1"
+        assert pixel_label(1, 4) == "1"
 
 
 @pytest.mark.parametrize(('kwargs'),
@@ -557,7 +557,7 @@ Number of dimensions: 1
 Shape: 3
 Components:
  0) x
- 1) Pixel Axis 0
+ 1) Pixel Axis 0 [x]
  2) World 0
  3) y
 """.strip()

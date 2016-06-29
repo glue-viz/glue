@@ -59,7 +59,7 @@ class TestPandasConversion(object):
             'n': [4, 5, 6, 7],
             'c': ['a', 'b', 'c', 'd'],
             'd': np.arange(4),
-            'Pixel Axis 0': np.arange(4),
+            'Pixel Axis 0 [x]': np.arange(4),
             'World 0': np.arange(4)
         })
         out_frame = d.to_dataframe()

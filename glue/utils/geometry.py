@@ -10,10 +10,10 @@ def points_inside_poly(x, y, vx, vy):
     from matplotlib.path import Path
     p = Path(np.column_stack((vx, vy)))
 
-    keep = ((x > np.min(vx)) &
-            (x < np.max(vx)) &
-            (y > np.min(vy)) &
-            (y < np.max(vy)))
+    keep = ((x >= np.min(vx)) &
+            (x <= np.max(vx)) &
+            (y >= np.min(vy)) &
+            (y <= np.max(vy)))
 
     inside = np.zeros(len(x), bool)
 

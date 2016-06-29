@@ -27,7 +27,7 @@ from glue.utils import view_shape
 # they are here for backward-compatibility (the code used to live in this
 # file)
 from glue.core.component import Component, CoordinateComponent, DerivedComponent
-from glue.core.component_id import ComponentID, ComponentIDDict
+from glue.core.component_id import ComponentID, ComponentIDDict, PixelComponentID
 
 __all__ = ['Data']
 
@@ -312,7 +312,8 @@ class Data(object):
         for i in range(self.ndim):
             comp = CoordinateComponent(self, i)
             label = pixel_label(i, self.ndim)
-            cid = self.add_component(comp, "Pixel Axis %s" % label, hidden=True)
+            cid = PixelComponentID(i, "Pixel Axis %s" % label, hidden=True)
+            self.add_component(comp, cid)
             self._pixel_component_ids.append(cid)
         if self.coords:
             for i in range(self.ndim):
@@ -703,6 +704,6 @@ class Data(object):
 @contract(i=int, ndim=int)
 def pixel_label(i, ndim):
     label = "{0}".format(i)
-    if ndim <= 3:
+    if 1 <= ndim <= 3:
         label += " [{0}]".format('xyz'[ndim - 1 - i])
     return label
