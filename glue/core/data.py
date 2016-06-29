@@ -312,7 +312,7 @@ class Data(object):
         for i in range(self.ndim):
             comp = CoordinateComponent(self, i)
             label = pixel_label(i, self.ndim)
-            cid = self.add_component(comp, "Pixel %s" % label, hidden=True)
+            cid = self.add_component(comp, "Pixel Axis %s" % label, hidden=True)
             self._pixel_component_ids.append(cid)
         if self.coords:
             for i in range(self.ndim):
@@ -702,8 +702,7 @@ class Data(object):
 
 @contract(i=int, ndim=int)
 def pixel_label(i, ndim):
-    if ndim == 2:
-        return ['y', 'x'][i]
-    if ndim == 3:
-        return ['z', 'y', 'x'][i]
-    return "Axis %s" % i
+    label = "{0}".format(i)
+    if ndim <= 3:
+        label += " [{0}]".format('xyz'[ndim - 1 - i])
+    return label
