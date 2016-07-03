@@ -9,7 +9,9 @@ import pandas as pd
 
 from glue.core.subset import (RoiSubsetState, RangeSubsetState,
                               CategoricalROISubsetState, AndState,
-                              MultiRangeSubsetState)
+                              MultiRangeSubsetState,
+                              CategoricalMultiRangeSubsetState,
+                              CategoricalROISubsetState2D)
 from glue.core.roi import (PolygonalROI, CategoricalROI, RangeROI, XRangeROI,
                            YRangeROI, RectangularROI)
 from glue.core.util import row_lookup
@@ -512,15 +514,12 @@ class CategoricalComponent(Component):
 
             # The selection is polygon-like, which requires special care.
 
-            # TODO: need to make this a public function
-            from glue.core.subset import combine_multiple
-
-            selection = []
-
             if isinstance(other_comp, CategoricalComponent):
 
                 # For each category, we check which categories along the other
                 # axis fall inside the polygon:
+
+                selection = {}
 
                 for code, label in enumerate(self.categories):
 
@@ -537,18 +536,10 @@ class CategoricalComponent(Component):
                     in_poly = roi.contains(x, y)
                     categories = other_comp.categories[in_poly]
 
-                    # If any categories are in the polygon, we set up an
-                    # AndState subset that includes only points for the current
-                    # label and for all the categories that do fall inside the
-                    # polygon.
                     if len(categories) > 0:
+                        selection[label] = set(categories)
 
-                        cat_roi_1 = CategoricalROI([label])
-                        cat_subset_1 = CategoricalROISubsetState(att=att, roi=cat_roi_1)
-                        cat_roi_2 = CategoricalROI(categories)
-                        cat_subset_2 = CategoricalROISubsetState(att=other_att, roi=cat_roi_2)
-
-                        selection.append(AndState(cat_subset_1, cat_subset_2))
+                return CategoricalROISubsetState2D(selection, att, other_att)
 
             else:
 
@@ -569,25 +560,20 @@ class CategoricalComponent(Component):
                 # We loop over each category and for each one we find the
                 # numerical ranges
 
+                selection = {}
+
                 for code, label in enumerate(self.categories):
 
                     # We determine all the numerical segments that represent the
                     # ensemble of points in y that fall in the polygon
+                    # TODO: profile the following function
                     segments = polygon_line_intersections(x, y, xval=code)
 
-                    if len(segments) == 0:
-                        continue
+                    if len(segments) > 0:
+                        selection[label] = segments
 
-                    # We make use of MultiRangeSubsetState to represent a
-                    # discontinuous range, and then combine with the categorical
-                    # component to create the selection.
-                    cont_subset = MultiRangeSubsetState(segments, att=other_att)
-                    cat_roi = CategoricalROI([label])
-                    cat_subset = CategoricalROISubsetState(att=att, roi=cat_roi)
+                return CategoricalMultiRangeSubsetState(selection, att, other_att)
 
-                    selection.append(AndState(cat_subset, cont_subset))
-
-            return combine_multiple(selection, operator.or_)
 
     def to_series(self, **kwargs):
         """ Convert into a pandas.Series object.

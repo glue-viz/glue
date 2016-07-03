@@ -577,6 +577,124 @@ class MultiRangeSubsetState(SubsetState):
         return MultiRangeSubsetState(self.pairs, self.att)
 
 
+class CategoricalROISubsetState2D(object):
+    """
+    A 2D subset state where both attributes are categorical.
+
+    Parameters
+    ----------
+    categories : dict
+        A dictionary containing for each label of one categorical component an
+        interable of labels for the other categorical component (using sets will
+        provide the best performance)
+    att1 : :class:`~glue.core.ComponentID`
+        The component ID matching the keys of the ``categories`` dictionary
+    att2 : :class:`~glue.core.ComponentID`
+        The component ID matching the values of the ``categories`` dictionary
+    """
+    def __init__(self, categories, att1, att2):
+        self.categories = categories
+        self.att1 = att1
+        self.att2 = att2
+
+    @property
+    def attributes(self):
+        return (self.att1, self.att2)
+
+    @memoize
+    @contract(data='isinstance(Data)', view='array_view')
+    def to_mask(self, data, view=None):
+
+        # Extract categories and numerical values
+        labels1 = data.get_component(self.att1).labels
+        labels2 = data.get_component(self.att2).labels
+
+        if view is not None:
+            labels1 = labels1[view]
+            labels2 = labels2[view]
+
+        # Initialize empty mask
+        mask = np.zeros(labels1.shape, dtype=bool)
+
+        # A loop over all values here is actually reasonably efficient compared
+        # to alternatives. Any improved implementation, even vectorized, should
+        # ensure that it is more efficient for large numbers of categories and
+        # values.
+        for i in range(len(labels1)):
+            if labels1[i] in self.categories:
+                if labels2[i] in self.categories[labels1[i]]:
+                    mask[i] = True
+
+        return mask
+
+    def copy(self):
+        result = CategoricalROISubsetState2D(self.categories,
+                                             self.att1, self.att2)
+        return result
+
+
+class CategoricalMultiRangeSubsetState(SubsetState):
+    """
+    A 2D subset state where one attribute is categorical and the other is
+    numerical, and where for each category, there are multiple possible subset
+    ranges.
+
+    Parameters
+    ----------
+    ranges : dict
+        A dictionary containing for each category (key), a list of tuples
+        giving the ranges of values for the numerical attribute.
+    cat_att : :class:`~glue.core.ComponentID`
+        The component ID for the categorical attribute
+    num_att : :class:`~glue.core.ComponentID`
+        The component ID for the numerical attribute
+    """
+
+    def __init__(self, ranges, cat_att, num_att):
+        self.ranges = ranges
+        self.cat_att = cat_att
+        self.num_att = num_att
+
+    @property
+    def attributes(self):
+        return (self.cat_att, self._num_att)
+
+    @memoize
+    @contract(data='isinstance(Data)', view='array_view')
+    def to_mask(self, data, view=None):
+
+        # Extract categories and numerical values
+        labels = data.get_component(self.cat_att).labels
+        values = data[self.num_att]
+
+        if view is not None:
+            labels = labels[view]
+            values = values[view]
+
+        # Initialize empty mask
+        mask = np.zeros(values.shape, dtype=bool)
+
+        # A loop over all values here is actually reasonably efficient compared
+        # to alternatives. Any improved implementation, even vectorized, should
+        # ensure that it is more efficient for large numbers of categories and
+        # values. For example, using 10000 categories and 1000000 data points
+        # takes 1.2 seconds on a laptop.
+        for i in range(len(values)):
+            if labels[i] in self.ranges:
+                for lo, hi in self.ranges[labels[i]]:
+                    if values[i] >= lo and values[i] <= hi:
+                        mask[i] = True
+                        break
+
+        return mask
+
+    def copy(self):
+        result = CategoricalMultiRangeSubsetState(self.ranges,
+                                                  self.cat_att,
+                                                  self.num_att)
+        return result
+
+
 class CompositeSubsetState(SubsetState):
     op = None
 
@@ -606,7 +724,6 @@ class CompositeSubsetState(SubsetState):
     def __str__(self):
         sym = OPSYM.get(self.op, self.op)
         return "(%s %s %s)" % (self.state1, sym, self.state2)
-
 
 class OrState(CompositeSubsetState):
     op = operator.or_
