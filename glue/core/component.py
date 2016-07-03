@@ -9,8 +9,9 @@ import pandas as pd
 
 from glue.core.subset import (RoiSubsetState, RangeSubsetState,
                               CategoricalROISubsetState, AndState,
-                              MultiRangeSubsetState, OrState)
-from glue.core.roi import PolygonalROI, CategoricalROI, RangeROI
+                              MultiRangeSubsetState)
+from glue.core.roi import (PolygonalROI, CategoricalROI, RangeROI, XRangeROI,
+                           YRangeROI, RectangularROI)
 from glue.core.util import row_lookup
 from glue.utils import (unique, shape_to_string, coerce_numeric, check_sorted,
                         polygon_line_intersections)
@@ -127,6 +128,8 @@ class Component(object):
         if coord not in ('x', 'y'):
             raise ValueError('coord should be one of x/y')
 
+        other_coord = 'y' if coord == 'x' else 'x'
+
         if isinstance(roi, RangeROI):
 
             # The selection is either an x range or a y range
@@ -140,7 +143,6 @@ class Component(object):
             else:
 
                 # The selection applies to the other component, so we delegate
-                other_coord = 'y' if coord == 'x' else 'x'
                 return other_comp.subset_from_roi(other_att, roi,
                                                   other_comp=self,
                                                   other_att=att,
@@ -154,11 +156,11 @@ class Component(object):
 
             if isinstance(other_comp, CategoricalComponent):
 
-                # Categorical components
                 return other_comp.subset_from_roi(other_att, roi,
                                                   other_comp=self,
                                                   other_att=att,
-                                                  is_nested=True)
+                                                  is_nested=True,
+                                                  coord=other_coord)
             else:
 
                 subset_state = RoiSubsetState()
@@ -470,6 +472,35 @@ class CategoricalComponent(Component):
                                                   other_comp=self,
                                                   other_att=att,
                                                   coord=other_coord)
+
+        elif isinstance(roi, RectangularROI):
+
+            # In this specific case, we can decompose the rectangular
+            # ROI into two RangeROIs that are combined with an 'and'
+            # logical operation.
+
+            other_coord = 'y' if coord == 'x' else 'x'
+
+            if coord == 'x':
+                range1 = XRangeROI(roi.xmin, roi.xmax)
+                range2 = YRangeROI(roi.ymin, roi.ymax)
+            else:
+                range2 = XRangeROI(roi.xmin, roi.xmax)
+                range1 = YRangeROI(roi.ymin, roi.ymax)
+
+            # We get the subset state for the current component
+            subset1 = self.subset_from_roi(att, range1,
+                                           other_comp=other_comp,
+                                           other_att=other_att,
+                                           coord=coord)
+
+            # We now get the subset state for the other component
+            subset2 = other_comp.subset_from_roi(other_att, range2,
+                                                 other_comp=self,
+                                                 other_att=att,
+                                                 coord=other_coord)
+
+            return AndState(subset1, subset2)
 
         elif isinstance(roi, CategoricalROI):
 
