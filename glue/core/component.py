@@ -544,6 +544,9 @@ class CategoricalComponent(Component):
                     # ensemble of points in y that fall in the polygon
                     segments = polygon_line_intersections(x, y, xval=code)
 
+                    if len(segments) == 0:
+                        continue
+
                     # We make use of MultiRangeSubsetState to represent a
                     # discontinuous range, and then combine with the categorical
                     # component to create the selection.
