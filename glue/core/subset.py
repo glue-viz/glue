@@ -588,9 +588,9 @@ class CategoricalROISubsetState2D(object):
         A dictionary containing for each label of one categorical component an
         interable of labels for the other categorical component (using sets will
         provide the best performance)
-    att1 : :class:`~glue.core.ComponentID`
+    att1 : :class:`~glue.core.component_id.ComponentID`
         The component ID matching the keys of the ``categories`` dictionary
-    att2 : :class:`~glue.core.ComponentID`
+    att2 : :class:`~glue.core.component_id.ComponentID`
         The component ID matching the values of the ``categories`` dictionary
     """
     def __init__(self, categories, att1, att2):
@@ -645,9 +645,9 @@ class CategoricalMultiRangeSubsetState(SubsetState):
     ranges : dict
         A dictionary containing for each category (key), a list of tuples
         giving the ranges of values for the numerical attribute.
-    cat_att : :class:`~glue.core.ComponentID`
+    cat_att : :class:`~glue.core.component_id.ComponentID`
         The component ID for the categorical attribute
-    num_att : :class:`~glue.core.ComponentID`
+    num_att : :class:`~glue.core.component_id.ComponentID`
         The component ID for the numerical attribute
     """
 
