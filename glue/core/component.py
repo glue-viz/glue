@@ -569,7 +569,7 @@ class CategoricalComponent(Component):
                 # We loop over each category and for each one we find the
                 # numerical ranges
 
-                for code, label in zip(self.codes, self.labels):
+                for code, label in enumerate(self.categories):
 
                     # We determine all the numerical segments that represent the
                     # ensemble of points in y that fall in the polygon
