@@ -21,7 +21,8 @@ from glue.utils import view_shape
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CategoricalROISubsetState',
            'RangeSubsetState', 'MultiRangeSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState', 'MaskSubsetState', 'CategorySubsetState',
-           'ElementSubsetState', 'InequalitySubsetState', 'combine_multiple']
+           'ElementSubsetState', 'InequalitySubsetState', 'combine_multiple',
+           'CategoricalMultiRangeSubsetState', 'CategoricalROISubsetState2D']
 
 
 OPSYM = {operator.ge: '>=', operator.gt: '>',
