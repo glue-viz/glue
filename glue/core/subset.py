@@ -15,7 +15,7 @@ from glue.core.message import SubsetDeleteMessage, SubsetUpdateMessage
 from glue.core.decorators import memoize
 from glue.core.visual import VisualAttributes
 from glue.config import settings
-from glue.utils import view_shape
+from glue.utils import view_shape, broadcast_to
 
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CategoricalROISubsetState',
@@ -435,7 +435,6 @@ class RoiSubsetState(SubsetState):
     def attributes(self):
         return (self.xatt, self.yatt)
 
-    @memoize
     @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
 
@@ -471,12 +470,19 @@ class RoiSubsetState(SubsetState):
             x_slice = x[subset]
             y_slice = y[subset]
 
-            result = self.roi.contains(x_slice, y_slice)
-            result = np.broadcast_to(result, data.shape)
+            if self.roi.defined():
+                result = self.roi.contains(x_slice, y_slice)
+            else:
+                result = np.zeros(x_slice.shape, dtype=bool)
+
+            result = broadcast_to(result, x.shape)
 
         else:
 
-            result = self.roi.contains(x, y)
+            if self.roi.defined():
+                result = self.roi.contains(x, y)
+            else:
+                result = np.zeros(x.shape, dtype=bool)
 
         if result.shape != x.shape:
             raise ValueError("Unexpected error: boolean mask has incorrect dimensions")
