@@ -435,7 +435,6 @@ class RoiSubsetState(SubsetState):
     def attributes(self):
         return (self.xatt, self.yatt)
 
-    @memoize
     @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
 
@@ -472,7 +471,7 @@ class RoiSubsetState(SubsetState):
             y_slice = y[subset]
 
             result = self.roi.contains(x_slice, y_slice)
-            result = np.broadcast_to(result, data.shape)
+            result = np.broadcast_to(result, x.shape)
 
         else:
 
