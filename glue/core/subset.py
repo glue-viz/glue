@@ -763,6 +763,9 @@ class MaskSubsetState(SubsetState):
         self.cids = cids
         self.mask = mask
 
+    def copy(self):
+        return MaskSubsetState(self.mask, self.cids)
+
     def to_mask(self, data, view=None):
         view = view or slice(None)
 
