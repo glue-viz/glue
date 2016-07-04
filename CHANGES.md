@@ -4,6 +4,8 @@ Full changelog
 v0.8.2 (unreleased)
 -------------------
 
+* Implement missing MaskSubsetState.copy. [#1033]
+
 * Ensure that failing data factory identifier functions are skipped. [#1029]
 
 * The naming of pixel axes is now more consistent between data with 3 or
