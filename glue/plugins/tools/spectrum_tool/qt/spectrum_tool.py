@@ -68,14 +68,21 @@ class Extractor(object):
         subset_state = RoiSubsetState(xatt=xatt, yatt=yatt, roi=roi)
         mask = subset_state.to_mask(data, view=view)
 
-        # We can now extract the values from the array and set values outside
-        # the mask to NaN
-        values = data[attribute, view].copy()
-        values[~mask] = np.nan
+        # We now extract the values that fall inside the ROI. Unfortunately,
+        # this returns a flat 1-d array, so we need to then reshape it to get
+        # an array with shape (n_spec, n_pix), where n_pix is the number of
+        # pixels inside the ROI
 
-        # We then average along all dimensions except the spectral dimension
-        axis = tuple(i for i in range(data.ndim) if i != zaxis)
-        spectrum = np.nanmean(values, axis=axis)
+        values = data[attribute, view]
+
+        if zaxis != 0:
+            values = values.swapaxes(zaxis, 0)
+            mask = mask.swapaxes(zaxis, 0)
+
+        values = values[mask].reshape(data.shape[zaxis], -1)
+
+        # We then average along the spatial dimension
+        spectrum = np.nanmean(values, axis=1)
 
         # Get the world coordinates of the spectral axis
         x = Extractor.abcissa(data, zaxis)
