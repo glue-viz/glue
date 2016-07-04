@@ -93,9 +93,9 @@ class Test3DExtractor(object):
 
     def test_spectrum(self):
         roi = RectangularROI()
-        roi.update_limits(0, 0, 3, 3)
+        roi.update_limits(0.5, 1.5, 2.5, 2.5)
 
-        expected = self.x[:, :3, :3].mean(axis=1).mean(axis=1)
+        expected = self.x[:, 1:3, 2:3].mean(axis=1).mean(axis=1)
         _, actual = Extractor.spectrum(
             self.data, self.data.id['x'], roi, (0, 'x', 'y'), 0)
         np.testing.assert_array_almost_equal(expected, actual)
@@ -210,7 +210,7 @@ def test_4d_single_channel():
     zaxis = 1
     expected = x[0, :, :, :].mean(axis=1).mean(axis=1)
     roi = RectangularROI()
-    roi.update_limits(0, 0, 10, 10)
+    roi.update_limits(-0.5, -0.5, 10.5, 10.5)
 
     _, actual = Extractor.spectrum(d, d.id['x'], roi, slc, zaxis)
 
