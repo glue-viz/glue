@@ -7,7 +7,7 @@ from glue.external.six import string_types
 
 
 __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
-           'coerce_numeric', 'check_sorted']
+           'coerce_numeric', 'check_sorted', 'broadcast_to']
 
 
 def unique(array):
@@ -141,3 +141,14 @@ def pretty_number(numbers):
             result = result.rstrip('0')
 
     return result
+
+
+def broadcast_to(array, shape):
+    """
+    Compatibility function - can be removed once we support only Numpy 1.10
+    and above
+    """
+    try:
+        return np.broadcast_to(array, shape)
+    except AttributeError:
+        return array * np.ones(shape)
