@@ -470,12 +470,19 @@ class RoiSubsetState(SubsetState):
             x_slice = x[subset]
             y_slice = y[subset]
 
-            result = self.roi.contains(x_slice, y_slice)
+            if self.roi.defined():
+                result = self.roi.contains(x_slice, y_slice)
+            else:
+                result = np.zeros(x_slice.shape, dtype=bool)
+
             result = np.broadcast_to(result, x.shape)
 
         else:
 
-            result = self.roi.contains(x, y)
+            if self.roi.defined():
+                result = self.roi.contains(x, y)
+            else:
+                result = np.zeros(x.shape, dtype=bool)
 
         if result.shape != x.shape:
             raise ValueError("Unexpected error: boolean mask has incorrect dimensions")
