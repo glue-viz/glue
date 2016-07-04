@@ -4,6 +4,21 @@ Full changelog
 v0.8.2 (unreleased)
 -------------------
 
+* Ensure that failing data factory identifier functions are skipped. [#1029]
+
+* The naming of pixel axes is now more consistent between data with 3 or
+  fewer dimensions, and data with more than 3 dimensions. The naming is now
+  always ``Pixel Axis ?`` where ``?`` is the index of the array, and for
+  datasets with 1 to 3 dimensions, we add a suffix e.g. ``[x]`` to indicate
+  the traditional axes. [#1029]
+
+* Implemented a number of performance improvements, including for: the check
+  of whether points are in polygon (``points_inside_poly``), the selection of
+  polygonal regions in multi-dimentional cubes when the selections are along
+  pixel axes, the selection of points in scatter plots with one or two
+  categorical components for rectangular, circular, and polygonal regions.
+  [#1029]
+
 * Fix a bug that caused multiple custom viewer classes to not work properly
   if the user did not override ``_custom_functions`` (which was private).
   [#810]

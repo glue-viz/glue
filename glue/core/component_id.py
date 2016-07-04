@@ -9,7 +9,7 @@ from glue.core.component_link import BinaryComponentLink
 from glue.core.subset import InequalitySubsetState
 
 
-__all__ = ['ComponentID', 'ComponentIDDict']
+__all__ = ['PixelComponentID', 'ComponentID', 'ComponentIDDict']
 
 # access to ComponentIDs via .item[name]
 
@@ -28,14 +28,13 @@ class ComponentIDDict(object):
 
 
 class ComponentID(object):
-
-    """ References a :class:`glue.core.component.Component` object within a :class:`~glue.core.data.Data` object.
+    """
+    References a :class:`glue.core.component.Component` object within a :class:`~glue.core.data.Data` object.
 
     ComponentIDs behave as keys::
 
        component_id = data.id[name]
        data[component_id] -> numpy array
-
     """
 
     def __init__(self, label, hidden=False):
@@ -131,3 +130,16 @@ class ComponentID(object):
 
     def __rpow__(self, other):
         return BinaryComponentLink(other, self, operator.pow)
+
+
+class PixelComponentID(ComponentID):
+    """
+    The ID of a component which is a pixel position in the data - this allows
+    us to make assumptions in certain places. For example when a polygon
+    selection is done in pixel space, it can easily be broadcast along
+    dimensions.
+    """
+
+    def __init__(self, axis, label, hidden=False):
+        self.axis = axis
+        super(PixelComponentID, self).__init__(label, hidden=hidden)

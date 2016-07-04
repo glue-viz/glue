@@ -93,7 +93,7 @@ def test_data():
     assert d2.label == 'testing'
 
     np.testing.assert_array_equal(d2['x'], [1, 2, 3])
-    np.testing.assert_array_equal(d2['Pixel Axis 0'], [0, 1, 2])
+    np.testing.assert_array_equal(d2['Pixel Axis 0 [x]'], [0, 1, 2])
 
 
 def test_data_style():
