@@ -25,6 +25,7 @@ from glue.viewers.common.qt.mpl_widget import MplWidget
 from glue.utils import nonpartial, Pointer
 from glue.utils.qt import Worker, messagebox_on_error
 from glue.core import roi as core_roi
+from glue.core.subset import RoiSubsetState
 
 from .profile_viewer import ProfileViewer
 
@@ -43,75 +44,43 @@ class Extractor(object):
 
     @staticmethod
     def spectrum(data, attribute, roi, slc, zaxis):
+
+        # Find the integer index of the x and y axes, which are the axes for
+        # which the image is shown (the ROI is drawn along these attributes)
         xaxis = slc.index('x')
         yaxis = slc.index('y')
-        ndim, nz = data.ndim, data.shape[zaxis]
 
+        # Get the actual component IDs corresponding to these axes
+        xatt = data.get_pixel_component_id(xaxis)
+        yatt = data.get_pixel_component_id(yaxis)
+
+        # Set up a view that does not reduce the dimensionality of the array but
+        # extracts 1-element slices along dimensions that are not relevant.
+        view = []
+        for idim, dim in enumerate(slc):
+            if idim in (xaxis, yaxis, zaxis):
+                view.append(slice(None))
+            else:
+                view.append(slice(dim, dim + 1))
+        view = tuple(view)
+
+        # We now delegate to RoiSubsetState to compute the mask based on the ROI
+        subset_state = RoiSubsetState(xatt=xatt, yatt=yatt, roi=roi)
+        mask = subset_state.to_mask(data, view=view)
+
+        # We can now extract the values from the array and set values outside
+        # the mask to NaN
+        values = data[attribute, view].copy()
+        values[~mask] = np.nan
+
+        # We then average along all dimensions except the spectral dimension
+        axis = tuple(i for i in range(data.ndim) if i != zaxis)
+        spectrum = np.nanmean(values, axis=axis)
+
+        # Get the world coordinates of the spectral axis
         x = Extractor.abcissa(data, zaxis)
 
-        if isinstance(roi, core_roi.RectangularROI):
-
-            l, r, b, t = roi.xmin, roi.xmax, roi.ymin, roi.ymax
-            shp = data.shape
-            # The 'or 0' is because Numpy in Python 3 cannot deal with 'None'
-            l, r = np.round(np.clip([l or 0, r or 0], 0, shp[xaxis])).astype(int)
-            b, t = np.round(np.clip([b or 0, t or 0], 0, shp[yaxis])).astype(int)
-
-            # extract sub-slice, without changing dimension
-            slc = [slice(s, s + 1)
-                   if s not in ['x', 'y'] else slice(None)
-                   for s in slc]
-            slc[xaxis] = slice(l, r)
-            slc[yaxis] = slice(b, t)
-            slc[zaxis] = slice(None)
-
-            data = data[attribute, tuple(slc)]   # attribute is Primary,
-            finite = np.isfinite(data)
-
-        elif isinstance(roi, core_roi.PolygonalROI):
-
-            # both circular and polygonal selection will call here
-            data = data[attribute]
-
-            # slice_data_shape is identical with data shape for getting masked data
-            slice_data_shape = []
-            for i in range(ndim):
-                if i != zaxis:
-                    slice_data_shape.append(data.shape[i])
-
-            # slice_roi_shape is relevant with xyz_axis order for defining roi region
-            slice_roi_shape = np.ones(len(slice_data_shape))
-            slice_roi_shape[0] = data.shape[xaxis]
-            slice_roi_shape[1] = data.shape[yaxis]
-            # for 4th dim
-            for j in range(ndim):
-                if j not in [xaxis, yaxis, zaxis]:
-                    slice_roi_shape[2] = data.shape[j]
-            posdata = np.argwhere(np.ones(slice_roi_shape))
-
-            # mask for each slice and expand to all
-            mask = roi.contains(posdata[:, 0], posdata[:, 1]).reshape(slice_data_shape)
-            mask = np.expand_dims(mask, axis=zaxis).repeat(nz, zaxis)
-
-            # make sure data.ndim == ndim
-            new_shape = np.ones(ndim)
-            new_shape[zaxis] = nz
-            new_shape[xaxis] = -1
-            data = data[mask].reshape(new_shape)  # data[mask].shape is (n, )
-            finite = np.isfinite(data)
-
-        assert data.ndim == ndim
-
-        for i in reversed(list(range(ndim))):
-            if i != zaxis:  # index of the zaxis in dataset
-                data = np.nansum(data, axis=i)
-                finite = finite.sum(axis=i)
-
-        assert data.ndim == 1
-        assert data.size == nz
-
-        data = (1. * data / finite).ravel()
-        return x, data
+        return x, spectrum
 
 
     @staticmethod
