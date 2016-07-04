@@ -241,6 +241,11 @@ def _build_axes(figure):
     ax2 = figure.add_subplot(122)
     ax1 = figure.add_subplot(121, sharex=ax2)
 
+    ax1.xaxis.get_major_formatter().set_useOffset(False)
+    ax1.yaxis.get_major_formatter().set_useOffset(False)
+    ax2.xaxis.get_major_formatter().set_useOffset(False)
+    ax2.yaxis.get_major_formatter().set_useOffset(False)
+
     return ax1, ax2
 
 
