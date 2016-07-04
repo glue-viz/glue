@@ -17,7 +17,8 @@ from glue.core.component import Component, CategoricalComponent
 from glue.core.data_collection import DataCollection
 from glue.core.data import Data
 from glue.core.roi import RectangularROI, XRangeROI, YRangeROI
-from glue.core.subset import RangeSubsetState, CategoricalROISubsetState, OrState
+from glue.core.subset import (RangeSubsetState, CategoricalROISubsetState,
+                              AndState)
 from glue.tests import example_data
 from glue.utils import renderless_figure
 
@@ -711,7 +712,7 @@ class TestCategoricalScatterClient(TestScatterClient):
 
         self.client.apply_roi(roi)
         assert isinstance(data.edit_subset.subset_state,
-                          OrState)
+                          AndState)
 
     @pytest.mark.parametrize(('roi_limits', 'mask'), [((0, -0.1, 10, 0.1), [0, 0, 0]),
                                                       ((0, 0.9, 10, 1.1), [1, 0, 0]),

@@ -6,9 +6,25 @@ __all__ = ['points_inside_poly', 'polygon_line_intersections']
 
 
 def points_inside_poly(x, y, vx, vy):
+
     from matplotlib.path import Path
     p = Path(np.column_stack((vx, vy)))
-    return p.contains_points(np.column_stack((x, y))).astype(bool)
+
+    keep = ((x >= np.min(vx)) &
+            (x <= np.max(vx)) &
+            (y >= np.min(vy)) &
+            (y <= np.max(vy)))
+
+    inside = np.zeros(len(x), bool)
+
+    x = x[keep]
+    y = y[keep]
+
+    coords = np.column_stack((x, y))
+
+    inside[keep] = p.contains_points(coords).astype(bool)
+
+    return inside
 
 
 def polygon_line_intersections(px, py, xval=None, yval=None):

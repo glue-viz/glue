@@ -17,10 +17,12 @@ from glue.core.visual import VisualAttributes
 from glue.config import settings
 from glue.utils import view_shape
 
+
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CategoricalROISubsetState',
            'RangeSubsetState', 'MultiRangeSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState', 'MaskSubsetState', 'CategorySubsetState',
-           'ElementSubsetState', 'InequalitySubsetState', 'combine_multiple']
+           'ElementSubsetState', 'InequalitySubsetState', 'combine_multiple',
+           'CategoricalMultiRangeSubsetState', 'CategoricalROISubsetState2D']
 
 
 OPSYM = {operator.ge: '>=', operator.gt: '>',
@@ -436,10 +438,49 @@ class RoiSubsetState(SubsetState):
     @memoize
     @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
+
+        # TODO: make sure that pixel components don't actually take up much
+        #       memory and are just views
+
         x = data[self.xatt, view]
         y = data[self.yatt, view]
-        result = self.roi.contains(x, y)
-        assert x.shape == result.shape
+
+        # We do the import here to avoid circular imports
+        from glue.core.component_id import PixelComponentID
+
+        if (x.ndim == data.ndim and
+            isinstance(self.xatt, PixelComponentID) and
+            isinstance(self.yatt, PixelComponentID)):
+
+            # This is a special case - the ROI is defined in pixel space, so we
+            # can apply it to a single slice and then broadcast it to all other
+            # dimensions. We start off by extracting a slice which takes only
+            # the first elements of all dimensions except the attributes in
+            # question, for which we take all the elements. We need to preserve
+            # the dimensionality of the array, hence the use of slice(0, 1).
+            # Note that we can only do this if the view (if present) preserved
+            # the dimensionality, which is why we checked that x.ndim == data.ndim
+
+            subset = []
+            for i in range(data.ndim):
+                if i == self.xatt.axis or i == self.yatt.axis:
+                    subset.append(slice(None))
+                else:
+                    subset.append(slice(0, 1))
+
+            x_slice = x[subset]
+            y_slice = y[subset]
+
+            result = self.roi.contains(x_slice, y_slice)
+            result = np.broadcast_to(result, data.shape)
+
+        else:
+
+            result = self.roi.contains(x, y)
+
+        if result.shape != x.shape:
+            raise ValueError("Unexpected error: boolean mask has incorrect dimensions")
+
         return result
 
     def copy(self):
@@ -537,6 +578,124 @@ class MultiRangeSubsetState(SubsetState):
         return MultiRangeSubsetState(self.pairs, self.att)
 
 
+class CategoricalROISubsetState2D(object):
+    """
+    A 2D subset state where both attributes are categorical.
+
+    Parameters
+    ----------
+    categories : dict
+        A dictionary containing for each label of one categorical component an
+        interable of labels for the other categorical component (using sets will
+        provide the best performance)
+    att1 : :class:`~glue.core.component_id.ComponentID`
+        The component ID matching the keys of the ``categories`` dictionary
+    att2 : :class:`~glue.core.component_id.ComponentID`
+        The component ID matching the values of the ``categories`` dictionary
+    """
+    def __init__(self, categories, att1, att2):
+        self.categories = categories
+        self.att1 = att1
+        self.att2 = att2
+
+    @property
+    def attributes(self):
+        return (self.att1, self.att2)
+
+    @memoize
+    @contract(data='isinstance(Data)', view='array_view')
+    def to_mask(self, data, view=None):
+
+        # Extract categories and numerical values
+        labels1 = data.get_component(self.att1).labels
+        labels2 = data.get_component(self.att2).labels
+
+        if view is not None:
+            labels1 = labels1[view]
+            labels2 = labels2[view]
+
+        # Initialize empty mask
+        mask = np.zeros(labels1.shape, dtype=bool)
+
+        # A loop over all values here is actually reasonably efficient compared
+        # to alternatives. Any improved implementation, even vectorized, should
+        # ensure that it is more efficient for large numbers of categories and
+        # values.
+        for i in range(len(labels1)):
+            if labels1[i] in self.categories:
+                if labels2[i] in self.categories[labels1[i]]:
+                    mask[i] = True
+
+        return mask
+
+    def copy(self):
+        result = CategoricalROISubsetState2D(self.categories,
+                                             self.att1, self.att2)
+        return result
+
+
+class CategoricalMultiRangeSubsetState(SubsetState):
+    """
+    A 2D subset state where one attribute is categorical and the other is
+    numerical, and where for each category, there are multiple possible subset
+    ranges.
+
+    Parameters
+    ----------
+    ranges : dict
+        A dictionary containing for each category (key), a list of tuples
+        giving the ranges of values for the numerical attribute.
+    cat_att : :class:`~glue.core.component_id.ComponentID`
+        The component ID for the categorical attribute
+    num_att : :class:`~glue.core.component_id.ComponentID`
+        The component ID for the numerical attribute
+    """
+
+    def __init__(self, ranges, cat_att, num_att):
+        self.ranges = ranges
+        self.cat_att = cat_att
+        self.num_att = num_att
+
+    @property
+    def attributes(self):
+        return (self.cat_att, self._num_att)
+
+    @memoize
+    @contract(data='isinstance(Data)', view='array_view')
+    def to_mask(self, data, view=None):
+
+        # Extract categories and numerical values
+        labels = data.get_component(self.cat_att).labels
+        values = data[self.num_att]
+
+        if view is not None:
+            labels = labels[view]
+            values = values[view]
+
+        # Initialize empty mask
+        mask = np.zeros(values.shape, dtype=bool)
+
+        # A loop over all values here is actually reasonably efficient compared
+        # to alternatives. Any improved implementation, even vectorized, should
+        # ensure that it is more efficient for large numbers of categories and
+        # values. For example, using 10000 categories and 1000000 data points
+        # takes 1.2 seconds on a laptop.
+        for i in range(len(values)):
+            if labels[i] in self.ranges:
+                for lo, hi in self.ranges[labels[i]]:
+                    if values[i] >= lo and values[i] <= hi:
+                        mask[i] = True
+                        break
+
+        return mask
+
+    def copy(self):
+        result = CategoricalMultiRangeSubsetState(self.ranges,
+                                                  self.cat_att,
+                                                  self.num_att)
+        return result
+
+
 class CompositeSubsetState(SubsetState):
     op = None
 
@@ -566,7 +725,6 @@ class CompositeSubsetState(SubsetState):
     def __str__(self):
         sym = OPSYM.get(self.op, self.op)
         return "(%s %s %s)" % (self.state1, sym, self.state2)
-
 
 class OrState(CompositeSubsetState):
     op = operator.or_

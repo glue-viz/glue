@@ -302,6 +302,8 @@ def find_factory(filename, **kwargs):
             is_format = df.identifier(filename, **kwargs)
         except ImportError:  # dependencies missing
             continue
+        except Exception:  # any other issue
+            continue
 
         if is_format:
             valid_formats.append(df)
