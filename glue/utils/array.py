@@ -151,4 +151,4 @@ def broadcast_to(array, shape):
     try:
         return np.broadcast_to(array, shape)
     except AttributeError:
-        return array * np.ones(shape)
+        return array * np.ones(shape, array.dtype)
