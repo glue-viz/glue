@@ -134,6 +134,8 @@ for example:
           Glue from a non-IPython shell, or from the notebook (see next
           section).
 
+.. _notebook:
+
 Using qglue with the IPython/Jupyter Notebook
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

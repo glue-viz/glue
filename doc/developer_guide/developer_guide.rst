@@ -19,6 +19,7 @@ The following pages provide logistical information about the layout of the code,
 
    issues.rst
    organization.rst
+   roadmap.rst
    qt_development.rst
    coding_guidelines.rst
    testing.rst
