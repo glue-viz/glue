@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.8.2 (unreleased)
+v0.8.2 (2016-07-06)
 -------------------
 
 * Implement missing MaskSubsetState.copy. [#1033]
