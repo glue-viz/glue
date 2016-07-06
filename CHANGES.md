@@ -6,6 +6,11 @@ v0.9.0 (unreleased)
 
 * No changes yet.
 
+v0.8.3 (unreleased)
+-------------------
+
+* No changes yet.
+
 v0.8.2 (2016-07-06)
 -------------------
 
