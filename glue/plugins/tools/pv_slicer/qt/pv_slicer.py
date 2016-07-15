@@ -222,7 +222,7 @@ def _slice_index(data, slc):
     The axis over which to extract PV slices
     """
     return max([i for i in range(len(slc))
-                if isinstance(slc[i], int)],
+                if isinstance(slc[i], int)] or isinstance(slc[i], float),
                key=lambda x: data.shape[x])
 
 
