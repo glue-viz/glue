@@ -16,6 +16,9 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
 
+import os
+ON_RTD = os.environ.get('READTHEDOCS') == 'True'
+
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -42,10 +45,14 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.coverage',
               'sphinx.ext.intersphinx']
 
 # Add the redirect.py plugin which is in this directory
-import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
 extensions.append('redirect')
+
+# Workaround for RTD where the default encoding is ASCII
+if ON_RTD:
+    import locale
+    locale.setlocale(locale.LC_ALL, 'C.UTF-8')
 
 intersphinx_cache_limit = 10     # days to keep the cached inventories
 intersphinx_mapping = {
