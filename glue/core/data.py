@@ -195,7 +195,7 @@ class Data(object):
         There are several ways to use this function, depending on how many
         components are passed to ``cid`` and ``cid_other``.
 
-        **Single component for each dataset**
+        **Joining on single components**
 
         First, one can specify a single component ID for both ``cid`` and
         ``cid_other``: this is the standard mode, and joins one component from
@@ -223,7 +223,10 @@ class Data(object):
             >>> s.to_mask()
             array([ True, False,  True,  True, False], dtype=bool)
 
-        **Multiple components**
+        **Joining on multiple components**
+
+        .. note:: This mode is currently slow, and will be optimized
+                  significantly in future.
 
         Next, one can specify several components for each dataset: in this
         case, the number of components given should match for both datasets.
@@ -255,7 +258,7 @@ class Data(object):
         and in particular, the second item (where a is 5 and b is 3) is not
         selected.
 
-        **One-to-many and many-to-one mapping**
+        **One-to-many and many-to-one joining**
 
         Finally, you can specify one component in one dataset and multiple ones
         in the other. In the case where one component is specified for this
