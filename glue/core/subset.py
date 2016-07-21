@@ -189,11 +189,11 @@ class Subset(object):
 
             if len(cid1) == 1 and len(cid2) == 1:
 
-                key_left = self.data[cid1[0], view].ravel()
-                key_right = other[cid2[0], mask_right].ravel()
-                mask = np.in1d(key_left, key_right)
+                key_left = self.data[cid1[0], view]
+                key_right = other[cid2[0], mask_right]
+                mask = np.in1d(key_left.ravel(), key_right.ravel())
 
-                return mask.reshape(self.data[cid1[0], view].shape)
+                return mask.reshape(key_left.shape)
 
             elif len(cid1) == len(cid2):
 
