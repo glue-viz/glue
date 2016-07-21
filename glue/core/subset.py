@@ -238,7 +238,9 @@ class Subset(object):
 
             else:
 
-                raise Exception("Either the number of components in the key join should match, or one of them should be a scalar")
+                raise Exception("Either the number of components in the key join sets "
+                                "should match, or one of the component sets should ",
+                                "contain a single component.")
 
         raise IncompatibleAttribute
 
