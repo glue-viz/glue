@@ -187,7 +187,15 @@ class Subset(object):
             finally:
                 self.data._recursing = False
 
-            if len(cid1) == len(cid2):
+            if len(cid1) == 1 and len(cid2) == 1:
+
+                key_left = self.data[cid1, view].ravel()
+                key_right = other[cid2, mask_right].ravel()
+                mask = np.in1d(key_left, key_right)
+
+                return mask.reshape(self.data[cid1[0], view].shape)
+
+            elif len(cid1) == len(cid2):
 
                 key_left_all = []
                 key_right_all = []
@@ -196,9 +204,10 @@ class Subset(object):
                     key_left_all.append(self.data[cid1_i, view].ravel())
                     key_right_all.append(other[cid2_i, mask_right].ravel())
 
-                # TODO: The following is slow because we switch to pure Python.
-                # This is just for now, to check that the concept works, but this
-                # should be optimized once we know we want to start using it.
+                # TODO: The following is slow because we are looping in Python.
+                #       This could be made significantly faster by switching to
+                #       C/Cython.
+
                 key_left_all = zip(*key_left_all)
                 key_right_all = set(zip(*key_right_all))
 
@@ -815,19 +824,15 @@ class MaskSubsetState(SubsetState):
 
     def to_mask(self, data, view=None):
 
-        print("TO MASK", data.label)
         view = view or slice(None)
 
         # shortcut for data on the same pixel grid
         if data.pixel_component_ids == self.cids:
-            print("HERE")
             return self.mask[view].copy()
 
         # locate each element of data in the coordinate system of the mask
         vals = [data[c, view].astype(np.int) for c in self.cids]
         result = self.mask[vals]
-
-        print("VALS", vals)
 
         for v, n in zip(vals, data.shape):
             result &= ((v >= 0) & (v < n))
