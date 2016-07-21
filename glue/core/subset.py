@@ -181,29 +181,55 @@ class Subset(object):
                 self.data._recursing = True
                 s2 = Subset(other)
                 s2.subset_state = self.subset_state
-                key_right = s2.to_mask()
+                mask_right = s2.to_mask()
             except IncompatibleAttribute:
                 continue
             finally:
                 self.data._recursing = False
 
-            key_left_all = []
-            key_right_all = []
+            if len(cid1) == len(cid2):
 
-            for cid1_i, cid2_i in zip(cid1, cid2):
-                key_left_all.append(self.data[cid1_i, view].ravel())
-                key_right_all.append(other[cid2_i, key_right].ravel())
+                key_left_all = []
+                key_right_all = []
 
-            # TODO: The following is slow because we switch to pure Python.
-            # This is just for now, to check that the concept works, but this
-            # should be optimized once we know we want to start using it.
-            key_left_all = zip(*key_left_all)
-            key_right_all = set(zip(*key_right_all))
+                for cid1_i, cid2_i in zip(cid1, cid2):
+                    key_left_all.append(self.data[cid1_i, view].ravel())
+                    key_right_all.append(other[cid2_i, mask_right].ravel())
 
-            result = [key in key_right_all for key in key_left_all]
-            result = np.array(result)
+                # TODO: The following is slow because we switch to pure Python.
+                # This is just for now, to check that the concept works, but this
+                # should be optimized once we know we want to start using it.
+                key_left_all = zip(*key_left_all)
+                key_right_all = set(zip(*key_right_all))
 
-            return result.reshape(self.data[cid1_i, view].shape)
+                result = [key in key_right_all for key in key_left_all]
+                result = np.array(result)
+
+                return result.reshape(self.data[cid1_i, view].shape)
+
+            elif len(cid1) == 1:
+
+                key_left = self.data[cid1[0], view].ravel()
+                mask = np.zeros_like(key_left, dtype=bool)
+                for cid2_i in cid2:
+                    key_right = other[cid2_i, mask_right].ravel()
+                    mask |= np.in1d(key_left, key_right)
+
+                return mask.reshape(self.data[cid1[0], view].shape)
+
+            elif len(cid2) == 1:
+
+                key_right = other[cid2[0], mask_right].ravel()
+                mask = np.zeros_like(self.data[cid1[0], view].ravel(), dtype=bool)
+                for cid1_i in cid1:
+                    key_left = self.data[cid1_i, view].ravel()
+                    mask |= np.in1d(key_left, key_right)
+
+                return mask.reshape(self.data[cid1[0], view].shape)
+
+            else:
+
+                raise Exception("Either the number of components in the key join should match, or one of them should be a scalar")
 
         raise IncompatibleAttribute
 
@@ -788,15 +814,20 @@ class MaskSubsetState(SubsetState):
         return MaskSubsetState(self.mask, self.cids)
 
     def to_mask(self, data, view=None):
+
+        print("TO MASK", data.label)
         view = view or slice(None)
 
         # shortcut for data on the same pixel grid
         if data.pixel_component_ids == self.cids:
+            print("HERE")
             return self.mask[view].copy()
 
         # locate each element of data in the coordinate system of the mask
         vals = [data[c, view].astype(np.int) for c in self.cids]
         result = self.mask[vals]
+
+        print("VALS", vals)
 
         for v, n in zip(vals, data.shape):
             result &= ((v >= 0) & (v < n))

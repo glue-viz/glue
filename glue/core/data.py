@@ -173,35 +173,140 @@ class Data(object):
               cid_other='cid_like')
     def join_on_key(self, other, cid, cid_other):
         """
-        Create an *element* mapping to another dataset, by
-        joining on values of ComponentIDs in both datasets.
+        Create an *element* mapping to another dataset, by joining on values of
+        ComponentIDs in both datasets.
 
-        This join allows any subsets defined on `other` to be
-        propagated to self.
+        This join allows any subsets defined on `other` to be propagated to
+        self. The different ways to call this method are described in the
+        **Examples** section below.
 
-        :param other: :class:`~glue.core.data.Data` to join with
-        :param cid: str or :class:`glue.core.component_id.ComponentID` in this dataset to use as a key
-        :param cid_other: ComponentID in the other dataset to use as a key
+        Parameters
+        ----------
+        other : :class:`~glue.core.data.Data`
+            Data object to join with
+        cid : str or :class:`~glue.core.component_id.ComponentID` or iterable
+            Component(s) in this dataset to use as a key
+        cid_other : str or :class:`~glue.core.component_id.ComponentID` or iterable
+            Component(s) in the other dataset to use as a key
 
-        :example:
+        Examples
+        --------
 
-        >>> d1 = Data(x=[1, 2, 3, 4, 5], k1=[0, 0, 1, 1, 2], label='d1')
-        >>> d2 = Data(y=[2, 4, 5, 8, 4], k2=[1, 3, 1, 2, 3], label='d2')
-        >>> d2.join_on_key(d1, 'k2', 'k1')
+        There are several ways to use this function, depending on how many
+        components are passed to ``cid`` and ``cid_other``.
 
-        >>> s = d1.new_subset()
-        >>> s.subset_state = d1.id['x'] > 2
-        >>> s.to_mask()
-        array([False, False,  True,  True,  True], dtype=bool)
+        **Single component for each dataset**
 
-        >>> s = d2.new_subset()
-        >>> s.subset_state = d1.id['x'] > 2
-        >>> s.to_mask()
-        array([ True, False,  True,  True, False], dtype=bool)
+        First, one can specify a single component ID for both ``cid`` and
+        ``cid_other``: this is the standard mode, and joins one component from
+        one dataset to the other:
 
-        The subset state selects the last 3 items in d1. These have
-        key values k1 of 1 and 2. Thus, the selected items in d2
-        are the elements where k2 = 1 or 2.
+            >>> d1 = Data(x=[1, 2, 3, 4, 5], k1=[0, 0, 1, 1, 2], label='d1')
+            >>> d2 = Data(y=[2, 4, 5, 8, 4], k2=[1, 3, 1, 2, 3], label='d2')
+            >>> d2.join_on_key(d1, 'k2', 'k1')
+
+        Selecting all values in ``d1`` where x is greater than 2 returns
+        the last three items as expected:
+
+            >>> s = d1.new_subset()
+            >>> s.subset_state = d1.id['x'] > 2
+            >>> s.to_mask()
+            array([False, False,  True,  True,  True], dtype=bool)
+
+        The linking was done between k1 and k2, and the values of
+        k1 for the last three items are 1 and 2 - this means that the
+        first, third, and fourth item in ``d2`` will then get selected,
+        since k2 has a value of either 1 or 2 for these items.
+
+            >>> s = d2.new_subset()
+            >>> s.subset_state = d1.id['x'] > 2
+            >>> s.to_mask()
+            array([ True, False,  True,  True, False], dtype=bool)
+
+        **Multiple components**
+
+        Next, one can specify several components for each dataset: in this
+        case, the number of components given should match for both datasets.
+        This causes items in both datasets to be linked when (and only when)
+        the set of keys match between the two datasets:
+
+            >>> d1 = Data(x=[1, 2, 3, 5, 5],
+            ...           y=[0, 0, 1, 1, 2], label='d1')
+            >>> d2 = Data(a=[2, 5, 5, 8, 4],
+            ...           b=[1, 3, 2, 2, 3], label='d2')
+            >>> d2.join_on_key(d1, ('a', 'b'), ('x', 'y'))
+
+        Selecting all items where x is 5 in ``d1`` in which x is a
+        component works as expected and selects the two last items::
+
+            >>> s = d1.new_subset()
+            >>> s.subset_state = d1.id['x'] == 5
+            >>> s.to_mask()
+            array([False, False, False,  True,  True], dtype=bool)
+
+        If we apply this selection to ``d2``, only items where a is 5
+        and b is 2 will be selected:
+
+            >>> s = d2.new_subset()
+            >>> s.subset_state = d1.id['x'] == 5
+            >>> s.to_mask()
+            array([False, False,  True, False, False], dtype=bool)
+
+        and in particular, the second item (where a is 5 and b is 3) is not
+        selected.
+
+        **One-to-many and many-to-one mapping**
+
+        Finally, you can specify one component in one dataset and multiple ones
+        in the other. In the case where one component is specified for this
+        dataset and multiple ones for the other dataset, then when an item
+        is selected in the other dataset, it will cause any item in the present
+        dataset which matches any of the keys in the other data to be selected:
+
+            >>> d1 = Data(x=[1, 2, 3], label='d1')
+            >>> d2 = Data(a=[1, 1, 2],
+            ...           b=[2, 3, 3], label='d2')
+            >>> d1.join_on_key(d2, 'x', ('a', 'b'))
+
+        In this case, if we select all items in ``d2`` where a is 2, this
+        will select the third item:
+
+            >>> s = d2.new_subset()
+            >>> s.subset_state = d2.id['a'] == 2
+            >>> s.to_mask()
+            array([False, False,  True], dtype=bool)
+
+        Since we have joined the datasets using both a and b, we select
+        all items in ``d1`` where x is either the value or a or b
+        (2 or 3) which means we select the second and third item:
+
+            >>> s = d1.new_subset()
+            >>> s.subset_state = d2.id['a'] == 2
+            >>> s.to_mask()
+            array([False,  True,  True], dtype=bool)
+
+        We can also join the datasets the other way around:
+
+            >>> d1 = Data(x=[1, 2, 3], label='d1')
+            >>> d2 = Data(a=[1, 1, 2],
+            ...           b=[2, 3, 3], label='d2')
+            >>> d2.join_on_key(d1, ('a', 'b'), 'x')
+
+        In this case, selecting items in ``d1`` where x is 1 selects the
+        first item, as expected:
+
+            >>> s = d1.new_subset()
+            >>> s.subset_state = d1.id['x'] == 1
+            >>> s.to_mask()
+            array([ True, False, False], dtype=bool)
+
+        This then causes any item in ``d2`` where either a or b are 1
+        to be selected, i.e. the first two items:
+
+            >>> s = d2.new_subset()
+            >>> s.subset_state = d1.id['x'] == 1
+            >>> s.to_mask()
+            array([ True,  True, False], dtype=bool)
         """
 
         # To make things easier, we transform all component inputs to a tuple
