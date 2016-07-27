@@ -597,6 +597,13 @@ def _save_data_collection_2(dc, context):
     return result
 
 
+@saver(DataCollection, version=3)
+def _save_data_collection_3(dc, context):
+    result = _save_data_collection_2(dc, context)
+    result['subset_group_count'] = dc._sg_count
+    return result
+
+
 @loader(DataCollection)
 def _load_data_collection(rec, context):
     dc = DataCollection(list(map(context.object, rec['data'])))
@@ -612,6 +619,12 @@ def _load_data_collection_2(rec, context):
     result._subset_groups = list(map(context.object, rec['groups']))
     for grp in result.subset_groups:
         grp.register_to_hub(result.hub)
+    return result
+
+@loader(DataCollection, version=3)
+def _load_data_collection_3(rec, context):
+    result = _load_data_collection_2(rec, context)
+    result._sg_count = rec['subset_group_count']
     return result
 
 
