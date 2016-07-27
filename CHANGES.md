@@ -9,7 +9,8 @@ v0.9.0 (unreleased)
 v0.8.3 (unreleased)
 -------------------
 
-* No changes yet.
+* Fixed a bug that caused new subset colors to incorrectly start from the start
+  of the color cycle after loading a session. [#1055]
 
 v0.8.2 (2016-07-06)
 -------------------
