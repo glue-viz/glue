@@ -150,6 +150,7 @@ class QtPlotlyExporter(QtGui.QDialog):
             traceback.print_exc(file=sys.stdout)
             print('-' * 60)
             self.set_status("An unexpected error occurred", color='red')
+            return
 
         self.set_status('Exporting succeeded', color='blue')
 
