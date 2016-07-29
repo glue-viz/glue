@@ -155,9 +155,10 @@ class TestQtPlotlyExporter():
 
         with patch('plotly.tools.CREDENTIALS_FILE', credentials_file):
             with patch('plotly.plotly.plot', mock.MagicMock()):
-                exporter = self.get_exporter()
-                exporter.accept()
-                assert exporter.text_status.text() == 'Exporting succeeded'
+                with patch('webbrowser.open_new_tab') as open_new_tab:
+                    exporter = self.get_exporter()
+                    exporter.accept()
+                    assert exporter.text_status.text() == 'Exporting succeeded'
 
     ERRORS = [
         (PlotlyError(SIGN_IN_ERROR), 'Authentication with username batman failed'),
@@ -177,9 +178,10 @@ class TestQtPlotlyExporter():
 
         with patch('plotly.tools.CREDENTIALS_FILE', credentials_file):
             with patch('plotly.plotly.plot', plot):
-                exporter = self.get_exporter()
-                exporter.accept()
-                assert exporter.text_status.text() == status
+                with patch('webbrowser.open_new_tab') as open_new_tab:
+                    exporter = self.get_exporter()
+                    exporter.accept()
+                    assert exporter.text_status.text() == status
 
     @pytest.mark.parametrize(('error', 'status'), ERRORS)
     def test_fix_url(self, tmpdir, error, status):
