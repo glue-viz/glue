@@ -183,29 +183,3 @@ class QtPlotlyExporter(QtGui.QDialog):
         self.ui.text_status.setStyleSheet("color: {0}".format(color))
         QtGui.QApplication.instance().processEvents()
 
-
-# if __name__ == "__main__":
-#
-#     import plotly.graph_objs as go
-#     # Create random data with numpy
-#     import numpy as np
-#
-#     N = 1000
-#     random_x = np.random.randn(N)
-#     random_y = np.random.randn(N)
-#
-#     # Create a trace
-#     trace = go.Scatter(
-#         x=random_x,
-#         y=random_y,
-#         mode='markers'
-#     )
-#
-#     args = [[trace]]
-#     kwargs = {'filename': 'basic-scatter'}
-#
-#     from glue.external.qt import get_qapp
-#     app = get_qapp()
-#     options = QtPlotlyExporter(plotly_args=args, plotly_kwargs=kwargs)
-#     options.raise_()
-#     options.exec_()
