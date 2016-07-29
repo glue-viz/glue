@@ -8,6 +8,7 @@ import plotly
 from plotly.exceptions import PlotlyError
 from mock import patch
 
+from glue.tests.helpers import requires_plotly
 from glue.core import Data, DataCollection
 from glue.app.qt import GlueApplication
 from glue.viewers.histogram.qt import HistogramWidget
@@ -47,6 +48,7 @@ def make_credentials_file(path, username='', api_key=''):
     plotly.files.FILE_CONTENT[path] = credentials
 
 
+@requires_plotly
 class TestQtPlotlyExporter():
 
     def setup_class(self):
