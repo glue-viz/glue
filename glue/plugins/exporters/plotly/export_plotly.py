@@ -275,7 +275,7 @@ def can_save_plotly(application):
         raise ValueError("Plotly Export supports at most 4 plots")
 
 
-def save_plotly(application, label):
+def save_plotly(application):
     """
     Save a Glue session to a plotly plot
 
@@ -290,7 +290,6 @@ def save_plotly(application, label):
     """
 
     args, kwargs = build_plotly_call(application)
-    kwargs['filename'] = label
 
     logging.getLogger(__name__).debug(args, kwargs)
 

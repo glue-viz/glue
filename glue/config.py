@@ -274,7 +274,7 @@ class ExporterRegistry(Registry):
       'label': exporter doesn't write to disk, but needs a label
     """
 
-    def add(self, label, exporter, checker, outmode='file'):
+    def add(self, label, exporter, checker, outmode=None):
         """
         Add a new exporter
         :param label: Short label for the exporter
@@ -289,7 +289,7 @@ class ExporterRegistry(Registry):
         ``exporter`` should raise an exception if export isn't possible.
 
         :param outmode: What kind of output is created?
-        :type outmode: str ('file' | 'directory' | 'label')
+        :type outmode: str ('file' | 'directory' | 'label') or None
         """
         self.members.append((label, exporter, checker, outmode))
 
