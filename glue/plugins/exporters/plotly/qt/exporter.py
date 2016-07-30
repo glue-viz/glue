@@ -3,10 +3,6 @@ import sys
 import traceback
 import webbrowser
 
-from plotly import plotly
-from plotly.exceptions import PlotlyError
-from plotly.tools import set_credentials_file
-
 from glue.external.qt import QtGui
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui
@@ -48,6 +44,8 @@ class QtPlotlyExporter(QtGui.QDialog):
 
         # Find out stored credentials (note that this will create the
         # credentials file if it doesn't already exist)
+
+        from plotly import plotly
 
         credentials = plotly.get_credentials()
         config_available = credentials['username'] != "" and credentials['api_key'] != ""
@@ -108,6 +106,10 @@ class QtPlotlyExporter(QtGui.QDialog):
             else:
                 auth['username'] = self.username
                 auth['api_key'] = self.api_key
+
+        from plotly import plotly
+        from plotly.exceptions import PlotlyError
+        from plotly.tools import set_credentials_file
 
         # Signing in - at the moment this will not check the credentials so we
         # can't catch any issues until later, but I've opened an issue for this:

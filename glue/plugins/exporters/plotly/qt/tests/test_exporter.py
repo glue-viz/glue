@@ -4,9 +4,13 @@ import json
 
 import mock
 import pytest
-import plotly
-from plotly.exceptions import PlotlyError
 from mock import patch
+
+try:
+    import plotly
+    from plotly.exceptions import PlotlyError
+except ImportError:
+    pytest.skip()
 
 from glue.tests.helpers import requires_plotly
 from glue.core import Data, DataCollection
