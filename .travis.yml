@@ -29,7 +29,7 @@ env:
     - SETUP_XVFB=True
     # Note that we need to specify requests 2.9 because of a bug in the version check in linkchecker
     - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.3 xlrd pillow pytest mock coverage pyyaml requests=2.9 sphinx_rtd_theme"
-    - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli ginga"
+    - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli ginga plotly"
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
     - secure: "SU9BYH8d9eNigypG3lC83s0NY6Mq9AHGKXyEGeXDtz1npJIC1KHdzPMP1v1K3dzCgl1p6ReMXPjZMCENyfNkad/xvzTzGk0Nu/4BjihrUPV6+ratVeLpv0JLm8ikh8q+sZURkdtzUOlds+Hfn5ku4LdpT87tcKHY9TINAGA34ZM="
     - AWS_ACCESS_KEY_ID: AKIAI2ERWDHLW3W24X3A
@@ -52,14 +52,14 @@ matrix:
           env:
             - PYTHON_VERSION=2.7 NUMPY_VERSION=dev
             # We don't test ginga with Numpy dev due to a bug in ginga
-            - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli"
+            - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli plotly"
 
         # PyQt5
         - os: linux
           env:
             - PYTHON_VERSION=2.7 NUMPY_VERSION=1.10 ASTROPY_VERSION=1.0 QT_PKG=pyqt5
             # We don't test ginga with PyQt5 due to a bug in ginga with QT_API
-            - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli"
+            - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli plotly"
 
         # The following configuration tests that glue functions with minimal
         # dependencies. The --no-deps is to prevent scipy from getting
@@ -108,7 +108,7 @@ matrix:
       - os: linux
         env:
           - PYTHON_VERSION=2.7 NUMPY_VERSION=dev
-          - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli"
+          - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli plotly"
 
       - os: linux
         env: PYTHON_VERSION=2.7 ASTROPY_VERSION=1.0 QT_PKG=pyside

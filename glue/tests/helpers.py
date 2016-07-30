@@ -62,6 +62,8 @@ requires_pil_or_skimage = pytest.mark.skipif(str(not SKIMAGE_INSTALLED and not P
 
 GINGA_INSTALLED, requires_ginga = make_skipper('ginga')
 
+PLOTLY_INSTALLED, requires_plotly = make_skipper('plotly')
+
 H5PY_INSTALLED, requires_h5py = make_skipper('h5py')
 
 PYQT4_INSTALLED, requires_pyqt4 = make_skipper('PyQt4')

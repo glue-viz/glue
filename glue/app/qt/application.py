@@ -697,7 +697,9 @@ class GlueApplication(Application, QtGui.QMainWindow):
     @messagebox_on_error("Failed to export session")
     def _choose_export_session(self, saver, checker, outmode):
         checker(self)
-        if outmode in ['file', 'directory']:
+        if outmode is None:
+            return saver(self)
+        elif outmode in ['file', 'directory']:
             outfile, file_filter = QtGui.QFileDialog.getSaveFileName(self)
             if not outfile:
                 return

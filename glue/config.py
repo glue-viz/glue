@@ -274,22 +274,27 @@ class ExporterRegistry(Registry):
       'label': exporter doesn't write to disk, but needs a label
     """
 
-    def add(self, label, exporter, checker, outmode='file'):
+    def add(self, label, exporter, checker, outmode=None):
         """
         Add a new exporter
-        :param label: Short label for the exporter
-        :type label: str
 
-        :param exporter: exporter function
-        :type exporter: function(application, path)
+        Parameters
+        ----------
+        label : str
+            Short label for the exporter
 
-        :param checker: function that checks if save is possible
-        :type exporter: function(application)
+        exporter : func
+            Exporter function which takes two arguments: the application and
+            optionally the path or label to create. This function should raise
+            an exception if export isn't possible.
 
-        ``exporter`` should raise an exception if export isn't possible.
+        checker : func
+            Function that checks if saving is possible, which takes one
+            argument: the application.
 
-        :param outmode: What kind of output is created?
-        :type outmode: str ('file' | 'directory' | 'label')
+        outmode : str or `None`
+            Indicates what kind of output is created. This can be either set to
+            ``'file'``, ``'directory'``, ``'label'``, or `None`.
         """
         self.members.append((label, exporter, checker, outmode))
 

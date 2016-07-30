@@ -11,6 +11,7 @@ environment:
                         # of 32 bit and 64 bit builds are needed, move this
                         # to the matrix section.
       CONDA_DEPENDENCIES: "scipy cython pyqt matplotlib h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage ipython ipykernel qtconsole traitlets=4.1.0"
+      PIP_DEPENDENCIES: "plotly"
 
   matrix:
       - PYTHON_VERSION: "2.7"
