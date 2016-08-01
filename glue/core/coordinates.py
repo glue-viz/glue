@@ -238,7 +238,10 @@ def coordinates_from_header(header):
     # We check whether the header contains at least CRVAL1 - if not, we would
     # end up with a default WCS that isn't quite 1 to 1 (because of a 1-pixel
     # offset) so better use Coordinates in that case.
-    if 'CRVAL1' in header:
+
+    from astropy.io.fits import Header
+
+    if isinstance(header, Header) and 'CRVAL1' in header:
         try:
             return WCSCoordinates(header)
         except Exception as e:
@@ -280,17 +283,4 @@ def header_from_string(string):
     Convert a string to a FITS header
     """
     from astropy.io import fits
-    cards = []
-    for s in string.splitlines():
-        try:
-            l, r = s.split('=')
-            key = l.strip()
-            value = r.split('/')[0].strip()
-            try:
-                value = int(value)
-            except ValueError:
-                pass
-        except ValueError:
-            continue
-        cards.append(fits.Card(key, value))
-    return fits.Header(cards)
+    return fits.Header.fromstring(string, sep='\n')

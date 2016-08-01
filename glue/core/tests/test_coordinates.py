@@ -155,32 +155,30 @@ class TestWcsCoordinates(object):
 
 class TestCoordinatesFromHeader(object):
 
-    def test_2d(self):
+    def test_2d_nowcs(self):
         hdr = {"NAXIS": 2}
-        with patch('glue.core.coordinates.WCSCoordinates') as wcs:
-            coord = coordinates_from_header(hdr)
-            wcs.assert_called_once_with(hdr)
+        coord = coordinates_from_header(hdr)
+        assert type(coord) == Coordinates
+
+    def test_2d(self):
+        hdr = header_from_string(HDR_2D_VALID)
+        coord = coordinates_from_header(hdr)
+        assert type(coord) == WCSCoordinates
+
+    def test_3d_nowcs(self):
+        hdr = HDR_3D_VALID_NOWCS
+        coord = coordinates_from_header(hdr)
+        assert type(coord) == Coordinates
 
     def test_3d(self):
-        hdr = {"NAXIS": 3}
-        with patch('glue.core.coordinates.WCSCoordinates') as wcs:
-            coord = coordinates_from_header(hdr)
-            wcs.assert_called_once_with(hdr)
+        hdr = header_from_string(HDR_3D_VALID_WCS)
+        coord = coordinates_from_header(hdr)
+        assert type(coord) == WCSCoordinates
 
-    @requires_astropy
     def test_nod(self):
         hdr = 0
-        with patch('glue.core.coordinates.Coordinates') as wcs:
-            coord = coordinates_from_header(hdr)
-            wcs.assert_called_once_with()
-
-    def test_attribute_error(self):
-        hdr = {"NAXIS": 2}
-        with patch('glue.core.coordinates.WCSCoordinates') as wcs:
-            wcs.side_effect = AttributeError
-            coord = coordinates_from_header(hdr)
-            wcs.assert_called_once_with(hdr)
-            assert type(coord) is Coordinates
+        coord = coordinates_from_header(hdr)
+        assert type(coord) == Coordinates
 
 HDR_2D_VALID = """
 SIMPLE  =                    T / Written by IDL:  Wed Jul 27 10:01:47 2011
@@ -212,8 +210,7 @@ NAXIS2  =                  128 /
 NAXIS3  =                  128 /
 """
 
-HDR_3D_VALID_WCS = """
-SIMPLE  =                    T / Written by IDL:  Thu Jul  7 15:37:21 2011
+HDR_3D_VALID_WCS = """SIMPLE  =                    T / Written by IDL:  Thu Jul  7 15:37:21 2011
 BITPIX  =                  -32 / Number of bits per data pixel
 NAXIS   =                    3 / Number of data axes
 NAXIS1  =                   82 /
