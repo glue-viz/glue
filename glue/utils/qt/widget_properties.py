@@ -176,7 +176,8 @@ class TextProperty(WidgetProperty):
 
     def setter(self, widget, value):
         widget.setText(value)
-        widget.editingFinished.emit()
+        if hasattr(widget, 'editingFinished'):
+            widget.editingFinished.emit()
 
 
 class ButtonProperty(WidgetProperty):
