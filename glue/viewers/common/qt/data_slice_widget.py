@@ -21,6 +21,7 @@ from glue.icons.qt import get_icon
 class SliceWidget(QtGui.QWidget):
 
     label = TextProperty('_ui_label')
+    slider_label = TextProperty('_ui_slider.label')
     slice_center = ValueProperty('_ui_slider.slider')
     mode = CurrentComboProperty('_ui_mode')
     use_world = ButtonProperty('_ui_slider.checkbox_world')
@@ -36,7 +37,7 @@ class SliceWidget(QtGui.QWidget):
         if aggregation is not None:
             raise NotImplemented("Aggregation option not implemented")
 
-        self._world = world
+        self._world = np.asarray(world)
         self._world_warning = world_warning
 
         layout = QtGui.QVBoxLayout()
@@ -140,6 +141,7 @@ class SliceWidget(QtGui.QWidget):
         if self.use_world:
             # Don't want to assume world is sorted, pick closest value
             value = np.argmin(np.abs(self._world - float(text)))
+            self._ui_slider.label.setText(str(self._world[value]))
         else:
             value = int(text)
         self._ui_slider.slider.setValue(value)

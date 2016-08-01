@@ -176,6 +176,7 @@ class TextProperty(WidgetProperty):
 
     def setter(self, widget, value):
         widget.setText(value)
+        widget.editingFinished.emit()
 
 
 class ButtonProperty(WidgetProperty):
