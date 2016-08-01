@@ -23,6 +23,31 @@ class Coordinates(object):
     def world2pixel(self, *args):
         return args
 
+    def world_axis(self, data, axis):
+        """
+        Find the world coordinates along a given dimension, and which for now we
+        center on the pixel origin.
+
+        Parameters
+        ----------
+        data : `~glue.core.data.Data`
+            The data to compute the coordinate axis for (this is used to
+            determine the size of the axis)
+        axis : int
+            The axis to compute, in Numpy axis order
+
+        Notes
+        -----
+        This method computes the axis values using pixel positions of zero along
+        all other axes. This will therefore only give the correct result for
+        non-dependent axes (which can be checked using the ``dependent_axes``
+        method)
+        """
+        wcs_axis = data.ndim - 1 - axis
+        pixel = [np.repeat(0, data.shape[axis])] * data.ndim
+        pixel[wcs_axis] = np.arange(data.shape[axis])
+        return self.pixel2world(*pixel)[wcs_axis]
+
     def axis_label(self, axis):
         return "World %i" % axis
 
