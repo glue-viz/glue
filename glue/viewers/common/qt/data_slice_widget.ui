@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>240</width>
-    <height>94</height>
+    <width>245</width>
+    <height>113</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -249,7 +249,7 @@
       <string notr="true">color: rgb(255, 33, 28)</string>
      </property>
      <property name="text">
-      <string>Warning: real coordinates are not aligned with pixel grid, and may be approximate or incorrect</string>
+      <string>Warning: real coordinates are not aligned with pixel grid. The coordinate shown above is the value at the center of the slice.</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

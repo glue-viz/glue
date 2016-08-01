@@ -38,15 +38,18 @@ class Coordinates(object):
 
         Notes
         -----
-        This method computes the axis values using pixel positions of zero along
-        all other axes. This will therefore only give the correct result for
-        non-dependent axes (which can be checked using the ``dependent_axes``
-        method)
+        This method computes the axis values using pixel positions at the center
+        of the data along all other axes. This will therefore only give the
+        correct result for non-dependent axes (which can be checked using the
+        ``dependent_axes`` method)
         """
-        wcs_axis = data.ndim - 1 - axis
-        pixel = [np.repeat(0, data.shape[axis])] * data.ndim
-        pixel[wcs_axis] = np.arange(data.shape[axis])
-        return self.pixel2world(*pixel)[wcs_axis]
+        pixel = []
+        for i, s in enumerate(data.shape):
+            if i == axis:
+                pixel.append(np.arange(data.shape[axis]))
+            else:
+                pixel.append(np.repeat((s - 1) / 2, data.shape[axis]))
+        return self.pixel2world(*pixel[::-1])[::-1][axis]
 
     def axis_label(self, axis):
         return "World %i" % axis
