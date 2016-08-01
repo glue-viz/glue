@@ -5,32 +5,39 @@ import os
 from functools import partial
 from collections import Counter
 
+import numpy as np
+
+from glue.core import Coordinates
 from glue.external.qt import QtGui, QtCore
 from glue.utils.qt import load_ui
 from glue.utils.qt.widget_properties import (TextProperty,
-                                       ValueProperty,
-                                       CurrentComboProperty)
+                                             ButtonProperty,
+                                             ValueProperty,
+                                             CurrentComboProperty)
 from glue.utils import nonpartial
 from glue.icons.qt import get_icon
 
 
 class SliceWidget(QtGui.QWidget):
+
     label = TextProperty('_ui_label')
     slice_center = ValueProperty('_ui_slider.slider')
     mode = CurrentComboProperty('_ui_mode')
+    use_world = ButtonProperty('_ui_slider.checkbox_world')
 
     slice_changed = QtCore.Signal(int)
     mode_changed = QtCore.Signal(str)
 
-    def __init__(self, label='', pix2world=None, lo=0, hi=10,
-                 parent=None, aggregation=None):
+    def __init__(self, label='', world=None, lo=0, hi=10,
+                 parent=None, aggregation=None, world_warning=False):
 
         super(SliceWidget, self).__init__(parent)
 
         if aggregation is not None:
             raise NotImplemented("Aggregation option not implemented")
-        if pix2world is not None:
-            raise NotImplemented("Pix2world option not implemented")
+
+        self._world = world
+        self._world_warning = world_warning
 
         layout = QtGui.QVBoxLayout()
         layout.setContentsMargins(3, 1, 3, 1)
@@ -54,7 +61,7 @@ class SliceWidget(QtGui.QWidget):
 
         slider = load_ui('data_slice_widget.ui', None,
                          directory=os.path.dirname(__file__))
-        slider.slider
+        self._ui_slider = slider
 
         slider.button_first.setStyleSheet('border: 0px')
         slider.button_first.setIcon(get_icon('playback_first'))
@@ -76,11 +83,11 @@ class SliceWidget(QtGui.QWidget):
         slider.slider.setValue((lo + hi) / 2)
         slider.slider.valueChanged.connect(lambda x:
                                            self.slice_changed.emit(self.mode))
-        slider.slider.valueChanged.connect(lambda x: slider.label.setText(str(x)))
+        slider.slider.valueChanged.connect(nonpartial(self.set_label_from_slider))
 
         slider.label.setMinimumWidth(50)
         slider.label.setText(str(slider.slider.value()))
-        slider.label.textChanged.connect(lambda x: slider.slider.setValue(int(x)))
+        slider.label.editingFinished.connect(nonpartial(self.set_slider_from_label))
 
         self._play_timer = QtCore.QTimer()
         self._play_timer.setInterval(500)
@@ -94,17 +101,48 @@ class SliceWidget(QtGui.QWidget):
         slider.button_next.clicked.connect(nonpartial(self._browse_slice, 'next'))
         slider.button_last.clicked.connect(nonpartial(self._browse_slice, 'last'))
 
+        slider.checkbox_world.toggled.connect(nonpartial(self.set_label_from_slider))
+
+        if world is None:
+            self.use_world = False
+            slider.checkbox_world.hide()
+        else:
+            self.use_world = not world_warning
+
         layout.addWidget(slider)
 
         self.setLayout(layout)
 
         self._ui_label = label
-        self._ui_slider = slider
         self._ui_mode = mode
         self._update_mode()
         self._frozen = False
 
         self._play_speed = 0
+
+        self.set_label_from_slider()
+
+    def set_label_from_slider(self):
+        value = self._ui_slider.slider.value()
+        if self.use_world:
+            text = str(self._world[value])
+            if self._world_warning:
+                self._ui_slider.label_warning.show()
+            else:
+                self._ui_slider.label_warning.hide()
+        else:
+            text = str(value)
+            self._ui_slider.label_warning.hide()
+        self._ui_slider.label.setText(text)
+
+    def set_slider_from_label(self):
+        text = self._ui_slider.label.text()
+        if self.use_world:
+            # Don't want to assume world is sorted, pick closest value
+            value = np.argmin(np.abs(self._world - float(text)))
+        else:
+            value = int(text)
+        self._ui_slider.slider.setValue(value)
 
     def _adjust_play(self, action):
         if action == 'stop':
@@ -238,8 +276,20 @@ class DataSlice(QtGui.QWidget):
 
         # create slider widget for each dimension...
         for i, s in enumerate(data.shape):
+
+            # TODO: For now we simply pass a single set of world coordinates,
+            # but we will need to generalize this in future. We deliberately
+            # check the type of data.coords here since we want to treat
+            # subclasses differently.
+            if type(data.coords) != Coordinates:
+                world = data.coords.world_axis(data, i)
+                world_warning = len(data.coords.dependent_axes(i)) > 1
+            else:
+                world = None
+                world_warning = False
+
             slider = SliceWidget(data.get_world_component_id(i).label,
-                                 hi=s - 1)
+                                 hi=s - 1, world=world, world_warning=world_warning)
 
             if i == self.ndim - 1:
                 slider.mode = 'x'
