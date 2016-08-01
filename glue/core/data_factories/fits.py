@@ -4,7 +4,7 @@ import warnings
 from os.path import basename
 from collections import OrderedDict
 
-from glue.core.coordinates import coordinates_from_header
+from glue.core.coordinates import coordinates_from_header, WCSCoordinates
 from glue.core.data import Component, Data
 from glue.config import data_factory
 
@@ -138,8 +138,9 @@ def is_table_hdu(hdu):
 
 
 def has_wcs(coords):
-    return any(axis['coordinate_type'] is not None
-               for axis in coords.wcs.get_axis_types())
+    return (isinstance(coords, WCSCoordinates) and
+               any(axis['coordinate_type'] is not None
+               for axis in coords.wcs.get_axis_types()))
 
 
 def is_casalike(filename, **kwargs):

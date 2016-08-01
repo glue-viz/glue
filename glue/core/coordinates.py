@@ -23,6 +23,34 @@ class Coordinates(object):
     def world2pixel(self, *args):
         return args
 
+    def world_axis(self, data, axis):
+        """
+        Find the world coordinates along a given dimension, and which for now we
+        center on the pixel origin.
+
+        Parameters
+        ----------
+        data : `~glue.core.data.Data`
+            The data to compute the coordinate axis for (this is used to
+            determine the size of the axis)
+        axis : int
+            The axis to compute, in Numpy axis order
+
+        Notes
+        -----
+        This method computes the axis values using pixel positions at the center
+        of the data along all other axes. This will therefore only give the
+        correct result for non-dependent axes (which can be checked using the
+        ``dependent_axes`` method)
+        """
+        pixel = []
+        for i, s in enumerate(data.shape):
+            if i == axis:
+                pixel.append(np.arange(data.shape[axis]))
+            else:
+                pixel.append(np.repeat((s - 1) / 2, data.shape[axis]))
+        return self.pixel2world(*pixel[::-1])[::-1][axis]
+
     def axis_label(self, axis):
         return "World %i" % axis
 
@@ -206,15 +234,23 @@ def coordinates_from_header(header):
 
     :rtype: :class:`~glue.core.coordinates.Coordinates`
     """
-    try:
-        return WCSCoordinates(header)
-    except Exception as e:
-        logging.getLogger(__name__).warn("\n\n*******************************\n"
-                                         "Encounted an error during WCS parsing. "
-                                         "Discarding world coordinates! "
-                                         "\n%s\n"
-                                         "*******************************\n\n" % e
-                                         )
+
+    # We check whether the header contains at least CRVAL1 - if not, we would
+    # end up with a default WCS that isn't quite 1 to 1 (because of a 1-pixel
+    # offset) so better use Coordinates in that case.
+
+    from astropy.io.fits import Header
+
+    if isinstance(header, Header) and 'CRVAL1' in header:
+        try:
+            return WCSCoordinates(header)
+        except Exception as e:
+            logging.getLogger(__name__).warn("\n\n*******************************\n"
+                                             "Encounted an error during WCS parsing. "
+                                             "Discarding world coordinates! "
+                                             "\n%s\n"
+                                             "*******************************\n\n" % e
+                                             )
     return Coordinates()
 
 
@@ -247,17 +283,4 @@ def header_from_string(string):
     Convert a string to a FITS header
     """
     from astropy.io import fits
-    cards = []
-    for s in string.splitlines():
-        try:
-            l, r = s.split('=')
-            key = l.strip()
-            value = r.split('/')[0].strip()
-            try:
-                value = int(value)
-            except ValueError:
-                pass
-        except ValueError:
-            continue
-        cards.append(fits.Card(key, value))
-    return fits.Header(cards)
+    return fits.Header.fromstring(string, sep='\n')

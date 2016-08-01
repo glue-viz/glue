@@ -37,6 +37,39 @@ class TestSliceWidget(object):
         s._ui_slider.button_prev.click()
         assert s.slice_center == 9
 
+    def test_slice_world(self):
+
+        s = SliceWidget(lo=0, hi=5, world=[1, 3, 5, 5.5, 8, 12])
+
+        # Check switching between world and pixel coordinates
+        s.slice_center = 0
+        assert s.slider_label == '1.0'
+        s.use_world = False
+        assert s.slider_label == '0'
+        s.slice_center = 3
+        assert s.slider_label == '3'
+        s.use_world = True
+        assert s.slider_label == '5.5'
+
+        # Round to nearest
+        s.slider_label = '11'
+        assert s.slice_center == 5
+        assert s.slider_label == '12.0'
+
+        # Make sure out of bound values work
+        s.slider_label = '20'
+        assert s.slice_center == 5
+        assert s.slider_label == '12.0'
+        s.slider_label = '-10'
+        assert s.slice_center == 0
+        assert s.slider_label == '1.0'
+
+        # And disable world and try and set by pixel
+        s.use_world = False
+        s.slider_label = '4'
+        assert s.slice_center == 4
+        assert s.slider_label == '4'
+
 
 class TestArraySlice(object):
 
