@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 import pytest
 import numpy as np
 from mock import patch
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_allclose
 
 from glue.tests.helpers import requires_astropy
 
@@ -41,8 +41,8 @@ class TestWcsCoordinates(object):
         x, y = 250., 187.5
         result = coord.pixel2world(x, y)
         expected = 359.9832692105993601, 5.0166664867400375
-        assert_almost_equal(result[0], expected[0])
-        assert_almost_equal(result[1], expected[1])
+        assert_allclose(result[0], expected[0])
+        assert_allclose(result[1], expected[1])
 
     def test_pixel2world_different_input_types(self):
         hdr = self.default_header()
@@ -51,8 +51,8 @@ class TestWcsCoordinates(object):
         x, y = 250, 187.5
         result = coord.pixel2world(x, y)
         expected = 359.9832692105993601, 5.0166664867400375
-        assert_almost_equal(result[0], expected[0])
-        assert_almost_equal(result[1], expected[1])
+        assert_allclose(result[0], expected[0])
+        assert_allclose(result[1], expected[1])
 
     def test_pixel2world_list(self):
         hdr = self.default_header()
@@ -65,7 +65,7 @@ class TestWcsCoordinates(object):
 
         for i in range(0, 1):
             for r, e in zip(result[i], expected[i]):
-                assert_almost_equal(r, e)
+                assert_allclose(r, e)
 
     def test_pixel2world_numpy(self):
         hdr = self.default_header()
@@ -102,7 +102,7 @@ class TestWcsCoordinates(object):
         result = coord.world2pixel(x, y)
         for i in range(0, 1):
             for r, e in zip(result[i], expected[i]):
-                assert_almost_equal(r, e)
+                assert_allclose(r, e)
 
     def test_world2pixel_scalar(self):
         hdr = self.default_header()
@@ -112,8 +112,8 @@ class TestWcsCoordinates(object):
         x, y = 0, 0
 
         result = coord.world2pixel(x, y)
-        assert_almost_equal(result[0], expected[0], 3)
-        assert_almost_equal(result[1], expected[1], 3)
+        assert_allclose(result[0], expected[0], 3)
+        assert_allclose(result[1], expected[1], 3)
 
     def test_world2pixel_mismatched_input(self):
         coord = WCSCoordinates(self.default_header())
@@ -121,8 +121,8 @@ class TestWcsCoordinates(object):
         expected = coord.world2pixel(x, y[0])
 
         result = coord.world2pixel(x, y)
-        assert_almost_equal(result[0], expected[0])
-        assert_almost_equal(result[1], expected[1])
+        assert_allclose(result[0], expected[0])
+        assert_allclose(result[1], expected[1])
 
     def test_pixel2world_mismatched_input(self):
         coord = WCSCoordinates(self.default_header())
@@ -130,8 +130,8 @@ class TestWcsCoordinates(object):
         expected = coord.pixel2world(x[0], y)
 
         result = coord.pixel2world(x, y)
-        assert_almost_equal(result[0], expected[0])
-        assert_almost_equal(result[1], expected[1])
+        assert_allclose(result[0], expected[0])
+        assert_allclose(result[1], expected[1])
 
     def test_pixel2world_invalid_input(self):
         coord = WCSCoordinates(None)
@@ -151,6 +151,30 @@ class TestWcsCoordinates(object):
 
         assert coord.axis_label(0) == 'Galactic Latitude'
         assert coord.axis_label(1) == 'Galactic Longitude'
+
+
+@requires_astropy
+def test_world_axis_wcs():
+
+    from astropy.io import fits
+
+    hdr = fits.Header()
+    hdr.update('NAXIS', 2)
+    hdr.update('CRVAL1', 0)
+    hdr.update('CRVAL2', 5)
+    hdr.update('CRPIX1', 2)
+    hdr.update('CRPIX2', 1)
+    hdr.update('CTYPE1', 'XOFFSET')
+    hdr.update('CTYPE2', 'YOFFSET')
+    hdr.update('CD1_1', -2.)
+    hdr.update('CD1_2', 0.)
+    hdr.update('CD2_1', 0.)
+    hdr.update('CD2_2', 2.)
+
+    data = np.ones((3, 4))
+    coord = WCSCoordinates(hdr)
+    assert_allclose(coord.world_axis(data, 0), [5, 7, 9])
+    assert_allclose(coord.world_axis(data, 1), [2, 0, -2, -4])
 
 
 class TestCoordinatesFromHeader(object):
