@@ -231,15 +231,20 @@ def coordinates_from_header(header):
 
     :rtype: :class:`~glue.core.coordinates.Coordinates`
     """
-    try:
-        return WCSCoordinates(header)
-    except Exception as e:
-        logging.getLogger(__name__).warn("\n\n*******************************\n"
-                                         "Encounted an error during WCS parsing. "
-                                         "Discarding world coordinates! "
-                                         "\n%s\n"
-                                         "*******************************\n\n" % e
-                                         )
+
+    # We check whether the header contains at least CRVAL1 - if not, we would
+    # end up with a default WCS that isn't quite 1 to 1 (because of a 1-pixel
+    # offset) so better use Coordinates in that case.
+    if 'CRVAL1' in header:
+        try:
+            return WCSCoordinates(header)
+        except Exception as e:
+            logging.getLogger(__name__).warn("\n\n*******************************\n"
+                                             "Encounted an error during WCS parsing. "
+                                             "Discarding world coordinates! "
+                                             "\n%s\n"
+                                             "*******************************\n\n" % e
+                                             )
     return Coordinates()
 
 
