@@ -85,7 +85,7 @@ class ComponentIDComboHelper(HubListener):
         self._categorical = value
         self.refresh()
 
-    def append(self, data):
+    def append_data(self, data):
 
         if self.hub is None:
             if data.hub is None:
@@ -99,8 +99,24 @@ class ComponentIDComboHelper(HubListener):
 
         self.refresh()
 
-    def remove(self, data):
+    def remove_data(self, data):
         self._data.remove(data)
+        self.refresh()
+
+    def set_multiple_data(self, datasets):
+        """
+        Add multiple datasets to the combo in one go (and clear any previous datasets).
+
+        Parameters
+        ----------
+        datasets : list
+            The list of :class:`~glue.core.data.Data` objects to add
+        """
+        try:
+            self._data.clear()
+        except AttributeError:  # PY2
+            self._data[:] = []
+        self._data.extend(datasets)
         self.refresh()
 
     @property
@@ -162,7 +178,7 @@ class ComponentIDComboHelper(HubListener):
                       handler=nonpartial(self.refresh),
                       filter=lambda msg: msg.data in self._data)
         hub.subscribe(self, DataCollectionDeleteMessage,
-                      handler=lambda msg: self.remove(msg.data),
+                      handler=lambda msg: self.remove_data(msg.data),
                       filter=lambda msg: msg.sender is self._data_collection)
 
     def unregister(self, hub):
@@ -197,14 +213,14 @@ class BaseDataComboHelper(HubListener):
         for helper in self._component_id_helpers:
             helper.clear()
             if self._data is not None:
-                helper.append(self._data)
+                helper.append_data(self._data)
             helper.refresh()
 
     def add_component_id_combo(self, combo):
         helper = ComponentIDComboHelper(combo)
-        self._component_id_helpers.append(helper)
+        self._component_id_helpers.append_data(helper)
         if self._data is not None:
-            helper.append(self._data)
+            helper.append_data(self._data)
 
     @property
     def hub(self):
@@ -226,8 +242,8 @@ class ManualDataComboHelper(BaseDataComboHelper):
     that is manually curated.
 
     Datasets are added and removed using the
-    :meth:`~ManualDataComboHelper.append` and
-    :meth:`~ManualDataComboHelper.remove` methods.
+    :meth:`~ManualDataComboHelper.append_data` and
+    :meth:`~ManualDataComboHelper.remove_data` methods.
 
     Parameters
     ----------
@@ -249,11 +265,11 @@ class ManualDataComboHelper(BaseDataComboHelper):
         self._datasets = []
         self.hub = data_collection.hub
 
-    def append(self, data):
+    def append_data(self, data):
         self._datasets.append(data)
         self.refresh()
 
-    def remove(self, data):
+    def remove_data(self, data):
         self._datasets.remove(data)
         self.refresh()
 
@@ -265,7 +281,7 @@ class ManualDataComboHelper(BaseDataComboHelper):
                       handler=nonpartial(self.refresh),
                       filter=lambda msg: msg.sender in self._datasets)
         hub.subscribe(self, DataCollectionDeleteMessage,
-                      handler=lambda msg: self.remove(msg.data),
+                      handler=lambda msg: self.remove_data(msg.data),
                       filter=lambda msg: msg.sender is self._data_collection)
 
 
