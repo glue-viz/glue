@@ -25,14 +25,14 @@ def test_component_id_combo_helper():
     data1 = Data(x=[1,2,3], y=[2,3,4], label='data1')
 
     dc.append(data1)
-    helper.append(data1)
+    helper.append_data(data1)
 
     assert _items_as_string(combo) == "x:y"
 
     data2 = Data(a=[1,2,3], b=['a','b','c'], label='data2')
 
     dc.append(data2)
-    helper.append(data2)
+    helper.append_data(data2)
 
     assert _items_as_string(combo) == "data1:x:y:data2:a:b"
 
@@ -59,7 +59,7 @@ def test_component_id_combo_helper():
     # data1.id['x'].label = 'z'
     # assert _items_as_string(combo) == "z:y"
 
-    helper.remove(data1)
+    helper.remove_data(data1)
 
     assert _items_as_string(combo) == ""
 
@@ -76,19 +76,19 @@ def test_component_id_combo_helper_init():
     dc.append(data)
 
     helper = ComponentIDComboHelper(combo, dc)
-    helper.append(data)
+    helper.append_data(data)
     assert _items_as_string(combo) == "a:b"
 
     helper = ComponentIDComboHelper(combo, dc, numeric=False)
-    helper.append(data)
+    helper.append_data(data)
     assert _items_as_string(combo) == "b"
 
     helper = ComponentIDComboHelper(combo, dc, categorical=False)
-    helper.append(data)
+    helper.append_data(data)
     assert _items_as_string(combo) == "a"
 
     helper = ComponentIDComboHelper(combo, dc, numeric=False, categorical=False)
-    helper.append(data)
+    helper.append_data(data)
     assert _items_as_string(combo) == ""
 
 
@@ -106,7 +106,7 @@ def test_manual_data_combo_helper():
 
     assert _items_as_string(combo) == ""
 
-    helper.append(data1)
+    helper.append_data(data1)
 
     assert _items_as_string(combo) == "data1"
 

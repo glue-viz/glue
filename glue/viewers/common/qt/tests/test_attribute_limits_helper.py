@@ -41,7 +41,7 @@ class TestAttributeLimitsHelper():
 
         self.component_helper = ComponentIDComboHelper(self.attribute_combo, self.data_collection)
 
-        self.component_helper.append(self.data)
+        self.component_helper.append_data(self.data)
 
         self.x_id = self.data.visible_components[0]
         self.y_id = self.data.visible_components[1]
