@@ -8,6 +8,11 @@ v0.9.0 (unreleased)
   preference pane for Plotly export has now been removed in favor of this new
   way to set the options. [#1057]
 
+* Renamed the ``ComponentIDComboHelper`` and ``ManualDataComboHelper``
+  ``append`` methods to ``append_data`` and the ``remove`` methods to
+  ``remove_data``, and added a new ``ComponentIDComboHelper.set_multiple_data``
+  method. [#1060]
+
 v0.8.3 (unreleased)
 -------------------
 
