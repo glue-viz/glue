@@ -313,9 +313,9 @@ class Data(object):
         """
 
         # To make things easier, we transform all component inputs to a tuple
-        if isinstance(cid, six.string_types):
+        if isinstance(cid, six.string_types) or isinstance(cid, ComponentID):
             cid = (cid,)
-        if isinstance(cid_other, six.string_types):
+        if isinstance(cid_other, six.string_types) or isinstance(cid_other, ComponentID):
             cid_other = (cid_other,)
 
         def get_component_id(data, name):
