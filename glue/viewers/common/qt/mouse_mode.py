@@ -25,7 +25,7 @@ from qtpy import QtWidgets
 from glue.core.callback_property import CallbackProperty
 from glue.core import roi
 from glue.core.qt import roi as qt_roi
-from glue.external.qt import get_qapp
+from glue.utils.qt import get_qapp
 from glue.icons.qt import get_icon
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui

@@ -60,6 +60,6 @@ def show_glue_info():
 
 if __name__ == "__main__":
 
-    from glue.external.qt import get_qapp
+    from glue.utils.qt import get_qapp
     app = get_qapp()
     show_glue_info()

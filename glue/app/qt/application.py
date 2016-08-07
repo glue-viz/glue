@@ -15,7 +15,7 @@ from glue.core import command, Data
 from glue import env
 from glue.main import load_plugins
 from glue.icons.qt import get_icon
-from glue.external.qt import get_qapp
+from glue.utils.qt import get_qapp
 from glue.app.qt.actions import action
 from glue.dialogs.data_wizard.qt import data_wizard
 from glue.app.qt.edit_subset_mode_toolbar import EditSubsetModeToolBar

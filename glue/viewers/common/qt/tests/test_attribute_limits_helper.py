@@ -11,7 +11,7 @@ from glue.core.qt.data_combo_helper import ComponentIDComboHelper
 from ..attribute_limits_helper import AttributeLimitsHelper
 
 # TEMPORARY
-from glue.external.qt import get_qapp
+from glue.utils.qt import get_qapp
 get_qapp()
 
 

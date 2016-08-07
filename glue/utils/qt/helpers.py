@@ -5,6 +5,7 @@ from contextlib import contextmanager
 
 from qtpy import QtCore, QtWidgets
 from qtpy.QtCore import Qt
+from qtpy.uic import loadUi
 from glue.utils.qt import get_text
 
 __all__ = ['update_combobox', 'GlueTabBar', 'load_ui', 'CUSTOM_QWIDGETS', 'process_dialog']
@@ -114,8 +115,7 @@ def load_ui(path, parent=None, directory=None):
         # Workaround for Mac app
         full_path = os.path.join(full_path.replace('site-packages.zip', 'glue'))
 
-    from glue.external.qt import load_ui
-    return load_ui(full_path, parent)
+    return loadUi(full_path, parent)
 
 
 @contextmanager
@@ -162,7 +162,7 @@ def process_dialog(delay=0, accept=False, reject=False, function=None):
         function = _reject
 
     def wrapper():
-        from glue.external.qt import get_qapp
+        from glue.utils.qt import get_qapp
         app = get_qapp()
         dialog = app.focusWidget().window()
         function(dialog)

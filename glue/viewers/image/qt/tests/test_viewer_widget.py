@@ -9,7 +9,7 @@ import pytest
 import numpy as np
 from mock import MagicMock
 
-from glue.external.qt import get_qapp
+from glue.utils.qt import get_qapp
 from glue.app.qt.tests.test_application import TestApplicationSession
 from glue import core
 from glue.app.qt import GlueApplication

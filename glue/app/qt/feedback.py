@@ -173,7 +173,7 @@ def submit_feedback():
 
 if __name__ == "__main__":
 
-    from glue.external.qt import get_qapp
+    from glue.utils.qt import get_qapp
     app = get_qapp()
     submit_bug_report(report="Crash log here")
     submit_feedback()

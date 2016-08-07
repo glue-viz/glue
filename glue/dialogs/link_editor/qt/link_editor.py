@@ -130,7 +130,7 @@ class LinkEditor(QtWidgets.QDialog):
 
 def main():
     import numpy as np
-    from glue.external.qt import get_qapp
+    from glue.utils.qt import get_qapp
     from glue.core import Data, DataCollection
 
     app = get_qapp()

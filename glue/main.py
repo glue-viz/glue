@@ -99,7 +99,7 @@ def die_on_error(msg):
                 import traceback
 
                 # Make sure application has been started
-                from glue.external.qt import get_qapp
+                from glue.utils.qt import get_qapp
                 get_qapp()
 
                 from glue.utils.qt import QMessageBoxPatched as QMessageBox

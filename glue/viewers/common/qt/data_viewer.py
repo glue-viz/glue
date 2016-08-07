@@ -6,7 +6,7 @@ from qtpy.QtCore import Qt
 from qtpy import QtWidgets
 from glue.core.application_base import ViewerBase
 from glue.core.qt.layer_artist_model import QtLayerArtistContainer, LayerArtistWidget
-from glue.external.qt import get_qapp
+from glue.utils.qt import get_qapp
 from glue.core.qt.mime import LAYERS_MIME_TYPE, LAYER_MIME_TYPE
 from glue.utils.qt import set_cursor
 from glue.config import settings

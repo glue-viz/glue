@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from qtpy import QtCore, QtWidgets
-from glue.external.qt import get_qapp
+from glue.utils.qt import get_qapp
 from glue.utils.qt import load_ui, connect_color
 from glue.utils.qt.widget_properties import CurrentComboProperty, ValueProperty, connect_value, connect_current_combo
 from glue.icons.qt import POINT_ICONS, symbol_icon

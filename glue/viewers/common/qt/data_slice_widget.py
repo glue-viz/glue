@@ -384,7 +384,7 @@ class DataSlice(QtWidgets.QWidget):
 
 if __name__ == "__main__":
 
-    from glue.external.qt import get_qapp
+    from glue.utils.qt import get_qapp
 
     app = get_qapp()
 

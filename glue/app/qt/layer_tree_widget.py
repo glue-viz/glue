@@ -551,7 +551,7 @@ def save_subset(subset):
 if __name__ == "__main__":
     from glue.core.data_collection import DataCollection
     collection = DataCollection()
-    from glue.external.qt import get_qapp
+    from glue.utils.qt import get_qapp
     app = get_qapp()
     widget = LayerTreeWidget()
     widget.setup(collection)
