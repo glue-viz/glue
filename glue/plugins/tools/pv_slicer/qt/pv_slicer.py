@@ -5,7 +5,11 @@ import numpy as np
 from glue.viewers.common.qt.mouse_mode import PathMode
 from glue.viewers.image.qt import StandaloneImageWidget
 from glue.viewers.common.qt.mpl_widget import defer_draw
+from glue.core.roi import VertexROIBase
+from glue.core.subset import RoiSubsetState
 
+from glue.core import Coordinates
+from astropy.io import ascii
 
 class PVSlicerTool(object):
 
@@ -33,6 +37,7 @@ class PVSlicerTool(object):
 
     def _build_from_vertices(self, vx, vy):
         pv_slice, x, y, wcs = _slice_from_path(vx, vy, self.widget.data, self.widget.attribute, self.widget.slice)
+
         if self._slice_widget is None:
             self._slice_widget = PVSliceWidget(image=pv_slice, wcs=wcs, image_client=self.widget.client,
                                                x=x, y=y, interpolation='nearest')
@@ -46,7 +51,32 @@ class PVSlicerTool(object):
         result.axes.set_xlabel("Position Along Slice")
         result.axes.set_ylabel(_slice_label(self.widget.data, self.widget.slice))
 
+        self.get_max_points(self.widget.data, pv_slice, x, y)
+
         result.show()
+
+    def get_max_points(self, data, pv_slice, x, y):
+        """
+        :param data: current widget data
+        :param pv_slice, x, y: return results from _slice_from_path
+        """
+        vx = []
+        vy = []
+
+        width = pv_slice.shape[1]
+        for i in range(width):
+            slc = pv_slice[:, i]
+            vx.append(np.argmax(slc))
+            vy.append(i)
+
+        pos_wcs= data.coords.pixel2world(x, y, vx)
+
+        ascii.write([pos_wcs[0], pos_wcs[1], pos_wcs[2]], 'max_pv_points.dat', names=['x', 'y', 'z'])
+
+        # TODO: new subset layer to store and plot points - VertexROIBase Or CategoricalROISubsetState?
+        # roi = VertexROIBase(vx=vx, vy=vy)
+        # We now delegate to RoiSubsetState to compute the mask based on the ROI
+        # subset_state = RoiSubsetState(xatt=x, yatt=y, roi=roi)
 
     def close(self):
         # close the tool widget
@@ -213,7 +243,6 @@ def _slice_from_path(x, y, data, attribute, slc):
     from astropy.wcs import WCS
     data = result.data
     wcs = WCS(result.header)
-
     return data, x, y, wcs
 
 
