@@ -5,7 +5,13 @@ import os.path
 
 import numpy as np
 from ginga.misc import log
-from ginga.qtw import ColorBar
+from ginga import toolkit
+try:
+    toolkit.use('qt')
+    from ginga.gw import ColorBar
+except ImportError:
+    # older versions of ginga
+    from ginga.qtw import ColorBar
 from ginga import cmap as ginga_cmap
 from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
 
@@ -48,7 +54,8 @@ class GingaWidget(ImageWidgetBase):
                                      # log_stderr=True
                                      )
 
-        self.canvas = ImageViewCanvas(self.logger, render='widget')
+        self.viewer = ImageViewCanvas(self.logger, render='widget')
+        self.canvas = self.viewer
 
         # prevent widget from grabbing focus
         try:
@@ -80,13 +87,13 @@ class GingaWidget(ImageWidgetBase):
                      autocenter='override')
 
         # make color bar, with color maps shared from ginga canvas
+        rgbmap = self.viewer.get_rgbmap()
         self.colorbar = ColorBar.ColorBar(self.logger)
-        rgbmap = self.canvas.get_rgbmap()
-        rgbmap.add_callback('changed', self.rgbmap_cb, self.canvas)
+        rgbmap.add_callback('changed', self.rgbmap_cb, self.viewer)
         self.colorbar.set_rgbmap(rgbmap)
 
         # make coordinates/value readout
-        self.readout = Readout.Readout(-1, -1)
+        self.readout = Readout.Readout(-1, 20)
         self.roi_tag = None
 
         super(GingaWidget, self).__init__(session, parent)
@@ -96,7 +103,7 @@ class GingaWidget(ImageWidgetBase):
         return []
 
     def make_client(self):
-        return GingaClient(self._data, self.canvas, self._layer_artist_container)
+        return GingaClient(self._data, self.viewer, self._layer_artist_container)
 
     def make_central_widget(self):
 
@@ -104,19 +111,24 @@ class GingaWidget(ImageWidgetBase):
         layout = QtGui.QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
-        layout.addWidget(self.canvas.get_widget(), stretch=1)
-        layout.addWidget(self.colorbar, stretch=0)
-        try:
-            layout.addWidget(self.readout.get_widget(), stretch=0)
-        except TypeError:  # recent versions of ginga
-            layout.addWidget(self.readout.get_widget().get_widget(), stretch=0)
+        layout.addWidget(self.viewer.get_widget(), stretch=1)
+        cbar_w = self.colorbar.get_widget()
+        if not isinstance(cbar_w, QtGui.QWidget):
+            # ginga wrapped widget
+            cbar_w = cbar_w.get_widget()
+        layout.addWidget(cbar_w, stretch=0)
+        readout_w = self.readout.get_widget()
+        if not isinstance(readout_w, QtGui.QWidget):
+            # ginga wrapped widget
+            readout_w = readout_w.get_widget()
+        layout.addWidget(readout_w, stretch=0)
         topw.setLayout(layout)
         return topw
 
     def match_colorbar(self, canvas, colorbar):
-        rgbmap = canvas.get_rgbmap()
-        loval, hival = canvas.get_cut_levels()
-        colorbar.set_range(loval, hival, redraw=False)
+        rgbmap = self.viewer.get_rgbmap()
+        loval, hival = self.viewer.get_cut_levels()
+        colorbar.set_range(loval, hival)
         colorbar.set_rgbmap(rgbmap)
 
     def rgbmap_cb(self, rgbmap, canvas):
@@ -184,7 +196,7 @@ class GingaWidget(ImageWidgetBase):
                       lambda tf: self._set_roi_mode('polygon', tf)))
 
         for tool in self._tools:
-            modes += tool._get_modes(self.canvas)
+            modes += tool._get_modes(self.viewer)
             add_callback(self.client, 'display_data', tool._display_data_hook)
 
         return modes
@@ -194,7 +206,7 @@ class GingaWidget(ImageWidgetBase):
         # XXX need better way of setting draw contexts
         self.canvas.draw_context = self
         self.canvas.set_drawtype(name, color='cyan', linestyle='dash')
-        bm = self.canvas.get_bindmap()
+        bm = self.viewer.get_bindmap()
         bm.set_mode('draw', mode_type='locked')
 
     def _clear_roi_cb(self, canvas, *args):
@@ -232,7 +244,7 @@ class GingaWidget(ImageWidgetBase):
             # value = fitsimage.get_data(data_x, data_y)
             # We report the value across the pixel, even though the coords
             # change halfway across the pixel
-            value = canvas.get_data(int(data_x + 0.5), int(data_y + 0.5))
+            value = self.viewer.get_data(int(data_x + 0.5), int(data_y + 0.5))
 
         except Exception:
             value = None
@@ -248,9 +260,9 @@ class GingaWidget(ImageWidgetBase):
         """This method is called when a toggle button in the toolbar is pressed
         selecting one of the modes.
         """
-        bm = self.canvas.get_bindmap()
+        bm = self.viewer.get_bindmap()
         if not tf:
-            bm.reset_mode(self.canvas)
+            bm.reset_mode(self.viewer)
             return
         bm.set_mode(modname, mode_type='locked')
         return True
