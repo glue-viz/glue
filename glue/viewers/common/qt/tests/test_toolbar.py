@@ -30,9 +30,9 @@ class MouseModeTest(MouseMode):
 class TestToolbar(object):
 
     def setup_method(self, method):
-        from glue.external.qt import QtGui
-        assert QtGui.QApplication.instance() is not None
-        self.win = QtGui.QMainWindow()
+        from qtpy import QtWidgets
+        assert QtWidgets.QApplication.instance() is not None
+        self.win = QtWidgets.QMainWindow()
         widget, axes = self._make_plot_widget(self.win)
         self.canvas = widget.canvas
         self.axes = axes

@@ -7,8 +7,8 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from glue.external.qt.QtCore import Qt
-from glue.external.qt import QtGui, QtCore
+from qtpy.QtCore import Qt
+from qtpy import QtCore, QtWidgets, QtGui
 from glue.core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode
 from glue.core.qt.data_collection_model import DataCollectionView
 from glue.config import single_subset_action
@@ -30,7 +30,7 @@ class Clipboard(object):
         self.contents = None
 
 
-class LayerAction(QtGui.QAction):
+class LayerAction(QtWidgets.QAction):
     _title = ''
     _icon = None
     _tooltip = None
@@ -267,24 +267,24 @@ class PasteSpecialAction(PasteAction):
         self.setMenu(self.menu())
 
     def menu(self):
-        m = QtGui.QMenu()
+        m = QtWidgets.QMenu()
 
-        a = QtGui.QAction("Or", m)
+        a = QtWidgets.QAction("Or", m)
         a.setIcon(get_icon('glue_or'))
         a.triggered.connect(nonpartial(self._paste, OrMode))
         m.addAction(a)
 
-        a = QtGui.QAction("And", m)
+        a = QtWidgets.QAction("And", m)
         a.setIcon(get_icon('glue_and'))
         a.triggered.connect(nonpartial(self._paste, AndMode))
         m.addAction(a)
 
-        a = QtGui.QAction("XOR", m)
+        a = QtWidgets.QAction("XOR", m)
         a.setIcon(get_icon('glue_xor'))
         a.triggered.connect(nonpartial(self._paste, XorMode))
         m.addAction(a)
 
-        a = QtGui.QAction("Not", m)
+        a = QtWidgets.QAction("Not", m)
         a.setIcon(get_icon('glue_andnot'))
         a.triggered.connect(nonpartial(self._paste, AndNotMode))
         m.addAction(a)
@@ -369,7 +369,7 @@ class LayerCommunicator(QtCore.QObject):
     layer_check_changed = QtCore.Signal(object, bool)
 
 
-class LayerTreeWidget(QtGui.QMainWindow):
+class LayerTreeWidget(QtWidgets.QMainWindow):
 
     """The layertree widget provides a way to visualize the various
     data and subset layers in a Glue session.
@@ -471,7 +471,7 @@ class LayerTreeWidget(QtGui.QMainWindow):
     def _create_actions(self):
         tree = self.ui.layerTree
 
-        sep = QtGui.QAction("", tree)
+        sep = QtWidgets.QAction("", tree)
         sep.setSeparator(True)
         tree.addAction(sep)
 
@@ -488,7 +488,7 @@ class LayerTreeWidget(QtGui.QMainWindow):
         self._actions['maskify'] = MaskifySubsetAction(self)
 
         # new component definer
-        separator = QtGui.QAction("sep", tree)
+        separator = QtWidgets.QAction("sep", tree)
         separator.setSeparator(True)
         tree.addAction(separator)
 
@@ -541,7 +541,7 @@ class LayerTreeWidget(QtGui.QMainWindow):
 
 def save_subset(subset):
     assert isinstance(subset, core.subset.Subset)
-    fname, fltr = QtGui.QFileDialog.getSaveFileName(caption="Select an output name",
+    fname, fltr = QtWidgets.QFileDialog.getSaveFileName(caption="Select an output name",
                                                     filter='FITS mask (*.fits);; Fits mask (*.fits)')
     fname = str(fname)
     if not fname:
@@ -551,7 +551,7 @@ def save_subset(subset):
 if __name__ == "__main__":
     from glue.core.data_collection import DataCollection
     collection = DataCollection()
-    from glue.external.qt import get_qapp
+    from glue.utils.qt import get_qapp
     app = get_qapp()
     widget = LayerTreeWidget()
     widget.setup(collection)

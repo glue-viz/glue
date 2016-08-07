@@ -1,8 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.core import Data, DataCollection
-from glue.external.qt import QtGui
-from glue.external.qt.QtCore import Qt
+from qtpy import QtGui, QtWidgets
+from qtpy.QtCore import Qt
 from glue.core.hub import HubListener
 from glue.core.message import (ComponentsChangedMessage,
                                DataCollectionAddMessage,
@@ -323,23 +323,23 @@ class DataCollectionComboHelper(BaseDataComboHelper):
 
 if __name__ == "__main__":
 
-    from glue.external.qt import get_qapp
+    from glue.utils.qt import get_qapp
 
     app = get_qapp()
 
-    window = QtGui.QWidget()
+    window = QtWidgets.QWidget()
 
-    layout = QtGui.QVBoxLayout()
+    layout = QtWidgets.QVBoxLayout()
 
     window.setLayout(layout)
 
-    data_combo = QtGui.QComboBox()
+    data_combo = QtWidgets.QComboBox()
     layout.addWidget(data_combo)
 
-    cid1_combo = QtGui.QComboBox()
+    cid1_combo = QtWidgets.QComboBox()
     layout.addWidget(cid1_combo)
 
-    cid2_combo = QtGui.QComboBox()
+    cid2_combo = QtWidgets.QComboBox()
     layout.addWidget(cid2_combo)
 
     d1 = Data(x=[1,2,3], y=[2,3,4], label='banana')

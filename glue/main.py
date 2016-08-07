@@ -99,7 +99,7 @@ def die_on_error(msg):
                 import traceback
 
                 # Make sure application has been started
-                from glue.external.qt import get_qapp
+                from glue.utils.qt import get_qapp
                 get_qapp()
 
                 from glue.utils.qt import QMessageBoxPatched as QMessageBox
@@ -204,13 +204,13 @@ def execute_script(script):
 
 def get_splash():
     """Instantiate a splash screen"""
-    from glue.external.qt import QtGui
-    from glue.external.qt.QtCore import Qt
+    from qtpy import QtWidgets
+    from qtpy.QtCore import Qt
     import os
 
     pth = os.path.join(os.path.dirname(__file__), 'logo.png')
     pm = QtGui.QPixmap(pth)
-    splash = QtGui.QSplashScreen(pm, Qt.WindowStaysOnTopHint)
+    splash = QtWidgets.QSplashScreen(pm, Qt.WindowStaysOnTopHint)
     splash.show()
 
     return splash

@@ -3,13 +3,13 @@ import sys
 import traceback
 import webbrowser
 
-from glue.external.qt import QtGui
+from qtpy import QtWidgets
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui
 from glue.utils.qt.widget_properties import TextProperty, ButtonProperty
 
 
-class QtPlotlyExporter(QtGui.QDialog):
+class QtPlotlyExporter(QtWidgets.QDialog):
 
     save_settings = ButtonProperty('checkbox_save')
     username = TextProperty('text_username')
@@ -32,12 +32,12 @@ class QtPlotlyExporter(QtGui.QDialog):
 
         # Set up radio button groups
 
-        self._radio_account = QtGui.QButtonGroup()
+        self._radio_account = QtWidgets.QButtonGroup()
         self._radio_account.addButton(self.ui.radio_account_glue)
         self._radio_account.addButton(self.ui.radio_account_config)
         self._radio_account.addButton(self.ui.radio_account_manual)
 
-        self._radio_sharing = QtGui.QButtonGroup()
+        self._radio_sharing = QtWidgets.QButtonGroup()
         self._radio_sharing.addButton(self.ui.radio_sharing_public)
         self._radio_sharing.addButton(self.ui.radio_sharing_secret)
         self._radio_sharing.addButton(self.ui.radio_sharing_private)
@@ -79,7 +79,7 @@ class QtPlotlyExporter(QtGui.QDialog):
         else:
             self.ui.radio_sharing_secret.setEnabled(True)
             self.ui.radio_sharing_private.setEnabled(True)
-        QtGui.QApplication.instance().processEvents()
+        QtWidgets.QApplication.instance().processEvents()
 
     def accept(self):
 
@@ -183,5 +183,5 @@ class QtPlotlyExporter(QtGui.QDialog):
     def set_status(self, text, color):
         self.ui.text_status.setText(text)
         self.ui.text_status.setStyleSheet("color: {0}".format(color))
-        QtGui.QApplication.instance().processEvents()
+        QtWidgets.QApplication.instance().processEvents()
 

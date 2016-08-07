@@ -19,7 +19,9 @@ env:
     - PYTHON_VERSION=2.7 ASTROPY_VERSION=1.0
     - PYTHON_VERSION=3.4 ASTROPY_VERSION=1.0
   global:
-    - PYTEST_ARGS="--cov glue"
+    - CONDA_CHANNELS='conda-forge spyder-ide'
+    - ASTROPY_VERSION=stable
+    - PYTEST_ARGS="--cov glue -vs"
     - MATPLOTLIB_VERSION=1.5.0
     - NUMPY_VERSION=1.10
     - ASTROPY_VERSION=stable
@@ -28,7 +30,7 @@ env:
     - QT_PKG=pyqt
     - SETUP_XVFB=True
     # Note that we need to specify requests 2.9 because of a bug in the version check in linkchecker
-    - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.3 xlrd pillow pytest mock coverage pyyaml requests=2.9 sphinx_rtd_theme"
+    - CONDA_DEPENDENCIES="nomkl pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.3 xlrd pillow pytest mock coverage pyyaml requests=2.9 sphinx_rtd_theme qtpy"
     - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli ginga plotly"
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
     - secure: "SU9BYH8d9eNigypG3lC83s0NY6Mq9AHGKXyEGeXDtz1npJIC1KHdzPMP1v1K3dzCgl1p6ReMXPjZMCENyfNkad/xvzTzGk0Nu/4BjihrUPV6+ratVeLpv0JLm8ikh8q+sZURkdtzUOlds+Hfn5ku4LdpT87tcKHY9TINAGA34ZM="
@@ -68,7 +70,7 @@ matrix:
           env:
             - PYTHON_VERSION=2.7
             - PYTEST_ARGS="--cov glue"
-            - CONDA_DEPENDENCIES="pytz pyparsing cycler python-dateutil freetype libpng sip qt pip setuptools=7.0 pandas mock pbr six funcsigs matplotlib"
+            - CONDA_DEPENDENCIES="pytz pyparsing cycler python-dateutil freetype libpng sip qt pip setuptools=7.0 pandas mock pbr six funcsigs matplotlib qtpy"
             - CONDA_DEPENDENCIES_FLAGS='--no-deps'
             - PIP_DEPENDENCIES="pytest-cov coveralls"
 
@@ -84,13 +86,16 @@ matrix:
         # Test with older package versions:
 
         - os: linux
-          env: PYTHON_VERSION=2.7 MATPLOTLIB_VERSION=1.3 ASTROPY_VERSION=0.3 NUMPY_VERSION=1.8
+          env:
+            - PYTHON_VERSION=2.7 MATPLOTLIB_VERSION=1.3 ASTROPY_VERSION=0.3 NUMPY_VERSION=1.8
 
         - os: linux
-          env: PYTHON_VERSION=2.7 MATPLOTLIB_VERSION=1.4 ASTROPY_VERSION=0.4 NUMPY_VERSION=1.9 IPYTHON_VERSION=1.1
+          env:
+            - PYTHON_VERSION=2.7 MATPLOTLIB_VERSION=1.4 ASTROPY_VERSION=0.4 NUMPY_VERSION=1.9 IPYTHON_VERSION=1.1
 
         - os: linux
-          env: PYTHON_VERSION=2.7 MATPLOTLIB_VERSION=1.4 ASTROPY_VERSION=0.4 NUMPY_VERSION=1.9 IPYTHON_VERSION=0.13
+          env:
+            - PYTHON_VERSION=2.7 MATPLOTLIB_VERSION=1.4 ASTROPY_VERSION=0.4 NUMPY_VERSION=1.9 IPYTHON_VERSION=0.13
 
         # Test with PySide, but due to segmentation faults, mark as an
         # allowed failure.
@@ -115,11 +120,12 @@ matrix:
 
 before_install:
 
-  # The PyQt5 package is in the spyder-ide channel
-  - if [[ $QT_PKG == pyqt5 ]]; then export CONDA_CHANNELS="astropy-ci-extras spyder-ide"; fi
-
-  # Prepare dependency list
-  - if [[ $QT_PKG != False ]]; then export CONDA_DEPENDENCIES="$QT_PKG "$CONDA_DEPENDENCIES; fi
+  # Prepare dependency list. Note that in future, PyQt5 will be the pyqt conda
+  # package with a version of 5.x rather than a pyqt5 package, so we explicitly
+  # request pyqt=4 for PyQt4.
+  - if [[ $QT_PKG == pyside ]]; then export CONDA_DEPENDENCIES="pyside "$CONDA_DEPENDENCIES; fi
+  - if [[ $QT_PKG == pyqt ]]; then export CONDA_DEPENDENCIES="pyqt=4 "$CONDA_DEPENDENCIES; fi
+  - if [[ $QT_PKG == pyqt5 ]]; then export CONDA_DEPENDENCIES="pyqt5 "$CONDA_DEPENDENCIES; fi
 
   # Special cases depending on IPython version
   - if [[ $IPYTHON_VERSION == 4 ]]; then export CONDA_DEPENDENCIES="traitlets=4.1.0 qtconsole ipykernel "$CONDA_DEPENDENCIES; fi
@@ -145,8 +151,8 @@ install:
   - LC_ALL=C
 
   # Uninstall PyQt if we are using PySide or PyQt5
-  - if [ $QT_PKG == pyside ]; then conda remove pyqt sip || true; fi
-  - if [ $QT_PKG == pyqt5 ]; then conda remove pyqt qt || true; fi
+  - if [ $QT_PKG == pyside ]; then conda remove --no-pin --force pyqt sip || true; fi
+  - if [ $QT_PKG == pyqt5 ]; then conda remove --no-pin --force pyqt qt || true; fi
 
   - if [[ $QT_PKG == pyqt5 ]]; then
       export QT_QPA_PLATFORM_PLUGIN_PATH=$HOME/miniconda/envs/test/lib/qt5/plugins/platforms;
@@ -156,6 +162,7 @@ install:
   # Uninstall any version of Qt if QT_PKG is False, and remove all qt
   # sub-directories
   - if [[ $QT_PKG == False ]]; then
+      conda remove --no-pin --force qtpy || true;
       conda remove --no-pin --force pyqt || true;
       conda remove --no-pin --force pyside || true;
       conda remove --no-pin --force pyqt5 || true;

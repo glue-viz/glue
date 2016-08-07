@@ -3,8 +3,9 @@ from __future__ import absolute_import, division, print_function
 import os
 import numpy as np
 
-from glue.external.qt.QtCore import Qt
-from glue.external.qt import QtGui, QtCore, is_pyqt5
+from qtpy.QtCore import Qt
+from qtpy import QtGui, QtCore
+from qtpy import PYQT5
 from glue.core.subset import ElementSubsetState
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core import message as msg
@@ -90,14 +91,14 @@ class TableWidget(DataViewer):
         hdr = self.ui.table.horizontalHeader()
         hdr.setStretchLastSection(True)
 
-        if is_pyqt5():
+        if PYQT5:
             hdr.setSectionResizeMode(hdr.Interactive)
         else:
             hdr.setResizeMode(hdr.Interactive)
 
         hdr = self.ui.table.verticalHeader()
 
-        if is_pyqt5():
+        if PYQT5:
             hdr.setSectionResizeMode(hdr.Interactive)
         else:
             hdr.setResizeMode(hdr.Interactive)
@@ -153,7 +154,7 @@ class TableWidget(DataViewer):
 
         self.ui.table.clearSelection()
         selection_mode = self.ui.table.selectionMode()
-        self.ui.table.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)
+        self.ui.table.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
 
         # The following is more efficient than just calling selectRow
         model = self.ui.table.selectionModel()
@@ -161,7 +162,7 @@ class TableWidget(DataViewer):
             index = self.model.order[index]
             model_index = self.model.createIndex(index, 0)
             model.select(model_index,
-                         QtGui.QItemSelectionModel.Select | QtGui.QItemSelectionModel.Rows)
+                         QtCore.QItemSelectionModel.Select | QtCore.QItemSelectionModel.Rows)
 
         self.ui.table.setSelectionMode(selection_mode)
 

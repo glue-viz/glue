@@ -1,16 +1,16 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt import QtGui
+from qtpy import QtWidgets
 from glue.core.hub import HubListener
 from glue.core.message import ComponentsChangedMessage
 
 
-class ComponentIDCombo(QtGui.QComboBox, HubListener):
+class ComponentIDCombo(QtWidgets.QComboBox, HubListener):
 
     """ A widget to select among componentIDs in a dataset """
 
     def __init__(self, data=None, parent=None, visible_only=True):
-        QtGui.QComboBox.__init__(self, parent)
+        QtWidgets.QComboBox.__init__(self, parent)
         self._data = data
         self._visible_only = visible_only
 

@@ -2,14 +2,13 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from glue.external.qt.QtCore import Signal
-from glue.external.qt import QtGui
+from qtpy import QtCore, QtWidgets
 from glue.utils.qt import load_ui, CUSTOM_QWIDGETS
 
 # FIXME: required for custom widget
 from glue.core.qt.mime import GlueMimeListWidget
 
-class ComponentSelector(QtGui.QWidget):
+class ComponentSelector(QtWidgets.QWidget):
     """ An interface to view the components and data of a DataCollection
 
     Components can be draged and dropped.
@@ -23,7 +22,7 @@ class ComponentSelector(QtGui.QWidget):
        >>> widget = ComponentSelector()
        >>> widget.setup(data_collection)
     """
-    component_changed = Signal()
+    component_changed = QtCore.Signal()
 
     def __init__(self, parent=None):
         super(ComponentSelector, self).__init__(parent)
@@ -80,7 +79,7 @@ class ComponentSelector(QtGui.QWidget):
         c_list = self._ui.component_selector
         c_list.clear()
         for c in cids:
-            item = QtGui.QListWidgetItem(c.label)
+            item = QtWidgets.QListWidgetItem(c.label)
             c_list.addItem(item)
             c_list.set_data(item, c)
 
@@ -131,7 +130,7 @@ CUSTOM_QWIDGETS.append(ComponentSelector)
 def main():  # pragma: no cover
     import glue
     import numpy as np
-    from glue.external.qt import get_qapp
+    from glue.utils.qt import get_qapp
 
     d = glue.core.Data(label="hi")
     d2 = glue.core.Data(label="there")

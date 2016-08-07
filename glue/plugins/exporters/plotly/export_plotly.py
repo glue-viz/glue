@@ -299,6 +299,7 @@ def save_plotly(application):
     exporter = QtPlotlyExporter(plotly_args=args, plotly_kwargs=kwargs)
     exporter.exec_()
 
+
 DISPATCH = {}
 
 try:

@@ -2,13 +2,13 @@
 
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt import QtGui
+from qtpy import QtWidgets, QtGui
 
 from ..actions import GlueActionButton
 
 
 def test_glue_action_button():
-    a = QtGui.QAction(None)
+    a = QtWidgets.QAction(None)
     a.setToolTip("testtooltip")
     a.setWhatsThis("testwhatsthis")
     a.setIcon(QtGui.QIcon("dummy_file"))

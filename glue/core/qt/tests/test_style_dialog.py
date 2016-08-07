@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import time
 
-from glue.external.qt import QtCore
+from qtpy import QtCore
 from glue.core import Data
 from glue.core.tests.util import simple_session
 

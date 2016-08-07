@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from glue.external.qt import QtGui
+from qtpy import QtWidgets
 from glue.external.six.moves.urllib.parse import urlencode
 from glue.external.six.moves.urllib.request import Request, urlopen
 from glue.utils.qt import load_ui
@@ -25,7 +25,7 @@ def diagnostics():
     return versions.strip()
 
 
-class BaseReportWidget(QtGui.QDialog):
+class BaseReportWidget(QtWidgets.QDialog):
 
     def accept(self):
         """
@@ -173,7 +173,7 @@ def submit_feedback():
 
 if __name__ == "__main__":
 
-    from glue.external.qt import get_qapp
+    from glue.utils.qt import get_qapp
     app = get_qapp()
     submit_bug_report(report="Crash log here")
     submit_feedback()

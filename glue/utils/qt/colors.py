@@ -4,7 +4,7 @@ import numpy as np
 from matplotlib.colors import ColorConverter
 
 from glue import config
-from glue.external.qt import QtCore, QtGui
+from qtpy import QtCore, QtWidgets, QtGui
 from glue.external.echo import add_callback
 from glue.utils import nonpartial
 from glue.utils.qt.helpers import CUSTOM_QWIDGETS
@@ -142,7 +142,7 @@ def connect_color(client, prop, widget):
     widget.colorChanged.connect(update_prop)
 
 
-class QColorBox(QtGui.QLabel):
+class QColorBox(QtWidgets.QLabel):
 
     mousePressed = QtCore.Signal()
     colorChanged = QtCore.Signal()
@@ -183,7 +183,7 @@ class QColorBox(QtGui.QLabel):
 CUSTOM_QWIDGETS.append(QColorBox)
 
 
-class QColormapCombo(QtGui.QComboBox):
+class QColormapCombo(QtWidgets.QComboBox):
 
     def __init__(self, *args, **kwargs):
         super(QColormapCombo, self).__init__(*args, **kwargs)
@@ -207,7 +207,7 @@ CUSTOM_QWIDGETS.append(QColormapCombo)
 
 if __name__ == "__main__":
 
-    from glue.external.qt import get_qapp
+    from glue.utils.qt import get_qapp
 
     app = get_qapp()
 

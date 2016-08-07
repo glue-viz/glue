@@ -2,8 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
+from qtpy.QtCore import Qt
 from glue.core import Data, DataCollection, Session
-from glue.external.qt.QtCore import Qt
 
 from ..viewer_widget import DataTableModel, TableWidget
 

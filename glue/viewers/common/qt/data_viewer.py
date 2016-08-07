@@ -2,11 +2,11 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from glue.external.qt.QtCore import Qt
-from glue.external.qt import QtGui
+from qtpy.QtCore import Qt
+from qtpy import QtWidgets
 from glue.core.application_base import ViewerBase
 from glue.core.qt.layer_artist_model import QtLayerArtistContainer, LayerArtistWidget
-from glue.external.qt import get_qapp
+from glue.utils.qt import get_qapp
 from glue.core.qt.mime import LAYERS_MIME_TYPE, LAYER_MIME_TYPE
 from glue.utils.qt import set_cursor
 from glue.config import settings
@@ -15,7 +15,7 @@ from glue.config import settings
 __all__ = ['DataViewer']
 
 
-class DataViewer(ViewerBase, QtGui.QMainWindow):
+class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
     """Base class for all Qt DataViewer widgets.
 
@@ -33,7 +33,7 @@ class DataViewer(ViewerBase, QtGui.QMainWindow):
         """
         :type session: :class:`~glue.core.Session`
         """
-        QtGui.QMainWindow.__init__(self, parent)
+        QtWidgets.QMainWindow.__init__(self, parent)
         ViewerBase.__init__(self, session)
         self.setWindowIcon(get_qapp().windowIcon())
         self._view = LayerArtistWidget(layer_style_widget_cls=self._layer_style_widget_cls)
@@ -131,7 +131,7 @@ class DataViewer(ViewerBase, QtGui.QMainWindow):
         if self._mdi_wrapper is not None:
             self._mdi_wrapper.move(x, y)
         else:
-            QtGui.QMainWindow.move(self, x, y)
+            QtWidgets.QMainWindow.move(self, x, y)
 
     @property
     def viewer_size(self):
@@ -169,12 +169,12 @@ class DataViewer(ViewerBase, QtGui.QMainWindow):
         :rtype: bool. True if user wishes to close. False otherwise
         """
         if self._warn_close and (not os.environ.get('GLUE_TESTING')) and self.isVisible():
-            buttons = QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel
-            dialog = QtGui.QMessageBox.warning(self, "Confirm Close",
+            buttons = QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
+            dialog = QtWidgets.QMessageBox.warning(self, "Confirm Close",
                                                "Do you want to close this window?",
                                                buttons=buttons,
-                                               defaultButton=QtGui.QMessageBox.Cancel)
-            return dialog == QtGui.QMessageBox.Ok
+                                               defaultButton=QtWidgets.QMessageBox.Cancel)
+            return dialog == QtWidgets.QMessageBox.Ok
         return True
 
     def _confirm_large_data(self, data):
@@ -185,10 +185,10 @@ class DataViewer(ViewerBase, QtGui.QMainWindow):
             warn_msg = ("WARNING: Data set has %i points, and may render slowly."
                         " Continue?" % data.size)
             title = "Add large data set?"
-            ok = QtGui.QMessageBox.Ok
-            cancel = QtGui.QMessageBox.Cancel
+            ok = QtWidgets.QMessageBox.Ok
+            cancel = QtWidgets.QMessageBox.Cancel
             buttons = ok | cancel
-            result = QtGui.QMessageBox.question(self, title, warn_msg,
+            result = QtWidgets.QMessageBox.question(self, title, warn_msg,
                                                 buttons=buttons,
                                                 defaultButton=cancel)
             return result == ok
@@ -197,7 +197,7 @@ class DataViewer(ViewerBase, QtGui.QMainWindow):
         return self._view
 
     def options_widget(self):
-        return QtGui.QWidget()
+        return QtWidgets.QWidget()
 
     def addToolBar(self, tb):
         super(DataViewer, self).addToolBar(tb)

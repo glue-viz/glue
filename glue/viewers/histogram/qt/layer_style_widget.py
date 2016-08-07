@@ -2,12 +2,12 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from glue.external.qt import QtGui
+from qtpy import QtWidgets
 from glue.utils.qt import load_ui, connect_color
 from glue.utils.qt.widget_properties import ValueProperty, connect_value
 
 
-class HistogramLayerStyleWidget(QtGui.QWidget):
+class HistogramLayerStyleWidget(QtWidgets.QWidget):
 
     alpha = ValueProperty('ui.slider_alpha', value_range=(0, 1))
 

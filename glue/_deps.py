@@ -129,6 +129,7 @@ gui_framework = (
 )
 
 required = (
+    Dependency('qtpy', 'Required'),
     Dependency('setuptools', 'Required'),
     Dependency('numpy', 'Required', min_version='1.4'),
     Dependency('matplotlib', 'Required for plotting', min_version='1.1'),

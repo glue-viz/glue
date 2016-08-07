@@ -15,8 +15,8 @@ except ImportError:
 from ginga import cmap as ginga_cmap
 from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
 
-from glue.external.qt.QtCore import Qt
-from glue.external.qt import QtGui, QtCore
+from qtpy.QtCore import Qt
+from qtpy import QtCore, QtWidgets, QtGui
 from glue.core.callback_property import add_callback
 from glue.core import roi as roimod
 from glue.config import tool_registry
@@ -107,18 +107,18 @@ class GingaWidget(ImageWidgetBase):
 
     def make_central_widget(self):
 
-        topw = QtGui.QWidget()
-        layout = QtGui.QVBoxLayout()
+        topw = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         layout.addWidget(self.viewer.get_widget(), stretch=1)
         cbar_w = self.colorbar.get_widget()
-        if not isinstance(cbar_w, QtGui.QWidget):
+        if not isinstance(cbar_w, QtWidgets.QWidget):
             # ginga wrapped widget
             cbar_w = cbar_w.get_widget()
         layout.addWidget(cbar_w, stretch=0)
         readout_w = self.readout.get_widget()
-        if not isinstance(readout_w, QtGui.QWidget):
+        if not isinstance(readout_w, QtWidgets.QWidget):
             # ginga wrapped widget
             readout_w = readout_w.get_widget()
         layout.addWidget(readout_w, stretch=0)
@@ -139,12 +139,12 @@ class GingaWidget(ImageWidgetBase):
         self.colorbar.set_range(loval, hival)
 
     def make_toolbar(self):
-        tb = QtGui.QToolBar(parent=self)
+        tb = QtWidgets.QToolBar(parent=self)
         tb.setIconSize(QtCore.QSize(25, 25))
         tb.layout().setSpacing(1)
         tb.setFocusPolicy(Qt.StrongFocus)
 
-        agroup = QtGui.QActionGroup(tb)
+        agroup = QtWidgets.QActionGroup(tb)
         agroup.setExclusive(True)
         for (mode_text, mode_icon, mode_cb) in self._mouse_modes():
             # TODO: add icons similar to the Matplotlib toolbar
@@ -289,7 +289,7 @@ class GingaWidget(ImageWidgetBase):
         return True
 
 
-class ColormapAction(QtGui.QAction):
+class ColormapAction(QtWidgets.QAction):
 
     def __init__(self, label, cmap, parent):
         super(ColormapAction, self).__init__(label, parent)
@@ -310,12 +310,12 @@ def _colormap_mode(parent, on_trigger):
         acts.append(a)
 
     # Toolbar button
-    tb = QtGui.QToolButton()
+    tb = QtWidgets.QToolButton()
     tb.setWhatsThis("Set color scale")
     tb.setToolTip("Set color scale")
     icon = get_icon('glue_rainbow')
     tb.setIcon(icon)
-    tb.setPopupMode(QtGui.QToolButton.InstantPopup)
+    tb.setPopupMode(QtWidgets.QToolButton.InstantPopup)
     tb.addActions(acts)
 
     return tb

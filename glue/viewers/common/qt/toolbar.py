@@ -4,23 +4,24 @@ import os
 
 import matplotlib
 
-from glue.external.qt.QtCore import Qt, Signal
-from glue.external.qt import QtCore, QtGui, is_pyqt5
+from qtpy import QtCore, QtWidgets
+from qtpy.QtCore import Qt
+from qtpy import PYQT5
 from glue.core.callback_property import add_callback
 from glue.icons.qt import get_icon
 from glue.utils import nonpartial
 
-if is_pyqt5():
+if PYQT5:
     from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 else:
     from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
 
 
 class GlueToolbar(NavigationToolbar2QT):
-    pan_begin = Signal()
-    pan_end = Signal()
-    mode_activated = Signal()
-    mode_deactivated = Signal()
+    pan_begin = QtCore.Signal()
+    pan_end = QtCore.Signal()
+    mode_activated = QtCore.Signal()
+    mode_deactivated = QtCore.Signal()
 
     def __init__(self, canvas, frame, name=None):
         """ Create a new toolbar object
@@ -50,9 +51,9 @@ class GlueToolbar(NavigationToolbar2QT):
 
     def _init_toolbar(self):
         self.basedir = os.path.join(matplotlib.rcParams['datapath'], 'images')
-        parent = QtGui.QToolBar.parent(self)
+        parent = QtWidgets.QToolBar.parent(self)
 
-        a = QtGui.QAction(get_icon('glue_home'),
+        a = QtWidgets.QAction(get_icon('glue_home'),
                           'Home', parent)
         a.triggered.connect(nonpartial(self.home))
         a.setToolTip('Reset original zoom')
@@ -62,7 +63,7 @@ class GlueToolbar(NavigationToolbar2QT):
         self.buttons['HOME'] = a
         self.addAction(a)
 
-        a = QtGui.QAction(get_icon('glue_filesave'),
+        a = QtWidgets.QAction(get_icon('glue_filesave'),
                           'Save', parent)
         a.triggered.connect(nonpartial(self.save_figure))
         a.setToolTip('Save the figure')
@@ -71,7 +72,7 @@ class GlueToolbar(NavigationToolbar2QT):
         self.buttons['SAVE'] = a
         self.addAction(a)
 
-        a = QtGui.QAction(get_icon('glue_back'),
+        a = QtWidgets.QAction(get_icon('glue_back'),
                           'Back', parent)
         a.triggered.connect(nonpartial(self.back))
         parent.addAction(a)
@@ -79,7 +80,7 @@ class GlueToolbar(NavigationToolbar2QT):
         self.buttons['BACK'] = a
         a.setToolTip('Back to previous view')
 
-        a = QtGui.QAction(get_icon('glue_forward'),
+        a = QtWidgets.QAction(get_icon('glue_forward'),
                           'Forward', parent)
         a.triggered.connect(nonpartial(self.forward))
         a.setToolTip('Forward to next view')
@@ -87,7 +88,7 @@ class GlueToolbar(NavigationToolbar2QT):
         self.buttons['FORWARD'] = a
         self.addAction(a)
 
-        a = QtGui.QAction(get_icon('glue_move'),
+        a = QtWidgets.QAction(get_icon('glue_move'),
                           'Pan', parent)
         a.triggered.connect(nonpartial(self.pan))
         a.setToolTip('Pan axes with left mouse, zoom with right')
@@ -98,7 +99,7 @@ class GlueToolbar(NavigationToolbar2QT):
         self.addAction(a)
         self.buttons['PAN'] = a
 
-        a = QtGui.QAction(get_icon('glue_zoom_to_rect'),
+        a = QtWidgets.QAction(get_icon('glue_zoom_to_rect'),
                           'Zoom', parent)
         a.triggered.connect(nonpartial(self.zoom))
         a.setToolTip('Zoom to rectangle')
@@ -156,7 +157,7 @@ class GlueToolbar(NavigationToolbar2QT):
         self.mode = ''
 
     def add_mode(self, mode):
-        parent = QtGui.QToolBar.parent(self)
+        parent = QtWidgets.QToolBar.parent(self)
 
         def toggle():
             self._custom_mode(mode)
@@ -166,7 +167,7 @@ class GlueToolbar(NavigationToolbar2QT):
             if self._active != mode.mode_id:
                 self._custom_mode(mode)
 
-        action = QtGui.QAction(mode.icon, mode.action_text, parent)
+        action = QtWidgets.QAction(mode.icon, mode.action_text, parent)
         action.triggered.connect(nonpartial(toggle))
         parent.addAction(action)
 
@@ -182,7 +183,7 @@ class GlueToolbar(NavigationToolbar2QT):
 
         menu_actions = mode.menu_actions()
         if len(menu_actions) > 0:
-            menu = QtGui.QMenu(self)
+            menu = QtWidgets.QMenu(self)
             for ma in mode.menu_actions():
                 ma.setParent(self)
                 menu.addAction(ma)
@@ -253,7 +254,7 @@ class GlueToolbar(NavigationToolbar2QT):
 
     def set_message(self, s):
         self.message.emit(s)
-        parent = QtGui.QToolBar.parent(self)
+        parent = QtWidgets.QToolBar.parent(self)
         if parent is None:
             return
         sb = parent.statusBar()

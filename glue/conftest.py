@@ -27,7 +27,7 @@ def pytest_configure(config):
 
     # Start up QApplication, if the Qt code is present
     try:
-        from glue.external.qt import get_qapp
+        from glue.utils.qt import get_qapp
     except ImportError:
         pass
     else:

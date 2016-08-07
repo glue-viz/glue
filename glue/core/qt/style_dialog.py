@@ -1,12 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt.QtCore import Qt
-from glue.external.qt import QtGui, QtCore
+from qtpy.QtCore import Qt
+from qtpy import QtCore, QtWidgets
 from glue.icons.qt import POINT_ICONS, symbol_icon
 from glue.utils.qt import mpl_to_qt4_color, qt4_to_mpl_color, CUSTOM_QWIDGETS
 
 
-class ColorWidget(QtGui.QLabel):
+class ColorWidget(QtWidgets.QLabel):
     mousePressed = QtCore.Signal()
 
     def mousePressEvent(self, event):
@@ -16,7 +16,7 @@ class ColorWidget(QtGui.QLabel):
 CUSTOM_QWIDGETS.append(ColorWidget)
 
 
-class StyleDialog(QtGui.QDialog):
+class StyleDialog(QtWidgets.QDialog):
 
     """Dialog which edits the style of a layer (Data or Subset)
 
@@ -34,18 +34,18 @@ class StyleDialog(QtGui.QDialog):
         self._connect()
 
     def _setup_widgets(self):
-        self.layout = QtGui.QFormLayout()
+        self.layout = QtWidgets.QFormLayout()
 
-        self.size_widget = QtGui.QSpinBox()
+        self.size_widget = QtWidgets.QSpinBox()
         self.size_widget.setMinimum(1)
         self.size_widget.setMaximum(40)
         self.size_widget.setValue(self.layer.style.markersize)
 
-        self.label_widget = QtGui.QLineEdit()
+        self.label_widget = QtWidgets.QLineEdit()
         self.label_widget.setText(self.layer.label)
         self.label_widget.selectAll()
 
-        self.symbol_widget = QtGui.QComboBox()
+        self.symbol_widget = QtWidgets.QComboBox()
         for idx, symbol in enumerate(self._symbols):
             icon = symbol_icon(symbol)
             self.symbol_widget.addItem(icon, '')
@@ -60,8 +60,8 @@ class StyleDialog(QtGui.QDialog):
         color = mpl_to_qt4_color(color, alpha=self.layer.style.alpha)
         self.set_color(color)
 
-        self.okcancel = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok |
-                                               QtGui.QDialogButtonBox.Cancel)
+        self.okcancel = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok |
+                                               QtWidgets.QDialogButtonBox.Cancel)
 
         if self._edit_label:
             self.layout.addRow("Label", self.label_widget)

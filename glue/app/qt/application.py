@@ -8,14 +8,14 @@ import warnings
 import webbrowser
 
 from glue.config import settings
-from glue.external.qt.QtCore import Qt
-from glue.external.qt import QtGui, QtCore
+from qtpy.QtCore import Qt
+from qtpy import QtCore, QtWidgets, QtGui
 from glue.core.application_base import Application
 from glue.core import command, Data
 from glue import env
 from glue.main import load_plugins
 from glue.icons.qt import get_icon
-from glue.external.qt import get_qapp
+from glue.utils.qt import get_qapp
 from glue.app.qt.actions import action
 from glue.dialogs.data_wizard.qt import data_wizard
 from glue.app.qt.edit_subset_mode_toolbar import EditSubsetModeToolBar
@@ -74,10 +74,10 @@ def status_pixmap(attention=False):
     return pm
 
 
-class ClickableLabel(QtGui.QLabel):
+class ClickableLabel(QtWidgets.QLabel):
 
     """
-    A QtGui.QLabel you can click on to generate events
+    A QtWidgets.QLabel you can click on to generate events
     """
 
     clicked = QtCore.Signal()
@@ -86,7 +86,7 @@ class ClickableLabel(QtGui.QLabel):
         self.clicked.emit()
 
 
-class GlueLogger(QtGui.QWidget):
+class GlueLogger(QtWidgets.QWidget):
 
     """
     A window to display error messages
@@ -94,13 +94,13 @@ class GlueLogger(QtGui.QWidget):
 
     def __init__(self, parent=None):
         super(GlueLogger, self).__init__(parent)
-        self._text = QtGui.QTextEdit()
+        self._text = QtWidgets.QTextEdit()
         self._text.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
-        clear = QtGui.QPushButton("Clear")
+        clear = QtWidgets.QPushButton("Clear")
         clear.clicked.connect(nonpartial(self._clear))
 
-        report = QtGui.QPushButton("Send Bug Report")
+        report = QtWidgets.QPushButton("Send Bug Report")
         report.clicked.connect(nonpartial(self._send_report))
 
         self.stderr = sys.stderr
@@ -112,8 +112,8 @@ class GlueLogger(QtGui.QWidget):
         self._status.setPixmap(status_pixmap())
         self._status.setContentsMargins(0, 0, 0, 0)
 
-        l = QtGui.QVBoxLayout()
-        h = QtGui.QHBoxLayout()
+        l = QtWidgets.QVBoxLayout()
+        h = QtWidgets.QHBoxLayout()
         l.setContentsMargins(2, 2, 2, 2)
         l.setSpacing(2)
         h.setContentsMargins(0, 0, 0, 0)
@@ -178,7 +178,7 @@ class GlueLogger(QtGui.QWidget):
             self.hide()
 
 
-class GlueApplication(Application, QtGui.QMainWindow):
+class GlueApplication(Application, QtWidgets.QMainWindow):
 
     """ The main GUI application for the Qt frontend"""
 
@@ -186,7 +186,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
 
         self.app = get_qapp()
 
-        QtGui.QMainWindow.__init__(self)
+        QtWidgets.QMainWindow.__init__(self)
         Application.__init__(self, data_collection=data_collection,
                              session=session)
 
@@ -232,7 +232,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
 
         lw = LayerTreeWidget()
         lw.set_checkable(False)
-        self._vb = QtGui.QVBoxLayout()
+        self._vb = QtWidgets.QVBoxLayout()
         self._vb.setContentsMargins(0, 0, 0, 0)
         self._vb.addWidget(lw)
         self._ui.data_layers.setLayout(self._vb)
@@ -278,7 +278,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
 
     def new_tab(self):
         """Spawn a new tab page"""
-        layout = QtGui.QGridLayout()
+        layout = QtWidgets.QGridLayout()
         layout.setSpacing(1)
         layout.setContentsMargins(0, 0, 0, 0)
         widget = GlueMdiArea(self)
@@ -324,7 +324,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
 
         Returns the window that this widget is wrapped in.
 
-        :param new_widget: new QtGui.QWidget to add
+        :param new_widget: new QtWidgets.QWidget to add
 
         :param label: label for the new window. Optional
         :type label: str
@@ -362,11 +362,11 @@ class GlueApplication(Application, QtGui.QMainWindow):
     def _get_plot_dashboards(self, sub_window):
 
         if not isinstance(sub_window, GlueMdiSubWindow):
-            return QtGui.QWidget(), QtGui.QWidget(), ""
+            return QtWidgets.QWidget(), QtWidgets.QWidget(), ""
 
         widget = sub_window.widget()
         if not isinstance(widget, DataViewer):
-            return QtGui.QWidget(), QtGui.QWidget(), ""
+            return QtWidgets.QWidget(), QtWidgets.QWidget(), ""
 
         layer_view = widget.layer_view()
         options_widget = widget.options_widget()
@@ -379,7 +379,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
                               (self._ui.plot_options, "Plot Options")]:
             layout = widget.layout()
             if layout is None:
-                layout = QtGui.QVBoxLayout()
+                layout = QtWidgets.QVBoxLayout()
                 layout.setContentsMargins(4, 4, 4, 4)
                 widget.setLayout(layout)
             while layout.count():
@@ -429,7 +429,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
 
     def _create_menu(self):
         mbar = self.menuBar()
-        menu = QtGui.QMenu(mbar)
+        menu = QtWidgets.QMenu(mbar)
         menu.setTitle("&File")
 
         menu.addAction(self._actions['data_new'])
@@ -450,21 +450,21 @@ class GlueApplication(Application, QtGui.QMainWindow):
         menu.addAction("&Quit", self.app.quit)
         mbar.addMenu(menu)
 
-        menu = QtGui.QMenu(mbar)
+        menu = QtWidgets.QMenu(mbar)
         menu.setTitle("&Edit ")
         menu.addAction(self._actions['undo'])
         menu.addAction(self._actions['redo'])
         mbar.addMenu(menu)
 
-        menu = QtGui.QMenu(mbar)
+        menu = QtWidgets.QMenu(mbar)
         menu.setTitle("&View ")
 
-        a = QtGui.QAction("&Console Log", menu)
+        a = QtWidgets.QAction("&Console Log", menu)
         a.triggered.connect(self._log._show)
         menu.addAction(a)
         mbar.addMenu(menu)
 
-        menu = QtGui.QMenu(mbar)
+        menu = QtWidgets.QMenu(mbar)
         menu.setTitle("&Canvas")
         menu.addAction(self._actions['tab_new'])
         menu.addAction(self._actions['viewer_new'])
@@ -473,19 +473,19 @@ class GlueApplication(Application, QtGui.QMainWindow):
         menu.addAction(self._actions['tab_rename'])
         mbar.addMenu(menu)
 
-        menu = QtGui.QMenu(mbar)
+        menu = QtWidgets.QMenu(mbar)
         menu.setTitle("Data &Manager")
         menu.addActions(self._layer_widget.actions())
 
         mbar.addMenu(menu)
 
-        menu = QtGui.QMenu(mbar)
+        menu = QtWidgets.QMenu(mbar)
         menu.setTitle("&Toolbars")
         tbar = EditSubsetModeToolBar()
         self._mode_toolbar = tbar
         self.addToolBar(tbar)
         tbar.hide()
-        a = QtGui.QAction("Selection Mode &Toolbar", menu)
+        a = QtWidgets.QAction("Selection Mode &Toolbar", menu)
         a.setCheckable(True)
         a.toggled.connect(tbar.setVisible)
         try:
@@ -497,7 +497,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
         menu.addActions(tbar.actions())
         mbar.addMenu(menu)
 
-        menu = QtGui.QMenu(mbar)
+        menu = QtWidgets.QMenu(mbar)
         menu.setTitle("&Plugins")
         menu.addAction(self._actions['plugin_manager'])
         menu.addSeparator()
@@ -511,11 +511,11 @@ class GlueApplication(Application, QtGui.QMainWindow):
         # trigger inclusion of Mac Native "Help" tool
         menu = mbar.addMenu("&Help")
 
-        a = QtGui.QAction("&Online Documentation", menu)
+        a = QtWidgets.QAction("&Online Documentation", menu)
         a.triggered.connect(nonpartial(webbrowser.open, DOCS_URL))
         menu.addAction(a)
 
-        a = QtGui.QAction("Send &Feedback", menu)
+        a = QtWidgets.QAction("Send &Feedback", menu)
         a.triggered.connect(nonpartial(submit_feedback))
         menu.addAction(a)
 
@@ -681,7 +681,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
         """
 
         # include file filter twice, so it shows up in Dialog
-        outfile, file_filter = QtGui.QFileDialog.getSaveFileName(self,
+        outfile, file_filter = QtWidgets.QFileDialog.getSaveFileName(self,
                                                                  filter="Glue Session (*.glu);; Glue Session including data (*.glu)")
 
         # This indicates that the user cancelled
@@ -700,13 +700,13 @@ class GlueApplication(Application, QtGui.QMainWindow):
         if outmode is None:
             return saver(self)
         elif outmode in ['file', 'directory']:
-            outfile, file_filter = QtGui.QFileDialog.getSaveFileName(self)
+            outfile, file_filter = QtWidgets.QFileDialog.getSaveFileName(self)
             if not outfile:
                 return
             return saver(self, outfile)
         else:
             assert outmode == 'label'
-            label, ok = QtGui.QInputDialog.getText(self, 'Choose a label:',
+            label, ok = QtWidgets.QInputDialog.getText(self, 'Choose a label:',
                                                    'Choose a label:')
             if not ok:
                 return
@@ -717,7 +717,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
     def _restore_session(self, show=True):
         """ Load a previously-saved state, and restart the session """
         fltr = "Glue sessions (*.glu)"
-        file_name, file_filter = QtGui.QFileDialog.getOpenFileName(self,
+        file_name, file_filter = QtWidgets.QFileDialog.getOpenFileName(self,
                                                                    filter=fltr)
         if not file_name:
             return
@@ -783,7 +783,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
         if hasattr(self, '_terminal_exception'):  # already failed to set up
             return
 
-        self._terminal_button = QtGui.QToolButton(self._ui)
+        self._terminal_button = QtWidgets.QToolButton(self._ui)
         self._terminal_button.setToolTip("Toggle IPython Prompt")
         i = get_icon('IPythonConsole')
         self._terminal_button.setIcon(i)
@@ -975,7 +975,7 @@ class GlueApplication(Application, QtGui.QMainWindow):
         label = others[0].label
         w.merged_label.setText(label)
 
-        entries = [QtGui.QListWidgetItem(other.label) for other in others]
+        entries = [QtWidgets.QListWidgetItem(other.label) for other in others]
         for e in entries:
             e.setCheckState(Qt.Checked)
 

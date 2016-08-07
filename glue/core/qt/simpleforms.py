@@ -1,15 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt.QtCore import QObject, Signal
-from glue.external.qt import QtGui
+from qtpy import QtCore, QtWidgets
 from glue.core.simpleforms import IntOption, FloatOption, BoolOption
 from glue.utils import nonpartial
 
 _dispatch = {}
 
 
-class FormItem(QObject):
-    changed = Signal()
+class FormItem(QtCore.QObject):
+    changed = QtCore.Signal()
 
     def __init__(self, instance, option):
         super(FormItem, self).__init__()
@@ -41,11 +40,11 @@ class NumberFormItem(FormItem):
 
 
 class IntFormItem(NumberFormItem):
-    widget_cls = QtGui.QSpinBox
+    widget_cls = QtWidgets.QSpinBox
 
 
 class FloatFormItem(NumberFormItem):
-    widget_cls = QtGui.QDoubleSpinBox
+    widget_cls = QtWidgets.QDoubleSpinBox
 
 
 class BoolFormItem(FormItem):
@@ -54,7 +53,7 @@ class BoolFormItem(FormItem):
         super(BoolFormItem, self).__init__(instance, option)
 
         value = option.__get__(instance)
-        self.widget = QtGui.QCheckBox()
+        self.widget = QtWidgets.QCheckBox()
         self.widget.setChecked(value)
         self.widget.clicked.connect(nonpartial(self.changed.emit))
 

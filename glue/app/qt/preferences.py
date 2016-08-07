@@ -5,7 +5,7 @@ import os
 import numpy as np
 from matplotlib.colors import ColorConverter
 
-from glue.external.qt import QtGui
+from qtpy import QtWidgets
 from glue.core.message import SettingsChangeMessage
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui, ColorProperty
@@ -18,7 +18,7 @@ __all__ = ["PreferencesDialog"]
 rgb = ColorConverter().to_rgb
 
 
-class PreferencesDialog(QtGui.QDialog):
+class PreferencesDialog(QtWidgets.QDialog):
 
     theme = CurrentComboTextProperty('ui.combo_theme')
     background = ColorProperty('ui.color_background')
@@ -116,7 +116,7 @@ class PreferencesDialog(QtGui.QDialog):
 
 if __name__ == "__main__":
 
-    from glue.external.qt import get_qapp
+    from glue.utils.qt import get_qapp
     app = get_qapp()
     widget = PreferencesDialog()
     widget.show()

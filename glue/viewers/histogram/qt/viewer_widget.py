@@ -3,8 +3,8 @@ from __future__ import absolute_import, division, print_function
 import os
 from functools import partial
 
-from glue.external.qt.QtCore import Qt
-from glue.external.qt import QtGui
+from qtpy.QtCore import Qt
+from qtpy import QtGui, QtWidgets
 from glue.core import message as msg
 from glue.viewers.histogram.client import HistogramClient
 from glue.viewers.common.qt.toolbar import GlueToolbar
@@ -52,7 +52,7 @@ class HistogramWidget(DataViewer):
 
         self.central_widget = MplWidget()
         self.setCentralWidget(self.central_widget)
-        self.option_widget = QtGui.QWidget()
+        self.option_widget = QtWidgets.QWidget()
         self.ui = load_ui('options_widget.ui', self.option_widget,
                           directory=os.path.dirname(__file__))
         self._tweak_geometry()

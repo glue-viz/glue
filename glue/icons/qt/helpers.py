@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt.QtCore import Qt
-from glue.external.qt import QtGui
+from qtpy.QtCore import Qt
+from qtpy import QtWidgets, QtGui
 from glue.utils.qt import mpl_to_qt4_color, tint_pixmap
 
 from glue.icons import icon_path

@@ -3,8 +3,9 @@ from __future__ import absolute_import, division, print_function
 import os
 from contextlib import contextmanager
 
-from glue.external.qt import QtGui, QtCore
-from glue.external.qt.QtCore import Qt
+from qtpy import QtCore, QtWidgets
+from qtpy.QtCore import Qt
+from qtpy.uic import loadUi
 from glue.utils.qt import get_text
 
 __all__ = ['update_combobox', 'GlueTabBar', 'load_ui', 'CUSTOM_QWIDGETS', 'process_dialog']
@@ -62,7 +63,7 @@ def update_combobox(combo, labeldata):
         combo.currentIndexChanged.emit(index)
 
 
-class GlueTabBar(QtGui.QTabBar):
+class GlueTabBar(QtWidgets.QTabBar):
 
     def __init__(self, *args, **kwargs):
         super(GlueTabBar, self).__init__(*args, **kwargs)
@@ -101,7 +102,7 @@ def load_ui(path, parent=None, directory=None):
 
     Returns
     -------
-    w : QtGui.QWidget
+    w : QtWidgets.QWidget
         The new widget
     """
 
@@ -114,8 +115,7 @@ def load_ui(path, parent=None, directory=None):
         # Workaround for Mac app
         full_path = os.path.join(full_path.replace('site-packages.zip', 'glue'))
 
-    from glue.external.qt import load_ui
-    return load_ui(full_path, parent, custom_widgets=CUSTOM_QWIDGETS)
+    return loadUi(full_path, parent)
 
 
 @contextmanager
@@ -162,7 +162,7 @@ def process_dialog(delay=0, accept=False, reject=False, function=None):
         function = _reject
 
     def wrapper():
-        from glue.external.qt import get_qapp
+        from glue.utils.qt import get_qapp
         app = get_qapp()
         dialog = app.focusWidget().window()
         function(dialog)

@@ -10,7 +10,7 @@ Example Use::
         bar = ButtonProperty('_button')
 
         def __init__(self):
-            self._button = QtGui.QCheckBox()
+            self._button = QtWidgets.QCheckBox()
 
     f = Foo()
     f.bar = True  # equivalent to f._button.setChecked(True)
@@ -22,9 +22,9 @@ from __future__ import absolute_import, division, print_function
 import math
 from functools import partial
 
+from qtpy import QtGui
 from glue.logger import logger
 from glue.external.six.moves import reduce
-from glue.external.qt import QtGui
 from glue.external.echo import add_callback
 from glue.utils.array import pretty_number
 

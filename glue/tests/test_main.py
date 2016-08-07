@@ -112,7 +112,7 @@ def test_start(glue, config, data):
         with patch('glue.config.load_configuration') as lc:
             with patch('glue.main.load_data_files') as ldf:
                 with patch('glue.app.qt.GlueApplication') as ga:
-                    with patch('glue.external.qt.QtGui') as qt:
+                    with patch('qtpy.QtWidgets') as qt:
 
                         rs.return_value = ga
                         ldf.return_value = Data()

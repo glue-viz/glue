@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from glue.external.qt import QtGui
+from qtpy import QtWidgets
 from glue import core
 from glue.plugins.dendro_viewer.client import DendroClient
 from glue.viewers.common.qt.toolbar import GlueToolbar
@@ -35,7 +35,7 @@ class DendroWidget(DataViewer):
         super(DendroWidget, self).__init__(session, parent)
 
         self.central_widget = MplWidget()
-        self.option_widget = QtGui.QWidget()
+        self.option_widget = QtWidgets.QWidget()
         self.setCentralWidget(self.central_widget)
 
         self.ui = load_ui('options_widget.ui', self.option_widget,

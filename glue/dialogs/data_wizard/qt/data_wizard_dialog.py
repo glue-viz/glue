@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt.QtCore import Qt
-from glue.external.qt import QtGui
+from qtpy.QtCore import Qt
+from qtpy import QtWidgets
 from glue.utils.qt import QMessageBoxPatched as QMessageBox, set_cursor
 
 __all__ = ['data_wizard', 'GlueDataDialog']
@@ -45,14 +45,14 @@ def data_wizard():
 class GlueDataDialog(object):
 
     def __init__(self, parent=None):
-        self._fd = QtGui.QFileDialog(parent)
+        self._fd = QtWidgets.QFileDialog(parent)
         from glue.config import data_factory
         self.filters = [(f, self._filter(f))
                         for f in data_factory.members if not f.deprecated]
         self.setNameFilter()
-        self._fd.setFileMode(QtGui.QFileDialog.ExistingFiles)
+        self._fd.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
         try:
-            self._fd.setOption(QtGui.QFileDialog.Option.HideNameFilterDetails,
+            self._fd.setOption(QtWidgets.QFileDialog.Option.HideNameFilterDetails,
                                True)
         except AttributeError:  # HideNameFilterDetails not present
             pass
@@ -84,7 +84,7 @@ class GlueDataDialog(object):
                 returns ([], None) if user cancels dialog
         """
         result = self._fd.exec_()
-        if result == QtGui.QDialog.Rejected:
+        if result == QtWidgets.QDialog.Rejected:
             return [], None
         # path = list(map(str, self.paths()))  # cast out of unicode
         path = list(self.paths())

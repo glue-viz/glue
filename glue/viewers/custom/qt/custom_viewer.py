@@ -76,8 +76,8 @@ from copy import copy
 import numpy as np
 
 from glue.external import six
-from glue.external.qt import QtGui
-from glue.external.qt.QtCore import Qt
+from qtpy import QtWidgets
+from qtpy.QtCore import Qt
 
 from glue.core.layer_artist import MatplotlibLayerArtist
 from glue.config import qt_client
@@ -611,9 +611,9 @@ class CustomViewer(object):
             hub.unsubscribe_all(w)
 
     def _build_ui(self, callback):
-        result = QtGui.QWidget()
+        result = QtWidgets.QWidget()
 
-        layout = QtGui.QFormLayout()
+        layout = QtWidgets.QFormLayout()
         layout.setFieldGrowthPolicy(layout.AllNonFixedFieldsGrow)
         result.setLayout(layout)
 
@@ -1176,12 +1176,12 @@ class FloatElement(FormElement):
     def recognizes(cls, params):
         return isinstance(params, (int, float)) and not isinstance(params, bool)
 
-class GenericTextBox(QtGui.QWidget):
+class GenericTextBox(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
         super(GenericTextBox, self).__init__(parent)
-        self._l = QtGui.QHBoxLayout()
-        self._textbox = QtGui.QLineEdit()
+        self._l = QtWidgets.QHBoxLayout()
+        self._textbox = QtWidgets.QLineEdit()
         self._l.setContentsMargins(2, 2, 2, 2)
         self._l.addWidget(self._textbox)
         self.setLayout(self._l)
@@ -1207,7 +1207,7 @@ class GenericTextBox(QtGui.QWidget):
     setValue = set_value
 
 
-class LabeledSlider(QtGui.QWidget):
+class LabeledSlider(QtWidgets.QWidget):
 
     """
     A labeled slider widget, that handles floats and integers
@@ -1221,7 +1221,7 @@ class LabeledSlider(QtGui.QWidget):
         :param parent: Widget parent
         """
         super(LabeledSlider, self).__init__(parent)
-        self._slider = QtGui.QSlider()
+        self._slider = QtWidgets.QSlider()
         self._slider.setMinimum(0)
         self._slider.setMaximum(100)
         self._slider.setOrientation(Qt.Horizontal)
@@ -1238,8 +1238,8 @@ class LabeledSlider(QtGui.QWidget):
         self.set_value(default)
 
         # setup layout
-        self._lbl = QtGui.QLabel(str(self.value()))
-        self._l = QtGui.QHBoxLayout()
+        self._lbl = QtWidgets.QLabel(str(self.value()))
+        self._l = QtWidgets.QHBoxLayout()
         self._l.setContentsMargins(2, 2, 2, 2)
         self._l.addWidget(self._slider)
         self._l.addWidget(self._lbl)
@@ -1294,7 +1294,7 @@ class BoolElement(FormElement):
         return isinstance(params, bool)
 
     def _build_ui(self):
-        w = QtGui.QCheckBox()
+        w = QtWidgets.QCheckBox()
         w.setChecked(self.params)
         w.toggled.connect(nonpartial(self.changed))
         return w
@@ -1369,7 +1369,7 @@ class ComponenentElement(FormElement, core.hub.HubListener):
         return params == 'att'
 
     def _build_ui(self):
-        result = QtGui.QComboBox()
+        result = QtWidgets.QComboBox()
         result.currentIndexChanged.connect(nonpartial(self.changed))
         return result
 
@@ -1441,7 +1441,7 @@ class ChoiceElement(FormElement):
             return False
 
     def _build_ui(self):
-        w = QtGui.QComboBox()
+        w = QtWidgets.QComboBox()
         for p in sorted(self.params):
             w.addItem(p)
 

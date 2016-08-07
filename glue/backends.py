@@ -27,7 +27,7 @@ class TimerBase(object):
 class QtTimer(TimerBase):
 
     def __init__(self, interval, callback):
-        from glue.external.qt import QtCore
+        from qtpy import QtCore
         self._timer = QtCore.QTimer()
         self._timer.setInterval(interval)
         self._timer.timeout.connect(callback)

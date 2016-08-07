@@ -2,8 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 from mock import MagicMock
 
-from glue.external.qt.QtCore import Qt
-from glue.external.qt import is_pyqt5
+from qtpy.QtCore import Qt
+from qtpy import PYQT5
 from glue.core import Data
 from glue.core.layer_artist import MatplotlibLayerArtist as _LayerArtist
 
@@ -100,7 +100,7 @@ def test_flags():
                 Qt.ItemIsSelectable |
                 Qt.ItemIsUserCheckable)
 
-    if is_pyqt5():
+    if PYQT5:
         expected |= Qt.ItemNeverHasChildren
 
     assert model.flags(model.index(0)) == expected

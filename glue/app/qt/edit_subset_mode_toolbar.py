@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.qt import QtGui
+from qtpy import QtWidgets
 from glue.core.edit_subset_mode import (EditSubsetMode, OrMode, AndNotMode,
                                         AndMode, XorMode, ReplaceMode)
 from glue.app.qt.actions import action
@@ -12,11 +12,11 @@ def set_mode(mode):
     edit_mode.mode = mode
 
 
-class EditSubsetModeToolBar(QtGui.QToolBar):
+class EditSubsetModeToolBar(QtWidgets.QToolBar):
 
     def __init__(self, title="Subset Update Mode", parent=None):
         super(EditSubsetModeToolBar, self).__init__(title, parent)
-        self._group = QtGui.QActionGroup(self)
+        self._group = QtWidgets.QActionGroup(self)
         self._modes = {}
         self._add_actions()
         self._modes[EditSubsetMode().mode].trigger()
