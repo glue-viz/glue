@@ -120,8 +120,12 @@ matrix:
 
 before_install:
 
-  # Prepare dependency list
-  - if [[ $QT_PKG != False ]]; then export CONDA_DEPENDENCIES="$QT_PKG "$CONDA_DEPENDENCIES; fi
+  # Prepare dependency list. Note that in future, PyQt5 will be the pyqt conda
+  # package with a version of 5.x rather than a pyqt5 package, so we explicitly
+  # request pyqt=4 for PyQt4.
+  - if [[ $QT_PKG == pyside ]]; then export CONDA_DEPENDENCIES="pyside "$CONDA_DEPENDENCIES; fi
+  - if [[ $QT_PKG == pyqt ]]; then export CONDA_DEPENDENCIES="pyqt=4 "$CONDA_DEPENDENCIES; fi
+  - if [[ $QT_PKG == pyqt5 ]]; then export CONDA_DEPENDENCIES="pyqt5 "$CONDA_DEPENDENCIES; fi
 
   # Special cases depending on IPython version
   - if [[ $IPYTHON_VERSION == 4 ]]; then export CONDA_DEPENDENCIES="traitlets=4.1.0 qtconsole ipykernel "$CONDA_DEPENDENCIES; fi
