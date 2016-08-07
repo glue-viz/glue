@@ -113,12 +113,12 @@ class GingaWidget(ImageWidgetBase):
         layout.setSpacing(0)
         layout.addWidget(self.viewer.get_widget(), stretch=1)
         cbar_w = self.colorbar.get_widget()
-        if not isinstance(cbar_w, QtGui.QWidget):
+        if not isinstance(cbar_w, QtWidgets.QWidget):
             # ginga wrapped widget
             cbar_w = cbar_w.get_widget()
         layout.addWidget(cbar_w, stretch=0)
         readout_w = self.readout.get_widget()
-        if not isinstance(readout_w, QtGui.QWidget):
+        if not isinstance(readout_w, QtWidgets.QWidget):
             # ginga wrapped widget
             readout_w = readout_w.get_widget()
         layout.addWidget(readout_w, stretch=0)
