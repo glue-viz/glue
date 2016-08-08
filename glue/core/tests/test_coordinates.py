@@ -321,3 +321,9 @@ def test_coords_preserve_shape_3d():
     result = coord.world2pixel(x, y, z)
     for r in result:
         assert r.shape == x.shape
+
+def test_world_axis_unit():
+    coord = coordinates_from_header(header_from_string(HDR_3D_VALID_WCS))
+    assert coord.world_axis_unit(0) == 'm / s'
+    assert coord.world_axis_unit(1) == 'deg'
+    assert coord.world_axis_unit(2) == 'deg'

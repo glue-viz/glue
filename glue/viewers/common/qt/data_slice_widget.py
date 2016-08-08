@@ -22,6 +22,7 @@ class SliceWidget(QtWidgets.QWidget):
 
     label = TextProperty('_ui_label')
     slider_label = TextProperty('_ui_slider.label')
+    slider_unit = TextProperty('_ui_slider.text_unit')
     slice_center = ValueProperty('_ui_slider.slider')
     mode = CurrentComboProperty('_ui_mode')
     use_world = ButtonProperty('_ui_slider.checkbox_world')
@@ -30,7 +31,8 @@ class SliceWidget(QtWidgets.QWidget):
     mode_changed = QtCore.Signal(str)
 
     def __init__(self, label='', world=None, lo=0, hi=10,
-                 parent=None, aggregation=None, world_warning=False):
+                 parent=None, aggregation=None, world_unit=None,
+                 world_warning=False):
 
         super(SliceWidget, self).__init__(parent)
 
@@ -109,6 +111,11 @@ class SliceWidget(QtWidgets.QWidget):
             slider.checkbox_world.hide()
         else:
             self.use_world = not world_warning
+
+        if world_unit:
+            self.slider_unit = world_unit
+        else:
+            self.slider_unit = ''
 
         layout.addWidget(slider)
 
@@ -285,13 +292,16 @@ class DataSlice(QtWidgets.QWidget):
             # subclasses differently.
             if type(data.coords) != Coordinates:
                 world = data.coords.world_axis(data, i)
+                world_unit = data.coords.world_axis_unit(i)
                 world_warning = len(data.coords.dependent_axes(i)) > 1
             else:
                 world = None
+                world_unit = None
                 world_warning = False
 
             slider = SliceWidget(data.get_world_component_id(i).label,
-                                 hi=s - 1, world=world, world_warning=world_warning)
+                                 hi=s - 1, world=world, world_unit=world_unit,
+                                 world_warning=world_warning)
 
             if i == self.ndim - 1:
                 slider.mode = 'x'
