@@ -318,6 +318,11 @@ class Data(object):
         if isinstance(cid_other, six.string_types) or isinstance(cid_other, ComponentID):
             cid_other = (cid_other,)
 
+        if len(cid) > 1 and len(cid_other) > 1 and len(cid) != len(cid_other):
+            raise Exception("Either the number of components in the key join "
+                            "sets should match, or one of the component sets "
+                            "should contain a single component.")
+
         def get_component_id(data, name):
             cid = data.find_component_id(name)
             if cid is None:
