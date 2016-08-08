@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>245</width>
-    <height>113</height>
+    <width>294</width>
+    <height>88</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -184,12 +184,19 @@
       <widget class="QLineEdit" name="label">
        <property name="maximumSize">
         <size>
-         <width>16777215</width>
+         <width>50</width>
          <height>16777215</height>
         </size>
        </property>
        <property name="maxLength">
         <number>10</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="text_unit">
+       <property name="text">
+        <string>TextLabel</string>
        </property>
       </widget>
      </item>

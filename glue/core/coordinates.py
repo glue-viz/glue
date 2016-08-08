@@ -51,6 +51,13 @@ class Coordinates(object):
                 pixel.append(np.repeat((s - 1) / 2, data.shape[axis]))
         return self.pixel2world(*pixel[::-1])[::-1][axis]
 
+    def world_axis_unit(self, axis):
+        """
+        Return the unit of the world coordinate given by ``axis`` (assuming the
+        Numpy axis order)
+        """
+        return ''
+
     def axis_label(self, axis):
         return "World %i" % axis
 
@@ -108,6 +115,9 @@ class WCSCoordinates(Coordinates):
                 setattr(wcs, k, getattr(wcs, v))
 
         self._wcs = wcs
+
+    def world_axis_unit(self, axis):
+        return str(self._wcs.wcs.cunit[self._wcs.naxis - 1 - axis])
 
     @property
     def wcs(self):
