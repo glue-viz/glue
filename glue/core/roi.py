@@ -1219,15 +1219,17 @@ class CategoricalROI(Roi):
            within the ROI
 
         """
-
-        check = self._categorical_helper(x)
-        index = np.minimum(np.searchsorted(self.categories, check),
-                           len(self.categories) - 1)
-        return self.categories[index] == check
+        if self.categories is None or len(self.categories) == 0:
+            return np.zeros(x.shape, dtype=bool)
+        else:
+            check = self._categorical_helper(x)
+            index = np.minimum(np.searchsorted(self.categories, check),
+                               len(self.categories) - 1)
+            return self.categories[index] == check
 
     def update_categories(self, categories):
-
-        self.categories = np.unique(self._categorical_helper(categories))
+        if len(categories) > 0:
+            self.categories = np.unique(self._categorical_helper(categories))
 
     def defined(self):
         """ Returns True if the ROI is defined """
