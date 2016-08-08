@@ -18,6 +18,9 @@ v0.9.0 (unreleased)
   ``glue.external.qt`` package is now deprecated. The ``get_qapp`` and
   ``load_ui`` functions are now available in ``glue.utils.qt``.
 
+* Avoid raising a (harmless) error when selecting a region in between two
+  categorical components.
+
 v0.8.3 (unreleased)
 -------------------
 
