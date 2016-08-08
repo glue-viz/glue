@@ -84,7 +84,7 @@ dendro_viewer = glue.plugins.dendro_viewer:setup
 image_viewer = glue.viewers.image:setup
 scatter_viewer = glue.viewers.scatter:setup
 histogram_viewer = glue.viewers.histogram:setup
-# table_viewer = glue.viewers.table:setup
+table_viewer = glue.viewers.table:setup
 
 [console_scripts]
 glue-config = glue.config_gen:main
