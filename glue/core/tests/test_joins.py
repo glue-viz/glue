@@ -125,3 +125,73 @@ class TestSubsets(object):
         s.subset_state = y.id['x'] > 1
 
         assert_array_equal(s.to_mask(), [False, True, True])
+
+
+def test_many_to_many():
+    """
+    Test the use of multiple keys to denote that combinations of components
+    have to match.
+    """
+
+    d1 = Data(x=[1, 2, 3, 5, 5],
+              y=[0, 0, 1, 1, 2], label='d1')
+    d2 = Data(a=[2, 5, 5, 8, 4],
+              b=[1, 3, 2, 2, 3], label='d2')
+    d2.join_on_key(d1, ('a', 'b'), ('x', 'y'))
+
+    s = d1.new_subset()
+    s.subset_state = d1.id['x'] == 5
+    assert_array_equal(s.to_mask(), [0, 0, 0, 1, 1])
+
+    s = d2.new_subset()
+    s.subset_state = d1.id['x'] == 5
+    assert_array_equal(s.to_mask(), [0, 0, 1, 0, 0])
+
+
+def test_one_and_many():
+    """
+    Test the use of one-to-many keys or many-to-one key to indicate that any of
+    the components can match the other.
+    """
+
+    d1 = Data(x=[1, 2, 3], label='d1')
+    d2 = Data(a=[1, 1, 2],
+              b=[2, 3, 3], label='d2')
+    d1.join_on_key(d2, 'x', ('a', 'b'))
+
+    s = d2.new_subset()
+    s.subset_state = d2.id['a'] == 2
+    assert_array_equal(s.to_mask(), [0, 0, 1])
+
+    s = d1.new_subset()
+    s.subset_state = d2.id['a'] == 2
+    assert_array_equal(s.to_mask(), [0, 1, 1])
+
+    d1 = Data(x=[1, 2, 3], label='d1')
+    d2 = Data(a=[1, 1, 2],
+              b=[2, 3, 3], label='d2')
+    d2.join_on_key(d1, ('a', 'b'), 'x')
+
+    s = d1.new_subset()
+    s.subset_state = d1.id['x'] == 1
+    assert_array_equal(s.to_mask(), [1, 0, 0])
+
+    s = d2.new_subset()
+    s.subset_state = d1.id['x'] == 1
+    assert_array_equal(s.to_mask(), [1, 1, 0])
+
+
+def test_mismatch():
+
+    d1 = Data(x=[1, 1, 2],
+              y=[2, 3, 3],
+              z=[2, 3, 3], label='d1')
+    d2 = Data(a=[1, 1, 2],
+              b=[2, 3, 3], label='d2')
+
+    with pytest.raises(Exception) as exc:
+        d1.join_on_key(d2, ('x', 'y', 'z'), ('a', 'b'))
+    assert exc.value.args[0] == ("Either the number of components in the key "
+                                 "join sets should match, or one of the "
+                                 "component sets should contain a single "
+                                 "component.")
