@@ -1228,8 +1228,7 @@ class CategoricalROI(Roi):
             return self.categories[index] == check
 
     def update_categories(self, categories):
-        if len(categories) > 0:
-            self.categories = np.unique(self._categorical_helper(categories))
+        self.categories = np.unique(self._categorical_helper(categories))
 
     def defined(self):
         """ Returns True if the ROI is defined """
