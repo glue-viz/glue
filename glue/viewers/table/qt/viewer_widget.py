@@ -4,7 +4,7 @@ import os
 import numpy as np
 
 from qtpy.QtCore import Qt
-from qtpy import QtGui, QtCore, QtWidgets
+from qtpy import QtCore, QtWidgets
 from qtpy import PYQT5
 from glue.core.subset import ElementSubsetState
 from glue.core.edit_subset_mode import EditSubsetMode
