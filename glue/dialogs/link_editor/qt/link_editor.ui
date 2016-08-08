@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1054</width>
-    <height>528</height>
+    <height>529</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -108,6 +108,13 @@
             <widget class="QPushButton" name="add_link">
              <property name="text">
               <string>Glue</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="smart_link">
+             <property name="text">
+              <string>Smart Glue</string>
              </property>
             </widget>
            </item>

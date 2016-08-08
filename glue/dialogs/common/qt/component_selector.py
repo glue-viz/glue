@@ -95,6 +95,7 @@ class ComponentSelector(QtWidgets.QWidget):
         :rtype: :class:`~glue.core.data.ComponentID`
         """
         item = self._ui.component_selector.currentItem()
+        print('what is item?', item)
         return self._ui.component_selector.get_data(item)
 
     @component.setter
@@ -107,6 +108,9 @@ class ComponentSelector(QtWidgets.QWidget):
                 return
         else:
             raise ValueError("Component not found: %s" % component)
+
+    def get_component(self, item):
+        return self._ui.component_selector.get_data(item)
 
     @property
     def data(self):
@@ -123,6 +127,13 @@ class ComponentSelector(QtWidgets.QWidget):
                 return
         else:
             raise ValueError("Data is not part of the DataCollection")
+
+    @property
+    def count(self):
+        return self._ui.component_selector.count()
+
+    def get_item(self, i):
+        return self._ui.component_selector.item(i)
 
 CUSTOM_QWIDGETS.append(ComponentSelector)
 

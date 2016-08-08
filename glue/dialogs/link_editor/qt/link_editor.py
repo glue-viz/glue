@@ -37,11 +37,13 @@ class LinkEditor(QtWidgets.QDialog):
         self._ui.left_components.setup(self._collection)
         self._ui.right_components.setup(self._collection)
         self._ui.signature_editor.hide()
+        print('what is left components', self._ui.left_components)
         for link in self._collection.links:
             self._add_link(link)
 
     def _connect(self):
         self._ui.add_link.clicked.connect(self._add_new_link)
+        self._ui.smart_link.clicked.connect(self._add_smart_link)
         self._ui.remove_link.clicked.connect(self._remove_link)
         self._ui.toggle_editor.clicked.connect(self._toggle_advanced)
         self._ui.signature_editor._ui.addButton.clicked.connect(
@@ -65,6 +67,8 @@ class LinkEditor(QtWidgets.QDialog):
         result = []
         id1 = self._ui.left_components.component
         id2 = self._ui.right_components.component
+        # print('component', self._ui.left_components, self._ui.left_components.)
+        # print()
         if id1:
             result.append(id1)
         if id2:
@@ -104,6 +108,73 @@ class LinkEditor(QtWidgets.QDialog):
 
         for link in links:
             self._add_link(link)
+
+    def _add_smart_link(self):
+        # load table here
+        # TODO: add support for advanced linking mode
+        if not self.advanced:
+            # TODO: links = linked_conponents_list which is get from the list file
+            l = self._ui.left_components # datacollection[0] or sth
+            r = self._ui.right_components
+
+            link_file = [['lat', 'latitude'], ['lon', 'longitude'], ['Declination', 'Vopt']]
+            # assume we have a ascii table link_data.dat
+            for each_list in link_file:
+                for i in range(l.count):
+                    l_item = l.get_item(i)
+                    if l_item.text() in each_list:
+                        l_comp = l.get_component(l_item)
+                        for j in range(r.count):
+                            r_item = r.get_item(j)
+                            print('r_item text', r_item.text())
+                            print('each list', each_list)
+                            if r_item.text() in each_list:
+                                r_comp = r.get_component(r_item)
+                                assert isinstance(l_comp, core.data.ComponentID), l_comp
+                                assert isinstance(r_comp, core.data.ComponentID), r_comp
+
+                                link = core.component_link.ComponentLink([l_comp], r_comp)
+                                print('find smart link!', link)
+                                self._add_link(link)
+
+
+            '''for each_list in link_file:
+                for left_cid in left_cids:
+                    if left_cid.label in each_list:
+                        print('what is left_cid.label', left_cid.label)
+                        for right_cid in right_cids:
+                            if right_cid.label in each_list:
+                                print('what is right_cid.label', right_cid.label)
+                                # link_pair.append([left_cid.label, right_cid.label])
+                                # left_item = QtWidgets.QListWidgetItem(left_cid.label)
+                                # right_item = QtWidgets.QListWidgetItem(right_cid.label)
+
+                                print('left_item', left_item)
+                                # left_comp = self._ui.left_components.get_component(left_item)
+                                # right_comp = self._ui.right_components.get_component(right_item)
+
+                                assert isinstance(left_comp, core.data.ComponentID), left_comp
+                                assert isinstance(right_comp, core.data.ComponentID), right_comp
+
+                                link = core.component_link.ComponentLink([left_comp], right_comp)
+                                print('find smart link!', link)
+                                self._add_link(link)'''
+
+
+                # component_list = data.components
+
+            # links.append(self._simple_links())  # add user manual linked items too
+            self._update_smart_link_list()
+        else:
+            return
+        # assert len(links) != 0
+        # for link in links:
+        #     self._add_link(link)
+        # pass
+
+    def _update_smart_link_list(self):
+        #TODO: add update
+        pass
 
     def links(self):
         current = self._ui.current_links
