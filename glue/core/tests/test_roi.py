@@ -417,6 +417,11 @@ class TestCategorical(object):
         np.testing.assert_array_equal(roi.categories,
                                       np.array(list('ghij')))
 
+    def test_empty_categories(self):
+        roi = CategoricalROI()
+        contains = roi.contains(np.array(['a','b','c']), None)
+        np.testing.assert_array_equal(contains, [0, 0, 0])
+
 
 class DummyEvent(object):
     def __init__(self, x, y, inaxes=True, key=None):

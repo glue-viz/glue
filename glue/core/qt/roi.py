@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 
 from qtpy.QtCore import Qt
-from qtpy import QtCore, QtWidgets
+from qtpy import QtCore, QtGui, QtWidgets
 from glue.core import roi
 from glue.utils.qt import mpl_to_qt4_color
 
@@ -46,7 +46,7 @@ class QtROI(object):
 
     def draw_polygon(self, canvas, x, y):
         x, y = self._transform(x, y)
-        poly = QtWidgets.QPolygon()
+        poly = QtGui.QPolygon()
         points = [QtCore.QPoint(xx, yy) for xx, yy in zip(x, y)]
         for p in points:
             poly.append(p)
@@ -70,7 +70,7 @@ class QtROI(object):
         edgecolor = mpl_to_qt4_color(self.plot_opts['edgecolor'],
                                      self.plot_opts['alpha'])
 
-        pen = QtWidgets.QPen(edgecolor)
+        pen = QtGui.QPen(edgecolor)
         pen.setWidth(self.plot_opts.get('edgewidth', 0))
         p.setPen(pen)
 
