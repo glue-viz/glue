@@ -95,7 +95,6 @@ class ComponentSelector(QtWidgets.QWidget):
         :rtype: :class:`~glue.core.data.ComponentID`
         """
         item = self._ui.component_selector.currentItem()
-        print('what is item?', item)
         return self._ui.component_selector.get_data(item)
 
     @component.setter

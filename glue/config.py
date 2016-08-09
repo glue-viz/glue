@@ -618,3 +618,6 @@ settings.add('DATA_ALPHA', 0.8, validator=float)
 settings.add('BACKGROUND_COLOR', '#FFFFFF')
 settings.add('FOREGROUND_COLOR', '#000000')
 settings.add('SHOW_LARGE_DATA_WARNING', True, validator=bool)
+from sets import Set
+settings.add('LINK_ARRAY', [Set(['GLON', 'Glon_deg']), Set(['GLAT', 'Glat_deg']), Set(['VHCO', 'Vel_kms'])])
+# TODO: how to save this settings to disk?
