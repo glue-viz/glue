@@ -6,12 +6,18 @@ import numpy as np
 from qtpy.QtCore import Qt
 from qtpy import QtCore, QtWidgets
 from qtpy import PYQT5
+from matplotlib.colors import ColorConverter
+
 from glue.core.subset import ElementSubsetState
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core import message as msg
+from glue.utils import nonpartial
 from glue.utils.qt import load_ui
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.toolbar import BasicToolbar
+from glue.viewers.table.qt.layer_widget import LayerWidget
+
+COLOR_CONVERTER = ColorConverter()
 
 
 class DataTableModel(QtCore.QAbstractTableModel):
@@ -77,6 +83,24 @@ class DataTableModel(QtCore.QAbstractTableModel):
         self.layoutChanged.emit()
 
 
+class BackgroundDelegate(QtWidgets.QStyledItemDelegate):
+
+    def paint(self, painter, option, index):
+        
+        # Fill the background before calling the base class paint
+        # otherwise selected cells would have a white background
+        background = index.data(Qt.BackgroundRole)
+        if background is not None and background.canConvert():
+            painter.fillRect(option.rect, background.value())
+    
+        QtWidgets.QStyledItemDelegate.paint(self, painter, option, index);
+
+
+def set_table_selection_color(viewer, color):
+    rgba = COLOR_CONVERTER.to_rgba_array(color)[0]
+    viewer.setStyleSheet("selection-background-color: rgba({0:.0%}, {1:.0%}, {2:.0%}, {3:.0%});".format(*rgba));
+
+
 class TableWidget(DataViewer):
 
     LABEL = "Table Viewer"
@@ -112,28 +136,57 @@ class TableWidget(DataViewer):
         self.model = None
         self.subset = None
         self.selected_rows = []
+        
+        self.ui.table.setItemDelegate(BackgroundDelegate())
+    
+        
+        # The layer widget is used to select which data or subset to show.
+        # We don't use the default layer list, because in this case we want to
+        # make sure that only one dataset or subset can be selected at any one
+        # time.
+        # self._layer_widget = LayerWidget()
+        
+        # Make sure we update the viewer if either the selected layer or the
+        # column specifying the filename is changed.
+        # self._layer_widget.ui.combo_active_layer.currentIndexChanged.connect(
+        #     nonpartial(self._update_options))
+        # self._layer_widget.ui.combo_active_layer.currentIndexChanged.connect(
+        #     nonpartial(self._refresh_data))
+        # self._options_widget.ui.combo_file_attribute.currentIndexChanged.connect(
+        #     nonpartial(self._refresh_data))
+        
+        # Find out when selection top left has changed
+        
+        # For now, we want to make sure that the selection in the table is
+        # linked to whatever selection is made in the top left data collection
+        # view.
+        data_collection_view = self.session.application._layer_widget.ui.layerTree
+        data_collection_view.selection_changed.connect(nonpartial(self._update_selection))
+
+    # def layer_view(self):
+    #     return self._layer_widget
 
     def register_to_hub(self, hub):
 
         super(TableWidget, self).register_to_hub(hub)
 
-        dfilter = lambda x: True
-        dcfilter = lambda x: True
-        subfilter = lambda x: True
-
-        hub.subscribe(self, msg.SubsetCreateMessage,
-                      handler=self._add_subset,
-                      filter=dfilter)
-
-        hub.subscribe(self, msg.SubsetUpdateMessage,
-                      handler=self._update_subset,
-                      filter=subfilter)
-
-        hub.subscribe(self, msg.SubsetDeleteMessage,
-                      handler=self._remove_subset)
-
-        hub.subscribe(self, msg.DataUpdateMessage,
-                      handler=self.update_window_title)
+        # dfilter = lambda x: True
+        # dcfilter = lambda x: True
+        # subfilter = lambda x: True
+        #
+        # hub.subscribe(self, msg.SubsetCreateMessage,
+        #               handler=self._add_subset,
+        #               filter=dfilter)
+        #
+        # hub.subscribe(self, msg.SubsetUpdateMessage,
+        #               handler=self._update_subset,
+        #               filter=subfilter)
+        #
+        # hub.subscribe(self, msg.SubsetDeleteMessage,
+        #               handler=self._remove_subset)
+        #
+        # hub.subscribe(self, msg.DataUpdateMessage,
+        #               handler=self.update_window_title)
 
     def _clicked(self, mode):
         self._broadcast_selection()
@@ -149,38 +202,6 @@ class TableWidget(DataViewer):
             mode = EditSubsetMode()
             mode.update(self.data, subset_state, focus_data=self.data)
 
-    def _add_subset(self, message):
-        self.subset = message.subset
-        self.selected_rows = self.subset.to_index_list()
-        self._update_selection()
-
-    def _update_selection(self):
-
-        self.ui.table.clearSelection()
-        selection_mode = self.ui.table.selectionMode()
-        self.ui.table.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
-
-        # The following is more efficient than just calling selectRow
-        model = self.ui.table.selectionModel()
-        for index in self.selected_rows:
-            index = self.model.order[index]
-            model_index = self.model.createIndex(index, 0)
-            model.select(model_index,
-                         QtCore.QItemSelectionModel.Select | QtCore.QItemSelectionModel.Rows)
-
-        self.ui.table.setSelectionMode(selection_mode)
-
-    def _update_subset(self, message):
-        self._add_subset(message)
-
-    def _remove_subset(self, message):
-        self.ui.table.clearSelection()
-
-    def _update_data(self, message):
-        self.set_data(message.data)
-
-    def unregister(self, hub):
-        pass
 
     def add_data(self, data):
         self.data = data
@@ -189,13 +210,57 @@ class TableWidget(DataViewer):
 
     def add_subset(self, subset):
         return True
-
+        
     def set_data(self, data):
         self.setUpdatesEnabled(False)
         self.model = DataTableModel(data)
         self.model.layoutChanged.connect(self._update_selection)
         self.ui.table.setModel(self.model)
         self.setUpdatesEnabled(True)
+
+    # def _add_subset(self, message):
+    #     self.subset = message.subset
+    #     self.selected_rows = self.subset.to_index_list()
+    #     self._update_selection()
+
+    # def _update_subset(self, message):
+    #     self._add_subset(message)
+    #
+    # def _remove_subset(self, message):
+    #     self.ui.table.clearSelection()
+    #
+    # def _update_data(self, message):
+    #     self.set_data(message.data)
+
+    def _update_selection(self):
+        """
+        Update the selection in the table to reflect the selected subset(s)
+        """
+
+        selected_rows = []
+        for subset in self.data.edit_subset:
+            selected_rows.append(subset.to_index_list())
+
+        # Note that np.unique returns a sorted array
+        if len(selected_rows) > 0:
+            selected_rows = np.unique(np.hstack(selected_rows))
+
+        self.ui.table.clearSelection()
+        selection_mode = self.ui.table.selectionMode()
+        self.ui.table.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
+
+        # The following is more efficient than just calling selectRow
+        model = self.ui.table.selectionModel()
+        for index in selected_rows:
+            index = self.model.order[index]
+            model_index = self.model.createIndex(index, 0)
+            model.select(model_index,
+                         QtCore.QItemSelectionModel.Select | QtCore.QItemSelectionModel.Rows)
+
+        self.ui.table.setSelectionMode(selection_mode)
+
+    def unregister(self, hub):
+        pass
 
     def closeEvent(self, event):
         """
