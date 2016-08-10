@@ -12,7 +12,7 @@ from glue.utils.qt import load_ui
 from glue.dialogs.common.qt.component_selector import ComponentSelector
 from glue.core.qt.mime import GlueMimeListWidget
 from glue.dialogs.link_editor.qt.link_equation import LinkEquation
-from glue.config import settings
+from glue.config import auto_linking
 
 __all__ = ['LinkEditor']
 
@@ -113,11 +113,11 @@ class LinkEditor(QtWidgets.QDialog):
             self._add_link(link)  # the link here is comp0 <-> comp1
             comp = self._selected_components()
             # Users' manual link component will be added to the link_array
-            for each_list in settings.LINK_ARRAY:
-                if comp[0].label in each_list:
-                    each_list.add(comp[1].label)
-                if comp[1].label in each_list:
-                    each_list.add(comp[0].label)
+            for i in range(auto_linking.count):
+                if comp[0].label in auto_linking.members[i]:
+                    auto_linking.add_to(comp[1].label, i)
+                if comp[1].label in auto_linking.members[i]:
+                    auto_linking.add_to(comp[0].label, i)
 
     def _add_smart_link(self):
         if not self.advanced:
@@ -127,7 +127,7 @@ class LinkEditor(QtWidgets.QDialog):
             if l == r:  # if same dataset
                 return
 
-            link_array = settings.LINK_ARRAY
+            link_array = auto_linking.members
             for each_list in link_array:
                 for i in range(l.count):
                     l_item = l.get_item(i)
@@ -151,7 +151,8 @@ class LinkEditor(QtWidgets.QDialog):
         current = self._ui.current_links
         return current.data.values()
 
-    def _remove_link(self):
+    # TODO: unglue from result panel can't be traced by the code now
+    '''def _remove_link(self):
         current = self._ui.current_links
         item = current.currentItem()
         row = current.currentRow()
@@ -163,11 +164,14 @@ class LinkEditor(QtWidgets.QDialog):
 
         comp = self._selected_components()
         # Users' manual remove component will also get removed to the link_array
-        for each_list in settings.LINK_ARRAY:
-            if comp[0].label in each_list:
-                each_list.discard(comp[0].label)
-            if comp[1].label in each_list:
-                each_list.discard(comp[1].label)
+        for i in range(auto_linking.count):
+            print('auto_linking.members[i]', auto_linking.members[i], 'label', comp[0].label)
+            if comp[0].label in auto_linking.members[i]:
+                print('auto_linking.members[i]', auto_linking.members[i], 'label', comp[0].label)
+                auto_linking.remove_from(comp[0].label, i)
+            if comp[1].label in auto_linking.members[i]:
+                auto_linking.remove_from(comp[1].label, i)'''
+
 
     @classmethod
     def update_links(cls, collection):

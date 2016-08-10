@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from ..config import qt_client, link_function, data_factory
+from ..config import qt_client, link_function, data_factory, auto_linking
 from glue.tests.helpers import requires_qt
 
 
@@ -45,3 +45,12 @@ def test_add_data_factory():
     def foo(x):
         pass
     assert (foo, 'XYZ file', '*txt', 0, False) in data_factory
+
+
+def test_auto_linking():
+    al = auto_linking
+    from sets import Set
+    al.add(Set(['test1', 'test2']))
+    al.add_to('test3', -1)
+    al.remove_from('test3', -1)
+

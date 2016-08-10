@@ -328,6 +328,55 @@ class ColormapRegistry(Registry):
         self.members.append([label, cmap])
 
 
+class AutoLinkingRegistry(Registry):
+    """
+    Stores link pairs for 'auto-linking' operation.
+    """
+    def __init__(self):
+        super(AutoLinkingRegistry, self).__init__()
+        self._defaults = self.default_members()
+        self._members = self._defaults
+
+    def default_members(self):
+        from sets import Set
+        members = []
+        # TODO: add label for each member?
+        # TODO: set default?
+        members.append(Set(['GLON', 'Glon_deg']))
+        members.append(Set(['GLAT', 'Glat_deg']))
+        members.append(Set(['VHCO', 'Vel_kms']))
+        return members
+
+    def add(self, member):
+        """
+        add new set pair as member
+        """
+        # assert isinstance(member, Set)  # TODO: validator here
+        if member not in self._members:
+            self._members.append(member)
+
+    def add_to(self, item, index):
+        """
+        add new item to existing member
+        """
+        if self._members[index] not in self._members:
+            self._members[index].add(item)
+
+    def remove_from(self, item, index):
+        """
+        remove existing member from member list
+        """
+        self._members[index].discard(item)
+
+    @property
+    def members(self):
+        return self._members
+
+    @property
+    def count(self):
+        return len(self._members)
+
+
 class DataFactoryRegistry(Registry):
 
     """Stores data factories. Data factories take filenames as input,
@@ -534,6 +583,7 @@ data_factory = DataFactoryRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
 colormaps = ColormapRegistry()
+auto_linking = AutoLinkingRegistry()
 importer = DataImportRegistry()
 exporters = ExporterRegistry()
 settings = SettingRegistry()
@@ -618,6 +668,6 @@ settings.add('DATA_ALPHA', 0.8, validator=float)
 settings.add('BACKGROUND_COLOR', '#FFFFFF')
 settings.add('FOREGROUND_COLOR', '#000000')
 settings.add('SHOW_LARGE_DATA_WARNING', True, validator=bool)
-from sets import Set
-settings.add('LINK_ARRAY', [Set(['GLON', 'Glon_deg']), Set(['GLAT', 'Glat_deg']), Set(['VHCO', 'Vel_kms'])])
+# from sets import Set
+# settings.add('LINK_ARRAY', [Set(['GLON', 'Glon_deg']), Set(['GLAT', 'Glat_deg']), Set(['VHCO', 'Vel_kms'])])
 # TODO: how to save this settings to disk?
