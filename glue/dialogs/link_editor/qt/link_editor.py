@@ -113,19 +113,31 @@ class LinkEditor(QtWidgets.QDialog):
             self._add_link(link)  # the link here is comp0 <-> comp1
             comp = self._selected_components()
             # Users' manual link component will be added to the link_array
+            flag = False
             for i in range(auto_linking.count):
-                if comp[0].label in auto_linking.members[i]:
+                if comp[0].label in auto_linking.members[i] and comp[1].label not in auto_linking.members[i]:
                     auto_linking.add_to(comp[1].label, i)
-                if comp[1].label in auto_linking.members[i]:
+                    flag = True
+                    break
+                if comp[1].label in auto_linking.members[i] and comp[0].label not in auto_linking.members[i]:
                     auto_linking.add_to(comp[0].label, i)
+                    flag = True
+                    break
+                if comp[0].label in auto_linking.members[i] and comp[1].label in auto_linking.members[i]:
+                    flag = True
+                    break   # pari already exists
+
+            if not flag:
+            # TODO: should not add here, should check all auto_linking members
+                from sets import Set
+                auto_linking.add(Set([comp[0].label, comp[1].label]))
 
     def _add_smart_link(self):
         if not self.advanced:
             l = self._ui.left_components
             r = self._ui.right_components
 
-            if l == r:  # if same dataset
-                return
+        # TODO: if same dataset then skip
 
             link_array = auto_linking.members
             for each_list in link_array:
@@ -152,7 +164,7 @@ class LinkEditor(QtWidgets.QDialog):
         return current.data.values()
 
     # TODO: unglue from result panel can't be traced by the code now
-    '''def _remove_link(self):
+    def _remove_link(self):
         current = self._ui.current_links
         item = current.currentItem()
         row = current.currentRow()
@@ -162,6 +174,9 @@ class LinkEditor(QtWidgets.QDialog):
         deleted = current.takeItem(row)
         assert deleted == item  # sanity check
 
+
+        '''
+        # TODO: find way to get link objects in item
         comp = self._selected_components()
         # Users' manual remove component will also get removed to the link_array
         for i in range(auto_linking.count):

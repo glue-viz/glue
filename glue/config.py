@@ -17,7 +17,7 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'qt_client', 'data_factory', 'link_function', 'link_helper',
            'colormaps', 'exporters', 'settings', 'fit_plugin',
            'auto_refresh', 'importer', 'DictRegistry', 'preference_panes',
-           'PreferencePanesRegistry']
+           'PreferencePanesRegistry', 'auto_linking']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -332,16 +332,12 @@ class AutoLinkingRegistry(Registry):
     """
     Stores link pairs for 'auto-linking' operation.
     """
-    def __init__(self):
-        super(AutoLinkingRegistry, self).__init__()
-        self._defaults = self.default_members()
-        self._members = self._defaults
+    #TODO: how to save to disk?
 
     def default_members(self):
         from sets import Set
         members = []
         # TODO: add label for each member?
-        # TODO: set default?
         members.append(Set(['GLON', 'Glon_deg']))
         members.append(Set(['GLAT', 'Glat_deg']))
         members.append(Set(['VHCO', 'Vel_kms']))
@@ -352,25 +348,21 @@ class AutoLinkingRegistry(Registry):
         add new set pair as member
         """
         # assert isinstance(member, Set)  # TODO: validator here
-        if member not in self._members:
-            self._members.append(member)
+        self._members.append(member)
+        print('add called?', self._members)
 
     def add_to(self, item, index):
         """
         add new item to existing member
         """
-        if self._members[index] not in self._members:
-            self._members[index].add(item)
+        self._members[index].add(item)
+        print('add to called?', self._members)
 
     def remove_from(self, item, index):
         """
         remove existing member from member list
         """
         self._members[index].discard(item)
-
-    @property
-    def members(self):
-        return self._members
 
     @property
     def count(self):
