@@ -332,37 +332,27 @@ class AutoLinkingRegistry(Registry):
     """
     Stores link pairs for 'auto-linking' operation.
     """
-    #TODO: how to save to disk?
+    def add(self, key, default=None, validator=None):
 
-    def default_members(self):
-        from sets import Set
-        members = []
-        # TODO: add label for each member?
-        members.append(Set(['GLON', 'Glon_deg']))
-        members.append(Set(['GLAT', 'Glat_deg']))
-        members.append(Set(['VHCO', 'Vel_kms']))
-        return members
+        if validator is None:
+            validator = lambda x: x
+
+        self._defaults[key] = validator(default)
+        self._validators[key] = validator
 
     def add(self, member):
         """
         add new set pair as member
         """
-        # assert isinstance(member, Set)  # TODO: validator here
+        from sets import Set
+        assert isinstance(member, Set), member
         self._members.append(member)
-        print('add called?', self._members)
 
     def add_to(self, item, index):
         """
         add new item to existing member
         """
         self._members[index].add(item)
-        print('add to called?', self._members)
-
-    def remove_from(self, item, index):
-        """
-        remove existing member from member list
-        """
-        self._members[index].discard(item)
 
     @property
     def count(self):
@@ -660,6 +650,3 @@ settings.add('DATA_ALPHA', 0.8, validator=float)
 settings.add('BACKGROUND_COLOR', '#FFFFFF')
 settings.add('FOREGROUND_COLOR', '#000000')
 settings.add('SHOW_LARGE_DATA_WARNING', True, validator=bool)
-# from sets import Set
-# settings.add('LINK_ARRAY', [Set(['GLON', 'Glon_deg']), Set(['GLAT', 'Glat_deg']), Set(['VHCO', 'Vel_kms'])])
-# TODO: how to save this settings to disk?

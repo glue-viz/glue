@@ -40,10 +40,13 @@ class LinkEditor(QtWidgets.QDialog):
         self._ui.signature_editor.hide()
         for link in self._collection.links:
             self._add_link(link)
+        if len(auto_linking.members) == 0:
+            self._ui.auto_link.hide()
 
     def _connect(self):
         self._ui.add_link.clicked.connect(self._add_new_link)
-        self._ui.smart_link.clicked.connect(self._add_smart_link)
+        if len(auto_linking.members) != 0:
+            self._ui.auto_link.clicked.connect(self._add_auto_link)
         self._ui.remove_link.clicked.connect(self._remove_link)
         self._ui.toggle_editor.clicked.connect(self._toggle_advanced)
         self._ui.signature_editor._ui.addButton.clicked.connect(
@@ -111,28 +114,8 @@ class LinkEditor(QtWidgets.QDialog):
 
         for link in links:
             self._add_link(link)  # the link here is comp0 <-> comp1
-            comp = self._selected_components()
-            # Users' manual link component will be added to the link_array
-            flag = False
-            for i in range(auto_linking.count):
-                if comp[0].label in auto_linking.members[i] and comp[1].label not in auto_linking.members[i]:
-                    auto_linking.add_to(comp[1].label, i)
-                    flag = True
-                    break
-                if comp[1].label in auto_linking.members[i] and comp[0].label not in auto_linking.members[i]:
-                    auto_linking.add_to(comp[0].label, i)
-                    flag = True
-                    break
-                if comp[0].label in auto_linking.members[i] and comp[1].label in auto_linking.members[i]:
-                    flag = True
-                    break   # pari already exists
 
-            if not flag:
-            # TODO: should not add here, should check all auto_linking members
-                from sets import Set
-                auto_linking.add(Set([comp[0].label, comp[1].label]))
-
-    def _add_smart_link(self):
+    def _add_auto_link(self):
         if not self.advanced:
             l = self._ui.left_components
             r = self._ui.right_components
@@ -163,7 +146,6 @@ class LinkEditor(QtWidgets.QDialog):
         current = self._ui.current_links
         return current.data.values()
 
-    # TODO: unglue from result panel can't be traced by the code now
     def _remove_link(self):
         current = self._ui.current_links
         item = current.currentItem()
@@ -173,20 +155,6 @@ class LinkEditor(QtWidgets.QDialog):
         current.drop_data(item)
         deleted = current.takeItem(row)
         assert deleted == item  # sanity check
-
-
-        '''
-        # TODO: find way to get link objects in item
-        comp = self._selected_components()
-        # Users' manual remove component will also get removed to the link_array
-        for i in range(auto_linking.count):
-            print('auto_linking.members[i]', auto_linking.members[i], 'label', comp[0].label)
-            if comp[0].label in auto_linking.members[i]:
-                print('auto_linking.members[i]', auto_linking.members[i], 'label', comp[0].label)
-                auto_linking.remove_from(comp[0].label, i)
-            if comp[1].label in auto_linking.members[i]:
-                auto_linking.remove_from(comp[1].label, i)'''
-
 
     @classmethod
     def update_links(cls, collection):

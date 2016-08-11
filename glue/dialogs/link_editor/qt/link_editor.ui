@@ -112,9 +112,9 @@
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="smart_link">
+            <widget class="QPushButton" name="auto_link">
              <property name="text">
-              <string>Smart Glue</string>
+              <string>Auto Glue</string>
              </property>
             </widget>
            </item>
