@@ -52,6 +52,23 @@ available in the ``Link Data`` dialog:
 This would allow you to link between two datasets with different conventions
 for specifying angles.
 
+.. _custom_auto_link_array:
+
+Custom Auto Link Array
+----------------------
+
+You can edit auto link array in `config.py` to use `auto glue` functionality in Link View Editor.
+
+You could either add one new set into the array as::
+
+from sets import Set
+longitude = Set(['GLON', 'Glon_deg'])
+auto_linking.add(longitude)
+
+Or extend current set by directly adding items after it::
+
+longitude = Set(['GLON', 'Glon_deg', 'l'])
+
 .. _custom_data_factory:
 
 Custom Data Loaders
