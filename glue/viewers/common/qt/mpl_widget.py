@@ -7,7 +7,7 @@ from functools import wraps
 import matplotlib
 from matplotlib.figure import Figure
 
-from qtpy import QtCore, QtWidgets
+from qtpy import QtCore, QtGui, QtWidgets
 from qtpy.QtCore import Qt
 from qtpy import PYQT5
 from glue.utils import DeferredMethod
@@ -108,7 +108,7 @@ class MplCanvas(FigureCanvas):
             except TypeError:  # mpl 1.4
                 x, y, w, h = drawRect
             p = QtGui.QPainter(self)
-            p.setPen(QtWidgets.QPen(Qt.red, 2, Qt.DotLine))
+            p.setPen(QtGui.QPen(Qt.red, 2, Qt.DotLine))
             p.drawRect(x, y, w, h)
             p.end()
 
