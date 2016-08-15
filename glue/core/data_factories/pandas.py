@@ -6,7 +6,7 @@ from glue.external import six
 from glue.core.data_factories.helpers import has_extension
 from glue.core.component import Component, CategoricalComponent
 from glue.core.data import Data
-from glue.config import data_factory
+from glue.config import data_factory, qglue_parser
 
 
 __all__ = ['pandas_read_table']
@@ -88,3 +88,17 @@ def pandas_read_table(path, **kwargs):
     if fallback is not None:
         return panda_process(fallback)
     raise IOError("Could not parse %s using pandas" % path)
+
+
+try:
+    import pandas as pd
+except ImportError:
+    pass
+else:
+    @qglue_parser(pd.DataFrame)
+    def _parse_data_dataframe(data, label):
+        label = label or 'Data'
+        result = Data(label=label)
+        for c in data.columns:
+            result.add_component(data[c], str(c))
+        return [result]

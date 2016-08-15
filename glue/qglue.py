@@ -46,27 +46,11 @@ def restore_io():
         sys.__stderr__ = _err
 
 
-try:
-    import pandas as pd
-except ImportError:
-    pass
-else:
-    @qglue_parser(pd.DataFrame)
-    def _parse_data_dataframe(data, label):
-        label = label or 'Data'
-        result = Data(label=label)
-        for c in data.columns:
-            result.add_component(data[c], str(c))
-        return [result]
-
-
 @qglue_parser(dict)
 def _parse_data_dict(data, label):
     result = Data(label=label)
-
     for label, component in data.items():
         result.add_component(component, label)
-
     return [result]
 
 
@@ -75,26 +59,6 @@ def _parse_data_recarray(data, label):
     kwargs = dict((n, data[n]) for n in data.dtype.names)
     return [Data(label=label, **kwargs)]
 
-
-try:
-    from astropy.table import Table
-    @qglue_parser(Table)
-    def _parse_data_astropy_table(data, label):
-        kwargs = dict((c, data[c]) for c in data.columns)
-        return [Data(label=label, **kwargs)]
-except ImportError:
-    pass
-
-
-try:
-    from spectral_cube import SpectralCube, StokesSpectralCube
-except ImportError:
-    pass
-else:
-    @qglue_parser((SpectralCube, StokesSpectralCube))
-    def _parse_spectral_cube(cube, label):
-        from glue.plugins.data_factories.spectral_cube.spectral_cube import spectral_cube_to_data
-        return [spectral_cube_to_data(cube, label=label)]
 
 @qglue_parser(Data)
 def _parse_data_glue_data(data, label):
@@ -120,18 +84,6 @@ def _parse_data_path(path, label):
     for d in as_list(data):
         d.label = label
     return as_list(data)
-
-
-try:
-    from astropy.io.fits import HDUList
-except ImportError:
-    pass
-else:
-    # Put HDUList parser before list parser
-    @qglue_parser(HDUList, priority=100)
-    def _parse_data_hdulist(data, label):
-        from glue.core.data_factories.fits import fits_reader
-        return fits_reader(data, label=label)
 
 
 def parse_data(data, label):
