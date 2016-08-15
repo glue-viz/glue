@@ -5,12 +5,12 @@ import numpy as np
 
 from glue.core import ComponentID
 from glue.core.tests.test_link_helpers import check_link, check_using
-from glue.tests.helpers import ASTROPY_GE_04_INSTALLED
+from glue.tests.helpers import ASTROPY_INSTALLED
 
 from ..link_helpers import (Galactic_to_FK5, FK4_to_FK5, ICRS_to_FK5,
                             Galactic_to_FK4, ICRS_to_FK4, ICRS_to_Galactic)
 
-if not ASTROPY_GE_04_INSTALLED:
+if not ASTROPY_INSTALLED:
     pytest.skip()
 
 

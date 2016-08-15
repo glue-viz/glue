@@ -11,7 +11,7 @@ from glue.core.component import CategoricalComponent
 from glue.core.data import Data
 from glue.core import data_factories as df
 from glue.config import data_factory
-from glue.tests.helpers import (requires_astropy, requires_astropy_ge_03,
+from glue.tests.helpers import (requires_astropy,
                                 requires_pil_or_skimage, make_file, requires_qt)
 
 
@@ -104,7 +104,7 @@ def test_csv_gz_factory():
     assert_array_equal(d['x'], [1, 2, 3])
 
 
-@requires_astropy_ge_03
+@requires_astropy
 def test_sextractor_factory():
     data = b"""#   1 NUMBER                 Running object number
 #   2 X_IMAGE                Object position along x                                    [pixel]

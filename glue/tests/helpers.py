@@ -26,14 +26,6 @@ def make_skipper(module, label=None, version=None):
 ASTROPY_INSTALLED, requires_astropy = make_skipper('astropy',
                                                    label='Astropy')
 
-ASTROPY_GE_03_INSTALLED, requires_astropy_ge_03 = make_skipper('astropy',
-                                                               label='Astropy >= 0.3',
-                                                               version='0.3')
-
-ASTROPY_GE_04_INSTALLED, requires_astropy_ge_04 = make_skipper('astropy',
-                                                               label='Astropy >= 0.4',
-                                                               version='0.4')
-
 MATPLOTLIB_GE_14_INSTALLED, requires_matplotlib_ge_14 = make_skipper('matplotlib',
                                                                label='Matplotlib >= 1.4',
                                                                version='1.4')
@@ -52,10 +44,7 @@ XLRD_INSTALLED, requires_xlrd = make_skipper('xlrd')
 
 PLOTLY_INSTALLED, requires_plotly = make_skipper('plotly')
 
-IPYTHON_GE_012_INSTALLED, requires_ipython_ge_012 = make_skipper('IPython',
-                                                                 label='IPython >= 0.12',
-                                                                 version='0.12')
-
+IPYTHON_INSTALLED, requires_ipython = make_skipper('IPython')
 
 requires_pil_or_skimage = pytest.mark.skipif(str(not SKIMAGE_INSTALLED and not PIL_INSTALLED),
                                              reason='Requires PIL or scikit-image')
