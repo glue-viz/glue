@@ -165,7 +165,7 @@ def is_casalike(filename, **kwargs):
     return ax == ['celestial', 'celestial', 'spectral', 'stokes']
 
 
-@data_factory(label='CASA PPV Cube', identifier=is_casalike)
+@data_factory(label='CASA PPV Cube', identifier=is_casalike, deprecated=True)
 def casalike_cube(filename, **kwargs):
     """
     This provides special support for 4D CASA FITS - like cubes,
