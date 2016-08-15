@@ -185,6 +185,56 @@ class SettingRegistry(DictRegistry):
         return setting in self._defaults and not setting in self._members
 
 
+class QGlueParserRegistry(Registry):
+    """
+    Registry for parsers that can be used to interpret arguments to the
+    :func:`~glue.qglue` function.
+
+    The members property is a list of parsers, each represented as a named tuple
+    with ``data_class``, ``parser`` and ``priority`` attributes, where ``class``
+    defines the class for which to use the parser, and ``parser`` is a function
+    that takes the input data and returns a list of glue
+    :class:`~glue.core.Data` objects. The ``parser`` functions should take two
+    arguments: the variable containing the data being parsed, and a label. In
+    addition, the priority (defaulting to 0) can be specified in case one wants
+    to make sure sub-classes get tested before more general classes. The
+    priority should be a numerical value, and the larger it is the higher the
+    priority.
+    """
+
+    item = namedtuple('DataFactory', 'data_class parser priority')
+
+    def add(self, data_class, parser, priority=0):
+        """
+        Add a new parser
+
+        Parameters
+        ----------
+        data_class : class
+            The type of of data for which to use the specified parser
+        parser : func
+            The function to use to parse the input data
+        priority : int, optional
+            The priority, which is used to determine the order in which to check
+            the parsers.
+        """
+        self.members.append(self.item(data_class, parser, priority))
+
+    def __call__(self, data_class, priority=0):
+        def adder(func):
+            if isinstance(data_class, tuple):
+                for dc in data_class:
+                    self.add(dc, func, priority=priority)
+            else:
+                self.add(data_class, func, priority=priority)
+            return func
+        return adder
+
+    def __iter__(self):
+        for member in sorted(self.members, key=lambda x: -x.priority):
+            yield member
+
+
 class DataImportRegistry(Registry):
     """
     Stores functions which can import data.
@@ -541,6 +591,7 @@ fit_plugin = ProfileFitterRegistry()
 single_subset_action = SingleSubsetLayerActionRegistry()
 menubar_plugin = MenubarPluginRegistry()
 preference_panes = PreferencePanesRegistry()
+qglue_parser = QGlueParserRegistry()
 
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)
