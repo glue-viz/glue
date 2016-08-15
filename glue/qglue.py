@@ -73,6 +73,11 @@ def _parse_data_astropy_table(data, label):
     return [Data(label=label, **kwargs)]
 
 
+def _parse_spectral_cube(cube, label):
+    from glue.plugins.data_factories.spectral_cube.spectral_cube import spectral_cube_to_data
+    return [spectral_cube_to_data(cube, label=label)]
+
+
 def _parse_data_glue_data(data, label):
     data.label = label
     return [data]
@@ -131,6 +136,14 @@ try:
     _parsers = [(HDUList, _parse_data_hdulist)] + _parsers
 except ImportError:
     pass
+
+try:
+    from spectral_cube import SpectralCube, StokesSpectralCube
+except ImportError:
+    pass
+else:
+    _parsers.append((SpectralCube, _parse_spectral_cube))
+    _parsers.append((StokesSpectralCube, _parse_spectral_cube))
 
 
 def parse_links(dc, links):

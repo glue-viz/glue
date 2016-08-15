@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from spectral_cube import StokesSpectralCube
+from spectral_cube import SpectralCube, StokesSpectralCube
 
 from glue.core import Data
 from glue.config import data_factory
@@ -24,16 +24,12 @@ def is_spectral_cube(filename, **kwargs):
         return True
 
 
-@data_factory(label='FITS Spectral Cube', identifier=is_spectral_cube)
-def spectral_cube_reader(filename, **kwargs):
-    """
-    Read in a FITS spectral cube. If multiple Stokes components are present,
-    these are split into separate glue components.
-    """
+def spectral_cube_to_data(cube, label=None):
 
-    cube = StokesSpectralCube.read(filename)
+    if isinstance(cube, SpectralCube):
+        cube = StokesSpectralCube({'I': cube})
 
-    result = Data()
+    result = Data(label=label)
     result.coords = coordinates_from_wcs(cube.wcs)
 
     for component in cube.components:
@@ -41,3 +37,13 @@ def spectral_cube_reader(filename, **kwargs):
         result.add_component(data, label='STOKES {0}'.format(component))
 
     return result
+
+
+@data_factory(label='FITS Spectral Cube', identifier=is_spectral_cube)
+def spectral_cube_reader(filename, **kwargs):
+    """
+    Read in a FITS spectral cube. If multiple Stokes components are present,
+    these are split into separate glue components.
+    """
+    cube = StokesSpectralCube.read(filename)
+    return spectral_cube_to_data(cube)
