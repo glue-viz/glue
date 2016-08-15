@@ -158,7 +158,7 @@ class QColorBox(QtWidgets.QLabel):
         event.accept()
 
     def query_color(self):
-        color = QtGui.QColorDialog.getColor(self._qcolor, parent=self)
+        color = QtWidgets.QColorDialog.getColor(self._qcolor, parent=self)
         if color.isValid():
             self.setColor(qt4_to_mpl_color(color))
 
