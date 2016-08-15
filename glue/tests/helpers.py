@@ -61,6 +61,9 @@ PYSIDE_INSTALLED, requires_pyside = make_skipper('PySide')
 
 QT_INSTALLED = PYQT4_INSTALLED or PYQT5_INSTALLED or PYSIDE_INSTALLED
 
+SPECTRAL_CUBE_INSTALLED, requires_spectral_cube = make_skipper('spectral_cube',
+                                                               label='spectral-cube')
+
 requires_qt = pytest.mark.skipif(str(not QT_INSTALLED),
                                  reason='An installation of Qt is required')
 
