@@ -52,5 +52,4 @@ def test_auto_linking():
     from sets import Set
     al.add(Set(['test1', 'test2']))
     al.add_to('test3', -1)
-    al.remove_from('test3', -1)
 
