@@ -60,7 +60,7 @@ Custom Auto Link Array
 You can edit auto link array in `config.py` to use `auto glue` functionality in Link View Editor.
 
 You could either add one new set into the array as::
-
+  from glue.config import auto_linking
   from sets import Set
   longitude = Set(['GLON', 'Glon_deg'])
   auto_linking.add(longitude)
