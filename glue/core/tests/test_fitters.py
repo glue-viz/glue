@@ -6,14 +6,14 @@ import pytest
 import numpy as np
 from mock import MagicMock
 
-from glue.tests.helpers import requires_scipy, requires_astropy_ge_03, ASTROPY_GE_03_INSTALLED
+from glue.tests.helpers import requires_scipy, requires_astropy, ASTROPY_INSTALLED
 
 from ..fitters import (PolynomialFitter, IntOption,
                        BasicGaussianFitter)
 needs_modeling = pytest.mark.skipif("False", reason='')
 
 
-if ASTROPY_GE_03_INSTALLED:
+if ASTROPY_INSTALLED:
     from astropy.modeling.models import Gaussian1D
     try:
         from astropy.modeling.fitting import NonLinearLSQFitter
@@ -22,7 +22,7 @@ if ASTROPY_GE_03_INSTALLED:
     from ..fitters import SimpleAstropyGaussianFitter
 
 
-@requires_astropy_ge_03
+@requires_astropy
 @requires_scipy
 class TestAstropyFitter(object):
 
@@ -139,7 +139,7 @@ class TestOptions(object):
         assert p.fit.call_args[1]['degree'] == 4
 
 
-@requires_astropy_ge_03
+@requires_astropy
 class TestFitWrapper(object):
 
     def setup_method(self, method):
@@ -168,7 +168,7 @@ class TestFitWrapper(object):
         np.testing.assert_array_equal(y, self.y)
 
 
-@requires_astropy_ge_03
+@requires_astropy
 class TestSetConstraints(object):
 
     def test(self):

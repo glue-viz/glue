@@ -39,7 +39,7 @@ field and click on **Add Channel**, then **Submit**:
 .. image:: images/manage_conda_channels.jpg
    :align: center
    :width: 50%
-   
+
 Once you have done this, you can install glue by clicking on the **Install** button corresponding to the **glueviz** entry. If you have already installed glue, and want to update, you can click on the **Update** button.
 
 Command-line installation
@@ -52,7 +52,7 @@ To install or update glue on the command-line, simply do::
 .. note:: There is currently a known issue when running Anaconda's Qt on
           certain Linux distributions (including Kubuntu). See
           `Issue with PyQt4 from conda`_ for more details.
-           
+
 Enthought Canopy
 ----------------
 
@@ -113,8 +113,9 @@ Glue has the following required dependencies:
 
 And the following optional dependencies are also highly recommended:
 
+* `IPython <http://ipython.org>`_ 1.0 or later
 * `SciPy <http://www.scipy.org>`_
-* `Astropy <http://www.astropy.org>`_ 0.4 or later
+* `Astropy <http://www.astropy.org>`_ 1.0 or later
 * `h5py <http://www.h5py.org>`_ (if using HDF5 files)
 
 In addition to these, there are several other optional dependencies to suport

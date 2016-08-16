@@ -18,7 +18,7 @@ from glue.core.data import Data
 from glue.core.component_link import ComponentLink
 from glue.core.data_collection import DataCollection
 from glue.core.tests.test_state import Cloner, containers_equal, doubler, clone
-from glue.tests.helpers import requires_ipython_ge_012
+from glue.tests.helpers import requires_ipython
 from glue.utils.qt import process_dialog
 from glue.viewers.image.qt import ImageWidget
 from glue.viewers.scatter.qt import ScatterWidget
@@ -78,7 +78,7 @@ class TestGlueApplication(object):
                     self.app._choose_save_session()
                     assert mb.call_count == 1
 
-    @requires_ipython_ge_012
+    @requires_ipython
     def test_terminal_present(self):
         """For good setups, terminal is available"""
         if not self.app.has_terminal():
@@ -113,7 +113,7 @@ class TestGlueApplication(object):
         except:
             return False
 
-    @requires_ipython_ge_012
+    @requires_ipython
     def test_toggle_terminal(self):
         term = MagicMock()
         self.app._terminal = term
