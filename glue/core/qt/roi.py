@@ -89,7 +89,7 @@ class QtPathROI(QtROI, roi.MplPathROI):
 
     def draw_polygon(self, canvas, x, y):
         x, y = self._transform(x, y)
-        poly = QtWidgets.QPolygon()
+        poly = QtGui.QPolygon()
         points = [QtCore.QPoint(xx, yy) for xx, yy in zip(x, y)]
         for p in points:
             poly.append(p)

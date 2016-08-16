@@ -83,9 +83,9 @@ class StyleDialog(QtWidgets.QDialog):
         self.setFocusPolicy(Qt.StrongFocus)
 
     def query_color(self, *args):
-        color = QtGui.QColorDialog.getColor(self._color, self.color_widget,
+        color = QtWidgets.QColorDialog.getColor(self._color, self.color_widget,
                                             "",
-                                            QtGui.QColorDialog.ShowAlphaChannel)
+                                            QtWidgets.QColorDialog.ShowAlphaChannel)
         if color.isValid():
             self.set_color(color)
 
