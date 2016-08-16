@@ -61,13 +61,13 @@ You can edit auto link array in `config.py` to use `auto glue` functionality in 
 
 You could either add one new set into the array as::
 
-from sets import Set
-longitude = Set(['GLON', 'Glon_deg'])
-auto_linking.add(longitude)
+  from sets import Set
+  longitude = Set(['GLON', 'Glon_deg'])
+  auto_linking.add(longitude)
 
 Or extend current set by directly adding items after it::
 
-longitude = Set(['GLON', 'Glon_deg', 'l'])
+  longitude = Set(['GLON', 'Glon_deg', 'l'])
 
 .. _custom_data_factory:
 
