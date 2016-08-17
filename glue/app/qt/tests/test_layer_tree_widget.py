@@ -227,15 +227,15 @@ class TestLayerTree(object):
 
     def test_save_subset(self):
         subset = MagicMock(core.Subset)
-        with patch('glue.app.qt.layer_tree_widget.QtWidgets.QFileDialog') as d:
-            d.getSaveFileName.return_value = ('test.fits', None)
+        with patch('qtpy.compat.getsavefilename') as d:
+            d.return_value = ('test.fits', None)
             save_subset(subset)
         subset.write_mask.assert_called_once_with('test.fits')
 
     def test_save_subset_cancel(self):
         subset = MagicMock(core.Subset)
-        with patch('glue.app.qt.layer_tree_widget.QtWidgets.QFileDialog') as d:
-            d.getSaveFileName.return_value = ('', '')
+        with patch('qtpy.compat.getsavefilename') as d:
+            d.return_value = ('', '')
             save_subset(subset)
         assert subset.write_mask.call_count == 0
 

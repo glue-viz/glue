@@ -6,9 +6,10 @@ import traceback
 
 import numpy as np
 
-from glue.external.six.moves import range as xrange
-from qtpy import QtCore, QtGui, QtWidgets
+from qtpy import QtCore, QtGui, QtWidgets, compat
 from qtpy.QtCore import Qt
+
+from glue.external.six.moves import range as xrange
 from glue.core.aggregate import Aggregate
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core import Subset
@@ -342,7 +343,7 @@ class CollapseContext(SpectrumContext):
     @messagebox_on_error("Failed to export projection")
     def _choose_save(self):
 
-        out, _ = QtWidgets.QFileDialog.getSaveFileName(filter='FITS Files (*.fits)')
+        out, _ = compat.getsavefilename(filters='FITS Files (*.fits)')
         if out is None:
             return
 
