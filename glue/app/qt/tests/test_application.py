@@ -51,29 +51,29 @@ class TestGlueApplication(object):
 
     def test_save_session(self):
         self.app.save_session = MagicMock()
-        with patch('glue.app.qt.application.QtWidgets.QFileDialog') as fd:
-            fd.getSaveFileName.return_value = '/tmp/junk', 'jnk'
+        with patch('qtpy.compat.getsavefilename') as fd:
+            fd.return_value = '/tmp/junk', 'jnk'
             self.app._choose_save_session()
             self.app.save_session.assert_called_once_with('/tmp/junk.glu', include_data=False)
 
     def test_save_session_cancel(self):
         """shouldnt try to save file if no file name provided"""
         self.app.save_session = MagicMock()
-        with patch('glue.app.qt.application.QtWidgets.QFileDialog') as fd:
-            fd.getSaveFileName.return_value = '', 'jnk'
+        with patch('qtpy.compat.getsavefilename') as fd:
+            fd.return_value = '', 'jnk'
             self.app._choose_save_session()
             assert self.app.save_session.call_count == 0
 
     def test_choose_save_session_ioerror(self):
         """should show box on ioerror"""
-        with patch('glue.app.qt.application.QtWidgets.QFileDialog') as fd:
+        with patch('qtpy.compat.getsavefilename') as fd:
             if sys.version_info[0] == 2:
                 mock_open = '__builtin__.open'
             else:
                 mock_open = 'builtins.open'
             with patch(mock_open) as op:
                 op.side_effect = IOError
-                fd.getSaveFileName.return_value = '/tmp/junk', '/tmp/junk'
+                fd.return_value = '/tmp/junk', '/tmp/junk'
                 with patch('glue.app.qt.application.QMessageBox') as mb:
                     self.app._choose_save_session()
                     assert mb.call_count == 1

@@ -7,8 +7,9 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
+from qtpy import QtCore, QtWidgets, QtGui, compat
 from qtpy.QtCore import Qt
-from qtpy import QtCore, QtWidgets, QtGui
+
 from glue.core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode
 from glue.core.qt.data_collection_model import DataCollectionView
 from glue.config import single_subset_action
@@ -541,8 +542,8 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
 
 def save_subset(subset):
     assert isinstance(subset, core.subset.Subset)
-    fname, fltr = QtWidgets.QFileDialog.getSaveFileName(caption="Select an output name",
-                                                    filter='FITS mask (*.fits);; Fits mask (*.fits)')
+    fname, fltr = compat.getsavefilename(caption="Select an output name",
+                                         filters='FITS mask (*.fits);; Fits mask (*.fits)')
     fname = str(fname)
     if not fname:
         return
