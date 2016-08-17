@@ -14,7 +14,7 @@ from contextlib import contextmanager
 import numpy as np
 
 from glue.external import six
-
+from glue.config import qglue_parser
 
 try:
     from glue.core import Data
@@ -46,42 +46,37 @@ def restore_io():
         sys.__stderr__ = _err
 
 
-def _parse_data_dataframe(data, label):
-    label = label or 'Data'
-    result = Data(label=label)
-    for c in data.columns:
-        result.add_component(data[c], str(c))
-    return [result]
-
-
+@qglue_parser(dict)
 def _parse_data_dict(data, label):
     result = Data(label=label)
-
     for label, component in data.items():
         result.add_component(component, label)
-
     return [result]
 
 
+@qglue_parser(np.recarray)
 def _parse_data_recarray(data, label):
     kwargs = dict((n, data[n]) for n in data.dtype.names)
     return [Data(label=label, **kwargs)]
 
 
-def _parse_data_astropy_table(data, label):
-    kwargs = dict((c, data[c]) for c in data.columns)
-    return [Data(label=label, **kwargs)]
-
-
+@qglue_parser(Data)
 def _parse_data_glue_data(data, label):
     data.label = label
     return [data]
 
 
+@qglue_parser(np.ndarray)
 def _parse_data_numpy(data, label):
     return [Data(**{label: data, 'label': label})]
 
 
+@qglue_parser(list)
+def _parse_data_list(data, label):
+    return [Data(**{label: data, 'label': label})]
+
+
+@qglue_parser(six.string_types)
 def _parse_data_path(path, label):
     from glue.core.data_factories import load_data, as_list
 
@@ -91,46 +86,18 @@ def _parse_data_path(path, label):
     return as_list(data)
 
 
-def _parse_data_hdulist(data, label):
-    from glue.core.data_factories.fits import fits_reader
-    return fits_reader(data, label=label)
-
-
-# (base class, parser function)
-_parsers = [
-    (Data, _parse_data_glue_data),
-    (six.string_types, _parse_data_path),
-    (dict, _parse_data_dict),
-    (np.recarray, _parse_data_recarray),
-    (np.ndarray, _parse_data_numpy),
-    (list, _parse_data_numpy)]
-
-
 def parse_data(data, label):
-    for typ, prsr in _parsers:
-        if isinstance(data, typ):
+    for item in qglue_parser:
+        data_class = item.data_class
+        parser = item.parser
+        if isinstance(data, data_class):
             try:
-                return prsr(data, label)
+                return parser(data, label)
             except Exception as e:
                 raise ValueError("Invalid format for data '%s'\n\n%s" %
                                  (label, e))
 
     raise TypeError("Invalid data description: %s" % data)
-
-try:
-    import pandas as pd
-    _parsers.append((pd.DataFrame, _parse_data_dataframe))
-except ImportError:
-    pass
-
-try:
-    from astropy.table import Table
-    from astropy.io.fits import HDUList
-    _parsers.append((Table, _parse_data_astropy_table))
-    # Put HDUList parser before list parser
-    _parsers = [(HDUList, _parse_data_hdulist)] + _parsers
-except ImportError:
-    pass
 
 
 def parse_links(dc, links):

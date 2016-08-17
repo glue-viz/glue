@@ -4,7 +4,7 @@ import numpy as np
 
 from glue.core.data_factories.helpers import has_extension
 from glue.core.data import Component, Data
-from glue.config import data_factory
+from glue.config import data_factory, qglue_parser
 
 
 __all__ = ['astropy_tabular_data', 'sextractor_factory', 'cds_factory',
@@ -122,3 +122,13 @@ daophot_factory = formatted_table_factory('daophot', 'DAOphot Catalog')
 ipac_factory = formatted_table_factory('ipac', 'IPAC Catalog')
 aastex_factory = formatted_table_factory('aastex', 'AASTeX Table')
 latex_factory = formatted_table_factory('latex', 'LaTeX Table')
+
+try:
+    from astropy.table import Table
+except ImportError:
+    pass
+else:
+    @qglue_parser(Table)
+    def _parse_data_astropy_table(data, label):
+        kwargs = dict((c, data[c]) for c in data.columns)
+        return [Data(label=label, **kwargs)]
