@@ -4,6 +4,7 @@ import os
 
 from qtpy import QtWidgets
 from glue import core
+from glue.utils import nonpartial
 from glue.utils.qt import load_ui
 
 # FIXME: at the moment we need to make sure that custom widgets are imported,
@@ -41,11 +42,10 @@ class LinkEditor(QtWidgets.QDialog):
             self._add_link(link)
 
     def _connect(self):
-        self._ui.add_link.clicked.connect(self._add_new_link)
-        self._ui.remove_link.clicked.connect(self._remove_link)
-        self._ui.toggle_editor.clicked.connect(self._toggle_advanced)
-        self._ui.signature_editor._ui.addButton.clicked.connect(
-            self._add_new_link)
+        self._ui.add_link.clicked.connect(nonpartial(self._add_new_link))
+        self._ui.remove_link.clicked.connect(nonpartial(self._remove_link))
+        self._ui.toggle_editor.clicked.connect(nonpartial(self._toggle_advanced))
+        self._ui.signature_editor._ui.addButton.clicked.connect(nonpartial(self._add_new_link))
 
     @property
     def advanced(self):
