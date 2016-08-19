@@ -18,7 +18,6 @@ def alpha_blend_colors(colors, additional_alpha=1.0):
     srca *= additional_alpha
 
     for color in colors[1:]:
-        print(srca, srcr, srcg, srcb)
         dstr, dstg, dstb, dsta = COLOR_CONVERTER.to_rgba(color)
         dsta *= additional_alpha
         outa = srca + dsta * (1 - srca)
