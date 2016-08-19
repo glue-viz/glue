@@ -29,9 +29,10 @@ from glue.utils.qt import get_qapp
 from glue.icons.qt import get_icon
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui
+from glue.viewers.common.qt.mode import CheckableMode
 
 
-class MouseMode(object):
+class MouseMode(CheckableMode):
 
     """ The base class for all MouseModes.
 
@@ -81,6 +82,12 @@ class MouseMode(object):
     def activate(self):
         """
         Fired when the toolbar button is activated
+        """
+        pass
+
+    def deactivate(self):
+        """
+        Fired when the toolbar button is deactivated
         """
         pass
 

@@ -15,7 +15,7 @@ from glue.core.exceptions import IncompatibleAttribute
 from glue.core import Subset
 from glue.core.callback_property import add_callback, ignore_callback
 from glue.config import fit_plugin
-from glue.viewers.common.qt.toolbar import GlueToolbar
+from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
 from glue.core.qt.mime import LAYERS_MIME_TYPE
 from glue.viewers.common.qt.mouse_mode import SpectrumExtractorMode
 from glue.utils.qt import load_ui
@@ -765,7 +765,7 @@ class SpectrumTool(object):
         return mode
 
     def _setup_toolbar(self):
-        tb = GlueToolbar(self.canvas, self.widget)
+        tb = MatplotlibViewerToolbar(self.canvas, self.widget)
 
         # disable ProfileViewer mouse processing during mouse modes
         tb.mode_activated.connect(self.profile.disconnect)

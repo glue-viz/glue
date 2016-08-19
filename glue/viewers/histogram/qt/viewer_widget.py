@@ -7,7 +7,7 @@ from qtpy.QtCore import Qt
 from qtpy import QtGui, QtWidgets
 from glue.core import message as msg
 from glue.viewers.histogram.client import HistogramClient
-from glue.viewers.common.qt.toolbar import GlueToolbar
+from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
 from glue.viewers.common.qt.mouse_mode import HRangeMode
 from glue.utils.qt import load_ui
 from glue.utils.qt.widget_properties import (connect_int_spin, ButtonProperty,
@@ -100,7 +100,7 @@ class HistogramWidget(DataViewer):
         connect_bool_button(cl, 'ylog', ui.ylog_box)
 
     def make_toolbar(self):
-        result = GlueToolbar(self.central_widget.canvas, self,
+        result = MatplotlibViewerToolbar(self.central_widget.canvas, self,
                              name='Histogram')
         for mode in self._mouse_modes():
             result.add_mode(mode)

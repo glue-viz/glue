@@ -92,7 +92,7 @@ from glue.viewers.common.qt.mpl_widget import MplWidget
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.utils.qt.widget_properties import (ValueProperty, ButtonProperty,
                                              CurrentComboProperty)
-from glue.viewers.common.qt.toolbar import GlueToolbar
+from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
 from glue.viewers.common.qt.mouse_mode import PolyMode, RectangleMode
 
 __all__ = ["AttributeInfo", "ViewerState", "UserDefinedFunction",
@@ -908,7 +908,7 @@ class CustomWidgetBase(DataViewer):
         self._coordinator.settings_changed()
 
     def make_toolbar(self):
-        result = GlueToolbar(self.central_widget.canvas, self, name=self.LABEL)
+        result = MatplotlibViewerToolbar(self.central_widget.canvas, self, name=self.LABEL)
         for mode in self._mouse_modes():
             result.add_mode(mode)
         self.addToolBar(result)

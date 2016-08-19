@@ -9,7 +9,7 @@ from glue.core.callback_property import add_callback, delay_callback
 from glue import core
 from glue.viewers.image.ds9norm import DS9Normalize
 from glue.viewers.image.client import MplImageClient
-from glue.viewers.common.qt.toolbar import GlueToolbar
+from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
 from glue.viewers.common.qt.mouse_mode import (RectangleMode, CircleMode, PolyMode,
                                 ContrastMode)
 from glue.icons.qt import get_icon
@@ -393,7 +393,7 @@ class ImageWidget(ImageWidgetBase):
         return MplWidget()
 
     def make_toolbar(self):
-        result = GlueToolbar(self.central_widget.canvas, self, name='Image')
+        result = MatplotlibViewerToolbar(self.central_widget.canvas, self, name='Image')
         for mode in self._mouse_modes():
             result.add_mode(mode)
 
@@ -601,7 +601,7 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
         """
         Setup the toolbar
         """
-        result = GlueToolbar(self.central_widget.canvas, self,
+        result = MatplotlibViewerToolbar(self.central_widget.canvas, self,
                              name='Image')
         result.add_mode(ContrastMode(self._axes, move_callback=self._set_norm))
         cm = _colormap_mode(self, self._set_cmap)

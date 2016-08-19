@@ -5,7 +5,7 @@ import os
 from qtpy import QtWidgets
 from glue import core
 from glue.plugins.dendro_viewer.client import DendroClient
-from glue.viewers.common.qt.toolbar import GlueToolbar
+from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
 from glue.viewers.common.qt.mouse_mode import PickMode
 from glue.utils.qt import load_ui
 from glue.utils.qt.widget_properties import (ButtonProperty, CurrentComboProperty,
@@ -63,7 +63,7 @@ class DendroWidget(DataViewer):
         connect_current_combo(cl, 'order_attr', ui.orderCombo)
 
     def make_toolbar(self):
-        result = GlueToolbar(self.central_widget.canvas, self,
+        result = MatplotlibViewerToolbar(self.central_widget.canvas, self,
                              name='Dendrogram')
         for mode in self._mouse_modes():
             result.add_mode(mode)

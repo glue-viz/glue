@@ -6,7 +6,7 @@ from qtpy.QtCore import Qt
 from qtpy import QtWidgets
 from glue import core
 from glue.viewers.scatter.client import ScatterClient
-from glue.viewers.common.qt.toolbar import GlueToolbar
+from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
 from glue.viewers.common.qt.mouse_mode import (RectangleMode, CircleMode,
                                 PolyMode, HRangeMode, VRangeMode)
 from glue.utils.qt import load_ui
@@ -102,7 +102,7 @@ class ScatterWidget(DataViewer):
         connect_float_edit(cl, 'ymax', ui.ymax)
 
     def make_toolbar(self):
-        result = GlueToolbar(self.central_widget.canvas, self,
+        result = MatplotlibViewerToolbar(self.central_widget.canvas, self,
                              name='Scatter Plot')
         for mode in self._mouse_modes():
             result.add_mode(mode)

@@ -7,7 +7,7 @@ from glue.viewers.common.qt.mpl_widget import MplWidget
 from glue.viewers.common.qt.mouse_mode import MouseMode
 from glue.icons.qt import get_icon
 
-from ..toolbar import GlueToolbar
+from ..mpl_toolbar import MatplotlibViewerToolbar
 
 
 class MouseModeTest(MouseMode):
@@ -36,7 +36,7 @@ class TestToolbar(object):
         widget, axes = self._make_plot_widget(self.win)
         self.canvas = widget.canvas
         self.axes = axes
-        self.tb = GlueToolbar(self.canvas, self.win)
+        self.tb = MatplotlibViewerToolbar(self.canvas, self.win)
         self.mode = MouseModeTest(self.axes, release_callback=self.callback)
         self.tb.add_mode(self.mode)
         self.win.addToolBar(self.tb)
@@ -63,6 +63,6 @@ class TestToolbar(object):
                 assert not self.tb.buttons[mode].isChecked()
 
     def test_callback(self):
-        self.tb.buttons['TEST'].trigger()
+        self.tb.buttons['HOME'].trigger()
         self.mode.release(None)
         assert self._called_back
