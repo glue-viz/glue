@@ -7,6 +7,7 @@ from collections import OrderedDict
 from qtpy import QtWidgets
 from qtpy import PYSIDE
 from glue import core
+from glue.utils import nonpartial
 from glue.utils.qt import load_ui, CUSTOM_QWIDGETS
 
 __all__ = ['LinkEquation']
@@ -240,10 +241,9 @@ class LinkEquation(QtWidgets.QWidget):
 
     def _connect(self):
         signal = self._ui.function.currentIndexChanged
-        signal.connect(self._setup_editor)
-        signal.connect(self._update_add_enabled)
-        self._output_widget.editor.textChanged.connect(
-            self._update_add_enabled)
+        signal.connect(nonpartial(self._setup_editor))
+        signal.connect(nonpartial(self._update_add_enabled))
+        self._output_widget.editor.textChanged.connect(nonpartial(self._update_add_enabled))
 
     def clear_inputs(self):
         for w in self._argument_widgets:
@@ -294,7 +294,7 @@ class LinkEquation(QtWidgets.QWidget):
         :param arguement: The argument name (string)
         """
         widget = ArgumentWidget(argument)
-        widget.editor.textChanged.connect(self._update_add_enabled)
+        widget.editor.textChanged.connect(nonpartial(self._update_add_enabled))
         self._ui.input_canvas.layout().addWidget(widget)
         self._argument_widgets.append(widget)
 

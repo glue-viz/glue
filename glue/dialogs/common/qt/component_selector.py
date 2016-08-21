@@ -4,6 +4,7 @@ import os
 
 from qtpy import QtCore, QtWidgets
 from glue.utils.qt import load_ui, CUSTOM_QWIDGETS
+from glue.utils import nonpartial
 
 # FIXME: required for custom widget
 from glue.core.qt.mime import GlueMimeListWidget
@@ -39,7 +40,7 @@ class ComponentSelector(QtWidgets.QWidget):
     def _connect(self):
         # attach Qt signals
         ds = self._ui.data_selector
-        ds.currentIndexChanged.connect(self._set_components)
+        ds.currentIndexChanged.connect(nonpartial(self._set_components))
         self._ui.component_selector.currentItemChanged.connect(
             lambda *args: self.component_changed.emit())
 
