@@ -10,6 +10,7 @@ from matplotlib.colors import ColorConverter
 
 from glue.core.layer_artist import LayerArtistBase
 from glue.core import message as msg
+from glue.core import Data
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui
 from glue.viewers.common.qt.data_viewer import DataViewer
@@ -18,6 +19,7 @@ from glue.viewers.common.qt.mode import CheckableMode
 from glue.icons.qt import get_icon
 from glue.core.subset import ElementSubsetState
 from glue.core.edit_subset_mode import EditSubsetMode
+from glue.core.state import lookup_class_with_patches
 from glue.utils.colors import alpha_blend_colors
 from glue.utils.qt import mpl_to_qt4_color
 
@@ -260,3 +262,15 @@ class TableWidget(DataViewer):
         d = Data(x=[0])
         self.ui.table.setModel(DataTableModel(d))
         event.accept()
+
+    def restore_layers(self, rec, context):
+        # For now this is a bit of a hack, we assume that all subsets saved
+        # for this viewer are from dataset, so we just get Data object
+        # then just sync the layers.
+        for layer in rec:
+            c = lookup_class_with_patches(layer.pop('_type'))
+            props = dict((k, context.object(v)) for k, v in layer.items())
+            layer = props['layer']
+            self.add_data(layer.data)
+            break
+        self._sync_layers()
