@@ -4,7 +4,7 @@ import os
 import numpy as np
 
 from qtpy.QtCore import Qt
-from qtpy import QtCore, QtGui
+from qtpy import QtCore, QtGui, QtWidgets
 from qtpy import PYQT5
 from matplotlib.colors import ColorConverter
 
@@ -14,6 +14,10 @@ from glue.utils import nonpartial
 from glue.utils.qt import load_ui
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.toolbar import BasicToolbar
+from glue.viewers.common.qt.mode import CheckableMode
+from glue.icons.qt import get_icon
+from glue.core.subset import ElementSubsetState
+from glue.core.edit_subset_mode import EditSubsetMode
 from glue.utils.colors import alpha_blend_colors
 from glue.utils.qt import mpl_to_qt4_color
 
@@ -119,6 +123,25 @@ class TableLayerArtist(LayerArtistBase):
     def clear(self):
         pass
 
+class RowSelectMode(CheckableMode):
+
+    def __init__(self, table=None):
+        super(RowSelectMode, self).__init__()
+        self.mode_id = 'ROWSELECT'
+        self.icon = get_icon('glue_row_select')
+        self.action_text = 'Select rows'
+        self.tool_tip = 'Select rows by clicking on rows and pressing enter was once the selection is ready to be applied'
+        self.table = table
+        self.deactivate()
+
+    def activate(self):
+        self.table.ui.table.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+
+    def deactivate(self):
+        self.table.ui.table.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
+        self.ui.table.clearSelection()
+
+
 class TableWidget(DataViewer):
 
     LABEL = "Table Viewer"
@@ -150,6 +173,25 @@ class TableWidget(DataViewer):
             hdr.setResizeMode(hdr.Interactive)
 
         self.model = None
+        self.setup_toolbar()
+
+    def keyPressEvent(self, event):
+        if event.key() in [Qt.Key_Enter, Qt.Key_Return]:
+            self.finalize_selection()
+        super(TableWidget, self).keyPressEvent(event)
+
+    def finalize_selection(self):
+        model = self.ui.table.selectionModel()
+        selected_rows = [self.model.order[x.row()] for x in model.selectedRows()]
+        subset_state = ElementSubsetState(selected_rows)
+        mode = EditSubsetMode()
+        mode.update(self._data, subset_state, focus_data=self.data)
+        self.ui.table.clearSelection()
+
+    def setup_toolbar(self):
+        self.toolbar = BasicToolbar(self)
+        self.toolbar.add_mode(RowSelectMode(self))
+        self.addToolBar(self.toolbar)
 
     def register_to_hub(self, hub):
 
