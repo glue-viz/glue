@@ -299,3 +299,7 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
     def update_window_title(self):
         self.setWindowTitle(self.window_title)
+
+    def set_status(self, message):
+        sb = self.statusBar()
+        sb.showMessage(message)

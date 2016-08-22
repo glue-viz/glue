@@ -136,10 +136,12 @@ class RowSelectMode(CheckableMode):
 
     def activate(self):
         self.table.ui.table.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.table.set_status("CLICK to select, press ENTER to finalize selection")
 
     def deactivate(self):
         self.table.ui.table.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
-        self.ui.table.clearSelection()
+        self.table.ui.table.clearSelection()
+        self.table.set_status("")
 
 
 class TableWidget(DataViewer):
