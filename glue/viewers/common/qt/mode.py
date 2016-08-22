@@ -5,6 +5,17 @@ __all__ = ['Mode', 'NonCheckableMode', 'CheckableMode']
 
 
 class Mode(object):
+    """
+    The base class for all toolbar modes.
+
+    All modes have the following attributes:
+
+    * icon : QIcon object
+    * mode_id : a short name for the mode
+    * action_text : the action title
+    * tool_tip : a tip that is shown when the user hovers over the icon
+    * shortcut : keyboard shortcut to toggle the mode
+    """
 
     icon = None
     mode_id = None
@@ -13,6 +24,10 @@ class Mode(object):
     shortcut = None
 
     def menu_actions(self):
+        """
+        List of QtWidgets.QActions to be attached to this mode
+        as a context menu.
+        """
         return []
 
 
@@ -24,6 +39,9 @@ class NonCheckableMode(Mode):
     """
 
     def activate(self):
+        """
+        Fired when the toolbar button is activated
+        """
         pass
 
 
@@ -36,7 +54,13 @@ class CheckableMode(Mode):
     """
 
     def activate(self):
+        """
+        Fired when the toolbar button is activated
+        """
         pass
 
     def defactivate(self):
+        """
+        Fired when the toolbar button is deactivated
+        """
         pass

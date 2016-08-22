@@ -2,6 +2,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+from qtpy import QtWidgets
+
 from glue.viewers.common.qt.mpl_widget import MplWidget
 
 from glue.viewers.common.qt.mouse_mode import MouseMode
@@ -30,8 +32,6 @@ class MouseModeTest(MouseMode):
 class TestToolbar(object):
 
     def setup_method(self, method):
-        from qtpy import QtWidgets
-        assert QtWidgets.QApplication.instance() is not None
         self.win = QtWidgets.QMainWindow()
         widget, axes = self._make_plot_widget(self.win)
         self.canvas = widget.canvas
@@ -66,3 +66,25 @@ class TestToolbar(object):
         self.tb.buttons['HOME'].trigger()
         self.mode.release(None)
         assert self._called_back
+
+    def test_change_mode(self):
+
+        self.tb.buttons['PAN'].toggle()
+        assert self.tb.mode.mode_id == 'PAN'
+        assert self.tb._mpl_nav.mode == 'pan/zoom'
+
+        self.tb.buttons['PAN'].toggle()
+        assert self.tb.mode is None
+        assert self.tb._mpl_nav.mode == ''
+
+        self.tb.buttons['ZOOM'].trigger()
+        assert self.tb.mode.mode_id == 'ZOOM'
+        assert self.tb._mpl_nav.mode == 'zoom rect'
+
+        self.tb.buttons['BACK'].trigger()
+        assert self.tb.mode is None
+        assert self.tb._mpl_nav.mode == ''
+
+        self.tb.buttons['TEST'].trigger()
+        assert self.tb.mode.mode_id == 'TEST'
+        assert self.tb._mpl_nav.mode == ''

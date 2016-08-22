@@ -67,11 +67,12 @@ class BasicToolbar(QtWidgets.QToolBar):
             self._mode = None
             self.mode_deactivated.emit()
 
-    def enable_mode(self, mode):
-        pass
+    def activate_mode(self, mode):
+        mode.activate()
 
-    def disable_mode(self, mode):
-        pass
+    def deactivate_mode(self, mode):
+        if isinstance(mode, CheckableMode):
+            mode.deactivate()
 
     def add_mode(self, mode):
 

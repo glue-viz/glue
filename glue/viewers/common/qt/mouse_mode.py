@@ -33,19 +33,16 @@ from glue.viewers.common.qt.mode import CheckableMode
 
 
 class MouseMode(CheckableMode):
-
-    """ The base class for all MouseModes.
+    """
+    The base class for all MouseModes.
 
     MouseModes have the following attributes:
 
-    * Icon : QIcon object
-    * action_text : The action title (used in some menus)
-    * tool_tip : string giving the tool itp
-    * shortcut : Keyboard shortcut to toggle the mode
-    * _press_callback : Callback method that will be called
+    * press_callback : Callback method that will be called
       whenever a MouseMode processes a mouse press event
-    * _move_callback : Same as above, for move events
-    * _release_callback : Same as above, for release events
+    * move_callback : Same as above, for move events
+    * release_callback : Same as above, for release events
+    * key_callback : Same as above, for release events
 
     The _callback hooks are called with the MouseMode as its only
     argument
@@ -58,16 +55,11 @@ class MouseMode(CheckableMode):
                  release_callback=None,
                  key_callback=None):
 
-        self.icon = None
-        self.mode_id = None
-        self.action_text = None
-        self.tool_tip = None
         self._axes = axes
         self._press_callback = press_callback
         self._move_callback = move_callback
         self._release_callback = release_callback
         self._key_callback = key_callback
-        self.shortcut = None
         self._event_x = None
         self._event_y = None
         self._event_xdata = None
@@ -79,20 +71,10 @@ class MouseMode(CheckableMode):
         self._event_x, self._event_y = event.x, event.y
         self._event_xdata, self._event_ydata = event.xdata, event.ydata
 
-    def activate(self):
-        """
-        Fired when the toolbar button is activated
-        """
-        pass
-
-    def deactivate(self):
-        """
-        Fired when the toolbar button is deactivated
-        """
-        pass
 
     def press(self, event):
-        """ Handles mouse presses
+        """
+        Handles mouse presses
 
         Logs mouse position and calls press_callback method
 
@@ -104,7 +86,8 @@ class MouseMode(CheckableMode):
             self._press_callback(self)
 
     def move(self, event):
-        """ Handles mouse move events
+        """
+        Handles mouse move events
 
         Logs mouse position and calls move_callback method
 
@@ -116,7 +99,8 @@ class MouseMode(CheckableMode):
             self._move_callback(self)
 
     def release(self, event):
-        """ Handles mouse release events.
+        """
+        Handles mouse release events.
 
         Logs mouse position and calls release_callback method
 
@@ -128,7 +112,8 @@ class MouseMode(CheckableMode):
             self._release_callback(self)
 
     def key(self, event):
-        """ Handles key press events
+        """
+        Handles key press events
 
         Calls key_callback method
 
@@ -137,10 +122,6 @@ class MouseMode(CheckableMode):
         """
         if self._key_callback is not None:
             self._key_callback(self)
-
-    def menu_actions(self):
-        """ List of QtWidgets.QActions to be attached to this mode as a context menu """
-        return []
 
 
 class RoiModeBase(MouseMode):

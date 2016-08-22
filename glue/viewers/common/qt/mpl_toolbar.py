@@ -153,11 +153,10 @@ class MatplotlibViewerToolbar(BasicToolbar):
             self._connections.append(self.canvas.mpl_connect('motion_notify_event', mode.move))
             self._connections.append(self.canvas.mpl_connect('button_release_event', mode.release))
             self._connections.append(self.canvas.mpl_connect('key_press_event', mode.key))
-        mode.activate()
+        super(MatplotlibViewerToolbar, self).activate_mode(mode)
 
     def deactivate_mode(self, mode):
         for connection in self._connections:
             self.canvas.mpl_disconnect(connection)
         self._connections = []
-        if isinstance(mode, CheckableMode):
-            mode.deactivate()
+        super(MatplotlibViewerToolbar, self).deactivate_mode(mode)
