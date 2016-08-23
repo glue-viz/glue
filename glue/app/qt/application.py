@@ -29,7 +29,7 @@ from glue.viewers.scatter.qt import ScatterWidget
 from glue.utils import nonpartial
 from glue.utils.qt import (pick_class, GlueTabBar,
                            QMessageBoxPatched as QMessageBox,
-                           set_cursor, messagebox_on_error, load_ui)
+                           set_cursor_cm, messagebox_on_error, load_ui)
 
 from glue.app.qt.feedback import submit_bug_report, submit_feedback
 from glue.app.qt.plugin_manager import QtPluginManager
@@ -675,7 +675,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     new_data_viewer = defer_draw(Application.new_data_viewer)
 
-    @set_cursor(Qt.WaitCursor)
     def _choose_save_session(self):
         """ Save the data collection and hub to file.
 
@@ -695,8 +694,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         if '.' not in outfile:
             outfile += '.glu'
 
-        self.save_session(
-            outfile, include_data="including data" in file_filter)
+        with set_cursor_cm(Qt.WaitCursor):
+            self.save_session(
+                outfile, include_data="including data" in file_filter)
 
     @messagebox_on_error("Failed to export session")
     def _choose_export_session(self, saver, checker, outmode):
@@ -717,7 +717,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             return saver(self, label)
 
     @messagebox_on_error("Failed to restore session")
-    @set_cursor(Qt.WaitCursor)
     def _restore_session(self, show=True):
         """ Load a previously-saved state, and restart the session """
         fltr = "Glue sessions (*.glu)"
@@ -726,8 +725,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         if not file_name:
             return
 
-        ga = self.restore_session(file_name)
-        self.close()
+        with set_cursor_cm(Qt.WaitCursor):
+            ga = self.restore_session(file_name)
+            self.close()
         return ga
 
     def _reset_session(self, show=True):
