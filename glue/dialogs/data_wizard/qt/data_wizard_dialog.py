@@ -52,8 +52,8 @@ class GlueDataDialog(object):
         self.setNameFilter()
         self._fd.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
         try:
-            self._fd.setOption(QtWidgets.QFileDialog.Option.HideNameFilterDetails,
-                               True)
+            self._fd.setOption(
+                QtWidgets.QFileDialog.Option.HideNameFilterDetails, True)
         except AttributeError:  # HideNameFilterDetails not present
             pass
 
@@ -109,4 +109,3 @@ class GlueDataDialog(object):
             result.extend(d)
 
         return result
-
