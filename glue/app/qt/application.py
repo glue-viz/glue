@@ -249,7 +249,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     def _tweak_geometry(self):
         """Maximize window"""
-        self.setWindowState(Qt.WindowMaximized)
+        # self.setWindowState(Qt.WindowMaximized)
         self._ui.main_splitter.setSizes([100, 800])
         self._ui.data_plot_splitter.setSizes([100, 150, 250])
 
