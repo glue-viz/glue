@@ -178,12 +178,22 @@ class ImageLayerArtist(MatplotlibLayerArtist, ImageLayerBase):
         for v in views:
             image = self._extract_view(v, transpose)
             extent = get_extent(v, transpose)
-            artists.append(self._axes.imshow(image, cmap=self.cmap,
-                                             norm=self.norm,
-                                             interpolation='nearest',
-                                             origin='lower',
-                                             extent=extent, zorder=0))
+            cim = self._axes.imshow(image, cmap=self.cmap, norm=self.norm,
+                                    interpolation='nearest', origin='lower',
+                                    extent=extent, zorder=0)
+            artists.append(cim)
             self._axes.set_aspect(self.aspect, adjustable='datalim')
+
+        if hasattr(self._axes, 'colorbar'):
+            # Update existing colorbar.
+            self._axes.colorbar.update_normal(cim)
+        else:
+            # Add horizontal colorbar at the bottom.
+            self._axes.figure.subplots_adjust(bottom=0.15)
+            cbar_ax = self._axes.figure.add_axes([0.1, 0.05, 0.85, 0.05])
+            self._axes.colorbar = self._axes.figure.colorbar(
+                cim, cax=cbar_ax, orientation='horizontal')
+
         self.artists = artists
         self._sync_style()
 
