@@ -55,8 +55,6 @@ class ImageWidgetBase(DataViewer):
         self._setup_widgets()
         self.client = self.make_client()
 
-        self._setup_tools()
-
         tb = self.make_toolbar()
         self.addToolBar(tb)
 
@@ -87,19 +85,6 @@ class ImageWidgetBase(DataViewer):
     def make_toolbar(self):
         """ Create and return the toolbar for this widget """
         raise NotImplementedError()
-
-    @staticmethod
-    def _get_default_tools():
-        return []
-
-    def _setup_tools(self):
-        """
-        Set up additional tools for this widget
-        """
-        from glue import config
-        self._tools = []
-        for tool in config.tool_registry.members[self.__class__]:
-            self._tools.append(tool(self))
 
     def _tweak_geometry(self):
         self.central_widget.resize(600, 400)

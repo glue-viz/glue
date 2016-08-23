@@ -5,7 +5,7 @@ from qtpy.QtCore import Qt
 from glue.core.callback_property import add_callback
 from glue.utils import nonpartial
 from glue.viewers.common.qt.mode import CheckableMode, NonCheckableMode
-
+from glue.config import toolbar_mode
 
 
 class BasicToolbar(QtWidgets.QToolBar):
@@ -25,6 +25,14 @@ class BasicToolbar(QtWidgets.QToolBar):
         self.layout().setSpacing(1)
         self.setFocusPolicy(Qt.StrongFocus)
         self._mode = None
+
+        self.setup_default_modes()
+
+        for mode in toolbar_mode.items(widget_cls=parent):
+            self.add_mode(mode)
+
+    def setup_default_modes(self):
+        pass
 
     @property
     def mode(self):

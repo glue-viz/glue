@@ -12,7 +12,7 @@ Objects used to configure Glue at runtime.
 
 __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'ColormapRegistry', 'DataFactoryRegistry', 'QtClientRegistry',
-           'LinkFunctionRegistry', 'LinkHelperRegistry', 'QtToolRegistry',
+           'LinkFunctionRegistry', 'LinkHelperRegistry', 'ToolbarModeRegistry',
            'SingleSubsetLayerActionRegistry', 'ProfileFitterRegistry',
            'qt_client', 'data_factory', 'link_function', 'link_helper',
            'colormaps', 'exporters', 'settings', 'fit_plugin',
@@ -443,7 +443,9 @@ class QtClientRegistry(Registry):
     """
 
 
-class QtToolRegistry(DictRegistry):
+class ToolbarModeRegistry(DictRegistry):
+
+    item = namedtuple('ToolbarMode', 'mode_cls priority')
 
     def default_members(self):
         defaults = {}
@@ -456,16 +458,34 @@ class QtToolRegistry(DictRegistry):
 
         return defaults
 
-    def add(self, tool_cls, widget_cls=None):
+    def add(self, mode_cls, widget_cls=None, priority=0):
         """
         Add a tool class to the registry, optionally specifying which widget
         class it should apply to (``widget_cls``). if ``widget_cls`` is set
         to `None`, the tool applies to all classes.
         """
-        if widget_cls in self.members:
-            self.members[widget_cls].append(tool_cls)
-        else:
-            self.members[widget_cls] = [tool_cls]
+        if widget_cls not in self.members:
+            self.members[widget_cls] = []
+        self.members[widget_cls].append(self.item(mode_cls, priority))
+
+    def __call__(self, widget_cls=None), priority=0:
+        def adder(mode_cls):
+            self.add(mode_cls, widget_cls=widget_cls, priority=priority)
+            return mode_cls
+        return adder
+
+    def items(self, widget_cls=None, subclass=True):
+
+        members = []
+
+        if widget_cls is not None:
+            for key in self.members:
+                if (key is None or (subclass and issubclass(widget_cls, key))
+                                or (not subclass and widget_cls is key)):
+                    members.extend(self.members[key])
+
+        for member in sorted(members, key=lambda x: -x.priority):
+            yield member.mode_cls
 
 
 class LinkFunctionRegistry(Registry):
@@ -579,7 +599,7 @@ class BooleanSetting(object):
         return self.state
 
 qt_client = QtClientRegistry()
-tool_registry = QtToolRegistry()
+toolbar_mode = ToolbarModeRegistry()
 data_factory = DataFactoryRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
@@ -596,6 +616,9 @@ qglue_parser = QGlueParserRegistry()
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)
 enable_contracts = BooleanSetting(False)
+
+# backward-compatibility
+tool_registry = toolbar_mode
 
 def load_configuration(search_path=None):
     ''' Find and import a config.py file

@@ -117,15 +117,18 @@ class MatplotlibViewerToolbar(BasicToolbar):
 
     def __init__(self, canvas, parent, name=None):
 
-        BasicToolbar.__init__(self, parent)
-
         self.canvas = canvas
 
         # Set up virtual Matplotlib navigation toolbar (don't show it)
         self._mpl_nav = NavigationToolbar2QT(canvas, parent)
         self._mpl_nav.hide()
 
-        # Set up default Matplotlib Modes
+        BasicToolbar.__init__(self, parent)
+
+    def setup_default_modes(self):
+
+        # Set up default Matplotlib Modes - this gets called by the __init__
+        # call to the parent class above.
 
         home_mode = HomeMode(toolbar=self._mpl_nav)
         self.add_mode(home_mode)
