@@ -423,8 +423,8 @@ class GingaSpectrumTool(GingaTool, SpectrumTool):
                 pass
         return Dummy()
 
-tool_registry.add(GingaPVSlicer, GingaWidget)
-tool_registry.add(GingaSpectrumTool, GingaWidget)
+# tool_registry.add(GingaPVSlicer, GingaWidget)
+# tool_registry.add(GingaSpectrumTool, GingaWidget)
 
 
 def cmap2pixmap(cmap, steps=50):

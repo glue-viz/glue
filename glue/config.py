@@ -445,47 +445,17 @@ class QtClientRegistry(Registry):
 
 class ToolbarModeRegistry(DictRegistry):
 
-    item = namedtuple('ToolbarMode', 'mode_cls priority')
-
-    def default_members(self):
-        defaults = {}
-        for viewer in qt_client.members:
-            try:
-                defaults[viewer] = viewer._get_default_tools()
-            except AttributeError:
-                logger.info("could not get default tools for {0}".format(viewer.__name__))
-                defaults[viewer] = []
-
-        return defaults
-
-    def add(self, mode_cls, widget_cls=None, priority=0):
+    def add(self, mode_cls):
         """
-        Add a tool class to the registry, optionally specifying which widget
-        class it should apply to (``widget_cls``). if ``widget_cls`` is set
-        to `None`, the tool applies to all classes.
+        Add a tool class to the registry. The the ``mode_id`` attribute on the
+        mode_cls should be set, and is used by the viewers to indicate which
+        modes they want to
         """
-        if widget_cls not in self.members:
-            self.members[widget_cls] = []
-        self.members[widget_cls].append(self.item(mode_cls, priority))
+        self.members[mode_cls.mode_id] = mode_cls
 
-    def __call__(self, widget_cls=None), priority=0:
-        def adder(mode_cls):
-            self.add(mode_cls, widget_cls=widget_cls, priority=priority)
-            return mode_cls
-        return adder
-
-    def items(self, widget_cls=None, subclass=True):
-
-        members = []
-
-        if widget_cls is not None:
-            for key in self.members:
-                if (key is None or (subclass and issubclass(widget_cls, key))
-                                or (not subclass and widget_cls is key)):
-                    members.extend(self.members[key])
-
-        for member in sorted(members, key=lambda x: -x.priority):
-            yield member.mode_cls
+    def __call__(self, mode_cls):
+        self.add(mode_cls)
+        return mode_cls
 
 
 class LinkFunctionRegistry(Registry):

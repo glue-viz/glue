@@ -30,6 +30,7 @@ from glue.icons.qt import get_icon
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui
 from glue.viewers.common.qt.mode import CheckableMode
+from glue.config import toolbar_mode
 
 
 class MouseMode(CheckableMode):
@@ -49,13 +50,14 @@ class MouseMode(CheckableMode):
     """
     enabled = CallbackProperty(True)
 
-    def __init__(self, axes,
+    def __init__(self, viewer,
                  press_callback=None,
                  move_callback=None,
                  release_callback=None,
                  key_callback=None):
 
-        self._axes = axes
+        self.viewer = viewer
+        self._axes = viewer.axes
         self._press_callback = press_callback
         self._move_callback = move_callback
         self._release_callback = release_callback
@@ -137,14 +139,14 @@ class RoiModeBase(MouseMode):
     """
     persistent = False  # clear the shape when drawing completes?
 
-    def __init__(self, axes, **kwargs):
+    def __init__(self, viewer, **kwargs):
         """
         :param roi_callback: Function that will be called when the
                              ROI is finished being defined.
         :type roi_callback:  function
         """
         self._roi_callback = kwargs.pop('roi_callback', None)
-        super(RoiModeBase, self).__init__(axes, **kwargs)
+        super(RoiModeBase, self).__init__(viewer, **kwargs)
         self._roi_tool = None
 
     def activate(self):
@@ -176,8 +178,8 @@ class RoiMode(RoiModeBase):
     on each mouse release
     """
 
-    def __init__(self, axes, **kwargs):
-        super(RoiMode, self).__init__(axes, **kwargs)
+    def __init__(self, viewer, **kwargs):
+        super(RoiMode, self).__init__(viewer, **kwargs)
 
         self._start_event = None
         self._drag = False
@@ -245,8 +247,8 @@ class ClickRoiMode(RoiModeBase):
     ROIs are finalized on enter press, and reset on escape press
     """
 
-    def __init__(self, axes, **kwargs):
-        super(ClickRoiMode, self).__init__(axes, **kwargs)
+    def __init__(self, viewer, **kwargs):
+        super(ClickRoiMode, self).__init__(viewer, **kwargs)
         self._last_event = None
         self._drawing = False
 
@@ -281,33 +283,38 @@ class ClickRoiMode(RoiModeBase):
             super(ClickRoiMode, self).release(event)
 
 
+@toolbar_mode
 class RectangleMode(RoiMode):
 
     """ Defines a Rectangular ROI, accessible via the roi() method"""
 
-    def __init__(self, axes, **kwargs):
-        super(RectangleMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_square')
-        self.mode_id = 'Rectangle'
-        self.action_text = 'Rectangular ROI'
-        self.tool_tip = 'Define a rectangular region of interest'
+    icon = 'glue_square'
+    mode_id = 'Rectangle'
+    action_text = 'Rectangular ROI'
+    tool_tip = 'Define a rectangular region of interest'
+    shortcut = 'R'
+
+    def __init__(self, viewer, **kwargs):
+        super(RectangleMode, self).__init__(viewer, **kwargs)
         self._roi_tool = qt_roi.QtRectangularROI(self._axes)
-        self.shortcut = 'R'
 
 
+@toolbar_mode
 class PathMode(ClickRoiMode):
+
     persistent = True
 
-    def __init__(self, axes, **kwargs):
-        super(PathMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_slice')
-        self.mode_id = 'Slice'
-        self.action_text = 'Slice Extraction'
-        self.tool_tip = ('Extract a slice from an arbitrary path\n'
-                         '  ENTER accepts the path\n'
-                         '  ESCAPE clears the path')
+    icon = 'glue_slice'
+    mode_id = 'Slice'
+    action_text = 'Slice Extraction'
+    tool_tip = ('Extract a slice from an arbitrary path\n'
+                '  ENTER accepts the path\n'
+                '  ESCAPE clears the path')
+    shortcut = 'P'
+
+    def __init__(self, viewer, **kwargs):
+        super(PathMode, self).__init__(viewer, **kwargs)
         self._roi_tool = qt_roi.QtPathROI(self._axes)
-        self.shortcut = 'P'
 
         self._roi_tool.plot_opts.update(edgecolor='#de2d26',
                                         facecolor=None,
@@ -315,114 +322,134 @@ class PathMode(ClickRoiMode):
                                         alpha=0.4)
 
 
+@toolbar_mode
 class CircleMode(RoiMode):
+    """
+    Defines a Circular ROI, accessible via the roi() method
+    """
 
-    """ Defines a Circular ROI, accessible via the roi() method"""
+    icon = 'glue_circle'
+    mode_id = 'Circle'
+    action_text = 'Circular ROI'
+    tool_tip = 'Define a circular region of interest'
+    shortcut = 'C'
 
-    def __init__(self, axes, **kwargs):
-        super(CircleMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_circle')
-        self.mode_id = 'Circle'
-        self.action_text = 'Circular ROI'
-        self.tool_tip = 'Define a circular region of interest'
+    def __init__(self, viewer, **kwargs):
+        super(CircleMode, self).__init__(viewer, **kwargs)
         self._roi_tool = qt_roi.QtCircularROI(self._axes)
-        self.shortcut = 'C'
 
 
+@toolbar_mode
 class PolyMode(ClickRoiMode):
+    """
+    Defines a Polygonal ROI, accessible via the roi() method
+    """
 
-    """ Defines a Polygonal ROI, accessible via the roi() method"""
+    icon = 'glue_lasso'
+    mode_id = 'Polygon'
+    action_text = 'Polygonal ROI'
+    tool_tip = ('Lasso a region of interest\n'
+                '  ENTER accepts the path\n'
+                '  ESCAPE clears the path')
+    shortcut = 'G'
 
-    def __init__(self, axes, **kwargs):
-        super(PolyMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_lasso')
-        self.mode_id = 'Polygon'
-        self.action_text = 'Polygonal ROI'
-        self.tool_tip = ('Lasso a region of interest\n'
-                         '  ENTER accepts the path\n'
-                         '  ESCAPE clears the path')
+    def __init__(self, viewer, **kwargs):
+        super(PolyMode, self).__init__(viewer, **kwargs)
         self._roi_tool = qt_roi.QtPolygonalROI(self._axes)
-        self.shortcut = 'G'
 
 
+@toolbar_mode
 class LassoMode(RoiMode):
+    """
+    Defines a Polygonal ROI, accessible via the roi() method
+    """
 
-    """ Defines a Polygonal ROI, accessible via the roi() method"""
+    icon = 'glue_lasso'
+    mode_id = 'Lasso'
+    action_text = 'Polygonal ROI'
+    tool_tip = 'Lasso a region of interest'
+    shortcut = 'L'
 
-    def __init__(self, axes, **kwargs):
-        super(LassoMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_lasso')
-        self.mode_id = 'Lasso'
-        self.action_text = 'Polygonal ROI'
-        self.tool_tip = 'Lasso a region of interest'
+    def __init__(self, viewer, **kwargs):
+        super(LassoMode, self).__init__(viewer, **kwargs)
         self._roi_tool = qt_roi.QtPolygonalROI(self._axes)
-        self.shortcut = 'L'
 
 
+@toolbar_mode
 class HRangeMode(RoiMode):
+    """
+    Defines a Range ROI, accessible via the roi() method.
+    This class defines horizontal ranges
+    """
 
-    """ Defines a Range ROI, accessible via the roi() method.
-    This class defines horizontal ranges"""
+    icon = 'glue_xrange_select'
+    mode_id = 'X range'
+    action_text = 'X range'
+    tool_tip = 'Select a range of x values'
+    shortcut = 'H'
 
-    def __init__(self, axes, **kwargs):
-        super(HRangeMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_xrange_select')
-        self.mode_id = 'X range'
-        self.action_text = 'X range'
-        self.tool_tip = 'Select a range of x values'
+    def __init__(self, viewer, **kwargs):
+        super(HRangeMode, self).__init__(viewer, **kwargs)
         self._roi_tool = qt_roi.QtXRangeROI(self._axes)
-        self.shortcut = 'H'
 
 
+@toolbar_mode
 class VRangeMode(RoiMode):
+    """
+    Defines a Range ROI, accessible via the roi() method.
+    This class defines vertical ranges
+    """
 
-    """ Defines a Range ROI, accessible via the roi() method.
-    This class defines vertical ranges"""
+    icon = 'glue_yrange_select'
+    mode_id = 'Y range'
+    action_text = 'Y range'
+    tool_tip = 'Select a range of y values'
+    shortcut = 'V'
 
-    def __init__(self, axes, **kwargs):
-        super(VRangeMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_yrange_select')
-        self.mode_id = 'Y range'
-        self.action_text = 'Y range'
-        self.tool_tip = 'Select a range of y values'
+    def __init__(self, viewer, **kwargs):
+        super(VRangeMode, self).__init__(viewer, **kwargs)
         self._roi_tool = qt_roi.QtYRangeROI(self._axes)
-        self.shortcut = 'V'
 
 
+@toolbar_mode
 class PickMode(RoiMode):
+    """
+    Defines a PointROI. Defines single point selections
+    """
 
-    """ Defines a PointROI. Defines single point selections """
+    icon = 'glue_yrange_select'
+    mode_id = 'Pick'
+    action_text = 'Pick'
+    tool_tip = 'Select a single item'
+    shortcut = 'K'
 
-    def __init__(self, axes, **kwargs):
-        super(PickMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_yrange_select')
-        self.mode_id = 'Pick'
-        self.action_text = 'Pick'
-        self.tool_tip = 'Select a single item'
+    def __init__(self, viewer, **kwargs):
+        super(PickMode, self).__init__(viewer, **kwargs)
         self._roi_tool = roi.MplPickROI(self._axes)
-        self.shortcut = 'K'
 
     def press(self, event):
         super(PickMode, self).press(event)
         self._drag = True
 
 
+@toolbar_mode
 class ContrastMode(MouseMode):
-
-    """Uses right mouse button drags to set bias and contrast, ala DS9
+    """
+    Uses right mouse button drags to set bias and contrast, ala DS9
 
     The horizontal position of the mouse sets the bias, the vertical
     position sets the contrast. The get_scaling method converts
     this information into scaling information for a particular data set
     """
 
-    def __init__(self, *args, **kwargs):
-        super(ContrastMode, self).__init__(*args, **kwargs)
-        self.icon = get_icon('glue_contrast')
-        self.mode_id = 'Contrast'
-        self.action_text = 'Contrast'
-        self.tool_tip = 'Adjust the bias/contrast'
-        self.shortcut = 'B'
+    icon = 'glue_contrast'
+    mode_id = 'Contrast'
+    saction_text = 'Contrast'
+    tool_tip = 'Adjust the bias/contrast'
+    shortcut = 'B'
+
+    def __init__(self, viewer, **kwargs):
+        super(ContrastMode, self).__init__(viewer, **kwargs)
 
         self.bias = 0.5
         self.contrast = 1.0
@@ -574,15 +601,16 @@ class SpectrumExtractorMode(RoiMode):
     """
     persistent = True
 
-    def __init__(self, axes, **kwargs):
-        super(SpectrumExtractorMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_spectrum')
-        self.mode_id = 'Spectrum'
-        self.action_text = 'Spectrum'
-        self.tool_tip = 'Extract a spectrum from the selection'
+    icon = 'glue_spectrum'
+    mode_id = 'Spectrum'
+    action_text = 'Spectrum'
+    tool_tip = 'Extract a spectrum from the selection'
+    shortcut = 'S'
 
+
+    def __init__(self, viewer, **kwargs):
+        super(SpectrumExtractorMode, self).__init__(viewer, **kwargs)
         self._roi_tool = qt_roi.QtRectangularROI(self._axes) # default
-        self.shortcut = 'S'
 
     def menu_actions(self):
         result = []

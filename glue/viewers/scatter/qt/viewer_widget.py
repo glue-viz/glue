@@ -49,6 +49,9 @@ class ScatterWidget(DataViewer):
 
     _layer_style_widget_cls = ScatterLayerStyleWidget
 
+    _toolbar_cls = MatplotlibViewerToolbar
+    modes = ['Rectangle', 'X range', 'Y range', 'Circle', 'Polygon']
+
     def __init__(self, session, parent=None):
 
         super(ScatterWidget, self).__init__(session, parent)
@@ -68,7 +71,7 @@ class ScatterWidget(DataViewer):
 
         self._connect()
         self.unique_fields = set()
-        tb = self.make_toolbar()
+        self._make_toolbar()
         cache_axes(self.client.axes, tb)
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
@@ -100,27 +103,6 @@ class ScatterWidget(DataViewer):
         connect_float_edit(cl, 'xmax', ui.xmax)
         connect_float_edit(cl, 'ymin', ui.ymin)
         connect_float_edit(cl, 'ymax', ui.ymax)
-
-    def make_toolbar(self):
-        result = MatplotlibViewerToolbar(self.central_widget.canvas, self,
-                             name='Scatter Plot')
-        for mode in self._mouse_modes():
-            result.add_mode(mode)
-        self.addToolBar(result)
-        return result
-
-    def _mouse_modes(self):
-        axes = self.client.axes
-
-        def apply_mode(mode):
-            return self.apply_roi(mode.roi())
-
-        rect = RectangleMode(axes, roi_callback=apply_mode)
-        xra = HRangeMode(axes, roi_callback=apply_mode)
-        yra = VRangeMode(axes, roi_callback=apply_mode)
-        circ = CircleMode(axes, roi_callback=apply_mode)
-        poly = PolyMode(axes, roi_callback=apply_mode)
-        return [rect, xra, yra, circ, poly]
 
     @defer_draw
     def _update_combos(self):

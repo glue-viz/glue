@@ -2,10 +2,12 @@ from __future__ import absolute_import, division, print_function
 
 from qtpy import QtCore, QtWidgets
 from qtpy.QtCore import Qt
+from glue.external import six
 from glue.core.callback_property import add_callback
 from glue.utils import nonpartial
 from glue.viewers.common.qt.mode import CheckableMode, NonCheckableMode
 from glue.config import toolbar_mode
+from glue.icons.qt import get_icon
 
 
 class BasicToolbar(QtWidgets.QToolBar):
@@ -27,9 +29,6 @@ class BasicToolbar(QtWidgets.QToolBar):
         self._mode = None
 
         self.setup_default_modes()
-
-        for mode in toolbar_mode.items(widget_cls=parent):
-            self.add_mode(mode)
 
     def setup_default_modes(self):
         pass
@@ -86,7 +85,12 @@ class BasicToolbar(QtWidgets.QToolBar):
 
         parent = QtWidgets.QToolBar.parent(self)
 
-        action = QtWidgets.QAction(mode.icon, mode.action_text, parent)
+        if isinstance(mode.icon, six.string_types):
+            icon = get_icon(mode.icon)
+        else:
+            icon = mode.icon
+
+        action = QtWidgets.QAction(icon, mode.action_text, parent)
 
         def toggle(checked):
             if checked:

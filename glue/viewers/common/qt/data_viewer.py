@@ -204,6 +204,19 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
         self._toolbars.append(tb)
         self._tb_vis[tb] = True
 
+    def _make_toolbar(self):
+
+        from glue.config import toolbar_mode
+
+        self.toolbar = self._toolbar_cls(self, name=self.LABEL)
+
+        for mode_id in self.modes:
+            mode_cls = toolbar_mode.members[mode_id]
+            mode = mode_cls(self)
+            self.toolbar.add_mode(mode)
+
+        self.addToolBar(self.toolbar)
+
     def show_toolbars(self):
         """Re-enable any toolbars that were hidden with `hide_toolbars()`
 

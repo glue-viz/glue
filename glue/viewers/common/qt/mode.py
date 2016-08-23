@@ -23,6 +23,9 @@ class Mode(object):
     tool_tip = None
     shortcut = None
 
+    def __init__(self, viewer=None):
+        self.viewer = viewer
+
     def menu_actions(self):
         """
         List of QtWidgets.QActions to be attached to this mode
@@ -59,7 +62,7 @@ class CheckableMode(Mode):
         """
         pass
 
-    def defactivate(self):
+    def deactivate(self):
         """
         Fired when the toolbar button is deactivated
         """
