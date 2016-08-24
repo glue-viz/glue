@@ -5,6 +5,7 @@ from setuptools import setup, find_packages
 from distutils.core import Command
 
 import os
+import re
 import sys
 import subprocess
 
@@ -38,7 +39,8 @@ if '.dev' in __version__:  # noqa
                 dev_value=commit_number))
 
         # We modify __version__ here too for commands such as egg_info
-        __version__ += commit_number  # noqa
+        __version__ = re.sub('\.dev[^"]*', '.dev{0}'.format(commit_number),
+                             __version__)  # noqa
 
 try:
     import pypandoc
