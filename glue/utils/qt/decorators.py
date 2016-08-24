@@ -5,7 +5,6 @@ import traceback
 from contextlib import contextmanager
 from functools import wraps
 
-from glue.utils.qt import get_qapp
 from glue.utils.qt import QMessageBoxPatched as QMessageBox
 
 __all__ = ['set_cursor', 'set_cursor_cm', 'messagebox_on_error',
@@ -20,6 +19,7 @@ def set_cursor(shape):
     def wrapper(func):
         @wraps(func)
         def result(*args, **kwargs):
+            from glue.utils.qt import get_qapp  # Here to avoid circ import
             app = get_qapp()
             app.setOverrideCursor(shape)
             try:
@@ -72,6 +72,7 @@ def die_on_error(msg):
                 return func(*args, **kwargs)
             except Exception as e:
                 # Make sure application has been started
+                from glue.utils.qt import get_qapp  # Here to avoid circ import
                 get_qapp()
 
                 m = "%s\n%s" % (msg, e)
