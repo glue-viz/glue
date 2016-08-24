@@ -183,7 +183,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     """ The main GUI application for the Qt frontend"""
 
-    def __init__(self, data_collection=None, session=None):
+    def __init__(self, data_collection=None, session=None, maximized=True):
 
         self.app = get_qapp()
 
@@ -218,7 +218,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         lwidget.ui.layerTree.addAction(a)
         lwidget.bind_selection_to_edit_subset()
 
-        self._tweak_geometry()
+        self._tweak_geometry(maximized=maximized)
         self._create_actions()
         self._create_menu()
         self._connect()
@@ -247,9 +247,10 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self.statusBar().setContentsMargins(2, 0, 20, 2)
         self.statusBar().setSizeGripEnabled(False)
 
-    def _tweak_geometry(self):
-        """Maximize window"""
-        # self.setWindowState(Qt.WindowMaximized)
+    def _tweak_geometry(self, maximized=True):
+        """Maximize window by default."""
+        if maximized:
+            self.setWindowState(Qt.WindowMaximized)
         self._ui.main_splitter.setSizes([100, 800])
         self._ui.data_plot_splitter.setSizes([100, 150, 250])
 
