@@ -10,14 +10,15 @@ import sys
 from shutil import copyfile
 
 import glue
+from glue.external.six import input
 
 
 def get_clobber():
     result = None
-    result = raw_input("\nDestination file exists. Overwrite? [y/n] ")
+    result = input("\nDestination file exists. Overwrite? [y/n] ")
     while result not in ['y', 'n']:
         print("\tPlease choose one of [y/n]")
-        result = raw_input("\nDestination file exists. Overwrite? [y/n] ")
+        result = input("\nDestination file exists. Overwrite? [y/n] ")
 
     return result == 'y'
 

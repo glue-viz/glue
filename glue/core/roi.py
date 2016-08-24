@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import copy
 
 import numpy as np
-from matplotlib.patches import Ellipse, Polygon, Rectangle, Path as mplPath
+from matplotlib.patches import Ellipse, Polygon, Rectangle, Path as MplPath, PathPatch
 from matplotlib.transforms import IdentityTransform, blended_transform_factory
 
 from glue.core.exceptions import UndefinedROI
@@ -1155,7 +1155,7 @@ class MplPathROI(MplPolygonalROI):
         else:
             x, y = self._roi.to_polygon()
             p = MplPath(np.column_stack((x, y)))
-            self._patch = PatchPath(p)
+            self._patch = PathPatch(p)
             self._patch.set_visible(True)
 
         # Update appearance
