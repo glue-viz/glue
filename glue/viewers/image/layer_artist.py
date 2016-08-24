@@ -188,11 +188,13 @@ class ImageLayerArtist(MatplotlibLayerArtist, ImageLayerBase):
             # Update existing colorbar.
             self._axes.colorbar.update_normal(cim)
         else:
-            # Add horizontal colorbar at the bottom.
-            self._axes.figure.subplots_adjust(bottom=0.15)
-            cbar_ax = self._axes.figure.add_axes([0.1, 0.05, 0.85, 0.05])
+            # Add vertical colorbar on the right.
+            bbox = self._axes.get_position()
+            self._axes.resizer.margins = [1, 1.75, 0.5, 0.25]
+            cbar_ax = self._axes.figure.add_axes(
+                [0.9, bbox.y0, 0.025, bbox.height])
             self._axes.colorbar = self._axes.figure.colorbar(
-                cim, cax=cbar_ax, orientation='horizontal')
+                cim, ax=self._axes, cax=cbar_ax)
 
         self.artists = artists
         self._sync_style()
