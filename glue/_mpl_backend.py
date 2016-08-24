@@ -6,7 +6,7 @@ class MatplotlibBackendSetter(object):
 
     enabled = True
 
-    def find_module(self, mod_name, pth):
+    def find_module(self, mod_name, pth=None):
         if self.enabled and 'matplotlib' in mod_name:
             self.enabled = False
             set_mpl_backend()
