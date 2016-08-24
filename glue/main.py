@@ -197,7 +197,8 @@ def execute_script(script):
     Provides a way for people with pre-installed binaries to use
     the glue library
     """
-    execfile(script)
+    with open(script) as fin:
+        exec(fin.read())
     sys.exit(0)
 
 
