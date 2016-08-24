@@ -1,12 +1,15 @@
 from __future__ import absolute_import, division, print_function
 
+import sys
 import traceback
 from contextlib import contextmanager
 from functools import wraps
 
+from glue.utils.qt import get_qapp
 from glue.utils.qt import QMessageBoxPatched as QMessageBox
 
-__all__ = ['set_cursor', 'set_cursor_cm', 'messagebox_on_error']
+__all__ = ['set_cursor', 'set_cursor_cm', 'messagebox_on_error',
+           'die_on_error']
 
 
 def set_cursor(shape):
@@ -17,7 +20,6 @@ def set_cursor(shape):
     def wrapper(func):
         @wraps(func)
         def result(*args, **kwargs):
-            from glue.utils.qt import get_qapp
             app = get_qapp()
             app.setOverrideCursor(shape)
             try:
@@ -59,4 +61,30 @@ def messagebox_on_error(msg):
                 qmb.exec_()
         return wrapper
 
+    return decorator
+
+
+def die_on_error(msg):
+    """Decorator that catches errors, displays a popup message, and quits"""
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                # Make sure application has been started
+                get_qapp()
+
+                m = "%s\n%s" % (msg, e)
+                detail = str(traceback.format_exc())
+                if len(m) > 500:
+                    detail = "Full message:\n\n%s\n\n%s" % (m, detail)
+                    m = m[:500] + '...'
+
+                qmb = QMessageBox(QMessageBox.Critical, "Error", m)
+                qmb.setDetailedText(detail)
+                qmb.show()
+                qmb.raise_()
+                qmb.exec_()
+                sys.exit(1)
+        return wrapper
     return decorator

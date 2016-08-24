@@ -7,6 +7,7 @@ import optparse
 
 from glue import __version__
 from glue.logger import logger
+from glue.utils.qt import die_on_error
 
 
 def parse(argv):
@@ -88,37 +89,6 @@ def verify(parser, argv):
         err_msg = "Must provide a .glu file\n"
 
     return err_msg
-
-
-def die_on_error(msg):
-    """Decorator that catches errors, displays a popup message, and quits"""
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            try:
-                return func(*args, **kwargs)
-            except Exception as e:
-
-                import traceback
-
-                # Make sure application has been started
-                from glue.utils.qt import get_qapp
-                get_qapp()
-
-                from glue.utils.qt import QMessageBoxPatched as QMessageBox
-                m = "%s\n%s" % (msg, e)
-                detail = str(traceback.format_exc())
-                if len(m) > 500:
-                    detail = "Full message:\n\n%s\n\n%s" % (m, detail)
-                    m = m[:500] + '...'
-
-                qmb = QMessageBox(QMessageBox.Critical, "Error", m)
-                qmb.setDetailedText(detail)
-                qmb.show()
-                qmb.raise_()
-                qmb.exec_()
-                sys.exit(1)
-        return wrapper
-    return decorator
 
 
 @die_on_error("Error restoring Glue session")
