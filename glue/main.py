@@ -53,6 +53,8 @@ def parse(argv):
                       help='use CONFIG as configuration file')
     parser.add_option('-v', '--verbose', action='store_true',
                       help="Increase the vebosity level", default=False)
+    parser.add_option('--no-fullscreen', action='store_true', dest='nofs',
+                      help="Do not start Glue maximized", default=False)
 
     err_msg = verify(parser, argv)
     if err_msg:
@@ -143,17 +145,23 @@ def run_tests():
     test()
 
 
-def start_glue(gluefile=None, config=None, datafiles=None):
+def start_glue(gluefile=None, config=None, datafiles=None, maximized=True):
     """Run a glue session and exit
 
-    :param gluefile: An optional .glu file to restore
-    :type gluefile: str
+    Parameters
+    ----------
+    gluefile : str
+        An optional ``.glu`` file to restore.
 
-    :param config: An optional configuration file to use
-    :type config: str
+    config : str
+        An optional configuration file to use.
 
-    :param datafiles: An optional list of data files to load
-    :type datafiles: list of str
+    datafiles : str
+        An optional list of data files to load.
+
+    maximized : bool
+        Maximize screen on startup. Otherwise, use default size.
+
     """
     import glue
     from glue.app.qt import GlueApplication
@@ -178,7 +186,7 @@ def start_glue(gluefile=None, config=None, datafiles=None):
     hub = data_collection.hub
 
     session = glue.core.Session(data_collection=data_collection, hub=hub)
-    ga = GlueApplication(session=session)
+    ga = GlueApplication(session=session, maximized=maximized)
 
     if datafiles:
         datasets = load_data_files(datafiles)
@@ -225,10 +233,14 @@ def main(argv=sys.argv):
 
     logger.info("Input arguments: %s", sys.argv)
 
+    # Global keywords for Glue startup.
+    kwargs = {'config': opt.config,
+              'maximized': not opt.nofs}
+
     if opt.test:
         return run_tests()
     elif opt.restore:
-        start_glue(gluefile=args[0], config=opt.config)
+        start_glue(gluefile=args[0], **kwargs)
     elif opt.script:
         execute_script(args[0])
     else:
@@ -239,11 +251,11 @@ def main(argv=sys.argv):
         if has_py:
             execute_script(args[0])
         elif has_glu:
-            start_glue(gluefile=args[0], config=opt.config)
+            start_glue(gluefile=args[0], **kwargs)
         elif has_file or has_files:
-            start_glue(datafiles=args, config=opt.config)
+            start_glue(datafiles=args, **kwargs)
         else:
-            start_glue(config=opt.config)
+            start_glue(**kwargs)
 
 
 _loaded_plugins = set()
