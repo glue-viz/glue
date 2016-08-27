@@ -95,8 +95,9 @@ def test_exec_real(tmpdir):
     with open(filename, 'w') as f:
         f.write('a = 1')
     with patch('glue.utils.qt.QMessageBoxPatched') as qmb:
-        main('glue -x {0}'.format(os.path.abspath(filename)).split())
-
+        with patch('sys.exit') as exit:
+            main('glue -x {0}'.format(os.path.abspath(filename)).split())
+    assert exit.called_once_with(0)
 
 @pytest.mark.parametrize(('cmd'), ['glueqt -g test.glu test.fits',
                                    'glueqt -g test.py test.fits',
