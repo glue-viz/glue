@@ -21,6 +21,9 @@ v0.9.0 (unreleased)
 * Avoid raising a (harmless) error when selecting a region in between two
   categorical components.
 
+* Added a new Data method, ``update_from_data``, that can be used to replicate
+  components from one dataset into another. [#1112]
+
 v0.8.3 (unreleased)
 -------------------
 

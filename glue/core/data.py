@@ -823,8 +823,10 @@ class Data(object):
     def update_from_data(self, data):
         """
         Replace numerical values in data to match values from another dataset.
+
         Drop components that aren't present in the new data. The matching is
-        done by component label.
+        done by component label, and components are resized if needed. Note
+        that the style is NOT copied.
         """
 
         old_labels = [cid.label for cid in self.components]
@@ -862,6 +864,9 @@ class Data(object):
 
         # Update data label
         self.label = data.label
+
+        # Update data coordinates
+        self.coords = data.coords
 
         # alert hub of the change
         if self.hub is not None:
