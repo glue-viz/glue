@@ -72,7 +72,7 @@ class ScatterWidget(DataViewer):
         self._connect()
         self.unique_fields = set()
         self._make_toolbar()
-        cache_axes(self.client.axes, tb)
+        cache_axes(self.client.axes, self.toolbar)
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
 
