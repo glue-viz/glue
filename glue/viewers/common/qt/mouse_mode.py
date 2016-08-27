@@ -21,7 +21,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from qtpy import QtWidgets
+from qtpy import QtGui, QtWidgets
 from glue.core.callback_property import CallbackProperty
 from glue.core import roi
 from glue.core.qt import roi as qt_roi

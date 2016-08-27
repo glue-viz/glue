@@ -212,7 +212,7 @@ def execute_script(script):
 
 def get_splash():
     """Instantiate a splash screen"""
-    from qtpy import QtWidgets
+    from qtpy import QtGui, QtWidgets
     from qtpy.QtCore import Qt
     import os
 

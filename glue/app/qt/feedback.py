@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from qtpy import QtWidgets
+from qtpy import QtGui, QtWidgets
 from glue.external.six.moves.urllib.parse import urlencode
 from glue.external.six.moves.urllib.request import Request, urlopen
 from glue.utils.qt import load_ui
