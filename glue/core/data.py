@@ -820,6 +820,45 @@ class Data(object):
         for subset in self.subsets:
             clear_cache(subset.subset_state.to_mask)
 
+    def update_from_data(self, data):
+        """
+        Replace numerical values in data to match values from another dataset.
+        Drop components that aren't present in the new data. The matching is
+        done by component label.
+        """
+
+        old_labels = [cid.label for cid in self.components]
+        new_labels = [cid.label for cid in data.components]
+
+        if len(old_labels) == len(set(old_labels)):
+            old_labels = set(old_labels)
+        else:
+            raise ValueError("Non-unique component labels in original data")
+
+        if len(new_labels) == len(set(new_labels)):
+            new_labels = set(new_labels)
+        else:
+            raise ValueError("Non-unique component labels in new data")
+
+        # Remove components that don't have a match in new data
+        for cname in old_labels - new_labels:
+            cid = self.find_component_id(cname)
+            self.remove_component(cid)
+
+        # Update shape
+        self._shape = data._shape
+
+        # Update components that exist in both
+        for cname in old_labels & new_labels:
+            comp_old = self.get_component(cname)
+            comp_new = data.get_component(cname)
+            comp_old._data = comp_new._data
+
+        # Add components that didn't exist in original one
+        for cname in new_labels - old_labels:
+            comp_new = data.get_component(cname)
+            self.add_component(comp_new, cname)
+
 
 @contract(i=int, ndim=int)
 def pixel_label(i, ndim):
