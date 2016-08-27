@@ -859,6 +859,17 @@ class Data(object):
             comp_new = data.get_component(cname)
             self.add_component(comp_new, cname)
 
+        # Update data label
+        self.label = data.label
+
+        # alert hub of the change
+        if self.hub is not None:
+            msg = NumericalDataChangedMessage(self)
+            self.hub.broadcast(msg)
+
+        for subset in self.subsets:
+            clear_cache(subset.subset_state.to_mask)
+
 
 @contract(i=int, ndim=int)
 def pixel_label(i, ndim):
