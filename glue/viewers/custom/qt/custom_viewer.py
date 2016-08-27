@@ -870,6 +870,7 @@ class CustomWidgetBase(DataViewer):
     LABEL = ''
 
     coordinator_cls = None
+    _toolbar_cls = MatplotlibViewerToolbar
 
     def __init__(self, session, parent=None):
         super(CustomWidgetBase, self).__init__(session, parent)
@@ -883,7 +884,7 @@ class CustomWidgetBase(DataViewer):
                                    layer_artist_container=self._layer_artist_container,
                                    coordinator=self._coordinator)
 
-        self.make_toolbar()
+        self._make_toolbar()
         self.statusBar().setSizeGripEnabled(False)
         self._update_artists = []
         self.settings_changed()
@@ -907,25 +908,12 @@ class CustomWidgetBase(DataViewer):
         self.client._redraw()
         self._coordinator.settings_changed()
 
-    def make_toolbar(self):
-        result = MatplotlibViewerToolbar(self.central_widget.canvas, self, name=self.LABEL)
-        for mode in self._mouse_modes():
-            result.add_mode(mode)
-        self.addToolBar(result)
-        return result
-
-    def _mouse_modes(self):
-        if not self._coordinator.selections_enabled:
+    @property
+    def modes(self):
+        if self._coordinator.selections_enabled:
+            return ['Rectangle', 'Polygon']
+        else:
             return []
-
-        axes = self.client.axes
-
-        def apply_mode(mode):
-            self.client.apply_roi(mode.roi())
-
-        # return []
-        return [RectangleMode(axes, roi_callback=apply_mode),
-                PolyMode(axes, roi_callback=apply_mode)]
 
     def add_data(self, data):
         """Add a new data set to the widget
