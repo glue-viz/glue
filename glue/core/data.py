@@ -856,8 +856,9 @@ class Data(object):
 
         # Add components that didn't exist in original one
         for cname in new_labels - old_labels:
+            cid = data.find_component_id(cname)
             comp_new = data.get_component(cname)
-            self.add_component(comp_new, cname)
+            self.add_component(comp_new, cid)
 
         # Update data label
         self.label = data.label
