@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from qtpy.QtCore import Qt
 from qtpy import QtWidgets
-from glue.utils.qt import QMessageBoxPatched as QMessageBox, set_cursor
+from glue.utils.qt import QMessageBoxPatched as QMessageBox, set_cursor_cm
 
 __all__ = ['data_wizard', 'GlueDataDialog']
 
@@ -53,8 +53,8 @@ class GlueDataDialog(object):
         self._fd.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
         self._curfile = ''
         try:
-            self._fd.setOption(QtWidgets.QFileDialog.Option.HideNameFilterDetails,
-                               True)
+            self._fd.setOption(
+                QtWidgets.QFileDialog.Option.HideNameFilterDetails, True)
         except AttributeError:  # HideNameFilterDetails not present
             pass
 
@@ -92,7 +92,6 @@ class GlueDataDialog(object):
         factory = self.factory()
         return path, factory
 
-    @set_cursor(Qt.WaitCursor)
     def load_data(self):
         """Highest level method to interactively load a data set.
 
@@ -102,13 +101,13 @@ class GlueDataDialog(object):
         paths, fac = self._get_paths_and_factory()
         result = []
 
-        for path in paths:
-            self._curfile = path
-            d = load_data(path, factory=fac.function)
-            if not isinstance(d, list):
-                d.label = data_label(path)
-                d = [d]
-            result.extend(d)
+        with set_cursor_cm(Qt.WaitCursor):
+            for path in paths:
+                self._curfile = path
+                d = load_data(path, factory=fac.function)
+                if not isinstance(d, list):
+                    d.label = data_label(path)
+                    d = [d]
+                result.extend(d)
 
         return result
-

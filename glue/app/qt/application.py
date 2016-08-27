@@ -10,7 +10,6 @@ import webbrowser
 from qtpy import QtCore, QtWidgets, QtGui, compat
 from qtpy.QtCore import Qt
 
-from glue.config import settings
 from glue.core.application_base import Application
 from glue.core import command, Data
 from glue import env
@@ -28,8 +27,9 @@ from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.image.qt import ImageWidget
 from glue.viewers.scatter.qt import ScatterWidget
 from glue.utils import nonpartial
-from glue.utils.qt import (pick_class, GlueTabBar, QMessageBoxPatched as
-                           QMessageBox, set_cursor, messagebox_on_error, load_ui)
+from glue.utils.qt import (pick_class, GlueTabBar,
+                           QMessageBoxPatched as QMessageBox,
+                           set_cursor_cm, messagebox_on_error, load_ui)
 
 from glue.app.qt.feedback import submit_bug_report, submit_feedback
 from glue.app.qt.plugin_manager import QtPluginManager
@@ -300,11 +300,11 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         if not os.environ.get('GLUE_TESTING'):
             buttons = QMessageBox.Ok | QMessageBox.Cancel
-            dialog = QMessageBox.warning(self, "Confirm Close",
-                                         "Are you sure you want to close this tab? "
-                                         "This will close all data viewers in the tab.",
-                                         buttons=buttons,
-                                         defaultButton=QMessageBox.Cancel)
+            dialog = QMessageBox.warning(
+                self, "Confirm Close",
+                "Are you sure you want to close this tab? "
+                "This will close all data viewers in the tab.",
+                buttons=buttons, defaultButton=QMessageBox.Cancel)
             if not dialog == QMessageBox.Ok:
                 return
 
@@ -394,7 +394,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         if sub_window is None:
             return
 
-        layer_view, options_widget, title = self._get_plot_dashboards(sub_window)
+        layer_view, options_widget, title = self._get_plot_dashboards(
+            sub_window)
 
         layout = self._ui.plot_layers.layout()
         layout.addWidget(layer_view)
@@ -524,17 +525,18 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         menu.addSeparator()
         menu.addAction("Version information", show_glue_info)
 
-
     def _choose_load_data(self, data_importer=None):
         if data_importer is None:
             self.add_datasets(self.data_collection, data_wizard())
         else:
             data = data_importer()
             if not isinstance(data, list):
-                raise TypeError("Data loader should return list of Data objects")
+                raise TypeError("Data loader should return list of "
+                                "Data objects")
             for item in data:
                 if not isinstance(item, Data):
-                    raise TypeError("Data loader should return list of Data objects")
+                    raise TypeError("Data loader should return list of "
+                                    "Data objects")
             self.add_datasets(self.data_collection, data)
 
     def _create_actions(self):
@@ -542,39 +544,38 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._actions = {}
 
         a = action("&New Data Viewer", self,
-                tip="Open a new visualization window in the current tab",
-                shortcut=QtGui.QKeySequence.New
-                )
+                   tip="Open a new visualization window in the current tab",
+                   shortcut=QtGui.QKeySequence.New)
         a.triggered.connect(nonpartial(self.choose_new_data_viewer))
         self._actions['viewer_new'] = a
 
         a = action('New &Tab', self,
-                shortcut=QtGui.QKeySequence.AddTab,
-                tip='Add a new tab')
+                   shortcut=QtGui.QKeySequence.AddTab,
+                   tip='Add a new tab')
         a.triggered.connect(nonpartial(self.new_tab))
         self._actions['tab_new'] = a
 
         a = action('&Rename Tab', self,
-                shortcut="Ctrl+R",
-                tip='Set a new label for the current tab')
+                   shortcut="Ctrl+R",
+                   tip='Set a new label for the current tab')
         a.triggered.connect(nonpartial(self.tab_bar.rename_tab))
         self._actions['tab_rename'] = a
 
         a = action('&Gather Windows', self,
-                tip='Gather plot windows side-by-side',
-                shortcut='Ctrl+G')
+                   tip='Gather plot windows side-by-side',
+                   shortcut='Ctrl+G')
         a.triggered.connect(nonpartial(self.gather_current_tab))
         self._actions['gather'] = a
 
         a = action('&Save Session', self,
-                tip='Save the current session')
+                   tip='Save the current session')
         a.triggered.connect(nonpartial(self._choose_save_session))
         self._actions['session_save'] = a
 
         # Add file loader as first item in File menu for convenience. We then
         # also add it again below in the Import menu for consistency.
         a = action("&Open Data Set", self, tip="Open a new data set",
-                shortcut=QtGui.QKeySequence.Open)
+                   shortcut=QtGui.QKeySequence.Open)
         a.triggered.connect(nonpartial(self._choose_load_data,
                                        data_wizard))
         self._actions['data_new'] = a
@@ -605,8 +606,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             for e in exporters:
                 label, saver, checker, mode = e
                 a = action(label, self,
-                        tip='Export the current session to %s format' %
-                        label)
+                           tip='Export the current session to %s format' %
+                           label)
                 a.triggered.connect(nonpartial(self._choose_export_session,
                                                saver, checker, mode))
                 acts.append(a)
@@ -614,25 +615,25 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             self._actions['session_export'] = acts
 
         a = action('Open S&ession', self,
-                tip='Restore a saved session')
+                   tip='Restore a saved session')
         a.triggered.connect(nonpartial(self._restore_session))
         self._actions['session_restore'] = a
 
         a = action('Reset S&ession', self,
-                tip='Reset session to clean state')
+                   tip='Reset session to clean state')
         a.triggered.connect(nonpartial(self._reset_session))
         self._actions['session_reset'] = a
 
         a = action("Undo", self,
-                tip='Undo last action',
-                shortcut=QtGui.QKeySequence.Undo)
+                   tip='Undo last action',
+                   shortcut=QtGui.QKeySequence.Undo)
         a.triggered.connect(nonpartial(self.undo))
         a.setEnabled(False)
         self._actions['undo'] = a
 
         a = action("Redo", self,
-                tip='Redo last action',
-                shortcut=QtGui.QKeySequence.Redo)
+                   tip='Redo last action',
+                   shortcut=QtGui.QKeySequence.Redo)
         a.triggered.connect(nonpartial(self.redo))
         a.setEnabled(False)
         self._actions['redo'] = a
@@ -649,7 +650,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._actions['plugins'] = acts
 
         a = action('&Plugin Manager', self,
-                tip='Open plugin manager')
+                   tip='Open plugin manager')
         a.triggered.connect(nonpartial(self.plugin_manager))
         self._actions['plugin_manager'] = a
 
@@ -675,7 +676,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     new_data_viewer = defer_draw(Application.new_data_viewer)
 
-    @set_cursor(Qt.WaitCursor)
     def _choose_save_session(self):
         """ Save the data collection and hub to file.
 
@@ -683,18 +683,21 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         """
 
         # include file filter twice, so it shows up in Dialog
-        outfile, file_filter  = compat.getsavefilename(parent=self,
-                                                       filters="Glue Session (*.glu);; Glue Session including data (*.glu)")
+        outfile, file_filter = compat.getsavefilename(
+            parent=self, filters=("Glue Session (*.glu);; "
+                                  "Glue Session including data (*.glu)"))
 
         # This indicates that the user cancelled
         if not outfile:
             return
 
         # Add extension if not specified
-        if not '.' in outfile:
+        if '.' not in outfile:
             outfile += '.glu'
 
-        self.save_session(outfile, include_data="including data" in file_filter)
+        with set_cursor_cm(Qt.WaitCursor):
+            self.save_session(
+                outfile, include_data="including data" in file_filter)
 
     @messagebox_on_error("Failed to export session")
     def _choose_export_session(self, saver, checker, outmode):
@@ -709,22 +712,23 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         else:
             assert outmode == 'label'
             label, ok = QtWidgets.QInputDialog.getText(self, 'Choose a label:',
-                                                   'Choose a label:')
+                                                       'Choose a label:')
             if not ok:
                 return
             return saver(self, label)
 
     @messagebox_on_error("Failed to restore session")
-    @set_cursor(Qt.WaitCursor)
     def _restore_session(self, show=True):
         """ Load a previously-saved state, and restart the session """
         fltr = "Glue sessions (*.glu)"
-        file_name, file_filter = compat.getopenfilename(parent=self, filters=fltr)
+        file_name, file_filter = compat.getopenfilename(
+            parent=self, filters=fltr)
         if not file_name:
             return
 
-        ga = self.restore_session(file_name)
-        self.close()
+        with set_cursor_cm(Qt.WaitCursor):
+            ga = self.restore_session(file_name)
+            self.close()
         return ga
 
     def _reset_session(self, show=True):
@@ -734,11 +738,11 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         if not os.environ.get('GLUE_TESTING'):
             buttons = QMessageBox.Ok | QMessageBox.Cancel
-            dialog = QMessageBox.warning(self, "Confirm Close",
-                                         "Are you sure you want to reset the session? "
-                                         "This will close all datasets, subsets, and data viewers",
-                                         buttons=buttons,
-                                         defaultButton=QMessageBox.Cancel)
+            dialog = QMessageBox.warning(
+                self, "Confirm Close",
+                "Are you sure you want to reset the session? "
+                "This will close all datasets, subsets, and data viewers",
+                buttons=buttons, defaultButton=QMessageBox.Cancel)
             if not dialog == QMessageBox.Ok:
                 return
 
@@ -828,11 +832,13 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         if self._terminal.isVisible():
             self._hide_terminal()
             if self._terminal.isVisible():
-                warnings.warn("An unexpected error occurred while trying to hide the terminal")
+                warnings.warn("An unexpected error occurred while "
+                              "trying to hide the terminal")
         else:
             self._show_terminal()
             if not self._terminal.isVisible():
-                warnings.warn("An unexpected error occurred while trying to show the terminal")
+                warnings.warn("An unexpected error occurred while "
+                              "trying to show the terminal")
 
     def _hide_terminal(self):
         self._terminal.hide()
