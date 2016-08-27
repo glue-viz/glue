@@ -131,7 +131,6 @@ def restore_session(gluefile):
 @die_on_error("Error reading data file")
 def load_data_files(datafiles):
     """Load data files and return a list of datasets"""
-    from glue.core.data_collection import DataCollection
     from glue.core.data_factories import auto_data, load_data
 
     datasets = []
@@ -173,7 +172,7 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True):
 
     datafiles = datafiles or []
 
-    data, hub = None, None
+    hub = None
 
     if gluefile is not None:
         app = restore_session(gluefile)
@@ -206,7 +205,8 @@ def execute_script(script):
     Provides a way for people with pre-installed binaries to use
     the glue library
     """
-    execfile(script)
+    with open(script) as fin:
+        exec(fin.read())
     sys.exit(0)
 
 
@@ -279,14 +279,15 @@ def load_plugins():
     # plugin, such as add items to various registries.
 
     import setuptools
-    logger.info("Loading external plugins using setuptools=={0}".format(setuptools.__version__))
+    logger.info("Loading external plugins using "
+                "setuptools=={0}".format(setuptools.__version__))
 
     from glue._plugin_helpers import iter_plugin_entry_points, PluginConfig
     config = PluginConfig.load()
 
     for item in iter_plugin_entry_points():
 
-        if not item.module_name in _installed_plugins:
+        if item.module_name not in _installed_plugins:
             _installed_plugins.add(item.name)
 
         if item.module_name in _loaded_plugins:
@@ -300,7 +301,8 @@ def load_plugins():
             function = item.load()
             function()
         except Exception as exc:
-            logger.info("Loading plugin {0} failed (Exception: {1})".format(item.name, exc))
+            logger.info("Loading plugin {0} failed "
+                        "(Exception: {1})".format(item.name, exc))
         else:
             logger.info("Loading plugin {0} succeeded".format(item.name))
             _loaded_plugins.add(item.module_name)
@@ -316,5 +318,6 @@ def load_plugins():
     from glue._settings_helpers import load_settings
     load_settings()
 
+
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))  # prama: no cover
+    sys.exit(main(sys.argv))  # pragma: no cover
