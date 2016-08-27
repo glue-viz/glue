@@ -14,13 +14,13 @@ def data_wizard():
        A list of new data objects. Returns an empty list if
        selection is canceled.
     """
-    def report_error(error, factory):
+    def report_error(error, factory, curfile):
         import traceback
         retry = QMessageBox.Retry
         cancel = QMessageBox.Cancel
         buttons = retry | cancel
         detail = traceback.format_exc()
-        msg = "\n".join(["Could not load data (wrong load method?)",
+        msg = "\n".join(["Could not load %s (wrong load method?)" % curfile,
                          "File load method: %s" % factory.label])
         detail = "\n\n".join(["Error message: %s" % error, detail])
         mb = QMessageBox(QMessageBox.Critical, "Data Load Error", msg)
@@ -36,7 +36,7 @@ def data_wizard():
             result = gdd.load_data()
             break
         except Exception as e:
-            decision = report_error(e, gdd.factory())
+            decision = report_error(e, gdd.factory(), gdd._curfile)
             if not decision:
                 return []
     return result
@@ -51,6 +51,7 @@ class GlueDataDialog(object):
                         for f in data_factory.members if not f.deprecated]
         self.setNameFilter()
         self._fd.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
+        self._curfile = ''
         try:
             self._fd.setOption(QtWidgets.QFileDialog.Option.HideNameFilterDetails,
                                True)
@@ -102,6 +103,7 @@ class GlueDataDialog(object):
         result = []
 
         for path in paths:
+            self._curfile = path
             d = load_data(path, factory=fac.function)
             if not isinstance(d, list):
                 d.label = data_label(path)
