@@ -31,6 +31,9 @@ class DendroWidget(DataViewer):
     parent = CurrentComboProperty('ui.parentCombo', 'parent attribute')
     order = CurrentComboProperty('ui.orderCombo', 'layout sorter attribute')
 
+    _toolbar_cls = MatplotlibViewerToolbar
+    modes = ['Pick']
+
     def __init__(self, session, parent=None):
         super(DendroWidget, self).__init__(session, parent)
 
@@ -46,12 +49,8 @@ class DendroWidget(DataViewer):
 
         self._connect()
 
-        self.make_toolbar()
+        self._make_toolbar()
         self.statusBar().setSizeGripEnabled(False)
-
-    @staticmethod
-    def _get_default_tools():
-        return []
 
     def _connect(self):
         ui = self.ui
@@ -62,16 +61,9 @@ class DendroWidget(DataViewer):
         connect_current_combo(cl, 'height_attr', ui.heightCombo)
         connect_current_combo(cl, 'order_attr', ui.orderCombo)
 
-    def make_toolbar(self):
-        result = MatplotlibViewerToolbar(self.central_widget.canvas, self,
-                             name='Dendrogram')
-        for mode in self._mouse_modes():
-            result.add_mode(mode)
-        self.addToolBar(result)
-        return result
+    def _make_toolbar(self):
 
-    def _mouse_modes(self):
-        axes = self.client.axes
+        super(DendroWidget, self)._make_toolbar()
 
         def apply_mode(mode):
             self.client.apply_roi(mode.roi())
@@ -80,9 +72,8 @@ class DendroWidget(DataViewer):
             if mode._drag:
                 self.client.apply_roi(mode.roi())
 
-        return [PickMode(axes,
-                         move_callback=on_move,
-                         roi_callback=apply_mode)]
+        self.toolbar.modes['Pick']._move_callback = on_move
+        self.toolbar.modes['Pick']._roi_callback = apply_mode
 
     def _update_combos(self, data=None):
         data = data or self.client.display_data

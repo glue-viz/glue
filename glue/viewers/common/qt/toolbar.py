@@ -23,6 +23,7 @@ class BasicToolbar(QtWidgets.QToolBar):
         super(BasicToolbar, self).__init__(parent=parent)
 
         self.buttons = {}
+        self.modes = {}
         self.setIconSize(QtCore.QSize(25, 25))
         self.layout().setSpacing(1)
         self.setFocusPolicy(Qt.StrongFocus)
@@ -126,5 +127,7 @@ class BasicToolbar(QtWidgets.QToolBar):
             menu.triggered.connect(nonpartial(toggle))
 
         self.addAction(action)
+
+        self.modes[mode.mode_id] = mode
 
         return action

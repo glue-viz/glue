@@ -98,10 +98,6 @@ class GingaWidget(ImageWidgetBase):
 
         super(GingaWidget, self).__init__(session, parent)
 
-    @staticmethod
-    def _get_default_tools():
-        return []
-
     def make_client(self):
         return GingaClient(self._data, self.viewer, self._layer_artist_container)
 
