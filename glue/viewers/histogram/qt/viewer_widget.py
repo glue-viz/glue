@@ -8,11 +8,10 @@ from qtpy import QtGui, QtWidgets
 from glue.core import message as msg
 from glue.viewers.histogram.client import HistogramClient
 from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
-from glue.viewers.common.qt.mouse_mode import HRangeMode
 from glue.utils.qt import load_ui
 from glue.utils.qt.widget_properties import (connect_int_spin, ButtonProperty,
-                                       FloatLineProperty, connect_float_edit,
-                                       ValueProperty, connect_bool_button)
+                                             FloatLineProperty, connect_float_edit,
+                                             ValueProperty, connect_bool_button)
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.mpl_widget import MplWidget, defer_draw
 from glue.viewers.histogram.qt.layer_style_widget import HistogramLayerStyleWidget
@@ -47,6 +46,9 @@ class HistogramWidget(DataViewer):
 
     _layer_style_widget_cls = HistogramLayerStyleWidget
 
+    _toolbar_cls = MatplotlibViewerToolbar
+    modes = ['X range']
+
     def __init__(self, session, parent=None):
         super(HistogramWidget, self).__init__(session, parent)
 
@@ -60,7 +62,7 @@ class HistogramWidget(DataViewer):
                                       self.central_widget.canvas.fig,
                                       layer_artist_container=self._layer_artist_container)
         self._init_limits()
-        self.make_toolbar()
+        self._make_toolbar()
         self._connect()
         # maps _hash(componentID) -> componentID
         self._component_hashes = {}
@@ -98,23 +100,6 @@ class HistogramWidget(DataViewer):
         connect_float_edit(cl, 'xmax', ui.xmax)
         connect_bool_button(cl, 'xlog', ui.xlog_box)
         connect_bool_button(cl, 'ylog', ui.ylog_box)
-
-    def make_toolbar(self):
-        result = MatplotlibViewerToolbar(self.central_widget.canvas, self,
-                             name='Histogram')
-        for mode in self._mouse_modes():
-            result.add_mode(mode)
-        self.addToolBar(result)
-        return result
-
-    def _mouse_modes(self):
-        axes = self.client.axes
-
-        def apply_mode(mode):
-            return self.apply_roi(mode.roi())
-
-        rect = HRangeMode(axes, roi_callback=apply_mode)
-        return [rect]
 
     @defer_draw
     def _update_attributes(self):

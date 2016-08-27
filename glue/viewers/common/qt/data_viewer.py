@@ -29,6 +29,9 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
     LABEL = 'Override this'
 
+    _toolbar_cls = None
+    modes = []
+
     def __init__(self, session, parent=None):
         """
         :type session: :class:`~glue.core.Session`
