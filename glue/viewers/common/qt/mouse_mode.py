@@ -299,18 +299,9 @@ class RectangleMode(RoiMode):
         self._roi_tool = qt_roi.QtRectangularROI(self._axes)
 
 
-@toolbar_mode
 class PathMode(ClickRoiMode):
 
     persistent = True
-
-    icon = 'glue_slice'
-    mode_id = 'Slice'
-    action_text = 'Slice Extraction'
-    tool_tip = ('Extract a slice from an arbitrary path\n'
-                '  ENTER accepts the path\n'
-                '  ESCAPE clears the path')
-    shortcut = 'P'
 
     def __init__(self, viewer, **kwargs):
         super(PathMode, self).__init__(viewer, **kwargs)

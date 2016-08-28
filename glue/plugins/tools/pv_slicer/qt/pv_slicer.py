@@ -5,24 +5,33 @@ import numpy as np
 from glue.viewers.common.qt.mouse_mode import PathMode
 from glue.viewers.image.qt import StandaloneImageWidget
 from glue.viewers.common.qt.mpl_widget import defer_draw
+from glue.external.echo import add_callback
+from glue.config import toolbar_mode
 
 
-class PVSlicerTool(object):
+@toolbar_mode
+class PVSlicerMode(PathMode):
 
-    def __init__(self, widget=None):
-        self.widget = widget
+    icon = 'glue_slice'
+    mode_id = 'Slice'
+    action_text = 'Slice Extraction'
+    tool_tip = ('Extract a slice from an arbitrary path\n'
+                '  ENTER accepts the path\n'
+                '  ESCAPE clears the path')
+    shortcut = 'P'
+
+    def __init__(self, viewer, **kwargs):
+        super(PVSlicerMode, self).__init__(viewer, **kwargs)
+        add_callback(viewer.client, 'display_data', self._display_data_hook)
+        self._roi_callback = self._extract_callback
         self._slice_widget = None
-
-    def _get_modes(self, axes):
-        self._path = PathMode(axes, roi_callback=self._extract_callback)
-        return [self._path]
-
-    def _clear_path(self):
-        self._path.clear()
 
     def _display_data_hook(self, data):
         if data is not None:
-            self._path.enabled = data.ndim > 2
+            self.enabled = data.ndim > 2
+
+    def _clear_path(self):
+        self.clear()
 
     def _extract_callback(self, mode):
         """
@@ -32,22 +41,27 @@ class PVSlicerTool(object):
         self._build_from_vertices(vx, vy)
 
     def _build_from_vertices(self, vx, vy):
-        pv_slice, x, y, wcs = _slice_from_path(vx, vy, self.widget.data, self.widget.attribute, self.widget.slice)
+        pv_slice, x, y, wcs = _slice_from_path(vx, vy, self.viewer.data,
+                                               self.viewer.attribute,
+                                               self.viewer.slice)
         if self._slice_widget is None:
-            self._slice_widget = PVSliceWidget(image=pv_slice, wcs=wcs, image_client=self.widget.client,
+            self._slice_widget = PVSliceWidget(image=pv_slice, wcs=wcs,
+                                               image_client=self.viewer.client,
                                                x=x, y=y, interpolation='nearest')
-            self.widget._session.application.add_widget(self._slice_widget,
+            self.viewer._session.application.add_widget(self._slice_widget,
                                                         label='Custom Slice')
             self._slice_widget.window_closed.connect(self._clear_path)
         else:
-            self._slice_widget.set_image(image=pv_slice, wcs=wcs, x=x, y=y, interpolation='nearest')
+            self._slice_widget.set_image(image=pv_slice, wcs=wcs,
+                                         x=x, y=y, interpolation='nearest')
 
         result = self._slice_widget
         result.axes.set_xlabel("Position Along Slice")
-        result.axes.set_ylabel(_slice_label(self.widget.data, self.widget.slice))
+        result.axes.set_ylabel(_slice_label(self.viewer.data, self.viewer.slice))
 
         result.show()
 
+    # TODO: figure out where to put close - a mode method?
     def close(self):
         # close the tool widget
         if self._slice_widget:
@@ -75,6 +89,9 @@ class PVSliceWidget(StandaloneImageWidget):
         self.axes.format_coord = self._format_coord
         self._x = x
         self._y = y
+
+    def _make_toolbar(self):
+        pass
 
     def _format_coord(self, x, y):
         """
