@@ -1,6 +1,8 @@
 # The classes in this file define toolbar modes. Mouse modes specifically
 # are defined in mouse_modes.py
 
+from glue.utils import nonpartial
+
 __all__ = ['Mode', 'NonCheckableMode', 'CheckableMode']
 
 
@@ -25,6 +27,7 @@ class Mode(object):
 
     def __init__(self, viewer=None):
         self.viewer = viewer
+        self.viewer.window_closed.connect(nonpartial(self.close))
 
     def menu_actions(self):
         """
@@ -32,6 +35,9 @@ class Mode(object):
         as a context menu.
         """
         return []
+
+    def close(self):
+        pass
 
 
 class NonCheckableMode(Mode):

@@ -130,15 +130,19 @@ class _TestImageWidgetBase(object):
         return [combo.itemText(i) for i in range(combo.count())]
 
     def test_plugins_closed_when_viewer_closed(self):
+
         # Regression test for #518
         self.widget.add_data(self.im)
 
-        tool = self.widget._tools[0]
-        tool.close = MagicMock()
+        modes = []
+        for mode_id, mode in self.widget.toolbar.modes.items():
+            mode.close = MagicMock()
+            modes.append(mode)
 
         self.widget.close()
 
-        assert tool.close.call_count == 1
+        for mode in modes:
+            assert mode.close.call_count == 1
 
 
 class TestImageWidget(_TestImageWidgetBase):

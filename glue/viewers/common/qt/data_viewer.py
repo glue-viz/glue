@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from qtpy.QtCore import Qt
-from qtpy import QtWidgets
+from qtpy import QtCore, QtWidgets
 from glue.core.application_base import ViewerBase
 from glue.core.qt.layer_artist_model import QtLayerArtistContainer, LayerArtistWidget
 from glue.utils.qt import get_qapp
@@ -24,6 +24,9 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
        * An automatic call to unregister on window close
        * Drag and drop support for adding data
     """
+
+    window_closed = QtCore.Signal()
+
     _layer_artist_container_cls = QtLayerArtistContainer
     _layer_style_widget_cls = None
 
@@ -165,6 +168,8 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
         super(DataViewer, self).closeEvent(event)
         event.accept()
+
+        self.window_closed.emit()
 
     def _confirm_close(self):
         """Ask for close confirmation

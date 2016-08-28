@@ -17,8 +17,8 @@ else:
 
 class HomeMode(NonCheckableMode):
 
-    def __init__(self, toolbar=None):
-        super(HomeMode, self).__init__()
+    def __init__(self, viewer, toolbar=None):
+        super(HomeMode, self).__init__(viewer=viewer)
         self.mode_id = 'HOME'
         self.icon = get_icon('glue_home')
         self.action_text = 'Home'
@@ -33,8 +33,8 @@ class HomeMode(NonCheckableMode):
 
 class SaveMode(NonCheckableMode):
 
-    def __init__(self, toolbar=None):
-        super(SaveMode, self).__init__()
+    def __init__(self, viewer, toolbar=None):
+        super(SaveMode, self).__init__(viewer=viewer)
         self.mode_id = 'SAVE'
         self.icon = get_icon('glue_filesave')
         self.action_text = 'Save'
@@ -48,8 +48,8 @@ class SaveMode(NonCheckableMode):
 
 class BackMode(NonCheckableMode):
 
-    def __init__(self, toolbar=None):
-        super(BackMode, self).__init__()
+    def __init__(self, viewer, toolbar=None):
+        super(BackMode, self).__init__(viewer=viewer)
         self.mode_id = 'BACK'
         self.icon = get_icon('glue_back')
         self.action_text = 'Back'
@@ -62,8 +62,8 @@ class BackMode(NonCheckableMode):
 
 class ForwardMode(NonCheckableMode):
 
-    def __init__(self, toolbar=None):
-        super(ForwardMode, self).__init__()
+    def __init__(self, viewer, toolbar=None):
+        super(ForwardMode, self).__init__(viewer=viewer)
         self.mode_id = 'FORWARD'
         self.icon = get_icon('glue_forward')
         self.action_text = 'Forward'
@@ -76,8 +76,8 @@ class ForwardMode(NonCheckableMode):
 
 class PanMode(CheckableMode):
 
-    def __init__(self, toolbar=None):
-        super(PanMode, self).__init__()
+    def __init__(self, viewer, toolbar=None):
+        super(PanMode, self).__init__(viewer=viewer)
         self.mode_id = 'PAN'
         self.icon = get_icon('glue_move')
         self.action_text = 'Pan'
@@ -94,8 +94,8 @@ class PanMode(CheckableMode):
 
 class ZoomMode(CheckableMode):
 
-    def __init__(self, toolbar=None):
-        super(ZoomMode, self).__init__()
+    def __init__(self, viewer, toolbar=None):
+        super(ZoomMode, self).__init__(viewer=viewer)
         self.mode_id = 'ZOOM'
         self.icon = get_icon('glue_zoom_to_rect')
         self.action_text = 'Zoom'
@@ -130,22 +130,22 @@ class MatplotlibViewerToolbar(BasicToolbar):
         # Set up default Matplotlib Modes - this gets called by the __init__
         # call to the parent class above.
 
-        home_mode = HomeMode(toolbar=self._mpl_nav)
+        home_mode = HomeMode(self.parent(), toolbar=self._mpl_nav)
         self.add_mode(home_mode)
 
-        save_mode = SaveMode(toolbar=self._mpl_nav)
+        save_mode = SaveMode(self.parent(), toolbar=self._mpl_nav)
         self.add_mode(save_mode)
 
-        back_mode = BackMode(toolbar=self._mpl_nav)
+        back_mode = BackMode(self.parent(), toolbar=self._mpl_nav)
         self.add_mode(back_mode)
 
-        forward_mode = ForwardMode(toolbar=self._mpl_nav)
+        forward_mode = ForwardMode(self.parent(), toolbar=self._mpl_nav)
         self.add_mode(forward_mode)
 
-        pan_mode = PanMode(toolbar=self._mpl_nav)
+        pan_mode = PanMode(self.parent(), toolbar=self._mpl_nav)
         self.add_mode(pan_mode)
 
-        zoom_mode = ZoomMode(toolbar=self._mpl_nav)
+        zoom_mode = ZoomMode(self.parent(), toolbar=self._mpl_nav)
         self.add_mode(zoom_mode)
 
         self._connections = []

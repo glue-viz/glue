@@ -717,6 +717,10 @@ class SpectrumExtractorMode(RoiMode):
                                         edgewidth=3,
                                         alpha=1.0)
 
+    def close(self):
+        self._tool.close()
+        return super(SpectrumExtractorMode, self).close()
+
 # TODO: refactor this so that we don't have a separate tool and mode
 
 

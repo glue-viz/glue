@@ -61,11 +61,10 @@ class PVSlicerMode(PathMode):
 
         result.show()
 
-    # TODO: figure out where to put close - a mode method?
     def close(self):
-        # close the tool widget
         if self._slice_widget:
             self._slice_widget.close()
+        return super(PVSlicerMode, self).close()
 
 
 class PVSliceWidget(StandaloneImageWidget):
