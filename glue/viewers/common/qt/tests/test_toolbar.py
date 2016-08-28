@@ -34,9 +34,11 @@ class TestToolbar(object):
     def setup_method(self, method):
         self.win = QtWidgets.QMainWindow()
         widget, axes = self._make_plot_widget(self.win)
+        self.win.setCentralWidget(widget)
+        self.win.central_widget = widget
         self.canvas = widget.canvas
         self.axes = axes
-        self.tb = MatplotlibViewerToolbar(self.canvas, self.win)
+        self.tb = MatplotlibViewerToolbar(self.win)
         self.mode = MouseModeTest(self.axes, release_callback=self.callback)
         self.tb.add_mode(self.mode)
         self.win.addToolBar(self.tb)

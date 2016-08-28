@@ -1,9 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import sys
-import os.path
-
-import numpy as np
 from ginga.misc import log
 from ginga import toolkit
 try:
@@ -12,33 +8,19 @@ try:
 except ImportError:
     # older versions of ginga
     from ginga.qtw import ColorBar
-from ginga import cmap as ginga_cmap
 from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
 
-from qtpy.QtCore import Qt
-from qtpy import QtCore, QtWidgets, QtGui
-from glue.core.callback_property import add_callback
-from glue.core import roi as roimod
-from glue.config import tool_registry
-from glue.plugins.ginga_viewer.qt.client import GingaClient
-from glue.plugins.tools.spectrum_tool.qt import SpectrumTool
-from glue.icons.qt import get_icon
-from glue.viewers.image.qt import ImageWidgetBase
-from glue.utils import nonpartial
+from qtpy import QtWidgets
 
-from glue.plugins.tools.pv_slicer.qt import PVSlicerTool
+from glue.plugins.ginga_viewer.qt.client import GingaClient
+from glue.viewers.image.qt import ImageWidgetBase
+from glue.viewers.common.qt.toolbar import BasicToolbar
+from glue.plugins.ginga_viewer.qt.utils import ginga_graphic_to_roi
 
 try:
     from ginga.gw import Readout
 except ImportError:  # older versions of ginga
     from ginga.qtw import Readout
-
-# ginga_cmap.add_matplotlib_cmaps()
-
-
-# Find out location of ginga module so we can some of its icons
-ginga_home = os.path.split(sys.modules['ginga'].__file__)[0]
-ginga_icon_dir = os.path.join(ginga_home, 'icons')
 
 __all__ = ['GingaWidget']
 
@@ -46,6 +28,11 @@ __all__ = ['GingaWidget']
 class GingaWidget(ImageWidgetBase):
 
     LABEL = "Ginga Viewer"
+
+    _toolbar_cls = BasicToolbar
+    modes = ['Ginga rectangle', 'Ginga circle', 'Ginga polygon', 'Ginga pan',
+             'Ginga free pan', 'Ginga rotate', 'Ginga contrast', 'Ginga cuts',
+             'Ginga colormap', 'Ginga slicer', 'Ginga spectrum']
 
     def __init__(self, session, parent=None):
 
@@ -98,6 +85,8 @@ class GingaWidget(ImageWidgetBase):
 
         super(GingaWidget, self).__init__(session, parent)
 
+        self._make_toolbar()
+
     def make_client(self):
         return GingaClient(self._data, self.viewer, self._layer_artist_container)
 
@@ -133,69 +122,6 @@ class GingaWidget(ImageWidgetBase):
     def cut_levels_cb(self, setting, tup):
         (loval, hival) = tup
         self.colorbar.set_range(loval, hival)
-
-    def make_toolbar(self):
-        tb = QtWidgets.QToolBar(parent=self)
-        tb.setIconSize(QtCore.QSize(25, 25))
-        tb.layout().setSpacing(1)
-        tb.setFocusPolicy(Qt.StrongFocus)
-
-        agroup = QtWidgets.QActionGroup(tb)
-        agroup.setExclusive(True)
-        for (mode_text, mode_icon, mode_cb) in self._mouse_modes():
-            # TODO: add icons similar to the Matplotlib toolbar
-            action = tb.addAction(mode_icon, mode_text)
-            action.setCheckable(True)
-            action.toggled.connect(mode_cb)
-            agroup.addAction(action)
-
-        action = tb.addAction(get_icon('glue_move'), "Pan")
-        self.mode_actns['pan'] = action
-        action.setCheckable(True)
-        action.toggled.connect(lambda tf: self.mode_cb('pan', tf))
-        agroup.addAction(action)
-        icon = QtGui.QIcon(os.path.join(ginga_icon_dir, 'hand_48.png'))
-        action = tb.addAction(icon, "Free Pan")
-        self.mode_actns['freepan'] = action
-        action.setCheckable(True)
-        action.toggled.connect(lambda tf: self.mode_cb('freepan', tf))
-        agroup.addAction(action)
-        icon = QtGui.QIcon(os.path.join(ginga_icon_dir, 'rotate_48.png'))
-        action = tb.addAction(icon, "Rotate")
-        self.mode_actns['rotate'] = action
-        action.setCheckable(True)
-        action.toggled.connect(lambda tf: self.mode_cb('rotate', tf))
-        agroup.addAction(action)
-        action = tb.addAction(get_icon('glue_contrast'), "Contrast")
-        self.mode_actns['contrast'] = action
-        action.setCheckable(True)
-        action.toggled.connect(lambda tf: self.mode_cb('contrast', tf))
-        agroup.addAction(action)
-        icon = QtGui.QIcon(os.path.join(ginga_icon_dir, 'cuts_48.png'))
-        action = tb.addAction(icon, "Cuts")
-        self.mode_actns['cuts'] = action
-        action.setCheckable(True)
-        action.toggled.connect(lambda tf: self.mode_cb('cuts', tf))
-        agroup.addAction(action)
-
-        cmap_w = _colormap_mode(self, self.client.set_cmap)
-        tb.addWidget(cmap_w)
-        return tb
-
-    def _mouse_modes(self):
-        modes = []
-        modes.append(("Rectangle", get_icon('glue_square'),
-                      lambda tf: self._set_roi_mode('rectangle', tf)))
-        modes.append(("Circle", get_icon('glue_circle'),
-                      lambda tf: self._set_roi_mode('circle', tf)))
-        modes.append(("Polygon", get_icon('glue_lasso'),
-                      lambda tf: self._set_roi_mode('polygon', tf)))
-
-        for tool in self._tools:
-            modes += tool._get_modes(self.viewer)
-            add_callback(self.client, 'display_data', tool._display_data_hook)
-
-        return modes
 
     def _set_roi_mode(self, name, tf):
         self.canvas.enable_draw(True)
@@ -283,165 +209,3 @@ class GingaWidget(ImageWidgetBase):
             self.mode_w.setChecked(False)
             self.mode_w = None
         return True
-
-
-class ColormapAction(QtWidgets.QAction):
-
-    def __init__(self, label, cmap, parent):
-        super(ColormapAction, self).__init__(label, parent)
-        self.cmap = cmap
-        pm = cmap2pixmap(cmap)
-        self.setIcon(QtGui.QIcon(pm))
-
-
-def _colormap_mode(parent, on_trigger):
-
-    # actions for each colormap
-    acts = []
-    # for label, cmap in config.colormaps:
-    for label in ginga_cmap.get_names():
-        cmap = ginga_cmap.get_cmap(label)
-        a = ColormapAction(label, cmap, parent)
-        a.triggered.connect(nonpartial(on_trigger, cmap))
-        acts.append(a)
-
-    # Toolbar button
-    tb = QtWidgets.QToolButton()
-    tb.setWhatsThis("Set color scale")
-    tb.setToolTip("Set color scale")
-    icon = get_icon('glue_rainbow')
-    tb.setIcon(icon)
-    tb.setPopupMode(QtWidgets.QToolButton.InstantPopup)
-    tb.addActions(acts)
-
-    return tb
-
-
-def ginga_graphic_to_roi(obj):
-    if obj.kind == 'rectangle':
-        roi = roimod.RectangularROI(xmin=obj.x1, xmax=obj.x2,
-                                    ymin=obj.y1, ymax=obj.y2)
-    elif obj.kind == 'circle':
-        roi = roimod.CircularROI(xc=obj.x, yc=obj.y,
-                                 radius=obj.radius)
-    elif obj.kind == 'polygon':
-        vx = map(lambda xy: xy[0], obj.points)
-        vy = map(lambda xy: xy[1], obj.points)
-        roi = roimod.PolygonalROI(vx=vx, vy=vy)
-
-    else:
-        raise Exception("Don't know how to convert shape '%s' to a ROI" % (
-            obj.kind))
-
-    return roi
-
-
-class GingaTool(object):
-    label = None
-    icon = None
-    shape = 'polygon'
-    color = 'red'
-    linestyle = 'solid'
-
-    def __init__(self, canvas):
-        self.parent_canvas = canvas
-        self._shape_tag = None
-
-        self.parent_canvas.add_callback('draw-event', self._extract_callback)
-        self.parent_canvas.add_callback('draw-down', self._clear_shape_cb)
-
-    def _get_modes(self, canvas):
-        return [(self.label, get_icon(self.icon), self._set_path_mode)]
-
-    def _display_data_hook(self, data):
-        # XXX need access to mode here
-        pass
-
-    def _set_path_mode(self, enable):
-        self.parent_canvas.enable_draw(True)
-        self.parent_canvas.draw_context = self
-
-        self.parent_canvas.set_drawtype(self.shape, color=self.color, linestyle=self.linestyle)
-        bm = self.parent_canvas.get_bindmap()
-        bm.set_mode('draw', mode_type='locked')
-
-    def _clear_shape_cb(self, *args):
-        try:
-            self.parent_canvas.deleteObjectByTag(self._shape_tag)
-        except:
-            pass
-
-    _clear_path = _clear_shape_cb
-
-
-class GingaPVSlicer(GingaTool, PVSlicerTool):
-    label = 'PV Slicer'
-    icon = 'glue_slice'
-    shape = 'path'
-
-    def __init__(self, widget=None):
-        GingaTool.__init__(self, widget.canvas)
-        PVSlicerTool.__init__(self, widget)
-
-    def _extract_callback(self, canvas, tag):
-        if self.parent_canvas.draw_context is not self:
-            return
-
-        self._shape_tag = tag
-        obj = self.parent_canvas.getObjectByTag(tag)
-        vx, vy = zip(*obj.points)
-        return self._build_from_vertices(vx, vy)
-
-
-class GingaSpectrumTool(GingaTool, SpectrumTool):
-    label = 'Spectrum'
-    icon = 'glue_spectrum'
-    shape = 'rectangle'
-
-    def __init__(self, widget=None):
-        GingaTool.__init__(self, widget.canvas)
-        SpectrumTool.__init__(self, widget)
-
-    def _extract_callback(self, canvas, tag):
-        if self.parent_canvas.draw_context is not self:
-            return
-
-        self._shape_tag = tag
-        obj = self.parent_canvas.getObjectByTag(tag)
-        roi = ginga_graphic_to_roi(obj)
-        return self._update_from_roi(roi)
-
-    def _setup_mouse_mode(self):
-        # XXX fix this ugliness
-        class Dummy:
-
-            def clear(self):
-                pass
-        return Dummy()
-
-# tool_registry.add(GingaPVSlicer, GingaWidget)
-# tool_registry.add(GingaSpectrumTool, GingaWidget)
-
-
-def cmap2pixmap(cmap, steps=50):
-    """Convert a Ginga colormap into a QtGui.QPixmap
-
-    :param cmap: The colormap to use
-    :type cmap: Ginga colormap instance (e.g. ginga.cmap.get_cmap('gray'))
-    :param steps: The number of color steps in the output. Default=50
-    :type steps: int
-
-    :rtype: QtGui.QPixmap
-    """
-    inds = np.linspace(0, 1, steps)
-    n = len(cmap.clst) - 1
-    tups = [cmap.clst[int(x * n)] for x in inds]
-    rgbas = [QtGui.QColor(int(r * 255), int(g * 255),
-                          int(b * 255), 255).rgba() for r, g, b in tups]
-    im = QtGui.QImage(steps, 1, QtGui.QImage.Format_Indexed8)
-    im.setColorTable(rgbas)
-    for i in range(steps):
-        im.setPixel(i, 0, i)
-    im = im.scaled(128, 32)
-    pm = QtGui.QPixmap.fromImage(im)
-    return pm

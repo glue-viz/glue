@@ -211,7 +211,7 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
         from glue.config import toolbar_mode
 
-        self.toolbar = self._toolbar_cls(self, name=self.LABEL)
+        self.toolbar = self._toolbar_cls(self)
 
         for mode_id in self.modes:
             mode_cls = toolbar_mode.members[mode_id]

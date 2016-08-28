@@ -497,6 +497,9 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
         if image is not None:
             self.set_image(image=image, wcs=wcs, **kwargs)
 
+    def _make_toolbar(self):
+        pass
+
     def _setup_axes(self):
         from glue.viewers.common.viz_client import init_mpl
         _, self._axes = init_mpl(self.central_widget.canvas.fig, axes=None, wcs=True)

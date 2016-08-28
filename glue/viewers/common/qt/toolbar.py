@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
-from qtpy import QtCore, QtWidgets
+import os
+from qtpy import QtCore, QtGui, QtWidgets
 from qtpy.QtCore import Qt
 from glue.external import six
 from glue.core.callback_property import add_callback
@@ -87,7 +88,10 @@ class BasicToolbar(QtWidgets.QToolBar):
         parent = QtWidgets.QToolBar.parent(self)
 
         if isinstance(mode.icon, six.string_types):
-            icon = get_icon(mode.icon)
+            if os.path.exists(mode.icon):
+                icon = QtGui.QIcon(mode.icon)
+            else:
+                icon = get_icon(mode.icon)
         else:
             icon = mode.icon
 

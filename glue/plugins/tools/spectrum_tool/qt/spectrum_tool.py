@@ -733,7 +733,7 @@ class SpectrumTool(object):
     *collapse context* lets the users collapse a section of a cube to a 2D image
     """
 
-    def __init__(self, image_widget, mouse_mode=None):
+    def __init__(self, image_widget, mouse_mode):
         self._relim_requested = True
 
         self.image_widget = image_widget

@@ -115,7 +115,7 @@ class MatplotlibViewerToolbar(BasicToolbar):
     pan_begin = QtCore.Signal()
     pan_end = QtCore.Signal()
 
-    def __init__(self, parent, name=None):
+    def __init__(self, parent):
 
         self.canvas = parent.central_widget.canvas
 
