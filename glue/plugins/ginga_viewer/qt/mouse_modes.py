@@ -226,7 +226,7 @@ class GingaSpectrumMode(GingaMode, SpectrumTool):
     shape = 'rectangle'
 
     def __init__(self, widget=None):
-        GingaMode.__init__(self, widget.canvas)
+        GingaMode.__init__(self, widget)
         SpectrumTool.__init__(self, widget, self)
         self._release_callback = self._update_profile
         self._move_callback = self._move_profile
