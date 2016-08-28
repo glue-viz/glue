@@ -45,12 +45,8 @@ class BaseTestSpectrumTool(object):
         self.image.add_data(self.data)
         self.image.data = self.data
         self.image.attribute = self.data.id['x']
-        for tool in self.image._tools:
-            if isinstance(tool, SpectrumTool):
-                self.tool = tool
-                break
-        else:
-            raise Exception("SpectrumTool not found")
+        self.mode = self.image.toolbar.modes['Spectrum']
+        self.tool = self.mode._tool
         self.tool.show = lambda *args: None
 
 

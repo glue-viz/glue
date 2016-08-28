@@ -385,33 +385,6 @@ class ImageWidget(ImageWidgetBase):
         self.toolbar.buttons['FORWARD'].triggered.connect(nonpartial(cl.check_update))
         self.toolbar.buttons['BACK'].triggered.connect(nonpartial(cl.check_update))
 
-    # def _mouse_modes(self):
-    #
-    #     axes = self.client.axes
-    #
-    #     def apply_mode(mode):
-    #         for roi_mode in roi_modes:
-    #             if roi_mode != mode:
-    #                 roi_mode._roi_tool.reset()
-    #         self.apply_roi(mode.roi())
-    #
-    #     rect = RectangleMode(axes, roi_callback=apply_mode)
-    #     circ = CircleMode(axes, roi_callback=apply_mode)
-    #     poly = PolyMode(axes, roi_callback=apply_mode)
-    #     roi_modes = [rect, circ, poly]
-    #
-    #     contrast = ContrastMode(axes, move_callback=self._set_norm)
-    #
-    #     self._contrast = contrast
-    #
-    #     # Get modes from tools
-    #     tool_modes = []
-    #     for tool in self._tools:
-    #         tool_modes += tool._get_modes(axes)
-    #         add_callback(self.client, 'display_data', tool._display_data_hook)
-    #
-    #     return [rect, circ, poly, contrast] + tool_modes
-
     def paintEvent(self, event):
         super(ImageWidget, self).paintEvent(event)
         pos = self.central_widget.canvas.mapFromGlobal(QtGui.QCursor.pos())
