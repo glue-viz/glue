@@ -89,6 +89,7 @@ def test_auto_exec():
     check_exec('glueqt test.py', 'test.py')
 
 
+@requires_qt
 def test_exec_real(tmpdir):
     # Actually test the script execution functionlity
     filename = tmpdir.join('test.py').strpath
@@ -98,6 +99,7 @@ def test_exec_real(tmpdir):
         with patch('sys.exit') as exit:
             main('glue -x {0}'.format(os.path.abspath(filename)).split())
     assert exit.called_once_with(0)
+
 
 @pytest.mark.parametrize(('cmd'), ['glueqt -g test.glu test.fits',
                                    'glueqt -g test.py test.fits',
