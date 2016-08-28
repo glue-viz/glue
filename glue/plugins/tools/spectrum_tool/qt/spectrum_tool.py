@@ -14,10 +14,10 @@ from glue.core.aggregate import Aggregate
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core import Subset
 from glue.core.callback_property import add_callback, ignore_callback
-from glue.config import fit_plugin
+from glue.config import fit_plugin, toolbar_mode
 from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
 from glue.core.qt.mime import LAYERS_MIME_TYPE
-from glue.viewers.common.qt.mouse_mode import SpectrumExtractorMode
+from glue.viewers.common.qt.mouse_mode import RoiMode
 from glue.utils.qt import load_ui
 from glue.core.qt.simpleforms import build_form_item
 from glue.utils.qt.widget_properties import CurrentComboProperty
@@ -27,7 +27,7 @@ from glue.utils import nonpartial, Pointer
 from glue.utils.qt import Worker, messagebox_on_error
 from glue.core import roi as core_roi
 from glue.core.subset import RoiSubsetState
-
+from glue.core.qt import roi as qt_roi
 from .profile_viewer import ProfileViewer
 
 
@@ -657,6 +657,69 @@ class SpectrumMainWindow(QtWidgets.QMainWindow):
             self.subset_dropped.emit(layer)
 
 
+@toolbar_mode
+class SpectrumExtractorMode(RoiMode):
+
+    """
+    Lets the user select a region in an image and, when connected to a
+    SpectrumExtractorTool, uses this to display spectra extracted from that
+    position
+    """
+    persistent = True
+
+    icon = 'glue_spectrum'
+    mode_id = 'Spectrum'
+    action_text = 'Spectrum'
+    tool_tip = 'Extract a spectrum from the selection'
+    shortcut = 'S'
+
+    def __init__(self, viewer, **kwargs):
+        super(SpectrumExtractorMode, self).__init__(viewer, **kwargs)
+        self._roi_tool = qt_roi.QtRectangularROI(self._axes)  # default
+        self._tool = SpectrumTool(self.viewer, self)
+        self._release_callback = self._tool._update_profile
+        self._move_callback = self._tool._move_profile
+
+    def menu_actions(self):
+
+        result = []
+
+        a = QtWidgets.QAction('Rectangle', None)
+        a.triggered.connect(nonpartial(self.set_roi_tool, 'Rectangle'))
+        result.append(a)
+
+        a = QtWidgets.QAction('Circle', None)
+        a.triggered.connect(nonpartial(self.set_roi_tool, 'Circle'))
+        result.append(a)
+
+        a = QtWidgets.QAction('Polygon', None)
+        a.triggered.connect(nonpartial(self.set_roi_tool, 'Polygon'))
+        result.append(a)
+
+        for r in result:
+            if self._move_callback is not None:
+                r.triggered.connect(nonpartial(self._move_callback, self))
+
+        return result
+
+    def set_roi_tool(self, mode):
+        if mode is 'Rectangle':
+            self._roi_tool = qt_roi.QtRectangularROI(self._axes)
+
+        if mode is 'Circle':
+            self._roi_tool = qt_roi.QtCircularROI(self._axes)
+
+        if mode is 'Polygon':
+            self._roi_tool = qt_roi.QtPolygonalROI(self._axes)
+
+        self._roi_tool.plot_opts.update(edgecolor='#c51b7d',
+                                        facecolor=None,
+                                        edgewidth=3,
+                                        alpha=1.0)
+
+# TODO: refactor this so that we don't have a separate tool and mode
+
+
 class SpectrumTool(object):
 
     """
@@ -670,7 +733,7 @@ class SpectrumTool(object):
     *collapse context* lets the users collapse a section of a cube to a 2D image
     """
 
-    def __init__(self, image_widget):
+    def __init__(self, image_widget, mouse_mode=None):
         self._relim_requested = True
 
         self.image_widget = image_widget
@@ -680,7 +743,7 @@ class SpectrumTool(object):
         self.profile = ProfileViewer(self.canvas.fig)
         self.axes = self.profile.axes
 
-        self.mouse_mode = self._setup_mouse_mode()
+        self.mouse_mode = mouse_mode
         self._setup_toolbar()
 
         self._setup_ctxbar()
@@ -726,6 +789,10 @@ class SpectrumTool(object):
 
         self.widget.setCentralWidget(w)
 
+        # TODO: fix hacks
+        w.canvas = self.canvas
+        self.widget.central_widget = w
+
     def _setup_ctxbar(self):
         l = self.widget.centralWidget().layout()
         self._contexts = [NavContext(self),
@@ -757,15 +824,9 @@ class SpectrumTool(object):
 
         self.widget.subset_dropped.connect(self._extract_subset_profile)
 
-    def _setup_mouse_mode(self):
-        # This will be added to the ImageWidget's toolbar
-        mode = SpectrumExtractorMode(self.image_widget,
-                                     release_callback=self._update_profile,
-                                     move_callback=self._move_profile)
-        return mode
-
     def _setup_toolbar(self):
-        tb = MatplotlibViewerToolbar(self.canvas, self.widget)
+
+        tb = MatplotlibViewerToolbar(self.widget)
 
         # disable ProfileViewer mouse processing during mouse modes
         tb.mode_activated.connect(self.profile.disconnect)
