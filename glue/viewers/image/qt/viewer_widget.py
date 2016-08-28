@@ -411,6 +411,9 @@ class ImageWidget(ImageWidgetBase):
         self.ui.rgb_options.current_changed.connect(lambda: self._toolbars[0].set_mode(self._contrast))
         self.central_widget.canvas.resize_end.connect(self.client.check_update)
 
+    def set_cmap(self, cmap):
+        self.client.set_cmap(cmap)
+
 
 class ColormapAction(QtWidgets.QAction):
 
@@ -434,11 +437,9 @@ class ColormapMode(NonCheckableMode):
         acts = []
         for label, cmap in config.colormaps:
             a = ColormapAction(label, cmap, self.viewer)
-            a.triggered.connect(nonpartial(self.viewer.client.set_cmap, cmap))
+            a.triggered.connect(nonpartial(self.viewer.set_cmap, cmap))
             acts.append(a)
         return acts
-
-    # tb.setPopupMode(QtWidgets.QToolButton.InstantPopup)
 
 
 class StandaloneImageWidget(QtWidgets.QMainWindow):
@@ -448,6 +449,8 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
     but with the ability to adjust contrast and resample.
     """
     window_closed = QtCore.Signal()
+    _toolbar_cls = MatplotlibViewerToolbar
+    modes = ['Contrast', 'COLORMAP']
 
     def __init__(self, image=None, wcs=None, parent=None, **kwargs):
         """
@@ -470,8 +473,6 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
         if image is not None:
             self.set_image(image=image, wcs=wcs, **kwargs)
 
-    def _make_toolbar(self):
-        pass
 
     def _setup_axes(self):
         from glue.viewers.common.viz_client import init_mpl
@@ -509,7 +510,7 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
     def _redraw(self):
         self.central_widget.canvas.draw()
 
-    def _set_cmap(self, cmap):
+    def set_cmap(self, cmap):
         self._im.set_cmap(cmap)
         self._redraw()
 
@@ -546,15 +547,6 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
         self._im.set_norm(self._norm)
         self._redraw()
 
-    def make_toolbar(self):
-        """
-        Setup the toolbar
-        """
-        result = MatplotlibViewerToolbar(self.central_widget.canvas, self,
-                             name='Image')
-        result.add_mode(ContrastMode(self._axes, move_callback=self._set_norm))
-        cm = _colormap_mode(self, self._set_cmap)
-        result.addWidget(cm)
-        self._cmap_actions = cm.actions()
-        self.addToolBar(result)
-        return result
+    def _make_toolbar(self):
+        DataViewer._make_toolbar(self)
+        self.toolbar.modes['Contrast']._move_callback = self._set_norm
