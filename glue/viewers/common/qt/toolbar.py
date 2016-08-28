@@ -124,7 +124,7 @@ class BasicToolbar(QtWidgets.QToolBar):
                 ma.setParent(self)
                 menu.addAction(ma)
             action.setMenu(menu)
-            menu.triggered.connect(nonpartial(toggle))
+            menu.triggered.connect(trigger)
 
         self.addAction(action)
 
