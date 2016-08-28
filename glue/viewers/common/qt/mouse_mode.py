@@ -56,7 +56,8 @@ class MouseMode(CheckableMode):
                  release_callback=None,
                  key_callback=None):
 
-        self.viewer = viewer
+        super(MouseMode, self).__init__(viewer)
+
         self._axes = viewer.axes
         self._press_callback = press_callback
         self._move_callback = move_callback
