@@ -106,11 +106,14 @@ def test_freeze_margins():
     ax = fig.add_subplot(1, 1, 1)
     freeze_margins(ax, margins=[1, 1, 1, 1])
 
-    bbox = ax.get_position()
-    np.testing.assert_allclose(bbox.x0, 0.125)
-    np.testing.assert_allclose(bbox.y0, 0.1)
-    np.testing.assert_allclose(bbox.x1, 0.9)
-    np.testing.assert_allclose(bbox.y1, 0.9)
+    # Note, we don't test the following since the defaults change depending
+    # on the Matplotlib version
+
+    # bbox = ax.get_position()
+    # np.testing.assert_allclose(bbox.x0, 0.125)
+    # np.testing.assert_allclose(bbox.y0, 0.1)
+    # np.testing.assert_allclose(bbox.x1, 0.9)
+    # np.testing.assert_allclose(bbox.y1, 0.9)
 
     fig.canvas.resize_event()
 
