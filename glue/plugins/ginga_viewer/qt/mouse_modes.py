@@ -18,7 +18,6 @@ from glue.plugins.tools.pv_slicer.qt import PVSlicerMode
 GINGA_HOME = os.path.split(sys.modules['ginga'].__file__)[0]
 GINGA_ICON_DIR = os.path.join(GINGA_HOME, 'icons')
 
-print("RUNNING GINGA MODES")
 
 @toolbar_mode
 class RectangleROIMode(CheckableMode):
