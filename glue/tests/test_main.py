@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import os
 import pytest
 from mock import patch
 
@@ -86,6 +87,18 @@ def test_exec():
 
 def test_auto_exec():
     check_exec('glueqt test.py', 'test.py')
+
+
+@requires_qt
+def test_exec_real(tmpdir):
+    # Actually test the script execution functionlity
+    filename = tmpdir.join('test.py').strpath
+    with open(filename, 'w') as f:
+        f.write('a = 1')
+    with patch('glue.utils.qt.QMessageBoxPatched') as qmb:
+        with patch('sys.exit') as exit:
+            main('glue -x {0}'.format(os.path.abspath(filename)).split())
+    assert exit.called_once_with(0)
 
 
 @pytest.mark.parametrize(('cmd'), ['glueqt -g test.glu test.fits',

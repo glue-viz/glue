@@ -27,6 +27,9 @@ v0.8.3 (unreleased)
 * Fixed a bug that caused new subset colors to incorrectly start from the start
   of the color cycle after loading a session. [#1055]
 
+* Fixed a bug that caused the functionality to execute scripts (glue -x) to not
+  work in Python 3. [#1114]
+
 v0.8.2 (2016-07-06)
 -------------------
 
