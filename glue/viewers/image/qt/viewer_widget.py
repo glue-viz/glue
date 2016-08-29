@@ -548,5 +548,24 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
         self._redraw()
 
     def _make_toolbar(self):
-        DataViewer._make_toolbar(self)
+
+        # TODO: remove once Python 2 is no longer supported - see below for
+        #       simpler code.
+
+        from glue.config import toolbar_mode
+
+        self.toolbar = self._toolbar_cls(self)
+
+        for mode_id in self.modes:
+            mode_cls = toolbar_mode.members[mode_id]
+            mode = mode_cls(self)
+            self.toolbar.add_mode(mode)
+
+        self.addToolBar(self.toolbar)
+
         self.toolbar.modes['Contrast']._move_callback = self._set_norm
+
+    # This works in Python 3 but not Python 2
+    # def _make_toolbar(self):
+    #     DataViewer._make_toolbar(self)
+    #     self.toolbar.modes['Contrast']._move_callback = self._set_norm
