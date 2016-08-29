@@ -81,6 +81,22 @@ Viewers
 .. automodapi:: glue.viewers.common.viz_client
    :no-inheritance-diagram:
 
+.. automodapi:: glue.viewers.common.qt.mode
+   :no-inheritance-diagram:
+   :inherited-members:
+
+.. automodapi:: glue.viewers.common.qt.mouse_mode
+   :no-inheritance-diagram:
+   :inherited-members:
+
+.. automodapi:: glue.viewers.common.qt.toolbar
+   :no-inheritance-diagram:
+   :inherited-members:
+
+.. automodapi:: glue.viewers.common.qt.mpl_toolbar
+   :no-inheritance-diagram:
+   :inherited-members:
+
 Utilities
 =========
 
@@ -120,4 +136,6 @@ Utilities
 .. automodapi:: glue.utils.qt.widget_properties
    :no-inheritance-diagram:
 
+.. automodapi:: glue.external.echo
+   :no-inheritance-diagram:
 

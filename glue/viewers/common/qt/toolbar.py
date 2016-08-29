@@ -10,6 +10,8 @@ from glue.viewers.common.qt.mode import CheckableMode, NonCheckableMode
 from glue.config import toolbar_mode
 from glue.icons.qt import get_icon
 
+__all__ = ['BasicToolbar']
+
 
 class BasicToolbar(QtWidgets.QToolBar):
 

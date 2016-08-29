@@ -14,6 +14,9 @@ if PYQT5:
 else:
     from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
 
+__all__ = ['HomeMode', 'SaveMode', 'BackMode', 'ForwardMode', 'PanMode',
+           'ZoomMode', 'MatplotlibViewerToolbar']
+
 
 class HomeMode(NonCheckableMode):
 

@@ -1,20 +1,18 @@
-"""MouseModes define various mouse gestures.
+"""
+MouseModes define various mouse gestures.
 
-The :class:`~glue.viewers.common.qt.toolbar.GlueToolbar` maintains a list of
-MouseModes from the visualization it is assigned to, and sees to it
-that only one MouseMode is active at a time.
+The toolbar maintains a list of MouseModes from the visualization it is
+assigned to, and sees to it that only one MouseMode is active at a time.
 
-Each MouseMode appears as an Icon in the GlueToolbar. Classes can
-assign methods to the press_callback, move_callback, and
-release_callback methods of each Mouse Mode, to implement custom
-functionality
+Each MouseMode appears as an Icon in the toolbar. Classes can assign methods to
+the press_callback, move_callback, and release_callback methods of each Mouse
+Mode, to implement custom functionality
 
 The basic usage pattern is thus:
  * visualization object instantiates the MouseModes it wants
- * each of these is passed to the add_mode method of the GlueToolbar
+ * each of these is passed to the add_mode method of the toolbar
  * visualization object optionally attaches methods to the 3 _callback
    methods in a MouseMode, for additional behavior
-
 """
 
 from __future__ import absolute_import, division, print_function
@@ -26,11 +24,15 @@ from glue.core.callback_property import CallbackProperty
 from glue.core import roi
 from glue.core.qt import roi as qt_roi
 from glue.utils.qt import get_qapp
-from glue.icons.qt import get_icon
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui
 from glue.viewers.common.qt.mode import CheckableMode
 from glue.config import toolbar_mode
+
+__all__ = ['MouseMode', 'RoiModeBase', 'RoiMode', 'PersistentRoiMode',
+           'ClickRoiMode', 'RectangleMode', 'PathMode', 'CircleMode',
+           'PolyMode', 'LassoMode', 'HRangeMode', 'VRangeMode', 'PickMode',
+           'ContrastMode']
 
 
 class MouseMode(CheckableMode):
@@ -74,15 +76,16 @@ class MouseMode(CheckableMode):
         self._event_x, self._event_y = event.x, event.y
         self._event_xdata, self._event_ydata = event.xdata, event.ydata
 
-
     def press(self, event):
         """
-        Handles mouse presses
+        Handles mouse presses.
 
-        Logs mouse position and calls press_callback method
+        Logs mouse position and calls press_callback method.
 
-        :param event: Mouse event
-        :type event: Matplotlib event
+        Parameters
+        ----------
+        event : :class:`~matplotlib.backend_bases.MouseEvent`
+            The event that was triggered
         """
         self._log_position(event)
         if self._press_callback is not None:
@@ -90,12 +93,14 @@ class MouseMode(CheckableMode):
 
     def move(self, event):
         """
-        Handles mouse move events
+        Handles mouse move events.
 
-        Logs mouse position and calls move_callback method
+        Logs mouse position and calls move_callback method.
 
-        :param event: Mouse event
-        :type event: Matplotlib event
+        Parameters
+        ----------
+        event : :class:`~matplotlib.backend_bases.MouseEvent`
+            The event that was triggered
         """
         self._log_position(event)
         if self._move_callback is not None:
@@ -105,10 +110,12 @@ class MouseMode(CheckableMode):
         """
         Handles mouse release events.
 
-        Logs mouse position and calls release_callback method
+        Logs mouse position and calls release_callback method.
 
-        :param event: Mouse event
-        :type event: Matplotlib event
+        Parameters
+        ----------
+        event : :class:`~matplotlib.backend_bases.MouseEvent`
+            The event that was triggered
         """
         self._log_position(event)
         if self._release_callback is not None:
@@ -116,20 +123,22 @@ class MouseMode(CheckableMode):
 
     def key(self, event):
         """
-        Handles key press events
+        Handles key press events.
 
-        Calls key_callback method
+        Calls key_callback method.
 
-        :param event: Key event
-        :type event: Matplotlib event
+        Parameters
+        ----------
+        event : :class:`~matplotlib.backend_bases.KeyEvent`
+            The event that was triggered
         """
         if self._key_callback is not None:
             self._key_callback(self)
 
 
 class RoiModeBase(MouseMode):
-
-    """ Base class for defining ROIs. ROIs accessible via the roi() method
+    """
+    Base class for defining ROIs. ROIs accessible via the roi() method
 
     See RoiMode and ClickRoiMode subclasses for interaction details
 
@@ -142,9 +151,11 @@ class RoiModeBase(MouseMode):
 
     def __init__(self, viewer, **kwargs):
         """
-        :param roi_callback: Function that will be called when the
-                             ROI is finished being defined.
-        :type roi_callback:  function
+        Parameters
+        ----------
+        roi_callback : `func`
+            Function that will be called when the ROI is finished being
+            defined.
         """
         self._roi_callback = kwargs.pop('roi_callback', None)
         super(RoiModeBase, self).__init__(viewer, **kwargs)
@@ -154,14 +165,19 @@ class RoiModeBase(MouseMode):
         self._roi_tool._sync_patch()
 
     def roi(self):
-        """ The ROI defined by this mouse mode
+        """
+        The ROI defined by this mouse mode
 
-        :rtype: :class:`~glue.core.roi.Roi`
+        Returns
+        -------
+        roi : :class:`~glue.core.roi.Roi`
         """
         return self._roi_tool.roi()
 
     def _finish_roi(self, event):
-        """Called by subclasses when ROI is fully defined"""
+        """
+        Called by subclasses when ROI is fully defined
+        """
         if not self.persistent:
             self._roi_tool.finalize_selection(event)
         if self._roi_callback is not None:
@@ -172,11 +188,11 @@ class RoiModeBase(MouseMode):
 
 
 class RoiMode(RoiModeBase):
+    """
+    Define Roi Modes via click+drag events.
 
-    """ Define Roi Modes via click+drag events
-
-    ROIs are updated continuously on click+drag events, and finalized
-    on each mouse release
+    ROIs are updated continuously on click+drag events, and finalized on each
+    mouse release
     """
 
     def __init__(self, viewer, **kwargs):
@@ -196,8 +212,8 @@ class RoiMode(RoiModeBase):
         if (dx + dy) > self._drag_dist:
             status = self._roi_tool.start_selection(self._start_event)
             # If start_selection returns False, the selection has not been
-            # started and we should abort, so we set self._drag to False in this
-            # case.
+            # started and we should abort, so we set self._drag to False in
+            # this case.
             self._drag = True if status is None else status
 
     def press(self, event):
@@ -228,7 +244,6 @@ class RoiMode(RoiModeBase):
 
 
 class PersistentRoiMode(RoiMode):
-
     """
     Same functionality as RoiMode, but the Roi is never
     finalized, and remains rendered after mouse gestures
@@ -240,12 +255,11 @@ class PersistentRoiMode(RoiMode):
 
 
 class ClickRoiMode(RoiModeBase):
-
     """
     Generate ROIs using clicks and click+drags.
 
     ROIs updated on each click, and each click+drag.
-    ROIs are finalized on enter press, and reset on escape press
+    ROIs are finalized on enter press, and reset on escape press.
     """
 
     def __init__(self, viewer, **kwargs):
@@ -286,8 +300,10 @@ class ClickRoiMode(RoiModeBase):
 
 @toolbar_mode
 class RectangleMode(RoiMode):
-
-    """ Defines a Rectangular ROI, accessible via the roi() method"""
+    """
+    Defines a Rectangular ROI, accessible via the :meth:`~RectangleMode.roi`
+    method
+    """
 
     icon = 'glue_square'
     mode_id = 'Rectangle'
@@ -317,7 +333,7 @@ class PathMode(ClickRoiMode):
 @toolbar_mode
 class CircleMode(RoiMode):
     """
-    Defines a Circular ROI, accessible via the roi() method
+    Defines a Circular ROI, accessible via the :meth:`~CircleMode.roi` method
     """
 
     icon = 'glue_circle'
@@ -334,7 +350,7 @@ class CircleMode(RoiMode):
 @toolbar_mode
 class PolyMode(ClickRoiMode):
     """
-    Defines a Polygonal ROI, accessible via the roi() method
+    Defines a Polygonal ROI, accessible via the :meth:`~PolyMode.roi` method
     """
 
     icon = 'glue_lasso'
@@ -353,7 +369,7 @@ class PolyMode(ClickRoiMode):
 @toolbar_mode
 class LassoMode(RoiMode):
     """
-    Defines a Polygonal ROI, accessible via the roi() method
+    Defines a Polygonal ROI, accessible via the :meth:`~LassoMode.roi` method
     """
 
     icon = 'glue_lasso'
@@ -370,7 +386,8 @@ class LassoMode(RoiMode):
 @toolbar_mode
 class HRangeMode(RoiMode):
     """
-    Defines a Range ROI, accessible via the roi() method.
+    Defines a Range ROI, accessible via the :meth:`~HRangeMode.roi` method.
+
     This class defines horizontal ranges
     """
 
@@ -388,8 +405,9 @@ class HRangeMode(RoiMode):
 @toolbar_mode
 class VRangeMode(RoiMode):
     """
-    Defines a Range ROI, accessible via the roi() method.
-    This class defines vertical ranges
+    Defines a Range ROI, accessible via the :meth:`~VRangeMode.roi` method.
+
+    This class defines vertical ranges.
     """
 
     icon = 'glue_yrange_select'
@@ -406,7 +424,9 @@ class VRangeMode(RoiMode):
 @toolbar_mode
 class PickMode(RoiMode):
     """
-    Defines a PointROI. Defines single point selections
+    Defines a PointROI.
+
+    Defines single point selections.
     """
 
     icon = 'glue_yrange_select'
@@ -427,11 +447,10 @@ class PickMode(RoiMode):
 @toolbar_mode
 class ContrastMode(MouseMode):
     """
-    Uses right mouse button drags to set bias and contrast, ala DS9
+    Uses right mouse button drags to set bias and contrast, DS9-style.
 
-    The horizontal position of the mouse sets the bias, the vertical
-    position sets the contrast. The get_scaling method converts
-    this information into scaling information for a particular data set
+    The horizontal position of the mouse sets the bias, the vertical position
+    sets the contrast.
     """
 
     icon = 'glue_contrast'
