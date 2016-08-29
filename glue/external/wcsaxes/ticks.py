@@ -23,21 +23,23 @@ class Ticks(Line2D):
     we read defaults from `xtick.*`. The following settings affect the
     default appearance of ticks:
 
+    * `xtick.direction`
     * `xtick.major.size`
     * `xtick.major.width`
     * `xtick.color`
     """
 
-    def __init__(self, ticksize=None, tick_out=False, **kwargs):
+    def __init__(self, ticksize=None, tick_out=None, **kwargs):
         if ticksize is None:
             ticksize = rcParams['xtick.major.size']
         self.set_ticksize(ticksize)
-        self.set_tick_out(tick_out)
-        # FIXME: tick_out is incompatible with Matplotlib tickdir option
+        self.set_tick_out(rcParams.get('xtick.direction', 'in') == 'out')
         self.clear()
         line2d_kwargs = {
             'color': rcParams['xtick.color'],
-            'linewidth': rcParams['xtick.major.width']
+            # For the linewidth we need to set a default since old versions of
+            # matplotlib don't have this.
+            'linewidth': rcParams.get('xtick.major.width', 1)
         }
         line2d_kwargs.update(kwargs)
         Line2D.__init__(self, [0.], [0.], **line2d_kwargs)
@@ -158,6 +160,9 @@ class Ticks(Line2D):
         initial_angle = 180. if self.get_tick_out() else 0.
 
         for axis in self.get_visible_axes():
+
+            if not axis in pixel_array:
+                continue
 
             for loc, angle in zip(pixel_array[axis], angle_array[axis]):
 

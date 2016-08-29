@@ -4,12 +4,13 @@ from matplotlib.axes import Axes, subplot_class_factory
 from matplotlib.transforms import Affine2D, Bbox, Transform
 
 from astropy.wcs import WCS
+from astropy.wcs.utils import wcs_to_celestial_frame
+from astropy.extern import six
 
 from .transforms import (WCSPixel2WorldTransform, WCSWorld2PixelTransform,
                          CoordinateTransform)
 from .coordinates_map import CoordinatesMap
 from .utils import get_coord_meta
-from .wcs_utils import wcs_to_celestial_frame
 from .frame import RectangularFrame
 import numpy as np
 
@@ -46,8 +47,12 @@ class WCSAxes(Axes):
         self._display_coords_index = 0
         fig.canvas.mpl_connect('key_press_event', self._set_cursor_prefs)
         self.patch = self.coords.frame.patch
+        self._drawn = False
 
     def _display_world_coords(self, x, y):
+
+        if not self._drawn:
+            return ""
 
         if self._display_coords_index == -1:
             return "%s %s (pixel)" % (x, y)
@@ -84,6 +89,43 @@ class WCSAxes(Axes):
         self.xaxis.set_visible(False)
         self.yaxis.set_visible(False)
 
+    # We now overload ``imshow`` because we need to make sure that origin is
+    # set to ``lower`` for all images, which means that we need to flip RGB
+    # images.
+    def imshow(self, X, *args, **kwargs):
+        """
+        Wrapper to Matplotlib's :meth:`~matplotlib.axes.Axes.imshow`.
+
+        If an RGB image is passed as a PIL object, it will be flipped
+        vertically and ``origin`` will be set to ``lower``, since WCS
+        transformations - like FITS files - assume that the origin is the lower
+        left pixel of the image (whereas RGB images have the origin in the top
+        left).
+
+        All arguments are passed to :meth:`~matplotlib.axes.Axes.imshow`.
+        """
+
+        origin = kwargs.get('origin', None)
+
+        if origin == 'upper':
+            raise ValueError("Cannot use images with origin='upper' in WCSAxes.")
+
+        # To check whether the image is a PIL image we can check if the data
+        # has a 'getpixel' attribute - this is what Matplotlib's AxesImage does
+
+        try:
+            from PIL.Image import Image, FLIP_TOP_BOTTOM
+        except ImportError:
+            # We don't need to worry since PIL is not installed, so user cannot
+            # have passed RGB image.
+            pass
+        else:
+            if isinstance(X, Image) or hasattr(X, 'getpixel'):
+                X = X.transpose(FLIP_TOP_BOTTOM)
+                kwargs['origin'] = 'lower'
+
+        return super(WCSAxes, self).imshow(X, *args, **kwargs)
+
     def reset_wcs(self, wcs=None, slices=None, transform=None, coord_meta=None):
         """
         Reset the current Axes, to use a new WCS object.
@@ -91,8 +133,18 @@ class WCSAxes(Axes):
 
         # Here determine all the coordinate axes that should be shown.
         if wcs is None and transform is None:
+
             self.wcs = IDENTITY
+
         else:
+
+            # We now force call 'set', which ensures the WCS object is
+            # consistent, which will only be important if the WCS has been set
+            # by hand. For example if the user sets a celestial WCS by hand and
+            # forgets to set the units, WCS.wcs.set() will do this.
+            if wcs is not None:
+                wcs.wcs.set()
+
             self.wcs = wcs
 
         # If we are making a new WCS, we need to preserve the path object since
@@ -136,6 +188,16 @@ class WCSAxes(Axes):
 
     def draw(self, renderer, inframe=False):
 
+        # In Axes.draw, the following code can result in the xlim and ylim
+        # values changing, so we need to force call this here to make sure that
+        # the limits are correct before we update the patch.
+        locator = self.get_axes_locator()
+        if locator:
+            pos = locator(self, renderer)
+            self.apply_aspect(pos)
+        else:
+            self.apply_aspect()
+
         # We need to make sure that that frame path is up to date
         self.coords.frame._update_patch_path()
 
@@ -165,6 +227,8 @@ class WCSAxes(Axes):
 
         self.coords.frame.draw(renderer)
 
+        self._drawn = True
+
     def set_xlabel(self, label):
         self.coords[self._x_index].set_axislabel(label)
 
@@ -177,7 +241,7 @@ class WCSAxes(Axes):
     def get_ylabel(self):
         return self.coords[self._y_index].get_axislabel()
 
-    def get_coords_overlay(self, frame, equinox=None, obstime=None, coord_meta=None):
+    def get_coords_overlay(self, frame, coord_meta=None):
 
         # Here we can't use get_transform because that deals with
         # pixel-to-pixel transformations when passing a WCS object.
@@ -186,7 +250,7 @@ class WCSAxes(Axes):
         else:
             if coord_meta is None:
                 coord_meta = get_coord_meta(frame)
-            transform = self._get_transform_no_transdata(frame, equinox=equinox, obstime=obstime)
+            transform = self._get_transform_no_transdata(frame)
             coords = CoordinatesMap(self, transform=transform, coord_meta=coord_meta, frame_class=self.frame_class)
 
         self._all_coords.append(coords)
@@ -201,7 +265,7 @@ class WCSAxes(Axes):
 
         return coords
 
-    def get_transform(self, frame, equinox=None, obstime=None):
+    def get_transform(self, frame):
         """
         Return a transform from the specified frame to display coordinates.
 
@@ -230,10 +294,11 @@ class WCSAxes(Axes):
                   ``WCSAxes`` instance).
                 * ``'fk5'`` or ``'galactic'``: return a transformation from
                   the specified frame to the pixel/data coordinates.
+                * :class:`~astropy.coordinates.BaseCoordinateFrame` instance.
         """
-        return self._get_transform_no_transdata(frame, equinox=equinox, obstime=obstime).inverted() + self.transData
+        return self._get_transform_no_transdata(frame).inverted() + self.transData
 
-    def _get_transform_no_transdata(self, frame, equinox=None, obstime=None):
+    def _get_transform_no_transdata(self, frame):
         """
         Return a transform from data to the specified frame
         """
@@ -248,12 +313,12 @@ class WCSAxes(Axes):
 
             if coord_in == coord_out:
 
-                return (WCSPixel2WorldTransform(self.wcs)
+                return (WCSPixel2WorldTransform(self.wcs, slice=self.slices)
                         + WCSWorld2PixelTransform(frame))
 
             else:
 
-                return (WCSPixel2WorldTransform(self.wcs)
+                return (WCSPixel2WorldTransform(self.wcs, slice=self.slices)
                         + CoordinateTransform(self.wcs, frame)
                         + WCSWorld2PixelTransform(frame))
 
@@ -263,13 +328,13 @@ class WCSAxes(Axes):
 
         elif isinstance(frame, Transform):
 
-            pixel2world = WCSPixel2WorldTransform(self.wcs)
+            pixel2world = WCSPixel2WorldTransform(self.wcs, slice=self.slices)
 
             return pixel2world + frame
 
         else:
 
-            pixel2world = WCSPixel2WorldTransform(self.wcs)
+            pixel2world = WCSPixel2WorldTransform(self.wcs, slice=self.slices)
 
             if frame == 'world':
 
@@ -308,7 +373,7 @@ class WCSAxes(Axes):
         draw_grid : bool
             Whether to show the gridlines
         """
-        if draw_grid:
+        if draw_grid and hasattr(self, 'coords'):
             self.coords.grid(draw_grid=draw_grid, **kwargs)
 
 # In the following, we put the generated subplot class in a temporary class and

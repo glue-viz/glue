@@ -1,10 +1,9 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
 import abc
-
+from collections import OrderedDict
 import numpy as np
 
-from astropy.utils import OrderedDict
 from astropy.extern import six
 
 from matplotlib.lines import Line2D, Path
@@ -164,6 +163,9 @@ class BaseFrame(OrderedDict):
         """
         self._color = color
 
+    def get_color(self):
+        return self._color
+
     def set_linewidth(self, linewidth):
         """
         Sets the linewidth of the frame.
@@ -174,6 +176,9 @@ class BaseFrame(OrderedDict):
             The linewidth of the frame in points.
         """
         self._linewidth = linewidth
+
+    def get_linewidth(self):
+        return self._linewidth
 
     @abc.abstractmethod
     def update_spines(self):

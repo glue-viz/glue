@@ -4,6 +4,8 @@ Full changelog
 v0.9.0 (unreleased)
 -----------------
 
+* Updated bundled version of WCSAxes to v0.9.
+
 * Implement new widget with better control over exporting to Plotly. The
   preference pane for Plotly export has now been removed in favor of this new
   way to set the options. [#1057]

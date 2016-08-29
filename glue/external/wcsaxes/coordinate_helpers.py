@@ -25,7 +25,10 @@ __all__ = ['CoordinateHelper']
 
 
 def wrap_angle_at(values, coord_wrap):
-    return np.mod(values - coord_wrap, 360.) - (360. - coord_wrap)
+    # On ARM processors, np.mod emits warnings if there are NaN values in the
+    # array, although this doesn't seem to happen on other processors.
+    with np.errstate(invalid='ignore'):
+        return np.mod(values - coord_wrap, 360.) - (360. - coord_wrap)
 
 
 class CoordinateHelper(object):
@@ -146,8 +149,13 @@ class CoordinateHelper(object):
 
         # Initialize tick formatter/locator
         if coord_type == 'scalar':
+            self._coord_unit_scale = None
             self._formatter_locator = ScalarFormatterLocator(unit=self.coord_unit)
         elif coord_type in ['longitude', 'latitude']:
+            if self.coord_unit is u.deg:
+                self._coord_unit_scale = None
+            else:
+                self._coord_unit_scale = self.coord_unit.to(u.deg)
             self._formatter_locator = AngleFormatterLocator()
         else:
             raise ValueError("coord_type should be one of 'scalar', 'longitude', or 'latitude'")
@@ -174,14 +182,25 @@ class CoordinateHelper(object):
         Given the value of a coordinate, will format it according to the
         format of the formatter_locator.
         """
+
+        if not hasattr(self, "_fl_spacing"):
+            return ""  # _update_ticks has not been called yet
+
         fl = self._formatter_locator
         if isinstance(fl, AngleFormatterLocator):
+
+            # Convert to degrees if needed
+            if self._coord_unit_scale is not None:
+                value *= self._coord_unit_scale
+
             if self.coord_type == 'longitude':
                 value = wrap_angle_at(value, self.coord_wrap)
             value = value * u.degree
             value = value.to(fl._unit).value
+
         spacing = self._fl_spacing
         string = fl.formatter(values=[value] * fl._unit, spacing=spacing)
+
         return string[0]
 
     def set_separator(self, separator):
@@ -276,6 +295,18 @@ class CoordinateHelper(object):
         """
         self.ticks.set_visible_axes(position)
 
+    def set_ticks_visible(self, visible):
+        """
+        Set whether ticks are visible or not.
+
+        Parameters
+        ----------
+        visible : bool
+            The visibility of ticks. Setting as ``False`` will hide ticks
+            along this coordinate.
+        """
+        self.ticks.set_visible(visible)
+
     def set_ticklabel(self, **kwargs):
         """
         Set the visual properties for the tick labels.
@@ -302,6 +333,18 @@ class CoordinateHelper(object):
             tick labels to be shown on the left and bottom axis.
         """
         self.ticklabels.set_visible_axes(position)
+
+    def set_ticklabel_visible(self, visible):
+        """
+        Set whether the tick labels are visible or not.
+
+        Parameters
+        ----------
+        visible : bool
+            The visibility of ticks. Setting as ``False`` will hide this
+            coordinate's tick labels.
+        """
+        self.ticklabels.set_visible(visible)
 
     def set_axislabel(self, text, minpad=1, **kwargs):
         """
@@ -458,6 +501,10 @@ class CoordinateHelper(object):
             # Rotate by 90 degrees
             dx, dy = -dy, dx
 
+            if self._coord_unit_scale is not None:
+                dx *= self._coord_unit_scale
+                dy *= self._coord_unit_scale
+
             if self.coord_type == 'longitude':
                 # Here we wrap at 180 not self.coord_wrap since we want to
                 # always ensure abs(dx) < 180 and abs(dy) < 180
@@ -467,8 +514,9 @@ class CoordinateHelper(object):
             tick_angle = np.degrees(np.arctan2(dy, dx))
 
             normal_angle_full = np.hstack([spine.normal_angle, spine.normal_angle[-1]])
-            reset = (((normal_angle_full - tick_angle) % 360 > 90.) &
-                     ((tick_angle - normal_angle_full) % 360 > 90.))
+            with np.errstate(invalid='ignore'):
+                reset = (((normal_angle_full - tick_angle) % 360 > 90.) &
+                         ((tick_angle - normal_angle_full) % 360 > 90.))
             tick_angle[reset] -= 180.
 
             # We find for each interval the starting and ending coordinate,
@@ -476,11 +524,17 @@ class CoordinateHelper(object):
             # longitudes.
             w1 = spine.world[:-1, self.coord_index]
             w2 = spine.world[1:, self.coord_index]
+
+            if self._coord_unit_scale is not None:
+                w1 = w1 * self._coord_unit_scale
+                w2 = w2 * self._coord_unit_scale
+
             if self.coord_type == 'longitude':
                 w1 = wrap_angle_at(w1, self.coord_wrap)
                 w2 = wrap_angle_at(w2, self.coord_wrap)
-                w1[w2 - w1 > 180.] += 360
-                w2[w1 - w2 > 180.] += 360
+                with np.errstate(invalid='ignore'):
+                    w1[w2 - w1 > 180.] += 360
+                    w2[w1 - w2 > 180.] += 360
 
             # For longitudes, we need to check ticks as well as ticks + 360,
             # since the above can produce pairs such as 359 to 361 or 0.5 to
@@ -509,8 +563,9 @@ class CoordinateHelper(object):
             # separately for the case where the tick falls exactly on the
             # frame points, otherwise we'll get two matches, one for w1 and
             # one for w2.
-            intersections = np.hstack([np.nonzero((t - w1) == 0)[0],
-                                       np.nonzero(((t - w1) * (t - w2)) < 0)[0]])
+            with np.errstate(invalid='ignore'):
+                intersections = np.hstack([np.nonzero((t - w1) == 0)[0],
+                                           np.nonzero(((t - w1) * (t - w2)) < 0)[0]])
 
             # But we also need to check for intersection with the last w2
             if t - w2[-1] == 0:
@@ -626,6 +681,11 @@ class CoordinateHelper(object):
         # single go rather than doing this in the gridline to path conversion
         # to fully benefit from vectorized coordinate transformations.
 
+        # Currently xy_world is in deg, but transform function needs it in
+        # native units
+        if self._coord_unit_scale is not None:
+            xy_world /= self._coord_unit_scale
+
         # Transform line to pixel coordinates
         pixel = self.transform.inverted().transform(xy_world)
 
@@ -678,6 +738,6 @@ class CoordinateHelper(object):
             field[1:, 1:][reset] = np.nan
 
         if len(tick_world_coordinates_values) > 0:
-            self._grid = self.parent_axes.contour(X, Y, field.transpose(), levels=tick_world_coordinates_values)
+            self._grid = self.parent_axes.contour(X, Y, field.transpose(), levels=np.sort(tick_world_coordinates_values))
         else:
             self._grid = None
