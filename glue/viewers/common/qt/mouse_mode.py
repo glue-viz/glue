@@ -25,7 +25,7 @@ from glue.core import roi
 from glue.core.qt import roi as qt_roi
 from glue.utils.qt import get_qapp
 from glue.utils import nonpartial
-from glue.utils.qt import load_ui
+from glue.utils.qt import load_ui, cmap2pixmap
 from glue.viewers.common.qt.tool import Tool, CheckableTool
 from glue.config import viewer_tool
 

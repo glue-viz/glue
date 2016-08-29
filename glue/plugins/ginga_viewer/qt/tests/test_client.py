@@ -71,6 +71,9 @@ class TestSubsetImage(object):
         assert resid.mean() < 0.1
 
     def test_transpose_slice(self):
+
+        from ..client import SubsetImage, BaseImage
+
         m = (self.subset.to_mask() * 127).T
 
         im1 = SubsetImage(self.subset, np.s_[:, :], transpose=True)
