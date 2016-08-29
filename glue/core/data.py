@@ -820,6 +820,71 @@ class Data(object):
         for subset in self.subsets:
             clear_cache(subset.subset_state.to_mask)
 
+    def update_values_from_data(self, data):
+        """
+        Replace numerical values in data to match values from another dataset.
+
+        Notes
+        -----
+
+        This method drops components that aren't present in the new data, and
+        adds components that are in the new data that were not in the original
+        data. The matching is done by component label, and components are
+        resized if needed. This means that for components with matching labels
+        in the original and new data, the
+        :class:`~glue.core.component_id.ComponentID` are preserved, and
+        existing plots and selections will be updated to reflect the new
+        values. Note that the coordinates are also copied, but the style is
+        **not** copied.
+        """
+
+        old_labels = [cid.label for cid in self.components]
+        new_labels = [cid.label for cid in data.components]
+
+        if len(old_labels) == len(set(old_labels)):
+            old_labels = set(old_labels)
+        else:
+            raise ValueError("Non-unique component labels in original data")
+
+        if len(new_labels) == len(set(new_labels)):
+            new_labels = set(new_labels)
+        else:
+            raise ValueError("Non-unique component labels in new data")
+
+        # Remove components that don't have a match in new data
+        for cname in old_labels - new_labels:
+            cid = self.find_component_id(cname)
+            self.remove_component(cid)
+
+        # Update shape
+        self._shape = data._shape
+
+        # Update components that exist in both
+        for cname in old_labels & new_labels:
+            comp_old = self.get_component(cname)
+            comp_new = data.get_component(cname)
+            comp_old._data = comp_new._data
+
+        # Add components that didn't exist in original one
+        for cname in new_labels - old_labels:
+            cid = data.find_component_id(cname)
+            comp_new = data.get_component(cname)
+            self.add_component(comp_new, cid)
+
+        # Update data label
+        self.label = data.label
+
+        # Update data coordinates
+        self.coords = data.coords
+
+        # alert hub of the change
+        if self.hub is not None:
+            msg = NumericalDataChangedMessage(self)
+            self.hub.broadcast(msg)
+
+        for subset in self.subsets:
+            clear_cache(subset.subset_state.to_mask)
+
 
 @contract(i=int, ndim=int)
 def pixel_label(i, ndim):
