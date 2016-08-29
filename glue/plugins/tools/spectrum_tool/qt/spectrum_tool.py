@@ -14,7 +14,7 @@ from glue.core.aggregate import Aggregate
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core import Subset
 from glue.core.callback_property import add_callback, ignore_callback
-from glue.config import fit_plugin, toolbar_mode
+from glue.config import fit_plugin, viewer_tool
 from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
 from glue.core.qt.mime import LAYERS_MIME_TYPE
 from glue.viewers.common.qt.mouse_mode import RoiMode
@@ -657,7 +657,7 @@ class SpectrumMainWindow(QtWidgets.QMainWindow):
             self.subset_dropped.emit(layer)
 
 
-@toolbar_mode
+@viewer_tool
 class SpectrumExtractorMode(RoiMode):
 
     """
@@ -668,7 +668,7 @@ class SpectrumExtractorMode(RoiMode):
     persistent = True
 
     icon = 'glue_spectrum'
-    mode_id = 'Spectrum'
+    tool_id = 'Spectrum'
     action_text = 'Spectrum'
     tool_tip = 'Extract a spectrum from the selection'
     shortcut = 'S'

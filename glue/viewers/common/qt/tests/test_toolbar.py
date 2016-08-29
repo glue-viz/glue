@@ -15,7 +15,7 @@ from ..mpl_toolbar import MatplotlibViewerToolbar
 
 class MouseModeTest(MouseMode):
 
-    mode_id = 'TEST'
+    tool_id = 'TEST'
     tool_tip = 'just testing'
     icon = 'glue_square'
 
@@ -81,7 +81,7 @@ class TestToolbar(object):
     def test_change_mode(self):
 
         self.viewer.toolbar.buttons['PAN'].toggle()
-        assert self.viewer.toolbar.mode.mode_id == 'PAN'
+        assert self.viewer.toolbar.mode.tool_id == 'PAN'
         assert self.viewer.toolbar._mpl_nav.mode == 'pan/zoom'
 
         self.viewer.toolbar.buttons['PAN'].toggle()
@@ -89,7 +89,7 @@ class TestToolbar(object):
         assert self.viewer.toolbar._mpl_nav.mode == ''
 
         self.viewer.toolbar.buttons['ZOOM'].trigger()
-        assert self.viewer.toolbar.mode.mode_id == 'ZOOM'
+        assert self.viewer.toolbar.mode.tool_id == 'ZOOM'
         assert self.viewer.toolbar._mpl_nav.mode == 'zoom rect'
 
         self.viewer.toolbar.buttons['BACK'].trigger()
@@ -97,5 +97,5 @@ class TestToolbar(object):
         assert self.viewer.toolbar._mpl_nav.mode == ''
 
         self.viewer.toolbar.buttons['TEST'].trigger()
-        assert self.viewer.toolbar.mode.mode_id == 'TEST'
+        assert self.viewer.toolbar.mode.tool_id == 'TEST'
         assert self.viewer.toolbar._mpl_nav.mode == ''

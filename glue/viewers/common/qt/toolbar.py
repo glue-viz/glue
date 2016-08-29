@@ -6,8 +6,8 @@ from qtpy.QtCore import Qt
 from glue.external import six
 from glue.core.callback_property import add_callback
 from glue.utils import nonpartial
-from glue.viewers.common.qt.mode import CheckableMode, NonCheckableMode
-from glue.config import toolbar_mode
+from glue.viewers.common.qt.tool import CheckableTool, Tool
+from glue.config import viewer_tool
 from glue.icons.qt import get_icon
 
 __all__ = ['BasicToolbar']
@@ -26,7 +26,7 @@ class BasicToolbar(QtWidgets.QToolBar):
         super(BasicToolbar, self).__init__(parent=parent)
 
         self.buttons = {}
-        self.modes = {}
+        self.tools = {}
         self.setIconSize(QtCore.QSize(25, 25))
         self.layout().setSpacing(1)
         self.setFocusPolicy(Qt.StrongFocus)
@@ -54,8 +54,8 @@ class BasicToolbar(QtWidgets.QToolBar):
         # mode...
         if old_mode is not None:
             self.deactivate_mode(old_mode)
-            if isinstance(old_mode, CheckableMode):
-                button = self.buttons[old_mode.mode_id]
+            if isinstance(old_mode, CheckableTool):
+                button = self.buttons[old_mode.tool_id]
                 if button.isChecked():
                     button.blockSignals(True)
                     button.setChecked(False)
@@ -64,14 +64,14 @@ class BasicToolbar(QtWidgets.QToolBar):
         # ... and enable the new one
         if new_mode is not None:
             self.activate_mode(new_mode)
-            if isinstance(new_mode, CheckableMode):
-                button = self.buttons[new_mode.mode_id]
+            if isinstance(new_mode, CheckableTool):
+                button = self.buttons[new_mode.tool_id]
                 if button.isChecked():
                     button.blockSignals(True)
                     button.setChecked(True)
                     button.blockSignals(False)
 
-        if isinstance(new_mode, CheckableMode):
+        if isinstance(new_mode, CheckableTool):
             self._mode = new_mode
             self.mode_activated.emit()
         else:
@@ -82,7 +82,7 @@ class BasicToolbar(QtWidgets.QToolBar):
         mode.activate()
 
     def deactivate_mode(self, mode):
-        if isinstance(mode, CheckableMode):
+        if isinstance(mode, CheckableTool):
             mode.deactivate()
 
     def add_mode(self, mode):
@@ -110,7 +110,7 @@ class BasicToolbar(QtWidgets.QToolBar):
 
         parent.addAction(action)
 
-        if isinstance(mode, CheckableMode):
+        if isinstance(mode, CheckableTool):
             action.toggled.connect(toggle)
         else:
             action.triggered.connect(trigger)
@@ -120,8 +120,8 @@ class BasicToolbar(QtWidgets.QToolBar):
             action.setShortcutContext(Qt.WidgetShortcut)
 
         action.setToolTip(mode.tool_tip)
-        action.setCheckable(isinstance(mode, CheckableMode))
-        self.buttons[mode.mode_id] = action
+        action.setCheckable(isinstance(mode, CheckableTool))
+        self.buttons[mode.tool_id] = action
 
         menu_actions = mode.menu_actions()
         if len(menu_actions) > 0:
@@ -134,6 +134,6 @@ class BasicToolbar(QtWidgets.QToolBar):
 
         self.addAction(action)
 
-        self.modes[mode.mode_id] = mode
+        self.tools[mode.tool_id] = mode
 
         return action

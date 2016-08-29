@@ -30,7 +30,7 @@ class GingaWidget(ImageWidgetBase):
     LABEL = "Ginga Viewer"
 
     _toolbar_cls = BasicToolbar
-    modes = ['Ginga rectangle', 'Ginga circle', 'Ginga polygon', 'Ginga pan',
+    tools = ['Ginga rectangle', 'Ginga circle', 'Ginga polygon', 'Ginga pan',
              'Ginga free pan', 'Ginga rotate', 'Ginga contrast', 'Ginga cuts',
              'Ginga colormap', 'Ginga slicer', 'Ginga spectrum']
 

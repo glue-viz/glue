@@ -45,7 +45,7 @@ class BaseTestSpectrumTool(object):
         self.image.add_data(self.data)
         self.image.data = self.data
         self.image.attribute = self.data.id['x']
-        self.mode = self.image.toolbar.modes['Spectrum']
+        self.mode = self.image.toolbar.tools['Spectrum']
         self.tool = self.mode._tool
         self.tool.show = lambda *args: None
 

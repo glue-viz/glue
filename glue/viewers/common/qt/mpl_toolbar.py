@@ -5,7 +5,7 @@ from qtpy import PYQT5
 
 from glue.icons.qt import get_icon
 from glue.utils import nonpartial
-from glue.viewers.common.qt.mode import CheckableMode, NonCheckableMode
+from glue.viewers.common.qt.tool import CheckableTool, Tool
 from glue.viewers.common.qt.mouse_mode import MouseMode
 from glue.viewers.common.qt.toolbar import BasicToolbar
 
@@ -14,15 +14,15 @@ if PYQT5:
 else:
     from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
 
-__all__ = ['HomeMode', 'SaveMode', 'BackMode', 'ForwardMode', 'PanMode',
-           'ZoomMode', 'MatplotlibViewerToolbar']
+__all__ = ['HomeTool', 'SaveTool', 'BackTool', 'ForwardTool', 'PanTool',
+           'ZoomTool', 'MatplotlibViewerToolbar']
 
 
-class HomeMode(NonCheckableMode):
+class HomeTool(Tool):
 
     def __init__(self, viewer, toolbar=None):
-        super(HomeMode, self).__init__(viewer=viewer)
-        self.mode_id = 'HOME'
+        super(HomeTool, self).__init__(viewer=viewer)
+        self.tool_id = 'HOME'
         self.icon = get_icon('glue_home')
         self.action_text = 'Home'
         self.tool_tip = 'Reset original zoom'
@@ -34,11 +34,11 @@ class HomeMode(NonCheckableMode):
         self.toolbar.home()
 
 
-class SaveMode(NonCheckableMode):
+class SaveTool(Tool):
 
     def __init__(self, viewer, toolbar=None):
-        super(SaveMode, self).__init__(viewer=viewer)
-        self.mode_id = 'SAVE'
+        super(SaveTool, self).__init__(viewer=viewer)
+        self.tool_id = 'SAVE'
         self.icon = get_icon('glue_filesave')
         self.action_text = 'Save'
         self.tool_tip = 'Save the figure'
@@ -49,11 +49,11 @@ class SaveMode(NonCheckableMode):
         self.toolbar.save_figure()
 
 
-class BackMode(NonCheckableMode):
+class BackTool(Tool):
 
     def __init__(self, viewer, toolbar=None):
-        super(BackMode, self).__init__(viewer=viewer)
-        self.mode_id = 'BACK'
+        super(BackTool, self).__init__(viewer=viewer)
+        self.tool_id = 'BACK'
         self.icon = get_icon('glue_back')
         self.action_text = 'Back'
         self.tool_tip = 'Back to previous view'
@@ -63,11 +63,11 @@ class BackMode(NonCheckableMode):
         self.toolbar.back()
 
 
-class ForwardMode(NonCheckableMode):
+class ForwardTool(Tool):
 
     def __init__(self, viewer, toolbar=None):
-        super(ForwardMode, self).__init__(viewer=viewer)
-        self.mode_id = 'FORWARD'
+        super(ForwardTool, self).__init__(viewer=viewer)
+        self.tool_id = 'FORWARD'
         self.icon = get_icon('glue_forward')
         self.action_text = 'Forward'
         self.tool_tip = 'Forward to next view'
@@ -77,11 +77,11 @@ class ForwardMode(NonCheckableMode):
         self.toolbar.forward()
 
 
-class PanMode(CheckableMode):
+class PanTool(CheckableTool):
 
     def __init__(self, viewer, toolbar=None):
-        super(PanMode, self).__init__(viewer=viewer)
-        self.mode_id = 'PAN'
+        super(PanTool, self).__init__(viewer=viewer)
+        self.tool_id = 'PAN'
         self.icon = get_icon('glue_move')
         self.action_text = 'Pan'
         self.tool_tip = 'Pan axes with left mouse, zoom with right'
@@ -95,11 +95,11 @@ class PanMode(CheckableMode):
         self.toolbar.pan()
 
 
-class ZoomMode(CheckableMode):
+class ZoomTool(CheckableTool):
 
     def __init__(self, viewer, toolbar=None):
-        super(ZoomMode, self).__init__(viewer=viewer)
-        self.mode_id = 'ZOOM'
+        super(ZoomTool, self).__init__(viewer=viewer)
+        self.tool_id = 'ZOOM'
         self.icon = get_icon('glue_zoom_to_rect')
         self.action_text = 'Zoom'
         self.tool_tip = 'Zoom to rectangle'
@@ -130,25 +130,25 @@ class MatplotlibViewerToolbar(BasicToolbar):
 
     def setup_default_modes(self):
 
-        # Set up default Matplotlib Modes - this gets called by the __init__
+        # Set up default Matplotlib Tools - this gets called by the __init__
         # call to the parent class above.
 
-        home_mode = HomeMode(self.parent(), toolbar=self._mpl_nav)
+        home_mode = HomeTool(self.parent(), toolbar=self._mpl_nav)
         self.add_mode(home_mode)
 
-        save_mode = SaveMode(self.parent(), toolbar=self._mpl_nav)
+        save_mode = SaveTool(self.parent(), toolbar=self._mpl_nav)
         self.add_mode(save_mode)
 
-        back_mode = BackMode(self.parent(), toolbar=self._mpl_nav)
+        back_mode = BackTool(self.parent(), toolbar=self._mpl_nav)
         self.add_mode(back_mode)
 
-        forward_mode = ForwardMode(self.parent(), toolbar=self._mpl_nav)
+        forward_mode = ForwardTool(self.parent(), toolbar=self._mpl_nav)
         self.add_mode(forward_mode)
 
-        pan_mode = PanMode(self.parent(), toolbar=self._mpl_nav)
+        pan_mode = PanTool(self.parent(), toolbar=self._mpl_nav)
         self.add_mode(pan_mode)
 
-        zoom_mode = ZoomMode(self.parent(), toolbar=self._mpl_nav)
+        zoom_mode = ZoomTool(self.parent(), toolbar=self._mpl_nav)
         self.add_mode(zoom_mode)
 
         self._connections = []

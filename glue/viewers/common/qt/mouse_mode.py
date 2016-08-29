@@ -26,8 +26,8 @@ from glue.core.qt import roi as qt_roi
 from glue.utils.qt import get_qapp
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui
-from glue.viewers.common.qt.mode import CheckableMode
-from glue.config import toolbar_mode
+from glue.viewers.common.qt.tool import CheckableTool
+from glue.config import viewer_tool
 
 __all__ = ['MouseMode', 'RoiModeBase', 'RoiMode', 'PersistentRoiMode',
            'ClickRoiMode', 'RectangleMode', 'PathMode', 'CircleMode',
@@ -35,7 +35,7 @@ __all__ = ['MouseMode', 'RoiModeBase', 'RoiMode', 'PersistentRoiMode',
            'ContrastMode']
 
 
-class MouseMode(CheckableMode):
+class MouseMode(CheckableTool):
     """
     The base class for all MouseModes.
 
@@ -298,7 +298,7 @@ class ClickRoiMode(RoiModeBase):
             super(ClickRoiMode, self).release(event)
 
 
-@toolbar_mode
+@viewer_tool
 class RectangleMode(RoiMode):
     """
     Defines a Rectangular ROI, accessible via the :meth:`~RectangleMode.roi`
@@ -306,7 +306,7 @@ class RectangleMode(RoiMode):
     """
 
     icon = 'glue_square'
-    mode_id = 'Rectangle'
+    tool_id = 'Rectangle'
     action_text = 'Rectangular ROI'
     tool_tip = 'Define a rectangular region of interest'
     shortcut = 'R'
@@ -330,14 +330,14 @@ class PathMode(ClickRoiMode):
                                         alpha=0.4)
 
 
-@toolbar_mode
+@viewer_tool
 class CircleMode(RoiMode):
     """
     Defines a Circular ROI, accessible via the :meth:`~CircleMode.roi` method
     """
 
     icon = 'glue_circle'
-    mode_id = 'Circle'
+    tool_id = 'Circle'
     action_text = 'Circular ROI'
     tool_tip = 'Define a circular region of interest'
     shortcut = 'C'
@@ -347,14 +347,14 @@ class CircleMode(RoiMode):
         self._roi_tool = qt_roi.QtCircularROI(self._axes)
 
 
-@toolbar_mode
+@viewer_tool
 class PolyMode(ClickRoiMode):
     """
     Defines a Polygonal ROI, accessible via the :meth:`~PolyMode.roi` method
     """
 
     icon = 'glue_lasso'
-    mode_id = 'Polygon'
+    tool_id = 'Polygon'
     action_text = 'Polygonal ROI'
     tool_tip = ('Lasso a region of interest\n'
                 '  ENTER accepts the path\n'
@@ -366,14 +366,14 @@ class PolyMode(ClickRoiMode):
         self._roi_tool = qt_roi.QtPolygonalROI(self._axes)
 
 
-@toolbar_mode
+@viewer_tool
 class LassoMode(RoiMode):
     """
     Defines a Polygonal ROI, accessible via the :meth:`~LassoMode.roi` method
     """
 
     icon = 'glue_lasso'
-    mode_id = 'Lasso'
+    tool_id = 'Lasso'
     action_text = 'Polygonal ROI'
     tool_tip = 'Lasso a region of interest'
     shortcut = 'L'
@@ -383,7 +383,7 @@ class LassoMode(RoiMode):
         self._roi_tool = qt_roi.QtPolygonalROI(self._axes)
 
 
-@toolbar_mode
+@viewer_tool
 class HRangeMode(RoiMode):
     """
     Defines a Range ROI, accessible via the :meth:`~HRangeMode.roi` method.
@@ -392,7 +392,7 @@ class HRangeMode(RoiMode):
     """
 
     icon = 'glue_xrange_select'
-    mode_id = 'X range'
+    tool_id = 'X range'
     action_text = 'X range'
     tool_tip = 'Select a range of x values'
     shortcut = 'H'
@@ -402,7 +402,7 @@ class HRangeMode(RoiMode):
         self._roi_tool = qt_roi.QtXRangeROI(self._axes)
 
 
-@toolbar_mode
+@viewer_tool
 class VRangeMode(RoiMode):
     """
     Defines a Range ROI, accessible via the :meth:`~VRangeMode.roi` method.
@@ -411,7 +411,7 @@ class VRangeMode(RoiMode):
     """
 
     icon = 'glue_yrange_select'
-    mode_id = 'Y range'
+    tool_id = 'Y range'
     action_text = 'Y range'
     tool_tip = 'Select a range of y values'
     shortcut = 'V'
@@ -421,7 +421,7 @@ class VRangeMode(RoiMode):
         self._roi_tool = qt_roi.QtYRangeROI(self._axes)
 
 
-@toolbar_mode
+@viewer_tool
 class PickMode(RoiMode):
     """
     Defines a PointROI.
@@ -430,7 +430,7 @@ class PickMode(RoiMode):
     """
 
     icon = 'glue_yrange_select'
-    mode_id = 'Pick'
+    tool_id = 'Pick'
     action_text = 'Pick'
     tool_tip = 'Select a single item'
     shortcut = 'K'
@@ -444,7 +444,7 @@ class PickMode(RoiMode):
         self._drag = True
 
 
-@toolbar_mode
+@viewer_tool
 class ContrastMode(MouseMode):
     """
     Uses right mouse button drags to set bias and contrast, DS9-style.
@@ -454,7 +454,7 @@ class ContrastMode(MouseMode):
     """
 
     icon = 'glue_contrast'
-    mode_id = 'Contrast'
+    tool_id = 'Contrast'
     saction_text = 'Contrast'
     tool_tip = 'Adjust the bias/contrast'
     shortcut = 'B'

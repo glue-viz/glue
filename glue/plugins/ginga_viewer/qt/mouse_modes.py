@@ -6,8 +6,8 @@ import sys
 from ginga import cmap as ginga_cmap
 
 from qtpy import QtGui, QtWidgets
-from glue.config import toolbar_mode
-from glue.viewers.common.qt.mode import CheckableMode, NonCheckableMode
+from glue.config import viewer_tool
+from glue.viewers.common.qt.tool import CheckableTool, Tool
 from glue.plugins.ginga_viewer.qt.utils import cmap2pixmap, ginga_graphic_to_roi
 from glue.utils import nonpartial
 from glue.plugins.tools.spectrum_tool.qt import SpectrumTool
@@ -19,10 +19,10 @@ GINGA_HOME = os.path.split(sys.modules['ginga'].__file__)[0]
 GINGA_ICON_DIR = os.path.join(GINGA_HOME, 'icons')
 
 
-@toolbar_mode
-class RectangleROIMode(CheckableMode):
+@viewer_tool
+class RectangleROIMode(CheckableTool):
 
-    mode_id = 'Ginga rectangle'
+    tool_id = 'Ginga rectangle'
     icon = 'glue_square'
     tooltip = 'Rectangle'
 
@@ -33,10 +33,10 @@ class RectangleROIMode(CheckableMode):
         self.viewer._set_roi_mode('rectangle', False)
 
 
-@toolbar_mode
-class CircleROIMode(CheckableMode):
+@viewer_tool
+class CircleROIMode(CheckableTool):
 
-    mode_id = 'Ginga circle'
+    tool_id = 'Ginga circle'
     icon = 'glue_circle'
     tooltip = 'Circle'
 
@@ -47,10 +47,10 @@ class CircleROIMode(CheckableMode):
         self.viewer._set_roi_mode('circle', False)
 
 
-@toolbar_mode
-class PolygonROIMode(CheckableMode):
+@viewer_tool
+class PolygonROIMode(CheckableTool):
 
-    mode_id = 'Ginga polygon'
+    tool_id = 'Ginga polygon'
     icon = 'glue_lasso'
     tooltip = 'Polygon'
 
@@ -61,10 +61,10 @@ class PolygonROIMode(CheckableMode):
         self.viewer._set_roi_mode('polygon', False)
 
 
-@toolbar_mode
-class PanMode(CheckableMode):
+@viewer_tool
+class PanMode(CheckableTool):
 
-    mode_id = 'Ginga pan'
+    tool_id = 'Ginga pan'
     icon = 'glue_move'
     tooltip = 'Pan'
 
@@ -75,10 +75,10 @@ class PanMode(CheckableMode):
         self.viewer.mode_cb('pan', False)
 
 
-@toolbar_mode
-class FreePanMode(CheckableMode):
+@viewer_tool
+class FreePanMode(CheckableTool):
 
-    mode_id = 'Ginga free pan'
+    tool_id = 'Ginga free pan'
     icon = os.path.join(GINGA_ICON_DIR, 'hand_48.png')
     tooltip = 'Free Pan'
 
@@ -89,10 +89,10 @@ class FreePanMode(CheckableMode):
         self.viewer.mode_cb('freepan', False)
 
 
-@toolbar_mode
-class RotateMode(CheckableMode):
+@viewer_tool
+class RotateMode(CheckableTool):
 
-    mode_id = 'Ginga rotate'
+    tool_id = 'Ginga rotate'
     icon = os.path.join(GINGA_ICON_DIR, 'rotate_48.png')
     tooltip = 'Rotate'
 
@@ -103,10 +103,10 @@ class RotateMode(CheckableMode):
         self.viewer.mode_cb('rotate', False)
 
 
-@toolbar_mode
-class ContrastMode(CheckableMode):
+@viewer_tool
+class ContrastMode(CheckableTool):
 
-    mode_id = 'Ginga contrast'
+    tool_id = 'Ginga contrast'
     icon = 'glue_contrast'
     tooltip = 'Rotate'
 
@@ -117,10 +117,10 @@ class ContrastMode(CheckableMode):
         self.viewer.mode_cb('contrast', False)
 
 
-@toolbar_mode
-class CutsMode(CheckableMode):
+@viewer_tool
+class CutsMode(CheckableTool):
 
-    mode_id = 'Ginga cuts'
+    tool_id = 'Ginga cuts'
     icon = os.path.join(GINGA_ICON_DIR, 'cuts_48.png')
     tooltip = 'Cuts'
 
@@ -140,11 +140,11 @@ class ColormapAction(QtWidgets.QAction):
         self.setIcon(QtGui.QIcon(pm))
 
 
-@toolbar_mode
-class ColormapMode(NonCheckableMode):
+@viewer_tool
+class ColormapMode(Tool):
 
     icon = 'glue_rainbow'
-    mode_id = 'Ginga colormap'
+    tool_id = 'Ginga colormap'
     action_text = 'Set color scale'
     tool_tip = 'Set color scale'
 
@@ -158,7 +158,7 @@ class ColormapMode(NonCheckableMode):
         return acts
 
 
-class GingaMode(CheckableMode):
+class GingaMode(CheckableTool):
     label = None
     icon = None
     shape = 'polygon'
@@ -167,7 +167,7 @@ class GingaMode(CheckableMode):
 
     def __init__(self, viewer):
 
-        super(CheckableMode, self).__init__(viewer)
+        super(CheckableTool, self).__init__(viewer)
 
         self.parent_canvas = self.viewer.canvas
         self._shape_tag = None
@@ -193,11 +193,11 @@ class GingaMode(CheckableMode):
     _clear_path = _clear_shape_cb
 
 
-@toolbar_mode
+@viewer_tool
 class GingaPVSlicerMode(GingaMode):
 
     icon = 'glue_slice'
-    mode_id = 'Ginga slicer'
+    tool_id = 'Ginga slicer'
     action_text = 'Slice Extraction'
     tool_tip = 'Extract a slice from an arbitrary path'
 
@@ -215,11 +215,11 @@ class GingaPVSlicerMode(GingaMode):
     _build_from_vertices = PVSlicerMode._build_from_vertices
 
 
-@toolbar_mode
+@viewer_tool
 class GingaSpectrumMode(GingaMode, SpectrumTool):
 
     icon = 'glue_spectrum'
-    mode_id = 'Ginga spectrum'
+    tool_id = 'Ginga spectrum'
     action_text = 'Spectrum'
     tool_tip = 'Extract a spectrum from the selection'
 

@@ -6,14 +6,14 @@ from glue.viewers.common.qt.mouse_mode import PathMode
 from glue.viewers.image.qt import StandaloneImageWidget
 from glue.viewers.common.qt.mpl_widget import defer_draw
 from glue.external.echo import add_callback
-from glue.config import toolbar_mode
+from glue.config import viewer_tool
 
 
-@toolbar_mode
+@viewer_tool
 class PVSlicerMode(PathMode):
 
     icon = 'glue_slice'
-    mode_id = 'Slice'
+    tool_id = 'Slice'
     action_text = 'Slice Extraction'
     tool_tip = ('Extract a slice from an arbitrary path\n'
                 '  ENTER accepts the path\n'

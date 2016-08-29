@@ -47,7 +47,7 @@ class HistogramWidget(DataViewer):
     _layer_style_widget_cls = HistogramLayerStyleWidget
 
     _toolbar_cls = MatplotlibViewerToolbar
-    modes = ['X range']
+    tools = ['X range']
 
     def __init__(self, session, parent=None):
         super(HistogramWidget, self).__init__(session, parent)

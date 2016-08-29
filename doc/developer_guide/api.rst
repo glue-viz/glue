@@ -81,7 +81,7 @@ Viewers
 .. automodapi:: glue.viewers.common.viz_client
    :no-inheritance-diagram:
 
-.. automodapi:: glue.viewers.common.qt.mode
+.. automodapi:: glue.viewers.common.qt.tool
    :no-inheritance-diagram:
    :inherited-members:
 

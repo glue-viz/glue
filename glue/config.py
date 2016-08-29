@@ -447,11 +447,11 @@ class ToolbarModeRegistry(DictRegistry):
 
     def add(self, mode_cls):
         """
-        Add a tool class to the registry. The the ``mode_id`` attribute on the
+        Add a tool class to the registry. The the ``tool_id`` attribute on the
         mode_cls should be set, and is used by the viewers to indicate which
         modes they want to
         """
-        self.members[mode_cls.mode_id] = mode_cls
+        self.members[mode_cls.tool_id] = mode_cls
 
     def __call__(self, mode_cls):
         self.add(mode_cls)
@@ -569,7 +569,7 @@ class BooleanSetting(object):
         return self.state
 
 qt_client = QtClientRegistry()
-toolbar_mode = ToolbarModeRegistry()
+viewer_tool = ToolbarModeRegistry()
 data_factory = DataFactoryRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
@@ -588,7 +588,7 @@ auto_refresh = BooleanSetting(False)
 enable_contracts = BooleanSetting(False)
 
 # backward-compatibility
-tool_registry = toolbar_mode
+tool_registry = viewer_tool
 
 def load_configuration(search_path=None):
     ''' Find and import a config.py file

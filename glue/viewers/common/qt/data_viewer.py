@@ -33,7 +33,7 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
     LABEL = 'Override this'
 
     _toolbar_cls = None
-    modes = []
+    tools = []
 
     def __init__(self, session, parent=None):
         """
@@ -214,12 +214,12 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
     def _make_toolbar(self):
 
-        from glue.config import toolbar_mode
+        from glue.config import viewer_tool
 
         self.toolbar = self._toolbar_cls(self)
 
-        for mode_id in self.modes:
-            mode_cls = toolbar_mode.members[mode_id]
+        for tool_id in self.tools:
+            mode_cls = viewer_tool.members[tool_id]
             mode = mode_cls(self)
             self.toolbar.add_mode(mode)
 

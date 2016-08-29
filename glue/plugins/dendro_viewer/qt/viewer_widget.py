@@ -32,7 +32,7 @@ class DendroWidget(DataViewer):
     order = CurrentComboProperty('ui.orderCombo', 'layout sorter attribute')
 
     _toolbar_cls = MatplotlibViewerToolbar
-    modes = ['Pick']
+    tools = ['Pick']
 
     def __init__(self, session, parent=None):
         super(DendroWidget, self).__init__(session, parent)
@@ -72,8 +72,8 @@ class DendroWidget(DataViewer):
             if mode._drag:
                 self.client.apply_roi(mode.roi())
 
-        self.toolbar.modes['Pick']._move_callback = on_move
-        self.toolbar.modes['Pick']._roi_callback = apply_mode
+        self.toolbar.tools['Pick']._move_callback = on_move
+        self.toolbar.tools['Pick']._roi_callback = apply_mode
 
     def _update_combos(self, data=None):
         data = data or self.client.display_data

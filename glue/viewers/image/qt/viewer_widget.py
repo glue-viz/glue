@@ -7,7 +7,7 @@ from qtpy.QtCore import Qt
 from qtpy import QtCore, QtWidgets, QtGui
 from glue.core.callback_property import add_callback, delay_callback
 from glue import core
-from glue.config import toolbar_mode
+from glue.config import viewer_tool
 from glue.viewers.image.ds9norm import DS9Normalize
 from glue.viewers.image.client import MplImageClient
 from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
@@ -20,7 +20,7 @@ from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.mpl_widget import MplWidget, defer_draw
 from glue.utils import nonpartial, Pointer
 from glue.utils.qt import cmap2pixmap, update_combobox, load_ui
-from glue.viewers.common.qt.mode import NonCheckableMode
+from glue.viewers.common.qt.tool import Tool
 
 # We do the following import to register the custom Qt Widget there
 from glue.viewers.image.qt.rgb_edit import RGBEdit  # pylint: disable=W0611
@@ -360,7 +360,7 @@ class ImageWidget(ImageWidgetBase):
     """
 
     _toolbar_cls = MatplotlibViewerToolbar
-    modes = ['Rectangle', 'X range', 'Y range', 'Circle', 'Polygon', 'Colormap']
+    tools = ['Rectangle', 'X range', 'Y range', 'Circle', 'Polygon', 'Colormap']
 
     def __init__(self, session, parent=None):
         super(ImageWidget, self).__init__(session, parent=parent)
@@ -424,11 +424,11 @@ class ColormapAction(QtWidgets.QAction):
         self.setIcon(QtGui.QIcon(pm))
 
 
-@toolbar_mode
-class ColormapMode(NonCheckableMode):
+@viewer_tool
+class ColormapMode(Tool):
 
     icon = 'glue_rainbow'
-    mode_id = 'Colormap'
+    tool_id = 'Colormap'
     action_text = 'Set color scale'
     tool_tip = 'Set color scale'
 
@@ -449,7 +449,7 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
     """
     window_closed = QtCore.Signal()
     _toolbar_cls = MatplotlibViewerToolbar
-    modes = ['Contrast', 'Colormap']
+    tools = ['Contrast', 'Colormap']
 
     def __init__(self, image=None, wcs=None, parent=None, **kwargs):
         """
@@ -550,20 +550,20 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
         # TODO: remove once Python 2 is no longer supported - see below for
         #       simpler code.
 
-        from glue.config import toolbar_mode
+        from glue.config import viewer_tool
 
         self.toolbar = self._toolbar_cls(self)
 
-        for mode_id in self.modes:
-            mode_cls = toolbar_mode.members[mode_id]
+        for tool_id in self.tools:
+            mode_cls = viewer_tool.members[tool_id]
             mode = mode_cls(self)
             self.toolbar.add_mode(mode)
 
         self.addToolBar(self.toolbar)
 
-        self.toolbar.modes['Contrast']._move_callback = self._set_norm
+        self.toolbar.tools['Contrast']._move_callback = self._set_norm
 
     # This works in Python 3 but not Python 2
     # def _make_toolbar(self):
     #     DataViewer._make_toolbar(self)
-    #     self.toolbar.modes['Contrast']._move_callback = self._set_norm
+    #     self.toolbar.tools['Contrast']._move_callback = self._set_norm

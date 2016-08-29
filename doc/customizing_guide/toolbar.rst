@@ -18,13 +18,13 @@ The basic structure for a non-checkable button is:
 .. code:: python
 
     from glue.config import toolbar_mode
-    from glue.viewers.common.qt.mode import NonCheckableMode
+    from glue.viewers.common.qt.tool import Tool
 
     @toolbar_mode
-    class MyCustomButton(NonCheckableMode):
+    class MyCustomButton(Tool):
 
         icon = 'myicon.png'
-        mode_id = 'custom_mode'
+        tool_id = 'custom_mode'
         action_text = 'Does cool stuff'
         tool_tip = 'Does cool stuff'
         shortcut = 'D'
@@ -44,8 +44,8 @@ The class-level variables set at the start of the class are as follows:
   to the path to a PNG file to be used for the icon. Note that this should
   **not** be a ``QIcon`` object.
 
-* ``mode_id``: a unique string that identifies this tool. If you create a
-  button/mode that has the same ``mode_id`` as an existing tool already
+* ``tool_id``: a unique string that identifies this tool. If you create a
+  button/mode that has the same ``tool_id`` as an existing tool already
   implemented in glue, you will overwrite the existing tool. This is never shown
   to the user.
 
@@ -76,13 +76,13 @@ but with an additional ``deactivate`` method:
 .. code:: python
 
     from glue.config import toolbar_mode
-    from glue.viewers.common.qt.mode import CheckableMode
+    from glue.viewers.common.qt.tool import CheckableTool
 
     @toolbar_mode
-    class MyCustomButton(CheckableMode):
+    class MyCustomButton(CheckableTool):
 
         icon = 'myicon.png'
-        mode_id = 'custom_mode'
+        tool_id = 'custom_mode'
         action_text = 'Does cool stuff'
         tool_tip = 'Does cool stuff'
         shortcut = 'D'
@@ -133,17 +133,17 @@ attribute on viewers:
 .. code:: python
 
     >>> from glue.viewers.image.qt import ImageWidget
-    >>> ImageWidget.modes
+    >>> ImageWidget.tools
     ['Rectangle', 'X range', 'Y range', 'Circle', 'Polygon', 'COLORMAP']
 
-The strings in the ``modes`` list correspond to the ``mode_id`` attribute on the
+The strings in the ``modes`` list correspond to the ``tool_id`` attribute on the
 button/mode classes. If you want to add an existing or custom button to a
 viewer, you can therefore simply do e.g.:
 
 .. code:: python
 
     from glue.viewers.image.qt import ImageWidget
-    ImageWidget.modes.append('custom_mode')
+    ImageWidget.tools.append('custom_mode')
 
 Including toolbars in custom viewers
 ------------------------------------
@@ -163,7 +163,7 @@ modes that should be present in the toolbar:
     class MyViewer(DataViewer):
 
         _toolbar_cls = BasicToolbar
-        modes = []
+        tools = []
 
 In the example above, the viewer will include an empty toolbar. There are
 currently two main classes available for toolbars:

@@ -9,7 +9,7 @@ import pytest
 import numpy as np
 from mock import MagicMock
 
-from glue.viewers.common.qt.mode import Mode
+from glue.viewers.common.qt.tool import Tool
 from glue.utils.qt import get_qapp
 from glue.app.qt.tests.test_application import TestApplicationSession
 from glue import core
@@ -135,13 +135,13 @@ class _TestImageWidgetBase(object):
         # Regression test for #518
         self.widget.add_data(self.im)
 
-        class TestMode(Mode):
+        class TestTool(Tool):
             icon = 'glue_lasso'
-            mode_id = 'test'
+            tool_id = 'test'
             def close(self):
                 self.closed = True
 
-        test_mode = TestMode(self.widget)
+        test_mode = TestTool(self.widget)
         self.widget.toolbar.add_mode(test_mode)
         self.widget.close()
         assert test_mode.closed
