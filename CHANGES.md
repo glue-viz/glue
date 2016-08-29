@@ -4,6 +4,8 @@ Full changelog
 v0.9.0 (unreleased)
 -----------------
 
+* Fix compatibility of test suite with pytest 3.x. [#1116]
+
 * Updated bundled version of WCSAxes to v0.9.
 
 * Implement new widget with better control over exporting to Plotly. The
