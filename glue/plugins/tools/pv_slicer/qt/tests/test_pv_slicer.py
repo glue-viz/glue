@@ -63,7 +63,7 @@ class TestStandaloneImageWidget(object):
         self.w = StandaloneImageWidget(im)
 
     def test_set_cmap(self):
-        cm_mode = self.w.toolbar.modes['COLORMAP']
+        cm_mode = self.w.toolbar.modes['Colormap']
         act = cm_mode.menu_actions()[1]
         act.trigger()
         assert self.w._im.cmap is act.cmap

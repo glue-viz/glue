@@ -360,7 +360,7 @@ class ImageWidget(ImageWidgetBase):
     """
 
     _toolbar_cls = MatplotlibViewerToolbar
-    modes = ['Rectangle', 'X range', 'Y range', 'Circle', 'Polygon', 'COLORMAP']
+    modes = ['Rectangle', 'X range', 'Y range', 'Circle', 'Polygon', 'Colormap']
 
     def __init__(self, session, parent=None):
         super(ImageWidget, self).__init__(session, parent=parent)
@@ -428,7 +428,7 @@ class ColormapAction(QtWidgets.QAction):
 class ColormapMode(NonCheckableMode):
 
     icon = 'glue_rainbow'
-    mode_id = 'COLORMAP'
+    mode_id = 'Colormap'
     action_text = 'Set color scale'
     tool_tip = 'Set color scale'
 
@@ -443,14 +443,13 @@ class ColormapMode(NonCheckableMode):
 
 
 class StandaloneImageWidget(QtWidgets.QMainWindow):
-
     """
     A simplified image viewer, without any brushing or linking,
     but with the ability to adjust contrast and resample.
     """
     window_closed = QtCore.Signal()
     _toolbar_cls = MatplotlibViewerToolbar
-    modes = ['Contrast', 'COLORMAP']
+    modes = ['Contrast', 'Colormap']
 
     def __init__(self, image=None, wcs=None, parent=None, **kwargs):
         """
@@ -472,7 +471,6 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
 
         if image is not None:
             self.set_image(image=image, wcs=wcs, **kwargs)
-
 
     def _setup_axes(self):
         from glue.viewers.common.viz_client import init_mpl
