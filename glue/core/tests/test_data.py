@@ -570,14 +570,14 @@ def test_data_str():
     assert str(d) == EXPECTED_STR
 
 
-def test_update_from_data():
+def test_update_values_from_data():
     d1 = Data(a=[1,2,3], b=[4,5,6], label='banana')
     d2 = Data(b=[1,2,3,4], c=[5,6,7,8], label='apple')
     d1a = d1.id['a']
     d1b = d1.id['b']
     d2b = d2.id['b']
     d2c = d2.id['c']
-    d1.update_from_data(d2)
+    d1.update_values_from_data(d2)
     assert not d1a in d1.components
     assert d1b in d1.components
     assert not d2b in d1.components
@@ -585,18 +585,18 @@ def test_update_from_data():
     assert d1.shape == (4,)
 
 
-def test_update_from_data_invalid():
+def test_update_values_from_data_invalid():
 
     d1 = Data(a=[1,2,3], label='banana')
     d1.add_component([3,4,5], 'a')
     d2 = Data(b=[1,2,3,4], c=[5,6,7,8], label='apple')
     with pytest.raises(ValueError) as exc:
-        d1.update_from_data(d2)
+        d1.update_values_from_data(d2)
     assert exc.value.args[0] == "Non-unique component labels in original data"
 
     d1 = Data(a=[1,2,3], b=[4,5,6], label='banana')
     d2 = Data(b=[1,2,3,4], label='apple')
     d2.add_component([5,6,7,8], 'b')
     with pytest.raises(ValueError) as exc:
-        d1.update_from_data(d2)
+        d1.update_values_from_data(d2)
     assert exc.value.args[0] == "Non-unique component labels in new data"

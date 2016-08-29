@@ -820,13 +820,22 @@ class Data(object):
         for subset in self.subsets:
             clear_cache(subset.subset_state.to_mask)
 
-    def update_from_data(self, data):
+    def update_values_from_data(self, data):
         """
         Replace numerical values in data to match values from another dataset.
 
-        Drop components that aren't present in the new data. The matching is
-        done by component label, and components are resized if needed. Note
-        that the style is NOT copied.
+        Notes
+        -----
+
+        This method drops components that aren't present in the new data, and
+        adds components that are in the new data that were not in the original
+        data. The matching is done by component label, and components are
+        resized if needed. This means that for components with matching labels
+        in the original and new data, the
+        :class:`~glue.core.component_id.ComponentID` are preserved, and
+        existing plots and selections will be updated to reflect the new
+        values. Note that the coordinates are also copied, but the style is
+        **not** copied.
         """
 
         old_labels = [cid.label for cid in self.components]
