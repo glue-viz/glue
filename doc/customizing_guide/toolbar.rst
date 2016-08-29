@@ -55,9 +55,10 @@ The class-level variables set at the start of the class are as follows:
   above the button in the toolbar. This can include instructions on how to use
   the tool.
 
-* ``shortcut``: this should be a key that the user can press when the viewer is
-  active, which will activate the tool. This can include modifier keys, e.g.
-  ``Ctrl+A`` or ``Ctrl+Shift+U``, but can also just be a single key, e.g. ``K``.
+* ``shortcut``: this should be a string giving a key that the user can press
+  when the viewer is active, which will activate the tool. This can include
+  modifier keys, e.g. ``'Ctrl+A'`` or ``'Ctrl+Shift+U'``, but can also just be
+  a single key, e.g. ``'K'``.
 
 When the user presses the tool icon, the ``activate`` method is called. In this
 method, you can write any code including code that may for example open a Qt
@@ -70,8 +71,8 @@ The ``@viewer_tool`` decorator tells glue that this class represents a viewer
 tool, and you will then be able to add the tool to any viewers (see
 :ref:`toolbar_content`) using the ``tool_id``.
 
-Checkable buttons
-^^^^^^^^^^^^^^^^^
+Checkable tools
+^^^^^^^^^^^^^^^
 
 The basic structure for a checkable tool is similar to the above, but with an
 additional ``deactivate`` method:
@@ -102,10 +103,10 @@ additional ``deactivate`` method:
         def close(self):
             pass
 
-When the button is checked, the ``activate`` method is called, and when the
+When the tool icon is pressed, the ``activate`` method is called, and when the
 button is unchecked (either by clicking on it again, or if the user clicks on
-another button), the ``deactivate`` method is called. As before, when the viewer
-is closed, the ``close`` method is called.
+another tool icon), the ``deactivate`` method is called. As before, when the
+viewer is closed, the ``close`` method is called.
 
 Drop-down menus
 ^^^^^^^^^^^^^^^
@@ -155,7 +156,8 @@ Including toolbars in custom viewers
 
 When defining a data viewer (as described in :doc:`full_custom_qt_viewer`), it
 is straightforward to add a toolbar that can then be used to add tools. To do
-this, when defining your `glue.viewers.common.qt.data_viewer.DataViewer` subclass,
+this, when defining your
+:class:`~glue.viewers.common.qt.data_viewer.DataViewer` subclass,
 you should also specify the ``_toolbar_cls`` and ``tools`` class-level
 attributes, which should give the class to use for the toolbar, and the default
 tools that should be present in the toolbar:
@@ -168,10 +170,10 @@ tools that should be present in the toolbar:
     class MyViewer(DataViewer):
 
         _toolbar_cls = BasicToolbar
-        tools = []
+        tools = ['custom_tool']
 
-In the example above, the viewer will include an empty toolbar. There are
-currently two main classes available for toolbars:
+In the example above, the viewer will include an toolbar with one tool (the one
+we defined above). There are currently two main classes available for toolbars:
 
 * :class:`~glue.viewers.common.qt.toolbar.BasicToolbar`: this is the most basic
   kind of toolbar - it comes with no tools by default.
@@ -181,3 +183,23 @@ currently two main classes available for toolbars:
   includes the standard Matplotlib buttons by default (home, zoom, pan, etc.).
   This toolbar can only be used if your data viewer includes a Matplotlib canvas
   accessible at ``viewer.canvas``.
+
+Available tools
+---------------
+
+The following tools are available by default (note that not all tools can be
+used in all viewers, click on each tool class name to find out more):
+
+=================== ========================================================
+Tool ID             Class
+=================== ========================================================
+``'Circle'``         :class:`~glue.viewers.common.qt.mouse_mode.CircleMode`
+``'Colormap'``       :class:`~glue.viewers.common.qt.mouse_mode.ColormapMode`
+``'Contrast'``       :class:`~glue.viewers.common.qt.mouse_mode.ContrastMode`
+``'Lasso'``          :class:`~glue.viewers.common.qt.mouse_mode.LassoMode`
+``'Pick'``           :class:`~glue.viewers.common.qt.mouse_mode.PickMode`
+``'Polygon'``        :class:`~glue.viewers.common.qt.mouse_mode.PolyMode`
+``'Rectangle'``      :class:`~glue.viewers.common.qt.mouse_mode.RectangleMode`
+``'X range'``        :class:`~glue.viewers.common.qt.mouse_mode.HRangeMode`
+``'Y range'``        :class:`~glue.viewers.common.qt.mouse_mode.VRangeMode`
+=================== ========================================================

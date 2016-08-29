@@ -26,13 +26,13 @@ from glue.core.qt import roi as qt_roi
 from glue.utils.qt import get_qapp
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui
-from glue.viewers.common.qt.tool import CheckableTool
+from glue.viewers.common.qt.tool import Tool, CheckableTool
 from glue.config import viewer_tool
 
 __all__ = ['MouseMode', 'RoiModeBase', 'RoiMode', 'PersistentRoiMode',
            'ClickRoiMode', 'RectangleMode', 'PathMode', 'CircleMode',
            'PolyMode', 'LassoMode', 'HRangeMode', 'VRangeMode', 'PickMode',
-           'ContrastMode']
+           'ContrastMode', 'ColormapMode']
 
 
 class MouseMode(CheckableTool):
@@ -601,3 +601,30 @@ class ContrastMode(MouseMode):
                 r.triggered.connect(nonpartial(self._move_callback, self))
 
         return result
+
+
+class ColormapAction(QtWidgets.QAction):
+
+    def __init__(self, label, cmap, parent):
+        super(ColormapAction, self).__init__(label, parent)
+        self.cmap = cmap
+        pm = cmap2pixmap(cmap)
+        self.setIcon(QtGui.QIcon(pm))
+
+
+@viewer_tool
+class ColormapMode(Tool):
+
+    icon = 'glue_rainbow'
+    tool_id = 'Colormap'
+    action_text = 'Set color scale'
+    tool_tip = 'Set color scale'
+
+    def menu_actions(self):
+        from glue import config
+        acts = []
+        for label, cmap in config.colormaps:
+            a = ColormapAction(label, cmap, self.viewer)
+            a.triggered.connect(nonpartial(self.viewer.set_cmap, cmap))
+            acts.append(a)
+        return acts

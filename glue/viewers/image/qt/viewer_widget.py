@@ -415,33 +415,6 @@ class ImageWidget(ImageWidgetBase):
         self.client.set_cmap(cmap)
 
 
-class ColormapAction(QtWidgets.QAction):
-
-    def __init__(self, label, cmap, parent):
-        super(ColormapAction, self).__init__(label, parent)
-        self.cmap = cmap
-        pm = cmap2pixmap(cmap)
-        self.setIcon(QtGui.QIcon(pm))
-
-
-@viewer_tool
-class ColormapMode(Tool):
-
-    icon = 'glue_rainbow'
-    tool_id = 'Colormap'
-    action_text = 'Set color scale'
-    tool_tip = 'Set color scale'
-
-    def menu_actions(self):
-        from glue import config
-        acts = []
-        for label, cmap in config.colormaps:
-            a = ColormapAction(label, cmap, self.viewer)
-            a.triggered.connect(nonpartial(self.viewer.set_cmap, cmap))
-            acts.append(a)
-        return acts
-
-
 class StandaloneImageWidget(QtWidgets.QMainWindow):
     """
     A simplified image viewer, without any brushing or linking,
