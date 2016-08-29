@@ -3,16 +3,13 @@ from __future__ import absolute_import, division, print_function
 import pytest
 import numpy as np
 
+pytest.importorskip('astropy')
+
 from glue.core import ComponentID
 from glue.core.tests.test_link_helpers import check_link, check_using
-from glue.tests.helpers import ASTROPY_INSTALLED
 
 from ..link_helpers import (Galactic_to_FK5, FK4_to_FK5, ICRS_to_FK5,
                             Galactic_to_FK4, ICRS_to_FK4, ICRS_to_Galactic)
-
-if not ASTROPY_INSTALLED:
-    pytest.skip()
-
 
 # We now store for each class the expected result of the conversion of (45,50)
 # from the input frame to output frame and then from the output frame to the

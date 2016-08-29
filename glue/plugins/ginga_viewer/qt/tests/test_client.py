@@ -4,12 +4,10 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
 
+pytest.importorskip('ginga')
+
 from glue.core import Data
 from glue.viewers.image.tests.test_client import _TestImageClientBase
-from glue.tests.helpers import GINGA_INSTALLED
-
-if not GINGA_INSTALLED:
-    pytest.skip()
 
 from ginga.misc import log
 from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas

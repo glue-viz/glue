@@ -6,11 +6,8 @@ import mock
 import pytest
 from mock import patch
 
-try:
-    import plotly
-    from plotly.exceptions import PlotlyError
-except ImportError:
-    pytest.skip()
+plotly = pytest.importorskip('plotly')
+from plotly.exceptions import PlotlyError
 
 from glue.tests.helpers import requires_plotly
 from glue.core import Data, DataCollection

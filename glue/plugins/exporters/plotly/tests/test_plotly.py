@@ -6,10 +6,7 @@ import numpy as np
 from glue.config import settings
 from glue.core import Data, DataCollection
 
-from glue.tests.helpers import QT_INSTALLED
-
-if not QT_INSTALLED:
-    pytest.skip()
+pytest.importorskip('qtpy')
 
 from glue.app.qt import GlueApplication
 from glue.viewers.scatter.qt import ScatterWidget
