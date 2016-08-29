@@ -5,8 +5,6 @@ import traceback
 from contextlib import contextmanager
 from functools import wraps
 
-from glue.utils.qt import QMessageBoxPatched as QMessageBox
-
 __all__ = ['set_cursor', 'set_cursor_cm', 'messagebox_on_error',
            'die_on_error']
 
@@ -46,6 +44,7 @@ def set_cursor_cm(shape):
 
 def messagebox_on_error(msg):
     """Decorator that catches exceptions and displays an error message"""
+    from glue.utils.qt import QMessageBoxPatched as QMessageBox  # Must be here
 
     def decorator(func):
         @wraps(func)
@@ -66,6 +65,8 @@ def messagebox_on_error(msg):
 
 def die_on_error(msg):
     """Decorator that catches errors, displays a popup message, and quits"""
+    from glue.utils.qt import QMessageBoxPatched as QMessageBox
+
     def decorator(func):
         def wrapper(*args, **kwargs):
             try:

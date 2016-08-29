@@ -7,7 +7,7 @@ import optparse
 
 from glue import __version__
 from glue.logger import logger
-from glue.utils.qt import die_on_error
+from glue.utils.qt.decorators import die_on_error
 
 
 def parse(argv):
