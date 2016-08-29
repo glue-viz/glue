@@ -1,30 +1,30 @@
-Toolbars
-========
+Custom tools for viewers and custom toolbars
+============================================
 
-Writing a custom button for a viewer toolbar
---------------------------------------------
+Writing a custom tool for a viewer toolbar
+------------------------------------------
 
-To create a tool to include in a viewer (either one of the built-in viewers or a
-custom viewer), you will need to write a short class. There are two types of
-toolbar buttons: ones that can be checked and unchecked, and ones that simply
-trigger an event when pressed, but do not remain pressed. These are described
-in the following sub-sections.
+Here we take a look at how to create a tool to include in a viewer's toolbar
+(either one of the built-in viewers or a custom viewer) There are two types of
+tools: ones that can be checked and unchecked, and ones that simply trigger an
+event when pressed, but do not remain pressed. These are described in the
+following two sub-sections.
 
-Non-checkable buttons
-^^^^^^^^^^^^^^^^^^^^^
+Non-checkable tools
+^^^^^^^^^^^^^^^^^^^
 
-The basic structure for a non-checkable button is:
+The basic structure for a non-checkable tool is:
 
 .. code:: python
 
-    from glue.config import toolbar_mode
+    from glue.config import viewer_tool
     from glue.viewers.common.qt.tool import Tool
 
-    @toolbar_mode
-    class MyCustomButton(Tool):
+    @viewer_tool
+    class MyCustomTool(Tool):
 
         icon = 'myicon.png'
-        tool_id = 'custom_mode'
+        tool_id = 'custom_tool'
         action_text = 'Does cool stuff'
         tool_tip = 'Does cool stuff'
         shortcut = 'D'
@@ -45,44 +45,47 @@ The class-level variables set at the start of the class are as follows:
   **not** be a ``QIcon`` object.
 
 * ``tool_id``: a unique string that identifies this tool. If you create a
-  button/mode that has the same ``tool_id`` as an existing tool already
-  implemented in glue, you will overwrite the existing tool. This is never shown
-  to the user.
+  tool that has the same ``tool_id`` as an existing tool already implemented in
+  glue, you will overwrite the existing tool. This is never shown to the user.
 
 * ``action_text``: a string describing the tool. This is shown in the status bar
-* at the bottom of the viewer whenever the button is active.
+  at the bottom of the viewer whenever the button is active.
 
 * ``tool_tip``: this should be a string that will be shown when the user hovers
   above the button in the toolbar. This can include instructions on how to use
-  the button.
+  the tool.
 
 * ``shortcut``: this should be a key that the user can press when the viewer is
-  active, which will activate the button. This can include modifier keys, e.g.
+  active, which will activate the tool. This can include modifier keys, e.g.
   ``Ctrl+A`` or ``Ctrl+Shift+U``, but can also just be a single key, e.g. ``K``.
 
-When the user presses the button, the ``activate`` method is called. In this
+When the user presses the tool icon, the ``activate`` method is called. In this
 method, you can write any code including code that may for example open a Qt
 window, or change the state of the viewer (for example changing the zoom or
 field of view). You can access the viewer instance with ``self.viewer``.
 Finally, when the viewer is closed the ``close`` method is called, so you should
 use this to do any necessary cleanup.
 
+The ``@viewer_tool`` decorator tells glue that this class represents a viewer
+tool, and you will then be able to add the tool to any viewers (see
+:ref:`toolbar_content`) using the ``tool_id``.
+
 Checkable buttons
 ^^^^^^^^^^^^^^^^^
 
-The basic structure for a checkable button is similar to non-checkable buttons,
-but with an additional ``deactivate`` method:
+The basic structure for a checkable tool is similar to the above, but with an
+additional ``deactivate`` method:
 
 .. code:: python
 
-    from glue.config import toolbar_mode
+    from glue.config import viewer_tool
     from glue.viewers.common.qt.tool import CheckableTool
 
-    @toolbar_mode
+    @viewer_tool
     class MyCustomButton(CheckableTool):
 
         icon = 'myicon.png'
-        tool_id = 'custom_mode'
+        tool_id = 'custom_tool'
         action_text = 'Does cool stuff'
         tool_tip = 'Does cool stuff'
         shortcut = 'D'
@@ -104,11 +107,11 @@ button is unchecked (either by clicking on it again, or if the user clicks on
 another button), the ``deactivate`` method is called. As before, when the viewer
 is closed, the ``close`` method is called.
 
-Button menus
-^^^^^^^^^^^^
+Drop-down menus
+^^^^^^^^^^^^^^^
 
-For both checkable and non-checkable buttons, it is possible to show a menu
-when the user clicks on the button. To do this, simply add a ``menu_actions``
+For both checkable and non-checkable tools, it is possible to show a menu
+when the user clicks on the icon. To do this, simply add a ``menu_actions``
 method to your class:
 
 .. code:: python
@@ -122,12 +125,14 @@ text, and callbacks.
 .. note:: In future, we will allow this to be done in a way that
           does not rely on Qt QActions.
 
+.. _toolbar_content:
+
 Customizing the content of a toolbar
 ------------------------------------
 
-When defining a button as above, the ``@toolbar_mode`` decorator ensures that
-the mode is registered with glue, but does not add it to any specific viewer.
-Which buttons are shown for a viewer is controlled by the ``modes`` class-level
+When defining a tool as above, the ``@viewer_tool`` decorator ensures that
+the tool is registered with glue, but does not add it to any specific viewer.
+Which buttons are shown for a viewer is controlled by the ``tools`` class-level
 attribute on viewers:
 
 .. code:: python
@@ -136,24 +141,24 @@ attribute on viewers:
     >>> ImageWidget.tools
     ['Rectangle', 'X range', 'Y range', 'Circle', 'Polygon', 'COLORMAP']
 
-The strings in the ``modes`` list correspond to the ``tool_id`` attribute on the
-button/mode classes. If you want to add an existing or custom button to a
-viewer, you can therefore simply do e.g.:
+The strings in the ``tools`` list correspond to the ``tool_id`` attribute on the
+tool classes. If you want to add an existing or custom button to a viewer, you
+can therefore simply do e.g.:
 
 .. code:: python
 
     from glue.viewers.image.qt import ImageWidget
-    ImageWidget.tools.append('custom_mode')
+    ImageWidget.tools.append('custom_tool')
 
 Including toolbars in custom viewers
 ------------------------------------
 
 When defining a data viewer (as described in :doc:`full_custom_qt_viewer`), it
-is straightforward to add a toolbar that can then be used to add buttons. To do
+is straightforward to add a toolbar that can then be used to add tools. To do
 this, when defining your `glue.viewers.common.qt.data_viewer.DataViewer` subclass,
-you should also specify the ``_toolbar_cls`` and ``modes`` class-level
+you should also specify the ``_toolbar_cls`` and ``tools`` class-level
 attributes, which should give the class to use for the toolbar, and the default
-modes that should be present in the toolbar:
+tools that should be present in the toolbar:
 
 .. code:: python
 
@@ -169,10 +174,10 @@ In the example above, the viewer will include an empty toolbar. There are
 currently two main classes available for toolbars:
 
 * :class:`~glue.viewers.common.qt.toolbar.BasicToolbar`: this is the most basic
-  kind of toolbar - it comes with no buttons by default.
+  kind of toolbar - it comes with no tools by default.
 
-* :class:`~glue.viewers.common.qt.mpl_toolbar.MatplotlibViewerToolbar`: this is a
-  subclass of :class:`~glue.viewers.common.qt.toolbar.BasicToolbar` that includes
-  the standard Matplotlib buttons by default (home, zoom, pan, etc.). This
-  toolbar can only be used if your data viewer includes a Matplotlib canvas
+* :class:`~glue.viewers.common.qt.mpl_toolbar.MatplotlibViewerToolbar`: this is
+  a subclass of :class:`~glue.viewers.common.qt.toolbar.BasicToolbar` that
+  includes the standard Matplotlib buttons by default (home, zoom, pan, etc.).
+  This toolbar can only be used if your data viewer includes a Matplotlib canvas
   accessible at ``viewer.canvas``.

@@ -247,7 +247,7 @@ provides more information about what the registry is and how it can be used.
 Registry name                  Registry class
 ========================== =======================================================
 ``qt_client``                :class:`glue.config.QtClientRegistry`
-``toolbar_mode``             :class:`glue.config.ToolbarModeRegistry`
+``viewer_tool``             :class:`glue.config.ToolbarModeRegistry`
 ``data_factory``             :class:`glue.config.DataFactoryRegistry`
 ``link_function``            :class:`glue.config.LinkFunctionRegistry`
 ``link_helper``              :class:`glue.config.LinkHelperRegistry`
