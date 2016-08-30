@@ -30,6 +30,7 @@ class MouseModeTest(MouseMode):
     def move(self, event):
         self.last_mode = 'MOVE'
 
+
 class ExampleViewer(DataViewer):
 
     _toolbar_cls = MatplotlibViewerToolbar

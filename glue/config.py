@@ -587,8 +587,6 @@ qglue_parser = QGlueParserRegistry()
 auto_refresh = BooleanSetting(False)
 enable_contracts = BooleanSetting(False)
 
-# backward-compatibility
-tool_registry = viewer_tool
 
 def load_configuration(search_path=None):
     ''' Find and import a config.py file
