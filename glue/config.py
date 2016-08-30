@@ -12,7 +12,7 @@ Objects used to configure Glue at runtime.
 
 __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'ColormapRegistry', 'DataFactoryRegistry', 'QtClientRegistry',
-           'LinkFunctionRegistry', 'LinkHelperRegistry', 'ToolbarModeRegistry',
+           'LinkFunctionRegistry', 'LinkHelperRegistry', 'ViewerToolRegistry',
            'SingleSubsetLayerActionRegistry', 'ProfileFitterRegistry',
            'qt_client', 'data_factory', 'link_function', 'link_helper',
            'colormaps', 'exporters', 'settings', 'fit_plugin',
@@ -443,19 +443,22 @@ class QtClientRegistry(Registry):
     """
 
 
-class ToolbarModeRegistry(DictRegistry):
+class ViewerToolRegistry(DictRegistry):
 
-    def add(self, mode_cls):
+    def add(self, tool_cls):
         """
         Add a tool class to the registry. The the ``tool_id`` attribute on the
-        mode_cls should be set, and is used by the viewers to indicate which
-        modes they want to
+        tool_cls should be set, and is used by the viewers to indicate which
+        tools they want to
         """
-        self.members[mode_cls.tool_id] = mode_cls
+        if tool_cls.tool_id in self.members:
+            raise ValueError("Tool ID '{0}' already registered".format(tool_cls.tool_id))
+        else:
+            self.members[tool_cls.tool_id] = tool_cls
 
-    def __call__(self, mode_cls):
-        self.add(mode_cls)
-        return mode_cls
+    def __call__(self, tool_cls):
+        self.add(tool_cls)
+        return tool_cls
 
 
 class LinkFunctionRegistry(Registry):
@@ -569,7 +572,7 @@ class BooleanSetting(object):
         return self.state
 
 qt_client = QtClientRegistry()
-viewer_tool = ToolbarModeRegistry()
+viewer_tool = ViewerToolRegistry()
 data_factory = DataFactoryRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()

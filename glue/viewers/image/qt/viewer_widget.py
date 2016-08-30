@@ -360,7 +360,7 @@ class ImageWidget(ImageWidgetBase):
     """
 
     _toolbar_cls = MatplotlibViewerToolbar
-    tools = ['Rectangle', 'X range', 'Y range', 'Circle', 'Polygon', 'Colormap']
+    tools = ['select:rectangle', 'select:xrange', 'select:yrange', 'select:circle', 'select:polygon', 'image:colormap']
 
     def __init__(self, session, parent=None):
         super(ImageWidget, self).__init__(session, parent=parent)
@@ -381,9 +381,9 @@ class ImageWidget(ImageWidgetBase):
         # connect viewport update buttons to client commands to
         # allow resampling
         cl = self.client
-        self.toolbar.buttons['HOME'].triggered.connect(nonpartial(cl.check_update))
-        self.toolbar.buttons['FORWARD'].triggered.connect(nonpartial(cl.check_update))
-        self.toolbar.buttons['BACK'].triggered.connect(nonpartial(cl.check_update))
+        self.toolbar.buttons['mpl:home'].triggered.connect(nonpartial(cl.check_update))
+        self.toolbar.buttons['mpl:forward'].triggered.connect(nonpartial(cl.check_update))
+        self.toolbar.buttons['mpl:back'].triggered.connect(nonpartial(cl.check_update))
 
     def paintEvent(self, event):
         super(ImageWidget, self).paintEvent(event)
@@ -422,7 +422,7 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
     """
     window_closed = QtCore.Signal()
     _toolbar_cls = MatplotlibViewerToolbar
-    tools = ['Contrast', 'Colormap']
+    tools = ['image:contrast', 'image:colormap']
 
     def __init__(self, image=None, wcs=None, parent=None, **kwargs):
         """
@@ -530,13 +530,13 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
         for tool_id in self.tools:
             mode_cls = viewer_tool.members[tool_id]
             mode = mode_cls(self)
-            self.toolbar.add_mode(mode)
+            self.toolbar.add_tool(mode)
 
         self.addToolBar(self.toolbar)
 
-        self.toolbar.tools['Contrast']._move_callback = self._set_norm
+        self.toolbar.tools['image:contrast']._move_callback = self._set_norm
 
     # This works in Python 3 but not Python 2
     # def _make_toolbar(self):
     #     DataViewer._make_toolbar(self)
-    #     self.toolbar.tools['Contrast']._move_callback = self._set_norm
+    #     self.toolbar.tools['image:contrast']._move_callback = self._set_norm

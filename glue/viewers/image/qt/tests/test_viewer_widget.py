@@ -142,7 +142,7 @@ class _TestImageWidgetBase(object):
                 self.closed = True
 
         test_mode = TestTool(self.widget)
-        self.widget.toolbar.add_mode(test_mode)
+        self.widget.toolbar.add_tool(test_mode)
         self.widget.close()
         assert test_mode.closed
 

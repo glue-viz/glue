@@ -30,9 +30,9 @@ class GingaWidget(ImageWidgetBase):
     LABEL = "Ginga Viewer"
 
     _toolbar_cls = BasicToolbar
-    tools = ['Ginga rectangle', 'Ginga circle', 'Ginga polygon', 'Ginga pan',
-             'Ginga free pan', 'Ginga rotate', 'Ginga contrast', 'Ginga cuts',
-             'Ginga colormap', 'Ginga slicer', 'Ginga spectrum']
+    tools = ['ginga:rectangle', 'ginga:circle', 'ginga:polygon', 'ginga:pan',
+             'ginga:freepan', 'ginga:rotate', 'ginga:contrast', 'ginga:cuts',
+             'ginga:colormap', 'ginga:slicer', 'ginga:spectrum']
 
     def __init__(self, session, parent=None):
 

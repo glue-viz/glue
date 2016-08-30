@@ -668,7 +668,7 @@ class SpectrumExtractorMode(RoiMode):
     persistent = True
 
     icon = 'glue_spectrum'
-    tool_id = 'Spectrum'
+    tool_id = 'spectrum'
     action_text = 'Spectrum'
     tool_tip = 'Extract a spectrum from the selection'
     shortcut = 'S'

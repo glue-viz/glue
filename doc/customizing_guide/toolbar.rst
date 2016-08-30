@@ -46,7 +46,7 @@ The class-level variables set at the start of the class are as follows:
 
 * ``tool_id``: a unique string that identifies this tool. If you create a
   tool that has the same ``tool_id`` as an existing tool already implemented in
-  glue, you will overwrite the existing tool. This is never shown to the user.
+  glue, you will get an error.
 
 * ``action_text``: a string describing the tool. This is shown in the status bar
   at the bottom of the viewer whenever the button is active.
@@ -58,7 +58,10 @@ The class-level variables set at the start of the class are as follows:
 * ``shortcut``: this should be a string giving a key that the user can press
   when the viewer is active, which will activate the tool. This can include
   modifier keys, e.g. ``'Ctrl+A'`` or ``'Ctrl+Shift+U'``, but can also just be
-  a single key, e.g. ``'K'``.
+  a single key, e.g. ``'K'``. If present, the shortcut is added at the end of
+  the tooltip. If multiple tools in a viewer have the same shortcut, a warning
+  will be emitted, and only the first tool registered with a particular
+  shortcut will be accessible with that shortcut.
 
 When the user presses the tool icon, the ``activate`` method is called. In this
 method, you can write any code including code that may for example open a Qt
@@ -140,7 +143,8 @@ attribute on viewers:
 
     >>> from glue.viewers.image.qt import ImageWidget
     >>> ImageWidget.tools
-    ['Rectangle', 'X range', 'Y range', 'Circle', 'Polygon', 'COLORMAP']
+    ['select:rectangle', 'select:xrange', 'select:yrange',
+     'select:circle', 'select:polygon', 'image:colormap']
 
 The strings in the ``tools`` list correspond to the ``tool_id`` attribute on the
 tool classes. If you want to add an existing or custom button to a viewer, you
@@ -190,16 +194,16 @@ Available tools
 The following tools are available by default (note that not all tools can be
 used in all viewers, click on each tool class name to find out more):
 
-=================== ========================================================
-Tool ID             Class
-=================== ========================================================
-``'Circle'``         :class:`~glue.viewers.common.qt.mouse_mode.CircleMode`
-``'Colormap'``       :class:`~glue.viewers.common.qt.mouse_mode.ColormapMode`
-``'Contrast'``       :class:`~glue.viewers.common.qt.mouse_mode.ContrastMode`
-``'Lasso'``          :class:`~glue.viewers.common.qt.mouse_mode.LassoMode`
-``'Pick'``           :class:`~glue.viewers.common.qt.mouse_mode.PickMode`
-``'Polygon'``        :class:`~glue.viewers.common.qt.mouse_mode.PolyMode`
-``'Rectangle'``      :class:`~glue.viewers.common.qt.mouse_mode.RectangleMode`
-``'X range'``        :class:`~glue.viewers.common.qt.mouse_mode.HRangeMode`
-``'Y range'``        :class:`~glue.viewers.common.qt.mouse_mode.VRangeMode`
-=================== ========================================================
+======================  ========================================================
+Tool ID                 Class
+======================  ========================================================
+``'select:circle'``     :class:`~glue.viewers.common.qt.mouse_mode.CircleMode`
+``'select:lasso'``      :class:`~glue.viewers.common.qt.mouse_mode.LassoMode`
+``'select:pick'``       :class:`~glue.viewers.common.qt.mouse_mode.PickMode`
+``'select:polygon'``    :class:`~glue.viewers.common.qt.mouse_mode.PolyMode`
+``'select:rectangle'``  :class:`~glue.viewers.common.qt.mouse_mode.RectangleMode`
+``'select:xrange'``     :class:`~glue.viewers.common.qt.mouse_mode.HRangeMode`
+``'select:yange'``      :class:`~glue.viewers.common.qt.mouse_mode.VRangeMode`
+``'image:colormap'``    :class:`~glue.viewers.common.qt.mouse_mode.ColormapMode`
+``'image:contrast'``    :class:`~glue.viewers.common.qt.mouse_mode.ContrastMode`
+======================  ========================================================

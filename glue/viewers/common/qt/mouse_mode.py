@@ -10,7 +10,7 @@ Mode, to implement custom functionality
 
 The basic usage pattern is thus:
  * visualization object instantiates the MouseModes it wants
- * each of these is passed to the add_mode method of the toolbar
+ * each of these is passed to the add_tool method of the toolbar
  * visualization object optionally attaches methods to the 3 _callback
    methods in a MouseMode, for additional behavior
 """
@@ -306,7 +306,7 @@ class RectangleMode(RoiMode):
     """
 
     icon = 'glue_square'
-    tool_id = 'Rectangle'
+    tool_id = 'select:rectangle'
     action_text = 'Rectangular ROI'
     tool_tip = 'Define a rectangular region of interest'
     shortcut = 'R'
@@ -337,7 +337,7 @@ class CircleMode(RoiMode):
     """
 
     icon = 'glue_circle'
-    tool_id = 'Circle'
+    tool_id = 'select:circle'
     action_text = 'Circular ROI'
     tool_tip = 'Define a circular region of interest'
     shortcut = 'C'
@@ -354,7 +354,7 @@ class PolyMode(ClickRoiMode):
     """
 
     icon = 'glue_lasso'
-    tool_id = 'Polygon'
+    tool_id = 'select:polygon'
     action_text = 'Polygonal ROI'
     tool_tip = ('Lasso a region of interest\n'
                 '  ENTER accepts the path\n'
@@ -392,10 +392,10 @@ class HRangeMode(RoiMode):
     """
 
     icon = 'glue_xrange_select'
-    tool_id = 'X range'
-    action_text = 'X range'
+    tool_id = 'select:xrange'
+    action_text = 'select:xrange'
     tool_tip = 'Select a range of x values'
-    shortcut = 'H'
+    shortcut = 'X'
 
     def __init__(self, viewer, **kwargs):
         super(HRangeMode, self).__init__(viewer, **kwargs)
@@ -411,10 +411,10 @@ class VRangeMode(RoiMode):
     """
 
     icon = 'glue_yrange_select'
-    tool_id = 'Y range'
-    action_text = 'Y range'
+    tool_id = 'select:yrange'
+    action_text = 'select:yrange'
     tool_tip = 'Select a range of y values'
-    shortcut = 'V'
+    shortcut = 'Y'
 
     def __init__(self, viewer, **kwargs):
         super(VRangeMode, self).__init__(viewer, **kwargs)
@@ -454,8 +454,8 @@ class ContrastMode(MouseMode):
     """
 
     icon = 'glue_contrast'
-    tool_id = 'Contrast'
-    saction_text = 'Contrast'
+    tool_id = 'image:contrast'
+    action_text = 'Contrast'
     tool_tip = 'Adjust the bias/contrast'
     shortcut = 'B'
 
@@ -616,7 +616,7 @@ class ColormapAction(QtWidgets.QAction):
 class ColormapMode(Tool):
 
     icon = 'glue_rainbow'
-    tool_id = 'Colormap'
+    tool_id = 'image:colormap'
     action_text = 'Set color scale'
     tool_tip = 'Set color scale'
 

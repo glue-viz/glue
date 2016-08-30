@@ -22,7 +22,7 @@ GINGA_ICON_DIR = os.path.join(GINGA_HOME, 'icons')
 @viewer_tool
 class RectangleROIMode(CheckableTool):
 
-    tool_id = 'Ginga rectangle'
+    tool_id = 'ginga:rectangle'
     icon = 'glue_square'
     tooltip = 'Rectangle'
 
@@ -36,9 +36,9 @@ class RectangleROIMode(CheckableTool):
 @viewer_tool
 class CircleROIMode(CheckableTool):
 
-    tool_id = 'Ginga circle'
+    tool_id = 'ginga:circle'
     icon = 'glue_circle'
-    tooltip = 'Circle'
+    tooltip = 'select:circle'
 
     def activate(self):
         self.viewer._set_roi_mode('circle', True)
@@ -50,9 +50,9 @@ class CircleROIMode(CheckableTool):
 @viewer_tool
 class PolygonROIMode(CheckableTool):
 
-    tool_id = 'Ginga polygon'
+    tool_id = 'ginga:polygon'
     icon = 'glue_lasso'
-    tooltip = 'Polygon'
+    tooltip = 'select:polygon'
 
     def activate(self):
         self.viewer._set_roi_mode('polygon', True)
@@ -64,7 +64,7 @@ class PolygonROIMode(CheckableTool):
 @viewer_tool
 class PanMode(CheckableTool):
 
-    tool_id = 'Ginga pan'
+    tool_id = 'ginga:pan'
     icon = 'glue_move'
     tooltip = 'Pan'
 
@@ -78,7 +78,7 @@ class PanMode(CheckableTool):
 @viewer_tool
 class FreePanMode(CheckableTool):
 
-    tool_id = 'Ginga free pan'
+    tool_id = 'ginga:freepan'
     icon = os.path.join(GINGA_ICON_DIR, 'hand_48.png')
     tooltip = 'Free Pan'
 
@@ -92,7 +92,7 @@ class FreePanMode(CheckableTool):
 @viewer_tool
 class RotateMode(CheckableTool):
 
-    tool_id = 'Ginga rotate'
+    tool_id = 'ginga:rotate'
     icon = os.path.join(GINGA_ICON_DIR, 'rotate_48.png')
     tooltip = 'Rotate'
 
@@ -106,7 +106,7 @@ class RotateMode(CheckableTool):
 @viewer_tool
 class ContrastMode(CheckableTool):
 
-    tool_id = 'Ginga contrast'
+    tool_id = 'ginga:contrast'
     icon = 'glue_contrast'
     tooltip = 'Rotate'
 
@@ -120,7 +120,7 @@ class ContrastMode(CheckableTool):
 @viewer_tool
 class CutsMode(CheckableTool):
 
-    tool_id = 'Ginga cuts'
+    tool_id = 'ginga:cuts'
     icon = os.path.join(GINGA_ICON_DIR, 'cuts_48.png')
     tooltip = 'Cuts'
 
@@ -144,7 +144,7 @@ class ColormapAction(QtWidgets.QAction):
 class ColormapMode(Tool):
 
     icon = 'glue_rainbow'
-    tool_id = 'Ginga colormap'
+    tool_id = 'ginga:colormap'
     action_text = 'Set color scale'
     tool_tip = 'Set color scale'
 
@@ -197,7 +197,7 @@ class GingaMode(CheckableTool):
 class GingaPVSlicerMode(GingaMode):
 
     icon = 'glue_slice'
-    tool_id = 'Ginga slicer'
+    tool_id = 'ginga:slicer'
     action_text = 'Slice Extraction'
     tool_tip = 'Extract a slice from an arbitrary path'
 
@@ -219,7 +219,7 @@ class GingaPVSlicerMode(GingaMode):
 class GingaSpectrumMode(GingaMode, SpectrumTool):
 
     icon = 'glue_spectrum'
-    tool_id = 'Ginga spectrum'
+    tool_id = 'ginga:spectrum'
     action_text = 'Spectrum'
     tool_tip = 'Extract a spectrum from the selection'
 

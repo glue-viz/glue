@@ -50,7 +50,7 @@ class ScatterWidget(DataViewer):
     _layer_style_widget_cls = ScatterLayerStyleWidget
 
     _toolbar_cls = MatplotlibViewerToolbar
-    tools = ['Rectangle', 'X range', 'Y range', 'Circle', 'Polygon']
+    tools = ['select:rectangle', 'select:xrange', 'select:yrange', 'select:circle', 'select:polygon']
 
     def __init__(self, session, parent=None):
 

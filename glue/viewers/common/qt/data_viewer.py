@@ -221,7 +221,7 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
         for tool_id in self.tools:
             mode_cls = viewer_tool.members[tool_id]
             mode = mode_cls(self)
-            self.toolbar.add_mode(mode)
+            self.toolbar.add_tool(mode)
 
         self.addToolBar(self.toolbar)
 

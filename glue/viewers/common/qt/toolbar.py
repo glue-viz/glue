@@ -1,8 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import warnings
+
 from qtpy import QtCore, QtGui, QtWidgets
 from qtpy.QtCore import Qt
+
 from glue.external import six
 from glue.core.callback_property import add_callback
 from glue.utils import nonpartial
@@ -85,7 +88,7 @@ class BasicToolbar(QtWidgets.QToolBar):
         if isinstance(mode, CheckableTool):
             mode.deactivate()
 
-    def add_mode(self, mode):
+    def add_tool(self, mode):
 
         parent = QtWidgets.QToolBar.parent(self)
 
@@ -115,11 +118,28 @@ class BasicToolbar(QtWidgets.QToolBar):
         else:
             action.triggered.connect(trigger)
 
-        if mode.shortcut is not None:
-            action.setShortcut(mode.shortcut)
-            action.setShortcutContext(Qt.WidgetShortcut)
+        shortcut = None
 
-        action.setToolTip(mode.tool_tip)
+        if mode.shortcut is not None:
+
+            # Make sure that the keyboard shortcut is unique
+            for m in self.tools.values():
+                if mode.shortcut == m.shortcut:
+                    warnings.warn("Tools '{0}' and '{1}' have the same shortcut "
+                                  "('{2}'). Ignoring shortcut for "
+                                  "'{1}'".format(m.tool_id, mode.tool_id, mode.shortcut))
+                    break
+            else:
+                shortcut = mode.shortcut
+                action.setShortcut(mode.shortcut)
+                action.setShortcutContext(Qt.WidgetShortcut)
+
+
+        if shortcut is None:
+            action.setToolTip(mode.tool_tip)
+        else:
+            action.setToolTip(mode.tool_tip + " [shortcut: {0}]".format(shortcut))
+
         action.setCheckable(isinstance(mode, CheckableTool))
         self.buttons[mode.tool_id] = action
 

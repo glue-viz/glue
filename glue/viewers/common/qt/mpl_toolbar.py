@@ -22,7 +22,7 @@ class HomeTool(Tool):
 
     def __init__(self, viewer, toolbar=None):
         super(HomeTool, self).__init__(viewer=viewer)
-        self.tool_id = 'HOME'
+        self.tool_id = 'mpl:home'
         self.icon = get_icon('glue_home')
         self.action_text = 'Home'
         self.tool_tip = 'Reset original zoom'
@@ -38,7 +38,7 @@ class SaveTool(Tool):
 
     def __init__(self, viewer, toolbar=None):
         super(SaveTool, self).__init__(viewer=viewer)
-        self.tool_id = 'SAVE'
+        self.tool_id = 'mpl:save'
         self.icon = get_icon('glue_filesave')
         self.action_text = 'Save'
         self.tool_tip = 'Save the figure'
@@ -53,7 +53,7 @@ class BackTool(Tool):
 
     def __init__(self, viewer, toolbar=None):
         super(BackTool, self).__init__(viewer=viewer)
-        self.tool_id = 'BACK'
+        self.tool_id = 'mpl:back'
         self.icon = get_icon('glue_back')
         self.action_text = 'Back'
         self.tool_tip = 'Back to previous view'
@@ -67,7 +67,7 @@ class ForwardTool(Tool):
 
     def __init__(self, viewer, toolbar=None):
         super(ForwardTool, self).__init__(viewer=viewer)
-        self.tool_id = 'FORWARD'
+        self.tool_id = 'mpl:forward'
         self.icon = get_icon('glue_forward')
         self.action_text = 'Forward'
         self.tool_tip = 'Forward to next view'
@@ -81,7 +81,7 @@ class PanTool(CheckableTool):
 
     def __init__(self, viewer, toolbar=None):
         super(PanTool, self).__init__(viewer=viewer)
-        self.tool_id = 'PAN'
+        self.tool_id = 'mpl:pan'
         self.icon = get_icon('glue_move')
         self.action_text = 'Pan'
         self.tool_tip = 'Pan axes with left mouse, zoom with right'
@@ -99,7 +99,7 @@ class ZoomTool(CheckableTool):
 
     def __init__(self, viewer, toolbar=None):
         super(ZoomTool, self).__init__(viewer=viewer)
-        self.tool_id = 'ZOOM'
+        self.tool_id = 'mpl:zoom'
         self.icon = get_icon('glue_zoom_to_rect')
         self.action_text = 'Zoom'
         self.tool_tip = 'Zoom to rectangle'
@@ -134,22 +134,22 @@ class MatplotlibViewerToolbar(BasicToolbar):
         # call to the parent class above.
 
         home_mode = HomeTool(self.parent(), toolbar=self._mpl_nav)
-        self.add_mode(home_mode)
+        self.add_tool(home_mode)
 
         save_mode = SaveTool(self.parent(), toolbar=self._mpl_nav)
-        self.add_mode(save_mode)
+        self.add_tool(save_mode)
 
         back_mode = BackTool(self.parent(), toolbar=self._mpl_nav)
-        self.add_mode(back_mode)
+        self.add_tool(back_mode)
 
         forward_mode = ForwardTool(self.parent(), toolbar=self._mpl_nav)
-        self.add_mode(forward_mode)
+        self.add_tool(forward_mode)
 
         pan_mode = PanTool(self.parent(), toolbar=self._mpl_nav)
-        self.add_mode(pan_mode)
+        self.add_tool(pan_mode)
 
         zoom_mode = ZoomTool(self.parent(), toolbar=self._mpl_nav)
-        self.add_mode(zoom_mode)
+        self.add_tool(zoom_mode)
 
         self._connections = []
 

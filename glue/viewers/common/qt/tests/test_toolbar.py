@@ -2,10 +2,15 @@
 
 from __future__ import absolute_import, division, print_function
 
+import warnings
+
 from qtpy import QtWidgets
 
+from glue.config import viewer_tool
 from glue.viewers.common.qt.mpl_widget import MplWidget
 from glue.viewers.common.qt.data_viewer import DataViewer
+from glue.viewers.common.qt.tool import Tool
+from glue.viewers.common.qt.toolbar import BasicToolbar
 from glue.viewers.common.qt.mouse_mode import MouseMode
 from glue.icons.qt import get_icon
 from glue.core.tests.util import simple_session
@@ -15,7 +20,7 @@ from ..mpl_toolbar import MatplotlibViewerToolbar
 
 class MouseModeTest(MouseMode):
 
-    tool_id = 'TEST'
+    tool_id = 'test'
     tool_tip = 'just testing'
     icon = 'glue_square'
 
@@ -46,7 +51,7 @@ class ExampleViewer(DataViewer):
     def _make_toolbar(self):
         super(ExampleViewer, self)._make_toolbar()
         self.mode = MouseModeTest(self, release_callback=self.callback)
-        self.toolbar.add_mode(self.mode)
+        self.toolbar.add_tool(self.mode)
 
     def callback(self, mode):
         self._called_back = True
@@ -75,28 +80,65 @@ class TestToolbar(object):
                 assert not self.viewer.toolbar.buttons[mode].isChecked()
 
     def test_callback(self):
-        self.viewer.toolbar.buttons['HOME'].trigger()
+        self.viewer.toolbar.buttons['mpl:home'].trigger()
         self.viewer.mode.release(None)
         assert self.viewer._called_back
 
     def test_change_mode(self):
 
-        self.viewer.toolbar.buttons['PAN'].toggle()
-        assert self.viewer.toolbar.mode.tool_id == 'PAN'
+        self.viewer.toolbar.buttons['mpl:pan'].toggle()
+        assert self.viewer.toolbar.mode.tool_id == 'mpl:pan'
         assert self.viewer.toolbar._mpl_nav.mode == 'pan/zoom'
 
-        self.viewer.toolbar.buttons['PAN'].toggle()
+        self.viewer.toolbar.buttons['mpl:pan'].toggle()
         assert self.viewer.toolbar.mode is None
         assert self.viewer.toolbar._mpl_nav.mode == ''
 
-        self.viewer.toolbar.buttons['ZOOM'].trigger()
-        assert self.viewer.toolbar.mode.tool_id == 'ZOOM'
+        self.viewer.toolbar.buttons['mpl:zoom'].trigger()
+        assert self.viewer.toolbar.mode.tool_id == 'mpl:zoom'
         assert self.viewer.toolbar._mpl_nav.mode == 'zoom rect'
 
-        self.viewer.toolbar.buttons['BACK'].trigger()
+        self.viewer.toolbar.buttons['mpl:back'].trigger()
         assert self.viewer.toolbar.mode is None
         assert self.viewer.toolbar._mpl_nav.mode == ''
 
-        self.viewer.toolbar.buttons['TEST'].trigger()
-        assert self.viewer.toolbar.mode.tool_id == 'TEST'
+        self.viewer.toolbar.buttons['test'].trigger()
+        assert self.viewer.toolbar.mode.tool_id == 'test'
         assert self.viewer.toolbar._mpl_nav.mode == ''
+
+
+@viewer_tool
+class ExampleTool1(Tool):
+
+    tool_id = 'TEST1'
+    tool_tip = 'tes1'
+    icon = 'glue_square'
+    shortcut = 'A'
+
+
+@viewer_tool
+class ExampleTool2(Tool):
+
+    tool_id = 'TEST2'
+    tool_tip = 'tes2'
+    icon = 'glue_square'
+    shortcut = 'A'
+
+
+class ExampleViewer2(DataViewer):
+
+    _toolbar_cls = BasicToolbar
+    tools = ['TEST1', 'TEST2']
+
+    def __init__(self, session, parent=None):
+        super(ExampleViewer2, self).__init__(session, parent=parent)
+        self._make_toolbar()
+
+
+def test_duplicate_shortcut():
+    session = simple_session()
+    with warnings.catch_warnings(record=True) as w:
+        viewer = ExampleViewer2(session)
+    assert len(w) == 1
+    assert str(w[0].message) == "Tools 'TEST1' and 'TEST2' have the same shortcut ('A'). Ignoring shortcut for 'TEST2'"
+
