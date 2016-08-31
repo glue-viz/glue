@@ -909,7 +909,7 @@ class CustomWidgetBase(DataViewer):
         self._coordinator.settings_changed()
 
     @property
-    def modes(self):
+    def tools(self):
         if self._coordinator.selections_enabled:
             return ['select:rectangle', 'select:polygon']
         else:
