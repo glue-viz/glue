@@ -363,10 +363,6 @@ class ImageWidget(ImageWidgetBase):
     tools = ['select:rectangle', 'select:circle', 'select:polygon',
              'image:contrast', 'image:colormap']
 
-    def __init__(self, session, parent=None):
-        super(ImageWidget, self).__init__(session, parent=parent)
-        self._make_toolbar()
-
     def make_client(self):
         return MplImageClient(self._data,
                               self.central_widget.canvas.fig,
@@ -375,9 +371,9 @@ class ImageWidget(ImageWidgetBase):
     def make_central_widget(self):
         return MplWidget()
 
-    def _make_toolbar(self):
+    def initialize_toolbar(self):
 
-        super(ImageWidget, self)._make_toolbar()
+        super(ImageWidget, self).initialize_toolbar()
 
         # connect viewport update buttons to client commands to
         # allow resampling
@@ -441,7 +437,7 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
         self._im = None
         self._norm = DS9Normalize()
 
-        self._make_toolbar()
+        self.initialize_toolbar()
 
         if image is not None:
             self.set_image(image=image, wcs=wcs, **kwargs)
@@ -519,7 +515,7 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
         self._im.set_norm(self._norm)
         self._redraw()
 
-    def _make_toolbar(self):
+    def initialize_toolbar(self):
 
         # TODO: remove once Python 2 is no longer supported - see below for
         #       simpler code.

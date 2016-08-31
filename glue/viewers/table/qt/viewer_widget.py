@@ -11,6 +11,7 @@ from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core import message as msg
 from glue.utils.qt import load_ui
 from glue.viewers.common.qt.data_viewer import DataViewer
+from glue.viewers.common.qt.toolbar import BasicToolbar
 
 
 class DataTableModel(QtCore.QAbstractTableModel):
@@ -79,6 +80,9 @@ class DataTableModel(QtCore.QAbstractTableModel):
 class TableWidget(DataViewer):
 
     LABEL = "Table Viewer"
+
+    _toolbar_cls = BasicToolbar
+    tools = []
 
     def __init__(self, session, parent=None, widget=None):
 

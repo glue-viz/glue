@@ -884,7 +884,6 @@ class CustomWidgetBase(DataViewer):
                                    layer_artist_container=self._layer_artist_container,
                                    coordinator=self._coordinator)
 
-        self._make_toolbar()
         self.statusBar().setSizeGripEnabled(False)
         self._update_artists = []
         self.settings_changed()

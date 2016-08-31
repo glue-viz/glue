@@ -85,8 +85,6 @@ class GingaWidget(ImageWidgetBase):
 
         super(GingaWidget, self).__init__(session, parent)
 
-        self._make_toolbar()
-
     def make_client(self):
         return GingaClient(self._data, self.viewer, self._layer_artist_container)
 

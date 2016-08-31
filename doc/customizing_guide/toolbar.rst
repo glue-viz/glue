@@ -188,6 +188,25 @@ we defined above). There are currently two main classes available for toolbars:
   This toolbar can only be used if your data viewer includes a Matplotlib canvas
   accessible at ``viewer.canvas``.
 
+Note that the toolbar is set up after ``__init__`` has run. Therefore, if you
+want to do any custom set-up to the toolbar after it has been set up, you
+should overload the ``initialize_toolbar`` method, e.g:
+
+.. code:: python
+
+    class MyViewer(DataViewer):
+
+        _toolbar_cls = BasicToolbar
+        tools = ['custom_tool']
+
+        def initialize_toolbar(self):
+            super(MyViewer, self).initialize_toolbar()
+            # custom code here
+
+In ``initialize_toolbar`` (and elsewhere in the class) you can then access the
+tool instances using ``self.toolbar.tools`` (which is a dictionary where each
+key is a ``tool_id``).
+
 Available tools
 ---------------
 
