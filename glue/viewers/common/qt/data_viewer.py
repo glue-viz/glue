@@ -10,14 +10,34 @@ from glue.utils.qt import get_qapp
 from glue.core.qt.mime import LAYERS_MIME_TYPE, LAYER_MIME_TYPE
 from glue.utils.qt import set_cursor
 from glue.config import settings
-
+from glue.external import six
+from glue.utils.noconflict import classmaker
 
 __all__ = ['DataViewer']
 
+    
+class ToolbarInitializer(object):
+    """
+    This is a meta-class which ensures that initialize_toolbar is always called
+    on DataViewer instances and sub-class instances after all the __init__ code
+    has been executed. We need to do this, because often the toolbar can only
+    be initialized after everything else (e.g. canvas, etc.) has been set up,
+    so we can't do it in DataViewer.__init__.
+    """
+    
+    def __call__(cls, *args, **kwargs):
+        obj = type.__call__(cls, *args, **kwargs)
+        obj.initialize_toolbar()
+        return obj
 
+# Note: we need to use classmaker here because otherwise we run into issues when
+# trying to use the meta-class with the Qt class.
+
+
+@six.add_metaclass(classmaker(left_metas=(ToolbarInitializer,)))
 class DataViewer(ViewerBase, QtWidgets.QMainWindow):
-
-    """Base class for all Qt DataViewer widgets.
+    """
+    Base class for all Qt DataViewer widgets.
 
     This defines a minimal interface, and implemlements the following::
 
@@ -212,7 +232,7 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
         self._toolbars.append(tb)
         self._tb_vis[tb] = True
 
-    def _make_toolbar(self):
+    def initialize_toolbar(self):
 
         from glue.config import viewer_tool
 

@@ -62,7 +62,6 @@ class HistogramWidget(DataViewer):
                                       self.central_widget.canvas.fig,
                                       layer_artist_container=self._layer_artist_container)
         self._init_limits()
-        self._make_toolbar()
         self._connect()
         # maps _hash(componentID) -> componentID
         self._component_hashes = {}

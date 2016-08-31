@@ -46,10 +46,9 @@ class ExampleViewer(DataViewer):
         self._axes = self.central_widget.canvas.fig.add_subplot(111)
         self._axes.plot([1, 2, 3])[0]
         self.setCentralWidget(self.central_widget)
-        self._make_toolbar()
 
-    def _make_toolbar(self):
-        super(ExampleViewer, self)._make_toolbar()
+    def initialize_toolbar(self):
+        super(ExampleViewer, self).initialize_toolbar()
         self.mode = MouseModeTest(self, release_callback=self.callback)
         self.toolbar.add_tool(self.mode)
 
@@ -132,7 +131,6 @@ class ExampleViewer2(DataViewer):
 
     def __init__(self, session, parent=None):
         super(ExampleViewer2, self).__init__(session, parent=parent)
-        self._make_toolbar()
 
 
 def test_duplicate_shortcut():

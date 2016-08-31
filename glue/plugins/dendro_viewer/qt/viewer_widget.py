@@ -49,7 +49,7 @@ class DendroWidget(DataViewer):
 
         self._connect()
 
-        self._make_toolbar()
+        self.initialize_toolbar()
         self.statusBar().setSizeGripEnabled(False)
 
     def _connect(self):
@@ -61,9 +61,9 @@ class DendroWidget(DataViewer):
         connect_current_combo(cl, 'height_attr', ui.heightCombo)
         connect_current_combo(cl, 'order_attr', ui.orderCombo)
 
-    def _make_toolbar(self):
+    def initialize_toolbar(self):
 
-        super(DendroWidget, self)._make_toolbar()
+        super(DendroWidget, self).initialize_toolbar()
 
         def on_move(mode):
             if mode._drag:
