@@ -73,10 +73,10 @@ class BasicToolbar(QtWidgets.QToolBar):
 
         if isinstance(new_tool, CheckableTool):
             self._active_tool = new_tool
-            self.active_tool_activated.emit()
+            self.tool_activated.emit()
         else:
             self._active_tool = None
-            self.active_tool_deactivated.emit()
+            self.tool_deactivated.emit()
 
     def activate_tool(self, tool):
         tool.activate()
