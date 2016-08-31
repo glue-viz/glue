@@ -2,6 +2,7 @@
 # are defined in mouse_modes.py
 
 from glue.utils import nonpartial
+from glue.core.callback_property import CallbackProperty
 
 __all__ = ['Tool', 'CheckableTool']
 
@@ -18,6 +19,8 @@ class Tool(object):
     * tool_tip : a tip that is shown when the user hovers over the icon
     * shortcut : keyboard shortcut to toggle the tool
     """
+
+    enabled = CallbackProperty(True)
 
     icon = None
     tool_id = None

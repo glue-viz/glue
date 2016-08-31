@@ -154,6 +154,12 @@ class BasicToolbar(QtWidgets.QToolBar):
 
         self.addAction(action)
 
+        # Bind tool visibility to mode.enabled
+        def toggle(state):
+            action.setVisible(state)
+            action.setEnabled(state)
+        add_callback(mode, 'enabled', toggle)
+
         self.tools[mode.tool_id] = mode
 
         return action

@@ -65,15 +65,14 @@ class DendroWidget(DataViewer):
 
         super(DendroWidget, self)._make_toolbar()
 
-        def apply_mode(mode):
-            self.client.apply_roi(mode.roi())
-
         def on_move(mode):
             if mode._drag:
                 self.client.apply_roi(mode.roi())
 
         self.toolbar.tools['Pick']._move_callback = on_move
-        self.toolbar.tools['Pick']._roi_callback = apply_mode
+
+    def apply_roi(self, roi):
+        self.client.apply_roi(roi)
 
     def _update_combos(self, data=None):
         data = data or self.client.display_data

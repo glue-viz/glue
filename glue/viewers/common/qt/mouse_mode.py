@@ -50,7 +50,6 @@ class MouseMode(CheckableTool):
     The _callback hooks are called with the MouseMode as its only
     argument
     """
-    enabled = CallbackProperty(True)
 
     def __init__(self, viewer,
                  press_callback=None,
@@ -142,10 +141,11 @@ class RoiModeBase(MouseMode):
 
     See RoiMode and ClickRoiMode subclasses for interaction details
 
-    Clients can provide an roi_callback function. When ROIs are
-    finalized (i.e. fully defined), this function will be called with
-    the RoiMode object as the argument. Clients can use RoiMode.roi()
-    to retrieve the new ROI, and take the appropriate action.
+    An roi_callback function can be provided. When ROIs are finalized (i.e.
+    fully defined), this function will be called with the RoiMode object as the
+    argument. Clients can use RoiMode.roi() to retrieve the new ROI, and take
+    the appropriate action. By default, roi_callback will default to calling an
+    ``apply_roi`` method on the data viewer.
     """
     persistent = False  # clear the shape when drawing completes?
 
@@ -157,7 +157,9 @@ class RoiModeBase(MouseMode):
             Function that will be called when the ROI is finished being
             defined.
         """
-        self._roi_callback = kwargs.pop('roi_callback', None)
+        def apply_mode(mode):
+            self.viewer.apply_roi(self.roi())
+        self._roi_callback = kwargs.pop('roi_callback', apply_mode)
         super(RoiModeBase, self).__init__(viewer, **kwargs)
         self._roi_tool = None
 
@@ -196,6 +198,7 @@ class RoiMode(RoiModeBase):
     """
 
     def __init__(self, viewer, **kwargs):
+        
         super(RoiMode, self).__init__(viewer, **kwargs)
 
         self._start_event = None
@@ -231,7 +234,6 @@ class RoiMode(RoiModeBase):
             self._finish_roi(event)
         self._drag = False
         self._start_event = None
-
         super(RoiMode, self).release(event)
 
     def key(self, event):
@@ -614,6 +616,12 @@ class ColormapAction(QtWidgets.QAction):
 
 @viewer_tool
 class ColormapMode(Tool):
+    """
+    A tool to change the colormap used in a viewer.
+
+    This calls a ``set_cmap`` method on the viewer, which should take the name
+    of the colormap as the sole argument.
+    """
 
     icon = 'glue_rainbow'
     tool_id = 'image:colormap'
