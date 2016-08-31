@@ -139,4 +139,3 @@ def test_duplicate_shortcut():
         viewer = ExampleViewer2(session)
     assert len(w) == 1
     assert str(w[0].message) == "Tools 'TEST1' and 'TEST2' have the same shortcut ('A'). Ignoring shortcut for 'TEST2'"
-
