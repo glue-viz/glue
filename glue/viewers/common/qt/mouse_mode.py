@@ -453,6 +453,9 @@ class ContrastMode(MouseMode):
 
     The horizontal position of the mouse sets the bias, the vertical position
     sets the contrast.
+
+    The move_callback defaults to calling _set_norm on the viewer with the
+    instance of ConstrastMode as the sole argument.
     """
 
     icon = 'glue_contrast'
@@ -462,6 +465,7 @@ class ContrastMode(MouseMode):
     shortcut = 'B'
 
     def __init__(self, viewer, **kwargs):
+
         super(ContrastMode, self).__init__(viewer, **kwargs)
 
         self.bias = 0.5
@@ -474,6 +478,9 @@ class ContrastMode(MouseMode):
         self.stretch = 'linear'
         self._vmin = None
         self._vmax = None
+
+        if self._move_callback is None:
+            self._move_callback = self.viewer.set_norm
 
     def set_clip_percentile(self, lo, hi):
         """Percentiles at which to clip the data at black/white"""

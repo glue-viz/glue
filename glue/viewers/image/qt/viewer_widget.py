@@ -360,7 +360,8 @@ class ImageWidget(ImageWidgetBase):
     """
 
     _toolbar_cls = MatplotlibViewerToolbar
-    tools = ['select:rectangle', 'select:xrange', 'select:yrange', 'select:circle', 'select:polygon', 'image:colormap']
+    tools = ['select:rectangle', 'select:circle', 'select:polygon',
+             'image:contrast', 'image:colormap']
 
     def __init__(self, session, parent=None):
         super(ImageWidget, self).__init__(session, parent=parent)
@@ -534,9 +535,3 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
 
         self.addToolBar(self.toolbar)
 
-        self.toolbar.tools['image:contrast']._move_callback = self._set_norm
-
-    # This works in Python 3 but not Python 2
-    # def _make_toolbar(self):
-    #     DataViewer._make_toolbar(self)
-    #     self.toolbar.tools['image:contrast']._move_callback = self._set_norm
