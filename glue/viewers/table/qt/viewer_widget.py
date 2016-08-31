@@ -258,7 +258,6 @@ class TableWidget(DataViewer):
         if the data set is big. To sidestep that,
         we swap out with a tiny data set before closing
         """
-        from glue.core import Data
         d = Data(x=[0])
         self.ui.table.setModel(DataTableModel(d))
         event.accept()
