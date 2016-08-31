@@ -223,6 +223,8 @@ class TestCustomViewer(object):
     def test_selections_enabled(self):
         w = self.build()
         assert w._coordinator.selections_enabled
+        assert 'select:rectangle' in w.toolbar.tools
+        assert 'select:polygon' in w.toolbar.tools
 
 
 def test_state_save():

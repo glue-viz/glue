@@ -28,6 +28,9 @@ v0.9.0 (unreleased)
 * Added a new Data method, ``update_values_from_data``, that can be used to replicate
   components from one dataset into another. [#1112]
 
+* Refactored code related to toolbars in order to make it easier to define
+  toolbars and toolbar modes that aren't Matplotlib-specific. [#1085]
+
 v0.8.3 (unreleased)
 -------------------
 

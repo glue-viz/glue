@@ -9,6 +9,7 @@ import pytest
 import numpy as np
 from mock import MagicMock
 
+from glue.viewers.common.qt.tool import Tool
 from glue.utils.qt import get_qapp
 from glue.app.qt.tests.test_application import TestApplicationSession
 from glue import core
@@ -130,16 +131,20 @@ class _TestImageWidgetBase(object):
         return [combo.itemText(i) for i in range(combo.count())]
 
     def test_plugins_closed_when_viewer_closed(self):
+
         # Regression test for #518
         self.widget.add_data(self.im)
 
-        tool = self.widget._tools[0]
-        tool.close = MagicMock()
+        class TestTool(Tool):
+            icon = 'glue_lasso'
+            tool_id = 'test'
+            def close(self):
+                self.closed = True
 
+        test_mode = TestTool(self.widget)
+        self.widget.toolbar.add_tool(test_mode)
         self.widget.close()
-
-        assert tool.close.call_count == 1
-
+        assert test_mode.closed
 
 class TestImageWidget(_TestImageWidgetBase):
     widget_cls = ImageWidget

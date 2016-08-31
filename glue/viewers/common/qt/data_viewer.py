@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from qtpy.QtCore import Qt
-from qtpy import QtWidgets
+from qtpy import QtCore, QtWidgets
 from glue.core.application_base import ViewerBase
 from glue.core.qt.layer_artist_model import QtLayerArtistContainer, LayerArtistWidget
 from glue.utils.qt import get_qapp
@@ -24,10 +24,16 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
        * An automatic call to unregister on window close
        * Drag and drop support for adding data
     """
+
+    window_closed = QtCore.Signal()
+
     _layer_artist_container_cls = QtLayerArtistContainer
     _layer_style_widget_cls = None
 
     LABEL = 'Override this'
+
+    _toolbar_cls = None
+    tools = []
 
     def __init__(self, session, parent=None):
         """
@@ -163,6 +169,8 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
         super(DataViewer, self).closeEvent(event)
         event.accept()
 
+        self.window_closed.emit()
+
     def _confirm_close(self):
         """Ask for close confirmation
 
@@ -203,6 +211,19 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
         super(DataViewer, self).addToolBar(tb)
         self._toolbars.append(tb)
         self._tb_vis[tb] = True
+
+    def _make_toolbar(self):
+
+        from glue.config import viewer_tool
+
+        self.toolbar = self._toolbar_cls(self)
+
+        for tool_id in self.tools:
+            mode_cls = viewer_tool.members[tool_id]
+            mode = mode_cls(self)
+            self.toolbar.add_tool(mode)
+
+        self.addToolBar(self.toolbar)
 
     def show_toolbars(self):
         """Re-enable any toolbars that were hidden with `hide_toolbars()`

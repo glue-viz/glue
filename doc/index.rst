@@ -84,6 +84,7 @@ Customizing/Hacking Glue
    customizing_guide/custom_viewer.rst
    python_guide/liveupdate.rst
    customizing_guide/full_custom_qt_viewer.rst
+   customizing_guide/toolbar.rst
 
 Getting help
 ------------

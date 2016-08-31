@@ -7,9 +7,10 @@ from qtpy.QtCore import Qt
 from qtpy import QtCore, QtWidgets, QtGui
 from glue.core.callback_property import add_callback, delay_callback
 from glue import core
+from glue.config import viewer_tool
 from glue.viewers.image.ds9norm import DS9Normalize
 from glue.viewers.image.client import MplImageClient
-from glue.viewers.common.qt.toolbar import GlueToolbar
+from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
 from glue.viewers.common.qt.mouse_mode import (RectangleMode, CircleMode, PolyMode,
                                 ContrastMode)
 from glue.icons.qt import get_icon
@@ -19,6 +20,7 @@ from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.mpl_widget import MplWidget, defer_draw
 from glue.utils import nonpartial, Pointer
 from glue.utils.qt import cmap2pixmap, update_combobox, load_ui
+from glue.viewers.common.qt.tool import Tool
 
 # We do the following import to register the custom Qt Widget there
 from glue.viewers.image.qt.rgb_edit import RGBEdit  # pylint: disable=W0611
@@ -54,12 +56,6 @@ class ImageWidgetBase(DataViewer):
         super(ImageWidgetBase, self).__init__(session, parent)
         self._setup_widgets()
         self.client = self.make_client()
-
-        self._setup_tools()
-
-        tb = self.make_toolbar()
-        self.addToolBar(tb)
-
         self._connect()
 
     def _setup_widgets(self):
@@ -83,23 +79,6 @@ class ImageWidgetBase(DataViewer):
     def make_central_widget(self):
         """ Create and return the central widget to display the image """
         raise NotImplementedError()
-
-    def make_toolbar(self):
-        """ Create and return the toolbar for this widget """
-        raise NotImplementedError()
-
-    @staticmethod
-    def _get_default_tools():
-        return []
-
-    def _setup_tools(self):
-        """
-        Set up additional tools for this widget
-        """
-        from glue import config
-        self._tools = []
-        for tool in config.tool_registry.members[self.__class__]:
-            self._tools.append(tool(self))
 
     def _tweak_geometry(self):
         self.central_widget.resize(600, 400)
@@ -373,16 +352,20 @@ class ImageWidgetBase(DataViewer):
     def closeEvent(self, event):
         # close window and all plugins
         super(ImageWidgetBase, self).closeEvent(event)
-        if event.isAccepted():
-            for t in self._tools:
-                t.close()
 
 
 class ImageWidget(ImageWidgetBase):
-
     """
     A matplotlib-based image widget
     """
+
+    _toolbar_cls = MatplotlibViewerToolbar
+    tools = ['select:rectangle', 'select:circle', 'select:polygon',
+             'image:contrast', 'image:colormap']
+
+    def __init__(self, session, parent=None):
+        super(ImageWidget, self).__init__(session, parent=parent)
+        self._make_toolbar()
 
     def make_client(self):
         return MplImageClient(self._data,
@@ -392,50 +375,16 @@ class ImageWidget(ImageWidgetBase):
     def make_central_widget(self):
         return MplWidget()
 
-    def make_toolbar(self):
-        result = GlueToolbar(self.central_widget.canvas, self, name='Image')
-        for mode in self._mouse_modes():
-            result.add_mode(mode)
+    def _make_toolbar(self):
 
-        cmap = _colormap_mode(self, self.client.set_cmap)
-        result.addWidget(cmap)
+        super(ImageWidget, self)._make_toolbar()
 
         # connect viewport update buttons to client commands to
         # allow resampling
         cl = self.client
-        result.buttons['HOME'].triggered.connect(nonpartial(cl.check_update))
-        result.buttons['FORWARD'].triggered.connect(nonpartial(
-            cl.check_update))
-        result.buttons['BACK'].triggered.connect(nonpartial(cl.check_update))
-
-        return result
-
-    def _mouse_modes(self):
-
-        axes = self.client.axes
-
-        def apply_mode(mode):
-            for roi_mode in roi_modes:
-                if roi_mode != mode:
-                    roi_mode._roi_tool.reset()
-            self.apply_roi(mode.roi())
-
-        rect = RectangleMode(axes, roi_callback=apply_mode)
-        circ = CircleMode(axes, roi_callback=apply_mode)
-        poly = PolyMode(axes, roi_callback=apply_mode)
-        roi_modes = [rect, circ, poly]
-
-        contrast = ContrastMode(axes, move_callback=self._set_norm)
-
-        self._contrast = contrast
-
-        # Get modes from tools
-        tool_modes = []
-        for tool in self._tools:
-            tool_modes += tool._get_modes(axes)
-            add_callback(self.client, 'display_data', tool._display_data_hook)
-
-        return [rect, circ, poly, contrast] + tool_modes
+        self.toolbar.buttons['mpl:home'].triggered.connect(nonpartial(cl.check_update))
+        self.toolbar.buttons['mpl:forward'].triggered.connect(nonpartial(cl.check_update))
+        self.toolbar.buttons['mpl:back'].triggered.connect(nonpartial(cl.check_update))
 
     def paintEvent(self, event):
         super(ImageWidget, self).paintEvent(event)
@@ -463,46 +412,18 @@ class ImageWidget(ImageWidgetBase):
         self.ui.rgb_options.current_changed.connect(lambda: self._toolbars[0].set_mode(self._contrast))
         self.central_widget.canvas.resize_end.connect(self.client.check_update)
 
-
-class ColormapAction(QtWidgets.QAction):
-
-    def __init__(self, label, cmap, parent):
-        super(ColormapAction, self).__init__(label, parent)
-        self.cmap = cmap
-        pm = cmap2pixmap(cmap)
-        self.setIcon(QtGui.QIcon(pm))
-
-
-def _colormap_mode(parent, on_trigger):
-
-    from glue import config
-
-    # actions for each colormap
-    acts = []
-    for label, cmap in config.colormaps:
-        a = ColormapAction(label, cmap, parent)
-        a.triggered.connect(nonpartial(on_trigger, cmap))
-        acts.append(a)
-
-    # Toolbar button
-    tb = QtWidgets.QToolButton()
-    tb.setWhatsThis("Set color scale")
-    tb.setToolTip("Set color scale")
-    icon = get_icon('glue_rainbow')
-    tb.setIcon(icon)
-    tb.setPopupMode(QtWidgets.QToolButton.InstantPopup)
-    tb.addActions(acts)
-
-    return tb
+    def set_cmap(self, cmap):
+        self.client.set_cmap(cmap)
 
 
 class StandaloneImageWidget(QtWidgets.QMainWindow):
-
     """
     A simplified image viewer, without any brushing or linking,
     but with the ability to adjust contrast and resample.
     """
     window_closed = QtCore.Signal()
+    _toolbar_cls = MatplotlibViewerToolbar
+    tools = ['image:contrast', 'image:colormap']
 
     def __init__(self, image=None, wcs=None, parent=None, **kwargs):
         """
@@ -512,6 +433,7 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
         :param kwargs: Extra keywords to pass to imshow
         """
         super(StandaloneImageWidget, self).__init__(parent)
+
         self.central_widget = MplWidget()
         self.setCentralWidget(self.central_widget)
         self._setup_axes()
@@ -519,7 +441,7 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
         self._im = None
         self._norm = DS9Normalize()
 
-        self.make_toolbar()
+        self._make_toolbar()
 
         if image is not None:
             self.set_image(image=image, wcs=wcs, **kwargs)
@@ -560,7 +482,7 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
     def _redraw(self):
         self.central_widget.canvas.draw()
 
-    def _set_cmap(self, cmap):
+    def set_cmap(self, cmap):
         self._im.set_cmap(cmap)
         self._redraw()
 
@@ -597,15 +519,19 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
         self._im.set_norm(self._norm)
         self._redraw()
 
-    def make_toolbar(self):
-        """
-        Setup the toolbar
-        """
-        result = GlueToolbar(self.central_widget.canvas, self,
-                             name='Image')
-        result.add_mode(ContrastMode(self._axes, move_callback=self._set_norm))
-        cm = _colormap_mode(self, self._set_cmap)
-        result.addWidget(cm)
-        self._cmap_actions = cm.actions()
-        self.addToolBar(result)
-        return result
+    def _make_toolbar(self):
+
+        # TODO: remove once Python 2 is no longer supported - see below for
+        #       simpler code.
+
+        from glue.config import viewer_tool
+
+        self.toolbar = self._toolbar_cls(self)
+
+        for tool_id in self.tools:
+            mode_cls = viewer_tool.members[tool_id]
+            mode = mode_cls(self)
+            self.toolbar.add_tool(mode)
+
+        self.addToolBar(self.toolbar)
+

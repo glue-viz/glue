@@ -1,20 +1,18 @@
-"""MouseModes define various mouse gestures.
+"""
+MouseModes define various mouse gestures.
 
-The :class:`~glue.viewers.common.qt.toolbar.GlueToolbar` maintains a list of
-MouseModes from the visualization it is assigned to, and sees to it
-that only one MouseMode is active at a time.
+The toolbar maintains a list of MouseModes from the visualization it is
+assigned to, and sees to it that only one MouseMode is active at a time.
 
-Each MouseMode appears as an Icon in the GlueToolbar. Classes can
-assign methods to the press_callback, move_callback, and
-release_callback methods of each Mouse Mode, to implement custom
-functionality
+Each MouseMode appears as an Icon in the toolbar. Classes can assign methods to
+the press_callback, move_callback, and release_callback methods of each Mouse
+Mode, to implement custom functionality
 
 The basic usage pattern is thus:
  * visualization object instantiates the MouseModes it wants
- * each of these is passed to the add_mode method of the GlueToolbar
+ * each of these is passed to the add_tool method of the toolbar
  * visualization object optionally attaches methods to the 3 _callback
    methods in a MouseMode, for additional behavior
-
 """
 
 from __future__ import absolute_import, division, print_function
@@ -26,47 +24,46 @@ from glue.core.callback_property import CallbackProperty
 from glue.core import roi
 from glue.core.qt import roi as qt_roi
 from glue.utils.qt import get_qapp
-from glue.icons.qt import get_icon
 from glue.utils import nonpartial
-from glue.utils.qt import load_ui
+from glue.utils.qt import load_ui, cmap2pixmap
+from glue.viewers.common.qt.tool import Tool, CheckableTool
+from glue.config import viewer_tool
+
+__all__ = ['MouseMode', 'RoiModeBase', 'RoiMode', 'PersistentRoiMode',
+           'ClickRoiMode', 'RectangleMode', 'PathMode', 'CircleMode',
+           'PolyMode', 'LassoMode', 'HRangeMode', 'VRangeMode', 'PickMode',
+           'ContrastMode', 'ColormapMode']
 
 
-class MouseMode(object):
-
-    """ The base class for all MouseModes.
+class MouseMode(CheckableTool):
+    """
+    The base class for all MouseModes.
 
     MouseModes have the following attributes:
 
-    * Icon : QIcon object
-    * action_text : The action title (used in some menus)
-    * tool_tip : string giving the tool itp
-    * shortcut : Keyboard shortcut to toggle the mode
-    * _press_callback : Callback method that will be called
+    * press_callback : Callback method that will be called
       whenever a MouseMode processes a mouse press event
-    * _move_callback : Same as above, for move events
-    * _release_callback : Same as above, for release events
+    * move_callback : Same as above, for move events
+    * release_callback : Same as above, for release events
+    * key_callback : Same as above, for release events
 
     The _callback hooks are called with the MouseMode as its only
     argument
     """
-    enabled = CallbackProperty(True)
 
-    def __init__(self, axes,
+    def __init__(self, viewer,
                  press_callback=None,
                  move_callback=None,
                  release_callback=None,
                  key_callback=None):
 
-        self.icon = None
-        self.mode_id = None
-        self.action_text = None
-        self.tool_tip = None
-        self._axes = axes
+        super(MouseMode, self).__init__(viewer)
+
+        self._axes = viewer.axes
         self._press_callback = press_callback
         self._move_callback = move_callback
         self._release_callback = release_callback
         self._key_callback = key_callback
-        self.shortcut = None
         self._event_x = None
         self._event_y = None
         self._event_xdata = None
@@ -78,99 +75,111 @@ class MouseMode(object):
         self._event_x, self._event_y = event.x, event.y
         self._event_xdata, self._event_ydata = event.xdata, event.ydata
 
-    def activate(self):
-        """
-        Fired when the toolbar button is activated
-        """
-        pass
-
     def press(self, event):
-        """ Handles mouse presses
+        """
+        Handles mouse presses.
 
-        Logs mouse position and calls press_callback method
+        Logs mouse position and calls press_callback method.
 
-        :param event: Mouse event
-        :type event: Matplotlib event
+        Parameters
+        ----------
+        event : :class:`~matplotlib.backend_bases.MouseEvent`
+            The event that was triggered
         """
         self._log_position(event)
         if self._press_callback is not None:
             self._press_callback(self)
 
     def move(self, event):
-        """ Handles mouse move events
+        """
+        Handles mouse move events.
 
-        Logs mouse position and calls move_callback method
+        Logs mouse position and calls move_callback method.
 
-        :param event: Mouse event
-        :type event: Matplotlib event
+        Parameters
+        ----------
+        event : :class:`~matplotlib.backend_bases.MouseEvent`
+            The event that was triggered
         """
         self._log_position(event)
         if self._move_callback is not None:
             self._move_callback(self)
 
     def release(self, event):
-        """ Handles mouse release events.
+        """
+        Handles mouse release events.
 
-        Logs mouse position and calls release_callback method
+        Logs mouse position and calls release_callback method.
 
-        :param event: Mouse event
-        :type event: Matplotlib event
+        Parameters
+        ----------
+        event : :class:`~matplotlib.backend_bases.MouseEvent`
+            The event that was triggered
         """
         self._log_position(event)
         if self._release_callback is not None:
             self._release_callback(self)
 
     def key(self, event):
-        """ Handles key press events
+        """
+        Handles key press events.
 
-        Calls key_callback method
+        Calls key_callback method.
 
-        :param event: Key event
-        :type event: Matplotlib event
+        Parameters
+        ----------
+        event : :class:`~matplotlib.backend_bases.KeyEvent`
+            The event that was triggered
         """
         if self._key_callback is not None:
             self._key_callback(self)
 
-    def menu_actions(self):
-        """ List of QtWidgets.QActions to be attached to this mode as a context menu """
-        return []
-
 
 class RoiModeBase(MouseMode):
-
-    """ Base class for defining ROIs. ROIs accessible via the roi() method
+    """
+    Base class for defining ROIs. ROIs accessible via the roi() method
 
     See RoiMode and ClickRoiMode subclasses for interaction details
 
-    Clients can provide an roi_callback function. When ROIs are
-    finalized (i.e. fully defined), this function will be called with
-    the RoiMode object as the argument. Clients can use RoiMode.roi()
-    to retrieve the new ROI, and take the appropriate action.
+    An roi_callback function can be provided. When ROIs are finalized (i.e.
+    fully defined), this function will be called with the RoiMode object as the
+    argument. Clients can use RoiMode.roi() to retrieve the new ROI, and take
+    the appropriate action. By default, roi_callback will default to calling an
+    ``apply_roi`` method on the data viewer.
     """
     persistent = False  # clear the shape when drawing completes?
 
-    def __init__(self, axes, **kwargs):
+    def __init__(self, viewer, **kwargs):
         """
-        :param roi_callback: Function that will be called when the
-                             ROI is finished being defined.
-        :type roi_callback:  function
+        Parameters
+        ----------
+        roi_callback : `func`
+            Function that will be called when the ROI is finished being
+            defined.
         """
-        self._roi_callback = kwargs.pop('roi_callback', None)
-        super(RoiModeBase, self).__init__(axes, **kwargs)
+        def apply_mode(mode):
+            self.viewer.apply_roi(self.roi())
+        self._roi_callback = kwargs.pop('roi_callback', apply_mode)
+        super(RoiModeBase, self).__init__(viewer, **kwargs)
         self._roi_tool = None
 
     def activate(self):
         self._roi_tool._sync_patch()
 
     def roi(self):
-        """ The ROI defined by this mouse mode
+        """
+        The ROI defined by this mouse mode
 
-        :rtype: :class:`~glue.core.roi.Roi`
+        Returns
+        -------
+        roi : :class:`~glue.core.roi.Roi`
         """
         return self._roi_tool.roi()
 
     def _finish_roi(self, event):
-        """Called by subclasses when ROI is fully defined"""
+        """
+        Called by subclasses when ROI is fully defined
+        """
         if not self.persistent:
             self._roi_tool.finalize_selection(event)
         if self._roi_callback is not None:
@@ -181,15 +190,16 @@ class RoiModeBase(MouseMode):
 
 
 class RoiMode(RoiModeBase):
+    """
+    Define Roi Modes via click+drag events.
 
-    """ Define Roi Modes via click+drag events
-
-    ROIs are updated continuously on click+drag events, and finalized
-    on each mouse release
+    ROIs are updated continuously on click+drag events, and finalized on each
+    mouse release
     """
 
-    def __init__(self, axes, **kwargs):
-        super(RoiMode, self).__init__(axes, **kwargs)
+    def __init__(self, viewer, **kwargs):
+        
+        super(RoiMode, self).__init__(viewer, **kwargs)
 
         self._start_event = None
         self._drag = False
@@ -205,8 +215,8 @@ class RoiMode(RoiModeBase):
         if (dx + dy) > self._drag_dist:
             status = self._roi_tool.start_selection(self._start_event)
             # If start_selection returns False, the selection has not been
-            # started and we should abort, so we set self._drag to False in this
-            # case.
+            # started and we should abort, so we set self._drag to False in
+            # this case.
             self._drag = True if status is None else status
 
     def press(self, event):
@@ -224,7 +234,6 @@ class RoiMode(RoiModeBase):
             self._finish_roi(event)
         self._drag = False
         self._start_event = None
-
         super(RoiMode, self).release(event)
 
     def key(self, event):
@@ -237,7 +246,6 @@ class RoiMode(RoiModeBase):
 
 
 class PersistentRoiMode(RoiMode):
-
     """
     Same functionality as RoiMode, but the Roi is never
     finalized, and remains rendered after mouse gestures
@@ -249,16 +257,15 @@ class PersistentRoiMode(RoiMode):
 
 
 class ClickRoiMode(RoiModeBase):
-
     """
     Generate ROIs using clicks and click+drags.
 
     ROIs updated on each click, and each click+drag.
-    ROIs are finalized on enter press, and reset on escape press
+    ROIs are finalized on enter press, and reset on escape press.
     """
 
-    def __init__(self, axes, **kwargs):
-        super(ClickRoiMode, self).__init__(axes, **kwargs)
+    def __init__(self, viewer, **kwargs):
+        super(ClickRoiMode, self).__init__(viewer, **kwargs)
         self._last_event = None
         self._drawing = False
 
@@ -293,33 +300,31 @@ class ClickRoiMode(RoiModeBase):
             super(ClickRoiMode, self).release(event)
 
 
+@viewer_tool
 class RectangleMode(RoiMode):
+    """
+    Defines a Rectangular ROI, accessible via the :meth:`~RectangleMode.roi`
+    method
+    """
 
-    """ Defines a Rectangular ROI, accessible via the roi() method"""
+    icon = 'glue_square'
+    tool_id = 'select:rectangle'
+    action_text = 'Rectangular ROI'
+    tool_tip = 'Define a rectangular region of interest'
+    shortcut = 'R'
 
-    def __init__(self, axes, **kwargs):
-        super(RectangleMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_square')
-        self.mode_id = 'Rectangle'
-        self.action_text = 'Rectangular ROI'
-        self.tool_tip = 'Define a rectangular region of interest'
+    def __init__(self, viewer, **kwargs):
+        super(RectangleMode, self).__init__(viewer, **kwargs)
         self._roi_tool = qt_roi.QtRectangularROI(self._axes)
-        self.shortcut = 'R'
 
 
 class PathMode(ClickRoiMode):
+
     persistent = True
 
-    def __init__(self, axes, **kwargs):
-        super(PathMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_slice')
-        self.mode_id = 'Slice'
-        self.action_text = 'Slice Extraction'
-        self.tool_tip = ('Extract a slice from an arbitrary path\n'
-                         '  ENTER accepts the path\n'
-                         '  ESCAPE clears the path')
+    def __init__(self, viewer, **kwargs):
+        super(PathMode, self).__init__(viewer, **kwargs)
         self._roi_tool = qt_roi.QtPathROI(self._axes)
-        self.shortcut = 'P'
 
         self._roi_tool.plot_opts.update(edgecolor='#de2d26',
                                         facecolor=None,
@@ -327,114 +332,141 @@ class PathMode(ClickRoiMode):
                                         alpha=0.4)
 
 
+@viewer_tool
 class CircleMode(RoiMode):
+    """
+    Defines a Circular ROI, accessible via the :meth:`~CircleMode.roi` method
+    """
 
-    """ Defines a Circular ROI, accessible via the roi() method"""
+    icon = 'glue_circle'
+    tool_id = 'select:circle'
+    action_text = 'Circular ROI'
+    tool_tip = 'Define a circular region of interest'
+    shortcut = 'C'
 
-    def __init__(self, axes, **kwargs):
-        super(CircleMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_circle')
-        self.mode_id = 'Circle'
-        self.action_text = 'Circular ROI'
-        self.tool_tip = 'Define a circular region of interest'
+    def __init__(self, viewer, **kwargs):
+        super(CircleMode, self).__init__(viewer, **kwargs)
         self._roi_tool = qt_roi.QtCircularROI(self._axes)
-        self.shortcut = 'C'
 
 
+@viewer_tool
 class PolyMode(ClickRoiMode):
+    """
+    Defines a Polygonal ROI, accessible via the :meth:`~PolyMode.roi` method
+    """
 
-    """ Defines a Polygonal ROI, accessible via the roi() method"""
+    icon = 'glue_lasso'
+    tool_id = 'select:polygon'
+    action_text = 'Polygonal ROI'
+    tool_tip = ('Lasso a region of interest\n'
+                '  ENTER accepts the path\n'
+                '  ESCAPE clears the path')
+    shortcut = 'G'
 
-    def __init__(self, axes, **kwargs):
-        super(PolyMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_lasso')
-        self.mode_id = 'Polygon'
-        self.action_text = 'Polygonal ROI'
-        self.tool_tip = ('Lasso a region of interest\n'
-                         '  ENTER accepts the path\n'
-                         '  ESCAPE clears the path')
+    def __init__(self, viewer, **kwargs):
+        super(PolyMode, self).__init__(viewer, **kwargs)
         self._roi_tool = qt_roi.QtPolygonalROI(self._axes)
-        self.shortcut = 'G'
 
 
+@viewer_tool
 class LassoMode(RoiMode):
+    """
+    Defines a Polygonal ROI, accessible via the :meth:`~LassoMode.roi` method
+    """
 
-    """ Defines a Polygonal ROI, accessible via the roi() method"""
+    icon = 'glue_lasso'
+    tool_id = 'Lasso'
+    action_text = 'Polygonal ROI'
+    tool_tip = 'Lasso a region of interest'
+    shortcut = 'L'
 
-    def __init__(self, axes, **kwargs):
-        super(LassoMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_lasso')
-        self.mode_id = 'Lasso'
-        self.action_text = 'Polygonal ROI'
-        self.tool_tip = 'Lasso a region of interest'
+    def __init__(self, viewer, **kwargs):
+        super(LassoMode, self).__init__(viewer, **kwargs)
         self._roi_tool = qt_roi.QtPolygonalROI(self._axes)
-        self.shortcut = 'L'
 
 
+@viewer_tool
 class HRangeMode(RoiMode):
+    """
+    Defines a Range ROI, accessible via the :meth:`~HRangeMode.roi` method.
 
-    """ Defines a Range ROI, accessible via the roi() method.
-    This class defines horizontal ranges"""
+    This class defines horizontal ranges
+    """
 
-    def __init__(self, axes, **kwargs):
-        super(HRangeMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_xrange_select')
-        self.mode_id = 'X range'
-        self.action_text = 'X range'
-        self.tool_tip = 'Select a range of x values'
+    icon = 'glue_xrange_select'
+    tool_id = 'select:xrange'
+    action_text = 'select:xrange'
+    tool_tip = 'Select a range of x values'
+    shortcut = 'X'
+
+    def __init__(self, viewer, **kwargs):
+        super(HRangeMode, self).__init__(viewer, **kwargs)
         self._roi_tool = qt_roi.QtXRangeROI(self._axes)
-        self.shortcut = 'H'
 
 
+@viewer_tool
 class VRangeMode(RoiMode):
+    """
+    Defines a Range ROI, accessible via the :meth:`~VRangeMode.roi` method.
 
-    """ Defines a Range ROI, accessible via the roi() method.
-    This class defines vertical ranges"""
+    This class defines vertical ranges.
+    """
 
-    def __init__(self, axes, **kwargs):
-        super(VRangeMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_yrange_select')
-        self.mode_id = 'Y range'
-        self.action_text = 'Y range'
-        self.tool_tip = 'Select a range of y values'
+    icon = 'glue_yrange_select'
+    tool_id = 'select:yrange'
+    action_text = 'select:yrange'
+    tool_tip = 'Select a range of y values'
+    shortcut = 'Y'
+
+    def __init__(self, viewer, **kwargs):
+        super(VRangeMode, self).__init__(viewer, **kwargs)
         self._roi_tool = qt_roi.QtYRangeROI(self._axes)
-        self.shortcut = 'V'
 
 
+@viewer_tool
 class PickMode(RoiMode):
+    """
+    Defines a PointROI.
 
-    """ Defines a PointROI. Defines single point selections """
+    Defines single point selections.
+    """
 
-    def __init__(self, axes, **kwargs):
-        super(PickMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_yrange_select')
-        self.mode_id = 'Pick'
-        self.action_text = 'Pick'
-        self.tool_tip = 'Select a single item'
+    icon = 'glue_yrange_select'
+    tool_id = 'Pick'
+    action_text = 'Pick'
+    tool_tip = 'Select a single item'
+    shortcut = 'K'
+
+    def __init__(self, viewer, **kwargs):
+        super(PickMode, self).__init__(viewer, **kwargs)
         self._roi_tool = roi.MplPickROI(self._axes)
-        self.shortcut = 'K'
 
     def press(self, event):
         super(PickMode, self).press(event)
         self._drag = True
 
 
+@viewer_tool
 class ContrastMode(MouseMode):
+    """
+    Uses right mouse button drags to set bias and contrast, DS9-style.
 
-    """Uses right mouse button drags to set bias and contrast, ala DS9
+    The horizontal position of the mouse sets the bias, the vertical position
+    sets the contrast.
 
-    The horizontal position of the mouse sets the bias, the vertical
-    position sets the contrast. The get_scaling method converts
-    this information into scaling information for a particular data set
+    The move_callback defaults to calling _set_norm on the viewer with the
+    instance of ConstrastMode as the sole argument.
     """
 
-    def __init__(self, *args, **kwargs):
-        super(ContrastMode, self).__init__(*args, **kwargs)
-        self.icon = get_icon('glue_contrast')
-        self.mode_id = 'Contrast'
-        self.action_text = 'Contrast'
-        self.tool_tip = 'Adjust the bias/contrast'
-        self.shortcut = 'B'
+    icon = 'glue_contrast'
+    tool_id = 'image:contrast'
+    action_text = 'Contrast'
+    tool_tip = 'Adjust the bias/contrast'
+    shortcut = 'B'
+
+    def __init__(self, viewer, **kwargs):
+
+        super(ContrastMode, self).__init__(viewer, **kwargs)
 
         self.bias = 0.5
         self.contrast = 1.0
@@ -446,6 +478,9 @@ class ContrastMode(MouseMode):
         self.stretch = 'linear'
         self._vmin = None
         self._vmax = None
+
+        if self._move_callback is None:
+            self._move_callback = self.viewer._set_norm
 
     def set_clip_percentile(self, lo, hi):
         """Percentiles at which to clip the data at black/white"""
@@ -577,57 +612,34 @@ class ContrastMode(MouseMode):
         return result
 
 
-class SpectrumExtractorMode(RoiMode):
+class ColormapAction(QtWidgets.QAction):
 
+    def __init__(self, label, cmap, parent):
+        super(ColormapAction, self).__init__(label, parent)
+        self.cmap = cmap
+        pm = cmap2pixmap(cmap)
+        self.setIcon(QtGui.QIcon(pm))
+
+
+@viewer_tool
+class ColormapMode(Tool):
     """
-    Let's the user select a region in an image and,
-    when connected to a SpectrumExtractorTool, uses this
-    to display spectra extracted from that position
+    A tool to change the colormap used in a viewer.
+
+    This calls a ``set_cmap`` method on the viewer, which should take the name
+    of the colormap as the sole argument.
     """
-    persistent = True
 
-    def __init__(self, axes, **kwargs):
-        super(SpectrumExtractorMode, self).__init__(axes, **kwargs)
-        self.icon = get_icon('glue_spectrum')
-        self.mode_id = 'Spectrum'
-        self.action_text = 'Spectrum'
-        self.tool_tip = 'Extract a spectrum from the selection'
-
-        self._roi_tool = qt_roi.QtRectangularROI(self._axes) # default
-        self.shortcut = 'S'
+    icon = 'glue_rainbow'
+    tool_id = 'image:colormap'
+    action_text = 'Set color scale'
+    tool_tip = 'Set color scale'
 
     def menu_actions(self):
-        result = []
-
-        a = QtWidgets.QAction('Rectangle', None)
-        a.triggered.connect(nonpartial(self.set_roi_tool, 'Rectangle'))
-        result.append(a)
-
-        a = QtWidgets.QAction('Circle', None)
-        a.triggered.connect(nonpartial(self.set_roi_tool, 'Circle'))
-        result.append(a)
-
-        a = QtWidgets.QAction('Polygon', None)
-        a.triggered.connect(nonpartial(self.set_roi_tool, 'Polygon'))
-        result.append(a)
-
-        for r in result:
-            if self._move_callback is not None:
-                r.triggered.connect(nonpartial(self._move_callback, self))
-
-        return result
-
-    def set_roi_tool(self, mode):
-        if mode is 'Rectangle':
-            self._roi_tool = qt_roi.QtRectangularROI(self._axes)
-
-        if mode is 'Circle':
-            self._roi_tool = qt_roi.QtCircularROI(self._axes)
-
-        if mode is 'Polygon':
-            self._roi_tool = qt_roi.QtPolygonalROI(self._axes)
-
-        self._roi_tool.plot_opts.update(edgecolor='#c51b7d',
-                                        facecolor=None,
-                                        edgewidth=3,
-                                        alpha=1.0)
+        from glue import config
+        acts = []
+        for label, cmap in config.colormaps:
+            a = ColormapAction(label, cmap, self.viewer)
+            a.triggered.connect(nonpartial(self.viewer.set_cmap, cmap))
+            acts.append(a)
+        return acts

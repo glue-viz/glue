@@ -23,16 +23,16 @@ class Event(object):
         self.inaxes = True
 
 
-def axes():
+def viewer():
     result = MagicMock()
-    result.figure.canvas.get_width_height.return_value = (640, 480)
+    result.axes.figure.canvas.get_width_height.return_value = (640, 480)
     return result
 
 
 class TestMouseMode(object):
 
     def setup_method(self, method):
-        self.mode = self.mode_factory()(axes())
+        self.mode = self.mode_factory()(viewer())
         self.axes = self.mode._axes
         self.attach_callbacks()
 

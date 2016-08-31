@@ -12,7 +12,7 @@ Objects used to configure Glue at runtime.
 
 __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'ColormapRegistry', 'DataFactoryRegistry', 'QtClientRegistry',
-           'LinkFunctionRegistry', 'LinkHelperRegistry', 'QtToolRegistry',
+           'LinkFunctionRegistry', 'LinkHelperRegistry', 'ViewerToolRegistry',
            'SingleSubsetLayerActionRegistry', 'ProfileFitterRegistry',
            'qt_client', 'data_factory', 'link_function', 'link_helper',
            'colormaps', 'exporters', 'settings', 'fit_plugin',
@@ -443,29 +443,22 @@ class QtClientRegistry(Registry):
     """
 
 
-class QtToolRegistry(DictRegistry):
+class ViewerToolRegistry(DictRegistry):
 
-    def default_members(self):
-        defaults = {}
-        for viewer in qt_client.members:
-            try:
-                defaults[viewer] = viewer._get_default_tools()
-            except AttributeError:
-                logger.info("could not get default tools for {0}".format(viewer.__name__))
-                defaults[viewer] = []
-
-        return defaults
-
-    def add(self, tool_cls, widget_cls=None):
+    def add(self, tool_cls):
         """
-        Add a tool class to the registry, optionally specifying which widget
-        class it should apply to (``widget_cls``). if ``widget_cls`` is set
-        to `None`, the tool applies to all classes.
+        Add a tool class to the registry. The the ``tool_id`` attribute on the
+        tool_cls should be set, and is used by the viewers to indicate which
+        tools they want to
         """
-        if widget_cls in self.members:
-            self.members[widget_cls].append(tool_cls)
+        if tool_cls.tool_id in self.members:
+            raise ValueError("Tool ID '{0}' already registered".format(tool_cls.tool_id))
         else:
-            self.members[widget_cls] = [tool_cls]
+            self.members[tool_cls.tool_id] = tool_cls
+
+    def __call__(self, tool_cls):
+        self.add(tool_cls)
+        return tool_cls
 
 
 class LinkFunctionRegistry(Registry):
@@ -579,7 +572,7 @@ class BooleanSetting(object):
         return self.state
 
 qt_client = QtClientRegistry()
-tool_registry = QtToolRegistry()
+viewer_tool = ViewerToolRegistry()
 data_factory = DataFactoryRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
@@ -596,6 +589,7 @@ qglue_parser = QGlueParserRegistry()
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)
 enable_contracts = BooleanSetting(False)
+
 
 def load_configuration(search_path=None):
     ''' Find and import a config.py file

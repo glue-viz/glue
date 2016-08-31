@@ -1,185 +1,147 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import warnings
 
-import matplotlib
-
-from qtpy import QtCore, QtWidgets
+from qtpy import QtCore, QtGui, QtWidgets
 from qtpy.QtCore import Qt
-from qtpy import PYQT5
+
+from glue.external import six
 from glue.core.callback_property import add_callback
-from glue.icons.qt import get_icon
 from glue.utils import nonpartial
+from glue.viewers.common.qt.tool import CheckableTool, Tool
+from glue.config import viewer_tool
+from glue.icons.qt import get_icon
 
-if PYQT5:
-    from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
-else:
-    from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
+__all__ = ['BasicToolbar']
 
 
-class GlueToolbar(NavigationToolbar2QT):
-    pan_begin = QtCore.Signal()
-    pan_end = QtCore.Signal()
+class BasicToolbar(QtWidgets.QToolBar):
+
     mode_activated = QtCore.Signal()
     mode_deactivated = QtCore.Signal()
 
-    def __init__(self, canvas, frame, name=None):
-        """ Create a new toolbar object
-
-        Parameters
-        ----------
-        canvas : Maptloblib canvas instance
-         The drawing canvas to interact with
-        frame : QWidget
-         The QT frame that the canvas is embedded within.
+    def __init__(self, parent):
         """
+        Create a new toolbar object
+        """
+
+        super(BasicToolbar, self).__init__(parent=parent)
+
         self.buttons = {}
-        self.__active = None
-        self.basedir = None
-        NavigationToolbar2QT.__init__(self, canvas, frame)
-        if name is not None:
-            self.setWindowTitle(name)
+        self.tools = {}
         self.setIconSize(QtCore.QSize(25, 25))
         self.layout().setSpacing(1)
         self.setFocusPolicy(Qt.StrongFocus)
-        self._idKey = None
+        self._mode = None
 
-        # pyside is prone to segfaults if slots hold the only
-        # reference to a signal, so we hold an extra reference
-        # see https://bugreports.qt-project.org/browse/PYSIDE-88
-        self.__signals = []
+        self.setup_default_modes()
 
-    def _init_toolbar(self):
-        self.basedir = os.path.join(matplotlib.rcParams['datapath'], 'images')
-        parent = QtWidgets.QToolBar.parent(self)
-
-        a = QtWidgets.QAction(get_icon('glue_home'),
-                          'Home', parent)
-        a.triggered.connect(nonpartial(self.home))
-        a.setToolTip('Reset original zoom')
-        a.setShortcut('H')
-        a.setShortcutContext(Qt.WidgetShortcut)
-        parent.addAction(a)
-        self.buttons['HOME'] = a
-        self.addAction(a)
-
-        a = QtWidgets.QAction(get_icon('glue_filesave'),
-                          'Save', parent)
-        a.triggered.connect(nonpartial(self.save_figure))
-        a.setToolTip('Save the figure')
-        a.setShortcut('Ctrl+Shift+S')
-        parent.addAction(a)
-        self.buttons['SAVE'] = a
-        self.addAction(a)
-
-        a = QtWidgets.QAction(get_icon('glue_back'),
-                          'Back', parent)
-        a.triggered.connect(nonpartial(self.back))
-        parent.addAction(a)
-        self.addAction(a)
-        self.buttons['BACK'] = a
-        a.setToolTip('Back to previous view')
-
-        a = QtWidgets.QAction(get_icon('glue_forward'),
-                          'Forward', parent)
-        a.triggered.connect(nonpartial(self.forward))
-        a.setToolTip('Forward to next view')
-        parent.addAction(a)
-        self.buttons['FORWARD'] = a
-        self.addAction(a)
-
-        a = QtWidgets.QAction(get_icon('glue_move'),
-                          'Pan', parent)
-        a.triggered.connect(nonpartial(self.pan))
-        a.setToolTip('Pan axes with left mouse, zoom with right')
-        a.setCheckable(True)
-        a.setShortcut('M')
-        a.setShortcutContext(Qt.WidgetShortcut)
-        parent.addAction(a)
-        self.addAction(a)
-        self.buttons['PAN'] = a
-
-        a = QtWidgets.QAction(get_icon('glue_zoom_to_rect'),
-                          'Zoom', parent)
-        a.triggered.connect(nonpartial(self.zoom))
-        a.setToolTip('Zoom to rectangle')
-        a.setShortcut('Z')
-        a.setShortcutContext(Qt.WidgetShortcut)
-        a.setCheckable(True)
-        parent.addAction(a)
-        self.addAction(a)
-        self.buttons['ZOOM'] = a
-
-        #self.adj_window = None
+    def setup_default_modes(self):
+        pass
 
     @property
-    def _active(self):
-        return self.__active
+    def mode(self):
+        return self._mode
 
-    @_active.setter
-    def _active(self, value):
-        if self.__active == value:
+    @mode.setter
+    def mode(self, new_mode):
+
+        old_mode = self._mode
+
+        # If the mode is as before, we don't need to do anything
+        if old_mode is new_mode:
             return
 
-        self.__active = value
-        if value not in [None, '']:
+        # Otheriwse, if the mode changes, then we need to disable the previous
+        # mode...
+        if old_mode is not None:
+            self.deactivate_mode(old_mode)
+            if isinstance(old_mode, CheckableTool):
+                button = self.buttons[old_mode.tool_id]
+                if button.isChecked():
+                    button.blockSignals(True)
+                    button.setChecked(False)
+                    button.blockSignals(False)
+
+        # ... and enable the new one
+        if new_mode is not None:
+            self.activate_mode(new_mode)
+            if isinstance(new_mode, CheckableTool):
+                button = self.buttons[new_mode.tool_id]
+                if button.isChecked():
+                    button.blockSignals(True)
+                    button.setChecked(True)
+                    button.blockSignals(False)
+
+        if isinstance(new_mode, CheckableTool):
+            self._mode = new_mode
             self.mode_activated.emit()
         else:
+            self._mode = None
             self.mode_deactivated.emit()
 
-    def home(self, *args):
-        super(GlueToolbar, self).home(*args)
-        self.canvas.homeButton.emit()
+    def activate_mode(self, mode):
+        mode.activate()
 
-    def zoom(self, *args):
-        self._deactivate_custom_modes()
-        super(GlueToolbar, self).zoom(*args)
-        self._update_buttons_checked()
+    def deactivate_mode(self, mode):
+        if isinstance(mode, CheckableTool):
+            mode.deactivate()
 
-    def pan(self, *args):
-        self._deactivate_custom_modes()
-        super(GlueToolbar, self).pan(*args)
-        self._update_buttons_checked()
+    def add_tool(self, mode):
 
-    def _deactivate_custom_modes(self):
-        if self._idPress is not None:
-            self._idPress = self.canvas.mpl_disconnect(self._idPress)
-        if self._idRelease is not None:
-            self._idRelease = self.canvas.mpl_disconnect(self._idRelease)
-        if self._idDrag is not None:
-            self._idDrag = self.canvas.mpl_disconnect(
-                self._idDrag)
-            self._idDrag = self.canvas.mpl_connect('motion_notify_event',
-                                                   self.mouse_move)
-        if self._idKey is not None:
-            self._idKey = self.canvas.mpl_disconnect(self._idKey)
-
-        self.mode = ''
-
-    def add_mode(self, mode):
         parent = QtWidgets.QToolBar.parent(self)
 
-        def toggle():
-            self._custom_mode(mode)
+        if isinstance(mode.icon, six.string_types):
+            if os.path.exists(mode.icon):
+                icon = QtGui.QIcon(mode.icon)
+            else:
+                icon = get_icon(mode.icon)
+        else:
+            icon = mode.icon
 
-        def enable():
-            # turn on if not
-            if self._active != mode.mode_id:
-                self._custom_mode(mode)
+        action = QtWidgets.QAction(icon, mode.action_text, parent)
 
-        action = QtWidgets.QAction(mode.icon, mode.action_text, parent)
-        action.triggered.connect(nonpartial(toggle))
+        def toggle(checked):
+            if checked:
+                self.mode = mode
+            else:
+                self.mode = None
+
+        def trigger(checked):
+            self.mode = mode
+
         parent.addAction(action)
 
-        self.__signals.extend([toggle, enable])
+        if isinstance(mode, CheckableTool):
+            action.toggled.connect(toggle)
+        else:
+            action.triggered.connect(trigger)
+
+        shortcut = None
 
         if mode.shortcut is not None:
-            action.setShortcut(mode.shortcut)
-            action.setShortcutContext(Qt.WidgetShortcut)
 
-        action.setToolTip(mode.tool_tip)
-        action.setCheckable(True)
-        self.buttons[mode.mode_id] = action
+            # Make sure that the keyboard shortcut is unique
+            for m in self.tools.values():
+                if mode.shortcut == m.shortcut:
+                    warnings.warn("Tools '{0}' and '{1}' have the same shortcut "
+                                  "('{2}'). Ignoring shortcut for "
+                                  "'{1}'".format(m.tool_id, mode.tool_id, mode.shortcut))
+                    break
+            else:
+                shortcut = mode.shortcut
+                action.setShortcut(mode.shortcut)
+                action.setShortcutContext(Qt.WidgetShortcut)
+
+
+        if shortcut is None:
+            action.setToolTip(mode.tool_tip)
+        else:
+            action.setToolTip(mode.tool_tip + " [shortcut: {0}]".format(shortcut))
+
+        action.setCheckable(isinstance(mode, CheckableTool))
+        self.buttons[mode.tool_id] = action
 
         menu_actions = mode.menu_actions()
         if len(menu_actions) > 0:
@@ -188,76 +150,16 @@ class GlueToolbar(NavigationToolbar2QT):
                 ma.setParent(self)
                 menu.addAction(ma)
             action.setMenu(menu)
-            menu.triggered.connect(nonpartial(enable))
+            menu.triggered.connect(trigger)
 
         self.addAction(action)
 
-        # bind action status to mode.enabled
+        # Bind tool visibility to mode.enabled
         def toggle(state):
             action.setVisible(state)
             action.setEnabled(state)
         add_callback(mode, 'enabled', toggle)
 
+        self.tools[mode.tool_id] = mode
+
         return action
-
-    def set_mode(self, mode):
-        if self._active != mode.mode_id:
-            self._custom_mode(mode)
-
-    def _custom_mode(self, mode):
-        if self._active == mode.mode_id:
-            self._active = None
-        else:
-            self._active = mode.mode_id
-
-        self._deactivate_custom_modes()
-
-        if self._active:
-            self._idPress = self.canvas.mpl_connect(
-                'button_press_event', mode.press)
-            self._idDrag = self.canvas.mpl_connect(
-                'motion_notify_event', mode.move)
-            self._idRelease = self.canvas.mpl_connect(
-                'button_release_event', mode.release)
-            self._idKey = self.canvas.mpl_connect(
-                'key_press_event', mode.key)
-            self.mode = mode.action_text
-            self.canvas.widgetlock(self)
-            mode.activate()
-
-            # allows grabbing of key events before clicking on plot
-            # XXX qt specific syntax here
-            try:
-                self.canvas.setFocus()
-            except AttributeError:
-                pass
-        else:
-            self.canvas.widgetlock.release(self)
-
-        for a in self.canvas.figure.get_axes():
-            a.set_navigate_mode(None)
-
-        self.set_message(self.mode)
-        self._update_buttons_checked()
-
-    def press_pan(self, event):
-        self.pan_begin.emit()
-        super(GlueToolbar, self).press_pan(event)
-
-    def release_pan(self, event):
-        self.pan_end.emit()
-        super(GlueToolbar, self).release_pan(event)
-
-    def _update_buttons_checked(self):
-        for mode in self.buttons:
-            self.buttons[mode].setChecked(self._active == mode)
-
-    def set_message(self, s):
-        self.message.emit(s)
-        parent = QtWidgets.QToolBar.parent(self)
-        if parent is None:
-            return
-        sb = parent.statusBar()
-        if sb is None:
-            return
-        sb.showMessage(s.replace(', ', '\n'))

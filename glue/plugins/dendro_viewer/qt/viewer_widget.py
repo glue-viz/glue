@@ -5,7 +5,7 @@ import os
 from qtpy import QtWidgets
 from glue import core
 from glue.plugins.dendro_viewer.client import DendroClient
-from glue.viewers.common.qt.toolbar import GlueToolbar
+from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
 from glue.viewers.common.qt.mouse_mode import PickMode
 from glue.utils.qt import load_ui
 from glue.utils.qt.widget_properties import (ButtonProperty, CurrentComboProperty,
@@ -31,6 +31,9 @@ class DendroWidget(DataViewer):
     parent = CurrentComboProperty('ui.parentCombo', 'parent attribute')
     order = CurrentComboProperty('ui.orderCombo', 'layout sorter attribute')
 
+    _toolbar_cls = MatplotlibViewerToolbar
+    tools = ['Pick']
+
     def __init__(self, session, parent=None):
         super(DendroWidget, self).__init__(session, parent)
 
@@ -46,12 +49,8 @@ class DendroWidget(DataViewer):
 
         self._connect()
 
-        self.make_toolbar()
+        self._make_toolbar()
         self.statusBar().setSizeGripEnabled(False)
-
-    @staticmethod
-    def _get_default_tools():
-        return []
 
     def _connect(self):
         ui = self.ui
@@ -62,27 +61,18 @@ class DendroWidget(DataViewer):
         connect_current_combo(cl, 'height_attr', ui.heightCombo)
         connect_current_combo(cl, 'order_attr', ui.orderCombo)
 
-    def make_toolbar(self):
-        result = GlueToolbar(self.central_widget.canvas, self,
-                             name='Dendrogram')
-        for mode in self._mouse_modes():
-            result.add_mode(mode)
-        self.addToolBar(result)
-        return result
+    def _make_toolbar(self):
 
-    def _mouse_modes(self):
-        axes = self.client.axes
-
-        def apply_mode(mode):
-            self.client.apply_roi(mode.roi())
+        super(DendroWidget, self)._make_toolbar()
 
         def on_move(mode):
             if mode._drag:
                 self.client.apply_roi(mode.roi())
 
-        return [PickMode(axes,
-                         move_callback=on_move,
-                         roi_callback=apply_mode)]
+        self.toolbar.tools['Pick']._move_callback = on_move
+
+    def apply_roi(self, roi):
+        self.client.apply_roi(roi)
 
     def _update_combos(self, data=None):
         data = data or self.client.display_data

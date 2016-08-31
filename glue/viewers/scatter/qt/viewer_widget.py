@@ -6,7 +6,7 @@ from qtpy.QtCore import Qt
 from qtpy import QtWidgets
 from glue import core
 from glue.viewers.scatter.client import ScatterClient
-from glue.viewers.common.qt.toolbar import GlueToolbar
+from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
 from glue.viewers.common.qt.mouse_mode import (RectangleMode, CircleMode,
                                 PolyMode, HRangeMode, VRangeMode)
 from glue.utils.qt import load_ui
@@ -49,6 +49,9 @@ class ScatterWidget(DataViewer):
 
     _layer_style_widget_cls = ScatterLayerStyleWidget
 
+    _toolbar_cls = MatplotlibViewerToolbar
+    tools = ['select:rectangle', 'select:xrange', 'select:yrange', 'select:circle', 'select:polygon']
+
     def __init__(self, session, parent=None):
 
         super(ScatterWidget, self).__init__(session, parent)
@@ -68,14 +71,10 @@ class ScatterWidget(DataViewer):
 
         self._connect()
         self.unique_fields = set()
-        tb = self.make_toolbar()
-        cache_axes(self.client.axes, tb)
+        self._make_toolbar()
+        cache_axes(self.client.axes, self.toolbar)
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
-
-    @staticmethod
-    def _get_default_tools():
-        return []
 
     def _tweak_geometry(self):
         self.central_widget.resize(600, 400)
@@ -100,27 +99,6 @@ class ScatterWidget(DataViewer):
         connect_float_edit(cl, 'xmax', ui.xmax)
         connect_float_edit(cl, 'ymin', ui.ymin)
         connect_float_edit(cl, 'ymax', ui.ymax)
-
-    def make_toolbar(self):
-        result = GlueToolbar(self.central_widget.canvas, self,
-                             name='Scatter Plot')
-        for mode in self._mouse_modes():
-            result.add_mode(mode)
-        self.addToolBar(result)
-        return result
-
-    def _mouse_modes(self):
-        axes = self.client.axes
-
-        def apply_mode(mode):
-            return self.apply_roi(mode.roi())
-
-        rect = RectangleMode(axes, roi_callback=apply_mode)
-        xra = HRangeMode(axes, roi_callback=apply_mode)
-        yra = VRangeMode(axes, roi_callback=apply_mode)
-        circ = CircleMode(axes, roi_callback=apply_mode)
-        poly = PolyMode(axes, roi_callback=apply_mode)
-        return [rect, xra, yra, circ, poly]
 
     @defer_draw
     def _update_combos(self):
