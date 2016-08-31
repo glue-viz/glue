@@ -13,7 +13,7 @@ from glue.config import viewer_tool
 class PVSlicerMode(PathMode):
 
     icon = 'glue_slice'
-    tool_id = 'Slice'
+    tool_id = 'slice'
     action_text = 'Slice Extraction'
     tool_tip = ('Extract a slice from an arbitrary path\n'
                 '  ENTER accepts the path\n'
