@@ -480,7 +480,7 @@ class ContrastMode(MouseMode):
         self._vmax = None
 
         if self._move_callback is None:
-            self._move_callback = self.viewer.set_norm
+            self._move_callback = self.viewer._set_norm
 
     def set_clip_percentile(self, lo, hi):
         """Percentiles at which to clip the data at black/white"""
