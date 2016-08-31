@@ -834,8 +834,8 @@ class SpectrumTool(object):
         tb = MatplotlibViewerToolbar(self.widget)
 
         # disable ProfileViewer mouse processing during mouse modes
-        tb.mode_activated.connect(self.profile.disconnect)
-        tb.mode_deactivated.connect(self.profile.connect)
+        tb.tool_activated.connect(self.profile.disconnect)
+        tb.tool_deactivated.connect(self.profile.connect)
 
         self._menu_toggle_action = QtWidgets.QAction("Options", tb)
         self._menu_toggle_action.setCheckable(True)
