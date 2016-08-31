@@ -1,12 +1,19 @@
 from __future__ import absolute_import, division, print_function
 
 import pytest
+import numpy as np
 
+from qtpy import QtCore, QtGui
+from glue.utils.qt import get_qapp
 from qtpy.QtCore import Qt
 from glue.core import Data, DataCollection, Session
 from glue.utils.qt import qt4_to_mpl_color
+from glue.app.qt import GlueApplication
 
 from ..viewer_widget import DataTableModel, TableWidget
+
+from glue.core.edit_subset_mode import (EditSubsetMode, AndNotMode, OrMode,
+                                        ReplaceMode)
 
 
 class TestDataTableModel():
@@ -75,25 +82,35 @@ def check_values_and_color(model, data, colors):
 
 def test_table_widget():
 
-    # TODO: add tests for doing the selection interactively
+    # Start off by creating a glue application instance with a table viewer and
+    # some data pre-loaded.
+
+    app = get_qapp()
 
     d = Data(a=[1, 2, 3, 4, 5],
              b=[3.2, 1.2, 4.5, 3.3, 2.2],
              c=['e', 'b', 'c', 'a', 'f'])
+
     dc = DataCollection([d])
-    session = Session(dc, hub=dc.hub)
 
-    widget = TableWidget(session)
-    widget.register_to_hub(dc.hub)
+    gapp = GlueApplication(dc)
+
+    widget = gapp.new_data_viewer(TableWidget)
     widget.add_data(d)
-    widget.show()
 
-    sg1 = dc.new_subset_group('D >= 3', d.id['a'] <= 3)
+    subset_mode = EditSubsetMode()
+
+    # Create two subsets
+
+    sg1 = dc.new_subset_group('D <= 3', d.id['a'] <= 3)
     sg1.style.color = '#aa0000'
     sg2 = dc.new_subset_group('1 < D < 4', (d.id['a'] > 1) & (d.id['a'] < 4))
     sg2.style.color = '#0000cc'
 
     model = widget.ui.table.model()
+
+    # We now check what the data and colors of the table are, and try various
+    # sorting methods to make sure that things are still correct.
 
     data = {
         'a': [1, 2, 3, 4, 5],
@@ -140,3 +157,83 @@ def test_table_widget():
     colors = [None, None, '#380088', '#380088', '#aa0000']
 
     check_values_and_color(model, data, colors)
+
+    model.sort(0, Qt.AscendingOrder)
+
+    # We now modify the subsets using the table.
+
+    selection = widget.ui.table.selectionModel()
+
+    widget.toolbar.actions['table:rowselect'].toggle()
+
+    def press_key(key):
+        event = QtGui.QKeyEvent(QtCore.QEvent.KeyPress, key, Qt.NoModifier)
+        app.postEvent(widget.ui.table, event)
+        app.processEvents()
+
+    app.processEvents()
+
+    # We now use key presses to navigate down to the third row
+
+    press_key(Qt.Key_Tab)
+    press_key(Qt.Key_Down)
+    press_key(Qt.Key_Down)
+
+    indices = selection.selectedRows()
+
+    # We make sure that the third row is selected
+
+    assert len(indices) == 1
+    assert indices[0].row() == 2
+
+    # At this point, the subsets haven't changed yet
+
+    np.testing.assert_equal(d.subsets[0].to_mask(), [1, 1, 1, 0, 0])
+    np.testing.assert_equal(d.subsets[1].to_mask(), [0, 1, 1, 0, 0])
+
+    # We specify that we are editing the second subset, and use a 'not' logical
+    # operation to remove the currently selected line from the second subset.
+
+    d.edit_subset = [d.subsets[1]]
+
+    subset_mode.mode = AndNotMode
+
+    press_key(Qt.Key_Enter)
+
+    np.testing.assert_equal(d.subsets[0].to_mask(), [1, 1, 1, 0, 0])
+    np.testing.assert_equal(d.subsets[1].to_mask(), [0, 1, 0, 0, 0])
+
+    # At this point, the selection should be cleared
+
+    indices = selection.selectedRows()
+    assert len(indices) == 0
+
+    # We move to the fourth row and now do an 'or' selection with the first
+    # subset.
+
+    press_key(Qt.Key_Down)
+
+    subset_mode.mode = OrMode
+
+    d.edit_subset = [d.subsets[0]]
+
+    press_key(Qt.Key_Enter)
+
+    np.testing.assert_equal(d.subsets[0].to_mask(), [1, 1, 1, 1, 0])
+    np.testing.assert_equal(d.subsets[1].to_mask(), [0, 1, 0, 0, 0])
+
+    # Finally we move to the fifth row and deselect all subsets so that
+    # pressing enter now creates a new subset.
+
+    press_key(Qt.Key_Down)
+
+    subset_mode.mode = ReplaceMode
+
+    d.edit_subset = None
+
+    press_key(Qt.Key_Enter)
+
+    np.testing.assert_equal(d.subsets[0].to_mask(), [1, 1, 1, 1, 0])
+    np.testing.assert_equal(d.subsets[1].to_mask(), [0, 1, 0, 0, 0])
+    np.testing.assert_equal(d.subsets[2].to_mask(), [0, 0, 0, 0, 1])
+
