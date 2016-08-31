@@ -679,6 +679,7 @@ class SpectrumExtractorMode(RoiMode):
         self._tool = SpectrumTool(self.viewer, self)
         self._release_callback = self._tool._update_profile
         self._move_callback = self._tool._move_profile
+        self._roi_callback = None
 
     def menu_actions(self):
 

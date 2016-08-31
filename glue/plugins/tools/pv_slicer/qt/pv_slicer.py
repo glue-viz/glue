@@ -89,9 +89,6 @@ class PVSliceWidget(StandaloneImageWidget):
         self._x = x
         self._y = y
 
-    def _make_toolbar(self):
-        pass
-
     def _format_coord(self, x, y):
         """
         Return a formatted location label for the taskbar
