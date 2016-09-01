@@ -80,7 +80,7 @@ def check_values_and_color(model, data, colors):
                 assert qt4_to_mpl_color(brush.color()) == colors[i]
 
 
-def test_table_widget():
+def test_table_widget(tmpdir):
 
     # Start off by creating a glue application instance with a table viewer and
     # some data pre-loaded.
@@ -237,3 +237,31 @@ def test_table_widget():
     np.testing.assert_equal(d.subsets[1].to_mask(), [0, 1, 0, 0, 0])
     np.testing.assert_equal(d.subsets[2].to_mask(), [0, 0, 0, 0, 1])
 
+    # Make the color for the new subset deterministic
+    dc.subset_groups[2].style.color = '#bababa'
+
+    # Now finally check saving and restoring session
+
+    session_file = tmpdir.join('table.glu').strpath
+
+    gapp.save_session(session_file)
+
+    gapp2 = GlueApplication.restore_session(session_file)
+    gapp2.show()
+
+    d = gapp2.data_collection[0]
+
+    widget2 = gapp2.viewers[0][0]
+
+    model2 = widget2.ui.table.model()
+
+    data = {
+        'a': [1, 2, 3, 4, 5],
+        'b': [3.2, 1.2, 4.5, 3.3, 2.2],
+        'c': ['e', 'b', 'c', 'a', 'f']
+    }
+
+    # Need to take into account new selections above
+    colors = ['#aa0000', '#380088', '#aa0000', "#aa0000", "#bababa"]
+
+    check_values_and_color(model2, data, colors)
