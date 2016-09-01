@@ -703,9 +703,9 @@ def _save_data_3(data, context):
 @loader(Data, version=3)
 def _load_data_3(rec, context):
     result = _load_data_2(rec, context)
+    yield result
     result._key_joins = dict((context.object(k), (context.object(v0), context.object(v1)))
                              for k, v0, v1 in rec['_key_joins'])
-    return result
 
 
 @saver(Data, version=4)
@@ -722,12 +722,12 @@ def _save_data_4(data, context):
 @loader(Data, version=4)
 def _load_data_4(rec, context):
     result = _load_data_2(rec, context)
+    yield result
     def load_cid_tuple(cids):
         return tuple(context.object(cid) for cid in cids)
     result._key_joins = dict((context.object(k), (load_cid_tuple(v0), load_cid_tuple(v1)))
                              for k, v0, v1 in rec['_key_joins'])
     result.uuid = rec['uuid']
-    return result
 
 
 @saver(ComponentID)
