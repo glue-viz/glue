@@ -15,8 +15,9 @@ class Tool(object):
 
     * icon : QIcon object
     * tool_id : a short name for the tool
-    * action_text : the action title
+    * action_text : the action title (used if the tool is made available in a menu)
     * tool_tip : a tip that is shown when the user hovers over the icon
+    * status_tip : a tip that is shown in the status bar when the tool is active
     * shortcut : keyboard shortcut to toggle the tool
     """
 
@@ -26,6 +27,7 @@ class Tool(object):
     tool_id = None
     action_text = None
     tool_tip = None
+    status_tip = None
     shortcut = None
 
     def __init__(self, viewer=None):

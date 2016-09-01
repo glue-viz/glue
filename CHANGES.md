@@ -31,6 +31,12 @@ v0.9.0 (unreleased)
 * Refactored code related to toolbars in order to make it easier to define
   toolbars and toolbar modes that aren't Matplotlib-specific. [#1085]
 
+* Added a new table viewer. [#1084]
+
+* Fix saving/loading of categorical components. [#1084]
+
+* Make it possible for tools to define a status bar message. [#1084]
+
 v0.8.3 (unreleased)
 -------------------
 

@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from collections import OrderedDict
 
+import uuid
 import numpy as np
 import pandas as pd
 
@@ -99,6 +100,11 @@ class Data(object):
             self.add_component(data, lbl)
 
         self._key_joins = {}
+
+        # To avoid circular references when saving objects with references to
+        # the data, we make sure that all Data objects have a UUID that can
+        # uniquely identify them.
+        self.uuid = str(uuid.uuid4())
 
     @property
     def subsets(self):

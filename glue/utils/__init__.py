@@ -12,3 +12,4 @@ from .array import *
 from .matplotlib import *
 from .misc import *
 from .geometry import *
+from .colors import *

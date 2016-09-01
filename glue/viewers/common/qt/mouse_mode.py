@@ -361,12 +361,16 @@ class PolyMode(ClickRoiMode):
     tool_tip = ('Lasso a region of interest\n'
                 '  ENTER accepts the path\n'
                 '  ESCAPE clears the path')
+    status_tip = ('CLICK and DRAG to define lasso, CLICK multiple times to '
+                  'define polygon, ENTER to finalize, ESCAPE to cancel')
     shortcut = 'G'
 
     def __init__(self, viewer, **kwargs):
         super(PolyMode, self).__init__(viewer, **kwargs)
         self._roi_tool = qt_roi.QtPolygonalROI(self._axes)
 
+
+# TODO: determine why LassoMode exists since it's the same as PolyMode?
 
 @viewer_tool
 class LassoMode(RoiMode):
@@ -375,9 +379,13 @@ class LassoMode(RoiMode):
     """
 
     icon = 'glue_lasso'
-    tool_id = 'Lasso'
+    tool_id = 'select:lasso'
     action_text = 'Polygonal ROI'
-    tool_tip = 'Lasso a region of interest'
+    tool_tip = ('Lasso a region of interest\n'
+                '  ENTER accepts the path\n'
+                '  ESCAPE clears the path')
+    status_tip = ('CLICK and DRAG to define lasso, CLICK multiple times to '
+                  'define polygon, ENTER to finalize, ESCAPE to cancel')
     shortcut = 'L'
 
     def __init__(self, viewer, **kwargs):
@@ -395,7 +403,7 @@ class HRangeMode(RoiMode):
 
     icon = 'glue_xrange_select'
     tool_id = 'select:xrange'
-    action_text = 'select:xrange'
+    action_text = 'X range'
     tool_tip = 'Select a range of x values'
     shortcut = 'X'
 
@@ -414,7 +422,7 @@ class VRangeMode(RoiMode):
 
     icon = 'glue_yrange_select'
     tool_id = 'select:yrange'
-    action_text = 'select:yrange'
+    action_text = 'Y range'
     tool_tip = 'Select a range of y values'
     shortcut = 'Y'
 

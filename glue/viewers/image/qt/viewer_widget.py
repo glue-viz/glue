@@ -378,9 +378,9 @@ class ImageWidget(ImageWidgetBase):
         # connect viewport update buttons to client commands to
         # allow resampling
         cl = self.client
-        self.toolbar.buttons['mpl:home'].triggered.connect(nonpartial(cl.check_update))
-        self.toolbar.buttons['mpl:forward'].triggered.connect(nonpartial(cl.check_update))
-        self.toolbar.buttons['mpl:back'].triggered.connect(nonpartial(cl.check_update))
+        self.toolbar.actions['mpl:home'].triggered.connect(nonpartial(cl.check_update))
+        self.toolbar.actions['mpl:forward'].triggered.connect(nonpartial(cl.check_update))
+        self.toolbar.actions['mpl:back'].triggered.connect(nonpartial(cl.check_update))
 
     def paintEvent(self, event):
         super(ImageWidget, self).paintEvent(event)
@@ -530,4 +530,3 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
             self.toolbar.add_tool(mode)
 
         self.addToolBar(self.toolbar)
-

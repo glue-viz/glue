@@ -49,8 +49,8 @@ class ExampleViewer(DataViewer):
 
     def initialize_toolbar(self):
         super(ExampleViewer, self).initialize_toolbar()
-        self.mode = MouseModeTest(self, release_callback=self.callback)
-        self.toolbar.add_tool(self.mode)
+        self.tool = MouseModeTest(self, release_callback=self.callback)
+        self.toolbar.add_tool(self.tool)
 
     def callback(self, mode):
         self._called_back = True
@@ -71,38 +71,38 @@ class TestToolbar(object):
         self.viewer.close()
 
     def assert_valid_mode_state(self, target_mode):
-        for mode in self.viewer.toolbar.buttons:
-            if mode == target_mode and self.viewer.toolbar.buttons[mode].isCheckable():
-                assert self.viewer.toolbar.buttons[mode].isChecked()
+        for tool_id in self.viewer.toolbar.actions:
+            if tool_id == target_mode and self.viewer.toolbar.actions[tool_id].isCheckable():
+                assert self.viewer.toolbar.actions[tool_id].isChecked()
                 self.viewer.toolbar._active == target_mode
             else:
-                assert not self.viewer.toolbar.buttons[mode].isChecked()
+                assert not self.viewer.toolbar.actions[tool_id].isChecked()
 
     def test_callback(self):
-        self.viewer.toolbar.buttons['mpl:home'].trigger()
-        self.viewer.mode.release(None)
+        self.viewer.toolbar.actions['mpl:home'].trigger()
+        self.viewer.tool.release(None)
         assert self.viewer._called_back
 
     def test_change_mode(self):
 
-        self.viewer.toolbar.buttons['mpl:pan'].toggle()
-        assert self.viewer.toolbar.mode.tool_id == 'mpl:pan'
+        self.viewer.toolbar.actions['mpl:pan'].toggle()
+        assert self.viewer.toolbar.active_tool.tool_id == 'mpl:pan'
         assert self.viewer.toolbar._mpl_nav.mode == 'pan/zoom'
 
-        self.viewer.toolbar.buttons['mpl:pan'].toggle()
-        assert self.viewer.toolbar.mode is None
+        self.viewer.toolbar.actions['mpl:pan'].toggle()
+        assert self.viewer.toolbar.active_tool is None
         assert self.viewer.toolbar._mpl_nav.mode == ''
 
-        self.viewer.toolbar.buttons['mpl:zoom'].trigger()
-        assert self.viewer.toolbar.mode.tool_id == 'mpl:zoom'
+        self.viewer.toolbar.actions['mpl:zoom'].trigger()
+        assert self.viewer.toolbar.active_tool.tool_id == 'mpl:zoom'
         assert self.viewer.toolbar._mpl_nav.mode == 'zoom rect'
 
-        self.viewer.toolbar.buttons['mpl:back'].trigger()
-        assert self.viewer.toolbar.mode is None
+        self.viewer.toolbar.actions['mpl:back'].trigger()
+        assert self.viewer.toolbar.active_tool is None
         assert self.viewer.toolbar._mpl_nav.mode == ''
 
-        self.viewer.toolbar.buttons['test'].trigger()
-        assert self.viewer.toolbar.mode.tool_id == 'test'
+        self.viewer.toolbar.actions['test'].trigger()
+        assert self.viewer.toolbar.active_tool.tool_id == 'test'
         assert self.viewer.toolbar._mpl_nav.mode == ''
 
 
@@ -139,4 +139,3 @@ def test_duplicate_shortcut():
         viewer = ExampleViewer2(session)
     assert len(w) == 1
     assert str(w[0].message) == "Tools 'TEST1' and 'TEST2' have the same shortcut ('A'). Ignoring shortcut for 'TEST2'"
-

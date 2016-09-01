@@ -306,6 +306,7 @@ class TestSubsetIo(object):
     def setup_method(self, method):
         self.data = MagicMock(spec=Data)
         self.data.shape = (4, 4)
+        self.data.uuid = 'abcde'
         self.subset = Subset(self.data)
         inds = np.array([1, 2, 3])
         self.subset.subset_state = ElementSubsetState(indices=inds)
