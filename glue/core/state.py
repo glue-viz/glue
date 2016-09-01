@@ -715,6 +715,7 @@ def _save_data_4(data, context):
         return tuple(context.id(cid) for cid in cids)
     result['_key_joins'] = [[context.id(k), save_cid_tuple(v0), save_cid_tuple(v1)]
                             for k, (v0, v1) in data._key_joins.items()]
+    result['uuid'] = data.uuid
     return result
 
 
@@ -725,18 +726,6 @@ def _load_data_4(rec, context):
         return tuple(context.object(cid) for cid in cids)
     result._key_joins = dict((context.object(k), (load_cid_tuple(v0), load_cid_tuple(v1)))
                              for k, v0, v1 in rec['_key_joins'])
-    return result
-
-@saver(Data, version=5)
-def _save_data_5(data, context):
-    result = _save_data_4(data, context)
-    result['uuid'] = data.uuid
-    return result
-
-
-@loader(Data, version=5)
-def _load_data_5(rec, context):
-    result = _load_data_4(rec, context)
     result.uuid = rec['uuid']
     return result
 

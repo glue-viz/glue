@@ -882,11 +882,14 @@ class ElementSubsetState(SubsetState):
     def __init__(self, indices=None, data=None):
         super(ElementSubsetState, self).__init__()
         self._indices = indices
-        self._data = data
+        if data is None:
+            self._data_uuid = None
+        else:
+            self._data_uuid = data.uuid
 
     @memoize
     def to_mask(self, data, view=None):
-        if data is self._data or self._data is None:
+        if data.uuid == self._data_uuid or self._data_uuid is None:
             # XXX this is inefficient for views
             result = np.zeros(data.shape, dtype=bool)
             if self._indices is not None:
@@ -898,17 +901,19 @@ class ElementSubsetState(SubsetState):
             raise IncompatibleAttribute()
 
     def copy(self):
-        return ElementSubsetState(indices=self._indices,
-                                  data=self._data)
+        state = ElementSubsetState(indices=self._indices)
+        state._data_uuid = self._data_uuid
+        return state
 
     def __gluestate__(self, context):
         return dict(indices=context.do(self._indices),
-                    data=context.do(self._data))
+                    data_uuid=self._data_uuid)
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        return cls(indices=context.object(rec['indices']),
-                   data=context.object(rec['data']))
+        state = cls(indices=context.object(rec['indices']))
+        state._data_uuid = rec['data_uuid']
+        return state
 
 
 class InequalitySubsetState(SubsetState):
