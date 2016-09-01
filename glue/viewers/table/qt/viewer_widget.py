@@ -137,9 +137,10 @@ class RowSelectTool(CheckableTool):
 
     tool_id = 'table:rowselect'
     icon = 'glue_row_select'
-    action_text = 'CLICK to select, press ENTER to finalize selection'
+    action_text = 'Select row(s)'
     tool_tip = ('Select rows by clicking on rows and pressing enter '
                 'once the selection is ready to be applied')
+    status_tip = 'CLICK to select, press ENTER to finalize selection'
 
     def __init__(self, viewer):
         super(RowSelectTool, self).__init__(viewer)

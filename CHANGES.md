@@ -35,6 +35,8 @@ v0.9.0 (unreleased)
 
 * Fix saving/loading of categorical components. [#1084]
 
+* Make it possible for tools to define a status bar message. [#1084]
+
 v0.8.3 (unreleased)
 -------------------
 

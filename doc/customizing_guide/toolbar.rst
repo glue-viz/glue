@@ -48,8 +48,8 @@ The class-level variables set at the start of the class are as follows:
   tool that has the same ``tool_id`` as an existing tool already implemented in
   glue, you will get an error.
 
-* ``action_text``: a string describing the tool. This is shown in the status bar
-  at the bottom of the viewer whenever the button is active.
+* ``action_text``: a string describing the tool. This is not currently used,
+  but would be the text that would appear if the tool was accessible by a menu.
 
 * ``tool_tip``: this should be a string that will be shown when the user hovers
   above the button in the toolbar. This can include instructions on how to use
@@ -78,7 +78,7 @@ Checkable tools
 ^^^^^^^^^^^^^^^
 
 The basic structure for a checkable tool is similar to the above, but with an
-additional ``deactivate`` method:
+additional ``deactivate`` method, and a ``status_tip`` attribute:
 
 .. code:: python
 
@@ -92,6 +92,7 @@ additional ``deactivate`` method:
         tool_id = 'custom_tool'
         action_text = 'Does cool stuff'
         tool_tip = 'Does cool stuff'
+        status_tip = 'Instructions on what to do now'
         shortcut = 'D'
 
         def __init__(self, viewer):
@@ -109,7 +110,9 @@ additional ``deactivate`` method:
 When the tool icon is pressed, the ``activate`` method is called, and when the
 button is unchecked (either by clicking on it again, or if the user clicks on
 another tool icon), the ``deactivate`` method is called. As before, when the
-viewer is closed, the ``close`` method is called.
+viewer is closed, the ``close`` method is called. The ``status_tip`` is a
+message shown in the status bar of the viewer when the tool is active. This can
+be used to provide instructions to the user as to what they should do next.
 
 Drop-down menus
 ^^^^^^^^^^^^^^^
