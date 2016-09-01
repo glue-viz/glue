@@ -69,8 +69,10 @@ from matplotlib import cm
 
 from glue.external import six
 from glue import core
-from glue.core.data import (Data, Component, ComponentID, DerivedComponent,
-                            CoordinateComponent)
+from glue.core.data import Data
+from glue.core.component_id import ComponentID
+from glue.core.component import (Component, CategoricalComponent,
+                                 DerivedComponent, CoordinateComponent)
 from glue.core.subset import (OPSYM, SYMOP, CompositeSubsetState,
                               SubsetState, Subset, RoiSubsetState,
                               InequalitySubsetState, RangeSubsetState)
@@ -701,9 +703,9 @@ def _save_data_3(data, context):
 @loader(Data, version=3)
 def _load_data_3(rec, context):
     result = _load_data_2(rec, context)
-    yield result
     result._key_joins = dict((context.object(k), (context.object(v0), context.object(v1)))
                              for k, v0, v1 in rec['_key_joins'])
+    return result
 
 
 @saver(Data, version=4)
@@ -719,11 +721,25 @@ def _save_data_4(data, context):
 @loader(Data, version=4)
 def _load_data_4(rec, context):
     result = _load_data_2(rec, context)
-    yield result
     def load_cid_tuple(cids):
         return tuple(context.object(cid) for cid in cids)
     result._key_joins = dict((context.object(k), (load_cid_tuple(v0), load_cid_tuple(v1)))
                              for k, v0, v1 in rec['_key_joins'])
+    return result
+
+@saver(Data, version=5)
+def _save_data_5(data, context):
+    result = _save_data_4(data, context)
+    result['uuid'] = data.uuid
+    return result
+
+
+@loader(Data, version=5)
+def _load_data_5(rec, context):
+    result = _load_data_4(rec, context)
+    result.uuid = rec['uuid']
+    return result
+
 
 @saver(ComponentID)
 def _save_component_id(cid, context):
@@ -755,6 +771,29 @@ def _load_component(rec, context):
     return Component(data=context.object(rec['data']),
                      units=rec['units'])
 
+@saver(CategoricalComponent)
+def _save_categorical_component(component, context):
+
+    if not context.include_data and hasattr(component, '_load_log'):
+        log = component._load_log
+        return dict(log=context.id(log),
+                    log_item=log.id(component))
+
+    return dict(categorical_data=context.do(component.labels),
+                categories=context.do(component.categories),
+                jitter_method=context.do(component._jitter_method),
+                units=component.units)
+
+
+@loader(CategoricalComponent)
+def _load_categorical_component(rec, context):
+    if 'log' in rec:
+        return context.object(rec['log']).component(rec['log_item'])
+
+    return CategoricalComponent(categorical_data=context.object(rec['categorical_data']),
+                                categories=context.object(rec['categories']),
+                                jitter=context.object(rec['jitter_method']),
+                                units=rec['units'])
 
 @saver(DerivedComponent)
 def _save_derived_component(component, context):

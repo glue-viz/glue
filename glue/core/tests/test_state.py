@@ -8,6 +8,7 @@ import numpy as np
 
 from glue.external import six
 from glue import core
+from glue.core.component import CategoricalComponent
 from glue.tests.helpers import requires_astropy, make_file
 
 from ..data_factories import load_data
@@ -231,6 +232,15 @@ def test_polygonal_roi():
 def test_matplotlib_cmap():
     from matplotlib import cm
     assert clone(cm.gist_heat) is cm.gist_heat
+
+
+def test_categorical_component():
+    c = CategoricalComponent(['a','b','c','a','b'], categories=['a','b','c'])
+    c2 = clone(c)
+    assert isinstance(c2, CategoricalComponent)
+    np.testing.assert_array_equal(c.data, [0, 1, 2, 0, 1])
+    np.testing.assert_array_equal(c.labels, ['a','b','c','a','b'])
+    np.testing.assert_array_equal(c.categories, ['a','b','c'])
 
 
 class DummyClass(object):
