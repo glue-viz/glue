@@ -33,6 +33,8 @@ v0.9.0 (unreleased)
 
 * Added a new table viewer. [#1084]
 
+* Fix saving/loading of categorical components. [#1084]
+
 v0.8.3 (unreleased)
 -------------------
 
