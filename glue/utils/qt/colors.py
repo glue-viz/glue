@@ -7,7 +7,6 @@ from glue import config
 from qtpy import QtCore, QtWidgets, QtGui
 from glue.external.echo import add_callback
 from glue.utils import nonpartial
-from glue.utils.qt.helpers import CUSTOM_QWIDGETS
 from glue.utils.qt.widget_properties import WidgetProperty
 
 from matplotlib import cm
@@ -181,8 +180,6 @@ class QColorBox(QtWidgets.QLabel):
         pixmap = QtGui.QPixmap.fromImage(image)
         self.setPixmap(pixmap)
 
-CUSTOM_QWIDGETS.append(QColorBox)
-
 
 class QColormapCombo(QtWidgets.QComboBox):
 
@@ -202,8 +199,6 @@ class QColormapCombo(QtWidgets.QComboBox):
     def resizeEvent(self, *args, **kwargs):
         super(QColormapCombo, self).resizeEvent(*args, **kwargs)
         self._update_icons()
-
-CUSTOM_QWIDGETS.append(QColormapCombo)
 
 
 if __name__ == "__main__":

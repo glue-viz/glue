@@ -7,13 +7,6 @@ from glue import core
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui
 
-# FIXME: at the moment we need to make sure that custom widgets are imported,
-# otherwise they don't get appended to CUSTOM_QWIDGETS. We need to find a
-# better long-term solution.
-from glue.dialogs.common.qt.component_selector import ComponentSelector
-from glue.core.qt.mime import GlueMimeListWidget
-from glue.dialogs.link_editor.qt.link_equation import LinkEquation
-
 __all__ = ['LinkEditor']
 
 

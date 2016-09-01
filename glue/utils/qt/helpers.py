@@ -8,7 +8,7 @@ from qtpy.QtCore import Qt
 from qtpy.uic import loadUi
 from glue.utils.qt import get_text
 
-__all__ = ['update_combobox', 'GlueTabBar', 'load_ui', 'CUSTOM_QWIDGETS', 'process_dialog']
+__all__ = ['update_combobox', 'GlueTabBar', 'load_ui', 'process_dialog']
 
 
 def update_combobox(combo, labeldata):
@@ -85,8 +85,6 @@ class GlueTabBar(QtWidgets.QTabBar):
         if index >= 0:
             self.rename_tab(index)
 
-
-CUSTOM_QWIDGETS = []
 
 def load_ui(path, parent=None, directory=None):
     """

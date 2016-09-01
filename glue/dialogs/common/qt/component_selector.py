@@ -3,11 +3,9 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from qtpy import QtCore, QtWidgets
-from glue.utils.qt import load_ui, CUSTOM_QWIDGETS
+from glue.utils.qt import load_ui
 from glue.utils import nonpartial
 
-# FIXME: required for custom widget
-from glue.core.qt.mime import GlueMimeListWidget
 
 class ComponentSelector(QtWidgets.QWidget):
     """ An interface to view the components and data of a DataCollection
@@ -124,8 +122,6 @@ class ComponentSelector(QtWidgets.QWidget):
                 return
         else:
             raise ValueError("Data is not part of the DataCollection")
-
-CUSTOM_QWIDGETS.append(ComponentSelector)
 
 
 def main():  # pragma: no cover

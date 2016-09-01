@@ -8,6 +8,7 @@ from qtpy import QtCore, QtGui, QtWidgets
 from qtpy import PYQT5
 from matplotlib.colors import ColorConverter
 
+from glue.utils.qt import get_qapp
 from glue.config import viewer_tool
 from glue.core.layer_artist import LayerArtistBase
 from glue.core import message as msg
@@ -121,13 +122,17 @@ class DataTableModel(QtCore.QAbstractTableModel):
 
 
 class TableLayerArtist(LayerArtistBase):
+
     def __init__(self, layer, table_viewer):
         self._table_viewer = table_viewer
         super(TableLayerArtist, self).__init__(layer)
+
     def redraw(self):
         self._table_viewer.model.data_changed()
+
     def update(self):
         pass
+
     def clear(self):
         pass
 
@@ -140,7 +145,8 @@ class RowSelectTool(CheckableTool):
     action_text = 'Select row(s)'
     tool_tip = ('Select rows by clicking on rows and pressing enter '
                 'once the selection is ready to be applied')
-    status_tip = 'CLICK to select, press ENTER to finalize selection'
+    status_tip = ('CLICK to select, press ENTER to finalize selection, '
+                  'ALT+CLICK or ALT+UP/DOWN to apply selection immediately')
 
     def __init__(self, viewer):
         super(RowSelectTool, self).__init__(viewer)
@@ -152,6 +158,15 @@ class RowSelectTool(CheckableTool):
     def deactivate(self):
         self.viewer.ui.table.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.viewer.ui.table.clearSelection()
+
+
+class TableViewWithSelectionSignal(QtWidgets.QTableView):
+
+    selection_changed = QtCore.Signal()
+
+    def selectionChanged(self, *args, **kwargs):
+        self.selection_changed.emit()
+        super(TableViewWithSelectionSignal, self).selectionChanged(*args, **kwargs)
 
 
 class TableWidget(DataViewer):
@@ -186,18 +201,31 @@ class TableWidget(DataViewer):
 
         self.model = None
 
+        self.ui.table.selection_changed.connect(self.selection_changed)
+
+    def selection_changed(self):
+        app = get_qapp()
+        if app.queryKeyboardModifiers() == Qt.AltModifier:
+            self.finalize_selection(clear=False)
+
     def keyPressEvent(self, event):
-        if event.key() in [Qt.Key_Enter, Qt.Key_Return]:
-            self.finalize_selection()
+        if self.toolbar.active_tool is self.toolbar.tools['table:rowselect']:
+            if event.key() in [Qt.Key_Enter, Qt.Key_Return]:
+                self.finalize_selection()
         super(TableWidget, self).keyPressEvent(event)
 
-    def finalize_selection(self):
+    def finalize_selection(self, clear=True):
         model = self.ui.table.selectionModel()
         selected_rows = [self.model.order[x.row()] for x in model.selectedRows()]
         subset_state = ElementSubsetState(indices=selected_rows, data=self.data)
         mode = EditSubsetMode()
         mode.update(self._data, subset_state, focus_data=self.data)
-        self.ui.table.clearSelection()
+        if clear:
+            # We block the signals here to make sure that we don't update
+            # the subset again once the selection is cleared.
+            self.ui.table.blockSignals(True)
+            self.ui.table.clearSelection()
+            self.ui.table.blockSignals(False)
 
     def register_to_hub(self, hub):
 
