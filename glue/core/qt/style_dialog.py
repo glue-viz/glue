@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from qtpy.QtCore import Qt
 from qtpy import QtCore, QtWidgets
 from glue.icons.qt import POINT_ICONS, symbol_icon
-from glue.utils.qt import mpl_to_qt4_color, qt4_to_mpl_color, CUSTOM_QWIDGETS
+from glue.utils.qt import mpl_to_qt4_color, qt4_to_mpl_color
 
 
 class ColorWidget(QtWidgets.QLabel):
@@ -12,8 +12,6 @@ class ColorWidget(QtWidgets.QLabel):
     def mousePressEvent(self, event):
         self.mousePressed.emit()
         event.accept()
-
-CUSTOM_QWIDGETS.append(ColorWidget)
 
 
 class StyleDialog(QtWidgets.QDialog):

@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 from qtpy import QtWidgets
 from glue.icons.qt import get_icon
-from glue.utils.qt.helpers import CUSTOM_QWIDGETS
 
 
 class GlueActionButton(QtWidgets.QPushButton):
@@ -21,8 +20,6 @@ class GlueActionButton(QtWidgets.QPushButton):
         self.setToolTip(self._action.toolTip())
         self.setWhatsThis(self._action.whatsThis())
         self.setEnabled(self._action.isEnabled())
-
-CUSTOM_QWIDGETS.append(GlueActionButton)
 
 
 def action(name, parent, tip='', icon=None, shortcut=None):

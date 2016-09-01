@@ -8,7 +8,7 @@ from qtpy import QtWidgets
 from qtpy import PYSIDE
 from glue import core
 from glue.utils import nonpartial
-from glue.utils.qt import load_ui, CUSTOM_QWIDGETS
+from glue.utils.qt import load_ui
 
 __all__ = ['LinkEquation']
 
@@ -316,5 +316,3 @@ class LinkEquation(QtWidgets.QWidget):
         self._ui.function.clear()
         for f in self._functions:
             self._ui.function.addItem(f)
-
-CUSTOM_QWIDGETS.append(LinkEquation)

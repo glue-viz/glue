@@ -14,7 +14,6 @@ from glue.icons.qt import layer_icon
 from glue.core.qt.style_dialog import StyleDialog
 from glue.utils import nonpartial
 from glue.utils.qt import PyMimeData
-from glue.utils.qt.helpers import CUSTOM_QWIDGETS
 
 DATA_IDX = 0
 SUBSET_IDX = 1
@@ -527,8 +526,6 @@ class DataCollectionView(QtWidgets.QTreeView):
         pos = self.mapToGlobal(rect.bottomLeft())
         pos.setY(pos.y() + 1)
         item.edit_factory(pos)
-
-CUSTOM_QWIDGETS.append(DataCollectionView)
 
 
 class LabeledDelegate(QtWidgets.QStyledItemDelegate):

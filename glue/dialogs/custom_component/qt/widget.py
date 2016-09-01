@@ -10,7 +10,6 @@ from glue import core
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui
 from glue.utils.qt import CompletionTextEdit
-from glue.utils.qt.helpers import CUSTOM_QWIDGETS
 
 __all__ = ['CustomComponentWidget']
 
@@ -91,8 +90,6 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
         tc.setPosition(pos)
         self.setTextCursor(tc)
         self.setAlignment(Qt.AlignCenter)
-
-CUSTOM_QWIDGETS.append(ColorizedCompletionTextEdit)
 
 
 class CustomComponentWidget(QtWidgets.QDialog):
