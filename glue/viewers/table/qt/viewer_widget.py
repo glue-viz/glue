@@ -209,8 +209,9 @@ class TableWidget(DataViewer):
             self.finalize_selection(clear=False)
 
     def keyPressEvent(self, event):
-        if event.key() in [Qt.Key_Enter, Qt.Key_Return]:
-            self.finalize_selection()
+        if self.toolbar.active_tool is self.toolbar.tools['table:rowselect']:
+            if event.key() in [Qt.Key_Enter, Qt.Key_Return]:
+                self.finalize_selection()
         super(TableWidget, self).keyPressEvent(event)
 
     def finalize_selection(self, clear=True):
@@ -220,7 +221,11 @@ class TableWidget(DataViewer):
         mode = EditSubsetMode()
         mode.update(self._data, subset_state, focus_data=self.data)
         if clear:
+            # We block the signals here to make sure that we don't update
+            # the subset again once the selection is cleared.
+            self.ui.table.blockSignals(True)
             self.ui.table.clearSelection()
+            self.ui.table.blockSignals(False)
 
     def register_to_hub(self, hub):
 
