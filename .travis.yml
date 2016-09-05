@@ -1,8 +1,6 @@
 language: c
 
-os:
-    - linux
-    - osx
+
 
 sudo: false
 
@@ -15,12 +13,10 @@ notifications:
   email: false
 
 env:
-  matrix:
-    - PYTHON_VERSION=2.7 ASTROPY_VERSION=1.0
-    - PYTHON_VERSION=3.4 ASTROPY_VERSION=1.0
   global:
     - CONDA_CHANNELS='conda-forge spyder-ide'
     - ASTROPY_VERSION=stable
+    - ACTION='test'
     - PYTEST_ARGS="--cov glue -vs"
     - MATPLOTLIB_VERSION=1.5.0
     - NUMPY_VERSION=1.10
@@ -34,6 +30,7 @@ env:
     - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli ginga plotly spectral-cube"
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
     - secure: "SU9BYH8d9eNigypG3lC83s0NY6Mq9AHGKXyEGeXDtz1npJIC1KHdzPMP1v1K3dzCgl1p6ReMXPjZMCENyfNkad/xvzTzGk0Nu/4BjihrUPV6+ratVeLpv0JLm8ikh8q+sZURkdtzUOlds+Hfn5ku4LdpT87tcKHY9TINAGA34ZM="
+    - secure: "a+GIg14t/Ltc8PbXBCxCiQ4Of0AHthTw2b8AQ1BAE9vDMnS36G3FylWvLgAM88n68vT0YAf2hAE5/9E+gB/vA/BZVTdpVaJUmPaznAfNnBBJqJUhq08chCtHoDAHbv741eLzqkLnZ57ZUhzI11LkLd9U7yOuSD63sxK05h77rKI="
     - AWS_ACCESS_KEY_ID: AKIAI2ERWDHLW3W24X3A
     - AWS_SECRET_ACCESS_KEY: $AWS_SECRET_KEY_ID
 
@@ -43,76 +40,23 @@ matrix:
     fast_finish: true
 
     include:
-
-        # Astropy dev
+        
         - os: linux
           env:
-            - PYTHON_VERSION=2.7 ASTROPY_VERSION=dev
+              - PYTHON_VERSION=3.5
+              - CONDA_DEPENDENCIES='requests jinja2 pyyaml numpy pandas matplotlib'
+              - PIP_DEPENDENCIES=''
+              - IPYTHON_VERSION=False
+              - ACTION=conda
 
-        # Numpy dev
-        - os: linux
+        - os: osx
           env:
-            - PYTHON_VERSION=2.7 NUMPY_VERSION=dev
-            # We don't test ginga with Numpy dev due to a bug in ginga
-            - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli plotly"
+              - PYTHON_VERSION=3.5
+              - CONDA_DEPENDENCIES='requests jinja2 pyyaml numpy pandas matplotlib'
+              - PIP_DEPENDENCIES=''
+              - IPYTHON_VERSION=False
+              - ACTION=conda
 
-        # PyQt5
-        - os: linux
-          env:
-            - PYTHON_VERSION=2.7 NUMPY_VERSION=1.10 ASTROPY_VERSION=1.0 QT_PKG=pyqt5
-            # We don't test ginga with PyQt5 due to a bug in ginga with QT_API
-            - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli plotly"
-
-        # The following configuration tests that glue functions with minimal
-        # dependencies. The --no-deps is to prevent scipy from getting
-        # installed as a pandas dependency.
-        - os: linux
-          env:
-            - PYTHON_VERSION=2.7
-            - PYTEST_ARGS="--cov glue"
-            - CONDA_DEPENDENCIES="pytz pyparsing cycler python-dateutil freetype libpng sip qt pip setuptools=7.0 pandas mock pbr six funcsigs matplotlib qtpy"
-            - CONDA_DEPENDENCIES_FLAGS='--no-deps'
-            - PIP_DEPENDENCIES="pytest-cov coveralls"
-
-        - os: linux
-          env:
-            - PYTHON_VERSION=2.7
-            - ASTROPY_VERSION=1.0
-            - DOC_TRIGGER=1
-            - APP_TRIGGER=1
-            - PYTEST_ARGS="--cov glue --no-optional-skip"
-            - NO_CFG_FILES=true
-
-        # Test with older package versions:
-
-        - os: linux
-          env:
-            - PYTHON_VERSION=2.7 MATPLOTLIB_VERSION=1.3 NUMPY_VERSION=1.8
-
-        - os: linux
-          env:
-            - PYTHON_VERSION=2.7 MATPLOTLIB_VERSION=1.4 NUMPY_VERSION=1.9 IPYTHON_VERSION=1.1
-
-        # Test with PySide, but due to segmentation faults, mark as an
-        # allowed failure.
-        - os: linux
-          env: PYTHON_VERSION=2.7 ASTROPY_VERSION=1.0 QT_PKG=pyside
-
-        # Test without any Qt installation, which will also cause all qt
-        # sub-directories to be removed, to make sure that no non-Qt code has
-        # any dependence on Qt code.
-        - os: linux
-          env: PYTHON_VERSION=2.7 ASTROPY_VERSION=1.0 QT_PKG=False
-
-    allow_failures:
-
-      - os: linux
-        env:
-          - PYTHON_VERSION=2.7 NUMPY_VERSION=dev
-          - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli plotly"
-
-      - os: linux
-        env: PYTHON_VERSION=2.7 ASTROPY_VERSION=1.0 QT_PKG=pyside
 
 before_install:
 
@@ -127,7 +71,7 @@ before_install:
   - if [[ $IPYTHON_VERSION == 4 ]]; then export CONDA_DEPENDENCIES="traitlets=4.1.0 qtconsole ipykernel "$CONDA_DEPENDENCIES; fi
 
   # Documentation dependencies
-  - if [ $DOC_TRIGGER ]; then export PIP_DEPENDENCIES="astropy-helpers linkchecker "$PIP_DEPENDENCIES; fi
+  - if [ $ACTION == docs ]; then export PIP_DEPENDENCIES="astropy-helpers linkchecker "$PIP_DEPENDENCIES; fi
 
   # Install ci-helpers and set up conda
   - git clone git://github.com/astropy/ci-helpers.git
@@ -171,22 +115,35 @@ install:
 
   # We need to install glue in order to make sure that the entry points are
   # installed
-  - python setup.py install
+  - if [[ $ACTION == test || $ACTION == docs ]]; then python setup.py install; fi
+  
+  # Make sure a single failing command fails the build
+  - set -e
 
 script:
 
-  - if [[ $QT_PKG == False ]]; then glue --version; fi
+  - if [[ $ACTION == test && $QT_PKG == False ]]; then glue --version; fi
 
-  - python setup.py test -a "$PYTEST_ARGS";
-
-  # In the following, we use separate if statements for each line, to make
-  # sure the exit code from each one is taken into account for the overall
-  # exit code.
-  - if [ $DOC_TRIGGER ]; then cd doc; make html 2> warnings.log; cd ..; fi
-  - if [ $DOC_TRIGGER ]; then cat doc/warnings.log; fi
-  # make sure stderr was empty, i.e. no warnings
-  - if [ $DOC_TRIGGER ]; then test ! -s doc/warnings.log; fi
-  - if [ $DOC_TRIGGER ]; then linkchecker --ignore-url=".*fontawesome_webfont.*" doc/_build/html; fi
+  - if [[ $ACTION == test ]]; then
+      python setup.py test -a "$PYTEST_ARGS";
+    elif [[ $ACTION == docs ]]; then
+      cd doc;
+      make html 2> warnings.log;
+      cd ..;
+      cat doc/warnings.log;
+      test ! -s doc/warnings.log;
+      linkchecker --ignore-url=".*fontawesome_webfont.*" doc/_build/html;
+    elif [[ $ACTION == conda ]]; then
+      cd .conda;
+      python prepare_recipe.py;
+      source activate root;
+      conda install conda-build;
+      conda config --set anaconda_upload no;
+      conda build . --output >& conda.log;
+      cat conda.log;
+      set package="$(tail -f conda.log)";
+      anaconda upload $package -l dev --token=$ANACONDA_TOKEN;
+    fi
 
 after_success:
 
