@@ -58,7 +58,7 @@ def parse(argv):
                       help='use CONFIG as configuration file')
     parser.add_option('-v', '--verbose', action='store_true',
                       help="Increase the vebosity level", default=False)
-    parser.add_option('--no-fullscreen', action='store_true', dest='nofs',
+    parser.add_option('--no-maximized', action='store_true', dest='nomax',
                       help="Do not start Glue maximized", default=False)
 
     err_msg = verify(parser, argv)
@@ -209,7 +209,7 @@ def main(argv=sys.argv):
 
     # Global keywords for Glue startup.
     kwargs = {'config': opt.config,
-              'maximized': not opt.nofs}
+              'maximized': not opt.nomax}
 
     if opt.test:
         return run_tests()
