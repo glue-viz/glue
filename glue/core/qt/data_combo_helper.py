@@ -40,7 +40,7 @@ class ComponentIDComboHelper(HubListener):
     """
 
     def __init__(self, component_id_combo, data_collection, visible=True,
-                 numeric=True, categorical=True):
+                 numeric=True, categorical=True, default_index=0):
 
         super(ComponentIDComboHelper, self).__init__()
 
@@ -54,6 +54,7 @@ class ComponentIDComboHelper(HubListener):
         self._data = []
         self._data_collection = data_collection
         self.hub = data_collection.hub
+        self.default_index = default_index
 
     def clear(self):
         self._data.clear()
@@ -158,7 +159,7 @@ class ComponentIDComboHelper(HubListener):
 
             label_data.extend([(cid.label, (cid, data)) for cid in component_ids])
 
-        update_combobox(self._component_id_combo, label_data)
+        update_combobox(self._component_id_combo, label_data, default_index=self.default_index)
 
         # Disable header rows
         model = self._component_id_combo.model()

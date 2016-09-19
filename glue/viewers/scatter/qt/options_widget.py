@@ -26,10 +26,11 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         viewer_state.connect('layers', self._update_combo_data)
 
         self.xatt_helper = ComponentIDComboHelper(self.ui.combo_xatt,
-                                                  session.data_collection)
+                                                  session.data_collection,
+                                                  default_index=0)
         self.yatt_helper = ComponentIDComboHelper(self.ui.combo_yatt,
-                                                  session.data_collection)
-
+                                                  session.data_collection,
+                                                  default_index=1)
         # Share the cache for the limits as a function of attribute
         self.limits_cache = {}
 
