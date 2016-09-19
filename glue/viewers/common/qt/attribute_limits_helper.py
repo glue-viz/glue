@@ -43,10 +43,6 @@ class AttributeLimitsHelper(object):
         The flip button
     log_button : ``QToolButton`` instance, optional
         A button indicating whether the attribute should be shown in log space
-    data : :class:`glue.core.data.Data`
-        The dataset to attach to the helper - this will be used to populate the
-        attribute combo as well as determine the limits automatically given the
-        scale mode preset.
 
     Notes
     -----
@@ -70,7 +66,7 @@ class AttributeLimitsHelper(object):
 
     def __init__(self, attribute_combo, lower_value, upper_value,
                  mode_combo=None, flip_button=None, log_button=None,
-                 data=None, limits_cache=None):
+                 limits_cache=None):
 
         self.component_id_combo = attribute_combo
         self.mode_combo = mode_combo
