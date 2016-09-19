@@ -1,1 +1,4 @@
-from glue_new_viewers.image.data_viewer import ImageViewer
+def setup():
+    from glue.config import qt_client
+    from .data_viewer import ImageViewer
+    qt_client.add(ImageViewer)
