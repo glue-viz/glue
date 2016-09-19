@@ -4,10 +4,10 @@ import uuid
 
 from glue.utils import nonpartial
 
-from glue_new_viewers.image.state import ImageLayerState
+from glue.viewers.image.state import ImageLayerState
 from glue.core.layer_artist import LayerArtistBase
-from glue_new_viewers.image.mpl_image_artist import CompositeImageArtist
-from glue_new_viewers.common.mpl_layer_artist import MatplotlibLayerArtist
+from glue.viewers.image.mpl_image_artist import CompositeImageArtist
+from glue.viewers.common.mpl_layer_artist import MatplotlibLayerArtist
 from matplotlib.colors import ColorConverter
 
 COLOR_CONVERTER = ColorConverter()

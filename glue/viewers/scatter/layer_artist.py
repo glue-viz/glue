@@ -2,8 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 from glue.utils import nonpartial
 
-from glue_new_viewers.scatter.state import ScatterLayerState
-from glue_new_viewers.common.mpl_layer_artist import MatplotlibLayerArtist
+from glue.viewers.scatter.state import ScatterLayerState
+from glue.viewers.common.mpl_layer_artist import MatplotlibLayerArtist
 
 
 class ScatterLayerArtist(MatplotlibLayerArtist):

@@ -6,11 +6,11 @@ from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core import Data
 
-from glue_new_viewers.common.mpl_data_viewer import MatplotlibDataViewer
-from glue_new_viewers.scatter.layer_style_editor import ScatterLayerStyleEditor
-from glue_new_viewers.scatter.layer_artist import ScatterLayerArtist
-from glue_new_viewers.scatter.options_widget import ScatterOptionsWidget
-from glue_new_viewers.scatter.state import ScatterViewerState
+from glue.viewers.common.qt.mpl_data_viewer import MatplotlibDataViewer
+from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
+from glue.viewers.scatter.qt.options_widget import ScatterOptionsWidget
+from glue.viewers.scatter.layer_artist import ScatterLayerArtist
+from glue.viewers.scatter.state import ScatterViewerState
 
 __all__ = ['ScatterViewer']
 

@@ -4,11 +4,9 @@ import os
 
 from qtpy import QtWidgets
 
-from glue.utils.qt import load_ui
+from glue.utils.qt import load_ui, autoconnect_qt
 from glue.viewers.common.qt.attribute_limits_helper import AttributeLimitsHelper
 from glue.core.qt.data_combo_helper import ComponentIDComboHelper
-
-from glue_new_viewers.common.qt_helpers import autoconnect_qt
 
 
 class ScatterLayerStyleEditor(QtWidgets.QWidget):

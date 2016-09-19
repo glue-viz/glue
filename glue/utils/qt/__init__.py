@@ -12,3 +12,4 @@ from .python_list_model import *
 from .threading import *
 from .app import *
 from .delegates import *
+from .autoconnect import *

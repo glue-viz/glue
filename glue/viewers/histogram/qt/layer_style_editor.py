@@ -2,9 +2,7 @@ import os
 
 from qtpy import QtWidgets
 
-from glue.utils.qt import load_ui
-
-from glue_new_viewers.common.qt_helpers import autoconnect_qt
+from glue.utils.qt import load_ui, autoconnect_qt
 
 
 class HistogramLayerStyleEditor(QtWidgets.QWidget):

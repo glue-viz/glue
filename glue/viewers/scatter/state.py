@@ -4,8 +4,8 @@ from glue.external.echo import CallbackProperty, add_callback
 from glue.utils import nonpartial
 from glue.config import colormaps
 
-from glue_new_viewers.common.state import State, StateList
-from glue_new_viewers.common.utils import avoid_circular
+from glue.core.state_objects import State, StateList
+from glue.utils import avoid_circular
 
 __all__ = ['ScatterViewerState', 'ScatterLayerState']
 

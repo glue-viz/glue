@@ -4,8 +4,8 @@ import numpy as np
 
 from glue.utils import nonpartial
 
-from glue_new_viewers.histogram.state import HistogramLayerState
-from glue_new_viewers.common.mpl_layer_artist import MatplotlibLayerArtist
+from glue.viewers.histogram.state import HistogramLayerState
+from glue.viewers.common.mpl_layer_artist import MatplotlibLayerArtist
 
 
 class HistogramLayerArtist(MatplotlibLayerArtist):

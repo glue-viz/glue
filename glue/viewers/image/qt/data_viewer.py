@@ -8,11 +8,11 @@ from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core import Data
 
-from glue_new_viewers.common.mpl_data_viewer import MatplotlibDataViewer
-from glue_new_viewers.image.layer_style_editor import ImageLayerStyleEditor
-from glue_new_viewers.image.layer_artist import ImageLayerArtist
-from glue_new_viewers.image.options_widget import ImageOptionsWidget
-from glue_new_viewers.image.state import ImageViewerState
+from glue.viewers.common.qt.mpl_data_viewer import MatplotlibDataViewer
+from glue.viewers.image.qt.layer_style_editor import ImageLayerStyleEditor
+from glue.viewers.image.layer_artist import ImageLayerArtist
+from glue.viewers.image.qt.options_widget import ImageOptionsWidget
+from glue.viewers.image.state import ImageViewerState
 
 __all__ = ['ImageViewer']
 

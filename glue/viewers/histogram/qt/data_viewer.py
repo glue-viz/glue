@@ -5,11 +5,11 @@ from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core import Data
 
-from glue_new_viewers.common.mpl_data_viewer import MatplotlibDataViewer
-from glue_new_viewers.histogram.layer_style_editor import HistogramLayerStyleEditor
-from glue_new_viewers.histogram.layer_artist import HistogramLayerArtist
-from glue_new_viewers.histogram.options_widget import HistogramOptionsWidget
-from glue_new_viewers.histogram.state import HistogramViewerState
+from glue.viewers.common.qt.mpl_data_viewer import MatplotlibDataViewer
+from glue.viewers.histogram.qt.layer_style_editor import HistogramLayerStyleEditor
+from glue.viewers.histogram.layer_artist import HistogramLayerArtist
+from glue.viewers.histogram.qt.options_widget import HistogramOptionsWidget
+from glue.viewers.histogram.state import HistogramViewerState
 
 __all__ = ['HistogramViewer']
 

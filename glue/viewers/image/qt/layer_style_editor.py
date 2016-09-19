@@ -2,9 +2,7 @@ import os
 
 from qtpy import QtWidgets
 
-from glue.utils.qt import load_ui
-
-from glue_new_viewers.common.qt_helpers import autoconnect_qt
+from glue.utils.qt import load_ui, autoconnect_qt
 from glue.core.qt.data_combo_helper import ComponentIDComboHelper
 from glue.viewers.common.qt.attribute_limits_helper import AttributeLimitsHelper
 

@@ -4,11 +4,9 @@ from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.mpl_widget import MplWidget
 from glue.viewers.common.viz_client import init_mpl
 from glue.external.echo import add_callback
-from glue.utils import nonpartial
+from glue.utils import nonpartial, avoid_circular
 from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
 from glue.core import message as msg
-
-from glue_new_viewers.common.utils import avoid_circular
 
 __all__ = ['MatplotlibDataViewer']
 
