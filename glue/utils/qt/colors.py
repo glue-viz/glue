@@ -140,6 +140,7 @@ def connect_color(client, prop, widget):
 
     add_callback(client, prop, update_widget)
     widget.colorChanged.connect(nonpartial(update_prop))
+    update_widget(getattr(client, prop))
 
 
 class QColorBox(QtWidgets.QLabel):
