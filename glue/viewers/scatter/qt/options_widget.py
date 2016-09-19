@@ -4,7 +4,7 @@ import os
 
 from qtpy import QtWidgets
 
-from glue.core import Data
+from glue.core import Data, Subset
 from glue.utils.qt import load_ui, autoconnect_qt
 from glue.core.qt.data_combo_helper import ComponentIDComboHelper
 from glue.viewers.common.qt.attribute_limits_helper import AttributeLimitsHelper
@@ -58,8 +58,18 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         self.yatt_limits_helper._update_limits()
 
     def _update_combo_data(self, *args):
-        # TODO: what about if only subset and not data is present?
-        layers = [layer_state.layer for layer_state in self.viewer_state.layers
-                  if isinstance(layer_state.layer, Data)]
+
+        layers = []
+
+        for layer_state in self.viewer_state.layers:
+            if isinstance(layer_state.layer, Data):
+                if layer_state.layer not in layers:
+                    layers.append(layer_state.layer)
+
+        for layer_state in self.viewer_state.layers:
+            if isinstance(layer_state.layer, Subset) and layer_state.layer.data not in layers:
+                if layer_state.layer not in layers:
+                    layers.append(layer_state.layer)
+
         self.xatt_helper.set_multiple_data(layers)
         self.yatt_helper.set_multiple_data(layers)
