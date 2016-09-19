@@ -25,6 +25,8 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
 
         viewer_state.connect('layers', self._update_combo_data)
 
+        self.ui.button_reset.clicked.connect(self.reset_limits)
+
         self.xatt_helper = ComponentIDComboHelper(self.ui.combo_xatt,
                                                   session.data_collection,
                                                   default_index=0)
@@ -49,6 +51,11 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
                                                         limits_cache=self.limits_cache)
 
         self.viewer_state = viewer_state
+
+    def reset_limits(self):
+        self.limits_cache.clear()
+        self.xatt_limits_helper._update_limits()
+        self.yatt_limits_helper._update_limits()
 
     def _update_combo_data(self, *args):
         # TODO: what about if only subset and not data is present?
