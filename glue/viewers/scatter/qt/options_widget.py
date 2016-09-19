@@ -30,17 +30,22 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         self.yatt_helper = ComponentIDComboHelper(self.ui.combo_yatt,
                                                   session.data_collection)
 
+        # Share the cache for the limits as a function of attribute
+        self.limits_cache = {}
+
         self.xatt_limits_helper = AttributeLimitsHelper(self.ui.combo_xatt,
                                                         self.ui.value_x_min,
                                                         self.ui.value_x_max,
                                                         flip_button=self.ui.button_flip_x,
-                                                        log_button=self.ui.bool_log_x)
+                                                        log_button=self.ui.bool_log_x,
+                                                        limits_cache=self.limits_cache)
 
         self.yatt_limits_helper = AttributeLimitsHelper(self.ui.combo_yatt,
                                                         self.ui.value_y_min,
                                                         self.ui.value_y_max,
                                                         flip_button=self.ui.button_flip_y,
-                                                        log_button=self.ui.bool_log_y)
+                                                        log_button=self.ui.bool_log_y,
+                                                        limits_cache=self.limits_cache)
 
         self.viewer_state = viewer_state
 
