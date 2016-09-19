@@ -7,6 +7,8 @@ from glue.utils import nonpartial
 from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.common.mpl_layer_artist import MatplotlibLayerArtist
 
+__all__ = ['ScatterLayerArtist']
+
 
 class ScatterLayerArtist(MatplotlibLayerArtist):
 
