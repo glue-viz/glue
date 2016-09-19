@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import numpy as np
+
 from glue.utils import nonpartial
 
 from glue.viewers.scatter.state import ScatterLayerState
@@ -31,6 +33,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
         # Set up an initially empty artist
         # self.mpl_artist = self.axes.plot([], [], 'o', mec='none')[0]
+        self.mpl_artists = [self.axes.scatter([0], [0])]
 
     def update(self):
 
@@ -61,14 +64,27 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         # self.mpl_artist.set_markersize(self.size)
 
         # TODO: is there a better way to do this?
-        self.clear()
+        # self.clear()
 
-        # For scatter
-        self.mpl_artists = [self.axes.scatter(x, y, c=c, s=s,
-                                              vmin=vmin, vmax=vmax, cmap=cmap,
-                                              edgecolor='none',
-                                              zorder=self.zorder,
-                                              alpha=self.layer_state.alpha)]
+        offsets = np.dstack((x, y))
+
+        self.mpl_artists[0].set_offsets(offsets)
+
+        if self.layer_state.size_mode == 'Fixed':
+            s = np.broadcast_to(s, x.shape)
+        self.mpl_artists[0].set_sizes(s)
+
+        if self.layer_state.color_mode == 'Fixed':
+            self.mpl_artists[0].set_facecolors(c)
+        else:
+            self.mpl_artists[0].set_array(c)
+            self.mpl_artists[0].set_cmap(cmap)
+            self.mpl_artists[0].set_clim(vmin, vmax)
+
+        self.mpl_artists[0].set_edgecolor('none')
+
+        self.mpl_artists[0].set_zorder(self.zorder)
+        self.mpl_artists[0].set_alpha(self.layer_state.alpha)
 
         # Reset the axes stack so that pressing the home button doesn't go back
         # to a previous irrelevant view.
