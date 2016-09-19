@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.core import Data, DataCollection
+from glue.core import Data, DataCollection, Subset
 from qtpy import QtGui, QtWidgets
 from qtpy.QtCore import Qt
 from glue.core.hub import HubListener
@@ -14,6 +14,7 @@ from glue.utils.qt.widget_properties import CurrentComboDataProperty
 
 __all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
            'DataCollectionComboHelper']
+
 
 class ComponentIDComboHelper(HubListener):
     """
@@ -87,6 +88,9 @@ class ComponentIDComboHelper(HubListener):
 
     def append_data(self, data):
 
+        if isinstance(data, Subset):
+            data = data.data
+
         if self.hub is None:
             if data.hub is None:
                 raise ValueError("Hub is not set on Data object")
@@ -95,9 +99,9 @@ class ComponentIDComboHelper(HubListener):
         elif data.hub is not self.hub:
             raise ValueError("Data Hub is different from current hub")
 
-        self._data.append(data)
-
-        self.refresh()
+        if data not in self._data:
+            self._data.append(data)
+            self.refresh()
 
     def remove_data(self, data):
         self._data.remove(data)
