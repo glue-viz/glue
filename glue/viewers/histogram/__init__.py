@@ -1,0 +1,1 @@
+from glue_new_viewers.histogram.data_viewer import HistogramViewer

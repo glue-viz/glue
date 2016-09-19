@@ -1,0 +1,1 @@
+from glue_new_viewers.image.data_viewer import ImageViewer

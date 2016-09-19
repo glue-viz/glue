@@ -1,0 +1,1 @@
+from glue_new_viewers.scatter.data_viewer import ScatterViewer
