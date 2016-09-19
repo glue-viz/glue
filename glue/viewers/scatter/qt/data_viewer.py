@@ -48,6 +48,7 @@ class ScatterViewer(MatplotlibDataViewer):
     def update_log(self):
         self.axes.set_xscale('log' if self.viewer_state.log_x else 'linear')
         self.axes.set_yscale('log' if self.viewer_state.log_y else 'linear')
+        self.axes.figure.canvas.draw()
 
     def apply_roi(self, roi):
 
