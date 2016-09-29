@@ -15,8 +15,7 @@ from glue.utils.qt.widget_properties import (connect_int_spin, ButtonProperty,
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.mpl_widget import MplWidget, defer_draw
 from glue.viewers.histogram.qt.layer_style_widget import HistogramLayerStyleWidget
-from glue.utils.array import pretty_number
-
+from glue.viewers.histogram.layer_artist import HistogramLayerArtist
 
 __all__ = ['HistogramWidget']
 
@@ -44,7 +43,7 @@ class HistogramWidget(DataViewer):
     xlog = ButtonProperty('ui.xlog_box', 'Log-scale the x axis?')
     ylog = ButtonProperty('ui.ylog_box', 'Log-scale the y axis?')
 
-    _layer_style_widget_cls = HistogramLayerStyleWidget
+    _layer_style_widget_cls = {HistogramLayerArtist: HistogramLayerStyleWidget}
 
     _toolbar_cls = MatplotlibViewerToolbar
     tools = ['select:xrange']

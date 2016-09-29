@@ -303,6 +303,9 @@ class LayerArtistWidget(QtWidgets.QWidget):
 
         self.layout_style_widgets = {}
 
+        self.empty = QtWidgets.QWidget()
+        self.layer_options_layout.addWidget(self.empty)
+
     def on_artist_add(self, layer_artists):
 
         if self.layer_style_widget_cls is None:
@@ -310,7 +313,15 @@ class LayerArtistWidget(QtWidgets.QWidget):
 
         for layer_artist in layer_artists:
             if layer_artist not in self.layout_style_widgets:
-                self.layout_style_widgets[layer_artist] = self.layer_style_widget_cls(layer_artist)
+                if isinstance(self.layer_style_widget_cls, dict):
+                    layer_artist_cls = layer_artist.__class__
+                    if layer_artist_cls in self.layer_style_widget_cls:
+                        layer_style_widget_cls = self.layer_style_widget_cls[layer_artist_cls]
+                    else:
+                        return
+                else:
+                    layer_style_widget_cls = self.layer_style_widget_cls
+                self.layout_style_widgets[layer_artist] = layer_style_widget_cls(layer_artist)
                 self.layer_options_layout.addWidget(self.layout_style_widgets[layer_artist])
 
     def on_selection_change(self, layer_artist):
@@ -319,10 +330,9 @@ class LayerArtistWidget(QtWidgets.QWidget):
             return
 
         if layer_artist in self.layout_style_widgets:
-            self.layer_options_layout.setEnabled(True)
             self.layer_options_layout.setCurrentWidget(self.layout_style_widgets[layer_artist])
         else:
-            self.layer_options_layout.setEnabled(False)
+            self.layer_options_layout.setCurrentWidget(self.empty)
 
 
 

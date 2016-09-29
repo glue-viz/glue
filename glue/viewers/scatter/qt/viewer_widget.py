@@ -13,6 +13,7 @@ from glue.utils.qt import load_ui
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.mpl_widget import MplWidget, defer_draw
 from glue.viewers.scatter.qt.layer_style_widget import ScatterLayerStyleWidget
+from glue.viewers.scatter.layer_artist import ScatterLayerArtist
 from glue.utils import nonpartial, cache_axes
 from glue.utils.qt.widget_properties import (ButtonProperty, FloatLineProperty,
                                              CurrentComboProperty,
@@ -47,7 +48,7 @@ class ScatterWidget(DataViewer):
     yatt = CurrentComboProperty('ui.yAxisComboBox',
                                 'Attribute to plot on y axis')
 
-    _layer_style_widget_cls = ScatterLayerStyleWidget
+    _layer_style_widget_cls = {ScatterLayerArtist: ScatterLayerStyleWidget}
 
     _toolbar_cls = MatplotlibViewerToolbar
     tools = ['select:rectangle', 'select:xrange', 'select:yrange', 'select:circle', 'select:polygon']
