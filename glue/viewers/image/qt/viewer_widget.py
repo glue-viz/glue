@@ -21,6 +21,8 @@ from glue.viewers.common.qt.mpl_widget import MplWidget, defer_draw
 from glue.utils import nonpartial, Pointer
 from glue.utils.qt import cmap2pixmap, update_combobox, load_ui
 from glue.viewers.common.qt.tool import Tool
+from glue.viewers.scatter.layer_artist import ScatterLayerArtist
+from glue.viewers.scatter.qt.layer_style_widget import ScatterLayerStyleWidget
 
 # We do the following import to register the custom Qt Widget there
 from glue.viewers.image.qt.rgb_edit import RGBEdit  # pylint: disable=W0611
@@ -51,6 +53,8 @@ class ImageWidgetBase(DataViewer):
     rgb_mode = ButtonProperty('ui.rgb',
                               'RGB Mode?')
     rgb_viz = Pointer('ui.rgb_options.rgb_visible')
+
+    _layer_style_widget_cls = {ScatterLayerArtist: ScatterLayerStyleWidget}
 
     def __init__(self, session, parent=None):
         super(ImageWidgetBase, self).__init__(session, parent)

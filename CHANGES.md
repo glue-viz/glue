@@ -4,6 +4,12 @@ Full changelog
 v0.9.0 (unreleased)
 -----------------
 
+* Make sure that the scatter layer artist style editor is shown when overplotting
+  a scatter plot on top of an image. [#1134]
+
+* Data viewers can now make layer_style_widget_cls a dictionary in cases
+  where multiple layer artist types are supported. [#1134]
+
 * Fix compatibility of test suite with pytest 3.x. [#1116]
 
 * Updated bundled version of WCSAxes to v0.9.

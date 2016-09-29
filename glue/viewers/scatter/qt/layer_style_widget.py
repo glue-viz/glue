@@ -32,7 +32,7 @@ class ScatterLayerStyleWidget(QtWidgets.QWidget):
         # Set initial values
         self.symbol = self.layer.style.marker
         self.size = self.layer.style.markersize
-        self.ui.label_color.setColor(self.layer.style.color)        
+        self.ui.label_color.setColor(self.layer.style.color)
         self.alpha = self.layer.style.alpha
 
     def _connect_global(self):

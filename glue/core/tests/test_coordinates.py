@@ -21,17 +21,17 @@ class TestWcsCoordinates(object):
     def default_header(self):
         from astropy.io import fits
         hdr = fits.Header()
-        hdr.update('NAXIS', 2)
-        hdr.update('CRVAL1', 0)
-        hdr.update('CRVAL2', 5)
-        hdr.update('CRPIX1', 250)
-        hdr.update('CRPIX2', 187.5)
-        hdr.update('CTYPE1', 'GLON-TAN')
-        hdr.update('CTYPE2', 'GLAT-TAN')
-        hdr.update('CD1_1', -0.0166666666667)
-        hdr.update('CD1_2', 0.)
-        hdr.update('CD2_1', 0.)
-        hdr.update('CD2_2', 0.01666666666667)
+        hdr['NAXIS'] = 2
+        hdr['CRVAL1'] = 0
+        hdr['CRVAL2'] = 5
+        hdr['CRPIX1'] = 250
+        hdr['CRPIX2'] = 187.5
+        hdr['CTYPE1'] = 'GLON-TAN'
+        hdr['CTYPE2'] = 'GLAT-TAN'
+        hdr['CD1_1'] = -0.0166666666667
+        hdr['CD1_2'] = 0.
+        hdr['CD2_1'] = 0.
+        hdr['CD2_2'] = 0.01666666666667
         return hdr
 
     def test_pixel2world_scalar(self):
@@ -159,17 +159,17 @@ def test_world_axis_wcs():
     from astropy.io import fits
 
     hdr = fits.Header()
-    hdr.update('NAXIS', 2)
-    hdr.update('CRVAL1', 0)
-    hdr.update('CRVAL2', 5)
-    hdr.update('CRPIX1', 2)
-    hdr.update('CRPIX2', 1)
-    hdr.update('CTYPE1', 'XOFFSET')
-    hdr.update('CTYPE2', 'YOFFSET')
-    hdr.update('CD1_1', -2.)
-    hdr.update('CD1_2', 0.)
-    hdr.update('CD2_1', 0.)
-    hdr.update('CD2_2', 2.)
+    hdr['NAXIS'] = 2
+    hdr['CRVAL1'] = 0
+    hdr['CRVAL2'] = 5
+    hdr['CRPIX1'] = 2
+    hdr['CRPIX2'] = 1
+    hdr['CTYPE1'] = 'XOFFSET'
+    hdr['CTYPE2'] = 'YOFFSET'
+    hdr['CD1_1'] = -2.
+    hdr['CD1_2'] = 0.
+    hdr['CD2_1'] = 0.
+    hdr['CD2_2'] = 2.
 
     data = np.ones((3, 4))
     coord = WCSCoordinates(hdr)
