@@ -23,6 +23,8 @@ class ImageViewerState(State):
     y_min = CallbackProperty()
     y_max = CallbackProperty()
 
+    aspect = CallbackProperty()
+
     layers = StateList()
 
 

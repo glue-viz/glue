@@ -37,6 +37,10 @@ class ImageViewer(MatplotlibDataViewer):
 
         add_callback(self.viewer_state, 'xcoord', nonpartial(self.update_labels))
         add_callback(self.viewer_state, 'ycoord', nonpartial(self.update_labels))
+        add_callback(self.viewer_state, 'aspect', nonpartial(self.update_aspect))
+
+        self.update_labels()
+        self.update_aspect()
 
     def update_labels(self):
         # if self.viewer_state.xcoord is not None:
@@ -44,6 +48,10 @@ class ImageViewer(MatplotlibDataViewer):
         # if self.viewer_state.ycoord is not None:
         #     self.axes.set_ylabel(self.viewer_state.ycoord[0])
         pass
+
+    def update_aspect(self):
+        self.axes.set_aspect(self.viewer_state.aspect)
+        self.axes.figure.canvas.draw()
 
     def apply_roi(self, roi):
 

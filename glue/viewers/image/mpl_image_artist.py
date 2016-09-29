@@ -21,7 +21,7 @@ class CompositeImageArtist(object):
         self.axes = ax
 
         # We create an image artist that remains invisible for now
-        self.image = ax.imshow([[0]], aspect='auto')
+        self.image = ax.imshow([[0]], interpolation='nearest')
 
         # We keep a dictionary of layers. The key should be the UUID of the
         # layer artist, and the values should be dictionaries that contain
@@ -29,6 +29,8 @@ class CompositeImageArtist(object):
         self.layers = {}
 
         self.shape = None
+
+        self._first = True
 
         # ax.set_ylim((df[y].min(), df[y].max()))
         # ax.set_xlim((df[x].min(), df[x].max()))
@@ -38,7 +40,7 @@ class CompositeImageArtist(object):
 
     def allocate(self, uuid):
         self.layers[uuid] = {'zorder': 0,
-                             'visible': False,
+                             'visible': True,
                              'array': None,
                              'color': None,
                              'alpha': 1,
@@ -61,6 +63,8 @@ class CompositeImageArtist(object):
                     else:
                         if value.shape != self.shape:
                             raise ValueError("data shape should be {0}".format(self.shape))
+                if key == 'vmin' and value is None:
+                    raise ValueError('who is setting vmin to None??')
                 self.layers[uuid][key] = value
         self.update()
 
@@ -75,7 +79,9 @@ class CompositeImageArtist(object):
 
             layer = self.layers[uuid]
 
-            if not layer['visible']:
+            # FIXME: the reason we check for vmin/vmax here is because when vmin
+            # is first set, this is triggered before vmax is set. Need to avoid that.
+            if not layer['visible'] or layer['vmin'] is None or layer['vmax'] is None:
                 continue
 
             # Get color and pre-multiply by alpha values
@@ -83,8 +89,11 @@ class CompositeImageArtist(object):
             color *= layer['alpha']
 
             # TODO: Here we could use the astropy normalization classes
-            plane = layer['array'][:, :, np.newaxis] * color[np.newaxis, np.newaxis,:]
-            plane = (plane - layer['vmin']) / (layer['vmax'] - layer['vmin'])
+            plane = color * np.ones(layer['array'].shape + (4,))
+            data = (layer['array'] - layer['vmin']) / (layer['vmax'] - layer['vmin'])
+            plane[:, :, 3] *= data
+
+            print(plane)
 
             img += plane
 
@@ -93,5 +102,7 @@ class CompositeImageArtist(object):
         self.image.set_clim(0, 1)
         self.image.set_array(img)
         self.image.set_extent([-0.5, self.shape[1] - 0.5, -0.5, self.shape[0] - 0.5])
-        self.axes.set_xlim(-0.5, self.shape[1] - 0.5)
-        self.axes.set_ylim(-0.5, self.shape[0] - 0.5)
+        if self._first:
+            self.axes.set_xlim(-0.5, self.shape[1] - 0.5)
+            self.axes.set_ylim(-0.5, self.shape[0] - 0.5)
+            self._first = False

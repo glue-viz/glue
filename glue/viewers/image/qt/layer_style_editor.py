@@ -25,12 +25,12 @@ class ImageLayerStyleEditor(QtWidgets.QWidget):
 
         autoconnect_qt(self.layer_state, self.ui, connect_kwargs)
 
-        self.att_helper = ComponentIDComboHelper(self.ui.combo_att,
-                                                 self.layer_state.data_collection,
-                                                 categorical=False)
-        self.att_helper.append_data(self.layer_state.layer)
-
         self.att_limits_helper = AttributeLimitsHelper(self.ui.combo_att,
                                                        self.ui.value_vmin,
                                                        self.ui.value_vmax,
                                                        flip_button=self.ui.button_flip_limits)
+
+        self.att_helper = ComponentIDComboHelper(self.ui.combo_att,
+                                                 self.layer_state.data_collection,
+                                                 categorical=False)
+        self.att_helper.append_data(self.layer_state.layer)
