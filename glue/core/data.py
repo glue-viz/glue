@@ -703,8 +703,12 @@ class Data(object):
         s += "Number of dimensions: %i\n" % self.ndim
         s += "Shape: %s\n" % ' x '.join([str(x) for x in self.shape])
         s += "Components:\n"
-        for i, component in enumerate(self._components):
-            s += " %i) %s\n" % (i, component)
+        for i, cid in enumerate(self._components):
+            comp = self.get_component(cid)
+            if comp.units is None or comp.units == '':
+                s += " %i) %s\n" % (i, cid)
+            else:
+                s += " %i) %s [%s]\n" % (i, cid, comp.units)
         return s[:-1]
 
     def __repr__(self):

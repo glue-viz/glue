@@ -23,6 +23,9 @@ v0.9.0 (unreleased)
   ``remove_data``, and added a new ``ComponentIDComboHelper.set_multiple_data``
   method. [#1060]
 
+* Fixed reading of units from FITS and VO tables, and display units in
+  table viewer. [#1135]
+
 * Make use of the QtPy package to deal with differences between PyQt4, PyQt5,
   and PySide, instead of the custom qt-helpers package. The
   ``glue.external.qt`` package is now deprecated. The ``get_qapp`` and
