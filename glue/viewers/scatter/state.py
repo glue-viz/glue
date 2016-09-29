@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+from glue.core import Data
 from glue.external.echo import CallbackProperty, add_callback
 from glue.utils import nonpartial
 from glue.config import colormaps
@@ -31,6 +32,8 @@ class ScatterViewerState(State):
 
 class ScatterLayerState(State):
 
+    style = CallbackProperty('Scatter')
+
     layer = CallbackProperty()
 
     color_mode = CallbackProperty('Fixed')
@@ -54,6 +57,24 @@ class ScatterLayerState(State):
 
     size_scaling = CallbackProperty(1.)
 
+    linewidth = CallbackProperty(1)
+    linestyle = CallbackProperty('solid')
+
+    h_nx = CallbackProperty(20)
+    h_x_min = CallbackProperty()
+    h_x_max = CallbackProperty()
+    h_ny = CallbackProperty(20)
+    h_y_min = CallbackProperty()
+    h_y_max = CallbackProperty()
+
+    vector_x_attribute = CallbackProperty()
+    vector_y_attribute = CallbackProperty()
+    vector_x_min = CallbackProperty()
+    vector_x_max = CallbackProperty()
+    vector_y_min = CallbackProperty()
+    vector_y_max = CallbackProperty()
+    vector_scale = CallbackProperty(1.)
+
     def __init__(self, *args, **kwargs):
 
         super(ScatterLayerState, self).__init__(*args, **kwargs)
@@ -74,6 +95,29 @@ class ScatterLayerState(State):
         self.connect('color', nonpartial(self.color_to_layer))
         self.connect('alpha', nonpartial(self.alpha_to_layer))
         self.connect('size', nonpartial(self.size_to_layer))
+
+        if isinstance(self.layer, Data):
+            data = self.layer
+        else:
+            data = self.layer.data
+
+        numeric_components = []
+        for cid in data.visible_components:
+            comp = data.get_component(cid)
+            if comp.numeric:
+                numeric_components.append(cid)
+
+        self.cmap_attribute = numeric_components[0], self.layer
+        self.size_attribute = numeric_components[0], self.layer
+        self.vector_x_attribute = numeric_components[0], self.layer
+        self.vector_y_attribute = numeric_components[1], self.layer
+
+        # FIXME: Shouldn't be needed?
+        # self.vector_x_min = self.layer[self.vector_x_attribute[0]].min()
+        # self.vector_x_max = self.layer[self.vector_x_attribute[0]].max()
+        # self.vector_y_min = self.layer[self.vector_y_attribute[0]].min()
+        # self.vector_y_max = self.layer[self.vector_y_attribute[0]].max()
+
 
     @avoid_circular
     def color_to_layer(self):

@@ -1,12 +1,17 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+from collections import OrderedDict
 
 from qtpy import QtWidgets
 
-from glue.utils.qt import load_ui, autoconnect_qt
+from glue.utils.qt import load_ui, autoconnect_qt, update_combobox
+from glue.utils.qt.widget_properties import CurrentComboDataProperty
 from glue.viewers.common.qt.attribute_limits_helper import AttributeLimitsHelper
 from glue.core.qt.data_combo_helper import ComponentIDComboHelper
+from glue.external.echo import add_callback
+from glue.viewers.scatter.state import ScatterLayerState
+from glue.utils import nonpartial
 
 
 class ScatterLayerStyleEditor(QtWidgets.QWidget):
@@ -15,23 +20,12 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
 
         super(ScatterLayerStyleEditor, self).__init__(parent=parent)
 
-        self.ui = load_ui('layer_style_editor.ui', self,
+        self.ui = load_ui('scatter_style_editor.ui', self,
                           directory=os.path.dirname(__file__))
 
-        # TODO: In future, should pass only state not layer?
-        self.layer_state = layer.layer_state
-
-        connect_kwargs = {
-            'size_scaling': dict(value_range=(0.1, 10), log=True),
-            'alpha': dict(value_range=(0, 1))
-        }
-
-        autoconnect_qt(self.layer_state, self.ui, connect_kwargs)
-        # autoconnect_qt(self.layer_state.layer.style, self.ui)
-
-        self.ui.combotext_size_mode.currentIndexChanged.connect(self._update_size_mode)
 
         # TODO: layer_state should not have data_collection attribute
+        self.layer_state = layer.layer_state
 
         self.size_limits_helper = AttributeLimitsHelper(self.ui.combo_size_attribute,
                                                         self.ui.value_size_vmin,
@@ -43,8 +37,6 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
                                                       categorical=False)
         self.size_cid_helper.append_data(self.layer_state.layer)
 
-        self.ui.combotext_color_mode.currentIndexChanged.connect(self._update_color_mode)
-
         self.cmap_limits_helper = AttributeLimitsHelper(self.ui.combo_cmap_attribute,
                                                         self.ui.value_cmap_vmin,
                                                         self.ui.value_cmap_vmax,
@@ -55,8 +47,8 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
                                                       categorical=False)
         self.cmap_cid_helper.append_data(self.layer_state.layer)
 
-        self._update_size_mode()
-        self._update_color_mode()
+        add_callback(self.layer_state, 'size_mode', nonpartial(self._update_size_mode))
+        add_callback(self.layer_state, 'color_mode', nonpartial(self._update_color_mode))
 
     def _update_size_mode(self):
 
@@ -84,10 +76,140 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
             self.ui.color_row_2.show()
             self.ui.color_row_3.show()
 
-        # Set up attribute list
-        # label_data = [(comp.label, comp) for comp in self.visible_components]
-        # update_combobox(self.ui.combo_size_attribute, label_data)
 
-        # self.ui.combotext_size_mode.currentIndexChanged.connect(self._update_size_mode)
-        # self.ui.combo_size_attribute.currentIndexChanged.connect(self._update_size_limits)
-        # self.ui.button_flip_size.clicked.connect(self._flip_size)
+class FastScatterLayerStyleEditor(QtWidgets.QWidget):
+
+    def __init__(self, layer, parent=None):
+
+        super(FastScatterLayerStyleEditor, self).__init__(parent=parent)
+
+        self.ui = load_ui('fast_scatter_style_editor.ui', self,
+                          directory=os.path.dirname(__file__))
+
+
+class LineLayerStyleEditor(QtWidgets.QWidget):
+
+    def __init__(self, layer, parent=None):
+
+        super(LineLayerStyleEditor, self).__init__(parent=parent)
+
+        self.ui = load_ui('line_style_editor.ui', self,
+                          directory=os.path.dirname(__file__))
+
+        label_data = [('–––––––', 'solid'),
+                      ('– – – – –', 'dashed'),
+                      ('· · · · · · · ·', 'dotted'),
+                      ('– · – · – ·', 'dashdot')]
+
+        update_combobox(self.ui.combo_linestyle, label_data)
+
+
+class Histogram2DLayerStyleEditor(QtWidgets.QWidget):
+
+    def __init__(self, layer, parent=None):
+
+        super(Histogram2DLayerStyleEditor, self).__init__(parent=parent)
+
+        self.ui = load_ui('histogram_2d_style_editor.ui', self,
+                          directory=os.path.dirname(__file__))
+
+
+class VectorLayerStyleEditor(QtWidgets.QWidget):
+
+    def __init__(self, layer, parent=None):
+
+        super(VectorLayerStyleEditor, self).__init__(parent=parent)
+
+        self.ui = load_ui('vector_style_editor.ui', self,
+                          directory=os.path.dirname(__file__))
+
+        # TODO: layer_state should not have data_collection attribute
+        self.layer_state = layer.layer_state
+
+        self.vx_limits_helper = AttributeLimitsHelper(self.ui.combo_vector_x_attribute,
+                                                        self.ui.value_vector_x_min,
+                                                        self.ui.value_vector_x_max)
+
+        self.vx_cid_helper = ComponentIDComboHelper(self.ui.combo_vector_x_attribute,
+                                                      self.layer_state.data_collection,
+                                                      categorical=False)
+        self.vx_cid_helper.append_data(self.layer_state.layer)
+
+        self.vy_limits_helper = AttributeLimitsHelper(self.ui.combo_vector_y_attribute,
+                                                        self.ui.value_vector_y_min,
+                                                        self.ui.value_vector_y_max)
+
+        self.vy_cid_helper = ComponentIDComboHelper(self.ui.combo_vector_y_attribute,
+                                                      self.layer_state.data_collection,
+                                                      categorical=False)
+        self.vy_cid_helper.append_data(self.layer_state.layer)
+
+
+class Generic2DLayerStyleEditor(QtWidgets.QWidget):
+
+    sub_editor = CurrentComboDataProperty('ui.combotext_style')
+
+    def __init__(self, layer, parent=None):
+
+        super(Generic2DLayerStyleEditor, self).__init__(parent=parent)
+
+        # TODO: In future, should pass only state not layer?
+        self.layer_state = layer.layer_state
+
+        self.ui = load_ui('layer_style_editor.ui', self,
+                          directory=os.path.dirname(__file__))
+
+        self.sub_editors = QtWidgets.QStackedLayout()
+        self.ui.placeholder.setLayout(self.sub_editors)
+
+        self.editors = OrderedDict()
+        self.editors['Scatter'] = ScatterLayerStyleEditor(layer)
+        self.editors['Fast Scatter'] = FastScatterLayerStyleEditor(layer)
+        self.editors['Line'] = LineLayerStyleEditor(layer)
+        self.editors['2D Histogram'] = Histogram2DLayerStyleEditor(layer)
+        self.editors['Vectors'] = VectorLayerStyleEditor(layer)
+
+        for name, widget in self.editors.items():
+            self.sub_editors.addWidget(widget)
+            self.ui.combotext_style.addItem(name, widget)
+
+        add_callback(self.layer_state, 'style', nonpartial(self._style_changed))
+
+        connect_kwargs = {
+            'size_scaling': dict(value_range=(0.1, 10), log=True),
+            'alpha': dict(value_range=(0, 1)),
+            'vector_scaling': dict(value_range=(1, 100), log=True),
+        }
+
+        autoconnect_qt(self.layer_state, self.ui, connect_kwargs)
+
+        # TEMP: should happen in ScatterLayerStyleEditor
+        self.editors['Scatter']._update_size_mode()
+        self.editors['Scatter']._update_color_mode()
+
+    def _style_changed(self):
+        self.sub_editors.setCurrentWidget(self.sub_editor)
+
+
+if __name__ == "__main__":
+
+    from glue.utils.qt import get_qapp
+    app = get_qapp()
+
+    class LayerArtist(object):
+        layer_state = None
+
+    from glue.core import Data, DataCollection
+
+    d = Data(x=[1,2,3,5,6], y=[3,4,3,2,2])
+    dc = DataCollection([d])
+
+    layer_artist = LayerArtist()
+    layer_artist.layer_state = ScatterLayerState(layer=d)
+    layer_artist.layer_state.data_collection = dc
+
+    editor = Generic2DLayerStyleEditor(layer=layer_artist)
+    editor.show()
+    editor.raise_()
+
+    app.exec_()

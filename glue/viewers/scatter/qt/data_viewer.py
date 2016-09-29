@@ -7,7 +7,7 @@ from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core import Data
 
 from glue.viewers.common.qt.mpl_data_viewer import MatplotlibDataViewer
-from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
+from glue.viewers.scatter.qt.layer_style_editor import Generic2DLayerStyleEditor
 from glue.viewers.scatter.qt.options_widget import ScatterOptionsWidget
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
 from glue.viewers.scatter.state import ScatterViewerState
@@ -19,7 +19,7 @@ class ScatterViewer(MatplotlibDataViewer):
 
     LABEL = 'New scatter viewer'
     _toolbar_cls = MatplotlibViewerToolbar
-    _layer_style_widget_cls = ScatterLayerStyleEditor
+    _layer_style_widget_cls = Generic2DLayerStyleEditor
     _state_cls = ScatterViewerState
     _options_cls = ScatterOptionsWidget
     _data_artist_cls = ScatterLayerArtist
