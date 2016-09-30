@@ -66,7 +66,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
             column_name = self.columns[section].label
             units = self._data.get_component(self.columns[section]).units
             if units != '':
-                column_name += " [{0}]".format(units)
+                column_name += "\n{0}".format(units)
             return column_name
         elif orientation == Qt.Vertical:
             return str(self.order[section])
