@@ -196,5 +196,8 @@ def test_fits_vector():
     # Regression test for bug that caused tables with vector columns to not load
     with warnings.catch_warnings(record=True) as w:
         df.load_data(os.path.join(DATA, 'events.fits'), factory=df.fits_reader)
-    assert len(w) == 1
-    assert str(w[0].message) == "Dropping column 'status' since it is not 1-dimensional"
+    for warning in w:
+        if str(warning.message) == "Dropping column 'status' since it is not 1-dimensional":
+            break
+    else:
+        raise ValueError("Missing warning about dropping column")

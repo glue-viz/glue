@@ -64,7 +64,10 @@ class Component(object):
 
     @units.setter
     def units(self, value):
-        self._units = str(value)
+        if value is None:
+            self._units = ''
+        else:
+            self._units = str(value)
 
     @property
     def hidden(self):

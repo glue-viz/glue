@@ -107,7 +107,7 @@ def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
                                    label=hdu_name)
             elif is_table_hdu(hdu):
                 # Loop through columns and make component list
-                table = Table(hdu.data)
+                table = Table.read(hdu, format='fits')
                 label = '{0}[{1}]'.format(
                     label_base,
                     hdu_name
