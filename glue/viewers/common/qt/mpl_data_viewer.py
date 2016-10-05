@@ -82,8 +82,15 @@ class MatplotlibDataViewer(DataViewer):
 
     def add_subset(self, subset):
 
+        # Copy settings from data if present
+        if subset.data in self._layer_artist_container:
+            initial_layer_state = self._layer_artist_container[subset.data][0].layer_state
+        else:
+            initial_layer_state = None
+
         # Create scatter layer artist and add to container
-        layer = self._subset_artist_cls(subset, self._axes, self.viewer_state)
+        layer = self._subset_artist_cls(subset, self._axes, self.viewer_state,
+                                        initial_layer_state=initial_layer_state)
         self._layer_artist_container.append(layer)
         layer.update()
 

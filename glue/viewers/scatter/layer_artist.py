@@ -20,12 +20,17 @@ __all__ = ['ScatterLayerArtist']
 
 class ScatterLayerArtist(MatplotlibLayerArtist):
 
-    def __init__(self, layer, axes, viewer_state):
+    def __init__(self, layer, axes, viewer_state, initial_layer_state=None):
 
         super(ScatterLayerArtist, self).__init__(layer, axes, viewer_state)
 
         # Set up a state object for the layer artist
-        self.layer_state = ScatterLayerState(layer=layer)
+        if initial_layer_state is None:
+            initial = {}
+        else:
+            initial = initial_layer_state.as_dict(exclude_layer=True)
+        print(initial)
+        self.layer_state = ScatterLayerState(layer=layer, **initial)
         self.viewer_state.layers.append(self.layer_state)
 
         # Watch for changes in the viewer state which would require the
