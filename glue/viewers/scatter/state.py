@@ -5,7 +5,7 @@ from glue.external.echo import CallbackProperty, add_callback
 from glue.utils import nonpartial
 from glue.config import colormaps
 
-from glue.core.state_objects import State, StateList
+from glue.core.state_objects import State, StateList, StateAttributeLimitsHelper
 from glue.utils import avoid_circular
 
 __all__ = ['ScatterViewerState', 'ScatterLayerState']
@@ -106,6 +106,22 @@ class ScatterLayerState(State):
             comp = data.get_component(cid)
             if comp.numeric:
                 numeric_components.append(cid)
+
+        self.helper_size = StateAttributeLimitsHelper(self, data='layer',
+                                                      attribute='size_attribute',
+                                                      vlo='size_vmin', vhi='size_vmax')
+
+        self.helper_cmap = StateAttributeLimitsHelper(self, data='layer',
+                                                      attribute='cmap_attribute',
+                                                      vlo='cmap_vmin', vhi='cmap_vmax')
+
+        self.helper_vector_x = StateAttributeLimitsHelper(self, data='layer',
+                                                          attribute='vector_x_attribute',
+                                                          vlo='vector_x_min', vhi='vector_x_max')
+
+        self.helper_vector_y = StateAttributeLimitsHelper(self, data='layer',
+                                                          attribute='vector_y_attribute',
+                                                          vlo='vector_y_min', vhi='vector_y_max')
 
         self.cmap_attribute = numeric_components[0], self.layer
         self.size_attribute = numeric_components[0], self.layer

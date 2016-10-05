@@ -7,7 +7,6 @@ from qtpy import QtWidgets
 
 from glue.utils.qt import load_ui, autoconnect_qt, update_combobox
 from glue.utils.qt.widget_properties import CurrentComboDataProperty
-from glue.viewers.common.qt.attribute_limits_helper import AttributeLimitsHelper
 from glue.core.qt.data_combo_helper import ComponentIDComboHelper
 from glue.external.echo import add_callback
 from glue.viewers.scatter.state import ScatterLayerState
@@ -27,20 +26,10 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         # TODO: layer_state should not have data_collection attribute
         self.layer_state = layer.layer_state
 
-        self.size_limits_helper = AttributeLimitsHelper(self.ui.combo_size_attribute,
-                                                        self.ui.value_size_vmin,
-                                                        self.ui.value_size_vmax,
-                                                        flip_button=self.ui.button_flip_size)
-
         self.size_cid_helper = ComponentIDComboHelper(self.ui.combo_size_attribute,
                                                       self.layer_state.data_collection,
                                                       categorical=False)
         self.size_cid_helper.append_data(self.layer_state.layer)
-
-        self.cmap_limits_helper = AttributeLimitsHelper(self.ui.combo_cmap_attribute,
-                                                        self.ui.value_cmap_vmin,
-                                                        self.ui.value_cmap_vmax,
-                                                        flip_button=self.ui.button_flip_cmap)
 
         self.cmap_cid_helper = ComponentIDComboHelper(self.ui.combo_cmap_attribute,
                                                       self.layer_state.data_collection,
@@ -126,25 +115,16 @@ class VectorLayerStyleEditor(QtWidgets.QWidget):
         # TODO: layer_state should not have data_collection attribute
         self.layer_state = layer.layer_state
 
-        self.vx_limits_helper = AttributeLimitsHelper(self.ui.combo_vector_x_attribute,
-                                                      self.ui.value_vector_x_min,
-                                                      self.ui.value_vector_x_max)
-
         self.vx_cid_helper = ComponentIDComboHelper(self.ui.combo_vector_x_attribute,
                                                     self.layer_state.data_collection,
                                                     categorical=False)
         self.vx_cid_helper.append_data(self.layer_state.layer)
 
-        print("VALUES", self.ui.value_vector_x_min.value(), self.ui.value_vector_x_max.value())
-
-        self.vy_limits_helper = AttributeLimitsHelper(self.ui.combo_vector_y_attribute,
-                                                      self.ui.value_vector_y_min,
-                                                      self.ui.value_vector_y_max)
-
         self.vy_cid_helper = ComponentIDComboHelper(self.ui.combo_vector_y_attribute,
                                                     self.layer_state.data_collection,
                                                     categorical=False)
         self.vy_cid_helper.append_data(self.layer_state.layer)
+
 
 
 class Generic2DLayerStyleEditor(QtWidgets.QWidget):
