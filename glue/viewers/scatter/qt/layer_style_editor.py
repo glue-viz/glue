@@ -127,21 +127,23 @@ class VectorLayerStyleEditor(QtWidgets.QWidget):
         self.layer_state = layer.layer_state
 
         self.vx_limits_helper = AttributeLimitsHelper(self.ui.combo_vector_x_attribute,
-                                                        self.ui.value_vector_x_min,
-                                                        self.ui.value_vector_x_max)
+                                                      self.ui.value_vector_x_min,
+                                                      self.ui.value_vector_x_max)
 
         self.vx_cid_helper = ComponentIDComboHelper(self.ui.combo_vector_x_attribute,
-                                                      self.layer_state.data_collection,
-                                                      categorical=False)
+                                                    self.layer_state.data_collection,
+                                                    categorical=False)
         self.vx_cid_helper.append_data(self.layer_state.layer)
 
+        print("VALUES", self.ui.value_vector_x_min.value(), self.ui.value_vector_x_max.value())
+
         self.vy_limits_helper = AttributeLimitsHelper(self.ui.combo_vector_y_attribute,
-                                                        self.ui.value_vector_y_min,
-                                                        self.ui.value_vector_y_max)
+                                                      self.ui.value_vector_y_min,
+                                                      self.ui.value_vector_y_max)
 
         self.vy_cid_helper = ComponentIDComboHelper(self.ui.combo_vector_y_attribute,
-                                                      self.layer_state.data_collection,
-                                                      categorical=False)
+                                                    self.layer_state.data_collection,
+                                                    categorical=False)
         self.vy_cid_helper.append_data(self.layer_state.layer)
 
 

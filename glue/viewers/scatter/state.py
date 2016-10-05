@@ -112,13 +112,6 @@ class ScatterLayerState(State):
         self.vector_x_attribute = numeric_components[0], self.layer
         self.vector_y_attribute = numeric_components[1], self.layer
 
-        # FIXME: Shouldn't be needed?
-        # self.vector_x_min = self.layer[self.vector_x_attribute[0]].min()
-        # self.vector_x_max = self.layer[self.vector_x_attribute[0]].max()
-        # self.vector_y_min = self.layer[self.vector_y_attribute[0]].min()
-        # self.vector_y_max = self.layer[self.vector_y_attribute[0]].max()
-
-
     @avoid_circular
     def color_to_layer(self):
         self.layer.style.color = self.color
