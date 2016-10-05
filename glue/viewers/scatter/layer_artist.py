@@ -30,7 +30,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         else:
             initial = initial_layer_state.as_dict(exclude_layer=True)
         print(initial)
-        self.layer_state = ScatterLayerState(layer=layer, **initial)
+        self.layer_state = ScatterLayerState(viewer_state=viewer_state, layer=layer, **initial)
         self.viewer_state.layers.append(self.layer_state)
 
         # Watch for changes in the viewer state which would require the
@@ -84,7 +84,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         if exception != 'Line':
             self.line_artist.set_data([],[])
 
-        if exception != 'Histogram':
+        if exception != '2D Histogram':
             self.histogram_artist.set_data([[]])
 
         if exception != 'Vectors':
@@ -179,7 +179,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             self.line_artist.set_linewidth(self.layer_state.linewidth)
             self.line_artist.set_linestyle(self.layer_state.linestyle)
 
-        elif self.layer_state.style == 'Histogram':
+        elif self.layer_state.style == '2D Histogram':
 
             if self.layer_state.h_x_min is None:
                 self.layer_state.h_x_min = self.viewer_state.x_min

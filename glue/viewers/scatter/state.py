@@ -30,7 +30,32 @@ class ScatterViewerState(State):
     layers = StateList()
 
 
+def add_link(instance1, prop1, instance2, prop2):
+
+    p1 = getattr(type(instance1), prop1)
+    if not isinstance(p1, CallbackProperty):
+        raise TypeError("%s is not a CallbackProperty" % prop1)
+
+    p2 = getattr(type(instance2), prop2)
+    if not isinstance(p2, CallbackProperty):
+        raise TypeError("%s is not a CallbackProperty" % prop2)
+
+    def update_prop1(value):
+        setattr(instance1, prop1, value)
+
+    def update_prop2(value):
+        setattr(instance2, prop2, value)
+
+    # Inefficient for now, but does the trick
+    add_callback(instance1, prop1, update_prop2)
+    # add_callback(instance2, prop2, update_prop1)
+
+
 class ScatterLayerState(State):
+
+    # These two will be linked to the reference values in the viewer state
+    _xatt = CallbackProperty()
+    _yatt = CallbackProperty()
 
     style = CallbackProperty('Scatter')
 
@@ -75,9 +100,14 @@ class ScatterLayerState(State):
     vector_y_max = CallbackProperty()
     vector_scale = CallbackProperty(1.)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, viewer_state=None, **kwargs):
 
-        super(ScatterLayerState, self).__init__(*args, **kwargs)
+        super(ScatterLayerState, self).__init__(**kwargs)
+
+        self.viewer_state = viewer_state
+
+        add_link(self.viewer_state, 'xatt', self, '_xatt')
+        add_link(self.viewer_state, 'yatt', self, '_yatt')
 
         self.color = self.layer.style.color
         self.alpha = self.layer.style.alpha
@@ -122,6 +152,12 @@ class ScatterLayerState(State):
         self.helper_vector_y = StateAttributeLimitsHelper(self, data='layer',
                                                           attribute='vector_y_attribute',
                                                           vlo='vector_y_min', vhi='vector_y_max')
+
+        self.helper_hist_x = StateAttributeLimitsHelper(self, data='layer', attribute='_xatt',
+                                                        vlo='h_x_min', vhi='h_x_max')
+
+        self.helper_hist_y = StateAttributeLimitsHelper(self, data='layer', attribute='_yatt',
+                                                        vlo='h_y_min', vhi='h_y_max')
 
         self.cmap_attribute = numeric_components[0], self.layer
         self.size_attribute = numeric_components[0], self.layer
