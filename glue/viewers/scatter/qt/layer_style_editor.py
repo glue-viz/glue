@@ -22,7 +22,6 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         self.ui = load_ui('scatter_style_editor.ui', self,
                           directory=os.path.dirname(__file__))
 
-
         # TODO: layer_state should not have data_collection attribute
         self.layer_state = layer.layer_state
 
@@ -126,7 +125,6 @@ class VectorLayerStyleEditor(QtWidgets.QWidget):
         self.vy_cid_helper.append_data(self.layer_state.layer)
 
 
-
 class Generic2DLayerStyleEditor(QtWidgets.QWidget):
 
     sub_editor = CurrentComboDataProperty('ui.combotext_style')
@@ -157,11 +155,9 @@ class Generic2DLayerStyleEditor(QtWidgets.QWidget):
 
         add_callback(self.layer_state, 'style', nonpartial(self._style_changed))
 
-        connect_kwargs = {
-            'size_scaling': dict(value_range=(0.1, 10), log=True),
-            'alpha': dict(value_range=(0, 1)),
-            'vector_scaling': dict(value_range=(1, 100), log=True),
-        }
+        connect_kwargs = {'size_scaling': dict(value_range=(0.1, 10), log=True),
+                          'alpha': dict(value_range=(0, 1)),
+                          'vector_scaling': dict(value_range=(1, 100), log=True)}
 
         autoconnect_qt(self.layer_state, self.ui, connect_kwargs)
 
@@ -183,7 +179,7 @@ if __name__ == "__main__":
 
     from glue.core import Data, DataCollection
 
-    d = Data(x=[1,2,3,5,6], y=[3,4,3,2,2])
+    d = Data(x=[1, 2, 3, 5, 6], y=[3, 4, 3, 2, 2])
     dc = DataCollection([d])
 
     layer_artist = LayerArtist()

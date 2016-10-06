@@ -9,6 +9,7 @@ from glue.utils.qt.widget_properties import (connect_bool_button,
                                              connect_float_edit,
                                              connect_text)
 from glue.utils.qt.colors import connect_color
+from glue.utils import nonpartial
 
 __all__ = ['autoconnect_qt']
 
@@ -48,3 +49,9 @@ def autoconnect_qt(state, widget, connect_kwargs={}):
                     connect_current_combo_text(state, wname, child, **kwargs)
                 elif wtype == 'color':
                     connect_color(state, wname, child, **kwargs)
+                elif wtype == 'button':
+                    # We have to do the following to make sure that we force
+                    # the closure of the state and wname variables for this
+                    # specific callback.
+                    func = getattr(state, wname)
+                    child.clicked.connect(nonpartial(func))

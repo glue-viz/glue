@@ -158,7 +158,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="button_reset">
+      <widget class="QPushButton" name="button_reset_limits">
        <property name="text">
         <string>Reset Limits</string>
        </property>

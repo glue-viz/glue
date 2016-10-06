@@ -29,26 +29,39 @@ class ScatterViewerState(State):
 
     layers = StateList()
 
+    def __init__(self, **kwargs):
+
+        super(ScatterViewerState, self).__init__(**kwargs)
+
+        self.limits_cache = {}
+
+        self.xatt_helper = StateAttributeLimitsHelper(self, attribute='xatt',
+                                                      vlo='x_min', vhi='x_max',
+                                                      vlog='log_x',
+                                                      limits_cache=self.limits_cache)
+
+        self.yatt_helper = StateAttributeLimitsHelper(self, attribute='yatt',
+                                                      vlo='y_min', vhi='y_max',
+                                                      vlog='log_y',
+                                                      limits_cache=self.limits_cache)
+
+    def reset_limits(self):
+        self.limits_cache.clear()
+        self.xatt_helper._update_limits()
+        self.yatt_helper._update_limits()
+
+    def flip_x(self):
+        self.xatt_helper.flip_limits()
+
+    def flip_y(self):
+        self.yatt_helper.flip_limits()
+
 
 def add_link(instance1, prop1, instance2, prop2):
-
-    p1 = getattr(type(instance1), prop1)
-    if not isinstance(p1, CallbackProperty):
-        raise TypeError("%s is not a CallbackProperty" % prop1)
-
-    p2 = getattr(type(instance2), prop2)
-    if not isinstance(p2, CallbackProperty):
-        raise TypeError("%s is not a CallbackProperty" % prop2)
-
-    def update_prop1(value):
-        setattr(instance1, prop1, value)
-
     def update_prop2(value):
         setattr(instance2, prop2, value)
-
     # Inefficient for now, but does the trick
     add_callback(instance1, prop1, update_prop2)
-    # add_callback(instance2, prop2, update_prop1)
 
 
 class ScatterLayerState(State):
@@ -137,32 +150,36 @@ class ScatterLayerState(State):
             if comp.numeric:
                 numeric_components.append(cid)
 
-        self.helper_size = StateAttributeLimitsHelper(self, data='layer',
-                                                      attribute='size_attribute',
+        self.helper_size = StateAttributeLimitsHelper(self, attribute='size_attribute',
                                                       vlo='size_vmin', vhi='size_vmax')
 
-        self.helper_cmap = StateAttributeLimitsHelper(self, data='layer',
-                                                      attribute='cmap_attribute',
+        self.helper_cmap = StateAttributeLimitsHelper(self, attribute='cmap_attribute',
                                                       vlo='cmap_vmin', vhi='cmap_vmax')
 
-        self.helper_vector_x = StateAttributeLimitsHelper(self, data='layer',
-                                                          attribute='vector_x_attribute',
+        self.helper_vector_x = StateAttributeLimitsHelper(self, attribute='vector_x_attribute',
                                                           vlo='vector_x_min', vhi='vector_x_max')
 
-        self.helper_vector_y = StateAttributeLimitsHelper(self, data='layer',
-                                                          attribute='vector_y_attribute',
+        self.helper_vector_y = StateAttributeLimitsHelper(self, attribute='vector_y_attribute',
                                                           vlo='vector_y_min', vhi='vector_y_max')
 
-        self.helper_hist_x = StateAttributeLimitsHelper(self, data='layer', attribute='_xatt',
+        self.helper_hist_x = StateAttributeLimitsHelper(self, attribute='_xatt',
                                                         vlo='h_x_min', vhi='h_x_max')
 
-        self.helper_hist_y = StateAttributeLimitsHelper(self, data='layer', attribute='_yatt',
+        self.helper_hist_y = StateAttributeLimitsHelper(self, attribute='_yatt',
                                                         vlo='h_y_min', vhi='h_y_max')
 
-        self.cmap_attribute = numeric_components[0], self.layer
-        self.size_attribute = numeric_components[0], self.layer
-        self.vector_x_attribute = numeric_components[0], self.layer
-        self.vector_y_attribute = numeric_components[1], self.layer
+        from glue.core import Subset
+
+        if isinstance(self.layer, Subset):
+            self.cmap_attribute = numeric_components[0], self.layer.data
+            self.size_attribute = numeric_components[0], self.layer.data
+            self.vector_x_attribute = numeric_components[0], self.layer.data
+            self.vector_y_attribute = numeric_components[1], self.layer.data
+        else:
+            self.cmap_attribute = numeric_components[0], self.layer
+            self.size_attribute = numeric_components[0], self.layer
+            self.vector_x_attribute = numeric_components[0], self.layer
+            self.vector_y_attribute = numeric_components[1], self.layer
 
     @avoid_circular
     def color_to_layer(self):
