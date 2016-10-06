@@ -57,10 +57,9 @@ class ScatterViewerState(State):
         self.yatt_helper.flip_limits()
 
 
-def add_link(instance1, prop1, instance2, prop2):
+def add_one_way_link(instance1, prop1, instance2, prop2):
     def update_prop2(value):
         setattr(instance2, prop2, value)
-    # Inefficient for now, but does the trick
     add_callback(instance1, prop1, update_prop2)
 
 
@@ -113,14 +112,16 @@ class ScatterLayerState(State):
     vector_y_max = CallbackProperty()
     vector_scale = CallbackProperty(1.)
 
+    link_other = CallbackProperty(True)
+
     def __init__(self, viewer_state=None, **kwargs):
 
         super(ScatterLayerState, self).__init__(**kwargs)
 
         self.viewer_state = viewer_state
 
-        add_link(self.viewer_state, 'xatt', self, '_xatt')
-        add_link(self.viewer_state, 'yatt', self, '_yatt')
+        add_one_way_link(self.viewer_state, 'xatt', self, '_xatt')
+        add_one_way_link(self.viewer_state, 'yatt', self, '_yatt')
 
         self.color = self.layer.style.color
         self.alpha = self.layer.style.alpha
@@ -180,6 +181,20 @@ class ScatterLayerState(State):
             self.size_attribute = numeric_components[0], self.layer
             self.vector_x_attribute = numeric_components[0], self.layer
             self.vector_y_attribute = numeric_components[1], self.layer
+
+        self.connect_all(self._keep_in_sync)
+
+        self._active_sync = False
+
+    def _keep_in_sync(self, prop, value):
+        if prop in ('style', 'layer', 'color', 'alpha', 'link_other') or self._active_sync:
+            return
+        for layer in self.viewer_state.layers:
+            layer._active_sync = True
+            if layer is not self and layer.link_other:
+                print("Modifying", layer, prop, value)
+                setattr(layer, prop, value)
+            layer._active_sync = False
 
     @avoid_circular
     def color_to_layer(self):

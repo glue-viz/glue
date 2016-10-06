@@ -12,7 +12,7 @@ from glue.viewers.common.mpl_layer_artist import MatplotlibLayerArtist
 from astropy.visualization import LogStretch
 from astropy.visualization.mpl_normalize import ImageNormalize
 
-from raster_axes.raster_axes import RasterizedScatter
+from raster_axes.raster_axes import RasterizedScatter, make_colormap
 from raster_axes.histogram2d import histogram2d
 
 __all__ = ['ScatterLayerArtist']
@@ -29,7 +29,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             initial = {}
         else:
             initial = initial_layer_state.as_dict(exclude_layer=True)
-        print(initial)
+
         self.layer_state = ScatterLayerState(viewer_state=viewer_state, layer=layer, **initial)
         self.viewer_state.layers.append(self.layer_state)
 
@@ -63,7 +63,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.histogram_artist = self.axes.imshow([[]], interpolation='nearest', cmap=plt.cm.gist_heat, aspect='auto', origin='lower')
 
         # Vectors
-        self.vector_artist = self.axes.quiver([],[],[],[])
+        self.vector_artist = self.axes.quiver([], [], [], [])
 
         self.mpl_artists = [self.scatter_artist, self.plot_artist,
                             self.fast_scatter_artist, self.line_artist,
@@ -82,7 +82,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             self.fast_scatter_artist._update(None)
 
         if exception != 'Line':
-            self.line_artist.set_data([],[])
+            self.line_artist.set_data([], [])
 
         if exception != '2D Histogram':
             self.histogram_artist.set_data([[]])
@@ -97,9 +97,6 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
         x = self.layer[self.viewer_state.xatt[0]]
         y = self.layer[self.viewer_state.yatt[0]]
-
-        # TODO: is there a better way to do this?
-        # self.clear()
 
         self.reset_artists(exception=self.layer_state.style)
 
@@ -201,12 +198,11 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             self.histogram_artist.set_data(array)
             self.histogram_artist.set_extent([self.layer_state.h_x_min, self.layer_state.h_x_max, self.layer_state.h_y_min, self.layer_state.h_y_max])
             self.histogram_artist.set_clim(0, array.max())
+            self.histogram_artist.set_cmap(make_colormap(self.layer_state.color))
+            self.histogram_artist.set_alpha(self.layer_state.alpha)
+            self.histogram_artist.set_zorder(self.zorder)
 
         elif self.layer_state.style == 'Vectors':
-
-
-            # offsets = np.dstack((x, y))
-            # self.vector_artist.set_offsets(offsets)
 
             vx = self.layer[self.layer_state.vector_x_attribute[0]]
             vy = self.layer[self.layer_state.vector_y_attribute[0]]
@@ -220,14 +216,15 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 pass
             if self.vector_artist in self.mpl_artists:
                 self.mpl_artists.remove(self.vector_artist)
-            self.vector_artist = self.axes.quiver(x, y, U, V, color=self.layer_state.color, alpha=self.layer_state.alpha, units='dots', scale=1./self.layer_state.vector_scale)
+
+            self.vector_artist = self.axes.quiver(x, y, U, V,
+                                                  color=self.layer_state.color,
+                                                  alpha=self.layer_state.alpha,
+                                                  units='dots',
+                                                  scale=1. / self.layer_state.vector_scale,
+                                                  zorder=self.zorder)
+
             self.mpl_artists.append(self.vector_artist)
-
-            # self.vector_artist.set_UVC(U, V)
-            # self.vector_artist.set_color(self.layer_state.color)
-            # self.vector_artist.set_alpha(self.layer_state.alpha)
-
-
 
         # Reset the axes stack so that pressing the home button doesn't go back
         # to a previous irrelevant view.
