@@ -3,18 +3,14 @@
 Installing Glue
 ===============
 
-.. note:: If you are interested in installing the experimental 3D viewers, see
-          the :ref:`experimental_3d` page after following the instructions
-          below.
+.. _anaconda:
 
-There are several ways to install Glue on your computer:
-
-Recommended: Anaconda Python Distribution
------------------------------------------
+Anaconda Python Distribution (Recommended)
+------------------------------------------
 
 **Platforms:** MacOS X, Linux, and Windows
 
-We recommend using the `Anaconda <http://continuum.io/downloads.html>`_ Python
+We recommend using the `Anaconda <http://continuum.io/downloads.html>`__ Python
 distribution from Continuum Analytics (or the related Miniconda distribution).
 Anaconda includes all of Glue's main dependencies. There are two ways of
 installing Glue with the Anaconda Python Distribution: graphically using the
@@ -53,26 +49,31 @@ To install or update glue on the command-line, simply do::
           certain Linux distributions (including Kubuntu). See
           `Issue with PyQt4 from conda`_ for more details.
 
-Enthought Canopy
-----------------
+Installing with pip
+-------------------
 
-**Platforms:** MacOS X, Linux, and Windows
+Installing glue with `pip <https://pip.pypa.io>`__ is also possible, although you
+will need to first make sure that you install Qt and either
+`PyQt <https://riverbankcomputing.com/software/pyqt/intro>`_ or
+`PySide <http://pyside.org>`_, since these cannot be automatically
+installed. See the section on `Installing PyQt or PySide`_
 
-The `Enthought Python Distribution <https://www.enthought.com/products/epd/>`_ includes most but not all
-non-trivial dependencies.
+Assuming that you have either PyQt or PySide installed, you can install glue
+along with **all** :ref:`required and optional dependencies <glue-deps>` using::
 
-If you want to install glue along with the required dependencies and recommended
-optional depedencies, you can do::
+    pip install glueviz[all]
+
+The above will include domain-specific plugins. If you only want to install glue
+with all required and only non-domain-specific optional dependencies (for
+example excluding the optional dependencies for astronomy), you can do::
 
     pip install glueviz[recommended]
-
-To install the additional astronomy optional dependencies, you can do::
-
-    pip install glueviz[recommended,astronomy]
 
 And finally, if you don't want to install optional dependencies at all::
 
     pip install glueviz
+
+Note that this will still installed required dependencies.
 
 Standalone Application
 ----------------------
@@ -80,30 +81,17 @@ Standalone Application
 **Platforms:** MacOS X
 
 Mac users with OS X >= 10.7 can download Glue as a `standalone program
-<http://mac.glueviz.org>`_. This is the fastest way to get started with using Glue, but this application includes its own version of Python, and will not recognize any packages in other Python installations. If you want to use glue in your existing Python installation, follow instructions in the other sections.
+<http://mac.glueviz.org>`_. This is a fast way to get started with using
+Glue, but this application includes its own version of Python, and will not
+recognize any packages in other Python installations. If you want to use glue in
+your existing Python installation, follow instructions in the other sections.
+Note that there may be a delay between when a release is announced, and when the
+dmg installer is available.
 
-Building from Source (For the Brave)
-------------------------------------
-
-**Platforms:** MacOS X, Linux, and Windows
-
-The source code for Glue is available on `GitHub
-<http://www.github.com/glue-viz/glue>`_. Glue relies upon a number of
-scientific python libraries, as well as the Qt GUI library. Installing
-these packages is somewhat beyond the scope of this document, and
-unforunately trickier than it should be. If you want to dive in, here
-is the basic strategy:
-
- * Install `Qt 4 <http://download.qt.io/archive/qt/4.8/4.8.6/>`_ and either `PyQt4 <http://www.riverbankcomputing.com/software/pyqt/download>`_ or `PySide <http://qt-project.org/wiki/Get-PySide>`_. If at all possible, use the binary installers; building PyQt4 or PySide from source is tricky (this is a euphemism).
-
- * Install Glue using pip: ``pip install glueviz``. Alternatively, ``git clone`` the repository and install via ``python setup.py install``
-
- * Install Glue's remaining dependencies by running ``glue-deps install``. For more information on these dependencies see :ref:`below <glue-deps>`.
-
+.. _glue-deps:
 
 Dependencies
-^^^^^^^^^^^^
-.. _glue-deps:
+------------
 
 Glue has the following required dependencies:
 
@@ -111,59 +99,60 @@ Glue has the following required dependencies:
 * `Numpy <http://www.numpy.org>`_
 * `Matplotlib <http://www.matplotlib.org>`_
 * `Pandas <http://pandas.pydata.org/>`_
-* Either `PySide`_, `PyQt4`_, or `PyQt5 <https://riverbankcomputing.com/software/pyqt/download5>`_
-* `QtPy <https://pypi.python.org/pypi/QtPy/>`__ 1.1 or higher - this is an abstraction layer for the Python Qt packages
+* `Astropy <http://www.astropy.org>`_ 1.0 or higher
+* `setuptools <http://setuptools.readthedocs.io/en/latest/>`_
+* Either `PySide`_ or `PyQt`_ (both PyQt4 and PyQt5 are supported)
+* `QtPy <https://pypi.python.org/pypi/QtPy/>`__ 1.1 or higher - this is an
+  abstraction layer for the Python Qt packages
 
-And the following optional dependencies are also highly recommended:
+The following optional dependencies are also highly recommended and
+domain-independent:
 
-* `IPython <http://ipython.org>`_ 1.0 or later
+* `IPython <http://ipython.org>`_ 1.0 or higher
+* `qtconsole <http://jupyter.org/qtconsole/>`_
+* `dill <http://pythonhosted.org/dill/>`_, for better session saving
 * `SciPy <http://www.scipy.org>`_
-* `Astropy <http://www.astropy.org>`_ 1.0 or later
-* `h5py <http://www.h5py.org>`_ (if using HDF5 files)
+* `scikit-image <http://scikit-image.org>`_
+* `h5py <http://www.h5py.org>`_ for reading HDF5 files
+* `xlrd <https://pypi.python.org/pypi/xlrd>`_ for reading Excel files
+* `plotly <https://plot.ly>`_ for exporting to plot.ly
+* `glue-vispy-viewers <https://pypi.python.org/pypi/glue-vispy-viewers>`_, which provide 3D viewers
 
-In addition to these, there are several other optional dependencies to suport
-various I/O and other optional functionality. Glue includes a command line
-utility ``glue-deps`` to manage dependencies:
+Finally, there are domain-specific optional dependencies. For astronomy, these
+are:
 
-* Calling ``glue-deps list`` displays all of Glue's required and optional
-  dependencies, along with whether or not each library is already installed on
-  your system. For missing dependencies, the program also provides a brief
-  description of how it is used within Glue.
+* `astrodendro <http://dendrograms.org>`_ for dendrograms
+* `pyavm <https://astrofrog.github.io/pyavm/>`_ for reading AVM metadata
+* `spectral-cube <http://spectral-cube.readthedocs.io>`_ for reading spectral cubes
+* `ginga <https://ejeschke.github.io/ginga/>`_ - if you want to use a ginga viewer in glue
 
-* Calling ``glue-deps install`` attempts to ``pip install`` all missing
-  libraries. You can install single libraries or categories of libraries by
-  providing additional arguments to ``glue-deps install``.
+You can check which dependencies are installed and which versions are available
+by running (once glue is installed)::
 
-Tips for Ubuntu
-^^^^^^^^^^^^^^^
+    glue-deps list
 
-Many dependencies can be reliably installed with ``apt``::
+It is also possible to install missing dependencies with::
 
-    sudo apt-get install python-numpy
-    sudo apt-get install python-scipy
-    sudo apt-get install python-matplotlib
+    glue-deps install
+
+Installing PyQt or PySide
+-------------------------
+
+If you are using Linux, PyQt and PySide will typically be available in the
+built-in package manager. For example, if you are using Ubuntu, then you can do::
+
     sudo apt-get install python-qt4
-    sudo apt-get install pyqt4-dev-tools
-    sudo apt-get install ipython
-    sudo apt-get install python-zmq
-    sudo apt-get install python-pygments
 
+for Python 2, and::
 
-MacPorts
-^^^^^^^^
-Many dependencies can be reliably installed with::
+    sudo apt-get install python3-pyqt4
 
-    sudo port install python27
-    sudo port install py27-numpy
-    sudo port install py27-scipy
-    sudo port install py27-matplotlib
-    sudo port install py27-pyqt4
-    sudo port install py27-ipython
-    sudo port install py27-pip
+for Python 3. If you are using MacOS X, then if you are using MacPorts to
+manage your Python installation, you can do::
 
-For information about using MacPorts to manage your Python
-installation, see `here
-<http://astrofrog.github.com/macports-python/>`__
+    sudo port install py35-pyqt4
+
+assuming you are using Python 3.5 (modify the ``py35`` version as needed).
 
 Running Glue
 ------------

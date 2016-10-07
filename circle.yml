@@ -9,7 +9,7 @@ dependencies:
   override:
     - sudo easy_install3 --version
     - sudo pip3 --version
-    - sudo pip3 install -q .[recommended,astronomy]
+    - sudo pip3 install -q .[all]
 
 test:
   override:
