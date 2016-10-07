@@ -13,30 +13,52 @@ Anaconda Python Distribution (Recommended)
 We recommend using the `Anaconda <http://continuum.io/downloads.html>`__ Python
 distribution from Continuum Analytics (or the related Miniconda distribution).
 Anaconda includes all of Glue's main dependencies. There are two ways of
-installing Glue with the Anaconda Python Distribution: graphically using the
-Anaconda Launcher, or using the command-line, both of which are described below.
+installing Glue with the Anaconda Python Distribution: :ref:`graphically using the
+Anaconda Navigator <anaconda_gui>`, or :ref:`using the conda command
+<anaconda_cli>` on the command-line, both of which are described
+below.
+
+.. _anaconda_gui:
 
 Graphical installation
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Once you have installed the Anaconda Python Distribution, open the Anaconda Launcher, and you will be presented with a window that looks like the following:
+Once Anaconda is installed, go to the **Applications** folder and launch the
+**Anaconda Navigator**:
 
-.. image:: images/anaconda_launcher.jpg
+.. image:: images/navigator_icon.png
    :align: center
-   :width: 100%
+   :width: 80
 
-As you can see, glue is already in the list (under the name **glueviz**).
-However, we need to tell Anaconda to get the latest version of glue from the
-**conda-forge** channel (the default version available is otherwise not the
-most recent). To do this, click on **Manage Channels** in the top right of the
-window, which will bring up a small window - type **conda-forge** into the
-field and click on **Add Channel**, then **Submit**:
+If you do not have the Anaconda Navigator icon, but have an Anaconda Launcher,
+you are using an old version of Anaconda. See :ref:`here <anaconda_old_gui>` for
+alternate instructions.
 
-.. image:: images/manage_conda_channels.jpg
+Assuming you have the navigator open, before installing glue first click on the
+**Channels** button:
+
+.. image:: images/navigator_channels_button.png
    :align: center
-   :width: 50%
+   :width: 373
 
-Once you have done this, you can install glue by clicking on the **Install** button corresponding to the **glueviz** entry. If you have already installed glue, and want to update, you can click on the **Update** button.
+If not already present, add **conda-forge** to the list of channels by clicking
+on **Add**, typing **conda-forge**, and pressing enter, then click on **Update
+channels**:
+
+.. image:: images/navigator_channels_dialog.png
+   :align: center
+   :width: 414
+
+You can now install the latest version of glue by clicking on **Install**:
+
+.. image:: images/navigator_install.png
+   :align: center
+   :width: 264
+
+Once the installation is complete, you can click on the **Launch** button (which
+will replace the **Install** button).
+
+.. _anaconda_cli:
 
 Command-line installation
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -153,6 +175,33 @@ manage your Python installation, you can do::
     sudo port install py35-pyqt4
 
 assuming you are using Python 3.5 (modify the ``py35`` version as needed).
+
+.. _anaconda_old_gui:
+
+Graphical installation with old versions of Anaconda
+----------------------------------------------------
+
+If you have the Anaconda Python Distribution, but have the Anaconda Launcher
+instead of the Anaconda Navigator, you will be presented with a window that
+looks like the following when opening the Launcher:
+
+.. image:: images/anaconda_launcher.jpg
+   :align: center
+   :width: 100%
+
+As you can see, glue is already in the list (under the name **glueviz**).
+However, we need to tell Anaconda to get the latest version of glue from the
+**conda-forge** channel (the default version available is otherwise not the
+most recent). To do this, click on **Manage Channels** in the top right of the
+window, which will bring up a small window - type **conda-forge** into the
+field and click on **Add Channel**, then **Submit**:
+
+.. image:: images/manage_conda_channels.jpg
+   :align: center
+   :width: 50%
+
+Once you have done this, you can install glue by clicking on the **Install** button corresponding to the **glueviz** entry. If you have already installed glue, and want to update, you can click on the **Update** button.
+
 
 Running Glue
 ------------
