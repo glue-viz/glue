@@ -50,11 +50,11 @@ Common options for all viewers
 
 All 3D viewers share a similar panel in the bottom left:
 
-.. image:: common_options.jpg
+.. image:: common_options.png
    :align: center
    :width: 300px
 
-In addition, all viewers will show a white rectangular 3D box, which by default
+In addition, all viewers will show a rectangular 3D box, which by default
 is a cube. The edges of the cube correspond to the min/max values in the
 options panel above. If these values are changed, the data is renormalized
 inside the cube, but the white cube stays the same. It is also possible to
@@ -107,7 +107,10 @@ the bottom left are in pixel coordinates, not world coordinates.
 
 This viewer is still highly experimental and currently very slow for displaying
 isosurfaces. In addition, it is only able to show a single isosurface level. We
-do not recommend using it at this time.
+do not recommend using it at this time, and have disabled it by default. If you
+are interested in trying it out, see the `README.md
+<https://github.com/glue-viz/glue-vispy-viewers/blob/master/README.md>`_ file in
+the glue-vispy-viewers repository.
 
 General limitations/known issues
 --------------------------------
