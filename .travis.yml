@@ -155,6 +155,10 @@ install:
       export QT_DEBUG_PLUGINS=1;
     fi
 
+  # We need to install glue in order to make sure that the entry points are
+  # installed
+  - python setup.py install
+
   # Uninstall any version of Qt if QT_PKG is False, and remove all qt
   # sub-directories
   - if [[ $QT_PKG == False ]]; then
@@ -168,10 +172,6 @@ install:
       rm glue/external/qt.py || true;
       export MPLBACKEND='Agg';
     fi
-
-  # We need to install glue in order to make sure that the entry points are
-  # installed
-  - python setup.py install
 
 script:
 
