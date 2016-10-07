@@ -168,6 +168,7 @@ install:
       conda remove --no-pin --force pyqt5 || true;
       conda remove --no-pin --force qt || true;
       conda remove --no-pin --force qt5 || true;
+      pip uninstall qtpy || true;
       find . -name "qt" -type d -exec rm -r {} \; || true;
       rm glue/external/qt.py || true;
       export MPLBACKEND='Agg';
