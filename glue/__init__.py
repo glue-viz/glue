@@ -131,10 +131,10 @@ from .main import load_plugins
 def test(no_optional_skip=False):
     from pytest import main
     root = os.path.abspath(os.path.dirname(__file__))
-    args = [root]
+    args = [root, '-x']
     if no_optional_skip:
         args.append('--no-optional-skip')
-    main(args=args)
+    return main(args=args)
 
 from glue._settings_helpers import load_settings
 load_settings()
