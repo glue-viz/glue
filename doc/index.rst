@@ -21,9 +21,6 @@ For more demos, check out the :ref:`videos <demo_videos>` page.
 
 **The latest version of glue is v0.9** - see our :ref:`overview of changes in v0.9 <whatsnew_09>`
 
-If you are interested in trying out **experimental 3D viewers** for Glue, please
-see :ref:`this page <experimental_3d>`!
-
 Getting started
 ---------------
 
@@ -62,6 +59,7 @@ Using the Glue application
    installation.rst
    getting_started/index.rst
    gui_guide/index.rst
+   gui_guide/3d_viewers.rst
 
 Interacting with data from Python
 ---------------------------------
