@@ -61,11 +61,16 @@ Enthought Canopy
 The `Enthought Python Distribution <https://www.enthought.com/products/epd/>`_ includes most but not all
 non-trivial dependencies.
 
-You can install Glue using::
+If you want to install glue along with the required dependencies and recommended
+optional depedencies, you can do::
 
-    pip install glueviz[all]
+    pip install glueviz[recommended]
 
-or if you don't want to install optional dependencies::
+To install the additional astronomy optional dependencies, you can do::
+
+    pip install glueviz[recommended,astronomy]
+
+And finally, if you don't want to install optional dependencies at all::
 
     pip install glueviz
 

@@ -140,6 +140,7 @@ required = (
 general = (
     Dependency('dill', 'Used when saving Glue sessions'),
     Dependency('h5py', 'Used to support HDF5 files'),
+    Dependency('xlrd', 'Used to support Excel files'),
     Dependency('scipy', 'Used for some image processing calculation'),
     Dependency('skimage',
                'Used to read popular image formats (jpeg, png, etc.)',
@@ -156,7 +157,10 @@ ipython = (
 
 
 astronomy = (
-    Dependency('pyavm', 'Used to parse AVM metadata in image files', 'PyAVM'),)
+    Dependency('pyavm', 'Used to parse AVM metadata in image files', 'PyAVM'),
+    Dependency('spectral-cube', 'Used to read in spectral cubes', 'spectral-cube'),
+    Dependency('ginga', 'Adds a ginga viewer to glue', 'ginga'),
+    Dependency('astrodendro', 'Used to read in and represent dendrograms', 'astrodendro'))
 
 
 testing = (
