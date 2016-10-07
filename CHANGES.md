@@ -4,6 +4,10 @@ Full changelog
 v0.9.0 (unreleased)
 -----------------
 
+* Improve support for spectral cubes. [#1075]
+
+* Only show the 'waiting' cursor when glue is doing something. [#1097]
+
 * Make sure that the scatter layer artist style editor is shown when overplotting
   a scatter plot on top of an image. [#1134]
 
@@ -12,7 +16,9 @@ v0.9.0 (unreleased)
 
 * Fix compatibility of test suite with pytest 3.x. [#1116]
 
-* Updated bundled version of WCSAxes to v0.9.
+* Updated bundled version of WCSAxes to v0.9. [#1089]
+
+* Fix compatibility with pre-releases of Matplotlib 2.0. [#1115]
 
 * Implement new widget with better control over exporting to Plotly. The
   preference pane for Plotly export has now been removed in favor of this new
@@ -24,12 +30,13 @@ v0.9.0 (unreleased)
   method. [#1060]
 
 * Fixed reading of units from FITS and VO tables, and display units in
-  table viewer. [#1135]
+  table viewer. [#1135, #1137]
 
 * Make use of the QtPy package to deal with differences between PyQt4, PyQt5,
   and PySide, instead of the custom qt-helpers package. The
   ``glue.external.qt`` package is now deprecated. The ``get_qapp`` and
   ``load_ui`` functions are now available in ``glue.utils.qt``.
+  [#1018, #1074, #1077, #1078, #1081]
 
 * Avoid raising a (harmless) error when selecting a region in between two
   categorical components.
@@ -38,22 +45,36 @@ v0.9.0 (unreleased)
   components from one dataset into another. [#1112]
 
 * Refactored code related to toolbars in order to make it easier to define
-  toolbars and toolbar modes that aren't Matplotlib-specific. [#1085]
+  toolbars and toolbar modes that aren't Matplotlib-specific. [#1085, #1120]
 
-* Added a new table viewer. [#1084]
+* Added a new table viewer. [#1084, #1123]
 
 * Fix saving/loading of categorical components. [#1084]
 
 * Make it possible for tools to define a status bar message. [#1084]
 
-v0.8.3 (unreleased)
--------------------
+* Added a command-line option, ``--no-maximized``, that prevents glue
+  from opening up with the application window maximized. [#1093, #1126]
+  
+* When opening multiple files in one go, if one of the files fails to
+  read, the error will now indicate which file failed. [#1104]
 
 * Fixed a bug that caused new subset colors to incorrectly start from the start
   of the color cycle after loading a session. [#1055]
 
 * Fixed a bug that caused the functionality to execute scripts (glue -x) to not
-  work in Python 3. [#1114]
+  work in Python 3. [#1101, #1114]
+  
+* The minimum supported version of Astropy is now 1.0, and the minimum
+  supported version of IPython is now 1.0. [#1076]
+  
+* Show world coordinates and units in the cube slicer. [#1059, #1068]
+
+* Fix errors that occurred when selecting categorical data. [#1069]
+
+* Added experimental support for joining on multiple keys in ``join_on_key``. [#974]
+
+* Fix compatibility with the latest version of ginga. [#1063]
 
 v0.8.2 (2016-07-06)
 -------------------
