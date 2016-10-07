@@ -104,7 +104,7 @@ setup(name='glueviz',
       install_requires=['numpy', 'pandas', 'astropy', 'matplotlib'],
       extras_require={
           'general':  ['dill', 'h5py', 'scipy', 'scikit-image'],
-          'astro': ['PyAVM'],
+          'astro': ['PyAVM', 'spectral-cube'],
           'export': ['plotly']
       },
       classifiers=[
