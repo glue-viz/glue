@@ -1,3 +1,5 @@
+.. _custom-toolbars:
+
 Custom tools for viewers and custom toolbars
 ============================================
 
