@@ -13,7 +13,7 @@ using Anaconda/Miniconda, by doing::
 
 If instead you installed glue with pip, you can update with::
 
-    pip install glueviz --upgrade
+    pip install glueviz[all] --upgrade
 
 Note that the 3D viewers (provided by the glue-vispy-viewers plugin package) are
 now automatically installed when installing the glueviz package.

@@ -63,13 +63,11 @@ non-trivial dependencies.
 
 You can install Glue using::
 
+    pip install glueviz[all]
+
+or if you don't want to install optional dependencies::
+
     pip install glueviz
-
-You can then install any additional (optional) Glue dependencies by running::
-
-    glue-deps install
-
-on the command line. For more information on ``glue-deps``, see :ref:`below <glue-deps>`
 
 Standalone Application
 ----------------------
