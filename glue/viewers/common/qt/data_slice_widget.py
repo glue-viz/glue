@@ -41,6 +41,7 @@ class SliceWidget(QtWidgets.QWidget):
 
         self._world = np.asarray(world)
         self._world_warning = world_warning
+        self._world_unit = world_unit
 
         layout = QtWidgets.QVBoxLayout()
         layout.setContentsMargins(3, 1, 3, 1)
@@ -88,7 +89,7 @@ class SliceWidget(QtWidgets.QWidget):
                                            self.slice_changed.emit(self.mode))
         slider.slider.valueChanged.connect(nonpartial(self.set_label_from_slider))
 
-        slider.label.setMinimumWidth(50)
+        slider.label.setMinimumWidth(80)
         slider.label.setText(str(slider.slider.value()))
         slider.label.editingFinished.connect(nonpartial(self.set_slider_from_label))
 
@@ -138,9 +139,11 @@ class SliceWidget(QtWidgets.QWidget):
                 self._ui_slider.label_warning.show()
             else:
                 self._ui_slider.label_warning.hide()
+            self.slider_unit = self._world_unit
         else:
             text = str(value)
             self._ui_slider.label_warning.hide()
+            self.slider_unit = ''
         self._ui_slider.label.setText(text)
 
     def set_slider_from_label(self):
