@@ -94,6 +94,13 @@ glue-deps = glue._deps:main
 glue = glue.main:main
 """
 
+install_requires = ['numpy',
+                    'pandas',
+                    'astropy',
+                    'matplotlib',
+                    'qtpy',
+                    'setuptools']
+
 extras_require = {
     'recommended': ['dill',
                     'h5py',
@@ -121,12 +128,7 @@ setup(name='glueviz',
       author='Chris Beaumont, Thomas Robitaille',
       author_email='glueviz@gmail.com',
       url='http://glueviz.org',
-      install_requires=['numpy',
-                        'pandas',
-                        'astropy',
-                        'matplotlib',
-                        'qtpy',
-                        'setuptools'],
+      install_requires=install_requires,
       extras_require=extras_require,
       classifiers=[
           'Intended Audience :: Science/Research',
