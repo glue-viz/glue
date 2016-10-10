@@ -12,7 +12,7 @@ from glue.core.subset import InequalitySubsetState
 from glue.core.util import join_component_view
 
 
-__all__ = ['ComponentLink', 'BinaryComponentLink']
+__all__ = ['ComponentLink', 'BinaryComponentLink', 'CoordinateComponentLink']
 
 
 def identity(x):
