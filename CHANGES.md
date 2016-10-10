@@ -14,6 +14,10 @@ v0.9.0 (unreleased)
 
 * Improve support for spectral cubes. [#1075]
 
+* Allow link functions/helpers to define a category using the ``category=``
+  argument (which defaults to ``General``), and make it possible to filter
+  by category in the link editor. [#1141]
+
 * Only show the 'waiting' cursor when glue is doing something. [#1097]
 
 * Make sure that the scatter layer artist style editor is shown when overplotting

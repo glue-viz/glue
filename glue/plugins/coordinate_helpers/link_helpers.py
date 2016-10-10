@@ -6,7 +6,7 @@
 from __future__ import absolute_import, division, print_function
 
 from astropy import units as u
-from astropy.coordinates import ICRS, FK5, FK4, Galactic
+from astropy.coordinates import ICRS, FK5, FK4, Galactic, Galactocentric
 
 from glue.core.link_helpers import MultiLink
 from glue.config import link_helper
@@ -40,48 +40,75 @@ class BaseCelestialMultiLink(MultiLink):
 
 
 @link_helper('Link Galactic and FK5 (J2000) Equatorial coordinates',
-             input_labels=['l', 'b', 'ra (fk5)', 'dec (fk5)'])
+             input_labels=['l', 'b', 'ra (fk5)', 'dec (fk5)'],
+             category='Astronomy')
 class Galactic_to_FK5(BaseCelestialMultiLink):
-    display = "Celestial Coordinates: Galactic <-> FK5 (J2000)"
+    display = "Galactic <-> FK5 (J2000)"
     frame_in = Galactic
     frame_out = FK5
 
 
 @link_helper('Link FK4 (B1950) and FK5 (J2000) Equatorial coordinates',
-             input_labels=['ra (fk4)', 'dec (fk4)', 'ra (fk5)', 'dec (fk5)'])
+             input_labels=['ra (fk4)', 'dec (fk4)', 'ra (fk5)', 'dec (fk5)'],
+             category='Astronomy')
 class FK4_to_FK5(BaseCelestialMultiLink):
-    display = "Celestial Coordinates: FK4 (B1950) <-> FK5 (J2000)"
+    display = "FK4 (B1950) <-> FK5 (J2000)"
     frame_in = FK4
     frame_out = FK5
 
 
 @link_helper('Link ICRS and FK5 (J2000) Equatorial coordinates',
-             input_labels=['ra (icrs)', 'dec (icrs)', 'ra (fk5)', 'dec (fk5)'])
+             input_labels=['ra (icrs)', 'dec (icrs)', 'ra (fk5)', 'dec (fk5)'],
+             category='Astronomy')
 class ICRS_to_FK5(BaseCelestialMultiLink):
-    display = "Celestial Coordinates: ICRS <-> FK5 (J2000)"
+    display = "ICRS <-> FK5 (J2000)"
     frame_in = ICRS
     frame_out = FK5
 
 
 @link_helper('Link Galactic and FK4 (B1950) Equatorial coordinates',
-             input_labels=['l', 'b', 'ra (fk4)', 'dec (fk4)'])
+             input_labels=['l', 'b', 'ra (fk4)', 'dec (fk4)'],
+             category='Astronomy')
 class Galactic_to_FK4(BaseCelestialMultiLink):
-    display = "Celestial Coordinates: Galactic <-> FK4 (B1950)"
+    display = "Galactic <-> FK4 (B1950)"
     frame_in = Galactic
     frame_out = FK4
 
 
 @link_helper('Link ICRS and FK4 (B1950) Equatorial coordinates',
-             input_labels=['ra (icrs)', 'dec (icrs)', 'ra (fk4)', 'dec (fk4)'])
+             input_labels=['ra (icrs)', 'dec (icrs)', 'ra (fk4)', 'dec (fk4)'],
+             category='Astronomy')
 class ICRS_to_FK4(BaseCelestialMultiLink):
-    display = "Celestial Coordinates: ICRS <-> FK4 (B1950)"
+    display = "ICRS <-> FK4 (B1950)"
     frame_in = ICRS
     frame_out = FK4
 
 
 @link_helper('Link ICRS and Galactic coordinates',
-             input_labels=['ra (icrs)', 'dec (icrs)', 'l', 'b'])
+             input_labels=['ra (icrs)', 'dec (icrs)', 'l', 'b'],
+             category='Astronomy')
 class ICRS_to_Galactic(BaseCelestialMultiLink):
-    display = "Celestial Coordinates: ICRS <-> Galactic"
+    display = "ICRS <-> Galactic"
     frame_in = ICRS
     frame_out = Galactic
+
+
+@link_helper('Link 3D Galactocentric and Galactic coordinates',
+             input_labels=['x (kpc)', 'y (kpc)', 'z (kpc)', 'l (deg)', 'b (deg)', 'distance (kpc)'],
+             category='Astronomy')
+class GalactocentricToGalactic(MultiLink):
+
+    display = "3D Galactocentric <-> Galactic"
+
+    def __init__(self, x_id, y_id, z_id, l_id, b_id, d_id):
+        super(GalactocentricToGalactic, self).__init__(x_id, y_id, z_id, l_id, b_id, d_id)
+        self.create_links([x_id, y_id, z_id], [l_id, b_id, d_id],
+                          self.forward, self.backward)
+
+    def forward(self, x_kpc, y_kpc, z_kpc):
+        gal = Galactocentric(x=x_kpc * u.kpc, y=y_kpc * u.kpc, z=z_kpc * u.kpc).transform_to(Galactic)
+        return gal.l.degree, gal.b.degree, gal.distance.to(u.kpc).value
+
+    def backward(self, l_deg, b_deg, d_kpc):
+        gal = Galactic(l=l_deg * u.deg, b=b_deg * u.deg, distance=d_kpc * u.kpc).transform_to(Galactocentric)
+        return gal.x.to(u.kpc).value, gal.y.to(u.kpc).value, gal.z.to(u.kpc).value
