@@ -43,22 +43,14 @@ Take a look at this video. For more details, consult the :ref:`tutorial <getting
 How do I use Glue with the IPython notebook?
 --------------------------------------------
 
-For IPython version >= 1.0, Glue can be started from the IPython HTML
-notebook without blocking, so that both the notebook and the Glue UI
-can run at once. This requires starting the notebook such that it
-cooperates with Qt. To do this, start the notebook with::
+For IPython version >= 4.0, Glue can be started from a Jupyter notebook without
+blocking, so that both the notebook and the Glue UI can run at once. This
+requires running the following magic function::
 
-    ipython notebook --gui qt
+    %gui qt
 
-And then starting glue (probably by calling :ref:`qglue <qglue>`) from the notebook.
-
-If you encounter an error like this::
-
-    ValueError: API 'QString' has already been set to version 1
-
-set the ``QT_API`` environment variable to either ``pyqt`` or ``pyside``, depending on which version of Qt you have installed::
-
-    QT_API=pyside ipython notebook --gui qt
+And then starting glue from the notebook, for example, by creating a new
+instance of :class:`~glue.app.qt.application.GlueApplication`.
 
 
 Does Glue Understand CASA Cubes?
