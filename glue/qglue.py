@@ -134,7 +134,11 @@ def parse_links(dc, links):
             result.append(ComponentLink(f, t, u))
         else:
             t = [find_cid(item) for item in t]
-            result += MultiLink(f, t, u, u2)
+
+            multi_link = MultiLink(f + t)
+            multi_link.create_links(f, t, u, u2)
+
+            result += multi_link
 
     return result
 
