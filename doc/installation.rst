@@ -74,6 +74,8 @@ To install or update glue on the command-line, simply do::
 Installing with pip
 -------------------
 
+**Platforms:** MacOS X, Linux, and Windows
+
 Installing glue with `pip <https://pip.pypa.io>`__ is also possible, although you
 will need to first make sure that you install Qt and either
 `PyQt <https://riverbankcomputing.com/software/pyqt/intro>`_ or

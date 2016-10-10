@@ -6,7 +6,7 @@ What's new in glue v0.9?
 ========================
 
 Below we list some of the main changes in glue v0.9 and in the 3D viewers in
-glue-vispy-viewers v0.5 . As a reminder, you can easily update glue if you are
+glue-vispy-viewers v0.5. As a reminder, you can easily update glue if you are
 using Anaconda/Miniconda, by doing::
 
     conda install -c conda-forge glueviz
@@ -15,15 +15,16 @@ If instead you installed glue with pip, you can update with::
 
     pip install glueviz[all] --upgrade
 
-Note that the 3D viewers (provided by the glue-vispy-viewers plugin package) are
-now automatically installed when installing the glueviz package.
+Note that the 3D viewers (provided by the
+`glue-vispy-viewers <https://github.com/glue-viz/glue-vispy-viewers>`_
+plugin package) are now automatically installed when installing glue as above.
 
 New table viewer
 ----------------
 
 Glue now includes a table viewer for data with 1-dimensional components (such as
 tables). The table viewer highlights selections made in other viewers, and
-also allows selections to be made in the viewer.
+also allows selections to be made in the viewer:
 
 .. image:: images/v0.9/table_viewer.png
    :align: center
@@ -31,7 +32,7 @@ also allows selections to be made in the viewer.
 
 To make a selection in the table, either select an existing subset in the **Data
 Collection** panel in the top left if you want to modify a subset, or make sure
-no subset is selected to make a new subset (similar to other viewers), then
+no subset is selected to make a new subset (as in other viewers), then
 click the button on the left in the table viewer toolbar, select rows you want
 to include in the subset, and press enter to validate the selection. You can
 also combine this with the ususal logical selections ('and', 'or', etc.) from
@@ -41,7 +42,7 @@ Improvements to 3D viewers
 --------------------------
 
 There have been a number of improvements to the 3D viewers provided by the
-glue-vispy-viewers package (now automatically installed with glue).
+`glue-vispy-viewers`_ package (now automatically installed with glue).
 
 .. image:: images/v0.9/3d_viewers.png
    :align: center
@@ -118,6 +119,9 @@ may not always be desirable.
 In addition, units are now properly read from FITS and VO tables, and are
 shown in the table viewer. In future, we will also show the units in the
 different viewers.
+
+Finally, a new linking function is now available to link celestial Galactic
+coordinates to 3D Galactocentric coordinates.
 
 Improvements to ``join_on_key`` [advanced]
 ------------------------------------------
