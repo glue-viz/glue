@@ -28,7 +28,7 @@ def test_add_link_default():
     @link_function(info='maps x to y', output_labels=['y'])
     def foo(x):
         return 3
-    val = (foo, 'maps x to y', ['y'])
+    val = (foo, 'maps x to y', ['y'], 'General')
     assert val in link_function
 
 
