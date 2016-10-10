@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.9.0 (unreleased)
+v0.9.0 (2016-10-10)
 -------------------
 
 * Fix serialization of celestial coordinate link functions. Classes 
