@@ -2,11 +2,6 @@
 This module provides several classes and LinkCollection classes to
 assist in linking data.
 
-The functions in this class (and stored in the __LINK_FUNCTIONS__
-list) define common coordinate transformations. They are meant to be
-used for the `using` parameter in
-:class:`glue.core.component_link.ComponentLink` instances.
-
 The :class:`LinkCollection` class and its sublcasses are factories to create
 multiple ComponentLinks easily. They are meant to be passed to
 :meth:`~glue.core.data_collection.DataCollection.add_link()`
@@ -14,6 +9,7 @@ multiple ComponentLinks easily. They are meant to be passed to
 
 from __future__ import absolute_import, division, print_function
 
+from glue.config import link_function
 from glue.external import six
 from glue.core.data import ComponentID
 from glue.core.component_link import ComponentLink
@@ -22,25 +18,17 @@ from glue.core.component_link import ComponentLink
 __all__ = ['LinkCollection', 'LinkSame', 'LinkTwoWay', 'MultiLink',
            'LinkAligned']
 
-__LINK_FUNCTIONS__ = []
-__LINK_HELPERS__ = []
 
-
+@link_function("Link conceptually identical components",
+               output_labels=['y'])
 def identity(x):
     return x
-identity.output_args = ['y']
 
 
+@link_function("Convert between linear measurements and volume",
+               output_labels=['volume'])
 def lengths_to_volume(width, height, depth):
-    """Compute volume from linear measurements of a box"""
-    # included for demonstration purposes
     return width * height * depth
-
-
-lengths_to_volume.output_args = ['area']
-
-__LINK_FUNCTIONS__.append(identity)
-__LINK_FUNCTIONS__.append(lengths_to_volume)
 
 
 class PartialResult(object):

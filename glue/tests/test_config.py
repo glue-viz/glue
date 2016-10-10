@@ -24,14 +24,6 @@ def test_add_client():
     assert TestClient in qt_client
 
 
-def test_link_defaults():
-    from ..core.link_helpers import __LINK_FUNCTIONS__
-    assert len(__LINK_FUNCTIONS__) > 0
-
-    for l in __LINK_FUNCTIONS__:
-        assert l in [ll[0] for ll in link_function]
-
-
 def test_add_link_default():
     @link_function(info='maps x to y', output_labels=['y'])
     def foo(x):

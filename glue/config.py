@@ -466,8 +466,10 @@ class LinkFunctionRegistry(Registry):
     """Stores functions to convert between quantities
 
     The members properety is a list of (function, info_string,
-    output_labels) namedtuples. `info_string` is describes what the
-    function does. `output_labels` is a list of names for each output.
+    output_labels) namedtuples. ``info_string`` describes what the
+    function does. ``output_labels`` is a list of names for each output.
+    ``category`` is a category in which the link funtion will appear (defaults
+    to 'General').
 
     New link functions can be registered via
 
@@ -478,18 +480,13 @@ class LinkFunctionRegistry(Registry):
 
     Link functions are expected to receive and return numpy arrays
     """
-    item = namedtuple('LinkFunction', 'function info output_labels')
+    item = namedtuple('LinkFunction', 'function info output_labels category')
 
-    def default_members(self):
-        from glue.core import link_helpers
-        return list(self.item(l, "", l.output_args)
-                    for l in link_helpers.__LINK_FUNCTIONS__)
-
-    def __call__(self, info="", output_labels=None):
+    def __call__(self, info="", output_labels=None, category='General'):
         out = output_labels or []
 
         def adder(func):
-            self.add(self.item(func, info, out))
+            self.add(self.item(func, info, out, category))
             return func
         return adder
 
@@ -516,7 +513,8 @@ class LinkHelperRegistry(Registry):
     The members property is a list of (object, info_string,
     input_labels) tuples. `Object` is the link helper. `info_string`
     describes what `object` does. `input_labels` is a list labeling
-    the inputs.
+    the inputs. ``category`` is a category in which the link funtion will appear
+    (defaults to 'General').
 
     Each link helper takes a list of ComponentIDs as inputs, and
     returns an iterable object (e.g. list) of ComponentLinks.
@@ -529,16 +527,11 @@ class LinkHelperRegistry(Registry):
             return [ComponentLink([degree], arcsecond, using=lambda d: d*3600),
                     ComponentLink([arcsecond], degree, using=lambda a: a/3600)]
     """
-    item = namedtuple('LinkHelper', 'helper info input_labels')
+    item = namedtuple('LinkHelper', 'helper info input_labels category')
 
-    def default_members(self):
-        from glue.core.link_helpers import __LINK_HELPERS__ as helpers
-        return list(self.item(l, l.info_text, l.input_args)
-                    for l in helpers)
-
-    def __call__(self, info, input_labels):
+    def __call__(self, info, input_labels, category='General'):
         def adder(func):
-            self.add(self.item(func, info, input_labels))
+            self.add(self.item(func, info, input_labels, category))
             return func
         return adder
 

@@ -378,6 +378,6 @@ def _find_combo_data(widget, value):
     """
     i = widget.findData(value)
     if i == -1:
-        raise ValueError("%s not found in combo box" % value)
+        raise ValueError("{0} not found in combo box".format(value))
     else:
         return i

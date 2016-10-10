@@ -2,15 +2,23 @@ from __future__ import absolute_import, division, print_function
 
 import os
 from inspect import getargspec
-from collections import OrderedDict
 
 from qtpy import QtWidgets
 from qtpy import PYSIDE
 from glue import core
+from glue.config import link_function, link_helper
 from glue.utils import nonpartial
-from glue.utils.qt import load_ui, messagebox_on_error
+from glue.utils.qt import load_ui, messagebox_on_error, update_combobox
+from glue.utils.qt.widget_properties import CurrentComboTextProperty, CurrentComboDataProperty
 
 __all__ = ['LinkEquation']
+
+
+def get_function_name(item):
+    if hasattr(item, 'display') and item.display is not None:
+        return item.display
+    else:
+        return item.__name__
 
 
 def function_label(function):
@@ -18,7 +26,6 @@ def function_label(function):
 
     :param function: A member from the glue.config.link_function registry
     """
-    name = function.function.__name__
     args = getargspec(function.function)[0]
     args = ', '.join(args)
     output = function.output_labels
@@ -114,19 +121,13 @@ class LinkEquation(QtWidgets.QWidget):
        widget = LinkEquation()
     """
 
+    category = CurrentComboTextProperty('_ui.category')
+    function = CurrentComboDataProperty('_ui.function')
+
     def __init__(self, parent=None):
         super(LinkEquation, self).__init__(parent)
-        from glue.config import link_function, link_helper
 
         # Set up mapping of function/helper name -> function/helper tuple. For the helpers, we use the 'display' name if available.
-        def get_name(item):
-            if hasattr(item, 'display') and item.display is not None:
-                return item.display
-            else:
-                return item.__name__
-        f = [f for f in link_function.members if len(f.output_labels) == 1]
-        self._functions = OrderedDict((get_name(l[0]), l) for l in
-                                      f + link_helper.members)
         self._argument_widgets = []
         self.spacer = None
         self._output_widget = ArgumentWidget("")
@@ -140,6 +141,8 @@ class LinkEquation(QtWidgets.QWidget):
         self.setLayout(l)
 
         self._init_widgets()
+        self._populate_category_combo()
+        self.category = 'General'
         self._populate_function_combo()
         self._connect()
         self._setup_editor()
@@ -189,27 +192,6 @@ class LinkEquation(QtWidgets.QWidget):
             a.component_id = i
         self._output_widget.component_id = out
 
-    @property
-    def function(self):
-        """ The currently-selected function
-
-        :rtype: A function or helper tuple
-        """
-        fname = str(self._ui.function.currentText())
-        func = self._functions[fname]
-        return func
-
-    @function.setter
-    def function(self, val):
-        if hasattr(val[0], 'display') and val[0].display is not None:
-            name = val[0].display
-        else:
-            name = val[0].__name__
-        pos = self._ui.function.findText(name)
-        if pos < 0:
-            raise KeyError("No function or helper found %s" % [val])
-        self._ui.function.setCurrentIndex(pos)
-
     @messagebox_on_error("Failed to create links")
     def links(self):
         """ Create ComponentLinks from the state of the widget
@@ -245,6 +227,7 @@ class LinkEquation(QtWidgets.QWidget):
         signal.connect(nonpartial(self._setup_editor))
         signal.connect(nonpartial(self._update_add_enabled))
         self._output_widget.editor.textChanged.connect(nonpartial(self._update_add_enabled))
+        self._ui.category.currentIndexChanged.connect(self._populate_function_combo)
 
     def clear_inputs(self):
         for w in self._argument_widgets:
@@ -312,8 +295,13 @@ class LinkEquation(QtWidgets.QWidget):
 
         self._argument_widgets = []
 
+    def _populate_category_combo(self):
+        f = [f for f in link_function.members if len(f.output_labels) == 1]
+        categories = sorted(set(l.category for l in f + link_helper.members))
+        update_combobox(self._ui.category, list(zip(categories, categories)))
+
     def _populate_function_combo(self):
         """ Add name of functions to function combo box """
-        self._ui.function.clear()
-        for f in self._functions:
-            self._ui.function.addItem(f)
+        f = [f for f in link_function.members if len(f.output_labels) == 1]
+        functions = ((get_function_name(l[0]), l) for l in f + link_helper.members if l.category == self.category)
+        update_combobox(self._ui.function, functions)

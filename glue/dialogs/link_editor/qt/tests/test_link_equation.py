@@ -105,11 +105,11 @@ class TestLinkEquation(object):
         assert self.widget.function is member
 
     def test_select_invalid_function(self):
-        with pytest.raises(KeyError) as exc:
+        with pytest.raises(ValueError) as exc:
             def bad(x):
                 pass
             self.widget.function = (bad, None, None)
-        assert exc.value.args[0].startswith('No function or helper found')
+        assert exc.value.args[0].startswith('Cannot find data')
 
     def test_make_link_function(self):
         widget = LinkEquation()
