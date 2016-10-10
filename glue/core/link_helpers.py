@@ -153,6 +153,12 @@ class MultiLink(LinkCollection):
         return cls(*[context.object(cid) for cid in rec['cids']])
 
 
+def multi_link(cids_left, cids_right, forwards=None, backwards=None):
+    ml = MultiLink(cids_left + cids_right)
+    ml.create_links(cids_left, cids_right, forwards=forwards, backwards=backwards)
+    return ml
+
+
 class LinkAligned(LinkCollection):
 
     """Compute all the links to specify that the input data are pixel-aligned.

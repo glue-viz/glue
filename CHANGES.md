@@ -8,7 +8,9 @@ v0.9.0 (unreleased)
   inheriting from MultiLink should now call MultiLink.__init__ with 
   individual components (not grouped into left/right) then the create_links 
   method with the components separated into left/right and the methods for 
-  forward/backward transformation [#1139]
+  forward/backward transformation. The original behavior can be retained
+  by using the ``multi_link`` function instead of the ``MultiLink`` class.
+  [#1139]
 
 * Improve support for spectral cubes. [#1075]
 
