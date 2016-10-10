@@ -7,6 +7,7 @@ pytest.importorskip('astropy')
 
 from glue.core import ComponentID
 from glue.core.tests.test_link_helpers import check_link, check_using
+from glue.core.tests.test_state import clone
 
 from ..link_helpers import (Galactic_to_FK5, FK4_to_FK5, ICRS_to_FK5,
                             Galactic_to_FK4, ICRS_to_FK4, ICRS_to_Galactic)
@@ -56,3 +57,10 @@ def test_conversion(conv_class, expected):
     check_using(result[1], (x, y), expected[0][1])
     check_using(result[2], (x, y), expected[1][0])
     check_using(result[3], (x, y), expected[1][1])
+
+    # Check that state saving works
+
+    check_using(clone(result[0]), (x, y), expected[0][0])
+    check_using(clone(result[1]), (x, y), expected[0][1])
+    check_using(clone(result[2]), (x, y), expected[1][0])
+    check_using(clone(result[3]), (x, y), expected[1][1])

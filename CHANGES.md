@@ -2,7 +2,15 @@ Full changelog
 ==============
 
 v0.9.0 (unreleased)
------------------
+-------------------
+
+* Fix serialization of celestial coordinate link functions. Classes 
+  inheriting from MultiLink should now call MultiLink.__init__ with 
+  individual components (not grouped into left/right) then the create_links 
+  method with the components separated into left/right and the methods for 
+  forward/backward transformation. The original behavior can be retained
+  by using the ``multi_link`` function instead of the ``MultiLink`` class.
+  [#1139]
 
 * Improve support for spectral cubes. [#1075]
 
@@ -55,7 +63,7 @@ v0.9.0 (unreleased)
 
 * Added a command-line option, ``--no-maximized``, that prevents glue
   from opening up with the application window maximized. [#1093, #1126]
-  
+
 * When opening multiple files in one go, if one of the files fails to
   read, the error will now indicate which file failed. [#1104]
 
@@ -64,10 +72,10 @@ v0.9.0 (unreleased)
 
 * Fixed a bug that caused the functionality to execute scripts (glue -x) to not
   work in Python 3. [#1101, #1114]
-  
+
 * The minimum supported version of Astropy is now 1.0, and the minimum
   supported version of IPython is now 1.0. [#1076]
-  
+
 * Show world coordinates and units in the cube slicer. [#1059, #1068]
 
 * Fix errors that occurred when selecting categorical data. [#1069]

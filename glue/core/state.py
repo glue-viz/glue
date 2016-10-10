@@ -88,7 +88,11 @@ literals = tuple([type(None), float, int, bytes, bool, list, tuple])
 
 if six.PY2:
     literals += (long,)
-literals += (np.ScalarType,)
+
+
+literals += np.ScalarType
+
+
 
 # We need to make sure that we don't break backward-compatibility when we move
 # classes/functions around in Glue, so we have a file that maps the old paths to
@@ -253,7 +257,7 @@ class GlueSerializer(object):
         if isinstance(obj, six.string_types):
             return 'st__%s' % obj
 
-        if isinstance(obj, literals):
+        if type(obj) in literals:
             return obj
 
         oid = id(obj)
@@ -291,7 +295,7 @@ class GlueSerializer(object):
         if isinstance(obj, six.string_types):
             return 'st__' + obj
 
-        if isinstance(obj, literals):
+        if type(obj) in literals:
             return obj
 
         oid = id(obj)
@@ -305,6 +309,8 @@ class GlueSerializer(object):
 
         if isinstance(obj, types.FunctionType):
             result['_type'] = 'types.FunctionType'
+        elif isinstance(obj, types.MethodType):
+            result['_type'] = 'types.MethodType'
         else:
             result['_type'] = "%s.%s" % (type(obj).__module__,
                                          type(obj).__name__)
@@ -850,6 +856,18 @@ def _load_function(rec, context):
     if 'pickle' in rec:
         return gp.loads(rec['pickle'].decode('base64'))
     return lookup_class_with_patches(rec['function'])
+
+
+@saver(types.MethodType)
+def _save_method(method, context):
+    # Note: this only works for methods for which the class can be serialized
+    return {'instance': context.id(method.__self__), 'method': method.__name__}
+
+
+@loader(types.MethodType)
+def _load_method(rec, context):
+    instance = context.object(rec['instance'])
+    return getattr(instance, rec['method'])
 
 
 @saver(core.Session)

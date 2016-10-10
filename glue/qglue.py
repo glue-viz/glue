@@ -101,7 +101,7 @@ def parse_data(data, label):
 
 
 def parse_links(dc, links):
-    from glue.core.link_helpers import MultiLink
+    from glue.core.link_helpers import multi_link
     from glue.core import ComponentLink
 
     data = dict((d.label, d) for d in dc)
@@ -134,7 +134,7 @@ def parse_links(dc, links):
             result.append(ComponentLink(f, t, u))
         else:
             t = [find_cid(item) for item in t]
-            result += MultiLink(f, t, u, u2)
+            result += multi_link(f, t, u, u2)
 
     return result
 

@@ -24,9 +24,9 @@ class BaseCelestialMultiLink(MultiLink):
     frame_out = None
 
     def __init__(self, in_lon, in_lat, out_lon, out_lat):
-        MultiLink.__init__(self, [in_lon, in_lat],
-                           [out_lon, out_lat],
-                           self.forward, self.backward)
+        super(BaseCelestialMultiLink, self).__init__(in_lon, in_lat, out_lon, out_lat)
+        self.create_links([in_lon, in_lat], [out_lon, out_lat],
+                          forwards=self.forward, backwards=self.backward)
 
     def forward(self, in_lon, in_lat):
         c = self.frame_in(in_lon * u.deg, in_lat * u.deg)

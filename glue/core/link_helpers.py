@@ -122,9 +122,15 @@ class MultiLink(LinkCollection):
               objects.
     """
 
-    def __init__(self, cids_left, cids_right, forwards=None, backwards=None):
-        cids_left = list(map(_toid, cids_left))
-        cids_right = list(map(_toid, cids_right))
+    cids = None
+
+    def __init__(self, *args):
+        self.cids = args
+
+    def create_links(self, cids_left, cids_right, forwards=None, backwards=None):
+
+        if self.cids is None:
+            raise Exception("MultiLink.__init__ was not called before creating links")
 
         if forwards is None and backwards is None:
             raise TypeError("Must supply either forwards or backwards")
@@ -138,6 +144,19 @@ class MultiLink(LinkCollection):
             for i, l in enumerate(cids_left):
                 func = PartialResult(backwards, i, name_prefix=self.__class__.__name__ + ".")
                 self.append(ComponentLink(cids_right, l, func))
+
+    def __gluestate__(self, context):
+        return {'cids': [context.id(cid) for cid in self.cids]}
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(*[context.object(cid) for cid in rec['cids']])
+
+
+def multi_link(cids_left, cids_right, forwards=None, backwards=None):
+    ml = MultiLink(cids_left + cids_right)
+    ml.create_links(cids_left, cids_right, forwards=forwards, backwards=backwards)
+    return ml
 
 
 class LinkAligned(LinkCollection):

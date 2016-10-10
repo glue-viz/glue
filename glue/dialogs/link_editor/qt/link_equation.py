@@ -8,7 +8,7 @@ from qtpy import QtWidgets
 from qtpy import PYSIDE
 from glue import core
 from glue.utils import nonpartial
-from glue.utils.qt import load_ui
+from glue.utils.qt import load_ui, messagebox_on_error
 
 __all__ = ['LinkEquation']
 
@@ -210,6 +210,7 @@ class LinkEquation(QtWidgets.QWidget):
             raise KeyError("No function or helper found %s" % [val])
         self._ui.function.setCurrentIndex(pos)
 
+    @messagebox_on_error("Failed to create links")
     def links(self):
         """ Create ComponentLinks from the state of the widget
 
