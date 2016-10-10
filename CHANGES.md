@@ -4,7 +4,11 @@ Full changelog
 v0.9.0 (unreleased)
 -------------------
 
-* Fix serialization of celestial coordinate link functions. [#1139]
+* Fix serialization of celestial coordinate link functions. Classes 
+  inheriting from MultiLink should now call MultiLink.__init__ with 
+  individual components (not grouped into left/right) then the create_links 
+  method with the components separated into left/right and the methods for 
+  forward/backward transformation [#1139]
 
 * Improve support for spectral cubes. [#1075]
 
