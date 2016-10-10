@@ -21,3 +21,4 @@ python_guide/custom_viewer.rst ../customizing_guide/custom_viewer.rst
 python_guide/customization.rst ../customizing_guide/customization.rst
 gui_guide/custom_subsets.rst ../python_guide/glue_from_python.rst
 gui_guide/configuration.rst ../customizing_guide/configuration.rst
+whatsnew/experimental_3d.rst ../gui_guide/3d_viewers.rst

@@ -94,6 +94,33 @@ glue-deps = glue._deps:main
 glue = glue.main:main
 """
 
+install_requires = ['numpy',
+                    'pandas',
+                    'astropy',
+                    'matplotlib',
+                    'qtpy',
+                    'setuptools']
+
+extras_require = {
+    'recommended': ['dill',
+                    'h5py',
+                    'scipy',
+                    'scikit-image',
+                    'ipython',
+                    'ipykernel',
+                    'qtconsole',
+                    'plotly',
+                    'xlrd',
+                    'glue-vispy-viewers'],
+    'astronomy': ['PyAVM',
+                  'astrodendro',
+                  'ginga',
+                  'spectral-cube']
+}
+
+extras_require['all'] = (extras_require['recommended'] +
+                         extras_require['astronomy'])
+
 setup(name='glueviz',
       version=__version__,
       description='Multidimensional data visualzation across files',
@@ -101,12 +128,8 @@ setup(name='glueviz',
       author='Chris Beaumont, Thomas Robitaille',
       author_email='glueviz@gmail.com',
       url='http://glueviz.org',
-      install_requires=['numpy', 'pandas', 'astropy', 'matplotlib'],
-      extras_require={
-          'general':  ['dill', 'h5py', 'scipy', 'scikit-image'],
-          'astro': ['PyAVM', 'spectral-cube'],
-          'export': ['plotly']
-      },
+      install_requires=install_requires,
+      extras_require=extras_require,
       classifiers=[
           'Intended Audience :: Science/Research',
           'Operating System :: OS Independent',

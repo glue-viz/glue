@@ -1,0 +1,16 @@
+dependencies:
+  pre:
+    - sudo apt-get update
+    # At the moment, ginga doesn't play well with PyQt5 installed in this way. Once it does
+    # we can instead install python3-pyqt5 python3-pyqt5.qtsvg
+    - sudo apt-get install python3 python3-setuptools python3-pytest python3-mock python3-pyqt4 python3-tk
+    - sudo easy_install3 pip
+    - sudo pip3 install wheel
+  override:
+    - sudo easy_install3 --version
+    - sudo pip3 --version
+    - sudo pip3 install -q .[all]
+
+test:
+  override:
+    - sudo python3 -c 'import glue; import sys; sys.exit(glue.test(no_optional_skip=True))'

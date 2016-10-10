@@ -158,12 +158,14 @@ install:
   # Uninstall any version of Qt if QT_PKG is False, and remove all qt
   # sub-directories
   - if [[ $QT_PKG == False ]]; then
+      sed -i.bak '/qtpy/d' setup.py;
       conda remove --no-pin --force qtpy || true;
       conda remove --no-pin --force pyqt || true;
       conda remove --no-pin --force pyside || true;
       conda remove --no-pin --force pyqt5 || true;
       conda remove --no-pin --force qt || true;
       conda remove --no-pin --force qt5 || true;
+      pip uninstall --yes qtpy || true;
       find . -name "qt" -type d -exec rm -r {} \; || true;
       rm glue/external/qt.py || true;
       export MPLBACKEND='Agg';
@@ -172,6 +174,7 @@ install:
   # We need to install glue in order to make sure that the entry points are
   # installed
   - python setup.py install
+
 
 script:
 
