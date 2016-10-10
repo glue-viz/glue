@@ -217,3 +217,29 @@ arguments. See ``glue --help`` for examples.
           within the python script directory (e.g., ``C:\Python27\Scripts``).
           Windows users can create a desktop shortcut for this file, and run
           Glue by double clicking on the icon.
+
+Install Latest Developing Version
+------------
+First get dependence packages using conda::
+
+conda install -c conda-forge glueviz glue-vispy-viewers pyqt=4.11.3
+conda remove glueviz glue-vispy-viewers
+
+Then download source code of `glue <https://github.com/glue-viz/glue>`_
+and `glue vispy viewer <https://github.com/glue-viz/glue-vispy-viewers>`_
+from github, use **python setup.py install** to install.
+
+Known issues
+------------
+
+Issues with SetupTools
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+On certain MacOS installations, when install from source code using **python
+setup.py install**, you may run into the following error::
+
+   ImportError: No module named extern
+
+A simple solution is to upgrade SetupTools version with::
+
+   pip install setuptools --grade
