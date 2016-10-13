@@ -96,9 +96,9 @@ glue = glue.main:main
 
 install_requires = ['numpy',
                     'pandas',
-                    'astropy',
+                    'astropy>=1',
                     'matplotlib',
-                    'qtpy',
+                    'qtpy>=1.1',
                     'setuptools']
 
 extras_require = {
@@ -106,7 +106,7 @@ extras_require = {
                     'h5py',
                     'scipy',
                     'scikit-image',
-                    'ipython',
+                    'ipython>=1',
                     'ipykernel',
                     'qtconsole',
                     'plotly',
