@@ -126,7 +126,7 @@ Glue has the following required dependencies:
 * `Astropy <http://www.astropy.org>`_ 1.0 or higher
 * `setuptools <http://setuptools.readthedocs.io/en/latest/>`_
 * Either `PySide`_ or `PyQt`_ (both PyQt4 and PyQt5 are supported)
-* `QtPy <https://pypi.python.org/pypi/QtPy/>`__ 1.1 or higher - this is an
+* `QtPy <https://pypi.python.org/pypi/QtPy/>`__ 1.1.1 or higher - this is an
   abstraction layer for the Python Qt packages
 
 The following optional dependencies are also highly recommended and
