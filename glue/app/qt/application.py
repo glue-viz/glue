@@ -812,7 +812,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             self._setup_terminal_error_dialog(e)
             return
 
-        self._terminal = self.add_widget(widget, label='IPython')
+        self._terminal = self.add_widget(widget)
         self._hide_terminal()
 
     def _setup_terminal_error_dialog(self, exception):

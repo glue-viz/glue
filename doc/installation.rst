@@ -133,7 +133,7 @@ Glue has the following required dependencies:
 The following optional dependencies are also highly recommended and
 domain-independent:
 
-* `IPython <http://ipython.org>`_ 1.0 or higher
+* `IPython <http://ipython.org>`_ 4.0 or higher
 * `qtconsole <http://jupyter.org/qtconsole/>`_
 * `dill <http://pythonhosted.org/dill/>`_, for better session saving
 * `SciPy <http://www.scipy.org>`_
