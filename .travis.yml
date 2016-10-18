@@ -22,6 +22,7 @@ env:
     - CONDA_CHANNELS='conda-forge spyder-ide'
     - MATPLOTLIB_VERSION=1.5
     - NUMPY_VERSION=1.11
+    - ASTROPY_VERSION=1.2
     - IPYTHON_VERSION=4
     - PYTEST_ARGS="--cov glue -vs"
     - NO_CFG_FILES=false
@@ -58,7 +59,6 @@ matrix:
         # NOTE: We don't test ginga with PyQt5 due to a bug in ginga with QT_API
         - os: linux
           env: PYTHON_VERSION=2.7
-               NUMPY_VERSION=1.10
                QT_PKG=pyqt5
                PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli plotly"
 

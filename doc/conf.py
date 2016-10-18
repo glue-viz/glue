@@ -104,6 +104,7 @@ copyright = u'2012-2016, Chris Beaumont, Thomas Robitaille, Michelle Borkin'
 # longer sets the backend explicitly (this is a workaround itself for a
 # matplotlib issue).
 with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
     import astropy_helpers
 
 # The version info for the project you're documenting, acts as replacement for
