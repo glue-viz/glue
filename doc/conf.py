@@ -19,6 +19,8 @@
 import os
 ON_RTD = os.environ.get('READTHEDOCS') == 'True'
 
+import warnings
+
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -32,7 +34,18 @@ Distribution({'setup_requires': 'astropy_helpers'})
 
 # Import matplotlib now to make sure the warning doesn't cause the Sphinx build
 # to fail
-import matplotlib
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    import sip
+    sip.setapi('QString', 2)
+    sip.setapi('QVariant', 2)
+    sip.setapi('QDate', 2)
+    sip.setapi('QDateTime', 2)
+    sip.setapi('QTextStream', 2)
+    sip.setapi('QTime', 2)
+    sip.setapi('QUrl', 2)
+    import PyQt4
+    import matplotlib.pyplot as plt
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -90,7 +103,8 @@ copyright = u'2012-2016, Chris Beaumont, Thomas Robitaille, Michelle Borkin'
 # astropy-helpers here. This can be removed in future once astropy-helpers no
 # longer sets the backend explicitly (this is a workaround itself for a
 # matplotlib issue).
-import astropy_helpers
+with warnings.catch_warnings():
+    import astropy_helpers
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
