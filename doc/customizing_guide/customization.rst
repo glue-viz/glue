@@ -138,6 +138,38 @@ An importer can be defined using the ``@importer`` decorator::
 The label in the ``@importer`` decorator is the text that will appear in the
 ``Import`` menu in Glue.
 
+.. _custom_data_exporter:
+
+Custom Data/Subset Exporters
+----------------------------
+
+In addition to allowing you to create custom loaders and importers, glue lets
+you create custom exporters for datasets and subsets. These exporters can be
+accessed by control-clicking on specific datasets or subsets:
+
+.. figure:: images/export_data.png
+   :align: center
+   :width: 50%
+
+and selecting **Export Data** or **Export Subsets**.
+
+A custom exporter looks like the following::
+
+     from glue.config import data_exporter
+
+     @data_exporter('My exporter')
+     def export_custom(data, filename):
+        # write out the data here
+
+The ``data`` argument to the function can be either a
+:class:`~glue.core.data.Data` or a :class:`~glue.core.subset.Subset` object, and
+``filename`` is a string which gives the file path. You can then write out the
+file in any way you like. Note that if you get a
+:class:`~glue.core.subset.Subset` object, you should make sure you export the
+data subset, not just the mask itself. For e.g. 2-dimensional datasets, we find
+that it is more intuitive to export arrays the same size as the original data
+but with the values not in the subset masked or set to NaN.
+
 .. _custom_menubar_tools:
 
 Custom menubar tools
@@ -249,6 +281,7 @@ Registry name                  Registry class
 ``qt_client``                :class:`glue.config.QtClientRegistry`
 ``viewer_tool``              :class:`glue.config.ViewerToolRegistry`
 ``data_factory``             :class:`glue.config.DataFactoryRegistry`
+``data_exporter``            :class:`glue.config.DataExporterRegistry`
 ``link_function``            :class:`glue.config.LinkFunctionRegistry`
 ``link_helper``              :class:`glue.config.LinkHelperRegistry`
 ``colormaps``                :class:`glue.config.ColormapRegistry`
@@ -305,4 +338,3 @@ then in ``config.py``, you can do::
 With this in place, the ``setup`` in your plugin will only get called if the
 Qt data viewers are needed, but you will avoid unecessarily importing Qt if
 you only want to access ``glue.core``.
-

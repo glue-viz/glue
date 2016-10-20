@@ -7,11 +7,10 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from qtpy import QtCore, QtWidgets, QtGui, compat
+from qtpy import QtCore, QtWidgets, QtGui
 from qtpy.QtCore import Qt
 
 from glue.core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode
-from glue.core.qt.data_collection_model import DataCollectionView
 from glue.config import single_subset_action
 from glue import core
 from glue.dialogs.link_editor.qt import LinkEditor
@@ -74,6 +73,12 @@ class LayerAction(QtWidgets.QAction):
 
     def single_selection(self):
         return len(self.selected_layers()) == 1
+
+    def single_selection_data(self):
+        layers = self.selected_layers()
+        if len(layers) != 1:
+            return False
+        return isinstance(layers[0], core.Data)
 
     def single_selection_subset(self):
         layers = self.selected_layers()
@@ -212,17 +217,27 @@ class MaskifySubsetAction(LayerAction):
         s.subset_state = s.state_as_mask()
 
 
-class SaveAction(LayerAction):
-    _title = "Save subset"
-    _tooltip = "Save the mask for this subset to a file"
+class ExportDataAction(LayerAction):
+
+    _title = "Export data"
+    _tooltip = "Save the data to a file"
 
     def _can_trigger(self):
-        return self.single_selection_subset()
+        return self.single_selection_data()
 
     def _do_action(self):
         assert self._can_trigger()
-        subset = self.selected_layers()[0]
-        save_subset(subset)
+        data = self.selected_layers()[0]
+        from glue.core.data_exporters.qt.dialog import export_data
+        export_data(data)
+
+class ExportSubsetAction(ExportDataAction):
+
+    _title = "Export subset"
+    _tooltip = "Save the data subset to a file"
+
+    def _can_trigger(self):
+        return self.single_selection_subset()
 
 
 class CopyAction(LayerAction):
@@ -476,7 +491,8 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
         sep.setSeparator(True)
         tree.addAction(sep)
 
-        self._actions['save'] = SaveAction(self)
+        self._actions['save_data'] = ExportDataAction(self)
+        self._actions['save_subset'] = ExportSubsetAction(self)
         self._actions['copy'] = CopyAction(self)
         self._actions['paste'] = PasteAction(self)
         self._actions['paste_special'] = PasteSpecialAction(self)
@@ -539,15 +555,6 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
     def __len__(self):
         return len(self.ui.layerTree)
 
-
-def save_subset(subset):
-    assert isinstance(subset, core.subset.Subset)
-    fname, fltr = compat.getsavefilename(caption="Select an output name",
-                                         filters='FITS mask (*.fits);; Fits mask (*.fits)')
-    fname = str(fname)
-    if not fname:
-        return
-    subset.write_mask(fname)
 
 if __name__ == "__main__":
     from glue.core.data_collection import DataCollection
