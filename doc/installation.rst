@@ -120,11 +120,11 @@ Dependencies
 Glue has the following required dependencies:
 
 * Python 2.7, or 3.3 and higher
-* `Numpy <http://www.numpy.org>`_
-* `Matplotlib <http://www.matplotlib.org>`_
-* `Pandas <http://pandas.pydata.org/>`_
+* `Numpy <http://www.numpy.org>`_ 1.9 or later
+* `Matplotlib <http://www.matplotlib.org>`_ 1.4 or later
+* `Pandas <http://pandas.pydata.org/>`_ 0.14 or later
 * `Astropy <http://www.astropy.org>`_ 1.0 or higher
-* `setuptools <http://setuptools.readthedocs.io/en/latest/>`_
+* `setuptools <http://setuptools.readthedocs.io/en/latest/>`_ 1.0 or later
 * Either `PySide`_ or `PyQt`_ (both PyQt4 and PyQt5 are supported)
 * `QtPy <https://pypi.python.org/pypi/QtPy/>`__ 1.1.1 or higher - this is an
   abstraction layer for the Python Qt packages
