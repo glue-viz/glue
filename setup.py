@@ -94,19 +94,19 @@ glue-deps = glue._deps:main
 glue = glue.main:main
 """
 
-install_requires = ['numpy',
-                    'pandas',
-                    'astropy>=1',
-                    'matplotlib',
+install_requires = ['numpy>=1.9',
+                    'pandas>=0.14',
+                    'astropy>=1.0',
+                    'matplotlib>=1.4',
                     'qtpy>=1.1',
-                    'setuptools']
+                    'setuptools>=1.0']
 
 extras_require = {
     'recommended': ['dill',
                     'h5py',
                     'scipy',
                     'scikit-image',
-                    'ipython>=1',
+                    'ipython>=1.0',
                     'ipykernel',
                     'qtconsole',
                     'plotly',
