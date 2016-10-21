@@ -4,7 +4,8 @@ Full changelog
 v0.9.1 (unreleased)
 -------------------
 
-- No changes yet.
+* Fixed a bug that caused selections to not propagate properly between
+  linked images and cubes.
 
 v0.9.0 (2016-10-10)
 -------------------
