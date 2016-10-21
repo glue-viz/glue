@@ -500,8 +500,8 @@ class RoiSubsetState(SubsetState):
         from glue.core.component_id import PixelComponentID
 
         if (x.ndim == data.ndim and
-            isinstance(self.xatt, PixelComponentID) and
-            isinstance(self.yatt, PixelComponentID)):
+            self.xatt in data.pixel_component_ids and
+            self.yatt in data.pixel_component_ids):
 
             # This is a special case - the ROI is defined in pixel space, so we
             # can apply it to a single slice and then broadcast it to all other
