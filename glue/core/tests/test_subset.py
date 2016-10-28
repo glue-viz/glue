@@ -534,6 +534,7 @@ def test_inequality_state_str():
     x = d.id['x']
     y = d.id['y']
 
+    assert str(x == 'a') == '(x == a)'
     assert str(x > 3) == '(x > 3)'
     assert str(x < 2) == '(x < 2)'
     assert str(x < y) == '(x < y)'
@@ -624,3 +625,9 @@ def test_save_element_subset_state():
     state1 = ElementSubsetState(indices=[1, 3, 4])
     state2 = clone(state1)
     assert state2._indices == [1, 3, 4]
+
+
+def test_inequality_subset_state_string():
+    d = Data(x=['a', 'b', 'c', 'b'])
+    state = d.id['x'] == 'b'
+    np.testing.assert_equal(state.to_mask(d), np.array([False, True, False, True]))

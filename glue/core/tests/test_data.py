@@ -372,7 +372,7 @@ class TestROICreation(object):
         d = Data(x=['a', 'b', 'c'], y=[1, 2, 3])
         comp = d.get_component(d.id['x'])
         roi = CategoricalROI(['b', 'c'])
-        s = comp.subset_from_roi('x', roi)
+        s = comp.subset_from_roi(d.id['x'], roi)
         assert isinstance(s, CategoricalROISubsetState)
         np.testing.assert_array_equal((s.roi.contains(['a', 'b', 'c'], None)),
                                       [False, True, True])
@@ -389,7 +389,7 @@ class TestROICreation(object):
         x_comp = d.get_component(d.id['x'])
         y_comp = d.get_component(d.id['y'])
         roi = PolygonalROI([0, 0, 2, 2], [0, 2, 2, 0])
-        s = x_comp.subset_from_roi('x', roi, other_comp=y_comp, other_att='y')
+        s = x_comp.subset_from_roi(d.id['x'], roi, other_comp=y_comp, other_att=d.id['y'])
         assert isinstance(s, RoiSubsetState)
         np.testing.assert_array_equal(s.to_mask(d), [True, True, False, False])
 

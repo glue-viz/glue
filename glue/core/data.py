@@ -15,6 +15,7 @@ from glue.core.decorators import clear_cache
 from glue.core.util import split_component_view
 from glue.core.hub import Hub
 from glue.core.subset import Subset, SubsetState
+from glue.core.component_id import ComponentIDList
 from glue.core.component_link import ComponentLink, CoordinateComponentLink
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.visual import VisualAttributes
@@ -76,8 +77,8 @@ class Data(object):
 
         # Components
         self._components = OrderedDict()
-        self._pixel_component_ids = []
-        self._world_component_ids = []
+        self._pixel_component_ids = ComponentIDList()
+        self._world_component_ids = ComponentIDList()
 
         self.id = ComponentIDDict(self)
 
@@ -333,11 +334,14 @@ class Data(object):
                             "should contain a single component.")
 
         def get_component_id(data, name):
-            cid = data.find_component_id(name)
-            if cid is None:
-                raise ValueError("ComponentID not found in %s: %s" %
-                                 (data.label, name))
-            return cid
+            if isinstance(name, ComponentID):
+                return name
+            else:
+                cid = data.find_component_id(name)
+                if cid is None:
+                    raise ValueError("ComponentID not found in %s: %s" %
+                                     (data.label, name))
+                return cid
 
         cid = tuple(get_component_id(self, name) for name in cid)
         cid_other = tuple(get_component_id(other, name) for name in cid_other)
@@ -572,7 +576,7 @@ class Data(object):
         """
         Equivalent to :attr:`Data.components`
         """
-        return list(self._components.keys())
+        return ComponentIDList(self._components.keys())
 
     @contract(subset='isinstance(Subset)|None',
               color='color|None',

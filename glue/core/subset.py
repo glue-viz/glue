@@ -5,6 +5,7 @@ import operator
 
 import numpy as np
 
+from glue.external import six
 from glue.external.six import PY3
 from glue.core.roi import CategoricalROI
 from glue.core.contracts import contract
@@ -253,18 +254,15 @@ class Subset(object):
                      If present, the mask will pertain to the view and not the
                      entire dataset.
 
-        Returns:
            A boolean numpy array, the same shape as the data, that
            defines whether each element belongs to the subset.
 
         """
         try:
-            return self.subset_state.to_mask(self.data, view)
+            mask = self.subset_state.to_mask(self.data, view)
+            return mask
         except IncompatibleAttribute as exc:
-            try:
-                return self._to_mask_join(view)
-            except IncompatibleAttribute:
-                raise exc
+            return self._to_mask_join(view)
 
     @contract(value=bool)
     def do_broadcast(self, value):
@@ -477,6 +475,7 @@ class SubsetState(object):
 
 class RoiSubsetState(SubsetState):
 
+    @contract(xatt='isinstance(ComponentID)', yatt='isinstance(ComponentID)')
     def __init__(self, xatt=None, yatt=None, roi=None):
         super(RoiSubsetState, self).__init__()
         self.xatt = xatt
@@ -934,15 +933,14 @@ class InequalitySubsetState(SubsetState):
                      operator.eq, operator.ne]
         if op not in valid_ops:
             raise TypeError("Invalid boolean operator: %s" % op)
-        if not isinstance(left, ComponentID) and not \
-                isinstance(left, numbers.Number) and not \
-                isinstance(left, ComponentLink):
-            raise TypeError("Input must be ComponenID or NumberType: %s"
+        if not isinstance(left, (ComponentID, numbers.Number,
+                                 ComponentLink, six.string_types)):
+            raise TypeError("Input must be ComponentID or NumberType or string: %s"
                             % type(left))
-        if not isinstance(right, ComponentID) and not \
-                isinstance(right, numbers.Number) and not \
-                isinstance(right, ComponentLink):
-            raise TypeError("Input must be ComponenID or NumberType: %s"
+
+        if not isinstance(left, (ComponentID, numbers.Number,
+                                 ComponentLink, six.string_types)):
+            raise TypeError("Input must be ComponentID or NumberType or string: %s"
                             % type(right))
         self._left = left
         self._right = right
@@ -962,13 +960,39 @@ class InequalitySubsetState(SubsetState):
 
     @memoize
     def to_mask(self, data, view=None):
-        left = self._left
-        if not isinstance(self._left, numbers.Number):
-            left = data[self._left, view]
 
-        right = self._right
-        if not isinstance(self._right, numbers.Number):
-            right = data[self._right, view]
+        # FIXME: the default view in glue should be ... not None, because
+        # if x is a Numpy array, x[None] has one more dimension than x. For
+        # now we just fix this for the scope of this method.
+        if view is None:
+            view = ...
+
+        if isinstance(self._left, (numbers.Number, six.string_types)):
+            left = self._left
+        else:
+            try:
+                comp = data.get_component(self._left)
+            except IncompatibleAttribute:
+                left = data[self._left, view]
+            else:
+                if comp.categorical:
+                    left = comp.labels[view]
+                else:
+                    left = comp.data[view]
+
+        if isinstance(self._right, (numbers.Number, six.string_types)):
+            right = self._right
+        else:
+            try:
+                comp = data.get_component(self._right)
+            except IncompatibleAttribute:
+                right = data[self._right, view]
+            else:
+                if comp.categorical:
+                    right = comp.labels[view]
+                else:
+                    right = comp.data[view]
+
 
         return self._operator(left, right)
 

@@ -30,6 +30,9 @@ v0.9.1 (2016-11-01)
 * Fixed plotting of fit on spectrum to make sure that the two are properly
   aligned. [#1158]
 
+* Made it possible to now create InequalitySubsetStates for
+  categorical components using e.g. d.id['a'] == 'string'. [#1153]
+
 * Fixed a bug that caused selections to not propagate properly between
   linked images and cubes. [#1144]
 
