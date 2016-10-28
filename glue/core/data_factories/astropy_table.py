@@ -65,6 +65,8 @@ def astropy_tabular_data(*args, **kwargs):
 
     table = astropy_table_read(*args, **kwargs)
 
+    result.meta = table.meta
+
     # Loop through columns and make component list
     for column_name in table.columns:
         c = table[column_name]
