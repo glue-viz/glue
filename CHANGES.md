@@ -12,6 +12,9 @@ v0.9.1 (unreleased)
 * Fixed a bug that caused selections to not propagate properly between
   linked images and cubes.
 
+* Make last interval of faceted subsets inclusive so as to make sure all values
+  in the faceted subset range end up in a subset. [#1154]
+
 v0.9.0 (2016-10-10)
 -------------------
 

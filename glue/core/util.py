@@ -117,16 +117,20 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
         facet_subset(data, data.id['mass'], lo=0, hi=10, steps=2)
 
     creates 2 new subsets. The first represents the constraint 0 <=
-    mass < 5. The second represents 5 <= mass < 10::
+    mass < 5. The second represents 5 <= mass <= 10::
 
         facet_subset(data, data.id['mass'], lo=10, hi=0, steps=2)
 
     Creates 2 new subsets. The first represents the constraint 10 >= x > 5
-    The second represents 5 >= mass > 0::
+    The second represents 5 >= mass >= 0::
 
         facet_subset(data, data.id['mass'], lo=0, hi=10, steps=2, prefix='m')
 
-    Labels the subsets ``m_1`` and ``m_2``
+    Labels the subsets ``m_1`` and ``m_2``.
+
+    Note that the last range is inclusive on both sides. For example, if ``lo``
+    is 0 and ``hi`` is 5, and ``steps`` is 5, then the intervals for the subsets
+    are [0,1), [1,2), [2,3), [3,4), and [4,5].
 
     """
     from glue.core.exceptions import IncompatibleAttribute
@@ -154,12 +158,25 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
     states = []
     labels = []
     for i in range(steps):
+
+        # The if i < steps - 1 clauses are needed because the last interval
+        # has to be inclusive on both sides.
+
         if reverse:
-            states.append((cid <= rng[i]) & (cid > rng[i + 1]))
-            labels.append(prefix + '{0}<{1}<={2}'.format(rng[i + 1], cid, rng[i]))
+            if i < steps - 1:
+                states.append((cid <= rng[i]) & (cid > rng[i + 1]))
+                labels.append(prefix + '{0}<{1}<={2}'.format(rng[i + 1], cid, rng[i]))
+            else:
+                states.append((cid <= rng[i]) & (cid >= rng[i + 1]))
+                labels.append(prefix + '{0}<={1}<={2}'.format(rng[i + 1], cid, rng[i]))
+
         else:
-            states.append((cid >= rng[i]) & (cid < rng[i + 1]))
-            labels.append(prefix + '{0}<={1}<{2}'.format(rng[i], cid, rng[i + 1]))
+            if i < steps - 1:
+                states.append((cid >= rng[i]) & (cid < rng[i + 1]))
+                labels.append(prefix + '{0}<={1}<{2}'.format(rng[i], cid, rng[i + 1]))
+            else:
+                states.append((cid >= rng[i]) & (cid <= rng[i + 1]))
+                labels.append(prefix + '{0}<={1}<={2}'.format(rng[i], cid, rng[i + 1]))
 
     result = []
     for lbl, s in zip(labels, states):
