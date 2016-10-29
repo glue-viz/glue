@@ -4,7 +4,10 @@ Full changelog
 v0.10.0 (unreleased)
 --------------------
 
-- No changes yet.
+- Added te ability to export data and subset from the data collection view via
+  contextual menus. It was previously possible to export only the mask itself,
+  and only to FITS files, but the framework for exporting data/subsets has now
+  been generalied.
 
 v0.9.1 (unreleased)
 -------------------

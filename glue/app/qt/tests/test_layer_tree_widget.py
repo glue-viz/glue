@@ -10,8 +10,7 @@ from qtpy import QtWidgets
 from glue import core
 from glue.tests import example_data
 
-from ..layer_tree_widget import (LayerTreeWidget, Clipboard,
-                                 save_subset, PlotAction)
+from ..layer_tree_widget import (LayerTreeWidget, Clipboard, PlotAction)
 
 
 class TestLayerTree(object):
@@ -224,20 +223,6 @@ class TestLayerTree(object):
         layer = self.add_layer()
         grp = self.collect.new_subset_group()
         assert self.widget.selected_layers() == [grp]
-
-    def test_save_subset(self):
-        subset = MagicMock(core.Subset)
-        with patch('qtpy.compat.getsavefilename') as d:
-            d.return_value = ('test.fits', None)
-            save_subset(subset)
-        subset.write_mask.assert_called_once_with('test.fits')
-
-    def test_save_subset_cancel(self):
-        subset = MagicMock(core.Subset)
-        with patch('qtpy.compat.getsavefilename') as d:
-            d.return_value = ('', '')
-            save_subset(subset)
-        assert subset.write_mask.call_count == 0
 
     def test_plot_action(self):
         # regression test for #364

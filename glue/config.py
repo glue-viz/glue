@@ -17,7 +17,7 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'qt_client', 'data_factory', 'link_function', 'link_helper',
            'colormaps', 'exporters', 'settings', 'fit_plugin',
            'auto_refresh', 'importer', 'DictRegistry', 'preference_panes',
-           'PreferencePanesRegistry']
+           'PreferencePanesRegistry', 'DataExporterRegistry', 'data_exporter']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -429,6 +429,25 @@ class DataFactoryRegistry(Registry):
             yield member
 
 
+class DataExporterRegistry(Registry):
+    """
+    Stores data exporters. Data exporters take a data/subset object as input
+    followed by a filename.
+    """
+
+    item = namedtuple('DataFactory', 'function label extension')
+
+    def __call__(self, label, extension=[]):
+        def adder(func):
+            self.add(self.item(func, label, extension))
+            return func
+        return adder
+
+    def __iter__(self):
+        for member in sorted(self.members, key=lambda x: x.label):
+            yield member
+
+
 class QtClientRegistry(Registry):
     """
     Stores QT widgets to visualize data.
@@ -567,6 +586,7 @@ class BooleanSetting(object):
 qt_client = QtClientRegistry()
 viewer_tool = ViewerToolRegistry()
 data_factory = DataFactoryRegistry()
+data_exporter = DataExporterRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
 colormaps = ColormapRegistry()
