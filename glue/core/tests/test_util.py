@@ -32,7 +32,7 @@ class TestFacetSubsets(object):
                                        True, False, False, False])
         np.testing.assert_array_equal(grps[2].subsets[0].to_mask(),
                                       [False, False, False,
-                                       False, True, False, False])
+                                       False, True, True, False])
 
     def test_default_lo_value(self):
         grps = facet_subsets(self.collect, self.data.id['x'],
@@ -43,7 +43,7 @@ class TestFacetSubsets(object):
                                        False, False, False])
         np.testing.assert_array_equal(grps[1].subsets[0].to_mask(),
                                       [False, False, False, True,
-                                       True, True, False])
+                                       True, True, True])
 
     def test_default_hi_value(self):
         grps = facet_subsets(self.collect, self.data.id['x'],
@@ -54,7 +54,7 @@ class TestFacetSubsets(object):
                                        False, False])
         np.testing.assert_array_equal(grps[1].subsets[0].to_mask(),
                                       [False, False, False, False, True,
-                                       True, False])
+                                       True, True])
 
     def test_default_steps(self):
         grps = facet_subsets(self.collect, self.data.id['x'])
@@ -63,7 +63,7 @@ class TestFacetSubsets(object):
     def test_label(self):
         grps = facet_subsets(self.collect, self.data.id['x'])
         lbls = ['1.0<=x<2.2', '2.2<=x<3.4', '3.4<=x<4.6', '4.6<=x<5.8',
-                '5.8<=x<7.0', None]
+                '5.8<=x<=7.0', None]
         for s, lbl in zip(grps, lbls):
             assert s.label == lbl
 
@@ -80,7 +80,7 @@ class TestFacetSubsets(object):
                                       [False, False, True, False, False,
                                        False, False])
         np.testing.assert_array_equal(grps[1].subsets[0].to_mask(),
-                                      [False, True, False, False, False,
+                                      [True, True, False, False, False,
                                        False, False])
 
 
