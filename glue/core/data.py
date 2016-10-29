@@ -81,6 +81,9 @@ class Data(object):
 
         self.id = ComponentIDDict(self)
 
+        # Metadata
+        self.meta = OrderedDict()
+
         # Subsets of the data
         self._subsets = []
 
