@@ -127,6 +127,14 @@ Developing Glue
 
    developer_guide/developer_guide.rst
 
+Publications
+------------
+
+* `Goodman et al. (2012), Principles of high-dimensional data
+  visualization in astronomy <http://dx.doi.org/10.1002/asna.201211705>`_
+* `Beaumont et al. (2015), Hackable User Interfaces In Astronomy with
+  Glue <http://adsabs.harvard.edu/abs/2015ASPC..495..101B>`_
+
 API
 ---
 
