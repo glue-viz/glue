@@ -4,6 +4,9 @@ Full changelog
 v0.9.1 (unreleased)
 -------------------
 
+* Fixed plotting of fit on spectrum to make sure that the two are properly
+  aligned. [#1158]
+
 * Fixed a bug that caused selections to not propagate properly between
   linked images and cubes.
 

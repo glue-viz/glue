@@ -333,7 +333,7 @@ class ProfileViewer(object):
         if self._artist is not None:
             self._artist.remove()
 
-        kwargs.setdefault('drawstyle', 'steps-post')
+        kwargs.setdefault('drawstyle', 'steps-mid')
 
         self._artist = self.axes.plot(x, y, **kwargs)[0]
         self._relayout()

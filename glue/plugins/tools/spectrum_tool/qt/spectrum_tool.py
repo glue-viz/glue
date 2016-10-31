@@ -656,6 +656,9 @@ class SpectrumMainWindow(QtWidgets.QMainWindow):
         if isinstance(layer, Subset):
             self.subset_dropped.emit(layer)
 
+    def set_status(self, message):
+        sb = self.statusBar()
+        sb.showMessage(message)
 
 @viewer_tool
 class SpectrumExtractorMode(RoiMode):
