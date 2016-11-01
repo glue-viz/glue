@@ -94,6 +94,7 @@ Getting help
    videos.rst
    faq.rst
    help.rst
+   known_issues.rst
 
 .. _architecture:
 
