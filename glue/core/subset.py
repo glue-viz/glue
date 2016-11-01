@@ -938,8 +938,8 @@ class InequalitySubsetState(SubsetState):
             raise TypeError("Input must be ComponentID or NumberType or string: %s"
                             % type(left))
 
-        if not isinstance(left, (ComponentID, numbers.Number,
-                                 ComponentLink, six.string_types)):
+        if not isinstance(right, (ComponentID, numbers.Number,
+                                  ComponentLink, six.string_types)):
             raise TypeError("Input must be ComponentID or NumberType or string: %s"
                             % type(right))
         self._left = left
