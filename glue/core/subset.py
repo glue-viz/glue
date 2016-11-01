@@ -965,7 +965,7 @@ class InequalitySubsetState(SubsetState):
         # if x is a Numpy array, x[None] has one more dimension than x. For
         # now we just fix this for the scope of this method.
         if view is None:
-            view = ...
+            view = Ellipsis
 
         if isinstance(self._left, (numbers.Number, six.string_types)):
             left = self._left
