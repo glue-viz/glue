@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.9.1 (unreleased)
+v0.9.1 (2016-11-01)
 -------------------
 
 * Fixed loading of session files made with earlier versions of glue that
@@ -11,7 +11,7 @@ v0.9.1 (unreleased)
   aligned. [#1158]
 
 * Fixed a bug that caused selections to not propagate properly between
-  linked images and cubes.
+  linked images and cubes. [#1144]
 
 * Make last interval of faceted subsets inclusive so as to make sure all values
   in the faceted subset range end up in a subset. [#1154]
@@ -19,10 +19,10 @@ v0.9.1 (unreleased)
 v0.9.0 (2016-10-10)
 -------------------
 
-* Fix serialization of celestial coordinate link functions. Classes 
-  inheriting from MultiLink should now call MultiLink.__init__ with 
-  individual components (not grouped into left/right) then the create_links 
-  method with the components separated into left/right and the methods for 
+* Fix serialization of celestial coordinate link functions. Classes
+  inheriting from MultiLink should now call MultiLink.__init__ with
+  individual components (not grouped into left/right) then the create_links
+  method with the components separated into left/right and the methods for
   forward/backward transformation. The original behavior can be retained
   by using the ``multi_link`` function instead of the ``MultiLink`` class.
   [#1139]
