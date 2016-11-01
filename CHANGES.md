@@ -12,6 +12,9 @@ v0.10.0 (unreleased)
 v0.9.1 (unreleased)
 -------------------
 
+* Fixed loading of session files made with earlier versions of glue that
+  contained selections made in 3D viewers. [#1160]
+
 * Fixed plotting of fit on spectrum to make sure that the two are properly
   aligned. [#1158]
 
