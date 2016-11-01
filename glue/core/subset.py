@@ -915,7 +915,10 @@ class ElementSubsetState(SubsetState):
     @classmethod
     def __setgluestate__(cls, rec, context):
         state = cls(indices=context.object(rec['indices']))
-        state._data_uuid = rec['data_uuid']
+        try:
+            state._data_uuid = rec['data_uuid']
+        except KeyError:  # BACKCOMPAT
+            pass
         return state
 
 
