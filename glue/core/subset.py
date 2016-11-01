@@ -890,7 +890,13 @@ class ElementSubsetState(SubsetState):
             # XXX this is inefficient for views
             result = np.zeros(data.shape, dtype=bool)
             if self._indices is not None:
-                result.flat[self._indices] = True
+                try:
+                    result.flat[self._indices] = True
+                except IndexError:
+                    if self._data_uuid is None:
+                        raise IncompatibleAttribute()
+                    else:
+                        raise
             if view is not None:
                 result = result[view]
             return result
