@@ -496,9 +496,6 @@ class RoiSubsetState(SubsetState):
         x = data[self.xatt, view]
         y = data[self.yatt, view]
 
-        # We do the import here to avoid circular imports
-        from glue.core.component_id import PixelComponentID
-
         if (x.ndim == data.ndim and
             self.xatt in data.pixel_component_ids and
             self.yatt in data.pixel_component_ids):
