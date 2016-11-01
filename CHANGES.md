@@ -27,6 +27,11 @@ v0.10.0 (unreleased)
 - Drop support for IPython 3.x and below, and make IPython and qtconsole into
   required dependencies. [#1145]
 
+- Added new classes that can be used to hold the state of e.g. viewers and other
+  objects. These classes allow callbacks to be attached to various properties,
+  and can be used to define logical relations between different attributes
+  in a GUI-independent way.
+
 v0.9.2 (unreleased)
 -------------------
 
