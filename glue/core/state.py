@@ -55,6 +55,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import json
+import uuid
 import types
 import logging
 from io import BytesIO
@@ -70,7 +71,7 @@ from matplotlib import cm
 from glue.external import six
 from glue import core
 from glue.core.data import Data
-from glue.core.component_id import ComponentID
+from glue.core.component_id import ComponentID, PixelComponentID
 from glue.core.component import (Component, CategoricalComponent,
                                  DerivedComponent, CoordinateComponent)
 from glue.core.subset import (OPSYM, SYMOP, CompositeSubsetState,
@@ -733,7 +734,10 @@ def _load_data_4(rec, context):
         return tuple(context.object(cid) for cid in cids)
     result._key_joins = dict((context.object(k), (load_cid_tuple(v0), load_cid_tuple(v1)))
                              for k, v0, v1 in rec['_key_joins'])
-    result.uuid = rec['uuid']
+    if 'uuid' in rec and rec['uuid'] is not None:
+        result.uuid = rec['uuid']
+    else:
+        result.uuid = str(uuid.uuid4())
 
 
 @saver(ComponentID)
@@ -744,6 +748,20 @@ def _save_component_id(cid, context):
 @loader(ComponentID)
 def _load_component_id(rec, context):
     return ComponentID(rec['label'], rec['hidden'])
+
+
+@saver(PixelComponentID)
+def _save_component_id(cid, context):
+    return dict(axis=cid.axis, label=cid.label, hidden=cid.hidden)
+
+
+@loader(PixelComponentID)
+def _load_component_id(rec, context):
+    if 'axis' in rec:
+        axis = rec['axis']
+    else:  # backward-compatibility
+        axis = int(rec['label'].split()[2])
+    return PixelComponentID(axis, rec['label'], rec['hidden'])
 
 
 @saver(Component)

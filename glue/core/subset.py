@@ -496,9 +496,6 @@ class RoiSubsetState(SubsetState):
         x = data[self.xatt, view]
         y = data[self.yatt, view]
 
-        # We do the import here to avoid circular imports
-        from glue.core.component_id import PixelComponentID
-
         if (x.ndim == data.ndim and
             self.xatt in data.pixel_component_ids and
             self.yatt in data.pixel_component_ids):
@@ -893,7 +890,13 @@ class ElementSubsetState(SubsetState):
             # XXX this is inefficient for views
             result = np.zeros(data.shape, dtype=bool)
             if self._indices is not None:
-                result.flat[self._indices] = True
+                try:
+                    result.flat[self._indices] = True
+                except IndexError:
+                    if self._data_uuid is None:
+                        raise IncompatibleAttribute()
+                    else:
+                        raise
             if view is not None:
                 result = result[view]
             return result
@@ -912,7 +915,10 @@ class ElementSubsetState(SubsetState):
     @classmethod
     def __setgluestate__(cls, rec, context):
         state = cls(indices=context.object(rec['indices']))
-        state._data_uuid = rec['data_uuid']
+        try:
+            state._data_uuid = rec['data_uuid']
+        except KeyError:  # BACKCOMPAT
+            pass
         return state
 
 
