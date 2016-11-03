@@ -46,6 +46,8 @@ try:
     import pypandoc
     LONG_DESCRIPTION = pypandoc.convert('README.md', 'rst')
 except (IOError, ImportError):
+    if 'sdist' in sys.argv or 'register' in sys.argv:
+        raise  # don't let this pass silently
     with open('README.md') as infile:
         LONG_DESCRIPTION = infile.read()
 
