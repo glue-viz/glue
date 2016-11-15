@@ -11,6 +11,7 @@ from qtpy import QtCore, QtWidgets, QtGui, compat
 from qtpy.QtCore import Qt
 
 from glue.core.application_base import Application
+from glue.core.message import ApplicationClosedMessage
 from glue.core import command, Data
 from glue import env
 from glue.main import load_plugins
@@ -908,6 +909,11 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                     path = path[1:]
 
             self.load_data(path)
+        event.accept()
+
+    def closeEvent(self, event):
+        """Emit a message to hub before closing."""
+        self._hub.broadcast(ApplicationClosedMessage(None))
         event.accept()
 
     def report_error(self, message, detail):

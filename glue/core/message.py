@@ -10,7 +10,7 @@ __all__ = ['Message', 'ErrorMessage', 'SubsetMessage', 'SubsetCreateMessage',
            'DataAddComponentMessage', 'DataUpdateMessage',
            'DataCollectionMessage', 'DataCollectionActiveChange',
            'DataCollectionActiveDataChange', 'DataCollectionAddMessage',
-           'DataCollectionDeleteMessage']
+           'DataCollectionDeleteMessage', 'ApplicationClosedMessage']
 
 
 class Message(object):
@@ -191,3 +191,8 @@ class SettingsChangeMessage(Message):
     def __init__(self, sender, settings, tag=None):
         super(SettingsChangeMessage, self).__init__(sender=sender, tag=tag)
         self.settings = settings
+
+
+class ApplicationClosedMessage(Message):
+    """A general message issued when Glue application is closed."""
+    pass
