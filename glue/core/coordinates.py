@@ -25,8 +25,8 @@ class Coordinates(object):
 
     def world_axis(self, data, axis):
         """
-        Find the world coordinates along a given dimension, and which for now we
-        center on the pixel origin.
+        Find the world coordinates along a given dimension, and which for now
+        we center on the pixel origin.
 
         Parameters
         ----------
@@ -38,10 +38,10 @@ class Coordinates(object):
 
         Notes
         -----
-        This method computes the axis values using pixel positions at the center
-        of the data along all other axes. This will therefore only give the
-        correct result for non-dependent axes (which can be checked using the
-        ``dependent_axes`` method)
+        This method computes the axis values using pixel positions at the
+        center of the data along all other axes. This will therefore only give
+        the correct result for non-dependent axes (which can be checked using
+        the ``dependent_axes`` method)
         """
         pixel = []
         for i, s in enumerate(data.shape):
@@ -59,7 +59,7 @@ class Coordinates(object):
         return ''
 
     def axis_label(self, axis):
-        return "World %i" % axis
+        return "World {}".format(axis)
 
     def dependent_axes(self, axis):
         """Return a tuple of which world-axes are non-indepndent
@@ -87,10 +87,10 @@ class WCSCoordinates(Coordinates):
 
     References
     ----------
-      * Greisen & Calabretta (2002), Astronomy and Astrophysics, 395, 1061
-      * Calabretta & Greisen (2002), Astronomy and Astrophysics, 395, 1077
-      * Greisen, Calabretta, Valdes & Allen (2006), Astronomy and
-        Astrophysics, 446, 747
+    * Greisen & Calabretta (2002), Astronomy and Astrophysics, 395, 1061
+    * Calabretta & Greisen (2002), Astronomy and Astrophysics, 395, 1077
+    * Greisen, Calabretta, Valdes & Allen (2006), Astronomy and
+      Astrophysics, 446, 747
     '''
 
     def __init__(self, header, wcs=None):
@@ -170,12 +170,15 @@ class WCSCoordinates(Coordinates):
         '''
         Convert pixel to world coordinates, preserving input type/shape
 
-        :param args: xpix, ypix[, zpix]: scalars, lists, or Numpy arrays
-                     The pixel coordinates to convert
+        Parameters
+        ----------
+        pixels : tuple of scalars, lists, or Numpy arrays
+            The pixel coordinates to convert in the format of
+            ``xpix, ypix[, zpix]``
 
-        *Returns*
-
-        xworld, yworld, [zworld]: scalars, lists or Numpy arrays
+        Returns
+        -------
+        xworld, yworld[, zworld] : scalars, lists or Numpy arrays
             The corresponding world coordinates
         '''
         arrs = [np.asarray(p) for p in pixel]
@@ -189,13 +192,15 @@ class WCSCoordinates(Coordinates):
         '''
         Convert pixel to world coordinates, preserving input type/shape
 
-        :param world:
-            xworld, yworld[, zworld] : scalars, lists or Numpy arrays
-            The world coordinates to convert
+        Parameters
+        ----------
+        world : tuple of scalars, lists or Numpy arrays
+            The world coordinates to convert in the format of
+            ``xworld, yworld[, zworld]``
 
-        *Returns*
-
-        xpix, ypix: scalars, lists, or Numpy arrays
+        Returns
+        -------
+        xpix, ypix[, zpix] : scalars, lists, or Numpy arrays
             The corresponding pixel coordinates
         '''
         arrs = [np.asarray(w) for w in world]
@@ -208,8 +213,8 @@ class WCSCoordinates(Coordinates):
     def axis_label(self, axis):
         header = self._header
         ndim = _get_ndim(header)
-        num = _get_ndim(header) - axis  # number orientation reversed
-        ax = self._header.get('CTYPE%i' % num)
+        num = ndim - axis  # number orientation reversed
+        ax = self._header.get('CTYPE{}'.format(num))
         if ax is not None:
             if len(ax) == 8 or '-' in ax:  # assume standard format
                 ax = ax[:5].split('-')[0].title()
@@ -237,14 +242,18 @@ class WCSCoordinates(Coordinates):
 
 
 def coordinates_from_header(header):
-    """ Convert a FITS header into a glue Coordinates object
-
-    :param header: Header to convert
-    :type header: :class:`astropy.io.fits.Header`
-
-    :rtype: :class:`~glue.core.coordinates.Coordinates`
     """
+    Convert a FITS header into a glue Coordinates object
 
+    Parameters
+    ----------
+    header : :class:`astropy.io.fits.Header`
+        Header to convert
+
+    Returns
+    -------
+    coordinates : :class:`~glue.core.coordinates.Coordinates`
+    """
     # We check whether the header contains at least CRVAL1 - if not, we would
     # end up with a default WCS that isn't quite 1 to 1 (because of a 1-pixel
     # offset) so better use Coordinates in that case.
@@ -255,12 +264,12 @@ def coordinates_from_header(header):
         try:
             return WCSCoordinates(header)
         except Exception as e:
-            logging.getLogger(__name__).warn("\n\n*******************************\n"
-                                             "Encounted an error during WCS parsing. "
-                                             "Discarding world coordinates! "
-                                             "\n%s\n"
-                                             "*******************************\n\n" % e
-                                             )
+            logging.getLogger(__name__).warn(
+                "\n\n*******************************\n"
+                "Encounted an error during WCS parsing. "
+                "Discarding world coordinates! "
+                "\n{}\n"
+                "*******************************\n\n".format(str(e)))
     return Coordinates()
 
 
@@ -275,8 +284,15 @@ def _get_ndim(header):
 def coordinates_from_wcs(wcs):
     """Convert a wcs object into a glue Coordinates object
 
-    :param wcs: The WCS object to use
-    :rtype: :class:`~glue.core.coordinates.Coordinates`
+    Parameters
+    ----------
+    wcs : obj
+        The WCS object to use
+
+    Returns
+    -------
+    coordinates : :class:`~glue.core.coordinates.Coordinates`
+
     """
     from astropy.io import fits
     hdr_str = wcs.wcs.to_header()
