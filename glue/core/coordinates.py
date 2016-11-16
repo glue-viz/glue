@@ -85,6 +85,13 @@ class WCSCoordinates(Coordinates):
     standard.  This class does not take into account
     distortions.
 
+    Parameters
+    ----------
+    header
+        FITS header (derived from WCS if not given)
+    wcs
+        WCS object to use, if different from header
+
     References
     ----------
     * Greisen & Calabretta (2002), Astronomy and Astrophysics, 395, 1061
@@ -93,9 +100,15 @@ class WCSCoordinates(Coordinates):
       Astrophysics, 446, 747
     '''
 
-    def __init__(self, header, wcs=None):
+    def __init__(self, header=None, wcs=None):
         super(WCSCoordinates, self).__init__()
         from astropy.wcs import WCS
+
+        if header is None and wcs is None:
+            raise ValueError('Must provide either FITS header or WCS or both')
+
+        if header is None:
+            header = wcs.to_header()
 
         self._header = header
 
