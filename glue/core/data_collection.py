@@ -265,6 +265,8 @@ class DataCollection(HubListener):
                 master.add_component(d.get_component(c), c)
             self.remove(d)
 
+        master.coords = data[0].coords
+
         return self
 
     @property

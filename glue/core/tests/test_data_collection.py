@@ -7,6 +7,7 @@ import numpy as np
 from mock import MagicMock
 from numpy.testing import assert_array_equal
 
+from ..coordinates import Coordinates
 from ..component_link import ComponentLink
 from ..data import Data, Component, ComponentID, DerivedComponent
 from ..data_collection import DataCollection
@@ -313,3 +314,19 @@ class TestDataCollection(object):
         assert_array_equal(c['a'], [3, 4, 5])
         dc.merge(a, b)
         assert_array_equal(c['a'], [3, 4, 5])
+
+    def test_merge_coordinates(self):
+
+        # Regression test to make sure the coordinates from the first dataset
+        # are preserved.
+
+        x = Data(x=[1, 2, 3])
+        y = Data(y=[2, 3, 4])
+        dc = DataCollection([x, y])
+
+        x.coords = Coordinates()
+        y.coords = Coordinates()
+
+        dc.merge(x, y)
+
+        assert dc[0].coords is x.coords

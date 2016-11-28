@@ -23,10 +23,13 @@
    <item>
     <widget class="QLabel" name="instructions">
      <property name="text">
-      <string>Several of the datasets (including at least one that you have added) have the same shape. Do you want to merge them?</string>
+      <string>Several of the datasets (including at least one that you have added) have the same shape. Do you want to merge them? Merging means that these separate datasets will then become components of a single dataset.</string>
      </property>
      <property name="scaledContents">
       <bool>false</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignJustify|Qt::AlignVCenter</set>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
