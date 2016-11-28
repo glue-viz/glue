@@ -38,7 +38,7 @@ def points_inside_poly(x, y, vx, vy):
     inside[keep] = p.contains_points(coords).astype(bool)
 
     good = np.isfinite(x) & np.isfinite(y)
-    inside[~good] = False
+    inside[keep][~good] = False
 
     inside = inside.reshape(reduced_shape)
     inside = np.broadcast_to(inside, original_shape)
