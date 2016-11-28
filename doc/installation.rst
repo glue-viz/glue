@@ -72,10 +72,6 @@ To install or update glue on the command-line, simply do::
 
     conda install -c conda-forge glueviz
 
-.. note:: There is currently a known issue when running Anaconda's Qt on
-          certain Linux distributions (including Kubuntu). See
-          `Issue with PyQt4 from conda`_ for more details.
-
 Installing with pip
 -------------------
 
