@@ -14,7 +14,7 @@ v0.9.2 (unreleased)
 
 * Fixed bug that caused coordinate information to be lost when merging datasets.
   The original behavior of keeping the coordinate information from the first
-  dataset has been restored.
+  dataset has been restored. [#1186]
 
 v0.9.1 (2016-11-01)
 -------------------
