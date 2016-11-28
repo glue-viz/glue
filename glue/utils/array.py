@@ -1,13 +1,31 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
+from numpy.lib.stride_tricks import as_strided
+
 import pandas as pd
 
 from glue.external.six import string_types
 
 
 __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
-           'coerce_numeric', 'check_sorted', 'broadcast_to']
+           'coerce_numeric', 'check_sorted', 'broadcast_to', 'unbroadcast']
+
+
+def unbroadcast(array):
+    """
+    Given an array, return a new array that is the smallest subset of the
+    original array that can be re-broadcasted back to the original array.
+
+    See http://stackoverflow.com/questions/40845769/un-broadcasting-numpy-arrays
+    for more details.
+    """
+
+    if array.ndim == 0:
+        return array
+
+    new_shape = np.where(np.array(array.strides) == 0, 1, array.shape)
+    return as_strided(array, shape=new_shape)
 
 
 def unique(array):
@@ -151,4 +169,4 @@ def broadcast_to(array, shape):
     try:
         return np.broadcast_to(array, shape)
     except AttributeError:
-        return array * np.ones(shape, array.dtype)
+        return np.broadcast_arrays(array, np.ones(shape, array.dtype))[0]

@@ -13,6 +13,7 @@ from glue.external import six
 from glue import core
 from glue.tests.helpers import requires_astropy
 
+from ..coordinates import Coordinates
 from ..component import (Component, DerivedComponent, CoordinateComponent,
                          CategoricalComponent)
 from ..component_id import ComponentID
@@ -203,10 +204,14 @@ class TestCategoricalComponent(object):
 class TestCoordinateComponent(object):
 
     def setup_method(self, method):
-        class TestCoords(object):
+
+        class TestCoords(Coordinates):
 
             def pixel2world(self, *args):
                 return [a * (i + 1) for i, a in enumerate(args)]
+
+            def dependent_axes(self, axis):
+                return (axis,)
 
         data = core.Data()
         data.add_component(Component(np.zeros((3, 3, 3))), 'test')

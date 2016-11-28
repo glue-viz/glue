@@ -5,8 +5,8 @@ import numpy as np
 
 from glue.external.six import string_types, PY2
 
-from ..array import (view_shape, coerce_numeric, stack_view, unique,
-                     shape_to_string, check_sorted, pretty_number)
+from ..array import (view_shape, coerce_numeric, stack_view, unique, broadcast_to,
+                     shape_to_string, check_sorted, pretty_number, unbroadcast)
 
 
 @pytest.mark.parametrize(('before', 'ref_after', 'ref_indices'),
@@ -104,3 +104,13 @@ class TestPrettyNumber(object):
     def test_list(self):
         assert pretty_number([1, 2, 3.3, 1e5]) == ['1', '2', '3.3',
                                                    '1.000e+05']
+
+
+def test_unbroadcast():
+
+    x = np.array([1, 2, 3])
+    y = broadcast_to(x, (2, 4, 3))
+
+    z = unbroadcast(y)
+    assert z.shape == (1, 1, 3)
+    np.testing.assert_allclose(z[0, 0], x)

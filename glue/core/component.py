@@ -9,14 +9,13 @@ import pandas as pd
 
 from glue.core.subset import (RoiSubsetState, RangeSubsetState,
                               CategoricalROISubsetState, AndState,
-                              MultiRangeSubsetState,
                               CategoricalMultiRangeSubsetState,
                               CategoricalROISubsetState2D)
 from glue.core.roi import (PolygonalROI, CategoricalROI, RangeROI, XRangeROI,
                            YRangeROI, RectangularROI)
 from glue.core.util import row_lookup
 from glue.utils import (unique, shape_to_string, coerce_numeric, check_sorted,
-                        polygon_line_intersections)
+                        polygon_line_intersections, broadcast_to)
 
 
 __all__ = ['Component', 'DerivedComponent',
@@ -108,7 +107,7 @@ class Component(object):
         return False
 
     def __str__(self):
-        return "Component with shape %s" % shape_to_string(self.shape)
+        return "%s with shape %s" % (self.__class__.__name__, shape_to_string(self.shape))
 
     def jitter(self, method=None):
         raise NotImplementedError
@@ -257,7 +256,6 @@ class DerivedComponent(Component):
 
 
 class CoordinateComponent(Component):
-
     """
     Components associated with pixel or world coordinates
 
@@ -275,16 +273,44 @@ class CoordinateComponent(Component):
         return self._calculate()
 
     def _calculate(self, view=None):
-        slices = [slice(0, s, 1) for s in self.shape]
-        grids = np.broadcast_arrays(*np.ogrid[slices])
-        if view is not None:
-            grids = [g[view] for g in grids]
 
         if self.world:
-            world = self._data.coords.pixel2world(*grids[::-1])[::-1]
-            return world[self.axis]
+
+            # This can be a bottleneck if we aren't careful, so we need to make
+            # sure that if not all dimensions depend on each other, we use smart
+            # broadcasting
+
+            pix_coords = []
+            dep_coords = self._data.coords.dependent_axes(self.axis)
+            for i in range(self._data.ndim):
+                if i in dep_coords:
+                    pix_coords.append(np.arange(self._data.shape[i]))
+                else:
+                    pix_coords.append(0)
+            pix_coords = np.meshgrid(*pix_coords, indexing='ij', copy=False)
+
+            world_coords = self._data.coords.pixel2world_single_axis(*pix_coords[::-1],
+                                                               axis=self._data.ndim - 1 - self.axis)
+
+            world_coords = broadcast_to(world_coords, self._data.shape)
+
+            if view is None:
+                view = Ellipsis
+
+            # FIXME: this is inefficient if view is only a small fraction of the
+            # whole array, and should be optimized.
+
+            return world_coords[view]
+
         else:
+
+            slices = [slice(0, s, 1) for s in self.shape]
+            grids = np.broadcast_arrays(*np.ogrid[slices])
+            if view is not None:
+                grids = [g[view] for g in grids]
             return grids[self.axis]
+
+
 
     @property
     def shape(self):
