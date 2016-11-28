@@ -4,6 +4,8 @@ import logging
 
 import numpy as np
 
+from glue.utils import unbroadcast
+
 
 __all__ = ['Coordinates', 'WCSCoordinates']
 
@@ -18,10 +20,114 @@ class Coordinates(object):
         pass
 
     def pixel2world(self, *args):
+        """
+        Convert pixel to world coordinates, preserving input type/shape.
+
+        Parameters
+        ----------
+        *pixel : scalars lists, or Numpy arrays
+            The pixel coordinates (0-based) to convert
+
+        Returns
+        -------
+        *world : Numpy arrays
+            The corresponding world coordinates
+        """
         return args
 
     def world2pixel(self, *args):
+        """
+        Convert world to pixel coordinates, preserving input type/shape.
+
+        Parameters
+        ----------
+        *world : scalars lists, or Numpy arrays
+            The world coordinates to convert
+
+        Returns
+        -------
+        *pixel : Numpy arrays
+            The corresponding pixel coordinates
+        """
         return args
+
+    def pixel2world_single_axis(self, *pixel, axis=None):
+        """
+        Convert pixel to world coordinates, preserving input type/shape.
+
+        This is a wrapper around pixel2world which returns the result for just
+        one axis, and also determines whether the calculation can be sped up
+        if broadcasting is present in the input arrays.
+
+        Parameters
+        ----------
+        *pixel : scalars lists, or Numpy arrays
+            The pixel coordinates (0-based) to convert
+        axis : int, optional
+            If only one axis is needed, it should be specified since the
+            calculation will be much more efficient.
+
+        Returns
+        -------
+        world : `numpy.ndarray`
+            The world coordinates for the requested axis
+        """
+
+        if axis is None:
+            raise ValueError("axis needs to be set")
+
+        original_shape = pixel[0].shape
+        pixel_new = []
+        dep_axes = self.dependent_axes(axis)
+        for ip, p in enumerate(pixel):
+            if ip in dep_axes:
+                pixel_new.append(unbroadcast(p))
+            else:
+                pixel_new.append(p.flat[0])
+        pixel = np.broadcast_arrays(*pixel_new)
+
+        result = self.pixel2world(*pixel)
+
+        return np.broadcast_to(result[axis], original_shape)
+
+    def world2pixel_single_axis(self, *world, axis=None):
+        """
+        Convert world to pixel coordinates, preserving input type/shape.
+
+        This is a wrapper around world2pixel which returns the result for just
+        one axis, and also determines whether the calculation can be sped up
+        if broadcasting is present in the input arrays.
+
+        Parameters
+        ----------
+        *world : scalars lists, or Numpy arrays
+            The world coordinates to convert
+        axis : int, optional
+            If only one axis is needed, it should be specified since the
+            calculation will be much more efficient.
+
+        Returns
+        -------
+        pixel : `numpy.ndarray`
+            The pixel coordinates for the requested axis
+        """
+
+        if axis is None:
+            raise ValueError("axis needs to be set")
+
+        original_shape = world[0].shape
+        world_new = []
+        dep_axes = self.dependent_axes(axis)
+        for iw, w in enumerate(world):
+            if iw in dep_axes:
+                world_new.append(unbroadcast(w))
+            else:
+                world_new.append(w.flat[0])
+        world = np.broadcast_arrays(*world_new)
+
+        result = self.world2pixel(*world)
+
+        return np.broadcast_to(result[axis], original_shape)
 
     def world_axis(self, data, axis):
         """
@@ -49,7 +155,7 @@ class Coordinates(object):
                 pixel.append(np.arange(data.shape[axis]))
             else:
                 pixel.append(np.repeat((s - 1) / 2, data.shape[axis]))
-        return self.pixel2world_indiv(*pixel[::-1], axis=data.ndim - 1 - axis)
+        return self.pixel2world_single_axis(*pixel[::-1], axis=data.ndim - 1 - axis)
 
     def world_axis_unit(self, axis):
         """
@@ -169,88 +275,14 @@ class WCSCoordinates(Coordinates):
             naxis = None
         self._wcs = WCS(self._header, naxis=naxis)
 
-    def pixel2world_indiv(self, *pixel, axis=None):
-        """
-        Convert pixel to world coordinates, but only return the coordinate
-        indicated by ``axis``.
+    def pixel2world(self, *pixel, axis=None):
+        return self._wcs.wcs_pix2world(*pixel, 0)
 
-        This allows us to do optimization based on which coordinates are
-        indepdendent from each other.
-        """
-        from glue.utils import unbroadcast
-        pixel_new = []
-        dep_axes = self.dependent_axes(axis)
-        for ip, p in enumerate(pixel):
-            if ip in dep_axes:
-                pixel_new.append(unbroadcast(p))
-            else:
-                pixel_new.append(p.flat[0])
-        pixel_new = np.broadcast_arrays(*pixel_new)
-        result = self.pixel2world(*pixel_new)[axis]
-        return np.broadcast_to(result, pixel[0].shape)
-
-    def pixel2world(self, *pixel):
-        '''
-        Convert pixel to world coordinates, preserving input type/shape
-
-        :param args: xpix, ypix[, zpix]: scalars, lists, or Numpy arrays
-                     The pixel coordinates to convert
-
-        *Returns*
-
-        xworld, yworld, [zworld]: scalars, lists or Numpy arrays
-            The corresponding world coordinates
-        '''
-        arrs = [np.asarray(p) for p in pixel]
-        pix = np.vstack(a.ravel() for a in arrs).T
-        result = tuple(self._wcs.wcs_pix2world(pix, 0).T)
-        for r, a in zip(result, arrs):
-            r.shape = a.shape
-        return result
-
-    def world2pixel_indiv(self, *world, axis=None):
-        """
-        Convert world to pixel coordinates, but only return the coordinate
-        indicated by ``axis``.
-
-        This allows us to do optimization based on which coordinates are
-        indepdendent from each other.
-        """
-        from glue.utils import unbroadcast
-        world_new = []
-        dep_axes = self.dependent_axes(axis)
-        for iw, w in enumerate(world):
-            if iw in dep_axes:
-                world_new.append(unbroadcast(w))
-            else:
-                world_new.append(w.flat[0])
-        world_new = np.broadcast_arrays(*world_new)
-        result = self.world2pixel(*world_new)[axis]
-        return np.broadcast_to(result, world[0].shape)
-
-    def world2pixel(self, *world):
-        '''
-        Convert pixel to world coordinates, preserving input type/shape
-
-        :param world:
-            xworld, yworld[, zworld] : scalars, lists or Numpy arrays
-            The world coordinates to convert
-
-        *Returns*
-
-        xpix, ypix: scalars, lists, or Numpy arrays
-            The corresponding pixel coordinates
-        '''
-        arrs = [np.asarray(w) for w in world]
-        pix = np.vstack(a.ravel() for a in arrs).T
-        result = tuple(self._wcs.wcs_world2pix(pix, 0).T)
-        for r, a in zip(result, arrs):
-            r.shape = a.shape
-        return result
+    def world2pixel(self, *world, axis=None):
+        return self._wcs.wcs_world2pix(*world, 0)
 
     def axis_label(self, axis):
         header = self._header
-        ndim = _get_ndim(header)
         num = _get_ndim(header) - axis  # number orientation reversed
         ax = self._header.get('CTYPE%i' % num)
         if ax is not None:

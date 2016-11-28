@@ -11,6 +11,8 @@ __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
 
 
 def unbroadcast(array):
+    if array.ndim == 0:
+        return array
     slices = []
     for i in range(array.ndim):
         if array.strides[i] == 0:

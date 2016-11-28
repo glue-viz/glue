@@ -289,7 +289,7 @@ class CoordinateComponent(Component):
                     pix_coords.append(0)
             pix_coords = np.meshgrid(*pix_coords, indexing='ij', copy=False)
 
-            world_coords = self._data.coords.pixel2world_indiv(*pix_coords[::-1],
+            world_coords = self._data.coords.pixel2world_single_axis(*pix_coords[::-1],
                                                                axis=self._data.ndim - 1 - self.axis)
 
             world_coords = np.broadcast_to(world_coords, self._data.shape)

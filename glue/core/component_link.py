@@ -272,7 +272,7 @@ class CoordinateComponentLink(ComponentLink):
 
     def using(self, *args):
 
-        attr = 'pixel2world_indiv' if self.pixel2world else 'world2pixel_indiv'
+        attr = 'pixel2world_single_axis' if self.pixel2world else 'world2pixel_single_axis'
         func = getattr(self.coords, attr)
 
         args2 = [None] * self.ndim
