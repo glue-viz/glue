@@ -2,10 +2,23 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
+from glue.utils import unbroadcast
+
 __all__ = ['points_inside_poly', 'polygon_line_intersections']
 
 
 def points_inside_poly(x, y, vx, vy):
+
+    original_shape = x.shape
+
+    x = unbroadcast(x)
+    y = unbroadcast(y)
+    x, y = np.broadcast_arrays(x, y)
+
+    reduced_shape = x.shape
+
+    x = x.flat
+    y = y.flat
 
     from matplotlib.path import Path
     p = Path(np.column_stack((vx, vy)))
@@ -23,6 +36,12 @@ def points_inside_poly(x, y, vx, vy):
     coords = np.column_stack((x, y))
 
     inside[keep] = p.contains_points(coords).astype(bool)
+
+    good = np.isfinite(x) & np.isfinite(y)
+    inside[~good] = False
+
+    inside = inside.reshape(reduced_shape)
+    inside = np.broadcast_to(inside, original_shape)
 
     return inside
 

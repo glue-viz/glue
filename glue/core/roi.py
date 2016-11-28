@@ -516,10 +516,7 @@ class PolygonalROI(VertexROIBase):
         if not isinstance(y, np.ndarray):
             y = np.asarray(y)
 
-        result = points_inside_poly(x.flat, y.flat, self.vx, self.vy)
-        good = np.isfinite(x.flat) & np.isfinite(y.flat)
-        result[~good] = False
-        result.shape = x.shape
+        result = points_inside_poly(x, y, self.vx, self.vy)
         return result
 
     def move_to(self, xdelta, ydelta):
