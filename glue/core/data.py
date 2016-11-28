@@ -533,12 +533,12 @@ class Data(object):
 
         def make_toworld_func(i):
             def pix2world(*args):
-                return self.coords.pixel2world(*args[::-1])[::-1][i]
+                return self.coords.pixel2world_indiv(*args[::-1], axis=self.ndim - 1 - i)
             return pix2world
 
         def make_topixel_func(i):
             def world2pix(*args):
-                return self.coords.world2pixel(*args[::-1])[::-1][i]
+                return self.coords.world2pixel_indiv(*args[::-1], axis=self.ndim - 1 - i)
             return world2pix
 
         result = []
@@ -737,6 +737,7 @@ class Data(object):
 
         :returns: :class:`~numpy.ndarray`
         """
+
         key, view = split_component_view(key)
         if isinstance(key, six.string_types):
             _k = key
@@ -753,6 +754,7 @@ class Data(object):
             raise IncompatibleAttribute(key)
 
         shp = view_shape(self.shape, view)
+
         if view is not None:
             result = comp[view]
         else:

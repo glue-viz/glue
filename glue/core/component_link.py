@@ -271,7 +271,8 @@ class CoordinateComponentLink(ComponentLink):
         self.hidden = True
 
     def using(self, *args):
-        attr = 'pixel2world' if self.pixel2world else 'world2pixel'
+
+        attr = 'pixel2world_indiv' if self.pixel2world else 'world2pixel_indiv'
         func = getattr(self.coords, attr)
 
         args2 = [None] * self.ndim
@@ -282,7 +283,7 @@ class CoordinateComponentLink(ComponentLink):
                 args2[i] = np.zeros_like(args[0])
         args2 = tuple(args2)
 
-        return func(*args2[::-1])[::-1][self.index]
+        return func(*args2[::-1], axis=self.ndim - 1 - self.index)
 
     def __str__(self):
         rep = 'pix2world' if self.pixel2world else 'world2pix'

@@ -49,7 +49,7 @@ class Coordinates(object):
                 pixel.append(np.arange(data.shape[axis]))
             else:
                 pixel.append(np.repeat((s - 1) / 2, data.shape[axis]))
-        return self.pixel2world(*pixel[::-1])[::-1][axis]
+        return self.pixel2world_indiv(*pixel[::-1], axis=data.ndim - 1 - axis)
 
     def world_axis_unit(self, axis):
         """
@@ -128,6 +128,9 @@ class WCSCoordinates(Coordinates):
         return self._header
 
     def dependent_axes(self, axis):
+
+        # TODO: we should cache this
+
         # if distorted, all bets are off
         try:
             if any([self._wcs.sip, self._wcs.det2im1, self._wcs.det2im2]):
@@ -166,6 +169,26 @@ class WCSCoordinates(Coordinates):
             naxis = None
         self._wcs = WCS(self._header, naxis=naxis)
 
+    def pixel2world_indiv(self, *pixel, axis=None):
+        """
+        Convert pixel to world coordinates, but only return the coordinate
+        indicated by ``axis``.
+
+        This allows us to do optimization based on which coordinates are
+        indepdendent from each other.
+        """
+        from glue.utils import unbroadcast
+        pixel_new = []
+        dep_axes = self.dependent_axes(axis)
+        for ip, p in enumerate(pixel):
+            if ip in dep_axes:
+                pixel_new.append(unbroadcast(p))
+            else:
+                pixel_new.append(p.flat[0])
+        pixel_new = np.broadcast_arrays(*pixel_new)
+        result = self.pixel2world(*pixel_new)[axis]
+        return np.broadcast_to(result, pixel[0].shape)
+
     def pixel2world(self, *pixel):
         '''
         Convert pixel to world coordinates, preserving input type/shape
@@ -184,6 +207,26 @@ class WCSCoordinates(Coordinates):
         for r, a in zip(result, arrs):
             r.shape = a.shape
         return result
+
+    def world2pixel_indiv(self, *world, axis=None):
+        """
+        Convert world to pixel coordinates, but only return the coordinate
+        indicated by ``axis``.
+
+        This allows us to do optimization based on which coordinates are
+        indepdendent from each other.
+        """
+        from glue.utils import unbroadcast
+        world_new = []
+        dep_axes = self.dependent_axes(axis)
+        for iw, w in enumerate(world):
+            if iw in dep_axes:
+                world_new.append(unbroadcast(w))
+            else:
+                world_new.append(w.flat[0])
+        world_new = np.broadcast_arrays(*world_new)
+        result = self.world2pixel(*world_new)[axis]
+        return np.broadcast_to(result, world[0].shape)
 
     def world2pixel(self, *world):
         '''
