@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.utils import unbroadcast
+from glue.utils import unbroadcast, broadcast_to
 
 __all__ = ['points_inside_poly', 'polygon_line_intersections']
 
@@ -41,7 +41,7 @@ def points_inside_poly(x, y, vx, vy):
     inside[keep][~good] = False
 
     inside = inside.reshape(reduced_shape)
-    inside = np.broadcast_to(inside, original_shape)
+    inside = broadcast_to(inside, original_shape)
 
     return inside
 

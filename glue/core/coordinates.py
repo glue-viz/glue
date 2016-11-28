@@ -4,7 +4,7 @@ import logging
 
 import numpy as np
 
-from glue.utils import unbroadcast
+from glue.utils import unbroadcast, broadcast_to
 
 
 __all__ = ['Coordinates', 'WCSCoordinates']
@@ -93,7 +93,7 @@ class Coordinates(object):
 
         result = self.pixel2world(*pixel)
 
-        return np.broadcast_to(result[axis], original_shape)
+        return broadcast_to(result[axis], original_shape)
 
     def world2pixel_single_axis(self, *world, **kwargs):
         """
@@ -135,7 +135,7 @@ class Coordinates(object):
 
         result = self.world2pixel(*world)
 
-        return np.broadcast_to(result[axis], original_shape)
+        return broadcast_to(result[axis], original_shape)
 
     def world_axis(self, data, axis):
         """
