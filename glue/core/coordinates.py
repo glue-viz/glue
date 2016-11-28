@@ -51,7 +51,9 @@ class Coordinates(object):
         """
         return args
 
-    def pixel2world_single_axis(self, *pixel, axis=None):
+    # PY3: pixel2world_single_axis(self, *pixel, axis=None)
+
+    def pixel2world_single_axis(self, *pixel, **kwargs):
         """
         Convert pixel to world coordinates, preserving input type/shape.
 
@@ -73,6 +75,9 @@ class Coordinates(object):
             The world coordinates for the requested axis
         """
 
+        # PY3: the following is needed for Python 2
+        axis = kwargs.get('axis', None)
+
         if axis is None:
             raise ValueError("axis needs to be set")
 
@@ -90,7 +95,7 @@ class Coordinates(object):
 
         return np.broadcast_to(result[axis], original_shape)
 
-    def world2pixel_single_axis(self, *world, axis=None):
+    def world2pixel_single_axis(self, *world, **kwargs):
         """
         Convert world to pixel coordinates, preserving input type/shape.
 
@@ -111,6 +116,9 @@ class Coordinates(object):
         pixel : `numpy.ndarray`
             The pixel coordinates for the requested axis
         """
+
+        # PY3: the following is needed for Python 2
+        axis = kwargs.get('axis', None)
 
         if axis is None:
             raise ValueError("axis needs to be set")
@@ -275,11 +283,13 @@ class WCSCoordinates(Coordinates):
             naxis = None
         self._wcs = WCS(self._header, naxis=naxis)
 
-    def pixel2world(self, *pixel, axis=None):
-        return self._wcs.wcs_pix2world(*pixel, 0)
+    def pixel2world(self, *pixel):
+        # PY3: can just do pix2world(*pixel, 0)
+        return self._wcs.wcs_pix2world(*(tuple(pixel) + (0,)))
 
-    def world2pixel(self, *world, axis=None):
-        return self._wcs.wcs_world2pix(*world, 0)
+    def world2pixel(self, *world):
+        # PY3: can just do world2pix(*world, 0)
+        return self._wcs.wcs_world2pix(*(tuple(world) + (0,)))
 
     def axis_label(self, axis):
         header = self._header
