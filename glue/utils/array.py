@@ -7,7 +7,17 @@ from glue.external.six import string_types
 
 
 __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
-           'coerce_numeric', 'check_sorted', 'broadcast_to']
+           'coerce_numeric', 'check_sorted', 'broadcast_to', 'unbroadcast']
+
+
+def unbroadcast(array):
+    slices = []
+    for i in range(array.ndim):
+        if array.strides[i] == 0:
+            slices.append(slice(0, 1))
+        else:
+            slices.append(slice(None))
+    return array[slices]
 
 
 def unique(array):
