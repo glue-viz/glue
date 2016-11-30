@@ -66,7 +66,7 @@ class BasicToolbar(QtWidgets.QToolBar):
             self.activate_tool(new_tool)
             if isinstance(new_tool, CheckableTool):
                 button = self.actions[new_tool.tool_id]
-                if button.isChecked():
+                if not button.isChecked():
                     button.blockSignals(True)
                     button.setChecked(True)
                     button.blockSignals(False)
