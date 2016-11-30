@@ -18,8 +18,8 @@ v0.9.2 (unreleased)
 
 * Fix significant performance bottlenecks with WCS coordinate conversions. [#1185]
 
-* Fix error when changing the contrast radio button the RGB image viewer mode.
-  [#1187]
+* Fix error when changing the contrast radio button the RGB image viewer mode,
+  and also fix bugs with setting the range of values manually. [#1187]
 
 v0.9.1 (2016-11-01)
 -------------------
