@@ -137,6 +137,11 @@ class DS9Normalize(Normalize, object):
                              (value, warpers.keys()))
         self._stretch = value
 
+    def autoscale_None(self, *args, **kwargs):
+        # We have to override the Matplotlib autoscale_None method to make sure
+        # that the limits don't get changed non-deterministically.
+        pass
+
     def update_clip(self, image):
         if self.clip_lo is None or self.clip_hi is None:
             return
