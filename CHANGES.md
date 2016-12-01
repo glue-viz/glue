@@ -16,7 +16,10 @@ v0.9.2 (unreleased)
   The original behavior of keeping the coordinate information from the first
   dataset has been restored. [#1186]
 
-* Fix signficant performance bottlenecks with WCS coordinate conversions. [#1185]
+* Fix significant performance bottlenecks with WCS coordinate conversions. [#1185]
+
+* Fix error when changing the contrast radio button the RGB image viewer mode,
+  and also fix bugs with setting the range of values manually. [#1187]
 
 v0.9.1 (2016-11-01)
 -------------------

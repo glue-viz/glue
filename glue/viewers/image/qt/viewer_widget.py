@@ -407,9 +407,12 @@ class ImageWidget(ImageWidgetBase):
         g = QtCore.QRect(20, self.central_widget.geometry().height() - h, w, h)
         self.label_widget.setGeometry(g)
 
+    def _set_contrast_mode(self):
+        self.toolbar.active_tool = self.toolbar.tools['image:contrast']
+
     def _connect(self):
         super(ImageWidget, self)._connect()
-        self.ui.rgb_options.current_changed.connect(lambda: self._toolbars[0].set_mode(self._contrast))
+        self.ui.rgb_options.current_changed.connect(nonpartial(self._set_contrast_mode))
         self.central_widget.canvas.resize_end.connect(self.client.check_update)
 
     def set_cmap(self, cmap):

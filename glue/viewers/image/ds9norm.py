@@ -123,6 +123,8 @@ class DS9Normalize(Normalize, object):
         self.contrast = 1.0
         self.clip_lo = 5.
         self.clip_hi = 95.
+        self.clip_vmin = None
+        self.clip_vmax = None
 
     @property
     def stretch(self):
@@ -135,18 +137,36 @@ class DS9Normalize(Normalize, object):
                              (value, warpers.keys()))
         self._stretch = value
 
+    def autoscale_None(self, *args, **kwargs):
+        # We have to override the Matplotlib autoscale_None method to make sure
+        # that the limits don't get changed non-deterministically.
+        pass
+
     def update_clip(self, image):
+        if self.clip_lo is None or self.clip_hi is None:
+            return
         vmin, vmax = fast_limits(image, self.clip_lo, self.clip_hi)
-        self.vmin = vmin
-        self.vmax = vmax
+        self.clip_vmin = vmin
+        self.clip_vmax = vmax
 
     def __call__(self, value, clip=False):
+
         # XXX ignore clip
 
-        self.autoscale_None(value)  # set vmin, vmax if unset
-        inverted = self.vmax <= self.vmin
+        # Note, 'self.vmin or self.clip_vmin' doesn't work because self.vmin
+        # can be 0 which causes vmin to then be None.
+        vmin = self.clip_vmin if self.vmin is None else self.vmin
+        vmax = self.clip_vmax if self.vmax is None else self.vmax
 
-        hi, lo = max(self.vmin, self.vmax), min(self.vmin, self.vmax)
+        # For the corner case where vmin/vmax aren't defined yet
+        if vmin is None:
+            vmin = np.min(value)
+        if vmax is None:
+            vmax = np.max(value)
+
+        inverted = vmax <= vmin
+
+        hi, lo = max(vmin, vmax), min(vmin, vmax)
 
         warp = warpers[self.stretch]
         result = warp(value, lo, hi, self.bias, self.contrast)
@@ -157,6 +177,47 @@ class DS9Normalize(Normalize, object):
         result = np.ma.MaskedArray(result, copy=False)
 
         return result
+
+    # We need to make sure that when we set vmin/vmax manually that always
+    # takes precedence over the automatically determined values. We use the
+    # following properties to make sure only one of vmin/vmax or clip_lo/clip_hi
+    # is defined at any one time.
+
+    @property
+    def vmin(self):
+        return self._vmin
+
+    @vmin.setter
+    def vmin(self, value):
+        self._vmin = value
+        self._clip_lo = None
+
+    @property
+    def vmax(self):
+        return self._vmax
+
+    @vmax.setter
+    def vmax(self, value):
+        self._vmax = value
+        self._clip_hi = None
+
+    @property
+    def clip_lo(self):
+        return self._clip_lo
+
+    @clip_lo.setter
+    def clip_lo(self, value):
+        self._clip_lo = value
+        self._vmin = None
+
+    @property
+    def clip_hi(self):
+        return self._clip_hi
+
+    @clip_hi.setter
+    def clip_hi(self, value):
+        self._clip_hi = value
+        self._vmax = None
 
     def __gluestate__(self, context):
         return dict(vmin=self.vmin, vmax=self.vmax, clip_lo=self.clip_lo,
