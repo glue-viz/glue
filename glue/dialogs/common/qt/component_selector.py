@@ -73,7 +73,7 @@ class ComponentSelector(QtWidgets.QWidget):
         if index < 0:
             return
         data = self._data[index]
-        cids = data.components
+        cids = [c for c in data.components if c not in data.auto_derived_components]
 
         c_list = self._ui.component_selector
         c_list.clear()

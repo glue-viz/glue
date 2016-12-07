@@ -28,7 +28,8 @@ from glue.utils import view_shape
 # Note: leave all the following imports for component and component_id since
 # they are here for backward-compatibility (the code used to live in this
 # file)
-from glue.core.component import Component, CoordinateComponent, DerivedComponent
+from glue.core.component import (Component, CoordinateComponent, DerivedComponent,
+                                 AutoDerivedComponent)
 from glue.core.component_id import ComponentID, ComponentIDDict, PixelComponentID
 
 __all__ = ['Data']
@@ -489,6 +490,16 @@ class Data(object):
         """
         return [c for c in self.component_ids() if
                 isinstance(self._components[c], DerivedComponent)]
+
+    @property
+    def auto_derived_components(self):
+        """
+        The ComponentIDs for each :class:`~glue.core.component.AutoDerivedComponent`
+
+        :rtype: list
+        """
+        return [c for c in self.component_ids() if
+                isinstance(self._components[c], AutoDerivedComponent)]
 
     @property
     def pixel_component_ids(self):
