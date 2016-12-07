@@ -48,7 +48,7 @@ class ComponentLink(object):
 
     @contract(using='callable|None',
               inverse='callable|None')
-    def __init__(self, comp_from, comp_to, using=None, inverse=None):
+    def __init__(self, comp_from, comp_to, using=None, inverse=None, inverse_component_link=None):
         """
         :param comp_from: The input ComponentIDs
         :type comp_from: list of :class:`~glue.core.component_id.ComponentID`
@@ -78,8 +78,18 @@ class ComponentLink(object):
 
         self._from = comp_from
         self._to = comp_to
+
         if using is None:
             using = identity
+
+        if using is identity:
+            if inverse is None:
+                inverse = identity
+            elif inverse is identity:
+                pass
+            else:
+                raise ValueError("Cannot specify inverse if using is identity")
+
         self._using = using
         self._inverse = inverse
 
@@ -100,6 +110,20 @@ class ComponentLink(object):
             if len(comp_from) != 1:
                 raise TypeError("comp_from must have only 1 element, "
                                 "or a 'using' function must be provided")
+
+        if inverse_component_link is None:
+            if inverse is not None:
+                if len(comp_from) == 1:
+                    self._inverse_component_link = ComponentLink([self._to], self._from[0],
+                                                                 using=self._inverse,
+                                                                 inverse=self._using,
+                                                                 inverse_component_link=self)
+                else:
+                    raise ValueError("Can only use an inverse with one comp_from link")
+            else:
+                self._inverse_component_link = None
+        else:
+            self._inverse_component_link = inverse_component_link
 
     @contract(data='isinstance(Data)', view='array_view')
     def compute(self, data, view=None):
@@ -166,6 +190,13 @@ class ComponentLink(object):
         """ The transformation function """
         return self._using
 
+    @property
+    def inverse(self):
+        if self._inverse is None:
+            return None
+        else:
+            return self._inverse_component_link
+
     def get_inverse(self):
         """ The inverse transformation, or None """
         return self._inverse
@@ -173,7 +204,10 @@ class ComponentLink(object):
     def __str__(self):
         args = ", ".join([t.label for t in self._from])
         if self._using is not identity:
-            result = "%s <- %s(%s)" % (self._to, self._using.__name__, args)
+            if self._inverse is None:
+                result = "%s <- %s(%s)" % (self._to, self._using.__name__, args)
+            else:
+                result = "%s <-> %s(%s)" % (self._to, self._using.__name__, args)
         else:
             result = "%s <-> %s" % (self._to, self._from)
         return result
@@ -244,6 +278,8 @@ class ComponentLink(object):
     @contract(other='isinstance(ComponentID)|component_like|float|int')
     def __ge__(self, other):
         return InequalitySubsetState(self, other, operator.ge)
+
+
 
 
 class CoordinateComponentLink(ComponentLink):
