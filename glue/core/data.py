@@ -522,12 +522,21 @@ class Data(object):
         :param label: ComponentID or string to search for
 
         :returns:
-            The associated ComponentID if label is found and unique, else None
+            The associated ComponentID if label is found and unique, else None.
+            First, this checks whether the component ID is present and unique in
+            the primary (non-derived) components of the data, and if not then
+            the derived components are checked. If there is one instance of the
+            label in the primary and one in the derived components, the primary
+            one takes precedence.
         """
-        result = [cid for cid in self.component_ids() if
-                  cid.label == label or cid is label]
-        if len(result) == 1:
-            return result[0]
+        for cid_set in (self.primary_components, self.derived_components):
+            result = [cid for cid in cid_set if
+                      cid.label == label or cid is label]
+            if len(result) == 1:
+                return result[0]
+            elif len(result) > 1:
+                return None
+        return None
 
     @property
     def coordinate_links(self):
