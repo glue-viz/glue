@@ -15,6 +15,10 @@ v0.10.0 (unreleased)
 - When hiding layers in the RGB image viewer, make sure the current layer changes
   to be a visible one if possible.
 
+- Avoid merging IDs when creating identity links. The previous behavior of
+  merging was good for performance but made it impossible to undo the linking
+  by un-gluing.
+
 v0.9.2 (unreleased)
 -------------------
 
