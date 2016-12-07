@@ -203,13 +203,24 @@ class ComponentLink(object):
 
     def __str__(self):
         args = ", ".join([t.label for t in self._from])
-        if self._using is not identity:
+        if self._using is identity:
+            result = "%s <-> %s" % (self._to, self._from[0])
+        else:
             if self._inverse is None:
                 result = "%s <- %s(%s)" % (self._to, self._using.__name__, args)
             else:
                 result = "%s <-> %s(%s)" % (self._to, self._using.__name__, args)
+        return result
+
+    def to_html(self):
+        args = ", ".join([t.to_html() for t in self._from])
+        if self._using is identity:
+            result = "%s &#8596; %s" % (self._to.to_html(), self._from[0].to_html())
         else:
-            result = "%s <-> %s" % (self._to, self._from)
+            if self._inverse is None:
+                result = "%s &#8592; %s(%s)" % (self._to.to_html(), self._using.__name__, args)
+            else:
+                result = "%s &#8596; %s(%s)" % (self._to.to_html(), self._using.__name__, args)
         return result
 
     def __repr__(self):

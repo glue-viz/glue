@@ -393,7 +393,7 @@ class Data(object):
         if isinstance(label, ComponentID):
             component_id = label
         else:
-            component_id = ComponentID(label, hidden=hidden)
+            component_id = ComponentID(label, hidden=hidden, parent=self)
 
         is_present = component_id in self._components
         self._components[component_id] = component
@@ -430,7 +430,7 @@ class Data(object):
         """
         if label is not None:
             if not isinstance(label, ComponentID):
-                label = ComponentID(label)
+                label = ComponentID(label, parent=self)
             link.set_to_id(label)
 
         if link.get_to_id() is None:
@@ -446,7 +446,7 @@ class Data(object):
         for i in range(self.ndim):
             comp = CoordinateComponent(self, i)
             label = pixel_label(i, self.ndim)
-            cid = PixelComponentID(i, "Pixel Axis %s" % label, hidden=True)
+            cid = PixelComponentID(i, "Pixel Axis %s" % label, hidden=True, parent=self)
             self.add_component(comp, cid)
             self._pixel_component_ids.append(cid)
         if self.coords:

@@ -83,8 +83,9 @@ class LinkEditor(QtWidgets.QDialog):
 
     def _add_link(self, link):
         current = self._ui.current_links
-        item = QtWidgets.QListWidgetItem(str(link))
+        item = QtWidgets.QListWidgetItem()
         current.addItem(item)
+        current.setItemWidget(item, QtWidgets.QLabel(link.to_html()))
         item.setHidden(link.hidden)
         current.set_data(item, link)
 
