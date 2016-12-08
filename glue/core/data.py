@@ -392,6 +392,7 @@ class Data(object):
 
         if isinstance(label, ComponentID):
             component_id = label
+            component_id.parent = self
         else:
             component_id = ComponentID(label, hidden=hidden, parent=self)
 

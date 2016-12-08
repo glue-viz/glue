@@ -53,7 +53,7 @@ class ComponentID(object):
            :type label: str"""
         self._label = str(label)
         self._hidden = hidden
-        self._parent = parent
+        self.parent = parent
 
     @property
     def label(self):
@@ -82,10 +82,10 @@ class ComponentID(object):
         return str(self._label)
 
     def to_html(self):
-        if self._parent is None:
+        if self.parent is None:
             return str(self._label)
         else:
-            return "<font color='#777777'>[{1}]</font>.{0}".format(self._label, self._parent._label)
+            return "<font color='#777777'>[{1}]</font>.{0}".format(self._label, self.parent._label)
 
     def __eq__(self, other):
         if isinstance(other, (numbers.Number, six.string_types)):

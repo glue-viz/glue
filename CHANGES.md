@@ -7,17 +7,19 @@ v0.10.0 (unreleased)
 - Removed ginga plugin from core package and moved it to a separate repository
   at https://github.com/ejeschke/glue-ginga.
 
-- Added te ability to export data and subset from the data collection view via
+- Added the ability to export data and subset from the data collection view via
   contextual menus. It was previously possible to export only the mask itself,
   and only to FITS files, but the framework for exporting data/subsets has now
-  been generalied.
+  been generalized.
 
 - When hiding layers in the RGB image viewer, make sure the current layer changes
   to be a visible one if possible.
 
 - Avoid merging IDs when creating identity links. The previous behavior of
   merging was good for performance but made it impossible to undo the linking
-  by un-gluing.
+  by un-gluing. Derived components created by links are now represented as
+  ``AutoDerivedComponent`` objects. Finally, ``ComponentID`` objects now hold
+  a reference to the first parent data they are used in. [#1189]
 
 v0.9.2 (unreleased)
 -------------------

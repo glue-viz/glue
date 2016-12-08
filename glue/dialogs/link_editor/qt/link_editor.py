@@ -3,9 +3,11 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from qtpy import QtWidgets
+from qtpy.QtCore import Qt
+
 from glue import core
 from glue.utils import nonpartial
-from glue.utils.qt import load_ui
+from glue.utils.qt import load_ui, HtmlItemDelegate
 
 __all__ = ['LinkEditor']
 
@@ -21,6 +23,10 @@ class LinkEditor(QtWidgets.QDialog):
         self._ui = load_ui('link_editor.ui', self,
                            directory=os.path.dirname(__file__))
 
+        self._html_item_delegate = HtmlItemDelegate(self._ui.current_links)
+        self._ui.current_links.setItemDelegate(self._html_item_delegate)
+        self._ui.current_links.setWordWrap(False)
+
         self._init_widgets()
         self._connect()
         if len(collection) > 1:
@@ -31,6 +37,7 @@ class LinkEditor(QtWidgets.QDialog):
         self._ui.left_components.setup(self._collection)
         self._ui.right_components.setup(self._collection)
         self._ui.signature_editor.hide()
+        self._ui
         for link in self._collection.links:
             self._add_link(link)
 
@@ -38,7 +45,6 @@ class LinkEditor(QtWidgets.QDialog):
         self._ui.add_link.clicked.connect(nonpartial(self._add_new_link))
         self._ui.remove_link.clicked.connect(nonpartial(self._remove_link))
         self._ui.toggle_editor.clicked.connect(nonpartial(self._toggle_advanced))
-        self._ui.signature_editor._ui.addButton.clicked.connect(nonpartial(self._add_new_link))
 
     @property
     def advanced(self):
@@ -48,7 +54,7 @@ class LinkEditor(QtWidgets.QDialog):
     def advanced(self, state):
         """Set whether the widget is in advanced state"""
         self._ui.signature_editor.setVisible(state)
-        self._ui.toggle_editor.setText("Basic" if state else "Advanced")
+        self._ui.toggle_editor.setText("Basic linking" if state else "Advanced linking")
 
     def _toggle_advanced(self):
         """Show or hide the signature editor widget"""
@@ -83,9 +89,9 @@ class LinkEditor(QtWidgets.QDialog):
 
     def _add_link(self, link):
         current = self._ui.current_links
-        item = QtWidgets.QListWidgetItem()
+        item = QtWidgets.QListWidgetItem(link.to_html())
+        item.setTextAlignment(Qt.AlignCenter)
         current.addItem(item)
-        current.setItemWidget(item, QtWidgets.QLabel(link.to_html()))
         item.setHidden(link.hidden)
         current.set_data(item, link)
 
