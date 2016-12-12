@@ -26,12 +26,6 @@ import warnings
 # If your documentation needs a minimal Sphinx version, state it here.
 #needs_sphinx = '1.0'
 
-# The following ensures that astropy-helpers is downloaded from PyPI and
-# installed locally in this directory, since it is needed for the Sphinx
-# extensions.
-from setuptools import Distribution
-Distribution({'setup_requires': 'astropy_helpers'})
-
 # Import matplotlib now to make sure the warning doesn't cause the Sphinx build
 # to fail
 with warnings.catch_warnings():
@@ -51,10 +45,7 @@ with warnings.catch_warnings():
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.coverage',
               'sphinx.ext.mathjax', 'sphinx.ext.viewcode',
-              'astropy_helpers.sphinx.ext.astropyautosummary',
-              'astropy_helpers.sphinx.ext.automodapi',
-              'astropy_helpers.sphinx.ext.numpydoc',
-              'astropy_helpers.sphinx.ext.automodsumm',
+              'sphinx_automodapi.automodapi', 'numpydoc',
               'sphinx.ext.intersphinx']
 
 # Add the redirect.py plugin which is in this directory
