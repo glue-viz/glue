@@ -180,6 +180,9 @@ install:
   # installed
   - python setup.py install
 
+  # List installed packages
+  - conda list
+
 
 script:
 

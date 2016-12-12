@@ -12,6 +12,7 @@ environment:
                         # to the matrix section.
       CONDA_VERSION: "4.1.11"
       CONDA_CHANNELS: "conda-forge"
+      CONDA_CHANNEL_PRIORITY: "True"
       CONDA_DEPENDENCIES: "scipy cython pyqt matplotlib h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage ipython ipykernel qtconsole traitlets=4.1.0 qtpy"
       PIP_DEPENDENCIES: "plotly"
 
@@ -35,6 +36,9 @@ install:
 
     # Install to make sure entry points work
     - "python setup.py install"
+
+    # List installed packages
+    - "conda list"
 
 # Not a .NET project, we build SunPy in the install step instead
 build: false
