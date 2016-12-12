@@ -126,7 +126,7 @@ before_install:
   # request pyqt=4 for PyQt4.
   - if [[ $QT_PKG == pyside ]]; then export CONDA_DEPENDENCIES="pyside "$CONDA_DEPENDENCIES; fi
   - if [[ $QT_PKG == pyqt ]]; then export CONDA_DEPENDENCIES="pyqt<=4.11.3 "$CONDA_DEPENDENCIES; fi
-  - if [[ $QT_PKG == pyqt5 ]]; then export CONDA_DEPENDENCIES="pyqt5 "$CONDA_DEPENDENCIES; fi
+  - if [[ $QT_PKG == pyqt5 ]]; then export CONDA_DEPENDENCIES="pyqt=5 "$CONDA_DEPENDENCIES; fi
 
   # Special cases depending on IPython version
   - if [[ $IPYTHON_VERSION == 4 ]]; then export CONDA_DEPENDENCIES="traitlets=4.1.0 qtconsole ipykernel "$CONDA_DEPENDENCIES; fi
@@ -151,9 +151,8 @@ install:
 
   - LC_ALL=C
 
-  # Uninstall PyQt if we are using PySide or PyQt5
+  # Uninstall PyQt if we are using PySide
   - if [ $QT_PKG == pyside ]; then conda remove --no-pin --force pyqt sip || true; fi
-  - if [ $QT_PKG == pyqt5 ]; then conda remove --no-pin --force pyqt qt || true; fi
 
   - if [[ $QT_PKG == pyqt5 ]]; then
       export QT_QPA_PLATFORM_PLUGIN_PATH=$HOME/miniconda/envs/test/lib/qt5/plugins/platforms;
@@ -167,9 +166,7 @@ install:
       conda remove --no-pin --force qtpy || true;
       conda remove --no-pin --force pyqt || true;
       conda remove --no-pin --force pyside || true;
-      conda remove --no-pin --force pyqt5 || true;
       conda remove --no-pin --force qt || true;
-      conda remove --no-pin --force qt5 || true;
       pip uninstall --yes qtpy || true;
       find . -name "qt" -type d -exec rm -r {} \; || true;
       rm glue/external/qt.py || true;
