@@ -87,17 +87,6 @@ master_doc = 'index'
 project = u'Glue'
 copyright = u'2012-2016, Chris Beaumont, Thomas Robitaille, Michelle Borkin'
 
-# Currently, astropy-helpers sets the Matplotlib backend explicitly. However,
-# since matplotlib is imported during the glue import below, the
-# astropy-helpers call to matplotlib.use emits a warning which causes the
-# Sphinx Travis build to fail. Therefore, we pre-emptively impor
-# astropy-helpers here. This can be removed in future once astropy-helpers no
-# longer sets the backend explicitly (this is a workaround itself for a
-# matplotlib issue).
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    import astropy_helpers
-
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
