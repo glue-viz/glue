@@ -71,6 +71,10 @@ numpydoc_show_class_members = False
 autosummary_generate = True
 automodapi_toctreedirnm = 'api'
 
+# At the moment, sphinx-automodapi causes a warning to appear about autoattribute being
+# registered twice, but this will be fixed in the next release.
+suppress_warnings = ['app.add_directive', 'app.add_node']
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
