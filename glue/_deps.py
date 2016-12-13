@@ -159,7 +159,6 @@ ipython = (
 astronomy = (
     Dependency('pyavm', 'Used to parse AVM metadata in image files', 'PyAVM'),
     Dependency('spectral_cube', 'Used to read in spectral cubes', 'spectral-cube'),
-    Dependency('ginga', 'Adds a ginga viewer to glue', 'ginga'),
     Dependency('astrodendro', 'Used to read in and represent dendrograms', 'astrodendro'))
 
 

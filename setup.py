@@ -75,7 +75,6 @@ cmdclass['test'] = PyTest
 # Define built-in plugins
 entry_points = """
 [glue.plugins]
-ginga_viewer = glue.plugins.ginga_viewer:setup
 export_d3po = glue.plugins.export_d3po:setup
 export_plotly = glue.plugins.exporters.plotly:setup
 pv_slicer = glue.plugins.tools.pv_slicer:setup
@@ -117,7 +116,6 @@ extras_require = {
                     'glue-vispy-viewers'],
     'astronomy': ['PyAVM',
                   'astrodendro',
-                  'ginga',
                   'spectral-cube']
 }
 
