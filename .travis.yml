@@ -19,7 +19,8 @@ env:
     - PYTHON_VERSION=2.7
     - PYTHON_VERSION=3.4
   global:
-    - CONDA_CHANNELS='conda-forge spyder-ide'
+    - CONDA_CHANNELS='conda-forge'
+    - CONDA_CHANNEL_PRIORITY=True
     - MATPLOTLIB_VERSION=1.5
     - NUMPY_VERSION=1.11
     - ASTROPY_VERSION=1.2
@@ -29,7 +30,7 @@ env:
     - QT_PKG=pyqt
     - SETUP_XVFB=True
     # Note that we need to specify requests 2.9 because of a bug in the version check in linkchecker
-    - CONDA_DEPENDENCIES="nomkl pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx=1.2.3 xlrd pillow pytest mock coverage pyyaml requests=2.9 sphinx_rtd_theme qtpy"
+    - CONDA_DEPENDENCIES="nomkl pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx<1.5 xlrd pillow pytest mock coverage pyyaml requests=2.9 sphinx_rtd_theme qtpy"
     - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli ginga plotly spectral-cube"
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
     - secure: "SU9BYH8d9eNigypG3lC83s0NY6Mq9AHGKXyEGeXDtz1npJIC1KHdzPMP1v1K3dzCgl1p6ReMXPjZMCENyfNkad/xvzTzGk0Nu/4BjihrUPV6+ratVeLpv0JLm8ikh8q+sZURkdtzUOlds+Hfn5ku4LdpT87tcKHY9TINAGA34ZM="
@@ -125,13 +126,13 @@ before_install:
   # request pyqt=4 for PyQt4.
   - if [[ $QT_PKG == pyside ]]; then export CONDA_DEPENDENCIES="pyside "$CONDA_DEPENDENCIES; fi
   - if [[ $QT_PKG == pyqt ]]; then export CONDA_DEPENDENCIES="pyqt<=4.11.3 "$CONDA_DEPENDENCIES; fi
-  - if [[ $QT_PKG == pyqt5 ]]; then export CONDA_DEPENDENCIES="pyqt5 "$CONDA_DEPENDENCIES; fi
+  - if [[ $QT_PKG == pyqt5 ]]; then export CONDA_DEPENDENCIES="pyqt=5 "$CONDA_DEPENDENCIES; fi
 
   # Special cases depending on IPython version
   - if [[ $IPYTHON_VERSION == 4 ]]; then export CONDA_DEPENDENCIES="traitlets=4.1.0 qtconsole ipykernel "$CONDA_DEPENDENCIES; fi
 
   # Documentation dependencies
-  - if [ $DOC_TRIGGER ]; then export PIP_DEPENDENCIES="astropy-helpers linkchecker "$PIP_DEPENDENCIES; fi
+  - if [ $DOC_TRIGGER ]; then export PIP_DEPENDENCIES="sphinx-automodapi numpydoc linkchecker "$PIP_DEPENDENCIES; fi
 
   # Install ci-helpers and set up conda
   - git clone git://github.com/astropy/ci-helpers.git
@@ -150,9 +151,8 @@ install:
 
   - LC_ALL=C
 
-  # Uninstall PyQt if we are using PySide or PyQt5
+  # Uninstall PyQt if we are using PySide
   - if [ $QT_PKG == pyside ]; then conda remove --no-pin --force pyqt sip || true; fi
-  - if [ $QT_PKG == pyqt5 ]; then conda remove --no-pin --force pyqt qt || true; fi
 
   - if [[ $QT_PKG == pyqt5 ]]; then
       export QT_QPA_PLATFORM_PLUGIN_PATH=$HOME/miniconda/envs/test/lib/qt5/plugins/platforms;
@@ -166,9 +166,7 @@ install:
       conda remove --no-pin --force qtpy || true;
       conda remove --no-pin --force pyqt || true;
       conda remove --no-pin --force pyside || true;
-      conda remove --no-pin --force pyqt5 || true;
       conda remove --no-pin --force qt || true;
-      conda remove --no-pin --force qt5 || true;
       pip uninstall --yes qtpy || true;
       find . -name "qt" -type d -exec rm -r {} \; || true;
       rm glue/external/qt.py || true;
@@ -178,6 +176,9 @@ install:
   # We need to install glue in order to make sure that the entry points are
   # installed
   - python setup.py install
+
+  # List installed packages
+  - conda list
 
 
 script:

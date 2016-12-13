@@ -644,12 +644,10 @@ def _default_search_order():
        * Glue's own default config
     """
 
-    from glue import config
-
     search_order = [os.path.join(os.getcwd(), 'config.py')]
     if 'GLUERC' in os.environ:
         search_order.append(os.environ['GLUERC'])
-    search_order.append(os.path.join(config.CFG_DIR, 'config.py'))
+    search_order.append(os.path.join(CFG_DIR, 'config.py'))
     return search_order[::-1]
 
 

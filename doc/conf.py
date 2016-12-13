@@ -26,12 +26,6 @@ import warnings
 # If your documentation needs a minimal Sphinx version, state it here.
 #needs_sphinx = '1.0'
 
-# The following ensures that astropy-helpers is downloaded from PyPI and
-# installed locally in this directory, since it is needed for the Sphinx
-# extensions.
-from setuptools import Distribution
-Distribution({'setup_requires': 'astropy_helpers'})
-
 # Import matplotlib now to make sure the warning doesn't cause the Sphinx build
 # to fail
 with warnings.catch_warnings():
@@ -51,10 +45,7 @@ with warnings.catch_warnings():
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.coverage',
               'sphinx.ext.mathjax', 'sphinx.ext.viewcode',
-              'astropy_helpers.sphinx.ext.astropyautosummary',
-              'astropy_helpers.sphinx.ext.automodapi',
-              'astropy_helpers.sphinx.ext.numpydoc',
-              'astropy_helpers.sphinx.ext.automodsumm',
+              'sphinx_automodapi.automodapi', 'numpydoc',
               'sphinx.ext.intersphinx']
 
 # Add the redirect.py plugin which is in this directory
@@ -69,16 +60,20 @@ if ON_RTD:
 
 intersphinx_cache_limit = 10     # days to keep the cached inventories
 intersphinx_mapping = {
-    'sphinx': ('http://sphinx.pocoo.org', None),
-    'python': ('http://docs.python.org/2.7', None),
-    'matplotlib': ('http://matplotlib.sourceforge.net', None),
-    'numpy': ('http://docs.scipy.org/doc/numpy', None),
+    'sphinx': ('http://www.sphinx-doc.org/en/latest/', None),
+    'python': ('https://docs.python.org/2.7', None),
+    'matplotlib': ('http://matplotlib.org', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy', None),
     'astropy': ('http://docs.astropy.org/en/stable/', None),
 }
 
 numpydoc_show_class_members = False
 autosummary_generate = True
 automodapi_toctreedirnm = 'api'
+
+# At the moment, sphinx-automodapi causes a warning to appear about autoattribute being
+# registered twice, but this will be fixed in the next release.
+suppress_warnings = ['app.add_directive', 'app.add_node']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -95,17 +90,6 @@ master_doc = 'index'
 # General information about the project.
 project = u'Glue'
 copyright = u'2012-2016, Chris Beaumont, Thomas Robitaille, Michelle Borkin'
-
-# Currently, astropy-helpers sets the Matplotlib backend explicitly. However,
-# since matplotlib is imported during the glue import below, the
-# astropy-helpers call to matplotlib.use emits a warning which causes the
-# Sphinx Travis build to fail. Therefore, we pre-emptively impor
-# astropy-helpers here. This can be removed in future once astropy-helpers no
-# longer sets the backend explicitly (this is a workaround itself for a
-# matplotlib issue).
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    import astropy_helpers
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -366,3 +350,5 @@ nitpick_ignore = [('py:class', 'object'), ('py:class', 'str'),
 # see https://bitbucket.org/birkenfeld/sphinx/issue/1254/#comment-7587063
 from glue.utils.qt.widget_properties import WidgetProperty
 WidgetProperty.__get__ = lambda self, *args, **kwargs: self
+
+viewcode_import = False

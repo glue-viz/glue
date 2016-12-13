@@ -1,6 +1,9 @@
 from qtpy import QtCore, QtGui, QtWidgets, PYQT5
 
+__all__ = ['get_qapp']
+
 qapp = None
+
 
 def get_qapp(icon_path=None):
     global qapp
