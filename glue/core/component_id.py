@@ -1,17 +1,28 @@
 from __future__ import absolute_import, division, print_function
 
 import operator
-
-import numpy as np
+import numbers
 
 from glue.external import six
 from glue.core.component_link import BinaryComponentLink
 from glue.core.subset import InequalitySubsetState
 
 
-__all__ = ['PixelComponentID', 'ComponentID', 'PixelComponentID', 'ComponentIDDict']
+__all__ = ['PixelComponentID', 'ComponentID', 'PixelComponentID', 'ComponentIDDict', 'ComponentIDList']
 
 # access to ComponentIDs via .item[name]
+
+class ComponentIDList(list):
+
+    def __contains__(self, cid):
+        if isinstance(cid, six.string_types):
+            for c in self:
+                if cid == c.label:
+                    return True
+            else:
+                return False
+        else:
+            return list.__contains__(self, cid)
 
 
 class ComponentIDDict(object):
@@ -70,7 +81,7 @@ class ComponentID(object):
         return str(self._label)
 
     def __eq__(self, other):
-        if np.issubsctype(type(other), np.number):
+        if isinstance(other, (numbers.Number, six.string_types)):
             return InequalitySubsetState(self, other, operator.eq)
         return other is self
 
@@ -79,7 +90,7 @@ class ComponentID(object):
         __hash__ = object.__hash__
 
     def __ne__(self, other):
-        if np.issubsctype(type(other), np.number):
+        if isinstance(other, (numbers.Number, six.string_types)):
             return InequalitySubsetState(self, other, operator.ne)
         return other is not self
 

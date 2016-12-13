@@ -113,6 +113,7 @@ class LayerArtistBase(PropertySetMixin):
         """
         if len(attributes) == 0:
             self.disable('')
+            return
 
         msg = ('Layer depends on attributes that '
                'cannot be derived for %s:\n -%s' %

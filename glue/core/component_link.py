@@ -86,7 +86,7 @@ class ComponentLink(object):
         self.hidden = False  # show in widgets?
         self.identity = self._using is identity
 
-        if type(comp_from) is not list:
+        if not isinstance(comp_from, list):
             raise TypeError("comp_from must be a list: %s" % type(comp_from))
 
         if not all(isinstance(f, ComponentID) for f in self._from):
