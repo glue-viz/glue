@@ -29,3 +29,81 @@ class TestRGBEdit(object):
         for color in ['red', 'green', 'blue']:
             self.w.current[color].click()
             assert self.artist.contrast_layer == color
+
+    def test_disable_current(self):
+
+        # If the current layer is set to not be visible, the current layer
+        # needs to automatically change.
+
+        self.w.current['red'].click()
+        self.w.vis['red'].click()
+
+        assert not self.w.current['red'].isEnabled()
+        assert self.w.current['green'].isEnabled()
+        assert self.w.current['blue'].isEnabled()
+
+        assert not self.w.current['red'].isChecked()
+        assert self.w.current['green'].isChecked()
+        assert not self.w.current['blue'].isChecked()
+
+        assert self.w.rgb_visible == (False, True, True)
+
+        self.w.vis['red'].click()
+
+        assert self.w.current['red'].isEnabled()
+        assert self.w.current['green'].isEnabled()
+        assert self.w.current['blue'].isEnabled()
+
+        assert not self.w.current['red'].isChecked()
+        assert self.w.current['green'].isChecked()
+        assert not self.w.current['blue'].isChecked()
+
+        assert self.w.rgb_visible == (True, True, True)
+
+        self.w.vis['blue'].click()
+
+        assert self.w.current['red'].isEnabled()
+        assert self.w.current['green'].isEnabled()
+        assert not self.w.current['blue'].isEnabled()
+
+        assert not self.w.current['red'].isChecked()
+        assert self.w.current['green'].isChecked()
+        assert not self.w.current['blue'].isChecked()
+
+        assert self.w.rgb_visible == (True, True, False)
+
+        self.w.vis['green'].click()
+
+        assert self.w.current['red'].isEnabled()
+        assert not self.w.current['green'].isEnabled()
+        assert not self.w.current['blue'].isEnabled()
+
+        assert self.w.current['red'].isChecked()
+        assert not self.w.current['green'].isChecked()
+        assert not self.w.current['blue'].isChecked()
+
+        assert self.w.rgb_visible == (True, False, False)
+
+        self.w.vis['red'].click()
+
+        assert not self.w.current['red'].isEnabled()
+        assert not self.w.current['green'].isEnabled()
+        assert not self.w.current['blue'].isEnabled()
+
+        assert self.w.current['red'].isChecked()
+        assert not self.w.current['green'].isChecked()
+        assert not self.w.current['blue'].isChecked()
+
+        assert self.w.rgb_visible == (False, False, False)
+
+        self.w.vis['green'].click()
+
+        assert not self.w.current['red'].isEnabled()
+        assert self.w.current['green'].isEnabled()
+        assert not self.w.current['blue'].isEnabled()
+
+        assert not self.w.current['red'].isChecked()
+        assert self.w.current['green'].isChecked()
+        assert not self.w.current['blue'].isChecked()
+
+        assert self.w.rgb_visible == (False, True, False)

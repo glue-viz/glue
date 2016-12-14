@@ -4,6 +4,11 @@ from qtpy import QtCore, QtWidgets
 from glue.core.qt.component_id_combo import ComponentIDCombo
 
 
+__all__ = ['RgbEdit']
+
+# The following is used for iterating over the colors in a deterministic order
+COLORS = ('red', 'green', 'blue')
+
 class RGBEdit(QtWidgets.QWidget):
 
     """A widget to set the contrast for individual layers in an RGB image
@@ -48,7 +53,7 @@ class RGBEdit(QtWidgets.QWidget):
         self.vis = {}
         self.cid = {}
 
-        for row, color in enumerate(['red', 'green', 'blue'], 1):
+        for row, color in enumerate(COLORS, 1):
             lbl = QtWidgets.QLabel(color.title())
 
             cid = ComponentIDCombo()
@@ -78,7 +83,7 @@ class RGBEdit(QtWidgets.QWidget):
     @property
     def attributes(self):
         """A 3-tuple of the ComponentIDs for each RGB layer"""
-        return tuple(self.cid[c].component for c in ['red', 'green', 'blue'])
+        return tuple(self.cid[c].component for c in COLORS)
 
     @attributes.setter
     def attributes(self, cids):
@@ -90,7 +95,7 @@ class RGBEdit(QtWidgets.QWidget):
     @property
     def rgb_visible(self):
         """ A 3-tuple of the visibility of each layer, as bools """
-        return tuple(self.vis[c].isChecked() for c in ['red', 'green', 'blue'])
+        return tuple(self.vis[c].isChecked() for c in COLORS)
 
     @rgb_visible.setter
     def rgb_visible(self, value):
@@ -148,5 +153,24 @@ class RGBEdit(QtWidgets.QWidget):
         self.artist.layer_visible['red'] = self.vis['red'].isChecked()
         self.artist.layer_visible['green'] = self.vis['green'].isChecked()
         self.artist.layer_visible['blue'] = self.vis['blue'].isChecked()
+
+        enabled = []
+        for color in COLORS:
+            visible = self.artist.layer_visible[color]
+            self.current[color].setEnabled(visible)
+            if visible:
+                enabled.append(color)
+
+        # We now check to see if the selected current layer is disabled, and
+        # if so we change the selection to the first visible layer. If there are
+        # no visible layers, don't do anything.
+        if len(enabled) > 0:
+            for color in COLORS:
+                if self.current[color].isChecked():
+                    if not self.current[color].isEnabled():
+                        self.current[enabled[0]].setChecked(True)
+                        self.update_current()
+                        break
+
         self.artist.update()
         self.artist.redraw()
