@@ -330,3 +330,23 @@ class TestDataCollection(object):
         dc.merge(x, y)
 
         assert dc[0].coords is x.coords
+
+    def test_merge_coordinates_preserve_labels(self):
+
+        # Regression test to make sure that axis labels are preserved after
+        # merging.
+
+        x = Data(x=[1, 2, 3])
+        y = Data(y=[2, 3, 4])
+        dc = DataCollection([x, y])
+
+        class CustomCoordinates(Coordinates):
+            def axis_label(self, axis):
+                return 'Custom {0}'.format(axis)
+
+        x.coords = CustomCoordinates()
+        y.coords = CustomCoordinates()
+
+        dc.merge(x, y)
+
+        assert sorted(cid.label for cid in dc[0].world_component_ids) == ['Custom 0']
