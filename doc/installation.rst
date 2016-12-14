@@ -149,7 +149,6 @@ are:
 * `astrodendro <http://dendrograms.org>`_ for dendrograms
 * `pyavm <https://astrofrog.github.io/pyavm/>`_ for reading AVM metadata
 * `spectral-cube <http://spectral-cube.readthedocs.io>`_ for reading spectral cubes
-* `ginga <https://ejeschke.github.io/ginga/>`_ - if you want to use a ginga viewer in glue
 
 You can check which dependencies are installed and which versions are available
 by running (once glue is installed)::
