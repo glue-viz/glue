@@ -1,6 +1,6 @@
 
-[![Build Status](https://travis-ci.org/glue-viz/glue.svg)](https://travis-ci.org/glue-viz/glue?branch=master)
-[![Build status](https://ci.appveyor.com/api/projects/status/elhwol929gwg1unv/branch/master?svg=true)](https://ci.appveyor.com/project/astrofrog/glue/branch/master)
+[![Travis status](https://img.shields.io/travis/glue/glue-viz/master.svg)](https://travis-ci.org/glue-viz/glue?branch=master)
+[![AppVeyor status](https://img.shields.io/appveyor/ci/glue-viz/glue/master.svg)](https://ci.appveyor.com/project/glue-viz/glue/branch/master)
 [![Coverage Status](https://coveralls.io/repos/glue-viz/glue/badge.svg)](https://coveralls.io/r/glue-viz/glue)
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.13866.svg)](http://dx.doi.org/10.5281/zenodo.13866)
 [![User mailing list](http://img.shields.io/badge/mailing%20list-users-green.svg?style=flat)](https://groups.google.com/forum/#!forum/glue-viz)
