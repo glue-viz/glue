@@ -12,6 +12,9 @@ v0.10.0 (unreleased)
   and only to FITS files, but the framework for exporting data/subsets has now
   been generalied.
 
+- When hiding layers in the RGB image viewer, make sure the current layer changes
+  to be a visible one if possible.
+
 v0.9.2 (unreleased)
 -------------------
 
