@@ -72,8 +72,7 @@ class Data(object):
 
         Extra array-like keywords are extracted into components
         """
-        # Coordinate conversion object
-        self.coords = coords or Coordinates()
+
         self._shape = ()
 
         # Components
@@ -82,6 +81,9 @@ class Data(object):
         self._pixel_aligned_data = OrderedDict()
         self._pixel_component_ids = ComponentIDList()
         self._world_component_ids = ComponentIDList()
+
+        # Coordinate conversion object
+        self.coords = coords or Coordinates()
 
         self.id = ComponentIDDict(self)
 
@@ -112,6 +114,19 @@ class Data(object):
         # the data, we make sure that all Data objects have a UUID that can
         # uniquely identify them.
         self.uuid = str(uuid.uuid4())
+
+    @property
+    def coords(self):
+        """
+        The coordinates object for the data.
+        """
+        return self._coords
+
+    @coords.setter
+    def coords(self, value):
+        self._coords = value
+        if len(self.components) > 0:
+            self._update_world_components(self.ndim)
 
     @property
     def subsets(self):
@@ -548,7 +563,10 @@ class Data(object):
         return dc
 
     def _create_pixel_and_world_components(self, ndim):
+        self._update_pixel_components(ndim)
+        self._update_world_components(ndim)
 
+    def _update_pixel_components(self, ndim):
         for i in range(ndim):
             comp = CoordinateComponent(self, i)
             label = pixel_label(i, ndim)
@@ -556,6 +574,10 @@ class Data(object):
             self.add_component(comp, cid)
             self._pixel_component_ids.append(cid)
 
+    def _update_world_components(self, ndim):
+        for cid in self._world_component_ids[:]:
+            self.remove_component(cid)
+            self._world_component_ids.remove(cid)
         if self.coords:
             for i in range(ndim):
                 comp = CoordinateComponent(self, i, world=True)

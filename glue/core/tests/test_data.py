@@ -4,6 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 import numpy as np
+from numpy.testing import assert_equal
 from mock import MagicMock
 
 from glue.external import six
@@ -785,3 +786,34 @@ def test_clone_meta():
     assert data2.meta['a'] == 1
     assert data2.meta['b'] == 'test'
     assert 'c' not in data2.meta
+
+
+def test_update_coords():
+
+    # Make sure that when overriding coords, the world coordinate components
+    # are updated.
+
+    data = Data(x=[1, 2, 3])
+
+    assert len(data.components) == 3
+
+    assert_equal(data[data.world_component_ids[0]], [0, 1, 2])
+
+    class CustomCoordinates(Coordinates):
+
+        def axis_label(self, axis):
+            return 'Custom {0}'.format(axis)
+
+        def world2pixel(self, *world):
+            return tuple([0.4 * w for w in world])
+
+        def pixel2world(self, *pixel):
+            return tuple([2.5 * p for p in pixel])
+
+    data.coords = CustomCoordinates()
+
+    assert len(data.components) == 3
+
+    assert_equal(data[data.world_component_ids[0]], [0, 2.5, 5])
+
+    assert sorted(cid.label for cid in data.world_component_ids) == ['Custom 0']
