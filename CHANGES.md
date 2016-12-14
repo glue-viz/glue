@@ -24,6 +24,8 @@ v0.9.2 (unreleased)
 * Fix error when changing the contrast radio button the RGB image viewer mode,
   and also fix bugs with setting the range of values manually. [#1187]
 
+* Fix a bug that caused coordinate axis labels to be lost during merging. [#1195]
+
 v0.9.1 (2016-11-01)
 -------------------
 

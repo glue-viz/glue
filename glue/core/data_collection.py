@@ -234,15 +234,19 @@ class DataCollection(HubListener):
             if d.shape != shp:
                 raise ValueError("All arguments must have the same shape")
 
-
         label = kwargs.get('label', data[0].label)
 
         master = Data(label=label)
         self.append(master)
 
+        master.coords = data[0].coords
+
         for d in data:
+
             skip = d.pixel_component_ids + d.world_component_ids
+
             for c in d.components:
+
                 if c in skip:
                     continue
 
@@ -263,9 +267,8 @@ class DataCollection(HubListener):
                 lbl = disambiguate(lbl, taken)
                 c._label = lbl
                 master.add_component(d.get_component(c), c)
-            self.remove(d)
 
-        master.coords = data[0].coords
+            self.remove(d)
 
         return self
 
