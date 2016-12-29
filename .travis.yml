@@ -166,15 +166,24 @@ install:
       pip uninstall --yes qtpy || true;
       find . -name "qt" -type d -exec rm -r {} \; || true;
       rm glue/external/qt.py || true;
-      export MPLBACKEND='Agg';
     fi
-
-  # We need to install glue in order to make sure that the entry points are
-  # installed
-  - python setup.py install
+    
+  # Set MPLBACKEND to Agg by default - this will get overriden if Qt is present,
+  # but it avoids having Matplotlib default to the osx backend on MacOS X
+  - export MPLBACKEND='Agg';
 
   # List installed packages - use the export command so as to be able to
-  # reproduce the exact environment locally
+  # reproduce the exact environment locally. Do this before installing glue
+  # since we don't want glue to appear in the list of packages for the
+  # environment.
+  - conda env export
+
+  # We need to install glue in order to make sure that the entry points are
+  # installed.
+  - python setup.py install
+
+  # List installed packages again - just to check if any packages got installed
+  # in the previous step.
   - conda env export
 
 script:
