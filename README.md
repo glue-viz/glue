@@ -1,5 +1,4 @@
-
-[![Travis status](https://img.shields.io/travis/glue/glue-viz/master.svg)](https://travis-ci.org/glue-viz/glue?branch=master)
+[![Travis Status](https://travis-ci.org/glue-viz/glue.svg?branch=master)](https://travis-ci.org/glue-viz/glue)
 [![AppVeyor status](https://img.shields.io/appveyor/ci/glue-viz/glue/master.svg)](https://ci.appveyor.com/project/glue-viz/glue/branch/master)
 [![Coverage Status](https://coveralls.io/repos/glue-viz/glue/badge.svg)](https://coveralls.io/r/glue-viz/glue)
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.13866.svg)](http://dx.doi.org/10.5281/zenodo.13866)
