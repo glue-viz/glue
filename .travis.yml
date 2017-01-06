@@ -17,14 +17,14 @@ notifications:
 env:
   matrix:
     - PYTHON_VERSION=2.7
-    - PYTHON_VERSION=3.4
+    - PYTHON_VERSION=3.6
   global:
     - CONDA_CHANNELS='conda-forge'
     - CONDA_CHANNEL_PRIORITY=True
     - MATPLOTLIB_VERSION=1.5
     - NUMPY_VERSION=1.11
-    - ASTROPY_VERSION=1.2
-    - IPYTHON_VERSION=4
+    - ASTROPY_VERSION=1.3
+    - IPYTHON_VERSION=5
     - PYTEST_ARGS="--cov glue -vs"
     - NO_CFG_FILES=false
     - QT_PKG=pyqt
@@ -46,12 +46,12 @@ matrix:
 
         # Astropy dev
         - os: linux
-          env: PYTHON_VERSION=2.7
+          env: PYTHON_VERSION=3.6
                ASTROPY_VERSION=dev
 
         # Numpy dev
         - os: linux
-          env: PYTHON_VERSION=2.7
+          env: PYTHON_VERSION=3.6
                NUMPY_VERSION=dev
 
         # PyQt5
@@ -63,14 +63,14 @@ matrix:
         # dependencies. The --no-deps is to prevent scipy from getting
         # installed as a pandas dependency.
         - os: linux
-          env: PYTHON_VERSION=2.7
+          env: PYTHON_VERSION=3.6
                PYTEST_ARGS="--cov glue"
                CONDA_DEPENDENCIES="pytz pyparsing cycler python-dateutil freetype libpng sip qt pip setuptools=7.0 pandas mock pbr six funcsigs matplotlib qtpy"
                CONDA_DEPENDENCIES_FLAGS='--no-deps'
                PIP_DEPENDENCIES="pytest-cov coveralls"
 
         - os: linux
-          env: PYTHON_VERSION=2.7
+          env: PYTHON_VERSION=3.6
                DOC_TRIGGER=1
                APP_TRIGGER=1
                PYTEST_ARGS="--cov glue --no-optional-skip"
@@ -103,7 +103,7 @@ matrix:
         # sub-directories to be removed, to make sure that no non-Qt code has
         # any dependence on Qt code.
         - os: linux
-          env: PYTHON_VERSION=2.7
+          env: PYTHON_VERSION=3.6
                QT_PKG=False
 
     allow_failures:
