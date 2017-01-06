@@ -39,7 +39,7 @@ class TestPandasConversion(object):
     def test_CoordinateComponent_conversion(self):
 
         d = Data(x=[1, 2, 3])
-        series = pd.Series(np.array([0, 1, 2], dtype=np.int))
+        series = pd.Series(np.array([0, 1, 2], dtype=np.int64))
         comp = d.get_component(d.get_pixel_component_id(0))
         assert_series_equal(series, comp.to_series())
 
@@ -49,7 +49,7 @@ class TestPandasConversion(object):
         cat_comp = CategoricalComponent(np.array(['a', 'b', 'c', 'd']))
         d.add_component(cat_comp, 'c')
         link = MagicMock()
-        link.compute.return_value = np.arange(4)
+        link.compute.return_value = np.arange(4, dtype=np.int64)
         deriv_comp = DerivedComponent(d, link)
         d.add_component(deriv_comp, 'd')
         order = [comp.label for comp in d.components]
@@ -57,11 +57,14 @@ class TestPandasConversion(object):
         frame = pd.DataFrame({
             'n': [4, 5, 6, 7],
             'c': ['a', 'b', 'c', 'd'],
-            'd': np.arange(4),
-            'Pixel Axis 0 [x]': np.ogrid[0:4],
+            'd': np.arange(4, dtype=np.int64),
+            'Pixel Axis 0 [x]': np.ogrid[0:4].astype(np.int64),
             'World 0': np.arange(4, dtype=np.int64)
         })
         out_frame = d.to_dataframe()
+
+        for col in out_frame:
+            print('COLUMN', col, out_frame[col].dtype)
 
         assert_frame_equal(out_frame, frame)
         assert list(out_frame.columns) == order
