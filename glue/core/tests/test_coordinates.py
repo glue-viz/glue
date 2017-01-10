@@ -4,7 +4,6 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 import numpy as np
-from mock import patch
 from numpy.testing import assert_allclose
 
 from glue.tests.helpers import requires_astropy
@@ -134,16 +133,12 @@ class TestWcsCoordinates(object):
         assert_allclose(result[1], expected[1])
 
     def test_pixel2world_invalid_input(self):
-        coord = WCSCoordinates(None)
-        x, y = {}, {}
-        with pytest.raises(TypeError) as exc:
-            coord.pixel2world(x, y)
+        with pytest.raises(ValueError):
+            WCSCoordinates(None)
 
     def test_world2pixel_invalid_input(self):
-        coord = WCSCoordinates(None)
-        x, y = {}, {}
-        with pytest.raises(TypeError) as exc:
-            coord.world2pixel(x, y)
+        with pytest.raises(ValueError):
+            WCSCoordinates(None)
 
     def test_axis_label(self):
         hdr = self.default_header()
