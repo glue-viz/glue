@@ -139,8 +139,8 @@ class Coordinates(object):
 
     def world_axis(self, data, axis):
         """
-        Find the world coordinates along a given dimension, and which for now we
-        center on the pixel origin.
+        Find the world coordinates along a given dimension, and which for now
+        we center on the pixel origin.
 
         Parameters
         ----------
@@ -152,10 +152,10 @@ class Coordinates(object):
 
         Notes
         -----
-        This method computes the axis values using pixel positions at the center
-        of the data along all other axes. This will therefore only give the
-        correct result for non-dependent axes (which can be checked using the
-        ``dependent_axes`` method)
+        This method computes the axis values using pixel positions at the
+        center of the data along all other axes. This will therefore only give
+        the correct result for non-dependent axes (which can be checked using
+        the ``dependent_axes`` method).
         """
         pixel = []
         for i, s in enumerate(data.shape):
@@ -163,7 +163,8 @@ class Coordinates(object):
                 pixel.append(np.arange(data.shape[axis]))
             else:
                 pixel.append(np.repeat((s - 1) / 2, data.shape[axis]))
-        return self.pixel2world_single_axis(*pixel[::-1], axis=data.ndim - 1 - axis)
+        return self.pixel2world_single_axis(*pixel[::-1],
+                                            axis=data.ndim - 1 - axis)
 
     def world_axis_unit(self, axis):
         """
@@ -173,7 +174,7 @@ class Coordinates(object):
         return ''
 
     def axis_label(self, axis):
-        return "World %i" % axis
+        return "World {}".format(axis)
 
     def dependent_axes(self, axis):
         """Return a tuple of which world-axes are non-indepndent
@@ -335,12 +336,17 @@ class WCSCoordinates(Coordinates):
 
 
 def coordinates_from_header(header):
-    """ Convert a FITS header into a glue Coordinates object
+    """
+    Convert a FITS header into a glue Coordinates object.
 
-    :param header: Header to convert
-    :type header: :class:`astropy.io.fits.Header`
+    Parameters
+    ----------
+    header : :class:`astropy.io.fits.Header`
+        Header to convert
 
-    :rtype: :class:`~glue.core.coordinates.Coordinates`
+    Returns
+    -------
+    coordinates : :class:`~glue.core.coordinates.Coordinates`
     """
 
     # We check whether the header contains at least CRVAL1 - if not, we would
@@ -353,12 +359,12 @@ def coordinates_from_header(header):
         try:
             return WCSCoordinates(header)
         except Exception as e:
-            logging.getLogger(__name__).warn("\n\n*******************************\n"
-                                             "Encounted an error during WCS parsing. "
-                                             "Discarding world coordinates! "
-                                             "\n%s\n"
-                                             "*******************************\n\n" % e
-                                             )
+            logging.getLogger(__name__).warn(
+                "\n\n*******************************\n"
+                "Encounted an error during WCS parsing. "
+                "Discarding world coordinates! "
+                "\n{}\n"
+                "*******************************\n\n".format(str(e)))
     return Coordinates()
 
 
@@ -371,10 +377,16 @@ def _get_ndim(header):
 
 
 def coordinates_from_wcs(wcs):
-    """Convert a wcs object into a glue Coordinates object
+    """Convert a wcs object into a glue Coordinates object.
 
-    :param wcs: The WCS object to use
-    :rtype: :class:`~glue.core.coordinates.Coordinates`
+    Parameters
+    ----------
+    wcs : obj
+        The WCS object to use
+
+    Returns
+    -------
+    coordinates : :class:`~glue.core.coordinates.Coordinates`
     """
     from astropy.io import fits
     hdr_str = wcs.wcs.to_header()
@@ -388,7 +400,7 @@ def coordinates_from_wcs(wcs):
 
 def header_from_string(string):
     """
-    Convert a string to a FITS header
+    Convert a string to a FITS header.
     """
     from astropy.io import fits
     return fits.Header.fromstring(string, sep='\n')
