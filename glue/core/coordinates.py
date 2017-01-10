@@ -202,9 +202,9 @@ class WCSCoordinates(Coordinates):
 
     Parameters
     ----------
-    header
+    header : :class:`astropy.io.fits.Header`
         FITS header (derived from WCS if not given)
-    wcs
+    wcs : :class:`astropy.wcs.WCS`
         WCS object to use, if different from header
 
     References
@@ -377,11 +377,12 @@ def _get_ndim(header):
 
 
 def coordinates_from_wcs(wcs):
-    """Convert a wcs object into a glue Coordinates object.
+    """
+    Convert an Astropy WCS object into a glue Coordinates object.
 
     Parameters
     ----------
-    wcs : obj
+    wcs : :class:`astropy.wcs.WCS`
         The WCS object to use
 
     Returns
