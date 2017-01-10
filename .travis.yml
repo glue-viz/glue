@@ -65,12 +65,13 @@ matrix:
         - os: linux
           env: PYTHON_VERSION=3.6
                PYTEST_ARGS="--cov glue"
-               CONDA_DEPENDENCIES="pytz pyparsing cycler python-dateutil freetype libpng sip qt pip setuptools=7.0 pandas mock pbr six funcsigs matplotlib qtpy"
+               CONDA_DEPENDENCIES="pytz pyparsing cycler python-dateutil freetype libpng sip qt pip setuptools pandas mock pbr six funcsigs matplotlib qtpy"
                CONDA_DEPENDENCIES_FLAGS='--no-deps'
                PIP_DEPENDENCIES="pytest-cov coveralls"
 
+        # We need to keep the following on 2.7 because of linkchecker
         - os: linux
-          env: PYTHON_VERSION=3.6
+          env: PYTHON_VERSION=2.7
                DOC_TRIGGER=1
                APP_TRIGGER=1
                PYTEST_ARGS="--cov glue --no-optional-skip"
