@@ -24,7 +24,7 @@ from glue.core.contracts import contract
 from glue.core.link_helpers import LinkCollection
 from glue.core.component_link import ComponentLink
 from glue.core.data import Data
-from glue.core.component import AutoDerivedComponent
+from glue.core.component import DerivedComponent
 
 
 def accessible_links(cids, links):
@@ -194,10 +194,12 @@ class LinkManager(object):
         """
         links = discover_links(data, self._links | self._inverse_links)
         for cid, link in six.iteritems(links):
-            d = AutoDerivedComponent(data, link)
+            d = DerivedComponent(data, link)
             if cid not in data.components:
+                # Need to hide component since we don't want to show components
+                # that are auto-generated in datasets by default.
+                cid.hidden = True
                 data.add_component(d, cid)
-
 
     @property
     def links(self):

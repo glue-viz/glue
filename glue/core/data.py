@@ -28,8 +28,7 @@ from glue.utils import view_shape
 # Note: leave all the following imports for component and component_id since
 # they are here for backward-compatibility (the code used to live in this
 # file)
-from glue.core.component import (Component, CoordinateComponent, DerivedComponent,
-                                 AutoDerivedComponent)
+from glue.core.component import Component, CoordinateComponent, DerivedComponent
 from glue.core.component_id import ComponentID, ComponentIDDict, PixelComponentID
 
 __all__ = ['Data']
@@ -493,16 +492,6 @@ class Data(object):
                 isinstance(self._components[c], DerivedComponent)]
 
     @property
-    def auto_derived_components(self):
-        """
-        The ComponentIDs for each :class:`~glue.core.component.AutoDerivedComponent`
-
-        :rtype: list
-        """
-        return [c for c in self.component_ids() if
-                isinstance(self._components[c], AutoDerivedComponent)]
-
-    @property
     def pixel_component_ids(self):
         """
         The :class:`ComponentIDs <glue.core.component_id.ComponentID>` for each pixel coordinate.
@@ -730,13 +719,21 @@ class Data(object):
         s = "Data Set: %s\n" % self.label
         s += "Number of dimensions: %i\n" % self.ndim
         s += "Shape: %s\n" % ' x '.join([str(x) for x in self.shape])
-        s += "Components:\n"
-        for i, cid in enumerate(self._components):
-            comp = self.get_component(cid)
-            if comp.units is None or comp.units == '':
-                s += " %i) %s\n" % (i, cid)
+        for hidden in [False, True]:
+            if hidden:
+                s += "Hidden "
             else:
-                s += " %i) %s [%s]\n" % (i, cid, comp.units)
+                s += "Main "
+            s += "components:\n"
+            components = [c for c in self.components if c.hidden == hidden]
+            for i, cid in enumerate(components):
+                if cid.hidden != hidden:
+                    continue
+                comp = self.get_component(cid)
+                if comp.units is None or comp.units == '':
+                    s += " %i) %s\n" % (i, cid)
+                else:
+                    s += " %i) %s [%s]\n" % (i, cid, comp.units)
         return s[:-1]
 
     def __repr__(self):

@@ -73,8 +73,10 @@ class ComponentSelector(QtWidgets.QWidget):
         if index < 0:
             return
         data = self._data[index]
-        cids = [c for c in data.components if c not in data.auto_derived_components]
-
+        # We allow 'hidden' components because we want to show things like coordinates,
+        # but we don't want to include hidden AND derived components which are
+        # generated from links.
+        cids = [c for c in data.components if not (c in data.derived_components and c.hidden)]
         c_list = self._ui.component_selector
         c_list.clear()
         for c in cids:

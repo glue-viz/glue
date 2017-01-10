@@ -16,10 +16,10 @@ v0.10.0 (unreleased)
   to be a visible one if possible.
 
 - Avoid merging IDs when creating identity links. The previous behavior of
-  merging was good for performance but made it impossible to undo the linking
-  by un-gluing. Derived components created by links are now represented as
-  ``AutoDerivedComponent`` objects. Finally, ``ComponentID`` objects now hold
-  a reference to the first parent data they are used in. [#1189]
+  merging was good for performance but made it impossible to undo the linking by
+  un-glueing. Derived components created by links are now hidden by default.
+  Finally, ``ComponentID`` objects now hold a reference to the first parent data
+  they are used in. [#1189]
 
 v0.9.2 (unreleased)
 -------------------

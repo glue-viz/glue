@@ -75,6 +75,10 @@ class ComponentID(object):
         """Whether to hide the component by default"""
         return self._hidden
 
+    @hidden.setter
+    def hidden(self, value):
+        self._hidden = value
+
     def __str__(self):
         return str(self._label)
 
