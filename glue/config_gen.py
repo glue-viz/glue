@@ -10,7 +10,7 @@ import sys
 from shutil import copyfile
 
 import glue
-from glue.external.six import input
+from glue.external.six.moves import input
 
 
 def get_clobber():
