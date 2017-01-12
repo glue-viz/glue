@@ -48,11 +48,12 @@ class ComponentID(object):
        data[component_id] -> numpy array
     """
 
-    def __init__(self, label, hidden=False):
+    def __init__(self, label, hidden=False, parent=None):
         """:param label: Name for the ID
            :type label: str"""
         self._label = str(label)
         self._hidden = hidden
+        self.parent = parent
 
     @property
     def label(self):
@@ -74,11 +75,21 @@ class ComponentID(object):
         """Whether to hide the component by default"""
         return self._hidden
 
+    @hidden.setter
+    def hidden(self, value):
+        self._hidden = value
+
     def __str__(self):
         return str(self._label)
 
     def __repr__(self):
         return str(self._label)
+
+    def to_html(self):
+        if self.parent is None:
+            return str(self._label)
+        else:
+            return "<font color='#777777'>[{1}]</font>.{0}".format(self._label, self.parent._label)
 
     def __eq__(self, other):
         if isinstance(other, (numbers.Number, six.string_types)):
@@ -151,6 +162,6 @@ class PixelComponentID(ComponentID):
     dimensions.
     """
 
-    def __init__(self, axis, label, hidden=False):
+    def __init__(self, axis, label, hidden=False, parent=None):
         self.axis = axis
-        super(PixelComponentID, self).__init__(label, hidden=hidden)
+        super(PixelComponentID, self).__init__(label, hidden=hidden, parent=parent)

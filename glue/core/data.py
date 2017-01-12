@@ -391,8 +391,9 @@ class Data(object):
 
         if isinstance(label, ComponentID):
             component_id = label
+            component_id.parent = self
         else:
-            component_id = ComponentID(label, hidden=hidden)
+            component_id = ComponentID(label, hidden=hidden, parent=self)
 
         is_present = component_id in self._components
         self._components[component_id] = component
@@ -429,7 +430,7 @@ class Data(object):
         """
         if label is not None:
             if not isinstance(label, ComponentID):
-                label = ComponentID(label)
+                label = ComponentID(label, parent=self)
             link.set_to_id(label)
 
         if link.get_to_id() is None:
@@ -445,7 +446,7 @@ class Data(object):
         for i in range(self.ndim):
             comp = CoordinateComponent(self, i)
             label = pixel_label(i, self.ndim)
-            cid = PixelComponentID(i, "Pixel Axis %s" % label, hidden=True)
+            cid = PixelComponentID(i, "Pixel Axis %s" % label, hidden=True, parent=self)
             self.add_component(comp, cid)
             self._pixel_component_ids.append(cid)
         if self.coords:
@@ -511,12 +512,21 @@ class Data(object):
         :param label: ComponentID or string to search for
 
         :returns:
-            The associated ComponentID if label is found and unique, else None
+            The associated ComponentID if label is found and unique, else None.
+            First, this checks whether the component ID is present and unique in
+            the primary (non-derived) components of the data, and if not then
+            the derived components are checked. If there is one instance of the
+            label in the primary and one in the derived components, the primary
+            one takes precedence.
         """
-        result = [cid for cid in self.component_ids() if
-                  cid.label == label or cid is label]
-        if len(result) == 1:
-            return result[0]
+        for cid_set in (self.primary_components, self.derived_components):
+            result = [cid for cid in cid_set if
+                      cid.label == label or cid is label]
+            if len(result) == 1:
+                return result[0]
+            elif len(result) > 1:
+                return None
+        return None
 
     @property
     def coordinate_links(self):
@@ -709,13 +719,21 @@ class Data(object):
         s = "Data Set: %s\n" % self.label
         s += "Number of dimensions: %i\n" % self.ndim
         s += "Shape: %s\n" % ' x '.join([str(x) for x in self.shape])
-        s += "Components:\n"
-        for i, cid in enumerate(self._components):
-            comp = self.get_component(cid)
-            if comp.units is None or comp.units == '':
-                s += " %i) %s\n" % (i, cid)
+        for hidden in [False, True]:
+            if hidden:
+                s += "Hidden "
             else:
-                s += " %i) %s [%s]\n" % (i, cid, comp.units)
+                s += "Main "
+            s += "components:\n"
+            components = [c for c in self.components if c.hidden == hidden]
+            for i, cid in enumerate(components):
+                if cid.hidden != hidden:
+                    continue
+                comp = self.get_component(cid)
+                if comp.units is None or comp.units == '':
+                    s += " %i) %s\n" % (i, cid)
+                else:
+                    s += " %i) %s [%s]\n" % (i, cid, comp.units)
         return s[:-1]
 
     def __repr__(self):

@@ -171,10 +171,6 @@ class LinkEquation(QtWidgets.QWidget):
         layout.addItem(spacer)
 
     @property
-    def add_button(self):
-        return self._ui.addButton
-
-    @property
     def signature(self):
         """ Returns the ComponentIDs assigned to the input and output arguments
 
@@ -220,7 +216,6 @@ class LinkEquation(QtWidgets.QWidget):
             state = state and a.component_id is not None
         if self.is_function():
             state = state and self._output_widget.component_id is not None
-        self._ui.addButton.setEnabled(state)
 
     def _connect(self):
         signal = self._ui.function.currentIndexChanged

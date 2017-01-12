@@ -18,8 +18,8 @@ from glue.utils import (unique, shape_to_string, coerce_numeric, check_sorted,
                         polygon_line_intersections, broadcast_to)
 
 
-__all__ = ['Component', 'DerivedComponent',
-           'CategoricalComponent', 'CoordinateComponent']
+__all__ = ['Component', 'DerivedComponent', 'CategoricalComponent',
+           'CoordinateComponent']
 
 
 class Component(object):
@@ -309,8 +309,6 @@ class CoordinateComponent(Component):
             if view is not None:
                 grids = [g[view] for g in grids]
             return grids[self.axis]
-
-
 
     @property
     def shape(self):

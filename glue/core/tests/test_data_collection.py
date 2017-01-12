@@ -214,13 +214,19 @@ class TestDataCollection(object):
         d2 = Data(x=[2, 3, 4])
         dc = DataCollection([d1, d2])
 
-        duplicated_id = d2.id['x']
+        original_id = d2.id['x']
         link = ComponentLink([d1.id['x']], d2.id['x'])
         dc.add_link(link)
 
-        assert d1.id['x'] is d2.id['x']
-        assert d1.id['x'] is not duplicated_id
-        assert duplicated_id not in d2.components
+        # NOTE: the behavior tested here is not desirable anymore, so the relevant
+        #       parts that are no longer true have been commented out and replaced
+        #       by the new behavior.
+
+        # assert d1.id['x'] is not original_id
+        # assert duplicated_id not in d2.components
+        assert d1.id['x'] is not original_id
+        assert d2.id['x'] is original_id
+        assert original_id in d2.components
 
         assert_array_equal(d1[d1.id['x']], [1, 2, 3])
         assert_array_equal(d2[d1.id['x']], [2, 3, 4])

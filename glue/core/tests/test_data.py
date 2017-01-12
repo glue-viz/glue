@@ -557,11 +557,12 @@ EXPECTED_STR = """
 Data Set: mydata
 Number of dimensions: 1
 Shape: 3
-Components:
+Main components:
  0) x
- 1) Pixel Axis 0 [x]
- 2) World 0
- 3) y
+ 1) y
+Hidden components:
+ 0) Pixel Axis 0 [x]
+ 1) World 0
 """.strip()
 
 def test_data_str():

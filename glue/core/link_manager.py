@@ -23,7 +23,8 @@ from glue.external import six
 from glue.core.contracts import contract
 from glue.core.link_helpers import LinkCollection
 from glue.core.component_link import ComponentLink
-from glue.core.data import Data, DerivedComponent
+from glue.core.data import Data
+from glue.core.component import DerivedComponent
 
 
 def accessible_links(cids, links):
@@ -39,7 +40,8 @@ def accessible_links(cids, links):
     """
     cids = set(cids)
     return [l for l in links if
-            set(l.get_from_ids()) <= cids]
+             set(l.get_from_ids()) <= cids]
+
 
 
 def discover_links(data, links):
@@ -122,7 +124,6 @@ class LinkManager(object):
 
     def __init__(self):
         self._links = set()
-        self._duplicated_ids = []
 
     def add_link(self, link):
         """
@@ -137,33 +138,8 @@ class LinkManager(object):
             for l in link:
                 self.add_link(l)
         else:
-            self._links.add(link)
-            if link.identity:
-                self._add_duplicated_id(link)
-        self._reassign_mergers()
-
-    def _add_duplicated_id(self, link):
-        frm = link.get_from_ids()
-        assert len(frm) == 1
-        frm = frm[0]
-        to = link.get_to_id()
-        if (frm, to) in self._duplicated_ids:
-            return
-        if (to, frm) in self._duplicated_ids:
-            return
-        self._duplicated_ids.append((frm, to))
-
-    def _reassign_mergers(self):
-        """Update all links such that any reference to a duplicate
-        componentID is replaced with the original"""
-        for l in self._links:
-            for o, d in self._duplicated_ids:
-                l.replace_ids(d, o)
-
-    def _merge_duplicate_ids(self, data):
-        for o, d in self._duplicated_ids:
-            if d in data.components:
-                data.update_id(d, o)
+            if not link.inverse in self._links:
+                self._links.add(link)
 
     @contract(link=ComponentLink)
     def remove_link(self, link):
@@ -189,9 +165,12 @@ class LinkManager(object):
         DerivedComponents will be replaced / added into
         the data object
         """
-        self._merge_duplicate_ids(data)
         self._remove_underiveable_components(data)
         self._add_deriveable_components(data)
+
+    @property
+    def _inverse_links(self):
+        return set(link.inverse for link in self._links if link.inverse is not None)
 
     def _remove_underiveable_components(self, data):
         """ Find and remove any DerivedComponent in the data
@@ -199,7 +178,7 @@ class LinkManager(object):
         """
         data_links = set(data.get_component(dc).link
                          for dc in data.derived_components)
-        missing_links = data_links - self._links
+        missing_links = data_links - self._links - self._inverse_links
         to_remove = []
         for m in missing_links:
             to_remove.extend(find_dependents(data, m))
@@ -213,10 +192,14 @@ class LinkManager(object):
         LinkManager
 
         """
-        links = discover_links(data, self._links)
+        links = discover_links(data, self._links | self._inverse_links)
         for cid, link in six.iteritems(links):
             d = DerivedComponent(data, link)
-            data.add_component(d, cid)
+            if cid not in data.components:
+                # Need to hide component since we don't want to show components
+                # that are auto-generated in datasets by default.
+                cid.hidden = True
+                data.add_component(d, cid)
 
     @property
     def links(self):

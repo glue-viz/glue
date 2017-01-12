@@ -238,6 +238,9 @@ class TestLinkManager(object):
 
         dc = DataCollection([d1, d2])
         dc.add_link(LinkSame(d2.id['u'], d1.id['x']))
-        assert x not in d1.components
+
+        # NOTE: the behavior tested here is not desirable anymore, so the
+        #       following assert is no longer True
+        # assert x not in d1.components
 
         np.testing.assert_array_equal(d1['z'], [8, 10, 12])
