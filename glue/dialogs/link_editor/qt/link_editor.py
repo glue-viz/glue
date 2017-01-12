@@ -37,7 +37,6 @@ class LinkEditor(QtWidgets.QDialog):
         self._ui.left_components.setup(self._collection)
         self._ui.right_components.setup(self._collection)
         self._ui.signature_editor.hide()
-        self._ui
         for link in self._collection.links:
             self._add_link(link)
 
