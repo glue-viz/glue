@@ -53,14 +53,17 @@ def pick_class(classes, sort=False, **kwargs):
     return pick_item(classes, choices, **kwargs)
 
 
-def get_text(title='Enter a label'):
+def get_text(title='Enter a label', default=None):
     """Prompt the user to enter text using QT
 
     :param title: Name of the prompt
+    :param default: Default text to show in prompt
 
-    *Returns*
+    Returns:
        The text the user typed, or None
     """
-    result, isok = QtWidgets.QInputDialog.getText(None, title, title)
+    result, isok = QtWidgets.QInputDialog.getText(
+        None, title, title, text=default
+    )
     if isok:
         return str(result)
