@@ -5,7 +5,8 @@ from collections import OrderedDict
 
 from qtpy import QtWidgets
 
-from glue.utils.qt import load_ui, autoconnect_qt, update_combobox
+from glue.external.echo.qt import autoconnect_callbacks_to_qt
+from glue.utils.qt import load_ui, update_combobox
 from glue.utils.qt.widget_properties import CurrentComboDataProperty
 from glue.core.qt.data_combo_helper import ComponentIDComboHelper
 from glue.external.echo import add_callback
@@ -25,12 +26,12 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         # TODO: layer_state should not have data_collection attribute
         self.layer_state = layer.layer_state
 
-        self.size_cid_helper = ComponentIDComboHelper(self.ui.combo_size_attribute,
+        self.size_cid_helper = ComponentIDComboHelper(self.ui.combodata_size_attribute,
                                                       self.layer_state.data_collection,
                                                       categorical=False)
         self.size_cid_helper.append_data(self.layer_state.layer)
 
-        self.cmap_cid_helper = ComponentIDComboHelper(self.ui.combo_cmap_attribute,
+        self.cmap_cid_helper = ComponentIDComboHelper(self.ui.combodata_cmap_attribute,
                                                       self.layer_state.data_collection,
                                                       categorical=False)
         self.cmap_cid_helper.append_data(self.layer_state.layer)
@@ -42,11 +43,11 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
 
         if self.layer_state.size_mode == "Fixed":
             self.ui.size_row_2.hide()
-            self.ui.combo_size_attribute.hide()
+            self.ui.combodata_size_attribute.hide()
             self.ui.value_size.show()
         else:
             self.ui.value_size.hide()
-            self.ui.combo_size_attribute.show()
+            self.ui.combodata_size_attribute.show()
             self.ui.size_row_2.show()
 
     def _update_color_mode(self):
@@ -54,12 +55,12 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         if self.layer_state.color_mode == "Fixed":
             self.ui.color_row_2.hide()
             self.ui.color_row_3.hide()
-            self.ui.combo_cmap_attribute.hide()
+            self.ui.combodata_cmap_attribute.hide()
             self.ui.spacer_color_label.show()
             self.ui.color_color.show()
         else:
             self.ui.color_color.hide()
-            self.ui.combo_cmap_attribute.show()
+            self.ui.combodata_cmap_attribute.show()
             self.ui.spacer_color_label.hide()
             self.ui.color_row_2.show()
             self.ui.color_row_3.show()
@@ -89,7 +90,7 @@ class LineLayerStyleEditor(QtWidgets.QWidget):
                       ('· · · · · · · ·', 'dotted'),
                       ('– · – · – ·', 'dashdot')]
 
-        update_combobox(self.ui.combo_linestyle, label_data)
+        update_combobox(self.ui.combodata_linestyle, label_data)
 
 
 class Histogram2DLayerStyleEditor(QtWidgets.QWidget):
@@ -114,12 +115,12 @@ class VectorLayerStyleEditor(QtWidgets.QWidget):
         # TODO: layer_state should not have data_collection attribute
         self.layer_state = layer.layer_state
 
-        self.vx_cid_helper = ComponentIDComboHelper(self.ui.combo_vector_x_attribute,
+        self.vx_cid_helper = ComponentIDComboHelper(self.ui.combodata_vector_x_attribute,
                                                     self.layer_state.data_collection,
                                                     categorical=False)
         self.vx_cid_helper.append_data(self.layer_state.layer)
 
-        self.vy_cid_helper = ComponentIDComboHelper(self.ui.combo_vector_y_attribute,
+        self.vy_cid_helper = ComponentIDComboHelper(self.ui.combodata_vector_y_attribute,
                                                     self.layer_state.data_collection,
                                                     categorical=False)
         self.vy_cid_helper.append_data(self.layer_state.layer)
@@ -159,7 +160,7 @@ class Generic2DLayerStyleEditor(QtWidgets.QWidget):
                           'alpha': dict(value_range=(0, 1)),
                           'vector_scaling': dict(value_range=(1, 100), log=True)}
 
-        autoconnect_qt(self.layer_state, self.ui, connect_kwargs)
+        autoconnect_callbacks_to_qt(self.layer_state, self.ui, connect_kwargs)
 
         # TEMP: should happen in ScatterLayerStyleEditor
         self.editors['Scatter']._update_size_mode()

@@ -4,8 +4,9 @@ import os
 
 from qtpy import QtWidgets
 
+from glue.external.echo.qt import autoconnect_callbacks_to_qt
 from glue.core import Data, Subset
-from glue.utils.qt import load_ui, autoconnect_qt
+from glue.utils.qt import load_ui
 from glue.core.qt.data_combo_helper import ComponentIDComboHelper
 
 __all__ = ['ScatterOptionsWidget']
@@ -20,15 +21,15 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         self.ui = load_ui('options_widget.ui', self,
                           directory=os.path.dirname(__file__))
 
-        autoconnect_qt(viewer_state, self.ui)
+        autoconnect_callbacks_to_qt(viewer_state, self.ui)
 
-        viewer_state.connect('layers', self._update_combo_data)
+        viewer_state.add_callback('layers', self._update_combo_data)
 
-        self.xatt_helper = ComponentIDComboHelper(self.ui.combo_xatt,
+        self.xatt_helper = ComponentIDComboHelper(self.ui.combodata_xatt,
                                                   session.data_collection,
                                                   default_index=0)
 
-        self.yatt_helper = ComponentIDComboHelper(self.ui.combo_yatt,
+        self.yatt_helper = ComponentIDComboHelper(self.ui.combodata_yatt,
                                                   session.data_collection,
                                                   default_index=1)
 

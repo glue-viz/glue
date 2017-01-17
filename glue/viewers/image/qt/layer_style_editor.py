@@ -2,7 +2,8 @@ import os
 
 from qtpy import QtWidgets
 
-from glue.utils.qt import load_ui, autoconnect_qt
+from glue.external.echo.qt import autoconnect_callbacks_to_qt
+from glue.utils.qt import load_ui
 from glue.core.qt.data_combo_helper import ComponentIDComboHelper
 from glue.viewers.common.qt.attribute_limits_helper import AttributeLimitsHelper
 
@@ -23,7 +24,7 @@ class ImageLayerStyleEditor(QtWidgets.QWidget):
             'alpha': dict(value_range=(0, 1))
         }
 
-        autoconnect_qt(self.layer_state, self.ui, connect_kwargs)
+        autoconnect_callbacks_to_qt(self.layer_state, self.ui, connect_kwargs)
 
         self.att_limits_helper = AttributeLimitsHelper(self.ui.combo_att,
                                                        self.ui.value_vmin,

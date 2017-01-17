@@ -36,11 +36,11 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         # Watch for changes in the viewer state which would require the
         # layers to be redrawn
         # TODO: don't connect to ALL signals here
-        # self.viewer_state.connect_all(nonpartial(self.update))
-        self.viewer_state.connect('xatt', nonpartial(self.update))
-        self.viewer_state.connect('yatt', nonpartial(self.update))
+        # self.viewer_state.add_callback('*',nonpartial(self.update))
+        self.viewer_state.add_callback('xatt', nonpartial(self.update))
+        self.viewer_state.add_callback('yatt', nonpartial(self.update))
 
-        self.layer_state.connect_all(nonpartial(self.update))
+        self.layer_state.add_callback('*', nonpartial(self.update))
 
         # TODO: following is temporary
         self.layer_state.data_collection = self.viewer_state.data_collection

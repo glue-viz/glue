@@ -7,14 +7,23 @@
     <x>0</x>
     <y>0</y>
     <width>220</width>
-    <height>81</height>
+    <height>84</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <property name="margin">
+   <property name="leftMargin">
+    <number>5</number>
+   </property>
+   <property name="topMargin">
+    <number>5</number>
+   </property>
+   <property name="rightMargin">
+    <number>5</number>
+   </property>
+   <property name="bottomMargin">
     <number>5</number>
    </property>
    <property name="spacing">
@@ -47,13 +56,13 @@
     </widget>
    </item>
    <item row="1" column="2">
-    <widget class="QLineEdit" name="value_h_x_min"/>
+    <widget class="QLineEdit" name="valuetext_h_x_min"/>
    </item>
    <item row="2" column="3">
-    <widget class="QLineEdit" name="value_h_y_max"/>
+    <widget class="QLineEdit" name="valuetext_h_y_max"/>
    </item>
    <item row="1" column="3">
-    <widget class="QLineEdit" name="value_h_x_max"/>
+    <widget class="QLineEdit" name="valuetext_h_x_max"/>
    </item>
    <item row="2" column="4">
     <widget class="QSpinBox" name="value_h_ny"/>
@@ -72,7 +81,7 @@
     </widget>
    </item>
    <item row="2" column="2">
-    <widget class="QLineEdit" name="value_h_y_min"/>
+    <widget class="QLineEdit" name="valuetext_h_y_min"/>
    </item>
    <item row="1" column="4">
     <widget class="QSpinBox" name="value_h_nx"/>

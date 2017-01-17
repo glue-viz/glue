@@ -60,7 +60,7 @@
         <widget class="QLineEdit" name="value_x_min"/>
        </item>
        <item row="0" column="2" colspan="4">
-        <widget class="QComboBox" name="combo_xcoord">
+        <widget class="QComboBox" name="combodata_xcoord">
          <property name="sizeAdjustPolicy">
           <enum>QComboBox::AdjustToMinimumContentsLength</enum>
          </property>
@@ -128,7 +128,7 @@
         </widget>
        </item>
        <item row="2" column="2" colspan="4">
-        <widget class="QComboBox" name="combo_ycoord">
+        <widget class="QComboBox" name="combodata_ycoord">
          <property name="sizeAdjustPolicy">
           <enum>QComboBox::AdjustToMinimumContentsLength</enum>
          </property>
@@ -179,7 +179,7 @@
         </widget>
        </item>
        <item row="4" column="2" colspan="4">
-        <widget class="QComboBox" name="combo_aspect"/>
+        <widget class="QComboBox" name="combodata_aspect"/>
        </item>
       </layout>
      </widget>

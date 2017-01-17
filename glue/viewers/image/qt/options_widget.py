@@ -4,7 +4,8 @@ import os
 
 from qtpy import QtWidgets
 
-from glue.utils.qt import load_ui, autoconnect_qt, update_combobox
+from glue.external.echo.qt import autoconnect_callbacks_to_qt
+from glue.utils.qt import load_ui, update_combobox
 from glue.core.qt.data_combo_helper import ComponentIDComboHelper
 from glue.viewers.common.qt.attribute_limits_helper import AttributeLimitsHelper
 
@@ -20,7 +21,7 @@ class ImageOptionsWidget(QtWidgets.QWidget):
         self.ui = load_ui('options_widget.ui', self,
                           directory=os.path.dirname(__file__))
 
-        autoconnect_qt(viewer_state, self.ui)
+        autoconnect_callbacks_to_qt(viewer_state, self.ui)
 
         aspect_labels = [('Square aspect ratio', 'equal'),
                          ('Free aspect ratio', 'auto')]
@@ -32,9 +33,9 @@ class ImageOptionsWidget(QtWidgets.QWidget):
         # TODO: make it so there is an equivalent of ComponentIDComboHelper for
         # coordinates
 
-        # self.xatt_helper = ComponentIDComboHelper(self.ui.combo_xatt,
+        # self.xatt_helper = ComponentIDComboHelper(self.ui.combodata_xatt,
         #                                           session.data_collection)
-        # self.yatt_helper = ComponentIDComboHelper(self.ui.combo_yatt,
+        # self.yatt_helper = ComponentIDComboHelper(self.ui.combodata_yatt,
         #                                           session.data_collection)
 
         self.xcoord_limits_helper = AttributeLimitsHelper(self.ui.combo_xcoord,

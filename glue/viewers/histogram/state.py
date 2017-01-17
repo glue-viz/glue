@@ -1,10 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.echo import CallbackProperty, add_callback
+from glue.external.echo import CallbackProperty, ListCallbackProperty, add_callback
 from glue.utils import nonpartial
 from glue.config import colormaps
 
-from glue.core.state_objects import State, StateList
+from glue.core.state_objects import State
 from glue.utils import avoid_circular
 
 __all__ = ['HistogramViewerState', 'HistogramLayerState']
@@ -31,7 +31,7 @@ class HistogramViewerState(State):
     cumulative = CallbackProperty(False)
     normalize = CallbackProperty(False)
 
-    layers = StateList()
+    layers = ListCallbackProperty()
 
 
 # TODO: try and avoid duplication in LayerState objects

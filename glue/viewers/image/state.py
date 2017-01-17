@@ -1,10 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.echo import CallbackProperty, add_callback
+from glue.external.echo import CallbackProperty, ListCallbackProperty, add_callback
 from glue.utils import nonpartial
 from glue.config import colormaps
 
-from glue.core.state_objects import State, StateList
+from glue.core.state_objects import State
 from glue.utils import avoid_circular
 
 __all__ = ['ImageViewerState', 'ImageLayerState']
@@ -25,7 +25,7 @@ class ImageViewerState(State):
 
     aspect = CallbackProperty()
 
-    layers = StateList()
+    layers = ListCallbackProperty()
 
 
 class ImageLayerState(State):

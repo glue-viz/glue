@@ -6,28 +6,37 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>167</width>
-    <height>149</height>
+    <width>192</width>
+    <height>151</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>2D Scatter</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_5">
+   <property name="leftMargin">
+    <number>5</number>
+   </property>
+   <property name="topMargin">
+    <number>5</number>
+   </property>
+   <property name="rightMargin">
+    <number>5</number>
+   </property>
+   <property name="bottomMargin">
+    <number>5</number>
+   </property>
    <property name="verticalSpacing">
     <number>5</number>
    </property>
-   <property name="margin">
-    <number>5</number>
-   </property>
    <item row="3" column="5">
-    <widget class="QLineEdit" name="value_y_max"/>
+    <widget class="QLineEdit" name="valuetext_y_max"/>
    </item>
    <item row="1" column="3">
-    <widget class="QLineEdit" name="value_x_min"/>
+    <widget class="QLineEdit" name="valuetext_x_min"/>
    </item>
    <item row="0" column="3" colspan="4">
-    <widget class="QComboBox" name="combo_xatt">
+    <widget class="QComboBox" name="combodata_xatt">
      <property name="sizeAdjustPolicy">
       <enum>QComboBox::AdjustToMinimumContentsLength</enum>
      </property>
@@ -95,7 +104,7 @@
     </widget>
    </item>
    <item row="2" column="3" colspan="4">
-    <widget class="QComboBox" name="combo_yatt">
+    <widget class="QComboBox" name="combodata_yatt">
      <property name="sizeAdjustPolicy">
       <enum>QComboBox::AdjustToMinimumContentsLength</enum>
      </property>
@@ -117,7 +126,7 @@
     </widget>
    </item>
    <item row="1" column="5">
-    <widget class="QLineEdit" name="value_x_max"/>
+    <widget class="QLineEdit" name="valuetext_x_max"/>
    </item>
    <item row="1" column="2">
     <widget class="QLabel" name="label_2">
@@ -130,7 +139,7 @@
     </widget>
    </item>
    <item row="3" column="3">
-    <widget class="QLineEdit" name="value_y_min"/>
+    <widget class="QLineEdit" name="valuetext_y_min"/>
    </item>
    <item row="3" column="2">
     <widget class="QLabel" name="label_2">

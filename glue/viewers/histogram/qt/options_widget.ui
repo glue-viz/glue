@@ -70,7 +70,7 @@
     </widget>
    </item>
    <item row="0" column="3" colspan="4">
-    <widget class="QComboBox" name="combo_xatt">
+    <widget class="QComboBox" name="combodata_xatt">
      <property name="sizeAdjustPolicy">
       <enum>QComboBox::AdjustToMinimumContentsLength</enum>
      </property>

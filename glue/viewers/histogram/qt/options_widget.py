@@ -5,7 +5,8 @@ import os
 from qtpy import QtWidgets
 
 from glue.core import Data
-from glue.utils.qt import load_ui, autoconnect_qt
+from glue.external.echo.qt import autoconnect_callbacks_to_qt
+from glue.utils.qt import load_ui
 from glue.core.qt.data_combo_helper import ComponentIDComboHelper
 from glue.viewers.common.qt.attribute_limits_helper import AttributeLimitsHelper
 
@@ -21,14 +22,14 @@ class HistogramOptionsWidget(QtWidgets.QWidget):
         self.ui = load_ui('options_widget.ui', self,
                           directory=os.path.dirname(__file__))
 
-        autoconnect_qt(viewer_state, self.ui)
+        autoconnect_callbacks_to_qt(viewer_state, self.ui)
 
         viewer_state.connect('layers', self._update_combo_data)
 
-        self.xatt_helper = ComponentIDComboHelper(self.ui.combo_xatt,
+        self.xatt_helper = ComponentIDComboHelper(self.ui.combodata_xatt,
                                                   session.data_collection)
 
-        self.xatt_limits_helper = AttributeLimitsHelper(self.ui.combo_xatt,
+        self.xatt_limits_helper = AttributeLimitsHelper(self.ui.combodata_xatt,
                                                         self.ui.value_x_min,
                                                         self.ui.value_x_max,
                                                         flip_button=self.ui.button_flip_x,

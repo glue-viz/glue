@@ -39,7 +39,7 @@
     <widget class="QLineEdit" name="value_vmax"/>
    </item>
    <item row="0" column="0" colspan="3">
-    <widget class="QComboBox" name="combo_att"/>
+    <widget class="QComboBox" name="combodata_att"/>
    </item>
    <item row="2" column="0" colspan="3">
     <widget class="QColorBox" name="color_color">

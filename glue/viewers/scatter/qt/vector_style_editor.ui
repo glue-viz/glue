@@ -7,21 +7,30 @@
     <x>0</x>
     <y>0</y>
     <width>169</width>
-    <height>152</height>
+    <height>155</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <property name="margin">
+   <property name="leftMargin">
+    <number>5</number>
+   </property>
+   <property name="topMargin">
+    <number>5</number>
+   </property>
+   <property name="rightMargin">
+    <number>5</number>
+   </property>
+   <property name="bottomMargin">
     <number>5</number>
    </property>
    <property name="spacing">
     <number>5</number>
    </property>
    <item row="6" column="2">
-    <widget class="QLineEdit" name="value_vector_y_max"/>
+    <widget class="QLineEdit" name="valuetext_vector_y_max"/>
    </item>
    <item row="3" column="0">
     <widget class="QLabel" name="label">
@@ -56,7 +65,7 @@
     </widget>
    </item>
    <item row="5" column="1" colspan="2">
-    <widget class="QComboBox" name="combo_vector_y_attribute"/>
+    <widget class="QComboBox" name="combodata_vector_y_attribute"/>
    </item>
    <item row="7" column="1" colspan="2">
     <widget class="QSlider" name="value_vector_scale">
@@ -66,7 +75,7 @@
     </widget>
    </item>
    <item row="6" column="1">
-    <widget class="QLineEdit" name="value_vector_y_min"/>
+    <widget class="QLineEdit" name="valuetext_vector_y_min"/>
    </item>
    <item row="2" column="1">
     <widget class="QColorBox" name="color_color">
@@ -98,13 +107,13 @@
     </widget>
    </item>
    <item row="4" column="1">
-    <widget class="QLineEdit" name="value_vector_x_min"/>
+    <widget class="QLineEdit" name="valuetext_vector_x_min"/>
    </item>
    <item row="4" column="2">
-    <widget class="QLineEdit" name="value_vector_x_max"/>
+    <widget class="QLineEdit" name="valuetext_vector_x_max"/>
    </item>
    <item row="3" column="1" colspan="2">
-    <widget class="QComboBox" name="combo_vector_x_attribute"/>
+    <widget class="QComboBox" name="combodata_vector_x_attribute"/>
    </item>
    <item row="2" column="0">
     <widget class="QLabel" name="label_5">

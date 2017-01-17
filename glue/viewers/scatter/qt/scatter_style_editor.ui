@@ -7,14 +7,23 @@
     <x>0</x>
     <y>0</y>
     <width>254</width>
-    <height>121</height>
+    <height>122</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <property name="margin">
+   <property name="leftMargin">
+    <number>5</number>
+   </property>
+   <property name="topMargin">
+    <number>5</number>
+   </property>
+   <property name="rightMargin">
+    <number>5</number>
+   </property>
+   <property name="bottomMargin">
     <number>5</number>
    </property>
    <item row="0" column="0">
@@ -48,7 +57,16 @@
           <property name="spacing">
            <number>7</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <item>
@@ -78,7 +96,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="combo_size_attribute">
+           <widget class="QComboBox" name="combodata_size_attribute">
             <property name="sizeAdjustPolicy">
              <enum>QComboBox::AdjustToMinimumContentsLength</enum>
             </property>
@@ -96,11 +114,20 @@
           <property name="spacing">
            <number>7</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <item>
-           <widget class="QLineEdit" name="value_size_vmin"/>
+           <widget class="QLineEdit" name="valuetext_size_vmin"/>
           </item>
           <item>
            <widget class="QToolButton" name="button_flip_size">
@@ -118,7 +145,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="value_size_vmax"/>
+           <widget class="QLineEdit" name="valuetext_size_vmax"/>
           </item>
          </layout>
         </widget>
@@ -129,7 +156,16 @@
           <property name="spacing">
            <number>7</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <item>
@@ -189,7 +225,16 @@
           <property name="spacing">
            <number>7</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <item>
@@ -213,7 +258,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="combo_cmap_attribute">
+           <widget class="QComboBox" name="combodata_cmap_attribute">
             <property name="sizeAdjustPolicy">
              <enum>QComboBox::AdjustToMinimumContentsLength</enum>
             </property>
@@ -244,11 +289,20 @@
           <property name="spacing">
            <number>7</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <item>
-           <widget class="QLineEdit" name="value_cmap_vmin"/>
+           <widget class="QLineEdit" name="valuetext_cmap_vmin"/>
           </item>
           <item>
            <widget class="QToolButton" name="button_flip_cmap">
@@ -266,7 +320,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="value_cmap_vmax"/>
+           <widget class="QLineEdit" name="valuetext_cmap_vmax"/>
           </item>
          </layout>
         </widget>
@@ -277,11 +331,20 @@
           <property name="spacing">
            <number>7</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <item>
-           <widget class="QColormapCombo" name="combo_cmap">
+           <widget class="QColormapCombo" name="combodata_cmap">
             <property name="sizeAdjustPolicy">
              <enum>QComboBox::AdjustToMinimumContentsLength</enum>
             </property>

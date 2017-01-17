@@ -1,11 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.core import Data
-from glue.external.echo import CallbackProperty, add_callback
+from glue.external.echo import CallbackProperty, ListCallbackProperty, add_callback
 from glue.utils import nonpartial
 from glue.config import colormaps
 
-from glue.core.state_objects import State, StateList, StateAttributeLimitsHelper
+from glue.core.state_objects import State, StateAttributeLimitsHelper
 from glue.utils import avoid_circular
 
 __all__ = ['ScatterViewerState', 'ScatterLayerState']
@@ -27,7 +27,7 @@ class ScatterViewerState(State):
     log_x = CallbackProperty()
     log_y = CallbackProperty()
 
-    layers = StateList()
+    layers = ListCallbackProperty()
 
     def __init__(self, **kwargs):
 
@@ -136,9 +136,9 @@ class ScatterLayerState(State):
         add_callback(self.layer.style, 'markersize',
                      nonpartial(self.size_from_layer))
 
-        self.connect('color', nonpartial(self.color_to_layer))
-        self.connect('alpha', nonpartial(self.alpha_to_layer))
-        self.connect('size', nonpartial(self.size_to_layer))
+        self.add_callback('color', nonpartial(self.color_to_layer))
+        self.add_callback('alpha', nonpartial(self.alpha_to_layer))
+        self.add_callback('size', nonpartial(self.size_to_layer))
 
         if isinstance(self.layer, Data):
             data = self.layer
@@ -182,7 +182,7 @@ class ScatterLayerState(State):
             self.vector_x_attribute = numeric_components[0], self.layer
             self.vector_y_attribute = numeric_components[1], self.layer
 
-        self.connect_all(self._keep_in_sync)
+        self.add_callback('*', self._keep_in_sync)
 
         self._active_sync = False
 
