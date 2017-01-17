@@ -27,10 +27,10 @@ def die_on_error(msg):
 
 def avoid_circular(meth):
     def wrapper(self, *args, **kwargs):
-        if not hasattr(self, '_active_callback') or not self._active_callback:
-            self._active_callback = True
+        if not hasattr(self, '_in_avoid_circular') or not self._in_avoid_circular:
+            self._in_avoid_circular = True
             try:
                 return meth(self, *args, **kwargs)
             finally:
-                self._active_callback = False
+                self._in_avoid_circular = False
     return wrapper

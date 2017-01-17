@@ -21,6 +21,9 @@ v0.10.0 (unreleased)
   Finally, ``ComponentID`` objects now hold a reference to the first parent data
   they are used in. [#1189]
 
+- Added a decorator that can be used to avoid circular calling of methods (can
+  occur when dealing with callbacks).
+
 v0.9.2 (unreleased)
 -------------------
 
