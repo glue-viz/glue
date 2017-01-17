@@ -22,7 +22,7 @@ v0.10.0 (unreleased)
   they are used in. [#1189]
 
 - Added a decorator that can be used to avoid circular calling of methods (can
-  occur when dealing with callbacks).
+  occur when dealing with callbacks). [#1207]
 
 v0.9.2 (unreleased)
 -------------------
