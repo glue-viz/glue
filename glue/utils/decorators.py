@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import traceback
 
-__all__ = ['die_on_error']
+__all__ = ['die_on_error', 'avoid_circular']
 
 
 def die_on_error(msg):
@@ -23,3 +23,14 @@ def die_on_error(msg):
                 print('=' * 72)
         return wrapper
     return decorator
+
+
+def avoid_circular(meth):
+    def wrapper(self, *args, **kwargs):
+        if not hasattr(self, '_active_callback') or not self._active_callback:
+            self._active_callback = True
+            try:
+                return meth(self, *args, **kwargs)
+            finally:
+                self._active_callback = False
+    return wrapper
