@@ -58,8 +58,8 @@ class HistogramLayerState(State):
         add_callback(self.layer.style, 'alpha',
                      nonpartial(self.alpha_from_layer))
 
-        self.connect('color', nonpartial(self.color_to_layer))
-        self.connect('alpha', nonpartial(self.alpha_to_layer))
+        self.add_callback('color', nonpartial(self.color_to_layer))
+        self.add_callback('alpha', nonpartial(self.alpha_to_layer))
 
     @avoid_circular
     def color_to_layer(self):

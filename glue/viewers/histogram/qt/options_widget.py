@@ -24,14 +24,14 @@ class HistogramOptionsWidget(QtWidgets.QWidget):
 
         autoconnect_callbacks_to_qt(viewer_state, self.ui)
 
-        viewer_state.connect('layers', self._update_combo_data)
+        viewer_state.add_callback('layers', self._update_combo_data)
 
         self.xatt_helper = ComponentIDComboHelper(self.ui.combodata_xatt,
                                                   session.data_collection)
 
         self.xatt_limits_helper = AttributeLimitsHelper(self.ui.combodata_xatt,
-                                                        self.ui.value_x_min,
-                                                        self.ui.value_x_max,
+                                                        self.ui.valuetext_x_min,
+                                                        self.ui.valuetext_x_max,
                                                         flip_button=self.ui.button_flip_x,
                                                         log_button=self.ui.bool_log_x)
 

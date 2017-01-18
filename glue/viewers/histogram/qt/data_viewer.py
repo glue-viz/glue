@@ -30,10 +30,10 @@ class HistogramViewer(MatplotlibDataViewer):
 
         super(HistogramViewer, self).__init__(session, parent)
 
-        self.viewer_state.connect('log_x', nonpartial(self.update_log))
-        self.viewer_state.connect('log_y', nonpartial(self.update_log))
+        self.viewer_state.add_callback('log_x', nonpartial(self.update_log))
+        self.viewer_state.add_callback('log_y', nonpartial(self.update_log))
 
-        self.viewer_state.connect('xatt', nonpartial(self.update_labels))
+        self.viewer_state.add_callback('xatt', nonpartial(self.update_labels))
 
     def update_labels(self):
         if self.viewer_state.xatt is not None:

@@ -21,15 +21,15 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         # Watch for changes in the viewer state which would require the
         # layers to be redrawn
         # TODO: don't connect to ALL signals here
-        # self.viewer_state.connect_all(nonpartial(self.update))
-        self.viewer_state.connect('xatt', nonpartial(self.update))
-        self.viewer_state.connect('n_bins', nonpartial(self.update))
-        self.viewer_state.connect('x_min', nonpartial(self.update))
-        self.viewer_state.connect('x_max', nonpartial(self.update))
-        self.viewer_state.connect('cumulative', nonpartial(self.update))
-        self.viewer_state.connect('normalize', nonpartial(self.update))
+        # self.viewer_state.add_callback('*', nonpartial(self.update))
+        self.viewer_state.add_callback('xatt', nonpartial(self.update))
+        self.viewer_state.add_callback('n_bins', nonpartial(self.update))
+        self.viewer_state.add_callback('x_min', nonpartial(self.update))
+        self.viewer_state.add_callback('x_max', nonpartial(self.update))
+        self.viewer_state.add_callback('cumulative', nonpartial(self.update))
+        self.viewer_state.add_callback('normalize', nonpartial(self.update))
 
-        self.layer_state.connect_all(nonpartial(self.update))
+        self.layer_state.add_callback('*', nonpartial(self.update))
 
         # TODO: following is temporary
         self.layer_state.data_collection = self.viewer_state.data_collection

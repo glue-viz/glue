@@ -7,17 +7,26 @@
     <x>0</x>
     <y>0</y>
     <width>243</width>
-    <height>178</height>
+    <height>180</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>1D Histogram</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_5">
-   <property name="verticalSpacing">
+   <property name="leftMargin">
     <number>5</number>
    </property>
-   <property name="margin">
+   <property name="topMargin">
+    <number>5</number>
+   </property>
+   <property name="rightMargin">
+    <number>5</number>
+   </property>
+   <property name="bottomMargin">
+    <number>5</number>
+   </property>
+   <property name="verticalSpacing">
     <number>5</number>
    </property>
    <item row="7" column="6">
@@ -49,10 +58,10 @@
     </widget>
    </item>
    <item row="7" column="3">
-    <widget class="QLineEdit" name="value_y_min"/>
+    <widget class="QLineEdit" name="valuetext_y_min"/>
    </item>
    <item row="7" column="5">
-    <widget class="QLineEdit" name="value_y_max"/>
+    <widget class="QLineEdit" name="valuetext_y_max"/>
    </item>
    <item row="7" column="4">
     <widget class="QToolButton" name="button_flip_y">
@@ -112,7 +121,7 @@
     </widget>
    </item>
    <item row="1" column="5">
-    <widget class="QLineEdit" name="value_x_max"/>
+    <widget class="QLineEdit" name="valuetext_x_max"/>
    </item>
    <item row="9" column="2" colspan="5">
     <widget class="QPushButton" name="pushButton">
@@ -155,7 +164,7 @@
     </widget>
    </item>
    <item row="1" column="3">
-    <widget class="QLineEdit" name="value_x_min"/>
+    <widget class="QLineEdit" name="valuetext_x_min"/>
    </item>
    <item row="2" column="3" colspan="4">
     <widget class="QSpinBox" name="value_n_bins">
