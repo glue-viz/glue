@@ -1,10 +1,13 @@
+from __future__ import absolute_import, division, print_function
+
 from contextlib import contextmanager
 from weakref import WeakKeyDictionary
-
+from functools import partial
 
 __all__ = ['CallbackProperty', 'callback_property',
            'add_callback', 'remove_callback',
-           'delay_callback', 'ignore_callback']
+           'delay_callback', 'ignore_callback',
+           'HasCallbackProperties']
 
 
 class CallbackProperty(object):
@@ -15,23 +18,24 @@ class CallbackProperty(object):
     is called with information about the state change. Otherwise,
     callback properties behave just like normal instance variables.
 
-    CallbackProperties must be defined at the class level. Use the helper
-    function :func:`~glue.external.echo.add_callback` to attach a callback to a
-    specific instance of a class with CallbackProperties.
+    CallbackProperties must be defined at the class level. Use
+    the helper function :func:`~echo.add_callback` to attach a callback to
+    a specific instance of a class with CallbackProperties
 
     Parameters
     ----------
     default
-        The initial value for the property.
-    getter : `func`, optional
-        Can be used to override the default getter
-    setter : `func`, optional
-        Can be used to override the default setter
+        The initial value for the property
     docstring : str
-        A custom docstring for this property
+        The docstring for the property
+    getter, setter : func
+        Custom getter and setter functions (advanced)
     """
 
-    def __init__(self, default=None, getter=None, setter=None, docstring=None):
+    def __init__(self, default=None, docstring=None, getter=None, setter=None):
+        """
+        :param default: The initial value for the property
+        """
         self._default = default
         self._callbacks = WeakKeyDictionary()
         self._2arg_callbacks = WeakKeyDictionary()
@@ -64,7 +68,7 @@ class CallbackProperty(object):
     def __set__(self, instance, value):
         try:
             old = self.__get__(instance)
-        except AttributeError:
+        except AttributeError:  # pragma: no cover
             old = None
         self._setter(instance, value)
         new = self.__get__(instance)
@@ -82,6 +86,11 @@ class CallbackProperty(object):
         """
         Call all callback functions with the current value
 
+        Each callback will either be called using
+        callback(new) or callback(old, new) depending
+        on whether ``echo_old`` was set to `True` when calling
+        :func:`~echo.add_callback`
+
         Parameters
         ----------
         instance
@@ -90,13 +99,6 @@ class CallbackProperty(object):
             The old value of the property
         new
             The new value of the property
-
-        Notes
-        -----
-
-        Each callback will either be called using
-        callback(new) or callback(old, new) depending
-        on whether echo_old was True during add_callback
         """
         if self._disabled.get(instance, False):
             return
@@ -124,13 +126,13 @@ class CallbackProperty(object):
         Parameters
         ----------
         instance
-            Instance to bind the callback to
-        func : `func`
-            Callback function
+            The instance to add the callback to
+        func : func
+            The callback function to add
         echo_old : bool, optional
             If `True`, the callback function will be invoked with both the old
-            and new values of the property, as func(old, new) If `False` (the
-            default), will be invoked as func(new)
+            and new values of the property, as ``func(old, new)``. If `False`
+            (the default), will be invoked as ``func(new)``
         """
         if echo_old:
             self._2arg_callbacks.setdefault(instance, []).append(func)
@@ -145,7 +147,7 @@ class CallbackProperty(object):
         ----------
         instance
             The instance to detach the callback from
-        func : `func`
+        func : func
             The callback function to remove
         """
         for cb in [self._callbacks, self._2arg_callbacks]:
@@ -160,6 +162,89 @@ class CallbackProperty(object):
             raise ValueError("Callback function not found: %s" % func)
 
 
+class HasCallbackProperties(object):
+    """
+    A class that adds functionality to subclasses that use callback properties.
+    """
+
+    def __init__(self):
+        self._global_callbacks = []
+        self._callback_partials = {}
+
+    def add_callback(self, name, callback, echo_old=False, echo_name=False):
+        """
+        Add a callback that gets triggered when a callback property of the
+        class changes.
+
+        Parameters
+        ----------
+        name : str
+            The instance to add the callback to. This can be ``'*'`` to
+            indicate that the callback should be added to all callback
+            properties.
+        func : func
+            The callback function to add
+        echo_old : bool, optional
+            If `True`, the callback function will be invoked with both the old
+            and new values of the property, as ``func(old, new)``. If `False`
+            (the default), will be invoked as ``func(new)``
+        echo_name : bool, optional
+            If `True`, the callback function will be invoked with the name of
+            the attribute as the first argument, followed by the value of the
+            property.
+        """
+
+        if name == '*':
+            for prop_name, prop in self.iter_callback_properties():
+                self.add_callback(prop_name, callback, echo_old=echo_old, echo_name=echo_name)
+        else:
+            if self.is_callback_property(name):
+                if echo_name:
+                    self._callback_partials[(name, callback)] = partial(callback, name)
+                    callback = self._callback_partials[(name, callback)]
+                prop = getattr(type(self), name)
+                prop.add_callback(self, callback, echo_old=echo_old)
+            else:
+                raise TypeError("attribute '{0}' is not a callback property".format(name))
+
+    def remove_callback(self, name, callback):
+        """
+        Remove a previously-added callback
+
+        Parameters
+        ----------
+        name : str
+            The instance to remove the callback from. This can be ``'*'`` to
+            indicate that the callback should be removed from all callback
+            properties.
+        func : func
+            The callback function to remove
+        """
+
+        if name == '*':
+            for prop_name, prop in self.iter_callback_properties():
+                self.remove_callback(prop_name, callback)
+        else:
+            if self.is_callback_property(name):
+                if (name, callback) in self._callback_partials:
+                    callback = self._callback_partials.pop((name, callback))
+                prop = getattr(type(self), name)
+                try:
+                    prop.remove_callback(self, callback)
+                except ValueError:
+                    pass  # Be forgiving if callback was already removed before
+            else:
+                raise TypeError("attribute '{0}' is not a callback property".format(name))
+
+    def is_callback_property(self, name):
+        return isinstance(getattr(type(self), name, None), CallbackProperty)
+
+    def iter_callback_properties(self):
+        for name in dir(self):
+            if self.is_callback_property(name):
+                yield name, getattr(type(self), name)
+
+
 def add_callback(instance, prop, callback, echo_old=False):
     """
     Attach a callback function to a property in an instance
@@ -167,11 +252,15 @@ def add_callback(instance, prop, callback, echo_old=False):
     Parameters
     ----------
     instance
-        Instance of a class with callback properties
+        The instance to add the callback to
     prop : str
         Name of callback property in `instance`
-    callback : `func`
-        Callback function
+    callback : func
+        The callback function to add
+    echo_old : bool, optional
+        If `True`, the callback function will be invoked with both the old
+        and new values of the property, as ``func(old, new)``. If `False`
+        (the default), will be invoked as ``func(new)``
 
     Examples
     --------
@@ -201,11 +290,11 @@ def remove_callback(instance, prop, callback):
     Parameters
     ----------
     instance
-        Instance of a class with callback properties
+        The instance to detach the callback from
     prop : str
         Name of callback property in `instance`
-    callback : `func`
-        Callback function
+    callback : func
+        The callback function to remove
     """
     p = getattr(type(instance), prop)
     if not isinstance(p, CallbackProperty):
@@ -215,10 +304,9 @@ def remove_callback(instance, prop, callback):
 
 def callback_property(getter):
     """
-    A decorator to build a CallbackProperty, by wrapping a getter method,
-    similar to the use of @property.
+    A decorator to build a CallbackProperty.
 
-    For example::
+    This is used by wrapping a getter method, similar to the use of @property::
 
         class Foo(object):
             @callback_property
@@ -229,8 +317,8 @@ def callback_property(getter):
             def x(self, value):
                 self._x = value
 
-    In simple cases with no getter or setter logic, it's
-    easier to create a CallbackProperty directly::
+    In simple cases with no getter or setter logic, it's easier to create a
+    :class:`~echo.CallbackProperty` directly::
 
         class Foo(object);
             x = CallbackProperty(initial_value)
@@ -251,8 +339,8 @@ class delay_callback(object):
     Parameters
     ----------
     instance
-        An instance object with CallbackProperties
-    props : str or iterable
+        An instance object with callback properties
+    *props : str
         One or more properties within instance to delay
 
     Examples
@@ -264,7 +352,7 @@ class delay_callback(object):
             f.bar = 20
             f.baz = 30
             f.bar = 10
-        print 'done'  # callbacks triggered at this point, if needed
+        print('done')  # callbacks triggered at this point, if needed
     """
 
     # Class-level registry of properties and how many times the callbacks have
@@ -316,18 +404,18 @@ class delay_callback(object):
 @contextmanager
 def ignore_callback(instance, *props):
     """
-    Temporarily ignore any callbacks from one or more callback properties.
+    Temporarily ignore any callbacks from one or more callback properties
 
     This is a context manager. Within the context block, no callbacks will be
-    issued. In contrast with :func:`delay_callback`, no callbakcs will be called
-    on exiting the context manager
+    issued. In contrast with :func:`~echo.delay_callback`, no callbakcs will be
+    called on exiting the context manager
 
     Parameters
     ----------
     instance
-        An instance object with CallbackProperties
-    props : str
-         One or more properties within instance to delay
+        An instance object with callback properties
+    *props : str
+        One or more properties within instance to ignore
 
     Examples
     --------
@@ -338,7 +426,7 @@ def ignore_callback(instance, *props):
                 f.bar = 20
                 f.baz = 30
                 f.bar = 10
-        print 'done'  # no callbacks called
+        print('done')  # no callbacks called
 
     """
     for prop in props:
