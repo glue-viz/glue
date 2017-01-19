@@ -65,6 +65,7 @@ intersphinx_mapping = {
     'matplotlib': ('http://matplotlib.org', None),
     'numpy': ('https://docs.scipy.org/doc/numpy', None),
     'astropy': ('http://docs.astropy.org/en/stable/', None),
+    'echo': ('http://echo.readthedocs.io/en/latest/', None),
 }
 
 numpydoc_show_class_members = False

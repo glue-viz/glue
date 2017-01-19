@@ -36,11 +36,7 @@ connect_int_spin = connect_value
 
 __all__ = ['WidgetProperty', 'CurrentComboDataProperty',
            'CurrentComboTextProperty', 'CurrentTabProperty', 'TextProperty',
-           'ButtonProperty', 'FloatLineProperty', 'ValueProperty',
-           'connect_bool_button', 'connect_current_combo',
-           'connect_current_combo_text',
-           'connect_float_edit', 'connect_int_spin', 'connect_value',
-           'connect_text']
+           'ButtonProperty', 'FloatLineProperty', 'ValueProperty']
 
 
 class WidgetProperty(object):
