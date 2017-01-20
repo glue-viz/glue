@@ -101,16 +101,15 @@ install_requires = ['numpy>=1.9',
                     'astropy>=1.0',
                     'matplotlib>=1.4',
                     'qtpy>=1.1',
-                    'setuptools>=1.0']
+                    'setuptools>=1.0',
+                    'ipython>=4.0',
+                    'qtconsole']
 
 extras_require = {
     'recommended': ['dill',
                     'h5py',
                     'scipy',
                     'scikit-image',
-                    'ipython>=1.0',
-                    'ipykernel',
-                    'qtconsole',
                     'plotly',
                     'xlrd',
                     'glue-vispy-viewers'],

@@ -24,6 +24,9 @@ v0.10.0 (unreleased)
 - Added a decorator that can be used to avoid circular calling of methods (can
   occur when dealing with callbacks). [#1207]
 
+- Drop support for IPython 3.x and below, and make IPython and qtconsole into
+  required dependencies. [#1145]
+
 v0.9.2 (unreleased)
 -------------------
 

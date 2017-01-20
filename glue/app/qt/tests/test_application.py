@@ -85,33 +85,8 @@ class TestGlueApplication(object):
             sys.stderr.write(self.app._terminal_exception)
             assert False
 
-    def app_without_terminal(self):
-        if not self.app.has_terminal():
-            return self.app
-
-        with patch('glue.app.qt.terminal.glue_terminal') as terminal:
-            terminal.side_effect = Exception("disabled")
-            app = GlueApplication()
-            app._create_terminal()
-            return app
-
-    def test_functional_without_terminal(self):
-        """Can still create app without terminal"""
-        app = self.app_without_terminal()
-
-    def test_messagebox_on_disabled_terminal(self):
-        """Clicking on the terminal toggle button raises messagebox on error"""
-        app = self.app_without_terminal()
-        with patch('glue.app.qt.application.QMessageBox') as qmb:
-            app._terminal_button.click()
-            assert qmb.call_count == 1
-
     def is_terminal_importable(self):
-        try:
-            import glue.qt.widgets.glue_terminal
-            return True
-        except:
-            return False
+        import glue.qt.widgets.glue_terminal  # noqa
 
     @requires_ipython
     def test_toggle_terminal(self):
@@ -217,21 +192,21 @@ class TestGlueApplication(object):
     #
     # pytest -s -v -x glue
     #
-    # Need to investigate this, but for now, no solution other than skipping 
+    # Need to investigate this, but for now, no solution other than skipping
     # the test.
     #
     # def test_suggest_merge(self):
-    # 
+    #
     #     x = Data(x=[1, 2, 3], label='x')
     #     y = Data(y=[4, 5, 6, 7], label='y')
     #     z = Data(z=[8, 9, 10], label='z')
-    # 
+    #
     #     self.app.data_collection.append(x)
     #     self.app.data_collection.append(y)
-    # 
+    #
     #     with process_dialog(delay=500, accept=True):
     #         result = self.app.add_datasets(self.app.data_collection, z)
-    # 
+    #
     #     np.testing.assert_equal(self.app.data_collection[0]['x'], [1, 2, 3])
     #     np.testing.assert_equal(self.app.data_collection[0]['z'], [8, 9, 10])
     #     np.testing.assert_equal(self.app.data_collection[1]['y'], [4, 5, 6, 7])

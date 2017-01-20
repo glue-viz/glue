@@ -30,7 +30,7 @@ env:
     - QT_PKG=pyqt
     - SETUP_XVFB=True
     # Note that we need to specify requests 2.9 because of a bug in the version check in linkchecker, and we can't use conda since requests 2.9 won't exist for e.g. Python 3.6
-    - CONDA_DEPENDENCIES="nomkl pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy ipykernel qtconsole"
+    - CONDA_DEPENDENCIES="nomkl pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole"
     - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli plotly spectral-cube requests==2.9"
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
     - secure: "SU9BYH8d9eNigypG3lC83s0NY6Mq9AHGKXyEGeXDtz1npJIC1KHdzPMP1v1K3dzCgl1p6ReMXPjZMCENyfNkad/xvzTzGk0Nu/4BjihrUPV6+ratVeLpv0JLm8ikh8q+sZURkdtzUOlds+Hfn5ku4LdpT87tcKHY9TINAGA34ZM="
@@ -84,7 +84,7 @@ matrix:
                ASTROPY_VERSION=1.0
                MATPLOTLIB_VERSION=1.4
                NUMPY_VERSION=1.9
-               IPYTHON_VERSION=1.1
+               IPYTHON_VERSION=4
                PANDAS_VERSION=0.14
                SETUPTOOLS=1.0
 
@@ -124,9 +124,6 @@ before_install:
   - if [[ $QT_PKG == pyside ]]; then export CONDA_DEPENDENCIES="pyside "$CONDA_DEPENDENCIES; fi
   - if [[ $QT_PKG == pyqt ]]; then export CONDA_DEPENDENCIES="pyqt=4 "$CONDA_DEPENDENCIES; fi
   - if [[ $QT_PKG == pyqt5 ]]; then export CONDA_DEPENDENCIES="pyqt=5 "$CONDA_DEPENDENCIES; fi
-
-  # Special cases depending on IPython version
-  - if [[ $IPYTHON_VERSION == 4 ]]; then export CONDA_DEPENDENCIES="traitlets=4.1.0 qtconsole ipykernel "$CONDA_DEPENDENCIES; fi
 
   # Documentation dependencies
   - if [ $DOC_TRIGGER ]; then export PIP_DEPENDENCIES="sphinx-automodapi numpydoc linkchecker "$PIP_DEPENDENCIES; fi
@@ -168,7 +165,7 @@ install:
       find . -name "qt" -type d -exec rm -r {} \; || true;
       rm glue/external/qt.py || true;
     fi
-    
+
   # Set MPLBACKEND to Agg by default - this will get overriden if Qt is present,
   # but it avoids having Matplotlib default to the osx backend on MacOS X
   - export MPLBACKEND='Agg';

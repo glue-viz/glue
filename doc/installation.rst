@@ -129,12 +129,12 @@ Glue has the following required dependencies:
 * Either `PySide`_ or `PyQt`_ (both PyQt4 and PyQt5 are supported)
 * `QtPy <https://pypi.python.org/pypi/QtPy/>`__ 1.1.1 or higher - this is an
   abstraction layer for the Python Qt packages
+  * `IPython <http://ipython.org>`_ 4.0 or higher
+  * `qtconsole <http://jupyter.org/qtconsole/>`_
 
 The following optional dependencies are also highly recommended and
 domain-independent:
 
-* `IPython <http://ipython.org>`_ 1.0 or higher
-* `qtconsole <http://jupyter.org/qtconsole/>`_
 * `dill <http://pythonhosted.org/dill/>`_, for better session saving
 * `SciPy <http://www.scipy.org>`_
 * `scikit-image <http://scikit-image.org>`_

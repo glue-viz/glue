@@ -35,6 +35,7 @@ from glue.utils.qt import (pick_class, GlueTabBar,
 from glue.app.qt.feedback import submit_bug_report, submit_feedback
 from glue.app.qt.plugin_manager import QtPluginManager
 from glue.app.qt.versions import show_glue_info
+from glue.app.qt.terminal import glue_terminal
 
 
 __all__ = ['GlueApplication']
@@ -783,6 +784,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         return self._terminal is not None
 
     def _create_terminal(self):
+
         if self._terminal is not None:  # already set up
             return
 
@@ -797,22 +799,15 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         self._layer_widget.ui.button_row.addWidget(self._terminal_button)
 
-        try:
-            from glue.app.qt.terminal import glue_terminal
-            widget = glue_terminal(data_collection=self._data,
-                                   dc=self._data,
-                                   hub=self._hub,
-                                   session=self.session,
-                                   application=self,
-                                   **vars(env))
-            self._terminal_button.clicked.connect(self._toggle_terminal)
-        except Exception as e:  # pylint: disable=W0703
-            import traceback
-            self._terminal_exception = traceback.format_exc()
-            self._setup_terminal_error_dialog(e)
-            return
+        widget = glue_terminal(data_collection=self._data,
+                               dc=self._data,
+                               hub=self._hub,
+                               session=self.session,
+                               application=self,
+                               **vars(env))
+        self._terminal_button.clicked.connect(self._toggle_terminal)
 
-        self._terminal = self.add_widget(widget, label='IPython')
+        self._terminal = self.add_widget(widget)
         self._hide_terminal()
 
     def _setup_terminal_error_dialog(self, exception):
