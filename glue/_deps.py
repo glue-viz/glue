@@ -135,7 +135,9 @@ required = (
     Dependency('matplotlib', 'Required for plotting', min_version='1.1'),
     Dependency(
         'pandas', 'Adds support for Excel files and DataFrames', min_version='0.13.1'),
-    Dependency('astropy', 'Used for FITS I/O, table reading, and WCS Parsing'))
+    Dependency('astropy', 'Used for FITS I/O, table reading, and WCS Parsing'),
+    Dependency('IPython', 'Needed for interactive IPython terminal', min_version='4'),
+    Dependency('qtconsole', 'Needed for interactive IPython terminal'))
 
 general = (
     Dependency('dill', 'Used when saving Glue sessions'),
@@ -148,9 +150,7 @@ general = (
 
 
 ipython = (
-    Dependency('IPython', 'Needed for interactive IPython terminal'),
     Dependency('ipykernel', 'Needed for interactive IPython terminal'),
-    Dependency('qtconsole', 'Needed for interactive IPython terminal'),
     Dependency('traitlets', 'Needed for interactive IPython terminal'),
     Dependency('pygments', 'Needed for interactive IPython terminal'),
     Dependency('zmq', 'Needed for interactive IPython terminal', 'pyzmq'))
