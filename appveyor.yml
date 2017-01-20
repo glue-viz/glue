@@ -10,7 +10,6 @@ environment:
       PYTHON_ARCH: "64" # needs to be set for CMD_IN_ENV to succeed. If a mix
                         # of 32 bit and 64 bit builds are needed, move this
                         # to the matrix section.
-      CONDA_VERSION: "4.3.4"
       CONDA_CHANNELS: "conda-forge"
       CONDA_CHANNEL_PRIORITY: "True"
       CONDA_DEPENDENCIES: "scipy cython pyqt=4 matplotlib h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage ipython ipykernel qtconsole traitlets qtpy vc=9"
