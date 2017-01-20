@@ -20,19 +20,23 @@ Example Use::
 from __future__ import absolute_import, division, print_function
 
 import math
-from functools import partial
 
-from qtpy import QtGui
 from glue.logger import logger
 from glue.external.six.moves import reduce
-from glue.external.echo import add_callback
 from glue.utils.array import pretty_number
+
+# Backward-compatibility
+from glue.external.echo.qt import (connect_checkable_button as connect_bool_button,
+                                   connect_combo_data as connect_current_combo,
+                                   connect_combo_text as connect_current_combo_text,
+                                   connect_float_text as connect_float_edit,
+                                   connect_value, connect_text)
+
+connect_int_spin = connect_value
 
 __all__ = ['WidgetProperty', 'CurrentComboDataProperty',
            'CurrentComboTextProperty', 'CurrentTabProperty', 'TextProperty',
-           'ButtonProperty', 'FloatLineProperty', 'ValueProperty',
-           'connect_bool_button', 'connect_current_combo',
-           'connect_float_edit', 'connect_int_spin']
+           'ButtonProperty', 'FloatLineProperty', 'ValueProperty']
 
 
 class WidgetProperty(object):
@@ -261,114 +265,6 @@ class ValueProperty(WidgetProperty):
             val = (val - vmin) / (vmax - vmin) * (imax - imin) + imin
         widget.setValue(val)
 
-
-def connect_bool_button(client, prop, widget):
-    """ Connect widget.setChecked and client.prop
-
-    client.prop should be a callback property
-    """
-    add_callback(client, prop, widget.setChecked)
-    widget.toggled.connect(partial(setattr, client, prop))
-
-
-def connect_current_combo(client, prop, widget):
-    """
-    Connect widget.currentIndexChanged and client.prop
-
-    client.prop should be a callback property
-    """
-
-    def update_widget(value):
-        try:
-            idx = _find_combo_data(widget, value)
-        except ValueError:
-            if value is None:
-                idx = -1
-            else:
-                raise
-        widget.setCurrentIndex(idx)
-
-    def update_prop(idx):
-        if idx == -1:
-            setattr(client, prop, None)
-        else:
-            setattr(client, prop, widget.itemData(idx))
-
-    add_callback(client, prop, update_widget)
-    widget.currentIndexChanged.connect(update_prop)
-    update_widget(getattr(client, prop))
-
-
-def connect_float_edit(client, prop, widget):
-    """
-    Connect widget.setText and client.prop
-    Also pretty-print the number
-
-    client.prop should be a callback property
-    """
-    v = QtGui.QDoubleValidator(None)
-    v.setDecimals(4)
-    widget.setValidator(v)
-
-    def update_prop():
-        val = widget.text()
-        try:
-            setattr(client, prop, float(val))
-        except ValueError:
-            setattr(client, prop, 0)
-
-    def update_widget(val):
-        if val is None:
-            val = 0.
-        widget.setText(pretty_number(val))
-
-    add_callback(client, prop, update_widget)
-    widget.editingFinished.connect(update_prop)
-    update_widget(getattr(client, prop))
-
-
-def connect_value(client, prop, widget, value_range=None, log=False):
-    """
-    Connect client.prop to widget.valueChanged
-
-    client.prop should be a callback property
-
-    If ``value_range`` is set, the slider values are mapped to that range. If
-    ``log`` is set, the mapping is assumed to be logarithmic instead of linear.
-    """
-
-    if log:
-        if value_range is None:
-            raise ValueError("log option can only be set if value_range is given")
-        else:
-            value_range = math.log10(value_range[0]), math.log10(value_range[1])
-
-    def update_prop():
-        val = widget.value()
-        if value_range is not None:
-            imin, imax = widget.minimum(), widget.maximum()
-            val = (val - imin) / (imax - imin) * (value_range[1] - value_range[0]) + value_range[0]
-        if log:
-            val = 10 ** val
-        setattr(client, prop, val)
-
-    def update_widget(val):
-        if val is None:
-            widget.setValue(0)
-            return
-        if log:
-            val = math.log10(val)
-        if value_range is not None:
-            imin, imax = widget.minimum(), widget.maximum()
-            val = (val - value_range[0]) / (value_range[1] - value_range[0]) * (imax - imin) + imin
-        widget.setValue(val)
-
-    add_callback(client, prop, update_widget)
-    widget.valueChanged.connect(update_prop)
-    update_widget(getattr(client, prop))
-
-
-connect_int_spin = connect_value
 
 def _find_combo_data(widget, value):
     """
