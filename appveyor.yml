@@ -12,7 +12,7 @@ environment:
                         # to the matrix section.
       CONDA_CHANNELS: "conda-forge"
       CONDA_CHANNEL_PRIORITY: "True"
-      CONDA_DEPENDENCIES: "scipy cython pyqt=4 matplotlib h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage ipython ipykernel qtconsole traitlets qtpy vc=9"
+      CONDA_DEPENDENCIES: "scipy cython pyqt=4 matplotlib h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage ipython ipykernel qtconsole traitlets qtpy"
       PIP_DEPENDENCIES: "plotly"
 
   matrix:
