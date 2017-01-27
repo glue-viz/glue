@@ -35,11 +35,11 @@ class ImageLayerArtist(LayerArtistBase):
         # layers to be redrawn
         # TODO: don't connect to ALL signals here
         # self.viewer_state.connect_all(nonpartial(self.update))
-        self.viewer_state.connect('xcoord', nonpartial(self.update))
-        self.viewer_state.connect('ycoord', nonpartial(self.update))
-        self.viewer_state.connect('att', nonpartial(self.update))
+        self.viewer_state.add_callback('xcoord', nonpartial(self.update))
+        self.viewer_state.add_callback('ycoord', nonpartial(self.update))
+        self.viewer_state.add_callback('att', nonpartial(self.update))
 
-        self.layer_state.connect_all(nonpartial(self.update))
+        self.layer_state.add_callback('*', nonpartial(self.update))
 
         # TODO: following is temporary
         self.layer_state.data_collection = self.viewer_state.data_collection
@@ -114,11 +114,11 @@ class ImageSubsetLayerArtist(MatplotlibLayerArtist):
         # layers to be redrawn
         # TODO: don't connect to ALL signals here
         # self.viewer_state.connect_all(nonpartial(self.update))
-        self.viewer_state.connect('xcoord', nonpartial(self.update))
-        self.viewer_state.connect('ycoord', nonpartial(self.update))
-        self.viewer_state.connect('att', nonpartial(self.update))
+        self.viewer_state.add_callback('xcoord', nonpartial(self.update))
+        self.viewer_state.add_callback('ycoord', nonpartial(self.update))
+        self.viewer_state.add_callback('att', nonpartial(self.update))
 
-        self.layer_state.connect_all(nonpartial(self.update))
+        self.layer_state.add_callback('*', nonpartial(self.update))
 
         # TODO: following is temporary
         self.layer_state.data_collection = self.viewer_state.data_collection

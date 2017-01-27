@@ -182,7 +182,7 @@ class ScatterLayerState(State):
             self.vector_x_attribute = numeric_components[0], self.layer
             self.vector_y_attribute = numeric_components[1], self.layer
 
-        self.add_callback('*', self._keep_in_sync)
+        self.add_callback('*', self._keep_in_sync, echo_name=True)
 
         self._active_sync = False
 
