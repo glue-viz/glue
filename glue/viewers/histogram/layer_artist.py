@@ -1,142 +1,87 @@
 from __future__ import absolute_import, division, print_function
 
-from abc import ABCMeta, abstractproperty, abstractmethod
-
 import numpy as np
 
-from glue.external import six
-from glue.core.exceptions import IncompatibleAttribute
-from glue.core.layer_artist import MatplotlibLayerArtist, ChangedTrigger
+from glue.utils import nonpartial
 
-__all__ = ['HistogramLayerArtist']
-
-
-@six.add_metaclass(ABCMeta)
-class HistogramLayerBase(object):
-    lo = abstractproperty()     # lo-cutoff for bin counting
-    hi = abstractproperty()     # hi-cutoff for bin counting
-    nbins = abstractproperty()  # number of bins
-    xlog = abstractproperty()   # whether to space bins logarithmically
-
-    @abstractmethod
-    def get_data(self):
-        """
-        Return array of bin counts
-        """
-        pass
+from glue.viewers.histogram.state import HistogramLayerState
+from glue.viewers.common.mpl_layer_artist import MatplotlibLayerArtist
 
 
-class HistogramLayerArtist(MatplotlibLayerArtist, HistogramLayerBase):
-    _property_set = MatplotlibLayerArtist._property_set + 'lo hi nbins xlog'.split()
+class HistogramLayerArtist(MatplotlibLayerArtist):
 
-    lo = ChangedTrigger(0)
-    hi = ChangedTrigger(1)
-    nbins = ChangedTrigger(10)
-    xlog = ChangedTrigger(False)
-    att = ChangedTrigger()
+    def __init__(self, layer, axes, viewer_state):
 
-    def __init__(self, layer, axes):
-        super(HistogramLayerArtist, self).__init__(layer, axes)
-        self.ylog = False
-        self.cumulative = False
-        self.normed = False
-        self.y = np.array([])
-        self.x = np.array([])
-        self._y = np.array([])
+        super(HistogramLayerArtist, self).__init__(layer, axes, viewer_state)
 
-        self._scale_state = None
+        # Set up a state object for the layer artist
+        self.layer_state = HistogramLayerState(layer=layer)
+        self.viewer_state.layers.append(self.layer_state)
 
-    def get_data(self):
-        return self.x, self.y
+        # Watch for changes in the viewer state which would require the
+        # layers to be redrawn
+        # TODO: don't connect to ALL signals here
+        # self.viewer_state.add_callback('*', nonpartial(self.update))
+        self.viewer_state.add_callback('xatt', nonpartial(self.update))
+        self.viewer_state.add_callback('n_bins', nonpartial(self.update))
+        self.viewer_state.add_callback('x_min', nonpartial(self.update))
+        self.viewer_state.add_callback('x_max', nonpartial(self.update))
+        self.viewer_state.add_callback('cumulative', nonpartial(self.update))
+        self.viewer_state.add_callback('normalize', nonpartial(self.update))
 
-    def clear(self):
-        super(HistogramLayerArtist, self).clear()
-        self.x = np.array([])
-        self.y = np.array([])
-        self._y = np.array([])
+        self.layer_state.add_callback('*', nonpartial(self.update))
 
-    def _calculate_histogram(self):
-        """Recalculate the histogram, creating new patches"""
+        # TODO: following is temporary
+        self.layer_state.data_collection = self.viewer_state.data_collection
+        self.data_collection = self.viewer_state.data_collection
+
+    def update(self):
+
+        x = self.layer[self.viewer_state.xatt[0]]
+        x = x[~np.isnan(x) & (x >= self.viewer_state.x_min) & (x <= self.viewer_state.x_max)]
+
+        # TODO: is there a better way to do this?
         self.clear()
-        try:
-            data = self.layer[self.att].ravel()
-            if not np.isfinite(data).any():
-                return False
-        except IncompatibleAttribute as exc:
-            self.disable_invalid_attributes(*exc.args)
-            return False
 
-        if data.size == 0:
+        if len(x) == 0:
             return
 
-        if self.lo > np.nanmax(data) or self.hi < np.nanmin(data):
-            return
-        if self.xlog:
-            data = np.log10(data)
-            rng = [np.log10(self.lo), np.log10(self.hi)]
+        # For histogram
+        result = self.axes.hist(x, range=sorted([self.viewer_state.x_min,
+                                                 self.viewer_state.x_max]),
+                                bins=self.viewer_state.n_bins,
+                                zorder=self.zorder,
+                                edgecolor='black',
+                                facecolor=self.layer_state.color,
+                                alpha=self.layer_state.alpha,
+                                cumulative=self.viewer_state.cumulative,
+                                normed=self.viewer_state.normalize)
+
+        self.mpl_artists = result[2]
+
+        # We have to do the following to make sure that we reset the y_max as
+        # needed. We can't simply reset based on the maximum for this layer
+        # because other layers might have other values, and we also can't do:
+        #
+        #   self.viewer_state.y_max = max(self.viewer_state.y_max, result[0].max())
+        #
+        # because this would never allow y_max to get smaller.
+
+        self.layer_state._y_max = result[0].max()
+
+        if self.viewer_state.log_y:
+            self.layer_state._y_max *= 2
         else:
-            rng = self.lo, self.hi
-        nbinpatch = self._axes.hist(data,
-                                    bins=int(self.nbins),
-                                    range=rng)
-        self._y, self.x, self.artists = nbinpatch
-        return True
+            self.layer_state._y_max *= 1.2
 
-    def _scale_histogram(self):
-        """Modify height of bins to match ylog, cumulative, and norm"""
-        if self.x.size == 0:
-            return
+        for layer in self.viewer_state.layers:
+            if self.layer_state != layer and hasattr(layer, '_y_max') and self.layer_state._y_max < layer._y_max:
+                break
+        else:
+            self.viewer_state.y_max = self.layer_state._y_max
 
-        y = self._y.astype(np.float)
-        dx = self.x[1] - self.x[0]
-        if self.normed:
-            div = y.sum() * dx
-            if div == 0:
-                div = 1
-            y /= div
-        if self.cumulative:
-            y = y.cumsum()
-            y /= y.max()
+        # Reset the axes stack so that pressing the home button doesn't go back
+        # to a previous irrelevant view.
+        self.axes.figure.canvas.toolbar.update()
 
-        self.y = y
-        bottom = 0 if not self.ylog else 1e-100
-
-        for a, y in zip(self.artists, y):
-            a.set_height(y)
-            x, y = a.get_xy()
-            a.set_xy((x, bottom))
-
-    def _check_scale_histogram(self):
-        """
-        If needed, rescale histogram to match cumulative/log/normed state.
-        """
-        state = (self.normed, self.ylog, self.cumulative)
-        if state == self._scale_state:
-            return
-        self._scale_state = state
-        self._scale_histogram()
-
-    def update(self, view=None):
-        """Sync plot.
-
-        The _change flag tracks whether the histogram needs to be
-        recalculated. If not, the properties of the existing
-        artists are updated
-        """
-        self._check_subset_state_changed()
-        if self._changed:
-            if not self._calculate_histogram():
-                return
-            self._changed = False
-            self._scale_state = None
-        self._check_scale_histogram()
-        self._sync_style()
-
-    def _sync_style(self):
-        """Update visual properties"""
-        style = self.layer.style
-        for artist in self.artists:
-            artist.set_facecolor(style.color)
-            artist.set_alpha(style.alpha)
-            artist.set_zorder(self.zorder)
-            artist.set_visible(self.visible and self.enabled)
+        self.redraw()

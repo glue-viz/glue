@@ -1,4 +1,4 @@
 def setup():
     from glue.config import qt_client
-    from .qt import ImageWidget
-    qt_client.add(ImageWidget)
+    from .qt.data_viewer import ImageViewer
+    qt_client.add(ImageViewer)

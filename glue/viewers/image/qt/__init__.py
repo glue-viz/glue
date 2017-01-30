@@ -1,1 +1,1 @@
-from .viewer_widget import *
+from .data_viewer import ImageViewer

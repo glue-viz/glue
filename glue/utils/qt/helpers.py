@@ -11,7 +11,7 @@ from glue.utils.qt import get_text
 __all__ = ['update_combobox', 'GlueTabBar', 'load_ui', 'process_dialog']
 
 
-def update_combobox(combo, labeldata):
+def update_combobox(combo, labeldata, default_index=0):
     """
     Redefine the items in a QComboBox
 
@@ -48,10 +48,10 @@ def update_combobox(combo, labeldata):
         current = None
 
     combo.clear()
-    index = 0
+    index = min(len(labeldata), default_index)
     for i, (label, data) in enumerate(labeldata):
         combo.addItem(label, userData=data)
-        if data is current:
+        if data is current or data == current:
             index = i
     combo.blockSignals(False)
     combo.setCurrentIndex(index)

@@ -84,6 +84,7 @@ spectral_cube = glue.plugins.data_factories.spectral_cube:setup
 dendro_viewer = glue.plugins.dendro_viewer:setup
 image_viewer = glue.viewers.image:setup
 scatter_viewer = glue.viewers.scatter:setup
+scatter_fast_viewer = glue.viewers.scatter_fast:setup
 histogram_viewer = glue.viewers.histogram:setup
 table_viewer = glue.viewers.table:setup
 data_exporters = glue.core.data_exporters:setup

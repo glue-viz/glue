@@ -22,6 +22,7 @@ class State(HasCallbackProperties):
     """
 
     def __init__(self, **kwargs):
+        super(State, self).__init__()
         for name in kwargs:
             if self.is_property(name):
                 setattr(self, name, kwargs[name])

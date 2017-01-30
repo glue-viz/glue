@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.core import Data, DataCollection
+from glue.core import Data, DataCollection, Subset
 from qtpy import QtGui, QtWidgets
 from qtpy.QtCore import Qt
 from glue.core.hub import HubListener
@@ -14,6 +14,7 @@ from glue.utils.qt.widget_properties import CurrentComboDataProperty
 
 __all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
            'DataCollectionComboHelper']
+
 
 class ComponentIDComboHelper(HubListener):
     """
@@ -39,7 +40,7 @@ class ComponentIDComboHelper(HubListener):
     """
 
     def __init__(self, component_id_combo, data_collection, visible=True,
-                 numeric=True, categorical=True):
+                 numeric=True, categorical=True, default_index=0):
 
         super(ComponentIDComboHelper, self).__init__()
 
@@ -53,6 +54,7 @@ class ComponentIDComboHelper(HubListener):
         self._data = []
         self._data_collection = data_collection
         self.hub = data_collection.hub
+        self.default_index = default_index
 
     def clear(self):
         self._data.clear()
@@ -87,6 +89,9 @@ class ComponentIDComboHelper(HubListener):
 
     def append_data(self, data):
 
+        if isinstance(data, Subset):
+            data = data.data
+
         if self.hub is None:
             if data.hub is None:
                 raise ValueError("Hub is not set on Data object")
@@ -95,9 +100,9 @@ class ComponentIDComboHelper(HubListener):
         elif data.hub is not self.hub:
             raise ValueError("Data Hub is different from current hub")
 
-        self._data.append(data)
-
-        self.refresh()
+        if data not in self._data:
+            self._data.append(data)
+            self.refresh()
 
     def remove_data(self, data):
         self._data.remove(data)
@@ -154,7 +159,7 @@ class ComponentIDComboHelper(HubListener):
 
             label_data.extend([(cid.label, (cid, data)) for cid in component_ids])
 
-        update_combobox(self._component_id_combo, label_data)
+        update_combobox(self._component_id_combo, label_data, default_index=self.default_index)
 
         # Disable header rows
         model = self._component_id_combo.model()
