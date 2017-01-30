@@ -7,6 +7,12 @@ v0.10.0 (unreleased)
 - Removed ginga plugin from core package and moved it to a separate repository
   at https://github.com/ejeschke/glue-ginga.
 
+- Make it possible to define a default index for DataComboHelper - this makes
+  it possible for viewers to have three DataComboHelper and ensure that they
+  default to different attributes. [#1163]
+
+- Deal properly with adding Subset objects to DataComboHelper. [#1163]
+
 - Added the ability to export data and subset from the data collection view via
   contextual menus. It was previously possible to export only the mask itself,
   and only to FITS files, but the framework for exporting data/subsets has now
