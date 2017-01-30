@@ -111,11 +111,6 @@ class QtPlotlyExporter(QtWidgets.QDialog):
         from plotly.exceptions import PlotlyError
         from plotly.tools import set_credentials_file
 
-        # Signing in - at the moment this will not check the credentials so we
-        # can't catch any issues until later, but I've opened an issue for this:
-        # https://github.com/plotly/plotly.py/issues/525
-        plotly.sign_in(auth['username'], auth['api_key'])
-
         if self.ui.radio_sharing_public.isChecked():
             self.plotly_kwargs['sharing'] = 'public'
         elif self.ui.radio_sharing_secret.isChecked():
@@ -132,15 +127,17 @@ class QtPlotlyExporter(QtWidgets.QDialog):
         self.plotly_args[0]['layout']['title'] = self.title
 
         try:
+            plotly.sign_in(auth['username'], auth['api_key'])
             plotly_url = plotly.plot(*self.plotly_args, **self.plotly_kwargs)
         except PlotlyError as exc:
             print("Plotly exception:")
             print('-' * 60)
             traceback.print_exc(file=sys.stdout)
             print('-' * 60)
-            if "the supplied API key doesn't match our records" in exc.args[0]:
+            if ('the supplied API key doesn\'t match our records' in exc.args[0] or
+                'Sign in failed' in exc.args[0]):
                 username = auth['username'] or plotly.get_credentials()['username']
-                self.set_status("Authentication with username {0} failed".format(username), color='red')
+                self.set_status("Authentication failed".format(username), color='red')
             elif "filled its quota of private files" in exc.args[0]:
                 self.set_status("Maximum number of private plots reached", color='red')
             else:
@@ -184,4 +181,3 @@ class QtPlotlyExporter(QtWidgets.QDialog):
         self.ui.text_status.setText(text)
         self.ui.text_status.setStyleSheet("color: {0}".format(color))
         QtWidgets.QApplication.instance().processEvents()
-

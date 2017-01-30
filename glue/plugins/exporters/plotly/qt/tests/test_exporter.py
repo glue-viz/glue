@@ -162,7 +162,7 @@ class TestQtPlotlyExporter():
                     assert exporter.text_status.text() == 'Exporting succeeded'
 
     ERRORS = [
-        (PlotlyError(SIGN_IN_ERROR), 'Authentication with username batman failed'),
+        (PlotlyError(SIGN_IN_ERROR), 'Authentication failed'),
         (PlotlyError(MAX_PRIVATE_ERROR), 'Maximum number of private plots reached'),
         (PlotlyError('Oh noes!'), 'An unexpected error occurred'),
         (TypeError('A banana is not an apple'), 'An unexpected error occurred')
@@ -177,12 +177,15 @@ class TestQtPlotlyExporter():
 
         plot = mock.MagicMock(side_effect=error)
 
+        sign_in = mock.MagicMock()
+
         with patch('plotly.tools.CREDENTIALS_FILE', credentials_file):
-            with patch('plotly.plotly.plot', plot):
-                with patch('webbrowser.open_new_tab') as open_new_tab:
-                    exporter = self.get_exporter()
-                    exporter.accept()
-                    assert exporter.text_status.text() == status
+            with patch('plotly.plotly.sign_in', sign_in):
+                with patch('plotly.plotly.plot', plot):
+                    with patch('webbrowser.open_new_tab'):
+                        exporter = self.get_exporter()
+                        exporter.accept()
+                        assert exporter.text_status.text() == status
 
     @pytest.mark.parametrize(('error', 'status'), ERRORS)
     def test_fix_url(self, tmpdir, error, status):
