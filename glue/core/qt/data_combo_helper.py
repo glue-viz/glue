@@ -157,7 +157,7 @@ class ComponentIDComboHelper(HubListener):
                 if (comp.numeric and self.numeric) or (comp.categorical and self.categorical):
                     component_ids.append(cid)
 
-            label_data.extend([(cid.label, (cid, data)) for cid in component_ids])
+            label_data.extend([(cid.label, cid) for cid in component_ids])
 
         update_combobox(self._component_id_combo, label_data, default_index=self.default_index)
 
@@ -176,7 +176,6 @@ class ComponentIDComboHelper(HubListener):
                 if self._component_id_combo.itemData(index) is not None:
                     self._component_id_combo.setCurrentIndex(index)
                     break
-
 
     def register_to_hub(self, hub):
         hub.subscribe(self, ComponentsChangedMessage,

@@ -1,17 +1,24 @@
 from __future__ import absolute_import, division, print_function
 
-from contextlib import contextmanager
-from collections import Counter, defaultdict
-
 import numpy as np
 
 from glue.utils import nonpartial
 from glue.core import Subset
-from glue.external import six
-from glue.external.echo import add_callback, CallbackProperty, ignore_callback, ListCallbackProperty, HasCallbackProperties
-
+from glue.external.echo import (delay_callback, CallbackProperty,
+                                HasCallbackProperties, CallbackList)
+from glue.core.state import saver, loader
 
 __all__ = ['State']
+
+
+@saver(CallbackList)
+def _save_callback_list(items, context):
+    return {'values': [context.id(item) for item in items]}
+
+
+@loader(CallbackList)
+def _load_callback_list(rec, context):
+    return [context.object(obj) for obj in rec['values']]
 
 
 class State(HasCallbackProperties):
@@ -22,15 +29,167 @@ class State(HasCallbackProperties):
     """
 
     def __init__(self, **kwargs):
-        for name in kwargs:
+        super(State, self).__init__()
+        self.update_from_dict(kwargs)
+
+    def update_from_state(self, state):
+        self.update_from_dict(state.as_dict())
+
+    def update_from_dict(self, properties):
+        for name in sorted(properties, key=self.update_priority, reverse=True):
             if self.is_property(name):
-                setattr(self, name, kwargs[name])
+                setattr(self, name, properties[name])
 
     def is_property(self, name):
         return isinstance(getattr(type(self), name, None), CallbackProperty)
 
+    def as_dict(self):
+        properties = {}
+        for name in dir(self):
+            if self.is_property(name):
+                properties[name] = getattr(self, name)
+        return properties
 
-class StateAttributeLimitsHelper(object):
+    def __gluestate__(self, context):
+        return {'state': dict((key, context.id(value)) for key, value in self.as_dict().items())}
+
+    def update_priority(self, name):
+        return 0
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        properties = dict((key, context.object(value)) for key, value in rec['state'].items())
+        return cls(**properties)
+
+class StateAttributeCacheHelper(object):
+    """
+    Generic class to help with caching values on a per-attribute basis
+
+    Parameters
+    ----------
+    state : :class:`glue.core.state_objects.State`
+        The state object with the callback properties to cache
+    attribute : str
+        The attribute name - this will be populated once a dataset is assigned
+        to the helper
+    cache : dict, optional
+        A dictionary that can be used to hold the cache. This option can be used
+        if a common cache should be shared between different helpers.
+    kwargs
+        Additional keyword arguments are taken to be values that should be
+        used/cached. The key should be the name to be understood by sub-classes
+        of this base class, and the value should be the name of the attribute
+        in the state.
+    """
+
+    def __init__(self, state, attribute, cache=None, **kwargs):
+
+        self._state = state
+        self._attribute = attribute
+        self._values = dict((key, kwargs[key]) for key in self.values_names if key in kwargs)
+        self._modifiers = dict((key, kwargs[key]) for key in self.modifiers_names if key in kwargs)
+
+        self._attribute_lookup = {'attribute': self._attribute}
+        self._attribute_lookup.update(self._values)
+        self._attribute_lookup.update(self._modifiers)
+        self._attribute_lookup_inv = {v: k for k, v in self._attribute_lookup.items()}
+
+        self._state.add_callback(self._attribute, nonpartial(self._update_attribute))
+
+        for prop in self._modifiers.values():
+            self._state.add_callback(prop, self._update_values, as_kwargs=True)
+
+        for prop in self._values.values():
+            self._state.add_callback(prop, self._update_values, as_kwargs=True)
+
+        self._cache = cache or {}
+
+    @property
+    def data_values(self):
+        # For subsets in 'data' mode, we want to compute the limits based on
+        # the full dataset, not just the subset.
+        if isinstance(self.data, Subset):
+            return self.data.data[self.component_id]
+        else:
+            return self.data[self.component_id]
+
+    def invalidate_cache(self):
+        self._cache.clear()
+
+    @property
+    def data(self):
+        if self.attribute is None:
+            return None
+        else:
+            return self.attribute.parent
+
+    @property
+    def component_id(self):
+        if self.attribute is None:
+            return None
+        else:
+            return self.attribute
+
+    def _update_attribute(self):
+        if self.component_id in self._cache:
+            # The component ID already exists in the cache, so just revert to
+            # that version of the values/settings.
+            self.set(cache=False, **self._cache[self.component_id])
+        else:
+            # We need to compute the values for the first time
+            self.update_values(attribute=self.component_id, use_default_modifiers=True)
+
+    def _update_values(self, **properties):
+        if hasattr(self, '_in_set'):
+            if self._in_set:
+                return
+        properties = dict((self._attribute_lookup_inv[key], value)
+                          for key, value in properties.items())
+        self.update_values(**properties)
+
+    def _modifiers_as_dict(self):
+        return dict((prop, getattr(self, prop)) for prop in self.modifiers_names if prop in self._modifiers)
+
+    def _values_as_dict(self):
+        return dict((prop, getattr(self, prop)) for prop in self.values_names if prop in self._values)
+
+    def _update_cache(self):
+        self._cache[self.component_id] = {}
+        self._cache[self.component_id].update(self._modifiers_as_dict())
+        self._cache[self.component_id].update(self._values_as_dict())
+
+    def __getattr__(self, attribute):
+        if attribute in self._attribute_lookup:
+            return getattr(self._state, self._attribute_lookup[attribute])
+        else:
+            raise AttributeError(attribute)
+
+    def __setattr__(self, attribute, value):
+        if attribute.startswith('_') or not attribute in self._attribute_lookup:
+            return object.__setattr__(self, attribute, value)
+        else:
+            return setattr(self._state, self._attribute_lookup[attribute], value)
+
+    def set(self, cache=True, **kwargs):
+
+        self._in_set = True
+
+        extra_kwargs = set(kwargs.keys()) - set(self.values_names) - set(self.modifiers_names)
+
+        if len(extra_kwargs) > 0:
+            raise ValueError("Invalid properties: {0}".format(extra_kwargs))
+
+        with delay_callback(self._state, *self._attribute_lookup.values()):
+            for prop, value in kwargs.items():
+                setattr(self, prop, value)
+
+        if cache:
+            self._update_cache()
+
+        self._in_set = False
+
+
+class StateAttributeLimitsHelper(StateAttributeCacheHelper):
     """
     This class is a helper for attribute-dependent min/max level values. It
     is equivalent to AttributeLimitsHelper but operates on State objects and
@@ -62,161 +221,61 @@ class StateAttributeLimitsHelper(object):
     parameters above.
     """
 
-    def __init__(self, state, attribute, vlo, vhi,
-                 percentile=None, vlog=None, limits_cache=None):
+    values_names = ('lower', 'upper')
+    modifiers_names = ('log', 'percentile')
 
-        self._state = state
+    def update_values(self, use_default_modifiers=False, **properties):
 
-        self._attribute = getattr(type(state), attribute)
-        self._vlo = getattr(type(state), vlo)
-        self._vhi = getattr(type(state), vhi)
-
-        self._attribute.add_callback(self._state, nonpartial(self._update_limits))
-        self._vlo.add_callback(self._state, nonpartial(self._manual_edit))
-        self._vhi.add_callback(self._state, nonpartial(self._manual_edit))
-
-        if vlog is not None:
-            self._vlog = getattr(type(state), vlog)
-            self._vlog.add_callback(self._state, nonpartial(self._manual_edit))
-        else:
-            self._vlog = CallbackProperty()
-
-        if percentile is not None:
-            self._percentile = getattr(type(state), percentile)
-            self._percentile.add_callback(self._state, nonpartial(self._update_percentile))
-        else:
-            self._percentile = CallbackProperty()
-
-        if limits_cache is None:
-            limits_cache = {}
-
-        self._limits = limits_cache
-
-        if self.data is not None:
-            self._update_data()
-            self._update_limits()
-
-    def _update_data(self):
-        if self.attribute is None or self.attribute[1] is not self.data:
-            if isinstance(self.data, Subset):
-                self.attribute = self.data.data.visible_components[0], self.data.data
-            else:
-                self.attribute = self.data.visible_components[0], self.data
-
-    def set_limits(self, vlo, vhi):
-        # FIXME: delay so that both notifications go out at the same time
-        self.vlo = vlo
-        self.vhi = vhi
-
-    def flip_limits(self):
-        self.set_limits(self.vhi, self.vlo)
-
-    def _manual_edit(self):
-        self._cache_limits()
-
-    def _update_percentile(self):
-        if self.percentile is not None:
-            self._auto_limits()
-            self._cache_limits()
-
-    def _invalidate_cache(self):
-        self._limits.clear()
-
-    def _cache_limits(self):
-        self._limits[self.component_id] = self.percentile, self.vlo, self.vhi, self.vlog
-
-    def _update_limits(self):
-        if self.component_id in self._limits:
-            self.percentile, lower, upper, self.vlog = self._limits[self.component_id]
-            self.set_limits(lower, upper)
-        else:
-            # Block signals here?
-            self.percentile = 100
-            self._auto_limits()
-            self.vlog = False
-
-    def _auto_limits(self):
-
-        if self.data is None:
+        if not any(prop in properties for prop in ('attribute', 'percentile', 'log')):
+            self.set(percentile='Custom')
             return
 
-        exclude = (100 - self.percentile) / 2.
-
-        # For subsets in 'data' mode, we want to compute the limits based on
-        # the full dataset, not just the subset.
-        if isinstance(self.data, Subset):
-            data_values = self.data.data[self.component_id]
+        if use_default_modifiers:
+            percentile = 100
+            log = False
         else:
-            data_values = self.data[self.component_id]
+            percentile = self.percentile or 100
+            log = self.log or False
 
-        try:
-            lower = np.nanpercentile(data_values, exclude)
-            upper = np.nanpercentile(data_values, 100 - exclude)
-        except AttributeError:  # Numpy < 1.9
-            data_values = data_values[~np.isnan(data_values)]
-            lower = np.percentile(data_values, exclude)
-            upper = np.percentile(data_values, 100 - exclude)
+        if percentile == 'Custom':
 
-        if isinstance(self.data, Subset):
-            lower = 0
+            self.set(percentile=percentile, log=log)
 
-        self.set_limits(lower, upper)
-
-    # FIXME: We need to find a more elegant way to do the following!
-
-    @property
-    def data(self):
-        if self.attribute is None:
-            return None
         else:
-            return self.attribute[1]
 
-    @property
-    def attribute(self):
-        return self._attribute.__get__(self._state)
+            exclude = (100 - percentile) / 2.
 
-    @attribute.setter
-    def attribute(self, value):
-        return self._attribute.__set__(self._state, value)
+            data_values = self.data_values
 
-    @property
-    def component_id(self):
-        if self.attribute is None:
-            return None
+            try:
+                lower = np.nanpercentile(data_values, exclude)
+                upper = np.nanpercentile(data_values, 100 - exclude)
+            except AttributeError:  # Numpy < 1.9
+                data_values = data_values[~np.isnan(data_values)]
+                lower = np.percentile(data_values, exclude)
+                upper = np.percentile(data_values, 100 - exclude)
+
+            self.set(lower=lower, upper=upper, percentile=percentile, log=log)
+
+    def flip_limits(self):
+        self.set(lower=self.upper, upper=self.lower)
+
+
+class StateAttributeSingleValueHelper(StateAttributeCacheHelper):
+
+    values_names = ('value',)
+    modifiers_names = ()
+
+    def __init__(self, state, attribute, function, **kwargs):
+        super(StateAttributeSingleValueHelper, self).__init__(state, attribute, **kwargs)
+        self.function = function
+
+    def update_values(self, use_default_modifiers=False, **properties):
+        if not any(prop in properties for prop in ('attribute',)):
+            self.set()
         else:
-            return self.attribute[0]
+            self.set(value=self.function(self.data_values))
 
-    @property
-    def percentile(self):
-        return self._percentile.__get__(self._state)
-
-    @percentile.setter
-    def percentile(self, value):
-        return self._percentile.__set__(self._state, value)
-
-    @property
-    def vlo(self):
-        return self._vlo.__get__(self._state)
-
-    @vlo.setter
-    def vlo(self, value):
-        return self._vlo.__set__(self._state, value)
-
-    @property
-    def vhi(self):
-        return self._vhi.__get__(self._state)
-
-    @vhi.setter
-    def vhi(self, value):
-        return self._vhi.__set__(self._state, value)
-
-    @property
-    def vlog(self):
-        return self._vlog.__get__(self._state)
-
-    @vlog.setter
-    def vlog(self, value):
-        return self._vlog.__set__(self._state, value)
 
 if __name__ == "__main__":
 
@@ -238,6 +297,6 @@ if __name__ == "__main__":
 
     helper = StateAttributeLimitsHelper(state, 'layer', 'comp',
                                         'lower', 'higher',
-                                        percentile='scale', vlog='log')
+                                        percentile='scale', log='log')
 
     helper.component_id = state.layer.id['x']
