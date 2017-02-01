@@ -49,11 +49,9 @@ class TestAttributeLimitsHelper():
     def test_attributes(self):
         assert self.attribute_combo.count() == 2
         assert self.attribute_combo.itemText(0) == 'x'
-        assert self.attribute_combo.itemData(0)[0] is self.x_id
-        assert self.attribute_combo.itemData(0)[1] is self.data
+        assert self.attribute_combo.itemData(0) is self.x_id
         assert self.attribute_combo.itemText(1) == 'y'
-        assert self.attribute_combo.itemData(1)[0] is self.y_id
-        assert self.attribute_combo.itemData(1)[1] is self.data
+        assert self.attribute_combo.itemData(1) is self.y_id
 
     def test_minmax(self):
         assert self.helper.vlo == -100

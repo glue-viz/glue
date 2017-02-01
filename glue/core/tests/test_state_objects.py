@@ -66,8 +66,7 @@ class TestStateAttributeLimitsHelper():
                                                  lower='lower', upper='upper',
                                                  percentile='scale', log='log')
         self.state.data = self.data
-
-        self.state.comp = (self.data.id['x'], self.data)
+        self.state.comp = self.data.id['x']
 
         self.x_id = self.data.visible_components[0]
         self.y_id = self.data.visible_components[1]
@@ -77,10 +76,10 @@ class TestStateAttributeLimitsHelper():
         assert self.helper.upper == +100
 
     def test_change_attribute(self):
-        self.helper.attribute = self.y_id, self.data
+        self.helper.attribute = self.y_id
         assert self.helper.lower == 2
         assert self.helper.upper == 3
-        self.helper.attribute = self.x_id, self.data
+        self.helper.attribute = self.x_id
         assert self.helper.lower == -100
         assert self.helper.upper == +100
 
@@ -106,12 +105,12 @@ class TestStateAttributeLimitsHelper():
         # Make sure that if we change scale and change attribute, the scale
         # modes are cached on a per-attribute basis.
         self.helper.percentile = 99.5
-        self.state.comp = self.y_id, self.data
+        self.state.comp = self.y_id
         assert self.helper.percentile == 100
         self.helper.percentile = 99
-        self.state.comp = self.x_id, self.data
+        self.state.comp = self.x_id
         assert self.helper.percentile == 99.5
-        self.state.comp = self.y_id, self.data
+        self.state.comp = self.y_id
         assert self.helper.percentile == 99
 
     def test_flip_button(self):
@@ -122,10 +121,10 @@ class TestStateAttributeLimitsHelper():
         assert self.helper.upper == -100
 
         # Make sure that values were re-cached when flipping
-        self.state.comp = self.y_id, self.data
+        self.state.comp = self.y_id
         assert self.helper.lower == 2
         assert self.helper.upper == 3
-        self.state.comp = self.x_id, self.data
+        self.state.comp = self.x_id
         assert self.helper.lower == +100
         assert self.helper.upper == -100
 
@@ -139,11 +138,11 @@ class TestStateAttributeLimitsHelper():
         assert self.helper.lower == -122
         assert self.helper.upper == 234
         assert self.helper.log
-        self.state.comp = self.y_id, self.data
+        self.state.comp = self.y_id
         assert self.helper.lower == 2
         assert self.helper.upper == 3
         assert not self.helper.log
-        self.state.comp = self.x_id, self.data
+        self.state.comp = self.x_id
         assert self.helper.lower == -122
         assert self.helper.upper == 234
         assert self.helper.log
@@ -171,7 +170,7 @@ class TestStateAttributeSingleValueHelper():
 
         self.state.data = self.data
 
-        self.state.comp = (self.data.id['x'], self.data)
+        self.state.comp = self.data.id['x']
 
         self.x_id = self.data.visible_components[0]
         self.y_id = self.data.visible_components[1]
@@ -180,15 +179,15 @@ class TestStateAttributeSingleValueHelper():
         assert self.helper.value == -35.
 
     def test_change_attribute(self):
-        self.helper.attribute = self.y_id, self.data
+        self.helper.attribute = self.y_id
         assert self.helper.value == 2.5
-        self.helper.attribute = self.x_id, self.data
+        self.helper.attribute = self.x_id
         assert self.helper.value == -35
 
     def test_manual_edit(self):
         self.state.val = 42.
         assert self.helper.value == 42
-        self.state.comp = self.y_id, self.data
+        self.state.comp = self.y_id
         assert self.helper.value == 2.5
-        self.state.comp = self.x_id, self.data
+        self.state.comp = self.x_id
         assert self.helper.value == 42
