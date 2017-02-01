@@ -241,17 +241,33 @@ def connect_value(instance, prop, widget, value_range=None, log=False):
     update_widget(getattr(instance, prop))
 
 
+def connect_button(instance, prop, widget):
+    """
+    Connect a button with a callback method
+
+    Parameters
+    ----------
+    instance : object
+        The class instance that the callback method is attached to
+    prop : str
+        The name of the callback method
+    widget : QtWidget
+        The Qt widget to connect. This should implement the ``clicked`` method
+    """
+    widget.clicked.connect(getattr(instance, prop))
+
+
 def _find_combo_data(widget, value):
     """
     Returns the index in a combo box where itemData == value
 
     Raises a ValueError if data is not found
     """
-    i = widget.findData(value)
-    if i == -1:
-        raise ValueError("%s not found in combo box" % value)
+    for idx in range(widget.count()):
+        if widget.itemData(idx) == value:
+            return idx
     else:
-        return i
+        raise ValueError("%s not found in combo box" % (value,))
 
 
 def _find_combo_text(widget, value):

@@ -169,9 +169,9 @@ class HasCallbackProperties(object):
 
     def __init__(self):
         self._global_callbacks = []
-        self._callback_partials = {}
+        self._callback_wrappers = {}
 
-    def add_callback(self, name, callback, echo_old=False, echo_name=False):
+    def add_callback(self, name, callback, echo_old=False, as_kwargs=False):
         """
         Add a callback that gets triggered when a callback property of the
         class changes.
@@ -188,20 +188,24 @@ class HasCallbackProperties(object):
             If `True`, the callback function will be invoked with both the old
             and new values of the property, as ``func(old, new)``. If `False`
             (the default), will be invoked as ``func(new)``
-        echo_name : bool, optional
-            If `True`, the callback function will be invoked with the name of
-            the attribute as the first argument, followed by the value of the
-            property.
+        as_kwargs : bool, optional
+            If `True`, the callback function will be invoked using keyword arguments
+            where the keyword is the name of the attribute, and the value is either
+            the new value or a tuple of (old, new) if echo_old is `True`.
         """
 
         if name == '*':
             for prop_name, prop in self.iter_callback_properties():
-                self.add_callback(prop_name, callback, echo_old=echo_old, echo_name=echo_name)
+                self.add_callback(prop_name, callback, echo_old=echo_old, as_kwargs=as_kwargs)
         else:
             if self.is_callback_property(name):
-                if echo_name:
-                    self._callback_partials[(name, callback)] = partial(callback, name)
-                    callback = self._callback_partials[(name, callback)]
+                if as_kwargs:
+                    def wrap_callback(function, name):
+                        def callback_wrapper(value):
+                            return function(**{name: value})
+                        return callback_wrapper
+                    self._callback_wrappers[(name, callback)] = wrap_callback(callback, name)
+                    callback = self._callback_wrappers[(name, callback)]
                 prop = getattr(type(self), name)
                 prop.add_callback(self, callback, echo_old=echo_old)
             else:
@@ -226,8 +230,8 @@ class HasCallbackProperties(object):
                 self.remove_callback(prop_name, callback)
         else:
             if self.is_callback_property(name):
-                if (name, callback) in self._callback_partials:
-                    callback = self._callback_partials.pop((name, callback))
+                if (name, callback) in self._callback_wrappers:
+                    callback = self._callback_wrappers.pop((name, callback))
                 prop = getattr(type(self), name)
                 try:
                     prop.remove_callback(self, callback)
