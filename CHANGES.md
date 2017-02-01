@@ -40,7 +40,7 @@ v0.10.0 (unreleased)
 
 - Updated ComponentIDComboHelper to no longer store ``(cid, data)`` as the
   ``userData`` but instead just the ``cid`` (the data is now accessible via
-  ``cid.parent``).
+  ``cid.parent``). [#1212]
 
 v0.9.2 (unreleased)
 -------------------
