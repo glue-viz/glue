@@ -157,14 +157,14 @@ class AttributeLimitsHelper(object):
     @property
     def component_id(self):
         if self.component_data is not None:
-            return self.component_data[0]
+            return self.component_data
         else:
             return None
 
     @property
     def data(self):
         if self.component_data is not None:
-            return self.component_data[1]
+            return self.component_data.parent
         else:
             return None
 
