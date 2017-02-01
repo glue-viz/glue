@@ -1,11 +1,11 @@
 import numpy as np
 from numpy.testing import assert_allclose
 
-from glue.external.echo import CallbackProperty
+from glue.external.echo import CallbackProperty, ListCallbackProperty
 from glue.core import Data, DataCollection
 
-from ..state_objects import State, StateAttributeLimitsHelper, StateAttributeSingleValueHelper, ListCallbackProperty
 from .test_state import clone
+from ..state_objects import State, StateAttributeLimitsHelper, StateAttributeSingleValueHelper
 
 
 class SimpleTestState(State):
