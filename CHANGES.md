@@ -38,6 +38,10 @@ v0.10.0 (unreleased)
   and can be used to define logical relations between different attributes
   in a GUI-independent way.
 
+- Updated ComponentIDComboHelper to no longer store ``(cid, data)`` as the
+  ``userData`` but instead just the ``cid`` (the data is now accessible via
+  ``cid.parent``). [#1212]
+
 v0.9.2 (unreleased)
 -------------------
 

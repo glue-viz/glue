@@ -7,7 +7,8 @@ from .connect import (connect_checkable_button,
                       connect_combo_data,
                       connect_combo_text,
                       connect_float_text,
-                      connect_text)
+                      connect_text,
+                      connect_button)
 
 __all__ = ['autoconnect_callbacks_to_qt']
 
@@ -18,6 +19,7 @@ HANDLERS['bool'] = connect_checkable_button
 HANDLERS['text'] = connect_text
 HANDLERS['combodata'] = connect_combo_data
 HANDLERS['combotext'] = connect_combo_text
+HANDLERS['button'] = connect_button
 
 
 def autoconnect_callbacks_to_qt(instance, widget, connect_kwargs={}):
@@ -65,7 +67,7 @@ def autoconnect_callbacks_to_qt(instance, widget, connect_kwargs={}):
     Applications can also define additional mappings between type and
     auto-linking. To do this, simply add a new entry to the ``HANDLERS`` object::
 
-        >>> from glue.echo.qt.autoconnect import HANDLERS
+        >>> echo.qt.autoconnect import HANDLERS
         >>> HANDLERS['color'] = connect_color
 
     The handler function (``connect_color`` in the example above) should take
@@ -90,7 +92,12 @@ def autoconnect_callbacks_to_qt(instance, widget, connect_kwargs={}):
         full_name = child.objectName()
         if '_' in full_name:
             wtype, wname = full_name.split('_', 1)
-            kwargs = connect_kwargs.get(wname, {})
+            if full_name in connect_kwargs:
+                kwargs = connect_kwargs[full_name]
+            elif wname in connect_kwargs:
+                kwargs = connect_kwargs[wname]
+            else:
+                kwargs = {}
             if hasattr(instance, wname):
                 if wtype in HANDLERS:
                     HANDLERS[wtype](instance, wname, child, **kwargs)
