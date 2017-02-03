@@ -480,12 +480,14 @@ loader = GlueUnSerializer.unserializes
 
 @saver(dict)
 def _save_dict(state, context):
-    return dict(contents=json.dumps(state))
+    return dict(contents=dict((context.id(key), context.id(value))
+                for key, value in state.items()))
 
 
 @loader(dict)
 def _load_dict(rec, context):
-    return json.loads(rec['contents'])
+    return dict((context.object(key), context.object(value))
+                for key, value in rec['contents'].items())
 
 
 @saver(CompositeSubsetState)
