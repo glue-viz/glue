@@ -57,7 +57,7 @@ class TestStateAttributeLimitsHelper():
             comp = CallbackProperty()
             lower = CallbackProperty()
             upper = CallbackProperty()
-            log = CallbackProperty()
+            log = CallbackProperty(False)
             scale = CallbackProperty(100)
 
         self.state = SimpleState()
