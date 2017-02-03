@@ -45,7 +45,7 @@ def make_credentials_file(path, username='', api_key=''):
     credentials['proxy_password'] = ''
     credentials['stream_ids'] = []
     with open(path, 'w') as f:
-        json.dump(credentials, f)
+        json.dump(credentials, f, sort_keys=True)
     plotly.files.FILE_CONTENT[path] = credentials
 
 

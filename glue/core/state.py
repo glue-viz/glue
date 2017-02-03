@@ -371,12 +371,13 @@ class GlueSerializer(object):
 
     def dumps(self, indent=None):
         result = self.dumpo()
-        return json.dumps(result, indent=indent, default=self.json_default)
+        return json.dumps(result, default=self.json_default,
+                          indent=indent, sort_keys=True)
 
     def dump(self, outfile, indent=None):
         result = self.dumpo()
         return json.dump(result, outfile, default=self.json_default,
-                         indent=indent)
+                         indent=indent, sort_keys=True)
 
 
 class GlueUnSerializer(object):

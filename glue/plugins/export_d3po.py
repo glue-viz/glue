@@ -203,7 +203,7 @@ def save_d3po(application, path):
 
     state_path = os.path.join(path, 'states.json')
     with open(state_path, 'w') as outfile:
-        json.dump(result, outfile, indent=2)
+        json.dump(result, outfile, indent=2, sort_keys=True)
 
     # index.html
     html_path = os.path.join(path, 'index.html')
