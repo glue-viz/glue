@@ -426,6 +426,44 @@ class Subset(object):
     if PY3:
         __hash__ = object.__hash__
 
+    # Provide convenient access to Data methods/properties that make sense
+    # here too.
+
+    def component_ids(self):
+        return self.data.component_ids()
+
+    @property
+    def components(self):
+        return self.data.components
+
+    @property
+    def derived_components(self):
+        return self.data.derived_components
+
+    @property
+    def primary_components(self):
+        return self.data.primary_components
+
+    @property
+    def visible_components(self):
+        return self.data.visible_components
+
+    @property
+    def pixel_component_ids(self):
+        return self.data.pixel_component_ids
+
+    @property
+    def world_component_ids(self):
+        return self.data.world_component_ids
+
+    @property
+    def ndim(self):
+        return self.data.ndim
+
+    @property
+    def shape(self):
+        return self.data.shape
+
 
 class SubsetState(object):
 
