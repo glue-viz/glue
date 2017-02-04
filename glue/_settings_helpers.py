@@ -16,7 +16,7 @@ def save_settings():
     config.add_section('main')
 
     for name, value, _ in sorted(settings):
-        config.set('main', name, value=json.dumps(value))
+        config.set('main', name, value=json.dumps(value, sort_keys=True))
 
     if not os.path.exists(CFG_DIR):
         os.mkdir(CFG_DIR)

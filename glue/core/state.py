@@ -371,12 +371,13 @@ class GlueSerializer(object):
 
     def dumps(self, indent=None):
         result = self.dumpo()
-        return json.dumps(result, indent=indent, default=self.json_default)
+        return json.dumps(result, default=self.json_default,
+                          indent=indent, sort_keys=True)
 
     def dump(self, outfile, indent=None):
         result = self.dumpo()
         return json.dump(result, outfile, default=self.json_default,
-                         indent=indent)
+                         indent=indent, sort_keys=True)
 
 
 class GlueUnSerializer(object):
@@ -479,12 +480,14 @@ loader = GlueUnSerializer.unserializes
 
 @saver(dict)
 def _save_dict(state, context):
-    return dict(contents=json.dumps(state))
+    return dict(contents=dict((context.id(key), context.id(value))
+                for key, value in state.items()))
 
 
 @loader(dict)
 def _load_dict(rec, context):
-    return json.loads(rec['contents'])
+    return dict((context.object(key), context.object(value))
+                for key, value in rec['contents'].items())
 
 
 @saver(CompositeSubsetState)

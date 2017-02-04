@@ -51,15 +51,17 @@ class State(HasCallbackProperties):
         return properties
 
     def __gluestate__(self, context):
-        return {'state': dict((key, context.id(value)) for key, value in self.as_dict().items())}
+        return {'values': dict((key, context.id(value)) for key, value in self.as_dict().items())}
 
     def update_priority(self, name):
         return 0
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        properties = dict((key, context.object(value)) for key, value in rec['state'].items())
-        return cls(**properties)
+        properties = dict((key, context.object(value)) for key, value in rec['values'].items())
+        result = cls(**properties)
+        return result
+
 
 class StateAttributeCacheHelper(object):
     """
@@ -102,7 +104,15 @@ class StateAttributeCacheHelper(object):
         for prop in self._values.values():
             self._state.add_callback(prop, self._update_values, as_kwargs=True)
 
-        self._cache = cache or {}
+        # NOTE: don't use self._cache = cache or {} here since if the initial
+        #       cache is empty it will evaluate as False!
+        if cache is None:
+            self._cache = {}
+        else:
+            self._cache = cache
+
+        if self.attribute is not None:
+            self._update_attribute()
 
     @property
     def data_values(self):
@@ -130,6 +140,10 @@ class StateAttributeCacheHelper(object):
         else:
             return self.attribute
 
+    def set_cache(self, cache):
+        self._cache = cache
+        self._update_attribute()
+
     def _update_attribute(self):
         if self.component_id in self._cache:
             # The component ID already exists in the cache, so just revert to
@@ -143,6 +157,8 @@ class StateAttributeCacheHelper(object):
         if hasattr(self, '_in_set'):
             if self._in_set:
                 return
+        if self.attribute is None:
+            return
         properties = dict((self._attribute_lookup_inv[key], value)
                           for key, value in properties.items())
         self.update_values(**properties)
@@ -154,9 +170,10 @@ class StateAttributeCacheHelper(object):
         return dict((prop, getattr(self, prop)) for prop in self.values_names if prop in self._values)
 
     def _update_cache(self):
-        self._cache[self.component_id] = {}
-        self._cache[self.component_id].update(self._modifiers_as_dict())
-        self._cache[self.component_id].update(self._values_as_dict())
+        if self.component_id is not None:
+            self._cache[self.component_id] = {}
+            self._cache[self.component_id].update(self._modifiers_as_dict())
+            self._cache[self.component_id].update(self._values_as_dict())
 
     def __getattr__(self, attribute):
         if attribute in self._attribute_lookup:
@@ -202,7 +219,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
         to the helper.
     lower, upper : str
         The fields for the lower/upper levels
-    mode : ``QComboBox`` instance, optional
+    percentile : ``QComboBox`` instance, optional
         The scale mode combo - this will be populated by presets such as
         Min/Max, various percentile levels, and Custom.
     log_button : ``QToolButton`` instance, optional
@@ -237,7 +254,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             percentile = self.percentile or 100
             log = self.log or False
 
-        if percentile == 'Custom':
+        if percentile == 'Custom' or self.data is None:
 
             self.set(percentile=percentile, log=log)
 
@@ -267,14 +284,14 @@ class StateAttributeSingleValueHelper(StateAttributeCacheHelper):
     modifiers_names = ()
 
     def __init__(self, state, attribute, function, **kwargs):
+        self._function = function
         super(StateAttributeSingleValueHelper, self).__init__(state, attribute, **kwargs)
-        self.function = function
 
     def update_values(self, use_default_modifiers=False, **properties):
-        if not any(prop in properties for prop in ('attribute',)):
+        if not any(prop in properties for prop in ('attribute',)) or self.data is None:
             self.set()
         else:
-            self.set(value=self.function(self.data_values))
+            self.set(value=self._function(self.data_values))
 
 
 if __name__ == "__main__":

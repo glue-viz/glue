@@ -631,3 +631,23 @@ def test_inequality_subset_state_string():
     d = Data(x=['a', 'b', 'c', 'b'])
     state = d.id['x'] == 'b'
     np.testing.assert_equal(state.to_mask(d), np.array([False, True, False, True]))
+
+
+def test_inherited_properties():
+
+    d = Data(x=np.random.random((3, 2, 4)).astype(np.float32))
+    sub = d.new_subset()
+    sub.subset_state = d.id['x'] > 0.5
+
+    assert sub.component_ids() == d.component_ids()
+    assert sub.components == d.components
+    assert sub.derived_components == d.derived_components
+    assert sub.primary_components == d.primary_components
+    assert sub.visible_components == d.visible_components
+    assert sub.pixel_component_ids == d.pixel_component_ids
+    assert sub.world_component_ids == d.world_component_ids
+
+    assert sub.ndim == 3
+    assert sub.shape == (3, 2, 4)
+
+    assert sub.hub is d.hub

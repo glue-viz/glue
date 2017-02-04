@@ -87,7 +87,7 @@ class ComponentIDComboHelper(HubListener):
         self._categorical = value
         self.refresh()
 
-    def append_data(self, data):
+    def append_data(self, data, refresh=True):
 
         if isinstance(data, Subset):
             data = data.data
@@ -102,7 +102,8 @@ class ComponentIDComboHelper(HubListener):
 
         if data not in self._data:
             self._data.append(data)
-            self.refresh()
+            if refresh:
+                self.refresh()
 
     def remove_data(self, data):
         self._data.remove(data)
@@ -121,7 +122,8 @@ class ComponentIDComboHelper(HubListener):
             self._data.clear()
         except AttributeError:  # PY2
             self._data[:] = []
-        self._data.extend(datasets)
+        for data in datasets:
+            self.append_data(data, refresh=False)
         self.refresh()
 
     @property
