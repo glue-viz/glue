@@ -111,9 +111,6 @@ class StateAttributeCacheHelper(object):
         else:
             self._cache = cache
 
-        if self.attribute is not None:
-            self._update_attribute()
-
     @property
     def data_values(self):
         # For subsets in 'data' mode, we want to compute the limits based on
@@ -241,6 +238,23 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
     values_names = ('lower', 'upper')
     modifiers_names = ('log', 'percentile')
 
+    def __init__(self, state, attribute, cache=None, **kwargs):
+
+        super(StateAttributeLimitsHelper, self).__init__(state, attribute, cache=cache, **kwargs)
+
+        if self.attribute is not None:
+
+            if (self.lower is not None and self.upper is not None and getattr(self, 'percentile', None) is None):
+                # If the lower and upper limits are already set, we need to make
+                # sure we don't override them, so we set the percentile mode to
+                # custom if it isn't already set.
+                self.set(percentile='Custom')
+            else:
+                # Otherwise, we force the recalculation or the fetching from
+                # cache of the limits based on the current attribute
+                self._update_attribute()
+
+
     def update_values(self, use_default_modifiers=False, **properties):
 
         if not any(prop in properties for prop in ('attribute', 'percentile', 'log')):
@@ -286,6 +300,8 @@ class StateAttributeSingleValueHelper(StateAttributeCacheHelper):
     def __init__(self, state, attribute, function, **kwargs):
         self._function = function
         super(StateAttributeSingleValueHelper, self).__init__(state, attribute, **kwargs)
+        if self.attribute is not None:
+            self._update_attribute()
 
     def update_values(self, use_default_modifiers=False, **properties):
         if not any(prop in properties for prop in ('attribute',)) or self.data is None:
