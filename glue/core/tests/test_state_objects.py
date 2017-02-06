@@ -191,3 +191,31 @@ class TestStateAttributeSingleValueHelper():
         assert self.helper.value == 2.5
         self.state.comp = self.x_id
         assert self.helper.value == 42
+
+
+def test_limits_helper_initial_values():
+
+    # Regression test for a bug that occurred if the limits cache was empty
+    # but some attributes were set to values - in this case we don't want to
+    # override the existing values.
+
+    data = Data(x=np.linspace(-100, 100, 10000),
+                y=np.linspace(2, 3, 10000), label='test_data')
+
+    class SimpleState(State):
+
+        layer = CallbackProperty()
+        comp = CallbackProperty()
+        lower = CallbackProperty()
+        upper = CallbackProperty()
+
+    state = SimpleState()
+    state.lower = 1
+    state.upper = 2
+    state.comp = data.id['x']
+
+    helper = StateAttributeLimitsHelper(state, attribute='comp',
+                                        lower='lower', upper='upper')
+
+    assert helper.lower == 1
+    assert helper.upper == 2

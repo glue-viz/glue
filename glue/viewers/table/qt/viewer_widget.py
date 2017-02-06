@@ -190,18 +190,10 @@ class TableWidget(DataViewer):
 
         hdr = self.ui.table.horizontalHeader()
         hdr.setStretchLastSection(True)
-
-        if PYQT5:
-            hdr.setSectionResizeMode(hdr.Interactive)
-        else:
-            hdr.setResizeMode(hdr.Interactive)
+        hdr.setSectionResizeMode(hdr.Interactive)
 
         hdr = self.ui.table.verticalHeader()
-
-        if PYQT5:
-            hdr.setSectionResizeMode(hdr.Interactive)
-        else:
-            hdr.setResizeMode(hdr.Interactive)
+        hdr.setSectionResizeMode(hdr.Interactive)
 
         self.model = None
 
