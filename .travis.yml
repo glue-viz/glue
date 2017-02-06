@@ -113,6 +113,8 @@ install:
 script:
 
   - python -c 'import IPython.utils'
+  - python -c 'from IPython import get_ipython'
+  - python -c 'import IPython.utils.py3compat as py3compat'
 
   - if [[ $QT_PKG == False ]]; then glue --version; fi
 
