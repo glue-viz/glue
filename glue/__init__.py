@@ -2,6 +2,8 @@
 
 __all__ = ['custom_viewer', 'qglue', 'test']
 
+ from IPython import get_ipython
+
 import os
 
 try:
