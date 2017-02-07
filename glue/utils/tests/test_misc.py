@@ -77,15 +77,21 @@ def test_nonpartial():
 
 def test_lookup_class():
 
-    lookup_class('glue.utils.misc.DeferredMethod') is DeferredMethod
+    assert lookup_class('glue.utils.misc.DeferredMethod') is DeferredMethod
 
     with pytest.raises(ValueError) as exc:
-        lookup_class('gluh.utils.misc.DeferredMethod') is None
+        assert lookup_class('gluh.utils.misc.DeferredMethod') is None
     assert exc.value.args[0] == "Module 'gluh.utils.misc' not found"
 
     with pytest.raises(ValueError) as exc:
-        lookup_class('glue.utils.misc.DeferredMethods') is None
+        assert lookup_class('glue.utils.misc.DeferredMethods') is None
     assert exc.value.args[0] == "Object 'glue.utils.misc.DeferredMethods' not found"
+
+
+def test_lookup_class_builtins():
+
+    assert lookup_class('__builtin__.dict') is dict
+    assert lookup_class('builtins.dict') is dict
 
 
 def test_as_list():
