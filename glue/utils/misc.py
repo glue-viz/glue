@@ -4,6 +4,7 @@ import string
 from functools import partial
 from contextlib import contextmanager
 
+from glue.external.six import PY2
 from glue.external.six.moves import reduce
 
 
@@ -68,11 +69,19 @@ def lookup_class(ref):
     ref : str
         The module string
     """
+
+    if PY2 and ref.startswith('builtins'):
+        ref = '.'.join(['__builtin__'] + ref.split('.')[1:])
+    elif not PY2 and ref.startswith('__builtin__'):
+        ref = '.'.join(['builtins'] + ref.split('.')[1:])
+
     mod = ref.rsplit('.', 1)[0]
+
     try:
         result = __import__(mod)
     except ImportError:
         raise ValueError("Module '{0}' not found".format(mod))
+
     try:
         for attr in ref.split('.')[1:]:
             result = getattr(result, attr)
