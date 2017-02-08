@@ -38,7 +38,7 @@ with warnings.catch_warnings():
     sip.setapi('QTextStream', 2)
     sip.setapi('QTime', 2)
     sip.setapi('QUrl', 2)
-    import PyQt4
+    import PyQt5
     import matplotlib.pyplot as plt
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
