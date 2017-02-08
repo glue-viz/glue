@@ -35,7 +35,7 @@ from glue.utils.qt import (pick_class, GlueTabBar,
 from glue.app.qt.feedback import submit_bug_report, submit_feedback
 from glue.app.qt.plugin_manager import QtPluginManager
 from glue.app.qt.versions import show_glue_info
-from glue.app.qt.terminal import glue_terminal
+from glue.app.qt.terminal import glue_terminal, IPythonTerminalError
 
 
 __all__ = ['GlueApplication']
@@ -43,20 +43,27 @@ DOCS_URL = 'http://www.glueviz.org'
 
 
 def _fix_ipython_pylab():
+
     try:
         from IPython import get_ipython
     except ImportError:
         return
+
     shell = get_ipython()
+
     if shell is None:
         return
 
     from IPython.core.error import UsageError
+    from IPython.terminal.pt_inputhooks import UnknownBackend
 
     try:
         shell.enable_pylab('inline', import_all=True)
     except ValueError:
         # if the shell is a normal terminal shell, we get here
+        pass
+    except UnknownBackend:
+        # if the shell is a normal terminal shell, we can also get here
         pass
     except UsageError:
         pass
@@ -799,14 +806,21 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         self._layer_widget.ui.button_row.addWidget(self._terminal_button)
 
-        widget = glue_terminal(data_collection=self._data,
-                               dc=self._data,
-                               hub=self._hub,
-                               session=self.session,
-                               application=self,
-                               **vars(env))
-        self._terminal_button.clicked.connect(self._toggle_terminal)
+        try:
+            widget = glue_terminal(data_collection=self._data,
+                                   dc=self._data,
+                                   hub=self._hub,
+                                   session=self.session,
+                                   application=self,
+                                   **vars(env))
+        except IPythonTerminalError as exc:
+            self._terminal = None
+            self._terminal_button.setEnabled(False)
+            self._terminal_button.setToolTip(str(exc))
+            self._terminal_exception = str(exc)
+            return
 
+        self._terminal_button.clicked.connect(self._toggle_terminal)
         self._terminal = self.add_widget(widget)
         self._hide_terminal()
 
@@ -863,11 +877,13 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             self.move(*position)
 
         self.raise_()  # bring window to front
+
         # at some point during all this, the MPL backend
         # switches. This call restores things, so
         # figures are still inlined in the notebook.
         # XXX find out a better place for this
         _fix_ipython_pylab()
+
         return self.app.exec_()
 
     exec_ = start
