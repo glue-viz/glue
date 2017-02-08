@@ -58,7 +58,7 @@ matrix:
         - os: linux
           env: PYTHON_VERSION=3.6
                PYTEST_ARGS="--cov glue"
-               CONDA_DEPENDENCIES="pytz pyparsing cycler python-dateutil freetype libpng sip qt pip setuptools pandas mock pbr six funcsigs matplotlib qtpy"
+               CONDA_DEPENDENCIES="pytz pyparsing cycler python-dateutil freetype libpng sip qt pip setuptools pandas mock pbr six matplotlib qtpy"
                CONDA_DEPENDENCIES_FLAGS='--no-deps'
                PIP_DEPENDENCIES="pytest-cov coveralls"
 
