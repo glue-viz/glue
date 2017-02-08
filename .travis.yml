@@ -19,8 +19,6 @@ env:
     - PYTHON_VERSION=2.7
     - PYTHON_VERSION=3.6
   global:
-    - CONDA_CHANNELS='conda-forge'
-    - CONDA_CHANNEL_PRIORITY=True
     - MATPLOTLIB_VERSION=1.5
     - NUMPY_VERSION=1.11
     - ASTROPY_VERSION=1.3
