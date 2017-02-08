@@ -17,8 +17,15 @@ from __future__ import absolute_import, division, print_function
 # must import these first, to set up Qt properly
 from qtpy import QtWidgets
 
+from IPython import get_ipython
+from IPython.terminal.interactiveshell import TerminalInteractiveShell
+
+from ipykernel.inprocess.ipkernel import InProcessInteractiveShell
+from ipykernel.connect import get_connection_file
+
 from qtconsole.inprocess import QtInProcessKernelManager
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
+from qtconsole.client import QtKernelClient
 
 from glue.app.qt.mdi_area import GlueMdiSubWindow
 from glue.utils import as_variable_name
@@ -26,6 +33,10 @@ from glue.utils.qt import get_qapp
 
 kernel_manager = None
 kernel_client = None
+
+
+class IPythonTerminalError(Exception):
+    pass
 
 
 def start_in_process_kernel():
@@ -71,6 +82,38 @@ def in_process_console(console_class=RichJupyterWidget, **kwargs):
     control.shell = kernel_manager.kernel.shell
     control.shell.user_ns.update(**kwargs)
     control.setWindowTitle('IPython Terminal - type howto() for instructions')
+
+    return control
+
+
+def connected_console(console_class=RichJupyterWidget, **kwargs):
+    """
+    Create a console widget, connected to another kernel running in the current
+    process.
+
+    This is used for instance if glue has been started from IPython.
+
+    Keyword arguments will be added to the namespace of the shell.
+
+    Parameters
+    ----------
+    console_class : `type`
+        The class of the console widget to create
+    """
+
+    shell = get_ipython()
+
+    if shell is None:
+        raise RuntimeError("There is no IPython kernel in this process")
+
+    client = QtKernelClient(connection_file=get_connection_file())
+    client.load_connection_file()
+    client.start_channels()
+
+    control = console_class()
+    control.kernel_client = client
+    control.shell = shell
+    control.shell.user_ns.update(**kwargs)
 
     return control
 
@@ -142,11 +185,44 @@ class DragAndDropTerminal(RichJupyterWidget):
             event.ignore()
 
 
+FROM_TERMINAL_MESSAGE = """
+Due to a limitation in IPython, the IPython terminal in glue does not work well
+or at all if glue was started from an IPython terminal, or a Jupyter qtconsole
+or notebook. However, you can use the original Python session you started glue
+from instead to interact with glue objects. For example, if you started the
+application with:
+
+    In [2]: app = qglue(...)
+
+or
+
+    In [2]: app = GlueApplication(...)
+
+you can then access e.g. the viewers with app.viewers, the data collection with
+app.data_collection, and so on. If the IPython shell hangs and doesn't allow
+you to type anything else until glue is closed, make sure you type:
+
+    In [1]: %gui qt
+
+before starting glue to avoid this kind of issue.
+""".strip()
+
+
 def glue_terminal(**kwargs):
     """
     Return a qt widget which embed an IPython interpreter.
 
     Keyword arguments will be added to the namespace of the shell.
     """
+
     kwargs['howto'] = howto
-    return in_process_console(console_class=DragAndDropTerminal, **kwargs)
+    shell = get_ipython()
+
+    if shell is None or isinstance(shell, InProcessInteractiveShell):
+        return in_process_console(console_class=DragAndDropTerminal, **kwargs)
+    else:
+        raise IPythonTerminalError(FROM_TERMINAL_MESSAGE)
+
+    # TODO: if glue is launched from a qtconsole or a notebook, we should in
+    # principle be able to use the connected_console function above, but this
+    # doesn't behave quite right and requires further investigation.
