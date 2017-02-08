@@ -25,7 +25,7 @@ env:
     - IPYTHON_VERSION=5
     - PYTEST_ARGS="--cov glue -vs"
     - NO_CFG_FILES=false
-    - QT_PKG=pyqt
+    - QT_PKG=pyqt5
     - SETUP_XVFB=True
     # Note that we need to specify requests 2.9 because of a bug in the version check in linkchecker, and we can't use conda since requests 2.9 won't exist for e.g. Python 3.6
     - CONDA_DEPENDENCIES="nomkl pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole"
@@ -52,11 +52,6 @@ matrix:
           env: PYTHON_VERSION=3.6
                NUMPY_VERSION=dev
 
-        # PyQt5
-        - os: linux
-          env: PYTHON_VERSION=2.7
-               QT_PKG=pyqt5
-
         # The following configuration tests that glue functions with minimal
         # dependencies. The --no-deps is to prevent scipy from getting
         # installed as a pandas dependency.
@@ -79,18 +74,24 @@ matrix:
 
         - os: linux
           env: PYTHON_VERSION=2.7
+               QT_PKG=pyqt
+
+        - os: linux
+          env: PYTHON_VERSION=2.7
                ASTROPY_VERSION=1.0
                MATPLOTLIB_VERSION=1.4
                NUMPY_VERSION=1.9
                IPYTHON_VERSION=4
                PANDAS_VERSION=0.14
                SETUPTOOLS=1.0
+               QT_PKG=pyqt
 
         - os: linux
           env: PYTHON_VERSION=2.7
                ASTROPY_VERSION=1.1
                MATPLOTLIB_VERSION=1.5
                NUMPY_VERSION=1.10
+               QT_PKG=pyqt
 
         # Test with PySide, but due to segmentation faults, mark as an
         # allowed failure.
