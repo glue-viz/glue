@@ -122,7 +122,7 @@ before_install:
   # package with a version of 5.x rather than a pyqt5 package, so we explicitly
   # request pyqt=4 for PyQt4.
   - if [[ $QT_PKG == pyside ]]; then export CONDA_DEPENDENCIES="pyside "$CONDA_DEPENDENCIES; fi
-  - if [[ $QT_PKG == pyqt ]]; then export CONDA_DEPENDENCIES="pyqt=4 icu=56 "$CONDA_DEPENDENCIES; fi
+  - if [[ $QT_PKG == pyqt ]]; then export CONDA_DEPENDENCIES="pyqt=4 "$CONDA_DEPENDENCIES; fi
   - if [[ $QT_PKG == pyqt5 ]]; then export CONDA_DEPENDENCIES="pyqt=5 "$CONDA_DEPENDENCIES; fi
 
   # Documentation dependencies
