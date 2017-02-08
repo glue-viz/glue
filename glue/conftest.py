@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+from IPython import get_ipython
+
 import os
 
 from glue.config import CFG_DIR as CFG_DIR_ORIG

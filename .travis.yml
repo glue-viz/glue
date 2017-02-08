@@ -1,9 +1,5 @@
 language: c
 
-os:
-    - linux
-    - osx
-
 sudo: false
 
 addons:
@@ -15,9 +11,6 @@ notifications:
   email: false
 
 env:
-  matrix:
-    - PYTHON_VERSION=2.7
-    - PYTHON_VERSION=3.6
   global:
     - CONDA_CHANNELS='conda-forge'
     - CONDA_CHANNEL_PRIORITY=True
@@ -44,77 +37,10 @@ matrix:
 
     include:
 
-        # Astropy dev
-        - os: linux
-          env: PYTHON_VERSION=3.6
-               ASTROPY_VERSION=dev
-
-        # Numpy dev
-        - os: linux
-          env: PYTHON_VERSION=3.6
-               NUMPY_VERSION=dev
-
         # PyQt5
         - os: linux
           env: PYTHON_VERSION=2.7
                QT_PKG=pyqt5
-
-        # The following configuration tests that glue functions with minimal
-        # dependencies. The --no-deps is to prevent scipy from getting
-        # installed as a pandas dependency.
-        - os: linux
-          env: PYTHON_VERSION=3.6
-               PYTEST_ARGS="--cov glue"
-               CONDA_DEPENDENCIES="pytz pyparsing cycler python-dateutil freetype libpng sip qt pip setuptools pandas mock pbr six funcsigs matplotlib qtpy"
-               CONDA_DEPENDENCIES_FLAGS='--no-deps'
-               PIP_DEPENDENCIES="pytest-cov coveralls"
-
-        # We need to keep the following on 2.7 because of linkchecker
-        - os: linux
-          env: PYTHON_VERSION=2.7
-               DOC_TRIGGER=1
-               APP_TRIGGER=1
-               PYTEST_ARGS="--cov glue --no-optional-skip"
-               NO_CFG_FILES=true
-
-        # Test with older package versions:
-
-        - os: linux
-          env: PYTHON_VERSION=2.7
-               ASTROPY_VERSION=1.0
-               MATPLOTLIB_VERSION=1.4
-               NUMPY_VERSION=1.9
-               IPYTHON_VERSION=4
-               PANDAS_VERSION=0.14
-               SETUPTOOLS=1.0
-
-        - os: linux
-          env: PYTHON_VERSION=2.7
-               ASTROPY_VERSION=1.1
-               MATPLOTLIB_VERSION=1.5
-               NUMPY_VERSION=1.10
-
-        # Test with PySide, but due to segmentation faults, mark as an
-        # allowed failure.
-        - os: linux
-          env: PYTHON_VERSION=2.7
-               QT_PKG=pyside
-
-        # Test without any Qt installation, which will also cause all qt
-        # sub-directories to be removed, to make sure that no non-Qt code has
-        # any dependence on Qt code.
-        - os: linux
-          env: PYTHON_VERSION=3.6
-               QT_PKG=False
-
-    allow_failures:
-
-      - os: linux
-        env: PYTHON_VERSION=2.7 NUMPY_VERSION=dev
-             PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli plotly"
-
-      - os: linux
-        env: PYTHON_VERSION=2.7 QT_PKG=pyside
 
 before_install:
 
@@ -185,6 +111,10 @@ install:
   - conda env export
 
 script:
+
+  - python -c 'import IPython.utils'
+  - python -c 'from IPython import get_ipython'
+  - python -c 'import IPython.utils.py3compat as py3compat'
 
   - if [[ $QT_PKG == False ]]; then glue --version; fi
 
