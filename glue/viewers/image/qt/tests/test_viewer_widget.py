@@ -204,7 +204,7 @@ class TestImageWidget(_TestImageWidgetBase):
         for artist in client.artists:
             assert artist.aspect == 'auto'
 
-    @pytest.mark.skipif("CI and not TRAVIS_LINUX")
+    @pytest.mark.skipif("CI")
     def test_resize(self):
 
         # Regression test for a bug that caused images to not be shown at
