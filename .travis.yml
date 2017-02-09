@@ -185,6 +185,13 @@ install:
 
 script:
 
+  # In the following, we make sure there are no font sizes hard-coded in *.ui files.
+  # We do this because the default application font size may change on different
+  # platforms, but the sizes in ui files are absolute, which can lead to mismatched
+  # font sizes.
+  - find glue -name "*.ui" -exec grep "pointsize" {} \; >& font.log
+  - test ! -s font.log
+
   - if [[ $QT_PKG == False ]]; then glue --version; fi
 
   - python setup.py test -a "$PYTEST_ARGS";
