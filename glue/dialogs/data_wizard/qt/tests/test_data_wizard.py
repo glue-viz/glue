@@ -90,6 +90,6 @@ def test_data_wizard_error_cancel():
     """Returns empty list of error generated and then canceled"""
     with patch('glue.dialogs.data_wizard.qt.data_wizard_dialog.GlueDataDialog') as mock:
         mock().load_data.side_effect = Exception
-        with patch('glue.dialogs.data_wizard.qt.data_wizard_dialog.QMessageBox') as qmb:
+        with patch('qtpy.QtWidgets.QMessageBox') as qmb:
             qmb().exec_.return_value = 0
             assert data_wizard() == []
