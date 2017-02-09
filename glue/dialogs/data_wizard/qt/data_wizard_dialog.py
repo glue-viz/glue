@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from qtpy.QtCore import Qt
 from qtpy import QtWidgets
-from glue.utils.qt import QMessageBoxPatched as QMessageBox, set_cursor_cm
+from glue.utils.qt import set_cursor_cm
 
 __all__ = ['data_wizard', 'GlueDataDialog']
 
@@ -16,14 +16,14 @@ def data_wizard():
     """
     def report_error(error, factory, curfile):
         import traceback
-        retry = QMessageBox.Retry
-        cancel = QMessageBox.Cancel
+        retry = QtWidgets.QMessageBox.Retry
+        cancel = QtWidgets.QMessageBox.Cancel
         buttons = retry | cancel
         detail = traceback.format_exc()
         msg = "\n".join(["Could not load %s (wrong load method?)" % curfile,
                          "File load method: %s" % factory.label])
         detail = "\n\n".join(["Error message: %s" % error, detail])
-        mb = QMessageBox(QMessageBox.Critical, "Data Load Error", msg)
+        mb = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Critical, "Data Load Error", msg)
         mb.setDetailedText(detail)
         mb.setDefaultButton(cancel)
         mb.setStandardButtons(buttons)

@@ -74,7 +74,7 @@ class TestGlueApplication(object):
             with patch(mock_open) as op:
                 op.side_effect = IOError
                 fd.return_value = '/tmp/junk', '/tmp/junk'
-                with patch('glue.app.qt.application.QMessageBox') as mb:
+                with patch('qtpy.QtWidgets.QMessageBox') as mb:
                     self.app._choose_save_session()
                     assert mb.call_count == 1
 
