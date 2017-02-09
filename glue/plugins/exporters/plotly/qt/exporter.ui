@@ -15,22 +15,6 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="label_10">
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Export to Plotly</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QLabel" name="label_6">
      <property name="text">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p style=&quot;line-height:16px&quot;&gt;The default is to export plots to Plotly using secret URLs and using your local plotly settings (~/.plotly/.credentals) if present, and the glue account if not.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
