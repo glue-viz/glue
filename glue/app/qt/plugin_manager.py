@@ -16,7 +16,7 @@ class QtPluginManager(object):
     def __init__(self, installed=None):
 
         self.ui = load_ui('plugin_manager.ui', None,
-                           directory=os.path.dirname(__file__))
+                          directory=os.path.dirname(__file__))
 
         self.ui.cancel.clicked.connect(self.reject)
         self.ui.confirm.clicked.connect(self.finalize)
@@ -39,7 +39,7 @@ class QtPluginManager(object):
 
         for plugin in sorted(config.plugins):
             check = QtWidgets.QTreeWidgetItem(self.ui.tree.invisibleRootItem(),
-                                          ["", plugin])
+                                              ["", plugin])
             check.setFlags(check.flags() | Qt.ItemIsUserCheckable)
             if config.plugins[plugin]:
                 check.setCheckState(0, Qt.Checked)
@@ -65,10 +65,9 @@ class QtPluginManager(object):
         except Exception:
             import traceback
             detail = str(traceback.format_exc())
-            from glue.utils.qt import QMessageBoxPatched as QMessageBox
-            message = QMessageBox(QMessageBox.Critical,
-                                  "Error",
-                                  "Could not save plugin configuration")
+            message = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Critical,
+                                            "Error",
+                                            "Could not save plugin configuration")
             message.setDetailedText(detail)
             message.exec_()
             return

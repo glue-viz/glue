@@ -15,7 +15,7 @@ from ..main import (die_on_error, restore_session, load_data_files,
 def test_die_on_error_exception():
     """Decorator should spawn a QMessageBox and exit"""
     with pytest.raises(SystemExit):
-        with patch('glue.utils.qt.QMessageBoxPatched') as qmb:
+        with patch('qtpy.QtWidgets.QMessageBox') as qmb:
             @die_on_error('test_msg')
             def test():
                 raise Exception()
@@ -95,7 +95,7 @@ def test_exec_real(tmpdir):
     filename = tmpdir.join('test.py').strpath
     with open(filename, 'w') as f:
         f.write('a = 1')
-    with patch('glue.utils.qt.QMessageBoxPatched') as qmb:
+    with patch('qtpy.QtWidgets.QMessageBox') as qmb:
         with patch('sys.exit') as exit:
             main('glue -x {0}'.format(os.path.abspath(filename)).split())
     assert exit.called_once_with(0)

@@ -44,7 +44,9 @@ def set_cursor_cm(shape):
 
 def messagebox_on_error(msg):
     """Decorator that catches exceptions and displays an error message"""
-    from glue.utils.qt import QMessageBoxPatched as QMessageBox  # Must be here
+
+    from qtpy import QtWidgets  # Must be here
+    from qtpy.QtCore import Qt
 
     def decorator(func):
         @wraps(func)
@@ -54,9 +56,10 @@ def messagebox_on_error(msg):
             except Exception as e:
                 m = "%s\n%s" % (msg, e.args[0])
                 detail = str(traceback.format_exc())
-                qmb = QMessageBox(QMessageBox.Critical, "Error", m)
+                qmb = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Critical, "Error", m)
                 qmb.setDetailedText(detail)
                 qmb.resize(400, qmb.size().height())
+                qmb.setTextInteractionFlags(Qt.TextSelectableByMouse)
                 qmb.exec_()
         return wrapper
 
@@ -65,7 +68,8 @@ def messagebox_on_error(msg):
 
 def die_on_error(msg):
     """Decorator that catches errors, displays a popup message, and quits"""
-    from glue.utils.qt import QMessageBoxPatched as QMessageBox
+
+    from qtpy import QtWidgets  # Must be here
 
     def decorator(func):
         def wrapper(*args, **kwargs):
@@ -82,7 +86,7 @@ def die_on_error(msg):
                     detail = "Full message:\n\n%s\n\n%s" % (m, detail)
                     m = m[:500] + '...'
 
-                qmb = QMessageBox(QMessageBox.Critical, "Error", m)
+                qmb = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Critical, "Error", m)
                 qmb.setDetailedText(detail)
                 qmb.show()
                 qmb.raise_()

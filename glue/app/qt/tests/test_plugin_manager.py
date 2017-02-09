@@ -2,9 +2,10 @@ from __future__ import absolute_import, division, print_function
 
 from mock import patch
 
+from qtpy import QtWidgets
+
 from glue import _plugin_helpers as ph
 from glue.main import load_plugins
-from glue.utils.qt import QMessageBoxPatched
 
 from ..plugin_manager import QtPluginManager
 
@@ -68,7 +69,7 @@ def test_permission_fail(tmpdir):
 
     config2 = ph.PluginConfig.load()
 
-    with patch.object(QMessageBoxPatched, 'exec_', return_value=None) as qmb:
+    with patch.object(QtWidgets.QMessageBox, 'exec_', return_value=None) as qmb:
         w = QtPluginManager()
         w.finalize()
 

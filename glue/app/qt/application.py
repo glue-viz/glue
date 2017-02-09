@@ -29,7 +29,6 @@ from glue.viewers.image.qt import ImageWidget
 from glue.viewers.scatter.qt import ScatterWidget
 from glue.utils import nonpartial
 from glue.utils.qt import (pick_class, GlueTabBar,
-                           QMessageBoxPatched as QMessageBox,
                            set_cursor_cm, messagebox_on_error, load_ui)
 
 from glue.app.qt.feedback import submit_bug_report, submit_feedback
@@ -308,13 +307,13 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             return
 
         if not os.environ.get('GLUE_TESTING'):
-            buttons = QMessageBox.Ok | QMessageBox.Cancel
-            dialog = QMessageBox.warning(
+            buttons = QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
+            dialog = QtWidgets.QMessageBox.warning(
                 self, "Confirm Close",
                 "Are you sure you want to close this tab? "
                 "This will close all data viewers in the tab.",
-                buttons=buttons, defaultButton=QMessageBox.Cancel)
-            if not dialog == QMessageBox.Ok:
+                buttons=buttons, defaultButton=QtWidgets.QMessageBox.Cancel)
+            if not dialog == QtWidgets.QMessageBox.Ok:
                 return
 
         w = self.tab_widget.widget(index)
@@ -746,13 +745,13 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         """
 
         if not os.environ.get('GLUE_TESTING'):
-            buttons = QMessageBox.Ok | QMessageBox.Cancel
-            dialog = QMessageBox.warning(
+            buttons = QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
+            dialog = QtWidgets.QMessageBox.warning(
                 self, "Confirm Close",
                 "Are you sure you want to reset the session? "
                 "This will close all datasets, subsets, and data viewers",
-                buttons=buttons, defaultButton=QMessageBox.Cancel)
-            if not dialog == QMessageBox.Ok:
+                buttons=buttons, defaultButton=QtWidgets.QMessageBox.Cancel)
+            if not dialog == QtWidgets.QMessageBox.Ok:
                 return
 
         ga = GlueApplication()
@@ -831,7 +830,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                "\nReason:\n%s" % exception)
 
         def show_msg():
-            mb = QMessageBox(QMessageBox.Critical,
+            mb = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Critical,
                              title, msg)
             mb.setDetailedText(self._terminal_exception)
             mb.exec_()
@@ -936,7 +935,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         :param detail: A longer description
         :type detail: str
         """
-        qmb = QMessageBox(QMessageBox.Critical, "Error", message)
+        qmb = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Critical, "Error", message)
         qmb.setDetailedText(detail)
         qmb.resize(400, qmb.size().height())
         qmb.exec_()
