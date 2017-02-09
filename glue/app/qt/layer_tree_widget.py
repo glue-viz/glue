@@ -505,9 +505,9 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
         self._actions['maskify'] = MaskifySubsetAction(self)
 
         # new component definer
-        separator = QtWidgets.QAction("sep", tree)
-        separator.setSeparator(True)
-        tree.addAction(separator)
+        sep = QtWidgets.QAction("", tree)
+        sep.setSeparator(True)
+        tree.addAction(sep)
 
         a = action("Define new component", self,
                  tip="Define a new component using python expressions")
