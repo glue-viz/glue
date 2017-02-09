@@ -10,11 +10,6 @@
     <height>282</height>
    </rect>
   </property>
-  <property name="font">
-   <font>
-    <pointsize>13</pointsize>
-   </font>
-  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -54,11 +49,6 @@
        </property>
        <item>
         <widget class="QPushButton" name="layerAddButton">
-         <property name="font">
-          <font>
-           <pointsize>11</pointsize>
-          </font>
-         </property>
          <property name="text">
           <string/>
          </property>
@@ -72,11 +62,6 @@
        </item>
        <item>
         <widget class="GlueActionButton" name="newSubsetButton">
-         <property name="font">
-          <font>
-           <pointsize>11</pointsize>
-          </font>
-         </property>
          <property name="text">
           <string/>
          </property>
@@ -93,11 +78,6 @@
          <property name="enabled">
           <bool>false</bool>
          </property>
-         <property name="font">
-          <font>
-           <pointsize>11</pointsize>
-          </font>
-         </property>
          <property name="text">
           <string/>
          </property>
@@ -111,11 +91,6 @@
        </item>
        <item>
         <widget class="GlueActionButton" name="linkButton">
-         <property name="font">
-          <font>
-           <pointsize>11</pointsize>
-          </font>
-         </property>
          <property name="text">
           <string/>
          </property>
