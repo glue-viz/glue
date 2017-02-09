@@ -172,7 +172,7 @@ def init_mpl(figure=None, axes=None, wcs=False, axes_factory=None):
         raise ValueError("Axes and figure are incompatible")
 
     try:
-        from glue.external.wcsaxes import WCSAxesSubplot
+        from astropy.visualization.wcsaxes import WCSAxesSubplot
     except ImportError:
         WCSAxesSubplot = None
 

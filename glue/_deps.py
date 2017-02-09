@@ -129,13 +129,12 @@ gui_framework = (
 )
 
 required = (
-    Dependency('qtpy', 'Required'),
-    Dependency('setuptools', 'Required'),
-    Dependency('numpy', 'Required', min_version='1.4'),
-    Dependency('matplotlib', 'Required for plotting', min_version='1.1'),
-    Dependency(
-        'pandas', 'Adds support for Excel files and DataFrames', min_version='0.13.1'),
-    Dependency('astropy', 'Used for FITS I/O, table reading, and WCS Parsing')
+    Dependency('qtpy', 'Required', min_version='1.1'),
+    Dependency('setuptools', 'Required', min_version='1.0'),
+    Dependency('numpy', 'Required', min_version='1.9'),
+    Dependency('matplotlib', 'Required for plotting', min_version='1.4'),
+    Dependency('pandas', 'Adds support for Excel files and DataFrames', min_version='0.14'),
+    Dependency('astropy', 'Used for FITS I/O, table reading, and WCS Parsing', min_version='1.3')
 )
 
 general = (
