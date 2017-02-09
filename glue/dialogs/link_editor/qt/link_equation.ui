@@ -89,12 +89,6 @@
      </item>
      <item>
       <widget class="QLabel" name="info">
-       <property name="font">
-        <font>
-         <pointsize>18</pointsize>
-         <kerning>true</kerning>
-        </font>
-       </property>
        <property name="text">
         <string>result = f(x, y)</string>
        </property>
@@ -107,8 +101,6 @@
       <widget class="QLabel" name="help_txt">
        <property name="font">
         <font>
-         <family>Helvetica</family>
-         <pointsize>12</pointsize>
          <italic>true</italic>
         </font>
        </property>
@@ -129,7 +121,6 @@
         <widget class="QLabel" name="input_label">
          <property name="font">
           <font>
-           <pointsize>14</pointsize>
            <weight>75</weight>
            <bold>true</bold>
           </font>
@@ -166,7 +157,6 @@
         <widget class="QLabel" name="output_label">
          <property name="font">
           <font>
-           <pointsize>14</pointsize>
            <weight>75</weight>
            <bold>true</bold>
           </font>

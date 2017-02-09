@@ -160,15 +160,24 @@ class LinkEquation(QtWidgets.QWidget):
             type(self.function).__name__ == 'LinkFunction'
 
     def _init_widgets(self):
+
         layout = QtWidgets.QVBoxLayout()
         layout.setSpacing(1)
         self._ui.input_canvas.setLayout(layout)
+
         layout = QtWidgets.QVBoxLayout()
         layout.setContentsMargins(1, 0, 1, 1)
         self._ui.output_canvas.setLayout(layout)
+
         layout.addWidget(self._output_widget)
-        spacer = QtWidgets.QSpacerItem(5, 5, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacer = QtWidgets.QSpacerItem(5, 5,
+                                       QtWidgets.QSizePolicy.Minimum,
+                                       QtWidgets.QSizePolicy.Expanding)
         layout.addItem(spacer)
+
+        font = self._ui.info.font()
+        font.setPointSize(font.pointSize() * 1.4)
+        self._ui.info.setFont(font)
 
     @property
     def signature(self):

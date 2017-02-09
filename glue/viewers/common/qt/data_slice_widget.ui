@@ -247,11 +247,6 @@
    </item>
    <item>
     <widget class="QLabel" name="label_warning">
-     <property name="font">
-      <font>
-       <pointsize>11</pointsize>
-      </font>
-     </property>
      <property name="styleSheet">
       <string notr="true">color: rgb(255, 33, 28)</string>
      </property>

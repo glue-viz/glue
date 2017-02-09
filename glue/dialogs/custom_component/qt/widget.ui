@@ -11,32 +11,9 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Define new component</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_5" stretch="0,5,0,0,0,1">
-   <item>
-    <widget class="QLabel" name="label_3">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>15</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Define new component</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-   </item>
+  <layout class="QVBoxLayout" name="verticalLayout_5" stretch="5,0,0,0,1">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,1">
      <item>
@@ -145,11 +122,6 @@ p, li { white-space: pre-wrap; }
    </item>
    <item>
     <widget class="QLabel" name="label_5">
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>In the box below, you can compose mathematical expressions that include components from the list above (you can drag and drop components into the field below or type them and use tab-completion).</string>
      </property>
@@ -173,11 +145,6 @@ p, li { white-space: pre-wrap; }
    </item>
    <item>
     <widget class="QLabel" name="label_6">
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Note: Make sure you include spaces around the component names. If a component name turns red, the syntax is invalid. You can use any variable defined inside your config.py file, as well as numpy.&lt;function&gt;, np.&lt;function&gt;, and math.&lt;function&gt; (e.g. np.log10 or math.sqrt).</string>
      </property>

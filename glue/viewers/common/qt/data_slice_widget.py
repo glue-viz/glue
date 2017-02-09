@@ -67,6 +67,10 @@ class SliceWidget(QtWidgets.QWidget):
                          directory=os.path.dirname(__file__))
         self._ui_slider = slider
 
+        font = slider.label_warning.font()
+        font.setPointSize(font.pointSize() * 0.75)
+        slider.label_warning.setFont(font)
+
         slider.button_first.setStyleSheet('border: 0px')
         slider.button_first.setIcon(get_icon('playback_first'))
         slider.button_prev.setStyleSheet('border: 0px')
