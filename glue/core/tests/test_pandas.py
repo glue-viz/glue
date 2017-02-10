@@ -60,13 +60,12 @@ class TestPandasConversion(object):
         else:
             world_0_dtype = np.int64
 
-        frame = pd.DataFrame({
-            'n': np.array([4, 5, 6, 7]),
-            'c': ['a', 'b', 'c', 'd'],
-            'd': np.arange(4),
-            'Pixel Axis 0 [x]': np.ogrid[0:4],
-            'World 0': np.arange(4).astype(world_0_dtype)
-        })
+        frame = pd.DataFrame()
+        frame['n'] = np.array([4, 5, 6, 7])
+        frame['Pixel Axis 0 [x]'] = np.ogrid[0:4]
+        frame['World 0'] = np.arange(4).astype(world_0_dtype)
+        frame['c'] = ['a', 'b', 'c', 'd']
+        frame['d'] = np.arange(4)
         out_frame = d.to_dataframe()
 
         assert_frame_equal(out_frame, frame)

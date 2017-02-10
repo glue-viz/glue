@@ -670,9 +670,7 @@ def _load_data(rec, context):
 
     comps = [list(map(context.object, [cid, comp]))
              for cid, comp in rec['components']]
-    comps = sorted(comps,
-                   key=lambda x: isinstance(x[1], (DerivedComponent,
-                                                   CoordinateComponent)))
+
     for cid, comp in comps:
         if isinstance(comp, CoordinateComponent):
             comp._data = result

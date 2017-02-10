@@ -40,9 +40,11 @@ class DendroClient(GenericMplClient):
         add_callback(self, 'parent_attr', nonpartial(self._relayout))
 
     def _default_attributes(self):
+
         assert self.display_data is not None
 
-        fallback = self.display_data.components[0]
+        fallback = self.display_data.pixel_component_ids[0]
+
         with delay_callback(self, 'height_attr', 'parent_attr',
                             'order_attr'):
 
