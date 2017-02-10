@@ -465,7 +465,16 @@ class StandaloneImageWidget(QtWidgets.QMainWindow):
         kwargs.setdefault('origin', 'upper')
 
         if wcs is not None:
+            # In the following we force the color and linewith of the WCSAxes
+            # frame to be restored after calling reset_wcs. This can be removed
+            # once we support Astropy 1.3.1 or later.
+            color = self._axes.coords.frame.get_color()
+            linewidth = self._axes.coords.frame.get_linewidth()
             self._axes.reset_wcs(wcs)
+            self._axes.coords.frame.set_color(color)
+            self._axes.coords.frame.set_linewidth(linewidth)
+            del color, linewidth
+
         self._im = imshow(self._axes, image, norm=self._norm, cmap='gray', **kwargs)
         self._im_array = image
         self._wcs = wcs

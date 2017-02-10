@@ -805,7 +805,15 @@ class MplImageClient(ImageClient):
         wcs = getattr(data.coords, 'wcs', None)
 
         if wcs is not None and hasattr(self.axes, 'reset_wcs'):
+            # In the following we force the color and linewith of the WCSAxes
+            # frame to be restored after calling reset_wcs. This can be removed
+            # once we support Astropy 1.3.1 or later.
+            color = self.axes.coords.frame.get_color()
+            linewidth = self.axes.coords.frame.get_linewidth()
             self.axes.reset_wcs(wcs, slices=slc[::-1])
+            self.axes.coords.frame.set_color(color)
+            self.axes.coords.frame.set_linewidth(linewidth)
+            del color, linewidth
 
     def _redraw(self):
         self._axes.figure.canvas.draw()

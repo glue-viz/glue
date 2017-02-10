@@ -7,6 +7,9 @@ v0.10.0 (unreleased)
 - Removed ginga plugin from core package and moved it to a separate repository
   at https://github.com/ejeschke/glue-ginga.
 
+- Switch from using bundled WCSAxes to using the version in Astropy, and fixed
+  an issue that caused the frame of the axes to be too thick. [#1231]
+
 - Make it possible to define a default index for DataComboHelper - this makes
   it possible for viewers to have three DataComboHelper and ensure that they
   default to different attributes. [#1163]
