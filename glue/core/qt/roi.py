@@ -3,7 +3,8 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 
 from qtpy.QtCore import Qt
-from qtpy import QtCore, QtGui, QtWidgets
+from qtpy import QtCore, QtGui, PYQT5
+
 from glue.core import roi
 from glue.utils.qt import mpl_to_qt4_color
 
@@ -58,8 +59,23 @@ class QtROI(object):
     def _transform(self, x, y):
         """ Convert points from MPL data coords to Qt Widget coords"""
         t = self._axes.transData
+
         xy = np.column_stack((x, y))
         pts = t.transform(xy)
+
+        # Matplotlib 2.x with PyQt5 on a retina display has a bug which means
+        # that the coordinates returned by transData are twice as large as they
+        # should be. Since we don't know when/if this bug will be fixed, we
+        # check whether the coordinates of the top right corner are outside
+        # the canvas.
+        if PYQT5:
+            xmax = self._axes.get_xlim()[1]
+            ymax = self._axes.get_ylim()[1]
+            xd, yd = t.transform((xmax, ymax))
+            if xd > self.canvas.width() or yd > self.canvas.height():
+                ratio = self.canvas.devicePixelRatio()
+                pts /= ratio
+
         pts[:, 1] = self.canvas.height() - pts[:, 1]
         return pts[:, 0], pts[:, 1]
 
@@ -145,8 +161,25 @@ class QtCircularROI(QtROI, roi.MplCircularROI):
         roi.MplCircularROI.__init__(self, axes)
 
     def paint(self, canvas):
+
         xy = list(map(int, self._roi.get_center()))
         radius = int(self._roi.get_radius())
+
+        # Matplotlib 2.x with PyQt5 on a retina display has a bug which means
+        # that the coordinates returned by transData are twice as large as they
+        # should be. Since we don't know when/if this bug will be fixed, we
+        # check whether the coordinates of the top right corner are outside
+        # the canvas.
+        if PYQT5:
+            xmax = self._axes.get_xlim()[1]
+            ymax = self._axes.get_ylim()[1]
+            xd, yd = self._axes.transData.transform((xmax, ymax))
+            if xd > self.canvas.width() or yd > self.canvas.height():
+                ratio = self.canvas.devicePixelRatio()
+                xy[0] /= ratio
+                xy[1] /= ratio
+                radius /= ratio
+
         center = QtCore.QPoint(xy[0], canvas.height() - xy[1])
 
         p = self.get_painter(canvas)
