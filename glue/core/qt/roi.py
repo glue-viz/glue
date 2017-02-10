@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 
 from qtpy.QtCore import Qt
-from qtpy import QtCore, QtGui, QtWidgets, PYQT5
+from qtpy import QtCore, QtGui, PYQT5
 
 from glue.core import roi
 from glue.utils.qt import mpl_to_qt4_color
@@ -73,7 +73,8 @@ class QtROI(object):
             ymax = self._axes.get_ylim()[1]
             xd, yd = t.transform((xmax, ymax))
             if xd > self.canvas.width() or yd > self.canvas.height():
-                pts /= 2
+                ratio = self.canvas.devicePixelRatio()
+                pts /= ratio
 
         pts[:, 1] = self.canvas.height() - pts[:, 1]
         return pts[:, 0], pts[:, 1]
@@ -174,9 +175,10 @@ class QtCircularROI(QtROI, roi.MplCircularROI):
             ymax = self._axes.get_ylim()[1]
             xd, yd = self._axes.transData.transform((xmax, ymax))
             if xd > self.canvas.width() or yd > self.canvas.height():
-                xy[0] /= 2
-                xy[1] /= 2
-                radius /= 2
+                ratio = self.canvas.devicePixelRatio()
+                xy[0] /= ratio
+                xy[1] /= ratio
+                radius /= ratio
 
         center = QtCore.QPoint(xy[0], canvas.height() - xy[1])
 
