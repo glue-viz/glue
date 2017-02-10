@@ -47,6 +47,8 @@ v0.10.0 (unreleased)
 v0.9.2 (unreleased)
 -------------------
 
+* Avoid duplicate toolbar in dendrogram viewer. [#1213, #1237]
+
 * Fixed bug that caused the contrast to change for the incorrect layer in the
   RGB image viewer.
 

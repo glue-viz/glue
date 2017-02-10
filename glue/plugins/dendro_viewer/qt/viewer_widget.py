@@ -49,7 +49,6 @@ class DendroWidget(DataViewer):
 
         self._connect()
 
-        self.initialize_toolbar()
         self.statusBar().setSizeGripEnabled(False)
 
     def _connect(self):
