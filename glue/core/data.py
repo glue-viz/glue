@@ -901,7 +901,6 @@ class Data(object):
         # the order of the components, and sets don't preserve order.
         for cid in self.components:
             cname = cid.label
-            print('loop1', cname, cname in old_labels & new_labels)
             if cname in old_labels & new_labels:
                 comp_old = self.get_component(cname)
                 comp_new = data.get_component(cname)
@@ -911,7 +910,6 @@ class Data(object):
         # and preserve the order of components as much as possible.
         for cid in data.components:
             cname = cid.label
-            print('loop2', cname, cname in new_labels - old_labels)
             if cname in new_labels - old_labels:
                 cid = data.find_component_id(cname)
                 comp_new = data.get_component(cname)

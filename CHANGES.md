@@ -55,9 +55,10 @@ v0.9.2 (unreleased)
   dataset has been restored. [#1186]
 
 * Fix Data.update_values_from_data to make sure that original component order
-  is preserved.
+  is preserved. [#1238]
 
 * Fix Data.components to return original component order, not alphabetical order.
+  [#1238]
 
 * Fix significant performance bottlenecks with WCS coordinate conversions. [#1185]
 

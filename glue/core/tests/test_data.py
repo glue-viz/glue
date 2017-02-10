@@ -622,11 +622,7 @@ def test_update_values_from_data_order():
     d2['j'] = [0, 1, 2]
     d2['a'] = [4, 4, 4]
 
-    print(d1.components)
-    print(d2.components)
-
     d2.update_values_from_data(d1)
-
 
     assert d2.visible_components == [d2.id['j'], d2.id['a'], d1.id['c'],
                                      d1.id['b'], d1.id['f']]
