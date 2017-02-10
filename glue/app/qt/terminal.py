@@ -226,3 +226,7 @@ def glue_terminal(**kwargs):
     # TODO: if glue is launched from a qtconsole or a notebook, we should in
     # principle be able to use the connected_console function above, but this
     # doesn't behave quite right and requires further investigation.
+    
+    # Note however that if we do this, then we need to avoid polluting the
+    # namespace of the original IPython console, as described in this issue:
+    # https://github.com/glue-viz/glue/issues/1209
