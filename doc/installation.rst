@@ -218,28 +218,30 @@ arguments. See ``glue --help`` for examples.
           Windows users can create a desktop shortcut for this file, and run
           Glue by double clicking on the icon.
 
-Install Latest Developing Version
-------------
-First get dependence packages using conda::
+Installing the latest developer version
+---------------------------------------
 
-conda install -c conda-forge glueviz glue-vispy-viewers pyqt=4.11.3
-conda remove glueviz glue-vispy-viewers
+If you are using conda, the easiest way to get all the dependencies installed
+when using the developer version is to first install the stable version, which
+will pull in all the dependencies, then to remove it and install the developer
+version::
 
-Then download source code of `glue <https://github.com/glue-viz/glue>`_
-and `glue vispy viewer <https://github.com/glue-viz/glue-vispy-viewers>`_
-from github, use **python setup.py install** to install.
+    conda install -c conda-forge glueviz glue-vispy-viewers
+    conda remove glueviz glue-vispy-viewers
 
-Known issues
-------------
+    git clone git://github.com/glue-viz/glue
+    cd glue
+    pip install .
+    cd ..
 
-Issues with SetupTools
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    git clone git://github.com/glue-viz/glue-vispy-viewers
+    cd glue-vispy-viewers
+    pip install .
+    cd ..
 
-On certain MacOS installations, when install from source code using **python
-setup.py install**, you may run into the following error::
+If you want to then uninstall the developer versions and install the stable
+versions again, you can uninstall the developer versions with::
 
-   ImportError: No module named extern
+    pip uninstall glueviz glue-vispy-viewers
 
-A simple solution is to upgrade SetupTools version with::
-
-   pip install setuptools --grade
+then install the stable versions with conda.
