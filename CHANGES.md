@@ -4,6 +4,8 @@ Full changelog
 v0.10.0 (unreleased)
 --------------------
 
+- Change default name of subsets to include the word 'Subset'. [#1234]
+
 - Removed ginga plugin from core package and moved it to a separate repository
   at https://github.com/ejeschke/glue-ginga.
 
