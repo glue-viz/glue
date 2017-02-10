@@ -565,39 +565,68 @@ Hidden components:
  1) World 0
 """.strip()
 
+
 def test_data_str():
     # Regression test for Data.__str__
-    d = Data(x=[1,2,3], y=[2,3,4], label='mydata')
+    d = Data(x=[1, 2, 3], y=[2, 3, 4], label='mydata')
     assert str(d) == EXPECTED_STR
 
 
 def test_update_values_from_data():
-    d1 = Data(a=[1,2,3], b=[4,5,6], label='banana')
-    d2 = Data(b=[1,2,3,4], c=[5,6,7,8], label='apple')
+    d1 = Data(a=[1, 2, 3], b=[4, 5, 6], label='banana')
+    d2 = Data(b=[1, 2, 3, 4], c=[5, 6, 7, 8], label='apple')
     d1a = d1.id['a']
     d1b = d1.id['b']
     d2b = d2.id['b']
     d2c = d2.id['c']
     d1.update_values_from_data(d2)
-    assert not d1a in d1.components
+    assert d1a not in d1.components
     assert d1b in d1.components
-    assert not d2b in d1.components
+    assert d2b not in d1.components
     assert d2c in d1.components
     assert d1.shape == (4,)
 
 
 def test_update_values_from_data_invalid():
 
-    d1 = Data(a=[1,2,3], label='banana')
-    d1.add_component([3,4,5], 'a')
-    d2 = Data(b=[1,2,3,4], c=[5,6,7,8], label='apple')
+    d1 = Data(a=[1, 2, 3], label='banana')
+    d1.add_component([3, 4, 5], 'a')
+    d2 = Data(b=[1, 2, 3, 4], c=[5, 6, 7, 8], label='apple')
     with pytest.raises(ValueError) as exc:
         d1.update_values_from_data(d2)
     assert exc.value.args[0] == "Non-unique component labels in original data"
 
-    d1 = Data(a=[1,2,3], b=[4,5,6], label='banana')
-    d2 = Data(b=[1,2,3,4], label='apple')
-    d2.add_component([5,6,7,8], 'b')
+    d1 = Data(a=[1, 2, 3], b=[4, 5, 6], label='banana')
+    d2 = Data(b=[1, 2, 3, 4], label='apple')
+    d2.add_component([5, 6, 7, 8], 'b')
     with pytest.raises(ValueError) as exc:
         d1.update_values_from_data(d2)
     assert exc.value.args[0] == "Non-unique component labels in new data"
+
+
+def test_update_values_from_data_order():
+
+    # Make sure that the order of components is preserved when calling
+    # Data.update_values_from_data. The final order should be first
+    # components that existed before, followed by new components
+
+    d1 = Data()
+    d1['c'] = [1, 2, 3]
+    d1['b'] = [2, 3, 4]
+    d1['j'] = [0, 1, 2]
+    d1['a'] = [4, 4, 4]
+    d1['f'] = [4, 5, 6]
+
+    d2 = Data()
+    d2['h'] = [4, 4, 4]
+    d2['j'] = [0, 1, 2]
+    d2['a'] = [4, 4, 4]
+
+    print(d1.components)
+    print(d2.components)
+
+    d2.update_values_from_data(d1)
+
+
+    assert d2.visible_components == [d2.id['j'], d2.id['a'], d1.id['c'],
+                                     d1.id['b'], d1.id['f']]

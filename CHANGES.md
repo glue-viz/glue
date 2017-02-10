@@ -54,6 +54,11 @@ v0.9.2 (unreleased)
   The original behavior of keeping the coordinate information from the first
   dataset has been restored. [#1186]
 
+* Fix Data.update_values_from_data to make sure that original component order
+  is preserved.
+
+* Fix Data.components to return original component order, not alphabetical order.
+
 * Fix significant performance bottlenecks with WCS coordinate conversions. [#1185]
 
 * Fix error when changing the contrast radio button the RGB image viewer mode,

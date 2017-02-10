@@ -22,14 +22,14 @@ def test_component_id_combo_helper():
 
     assert _items_as_string(combo) == ""
 
-    data1 = Data(x=[1,2,3], y=[2,3,4], label='data1')
+    data1 = Data(x=[1, 2, 3], y=[2, 3, 4], label='data1')
 
     dc.append(data1)
     helper.append_data(data1)
 
     assert _items_as_string(combo) == "x:y"
 
-    data2 = Data(a=[1,2,3], b=['a','b','c'], label='data2')
+    data2 = Data(a=[1, 2, 3], b=['a', 'b', 'c'], label='data2')
 
     dc.append(data2)
     helper.append_data(data2)
@@ -48,7 +48,7 @@ def test_component_id_combo_helper():
     helper.numeric = True
 
     helper.visible = False
-    assert _items_as_string(combo) == "data1:Pixel Axis 0 [x]:World 0:x:y:data2:Pixel Axis 0 [x]:World 0:a:b"
+    assert _items_as_string(combo) == "data1:x:Pixel Axis 0 [x]:World 0:y:data2:a:Pixel Axis 0 [x]:World 0:b"
     helper.visible = True
 
     dc.remove(data2)

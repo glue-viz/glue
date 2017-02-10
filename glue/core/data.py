@@ -462,7 +462,7 @@ class Data(object):
 
         :rtype: list
         """
-        return sorted(self._components.keys(), key=lambda x: x.label)
+        return list(self._components.keys())
 
     @property
     def visible_components(self):
@@ -896,17 +896,26 @@ class Data(object):
         # Update shape
         self._shape = data._shape
 
-        # Update components that exist in both
-        for cname in old_labels & new_labels:
-            comp_old = self.get_component(cname)
-            comp_new = data.get_component(cname)
-            comp_old._data = comp_new._data
+        # Update components that exist in both. Note that we can't just loop
+        # over old_labels & new_labels since we need to make sure we preserve
+        # the order of the components, and sets don't preserve order.
+        for cid in self.components:
+            cname = cid.label
+            print('loop1', cname, cname in old_labels & new_labels)
+            if cname in old_labels & new_labels:
+                comp_old = self.get_component(cname)
+                comp_new = data.get_component(cname)
+                comp_old._data = comp_new._data
 
-        # Add components that didn't exist in original one
-        for cname in new_labels - old_labels:
-            cid = data.find_component_id(cname)
-            comp_new = data.get_component(cname)
-            self.add_component(comp_new, cid)
+        # Add components that didn't exist in original one. As above, we try
+        # and preserve the order of components as much as possible.
+        for cid in data.components:
+            cname = cid.label
+            print('loop2', cname, cname in new_labels - old_labels)
+            if cname in new_labels - old_labels:
+                cid = data.find_component_id(cname)
+                comp_new = data.get_component(cname)
+                self.add_component(comp_new, cid)
 
         # Update data label
         self.label = data.label
