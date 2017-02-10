@@ -160,8 +160,15 @@ class Application(HubListener):
 
     @catch_error("Could not load data")
     def load_data(self, path):
+        """
+        Given a path to a file, load the file as a Data object and add it to
+        the current session.
+
+        This returns the added `Data` object.
+        """
         d = load_data(path)
         self.add_datasets(self.data_collection, d)
+        return d
 
     @catch_error("Could not add data")
     def add_data(self, *args, **kwargs):
@@ -171,6 +178,8 @@ class Application(HubListener):
         Positional arguments are interpreted using the data factories, while
         keyword arguments are interpreted using the same infrastructure as the
         `qglue` command.
+
+        This returns a list of added `Data` objects.
         """
 
         datasets = []
@@ -189,6 +198,8 @@ class Application(HubListener):
 
         if links is not None:
             self.data_collection.add_link(parse_links(self.data_collection, links))
+
+        return datasets
 
     def report_error(self, message, detail):
         """ Report an error message to the user.

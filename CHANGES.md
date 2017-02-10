@@ -4,6 +4,9 @@ Full changelog
 v0.10.0 (unreleased)
 --------------------
 
+- The GlueApplication.add_data and load_data methods now return the
+  loaded data objects. [#1239]
+
 - Change default name of subsets to include the word 'Subset'. [#1234]
 
 - Removed ginga plugin from core package and moved it to a separate repository
