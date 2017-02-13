@@ -146,6 +146,7 @@ def set_background_color(axes, color):
 def set_foreground_color(axes, color):
     if hasattr(axes, 'coords'):
         axes.coords.frame.set_color(color)
+        axes.coords.frame.set_linewidth(1)
         for coord in axes.coords:
             coord.set_ticks(color=color)
             coord.set_ticklabel(color=color)
@@ -154,7 +155,7 @@ def set_foreground_color(axes, color):
         for spine in axes.spines.values():
             spine.set_color(color)
         axes.tick_params(color=color,
-                          labelcolor=color)
+                         labelcolor=color)
         axes.xaxis.label.set_color(color)
         axes.yaxis.label.set_color(color)
 
@@ -172,7 +173,7 @@ def init_mpl(figure=None, axes=None, wcs=False, axes_factory=None):
         raise ValueError("Axes and figure are incompatible")
 
     try:
-        from glue.external.wcsaxes import WCSAxesSubplot
+        from astropy.visualization.wcsaxes import WCSAxesSubplot
     except ImportError:
         WCSAxesSubplot = None
 
