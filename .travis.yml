@@ -177,7 +177,7 @@ install:
 
   # We need to install glue in order to make sure that the entry points are
   # installed.
-  - python setup.py install
+  - python setup.py install --no-deps
 
   # List installed packages again - just to check if any packages got installed
   # in the previous step.
