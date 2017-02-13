@@ -37,8 +37,15 @@ class Dependency(object):
         try:
             module = __import__(self.module)
             return module.__version__
-        except (ImportError, AttributeError):
+        except ImportError:
             return 'unknown version'
+        except AttributeError:
+            try:
+                return module.__VERSION__
+            except AttributeError:
+                return 'unknown version'
+
+
 
     def install(self):
         if self.installed:
@@ -134,13 +141,14 @@ required = (
     Dependency('numpy', 'Required', min_version='1.9'),
     Dependency('matplotlib', 'Required for plotting', min_version='1.4'),
     Dependency('pandas', 'Adds support for Excel files and DataFrames', min_version='0.14'),
-    Dependency('astropy', 'Used for FITS I/O, table reading, and WCS Parsing', min_version='1.3')
+    Dependency('astropy', 'Used for FITS I/O, table reading, and WCS Parsing', min_version='1.3'),
+    Dependency('dill', 'Used when saving Glue sessions', min_version='0.2'),
+    Dependency('h5py', 'Used to support HDF5 files', min_version='2.4'),
+    Dependency('xlrd', 'Used to support Excel files', min_version='1.0'),
+    Dependency('glue_vispy_viewers', '3D viewers for glue', 'glue-vispy-viewers', min_version='0.6')
 )
 
 general = (
-    Dependency('dill', 'Used when saving Glue sessions'),
-    Dependency('h5py', 'Used to support HDF5 files'),
-    Dependency('xlrd', 'Used to support Excel files'),
     Dependency('scipy', 'Used for some image processing calculation'),
     Dependency('skimage',
                'Used to read popular image formats (jpeg, png, etc.)',
