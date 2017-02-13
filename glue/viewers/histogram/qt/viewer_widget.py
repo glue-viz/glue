@@ -28,7 +28,7 @@ def _hash(x):
 
 
 class HistogramWidget(DataViewer):
-    LABEL = "Histogram"
+    LABEL = "1D Histogram"
     _property_set = DataViewer._property_set + \
         'component xlog ylog normed cumulative autoscale xmin xmax nbins'.split(
         )
@@ -239,7 +239,7 @@ class HistogramWidget(DataViewer):
         if c is not None:
             label = str(c.label)
         else:
-            label = 'Histogram'
+            label = '1D Histogram'
         return label
 
     def _update_labels(self):

@@ -1,25 +1,14 @@
-:orphan:
-
-.. _experimental_3d:
+.. _viewers-3d:
 
 3D viewers in Glue
 ==================
 
-.. important:: The functionality described on this page is experimental
-               and is not feature-complete. If you do try it out, let us know if
-               you have any feedback, or are interested in helping develop it
-               further!
-
-A plugin with experimental 3D viewers for glue, powered by `VisPy
-<http://www.vispy.org>`_, is now available. To install this plugin, you will
-first need to make sure that the VisPy package is installed.
-
-Provided that you installed glue with ``conda`` or with ``pip`` (with the
-optional dependencies enabled), you should already have the 3D viewers
-available. You can check this by going to the **Canvas** menu in glue and
-selecting **New Data Viewer**, or alternatively by dragging a dataset onto
-the canvas area. If the 3D viewers plugin is installed, you should see the
-3D viewers in the list:
+A plugin with 3D viewers for glue, powered by `VisPy <http://www.vispy.org>`_,
+is available. Provided that you installed glue with ``conda`` or with ``pip``,
+you should already have the 3D viewers available. You can check this by going to
+the **Canvas** menu in glue and selecting **New Data Viewer**, or alternatively
+by dragging a dataset onto the canvas area. If the 3D viewers plugin is
+installed, you should see the 3D viewers in the list:
 
 .. image:: images/3d_viewers_select.png
    :align: center
@@ -28,10 +17,6 @@ the canvas area. If the 3D viewers plugin is installed, you should see the
 If you don't see these in the list, then if you are using
 `Anaconda <https://www.continuum.io/downloads>`_ to manage your Python
 distribution, you can install the 3D viewers plugin using::
-
-    conda install -c conda-forge glue-vispy-viewers
-
-If you don't use Anaconda, you can install the plugin using::
 
     pip install glue-vispy-viewers
 
@@ -115,24 +100,10 @@ out, see the `README.md
 <https://github.com/glue-viz/glue-vispy-viewers/blob/master/README.md>`_ file in
 the glue-vispy-viewers repository.
 
-General limitations/known issues
---------------------------------
-
-* The performance of the viewers may not yet be optimal with large datasets -
-  if in doubt, start with a smaller dataset first to see if you will run into
-  performance issues.
-
 Reporting issues
 ----------------
 
-Please report any issues in the following `issue tracker
+Please report any issues with the 3D viewers in the following `issue tracker
 <https://github.com/glue-viz/glue-3d-viewer/issues>`_. Please first check that
 there is not already a similar issue open -- if there is, please feel free to
 comment on that issue to let us know you ran into that problem too!
-
-Credits
--------
-
-* Penny Qian
-* Tom Robitaille
-* Maxwell Tsai
