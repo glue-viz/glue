@@ -1,1 +1,0 @@
-from glue.utils.qt.widget_properties import *
