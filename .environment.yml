@@ -1,11 +1,8 @@
 name: glueviz
 
-channels:
-  - conda-forge
-
 dependencies:
   - qtpy
-  - pyqt
+  - pyqt=5
   - numpy
   - matplotlib
   - pandas
