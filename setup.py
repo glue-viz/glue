@@ -42,14 +42,8 @@ if '.dev' in __version__:  # noqa
         __version__ = re.sub('\.dev[^"]*', '.dev{0}'.format(commit_number),
                              __version__)  # noqa
 
-try:
-    import pypandoc
-    LONG_DESCRIPTION = pypandoc.convert('README.md', 'rst')
-except (IOError, ImportError):
-    if 'sdist' in sys.argv or 'register' in sys.argv:
-        raise  # don't let this pass silently
-    with open('README.md') as infile:
-        LONG_DESCRIPTION = infile.read()
+with open('README.rst') as infile:
+    LONG_DESCRIPTION = infile.read()
 
 cmdclass = {}
 
