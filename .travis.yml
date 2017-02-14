@@ -156,6 +156,7 @@ install:
   # sub-directories
   - if [[ $QT_PKG == False ]]; then
       sed -i.bak '/qtpy/d' setup.py;
+      sed -i.bak '/sys.exit(1)/d' setup.py;
       conda remove --no-pin --force qtpy || true;
       conda remove --no-pin --force pyqt || true;
       conda remove --no-pin --force pyside || true;
