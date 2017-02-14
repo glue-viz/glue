@@ -22,3 +22,4 @@ dependencies:
   - python=3.5
   - pip:
      - sphinx-automodapi
+     - numpydoc
