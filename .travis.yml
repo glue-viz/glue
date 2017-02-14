@@ -179,6 +179,9 @@ install:
   # installed.
   - pip install . --no-deps
 
+  # Check that all the plugins load correctly
+  - python -c 'from glue.logger import logger; logger.setLevel("DEBUG"); from glue.main import load_plugins; load_plugins()'
+
   # List installed packages again - just to check if any packages got installed
   # in the previous step.
   - conda env export
