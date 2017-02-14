@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from qtpy import QtCore, QtWidgets
+from qtpy.QtCore import Qt
 from glue.utils.qt import load_ui
 from glue.utils import nonpartial
 
@@ -76,13 +77,39 @@ class ComponentSelector(QtWidgets.QWidget):
         # We allow 'hidden' components because we want to show things like coordinates,
         # but we don't want to include hidden AND derived components which are
         # generated from links.
-        cids = [c for c in data.components if not (c in data.derived_components and c.hidden)]
+        cids = [c for c in data.components if c.hidden and c not in data.derived_components]
+        cids += [c for c in data.components if not c.hidden]
         c_list = self._ui.component_selector
         c_list.clear()
-        for c in cids:
-            item = QtWidgets.QListWidgetItem(c.label)
+
+        # Coordinate components
+        if len(data.coordinate_components) > 0:
+            item = QtWidgets.QListWidgetItem('Coordinate components')
+            item.setFlags(item.flags() & ~Qt.ItemIsEnabled)
             c_list.addItem(item)
-            c_list.set_data(item, c)
+            for c in data.coordinate_components:
+                item = QtWidgets.QListWidgetItem(c.label)
+                c_list.addItem(item)
+                c_list.set_data(item, c)
+
+        if len(set(data.primary_components) - set(data.coordinate_components)) > 0:
+            item = QtWidgets.QListWidgetItem('Main components')
+            item.setFlags(item.flags() & ~Qt.ItemIsEnabled)
+            c_list.addItem(item)
+            for c in data.primary_components:
+                if c not in data.coordinate_components:
+                    item = QtWidgets.QListWidgetItem(c.label)
+                    c_list.addItem(item)
+                    c_list.set_data(item, c)
+
+        if len(data.derived_components) > 0:
+            item = QtWidgets.QListWidgetItem('Derived components')
+            item.setFlags(item.flags() & ~Qt.ItemIsEnabled)
+            c_list.addItem(item)
+            for c in data.derived_components:
+                item = QtWidgets.QListWidgetItem(c.label)
+                c_list.addItem(item)
+                c_list.set_data(item, c)
 
     def _set_data(self):
         """ Populate the data list with data sets in the collection """
