@@ -83,8 +83,8 @@ components using e.g.::
 
     d.id['source'] == 'name'
 
-Subsets now share more attributes with parent Datasets [advanced]
------------------------------------------------------------------
+Subsets now share more attributes with parent Data objects [advanced]
+---------------------------------------------------------------------
 
 :class:`~glue.core.subset.Subset` objects now have properties such as
 ``components``, ``visible_components``, ``ndim``, ``shape``, and more which are
