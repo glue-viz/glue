@@ -77,6 +77,9 @@ v0.9.2 (unreleased)
 
 * Fix a bug that caused coordinate axis labels to be lost during merging. [#1195]
 
+* Fix a bug that caused tab names to not be saved and restored to/from session
+  files. [#1241, #1242]
+
 v0.9.1 (2016-11-01)
 -------------------
 
