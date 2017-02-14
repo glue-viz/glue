@@ -683,6 +683,11 @@ class SpectrumExtractorMode(RoiMode):
         self._release_callback = self._tool._update_profile
         self._move_callback = self._tool._move_profile
         self._roi_callback = None
+        add_callback(viewer.client, 'display_data', self._display_data_hook)
+
+    def _display_data_hook(self, data):
+        if data is not None:
+            self.enabled = data.ndim == 3
 
     def menu_actions(self):
 

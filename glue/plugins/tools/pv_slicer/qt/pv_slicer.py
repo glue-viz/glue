@@ -28,7 +28,7 @@ class PVSlicerMode(PathMode):
 
     def _display_data_hook(self, data):
         if data is not None:
-            self.enabled = data.ndim > 2
+            self.enabled = data.ndim == 3
 
     def _clear_path(self):
         self.clear()
