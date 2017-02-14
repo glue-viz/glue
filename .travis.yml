@@ -60,7 +60,7 @@ matrix:
         - os: linux
           env: PYTHON_VERSION=3.6
                PYTEST_ARGS="--cov glue"
-               CONDA_DEPENDENCIES="pip setuptools pandas mock matplotlib qtpy ipykernel qtconsole"
+               CONDA_DEPENDENCIES="pip setuptools pandas mock matplotlib qtpy ipython ipykernel qtconsole"
                PIP_DEPENDENCIES="pytest-cov coveralls"
                REMOVE_INSTALL_REQUIRES=1
 

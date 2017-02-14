@@ -130,6 +130,7 @@ Glue has the following required dependencies:
 * `QtPy <https://pypi.python.org/pypi/QtPy/>`__ 1.1.1 or higher - this is an
   abstraction layer for the Python Qt packages
 * `IPython <http://ipython.org>`_ 4.0 or higher
+* `ipykernel <https://pypi.python.org/pypi/ipykernel>`_
 * `qtconsole <http://jupyter.org/qtconsole/>`_
 * `dill <http://pythonhosted.org/dill/>`_ 0.2 or later (which improves session saving)
 * `h5py <http://www.h5py.org>`_ 2.4 or later, for reading HDF5 files
