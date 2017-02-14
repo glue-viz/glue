@@ -74,11 +74,6 @@ class ComponentSelector(QtWidgets.QWidget):
         if index < 0:
             return
         data = self._data[index]
-        # We allow 'hidden' components because we want to show things like coordinates,
-        # but we don't want to include hidden AND derived components which are
-        # generated from links.
-        cids = [c for c in data.components if c.hidden and c not in data.derived_components]
-        cids += [c for c in data.components if not c.hidden]
         c_list = self._ui.component_selector
         c_list.clear()
 
@@ -102,14 +97,19 @@ class ComponentSelector(QtWidgets.QWidget):
                     c_list.addItem(item)
                     c_list.set_data(item, c)
 
-        if len(data.derived_components) > 0:
+        # We allow 'hidden' components because we want to show things like coordinates,
+        # but we don't want to include hidden AND derived components which are
+        # generated from links.
+
+        if len(set(data.derived_components) & set(data.visible_components)) > 0:
             item = QtWidgets.QListWidgetItem('Derived components')
             item.setFlags(item.flags() & ~Qt.ItemIsEnabled)
             c_list.addItem(item)
             for c in data.derived_components:
-                item = QtWidgets.QListWidgetItem(c.label)
-                c_list.addItem(item)
-                c_list.set_data(item, c)
+                if not c.hidden:
+                    item = QtWidgets.QListWidgetItem(c.label)
+                    c_list.addItem(item)
+                    c_list.set_data(item, c)
 
     def _set_data(self):
         """ Populate the data list with data sets in the collection """
