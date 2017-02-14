@@ -268,6 +268,13 @@ class TestApplicationSession(object):
         app = GlueApplication()
         self.check_clone(app)
 
+    def test_tab_names(self):
+        app = GlueApplication()
+        app.tab_bar.setTabText(0, 'Banana')
+        assert app.tab_names == ['Banana']
+        app2 = self.check_clone(app)
+        assert app2.tab_names == ['Banana']
+
     def test_data_application(self):
         dc = DataCollection([Data(label='test',
                                             x=[1, 2, 3], y=[2, 3, 4])])

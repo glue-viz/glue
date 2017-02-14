@@ -979,6 +979,11 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         """
         return [self.tab_bar.tabText(i) for i in range(self.tab_count)]
 
+    @tab_names.setter
+    def tab_names(self, values):
+        for index, value in enumerate(values):
+            self.tab_bar.setTabText(index, value)
+
     @staticmethod
     def _choose_merge(data, others):
 
@@ -1015,3 +1020,15 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             return result, str(w.merged_label.text())
 
         return None, None
+
+    def __gluestate__(self, context):
+        state = super(GlueApplication, self).__gluestate__(context)
+        state['tab_names'] = self.tab_names
+        return state
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        self = super(GlueApplication, cls).__setgluestate__(rec, context)
+        if 'tab_names' in rec:
+            self.tab_names = rec['tab_names']
+        return self
