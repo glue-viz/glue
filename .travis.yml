@@ -32,6 +32,7 @@ env:
     # Note that we need to specify requests 2.9 because of a bug in the version check in linkchecker, and we can't use conda since requests 2.9 won't exist for e.g. Python 3.6
     - CONDA_DEPENDENCIES="nomkl pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole"
     - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli plotly spectral-cube requests==2.9 glue-vispy-viewers"
+    - REMOVE_INSTALL_REQUIRES=0
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
     - secure: "SU9BYH8d9eNigypG3lC83s0NY6Mq9AHGKXyEGeXDtz1npJIC1KHdzPMP1v1K3dzCgl1p6ReMXPjZMCENyfNkad/xvzTzGk0Nu/4BjihrUPV6+ratVeLpv0JLm8ikh8q+sZURkdtzUOlds+Hfn5ku4LdpT87tcKHY9TINAGA34ZM="
     - AWS_ACCESS_KEY_ID: AKIAI2ERWDHLW3W24X3A
@@ -63,6 +64,7 @@ matrix:
                CONDA_DEPENDENCIES="pytz pyparsing cycler python-dateutil freetype libpng sip qt pip setuptools pandas mock pbr six matplotlib qtpy"
                CONDA_DEPENDENCIES_FLAGS='--no-deps'
                PIP_DEPENDENCIES="pytest-cov coveralls"
+               REMOVE_INSTALL_REQUIRES=1
 
         # We need to keep the following on 2.7 because of linkchecker
         - os: linux
@@ -174,6 +176,15 @@ install:
   # since we don't want glue to appear in the list of packages for the
   # environment.
   - conda env export
+
+  # If REMOVE_INSTALL_REQUIRES is set, then we need to get rid of the
+  # install_requires section in setup.py. This is used for the absolute
+  # minimal build to make sure that things still work. In practice,
+  # glue could never be run with such a restrictive set of dependencies
+  # because install_requires will not be empty for users, but it ensures
+  # that if we change some of the dependencies from required to optional
+  # in future (apart from a core few), things will still work.
+  - if [ $REMOVE_INSTALL_REQUIRES ]; then sed -i.bak s/install_requires=install_requires/install_reqires={}/g setup.py; fi
 
   # We need to install glue in order to make sure that the entry points are
   # installed.
