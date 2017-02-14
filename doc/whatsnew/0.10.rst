@@ -62,8 +62,9 @@ Ginga plugin now moved to a separate package
 --------------------------------------------
 
 The plugin that allows `ginga <https://ejeschke.github.io/ginga/>`_ viewers to
-be used inside glue has been moved to a new package, glue-ginga. To install
-this, simply do::
+be used inside glue has been moved to a new package,
+`glue-ginga <https://pypi.python.org/pypi/glue-ginga/0.1>`_. To install
+this plugin, simply do::
 
     pip install glue-ginga
 
