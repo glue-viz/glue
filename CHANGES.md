@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.10.0 (unreleased)
+v0.10.0 (2017-02-14)
 --------------------
 
 * The GlueApplication.add_data and load_data methods now return the
