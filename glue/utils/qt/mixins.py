@@ -37,7 +37,7 @@ class GlueItemWidget(object):
         ----------
         selected_items : list
             A list of ``QtWidgets.QListWidgetItems`` or ``QtWidgets.QTreeWidgetItems`` instances
-            
+
         Returns
         -------
         result : list
@@ -60,7 +60,7 @@ class GlueItemWidget(object):
         Convenience method to fetch the data associated with a ``QxxWidgetItem``.
         """
         # return item.data(Qt.UserRole)
-        return self._mime_data[id(item)]
+        return self._mime_data.get(id(item), None)
 
     def set_data(self, item, data):
         """
@@ -75,5 +75,3 @@ class GlueItemWidget(object):
     @property
     def data(self):
         return self._mime_data
-        
-

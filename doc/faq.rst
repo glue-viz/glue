@@ -103,7 +103,7 @@ attribute. Repeat a second time to view the second image, and finally create a
 scatterplot comparing the image intensities at each pixel. You can then select
 regions in any of the three plots, and the corresponding selections in the other
 plots will be highlighted. Another interesting way to visualize your two related
-images is drop a 4th object using **Image Viewer**, but this time select the RGB
+images is drop a 4th object using **2D Image Viewer**, but this time select the RGB
 instead of Monochrome, and put each image into one of the colors. Right mouse
 down will change the *Contrast* selected color after you have selected the
 *bias/contrast button* on the top row. Obviously with three images  this is a

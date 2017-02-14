@@ -40,7 +40,7 @@ class ImageWidgetBase(DataViewer):
     This base class avoids any matplotlib-specific logic
     """
 
-    LABEL = "Image Viewer"
+    LABEL = "2D Image Viewer"
     _property_set = DataViewer._property_set + \
         'data attribute rgb_mode rgb_viz ratt gatt batt slice'.split()
 

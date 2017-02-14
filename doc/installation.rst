@@ -129,19 +129,20 @@ Glue has the following required dependencies:
 * Either `PySide`_ or `PyQt`_ (both PyQt4 and PyQt5 are supported)
 * `QtPy <https://pypi.python.org/pypi/QtPy/>`__ 1.1.1 or higher - this is an
   abstraction layer for the Python Qt packages
-  * `IPython <http://ipython.org>`_ 4.0 or higher
-  * `qtconsole <http://jupyter.org/qtconsole/>`_
+* `IPython <http://ipython.org>`_ 4.0 or higher
+* `ipykernel <https://pypi.python.org/pypi/ipykernel>`_
+* `qtconsole <http://jupyter.org/qtconsole/>`_
+* `dill <http://pythonhosted.org/dill/>`_ 0.2 or later (which improves session saving)
+* `h5py <http://www.h5py.org>`_ 2.4 or later, for reading HDF5 files
+* `xlrd <https://pypi.python.org/pypi/xlrd>`_ 1.0 or later, for reading Excel files
+* `glue-vispy-viewers <https://pypi.python.org/pypi/glue-vispy-viewers>`_, which provide 3D viewers
 
 The following optional dependencies are also highly recommended and
 domain-independent:
 
-* `dill <http://pythonhosted.org/dill/>`_, for better session saving
 * `SciPy <http://www.scipy.org>`_
 * `scikit-image <http://scikit-image.org>`_
-* `h5py <http://www.h5py.org>`_ for reading HDF5 files
-* `xlrd <https://pypi.python.org/pypi/xlrd>`_ for reading Excel files
 * `plotly <https://plot.ly>`_ for exporting to plot.ly
-* `glue-vispy-viewers <https://pypi.python.org/pypi/glue-vispy-viewers>`_, which provide 3D viewers
 
 Finally, there are domain-specific optional dependencies. For astronomy, these
 are:

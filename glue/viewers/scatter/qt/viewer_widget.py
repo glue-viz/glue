@@ -30,7 +30,7 @@ class ScatterWidget(DataViewer):
     An interactive scatter plot.
     """
 
-    LABEL = "Scatter Plot"
+    LABEL = "2D Scatter Plot"
     _property_set = DataViewer._property_set + \
         'xlog ylog xflip yflip hidden xatt yatt xmin xmax ymin ymax'.split()
 

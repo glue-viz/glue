@@ -96,6 +96,21 @@ glue-deps = glue._deps:main
 glue = glue.main:main
 """
 
+# Glue can work with PyQt4, PyQt5, and PySide. We can't add them to
+# install_requires because they aren't on PyPI but we can check here that one of
+# them is installed.
+try:
+    import PyQt5  # noqa
+except:
+    try:
+        import PyQt4  # noqa
+    except:
+        try:
+            import PySide  # noqa
+        except:
+            print("Glue requires PyQt4, PyQt5, or PySide to be installed")
+            sys.exit(1)
+
 install_requires = ['numpy>=1.9',
                     'pandas>=0.14',
                     'astropy>=1.3',
@@ -103,16 +118,17 @@ install_requires = ['numpy>=1.9',
                     'qtpy>=1.1',
                     'setuptools>=1.0',
                     'ipython>=4.0',
-                    'qtconsole']
+                    'ipykernel',
+                    'qtconsole',
+                    'dill>=0.2',
+                    'glue-vispy-viewers>=0.6',
+                    'xlrd>=1.0',
+                    'h5py>=2.4']
 
 extras_require = {
-    'recommended': ['dill',
-                    'h5py',
-                    'scipy',
+    'recommended': ['scipy',
                     'scikit-image',
-                    'plotly',
-                    'xlrd',
-                    'glue-vispy-viewers'],
+                    'plotly'],
     'astronomy': ['PyAVM',
                   'astrodendro',
                   'spectral-cube']
@@ -140,6 +156,7 @@ setup(name='glueviz',
           'Programming Language :: Python :: 3.3',
           'Programming Language :: Python :: 3.4',
           'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
           'Topic :: Scientific/Engineering :: Visualization',
           'License :: OSI Approved :: BSD License'
           ],

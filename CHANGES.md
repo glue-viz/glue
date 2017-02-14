@@ -4,56 +4,53 @@ Full changelog
 v0.10.0 (unreleased)
 --------------------
 
-- The GlueApplication.add_data and load_data methods now return the
+* The GlueApplication.add_data and load_data methods now return the
   loaded data objects. [#1239]
 
-- Change default name of subsets to include the word 'Subset'. [#1234]
+* Change default name of subsets to include the word 'Subset'. [#1234]
 
-- Removed ginga plugin from core package and moved it to a separate repository
+* Removed ginga plugin from core package and moved it to a separate repository
   at https://github.com/ejeschke/glue-ginga.
 
-- Switch from using bundled WCSAxes to using the version in Astropy, and fixed
+* Switch from using bundled WCSAxes to using the version in Astropy, and fixed
   an issue that caused the frame of the axes to be too thick. [#1231]
 
-- Make it possible to define a default index for DataComboHelper - this makes
+* Make it possible to define a default index for DataComboHelper - this makes
   it possible for viewers to have three DataComboHelper and ensure that they
   default to different attributes. [#1163]
 
-- Deal properly with adding Subset objects to DataComboHelper. [#1163]
+* Deal properly with adding Subset objects to DataComboHelper. [#1163]
 
-- Added the ability to export data and subset from the data collection view via
+* Added the ability to export data and subset from the data collection view via
   contextual menus. It was previously possible to export only the mask itself,
   and only to FITS files, but the framework for exporting data/subsets has now
   been generalized.
 
-- When hiding layers in the RGB image viewer, make sure the current layer changes
+* When hiding layers in the RGB image viewer, make sure the current layer changes
   to be a visible one if possible.
 
-- Avoid merging IDs when creating identity links. The previous behavior of
+* Avoid merging IDs when creating identity links. The previous behavior of
   merging was good for performance but made it impossible to undo the linking by
   un-glueing. Derived components created by links are now hidden by default.
   Finally, ``ComponentID`` objects now hold a reference to the first parent data
   they are used in. [#1189]
 
-- Added a decorator that can be used to avoid circular calling of methods (can
+* Added a decorator that can be used to avoid circular calling of methods (can
   occur when dealing with callbacks). [#1207]
 
-- Drop support for IPython 3.x and below, and make IPython and qtconsole into
+* Drop support for IPython 3.x and below, and make IPython and qtconsole into
   required dependencies. [#1145]
 
-- Added new classes that can be used to hold the state of e.g. viewers and other
+* Added new classes that can be used to hold the state of e.g. viewers and other
   objects. These classes allow callbacks to be attached to various properties,
   and can be used to define logical relations between different attributes
   in a GUI-independent way.
 
-- Fix selections when using Matplotlib 2.x, PyQt5 and a retina display. [#1236]
+* Fix selections when using Matplotlib 2.x, PyQt5 and a retina display. [#1236]
 
-- Updated ComponentIDComboHelper to no longer store ``(cid, data)`` as the
+* Updated ComponentIDComboHelper to no longer store ``(cid, data)`` as the
   ``userData`` but instead just the ``cid`` (the data is now accessible via
   ``cid.parent``). [#1212]
-
-v0.9.2 (unreleased)
--------------------
 
 * Avoid duplicate toolbar in dendrogram viewer. [#1213, #1237]
 

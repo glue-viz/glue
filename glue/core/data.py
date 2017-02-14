@@ -458,7 +458,7 @@ class Data(object):
 
     @property
     def components(self):
-        """ All :class:`ComponentIDs <glue.core.component_id.ComponentID>` in the Data
+        """All :class:`ComponentIDs <glue.core.component_id.ComponentID>` in the Data
 
         :rtype: list
         """
@@ -472,6 +472,15 @@ class Data(object):
         """
         return [cid for cid, comp in self._components.items()
                 if not cid.hidden and not comp.hidden]
+
+    @property
+    def coordinate_components(self):
+        """The ComponentIDs associated with a :class:`~glue.core.component.CoordinateComponent`
+
+        :rtype: list
+        """
+        return [c for c in self.component_ids() if
+                isinstance(self._components[c], CoordinateComponent)]
 
     @property
     def primary_components(self):
