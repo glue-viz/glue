@@ -671,9 +671,19 @@ def _load_data(rec, context):
     comps = [list(map(context.object, [cid, comp]))
              for cid, comp in rec['components']]
 
-    for cid, comp in comps:
+    for icomp, (cid, comp) in enumerate(comps):
         if isinstance(comp, CoordinateComponent):
             comp._data = result
+
+            # For backward compatibility, we need to check for cases where
+            # the component ID for the pixel components was not a PixelComponentID
+            # and upgrade it to one. This can be removed once we no longer
+            # support pre-v0.8 session files.
+            if not comp.world and not isinstance(cid, PixelComponentID):
+                cid = PixelComponentID(comp.axis, cid.label,
+                                       hidden=cid.hidden, parent=cid.parent)
+                comps[icomp] = (cid, comp)
+
         result.add_component(comp, cid)
 
     assert result._world_component_ids == []
