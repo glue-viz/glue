@@ -1,0 +1,363 @@
+{
+  "CoordinateComponent_2": {
+    "world": true, 
+    "_type": "glue.core.component.CoordinateComponent", 
+    "axis": 1
+  }, 
+  "CoordinateComponent_1": {
+    "world": true, 
+    "_type": "glue.core.component.CoordinateComponent", 
+    "axis": 0
+  }, 
+  "CoordinateComponent_0": {
+    "world": false, 
+    "_type": "glue.core.component.CoordinateComponent", 
+    "axis": 1
+  }, 
+  "Coordinates": {
+    "_type": "glue.core.coordinates.Coordinates"
+  }, 
+  "__main__": {
+    "_type": "glue.app.qt.application.GlueApplication", 
+    "session": "Session", 
+    "data": "DataCollection", 
+    "viewers": [
+      [
+        "ImageWidget"
+      ]
+    ], 
+    "plugins": [
+      "glue.plugins.tools.pv_slicer", 
+      "glue.viewers.histogram", 
+      "glue.plugins.export_plotly", 
+      "glue.plugins.export_d3po", 
+      "glue.viewers.image", 
+      "glue.plugins.tools.spectrum_tool", 
+      "glue.viewers.scatter", 
+      "glue.plugins.coordinate_helpers"
+    ]
+  }, 
+  "1_0": {
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes", 
+      "color": "#e31a1c", 
+      "markersize": 7, 
+      "marker": "o", 
+      "alpha": 0.5, 
+      "linewidth": 1, 
+      "linestyle": "solid"
+    }, 
+    "group": "1", 
+    "_type": "glue.core.subset_group.GroupedSubset"
+  }, 
+  "World 1": {
+    "hidden": true, 
+    "_type": "glue.core.component_id.ComponentID", 
+    "label": "World 1"
+  }, 
+  "image_0": {
+    "hidden": false, 
+    "_type": "glue.core.component_id.ComponentID", 
+    "label": "image"
+  }, 
+  "CoordinateComponent": {
+    "world": false, 
+    "_type": "glue.core.component.CoordinateComponent", 
+    "axis": 0
+  }, 
+  "Component": {
+    "units": "None", 
+    "_type": "glue.core.component.Component", 
+    "data": {
+      "_type": "numpy.ndarray", 
+      "data": "k05VTVBZAQBGAHsnZGVzY3InOiAnPGY4JywgJ2ZvcnRyYW5fb3JkZXInOiBGYWxzZSwgJ3NoYXBlJzogKDMsIDIpLCB9ICAgICAgICAgIAoAAAAAAADwPwAAAAAAAPA/AAAAAAAA8D8AAAAAAADwPwAAAAAAAPA/AAAAAAAA8D8="
+    }
+  }, 
+  "1": {
+    "_type": "glue.core.subset_group.SubsetGroup", 
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes", 
+      "color": "#e31a1c", 
+      "markersize": 7, 
+      "marker": "o", 
+      "alpha": 0.5, 
+      "linewidth": 1, 
+      "linestyle": "solid"
+    }, 
+    "state": "RoiSubsetState", 
+    "subsets": [
+      "1_0"
+    ], 
+    "label": "1"
+  }, 
+  "ImageWidget": {
+    "layers": [
+      {
+        "visible": true, 
+        "layer": "image", 
+        "zorder": 1, 
+        "_type": "glue.viewers.image.layer_artist.ImageLayerArtist", 
+        "norm": "DS9Normalize"
+      }, 
+      {
+        "visible": true, 
+        "layer": "1_0", 
+        "zorder": 2, 
+        "_type": "glue.viewers.image.layer_artist.SubsetImageLayerArtist"
+      }
+    ], 
+    "_type": "glue.viewers.image.qt.viewer_widget.ImageWidget", 
+    "pos": [
+      0, 
+      0
+    ], 
+    "session": "Session", 
+    "properties": {
+      "rgb_viz": [
+        true, 
+        true, 
+        true
+      ], 
+      "ratt": null, 
+      "rgb_mode": false, 
+      "gatt": null, 
+      "attribute": "image_0", 
+      "batt": null, 
+      "slice": [
+        "y", 
+        "x"
+      ], 
+      "data": "image"
+    }, 
+    "size": [
+      600, 
+      400
+    ]
+  }, 
+  "CoordinateComponentLink_2": {
+    "index": 1, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "Pixel y", 
+      "Pixel x"
+    ], 
+    "to": [
+      "World 1"
+    ], 
+    "pix2world": true, 
+    "coords": "Coordinates"
+  }, 
+  "CoordinateComponentLink": {
+    "index": 0, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "World 0", 
+      "World 1"
+    ], 
+    "to": [
+      "Pixel y"
+    ], 
+    "pix2world": false, 
+    "coords": "Coordinates"
+  }, 
+  "image": {
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes", 
+      "color": "#7f7f7f", 
+      "markersize": 3, 
+      "marker": "o", 
+      "alpha": 0.5, 
+      "linewidth": 1, 
+      "linestyle": "solid"
+    }, 
+    "_protocol": 3, 
+    "subsets": [
+      "1_0"
+    ], 
+    "_type": "glue.core.data.Data", 
+    "label": "image", 
+    "coords": "Coordinates", 
+    "components": [
+      [
+        "image_0", 
+        "Component"
+      ], 
+      [
+        "Pixel y", 
+        "CoordinateComponent"
+      ], 
+      [
+        "Pixel x", 
+        "CoordinateComponent_0"
+      ], 
+      [
+        "World 0", 
+        "CoordinateComponent_1"
+      ], 
+      [
+        "World 1", 
+        "CoordinateComponent_2"
+      ]
+    ], 
+    "_key_joins": []
+  }, 
+  "World 0": {
+    "hidden": true, 
+    "_type": "glue.core.component_id.ComponentID", 
+    "label": "World 0"
+  }, 
+  "RoiSubsetState": {
+    "roi": "PolygonalROI", 
+    "_type": "glue.core.subset.RoiSubsetState", 
+    "xatt": "Pixel x", 
+    "yatt": "Pixel y"
+  }, 
+  "Pixel y": {
+    "hidden": true, 
+    "_type": "glue.core.component_id.ComponentID", 
+    "label": "Pixel y"
+  }, 
+  "Pixel x": {
+    "hidden": true, 
+    "_type": "glue.core.component_id.ComponentID", 
+    "label": "Pixel x"
+  }, 
+  "PolygonalROI": {
+    "vx": [
+      0.523465703971119, 
+      0.523465703971119, 
+      0.523465703971119, 
+      0.523465703971119, 
+      0.5451263537906135, 
+      0.5776173285198554, 
+      0.6642599277978336, 
+      0.8158844765342956, 
+      0.9675090252707577, 
+      1.1841155234657035, 
+      1.335740072202166, 
+      1.4765342960288805, 
+      1.5631768953068592, 
+      1.628158844765343, 
+      1.7039711191335734, 
+      1.7039711191335734, 
+      1.7039711191335734, 
+      1.6931407942238268, 
+      1.628158844765343, 
+      1.5415162454873643, 
+      1.454873646209386, 
+      1.3574007220216604, 
+      1.2599277978339347, 
+      1.162454873646209, 
+      1.0649819494584833, 
+      0.9675090252707577, 
+      0.8808664259927794, 
+      0.7942238267148012, 
+      0.707581227436823, 
+      0.6425992779783392, 
+      0.5992779783393498
+    ], 
+    "vy": [
+      1.9765342960288808, 
+      1.9548736462093863, 
+      1.868231046931408, 
+      1.7382671480144405, 
+      1.5108303249097472, 
+      1.4133574007220215, 
+      1.2942238267148014, 
+      1.2075812274368232, 
+      1.1859205776173285, 
+      1.1859205776173285, 
+      1.1859205776173285, 
+      1.2075812274368232, 
+      1.2184115523465704, 
+      1.2509025270758123, 
+      1.3375451263537905, 
+      1.4891696750902528, 
+      1.7707581227436824, 
+      2.0090252707581224, 
+      2.279783393501805, 
+      2.4530685920577615, 
+      2.5288808664259927, 
+      2.583032490974729, 
+      2.6263537906137184, 
+      2.6696750902527073, 
+      2.723826714801444, 
+      2.734657039711191, 
+      2.734657039711191, 
+      2.6805054151624548, 
+      2.6046931407942235, 
+      2.5288808664259927, 
+      2.4422382671480145
+    ], 
+    "_type": "glue.core.roi.PolygonalROI"
+  }, 
+  "CoordinateComponentLink_1": {
+    "index": 0, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "Pixel y", 
+      "Pixel x"
+    ], 
+    "to": [
+      "World 0"
+    ], 
+    "pix2world": true, 
+    "coords": "Coordinates"
+  }, 
+  "CoordinateComponentLink_0": {
+    "index": 1, 
+    "_type": "glue.core.component_link.CoordinateComponentLink", 
+    "frm": [
+      "World 0", 
+      "World 1"
+    ], 
+    "to": [
+      "Pixel x"
+    ], 
+    "pix2world": false, 
+    "coords": "Coordinates"
+  }, 
+  "DS9Normalize": {
+    "vmax": 1.0, 
+    "_type": "glue.viewers.image.ds9norm.DS9Normalize", 
+    "bias": 0.5, 
+    "vmin": 1.0, 
+    "clip_hi": 95.0, 
+    "stretch": "arcsinh", 
+    "clip_lo": 5.0, 
+    "contrast": 1.0
+  }, 
+  "DataCollection": {
+    "_type": "glue.core.data_collection.DataCollection", 
+    "components": [
+      "Component", 
+      "CoordinateComponent", 
+      "CoordinateComponent_0", 
+      "CoordinateComponent_1", 
+      "CoordinateComponent_2"
+    ], 
+    "links": [
+      "CoordinateComponentLink", 
+      "CoordinateComponentLink_0", 
+      "CoordinateComponentLink_1", 
+      "CoordinateComponentLink_2"
+    ], 
+    "_protocol": 2, 
+    "groups": [
+      "1"
+    ], 
+    "cids": [
+      "image_0", 
+      "Pixel y", 
+      "Pixel x", 
+      "World 0", 
+      "World 1"
+    ], 
+    "data": [
+      "image"
+    ]
+  }, 
+  "Session": {
+    "_type": "glue.core.session.Session"
+  }
+}
