@@ -8,6 +8,7 @@ import numpy as np
 
 from glue.tests.helpers import requires_astropy, requires_h5py, requires_qt
 from glue.core.state import GlueUnSerializer
+from glue.core.component_id import PixelComponentID
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 
@@ -145,3 +146,22 @@ def test_load_viewers_04():
     assert not s.ylog
     assert not s.xflip
     assert s.yflip
+
+
+@requires_qt
+def test_load_pixel_components_07():
+
+    # This loads a session file made with Glue v0.7. In 0.7 and before,
+    # PixelComponentID did not exist, so we need to make sure that when loading
+    # in such files, we transform the appropriate ComponentIDs to
+    # PixelComponentIDs.
+
+    with open(os.path.join(DATA, 'glue_v0.7_pixel_roi_selection.glu'), 'r') as f:
+        content = f.read()
+
+    state = GlueUnSerializer.loads(content)
+
+    ga = state.object('__main__')
+
+    assert isinstance(ga.data_collection[0].pixel_component_ids[0], PixelComponentID)
+    assert isinstance(ga.data_collection[0].pixel_component_ids[1], PixelComponentID)
