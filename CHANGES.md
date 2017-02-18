@@ -11,6 +11,9 @@ v0.10.1 (unreleased)
 
 * Fixed compatibility with old session files. [#1243, #1246]
 
+* Fixed a bug that caused subsets to disappear behind the image when
+  toggling RGB mode on/off in image viewer. [#1246]
+
 v0.10.0 (2017-02-14)
 --------------------
 
