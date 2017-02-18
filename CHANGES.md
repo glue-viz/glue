@@ -6,6 +6,11 @@ v0.11.0 (unreleased)
 
 * No changes yet.
 
+v0.10.1 (unreleased)
+--------------------
+
+* Fixed compatibility with old session files. [#1243]
+
 v0.10.0 (2017-02-14)
 --------------------
 

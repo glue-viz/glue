@@ -216,6 +216,13 @@ class ImageWidgetBase(DataViewer):
 
         with self.client.artists.ignore_empty():
             self.set_attribute_combo(self.client.display_data)
+
+        # Even if we aren't in monochromatic mode, we should set the data on the
+        # RGBEdit object so that if we are loading a session and some of the
+        # attributes in the RGB view are set, the combo boxes will be set to
+        # the right value.
+        self.ui.rgb_options.data = self.client.display_data
+
         self.client.add_layer(self.client.display_data)
         self.client._update_and_redraw()
         self.update_window_title()

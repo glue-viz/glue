@@ -103,14 +103,22 @@ class RGBEdit(QtWidgets.QWidget):
             self.vis[c].setChecked(v)
 
     @property
+    def data(self):
+        return list(self.cid.values())[0].data
+
+    @data.setter
+    def data(self, value):
+        for cid in self.cid.values():
+            cid.data = value
+
+    @property
     def artist(self):
         return self._artist
 
     @artist.setter
     def artist(self, value):
         self._artist = value
-        for cid in self.cid.values():
-            cid.data = value.layer
+        self.data = value.layer
         self.update_layers()
         self.update_current()
 
