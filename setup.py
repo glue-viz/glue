@@ -115,7 +115,7 @@ install_requires = ['numpy>=1.9',
                     'ipykernel',
                     'qtconsole',
                     'dill>=0.2',
-                    'glue-vispy-viewers>=0.6',
+                    'glue-vispy-viewers>=0.7',
                     'xlrd>=1.0',
                     'h5py>=2.4']
 
