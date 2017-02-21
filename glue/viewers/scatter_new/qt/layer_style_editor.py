@@ -117,12 +117,12 @@ class VectorLayerStyleEditor(QtWidgets.QWidget):
 
         self.vx_cid_helper = ComponentIDComboHelper(self.ui.combodata_vector_x_attribute,
                                                     self.layer_state.data_collection,
-                                                    categorical=False)
+                                                    categorical=False, default_index=0)
         self.vx_cid_helper.append_data(self.layer_state.layer)
 
         self.vy_cid_helper = ComponentIDComboHelper(self.ui.combodata_vector_y_attribute,
                                                     self.layer_state.data_collection,
-                                                    categorical=False)
+                                                    categorical=False, default_index=1)
         self.vy_cid_helper.append_data(self.layer_state.layer)
 
 

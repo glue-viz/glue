@@ -118,6 +118,9 @@ class ScatterLayerState(State):
 
         super(ScatterLayerState, self).__init__(**kwargs)
 
+        if self.layer.size > 100000:
+            self.style = 'Fast Scatter'
+
         self.viewer_state = viewer_state
 
         add_one_way_link(self.viewer_state, 'xatt', self, '_xatt')
@@ -168,11 +171,6 @@ class ScatterLayerState(State):
 
         self.helper_hist_y = StateAttributeLimitsHelper(self, attribute='_yatt',
                                                         lower='h_y_min', upper='h_y_max')
-
-        self.cmap_attribute = numeric_components[0]
-        self.size_attribute = numeric_components[0]
-        self.vector_x_attribute = numeric_components[0]
-        self.vector_y_attribute = numeric_components[1]
 
         self.add_callback('*', self._keep_in_sync, as_kwargs=True)
 
