@@ -58,12 +58,6 @@ class MatplotlibDataViewer(DataViewer):
     def update_log_y(self):
         self.axes.set_yscale('log' if self.viewer_state.log_y else 'linear')
 
-    def update_labels(self):
-        if self.viewer_state.xatt is not None:
-            self.axes.set_xlabel(self.viewer_state.xatt[0])
-        if self.viewer_state.yatt is not None:
-            self.axes.set_ylabel(self.viewer_state.yatt[0])
-
     @avoid_circular
     def limits_from_mpl(self):
         # TODO: delay callbacks here
