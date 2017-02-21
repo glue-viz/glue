@@ -27,24 +27,13 @@ class HistogramViewer(MatplotlibDataViewer):
     tools = ['select:xrange']
 
     def __init__(self, session, parent=None):
-
         super(HistogramViewer, self).__init__(session, parent)
-
-        self.viewer_state.add_callback('log_x', nonpartial(self.update_log_x))
-        self.viewer_state.add_callback('log_y', nonpartial(self.update_log_y))
-
         self.viewer_state.add_callback('xatt', nonpartial(self.update_labels))
 
     def update_labels(self):
         if self.viewer_state.xatt is not None:
             self.axes.set_xlabel(self.viewer_state.xatt)
         self.axes.set_ylabel('Number')
-
-    def update_log_x(self):
-        self.axes.set_xscale('log' if self.viewer_state.log_x else 'linear')
-
-    def update_log_y(self):
-        self.axes.set_yscale('log' if self.viewer_state.log_y else 'linear')
 
     def apply_roi(self, roi):
 
