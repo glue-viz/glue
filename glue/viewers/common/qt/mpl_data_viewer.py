@@ -47,7 +47,16 @@ class MatplotlibDataViewer(DataViewer):
         self.axes.callbacks.connect('xlim_changed', nonpartial(self.limits_from_mpl))
         self.axes.callbacks.connect('ylim_changed', nonpartial(self.limits_from_mpl))
 
+        self.viewer_state.add_callback('log_x', nonpartial(self.update_log_x))
+        self.viewer_state.add_callback('log_y', nonpartial(self.update_log_y))
+
         self.axes.set_autoscale_on(False)
+
+    def update_log_x(self):
+        self.axes.set_xscale('log' if self.viewer_state.log_x else 'linear')
+
+    def update_log_y(self):
+        self.axes.set_yscale('log' if self.viewer_state.log_y else 'linear')
 
     def update_labels(self):
         if self.viewer_state.xatt is not None:
