@@ -82,6 +82,10 @@ class MatplotlibDataViewer(DataViewer):
         self._layer_artist_container.append(layer)
         layer.update()
 
+        # Add existing subsets to viewer
+        for subset in data.subsets:
+            self.add_subset(subset)
+
         return True
 
     def add_subset(self, subset):
