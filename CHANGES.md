@@ -403,6 +403,8 @@ v0.11.0 (2017-08-22)
   (which results in immediate changes rather than waiting up to a
    second for things to change). [#1343]
 
+* Improved naming of components when merging datasets. [#1249]
+
 * Made it possible to delay callbacks from the Hub using the
   ``Hub.delay_callbacks`` context manager. Also fixed the Hub so that
   it uses weak references to classes and methods wherever possible. [#1339]
