@@ -649,5 +649,6 @@ def test_inherited_properties():
 
     assert sub.ndim == 3
     assert sub.shape == (3, 2, 4)
+    assert sub.size == 24
 
     assert sub.hub is d.hub
