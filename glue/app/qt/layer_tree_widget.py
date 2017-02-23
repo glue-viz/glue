@@ -231,6 +231,7 @@ class ExportDataAction(LayerAction):
         from glue.core.data_exporters.qt.dialog import export_data
         export_data(data)
 
+
 class ExportSubsetAction(ExportDataAction):
 
     _title = "Export subset"
@@ -238,6 +239,36 @@ class ExportSubsetAction(ExportDataAction):
 
     def _can_trigger(self):
         return self.single_selection_subset()
+
+
+class ImportSubsetMaskAction(LayerAction):
+
+    _title = "Import subset mask(s)"
+    _tooltip = "Import subset mask from a file"
+
+    def _can_trigger(self):
+        return self.single_selection_subset() or self.single_selection_data()
+
+    def _do_action(self):
+        assert self._can_trigger()
+        data = self.selected_layers()[0]
+        from glue.io.qt.dialog import import_subset_mask
+        import_subset_mask(data, self._layer_tree._data_collection)
+
+
+class ExportSubsetMaskAction(LayerAction):
+
+    _title = "Export subset mask(s)"
+    _tooltip = "Export subset mask to a file"
+
+    def _can_trigger(self):
+        return self.single_selection_subset() or self.single_selection_data()
+
+    def _do_action(self):
+        assert self._can_trigger()
+        data = self.selected_layers()[0]
+        from glue.io.qt.dialog import export_subset_mask
+        export_subset_mask(data)
 
 
 class CopyAction(LayerAction):
@@ -486,8 +517,12 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
         sep.setSeparator(True)
         tree.addAction(sep)
 
+        # Actions relating to I/O
         self._actions['save_data'] = ExportDataAction(self)
         self._actions['save_subset'] = ExportSubsetAction(self)
+        self._actions['import_subset_mask'] = ImportSubsetMaskAction(self)
+        self._actions['export_subset_mask'] = ExportSubsetMaskAction(self)
+
         self._actions['copy'] = CopyAction(self)
         self._actions['paste'] = PasteAction(self)
         self._actions['paste_special'] = PasteSpecialAction(self)
@@ -500,9 +535,9 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
         self._actions['maskify'] = MaskifySubsetAction(self)
 
         # new component definer
-        sep = QtWidgets.QAction("", tree)
-        sep.setSeparator(True)
-        tree.addAction(sep)
+        separator = QtWidgets.QAction("sep", tree)
+        separator.setSeparator(True)
+        tree.addAction(separator)
 
         a = action("Define new component", self,
                  tip="Define a new component using python expressions")

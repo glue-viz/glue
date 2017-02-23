@@ -448,6 +448,22 @@ class DataExporterRegistry(Registry):
             yield member
 
 
+class SubsetMaskExporterRegistry(DataExporterRegistry):
+    """
+    Stores mask exporters. Mask exporters should take a filename followed by
+    a dictionary of Numpy boolean arrays all with the same dimensions.
+    """
+    item = namedtuple('SubsetMaskExporter', 'function label extension')
+
+
+class SubsetMaskImporterRegistry(DataExporterRegistry):
+    """
+    Stores mask importers. Mask importers should take a filename and return a
+    dictionary of Numpy boolean arrays.
+    """
+    item = namedtuple('SubsetMaskImporter', 'function label extension')
+
+
 class QtClientRegistry(Registry):
     """
     Stores QT widgets to visualize data.
@@ -585,8 +601,6 @@ class BooleanSetting(object):
 
 qt_client = QtClientRegistry()
 viewer_tool = ViewerToolRegistry()
-data_factory = DataFactoryRegistry()
-data_exporter = DataExporterRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
 colormaps = ColormapRegistry()
@@ -602,6 +616,13 @@ qglue_parser = QGlueParserRegistry()
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)
 enable_contracts = BooleanSetting(False)
+
+# Data and subset I/O
+data_factory = DataFactoryRegistry()
+data_exporter = DataExporterRegistry()
+subset_mask_exporter = SubsetMaskExporterRegistry()
+subset_mask_importer = SubsetMaskImporterRegistry()
+
 
 
 def load_configuration(search_path=None):
