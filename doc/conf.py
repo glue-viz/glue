@@ -90,7 +90,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Glue'
-copyright = u'2012-2016, Chris Beaumont, Thomas Robitaille, Michelle Borkin'
+copyright = u'2012-2017, Chris Beaumont, Thomas Robitaille, Michelle Borkin'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
