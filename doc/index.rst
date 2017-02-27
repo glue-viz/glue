@@ -41,8 +41,10 @@ Glue thus blurs the boundary between GUI-centric and code-centric data
 exploration. In addition, it is also possible to develop your own plugin
 packages for Glue that you can distribute to users separately, and you can also
 make use of the Glue framework in your own application to provide data linking
-capabilities. Glue compares with other open-source and commercial data visualization 
-solutions, you can view  `this comparison table <https://docs.google.com/spreadsheets/d/1NvvS471KSMir26P3ANyQnvn8n-j6IJLdlAAijMA2dD0/edit?usp=sharing>`_ 
+capabilities.
+
+To see how glue compares with other open-source and commercial data visualization 
+solutions, you can view  `this comparison table <https://docs.google.com/spreadsheets/d/1NvvS471KSMir26P3ANyQnvn8n-j6IJLdlAAijMA2dD0/edit?usp=sharing>`_.
 
 In the following sections, we cover the different ways of using Glue from the
 Glue application to the more advanced ways of interacting with Glue from Python.
