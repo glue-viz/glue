@@ -1,6 +1,11 @@
 Full changelog
 ==============
 
+v0.10.1 (unreleased)
+--------------------
+
+* Fixed compatibility with session files from before v0.8. [#1243]
+
 v0.10.0 (2017-02-14)
 --------------------
 
