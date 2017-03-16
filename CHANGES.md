@@ -6,6 +6,9 @@ v0.10.1 (unreleased)
 
 * Fixed compatibility with session files from before v0.8. [#1243]
 
+* Renamed package to glue-core, since glueviz is now a meta-package (no need
+  for a new major version since this change should be seamless to users).
+
 v0.10.0 (2017-02-14)
 --------------------
 

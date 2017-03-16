@@ -115,7 +115,6 @@ install_requires = ['numpy>=1.9',
                     'ipykernel',
                     'qtconsole',
                     'dill>=0.2',
-                    'glue-vispy-viewers>=0.6',
                     'xlrd>=1.0',
                     'h5py>=2.4']
 
@@ -131,7 +130,7 @@ extras_require = {
 extras_require['all'] = (extras_require['recommended'] +
                          extras_require['astronomy'])
 
-setup(name='glueviz',
+setup(name='glue-core',
       version=__version__,
       description='Multidimensional data visualzation across files',
       long_description=LONG_DESCRIPTION,
