@@ -425,6 +425,8 @@ class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
         self.new_item.emit(idx)
 
     def invalidate(self):
+        if not PYQT5:
+            self.reset()
         # Hacky way to notify the view to update its contents
         self.beginRemoveRows(
                 self.index(DATA_IDX, 0), 0,
@@ -434,6 +436,8 @@ class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
                 self.index(SUBSET_IDX, 0), 0,
                 len(self.data_collection.subset_groups))
         self.endRemoveRows()
+        # update the selections on model reset
+        self.modelReset.emit()
 
     def glue_data(self, indices):
         """ Given a list of indices, return a list of all selected
@@ -506,7 +510,7 @@ class DataCollectionView(QtWidgets.QTreeView):
         self.setExpandsOnDoubleClick(False)
         self.expandToDepth(0)
         self._model.layoutChanged.connect(lambda: self.expandToDepth(0))
-        self._model.layoutChanged.connect(self.selection_changed.emit)
+        self._model.modelReset.connect(self.selection_changed)
         self._model.new_item.connect(self.select_indices)
 
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
