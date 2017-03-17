@@ -425,11 +425,15 @@ class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
         self.new_item.emit(idx)
 
     def invalidate(self):
-        self.root = DataCollectionItem(self.data_collection)
-        self._items.clear()
-        if not PYQT5:
-            self.reset()
-        self.layoutChanged.emit()
+        # Hacky way to notify the view to update its contents
+        self.beginRemoveRows(
+                self.index(DATA_IDX, 0), 0,
+                len(self.data_collection))
+        self.endRemoveRows()
+        self.beginRemoveRows(
+                self.index(SUBSET_IDX, 0), 0,
+                len(self.data_collection.subset_groups))
+        self.endRemoveRows()
 
     def glue_data(self, indices):
         """ Given a list of indices, return a list of all selected
