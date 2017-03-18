@@ -246,6 +246,10 @@ class TableWidget(DataViewer):
                       handler=nonpartial(self._refresh),
                       filter=dfilter)
 
+    def unregister(self, hub):
+        super(TableWidget, self).unregister(hub)
+        hub.unsubscribe_all(self)
+
     def _refresh(self):
         self._sync_layers()
         self.model.data_changed()
@@ -275,15 +279,13 @@ class TableWidget(DataViewer):
     def add_subset(self, subset):
         return True
 
-    def unregister(self, hub):
-        pass
-
     def closeEvent(self, event):
         """
         On close, Qt seems to scan through the entire model
         if the data set is big. To sidestep that,
         we swap out with a tiny data set before closing
         """
+        super(TableWidget, self).closeEvent(event)
         d = Data(x=[0])
         self.ui.table.setModel(DataTableModel(d))
         event.accept()

@@ -4,6 +4,9 @@ Full changelog
 v0.10.2 (unreleased)
 --------------------
 
+* Fixed a bug that caused errors to appear in the console log after a
+  table viewer was closed. [#1267]
+
 * Fixed a bug that caused error message dialogs to not work correctly with
   Qt4. [#1262]
 
