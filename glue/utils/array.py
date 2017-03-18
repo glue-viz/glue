@@ -117,7 +117,7 @@ def coerce_numeric(arr):
     # a string dtype, or anything else
     try:
         return pd.to_numeric(arr, errors='coerce')
-    except AttributeError:  # older versions of pandas
+    except AttributeError:  # pandas < 0.19
         return pd.Series(arr).convert_objects(convert_numeric=True).values
 
 

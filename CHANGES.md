@@ -12,6 +12,8 @@ v0.10.2 (unreleased)
 * Fixed a bug that caused error message dialogs to not work correctly with
   Qt4. [#1262]
 
+* Fixed a deprecation warning for pandas >= 0.19. [#1263]
+
 v0.10.1 (2017-03-16)
 --------------------
 
