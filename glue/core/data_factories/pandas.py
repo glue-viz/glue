@@ -2,6 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
+import pandas as pd
+
 from glue.external import six
 from glue.core.data_factories.helpers import has_extension
 from glue.core.component import Component, CategoricalComponent
@@ -21,8 +23,13 @@ def panda_process(indf):
     result = Data()
     for name, column in indf.iteritems():
         if (column.dtype == np.object) | (column.dtype == np.bool):
+
             # try to salvage numerical data
-            coerced = column.convert_objects(convert_numeric=True)
+            try:
+                coerced = pd.to_numeric(column, errors='coerce')
+            except AttributeError:  # older versions of pandas
+                coerced = column.convert_objects(convert_numeric=True)
+
             if (coerced.dtype != column.dtype) and coerced.isnull().mean() < 0.4:
                 c = Component(coerced.values)
             else:
