@@ -6,6 +6,12 @@ v0.11.0 (unreleased)
 
 * No changes yet.
 
+v0.10.2 (unreleased)
+--------------------
+
+* Fixed a bug that caused error message dialogs to not work correctly with
+  Qt4. [#1262]
+
 v0.10.1 (2017-03-16)
 --------------------
 
