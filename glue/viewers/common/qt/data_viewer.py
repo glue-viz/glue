@@ -15,7 +15,7 @@ from glue.utils.noconflict import classmaker
 
 __all__ = ['DataViewer']
 
-    
+
 class ToolbarInitializer(object):
     """
     This is a meta-class which ensures that initialize_toolbar is always called
@@ -24,7 +24,7 @@ class ToolbarInitializer(object):
     be initialized after everything else (e.g. canvas, etc.) has been set up,
     so we can't do it in DataViewer.__init__.
     """
-    
+
     def __call__(cls, *args, **kwargs):
         obj = type.__call__(cls, *args, **kwargs)
         obj.initialize_toolbar()
@@ -176,6 +176,7 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
     def closeEvent(self, event):
         """ Call unregister on window close """
+
         if not self._confirm_close():
             event.ignore()
             return
