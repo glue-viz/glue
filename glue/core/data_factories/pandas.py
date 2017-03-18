@@ -27,7 +27,7 @@ def panda_process(indf):
             # try to salvage numerical data
             try:
                 coerced = pd.to_numeric(column, errors='coerce')
-            except AttributeError:  # older versions of pandas
+            except AttributeError:  # pandas < 0.19
                 coerced = column.convert_objects(convert_numeric=True)
 
             if (coerced.dtype != column.dtype) and coerced.isnull().mean() < 0.4:
