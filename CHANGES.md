@@ -9,6 +9,8 @@ v0.10.2 (unreleased)
 
 * Fixed a deprecation warning for pandas >= 0.19. [#1263]
 
+* Hide common Matplotlib warnings when min/max along an axis are equal. [#1268]
+
 v0.10.1 (2017-03-16)
 --------------------
 
