@@ -4,6 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 from functools import wraps
 
+import warnings
 import matplotlib
 from matplotlib.figure import Figure
 
@@ -22,6 +23,11 @@ else:
     except ImportError:  # mpl < 1.4
         from matplotlib.backends.backend_qt4agg import FigureManagerQTAgg as FigureManager
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+
+# We want to ignore warnings about left==right and bottom==top since these are
+# not critical and the default behavior makes sense.
+warnings.filterwarnings('ignore', '.*Attempting to set identical left==right', UserWarning)
+warnings.filterwarnings('ignore', '.*Attempting to set identical bottom==top', UserWarning)
 
 
 def defer_draw(func):
