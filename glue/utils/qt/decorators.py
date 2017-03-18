@@ -45,7 +45,7 @@ def set_cursor_cm(shape):
 def messagebox_on_error(msg):
     """Decorator that catches exceptions and displays an error message"""
 
-    from qtpy import QtWidgets  # Must be here
+    from qtpy import QtWidgets, PYQT5  # Must be here
     from qtpy.QtCore import Qt
 
     def decorator(func):
@@ -59,7 +59,8 @@ def messagebox_on_error(msg):
                 qmb = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Critical, "Error", m)
                 qmb.setDetailedText(detail)
                 qmb.resize(400, qmb.size().height())
-                qmb.setTextInteractionFlags(Qt.TextSelectableByMouse)
+                if PYQT5:
+                    qmb.setTextInteractionFlags(Qt.TextSelectableByMouse)
                 qmb.exec_()
         return wrapper
 
