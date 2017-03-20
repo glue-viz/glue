@@ -241,6 +241,7 @@ class SubsetItem(Item):
 
 class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
     new_item = QtCore.Signal(QtCore.QModelIndex)
+    model_changed = QtCore.Signal()
 
     def __init__(self, data_collection, parent=None):
         QtCore.QAbstractItemModel.__init__(self, parent)
@@ -437,14 +438,17 @@ class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
                 len(self.data_collection.subset_groups))
         self.endRemoveRows()
         # update the selections on model reset
-        self.modelReset.emit()
+        self.model_changed.emit()
 
     def glue_data(self, indices):
         """ Given a list of indices, return a list of all selected
         Data, Subset, and SubsetGroup objects.
         """
-        items = [self._get_item(idx) for idx in indices]
-        items = [item.glue_data for item in items]
+        items = []
+        for idx in indices:
+            item = self._get_item(idx)
+            if idx.row() < item.parent.children_count:
+                items.append(item.glue_data)
         return items
 
     def mimeData(self, indices):
@@ -510,7 +514,7 @@ class DataCollectionView(QtWidgets.QTreeView):
         self.setExpandsOnDoubleClick(False)
         self.expandToDepth(0)
         self._model.layoutChanged.connect(lambda: self.expandToDepth(0))
-        self._model.modelReset.connect(self.selection_changed)
+        self._model.model_changed.connect(self.selection_changed)
         self._model.new_item.connect(self.select_indices)
 
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
