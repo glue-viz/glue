@@ -20,6 +20,9 @@ v0.10.2 (unreleased)
 
 * Hide common Matplotlib warnings when min/max along an axis are equal. [#1268]
 
+* Fixed a bug that caused sessions with table viewers that had no subsets
+  to not be restored correctly. [#1271]
+
 v0.10.1 (2017-03-16)
 --------------------
 
