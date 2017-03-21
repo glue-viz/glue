@@ -528,9 +528,18 @@ class Data(object):
             label in the primary and one in the derived components, the primary
             one takes precedence.
         """
+
         for cid_set in (self.primary_components, self.derived_components):
-            result = [cid for cid in cid_set if
-                      cid.label == label or cid is label]
+
+            result = []
+            for cid in cid_set:
+                if isinstance(label, ComponentID):
+                    if cid is label:
+                        result.append(cid)
+                else:
+                    if cid.label == label:
+                        result.append(cid)
+
             if len(result) == 1:
                 return result[0]
             elif len(result) > 1:
