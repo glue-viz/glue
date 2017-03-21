@@ -97,6 +97,8 @@ class DataTableModel(QtCore.QAbstractTableModel):
             # Find all subsets that this index is part of
             colors = []
             for layer_artist in self._table_viewer.layers[::-1]:
+                if isinstance(layer_artist.layer, Data):
+                    continue
                 if layer_artist.visible:
                     subset = layer_artist.layer
                     try:
@@ -256,12 +258,12 @@ class TableWidget(DataViewer):
 
     def _sync_layers(self):
 
-        # For now we don't show the data in the list because it always has to
-        # be shown
-
         for layer_artist in self.layers:
-            if layer_artist.layer not in self.data.subsets:
+            if layer_artist.layer is not self.data and layer_artist.layer not in self.data.subsets:
                 self._layer_artist_container.remove(layer_artist)
+
+        if self.data not in self._layer_artist_container:
+            self._layer_artist_container.append(TableLayerArtist(self.data, self))
 
         for subset in self.data.subsets:
             if subset not in self._layer_artist_container:
@@ -298,6 +300,9 @@ class TableWidget(DataViewer):
             c = lookup_class_with_patches(layer.pop('_type'))
             props = dict((k, context.object(v)) for k, v in layer.items())
             layer = props['layer']
-            self.add_data(layer.data)
+            if isinstance(layer, Data):
+                self.add_data(layer)
+            else:
+                self.add_data(layer.data)
             break
         self._sync_layers()

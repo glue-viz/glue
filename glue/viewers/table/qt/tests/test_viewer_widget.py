@@ -265,3 +265,33 @@ def test_table_widget(tmpdir):
     colors = ['#aa0000', '#380088', '#aa0000', "#aa0000", "#bababa"]
 
     check_values_and_color(model2, data, colors)
+
+
+def test_table_widget_session_no_subset(tmpdir):
+
+    # Regression test for a bug that caused table viewers with no subsets to
+    # not be restored correctly and instead raise an exception.
+
+    app = get_qapp()
+
+    d = Data(a=[1, 2, 3, 4, 5],
+             b=[3.2, 1.2, 4.5, 3.3, 2.2],
+             c=['e', 'b', 'c', 'a', 'f'], label='test')
+
+    dc = DataCollection([d])
+
+    gapp = GlueApplication(dc)
+
+    widget = gapp.new_data_viewer(TableWidget)
+    widget.add_data(d)
+
+    session_file = tmpdir.join('table.glu').strpath
+
+    gapp.save_session(session_file)
+
+    gapp2 = GlueApplication.restore_session(session_file)
+    gapp2.show()
+
+    d = gapp2.data_collection[0]
+
+    widget2 = gapp2.viewers[0][0]
