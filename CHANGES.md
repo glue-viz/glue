@@ -9,6 +9,9 @@ v0.11.0 (unreleased)
 v0.10.2 (unreleased)
 --------------------
 
+* Fixed a bug that caused Data.find_component_id to return incorrect results
+  when string components were present in the data. [#1269]
+
 * Fixed a bug that caused errors to appear in the console log after a
   table viewer was closed. [#1267]
 
