@@ -626,3 +626,16 @@ def test_update_values_from_data_order():
 
     assert d2.visible_components == [d2.id['j'], d2.id['a'], d1.id['c'],
                                      d1.id['b'], d1.id['f']]
+
+
+def test_find_component_id_with_cid():
+
+    # Regression test for a bug that caused Data.find_component_id to return
+    # True erroneously when passing a component ID.
+
+    d1 = Data()
+    d1['a'] = ['a', 'b', 'c']
+    d1['b'] = [1, 2, 3]
+
+    assert d1.find_component_id(d1.id['a']) is d1.id['a']
+    assert d1.find_component_id(d1.id['b']) is d1.id['b']
