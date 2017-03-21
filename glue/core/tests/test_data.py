@@ -583,7 +583,8 @@ def test_update_values_from_data():
     assert d1a not in d1.components
     assert d1b in d1.components
     assert d2b not in d1.components
-    assert d2c in d1.components
+    assert d2c not in d1.components
+    assert [cid.label for cid in d1.visible_components] == ['b', 'c']
     assert d1.shape == (4,)
 
 
@@ -624,8 +625,7 @@ def test_update_values_from_data_order():
 
     d2.update_values_from_data(d1)
 
-    assert d2.visible_components == [d2.id['j'], d2.id['a'], d1.id['c'],
-                                     d1.id['b'], d1.id['f']]
+    assert [cid.label for cid in d2.visible_components] == ['j', 'a', 'c', 'b', 'f']
 
 
 def test_find_component_id_with_cid():
@@ -639,3 +639,39 @@ def test_find_component_id_with_cid():
 
     assert d1.find_component_id(d1.id['a']) is d1.id['a']
     assert d1.find_component_id(d1.id['b']) is d1.id['b']
+
+
+def test_linked_component_visible():
+
+    # Regression test for a bug that caused components to become hidden once
+    # they were linked with another component.
+
+    from ..link_helpers import LinkSame
+    from ..data_collection import DataCollection
+
+    d1 = Data(x=[1], y=[2])
+    d2 = Data(w=[3], v=[4])
+
+    assert not d1.id['x'].hidden
+    assert not d2.id['w'].hidden
+
+    dc = DataCollection([d1, d2])
+    dc.add_link(LinkSame(d1.id['x'], d2.id['w']))
+
+    assert d1.id['x'] is d2.id['x']
+    assert d1.id['w'] is d2.id['w']
+
+    assert not d1.id['x'].hidden
+    assert not d2.id['w'].hidden
+
+    assert not d1.id['w'].hidden
+    assert not d2.id['x'].hidden
+
+    assert d1.id['x'].parent is d1
+    assert d1.id['y'].parent is d1
+
+    assert d2.id['w'].parent is d2
+    assert d2.id['v'].parent is d2
+
+    assert d1.visible_components == [d1.id['x'], d1.id['y']]
+    assert d2.visible_components == [d2.id['v'], d2.id['w']]

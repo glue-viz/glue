@@ -4,6 +4,9 @@ Full changelog
 v0.10.2 (unreleased)
 --------------------
 
+* Fixed a bug that caused components that were linked to then disappear from
+  drop-down lists of available components in new viewers. [#1270]
+
 * Fixed a bug that caused Data.find_component_id to return incorrect results
   when string components were present in the data. [#1269]
 
