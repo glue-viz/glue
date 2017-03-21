@@ -391,7 +391,8 @@ class Data(object):
 
         if isinstance(label, ComponentID):
             component_id = label
-            component_id.parent = self
+            if component_id.parent is None:
+                component_id.parent = self
         else:
             component_id = ComponentID(label, hidden=hidden, parent=self)
 
@@ -471,7 +472,7 @@ class Data(object):
         :rtype: list
         """
         return [cid for cid, comp in self._components.items()
-                if not cid.hidden and not comp.hidden]
+                if not cid.hidden and not comp.hidden and cid.parent is self]
 
     @property
     def coordinate_components(self):
@@ -931,7 +932,7 @@ class Data(object):
             if cname in new_labels - old_labels:
                 cid = data.find_component_id(cname)
                 comp_new = data.get_component(cname)
-                self.add_component(comp_new, cid)
+                self.add_component(comp_new, cid.label)
 
         # Update data label
         self.label = data.label

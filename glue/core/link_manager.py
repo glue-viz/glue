@@ -196,9 +196,6 @@ class LinkManager(object):
         for cid, link in six.iteritems(links):
             d = DerivedComponent(data, link)
             if cid not in data.components:
-                # Need to hide component since we don't want to show components
-                # that are auto-generated in datasets by default.
-                cid.hidden = True
                 data.add_component(d, cid)
 
     @property
