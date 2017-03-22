@@ -751,6 +751,31 @@ def _load_data_4(rec, context):
         result.uuid = str(uuid.uuid4())
 
 
+@saver(Data, version=5)
+def _save_data_5(data, context):
+    result = _save_data_4(data, context)
+    result['primary_owner'] = [context.id(cid) for cid in data.components if cid.parent is data]
+    return result
+
+
+@loader(Data, version=5)
+def _load_data_5(rec, context):
+    result = _load_data_2(rec, context)
+    if 'primary_owner' in rec:
+        for cid in rec['primary_owner']:
+            cid = context.object(cid)
+            cid.parent = result
+    yield result
+    def load_cid_tuple(cids):
+        return tuple(context.object(cid) for cid in cids)
+    result._key_joins = dict((context.object(k), (load_cid_tuple(v0), load_cid_tuple(v1)))
+                             for k, v0, v1 in rec['_key_joins'])
+    if 'uuid' in rec and rec['uuid'] is not None:
+        result.uuid = rec['uuid']
+    else:
+        result.uuid = str(uuid.uuid4())
+
+
 @saver(ComponentID)
 def _save_component_id(cid, context):
     return dict(label=cid.label, hidden=cid.hidden)
