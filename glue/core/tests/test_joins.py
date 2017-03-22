@@ -113,8 +113,8 @@ class TestSubsets(object):
         assert exc.value.args[0] == 'ComponentID not found in y: bad_key'
 
     def test_clone(self):
-        x = Data(id=[0, 1, 2])
-        y = Data(id=[0, 1, 2], x=[1, 2, 3])
+        x = Data(id=[0, 1, 2], label='data_x')
+        y = Data(id=[0, 1, 2], x=[1, 2, 3], label='data_y')
         x.join_on_key(y, 'id', 'id')
 
         dc = DataCollection([x, y])
