@@ -1,6 +1,7 @@
 recursive-include glue *.ui *.png *.glu *.hdf5 *.fits *.xlsx
 include LICENSE
 include README.md
+include glueviz.png
 include glueviz.desktop
 include CHANGES.md
 recursive-include doc *
