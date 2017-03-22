@@ -762,12 +762,12 @@ def _load_component_id(rec, context):
 
 
 @saver(PixelComponentID)
-def _save_component_id(cid, context):
+def _save_pixel_component_id(cid, context):
     return dict(axis=cid.axis, label=cid.label, hidden=cid.hidden)
 
 
 @loader(PixelComponentID)
-def _load_component_id(rec, context):
+def _load_pixel_component_id(rec, context):
     if 'axis' in rec:
         axis = rec['axis']
     else:  # backward-compatibility
