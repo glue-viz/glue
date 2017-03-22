@@ -744,7 +744,10 @@ class Data(object):
             else:
                 s += "Main "
             s += "components:\n"
-            components = [c for c in self.components if c.hidden == hidden]
+            if hidden:
+                components = [c for c in self.components if c not in self.visible_components]
+            else:
+                components = [c for c in self.visible_components]
             for i, cid in enumerate(components):
                 if cid.hidden != hidden:
                     continue

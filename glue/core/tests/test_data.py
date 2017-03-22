@@ -23,6 +23,7 @@ from ..subset import (Subset, CategoricalROISubsetState, SubsetState,
                       CategoricalROISubsetState2D, AndState)
 from ..roi import PolygonalROI, CategoricalROI, RangeROI, RectangularROI
 
+from .test_state import clone
 
 class _TestCoordinates(Coordinates):
 
@@ -675,3 +676,32 @@ def test_linked_component_visible():
 
     assert d1.visible_components == [d1.id['x'], d1.id['y']]
     assert d2.visible_components == [d2.id['v'], d2.id['w']]
+
+
+def test_parent_preserved_session():
+
+    # Regression test for a bug that caused ComponentID parents to not be
+    # preserved when saving and restoring a session.
+
+    from ..link_helpers import LinkSame
+    from ..data_collection import DataCollection
+
+    d1 = Data(x=[1], y=[2], label='test1')
+    d2 = Data(w=[3], v=[4], label='test2')
+
+    dc = DataCollection([d1, d2])
+    dc.add_link(LinkSame(d1.id['x'], d2.id['w']))
+
+    assert d1.id['x'].parent is d1
+    assert d1.id['y'].parent is d1
+
+    assert d2.id['w'].parent is d2
+    assert d2.id['v'].parent is d2
+
+    dc2 = clone(dc)
+
+    assert dc2[0].id['x'].parent.label == 'test1'
+    assert dc2[0].id['y'].parent.label == 'test1'
+
+    assert dc2[1].id['w'].parent.label == 'test2'
+    assert dc2[1].id['v'].parent.label == 'test2'
