@@ -10,17 +10,13 @@ environment:
       PYTHON_ARCH: "64" # needs to be set for CMD_IN_ENV to succeed. If a mix
                         # of 32 bit and 64 bit builds are needed, move this
                         # to the matrix section.
-      # We add astropy-ci-extras to have the latest version of Astropy with older Numpy versions. 
-      CONDA_CHANNELS: "astropy-ci-extras"
       CONDA_DEPENDENCIES: "scipy cython pyqt matplotlib h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage ipython ipykernel qtconsole traitlets qtpy"
       PIP_DEPENDENCIES: "plotly"
-      ASTROPY_VERSION: "1.3"
 
   matrix:
       - PYTHON_VERSION: "2.7"
-        NUMPY_VERSION: "1.9"
+      - PYTHON_VERSION: "3.5"
       - PYTHON_VERSION: "3.6"
-        NUMPY_VERSION: "1.11"
 
 platform:
     -x64
