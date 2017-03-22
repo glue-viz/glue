@@ -13,7 +13,7 @@ v0.10.3 (unreleased)
 
 * Fixed bugs with saving and restoring of various types of subset states. [#1285]
 
-v0.10.2 (unreleased)
+v0.10.2 (2017-03-22)
 --------------------
 
 * Fixed a bug that caused components that were linked to then disappear from
