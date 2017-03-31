@@ -76,7 +76,7 @@ def has_extension(exts):
     """
 
     def tester(x, **kwargs):
-        return _extension(x) in set(exts.split())
+        return _extension(x).lower() in set(exts.lower().split())
     return tester
 
 
