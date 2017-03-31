@@ -4,7 +4,7 @@ Full changelog
 v0.11.0 (unreleased)
 --------------------
 
-* No changes yet.
+* Inherit .size attribute from Data in Subset. [#1248]
 
 v0.10.2 (unreleased)
 --------------------

@@ -465,6 +465,10 @@ class Subset(object):
         return self.data.shape
 
     @property
+    def size(self):
+        return self.data.size
+
+    @property
     def hub(self):
         return self.data.hub
 
