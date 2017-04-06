@@ -31,6 +31,8 @@ class HistogramViewer(MatplotlibDataViewer):
     def __init__(self, session, parent=None):
         super(HistogramViewer, self).__init__(session, parent)
         self.viewer_state.add_callback('xatt', nonpartial(self.on_attribute_update))
+        self.viewer_state.add_callback('log_x', nonpartial(self.on_attribute_update))
+        self.viewer_state.add_callback('normalize', nonpartial(self.on_attribute_update))
 
     def on_attribute_update(self):
 
@@ -39,9 +41,15 @@ class HistogramViewer(MatplotlibDataViewer):
             # Update ticks, which sets the labels to categories if components are categorical
             update_ticks(self.axes, 'x', self.viewer_state._get_x_components(), False)
 
-            self.axes.set_xlabel(self.viewer_state.xatt)
+            if self.viewer_state.log_x:
+                self.axes.set_xlabel('Log ' + self.viewer_state.xatt.label)
+            else:
+                self.axes.set_xlabel(self.viewer_state.xatt.label)
 
-        self.axes.set_ylabel('Number')
+        if self.viewer_state.normalize:
+            self.axes.set_ylabel('Normalized number')
+        else:
+            self.axes.set_ylabel('Number')
 
     def apply_roi(self, roi):
 

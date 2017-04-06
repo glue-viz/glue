@@ -6,7 +6,7 @@ from numpy.testing import assert_allclose
 
 from glue.core import Data
 from glue.core.roi import XRangeROI
-from glue.core.subset import RangeSubsetState
+from glue.core.subset import RangeSubsetState, CategoricalROISubsetState
 from glue import core
 from glue.core.tests.util import simple_session
 from glue.utils.qt import combo_as_string
@@ -164,6 +164,10 @@ class TestHistogramViewer(object):
 
         viewer_state.xatt = self.data.id['y']
 
+        formatter = self.viewer.axes.xaxis.get_major_formatter()
+        xlabels = [formatter.format_data(pos) for pos in range(3)]
+        assert xlabels == ['a', 'b', 'c']
+
         assert_allclose(self.viewer.layers[0].mpl_hist, [2, 1, 1])
         assert_allclose(self.viewer.layers[0].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
         assert_allclose(self.viewer.layers[1].mpl_hist, [1, 0, 1])
@@ -225,3 +229,107 @@ class TestHistogramViewer(object):
         assert state.hi == 2.5
 
         # TODO: add a similar test in log space
+
+    def test_apply_roi_categorical(self):
+
+        # Check that when doing an ROI selection, the ROI clips to the bin edges
+        # outside the selection
+
+        viewer_state = self.viewer.viewer_state
+
+        self.viewer.add_data(self.data)
+
+        viewer_state.xatt = self.data.id['y']
+
+        roi = XRangeROI(0.3, 0.9)
+
+        assert len(self.viewer.layers) == 1
+
+        self.viewer.apply_roi(roi)
+
+        assert len(self.viewer.layers) == 2
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [2, 1, 1])
+        assert_allclose(self.viewer.layers[1].mpl_hist, [2, 1, 0])
+
+        assert_allclose(self.data.subsets[0].to_mask(), [1, 1, 0, 1])
+
+        state = self.data.subsets[0].subset_state
+        assert isinstance(state, CategoricalROISubsetState)
+
+        assert state.roi.categories == ['a', 'b']
+
+    def test_axes_labels(self):
+
+        viewer_state = self.viewer.viewer_state
+
+        self.viewer.add_data(self.data)
+
+        assert self.viewer.axes.get_xlabel() == 'x'
+        assert self.viewer.axes.get_ylabel() == 'Number'
+
+        viewer_state.log_x = True
+
+        assert self.viewer.axes.get_xlabel() == 'Log x'
+        assert self.viewer.axes.get_ylabel() == 'Number'
+
+        viewer_state.xatt = self.data.id['y']
+
+        assert self.viewer.axes.get_xlabel() == 'y'
+        assert self.viewer.axes.get_ylabel() == 'Number'
+
+        viewer_state.normalize = True
+
+        assert self.viewer.axes.get_xlabel() == 'y'
+        assert self.viewer.axes.get_ylabel() == 'Normalized number'
+
+        viewer_state.normalize = False
+        viewer_state.cumulative = True
+
+        assert self.viewer.axes.get_xlabel() == 'y'
+        assert self.viewer.axes.get_ylabel() == 'Number'
+
+    def test_update_when_limits_unchanged(self):
+
+        # Regression test for glue-viz/glue#1010 - this bug caused histograms
+        # to not be recomputed if the attribute changed but the limits and
+        # number of bins did not.
+
+        viewer_state = self.viewer.viewer_state
+
+        self.viewer.add_data(self.data)
+
+        viewer_state.xatt = self.data.id['y']
+        viewer_state.hist_x_min = -10
+        viewer_state.hist_x_max = +10
+        viewer_state.hist_n_bin = 5
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0, 3, 1, 0])
+
+        viewer_state.xatt = self.data.id['x']
+        viewer_state.hist_x_min = -10
+        viewer_state.hist_x_max = +10
+        viewer_state.hist_n_bin = 5
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0, 2, 2, 0])
+
+        viewer_state.xatt = self.data.id['y']
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0, 3, 1, 0])
+
+        viewer_state.xatt = self.data.id['x']
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0, 2, 2, 0])
+
+    # TODO: update the following test following refactoring
+    # def test_component_replaced(self):
+    #     # regression test for 508
+    #     self.viewer.register_to_hub(self.collect.hub)
+    #     self.viewer.add_layer(self.data)
+    #     self.viewer.component = self.data.components[0]
+    #
+    #     test = ComponentID('test')
+    #     self.data.update_id(self.viewer.component, test)
+    #     assert self.viewer.component is test
+
+    # TODO: Check for extraneous draw events
