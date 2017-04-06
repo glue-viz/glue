@@ -9,7 +9,6 @@ from glue.external.echo.qt import autoconnect_callbacks_to_qt
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui
 from glue.core.qt.data_combo_helper import ComponentIDComboHelper
-from glue.viewers.common.qt.attribute_limits_helper import AttributeLimitsHelper
 
 __all__ = ['HistogramOptionsWidget']
 

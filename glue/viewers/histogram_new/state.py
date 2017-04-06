@@ -4,9 +4,9 @@ import numpy as np
 
 from glue.core import Data
 
-from glue.external.echo import CallbackProperty, ListCallbackProperty, add_callback, keep_in_sync, ignore_callback
+from glue.external.echo import (CallbackProperty, ListCallbackProperty,
+                                add_callback)
 from glue.utils import nonpartial
-from glue.config import colormaps
 
 from glue.core.state_objects import State, StateAttributeLimitsHelper, StateAttributeHistogramHelper
 from glue.utils.decorators import avoid_circular
