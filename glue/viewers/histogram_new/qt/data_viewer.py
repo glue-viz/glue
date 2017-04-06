@@ -45,6 +45,8 @@ class HistogramViewer(MatplotlibDataViewer):
 
     def apply_roi(self, roi):
 
+        # TODO: move this to state class?
+
         # TODO: add back command stack here so as to be able to undo?
         # cmd = command.ApplyROI(client=self.client, roi=roi)
         # self._session.command_stack.do(cmd)

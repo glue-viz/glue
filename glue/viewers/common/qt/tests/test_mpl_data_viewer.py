@@ -1,0 +1,274 @@
+# pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
+
+from __future__ import absolute_import, division, print_function
+
+from mock import MagicMock
+
+from glue.core.tests.util import simple_session
+
+
+class BaseTestMatplotlibDataViewer(object):
+    """
+    Base class to test viewers based on MatplotlibDataViewer. This only runs
+    a subset of tests that relate to functionality implemented in
+    MatplotlibDataViewer and specific viewers are responsible for implementing
+    a more complete test suite.
+
+    Viewers based on this should inherit from this test class and define the
+    following attributes:
+
+    * ``data``: an instance of a data object that works by default in the viewer
+    * ``viewer_cls``: the viewer class
+
+    It is then safe to assume that ``data_collection``, ``viewer``, and ``hub``
+    are defined when writing tests.
+    """
+
+    def setup_method(self, method):
+
+        self.data = self.init_data()
+
+        self.session = simple_session()
+        self.hub = self.session.hub
+
+        self.data_collection = self.session.data_collection
+        self.data_collection.append(self.data)
+
+        self.viewer = self.viewer_cls(self.session)
+
+        self.data_collection.register_to_hub(self.hub)
+        self.viewer.register_to_hub(self.hub)
+
+    def init_subset(self):
+        cid = self.data.visible_components[0]
+        self.data_collection.new_subset_group('subset 1', cid > 0)
+
+    def teardown_method(self, method):
+        self.viewer.close()
+
+    def test_add_data(self):
+
+        # Add a dataset with no subsets and make sure the appropriate layer
+        # state and layer artists are created
+
+        self.viewer.add_data(self.data)
+
+        assert len(self.viewer.layers) == 1
+        assert self.viewer.layers[0].layer is self.data
+
+        assert len(self.viewer.viewer_state.layers) == 1
+        assert self.viewer.viewer_state.layers[0].layer is self.data
+
+    def test_add_data_with_subset(self):
+
+        # Make sure that if subsets are present in the data, they are added
+        # automatically
+
+        self.init_subset()
+        self.viewer.add_data(self.data)
+
+        assert len(self.viewer.layers) == 2
+        assert self.viewer.layers[0].layer is self.data
+        assert self.viewer.layers[1].layer is self.data.subsets[0]
+
+        assert len(self.viewer.viewer_state.layers) == 2
+        assert self.viewer.viewer_state.layers[0].layer is self.data
+        assert self.viewer.viewer_state.layers[1].layer is self.data.subsets[0]
+
+    def test_add_data_then_subset(self):
+
+        # Make sure that if a subset is created in a dataset that has already
+        # been added to a viewer, the subset gets added
+
+        self.viewer.add_data(self.data)
+
+        assert len(self.viewer.layers) == 1
+        assert self.viewer.layers[0].layer is self.data
+
+        assert len(self.viewer.viewer_state.layers) == 1
+        assert self.viewer.viewer_state.layers[0].layer is self.data
+
+        self.init_subset()
+
+        assert len(self.viewer.layers) == 2
+        assert self.viewer.layers[0].layer is self.data
+        assert self.viewer.layers[1].layer is self.data.subsets[0]
+
+        assert len(self.viewer.viewer_state.layers) == 2
+        assert self.viewer.viewer_state.layers[0].layer is self.data
+        assert self.viewer.viewer_state.layers[1].layer is self.data.subsets[0]
+
+    def test_update_subset(self):
+
+        # Check that updating a subset causes the plot to be updated
+
+        draw = self.viewer.axes.figure.canvas.draw = MagicMock()
+
+        self.init_subset()
+
+        assert draw.call_count == 0
+
+        self.viewer.add_data(self.data)
+
+        # FIXME: this should only cause the data to be drawn once, but currently
+        # it is being drawn more times
+        # assert draw.call_count == 1
+
+        count_before = draw.call_count
+
+        # Change the subset
+        cid = self.data.visible_components[0]
+        self.data.subsets[0].subset_state = cid > 1
+
+        # Make sure the figure has been redrawn
+        assert draw.call_count - count_before > 0
+
+    def test_double_add_ignored(self):
+        self.viewer.add_data(self.data)
+        assert len(self.viewer.viewer_state.layers) == 1
+        self.viewer.add_data(self.data)
+        assert len(self.viewer.viewer_state.layers) == 1
+
+    def test_removing_data_removes_layer_state(self):
+        # Removing data from data collection should remove data from viewer
+        self.viewer.add_data(self.data)
+        assert len(self.viewer.viewer_state.layers) == 1
+        self.data_collection.remove(self.data)
+        assert len(self.viewer.viewer_state.layers) == 0
+
+    def test_removing_subset_removes_layers(self):
+
+        # Removing a layer artist removes the corresponding layer state. We need
+        # to do this with a subset otherwise the viewer is closed
+
+        self.init_subset()
+        self.viewer.add_data(self.data)
+
+        assert len(self.viewer.layers) == 2
+        assert len(self.viewer.viewer_state.layers) == 2
+
+        self.data_collection.remove_subset_group(self.data_collection.subset_groups[0])
+
+        assert len(self.viewer.layers) == 1
+        assert self.viewer.layers[0].layer is self.data
+
+        assert len(self.viewer.viewer_state.layers) == 1
+        assert self.viewer.viewer_state.layers[0].layer is self.data
+
+    def test_removing_layer_artist_removes_layer_state(self):
+
+        # Removing a layer artist removes the corresponding layer state. We need
+        # to do this with a subset otherwise the viewer is closed
+
+        self.init_subset()
+        self.viewer.add_data(self.data)
+
+        assert len(self.viewer.layers) == 2
+        assert len(self.viewer.viewer_state.layers) == 2
+
+        # self.layers is a copy so we need to remove from the original list
+        self.viewer._layer_artist_container.remove(self.viewer.layers[1])
+
+        assert len(self.viewer.layers) == 1
+        assert self.viewer.layers[0].layer is self.data
+
+        assert len(self.viewer.viewer_state.layers) == 1
+        assert self.viewer.viewer_state.layers[0].layer is self.data
+
+    def test_removing_layer_state_removes_layer_artist(self):
+
+        # Removing a layer artist removes the corresponding layer state. We need
+        # to do this with a subset otherwise the viewer is closed
+
+        self.init_subset()
+        self.viewer.add_data(self.data)
+
+        assert len(self.viewer.layers) == 2
+        assert len(self.viewer.viewer_state.layers) == 2
+
+        # self.layers is a copy so we need to remove from the original list
+        self.viewer.viewer_state.layers.pop(1)
+
+        assert len(self.viewer.layers) == 1
+        assert self.viewer.layers[0].layer is self.data
+
+        assert len(self.viewer.viewer_state.layers) == 1
+        assert self.viewer.viewer_state.layers[0].layer is self.data
+
+    def test_limits_sync(self):
+
+        viewer_state = self.viewer.viewer_state
+        axes = self.viewer.axes
+
+        # Make sure that the viewer state and matplotlib viewer limits and log
+        # settings are in sync. We start by modifying the state and making sure
+        # that the axes follow.
+
+        viewer_state.x_min = 3
+        viewer_state.x_max = 9
+
+        viewer_state.y_min = -2
+        viewer_state.y_max = 3
+
+        assert axes.get_xlim() == (3, 9)
+        assert axes.get_ylim() == (-2, 3)
+        assert axes.get_xscale() == 'linear'
+        assert axes.get_yscale() == 'linear'
+
+        viewer_state.log_x = True
+
+        assert axes.get_xlim() == (3, 9)
+        assert axes.get_ylim() == (-2, 3)
+        assert axes.get_xscale() == 'log'
+        assert axes.get_yscale() == 'linear'
+
+        viewer_state.log_y = True
+
+        # FIXME: the limits for y don't seem right, should be adjusted because of log?
+        assert axes.get_xlim() == (3, 9)
+        assert axes.get_ylim() == (-2, 3)
+        assert axes.get_xscale() == 'log'
+        assert axes.get_yscale() == 'log'
+
+        # Check that changing the axes changes the state
+
+        # NOTE: at the moment this doesn't work because Matplotlib doesn't
+        # emit events for changing xscale/yscale. This isn't crucial anyway for
+        # glue, but leaving the tests below in case this is fixed some day. The
+        # Matplotlib issue is https://github.com/matplotlib/matplotlib/issues/8439
+
+        axes.set_xscale('linear')
+        #
+        # assert viewer_state.x_min == 3
+        # assert viewer_state.x_max == 9
+        # assert viewer_state.y_min == -2
+        # assert viewer_state.y_max == 3
+        # assert not viewer_state.log_x
+        # assert viewer_state.log_y
+        #
+        axes.set_yscale('linear')
+        #
+        # assert viewer_state.x_min == 3
+        # assert viewer_state.x_max == 9
+        # assert viewer_state.y_min == -2
+        # assert viewer_state.y_max == 3
+        # assert not viewer_state.log_x
+        # assert not viewer_state.log_y
+
+        axes.set_xlim(-1, 4)
+
+        assert viewer_state.x_min == -1
+        assert viewer_state.x_max == 4
+        assert viewer_state.y_min == -2
+        assert viewer_state.y_max == 3
+        # assert not viewer_state.log_x
+        # assert not viewer_state.log_y
+
+        axes.set_ylim(5, 6)
+
+        assert viewer_state.x_min == -1
+        assert viewer_state.x_max == 4
+        assert viewer_state.y_min == 5
+        assert viewer_state.y_max == 6
+        # assert not viewer_state.log_x
+        # assert not viewer_state.log_y

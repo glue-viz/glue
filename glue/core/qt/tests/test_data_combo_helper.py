@@ -2,14 +2,10 @@ from __future__ import absolute_import, division, print_function
 
 from glue.core import Data, DataCollection
 from qtpy import QtWidgets
+from glue.utils.qt import combo_as_string
 
 from ..data_combo_helper import (ComponentIDComboHelper, ManualDataComboHelper,
                                  DataCollectionComboHelper)
-
-
-def _items_as_string(combo):
-    items = [combo.itemText(i) for i in range(combo.count())]
-    return ":".join(items)
 
 
 def test_component_id_combo_helper():

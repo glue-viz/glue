@@ -4,34 +4,22 @@ import numpy as np
 
 from glue.core import Data
 
-from glue.external.echo import (CallbackProperty, ListCallbackProperty,
-                                add_callback)
+from glue.external.echo import CallbackProperty, add_callback
 from glue.utils import nonpartial
 
+from glue.viewers.common.mpl_data_viewer_state import MatplotlibDataViewerState
 from glue.core.state_objects import State, StateAttributeLimitsHelper, StateAttributeHistogramHelper
 from glue.utils.decorators import avoid_circular
 
 __all__ = ['HistogramViewerState', 'HistogramLayerState']
 
 
-class HistogramViewerState(State):
+class HistogramViewerState(MatplotlibDataViewerState):
 
     xatt = CallbackProperty()
-    yatt = CallbackProperty()
-
-    x_min = CallbackProperty()
-    x_max = CallbackProperty()
-
-    y_min = CallbackProperty()
-    y_max = CallbackProperty()
-
-    log_x = CallbackProperty()
-    log_y = CallbackProperty()
 
     cumulative = CallbackProperty(False)
     normalize = CallbackProperty(False)
-
-    layers = ListCallbackProperty()
 
     hist_x_min = CallbackProperty()
     hist_x_max = CallbackProperty()

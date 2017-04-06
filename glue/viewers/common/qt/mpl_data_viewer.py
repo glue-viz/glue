@@ -7,7 +7,9 @@ from glue.external.echo import add_callback
 from glue.utils import nonpartial
 from glue.utils.decorators import avoid_circular
 from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
+from glue.viewers.common.mpl_data_viewer_state import MatplotlibDataViewerState
 from glue.core import message as msg
+from glue.core import Data
 
 __all__ = ['MatplotlibDataViewer']
 
@@ -15,6 +17,7 @@ __all__ = ['MatplotlibDataViewer']
 class MatplotlibDataViewer(DataViewer):
 
     _toolbar_cls = MatplotlibViewerToolbar
+    _state_cls = MatplotlibDataViewerState
 
     def __init__(self, session, parent=None):
 
@@ -52,6 +55,30 @@ class MatplotlibDataViewer(DataViewer):
 
         self.axes.set_autoscale_on(False)
 
+        # TODO: in future could move the following to a more basic data viewer class
+
+        # When layer artists are removed from the layer artist container, we need
+        # to make sure we remove matching layer states in the viewer state
+        # layers attribute.
+        self._layer_artist_container.on_changed(nonpartial(self._sync_state_layers))
+
+        # And vice-versa when layer states are removed from the viewer state, we
+        # need to keep the layer_artist_container in sync
+        self.viewer_state.add_callback('layers', nonpartial(self._sync_layer_artist_container))
+
+    def _sync_state_layers(self):
+        # Remove layer state objects that no longer have a matching layer
+        for layer_state in self.viewer_state.layers:
+            if layer_state.layer not in self._layer_artist_container:
+                self.viewer_state.layers.remove(layer_state)
+
+    def _sync_layer_artist_container(self):
+        # Remove layer artists that no longer have a matching layer state
+        layer_states = set(layer_state.layer for layer_state in self.viewer_state.layers)
+        for layer_artist in self._layer_artist_container:
+            if layer_artist.layer not in layer_states:
+                self._layer_artist_container.remove(layer_artist)
+
     def update_log_x(self):
         self.axes.set_xscale('log' if self.viewer_state.log_x else 'linear')
 
@@ -77,6 +104,9 @@ class MatplotlibDataViewer(DataViewer):
 
     def add_data(self, data):
 
+        if data in self._layer_artist_container:
+            return True
+
         # Create layer artist and add to container
         layer = self._data_artist_cls(data, self._axes, self.viewer_state)
         self._layer_artist_container.append(layer)
@@ -87,6 +117,16 @@ class MatplotlibDataViewer(DataViewer):
             self.add_subset(subset)
 
         return True
+
+    def remove_data(self, data):
+
+        for layer_artist in self.viewer_state.layers[::-1]:
+            if isinstance(layer_artist.layer, Data):
+                if layer_artist.layer is data:
+                    self.viewer_state.layers.remove(layer_artist)
+            else:
+                if layer_artist.layer.data is data:
+                    self.viewer_state.layers.remove(layer_artist)
 
     def add_subset(self, subset):
 
@@ -147,6 +187,13 @@ class MatplotlibDataViewer(DataViewer):
                       handler=self._update_subset,
                       filter=has_data)
 
+        hub.subscribe(self, msg.DataCollectionDeleteMessage,
+                      handler=lambda x: self.remove_data(x.data))
+
         # hub.subscribe(self, msg.ComponentsChangedMessage,
         #               handler=self._update_data,
         #               filter=has_data)
+
+    def unregister(self, hub):
+        super(MatplotlibDataViewer, self).unregister(hub)
+        hub.unsubscribe_all(self)

@@ -2,141 +2,105 @@
 
 from __future__ import absolute_import, division, print_function
 
-import os
 
-import pytest
-
+from glue.core import Data
 from glue import core
 from glue.core.tests.util import simple_session
+from glue.utils.qt import combo_as_string
+from glue.viewers.common.qt.tests.test_mpl_data_viewer import BaseTestMatplotlibDataViewer
 
-from ..viewer_widget import HistogramWidget, _hash
-
-
-def mock_data():
-    return core.Data(label='d1', x=[1, 2, 3], y=[2, 3, 4])
-
-os.environ['GLUE_TESTING'] = 'True'
+from ..data_viewer import HistogramViewer
 
 
-class TestHistogramWidget(object):
+class TestHistogramCommon(BaseTestMatplotlibDataViewer):
+    def init_data(self):
+        return Data(label='d1', x=[3.4, 2.3, -1.1, 0.3], y=['a', 'b', 'c', 'a'])
+    viewer_cls = HistogramViewer
+
+
+class TestHistogramViewer(object):
 
     def setup_method(self, method):
-        self.data = mock_data()
+
+        self.data = Data(label='d1', x=[3.4, 2.3, -1.1, 0.3], y=['a', 'b', 'c', 'a'])
+
         self.session = simple_session()
-        self.collect = self.session.data_collection
         self.hub = self.session.hub
-        self.collect.append(self.data)
-        self.widget = HistogramWidget(self.session)
+
+        self.data_collection = self.session.data_collection
+        self.data_collection.append(self.data)
+
+        self.viewer = HistogramViewer(self.session)
+
+        self.data_collection.register_to_hub(self.hub)
+        self.viewer.register_to_hub(self.hub)
 
     def teardown_method(self, method):
-        self.widget.close()
+        self.viewer.close()
 
-    def set_up_hub(self):
-        self.collect.register_to_hub(self.hub)
-        self.widget.register_to_hub(self.hub)
-        return self.hub
+    def test_basic(self):
 
-    def assert_component_integrity(self, dc=None, widget=None):
-        dc = dc or self.collect
-        widget = widget or self.widget
-        combo = widget.ui.attributeCombo
-        row = 0
-        for data in dc:
-            if data not in widget._layer_artist_container:
-                continue
-            assert combo.itemText(row) == data.label
-            assert combo.itemData(row) == _hash(data)
-            row += 2  # next row is separator
-            for c in data.visible_components:
-                assert combo.itemText(row) == c.label
-                assert combo.itemData(row) == _hash(c)
-                row += 1
+        viewer_state = self.viewer.viewer_state
 
-    def test_attribute_set_with_combo(self):
-        self.widget.ui.attributeCombo.setCurrentIndex(1)
-        obj = self.widget.ui.attributeCombo.itemData(1)
-        assert self.widget.client.component is obj
+        # Check defaults when we add data
+        self.viewer.add_data(self.data)
 
-        obj = self.widget.ui.attributeCombo.itemData(0)
-        self.widget.ui.attributeCombo.setCurrentIndex(0)
-        assert self.widget.client.component is obj
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_xatt) == 'x:y'
 
-    def test_attributes_populated_after_first_data_add(self):
-        d2 = self.data
-        self.collect.append(d2)
-        self.widget.add_data(d2)
-        assert self.widget.client.layer_present(d2)
-        print(list(self.widget.client._artists))
+        assert viewer_state.xatt is self.data.id['x']
+        assert viewer_state.x_min == -1.1
+        assert viewer_state.x_max == 3.4
+        assert viewer_state.y_min == 0.0
+        assert viewer_state.y_max == 1.2
 
-        self.assert_component_integrity()
+        assert viewer_state.hist_x_min == -1.1
+        assert viewer_state.hist_x_max == 3.4
+        assert viewer_state.hist_n_bin == 15
 
-    def test_double_add_ignored(self):
-        self.widget.add_data(self.data)
-        self.widget.add_data(self.data)
+        assert not viewer_state.cumulative
+        assert not viewer_state.normalize
+
+        assert not viewer_state.log_x
+        assert not viewer_state.log_y
+
+        assert len(viewer_state.layers) == 1
+
+        # Change to categorical component and check new values
+
+        viewer_state.xatt = self.data.id['y']
+
+        assert viewer_state.x_min == -0.5
+        assert viewer_state.x_max == 2.5
+        assert viewer_state.y_min == 0.0
+        assert viewer_state.y_max == 2.4
+
+        assert viewer_state.hist_x_min == -0.5
+        assert viewer_state.hist_x_max == 2.5
+        assert viewer_state.hist_n_bin == 3
+
+        assert not viewer_state.cumulative
+        assert not viewer_state.normalize
+
+        assert not viewer_state.log_x
+        assert not viewer_state.log_y
 
     def test_remove_data(self):
-        """ should remove entry fom combo box """
-        hub = self.set_up_hub()
-        self.widget.add_data(self.data)
-        self.collect.remove(self.data)
-        assert not self.widget.data_present(self.data)
-
-    def test_remove_all_data(self):
-        self.set_up_hub()
-        self.collect.append(core.Data())
-        for data in list(self.collect):
-            self.collect.remove(data)
-            assert not self.widget.data_present(self.data)
-
-    @pytest.mark.parametrize(('box', 'prop'),
-                             [('normalized_box', 'normed'),
-                              ('autoscale_box', 'autoscale'),
-                              ('cumulative_box', 'cumulative'),
-                              ('xlog_box', 'xlog'),
-                              ('ylog_box', 'ylog')])
-    def test_check_box_syncs_to_property(self, box, prop):
-        box = getattr(self.widget.ui, box)
-        box.toggle()
-        assert getattr(self.widget.client, prop) == box.isChecked()
-        box.toggle()
-        assert getattr(self.widget.client, prop) == box.isChecked()
-
-    def test_nbin_change(self):
-        self.widget.ui.binSpinBox.setValue(7.0)
-        assert self.widget.client.nbins == 7
-
-    def test_update_xmin_xmax(self):
-
-        self.widget.ui.xmin.setText('-5')
-        self.widget.ui.xmin.editingFinished.emit()
-        assert self.widget.client.xlimits[0] == -5
-
-        self.widget.ui.xmax.setText('15')
-        self.widget.ui.xmax.editingFinished.emit()
-        assert self.widget.client.xlimits[1] == 15
+        self.viewer.add_data(self.data)
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_xatt) == 'x:y'
+        self.data_collection.remove(self.data)
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_xatt) == ''
 
     def test_update_component_updates_title(self):
-        self.widget.add_data(self.data)
-        for comp in self.data.visible_components:
-            self.widget.component = comp
-            assert self.widget.windowTitle() == str(comp)
-
-    def test_update_attributes_preserves_current_component(self):
-        self.widget.add_data(self.data)
-        self.widget.component = self.data.visible_components[1]
-        self.widget._update_attributes()
-        assert self.widget.component is self.data.visible_components[1]
-
-    def test_invalid_component_set(self):
-        with pytest.raises(IndexError) as exc:
-            self.widget.component = None
-        assert exc.value.args[0] == "Component not present: None"
+        self.viewer.add_data(self.data)
+        self.viewer.windowTitle() == 'x'
+        self.viewer.viewer_state.xatt = self.data.id['y']
+        self.viewer.windowTitle() == 'y'
 
     def test_combo_updates_with_component_add(self):
-        hub = self.set_up_hub()
-        self.widget.add_data(self.data)
-        self.data.add_component(self.data[self.data.components[0]], 'testing')
-        self.assert_component_integrity()
+        self.viewer.add_data(self.data)
+        self.data.add_component([3, 4, 1, 2], 'z')
+        assert self.viewer.viewer_state.xatt is self.data.id['x']
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_xatt) == 'x:y:z'
 
     def test_nonnumeric_first_component(self):
         # regression test for #208. Shouldn't complain if
@@ -144,5 +108,5 @@ class TestHistogramWidget(object):
         data = core.Data()
         data.add_component(['a', 'b', 'c'], label='c1')
         data.add_component([1, 2, 3], label='c2')
-        self.collect.append(data)
-        self.widget.add_data(data)
+        self.data_collection.append(data)
+        self.viewer.add_data(data)
