@@ -10,6 +10,7 @@ from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
 from glue.viewers.common.mpl_data_viewer_state import MatplotlibDataViewerState
 from glue.core import message as msg
 from glue.core import Data
+from glue.core.exceptions import IncompatibleDataException
 
 __all__ = ['MatplotlibDataViewer']
 
@@ -107,6 +108,9 @@ class MatplotlibDataViewer(DataViewer):
         if data in self._layer_artist_container:
             return True
 
+        if data not in self.session.data_collection:
+            raise IncompatibleDataException("Data not in DataCollection")
+
         # Create layer artist and add to container
         layer = self._data_artist_cls(data, self._axes, self.viewer_state)
         self._layer_artist_container.append(layer)
@@ -129,6 +133,12 @@ class MatplotlibDataViewer(DataViewer):
                     self.viewer_state.layers.remove(layer_artist)
 
     def add_subset(self, subset):
+
+        # Make sure we add the data first if it doesn't already exist in viewer.
+        # This will then auto add the subsets so can just return.
+        if subset.data not in self._layer_artist_container:
+            self.add_data(subset.data)
+            return
 
         # Copy settings from data if present
         if subset.data in self._layer_artist_container:

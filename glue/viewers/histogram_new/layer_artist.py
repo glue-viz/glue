@@ -78,6 +78,8 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
                                 cumulative=self.viewer_state.cumulative,
                                 normed=self.viewer_state.normalize)
 
+        self.mpl_hist = result[0]
+        self.mpl_bins = result[1]
         self.mpl_artists = result[2]
 
         # We have to do the following to make sure that we reset the y_max as

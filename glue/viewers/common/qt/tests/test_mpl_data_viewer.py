@@ -2,9 +2,12 @@
 
 from __future__ import absolute_import, division, print_function
 
+import pytest
 from mock import MagicMock
 
+from glue.core import Data
 from glue.core.tests.util import simple_session
+from glue.core.exceptions import IncompatibleDataException
 
 
 class BaseTestMatplotlibDataViewer(object):
@@ -75,6 +78,21 @@ class BaseTestMatplotlibDataViewer(object):
         assert self.viewer.viewer_state.layers[0].layer is self.data
         assert self.viewer.viewer_state.layers[1].layer is self.data.subsets[0]
 
+    def test_adding_subset_adds_data(self):
+
+        # TODO: in future consider whether we want to deprecate this behavior
+
+        self.init_subset()
+        self.viewer.add_subset(self.data.subsets[0])
+
+        assert len(self.viewer.layers) == 2
+        assert self.viewer.layers[0].layer is self.data
+        assert self.viewer.layers[1].layer is self.data.subsets[0]
+
+        assert len(self.viewer.viewer_state.layers) == 2
+        assert self.viewer.viewer_state.layers[0].layer is self.data
+        assert self.viewer.viewer_state.layers[1].layer is self.data.subsets[0]
+
     def test_add_data_then_subset(self):
 
         # Make sure that if a subset is created in a dataset that has already
@@ -136,6 +154,14 @@ class BaseTestMatplotlibDataViewer(object):
         self.data_collection.remove(self.data)
         assert len(self.viewer.viewer_state.layers) == 0
 
+    def test_removing_data_removes_subsets(self):
+        # Removing data from data collection should remove subsets from viewer
+        self.init_subset()
+        self.viewer.add_data(self.data)
+        assert len(self.viewer.viewer_state.layers) == 2
+        self.data_collection.remove(self.data)
+        assert len(self.viewer.viewer_state.layers) == 0
+
     def test_removing_subset_removes_layers(self):
 
         # Removing a layer artist removes the corresponding layer state. We need
@@ -194,6 +220,33 @@ class BaseTestMatplotlibDataViewer(object):
 
         assert len(self.viewer.viewer_state.layers) == 1
         assert self.viewer.viewer_state.layers[0].layer is self.data
+
+    def test_new_subset_after_remove_data(self):
+
+        # Once we remove a dataset, if we make a new subset, it will not be
+        # added to the viewer
+
+        self.init_subset()
+        self.viewer.add_data(self.data)
+
+        assert len(self.viewer.layers) == 2
+        assert len(self.viewer.viewer_state.layers) == 2
+
+        self.viewer.viewer_state.layers.pop(0)
+
+        self.init_subset()  # makes a new subset
+
+        assert len(self.data.subsets) == 2
+
+        assert len(self.viewer.layers) == 1
+        assert self.viewer.layers[0].layer is self.data.subsets[0]
+
+        assert len(self.viewer.viewer_state.layers) == 1
+        assert self.viewer.viewer_state.layers[0].layer is self.data.subsets[0]
+
+    def test_remove_not_present_ignored(self):
+        data = Data(label='not in viewer')
+        self.viewer.remove_data(data)
 
     def test_limits_sync(self):
 
@@ -272,3 +325,8 @@ class BaseTestMatplotlibDataViewer(object):
         assert viewer_state.y_max == 6
         # assert not viewer_state.log_x
         # assert not viewer_state.log_y
+
+    def test_add_invalid_data(self):
+        data2 = Data()
+        with pytest.raises(IncompatibleDataException):
+            self.viewer.add_data(data2)

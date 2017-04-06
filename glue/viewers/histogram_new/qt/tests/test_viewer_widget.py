@@ -2,8 +2,11 @@
 
 from __future__ import absolute_import, division, print_function
 
+from numpy.testing import assert_allclose
 
 from glue.core import Data
+from glue.core.roi import XRangeROI
+from glue.core.subset import RangeSubsetState
 from glue import core
 from glue.core.tests.util import simple_session
 from glue.utils.qt import combo_as_string
@@ -110,3 +113,115 @@ class TestHistogramViewer(object):
         data.add_component([1, 2, 3], label='c2')
         self.data_collection.append(data)
         self.viewer.add_data(data)
+
+    def test_histogram_values(self):
+
+        # Check the actual values of the histograms
+
+        viewer_state = self.viewer.viewer_state
+
+        self.viewer.add_data(self.data)
+
+        # Numerical attribute
+
+        viewer_state.hist_x_min = -5
+        viewer_state.hist_x_max = 5
+        viewer_state.hist_n_bin = 4
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 1, 2, 1])
+        assert_allclose(self.viewer.layers[0].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+
+        cid = self.data.visible_components[0]
+        self.data_collection.new_subset_group('subset 1', cid < 2)
+
+        assert_allclose(self.viewer.layers[1].mpl_hist, [0, 1, 1, 0])
+        assert_allclose(self.viewer.layers[1].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+
+        viewer_state.normalize = True
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0.1, 0.2, 0.1])
+        assert_allclose(self.viewer.layers[0].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[1].mpl_hist, [0, 0.2, 0.2, 0])
+        assert_allclose(self.viewer.layers[1].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+
+        viewer_state.cumulative = True
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0.25, 0.75, 1.0])
+        assert_allclose(self.viewer.layers[0].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[1].mpl_hist, [0, 0.5, 1.0, 1.0])
+        assert_allclose(self.viewer.layers[1].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+
+        viewer_state.normalize = False
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 1, 3, 4])
+        assert_allclose(self.viewer.layers[0].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[1].mpl_hist, [0, 1, 2, 2])
+        assert_allclose(self.viewer.layers[1].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+
+        viewer_state.cumulative = False
+
+        # Categorical attribute
+
+        viewer_state.xatt = self.data.id['y']
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [2, 1, 1])
+        assert_allclose(self.viewer.layers[0].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[1].mpl_hist, [1, 0, 1])
+        assert_allclose(self.viewer.layers[1].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+
+        viewer_state.normalize = True
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0.5, 0.25, 0.25])
+        assert_allclose(self.viewer.layers[0].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[1].mpl_hist, [0.5, 0, 0.5])
+        assert_allclose(self.viewer.layers[1].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+
+        viewer_state.cumulative = True
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0.5, 0.75, 1])
+        assert_allclose(self.viewer.layers[0].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[1].mpl_hist, [0.5, 0.5, 1])
+        assert_allclose(self.viewer.layers[1].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+
+        viewer_state.normalize = False
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [2, 3, 4])
+        assert_allclose(self.viewer.layers[0].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[1].mpl_hist, [1, 1, 2])
+        assert_allclose(self.viewer.layers[1].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+
+        # TODO: add tests for log
+
+    def test_apply_roi(self):
+
+        # Check that when doing an ROI selection, the ROI clips to the bin edges
+        # outside the selection
+
+        viewer_state = self.viewer.viewer_state
+
+        self.viewer.add_data(self.data)
+
+        viewer_state.hist_x_min = -5
+        viewer_state.hist_x_max = 5
+        viewer_state.hist_n_bin = 4
+
+        roi = XRangeROI(-0.2, 0.1)
+
+        assert len(self.viewer.layers) == 1
+
+        self.viewer.apply_roi(roi)
+
+        assert len(self.viewer.layers) == 2
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 1, 2, 1])
+        assert_allclose(self.viewer.layers[1].mpl_hist, [0, 1, 2, 0])
+
+        assert_allclose(self.data.subsets[0].to_mask(), [0, 1, 1, 1])
+
+        state = self.data.subsets[0].subset_state
+        assert isinstance(state, RangeSubsetState)
+
+        assert state.lo == -2.5
+        assert state.hi == 2.5
+
+        # TODO: add a similar test in log space
