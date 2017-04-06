@@ -6,6 +6,7 @@ from qtpy import QtWidgets
 
 from glue.core import Data
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
+from glue.utils import nonpartial
 from glue.utils.qt import load_ui
 from glue.core.qt.data_combo_helper import ComponentIDComboHelper
 from glue.viewers.common.qt.attribute_limits_helper import AttributeLimitsHelper
@@ -30,6 +31,15 @@ class HistogramOptionsWidget(QtWidgets.QWidget):
                                                   session.data_collection)
 
         self.viewer_state = viewer_state
+
+        viewer_state.add_callback('xatt', nonpartial(self._update_attribute))
+
+    def _update_attribute(self):
+        # If at least one of the components is categorical, disable log button
+        log_enabled = not any(comp.categorical for comp in self.viewer_state._get_x_components())
+        self.ui.bool_log_x.setEnabled(log_enabled)
+        if not log_enabled:
+            self.ui.bool_log_x.setChecked(False)
 
     def _update_combo_data(self, *args):
         # TODO: what about if only subset and not data is present?

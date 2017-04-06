@@ -1,10 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
+import numpy as np
+
+from glue.core import Data
+
 from glue.external.echo import CallbackProperty, ListCallbackProperty, add_callback, keep_in_sync, ignore_callback
 from glue.utils import nonpartial
 from glue.config import colormaps
 
-from glue.core.state_objects import State, StateAttributeLimitsHelper
+from glue.core.state_objects import State, StateAttributeLimitsHelper, StateAttributeHistogramHelper
 from glue.utils.decorators import avoid_circular
 
 __all__ = ['HistogramViewerState', 'HistogramLayerState']
@@ -35,13 +39,33 @@ class HistogramViewerState(State):
 
     def __init__(self):
         super(HistogramViewerState, self).__init__()
-        self.x_att_helper = StateAttributeLimitsHelper(self, attribute='xatt',
-                                                       lower='x_min', upper='x_max', log='log_x')
-        self.hist_x_att_helper = StateAttributeLimitsHelper(self, attribute='xatt',
-                                                            lower='hist_x_min', upper='hist_x_max')
+        self.x_att_helper = StateAttributeLimitsHelper(self, 'xatt', lower='x_min',
+                                                       upper='x_max', log='log_x')
+        self.hist_helper = StateAttributeHistogramHelper(self, 'xatt', lower='hist_x_min',
+                                                         upper='hist_x_max', n_bin='hist_n_bin')
 
     def flip_x(self):
         self.x_att_helper.flip_limits()
+
+    def _get_x_components(self):
+        # Construct list of components over all layers
+        components = []
+        for layer_state in self.layers:
+            if isinstance(layer_state.layer, Data):
+                components.append(layer_state.layer.get_component(self.xatt))
+            else:
+                components.append(layer_state.layer.data.get_component(self.xatt))
+        return components
+
+    @property
+    def bins(self):
+        if self.log_x:
+            return np.logspace(np.log10(self.hist_x_min),
+                               np.log10(self.hist_x_max),
+                               self.hist_n_bin + 1)
+        else:
+            return np.linspace(self.hist_x_min, self.hist_x_max,
+                               self.hist_n_bin + 1)
 
 
 class HistogramLayerState(State):

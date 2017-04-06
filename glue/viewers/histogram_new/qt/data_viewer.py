@@ -4,6 +4,8 @@ from glue.utils import nonpartial
 from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core import Data
+from glue.core.util import update_ticks
+from glue.core.roi import RangeROI
 
 from glue.viewers.common.qt.mpl_data_viewer import MatplotlibDataViewer
 from glue.viewers.histogram_new.qt.layer_style_editor import HistogramLayerStyleEditor
@@ -28,11 +30,17 @@ class HistogramViewer(MatplotlibDataViewer):
 
     def __init__(self, session, parent=None):
         super(HistogramViewer, self).__init__(session, parent)
-        self.viewer_state.add_callback('xatt', nonpartial(self.update_labels))
+        self.viewer_state.add_callback('xatt', nonpartial(self.on_attribute_update))
 
-    def update_labels(self):
+    def on_attribute_update(self):
+
         if self.viewer_state.xatt is not None:
+
+            # Update ticks, which sets the labels to categories if components are categorical
+            update_ticks(self.axes, 'x', self.viewer_state._get_x_components(), False)
+
             self.axes.set_xlabel(self.viewer_state.xatt)
+
         self.axes.set_ylabel('Number')
 
     def apply_roi(self, roi):
@@ -41,7 +49,22 @@ class HistogramViewer(MatplotlibDataViewer):
         # cmd = command.ApplyROI(client=self.client, roi=roi)
         # self._session.command_stack.do(cmd)
 
-        # Does subset get applied to all data or just visible data?
+        # TODO Does subset get applied to all data or just visible data?
+
+        # Expand roi to match bin edges
+        # TODO: make this an option
+
+        bins = self.viewer_state.bins
+
+        x = roi.to_polygon()[0]
+        lo, hi = min(x), max(x)
+
+        if lo >= bins.min():
+            lo = bins[bins <= lo].max()
+        if hi <= bins.max():
+            hi = bins[bins >= hi].min()
+
+        roi_new = RangeROI(min=lo, max=hi, orientation='x')
 
         for layer_artist in self._layer_artist_container:
 
@@ -50,7 +73,7 @@ class HistogramViewer(MatplotlibDataViewer):
 
             x_comp = layer_artist.layer.get_component(self.viewer_state.xatt)
 
-            subset_state = x_comp.subset_from_roi(self.viewer_state.xatt, roi,
+            subset_state = x_comp.subset_from_roi(self.viewer_state.xatt, roi_new,
                                                   coord='x')
 
             mode = EditSubsetMode()
