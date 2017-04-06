@@ -115,6 +115,15 @@ class StateAttributeCacheHelper(object):
         else:
             return self.data[self.component_id]
 
+    @property
+    def data_component(self):
+        # For subsets in 'data' mode, we want to compute the limits based on
+        # the full dataset, not just the subset.
+        if isinstance(self.data, Subset):
+            return self.data.data.get_component(self.component_id)
+        else:
+            return self.data.get_component(self.component_id)
+
     def invalidate_cache(self):
         self._cache.clear()
 
@@ -301,17 +310,59 @@ class StateAttributeSingleValueHelper(StateAttributeCacheHelper):
     values_names = ('value',)
     modifiers_names = ()
 
-    def __init__(self, state, attribute, function, **kwargs):
+    def __init__(self, state, attribute, function, mode='values', **kwargs):
         self._function = function
         super(StateAttributeSingleValueHelper, self).__init__(state, attribute, **kwargs)
         if self.attribute is not None:
             self._update_attribute()
+        if mode in ('values', 'component'):
+            self.mode = mode
+        else:
+            raise ValueError('mode should be one of "values" or "component"')
 
     def update_values(self, use_default_modifiers=False, **properties):
         if not any(prop in properties for prop in ('attribute',)) or self.data is None:
             self.set()
         else:
-            self.set(value=self._function(self.data_values))
+            if self.mode == 'values':
+                arg = self.data_values
+            else:
+                arg = self.data_component
+            self.set(value=self._function(arg))
+
+
+class StateAttributeHistogramHelper(StateAttributeCacheHelper):
+
+    values_names = ('lower', 'upper', 'n_bin')
+    modifiers_names = ('default_n_bin', 'max_n_bin')
+
+    def __init__(self, *args, **kwargs):
+        self._max_n_bin = kwargs.pop('max_n_bin', 30)
+        self._default_n_bin = kwargs.pop('default_n_bin', 15)
+        super(StateAttributeHistogramHelper, self).__init__(*args, **kwargs)
+
+    def update_values(self, use_default_modifiers=False, **properties):
+
+        if 'attribute' not in properties or self.data is None:
+            self.set()
+            return
+
+        comp = self.data_component
+
+        if comp.categorical:
+
+            n_bin = max(1, min(comp.categories.size, self._max_n_bin))
+            lower = -0.5
+            upper = lower + comp.categories.size
+
+        else:
+
+            n_bin = self._default_n_bin
+            values = self.data_values
+            lower = np.nanmin(values)
+            upper = np.nanmax(values)
+
+        self.set(lower=lower, upper=upper, n_bin=n_bin)
 
 
 if __name__ == "__main__":
