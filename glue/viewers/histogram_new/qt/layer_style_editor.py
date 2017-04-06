@@ -21,8 +21,3 @@ class HistogramLayerStyleEditor(QtWidgets.QWidget):
         connect_kwargs = {'alpha': dict(value_range=(0, 1))}
 
         autoconnect_callbacks_to_qt(self.layer_state, self.ui, connect_kwargs)
-
-        # TODO: find a way to avoid needing this explicit call
-        connect_checkable_button(self.layer_state.viewer_state,
-                                 'link_bin_settings',
-                                 self.ui.bool_link_bin_settings)

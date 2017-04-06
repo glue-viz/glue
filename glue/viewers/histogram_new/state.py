@@ -29,17 +29,19 @@ class HistogramViewerState(State):
 
     layers = ListCallbackProperty()
 
-    link_bin_settings = CallbackProperty(False)
+    hist_x_min = CallbackProperty()
+    hist_x_max = CallbackProperty()
+    hist_n_bin = CallbackProperty(10)
 
     def __init__(self):
         super(HistogramViewerState, self).__init__()
         self.x_att_helper = StateAttributeLimitsHelper(self, attribute='xatt',
                                                        lower='x_min', upper='x_max', log='log_x')
+        self.hist_x_att_helper = StateAttributeLimitsHelper(self, attribute='xatt',
+                                                            lower='hist_x_min', upper='hist_x_max')
 
     def flip_x(self):
         self.x_att_helper.flip_limits()
-
-# TODO: try and avoid duplication in LayerState objects
 
 
 class HistogramLayerState(State):
@@ -47,24 +49,12 @@ class HistogramLayerState(State):
     layer = CallbackProperty()
     color = CallbackProperty()
     alpha = CallbackProperty()
-    x_min = CallbackProperty()
-    x_max = CallbackProperty()
-    n_bins = CallbackProperty(10)
-
-    # We need to add this to make it possible to use StateAttributeLimitsHelper
-    xatt = CallbackProperty()
-    log_x = CallbackProperty()
 
     def __init__(self, viewer_state=None, **kwargs):
 
         super(HistogramLayerState, self).__init__(**kwargs)
 
         self.viewer_state = viewer_state
-        keep_in_sync(self.viewer_state, 'xatt', self, 'xatt')
-        keep_in_sync(self.viewer_state, 'log_x', self, 'log_x')
-
-        self.x_att_helper = StateAttributeLimitsHelper(self, attribute='xatt',
-                                                       lower='x_min', upper='x_max', log='log_x')
 
         self.color = self.layer.style.color
         self.alpha = self.layer.style.alpha
@@ -77,18 +67,6 @@ class HistogramLayerState(State):
 
         self.add_callback('color', nonpartial(self.color_to_layer))
         self.add_callback('alpha', nonpartial(self.alpha_to_layer))
-
-        self.add_callback('x_min', nonpartial(self._bin_settings_updated))
-        self.add_callback('x_max', nonpartial(self._bin_settings_updated))
-        self.add_callback('n_bins', nonpartial(self._bin_settings_updated))
-        self.viewer_state.add_callback('link_bin_settings', nonpartial(self._bin_settings_updated))
-
-    def _bin_settings_updated(self):
-        for layer in self.viewer_state.layers:
-            if self.viewer_state.link_bin_settings and layer is not self:
-                layer.x_min = self.x_min
-                layer.x_max = self.x_max
-                layer.n_bins = self.n_bins
 
     @avoid_circular
     def color_to_layer(self):

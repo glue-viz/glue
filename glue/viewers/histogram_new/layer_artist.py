@@ -35,8 +35,9 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         self.viewer_state.add_callback('log_y', nonpartial(self.update))
         self.viewer_state.add_callback('cumulative', nonpartial(self.update))
         self.viewer_state.add_callback('normalize', nonpartial(self.update))
-        self.layer_state.add_callback('x_min', nonpartial(self._viewer_limits_changed))
-        self.layer_state.add_callback('x_max', nonpartial(self.update))
+        self.viewer_state.add_callback('hist_x_min', nonpartial(self.update))
+        self.viewer_state.add_callback('hist_x_max', nonpartial(self.update))
+        self.viewer_state.add_callback('hist_n_bin', nonpartial(self.update))
 
         self.layer_state.add_callback('*', nonpartial(self.update))
 
@@ -44,19 +45,13 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         self.layer_state.data_collection = self.viewer_state.data_collection
         self.data_collection = self.viewer_state.data_collection
 
-    def _viewer_limits_changed(self):
-        if self.layer_state.x_min is None and self.viewer_state.x_min is not None:
-            self.layer_state.x_min = self.viewer_state.x_min
-        if self.layer_state.x_max is None and self.viewer_state.x_max is not None:
-            self.layer_state.x_max = self.viewer_state.x_max
-
     def update(self):
 
-        if self.layer_state.x_min is None or self.layer_state.x_max is None:
+        if self.viewer_state.hist_x_min is None or self.viewer_state.hist_x_max is None:
             return
 
         x = self.layer[self.viewer_state.xatt]
-        x = x[~np.isnan(x) & (x >= self.layer_state.x_min) & (x <= self.layer_state.x_max)]
+        x = x[~np.isnan(x) & (x >= self.viewer_state.hist_x_min) & (x <= self.viewer_state.hist_x_max)]
 
         # TODO: is there a better way to do this?
         self.clear()
@@ -66,13 +61,13 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
             return
 
         # For histogram
-        xmin, xmax = sorted([self.layer_state.x_min, self.layer_state.x_max])
-        if self.layer_state.log_x:
+        xmin, xmax = sorted([self.viewer_state.hist_x_min, self.viewer_state.hist_x_max])
+        if self.viewer_state.log_x:
             range = None
-            bins = np.logspace(np.log10(xmin), np.log10(xmax), self.layer_state.n_bins)
+            bins = np.logspace(np.log10(xmin), np.log10(xmax), self.viewer_state.hist_n_bin)
         else:
             range = [xmin, xmax]
-            bins = self.layer_state.n_bins
+            bins = self.viewer_state.hist_n_bin
 
         result = self.axes.hist(x, range=range,
                                 bins=bins,

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>348</width>
-    <height>117</height>
+    <width>168</width>
+    <height>57</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,8 +17,21 @@
    <property name="margin">
     <number>5</number>
    </property>
-   <item row="1" column="2">
-    <widget class="QLineEdit" name="valuetext_x_max"/>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>transparency:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
    </item>
    <item row="0" column="0">
     <widget class="QLabel" name="label_2">
@@ -29,7 +42,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Color:</string>
+      <string>color</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -49,52 +62,7 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_3">
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Bins:</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="valuetext_x_min"/>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label">
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Transparency:</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="3">
-    <widget class="QSpinBox" name="value_n_bins"/>
-   </item>
-   <item row="2" column="1" colspan="2">
-    <widget class="QCheckBox" name="bool_link_bin_settings">
-     <property name="text">
-      <string>Use same bins for all layers</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1" colspan="3">
+   <item row="1" column="1" colspan="2">
     <widget class="QSlider" name="value_alpha">
      <property name="maximum">
       <number>100</number>

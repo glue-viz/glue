@@ -480,8 +480,7 @@ class keep_in_sync(object):
 
         self._syncing = False
 
-        add_callback(self.instance1, self.prop1, self.prop2_from_prop1)
-        add_callback(self.instance2, self.prop2, self.prop1_from_prop2)
+        self.enable_syncing()
 
     def prop1_from_prop2(self, value):
         if not self._syncing:
@@ -495,6 +494,10 @@ class keep_in_sync(object):
             setattr(self.instance2, self.prop2, getattr(self.instance1, self.prop1))
             self._syncing = False
 
-    def stop_syncing(self):
+    def enable_syncing(self):
+        add_callback(self.instance1, self.prop1, self.prop2_from_prop1)
+        add_callback(self.instance2, self.prop2, self.prop1_from_prop2)
+
+    def disable_syncing(self):
         remove_callback(self.instance1, self.prop1, self.prop2_from_prop1)
         remove_callback(self.instance2, self.prop2, self.prop1_from_prop2)
