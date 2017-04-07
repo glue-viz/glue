@@ -7,7 +7,8 @@ from glue.core.hub import HubListener
 from glue.core.message import (ComponentsChangedMessage,
                                DataCollectionAddMessage,
                                DataCollectionDeleteMessage,
-                               DataUpdateMessage)
+                               DataUpdateMessage,
+                               ComponentReplacedMessage)
 from glue.utils import nonpartial
 from glue.utils.qt import update_combobox
 from glue.utils.qt.widget_properties import CurrentComboDataProperty
@@ -180,6 +181,9 @@ class ComponentIDComboHelper(HubListener):
                     break
 
     def register_to_hub(self, hub):
+        hub.subscribe(self, ComponentReplacedMessage,
+                      handler=nonpartial(self.refresh),
+                      filter=lambda msg: msg.data in self._data)
         hub.subscribe(self, ComponentsChangedMessage,
                       handler=nonpartial(self.refresh),
                       filter=lambda msg: msg.data in self._data)
