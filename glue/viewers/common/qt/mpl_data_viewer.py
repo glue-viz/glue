@@ -132,6 +132,11 @@ class MatplotlibDataViewer(DataViewer):
                 if layer_artist.layer.data is data:
                     self.viewer_state.layers.remove(layer_artist)
 
+    def remove_subset(self, subset):
+        if subset in self._layer_artist_container:
+            self._layer_artist_container.pop(subset)
+            self.axes.figure.canvas.draw()
+
     def add_subset(self, subset):
 
         # Make sure we add the data first if it doesn't already exist in viewer.
@@ -164,9 +169,7 @@ class MatplotlibDataViewer(DataViewer):
             self.axes.figure.canvas.draw()
 
     def _remove_subset(self, message):
-        if message.subset in self._layer_artist_container:
-            self._layer_artist_container.pop(message.subset)
-            self.axes.figure.canvas.draw()
+        self.remove_subset(message.subset)
 
     def options_widget(self):
         return self.options

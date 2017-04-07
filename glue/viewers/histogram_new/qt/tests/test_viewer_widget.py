@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-from numpy.testing import assert_allclose
+from numpy.testing import assert_equal, assert_allclose
 
 from glue.core import Data
 from glue.core.roi import XRangeROI
@@ -257,7 +257,7 @@ class TestHistogramViewer(object):
         state = self.data.subsets[0].subset_state
         assert isinstance(state, CategoricalROISubsetState)
 
-        assert state.roi.categories == ['a', 'b']
+        assert_equal(state.roi.categories, ['a', 'b'])
 
     def test_axes_labels(self):
 
@@ -324,7 +324,7 @@ class TestHistogramViewer(object):
     # TODO: update the following test following refactoring
     # def test_component_replaced(self):
     #     # regression test for 508
-    #     self.viewer.register_to_hub(self.collect.hub)
+    #     self.viewer.register_to_hub(self.data_collection.hub)
     #     self.viewer.add_layer(self.data)
     #     self.viewer.component = self.data.components[0]
     #

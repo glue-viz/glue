@@ -116,30 +116,42 @@ class BaseTestMatplotlibDataViewer(object):
         assert self.viewer.viewer_state.layers[0].layer is self.data
         assert self.viewer.viewer_state.layers[1].layer is self.data.subsets[0]
 
+    def init_draw_count(self):
+        self.draw = self.viewer.axes.figure.canvas.draw = MagicMock()
+
+    @property
+    def draw_count(self):
+        return self.draw.call_count
+
+    @pytest.mark.xfail
+    def test_single_draw(self):
+        # Make sure that the number of draws is kept to a minimum
+        self.init_draw_count()
+        self.init_subset()
+        assert self.draw_count == 0
+        self.viewer.add_data(self.data)
+        assert self.draw_count == 1
+
     def test_update_subset(self):
+
+        self.init_draw_count()
 
         # Check that updating a subset causes the plot to be updated
 
-        draw = self.viewer.axes.figure.canvas.draw = MagicMock()
-
         self.init_subset()
 
-        assert draw.call_count == 0
+        assert self.draw_count == 0
 
         self.viewer.add_data(self.data)
 
-        # FIXME: this should only cause the data to be drawn once, but currently
-        # it is being drawn more times
-        # assert draw.call_count == 1
-
-        count_before = draw.call_count
+        count_before = self.draw_count
 
         # Change the subset
         cid = self.data.visible_components[0]
         self.data.subsets[0].subset_state = cid > 1
 
         # Make sure the figure has been redrawn
-        assert draw.call_count - count_before > 0
+        assert self.draw_count - count_before > 0
 
     def test_double_add_ignored(self):
         self.viewer.add_data(self.data)
@@ -330,3 +342,69 @@ class BaseTestMatplotlibDataViewer(object):
         data2 = Data()
         with pytest.raises(IncompatibleDataException):
             self.viewer.add_data(data2)
+
+    # Communication tests
+
+    def test_ignore_data_add_message(self):
+        self.data_collection.append(self.data)
+        assert len(self.viewer.layers) == 0
+
+    def test_update_data_ignored_if_data_not_present(self):
+        self.init_draw_count()
+        self.data_collection.append(self.data)
+        ct0 = self.draw_count
+        self.data.style.color = 'blue'
+        assert self.draw_count == ct0
+
+    def test_update_data_processed_if_data_present(self):
+        self.init_draw_count()
+        self.data_collection.append(self.data)
+        self.viewer.add_data(self.data)
+        ct0 = self.draw_count
+        self.data.style.color = 'blue'
+        assert self.draw_count > ct0
+
+    def test_add_subset_ignored_if_data_not_present(self):
+        self.data_collection.append(self.data)
+        sub = self.data.new_subset()
+        assert sub not in self.viewer._layer_artist_container
+
+    def test_add_subset_processed_if_data_present(self):
+        self.data_collection.append(self.data)
+        self.viewer.add_data(self.data)
+        sub = self.data.new_subset()
+        assert sub in self.viewer._layer_artist_container
+
+    @pytest.mark.xfail
+    def test_update_subset_ignored_if_not_present(self):
+        self.init_draw_count()
+        self.data_collection.append(self.data)
+        self.viewer.add_data(self.data)
+        sub = self.data.new_subset()
+        self.viewer.remove_subset(sub)
+        ct0 = self.draw_count
+        sub.style.color = 'blue'
+        assert self.draw_count == ct0
+
+    def test_update_subset_processed_if_present(self):
+        self.init_draw_count()
+        self.data_collection.append(self.data)
+        self.viewer.add_data(self.data)
+        sub = self.data.new_subset()
+        ct0 = self.draw_count
+        sub.style.color = 'blue'
+        assert self.draw_count > ct0
+
+    def test_data_remove_message(self):
+        self.data_collection.append(self.data)
+        self.viewer.add_data(self.data)
+        self.data_collection.remove(self.data)
+        assert self.data not in self.viewer._layer_artist_container
+
+    def test_subset_remove_message(self):
+        self.data_collection.append(self.data)
+        self.viewer.add_data(self.data)
+        sub = self.data.new_subset()
+        assert sub in self.viewer._layer_artist_container
+        sub.delete()
+        assert sub not in self.viewer._layer_artist_container
