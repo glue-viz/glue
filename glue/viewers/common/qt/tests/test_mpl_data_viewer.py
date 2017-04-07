@@ -7,6 +7,7 @@ import pytest
 from glue.core import Data
 from glue.core.tests.util import simple_session
 from glue.core.exceptions import IncompatibleDataException
+from glue.app.qt.application import GlueApplication
 
 
 class MatplotlibDrawCounter(object):
@@ -414,3 +415,27 @@ class BaseTestMatplotlibDataViewer(object):
         assert sub in self.viewer._layer_artist_container
         sub.delete()
         assert sub not in self.viewer._layer_artist_container
+
+    def test_session_round_trip(self, tmpdir):
+
+        self.init_subset()
+
+        ga = GlueApplication(self.data_collection)
+        ga.show()
+
+        viewer = ga.new_data_viewer(self.viewer_cls)
+        viewer.add_data(self.data)
+
+        session_file = tmpdir.join('test_session_round_trip.glu').strpath
+        ga.save_session(session_file)
+        ga.close()
+
+        ga2 = GlueApplication.restore_session(session_file)
+        ga2.show()
+
+        viewer2 = ga2.viewers[0][0]
+
+        data2 = ga2.data_collection[0]
+
+        assert viewer2.layers[0].layer is data2
+        assert viewer2.layers[1].layer is data2.subsets[0]

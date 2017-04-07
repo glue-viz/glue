@@ -35,24 +35,24 @@ class MatplotlibDataViewer(DataViewer):
 
         # Set up the state which will contain everything needed to represent
         # the current state of the viewer
-        self.viewer_state = self._state_cls()
-        self.viewer_state.data_collection = session.data_collection
+        self.state = self._state_cls()
+        self.state.data_collection = session.data_collection
 
         # Set up the options widget, which will include options that control the
         # viewer state
-        self.options = self._options_cls(viewer_state=self.viewer_state,
+        self.options = self._options_cls(viewer_state=self.state,
                                          session=session)
 
-        add_callback(self.viewer_state, 'x_min', nonpartial(self.limits_to_mpl))
-        add_callback(self.viewer_state, 'x_max', nonpartial(self.limits_to_mpl))
-        add_callback(self.viewer_state, 'y_min', nonpartial(self.limits_to_mpl))
-        add_callback(self.viewer_state, 'y_max', nonpartial(self.limits_to_mpl))
+        add_callback(self.state, 'x_min', nonpartial(self.limits_to_mpl))
+        add_callback(self.state, 'x_max', nonpartial(self.limits_to_mpl))
+        add_callback(self.state, 'y_min', nonpartial(self.limits_to_mpl))
+        add_callback(self.state, 'y_max', nonpartial(self.limits_to_mpl))
 
         self.axes.callbacks.connect('xlim_changed', nonpartial(self.limits_from_mpl))
         self.axes.callbacks.connect('ylim_changed', nonpartial(self.limits_from_mpl))
 
-        self.viewer_state.add_callback('log_x', nonpartial(self.update_log_x))
-        self.viewer_state.add_callback('log_y', nonpartial(self.update_log_y))
+        self.state.add_callback('log_x', nonpartial(self.update_log_x))
+        self.state.add_callback('log_y', nonpartial(self.update_log_y))
 
         self.axes.set_autoscale_on(False)
 
@@ -65,37 +65,37 @@ class MatplotlibDataViewer(DataViewer):
 
         # And vice-versa when layer states are removed from the viewer state, we
         # need to keep the layer_artist_container in sync
-        self.viewer_state.add_callback('layers', nonpartial(self._sync_layer_artist_container))
+        self.state.add_callback('layers', nonpartial(self._sync_layer_artist_container))
 
     def _sync_state_layers(self):
         # Remove layer state objects that no longer have a matching layer
-        for layer_state in self.viewer_state.layers:
+        for layer_state in self.state.layers:
             if layer_state.layer not in self._layer_artist_container:
-                self.viewer_state.layers.remove(layer_state)
+                self.state.layers.remove(layer_state)
 
     def _sync_layer_artist_container(self):
         # Remove layer artists that no longer have a matching layer state
-        layer_states = set(layer_state.layer for layer_state in self.viewer_state.layers)
+        layer_states = set(layer_state.layer for layer_state in self.state.layers)
         for layer_artist in self._layer_artist_container:
             if layer_artist.layer not in layer_states:
                 self._layer_artist_container.remove(layer_artist)
 
     def update_log_x(self):
-        self.axes.set_xscale('log' if self.viewer_state.log_x else 'linear')
+        self.axes.set_xscale('log' if self.state.log_x else 'linear')
 
     def update_log_y(self):
-        self.axes.set_yscale('log' if self.viewer_state.log_y else 'linear')
+        self.axes.set_yscale('log' if self.state.log_y else 'linear')
 
     @avoid_circular
     def limits_from_mpl(self):
         # TODO: delay callbacks here
-        self.viewer_state.x_min, self.viewer_state.x_max = self.axes.get_xlim()
-        self.viewer_state.y_min, self.viewer_state.y_max = self.axes.get_ylim()
+        self.state.x_min, self.state.x_max = self.axes.get_xlim()
+        self.state.y_min, self.state.y_max = self.axes.get_ylim()
 
     @avoid_circular
     def limits_to_mpl(self):
-        self.axes.set_xlim(self.viewer_state.x_min, self.viewer_state.x_max)
-        self.axes.set_ylim(self.viewer_state.y_min, self.viewer_state.y_max)
+        self.axes.set_xlim(self.state.x_min, self.state.x_max)
+        self.axes.set_ylim(self.state.y_min, self.state.y_max)
         self.axes.figure.canvas.draw()
 
     # TODO: shouldn't need this!
@@ -113,7 +113,7 @@ class MatplotlibDataViewer(DataViewer):
             raise IncompatibleDataException("Data not in DataCollection")
 
         # Create layer artist and add to container
-        layer = self._data_artist_cls(data, self._axes, self.viewer_state)
+        layer = self._data_artist_cls(self._axes, self.state, layer=data)
         self._layer_artist_container.append(layer)
         layer.update()
 
@@ -126,13 +126,13 @@ class MatplotlibDataViewer(DataViewer):
     @defer_draw
     def remove_data(self, data):
 
-        for layer_artist in self.viewer_state.layers[::-1]:
+        for layer_artist in self.state.layers[::-1]:
             if isinstance(layer_artist.layer, Data):
                 if layer_artist.layer is data:
-                    self.viewer_state.layers.remove(layer_artist)
+                    self.state.layers.remove(layer_artist)
             else:
                 if layer_artist.layer.data is data:
-                    self.viewer_state.layers.remove(layer_artist)
+                    self.state.layers.remove(layer_artist)
 
     @defer_draw
     def add_subset(self, subset):
@@ -143,15 +143,8 @@ class MatplotlibDataViewer(DataViewer):
             self.add_data(subset.data)
             return
 
-        # Copy settings from data if present
-        if subset.data in self._layer_artist_container:
-            initial_layer_state = self._layer_artist_container[subset.data][0].layer_state
-        else:
-            initial_layer_state = None
-
         # Create scatter layer artist and add to container
-        layer = self._subset_artist_cls(subset, self._axes, self.viewer_state,
-                                        initial_layer_state=initial_layer_state)
+        layer = self._subset_artist_cls(self._axes, self.state, layer=subset)
         self._layer_artist_container.append(layer)
         layer.update()
 

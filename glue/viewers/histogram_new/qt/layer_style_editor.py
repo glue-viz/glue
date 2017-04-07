@@ -16,7 +16,7 @@ class HistogramLayerStyleEditor(QtWidgets.QWidget):
                           directory=os.path.dirname(__file__))
 
         # TODO: In future, should pass only state not layer?
-        self.layer_state = layer.layer_state
+        self.layer_state = layer.state
 
         connect_kwargs = {'alpha': dict(value_range=(0, 1))}
 

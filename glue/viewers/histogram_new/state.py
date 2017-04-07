@@ -24,8 +24,8 @@ class HistogramViewerState(MatplotlibDataViewerState):
     hist_x_max = DeferredDrawCallbackProperty()
     hist_n_bin = DeferredDrawCallbackProperty(10)
 
-    def __init__(self):
-        super(HistogramViewerState, self).__init__()
+    def __init__(self, **kwargs):
+        super(HistogramViewerState, self).__init__(**kwargs)
         self.x_att_helper = StateAttributeLimitsHelper(self, 'xatt', lower='x_min',
                                                        upper='x_max', log='log_x')
         self.hist_helper = StateAttributeHistogramHelper(self, 'xatt', lower='hist_x_min',

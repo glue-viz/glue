@@ -32,16 +32,19 @@ class MatplotlibLayerArtist(LayerArtistBase):
 
     @property
     def zorder(self):
-        return self.layer_state.zorder
+        return self.state.zorder
 
     @zorder.setter
     def zorder(self, value):
-        self.layer_state.zorder = value
+        self.state.zorder = value
 
     @property
     def visible(self):
-        return self.layer_state.visible
+        return self.state.visible
 
     @visible.setter
     def visible(self, value):
-        self.layer_state.visible = value
+        self.state.visible = value
+
+    def __gluestate__(self, context):
+        return dict(state=context.id(self.state))
