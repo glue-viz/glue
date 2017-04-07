@@ -2,12 +2,15 @@
 
 from __future__ import absolute_import, division, print_function
 
+import pytest
+
 from numpy.testing import assert_equal, assert_allclose
 
 from glue.core import Data
 from glue.core.roi import XRangeROI
 from glue.core.subset import RangeSubsetState, CategoricalROISubsetState
 from glue import core
+from glue.core.component_id import ComponentID
 from glue.core.tests.util import simple_session
 from glue.utils.qt import combo_as_string
 from glue.viewers.common.qt.tests.test_mpl_data_viewer import BaseTestMatplotlibDataViewer
@@ -322,23 +325,28 @@ class TestHistogramViewer(object):
         assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0, 2, 2, 0])
 
     # TODO: update the following test following refactoring
-    # def test_component_replaced(self):
-    #     # regression test for 508
-    #     self.viewer.register_to_hub(self.data_collection.hub)
-    #     self.viewer.add_layer(self.data)
-    #     self.viewer.component = self.data.components[0]
-    #
-    #     test = ComponentID('test')
-    #     self.data.update_id(self.viewer.component, test)
-    #     assert self.viewer.component is test
+    def test_component_replaced(self):
+
+        # regression test for 508 - if a component ID is replaced, we should
+        # make sure that the component ID is selected if the old component ID
+        # was selected
+
+        self.viewer.add_data(self.data)
+        self.viewer.viewer_state.xatt = self.data.components[0]
+        test = ComponentID('test')
+        self.data.update_id(self.viewer.viewer_state.xatt, test)
+        assert self.viewer.viewer_state.xatt is test
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_xatt) == 'test:y'
 
     # TODO: Check for extraneous draw events
 
-    # def test_nbin_override_persists_over_attribute_change(self):
-    #     # regression test for #398
-    #     self.collect.append(self.data)
-    #     self.client.add_layer(self.data)
-    #     self.client.set_component(self.data.id['x'])
-    #     self.client.nbins = 7
-    #     self.client.set_component(self.data.id['y'])
-    #     assert self.client.nbins == 7
+    @pytest.mark.xfail
+    def test_nbin_override_persists_over_attribute_change(self):
+
+        # regression test for #398
+
+        self.viewer.add_data(self.data)
+        self.viewer.viewer_state.xatt = self.data.id['x']
+        self.viewer.viewer_state.hist_n_bin = 7
+        self.viewer.viewer_state.xatt = self.data.id['y']
+        assert self.viewer.viewer_state.hist_n_bin == 7
