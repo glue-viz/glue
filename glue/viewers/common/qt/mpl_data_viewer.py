@@ -4,7 +4,7 @@ from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.mpl_widget import MplWidget
 from glue.viewers.common.viz_client import init_mpl
 from glue.external.echo import add_callback
-from glue.utils import nonpartial
+from glue.utils import nonpartial, defer_draw
 from glue.utils.decorators import avoid_circular
 from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
 from glue.viewers.common.mpl_state import MatplotlibDataViewerState
@@ -103,6 +103,7 @@ class MatplotlibDataViewer(DataViewer):
     def axes(self):
         return self._axes
 
+    @defer_draw
     def add_data(self, data):
 
         if data in self._layer_artist_container:
@@ -122,6 +123,7 @@ class MatplotlibDataViewer(DataViewer):
 
         return True
 
+    @defer_draw
     def remove_data(self, data):
 
         for layer_artist in self.viewer_state.layers[::-1]:
@@ -132,11 +134,7 @@ class MatplotlibDataViewer(DataViewer):
                 if layer_artist.layer.data is data:
                     self.viewer_state.layers.remove(layer_artist)
 
-    def remove_subset(self, subset):
-        if subset in self._layer_artist_container:
-            self._layer_artist_container.pop(subset)
-            self.axes.figure.canvas.draw()
-
+    @defer_draw
     def add_subset(self, subset):
 
         # Make sure we add the data first if it doesn't already exist in viewer.
@@ -158,6 +156,12 @@ class MatplotlibDataViewer(DataViewer):
         layer.update()
 
         return True
+
+    @defer_draw
+    def remove_subset(self, subset):
+        if subset in self._layer_artist_container:
+            self._layer_artist_container.pop(subset)
+            self.axes.figure.canvas.draw()
 
     def _add_subset(self, message):
         self.add_subset(message.subset)

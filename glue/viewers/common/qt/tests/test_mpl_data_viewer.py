@@ -10,6 +10,14 @@ from glue.core.tests.util import simple_session
 from glue.core.exceptions import IncompatibleDataException
 
 
+class MatplotlibDrawCounter(object):
+    def __init__(self, figure):
+        self.draw_count = 0
+        figure.canvas.mpl_connect('draw_event', self.on_draw)
+    def on_draw(self, event):
+        self.draw_count += 1
+
+
 class BaseTestMatplotlibDataViewer(object):
     """
     Base class to test viewers based on MatplotlibDataViewer. This only runs
@@ -117,13 +125,12 @@ class BaseTestMatplotlibDataViewer(object):
         assert self.viewer.viewer_state.layers[1].layer is self.data.subsets[0]
 
     def init_draw_count(self):
-        self.draw = self.viewer.axes.figure.canvas.draw = MagicMock()
+        self.mpl_counter = MatplotlibDrawCounter(self.viewer.axes.figure)
 
     @property
     def draw_count(self):
-        return self.draw.call_count
+        return self.mpl_counter.draw_count
 
-    @pytest.mark.xfail
     def test_single_draw(self):
         # Make sure that the number of draws is kept to a minimum
         self.init_draw_count()

@@ -39,8 +39,8 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
 
     def clear(self):
         super(HistogramLayerArtist, self).clear()
+        self.mpl_hist_unscaled = np.array([])
         self.mpl_hist = np.array([])
-        self.mpl_hist_scaled = np.array([])
         self.mpl_bins = np.array([])
 
     def reset_cache(self):
@@ -68,27 +68,27 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
             range = [xmin, xmax]
             bins = self.viewer_state.hist_n_bin
 
-        self.mpl_hist, self.mpl_bins, self.mpl_artists = self.axes.hist(x, range=range, bins=bins)
+        self.mpl_hist_unscaled, self.mpl_bins, self.mpl_artists = self.axes.hist(x, range=range, bins=bins)
 
     @defer_draw
     def _scale_histogram(self):
 
-        if self.mpl_bins.size == 0 or self.mpl_hist.sum() == 0:
+        if self.mpl_bins.size == 0 or self.mpl_hist_unscaled.sum() == 0:
             return
 
-        self.mpl_hist_scaled = self.mpl_hist.astype(np.float)
+        self.mpl_hist = self.mpl_hist_unscaled.astype(np.float)
         dx = self.mpl_bins[1] - self.mpl_bins[0]
 
-        if self.viewer_state.normalize:
-            self.mpl_hist_scaled /= (self.mpl_hist_scaled.sum() * dx)
-
         if self.viewer_state.cumulative:
-            self.mpl_hist_scaled = self.mpl_hist_scaled.cumsum()
-            self.mpl_hist_scaled /= self.mpl_hist_scaled.max()
+            self.mpl_hist = self.mpl_hist.cumsum()
+            if self.viewer_state.normalize:
+                self.mpl_hist /= self.mpl_hist.max()
+        elif self.viewer_state.normalize:
+            self.mpl_hist /= (self.mpl_hist.sum() * dx)
 
         bottom = 0 if not self.viewer_state.log_y else 1e-100
 
-        for mpl_artist, y in zip(self.mpl_artists, self.mpl_hist_scaled):
+        for mpl_artist, y in zip(self.mpl_artists, self.mpl_hist):
             mpl_artist.set_height(y)
             x, y = mpl_artist.get_xy()
             mpl_artist.set_xy((x, bottom))
@@ -101,7 +101,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         #
         # because this would never allow y_max to get smaller.
 
-        self.layer_state._y_max = self.mpl_hist_scaled.max()
+        self.layer_state._y_max = self.mpl_hist.max()
 
         if self.viewer_state.log_y:
             self.layer_state._y_max *= 2
@@ -115,7 +115,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
             self.viewer_state.y_max = self.layer_state._y_max
 
         if self.viewer_state.log_y:
-            self.viewer_state.y_min = self.mpl_hist_scaled[self.mpl_hist_scaled > 0].min() / 10
+            self.viewer_state.y_min = self.mpl_hist[self.mpl_hist > 0].min() / 10
         else:
             self.viewer_state.y_min = 0
 
