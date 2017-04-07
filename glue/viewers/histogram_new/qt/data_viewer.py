@@ -6,6 +6,7 @@ from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core import Data
 from glue.core.util import update_ticks
 from glue.core.roi import RangeROI
+from glue.utils import defer_draw
 
 from glue.viewers.common.qt.mpl_data_viewer import MatplotlibDataViewer
 from glue.viewers.histogram_new.qt.layer_style_editor import HistogramLayerStyleEditor
@@ -30,11 +31,12 @@ class HistogramViewer(MatplotlibDataViewer):
 
     def __init__(self, session, parent=None):
         super(HistogramViewer, self).__init__(session, parent)
-        self.viewer_state.add_callback('xatt', nonpartial(self.on_attribute_update))
-        self.viewer_state.add_callback('log_x', nonpartial(self.on_attribute_update))
-        self.viewer_state.add_callback('normalize', nonpartial(self.on_attribute_update))
+        self.viewer_state.add_callback('xatt', nonpartial(self._update_axes))
+        self.viewer_state.add_callback('log_x', nonpartial(self._update_axes))
+        self.viewer_state.add_callback('normalize', nonpartial(self._update_axes))
 
-    def on_attribute_update(self):
+    @defer_draw
+    def _update_axes(self):
 
         if self.viewer_state.xatt is not None:
 
@@ -50,6 +52,8 @@ class HistogramViewer(MatplotlibDataViewer):
             self.axes.set_ylabel('Normalized number')
         else:
             self.axes.set_ylabel('Number')
+
+        self.axes.figure.canvas.draw()
 
     def apply_roi(self, roi):
 

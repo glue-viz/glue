@@ -4,26 +4,25 @@ import numpy as np
 
 from glue.core import Data
 
-from glue.external.echo import CallbackProperty, add_callback
-from glue.utils import nonpartial
-
-from glue.viewers.common.mpl_data_viewer_state import MatplotlibDataViewerState
-from glue.core.state_objects import State, StateAttributeLimitsHelper, StateAttributeHistogramHelper
-from glue.utils.decorators import avoid_circular
+from glue.viewers.common.mpl_state import (MatplotlibDataViewerState,
+                                           MatplotlibLayerState,
+                                           DeferredDrawCallbackProperty)
+from glue.core.state_objects import (StateAttributeLimitsHelper,
+                                     StateAttributeHistogramHelper)
 
 __all__ = ['HistogramViewerState', 'HistogramLayerState']
 
 
 class HistogramViewerState(MatplotlibDataViewerState):
 
-    xatt = CallbackProperty()
+    xatt = DeferredDrawCallbackProperty()
 
-    cumulative = CallbackProperty(False)
-    normalize = CallbackProperty(False)
+    cumulative = DeferredDrawCallbackProperty(False)
+    normalize = DeferredDrawCallbackProperty(False)
 
-    hist_x_min = CallbackProperty()
-    hist_x_max = CallbackProperty()
-    hist_n_bin = CallbackProperty(10)
+    hist_x_min = DeferredDrawCallbackProperty()
+    hist_x_max = DeferredDrawCallbackProperty()
+    hist_n_bin = DeferredDrawCallbackProperty(10)
 
     def __init__(self):
         super(HistogramViewerState, self).__init__()
@@ -56,42 +55,5 @@ class HistogramViewerState(MatplotlibDataViewerState):
                                self.hist_n_bin + 1)
 
 
-class HistogramLayerState(State):
-
-    layer = CallbackProperty()
-    color = CallbackProperty()
-    alpha = CallbackProperty()
-
-    def __init__(self, viewer_state=None, **kwargs):
-
-        super(HistogramLayerState, self).__init__(**kwargs)
-
-        self.viewer_state = viewer_state
-
-        self.color = self.layer.style.color
-        self.alpha = self.layer.style.alpha
-
-        add_callback(self.layer.style, 'color',
-                     nonpartial(self.color_from_layer))
-
-        add_callback(self.layer.style, 'alpha',
-                     nonpartial(self.alpha_from_layer))
-
-        self.add_callback('color', nonpartial(self.color_to_layer))
-        self.add_callback('alpha', nonpartial(self.alpha_to_layer))
-
-    @avoid_circular
-    def color_to_layer(self):
-        self.layer.style.color = self.color
-
-    @avoid_circular
-    def alpha_to_layer(self):
-        self.layer.style.alpha = self.alpha
-
-    @avoid_circular
-    def color_from_layer(self):
-        self.color = self.layer.style.color
-
-    @avoid_circular
-    def alpha_from_layer(self):
-        self.alpha = self.layer.style.alpha
+class HistogramLayerState(MatplotlibLayerState):
+    pass

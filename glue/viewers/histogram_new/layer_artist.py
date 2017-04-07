@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.utils import nonpartial
+from glue.utils import defer_draw
 
 from glue.viewers.histogram_new.state import HistogramLayerState
 from glue.viewers.common.mpl_layer_artist import MatplotlibLayerArtist
@@ -28,33 +28,32 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
 
         # Watch for changes in the viewer state which would require the
         # layers to be redrawn
-        # TODO: don't connect to ALL signals here
-        # self.viewer_state.add_callback('*', nonpartial(self.update))
-        self.viewer_state.add_callback('xatt', nonpartial(self.update))
-        self.viewer_state.add_callback('log_x', nonpartial(self.update))
-        self.viewer_state.add_callback('log_y', nonpartial(self.update))
-        self.viewer_state.add_callback('cumulative', nonpartial(self.update))
-        self.viewer_state.add_callback('normalize', nonpartial(self.update))
-        self.viewer_state.add_callback('hist_x_min', nonpartial(self.update))
-        self.viewer_state.add_callback('hist_x_max', nonpartial(self.update))
-        self.viewer_state.add_callback('hist_n_bin', nonpartial(self.update))
-
-        self.layer_state.add_callback('*', nonpartial(self.update))
+        self.viewer_state.add_callback('*', self._update_histogram, as_kwargs=True)
+        self.layer_state.add_callback('*', self._update_histogram, as_kwargs=True)
 
         # TODO: following is temporary
         self.layer_state.data_collection = self.viewer_state.data_collection
         self.data_collection = self.viewer_state.data_collection
 
-    def update(self):
+        self.reset_cache()
 
-        if self.viewer_state.hist_x_min is None or self.viewer_state.hist_x_max is None:
-            return
+    def clear(self):
+        super(HistogramLayerArtist, self).clear()
+        self.mpl_hist = np.array([])
+        self.mpl_hist_scaled = np.array([])
+        self.mpl_bins = np.array([])
+
+    def reset_cache(self):
+        self._last_viewer_state = {}
+        self._last_layer_state = {}
+
+    @defer_draw
+    def _calculate_histogram(self):
+
+        self.clear()
 
         x = self.layer[self.viewer_state.xatt]
         x = x[~np.isnan(x) & (x >= self.viewer_state.hist_x_min) & (x <= self.viewer_state.hist_x_max)]
-
-        # TODO: is there a better way to do this?
-        self.clear()
 
         if len(x) == 0:
             self.redraw()
@@ -69,18 +68,30 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
             range = [xmin, xmax]
             bins = self.viewer_state.hist_n_bin
 
-        result = self.axes.hist(x, range=range,
-                                bins=bins,
-                                zorder=self.zorder,
-                                edgecolor='black',
-                                facecolor=self.layer_state.color,
-                                alpha=self.layer_state.alpha,
-                                cumulative=self.viewer_state.cumulative,
-                                normed=self.viewer_state.normalize)
+        self.mpl_hist, self.mpl_bins, self.mpl_artists = self.axes.hist(x, range=range, bins=bins)
 
-        self.mpl_hist = result[0]
-        self.mpl_bins = result[1]
-        self.mpl_artists = result[2]
+    @defer_draw
+    def _scale_histogram(self):
+
+        if self.mpl_bins.size == 0 or self.mpl_hist.sum() == 0:
+            return
+
+        self.mpl_hist_scaled = self.mpl_hist.astype(np.float)
+        dx = self.mpl_bins[1] - self.mpl_bins[0]
+
+        if self.viewer_state.normalize:
+            self.mpl_hist_scaled /= (self.mpl_hist_scaled.sum() * dx)
+
+        if self.viewer_state.cumulative:
+            self.mpl_hist_scaled = self.mpl_hist_scaled.cumsum()
+            self.mpl_hist_scaled /= self.mpl_hist_scaled.max()
+
+        bottom = 0 if not self.viewer_state.log_y else 1e-100
+
+        for mpl_artist, y in zip(self.mpl_artists, self.mpl_hist_scaled):
+            mpl_artist.set_height(y)
+            x, y = mpl_artist.get_xy()
+            mpl_artist.set_xy((x, bottom))
 
         # We have to do the following to make sure that we reset the y_max as
         # needed. We can't simply reset based on the maximum for this layer
@@ -90,7 +101,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         #
         # because this would never allow y_max to get smaller.
 
-        self.layer_state._y_max = result[0].max()
+        self.layer_state._y_max = self.mpl_hist_scaled.max()
 
         if self.viewer_state.log_y:
             self.layer_state._y_max *= 2
@@ -104,9 +115,70 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
             self.viewer_state.y_max = self.layer_state._y_max
 
         if self.viewer_state.log_y:
-            self.viewer_state.y_min = result[0][result[0] > 0].min() / 10
+            self.viewer_state.y_min = self.mpl_hist_scaled[self.mpl_hist_scaled > 0].min() / 10
         else:
             self.viewer_state.y_min = 0
+
+        self.redraw()
+
+    @defer_draw
+    def _update_visual_attributes(self):
+
+        for mpl_artist in self.mpl_artists:
+            mpl_artist.set_visible(self.layer_state.visible)
+            mpl_artist.set_zorder(self.layer_state.zorder)
+            mpl_artist.set_edgecolor('none')
+            mpl_artist.set_facecolor(self.layer_state.color)
+            mpl_artist.set_alpha(self.layer_state.alpha)
+
+        self.redraw()
+
+    def _update_histogram(self, force=False, **kwargs):
+
+        if (self.viewer_state.hist_x_min is None or
+            self.viewer_state.hist_x_max is None or
+            self.viewer_state.hist_n_bin is None or
+            self.viewer_state.xatt is None or
+            self.layer_state.layer is None):
+            return
+
+        # Figure out which attributes are different from before. Ideally we shouldn't
+        # need this but currently this method is called multiple times if an
+        # attribute is changed due to xatt changing then hist_x_min, hist_x_max, etc.
+        # If we can solve this so that _update_histogram is really only called once
+        # then we could consider simplifying this. Until then, we manually keep track
+        # of which properties have changed.
+
+        changed = set()
+
+        if not force:
+
+            for key, value in self.viewer_state.as_dict().items():
+                if value != self._last_viewer_state.get(key, None):
+                    changed.add(key)
+
+            for key, value in self.layer_state.as_dict().items():
+                if value != self._last_layer_state.get(key, None):
+                    changed.add(key)
+
+        self._last_viewer_state.update(self.viewer_state.as_dict())
+        self._last_layer_state.update(self.layer_state.as_dict())
+
+        if force or any(prop in changed for prop in ('layer', 'xatt', 'hist_x_min', 'hist_x_max', 'hist_n_bin', 'log_x')):
+            self._calculate_histogram()
+            force = True  # make sure scaling and visual attributes are updated
+
+        if force or any(prop in changed for prop in ('log_y', 'normalize', 'cumulative')):
+            self._scale_histogram()
+
+        if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'visible')):
+            self._update_visual_attributes()
+
+    @defer_draw
+    def update(self):
+
+        # Recompute the histogram
+        self._update_histogram(force=True)
 
         # Reset the axes stack so that pressing the home button doesn't go back
         # to a previous irrelevant view.

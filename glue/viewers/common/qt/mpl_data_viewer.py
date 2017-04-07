@@ -7,7 +7,7 @@ from glue.external.echo import add_callback
 from glue.utils import nonpartial
 from glue.utils.decorators import avoid_circular
 from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
-from glue.viewers.common.mpl_data_viewer_state import MatplotlibDataViewerState
+from glue.viewers.common.mpl_state import MatplotlibDataViewerState
 from glue.core import message as msg
 from glue.core import Data
 from glue.core.exceptions import IncompatibleDataException
@@ -181,7 +181,7 @@ class MatplotlibDataViewer(DataViewer):
         def subset_has_data(x):
             return x.sender.data in self._layer_artist_container.layers
 
-        def has_data(x):
+        def has_data_or_subset(x):
             return x.sender in self._layer_artist_container.layers
 
         hub.subscribe(self, msg.SubsetCreateMessage,
@@ -190,15 +190,15 @@ class MatplotlibDataViewer(DataViewer):
 
         hub.subscribe(self, msg.SubsetUpdateMessage,
                       handler=self._update_subset,
-                      filter=subset_has_data)
+                      filter=has_data_or_subset)
 
         hub.subscribe(self, msg.SubsetDeleteMessage,
                       handler=self._remove_subset,
-                      filter=subset_has_data)
+                      filter=has_data_or_subset)
 
         hub.subscribe(self, msg.NumericalDataChangedMessage,
                       handler=self._update_subset,
-                      filter=has_data)
+                      filter=has_data_or_subset)
 
         hub.subscribe(self, msg.DataCollectionDeleteMessage,
                       handler=lambda x: self.remove_data(x.data))
