@@ -28,8 +28,8 @@ class MatplotlibDataViewerState(State):
     y_min = DeferredDrawCallbackProperty()
     y_max = DeferredDrawCallbackProperty()
 
-    log_x = DeferredDrawCallbackProperty(False)
-    log_y = DeferredDrawCallbackProperty(False)
+    x_log = DeferredDrawCallbackProperty(False)
+    y_log = DeferredDrawCallbackProperty(False)
 
     layers = ListCallbackProperty()
 

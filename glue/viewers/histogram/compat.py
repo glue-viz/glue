@@ -30,8 +30,8 @@ def update_viewer_state(rec, context):
         viewer_state['hist_n_bin'] = int(properties['nbins'])
         viewer_state['hist_x_min'] = properties['xmin']
         viewer_state['hist_x_max'] = properties['xmax']
-        viewer_state['log_x'] = properties['xlog']
-        viewer_state['log_y'] = properties['ylog']
+        viewer_state['x_log'] = properties['xlog']
+        viewer_state['y_log'] = properties['ylog']
         viewer_state['normalize'] = properties['normed']
         viewer_state['cumulative'] = properties['cumulative']
         viewer_state['x_att'] = properties['component']

@@ -199,12 +199,12 @@ def export_histogram(viewer):
 
     xlabel = att.label
     xmin, xmax = viewer.state.x_min, viewer.state.x_max
-    if viewer.state.log_x:
+    if viewer.state.x_log:
         xlabel = 'Log ' + xlabel
         xmin = np.log10(xmin)
         xmax = np.log10(xmax)
     xaxis = _axis(lo=xmin, hi=xmax, title=xlabel)
-    yaxis = _axis(log=viewer.state.log_y, lo=0 if not viewer.state.log_y else 1e-3,
+    yaxis = _axis(log=viewer.state.y_log, lo=0 if not viewer.state.y_log else 1e-3,
                   hi=ymax * 1.05)
 
     return traces, xaxis, yaxis

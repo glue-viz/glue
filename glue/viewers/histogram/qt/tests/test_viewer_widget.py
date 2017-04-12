@@ -71,8 +71,8 @@ class TestHistogramViewer(object):
         assert not viewer_state.cumulative
         assert not viewer_state.normalize
 
-        assert not viewer_state.log_x
-        assert not viewer_state.log_y
+        assert not viewer_state.x_log
+        assert not viewer_state.y_log
 
         assert len(viewer_state.layers) == 1
 
@@ -92,8 +92,8 @@ class TestHistogramViewer(object):
         assert not viewer_state.cumulative
         assert not viewer_state.normalize
 
-        assert not viewer_state.log_x
-        assert not viewer_state.log_y
+        assert not viewer_state.x_log
+        assert not viewer_state.y_log
 
     def test_remove_data(self):
         self.viewer.add_data(self.data)
@@ -276,7 +276,7 @@ class TestHistogramViewer(object):
         assert self.viewer.axes.get_xlabel() == 'x'
         assert self.viewer.axes.get_ylabel() == 'Number'
 
-        viewer_state.log_x = True
+        viewer_state.x_log = True
 
         assert self.viewer.axes.get_xlabel() == 'Log x'
         assert self.viewer.axes.get_ylabel() == 'Number'
@@ -384,8 +384,8 @@ class TestHistogramViewer(object):
         assert_allclose(viewer1.state.hist_x_min, 0)
         assert_allclose(viewer1.state.hist_x_max, 9)
         assert_allclose(viewer1.state.hist_n_bin, 6)
-        assert not viewer1.state.log_x
-        assert not viewer1.state.log_y
+        assert not viewer1.state.x_log
+        assert not viewer1.state.y_log
         assert viewer1.state.layers[0].visible
         assert not viewer1.state.layers[1].visible
         assert not viewer1.state.cumulative
@@ -400,8 +400,8 @@ class TestHistogramViewer(object):
         assert_allclose(viewer2.state.hist_x_min, 2)
         assert_allclose(viewer2.state.hist_x_max, 16)
         assert_allclose(viewer2.state.hist_n_bin, 8)
-        assert not viewer2.state.log_x
-        assert not viewer2.state.log_y
+        assert not viewer2.state.x_log
+        assert not viewer2.state.y_log
         assert viewer2.state.layers[0].visible
         assert viewer2.state.layers[1].visible
         assert not viewer2.state.cumulative
@@ -416,8 +416,8 @@ class TestHistogramViewer(object):
         assert_allclose(viewer3.state.hist_x_min, 0)
         assert_allclose(viewer3.state.hist_x_max, 9)
         assert_allclose(viewer3.state.hist_n_bin, 10)
-        assert not viewer3.state.log_x
-        assert viewer3.state.log_y
+        assert not viewer3.state.x_log
+        assert viewer3.state.y_log
         assert viewer3.state.layers[0].visible
         assert viewer3.state.layers[1].visible
         assert not viewer3.state.cumulative
@@ -432,8 +432,8 @@ class TestHistogramViewer(object):
         assert_allclose(viewer4.state.hist_x_min, -1)
         assert_allclose(viewer4.state.hist_x_max, 10)
         assert_allclose(viewer4.state.hist_n_bin, 4)
-        assert not viewer4.state.log_x
-        assert not viewer4.state.log_y
+        assert not viewer4.state.x_log
+        assert not viewer4.state.y_log
         assert viewer4.state.layers[0].visible
         assert viewer4.state.layers[1].visible
         assert viewer4.state.cumulative

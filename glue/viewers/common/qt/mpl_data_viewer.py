@@ -51,8 +51,8 @@ class MatplotlibDataViewer(DataViewer):
         self.axes.callbacks.connect('xlim_changed', nonpartial(self.limits_from_mpl))
         self.axes.callbacks.connect('ylim_changed', nonpartial(self.limits_from_mpl))
 
-        self.state.add_callback('log_x', nonpartial(self.update_log_x))
-        self.state.add_callback('log_y', nonpartial(self.update_log_y))
+        self.state.add_callback('x_log', nonpartial(self.update_x_log))
+        self.state.add_callback('y_log', nonpartial(self.update_y_log))
 
         self.axes.set_autoscale_on(False)
 
@@ -80,11 +80,11 @@ class MatplotlibDataViewer(DataViewer):
             if layer_artist.layer not in layer_states:
                 self._layer_artist_container.remove(layer_artist)
 
-    def update_log_x(self):
-        self.axes.set_xscale('log' if self.state.log_x else 'linear')
+    def update_x_log(self):
+        self.axes.set_xscale('log' if self.state.x_log else 'linear')
 
-    def update_log_y(self):
-        self.axes.set_yscale('log' if self.state.log_y else 'linear')
+    def update_y_log(self):
+        self.axes.set_yscale('log' if self.state.y_log else 'linear')
 
     @avoid_circular
     def limits_from_mpl(self):

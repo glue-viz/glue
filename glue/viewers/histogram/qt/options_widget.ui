@@ -40,7 +40,7 @@
     <widget class="QLineEdit" name="valuetext_y_min"/>
    </item>
    <item row="7" column="6">
-    <widget class="QToolButton" name="bool_log_y">
+    <widget class="QToolButton" name="bool_y_log">
      <property name="text">
       <string>log</string>
      </property>
@@ -162,7 +162,7 @@
     <widget class="QLineEdit" name="valuetext_y_max"/>
    </item>
    <item row="1" column="6">
-    <widget class="QToolButton" name="bool_log_x">
+    <widget class="QToolButton" name="bool_x_log">
      <property name="text">
       <string>log</string>
      </property>

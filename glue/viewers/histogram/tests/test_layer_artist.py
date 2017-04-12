@@ -73,12 +73,12 @@ class TestHistogramLayerArtist(object):
         assert self.call_counter['_scale_histogram'] == 4
 
         # xlog
-        self.viewer_state.log_x ^= True
+        self.viewer_state.x_log ^= True
         assert self.call_counter['_calculate_histogram'] == 5
         assert self.call_counter['_scale_histogram'] == 5
 
         # ylog -- no call
-        self.viewer_state.log_y ^= True
+        self.viewer_state.y_log ^= True
         assert self.call_counter['_calculate_histogram'] == 5
         assert self.call_counter['_scale_histogram'] == 6
 

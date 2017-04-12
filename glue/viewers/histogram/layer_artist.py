@@ -63,7 +63,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
 
         # For histogram
         xmin, xmax = sorted([self._viewer_state.hist_x_min, self._viewer_state.hist_x_max])
-        if self._viewer_state.log_x:
+        if self._viewer_state.x_log:
             range = None
             bins = np.logspace(np.log10(xmin), np.log10(xmax), self._viewer_state.hist_n_bin)
         else:
@@ -88,7 +88,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         elif self._viewer_state.normalize:
             self.mpl_hist /= (self.mpl_hist.sum() * dx)
 
-        bottom = 0 if not self._viewer_state.log_y else 1e-100
+        bottom = 0 if not self._viewer_state.y_log else 1e-100
 
         for mpl_artist, y in zip(self.mpl_artists, self.mpl_hist):
             mpl_artist.set_height(y)
@@ -105,7 +105,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
 
         self.state._y_max = self.mpl_hist.max()
 
-        if self._viewer_state.log_y:
+        if self._viewer_state.y_log:
             self.state._y_max *= 2
         else:
             self.state._y_max *= 1.2
@@ -116,7 +116,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         else:
             self._viewer_state.y_max = self.state._y_max
 
-        if self._viewer_state.log_y:
+        if self._viewer_state.y_log:
             self._viewer_state.y_min = self.mpl_hist[self.mpl_hist > 0].min() / 10
         else:
             self._viewer_state.y_min = 0
@@ -166,11 +166,11 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         self._last_viewer_state.update(self._viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
 
-        if force or any(prop in changed for prop in ('layer', 'x_att', 'hist_x_min', 'hist_x_max', 'hist_n_bin', 'log_x')):
+        if force or any(prop in changed for prop in ('layer', 'x_att', 'hist_x_min', 'hist_x_max', 'hist_n_bin', 'x_log')):
             self._calculate_histogram()
             force = True  # make sure scaling and visual attributes are updated
 
-        if force or any(prop in changed for prop in ('log_y', 'normalize', 'cumulative')):
+        if force or any(prop in changed for prop in ('y_log', 'normalize', 'cumulative')):
             self._scale_histogram()
 
         if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'visible')):

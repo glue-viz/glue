@@ -27,7 +27,7 @@ class HistogramViewerState(MatplotlibDataViewerState):
     def __init__(self, **kwargs):
         super(HistogramViewerState, self).__init__(**kwargs)
         self.x_att_helper = StateAttributeLimitsHelper(self, 'x_att', lower='x_min',
-                                                       upper='x_max', log='log_x')
+                                                       upper='x_max', log='x_log')
         self.hist_helper = StateAttributeHistogramHelper(self, 'x_att', lower='hist_x_min',
                                                          upper='hist_x_max', n_bin='hist_n_bin')
 
@@ -54,7 +54,7 @@ class HistogramViewerState(MatplotlibDataViewerState):
 
     @property
     def bins(self):
-        if self.log_x:
+        if self.x_log:
             return np.logspace(np.log10(self.hist_x_min),
                                np.log10(self.hist_x_max),
                                self.hist_n_bin + 1)

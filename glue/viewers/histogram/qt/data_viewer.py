@@ -35,7 +35,7 @@ class HistogramViewer(MatplotlibDataViewer):
     def __init__(self, session, parent=None):
         super(HistogramViewer, self).__init__(session, parent)
         self.state.add_callback('x_att', nonpartial(self._update_axes))
-        self.state.add_callback('log_x', nonpartial(self._update_axes))
+        self.state.add_callback('x_log', nonpartial(self._update_axes))
         self.state.add_callback('normalize', nonpartial(self._update_axes))
 
     @defer_draw
@@ -46,7 +46,7 @@ class HistogramViewer(MatplotlibDataViewer):
             # Update ticks, which sets the labels to categories if components are categorical
             update_ticks(self.axes, 'x', self.state._get_x_components(), False)
 
-            if self.state.log_x:
+            if self.state.x_log:
                 self.axes.set_xlabel('Log ' + self.state.x_att.label)
             else:
                 self.axes.set_xlabel(self.state.x_att.label)

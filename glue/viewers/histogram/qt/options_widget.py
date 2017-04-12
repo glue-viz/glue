@@ -36,9 +36,9 @@ class HistogramOptionsWidget(QtWidgets.QWidget):
     def _update_attribute(self):
         # If at least one of the components is categorical, disable log button
         log_enabled = not any(comp.categorical for comp in self.viewer_state._get_x_components())
-        self.ui.bool_log_x.setEnabled(log_enabled)
+        self.ui.bool_x_log.setEnabled(log_enabled)
         if not log_enabled:
-            self.ui.bool_log_x.setChecked(False)
+            self.ui.bool_x_log.setChecked(False)
 
     def _update_combo_data(self, *args):
         # TODO: what about if only subset and not data is present?

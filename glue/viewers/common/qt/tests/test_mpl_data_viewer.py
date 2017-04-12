@@ -287,14 +287,14 @@ class BaseTestMatplotlibDataViewer(object):
         assert axes.get_xscale() == 'linear'
         assert axes.get_yscale() == 'linear'
 
-        viewer_state.log_x = True
+        viewer_state.x_log = True
 
         assert axes.get_xlim() == (3, 9)
         assert axes.get_ylim() == (-2, 3)
         assert axes.get_xscale() == 'log'
         assert axes.get_yscale() == 'linear'
 
-        viewer_state.log_y = True
+        viewer_state.y_log = True
 
         # FIXME: the limits for y don't seem right, should be adjusted because of log?
         assert axes.get_xlim() == (3, 9)
@@ -315,8 +315,8 @@ class BaseTestMatplotlibDataViewer(object):
         # assert viewer_state.x_max == 9
         # assert viewer_state.y_min == -2
         # assert viewer_state.y_max == 3
-        # assert not viewer_state.log_x
-        # assert viewer_state.log_y
+        # assert not viewer_state.x_log
+        # assert viewer_state.y_log
         #
         axes.set_yscale('linear')
         #
@@ -324,8 +324,8 @@ class BaseTestMatplotlibDataViewer(object):
         # assert viewer_state.x_max == 9
         # assert viewer_state.y_min == -2
         # assert viewer_state.y_max == 3
-        # assert not viewer_state.log_x
-        # assert not viewer_state.log_y
+        # assert not viewer_state.x_log
+        # assert not viewer_state.y_log
 
         axes.set_xlim(-1, 4)
 
@@ -333,8 +333,8 @@ class BaseTestMatplotlibDataViewer(object):
         assert viewer_state.x_max == 4
         assert viewer_state.y_min == -2
         assert viewer_state.y_max == 3
-        # assert not viewer_state.log_x
-        # assert not viewer_state.log_y
+        # assert not viewer_state.x_log
+        # assert not viewer_state.y_log
 
         axes.set_ylim(5, 6)
 
@@ -342,8 +342,8 @@ class BaseTestMatplotlibDataViewer(object):
         assert viewer_state.x_max == 4
         assert viewer_state.y_min == 5
         assert viewer_state.y_max == 6
-        # assert not viewer_state.log_x
-        # assert not viewer_state.log_y
+        # assert not viewer_state.x_log
+        # assert not viewer_state.y_log
 
     def test_add_invalid_data(self):
         data2 = Data()
