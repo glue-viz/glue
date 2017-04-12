@@ -22,7 +22,7 @@ __all__ = ['HistogramViewer']
 
 class HistogramViewer(MatplotlibDataViewer):
 
-    LABEL = 'New histogram viewer'
+    LABEL = '1D Histogram'
     _toolbar_cls = MatplotlibViewerToolbar
     _layer_style_widget_cls = HistogramLayerStyleEditor
     _state_cls = HistogramViewerState
@@ -34,22 +34,22 @@ class HistogramViewer(MatplotlibDataViewer):
 
     def __init__(self, session, parent=None):
         super(HistogramViewer, self).__init__(session, parent)
-        self.state.add_callback('xatt', nonpartial(self._update_axes))
+        self.state.add_callback('x_att', nonpartial(self._update_axes))
         self.state.add_callback('log_x', nonpartial(self._update_axes))
         self.state.add_callback('normalize', nonpartial(self._update_axes))
 
     @defer_draw
     def _update_axes(self):
 
-        if self.state.xatt is not None:
+        if self.state.x_att is not None:
 
             # Update ticks, which sets the labels to categories if components are categorical
             update_ticks(self.axes, 'x', self.state._get_x_components(), False)
 
             if self.state.log_x:
-                self.axes.set_xlabel('Log ' + self.state.xatt.label)
+                self.axes.set_xlabel('Log ' + self.state.x_att.label)
             else:
-                self.axes.set_xlabel(self.state.xatt.label)
+                self.axes.set_xlabel(self.state.x_att.label)
 
         if self.state.normalize:
             self.axes.set_ylabel('Normalized number')
@@ -88,9 +88,9 @@ class HistogramViewer(MatplotlibDataViewer):
             if not isinstance(layer_artist.layer, Data):
                 continue
 
-            x_comp = layer_artist.layer.get_component(self.state.xatt)
+            x_comp = layer_artist.layer.get_component(self.state.x_att)
 
-            subset_state = x_comp.subset_from_roi(self.state.xatt, roi_new,
+            subset_state = x_comp.subset_from_roi(self.state.x_att, roi_new,
                                                   coord='x')
 
             mode = EditSubsetMode()

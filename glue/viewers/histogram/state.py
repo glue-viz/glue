@@ -15,7 +15,7 @@ __all__ = ['HistogramViewerState', 'HistogramLayerState']
 
 class HistogramViewerState(MatplotlibDataViewerState):
 
-    xatt = DeferredDrawCallbackProperty()
+    x_att = DeferredDrawCallbackProperty()
 
     cumulative = DeferredDrawCallbackProperty(False)
     normalize = DeferredDrawCallbackProperty(False)
@@ -26,9 +26,9 @@ class HistogramViewerState(MatplotlibDataViewerState):
 
     def __init__(self, **kwargs):
         super(HistogramViewerState, self).__init__(**kwargs)
-        self.x_att_helper = StateAttributeLimitsHelper(self, 'xatt', lower='x_min',
+        self.x_att_helper = StateAttributeLimitsHelper(self, 'x_att', lower='x_min',
                                                        upper='x_max', log='log_x')
-        self.hist_helper = StateAttributeHistogramHelper(self, 'xatt', lower='hist_x_min',
+        self.hist_helper = StateAttributeHistogramHelper(self, 'x_att', lower='hist_x_min',
                                                          upper='hist_x_max', n_bin='hist_n_bin')
 
     def update_priority(self, name):
@@ -47,9 +47,9 @@ class HistogramViewerState(MatplotlibDataViewerState):
         components = []
         for layer_state in self.layers:
             if isinstance(layer_state.layer, Data):
-                components.append(layer_state.layer.get_component(self.xatt))
+                components.append(layer_state.layer.get_component(self.x_att))
             else:
-                components.append(layer_state.layer.data.get_component(self.xatt))
+                components.append(layer_state.layer.data.get_component(self.x_att))
         return components
 
     @property

@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.mpl_widget import MplWidget
-from glue.viewers.common.viz_client import init_mpl
+from glue.viewers.common.viz_client import init_mpl, update_appearance_from_settings
 from glue.external.echo import add_callback
 from glue.utils import nonpartial, defer_draw
 from glue.utils.decorators import avoid_circular
@@ -203,6 +203,18 @@ class MatplotlibDataViewer(DataViewer):
         # hub.subscribe(self, msg.ComponentsChangedMessage,
         #               handler=self._update_data,
         #               filter=has_data)
+
+        def is_appearance_settings(msg):
+            return ('BACKGROUND_COLOR' in msg.settings
+                    or 'FOREGROUND_COLOR' in msg.settings)
+
+        hub.subscribe(self, msg.SettingsChangeMessage,
+                      self._update_appearance_from_settings,
+                      filter=is_appearance_settings)
+
+    def _update_appearance_from_settings(self, message):
+        update_appearance_from_settings(self.axes)
+        self.axes.figure.canvas.draw()
 
     def unregister(self, hub):
         super(MatplotlibDataViewer, self).unregister(hub)

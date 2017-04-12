@@ -56,9 +56,9 @@ class TestHistogramViewer(object):
         # Check defaults when we add data
         self.viewer.add_data(self.data)
 
-        assert combo_as_string(self.viewer.options_widget().ui.combodata_xatt) == 'x:y'
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'x:y'
 
-        assert viewer_state.xatt is self.data.id['x']
+        assert viewer_state.x_att is self.data.id['x']
         assert viewer_state.x_min == -1.1
         assert viewer_state.x_max == 3.4
         assert viewer_state.y_min == 0.0
@@ -78,7 +78,7 @@ class TestHistogramViewer(object):
 
         # Change to categorical component and check new values
 
-        viewer_state.xatt = self.data.id['y']
+        viewer_state.x_att = self.data.id['y']
 
         assert viewer_state.x_min == -0.5
         assert viewer_state.x_max == 2.5
@@ -97,21 +97,21 @@ class TestHistogramViewer(object):
 
     def test_remove_data(self):
         self.viewer.add_data(self.data)
-        assert combo_as_string(self.viewer.options_widget().ui.combodata_xatt) == 'x:y'
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'x:y'
         self.data_collection.remove(self.data)
-        assert combo_as_string(self.viewer.options_widget().ui.combodata_xatt) == ''
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == ''
 
     def test_update_component_updates_title(self):
         self.viewer.add_data(self.data)
         self.viewer.windowTitle() == 'x'
-        self.viewer.state.xatt = self.data.id['y']
+        self.viewer.state.x_att = self.data.id['y']
         self.viewer.windowTitle() == 'y'
 
     def test_combo_updates_with_component_add(self):
         self.viewer.add_data(self.data)
         self.data.add_component([3, 4, 1, 2], 'z')
-        assert self.viewer.state.xatt is self.data.id['x']
-        assert combo_as_string(self.viewer.options_widget().ui.combodata_xatt) == 'x:y:z'
+        assert self.viewer.state.x_att is self.data.id['x']
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'x:y:z'
 
     def test_nonnumeric_first_component(self):
         # regression test for #208. Shouldn't complain if
@@ -170,7 +170,7 @@ class TestHistogramViewer(object):
 
         # Categorical attribute
 
-        viewer_state.xatt = self.data.id['y']
+        viewer_state.x_att = self.data.id['y']
 
         formatter = self.viewer.axes.xaxis.get_major_formatter()
         xlabels = [formatter.format_data(pos) for pos in range(3)]
@@ -247,7 +247,7 @@ class TestHistogramViewer(object):
 
         self.viewer.add_data(self.data)
 
-        viewer_state.xatt = self.data.id['y']
+        viewer_state.x_att = self.data.id['y']
 
         roi = XRangeROI(0.3, 0.9)
 
@@ -281,7 +281,7 @@ class TestHistogramViewer(object):
         assert self.viewer.axes.get_xlabel() == 'Log x'
         assert self.viewer.axes.get_ylabel() == 'Number'
 
-        viewer_state.xatt = self.data.id['y']
+        viewer_state.x_att = self.data.id['y']
 
         assert self.viewer.axes.get_xlabel() == 'y'
         assert self.viewer.axes.get_ylabel() == 'Number'
@@ -307,25 +307,25 @@ class TestHistogramViewer(object):
 
         self.viewer.add_data(self.data)
 
-        viewer_state.xatt = self.data.id['y']
+        viewer_state.x_att = self.data.id['y']
         viewer_state.hist_x_min = -10
         viewer_state.hist_x_max = +10
         viewer_state.hist_n_bin = 5
 
         assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0, 3, 1, 0])
 
-        viewer_state.xatt = self.data.id['x']
+        viewer_state.x_att = self.data.id['x']
         viewer_state.hist_x_min = -10
         viewer_state.hist_x_max = +10
         viewer_state.hist_n_bin = 5
 
         assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0, 2, 2, 0])
 
-        viewer_state.xatt = self.data.id['y']
+        viewer_state.x_att = self.data.id['y']
 
         assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0, 3, 1, 0])
 
-        viewer_state.xatt = self.data.id['x']
+        viewer_state.x_att = self.data.id['x']
 
         assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0, 2, 2, 0])
 
@@ -337,11 +337,11 @@ class TestHistogramViewer(object):
         # was selected
 
         self.viewer.add_data(self.data)
-        self.viewer.state.xatt = self.data.components[0]
+        self.viewer.state.x_att = self.data.components[0]
         test = ComponentID('test')
-        self.data.update_id(self.viewer.state.xatt, test)
-        assert self.viewer.state.xatt is test
-        assert combo_as_string(self.viewer.options_widget().ui.combodata_xatt) == 'test:y'
+        self.data.update_id(self.viewer.state.x_att, test)
+        assert self.viewer.state.x_att is test
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'test:y'
 
     # TODO: Check for extraneous draw events
 
@@ -351,9 +351,9 @@ class TestHistogramViewer(object):
         # regression test for #398
 
         self.viewer.add_data(self.data)
-        self.viewer.state.xatt = self.data.id['x']
+        self.viewer.state.x_att = self.data.id['x']
         self.viewer.state.hist_n_bin = 7
-        self.viewer.state.xatt = self.data.id['y']
+        self.viewer.state.x_att = self.data.id['y']
         assert self.viewer.state.hist_n_bin == 7
 
     @pytest.mark.parametrize('protocol', [0])
@@ -376,7 +376,7 @@ class TestHistogramViewer(object):
 
         viewer1 = ga.viewers[0][0]
         assert len(viewer1.state.layers) == 2
-        assert viewer1.state.xatt is dc[0].id['a']
+        assert viewer1.state.x_att is dc[0].id['a']
         assert_allclose(viewer1.state.x_min, 0)
         assert_allclose(viewer1.state.x_max, 9)
         assert_allclose(viewer1.state.y_min, 0)
@@ -392,7 +392,7 @@ class TestHistogramViewer(object):
         assert not viewer1.state.normalize
 
         viewer2 = ga.viewers[0][1]
-        assert viewer2.state.xatt is dc[0].id['b']
+        assert viewer2.state.x_att is dc[0].id['b']
         assert_allclose(viewer2.state.x_min, 2)
         assert_allclose(viewer2.state.x_max, 16)
         assert_allclose(viewer2.state.y_min, 0)
@@ -408,7 +408,7 @@ class TestHistogramViewer(object):
         assert not viewer2.state.normalize
 
         viewer3 = ga.viewers[0][2]
-        assert viewer3.state.xatt is dc[0].id['a']
+        assert viewer3.state.x_att is dc[0].id['a']
         assert_allclose(viewer3.state.x_min, 0)
         assert_allclose(viewer3.state.x_max, 9)
         assert_allclose(viewer3.state.y_min, 0.037037037037037035)
@@ -424,7 +424,7 @@ class TestHistogramViewer(object):
         assert viewer3.state.normalize
 
         viewer4 = ga.viewers[0][3]
-        assert viewer4.state.xatt is dc[0].id['a']
+        assert viewer4.state.x_att is dc[0].id['a']
         assert_allclose(viewer4.state.x_min, -1)
         assert_allclose(viewer4.state.x_max, 10)
         assert_allclose(viewer4.state.y_min, 0)

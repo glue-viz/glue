@@ -26,12 +26,12 @@ class HistogramOptionsWidget(QtWidgets.QWidget):
 
         viewer_state.add_callback('layers', self._update_combo_data)
 
-        self.xatt_helper = ComponentIDComboHelper(self.ui.combodata_xatt,
+        self.x_att_helper = ComponentIDComboHelper(self.ui.combodata_x_att,
                                                   session.data_collection)
 
         self.viewer_state = viewer_state
 
-        viewer_state.add_callback('xatt', nonpartial(self._update_attribute))
+        viewer_state.add_callback('x_att', nonpartial(self._update_attribute))
 
     def _update_attribute(self):
         # If at least one of the components is categorical, disable log button
@@ -44,4 +44,4 @@ class HistogramOptionsWidget(QtWidgets.QWidget):
         # TODO: what about if only subset and not data is present?
         layers = [layer_state.layer for layer_state in self.viewer_state.layers
                   if isinstance(layer_state.layer, Data)]
-        self.xatt_helper.set_multiple_data(layers)
+        self.x_att_helper.set_multiple_data(layers)

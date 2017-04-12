@@ -43,7 +43,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
 
         self.clear()
 
-        x = self.layer[self.viewer_state.xatt]
+        x = self.layer[self.viewer_state.x_att]
         x = x[~np.isnan(x) & (x >= self.viewer_state.hist_x_min) & (x <= self.viewer_state.hist_x_max)]
 
         if len(x) == 0:
@@ -129,13 +129,13 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         if (self.viewer_state.hist_x_min is None or
             self.viewer_state.hist_x_max is None or
             self.viewer_state.hist_n_bin is None or
-            self.viewer_state.xatt is None or
+            self.viewer_state.x_att is None or
             self.state.layer is None):
             return
 
         # Figure out which attributes are different from before. Ideally we shouldn't
         # need this but currently this method is called multiple times if an
-        # attribute is changed due to xatt changing then hist_x_min, hist_x_max, etc.
+        # attribute is changed due to x_att changing then hist_x_min, hist_x_max, etc.
         # If we can solve this so that _update_histogram is really only called once
         # then we could consider simplifying this. Until then, we manually keep track
         # of which properties have changed.
@@ -155,7 +155,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         self._last_viewer_state.update(self.viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
 
-        if force or any(prop in changed for prop in ('layer', 'xatt', 'hist_x_min', 'hist_x_max', 'hist_n_bin', 'log_x')):
+        if force or any(prop in changed for prop in ('layer', 'x_att', 'hist_x_min', 'hist_x_max', 'hist_n_bin', 'log_x')):
             self._calculate_histogram()
             force = True  # make sure scaling and visual attributes are updated
 

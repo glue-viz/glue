@@ -130,7 +130,7 @@ def test_load_viewers_04():
     h = viewers['1D Histogram']
     assert h.viewer_size == (1235, 531)
     assert h.position == (0, 535)
-    assert h.component.label == 'b'
+    assert h.state.x_att.label == 'b'
 
     i = viewers['2D Image Viewer']
     assert i.viewer_size == (562, 513)

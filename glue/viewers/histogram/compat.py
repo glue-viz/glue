@@ -34,7 +34,7 @@ def update_viewer_state(rec, context):
         viewer_state['log_y'] = properties['ylog']
         viewer_state['normalize'] = properties['normed']
         viewer_state['cumulative'] = properties['cumulative']
-        viewer_state['xatt'] = properties['component']
+        viewer_state['x_att'] = properties['component']
 
         layer_states = []
 

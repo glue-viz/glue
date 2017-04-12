@@ -52,7 +52,7 @@ class TestHistogramLayerArtist(object):
         assert self.call_counter['_calculate_histogram'] == 0
         assert self.call_counter['_scale_histogram'] == 0
 
-        self.viewer_state.xatt = self.data.id['x']
+        self.viewer_state.x_att = self.data.id['x']
 
         assert self.call_counter['_calculate_histogram'] == 1
         assert self.call_counter['_scale_histogram'] == 1
