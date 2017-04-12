@@ -38,8 +38,8 @@ class TestHistogramLayerArtist(object):
         # TODO: The following line shouldn't be needed
         self.viewer_state.data_collection = dc
 
-        self.artist = HistogramLayerArtist(self.subset, ax, self.viewer_state)
-        self.layer_state = self.artist.layer_state
+        self.artist = HistogramLayerArtist(ax, self.viewer_state, layer=self.subset)
+        self.layer_state = self.artist.state
 
         self.call_counter = CallCounter()
         sys.setprofile(self.call_counter)

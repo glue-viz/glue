@@ -2,6 +2,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
+
 import pytest
 
 from numpy.testing import assert_equal, assert_allclose
@@ -14,8 +16,11 @@ from glue.core.component_id import ComponentID
 from glue.core.tests.util import simple_session
 from glue.utils.qt import combo_as_string
 from glue.viewers.common.qt.tests.test_mpl_data_viewer import BaseTestMatplotlibDataViewer
+from glue.core.state import GlueUnSerializer
 
 from ..data_viewer import HistogramViewer
+
+DATA = os.path.join(os.path.dirname(__file__), 'data')
 
 
 class TestHistogramCommon(BaseTestMatplotlibDataViewer):
@@ -46,7 +51,7 @@ class TestHistogramViewer(object):
 
     def test_basic(self):
 
-        viewer_state = self.viewer.viewer_state
+        viewer_state = self.viewer.state
 
         # Check defaults when we add data
         self.viewer.add_data(self.data)
@@ -99,13 +104,13 @@ class TestHistogramViewer(object):
     def test_update_component_updates_title(self):
         self.viewer.add_data(self.data)
         self.viewer.windowTitle() == 'x'
-        self.viewer.viewer_state.xatt = self.data.id['y']
+        self.viewer.state.xatt = self.data.id['y']
         self.viewer.windowTitle() == 'y'
 
     def test_combo_updates_with_component_add(self):
         self.viewer.add_data(self.data)
         self.data.add_component([3, 4, 1, 2], 'z')
-        assert self.viewer.viewer_state.xatt is self.data.id['x']
+        assert self.viewer.state.xatt is self.data.id['x']
         assert combo_as_string(self.viewer.options_widget().ui.combodata_xatt) == 'x:y:z'
 
     def test_nonnumeric_first_component(self):
@@ -121,7 +126,7 @@ class TestHistogramViewer(object):
 
         # Check the actual values of the histograms
 
-        viewer_state = self.viewer.viewer_state
+        viewer_state = self.viewer.state
 
         self.viewer.add_data(self.data)
 
@@ -204,7 +209,7 @@ class TestHistogramViewer(object):
         # Check that when doing an ROI selection, the ROI clips to the bin edges
         # outside the selection
 
-        viewer_state = self.viewer.viewer_state
+        viewer_state = self.viewer.state
 
         self.viewer.add_data(self.data)
 
@@ -238,7 +243,7 @@ class TestHistogramViewer(object):
         # Check that when doing an ROI selection, the ROI clips to the bin edges
         # outside the selection
 
-        viewer_state = self.viewer.viewer_state
+        viewer_state = self.viewer.state
 
         self.viewer.add_data(self.data)
 
@@ -264,7 +269,7 @@ class TestHistogramViewer(object):
 
     def test_axes_labels(self):
 
-        viewer_state = self.viewer.viewer_state
+        viewer_state = self.viewer.state
 
         self.viewer.add_data(self.data)
 
@@ -298,7 +303,7 @@ class TestHistogramViewer(object):
         # to not be recomputed if the attribute changed but the limits and
         # number of bins did not.
 
-        viewer_state = self.viewer.viewer_state
+        viewer_state = self.viewer.state
 
         self.viewer.add_data(self.data)
 
@@ -332,10 +337,10 @@ class TestHistogramViewer(object):
         # was selected
 
         self.viewer.add_data(self.data)
-        self.viewer.viewer_state.xatt = self.data.components[0]
+        self.viewer.state.xatt = self.data.components[0]
         test = ComponentID('test')
-        self.data.update_id(self.viewer.viewer_state.xatt, test)
-        assert self.viewer.viewer_state.xatt is test
+        self.data.update_id(self.viewer.state.xatt, test)
+        assert self.viewer.state.xatt is test
         assert combo_as_string(self.viewer.options_widget().ui.combodata_xatt) == 'test:y'
 
     # TODO: Check for extraneous draw events
@@ -346,7 +351,90 @@ class TestHistogramViewer(object):
         # regression test for #398
 
         self.viewer.add_data(self.data)
-        self.viewer.viewer_state.xatt = self.data.id['x']
-        self.viewer.viewer_state.hist_n_bin = 7
-        self.viewer.viewer_state.xatt = self.data.id['y']
-        assert self.viewer.viewer_state.hist_n_bin == 7
+        self.viewer.state.xatt = self.data.id['x']
+        self.viewer.state.hist_n_bin = 7
+        self.viewer.state.xatt = self.data.id['y']
+        assert self.viewer.state.hist_n_bin == 7
+
+    @pytest.mark.parametrize('protocol', [0])
+    def test_session_back_compat(self, protocol):
+
+        filename = os.path.join(DATA, 'histogram_v{0}.glu'.format(protocol))
+
+        with open(filename, 'r') as f:
+            session = f.read()
+
+        state = GlueUnSerializer.loads(session)
+
+        ga = state.object('__main__')
+
+        dc = ga.session.data_collection
+
+        assert len(dc) == 1
+
+        assert dc[0].label == 'data'
+
+        viewer1 = ga.viewers[0][0]
+        assert len(viewer1.state.layers) == 2
+        assert viewer1.state.xatt is dc[0].id['a']
+        assert_allclose(viewer1.state.x_min, 0)
+        assert_allclose(viewer1.state.x_max, 9)
+        assert_allclose(viewer1.state.y_min, 0)
+        assert_allclose(viewer1.state.y_max, 2.4)
+        assert_allclose(viewer1.state.hist_x_min, 0)
+        assert_allclose(viewer1.state.hist_x_max, 9)
+        assert_allclose(viewer1.state.hist_n_bin, 6)
+        assert not viewer1.state.log_x
+        assert not viewer1.state.log_y
+        assert viewer1.state.layers[0].visible
+        assert not viewer1.state.layers[1].visible
+        assert not viewer1.state.cumulative
+        assert not viewer1.state.normalize
+
+        viewer2 = ga.viewers[0][1]
+        assert viewer2.state.xatt is dc[0].id['b']
+        assert_allclose(viewer2.state.x_min, 2)
+        assert_allclose(viewer2.state.x_max, 16)
+        assert_allclose(viewer2.state.y_min, 0)
+        assert_allclose(viewer2.state.y_max, 1.2)
+        assert_allclose(viewer2.state.hist_x_min, 2)
+        assert_allclose(viewer2.state.hist_x_max, 16)
+        assert_allclose(viewer2.state.hist_n_bin, 8)
+        assert not viewer2.state.log_x
+        assert not viewer2.state.log_y
+        assert viewer2.state.layers[0].visible
+        assert viewer2.state.layers[1].visible
+        assert not viewer2.state.cumulative
+        assert not viewer2.state.normalize
+
+        viewer3 = ga.viewers[0][2]
+        assert viewer3.state.xatt is dc[0].id['a']
+        assert_allclose(viewer3.state.x_min, 0)
+        assert_allclose(viewer3.state.x_max, 9)
+        assert_allclose(viewer3.state.y_min, 0.037037037037037035)
+        assert_allclose(viewer3.state.y_max, 0.7407407407407407)
+        assert_allclose(viewer3.state.hist_x_min, 0)
+        assert_allclose(viewer3.state.hist_x_max, 9)
+        assert_allclose(viewer3.state.hist_n_bin, 10)
+        assert not viewer3.state.log_x
+        assert viewer3.state.log_y
+        assert viewer3.state.layers[0].visible
+        assert viewer3.state.layers[1].visible
+        assert not viewer3.state.cumulative
+        assert viewer3.state.normalize
+
+        viewer4 = ga.viewers[0][3]
+        assert viewer4.state.xatt is dc[0].id['a']
+        assert_allclose(viewer4.state.x_min, -1)
+        assert_allclose(viewer4.state.x_max, 10)
+        assert_allclose(viewer4.state.y_min, 0)
+        assert_allclose(viewer4.state.y_max, 12)
+        assert_allclose(viewer4.state.hist_x_min, -1)
+        assert_allclose(viewer4.state.hist_x_max, 10)
+        assert_allclose(viewer4.state.hist_n_bin, 4)
+        assert not viewer4.state.log_x
+        assert not viewer4.state.log_y
+        assert viewer4.state.layers[0].visible
+        assert viewer4.state.layers[1].visible
+        assert viewer4.state.cumulative
+        assert not viewer4.state.normalize

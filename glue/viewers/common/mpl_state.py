@@ -57,6 +57,8 @@ class MatplotlibLayerState(State):
         add_callback(self.layer.style, 'alpha',
                      nonpartial(self.alpha_from_layer))
 
+        # TODO: can we use keep_in_sync here?
+
         self.add_callback('color', nonpartial(self.color_to_layer))
         self.add_callback('alpha', nonpartial(self.alpha_to_layer))
 

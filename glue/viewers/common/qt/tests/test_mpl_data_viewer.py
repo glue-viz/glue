@@ -67,8 +67,8 @@ class BaseTestMatplotlibDataViewer(object):
         assert len(self.viewer.layers) == 1
         assert self.viewer.layers[0].layer is self.data
 
-        assert len(self.viewer.viewer_state.layers) == 1
-        assert self.viewer.viewer_state.layers[0].layer is self.data
+        assert len(self.viewer.state.layers) == 1
+        assert self.viewer.state.layers[0].layer is self.data
 
     def test_add_data_with_subset(self):
 
@@ -82,9 +82,9 @@ class BaseTestMatplotlibDataViewer(object):
         assert self.viewer.layers[0].layer is self.data
         assert self.viewer.layers[1].layer is self.data.subsets[0]
 
-        assert len(self.viewer.viewer_state.layers) == 2
-        assert self.viewer.viewer_state.layers[0].layer is self.data
-        assert self.viewer.viewer_state.layers[1].layer is self.data.subsets[0]
+        assert len(self.viewer.state.layers) == 2
+        assert self.viewer.state.layers[0].layer is self.data
+        assert self.viewer.state.layers[1].layer is self.data.subsets[0]
 
     def test_adding_subset_adds_data(self):
 
@@ -97,9 +97,9 @@ class BaseTestMatplotlibDataViewer(object):
         assert self.viewer.layers[0].layer is self.data
         assert self.viewer.layers[1].layer is self.data.subsets[0]
 
-        assert len(self.viewer.viewer_state.layers) == 2
-        assert self.viewer.viewer_state.layers[0].layer is self.data
-        assert self.viewer.viewer_state.layers[1].layer is self.data.subsets[0]
+        assert len(self.viewer.state.layers) == 2
+        assert self.viewer.state.layers[0].layer is self.data
+        assert self.viewer.state.layers[1].layer is self.data.subsets[0]
 
     def test_add_data_then_subset(self):
 
@@ -111,8 +111,8 @@ class BaseTestMatplotlibDataViewer(object):
         assert len(self.viewer.layers) == 1
         assert self.viewer.layers[0].layer is self.data
 
-        assert len(self.viewer.viewer_state.layers) == 1
-        assert self.viewer.viewer_state.layers[0].layer is self.data
+        assert len(self.viewer.state.layers) == 1
+        assert self.viewer.state.layers[0].layer is self.data
 
         self.init_subset()
 
@@ -120,9 +120,9 @@ class BaseTestMatplotlibDataViewer(object):
         assert self.viewer.layers[0].layer is self.data
         assert self.viewer.layers[1].layer is self.data.subsets[0]
 
-        assert len(self.viewer.viewer_state.layers) == 2
-        assert self.viewer.viewer_state.layers[0].layer is self.data
-        assert self.viewer.viewer_state.layers[1].layer is self.data.subsets[0]
+        assert len(self.viewer.state.layers) == 2
+        assert self.viewer.state.layers[0].layer is self.data
+        assert self.viewer.state.layers[1].layer is self.data.subsets[0]
 
     def init_draw_count(self):
         self.mpl_counter = MatplotlibDrawCounter(self.viewer.axes.figure)
@@ -162,24 +162,24 @@ class BaseTestMatplotlibDataViewer(object):
 
     def test_double_add_ignored(self):
         self.viewer.add_data(self.data)
-        assert len(self.viewer.viewer_state.layers) == 1
+        assert len(self.viewer.state.layers) == 1
         self.viewer.add_data(self.data)
-        assert len(self.viewer.viewer_state.layers) == 1
+        assert len(self.viewer.state.layers) == 1
 
     def test_removing_data_removes_layer_state(self):
         # Removing data from data collection should remove data from viewer
         self.viewer.add_data(self.data)
-        assert len(self.viewer.viewer_state.layers) == 1
+        assert len(self.viewer.state.layers) == 1
         self.data_collection.remove(self.data)
-        assert len(self.viewer.viewer_state.layers) == 0
+        assert len(self.viewer.state.layers) == 0
 
     def test_removing_data_removes_subsets(self):
         # Removing data from data collection should remove subsets from viewer
         self.init_subset()
         self.viewer.add_data(self.data)
-        assert len(self.viewer.viewer_state.layers) == 2
+        assert len(self.viewer.state.layers) == 2
         self.data_collection.remove(self.data)
-        assert len(self.viewer.viewer_state.layers) == 0
+        assert len(self.viewer.state.layers) == 0
 
     def test_removing_subset_removes_layers(self):
 
@@ -190,15 +190,15 @@ class BaseTestMatplotlibDataViewer(object):
         self.viewer.add_data(self.data)
 
         assert len(self.viewer.layers) == 2
-        assert len(self.viewer.viewer_state.layers) == 2
+        assert len(self.viewer.state.layers) == 2
 
         self.data_collection.remove_subset_group(self.data_collection.subset_groups[0])
 
         assert len(self.viewer.layers) == 1
         assert self.viewer.layers[0].layer is self.data
 
-        assert len(self.viewer.viewer_state.layers) == 1
-        assert self.viewer.viewer_state.layers[0].layer is self.data
+        assert len(self.viewer.state.layers) == 1
+        assert self.viewer.state.layers[0].layer is self.data
 
     def test_removing_layer_artist_removes_layer_state(self):
 
@@ -209,7 +209,7 @@ class BaseTestMatplotlibDataViewer(object):
         self.viewer.add_data(self.data)
 
         assert len(self.viewer.layers) == 2
-        assert len(self.viewer.viewer_state.layers) == 2
+        assert len(self.viewer.state.layers) == 2
 
         # self.layers is a copy so we need to remove from the original list
         self.viewer._layer_artist_container.remove(self.viewer.layers[1])
@@ -217,8 +217,8 @@ class BaseTestMatplotlibDataViewer(object):
         assert len(self.viewer.layers) == 1
         assert self.viewer.layers[0].layer is self.data
 
-        assert len(self.viewer.viewer_state.layers) == 1
-        assert self.viewer.viewer_state.layers[0].layer is self.data
+        assert len(self.viewer.state.layers) == 1
+        assert self.viewer.state.layers[0].layer is self.data
 
     def test_removing_layer_state_removes_layer_artist(self):
 
@@ -229,16 +229,16 @@ class BaseTestMatplotlibDataViewer(object):
         self.viewer.add_data(self.data)
 
         assert len(self.viewer.layers) == 2
-        assert len(self.viewer.viewer_state.layers) == 2
+        assert len(self.viewer.state.layers) == 2
 
         # self.layers is a copy so we need to remove from the original list
-        self.viewer.viewer_state.layers.pop(1)
+        self.viewer.state.layers.pop(1)
 
         assert len(self.viewer.layers) == 1
         assert self.viewer.layers[0].layer is self.data
 
-        assert len(self.viewer.viewer_state.layers) == 1
-        assert self.viewer.viewer_state.layers[0].layer is self.data
+        assert len(self.viewer.state.layers) == 1
+        assert self.viewer.state.layers[0].layer is self.data
 
     def test_new_subset_after_remove_data(self):
 
@@ -249,9 +249,9 @@ class BaseTestMatplotlibDataViewer(object):
         self.viewer.add_data(self.data)
 
         assert len(self.viewer.layers) == 2
-        assert len(self.viewer.viewer_state.layers) == 2
+        assert len(self.viewer.state.layers) == 2
 
-        self.viewer.viewer_state.layers.pop(0)
+        self.viewer.state.layers.pop(0)
 
         self.init_subset()  # makes a new subset
 
@@ -260,8 +260,8 @@ class BaseTestMatplotlibDataViewer(object):
         assert len(self.viewer.layers) == 1
         assert self.viewer.layers[0].layer is self.data.subsets[0]
 
-        assert len(self.viewer.viewer_state.layers) == 1
-        assert self.viewer.viewer_state.layers[0].layer is self.data.subsets[0]
+        assert len(self.viewer.state.layers) == 1
+        assert self.viewer.state.layers[0].layer is self.data.subsets[0]
 
     def test_remove_not_present_ignored(self):
         data = Data(label='not in viewer')
@@ -269,7 +269,7 @@ class BaseTestMatplotlibDataViewer(object):
 
     def test_limits_sync(self):
 
-        viewer_state = self.viewer.viewer_state
+        viewer_state = self.viewer.state
         axes = self.viewer.axes
 
         # Make sure that the viewer state and matplotlib viewer limits and log

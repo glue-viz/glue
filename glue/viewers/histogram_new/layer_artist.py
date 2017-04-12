@@ -10,15 +10,12 @@ from glue.viewers.common.mpl_layer_artist import MatplotlibLayerArtist
 
 class HistogramLayerArtist(MatplotlibLayerArtist):
 
+    _layer_state_cls = HistogramLayerState
+
     def __init__(self, axes, viewer_state, layer_state=None, layer=None):
 
-        super(HistogramLayerArtist, self).__init__(layer, axes, viewer_state)
-
-        self.layer = layer or layer_state.layer
-
-        # Set up a state object for the layer artist
-        self.state = layer_state or HistogramLayerState(viewer_state=viewer_state, layer=self.layer)
-        self.viewer_state.layers.append(self.state)
+        super(HistogramLayerArtist, self).__init__(axes, viewer_state,
+                                                   layer_state=layer_state, layer=layer)
 
         # Watch for changes in the viewer state which would require the
         # layers to be redrawn

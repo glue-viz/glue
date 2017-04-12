@@ -31,6 +31,14 @@ class HistogramViewerState(MatplotlibDataViewerState):
         self.hist_helper = StateAttributeHistogramHelper(self, 'xatt', lower='hist_x_min',
                                                          upper='hist_x_max', n_bin='hist_n_bin')
 
+    def update_priority(self, name):
+        if name == 'layers':
+            return 2
+        elif name.endswith(('_min', '_max', '_bin')):
+            return 0
+        else:
+            return 1
+
     def flip_x(self):
         self.x_att_helper.flip_limits()
 

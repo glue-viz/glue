@@ -1,0 +1,397 @@
+{
+  "Component": {
+    "_type": "glue.core.component.Component",
+    "data": {
+      "_type": "numpy.ndarray",
+      "data": "k05VTVBZAQBGAHsnZGVzY3InOiAnPGk4JywgJ2ZvcnRyYW5fb3JkZXInOiBGYWxzZSwgJ3NoYXBlJzogKDEwLCksIH0gICAgICAgICAgIAoAAAAAAAAAAAEAAAAAAAAAAgAAAAAAAAADAAAAAAAAAAQAAAAAAAAABQAAAAAAAAAGAAAAAAAAAAcAAAAAAAAACAAAAAAAAAAJAAAAAAAAAA=="
+    },
+    "units": ""
+  },
+  "Component_0": {
+    "_type": "glue.core.component.Component",
+    "data": {
+      "_type": "numpy.ndarray",
+      "data": "k05VTVBZAQBGAHsnZGVzY3InOiAnPGk4JywgJ2ZvcnRyYW5fb3JkZXInOiBGYWxzZSwgJ3NoYXBlJzogKDEwLCksIH0gICAgICAgICAgIAoAAAAAAAAAAAIAAAAAAAAABAAAAAAAAAAGAAAAAAAAAAgAAAAAAAAACgAAAAAAAAAMAAAAAAAAAA4AAAAAAAAAEAAAAAAAAAASAAAAAAAAAA=="
+    },
+    "units": ""
+  },
+  "CoordinateComponent": {
+    "_type": "glue.core.component.CoordinateComponent",
+    "axis": 0,
+    "world": false
+  },
+  "CoordinateComponentLink": {
+    "_type": "glue.core.component_link.CoordinateComponentLink",
+    "coords": "Coordinates",
+    "frm": [
+      "World 0"
+    ],
+    "index": 0,
+    "pix2world": false,
+    "to": [
+      "Pixel Axis 0 [x]"
+    ]
+  },
+  "CoordinateComponentLink_0": {
+    "_type": "glue.core.component_link.CoordinateComponentLink",
+    "coords": "Coordinates",
+    "frm": [
+      "Pixel Axis 0 [x]"
+    ],
+    "index": 0,
+    "pix2world": true,
+    "to": [
+      "World 0"
+    ]
+  },
+  "CoordinateComponent_0": {
+    "_type": "glue.core.component.CoordinateComponent",
+    "axis": 0,
+    "world": true
+  },
+  "Coordinates": {
+    "_type": "glue.core.coordinates.Coordinates"
+  },
+  "DataCollection": {
+    "_protocol": 3,
+    "_type": "glue.core.data_collection.DataCollection",
+    "cids": [
+      "a",
+      "Pixel Axis 0 [x]",
+      "World 0",
+      "b"
+    ],
+    "components": [
+      "Component",
+      "CoordinateComponent",
+      "CoordinateComponent_0",
+      "Component_0"
+    ],
+    "data": [
+      "data"
+    ],
+    "groups": [
+      "Subset 1_0"
+    ],
+    "links": [
+      "CoordinateComponentLink",
+      "CoordinateComponentLink_0"
+    ],
+    "subset_group_count": 1
+  },
+  "HistogramWidget": {
+    "_type": "glue.viewers.histogram.qt.viewer_widget.HistogramWidget",
+    "layers": [
+      {
+        "_type": "glue.viewers.histogram.layer_artist.HistogramLayerArtist",
+        "hi": 9,
+        "layer": "data",
+        "lo": 0,
+        "nbins": 6.0,
+        "visible": true,
+        "xlog": false,
+        "zorder": 1
+      },
+      {
+        "_type": "glue.viewers.histogram.layer_artist.HistogramLayerArtist",
+        "hi": 9,
+        "layer": "Subset 1",
+        "lo": 0,
+        "nbins": 6.0,
+        "visible": false,
+        "xlog": false,
+        "zorder": 2
+      }
+    ],
+    "pos": [
+      0,
+      0
+    ],
+    "properties": {
+      "autoscale": true,
+      "component": "a",
+      "cumulative": false,
+      "nbins": 6.0,
+      "normed": false,
+      "xlog": false,
+      "xmax": 9.0,
+      "xmin": 0.0,
+      "ylog": false
+    },
+    "session": "Session",
+    "size": [
+      600,
+      400
+    ]
+  },
+  "HistogramWidget_0": {
+    "_type": "glue.viewers.histogram.qt.viewer_widget.HistogramWidget",
+    "layers": [
+      {
+        "_type": "glue.viewers.histogram.layer_artist.HistogramLayerArtist",
+        "hi": 16.0,
+        "layer": "data",
+        "lo": 2.0,
+        "nbins": 8.0,
+        "visible": true,
+        "xlog": false,
+        "zorder": 1
+      },
+      {
+        "_type": "glue.viewers.histogram.layer_artist.HistogramLayerArtist",
+        "hi": 16.0,
+        "layer": "Subset 1",
+        "lo": 2.0,
+        "nbins": 8.0,
+        "visible": true,
+        "xlog": false,
+        "zorder": 2
+      }
+    ],
+    "pos": [
+      502,
+      362
+    ],
+    "properties": {
+      "autoscale": true,
+      "component": "b",
+      "cumulative": false,
+      "nbins": 8.0,
+      "normed": false,
+      "xlog": false,
+      "xmax": 16.0,
+      "xmin": 2.0,
+      "ylog": false
+    },
+    "session": "Session",
+    "size": [
+      600,
+      400
+    ]
+  },
+  "HistogramWidget_1": {
+    "_type": "glue.viewers.histogram.qt.viewer_widget.HistogramWidget",
+    "layers": [
+      {
+        "_type": "glue.viewers.histogram.layer_artist.HistogramLayerArtist",
+        "hi": 9,
+        "layer": "data",
+        "lo": 0,
+        "nbins": 10.0,
+        "visible": true,
+        "xlog": false,
+        "zorder": 1
+      },
+      {
+        "_type": "glue.viewers.histogram.layer_artist.HistogramLayerArtist",
+        "hi": 9,
+        "layer": "Subset 1",
+        "lo": 0,
+        "nbins": 10.0,
+        "visible": true,
+        "xlog": false,
+        "zorder": 2
+      }
+    ],
+    "pos": [
+      502,
+      0
+    ],
+    "properties": {
+      "autoscale": true,
+      "component": "a",
+      "cumulative": false,
+      "nbins": 10.0,
+      "normed": true,
+      "xlog": false,
+      "xmax": 9.0,
+      "xmin": 0.0,
+      "ylog": true
+    },
+    "session": "Session",
+    "size": [
+      600,
+      400
+    ]
+  },
+  "HistogramWidget_2": {
+    "_type": "glue.viewers.histogram.qt.viewer_widget.HistogramWidget",
+    "layers": [
+      {
+        "_type": "glue.viewers.histogram.layer_artist.HistogramLayerArtist",
+        "hi": 10.0,
+        "layer": "data",
+        "lo": -1.0,
+        "nbins": 4.0,
+        "visible": true,
+        "xlog": false,
+        "zorder": 1
+      },
+      {
+        "_type": "glue.viewers.histogram.layer_artist.HistogramLayerArtist",
+        "hi": 10.0,
+        "layer": "Subset 1",
+        "lo": -1.0,
+        "nbins": 4.0,
+        "visible": true,
+        "xlog": false,
+        "zorder": 2
+      }
+    ],
+    "pos": [
+      0,
+      362
+    ],
+    "properties": {
+      "autoscale": true,
+      "component": "a",
+      "cumulative": true,
+      "nbins": 4.0,
+      "normed": false,
+      "xlog": false,
+      "xmax": 10.0,
+      "xmin": -1.0,
+      "ylog": false
+    },
+    "session": "Session",
+    "size": [
+      600,
+      400
+    ]
+  },
+  "Pixel Axis 0 [x]": {
+    "_type": "glue.core.component_id.PixelComponentID",
+    "axis": 0,
+    "hidden": true,
+    "label": "Pixel Axis 0 [x]"
+  },
+  "RangeSubsetState": {
+    "_type": "glue.core.subset.RangeSubsetState",
+    "att": "a",
+    "hi": 4.5,
+    "lo": 1.5
+  },
+  "Session": {
+    "_type": "glue.core.session.Session"
+  },
+  "Subset 1": {
+    "_type": "glue.core.subset_group.GroupedSubset",
+    "group": "Subset 1_0",
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes",
+      "alpha": 0.5,
+      "color": "#e31a1c",
+      "linestyle": "solid",
+      "linewidth": 1,
+      "marker": "o",
+      "markersize": 7
+    }
+  },
+  "Subset 1_0": {
+    "_type": "glue.core.subset_group.SubsetGroup",
+    "label": "Subset 1",
+    "state": "RangeSubsetState",
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes",
+      "alpha": 0.5,
+      "color": "#e31a1c",
+      "linestyle": "solid",
+      "linewidth": 1,
+      "marker": "o",
+      "markersize": 7
+    },
+    "subsets": [
+      "Subset 1"
+    ]
+  },
+  "World 0": {
+    "_type": "glue.core.component_id.ComponentID",
+    "hidden": true,
+    "label": "World 0"
+  },
+  "__main__": {
+    "_type": "glue.app.qt.application.GlueApplication",
+    "data": "DataCollection",
+    "plugins": [
+      "glue_vispy_viewers.scatter",
+      "glue.plugins.tools.spectrum_tool",
+      "glue.viewers.table",
+      "glue.viewers.histogram",
+      "glue.viewers.scatter",
+      "glue.viewers.image",
+      "glue.plugins.tools.pv_slicer",
+      "glue.plugins.coordinate_helpers",
+      "glue.plugins.exporters.plotly",
+      "glue.plugins.export_d3po",
+      "glue.core.data_exporters",
+      "glue_h5part",
+      "glue_vispy_viewers.volume"
+    ],
+    "session": "Session",
+    "tab_names": [
+      "Tab 1"
+    ],
+    "viewers": [
+      [
+        "HistogramWidget",
+        "HistogramWidget_0",
+        "HistogramWidget_1",
+        "HistogramWidget_2"
+      ]
+    ]
+  },
+  "a": {
+    "_type": "glue.core.component_id.ComponentID",
+    "hidden": false,
+    "label": "a"
+  },
+  "b": {
+    "_type": "glue.core.component_id.ComponentID",
+    "hidden": false,
+    "label": "b"
+  },
+  "data": {
+    "_key_joins": [],
+    "_protocol": 5,
+    "_type": "glue.core.data.Data",
+    "components": [
+      [
+        "a",
+        "Component"
+      ],
+      [
+        "Pixel Axis 0 [x]",
+        "CoordinateComponent"
+      ],
+      [
+        "World 0",
+        "CoordinateComponent_0"
+      ],
+      [
+        "b",
+        "Component_0"
+      ]
+    ],
+    "coords": "Coordinates",
+    "label": "data",
+    "primary_owner": [
+      "a",
+      "Pixel Axis 0 [x]",
+      "World 0",
+      "b"
+    ],
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes",
+      "alpha": 0.8,
+      "color": "0.35",
+      "linestyle": "solid",
+      "linewidth": 1,
+      "marker": "o",
+      "markersize": 3
+    },
+    "subsets": [
+      "Subset 1"
+    ],
+    "uuid": "103f82ee-7731-4816-b207-164b683762d2"
+  }
+}

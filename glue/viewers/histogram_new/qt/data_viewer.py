@@ -105,6 +105,7 @@ class HistogramViewer(MatplotlibDataViewer):
                     _protocol=1)
 
     @classmethod
+    @defer_draw
     def __setgluestate__(cls, rec, context):
 
         if rec.get('_protocol', 0) < 1:
@@ -118,14 +119,14 @@ class HistogramViewer(MatplotlibDataViewer):
         viewer.move(x=x, y=y)
 
         viewer_state = HistogramViewerState.__setgluestate__(rec['state'], context)
+
         viewer.state.update_from_state(viewer_state)
 
         # Restore layer artists
         for l in rec['layers']:
             cls = lookup_class_with_patches(l.pop('_type'))
             layer_state = context.object(l['state'])
-            print(type(layer_state))
-            layer_artist = cls(axes=viewer.axes, viewer_state=viewer.state, layer_state=layer_state)
+            layer_artist = cls(viewer.axes, viewer.state, layer_state=layer_state)
             viewer._layer_artist_container.append(layer_artist)
 
         return viewer
