@@ -9,11 +9,11 @@ from glue.core.roi import RangeROI
 from glue.utils import defer_draw
 
 from glue.viewers.common.qt.mpl_data_viewer import MatplotlibDataViewer
-from glue.viewers.histogram_new.qt.layer_style_editor import HistogramLayerStyleEditor
-from glue.viewers.histogram_new.layer_artist import HistogramLayerArtist
-from glue.viewers.histogram_new.qt.options_widget import HistogramOptionsWidget
-from glue.viewers.histogram_new.state import HistogramViewerState
-from glue.viewers.histogram_new.compat import update_viewer_state
+from glue.viewers.histogram.qt.layer_style_editor import HistogramLayerStyleEditor
+from glue.viewers.histogram.layer_artist import HistogramLayerArtist
+from glue.viewers.histogram.qt.options_widget import HistogramOptionsWidget
+from glue.viewers.histogram.state import HistogramViewerState
+from glue.viewers.histogram.compat import update_viewer_state
 
 from glue.core.state import lookup_class_with_patches
 

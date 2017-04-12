@@ -15,5 +15,4 @@ glue.qt.widgets.image_widget.ImageWidget -> glue.viewers.image.qt.ImageWidget
 glue.qt.widgets.histogram_widget.HistogramWidget -> glue.viewers.histogram.qt.HistogramWidget
 glue.qt.glue_application.GlueApplication -> glue.app.qt.application.GlueApplication
 glue_vispy_viewers.common.toolbar.PatchedElementSubsetState -> glue.core.subset.ElementSubsetState
-glue.viewers.histogram.qt.viewer_widget.HistogramWidget -> glue.viewers.histogram_new.qt.data_viewer.HistogramViewer
-glue.viewers.histogram.layer_artist.HistogramLayerArtist -> glue.viewers.histogram_new.layer_artist.HistogramLayerArtist
+glue.viewers.histogram.qt.viewer_widget.HistogramWidget -> glue.viewers.histogram.qt.data_viewer.HistogramViewer
