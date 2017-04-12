@@ -259,7 +259,7 @@ def can_save_plotly(application):
             if hasattr(viewer, '__plotly__'):
                 continue
 
-            if not isinstance(viewer, (ScatterWidget, HistogramWidget)):
+            if not isinstance(viewer, (ScatterWidget, HistogramViewer)):
                 raise ValueError("Plotly Export cannot handle viewer: %s"
                                  % type(viewer))
 
@@ -294,7 +294,7 @@ def save_plotly(application):
     logging.getLogger(__name__).debug(args, kwargs)
 
     # TODO: check what current GUI framework is
-    
+
     from glue.plugins.exporters.plotly.qt import QtPlotlyExporter
     exporter = QtPlotlyExporter(plotly_args=args, plotly_kwargs=kwargs)
     exporter.exec_()
@@ -304,9 +304,9 @@ DISPATCH = {}
 
 try:
     from glue.viewers.scatter.qt import ScatterWidget
-    from glue.viewers.histogram.qt import HistogramWidget
+    from glue.viewers.histogram.qt import HistogramViewer
 except ImportError:
     pass
 else:
     DISPATCH[ScatterWidget] = export_scatter
-    DISPATCH[HistogramWidget] = export_histogram
+    DISPATCH[HistogramViewer] = export_histogram

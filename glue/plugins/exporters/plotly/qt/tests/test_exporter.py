@@ -12,7 +12,7 @@ from plotly.exceptions import PlotlyError
 from glue.tests.helpers import requires_plotly
 from glue.core import Data, DataCollection
 from glue.app.qt import GlueApplication
-from glue.viewers.histogram.qt import HistogramWidget
+from glue.viewers.histogram.qt import HistogramViewer
 
 from glue.plugins.exporters.plotly.export_plotly import build_plotly_call
 
@@ -59,7 +59,7 @@ class TestQtPlotlyExporter():
         app = GlueApplication(dc)
 
         data.style.color = '#000000'
-        v = app.new_data_viewer(HistogramWidget, data=data)
+        v = app.new_data_viewer(HistogramViewer, data=data)
         v.component = data.id['y']
         v.xmin = 0
         v.xmax = 10
