@@ -6,6 +6,7 @@ from glue.utils import defer_draw
 
 from glue.viewers.histogram.state import HistogramLayerState
 from glue.viewers.common.mpl_layer_artist import MatplotlibLayerArtist
+from glue.core.exceptions import IncompatibleAttribute
 
 
 class HistogramLayerArtist(MatplotlibLayerArtist):
@@ -19,12 +20,12 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
 
         # Watch for changes in the viewer state which would require the
         # layers to be redrawn
-        self.viewer_state.add_callback('*', self._update_histogram, as_kwargs=True)
+        self._viewer_state.add_callback('*', self._update_histogram, as_kwargs=True)
         self.state.add_callback('*', self._update_histogram, as_kwargs=True)
 
         # TODO: following is temporary
-        self.state.data_collection = self.viewer_state.data_collection
-        self.data_collection = self.viewer_state.data_collection
+        self.state.data_collection = self._viewer_state.data_collection
+        self.data_collection = self._viewer_state.data_collection
 
         self.reset_cache()
 
@@ -43,21 +44,31 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
 
         self.clear()
 
-        x = self.layer[self.viewer_state.x_att]
-        x = x[~np.isnan(x) & (x >= self.viewer_state.hist_x_min) & (x <= self.viewer_state.hist_x_max)]
+        try:
+            x = self.layer[self._viewer_state.x_att]
+        except AttributeError:
+            return
+        except (IncompatibleAttribute, IndexError):
+            # The following includes a call to self.clear()
+            self.disable_invalid_attributes(self._viewer_state.x_att)
+            return
+        else:
+            self._enabled = True
+
+        x = x[~np.isnan(x) & (x >= self._viewer_state.hist_x_min) & (x <= self._viewer_state.hist_x_max)]
 
         if len(x) == 0:
             self.redraw()
             return
 
         # For histogram
-        xmin, xmax = sorted([self.viewer_state.hist_x_min, self.viewer_state.hist_x_max])
-        if self.viewer_state.log_x:
+        xmin, xmax = sorted([self._viewer_state.hist_x_min, self._viewer_state.hist_x_max])
+        if self._viewer_state.log_x:
             range = None
-            bins = np.logspace(np.log10(xmin), np.log10(xmax), self.viewer_state.hist_n_bin)
+            bins = np.logspace(np.log10(xmin), np.log10(xmax), self._viewer_state.hist_n_bin)
         else:
             range = [xmin, xmax]
-            bins = self.viewer_state.hist_n_bin
+            bins = self._viewer_state.hist_n_bin
 
         self.mpl_hist_unscaled, self.mpl_bins, self.mpl_artists = self.axes.hist(x, range=range, bins=bins)
 
@@ -70,14 +81,14 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         self.mpl_hist = self.mpl_hist_unscaled.astype(np.float)
         dx = self.mpl_bins[1] - self.mpl_bins[0]
 
-        if self.viewer_state.cumulative:
+        if self._viewer_state.cumulative:
             self.mpl_hist = self.mpl_hist.cumsum()
-            if self.viewer_state.normalize:
+            if self._viewer_state.normalize:
                 self.mpl_hist /= self.mpl_hist.max()
-        elif self.viewer_state.normalize:
+        elif self._viewer_state.normalize:
             self.mpl_hist /= (self.mpl_hist.sum() * dx)
 
-        bottom = 0 if not self.viewer_state.log_y else 1e-100
+        bottom = 0 if not self._viewer_state.log_y else 1e-100
 
         for mpl_artist, y in zip(self.mpl_artists, self.mpl_hist):
             mpl_artist.set_height(y)
@@ -88,27 +99,27 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         # needed. We can't simply reset based on the maximum for this layer
         # because other layers might have other values, and we also can't do:
         #
-        #   self.viewer_state.y_max = max(self.viewer_state.y_max, result[0].max())
+        #   self._viewer_state.y_max = max(self._viewer_state.y_max, result[0].max())
         #
         # because this would never allow y_max to get smaller.
 
         self.state._y_max = self.mpl_hist.max()
 
-        if self.viewer_state.log_y:
+        if self._viewer_state.log_y:
             self.state._y_max *= 2
         else:
             self.state._y_max *= 1.2
 
-        for layer in self.viewer_state.layers:
+        for layer in self._viewer_state.layers:
             if self.state != layer and hasattr(layer, '_y_max') and self.state._y_max < layer._y_max:
                 break
         else:
-            self.viewer_state.y_max = self.state._y_max
+            self._viewer_state.y_max = self.state._y_max
 
-        if self.viewer_state.log_y:
-            self.viewer_state.y_min = self.mpl_hist[self.mpl_hist > 0].min() / 10
+        if self._viewer_state.log_y:
+            self._viewer_state.y_min = self.mpl_hist[self.mpl_hist > 0].min() / 10
         else:
-            self.viewer_state.y_min = 0
+            self._viewer_state.y_min = 0
 
         self.redraw()
 
@@ -126,10 +137,10 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
 
     def _update_histogram(self, force=False, **kwargs):
 
-        if (self.viewer_state.hist_x_min is None or
-            self.viewer_state.hist_x_max is None or
-            self.viewer_state.hist_n_bin is None or
-            self.viewer_state.x_att is None or
+        if (self._viewer_state.hist_x_min is None or
+            self._viewer_state.hist_x_max is None or
+            self._viewer_state.hist_n_bin is None or
+            self._viewer_state.x_att is None or
             self.state.layer is None):
             return
 
@@ -144,7 +155,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
 
         if not force:
 
-            for key, value in self.viewer_state.as_dict().items():
+            for key, value in self._viewer_state.as_dict().items():
                 if value != self._last_viewer_state.get(key, None):
                     changed.add(key)
 
@@ -152,7 +163,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
                 if value != self._last_layer_state.get(key, None):
                     changed.add(key)
 
-        self._last_viewer_state.update(self.viewer_state.as_dict())
+        self._last_viewer_state.update(self._viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
 
         if force or any(prop in changed for prop in ('layer', 'x_att', 'hist_x_min', 'hist_x_max', 'hist_n_bin', 'log_x')):

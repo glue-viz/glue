@@ -21,13 +21,13 @@ class MatplotlibLayerArtist(LayerArtistBase):
 
         # Keep a reference to the layer (data or subset) and axes
         self.axes = axes
-        self.viewer_state = viewer_state
+        self._viewer_state = viewer_state
 
         # Set up a state object for the layer artist
         self.state = layer_state or self._layer_state_cls(viewer_state=viewer_state,
                                                           layer=self.layer)
-        if self.state not in self.viewer_state.layers:
-            self.viewer_state.layers.append(self.state)
+        if self.state not in self._viewer_state.layers:
+            self._viewer_state.layers.append(self.state)
 
         self.mpl_artists = []
 
