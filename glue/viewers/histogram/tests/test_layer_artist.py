@@ -23,7 +23,7 @@ class CallCounter(object):
 
 class TestHistogramLayerArtist(object):
 
-    def setup_method(self):
+    def setup_method(self, method):
 
         self.viewer_state = HistogramViewerState()
 
@@ -44,7 +44,7 @@ class TestHistogramLayerArtist(object):
         self.call_counter = CallCounter()
         sys.setprofile(self.call_counter)
 
-    def teardown_method(self):
+    def teardown_method(self, method):
         sys.setprofile(None)
 
     def test_recalc_on_state_changes(self):
