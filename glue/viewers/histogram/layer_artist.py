@@ -20,8 +20,8 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
 
         # Watch for changes in the viewer state which would require the
         # layers to be redrawn
-        self._viewer_state.add_callback('*', self._update_histogram, as_kwargs=True)
-        self.state.add_callback('*', self._update_histogram, as_kwargs=True)
+        self._viewer_state.add_global_callback(self._update_histogram)
+        self.state.add_global_callback(self._update_histogram)
 
         # TODO: following is temporary
         self.state.data_collection = self._viewer_state.data_collection

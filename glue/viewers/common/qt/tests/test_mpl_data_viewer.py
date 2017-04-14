@@ -382,8 +382,13 @@ class BaseTestMatplotlibDataViewer(object):
         sub = self.data.new_subset()
         assert sub in self.viewer._layer_artist_container
 
-    @pytest.mark.xfail
     def test_update_subset_ignored_if_not_present(self):
+        # This can be quite a difficult test to pass because it makes sure that
+        # there are absolutely no references to the layer state left over once
+        # a subset is removed - when originally written this identified quite
+        # a few places where references were being accidentally kept, and
+        # resulted in weakref being needed in a number of places. But ultimately
+        # this test should pass! No cheating :)
         self.init_draw_count()
         self.data_collection.append(self.data)
         self.viewer.add_data(self.data)

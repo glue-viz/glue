@@ -22,7 +22,7 @@ class HistogramViewerState(MatplotlibDataViewerState):
 
     hist_x_min = DeferredDrawCallbackProperty()
     hist_x_max = DeferredDrawCallbackProperty()
-    hist_n_bin = DeferredDrawCallbackProperty(10)
+    hist_n_bin = DeferredDrawCallbackProperty()
 
     def __init__(self, **kwargs):
         super(HistogramViewerState, self).__init__(**kwargs)

@@ -15,9 +15,6 @@ class HistogramLayerStyleEditor(QtWidgets.QWidget):
         self.ui = load_ui('layer_style_editor.ui', self,
                           directory=os.path.dirname(__file__))
 
-        # TODO: In future, should pass only state not layer?
-        self.layer_state = layer.state
-
         connect_kwargs = {'alpha': dict(value_range=(0, 1))}
 
-        autoconnect_callbacks_to_qt(self.layer_state, self.ui, connect_kwargs)
+        autoconnect_callbacks_to_qt(layer.state, self.ui, connect_kwargs)

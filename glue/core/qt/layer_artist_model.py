@@ -11,6 +11,8 @@ these layers, and provides GUI access to the model
 
 from __future__ import absolute_import, division, print_function
 
+from weakref import WeakKeyDictionary
+
 from qtpy.QtCore import Qt
 from qtpy import QtCore, QtWidgets, QtGui
 from glue.core.layer_artist import LayerArtistBase, LayerArtistContainer
@@ -301,7 +303,7 @@ class LayerArtistWidget(QtWidgets.QWidget):
 
         self.setLayout(self.layout)
 
-        self.layout_style_widgets = {}
+        self.layout_style_widgets = WeakKeyDictionary()
 
         self.empty = QtWidgets.QWidget()
         self.layer_options_layout.addWidget(self.empty)
