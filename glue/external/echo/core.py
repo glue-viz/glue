@@ -2,7 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 from contextlib import contextmanager
 from weakref import WeakKeyDictionary
-from functools import partial
+
+from .callback_container import CallbackContainer
 
 __all__ = ['CallbackProperty', 'callback_property',
            'add_callback', 'remove_callback',
@@ -134,10 +135,11 @@ class CallbackProperty(object):
             and new values of the property, as ``func(old, new)``. If `False`
             (the default), will be invoked as ``func(new)``
         """
+
         if echo_old:
-            self._2arg_callbacks.setdefault(instance, []).append(func)
+            self._2arg_callbacks.setdefault(instance, CallbackContainer()).append(func)
         else:
-            self._callbacks.setdefault(instance, []).append(func)
+            self._callbacks.setdefault(instance, CallbackContainer()).append(func)
 
     def remove_callback(self, instance, func):
         """
@@ -153,11 +155,9 @@ class CallbackProperty(object):
         for cb in [self._callbacks, self._2arg_callbacks]:
             if instance not in cb:
                 continue
-            try:
+            if func in cb[instance]:
                 cb[instance].remove(func)
-                break
-            except ValueError:
-                pass
+                return
         else:
             raise ValueError("Callback function not found: %s" % func)
 
@@ -168,10 +168,34 @@ class HasCallbackProperties(object):
     """
 
     def __init__(self):
-        self._global_callbacks = []
+        from .list import ListCallbackProperty
+        self._global_callbacks = CallbackContainer()
         self._callback_wrappers = {}
+        for prop_name, prop in self.iter_callback_properties():
+            if isinstance(prop, ListCallbackProperty):
+                prop.add_callback(self, self.notify_global_lists)
 
-    def add_callback(self, name, callback, echo_old=False, as_kwargs=False):
+    def notify_global_lists(self, *args):
+        from .list import ListCallbackProperty
+        properties = {}
+        for prop_name, prop in self.iter_callback_properties():
+            if isinstance(prop, ListCallbackProperty):
+                callback_list = getattr(self, prop_name)
+                if callback_list is args[0]:
+                    properties[prop_name] = callback_list
+                    break
+        self.notify_global(**properties)
+
+    def notify_global(self, **kwargs):
+        for callback in self._global_callbacks:
+            callback(**kwargs)
+
+    def __setattr__(self, attribute, value):
+        super(HasCallbackProperties, self).__setattr__(attribute, value)
+        if self.is_callback_property(attribute):
+            self.notify_global(**{attribute: value})
+
+    def add_callback(self, name, callback, echo_old=False):
         """
         Add a callback that gets triggered when a callback property of the
         class changes.
@@ -179,37 +203,19 @@ class HasCallbackProperties(object):
         Parameters
         ----------
         name : str
-            The instance to add the callback to. This can be ``'*'`` to
-            indicate that the callback should be added to all callback
-            properties.
-        func : func
+            The instance to add the callback to.
+        callback : func
             The callback function to add
         echo_old : bool, optional
             If `True`, the callback function will be invoked with both the old
-            and new values of the property, as ``func(old, new)``. If `False`
-            (the default), will be invoked as ``func(new)``
-        as_kwargs : bool, optional
-            If `True`, the callback function will be invoked using keyword arguments
-            where the keyword is the name of the attribute, and the value is either
-            the new value or a tuple of (old, new) if echo_old is `True`.
+            and new values of the property, as ``callback(old, new)``. If `False`
+            (the default), will be invoked as ``callback(new)``
         """
-
-        if name == '*':
-            for prop_name, prop in self.iter_callback_properties():
-                self.add_callback(prop_name, callback, echo_old=echo_old, as_kwargs=as_kwargs)
+        if self.is_callback_property(name):
+            prop = getattr(type(self), name)
+            prop.add_callback(self, callback, echo_old=echo_old)
         else:
-            if self.is_callback_property(name):
-                if as_kwargs:
-                    def wrap_callback(function, name):
-                        def callback_wrapper(value):
-                            return function(**{name: value})
-                        return callback_wrapper
-                    self._callback_wrappers[(name, callback)] = wrap_callback(callback, name)
-                    callback = self._callback_wrappers[(name, callback)]
-                prop = getattr(type(self), name)
-                prop.add_callback(self, callback, echo_old=echo_old)
-            else:
-                raise TypeError("attribute '{0}' is not a callback property".format(name))
+            raise TypeError("attribute '{0}' is not a callback property".format(name))
 
     def remove_callback(self, name, callback):
         """
@@ -218,27 +224,42 @@ class HasCallbackProperties(object):
         Parameters
         ----------
         name : str
-            The instance to remove the callback from. This can be ``'*'`` to
-            indicate that the callback should be removed from all callback
-            properties.
+            The instance to remove the callback from.
         func : func
             The callback function to remove
         """
 
-        if name == '*':
-            for prop_name, prop in self.iter_callback_properties():
-                self.remove_callback(prop_name, callback)
+        if self.is_callback_property(name):
+            prop = getattr(type(self), name)
+            try:
+                prop.remove_callback(self, callback)
+            except ValueError:  # pragma: nocover
+                pass  # Be forgiving if callback was already removed before
         else:
-            if self.is_callback_property(name):
-                if (name, callback) in self._callback_wrappers:
-                    callback = self._callback_wrappers.pop((name, callback))
-                prop = getattr(type(self), name)
-                try:
-                    prop.remove_callback(self, callback)
-                except ValueError:
-                    pass  # Be forgiving if callback was already removed before
-            else:
-                raise TypeError("attribute '{0}' is not a callback property".format(name))
+            raise TypeError("attribute '{0}' is not a callback property".format(name))
+
+    def add_global_callback(self, callback):
+        """
+        Add a global callback function, which is a callback that gets triggered
+        when any callback properties on the class change.
+
+        Parameters
+        ----------
+        callback : func
+            The callback function to add
+        """
+        self._global_callbacks.append(callback)
+
+    def remove_global_callback(self, callback):
+        """
+        Remove a global callback function.
+
+        Parameters
+        ----------
+        callback : func
+            The callback function to remove
+        """
+        self._global_callbacks.remove(callback)
 
     def is_callback_property(self, name):
         return isinstance(getattr(type(self), name, None), CallbackProperty)

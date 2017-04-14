@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.utils import nonpartial
 from glue.core import Subset
 from glue.external.echo import (delay_callback, CallbackProperty,
                                 HasCallbackProperties, CallbackList)
@@ -96,13 +95,9 @@ class StateAttributeCacheHelper(object):
         self._attribute_lookup.update(self._modifiers)
         self._attribute_lookup_inv = {v: k for k, v in self._attribute_lookup.items()}
 
-        self._state.add_callback(self._attribute, nonpartial(self._update_attribute))
+        self._state.add_callback(self._attribute, self._update_attribute)
 
-        for prop in self._modifiers.values():
-            self._state.add_callback(prop, self._update_values, as_kwargs=True)
-
-        for prop in self._values.values():
-            self._state.add_callback(prop, self._update_values, as_kwargs=True)
+        self._state.add_global_callback(self._update_values)
 
         # NOTE: don't use self._cache = cache or {} here since if the initial
         #       cache is empty it will evaluate as False!
@@ -141,7 +136,7 @@ class StateAttributeCacheHelper(object):
         self._cache = cache
         self._update_attribute()
 
-    def _update_attribute(self):
+    def _update_attribute(self, *args):
         if self.component_id in self._cache:
             # The component ID already exists in the cache, so just revert to
             # that version of the values/settings.
@@ -151,14 +146,16 @@ class StateAttributeCacheHelper(object):
             self.update_values(attribute=self.component_id, use_default_modifiers=True)
 
     def _update_values(self, **properties):
+
         if hasattr(self, '_in_set'):
             if self._in_set:
                 return
         if self.attribute is None:
             return
         properties = dict((self._attribute_lookup_inv[key], value)
-                          for key, value in properties.items())
-        self.update_values(**properties)
+                          for key, value in properties.items() if key in self._attribute_lookup_inv and self._attribute_lookup_inv[key] != 'attribute')
+        if len(properties) > 0:
+            self.update_values(**properties)
 
     def _modifiers_as_dict(self):
         return dict((prop, getattr(self, prop)) for prop in self.modifiers_names if prop in self._modifiers)
