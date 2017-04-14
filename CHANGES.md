@@ -4,7 +4,9 @@ Full changelog
 v0.11.0 (unreleased)
 --------------------
 
-* No changes yet.
+* Updated bundled version of echo to include fixes to avoid circular
+  references, which in turn caused some callback functions to not be
+  cleaned up. [#1281]
 
 v0.10.2 (unreleased)
 --------------------
