@@ -18,32 +18,32 @@ class CallbackList(list):
     def append(self, value):
         super(CallbackList, self).append(value)
         if isinstance(value, HasCallbackProperties):
-            value.add_callback('*', self.callback)
+            value.add_global_callback(self.callback)
         self.callback()
 
     def extend(self, iterable):
         super(CallbackList, self).extend(iterable)
         for item in iterable:
             if isinstance(item, HasCallbackProperties):
-                item.add_callback('*', self.callback)
+                item.add_global_callback(self.callback)
         self.callback()
 
     def insert(self, index, value):
         super(CallbackList, self).insert(index, value)
         if isinstance(value, HasCallbackProperties):
-            value.add_callback('*', self.callback)
+            value.add_global_callback(self.callback)
         self.callback()
 
     def pop(self, index=-1):
         result = super(CallbackList, self).pop(index)
         if isinstance(result, HasCallbackProperties):
-            result.remove_callback('*', self.callback)
+            result.remove_global_callback(self.callback)
         self.callback()
         return result
 
     def remove(self, value):
         if isinstance(value, HasCallbackProperties):
-            value.remove_callback('*', self.callback)
+            value.remove_global_callback(self.callback)
         super(CallbackList, self).remove(value)
         self.callback()
 
@@ -63,7 +63,7 @@ class CallbackList(list):
 
         for old_value in old_values:
             if isinstance(old_value, HasCallbackProperties):
-                old_value.remove_callback('*', self.callback)
+                old_value.remove_global_callback(self.callback)
 
         if isinstance(slc, slice):
             new_values = new_value
@@ -72,7 +72,7 @@ class CallbackList(list):
 
         for value in new_values:
             if isinstance(value, HasCallbackProperties):
-                value.add_callback('*', self.callback)
+                value.add_global_callback(self.callback)
 
         super(CallbackList, self).__setitem__(slc, new_value)
         self.callback()
@@ -82,7 +82,7 @@ class CallbackList(list):
         def clear(self):
             for item in self:
                 if isinstance(item, HasCallbackProperties):
-                    item.remove_callback('*', self.callback)
+                    item.remove_global_callback(self.callback)
             super(CallbackList, self).clear()
             self.callback()
 
@@ -96,11 +96,11 @@ class CallbackList(list):
 
             for old_value in old_values:
                 if isinstance(old_value, HasCallbackProperties):
-                    old_value.remove_callback('*', self.callback)
+                    old_value.remove_global_callback(self.callback)
 
             for value in new_values:
                 if isinstance(value, HasCallbackProperties):
-                    value.add_callback('*', self.callback)
+                    value.add_global_callback(self.callback)
 
             super(CallbackList, self).__setslice__(start, end, new_values)
             self.callback()
@@ -122,8 +122,8 @@ class ListCallbackProperty(CallbackProperty):
         if not isinstance(value, list):
             raise TypeError('callback property should be a list')
 
-        def callback(*args):
-            self.notify(instance, value, value)
+        def callback(*args, **kwargs):
+            self.notify(instance, wrapped_list, wrapped_list)
 
         wrapped_list = CallbackList(callback, value)
         super(ListCallbackProperty, self)._default_setter(instance, wrapped_list)
