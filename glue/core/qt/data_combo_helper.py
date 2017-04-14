@@ -107,8 +107,9 @@ class ComponentIDComboHelper(HubListener):
                 self.refresh()
 
     def remove_data(self, data):
-        self._data.remove(data)
-        self.refresh()
+        if data in self._data:
+            self._data.remove(data)
+            self.refresh()
 
     def set_multiple_data(self, datasets):
         """
