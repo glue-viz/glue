@@ -3,7 +3,7 @@
 # We have to include "yes |" since sometimes, gem asks about installing the
 # shell completion tool.
 
-yes | gem install travis -v 1.6.11
+yes | gem install travis
 yes | gem environment
 
 export PATH=`yes | gem environment | grep "EXECUTABLE DIRECTORY" | cut -d":" -f2 | cut -c 2-`:$PATH
