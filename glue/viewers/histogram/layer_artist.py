@@ -110,11 +110,9 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         else:
             self.state._y_max *= 1.2
 
-        for layer in self._viewer_state.layers:
-            if self.state != layer and hasattr(layer, '_y_max') and self.state._y_max < layer._y_max:
-                break
-        else:
-            self._viewer_state.y_max = self.state._y_max
+        largest_y_max = max(layer._y_max for layer in self._viewer_state.layers)
+        if largest_y_max != self._viewer_state.y_max:
+            self._viewer_state.y_max = largest_y_max
 
         if self._viewer_state.y_log:
             self._viewer_state.y_min = self.mpl_hist[self.mpl_hist > 0].min() / 10
