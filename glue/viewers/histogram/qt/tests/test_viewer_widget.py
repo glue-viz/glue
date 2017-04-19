@@ -150,6 +150,8 @@ class TestHistogramViewer(object):
         viewer_state.hist_x_max = 5
         viewer_state.hist_n_bin = 4
 
+        assert_allclose(self.viewer.state.y_max, 2.4)
+
         assert_allclose(self.viewer.layers[0].mpl_hist, [0, 1, 2, 1])
         assert_allclose(self.viewer.layers[0].mpl_bins, [-5, -2.5, 0, 2.5, 5])
 
@@ -161,6 +163,7 @@ class TestHistogramViewer(object):
 
         viewer_state.normalize = True
 
+        assert_allclose(self.viewer.state.y_max, 0.24)
         assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0.1, 0.2, 0.1])
         assert_allclose(self.viewer.layers[0].mpl_bins, [-5, -2.5, 0, 2.5, 5])
         assert_allclose(self.viewer.layers[1].mpl_hist, [0, 0.2, 0.2, 0])
@@ -168,6 +171,7 @@ class TestHistogramViewer(object):
 
         viewer_state.cumulative = True
 
+        assert_allclose(self.viewer.state.y_max, 1.2)
         assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0.25, 0.75, 1.0])
         assert_allclose(self.viewer.layers[0].mpl_bins, [-5, -2.5, 0, 2.5, 5])
         assert_allclose(self.viewer.layers[1].mpl_hist, [0, 0.5, 1.0, 1.0])
@@ -175,6 +179,7 @@ class TestHistogramViewer(object):
 
         viewer_state.normalize = False
 
+        assert_allclose(self.viewer.state.y_max, 4.8)
         assert_allclose(self.viewer.layers[0].mpl_hist, [0, 1, 3, 4])
         assert_allclose(self.viewer.layers[0].mpl_bins, [-5, -2.5, 0, 2.5, 5])
         assert_allclose(self.viewer.layers[1].mpl_hist, [0, 1, 2, 2])
@@ -190,6 +195,7 @@ class TestHistogramViewer(object):
         xlabels = [formatter.format_data(pos) for pos in range(3)]
         assert xlabels == ['a', 'b', 'c']
 
+        assert_allclose(self.viewer.state.y_max, 2.4)
         assert_allclose(self.viewer.layers[0].mpl_hist, [2, 1, 1])
         assert_allclose(self.viewer.layers[0].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
         assert_allclose(self.viewer.layers[1].mpl_hist, [1, 0, 1])
@@ -197,6 +203,7 @@ class TestHistogramViewer(object):
 
         viewer_state.normalize = True
 
+        assert_allclose(self.viewer.state.y_max, 0.6)
         assert_allclose(self.viewer.layers[0].mpl_hist, [0.5, 0.25, 0.25])
         assert_allclose(self.viewer.layers[0].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
         assert_allclose(self.viewer.layers[1].mpl_hist, [0.5, 0, 0.5])
@@ -204,6 +211,7 @@ class TestHistogramViewer(object):
 
         viewer_state.cumulative = True
 
+        assert_allclose(self.viewer.state.y_max, 1.2)
         assert_allclose(self.viewer.layers[0].mpl_hist, [0.5, 0.75, 1])
         assert_allclose(self.viewer.layers[0].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
         assert_allclose(self.viewer.layers[1].mpl_hist, [0.5, 0.5, 1])
@@ -211,6 +219,7 @@ class TestHistogramViewer(object):
 
         viewer_state.normalize = False
 
+        assert_allclose(self.viewer.state.y_max, 4.8)
         assert_allclose(self.viewer.layers[0].mpl_hist, [2, 3, 4])
         assert_allclose(self.viewer.layers[0].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
         assert_allclose(self.viewer.layers[1].mpl_hist, [1, 1, 2])
@@ -310,6 +319,42 @@ class TestHistogramViewer(object):
 
         assert self.viewer.axes.get_xlabel() == 'y'
         assert self.viewer.axes.get_ylabel() == 'Number'
+
+    def test_y_min_y_max(self):
+
+        # Regression test for a bug that caused y_max to not be set correctly
+        # when multiple subsets were present and after turning on normalization
+        # after switching to a different attribute from that used to make the
+        # selection.
+
+        viewer_state = self.viewer.state
+        self.viewer.add_data(self.data)
+
+        self.data.add_component([3.4, 3.5, 10.2, 20.3], 'z')
+
+        viewer_state.x_att = self.data.id['x']
+
+        cid = self.data.visible_components[0]
+        self.data_collection.new_subset_group('subset 1', cid < 1)
+
+        cid = self.data.visible_components[0]
+        self.data_collection.new_subset_group('subset 2', cid < 2)
+
+        cid = self.data.visible_components[0]
+        self.data_collection.new_subset_group('subset 3', cid < 3)
+
+        assert_allclose(self.viewer.state.y_min, 0)
+        assert_allclose(self.viewer.state.y_max, 1.2)
+
+        viewer_state.x_att = self.data.id['z']
+
+        assert_allclose(self.viewer.state.y_min, 0)
+        assert_allclose(self.viewer.state.y_max, 2.4)
+
+        viewer_state.normalize = True
+
+        assert_allclose(self.viewer.state.y_min, 0)
+        assert_allclose(self.viewer.state.y_max, 0.5325443786982249)
 
     def test_update_when_limits_unchanged(self):
 
