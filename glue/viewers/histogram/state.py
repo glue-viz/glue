@@ -24,12 +24,15 @@ class HistogramViewerState(MatplotlibDataViewerState):
     hist_x_max = DeferredDrawCallbackProperty()
     hist_n_bin = DeferredDrawCallbackProperty()
 
+    common_n_bin = DeferredDrawCallbackProperty(True)
+
     def __init__(self, **kwargs):
         super(HistogramViewerState, self).__init__(**kwargs)
         self.x_att_helper = StateAttributeLimitsHelper(self, 'x_att', lower='x_min',
                                                        upper='x_max', log='x_log')
         self.hist_helper = StateAttributeHistogramHelper(self, 'x_att', lower='hist_x_min',
-                                                         upper='hist_x_max', n_bin='hist_n_bin')
+                                                         upper='hist_x_max', n_bin='hist_n_bin',
+                                                         common_n_bin='common_n_bin')
 
     def update_priority(self, name):
         if name == 'layers':

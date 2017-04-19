@@ -265,6 +265,111 @@ class TestStateAttributeHistogramHelper():
         assert self.state.n_bin == 3
 
 
+def test_histogram_helper_common_n_bin():
+
+    data = Data(x=[-3.2, 4.3, 2.2],
+                y=['a', 'f', 'd'],
+                z=[1.1, 2.3, 1.2],
+                label='test_data')
+
+    class SimpleState(State):
+
+        layer = CallbackProperty()
+        comp = CallbackProperty()
+        x_min = CallbackProperty()
+        x_max = CallbackProperty()
+        n_bin = CallbackProperty()
+        common = CallbackProperty()
+
+    state = SimpleState()
+
+    helper = StateAttributeHistogramHelper(state, attribute='comp',
+                                           lower='x_min', upper='x_max', n_bin='n_bin',
+                                           common_n_bin='common')
+
+    state.data = data
+
+    state.comp = data.id['x']
+    state.n_bin = 9
+    state.comp = data.id['y']
+    assert state.n_bin == 3
+    state.comp = data.id['z']
+    assert state.n_bin == 15
+
+    state.n_bin = 12
+
+    state.common = True
+
+    state.comp = data.id['x']
+    assert state.n_bin == 12
+
+    state.n_bin = 11
+
+    state.comp = data.id['y']
+    assert state.n_bin == 3
+    state.comp = data.id['z']
+    assert state.n_bin == 11
+
+    state.common = False
+    state.n_bin = 13
+
+    state.comp = data.id['x']
+    assert state.n_bin == 11
+
+
+def test_histogram_helper_common_n_bin_active():
+
+    # Make sure that common_n_bin works as expected if True from start
+
+    data = Data(x=[-3.2, 4.3, 2.2],
+                y=['a', 'f', 'd'],
+                z=[1.1, 2.3, 1.2],
+                label='test_data')
+
+    class SimpleState(State):
+
+        layer = CallbackProperty()
+        comp = CallbackProperty()
+        x_min = CallbackProperty()
+        x_max = CallbackProperty()
+        n_bin = CallbackProperty()
+        common = CallbackProperty(True)
+
+    state = SimpleState()
+
+    helper = StateAttributeHistogramHelper(state, attribute='comp',
+                                           lower='x_min', upper='x_max', n_bin='n_bin',
+                                           common_n_bin='common')
+
+    state.data = data
+
+    state.comp = data.id['x']
+    state.n_bin = 9
+    state.comp = data.id['z']
+    assert state.n_bin == 9
+
+    state.n_bin = 12
+
+    state.common = True
+
+    state.comp = data.id['x']
+    assert state.n_bin == 12
+
+    state.n_bin = 11
+
+    state.comp = data.id['y']
+    assert state.n_bin == 3
+    state.comp = data.id['z']
+    assert state.n_bin == 11
+
+    state.common = False
+    state.n_bin = 13
+
+    state.comp = data.id['x']
+    assert state.n_bin == 11
+
+
+
 def test_limits_helper_initial_values():
 
     # Regression test for a bug that occurred if the limits cache was empty

@@ -338,35 +338,78 @@ class StateAttributeSingleValueHelper(StateAttributeCacheHelper):
 class StateAttributeHistogramHelper(StateAttributeCacheHelper):
 
     values_names = ('lower', 'upper', 'n_bin')
-    modifiers_names = ('default_n_bin', 'max_n_bin')
+    modifiers_names = ()
 
     def __init__(self, *args, **kwargs):
+
         self._max_n_bin = kwargs.pop('max_n_bin', 30)
         self._default_n_bin = kwargs.pop('default_n_bin', 15)
+
+        common_n_bin_att = kwargs.pop('common_n_bin', None)
+
         super(StateAttributeHistogramHelper, self).__init__(*args, **kwargs)
+
+        if common_n_bin_att is not None:
+            if getattr(self._state, common_n_bin_att):
+                self._common_n_bin = self._default_n_bin
+            else:
+                self._common_n_bin = None
+            self._state.add_callback(common_n_bin_att, self._update_common_n_bin)
+        else:
+            self._common_n_bin = None
+
+        print(self._cache)
+
+    def _apply_common_n_bin(self):
+        for att in self._cache:
+            cmp = self.data.get_component(att)
+            if not cmp.categorical:
+                self._cache[att]['n_bin'] = self._common_n_bin
+
+    def _update_common_n_bin(self, common_n_bin):
+        if common_n_bin:
+            if self.data_component.categorical:
+                self._common_n_bin = self._default_n_bin
+            else:
+                self._common_n_bin = self.n_bin
+            self._apply_common_n_bin()
+        else:
+            self._common_n_bin = None
 
     def update_values(self, use_default_modifiers=False, **properties):
 
-        if 'attribute' not in properties or self.data is None:
+        if not any(prop in properties for prop in ('attribute', 'n_bin')) or self.data is None:
             self.set()
             return
 
         comp = self.data_component
 
-        if comp.categorical:
+        if 'n_bin' in properties:
+            self.set()
+            if self._common_n_bin is not None and not comp.categorical:
+                self._common_n_bin = properties['n_bin']
+                self._apply_common_n_bin()
 
-            n_bin = max(1, min(comp.categories.size, self._max_n_bin))
-            lower = -0.5
-            upper = lower + comp.categories.size
+        if 'attribute' in properties:
 
-        else:
+            if comp.categorical:
 
-            n_bin = self._default_n_bin
-            values = self.data_values
-            lower = np.nanmin(values)
-            upper = np.nanmax(values)
+                n_bin = max(1, min(comp.categories.size, self._max_n_bin))
+                lower = -0.5
+                upper = lower + comp.categories.size
 
-        self.set(lower=lower, upper=upper, n_bin=n_bin)
+            else:
+
+                if self._common_n_bin is None:
+                    n_bin = self._default_n_bin
+                else:
+                    n_bin = self._common_n_bin
+
+                values = self.data_values
+                lower = np.nanmin(values)
+                upper = np.nanmax(values)
+
+            self.set(lower=lower, upper=upper, n_bin=n_bin)
 
 
 if __name__ == "__main__":
