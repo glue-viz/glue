@@ -47,8 +47,13 @@ class HistogramViewerState(MatplotlibDataViewerState):
 
     def update_bins_to_view(self):
         # TODO: delay callback
-        self.hist_x_min = self.x_min
-        self.hist_x_max = self.x_max
+        if self.x_max > self.x_min:
+            self.hist_x_min = self.x_min
+            self.hist_x_max = self.x_max
+        else:
+            self.hist_x_min = self.x_max
+            self.hist_x_max = self.x_min
+
 
     def _get_x_components(self):
         # Construct list of components over all layers
