@@ -7,16 +7,20 @@ import operator as op
 
 import pytest
 import numpy as np
+from numpy.testing import assert_equal
+
 from mock import MagicMock
 
 from glue.tests.helpers import requires_astropy
 
 from .. import DataCollection, ComponentLink
 from ..data import Data, Component
+from ..roi import CategoricalROI, RectangularROI
 from ..message import SubsetDeleteMessage
 from ..registry import Registry
 from ..subset import (Subset, SubsetState,
-                      ElementSubsetState, RoiSubsetState, RangeSubsetState)
+                      ElementSubsetState, RoiSubsetState, RangeSubsetState,
+                      CategoricalROISubsetState, InequalitySubsetState, CategorySubsetState, MaskSubsetState, CategoricalROISubsetState2D, CategoricalMultiRangeSubsetState)
 from ..subset import AndState
 from ..subset import InvertState
 from ..subset import OrState
@@ -651,3 +655,157 @@ def test_inherited_properties():
     assert sub.shape == (3, 2, 4)
 
     assert sub.hub is d.hub
+
+
+class TestCloneSubsetStates():
+
+    def setup_method(self, method):
+        self.data = Data(a=[-3, 2, 4, 1],
+                         b=['a', 'b', 'a', 'c'],
+                         c=[1.2, 1.3, 1.5, 1.9],
+                         d=['x', 'y', 'z', 'y'])
+
+    def test_element_subset_state(self):
+
+        subset = self.data.new_subset()
+        subset.subset_state = ElementSubsetState(indices=[1, 2])
+        assert_equal(self.data.subsets[0].to_mask(), [0, 1, 1, 0])
+
+        data_clone = clone(self.data)
+
+        assert_equal(data_clone.subsets[0].to_mask(), [0, 1, 1, 0])
+
+    def test_categorical_roi_subset_state(self):
+
+        roi = CategoricalROI(['a', 'c'])
+
+        subset = self.data.new_subset()
+        subset.subset_state = CategoricalROISubsetState(att=self.data.id['b'], roi=roi)
+        assert_equal(self.data.subsets[0].to_mask(), [1, 0, 1, 1])
+
+        data_clone = clone(self.data)
+
+        assert_equal(data_clone.subsets[0].to_mask(), [1, 0, 1, 1])
+
+    def test_categorical_roi_2d_subset_state(self):
+
+        selection = {'a': ['x'], 'b': ['x'], 'c': ['y']}
+
+        subset = self.data.new_subset()
+        subset.subset_state = CategoricalROISubsetState2D(selection, self.data.id['b'], self.data.id['d'])
+        assert_equal(self.data.subsets[0].to_mask(), [1, 0, 0, 1])
+
+        data_clone = clone(self.data)
+
+        assert_equal(data_clone.subsets[0].to_mask(), [1, 0, 0, 1])
+
+    def test_category_subset_state(self):
+
+        subset = self.data.new_subset()
+        subset.subset_state = CategorySubsetState(self.data.id['b'], [0, 2])
+        assert_equal(self.data.subsets[0].to_mask(), [1, 0, 1, 1])
+
+        data_clone = clone(self.data)
+
+        assert_equal(data_clone.subsets[0].to_mask(), [1, 0, 1, 1])
+
+    def test_category_multi_range_subset_state(self):
+
+        ranges = {'a': [(1.0, 1.1), (1.3, 1.6)], 'b':[(1.1, 1.4), (1.7, 1.8)], 'c':[(1.1, 1.2)]}
+
+        subset = self.data.new_subset()
+        subset.subset_state = CategoricalMultiRangeSubsetState(ranges, self.data.id['b'], self.data.id['c'])
+        assert_equal(self.data.subsets[0].to_mask(), [0, 1, 1, 0])
+
+        data_clone = clone(self.data)
+
+        assert_equal(data_clone.subsets[0].to_mask(), [0, 1, 1, 0])
+
+    def test_inequality_roi_subset_state(self):
+
+        subset = self.data.new_subset()
+        subset.subset_state = self.data.id['a'] > 1.5
+        assert isinstance(subset.subset_state, InequalitySubsetState)
+
+        assert_equal(self.data.subsets[0].to_mask(), [0, 1, 1, 0])
+
+        data_clone = clone(self.data)
+
+        assert_equal(data_clone.subsets[0].to_mask(), [0, 1, 1, 0])
+
+    def test_mask_subset_state(self):
+
+        subset = self.data.new_subset()
+        subset.subset_state = MaskSubsetState([0, 1, 0, 1], self.data.pixel_component_ids)
+
+        assert_equal(self.data.subsets[0].to_mask(), [0, 1, 0, 1])
+
+        data_clone = clone(self.data)
+
+        assert_equal(data_clone.subsets[0].to_mask(), [0, 1, 0, 1])
+
+    def test_range_subset_state(self):
+
+        subset = self.data.new_subset()
+        subset.subset_state = RangeSubsetState(1.1, 1.4, self.data.id['c'])
+        assert_equal(self.data.subsets[0].to_mask(), [1, 1, 0, 0])
+
+        data_clone = clone(self.data)
+
+        assert_equal(data_clone.subsets[0].to_mask(), [1, 1, 0, 0])
+
+    def test_and_subset_state(self):
+
+        subset = self.data.new_subset()
+        subset.subset_state = (self.data.id['a'] > 1) & (self.data.id['c'] < 1.5)
+        assert isinstance(subset.subset_state, AndState)
+        assert_equal(self.data.subsets[0].to_mask(), [0, 1, 0, 0])
+
+        data_clone = clone(self.data)
+
+        assert_equal(data_clone.subsets[0].to_mask(), [0, 1, 0, 0])
+
+    def test_or_subset_state(self):
+
+        subset = self.data.new_subset()
+        subset.subset_state = (self.data.id['a'] > 1) | (self.data.id['c'] < 1.5)
+        assert isinstance(subset.subset_state, OrState)
+        assert_equal(self.data.subsets[0].to_mask(), [1, 1, 1, 0])
+
+        data_clone = clone(self.data)
+
+        assert_equal(data_clone.subsets[0].to_mask(), [1, 1, 1, 0])
+
+    def test_not_subset_state(self):
+
+        subset = self.data.new_subset()
+        subset.subset_state = ~(self.data.id['a'] > 1)
+        assert isinstance(subset.subset_state, InvertState)
+        assert_equal(self.data.subsets[0].to_mask(), [1, 0, 0, 1])
+
+        data_clone = clone(self.data)
+
+        assert_equal(data_clone.subsets[0].to_mask(), [1, 0, 0, 1])
+
+    def test_xor_subset_state(self):
+
+        subset = self.data.new_subset()
+        subset.subset_state = (self.data.id['a'] > 1) ^ (self.data.id['c'] > 1.3)
+        assert isinstance(subset.subset_state, XorState)
+        assert_equal(self.data.subsets[0].to_mask(), [0, 1, 0, 1])
+
+        data_clone = clone(self.data)
+
+        assert_equal(data_clone.subsets[0].to_mask(), [0, 1, 0, 1])
+
+    def test_roi_subset_state(self):
+
+        roi = RectangularROI(xmin=0, xmax=3, ymin=1.1, ymax=1.4)
+
+        subset = self.data.new_subset()
+        subset.subset_state = RoiSubsetState(xatt=self.data.id['a'], yatt=self.data.id['c'], roi=roi)
+        assert_equal(self.data.subsets[0].to_mask(), [0, 1, 0, 0])
+
+        data_clone = clone(self.data)
+
+        assert_equal(data_clone.subsets[0].to_mask(), [0, 1, 0, 0])
