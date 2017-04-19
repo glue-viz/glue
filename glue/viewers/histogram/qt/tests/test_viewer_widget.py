@@ -388,7 +388,6 @@ class TestHistogramViewer(object):
 
         assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0, 2, 2, 0])
 
-    # TODO: update the following test following refactoring
     def test_component_replaced(self):
 
         # regression test for 508 - if a component ID is replaced, we should
@@ -401,8 +400,6 @@ class TestHistogramViewer(object):
         self.data.update_id(self.viewer.state.x_att, test)
         assert self.viewer.state.x_att is test
         assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'test:y'
-
-    # TODO: Check for extraneous draw events
 
     def test_nbin_override_persists_over_numerical_attribute_change(self):
 

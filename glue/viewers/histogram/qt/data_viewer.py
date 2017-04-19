@@ -68,9 +68,6 @@ class HistogramViewer(MatplotlibDataViewer):
 
         # TODO Does subset get applied to all data or just visible data?
 
-        # Expand roi to match bin edges
-        # TODO: make this an option
-
         bins = self.state.bins
 
         x = roi.to_polygon()[0]

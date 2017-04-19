@@ -111,7 +111,6 @@ def test_component_id_combo_helper_replaced():
 
     data1 = Data(x=[1, 2, 3], y=[2, 3, 4], label='data1')
 
-    print('here0', callback.call_args)
     callback.reset_mock()
 
     dc.append(data1)
