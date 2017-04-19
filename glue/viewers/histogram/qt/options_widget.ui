@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>270</width>
-    <height>248</height>
+    <width>275</width>
+    <height>237</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -214,7 +214,7 @@
      <item>
       <widget class="QSpinBox" name="value_hist_n_bin">
        <property name="keyboardTracking">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -288,6 +288,13 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item row="12" column="3" colspan="4">
+    <widget class="QPushButton" name="button_update_bins_to_view">
+     <property name="text">
+      <string>Update bins to current view</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

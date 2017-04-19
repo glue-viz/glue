@@ -45,6 +45,11 @@ class HistogramViewerState(MatplotlibDataViewerState):
     def flip_x(self):
         self.x_att_helper.flip_limits()
 
+    def update_bins_to_view(self):
+        # TODO: delay callback
+        self.hist_x_min = self.x_min
+        self.hist_x_max = self.x_max
+
     def _get_x_components(self):
         # Construct list of components over all layers
         components = []
