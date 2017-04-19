@@ -1260,3 +1260,10 @@ class CategoricalROI(Roi):
         roi.update_categories(cat_data[lo:hi])
 
         return roi
+
+    def __gluestate__(self, context):
+        return dict(categories=self.categories.tolist())
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(categories=rec['categories'])

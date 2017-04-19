@@ -8,6 +8,11 @@ v0.11.0 (unreleased)
   references, which in turn caused some callback functions to not be
   cleaned up. [#1281]
 
+v0.10.3 (unreleased)
+-------------------
+
+* Fixed bugs with saving and restoring of various types of subset states.
+
 v0.10.2 (unreleased)
 --------------------
 
