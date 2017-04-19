@@ -345,15 +345,16 @@ class TestHistogramViewer(object):
 
     # TODO: Check for extraneous draw events
 
-    @pytest.mark.xfail
-    def test_nbin_override_persists_over_attribute_change(self):
+    def test_nbin_override_persists_over_numerical_attribute_change(self):
 
         # regression test for #398
+
+        self.data.add_component([3, 4, 1, 2], 'z')
 
         self.viewer.add_data(self.data)
         self.viewer.state.x_att = self.data.id['x']
         self.viewer.state.hist_n_bin = 7
-        self.viewer.state.x_att = self.data.id['y']
+        self.viewer.state.x_att = self.data.id['z']
         assert self.viewer.state.hist_n_bin == 7
 
     @pytest.mark.parametrize('protocol', [0])
