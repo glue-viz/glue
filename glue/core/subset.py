@@ -887,7 +887,7 @@ class MaskSubsetState(SubsetState):
         :param mask: Boolean ndarray
         """
         self.cids = cids
-        self.mask = mask
+        self.mask = np.asarray(mask, dtype=bool)
 
     def copy(self):
         return MaskSubsetState(self.mask, self.cids)
