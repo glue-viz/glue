@@ -95,6 +95,20 @@ class TestHistogramViewer(object):
         assert not viewer_state.x_log
         assert not viewer_state.y_log
 
+    def test_flip(self):
+
+        viewer_state = self.viewer.state
+
+        self.viewer.add_data(self.data)
+
+        assert viewer_state.x_min == -1.1
+        assert viewer_state.x_max == 3.4
+
+        self.viewer.options_widget().button_flip_x.click()
+
+        assert viewer_state.x_min == 3.4
+        assert viewer_state.x_max == -1.1
+
     def test_remove_data(self):
         self.viewer.add_data(self.data)
         assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'x:y'
