@@ -620,6 +620,14 @@ class CategoricalROISubsetState(SubsetState):
                                            att=att)
         return subset
 
+    def __gluestate__(self, context):
+        return dict(att=context.id(self.att),
+                    roi=context.id(self.roi))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(att=context.object(rec['att']), roi=context.object(rec['roi']))
+
 
 class RangeSubsetState(SubsetState):
 
@@ -674,7 +682,7 @@ class MultiRangeSubsetState(SubsetState):
         return MultiRangeSubsetState(self.pairs, self.att)
 
 
-class CategoricalROISubsetState2D(object):
+class CategoricalROISubsetState2D(SubsetState):
     """
     A 2D subset state where both attributes are categorical.
 
@@ -728,6 +736,17 @@ class CategoricalROISubsetState2D(object):
         result = CategoricalROISubsetState2D(self.categories,
                                              self.att1, self.att2)
         return result
+
+    def __gluestate__(self, context):
+        return dict(categories=self.categories,
+                    att1=context.id(self.att1),
+                    att2=context.id(self.att2))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(categories=rec['categories'],
+                   att1=context.object(rec['att1']),
+                   att2=context.object(rec['att2']))
 
 
 class CategoricalMultiRangeSubsetState(SubsetState):
@@ -790,6 +809,17 @@ class CategoricalMultiRangeSubsetState(SubsetState):
                                                   self.cat_att,
                                                   self.num_att)
         return result
+
+    def __gluestate__(self, context):
+        return dict(ranges=self.ranges,
+                    cat_att=context.id(self.cat_att),
+                    num_att=context.id(self.num_att))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(ranges=rec['ranges'],
+                   cat_att=context.object(rec['cat_att']),
+                   num_att=context.object(rec['num_att']))
 
 
 class CompositeSubsetState(SubsetState):
@@ -857,7 +887,7 @@ class MaskSubsetState(SubsetState):
         :param mask: Boolean ndarray
         """
         self.cids = cids
-        self.mask = mask
+        self.mask = np.asarray(mask, dtype=bool)
 
     def copy(self):
         return MaskSubsetState(self.mask, self.cids)
