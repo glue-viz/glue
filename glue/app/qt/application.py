@@ -54,7 +54,14 @@ def _fix_ipython_pylab():
         return
 
     from IPython.core.error import UsageError
-    from IPython.terminal.pt_inputhooks import UnknownBackend
+
+    # UnknownBackend exists only in IPython 5.0 and above, so if it doesn't
+    # exist we just set UnknownBackend to be a fake exception class
+    try:
+        from IPython.terminal.pt_inputhooks import UnknownBackend
+    except ImportError:
+        class UnknownBackend(Exception):
+            pass
 
     try:
         shell.enable_pylab('inline', import_all=True)
