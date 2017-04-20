@@ -10,7 +10,7 @@ pytest.importorskip('qtpy')
 
 from glue.app.qt import GlueApplication
 from glue.viewers.scatter.qt import ScatterWidget
-from glue.viewers.histogram.qt import HistogramWidget
+from glue.viewers.histogram.qt import HistogramViewer
 
 from ..export_plotly import build_plotly_call
 
@@ -99,7 +99,7 @@ class TestPlotly(object):
         app = self.app
         d = self.data
         d.style.color = '#000000'
-        v = app.new_data_viewer(HistogramWidget, data=d)
+        v = app.new_data_viewer(HistogramViewer, data=d)
         v.component = d.id['y']
         v.xmin = 0
         v.xmax = 10

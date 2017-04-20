@@ -7,7 +7,7 @@ from glue.external.echo import (delay_callback, CallbackProperty,
                                 HasCallbackProperties, CallbackList)
 from glue.core.state import saver, loader
 
-__all__ = ['State']
+__all__ = ['State', 'StateAttributeLimitsHelper', 'StateAttributeSingleValueHelper']
 
 
 @saver(CallbackList)
@@ -115,6 +115,15 @@ class StateAttributeCacheHelper(object):
         else:
             return self.data[self.component_id]
 
+    @property
+    def data_component(self):
+        # For subsets in 'data' mode, we want to compute the limits based on
+        # the full dataset, not just the subset.
+        if isinstance(self.data, Subset):
+            return self.data.data.get_component(self.component_id)
+        else:
+            return self.data.get_component(self.component_id)
+
     def invalidate_cache(self):
         self._cache.clear()
 
@@ -216,8 +225,9 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
     percentile : ``QComboBox`` instance, optional
         The scale mode combo - this will be populated by presets such as
         Min/Max, various percentile levels, and Custom.
-    log_button : ``QToolButton`` instance, optional
-        A button indicating whether the attribute should be shown in log space
+    log : bool
+        Whether the limits are in log mode (in which case only positive values
+        are used when finding the limits)
 
     Notes
     -----
@@ -275,6 +285,12 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
 
             data_values = self.data_values
 
+            if log:
+                data_values = data_values[data_values > 0]
+                if len(data_values) == 0:
+                    self.set(lower=0.1, upper=1, percentile=percentile, log=log)
+                    return
+
             try:
                 lower = np.nanpercentile(data_values, exclude)
                 upper = np.nanpercentile(data_values, 100 - exclude)
@@ -282,6 +298,10 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
                 data_values = data_values[~np.isnan(data_values)]
                 lower = np.percentile(data_values, exclude)
                 upper = np.percentile(data_values, 100 - exclude)
+
+            if self.data_component.categorical:
+                lower = np.floor(lower - 0.5) + 0.5
+                upper = np.ceil(upper + 0.5) - 0.5
 
             self.set(lower=lower, upper=upper, percentile=percentile, log=log)
 
@@ -294,17 +314,102 @@ class StateAttributeSingleValueHelper(StateAttributeCacheHelper):
     values_names = ('value',)
     modifiers_names = ()
 
-    def __init__(self, state, attribute, function, **kwargs):
+    def __init__(self, state, attribute, function, mode='values', **kwargs):
         self._function = function
         super(StateAttributeSingleValueHelper, self).__init__(state, attribute, **kwargs)
         if self.attribute is not None:
             self._update_attribute()
+        if mode in ('values', 'component'):
+            self.mode = mode
+        else:
+            raise ValueError('mode should be one of "values" or "component"')
 
     def update_values(self, use_default_modifiers=False, **properties):
         if not any(prop in properties for prop in ('attribute',)) or self.data is None:
             self.set()
         else:
-            self.set(value=self._function(self.data_values))
+            if self.mode == 'values':
+                arg = self.data_values
+            else:
+                arg = self.data_component
+            self.set(value=self._function(arg))
+
+
+class StateAttributeHistogramHelper(StateAttributeCacheHelper):
+
+    values_names = ('lower', 'upper', 'n_bin')
+    modifiers_names = ()
+
+    def __init__(self, *args, **kwargs):
+
+        self._max_n_bin = kwargs.pop('max_n_bin', 30)
+        self._default_n_bin = kwargs.pop('default_n_bin', 15)
+
+        common_n_bin_att = kwargs.pop('common_n_bin', None)
+
+        super(StateAttributeHistogramHelper, self).__init__(*args, **kwargs)
+
+        if common_n_bin_att is not None:
+            if getattr(self._state, common_n_bin_att):
+                self._common_n_bin = self._default_n_bin
+            else:
+                self._common_n_bin = None
+            self._state.add_callback(common_n_bin_att, self._update_common_n_bin)
+        else:
+            self._common_n_bin = None
+
+        print(self._cache)
+
+    def _apply_common_n_bin(self):
+        for att in self._cache:
+            cmp = self.data.get_component(att)
+            if not cmp.categorical:
+                self._cache[att]['n_bin'] = self._common_n_bin
+
+    def _update_common_n_bin(self, common_n_bin):
+        if common_n_bin:
+            if self.data_component.categorical:
+                self._common_n_bin = self._default_n_bin
+            else:
+                self._common_n_bin = self.n_bin
+            self._apply_common_n_bin()
+        else:
+            self._common_n_bin = None
+
+    def update_values(self, use_default_modifiers=False, **properties):
+
+        if not any(prop in properties for prop in ('attribute', 'n_bin')) or self.data is None:
+            self.set()
+            return
+
+        comp = self.data_component
+
+        if 'n_bin' in properties:
+            self.set()
+            if self._common_n_bin is not None and not comp.categorical:
+                self._common_n_bin = properties['n_bin']
+                self._apply_common_n_bin()
+
+        if 'attribute' in properties:
+
+            if comp.categorical:
+
+                n_bin = max(1, min(comp.categories.size, self._max_n_bin))
+                lower = -0.5
+                upper = lower + comp.categories.size
+
+            else:
+
+                if self._common_n_bin is None:
+                    n_bin = self._default_n_bin
+                else:
+                    n_bin = self._common_n_bin
+
+                values = self.data_values
+                lower = np.nanmin(values)
+                upper = np.nanmax(values)
+
+            self.set(lower=lower, upper=upper, n_bin=n_bin)
 
 
 if __name__ == "__main__":

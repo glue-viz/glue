@@ -22,7 +22,7 @@ from glue.tests.helpers import requires_ipython
 from glue.utils.qt import process_dialog
 from glue.viewers.image.qt import ImageWidget
 from glue.viewers.scatter.qt import ScatterWidget
-from glue.viewers.histogram.qt import HistogramWidget
+from glue.viewers.histogram.qt import HistogramViewer
 
 
 from ..application import GlueApplication
@@ -315,9 +315,9 @@ class TestApplicationSession(object):
         dc = DataCollection([d])
 
         app = GlueApplication(dc)
-        w1 = app.new_data_viewer(HistogramWidget, data=d)
+        w1 = app.new_data_viewer(HistogramViewer, data=d)
         app.new_tab()
-        w2 = app.new_data_viewer(HistogramWidget, data=d)
+        w2 = app.new_data_viewer(HistogramViewer, data=d)
         assert app.viewers == ((w1,), (w2,))
 
         self.check_clone(app)
@@ -327,7 +327,7 @@ class TestApplicationSession(object):
         dc = DataCollection([d])
 
         app = GlueApplication(dc)
-        w = app.new_data_viewer(HistogramWidget, data=d)
+        w = app.new_data_viewer(HistogramViewer, data=d)
         self.check_clone(app)
 
         dc.new_subset_group()

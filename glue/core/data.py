@@ -698,19 +698,34 @@ class Data(object):
 
     @contract(old=ComponentID, new=ComponentID)
     def update_id(self, old, new):
-        """Reassign a component to a different :class:`glue.core.component_id.ComponentID`
+        """
+        Reassign a component to a different :class:`glue.core.component_id.ComponentID`
 
-        :param old: The old :class:`glue.core.component_id.ComponentID`.
-        :param new: The new :class:`glue.core.component_id.ComponentID`.
+        Parameters
+        ----------
+        old : :class:`glue.core.component_id.ComponentID`
+            The old component ID
+        new : :class:`glue.core.component_id.ComponentID`
+            The new component ID
         """
 
         if new is old:
             return
 
+        if new.parent is None:
+            new.parent = self
+
         changed = False
         if old in self._components:
-            self._components[new] = self._components[old]
+
+            # We want to keep the original order, so we can't just do:
+            #   self._components[new] = self._components[old]
+            # which will put the new component ID at the end, but instead
+            # we need to do:
+            self._components = OrderedDict((new, value) if key is old else (key, value)
+                                           for key, value in self._components.items())
             changed = True
+
         try:
             index = self._pixel_component_ids.index(old)
             self._pixel_component_ids[index] = new
@@ -730,7 +745,6 @@ class Data(object):
 
             # remove old component and broadcast the change
             # see #508 for discussion of this
-            self._components.pop(old)
             msg = ComponentReplacedMessage(self, old, new)
             self.hub.broadcast(msg)
 

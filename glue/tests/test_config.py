@@ -9,11 +9,11 @@ def test_default_clients():
 
     from glue.viewers.image.qt import ImageWidget
     from glue.viewers.scatter.qt import ScatterWidget
-    from glue.viewers.histogram.qt import HistogramWidget
+    from glue.viewers.histogram.qt import HistogramViewer
 
     assert ImageWidget in qt_client
     assert ScatterWidget in qt_client
-    assert HistogramWidget in qt_client
+    assert HistogramViewer in qt_client
 
 
 def test_add_client():

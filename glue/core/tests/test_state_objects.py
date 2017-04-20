@@ -5,7 +5,7 @@ from glue.external.echo import CallbackProperty, ListCallbackProperty
 from glue.core import Data, DataCollection
 
 from .test_state import clone
-from ..state_objects import State, StateAttributeLimitsHelper, StateAttributeSingleValueHelper
+from ..state_objects import State, StateAttributeLimitsHelper, StateAttributeSingleValueHelper, StateAttributeHistogramHelper
 
 
 class SimpleTestState(State):
@@ -191,6 +191,183 @@ class TestStateAttributeSingleValueHelper():
         assert self.helper.value == 2.5
         self.state.comp = self.x_id
         assert self.helper.value == 42
+
+
+class TestStateAttributeHistogramHelper():
+
+    def setup_method(self, method):
+
+        self.data = Data(x=[-3.2, 4.3, 2.2, 5.4, 7.2, -1.1, 2.3],
+                         y=['a', 'f', 'd', 'e', 'f', 'f', 'a'], label='test_data')
+
+        self.data_collection = DataCollection([self.data])
+
+        class SimpleState(State):
+
+            layer = CallbackProperty()
+            comp = CallbackProperty()
+            x_min = CallbackProperty()
+            x_max = CallbackProperty()
+            n_bin = CallbackProperty()
+
+        self.state = SimpleState()
+
+        self.helper = StateAttributeHistogramHelper(self.state, attribute='comp',
+                                                    lower='x_min', upper='x_max', n_bin='n_bin')
+
+        self.state.data = self.data
+
+    def test_default_numerical(self):
+        self.state.comp = self.data.id['x']
+        assert self.state.x_min == -3.2
+        assert self.state.x_max == 7.2
+        assert self.state.n_bin == 15
+
+    def test_default_categorical(self):
+        self.state.comp = self.data.id['y']
+        assert self.state.x_min == -0.5
+        assert self.state.x_max == 3.5
+        assert self.state.n_bin == 4
+
+    def test_hitting_limits(self):
+
+        # FIXME: here we modify the internal defaults rather than making a new
+        # state helper, but this could be improved
+        self.helper._default_n_bin = 4
+        self.helper._max_n_bin = 3
+
+        self.state.comp = self.data.id['x']
+        assert self.state.x_min == -3.2
+        assert self.state.x_max == 7.2
+        assert self.state.n_bin == 4
+
+        self.state.comp = self.data.id['y']
+        assert self.state.x_min == -0.5
+        assert self.state.x_max == 3.5
+        assert self.state.n_bin == 3
+
+    def test_caching(self):
+        self.state.comp = self.data.id['x']
+        self.state.x_min = 2
+        self.state.x_max = 7
+        self.state.n_bin = 8
+        self.state.comp = self.data.id['y']
+        self.state.x_min = 1.5
+        self.state.x_max = 3.5
+        self.state.n_bin = 3
+        self.state.comp = self.data.id['x']
+        assert self.state.x_min == 2
+        assert self.state.x_max == 7
+        assert self.state.n_bin == 8
+        self.state.comp = self.data.id['y']
+        assert self.state.x_min == 1.5
+        assert self.state.x_max == 3.5
+        assert self.state.n_bin == 3
+
+
+def test_histogram_helper_common_n_bin():
+
+    data = Data(x=[-3.2, 4.3, 2.2],
+                y=['a', 'f', 'd'],
+                z=[1.1, 2.3, 1.2],
+                label='test_data')
+
+    class SimpleState(State):
+
+        layer = CallbackProperty()
+        comp = CallbackProperty()
+        x_min = CallbackProperty()
+        x_max = CallbackProperty()
+        n_bin = CallbackProperty()
+        common = CallbackProperty()
+
+    state = SimpleState()
+
+    helper = StateAttributeHistogramHelper(state, attribute='comp',
+                                           lower='x_min', upper='x_max', n_bin='n_bin',
+                                           common_n_bin='common')
+
+    state.data = data
+
+    state.comp = data.id['x']
+    state.n_bin = 9
+    state.comp = data.id['y']
+    assert state.n_bin == 3
+    state.comp = data.id['z']
+    assert state.n_bin == 15
+
+    state.n_bin = 12
+
+    state.common = True
+
+    state.comp = data.id['x']
+    assert state.n_bin == 12
+
+    state.n_bin = 11
+
+    state.comp = data.id['y']
+    assert state.n_bin == 3
+    state.comp = data.id['z']
+    assert state.n_bin == 11
+
+    state.common = False
+    state.n_bin = 13
+
+    state.comp = data.id['x']
+    assert state.n_bin == 11
+
+
+def test_histogram_helper_common_n_bin_active():
+
+    # Make sure that common_n_bin works as expected if True from start
+
+    data = Data(x=[-3.2, 4.3, 2.2],
+                y=['a', 'f', 'd'],
+                z=[1.1, 2.3, 1.2],
+                label='test_data')
+
+    class SimpleState(State):
+
+        layer = CallbackProperty()
+        comp = CallbackProperty()
+        x_min = CallbackProperty()
+        x_max = CallbackProperty()
+        n_bin = CallbackProperty()
+        common = CallbackProperty(True)
+
+    state = SimpleState()
+
+    helper = StateAttributeHistogramHelper(state, attribute='comp',
+                                           lower='x_min', upper='x_max', n_bin='n_bin',
+                                           common_n_bin='common')
+
+    state.data = data
+
+    state.comp = data.id['x']
+    state.n_bin = 9
+    state.comp = data.id['z']
+    assert state.n_bin == 9
+
+    state.n_bin = 12
+
+    state.common = True
+
+    state.comp = data.id['x']
+    assert state.n_bin == 12
+
+    state.n_bin = 11
+
+    state.comp = data.id['y']
+    assert state.n_bin == 3
+    state.comp = data.id['z']
+    assert state.n_bin == 11
+
+    state.common = False
+    state.n_bin = 13
+
+    state.comp = data.id['x']
+    assert state.n_bin == 11
+
 
 
 def test_limits_helper_initial_values():

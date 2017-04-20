@@ -80,7 +80,7 @@ def save_histogram(plot, index):
     """ Convert a single histogram to a D3PO plot
 
     :param plot: Glue histogram
-    :type plot: :class:`~glue.viewers.histogram.qt.HistogramWidget`
+    :type plot: :class:`~glue.viewers.histogram.qt.HistogramViewer`
 
     :param index: 1D index of plot on the page
     :type index: int
@@ -304,9 +304,9 @@ initialize('states.json', 'data.csv');
 
 try:
     from glue.viewers.scatter.qt import ScatterWidget
-    from glue.viewers.histogram.qt import HistogramWidget
+    from glue.viewers.histogram.qt import HistogramViewer
 except ImportError:
     pass
 else:
     DISPATCH[ScatterWidget] = save_scatter
-    DISPATCH[HistogramWidget] = save_histogram
+    DISPATCH[HistogramViewer] = save_histogram

@@ -8,7 +8,7 @@ from qtpy.QtCore import Qt
 from qtpy.uic import loadUi
 from glue.utils.qt import get_text
 
-__all__ = ['update_combobox', 'GlueTabBar', 'load_ui', 'process_dialog']
+__all__ = ['update_combobox', 'GlueTabBar', 'load_ui', 'process_dialog', 'combo_as_string']
 
 
 def update_combobox(combo, labeldata, default_index=0):
@@ -174,3 +174,12 @@ def process_dialog(delay=0, accept=False, reject=False, function=None):
     timer.start()
 
     yield
+
+
+def combo_as_string(combo):
+    """
+    Return the text labels of a combo box as a string to make it easier to
+    check the content of a combo box in tests.
+    """
+    items = [combo.itemText(i) for i in range(combo.count())]
+    return ":".join(items)

@@ -65,9 +65,9 @@ Here are the settings associated with each data viewer:
     ~ImageWidget.rgb_mode
     ~ImageWidget.slice
 
-.. currentmodule:: glue.viewers.histogram.qt.viewer_widget
+.. currentmodule:: glue.viewers.histogram.qt.data_viewer
 
-:class:`Histogram Viewer <HistogramWidget>`
+:class:`Histogram Viewer <HistogramViewer>`
 ---------------------------------------------
 
 .. autosummary::

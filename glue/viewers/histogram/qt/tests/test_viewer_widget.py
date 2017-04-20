@@ -6,137 +6,126 @@ import os
 
 import pytest
 
+from numpy.testing import assert_equal, assert_allclose
+
+from glue.core import Data
+from glue.core.roi import XRangeROI
+from glue.core.subset import RangeSubsetState, CategoricalROISubsetState
 from glue import core
+from glue.core.component_id import ComponentID
 from glue.core.tests.util import simple_session
+from glue.utils.qt import combo_as_string
+from glue.viewers.common.qt.tests.test_mpl_data_viewer import BaseTestMatplotlibDataViewer
+from glue.core.state import GlueUnSerializer
 
-from ..viewer_widget import HistogramWidget, _hash
+from ..data_viewer import HistogramViewer
+
+DATA = os.path.join(os.path.dirname(__file__), 'data')
 
 
-def mock_data():
-    return core.Data(label='d1', x=[1, 2, 3], y=[2, 3, 4])
+class TestHistogramCommon(BaseTestMatplotlibDataViewer):
+    def init_data(self):
+        return Data(label='d1', x=[3.4, 2.3, -1.1, 0.3], y=['a', 'b', 'c', 'a'])
+    viewer_cls = HistogramViewer
 
-os.environ['GLUE_TESTING'] = 'True'
 
-
-class TestHistogramWidget(object):
+class TestHistogramViewer(object):
 
     def setup_method(self, method):
-        self.data = mock_data()
+
+        self.data = Data(label='d1', x=[3.4, 2.3, -1.1, 0.3], y=['a', 'b', 'c', 'a'])
+
         self.session = simple_session()
-        self.collect = self.session.data_collection
         self.hub = self.session.hub
-        self.collect.append(self.data)
-        self.widget = HistogramWidget(self.session)
+
+        self.data_collection = self.session.data_collection
+        self.data_collection.append(self.data)
+
+        self.viewer = HistogramViewer(self.session)
+
+        self.data_collection.register_to_hub(self.hub)
+        self.viewer.register_to_hub(self.hub)
 
     def teardown_method(self, method):
-        self.widget.close()
+        self.viewer.close()
 
-    def set_up_hub(self):
-        self.collect.register_to_hub(self.hub)
-        self.widget.register_to_hub(self.hub)
-        return self.hub
+    def test_basic(self):
 
-    def assert_component_integrity(self, dc=None, widget=None):
-        dc = dc or self.collect
-        widget = widget or self.widget
-        combo = widget.ui.attributeCombo
-        row = 0
-        for data in dc:
-            if data not in widget._layer_artist_container:
-                continue
-            assert combo.itemText(row) == data.label
-            assert combo.itemData(row) == _hash(data)
-            row += 2  # next row is separator
-            for c in data.visible_components:
-                assert combo.itemText(row) == c.label
-                assert combo.itemData(row) == _hash(c)
-                row += 1
+        viewer_state = self.viewer.state
 
-    def test_attribute_set_with_combo(self):
-        self.widget.ui.attributeCombo.setCurrentIndex(1)
-        obj = self.widget.ui.attributeCombo.itemData(1)
-        assert self.widget.client.component is obj
+        # Check defaults when we add data
+        self.viewer.add_data(self.data)
 
-        obj = self.widget.ui.attributeCombo.itemData(0)
-        self.widget.ui.attributeCombo.setCurrentIndex(0)
-        assert self.widget.client.component is obj
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'x:y'
 
-    def test_attributes_populated_after_first_data_add(self):
-        d2 = self.data
-        self.collect.append(d2)
-        self.widget.add_data(d2)
-        assert self.widget.client.layer_present(d2)
-        print(list(self.widget.client._artists))
+        assert viewer_state.x_att is self.data.id['x']
+        assert viewer_state.x_min == -1.1
+        assert viewer_state.x_max == 3.4
+        assert viewer_state.y_min == 0.0
+        assert viewer_state.y_max == 1.2
 
-        self.assert_component_integrity()
+        assert viewer_state.hist_x_min == -1.1
+        assert viewer_state.hist_x_max == 3.4
+        assert viewer_state.hist_n_bin == 15
 
-    def test_double_add_ignored(self):
-        self.widget.add_data(self.data)
-        self.widget.add_data(self.data)
+        assert not viewer_state.cumulative
+        assert not viewer_state.normalize
+
+        assert not viewer_state.x_log
+        assert not viewer_state.y_log
+
+        assert len(viewer_state.layers) == 1
+
+        # Change to categorical component and check new values
+
+        viewer_state.x_att = self.data.id['y']
+
+        assert viewer_state.x_min == -0.5
+        assert viewer_state.x_max == 2.5
+        assert viewer_state.y_min == 0.0
+        assert viewer_state.y_max == 2.4
+
+        assert viewer_state.hist_x_min == -0.5
+        assert viewer_state.hist_x_max == 2.5
+        assert viewer_state.hist_n_bin == 3
+
+        assert not viewer_state.cumulative
+        assert not viewer_state.normalize
+
+        assert not viewer_state.x_log
+        assert not viewer_state.y_log
+
+    def test_flip(self):
+
+        viewer_state = self.viewer.state
+
+        self.viewer.add_data(self.data)
+
+        assert viewer_state.x_min == -1.1
+        assert viewer_state.x_max == 3.4
+
+        self.viewer.options_widget().button_flip_x.click()
+
+        assert viewer_state.x_min == 3.4
+        assert viewer_state.x_max == -1.1
 
     def test_remove_data(self):
-        """ should remove entry fom combo box """
-        hub = self.set_up_hub()
-        self.widget.add_data(self.data)
-        self.collect.remove(self.data)
-        assert not self.widget.data_present(self.data)
-
-    def test_remove_all_data(self):
-        self.set_up_hub()
-        self.collect.append(core.Data())
-        for data in list(self.collect):
-            self.collect.remove(data)
-            assert not self.widget.data_present(self.data)
-
-    @pytest.mark.parametrize(('box', 'prop'),
-                             [('normalized_box', 'normed'),
-                              ('autoscale_box', 'autoscale'),
-                              ('cumulative_box', 'cumulative'),
-                              ('xlog_box', 'xlog'),
-                              ('ylog_box', 'ylog')])
-    def test_check_box_syncs_to_property(self, box, prop):
-        box = getattr(self.widget.ui, box)
-        box.toggle()
-        assert getattr(self.widget.client, prop) == box.isChecked()
-        box.toggle()
-        assert getattr(self.widget.client, prop) == box.isChecked()
-
-    def test_nbin_change(self):
-        self.widget.ui.binSpinBox.setValue(7.0)
-        assert self.widget.client.nbins == 7
-
-    def test_update_xmin_xmax(self):
-
-        self.widget.ui.xmin.setText('-5')
-        self.widget.ui.xmin.editingFinished.emit()
-        assert self.widget.client.xlimits[0] == -5
-
-        self.widget.ui.xmax.setText('15')
-        self.widget.ui.xmax.editingFinished.emit()
-        assert self.widget.client.xlimits[1] == 15
+        self.viewer.add_data(self.data)
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'x:y'
+        self.data_collection.remove(self.data)
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == ''
 
     def test_update_component_updates_title(self):
-        self.widget.add_data(self.data)
-        for comp in self.data.visible_components:
-            self.widget.component = comp
-            assert self.widget.windowTitle() == str(comp)
-
-    def test_update_attributes_preserves_current_component(self):
-        self.widget.add_data(self.data)
-        self.widget.component = self.data.visible_components[1]
-        self.widget._update_attributes()
-        assert self.widget.component is self.data.visible_components[1]
-
-    def test_invalid_component_set(self):
-        with pytest.raises(IndexError) as exc:
-            self.widget.component = None
-        assert exc.value.args[0] == "Component not present: None"
+        self.viewer.add_data(self.data)
+        self.viewer.windowTitle() == 'x'
+        self.viewer.state.x_att = self.data.id['y']
+        self.viewer.windowTitle() == 'y'
 
     def test_combo_updates_with_component_add(self):
-        hub = self.set_up_hub()
-        self.widget.add_data(self.data)
-        self.data.add_component(self.data[self.data.components[0]], 'testing')
-        self.assert_component_integrity()
+        self.viewer.add_data(self.data)
+        self.data.add_component([3, 4, 1, 2], 'z')
+        assert self.viewer.state.x_att is self.data.id['x']
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'x:y:z'
 
     def test_nonnumeric_first_component(self):
         # regression test for #208. Shouldn't complain if
@@ -144,5 +133,365 @@ class TestHistogramWidget(object):
         data = core.Data()
         data.add_component(['a', 'b', 'c'], label='c1')
         data.add_component([1, 2, 3], label='c2')
-        self.collect.append(data)
-        self.widget.add_data(data)
+        self.data_collection.append(data)
+        self.viewer.add_data(data)
+
+    def test_histogram_values(self):
+
+        # Check the actual values of the histograms
+
+        viewer_state = self.viewer.state
+
+        self.viewer.add_data(self.data)
+
+        # Numerical attribute
+
+        viewer_state.hist_x_min = -5
+        viewer_state.hist_x_max = 5
+        viewer_state.hist_n_bin = 4
+
+        assert_allclose(self.viewer.state.y_max, 2.4)
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 1, 2, 1])
+        assert_allclose(self.viewer.layers[0].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+
+        cid = self.data.visible_components[0]
+        self.data_collection.new_subset_group('subset 1', cid < 2)
+
+        assert_allclose(self.viewer.layers[1].mpl_hist, [0, 1, 1, 0])
+        assert_allclose(self.viewer.layers[1].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+
+        viewer_state.normalize = True
+
+        assert_allclose(self.viewer.state.y_max, 0.24)
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0.1, 0.2, 0.1])
+        assert_allclose(self.viewer.layers[0].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[1].mpl_hist, [0, 0.2, 0.2, 0])
+        assert_allclose(self.viewer.layers[1].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+
+        viewer_state.cumulative = True
+
+        assert_allclose(self.viewer.state.y_max, 1.2)
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0.25, 0.75, 1.0])
+        assert_allclose(self.viewer.layers[0].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[1].mpl_hist, [0, 0.5, 1.0, 1.0])
+        assert_allclose(self.viewer.layers[1].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+
+        viewer_state.normalize = False
+
+        assert_allclose(self.viewer.state.y_max, 4.8)
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 1, 3, 4])
+        assert_allclose(self.viewer.layers[0].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[1].mpl_hist, [0, 1, 2, 2])
+        assert_allclose(self.viewer.layers[1].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+
+        viewer_state.cumulative = False
+
+        # Categorical attribute
+
+        viewer_state.x_att = self.data.id['y']
+
+        formatter = self.viewer.axes.xaxis.get_major_formatter()
+        xlabels = [formatter.format_data(pos) for pos in range(3)]
+        assert xlabels == ['a', 'b', 'c']
+
+        assert_allclose(self.viewer.state.y_max, 2.4)
+        assert_allclose(self.viewer.layers[0].mpl_hist, [2, 1, 1])
+        assert_allclose(self.viewer.layers[0].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[1].mpl_hist, [1, 0, 1])
+        assert_allclose(self.viewer.layers[1].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+
+        viewer_state.normalize = True
+
+        assert_allclose(self.viewer.state.y_max, 0.6)
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0.5, 0.25, 0.25])
+        assert_allclose(self.viewer.layers[0].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[1].mpl_hist, [0.5, 0, 0.5])
+        assert_allclose(self.viewer.layers[1].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+
+        viewer_state.cumulative = True
+
+        assert_allclose(self.viewer.state.y_max, 1.2)
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0.5, 0.75, 1])
+        assert_allclose(self.viewer.layers[0].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[1].mpl_hist, [0.5, 0.5, 1])
+        assert_allclose(self.viewer.layers[1].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+
+        viewer_state.normalize = False
+
+        assert_allclose(self.viewer.state.y_max, 4.8)
+        assert_allclose(self.viewer.layers[0].mpl_hist, [2, 3, 4])
+        assert_allclose(self.viewer.layers[0].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[1].mpl_hist, [1, 1, 2])
+        assert_allclose(self.viewer.layers[1].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+
+        # TODO: add tests for log
+
+    def test_apply_roi(self):
+
+        # Check that when doing an ROI selection, the ROI clips to the bin edges
+        # outside the selection
+
+        viewer_state = self.viewer.state
+
+        self.viewer.add_data(self.data)
+
+        viewer_state.hist_x_min = -5
+        viewer_state.hist_x_max = 5
+        viewer_state.hist_n_bin = 4
+
+        roi = XRangeROI(-0.2, 0.1)
+
+        assert len(self.viewer.layers) == 1
+
+        self.viewer.apply_roi(roi)
+
+        assert len(self.viewer.layers) == 2
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 1, 2, 1])
+        assert_allclose(self.viewer.layers[1].mpl_hist, [0, 1, 2, 0])
+
+        assert_allclose(self.data.subsets[0].to_mask(), [0, 1, 1, 1])
+
+        state = self.data.subsets[0].subset_state
+        assert isinstance(state, RangeSubsetState)
+
+        assert state.lo == -2.5
+        assert state.hi == 2.5
+
+        # TODO: add a similar test in log space
+
+    def test_apply_roi_categorical(self):
+
+        # Check that when doing an ROI selection, the ROI clips to the bin edges
+        # outside the selection
+
+        viewer_state = self.viewer.state
+
+        self.viewer.add_data(self.data)
+
+        viewer_state.x_att = self.data.id['y']
+
+        roi = XRangeROI(0.3, 0.9)
+
+        assert len(self.viewer.layers) == 1
+
+        self.viewer.apply_roi(roi)
+
+        assert len(self.viewer.layers) == 2
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [2, 1, 1])
+        assert_allclose(self.viewer.layers[1].mpl_hist, [2, 1, 0])
+
+        assert_allclose(self.data.subsets[0].to_mask(), [1, 1, 0, 1])
+
+        state = self.data.subsets[0].subset_state
+        assert isinstance(state, CategoricalROISubsetState)
+
+        assert_equal(state.roi.categories, ['a', 'b'])
+
+    def test_axes_labels(self):
+
+        viewer_state = self.viewer.state
+
+        self.viewer.add_data(self.data)
+
+        assert self.viewer.axes.get_xlabel() == 'x'
+        assert self.viewer.axes.get_ylabel() == 'Number'
+
+        viewer_state.x_log = True
+
+        assert self.viewer.axes.get_xlabel() == 'Log x'
+        assert self.viewer.axes.get_ylabel() == 'Number'
+
+        viewer_state.x_att = self.data.id['y']
+
+        assert self.viewer.axes.get_xlabel() == 'y'
+        assert self.viewer.axes.get_ylabel() == 'Number'
+
+        viewer_state.normalize = True
+
+        assert self.viewer.axes.get_xlabel() == 'y'
+        assert self.viewer.axes.get_ylabel() == 'Normalized number'
+
+        viewer_state.normalize = False
+        viewer_state.cumulative = True
+
+        assert self.viewer.axes.get_xlabel() == 'y'
+        assert self.viewer.axes.get_ylabel() == 'Number'
+
+    def test_y_min_y_max(self):
+
+        # Regression test for a bug that caused y_max to not be set correctly
+        # when multiple subsets were present and after turning on normalization
+        # after switching to a different attribute from that used to make the
+        # selection.
+
+        viewer_state = self.viewer.state
+        self.viewer.add_data(self.data)
+
+        self.data.add_component([3.4, 3.5, 10.2, 20.3], 'z')
+
+        viewer_state.x_att = self.data.id['x']
+
+        cid = self.data.visible_components[0]
+        self.data_collection.new_subset_group('subset 1', cid < 1)
+
+        cid = self.data.visible_components[0]
+        self.data_collection.new_subset_group('subset 2', cid < 2)
+
+        cid = self.data.visible_components[0]
+        self.data_collection.new_subset_group('subset 3', cid < 3)
+
+        assert_allclose(self.viewer.state.y_min, 0)
+        assert_allclose(self.viewer.state.y_max, 1.2)
+
+        viewer_state.x_att = self.data.id['z']
+
+        assert_allclose(self.viewer.state.y_min, 0)
+        assert_allclose(self.viewer.state.y_max, 2.4)
+
+        viewer_state.normalize = True
+
+        assert_allclose(self.viewer.state.y_min, 0)
+        assert_allclose(self.viewer.state.y_max, 0.5325443786982249)
+
+    def test_update_when_limits_unchanged(self):
+
+        # Regression test for glue-viz/glue#1010 - this bug caused histograms
+        # to not be recomputed if the attribute changed but the limits and
+        # number of bins did not.
+
+        viewer_state = self.viewer.state
+
+        self.viewer.add_data(self.data)
+
+        viewer_state.x_att = self.data.id['y']
+        viewer_state.hist_x_min = -10
+        viewer_state.hist_x_max = +10
+        viewer_state.hist_n_bin = 5
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0, 3, 1, 0])
+
+        viewer_state.x_att = self.data.id['x']
+        viewer_state.hist_x_min = -10
+        viewer_state.hist_x_max = +10
+        viewer_state.hist_n_bin = 5
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0, 2, 2, 0])
+
+        viewer_state.x_att = self.data.id['y']
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0, 3, 1, 0])
+
+        viewer_state.x_att = self.data.id['x']
+
+        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0, 2, 2, 0])
+
+    def test_component_replaced(self):
+
+        # regression test for 508 - if a component ID is replaced, we should
+        # make sure that the component ID is selected if the old component ID
+        # was selected
+
+        self.viewer.add_data(self.data)
+        self.viewer.state.x_att = self.data.components[0]
+        test = ComponentID('test')
+        self.data.update_id(self.viewer.state.x_att, test)
+        assert self.viewer.state.x_att is test
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'test:y'
+
+    def test_nbin_override_persists_over_numerical_attribute_change(self):
+
+        # regression test for #398
+
+        self.data.add_component([3, 4, 1, 2], 'z')
+
+        self.viewer.add_data(self.data)
+        self.viewer.state.x_att = self.data.id['x']
+        self.viewer.state.hist_n_bin = 7
+        self.viewer.state.x_att = self.data.id['z']
+        assert self.viewer.state.hist_n_bin == 7
+
+    @pytest.mark.parametrize('protocol', [0])
+    def test_session_back_compat(self, protocol):
+
+        filename = os.path.join(DATA, 'histogram_v{0}.glu'.format(protocol))
+
+        with open(filename, 'r') as f:
+            session = f.read()
+
+        state = GlueUnSerializer.loads(session)
+
+        ga = state.object('__main__')
+
+        dc = ga.session.data_collection
+
+        assert len(dc) == 1
+
+        assert dc[0].label == 'data'
+
+        viewer1 = ga.viewers[0][0]
+        assert len(viewer1.state.layers) == 2
+        assert viewer1.state.x_att is dc[0].id['a']
+        assert_allclose(viewer1.state.x_min, 0)
+        assert_allclose(viewer1.state.x_max, 9)
+        assert_allclose(viewer1.state.y_min, 0)
+        assert_allclose(viewer1.state.y_max, 2.4)
+        assert_allclose(viewer1.state.hist_x_min, 0)
+        assert_allclose(viewer1.state.hist_x_max, 9)
+        assert_allclose(viewer1.state.hist_n_bin, 6)
+        assert not viewer1.state.x_log
+        assert not viewer1.state.y_log
+        assert viewer1.state.layers[0].visible
+        assert not viewer1.state.layers[1].visible
+        assert not viewer1.state.cumulative
+        assert not viewer1.state.normalize
+
+        viewer2 = ga.viewers[0][1]
+        assert viewer2.state.x_att is dc[0].id['b']
+        assert_allclose(viewer2.state.x_min, 2)
+        assert_allclose(viewer2.state.x_max, 16)
+        assert_allclose(viewer2.state.y_min, 0)
+        assert_allclose(viewer2.state.y_max, 1.2)
+        assert_allclose(viewer2.state.hist_x_min, 2)
+        assert_allclose(viewer2.state.hist_x_max, 16)
+        assert_allclose(viewer2.state.hist_n_bin, 8)
+        assert not viewer2.state.x_log
+        assert not viewer2.state.y_log
+        assert viewer2.state.layers[0].visible
+        assert viewer2.state.layers[1].visible
+        assert not viewer2.state.cumulative
+        assert not viewer2.state.normalize
+
+        viewer3 = ga.viewers[0][2]
+        assert viewer3.state.x_att is dc[0].id['a']
+        assert_allclose(viewer3.state.x_min, 0)
+        assert_allclose(viewer3.state.x_max, 9)
+        assert_allclose(viewer3.state.y_min, 0.037037037037037035)
+        assert_allclose(viewer3.state.y_max, 0.7407407407407407)
+        assert_allclose(viewer3.state.hist_x_min, 0)
+        assert_allclose(viewer3.state.hist_x_max, 9)
+        assert_allclose(viewer3.state.hist_n_bin, 10)
+        assert not viewer3.state.x_log
+        assert viewer3.state.y_log
+        assert viewer3.state.layers[0].visible
+        assert viewer3.state.layers[1].visible
+        assert not viewer3.state.cumulative
+        assert viewer3.state.normalize
+
+        viewer4 = ga.viewers[0][3]
+        assert viewer4.state.x_att is dc[0].id['a']
+        assert_allclose(viewer4.state.x_min, -1)
+        assert_allclose(viewer4.state.x_max, 10)
+        assert_allclose(viewer4.state.y_min, 0)
+        assert_allclose(viewer4.state.y_max, 12)
+        assert_allclose(viewer4.state.hist_x_min, -1)
+        assert_allclose(viewer4.state.hist_x_max, 10)
+        assert_allclose(viewer4.state.hist_n_bin, 4)
+        assert not viewer4.state.x_log
+        assert not viewer4.state.y_log
+        assert viewer4.state.layers[0].visible
+        assert viewer4.state.layers[1].visible
+        assert viewer4.state.cumulative
+        assert not viewer4.state.normalize

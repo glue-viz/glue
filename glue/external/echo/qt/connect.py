@@ -28,6 +28,7 @@ def connect_checkable_button(instance, prop, widget):
     """
     add_callback(instance, prop, widget.setChecked)
     widget.toggled.connect(partial(setattr, instance, prop))
+    widget.setChecked(getattr(instance, prop) or False)
 
 
 def connect_text(instance, prop, widget):

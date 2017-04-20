@@ -187,7 +187,7 @@ def export_histogram(viewer):
         if not artist.visible:
             continue
         layer = artist.layer
-        x, y = _sanitize(artist.x[:-1], artist.y)
+        x, y = _sanitize(artist.mpl_bins[:-1], artist.mpl_hist)
         trace = dict(
             name=layer.label,
             type='bar',
@@ -195,16 +195,16 @@ def export_histogram(viewer):
             x=x,
             y=y)
         traces.append(trace)
-        ymax = max(ymax, artist.y.max())
+        ymax = max(ymax, artist.mpl_hist.max())
 
     xlabel = att.label
-    xmin, xmax = viewer.xmin, viewer.xmax
-    if viewer.xlog:
+    xmin, xmax = viewer.state.x_min, viewer.state.x_max
+    if viewer.state.x_log:
         xlabel = 'Log ' + xlabel
         xmin = np.log10(xmin)
         xmax = np.log10(xmax)
     xaxis = _axis(lo=xmin, hi=xmax, title=xlabel)
-    yaxis = _axis(log=viewer.ylog, lo=0 if not viewer.ylog else 1e-3,
+    yaxis = _axis(log=viewer.state.y_log, lo=0 if not viewer.state.y_log else 1e-3,
                   hi=ymax * 1.05)
 
     return traces, xaxis, yaxis
@@ -259,7 +259,7 @@ def can_save_plotly(application):
             if hasattr(viewer, '__plotly__'):
                 continue
 
-            if not isinstance(viewer, (ScatterWidget, HistogramWidget)):
+            if not isinstance(viewer, (ScatterWidget, HistogramViewer)):
                 raise ValueError("Plotly Export cannot handle viewer: %s"
                                  % type(viewer))
 
@@ -294,7 +294,7 @@ def save_plotly(application):
     logging.getLogger(__name__).debug(args, kwargs)
 
     # TODO: check what current GUI framework is
-    
+
     from glue.plugins.exporters.plotly.qt import QtPlotlyExporter
     exporter = QtPlotlyExporter(plotly_args=args, plotly_kwargs=kwargs)
     exporter.exec_()
@@ -304,9 +304,9 @@ DISPATCH = {}
 
 try:
     from glue.viewers.scatter.qt import ScatterWidget
-    from glue.viewers.histogram.qt import HistogramWidget
+    from glue.viewers.histogram.qt import HistogramViewer
 except ImportError:
     pass
 else:
     DISPATCH[ScatterWidget] = export_scatter
-    DISPATCH[HistogramWidget] = export_histogram
+    DISPATCH[HistogramViewer] = export_histogram

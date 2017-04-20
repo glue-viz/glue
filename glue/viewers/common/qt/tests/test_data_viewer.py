@@ -10,7 +10,7 @@ from glue.app.qt import GlueApplication
 
 from glue.core.tests.util import simple_session
 from ..data_viewer import DataViewer
-from glue.viewers.histogram.qt import HistogramWidget
+from glue.viewers.histogram.qt import HistogramViewer
 from glue.viewers.image.qt import ImageWidget
 from glue.viewers.scatter.qt import ScatterWidget
 
@@ -104,4 +104,4 @@ class TestDataViewerImage(BaseTestDataViewer):
 
 
 class TestDataViewerHistogram(BaseTestDataViewer):
-    widget_cls = HistogramWidget
+    widget_cls = HistogramViewer
