@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.10.3 (unreleased)
+v0.10.3 (2017-04-20)
 -------------------
 
 * Fixed bugs with saving and restoring of various types of subset states. [#1285]
