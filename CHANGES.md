@@ -13,6 +13,8 @@ v0.10.3 (unreleased)
 
 * Fixed bugs with saving and restoring of various types of subset states. [#1285]
 
+* Fixed a bug that caused glue to not open when IPython 4.0 was installed. [#1287]
+
 v0.10.2 (2017-03-22)
 --------------------
 
