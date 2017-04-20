@@ -7,7 +7,7 @@ from glue.external.echo import (delay_callback, CallbackProperty,
                                 HasCallbackProperties, CallbackList)
 from glue.core.state import saver, loader
 
-__all__ = ['State']
+__all__ = ['State', 'StateAttributeLimitsHelper', 'StateAttributeSingleValueHelper']
 
 
 @saver(CallbackList)
@@ -216,8 +216,9 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
     percentile : ``QComboBox`` instance, optional
         The scale mode combo - this will be populated by presets such as
         Min/Max, various percentile levels, and Custom.
-    log_button : ``QToolButton`` instance, optional
-        A button indicating whether the attribute should be shown in log space
+    log : bool
+        Whether the limits are in log mode (in which case only positive values
+        are used when finding the limits)
 
     Notes
     -----
@@ -274,6 +275,12 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             exclude = (100 - percentile) / 2.
 
             data_values = self.data_values
+
+            if log:
+                data_values = data_values[data_values > 0]
+                if len(data_values) == 0:
+                    self.set(lower=0.1, upper=1, percentile=percentile, log=log)
+                    return
 
             try:
                 lower = np.nanpercentile(data_values, exclude)
