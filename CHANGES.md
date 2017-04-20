@@ -19,7 +19,7 @@ v0.10.4 (unreleased)
 * Fixed a bug that caused merged datasets to crash viewers (because
   the visible_components attribute returned an empty list). [#1288]
 
-v0.10.3 (unreleased)
+v0.10.3 (2017-04-20)
 -------------------
 
 * Fixed bugs with saving and restoring of various types of subset states. [#1285]
