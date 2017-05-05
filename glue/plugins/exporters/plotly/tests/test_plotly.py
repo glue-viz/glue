@@ -9,7 +9,7 @@ from glue.core import Data, DataCollection
 pytest.importorskip('qtpy')
 
 from glue.app.qt import GlueApplication
-from glue.viewers.scatter.qt import ScatterWidget
+from glue.viewers.scatter.qt import ScatterViewer
 from glue.viewers.histogram.qt import HistogramViewer
 
 from ..export_plotly import build_plotly_call
@@ -29,7 +29,7 @@ class TestPlotly(object):
         d.style.markersize = 6
         d.style.color = '#ff0000'
         d.style.alpha = .4
-        v = app.new_data_viewer(ScatterWidget, data=d)
+        v = app.new_data_viewer(ScatterViewer, data=d)
         v.xatt = d.id['y']
         v.yatt = d.id['x']
 
@@ -55,7 +55,7 @@ class TestPlotly(object):
         s.subset_state = d.id['x'] > 1
         s.style.marker = 's'
 
-        v = app.new_data_viewer(ScatterWidget, data=d)
+        v = app.new_data_viewer(ScatterViewer, data=d)
         v.xatt = d.id['x']
         v.yatt = d.id['x']
 
@@ -71,7 +71,7 @@ class TestPlotly(object):
 
         app = self.app
 
-        v = app.new_data_viewer(ScatterWidget, data=self.data)
+        v = app.new_data_viewer(ScatterViewer, data=self.data)
 
         v.xlog = True
         v.xmin = 10

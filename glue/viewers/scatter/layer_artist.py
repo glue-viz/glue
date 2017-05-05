@@ -70,8 +70,6 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
     def _update_scatter(self, force=False, **kwargs):
 
-        print('_update_scatter', self.state.color, self.state.layer.style.color)
-
         if (self._viewer_state.x_att is None or
             self._viewer_state.y_att is None or
             self.state.layer is None):
@@ -98,8 +96,6 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
         self._last_viewer_state.update(self._viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
-
-        print('CHANGED', changed)
 
         if force or any(prop in changed for prop in ('layer', 'x_att', 'y_att')):
             self._update_scatter_data()

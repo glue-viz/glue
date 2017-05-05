@@ -9,7 +9,7 @@ For example::
 
     from glue.core import Data, DataCollection
     from glue.app.qt.application import GlueApplication
-    from glue.viewers.scatter.qt import ScatterWidget
+    from glue.viewers.scatter.qt import ScatterViewer
     import numpy as np
 
     # create some data
@@ -20,7 +20,7 @@ For example::
     ga = GlueApplication(dc)
 
     # plot x vs y, flip the x axis, log-scale y axis
-    scatter = ga.new_data_viewer(ScatterWidget)
+    scatter = ga.new_data_viewer(ScatterViewer)
     scatter.add_data(d)
     scatter.xatt = d.id['x']
     scatter.yatt = d.id['y']
@@ -38,21 +38,21 @@ Here are the settings associated with each data viewer:
 
 .. currentmodule:: glue.viewers.scatter.qt.viewer_widget
 
-:class:`Scatter Plots <ScatterWidget>`
+:class:`Scatter Plots <ScatterViewer>`
 --------------------------------------
 
 .. autosummary::
-    ~ScatterWidget.xlog
-    ~ScatterWidget.ylog
-    ~ScatterWidget.xflip
-    ~ScatterWidget.yflip
-    ~ScatterWidget.xmin
-    ~ScatterWidget.xmax
-    ~ScatterWidget.ymin
-    ~ScatterWidget.ymax
-    ~ScatterWidget.hidden
-    ~ScatterWidget.xatt
-    ~ScatterWidget.yatt
+    ~ScatterViewer.xlog
+    ~ScatterViewer.ylog
+    ~ScatterViewer.xflip
+    ~ScatterViewer.yflip
+    ~ScatterViewer.xmin
+    ~ScatterViewer.xmax
+    ~ScatterViewer.ymin
+    ~ScatterViewer.ymax
+    ~ScatterViewer.hidden
+    ~ScatterViewer.xatt
+    ~ScatterViewer.yatt
 
 .. currentmodule:: glue.viewers.image.qt.viewer_widget
 

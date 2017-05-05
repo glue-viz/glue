@@ -12,7 +12,7 @@ from glue.core.tests.util import simple_session
 from ..data_viewer import DataViewer
 from glue.viewers.histogram.qt import HistogramViewer
 from glue.viewers.image.qt import ImageWidget
-from glue.viewers.scatter.qt import ScatterWidget
+from glue.viewers.scatter.qt import ScatterViewer
 
 
 # TODO: We should maybe consider running these tests for all
@@ -95,7 +95,7 @@ class BaseTestDataViewer(object):
 
 
 class TestDataViewerScatter(BaseTestDataViewer):
-    widget_cls = ScatterWidget
+    widget_cls = ScatterViewer
 
 
 class TestDataViewerImage(BaseTestDataViewer):

@@ -10,7 +10,7 @@ from glue.core.message import SettingsChangeMessage
 from qtpy import QtWidgets
 from glue.app.qt.preferences import PreferencesDialog
 from glue.app.qt import GlueApplication
-from glue.viewers.scatter.qt import ScatterWidget
+from glue.viewers.scatter.qt import ScatterViewer
 from glue.viewers.image.qt import ImageWidget
 from glue.viewers.histogram.qt import HistogramViewer
 from glue.plugins.dendro_viewer.qt.viewer_widget import DendroWidget
@@ -307,7 +307,7 @@ def test_foreground_background_settings():
     # Make sure that settings change existing viewers, so we create a bunch of
     # viewers here.
 
-    scatter1 = app.new_data_viewer(ScatterWidget)
+    scatter1 = app.new_data_viewer(ScatterViewer)
     scatter1.add_data(d_1d)
 
     image1 = app.new_data_viewer(ImageWidget)
@@ -354,7 +354,7 @@ def test_foreground_background_settings():
 
         # Now make sure that new viewers also inherit these settings
 
-        scatter2 = app.new_data_viewer(ScatterWidget)
+        scatter2 = app.new_data_viewer(ScatterViewer)
         scatter2.add_data(d_1d)
 
         image2 = app.new_data_viewer(ImageWidget)
