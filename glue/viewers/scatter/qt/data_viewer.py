@@ -8,11 +8,11 @@ from glue.core.util import update_ticks
 from glue.utils import defer_draw
 
 from glue.viewers.common.qt.mpl_data_viewer import MatplotlibDataViewer
-from glue.viewers.scatter_new.qt.layer_style_editor import ScatterLayerStyleEditor
-from glue.viewers.scatter_new.layer_artist import ScatterLayerArtist
-from glue.viewers.scatter_new.qt.options_widget import ScatterOptionsWidget
-from glue.viewers.scatter_new.state import ScatterViewerState
-from glue.viewers.scatter_new.compat import update_viewer_state
+from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
+from glue.viewers.scatter.layer_artist import ScatterLayerArtist
+from glue.viewers.scatter.qt.options_widget import ScatterOptionsWidget
+from glue.viewers.scatter.state import ScatterViewerState
+from glue.viewers.scatter.compat import update_viewer_state
 
 from glue.core.state import lookup_class_with_patches
 
