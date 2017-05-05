@@ -117,9 +117,9 @@ class TestHistogramViewer(object):
 
     def test_update_component_updates_title(self):
         self.viewer.add_data(self.data)
-        self.viewer.windowTitle() == 'x'
+        assert self.viewer.windowTitle() == '1D Histogram'
         self.viewer.state.x_att = self.data.id['y']
-        self.viewer.windowTitle() == 'y'
+        assert self.viewer.windowTitle() == '1D Histogram'
 
     def test_combo_updates_with_component_add(self):
         self.viewer.add_data(self.data)

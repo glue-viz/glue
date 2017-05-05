@@ -6,11 +6,11 @@ import os
 
 import pytest
 
-from numpy.testing import assert_equal, assert_allclose
+from numpy.testing import assert_allclose
 
 from glue.core import Data
-from glue.core.roi import XRangeROI
-from glue.core.subset import RangeSubsetState, CategoricalROISubsetState
+from glue.core.roi import RectangularROI
+from glue.core.subset import RoiSubsetState, AndState
 from glue import core
 from glue.core.component_id import ComponentID
 from glue.core.tests.util import simple_session
@@ -117,11 +117,11 @@ class TestScatterViewer(object):
         assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == ''
         assert combo_as_string(self.viewer.options_widget().ui.combodata_y_att) == ''
 
-#     def test_update_component_updates_title(self):
-#         self.viewer.add_data(self.data)
-#         self.viewer.windowTitle() == 'x'
-#         self.viewer.state.x_att = self.data.id['y']
-#         self.viewer.windowTitle() == 'y'
+    def test_update_component_updates_title(self):
+        self.viewer.add_data(self.data)
+        assert self.viewer.windowTitle() == '2D Scatter'
+        self.viewer.state.x_att = self.data.id['y']
+        assert self.viewer.windowTitle() == '2D Scatter'
 
     def test_combo_updates_with_component_add(self):
         self.viewer.add_data(self.data)
@@ -140,68 +140,45 @@ class TestScatterViewer(object):
         self.data_collection.append(data)
         self.viewer.add_data(data)
 
-#     def test_apply_roi(self):
-#
-#         # Check that when doing an ROI selection, the ROI clips to the bin edges
-#         # outside the selection
-#
-#         viewer_state = self.viewer.state
-#
-#         self.viewer.add_data(self.data)
-#
-#         viewer_state.hist_x_min = -5
-#         viewer_state.hist_x_max = 5
-#         viewer_state.hist_n_bin = 4
-#
-#         roi = XRangeROI(-0.2, 0.1)
-#
-#         assert len(self.viewer.layers) == 1
-#
-#         self.viewer.apply_roi(roi)
-#
-#         assert len(self.viewer.layers) == 2
-#
-#         assert_allclose(self.viewer.layers[0].mpl_hist, [0, 1, 2, 1])
-#         assert_allclose(self.viewer.layers[1].mpl_hist, [0, 1, 2, 0])
-#
-#         assert_allclose(self.data.subsets[0].to_mask(), [0, 1, 1, 1])
-#
-#         state = self.data.subsets[0].subset_state
-#         assert isinstance(state, RangeSubsetState)
-#
-#         assert state.lo == -2.5
-#         assert state.hi == 2.5
-#
-#         # TODO: add a similar test in log space
-#
-#     def test_apply_roi_categorical(self):
-#
-#         # Check that when doing an ROI selection, the ROI clips to the bin edges
-#         # outside the selection
-#
-#         viewer_state = self.viewer.state
-#
-#         self.viewer.add_data(self.data)
-#
-#         viewer_state.x_att = self.data.id['y']
-#
-#         roi = XRangeROI(0.3, 0.9)
-#
-#         assert len(self.viewer.layers) == 1
-#
-#         self.viewer.apply_roi(roi)
-#
-#         assert len(self.viewer.layers) == 2
-#
-#         assert_allclose(self.viewer.layers[0].mpl_hist, [2, 1, 1])
-#         assert_allclose(self.viewer.layers[1].mpl_hist, [2, 1, 0])
-#
-#         assert_allclose(self.data.subsets[0].to_mask(), [1, 1, 0, 1])
-#
-#         state = self.data.subsets[0].subset_state
-#         assert isinstance(state, CategoricalROISubsetState)
-#
-#         assert_equal(state.roi.categories, ['a', 'b'])
+    def test_apply_roi(self):
+
+        self.viewer.add_data(self.data)
+
+        roi = RectangularROI(0, 3, 3.25, 3.45)
+
+        assert len(self.viewer.layers) == 1
+
+        self.viewer.apply_roi(roi)
+
+        assert len(self.viewer.layers) == 2
+        assert len(self.data.subsets) == 1
+
+        assert_allclose(self.data.subsets[0].to_mask(), [0, 1, 0, 0])
+
+        state = self.data.subsets[0].subset_state
+        assert isinstance(state, RoiSubsetState)
+
+    def test_apply_roi_categorical(self):
+
+        viewer_state = self.viewer.state
+
+        self.viewer.add_data(self.data)
+
+        viewer_state.y_att = self.data.id['z']
+
+        roi = RectangularROI(0, 3, -0.4, 0.3)
+
+        assert len(self.viewer.layers) == 1
+
+        self.viewer.apply_roi(roi)
+
+        assert len(self.viewer.layers) == 2
+        assert len(self.data.subsets) == 1
+
+        assert_allclose(self.data.subsets[0].to_mask(), [0, 0, 0, 1])
+
+        state = self.data.subsets[0].subset_state
+        assert isinstance(state, AndState)
 #
     def test_axes_labels(self):
 
