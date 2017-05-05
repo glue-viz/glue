@@ -356,3 +356,13 @@ class TestDataCollection(object):
         dc.merge(x, y)
 
         assert sorted(cid.label for cid in dc[0].world_component_ids) == ['Custom 0']
+
+    def test_merge_visible_components(self):
+        # Regression test for a bug that caused visible_components to be empty
+        # for a dataset made from merging other datasets.
+        x = Data(x=[1, 2, 3], label='dx')
+        y = Data(y=[2, 3, 4], label='dy')
+        dc = DataCollection([x, y])
+        dc.merge(x, y)
+        assert dc[0].visible_components[0] is x.id['x']
+        assert dc[0].visible_components[1] is y.id['y']
