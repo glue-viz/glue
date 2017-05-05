@@ -276,3 +276,10 @@ class TestScatterViewer(object):
         assert viewer3.state.layers[0].visible
         assert viewer3.state.layers[1].visible
         assert not viewer3.state.layers[2].visible
+
+    def test_save_svg(self, tmpdir):
+        # Regression test for a bug in AxesCache that caused SVG saving to
+        # fail (because renderer.buffer_rgba did not exist)
+        self.viewer.add_data(self.data)
+        filename = tmpdir.join('test.svg').strpath
+        self.viewer.axes.figure.savefig(filename)
