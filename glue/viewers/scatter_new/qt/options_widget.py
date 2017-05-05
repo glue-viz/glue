@@ -25,13 +25,13 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
 
         viewer_state.add_callback('layers', self._update_combo_data)
 
-        self.xatt_helper = ComponentIDComboHelper(self.ui.combodata_x_att,
-                                                  session.data_collection,
-                                                  default_index=0)
+        self.x_att_helper = ComponentIDComboHelper(self.ui.combodata_x_att,
+                                                   session.data_collection,
+                                                   default_index=0)
 
-        self.yatt_helper = ComponentIDComboHelper(self.ui.combodata_y_att,
-                                                  session.data_collection,
-                                                  default_index=1)
+        self.y_att_helper = ComponentIDComboHelper(self.ui.combodata_y_att,
+                                                   session.data_collection,
+                                                   default_index=1)
 
         self.viewer_state = viewer_state
 
@@ -52,5 +52,5 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
                 if layer_state.layer not in layers:
                     layers.append(layer_state.layer)
 
-        self.xatt_helper.set_multiple_data(layers)
-        self.yatt_helper.set_multiple_data(layers)
+        self.x_att_helper.set_multiple_data(layers)
+        self.y_att_helper.set_multiple_data(layers)

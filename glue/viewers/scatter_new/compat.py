@@ -3,7 +3,7 @@ import uuid
 from .state import ScatterLayerState
 
 STATE_CLASS = {}
-STATE_CLASS['HistogramLayerArtist'] = ScatterLayerState
+STATE_CLASS['ScatterLayerArtist'] = ScatterLayerState
 
 
 def update_viewer_state(rec, context):
@@ -27,14 +27,12 @@ def update_viewer_state(rec, context):
         viewer_state = rec['state']['values']
         viewer_state['x_min'] = properties['xmin']
         viewer_state['x_max'] = properties['xmax']
-        viewer_state['hist_n_bin'] = int(properties['nbins'])
-        viewer_state['hist_x_min'] = properties['xmin']
-        viewer_state['hist_x_max'] = properties['xmax']
+        viewer_state['y_min'] = properties['ymin']
+        viewer_state['y_max'] = properties['ymax']
         viewer_state['x_log'] = properties['xlog']
         viewer_state['y_log'] = properties['ylog']
-        viewer_state['normalize'] = properties['normed']
-        viewer_state['cumulative'] = properties['cumulative']
-        viewer_state['x_att'] = properties['component']
+        viewer_state['x_att'] = properties['xatt']
+        viewer_state['y_att'] = properties['yatt']
 
         layer_states = []
 
