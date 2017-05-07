@@ -33,13 +33,16 @@ class TestScatterViewer(object):
 
     def setup_method(self, method):
 
-        self.data = Data(label='d1', x=[3.4, 2.3, -1.1, 0.3], y=[3.2, 3.3, 3.4, 3.5], z=['a', 'b', 'c', 'a'])
+        self.data = Data(label='d1', x=[3.4, 2.3, -1.1, 0.3],
+                         y=[3.2, 3.3, 3.4, 3.5], z=['a', 'b', 'c', 'a'])
+        self.data_2d = Data(label='d2', a=[[1, 2], [3, 4]], b=[[5, 6], [7, 8]])
 
         self.session = simple_session()
         self.hub = self.session.hub
 
         self.data_collection = self.session.data_collection
         self.data_collection.append(self.data)
+        self.data_collection.append(self.data_2d)
 
         self.viewer = ScatterViewer(self.session)
 
@@ -179,7 +182,7 @@ class TestScatterViewer(object):
 
         state = self.data.subsets[0].subset_state
         assert isinstance(state, AndState)
-#
+
     def test_axes_labels(self):
 
         viewer_state = self.viewer.state
@@ -283,3 +286,19 @@ class TestScatterViewer(object):
         self.viewer.add_data(self.data)
         filename = tmpdir.join('test.svg').strpath
         self.viewer.axes.figure.savefig(filename)
+
+    def test_2d(self):
+
+        viewer_state = self.viewer.state
+
+        self.viewer.add_data(self.data_2d)
+
+        assert viewer_state.x_att is self.data_2d.id['a']
+        assert viewer_state.x_min == 1
+        assert viewer_state.x_max == 4
+
+        assert viewer_state.y_att is self.data_2d.id['b']
+        assert viewer_state.y_min == 5
+        assert viewer_state.y_max == 8
+
+        assert len(self.viewer.layers[0].mpl_artists) == 1

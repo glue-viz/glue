@@ -36,7 +36,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
     def _update_scatter_data(self):
 
         try:
-            x = self.layer[self._viewer_state.x_att]
+            x = self.layer[self._viewer_state.x_att].ravel()
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self._viewer_state.x_att)
@@ -45,7 +45,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             self._enabled = True
 
         try:
-            y = self.layer[self._viewer_state.y_att]
+            y = self.layer[self._viewer_state.y_att].ravel()
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self._viewer_state.y_att)
