@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from glue.core import Data
 
-from glue.viewers.common.mpl_state import (MatplotlibDataViewerState,
+from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
                                            DeferredDrawCallbackProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper

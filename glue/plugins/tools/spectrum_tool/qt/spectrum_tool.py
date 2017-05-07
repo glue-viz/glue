@@ -15,14 +15,14 @@ from glue.core.exceptions import IncompatibleAttribute
 from glue.core import Subset
 from glue.core.callback_property import add_callback, ignore_callback
 from glue.config import fit_plugin, viewer_tool
-from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
+from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.qt.mime import LAYERS_MIME_TYPE
 from glue.viewers.common.qt.mouse_mode import RoiMode
 from glue.utils.qt import load_ui
 from glue.core.qt.simpleforms import build_form_item
 from glue.utils.qt.widget_properties import CurrentComboProperty
 from glue.app.qt.mdi_area import GlueMdiSubWindow
-from glue.viewers.common.qt.mpl_widget import MplWidget
+from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.utils import nonpartial, Pointer
 from glue.utils.qt import Worker, messagebox_on_error
 from glue.core import roi as core_roi

@@ -10,14 +10,14 @@ from glue import core
 from glue.config import viewer_tool
 from glue.viewers.image.ds9norm import DS9Normalize
 from glue.viewers.image.client import MplImageClient
-from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
+from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.viewers.common.qt.mouse_mode import (RectangleMode, CircleMode, PolyMode,
                                 ContrastMode)
 from glue.icons.qt import get_icon
 from glue.utils.qt.widget_properties import CurrentComboProperty, ButtonProperty, connect_current_combo, _find_combo_data
 from glue.viewers.common.qt.data_slice_widget import DataSlice
 from glue.viewers.common.qt.data_viewer import DataViewer
-from glue.viewers.common.qt.mpl_widget import MplWidget, defer_draw
+from glue.viewers.matplotlib.qt.widget import MplWidget, defer_draw
 from glue.utils import nonpartial, Pointer
 from glue.utils.qt import cmap2pixmap, update_combobox, load_ui
 from glue.viewers.common.qt.tool import Tool

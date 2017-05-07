@@ -1,13 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.viewers.common.qt.data_viewer import DataViewer
-from glue.viewers.common.qt.mpl_widget import MplWidget
+from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.common.viz_client import init_mpl, update_appearance_from_settings
 from glue.external.echo import add_callback
 from glue.utils import nonpartial, defer_draw
 from glue.utils.decorators import avoid_circular
-from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
-from glue.viewers.common.mpl_state import MatplotlibDataViewerState
+from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
+from glue.viewers.matplotlib.state import MatplotlibDataViewerState
 from glue.core import message as msg
 from glue.core import Data
 from glue.core.exceptions import IncompatibleDataException

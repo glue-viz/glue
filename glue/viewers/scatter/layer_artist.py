@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from glue.utils import defer_draw
 
 from glue.viewers.scatter.state import ScatterLayerState
-from glue.viewers.common.mpl_layer_artist import MatplotlibLayerArtist
+from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 
 

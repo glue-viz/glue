@@ -23,7 +23,7 @@ from glue.app.qt.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from glue.app.qt.mdi_area import GlueMdiArea, GlueMdiSubWindow
 from glue.app.qt.layer_tree_widget import PlotAction, LayerTreeWidget
 from glue.app.qt.preferences import PreferencesDialog
-from glue.viewers.common.qt.mpl_widget import defer_draw
+from glue.viewers.matplotlib.qt.widget import defer_draw
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.image.qt import ImageWidget
 from glue.viewers.scatter.qt import ScatterViewer

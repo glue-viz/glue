@@ -1,14 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.utils import nonpartial
-from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
+from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core import Data
 from glue.core.util import update_ticks
 from glue.core.roi import RangeROI
 from glue.utils import defer_draw
 
-from glue.viewers.common.qt.mpl_data_viewer import MatplotlibDataViewer
+from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.histogram.qt.layer_style_editor import HistogramLayerStyleEditor
 from glue.viewers.histogram.layer_artist import HistogramLayerArtist
 from glue.viewers.histogram.qt.options_widget import HistogramOptionsWidget

@@ -108,7 +108,7 @@ Viewers
    :no-inheritance-diagram:
    :inherited-members:
 
-.. automodapi:: glue.viewers.common.qt.mpl_toolbar
+.. automodapi:: glue.viewers.matplotlib.qt.toolbar
    :no-inheritance-diagram:
    :inherited-members:
 

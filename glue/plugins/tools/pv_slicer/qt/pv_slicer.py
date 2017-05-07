@@ -4,7 +4,7 @@ import numpy as np
 
 from glue.viewers.common.qt.mouse_mode import PathMode
 from glue.viewers.image.qt import StandaloneImageWidget
-from glue.viewers.common.qt.mpl_widget import defer_draw
+from glue.viewers.matplotlib.qt.widget import defer_draw
 from glue.external.echo import add_callback
 from glue.config import viewer_tool
 
