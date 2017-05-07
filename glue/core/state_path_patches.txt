@@ -16,3 +16,4 @@ glue.qt.widgets.histogram_widget.HistogramWidget -> glue.viewers.histogram.qt.da
 glue.qt.glue_application.GlueApplication -> glue.app.qt.application.GlueApplication
 glue_vispy_viewers.common.toolbar.PatchedElementSubsetState -> glue.core.subset.ElementSubsetState
 glue.viewers.histogram.qt.viewer_widget.HistogramWidget -> glue.viewers.histogram.qt.data_viewer.HistogramViewer
+glue.viewers.scatter.qt.viewer_widget.ScatterWidget -> glue.viewers.scatter.qt.data_viewer.ScatterViewer
