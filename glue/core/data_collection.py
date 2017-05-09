@@ -266,6 +266,7 @@ class DataCollection(HubListener):
 
                 lbl = disambiguate(lbl, taken)
                 c._label = lbl
+                c.parent = master
                 master.add_component(d.get_component(c), c)
 
             self.remove(d)
