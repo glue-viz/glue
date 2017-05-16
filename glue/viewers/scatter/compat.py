@@ -6,7 +6,7 @@ STATE_CLASS = {}
 STATE_CLASS['ScatterLayerArtist'] = ScatterLayerState
 
 
-def update_viewer_state(rec, context):
+def update_scatter_viewer_state(rec, context):
     """
     Given viewer session information, make sure the session information is
     compatible with the current version of the viewers, and if not, update

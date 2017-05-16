@@ -11,6 +11,7 @@ from glue.viewers.matplotlib.state import MatplotlibDataViewerState
 from glue.core import message as msg
 from glue.core import Data
 from glue.core.exceptions import IncompatibleDataException
+from glue.core.state import lookup_class_with_patches
 
 __all__ = ['MatplotlibDataViewer']
 
@@ -219,3 +220,40 @@ class MatplotlibDataViewer(DataViewer):
     def unregister(self, hub):
         super(MatplotlibDataViewer, self).unregister(hub)
         hub.unsubscribe_all(self)
+
+    def __gluestate__(self, context):
+        return dict(state=self.state.__gluestate__(context),
+                    session=context.id(self._session),
+                    size=self.viewer_size,
+                    pos=self.position,
+                    layers=list(map(context.do, self.layers)),
+                    _protocol=1)
+
+    def update_viewer_state(rec, context):
+        pass
+
+    @classmethod
+    @defer_draw
+    def __setgluestate__(cls, rec, context):
+
+        if rec.get('_protocol', 0) < 1:
+            cls.update_viewer_state(rec, context)
+
+        session = context.object(rec['session'])
+        viewer = cls(session)
+        viewer.register_to_hub(session.hub)
+        viewer.viewer_size = rec['size']
+        x, y = rec['pos']
+        viewer.move(x=x, y=y)
+
+        viewer_state = cls._state_cls.__setgluestate__(rec['state'], context)
+        viewer.state.update_from_state(viewer_state)
+
+        # Restore layer artists
+        for l in rec['layers']:
+            cls = lookup_class_with_patches(l.pop('_type'))
+            layer_state = context.object(l['state'])
+            layer_artist = cls(viewer.axes, viewer.state, layer_state=layer_state)
+            viewer._layer_artist_container.append(layer_artist)
+
+        return viewer

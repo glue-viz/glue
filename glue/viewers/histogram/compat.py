@@ -6,7 +6,7 @@ STATE_CLASS = {}
 STATE_CLASS['HistogramLayerArtist'] = HistogramLayerState
 
 
-def update_viewer_state(rec, context):
+def update_histogram_viewer_state(rec, context):
     """
     Given viewer session information, make sure the session information is
     compatible with the current version of the viewers, and if not, update
