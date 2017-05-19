@@ -6,7 +6,7 @@ from __future__ import absolute_import
 import numpy as np
 
 from matplotlib.transforms import TransformedBbox
-from matplotlib.colors import ColorConverter
+from matplotlib.colors import ColorConverter, Colormap
 from astropy.visualization import LinearStretch, ManualInterval, ContrastBiasStretch
 
 __all__ = ['CompositeArray']
@@ -27,8 +27,6 @@ class CompositeArray(object):
         # layer artist, and the values should be dictionaries that contain
         # 'zorder', 'visible', 'array', 'color', and 'alpha'.
         self.layers = {}
-
-        self.shape = None
 
         self._first = True
 
@@ -57,24 +55,24 @@ class CompositeArray(object):
             if key not in self.layers[uuid]:
                 raise KeyError("Unknown key: {0}".format(key))
             else:
-                if key == 'array':
-                    if self.shape is None:
-                        self.shape = value.shape
-                    else:
-                        if value.shape != self.shape:
-                            raise ValueError("data shape should be {0} (got {1})".format(self.shape, value.shape))
                 self.layers[uuid][key] = value
+
+    @property
+    def shape(self):
+        if len(self.layers) > 0:
+            first_layer = list(self.layers.values())[0]
+            if callable(first_layer['array']):
+                array = first_layer['array']()
+            else:
+                array = first_layer['array']
+            return array.shape
+        else:
+            return None
 
     def __getitem__(self, view):
 
-        if self.shape is None:
-            return
-
-        # Construct image
-        img = np.zeros(self.shape + (4,))[view]
+        img = None
         visible_layers = 0
-
-        scalar = img.ndim == 1
 
         for uuid in sorted(self.layers, key=lambda x: self.layers[x]['zorder']):
 
@@ -86,20 +84,45 @@ class CompositeArray(object):
             interval = ManualInterval(*layer['clim'])
             contrast_bias = ContrastBiasStretch(layer['contrast'], layer['bias'])
 
-            # Get color and pre-multiply by alpha values
-            color = COLOR_CONVERTER.to_rgba_array(layer['color'])[0]
-            color *= layer['alpha']
+            if callable(layer['array']):
+                array = layer['array']()
+            else:
+                array = layer['array']
 
-            array_sub = layer['array'][view]
-
-            if scalar:
+            array_sub = array[view]
+            if np.isscalar(array_sub):
+                scalar = True
                 array_sub = np.atleast_2d(array_sub)
+            else:
+                scalar = False
 
             data = layer['stretch'](contrast_bias(interval(array_sub)))
-            plane = data[:, :, np.newaxis] * color
-            plane[:, :, 3] = 1
 
-            visible_layers += 1
+            if isinstance(layer['color'], Colormap):
+
+                if img is None:
+                    img = np.ones(data.shape + (4,))
+
+                # Compute colormapped image
+                plane = layer['color'](data)
+
+                # Use traditional alpha compositing
+                img *= (1 - layer['alpha'])
+                plane = plane * layer['alpha']
+
+            else:
+
+                if img is None:
+                    img = np.zeros(data.shape + (4,))
+
+                # Get color and pre-multiply by alpha values
+                color = COLOR_CONVERTER.to_rgba_array(layer['color'])[0]
+                color *= layer['alpha']
+
+                plane = data[:, :, np.newaxis] * color
+                plane[:, :, 3] = 1
+
+                visible_layers += 1
 
             if scalar:
                 plane = plane[0, 0]

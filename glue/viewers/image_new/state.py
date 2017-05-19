@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.core import Data
-from glue.external.echo import ListCallbackProperty
+from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
                                            DeferredDrawCallbackProperty)
@@ -14,9 +14,10 @@ class ImageViewerState(MatplotlibDataViewerState):
 
     x_att = DeferredDrawCallbackProperty()
     y_att = DeferredDrawCallbackProperty()
-    aspect = DeferredDrawCallbackProperty()
+    aspect = DeferredDrawCallbackProperty('equal')
     reference_data = DeferredDrawCallbackProperty()
     slices = DeferredDrawCallbackProperty()
+    color_mode = DeferredDrawCallbackProperty('Colormaps')
 
     def __init__(self, **kwargs):
 
@@ -64,6 +65,12 @@ class ImageViewerState(MatplotlibDataViewerState):
         transpose = self.y_att.axis > self.x_att.axis
         return slices, transpose
 
+    def flip_x(self):
+        self.x_att_helper.flip_limits()
+
+    def flip_y(self):
+        self.y_att_helper.flip_limits()
+
 
 class ImageLayerState(MatplotlibLayerState):
 
@@ -73,12 +80,15 @@ class ImageLayerState(MatplotlibLayerState):
     percentile = DeferredDrawCallbackProperty(100)
     contrast = DeferredDrawCallbackProperty(1)
     bias = DeferredDrawCallbackProperty(0.5)
+    cmap = DeferredDrawCallbackProperty()
 
     def __init__(self, **kwargs):
         super(ImageLayerState, self).__init__(**kwargs)
         self.attribute_helper = StateAttributeLimitsHelper(self, attribute='attribute',
                                                            percentile='percentile',
                                                            lower='v_min', upper='v_max')
+        if self.cmap is None:
+            self.cmap = colormaps.members[0][1]
 
     def flip_limits(self):
         self.attribute_helper.flip_limits()

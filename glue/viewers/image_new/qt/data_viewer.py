@@ -12,6 +12,9 @@ from glue.viewers.image_new.layer_artist import ImageLayerArtist, ImageSubsetLay
 from glue.viewers.image_new.qt.options_widget import ImageOptionsWidget
 from glue.viewers.image_new.state import ImageViewerState
 
+from glue.external.modest_image import imshow
+from glue.viewers.image_new.composite_array import CompositeArray
+
 # Import the mouse mode to make sure it gets registered
 from glue.viewers.image_new.contrast_mouse_mode import ContrastBiasMode  # noqa
 
@@ -36,6 +39,9 @@ class ImageViewer(MatplotlibDataViewer):
     def __init__(self, *args, **kwargs):
         super(ImageViewer, self).__init__(*args, **kwargs)
         self.state.add_callback('aspect', self.set_aspect)
+        self.axes._composite = CompositeArray(self.axes)
+        self.axes._composite_image = imshow(self.axes, self.axes._composite,
+                                            origin='lower', interpolation='nearest')
 
     def set_aspect(self, *args):
         self.axes.set_aspect(self.state.aspect)
@@ -55,6 +61,8 @@ class ImageViewer(MatplotlibDataViewer):
 
             if not isinstance(layer_artist.layer, Data):
                 continue
+
+            print(roi)
 
             x_comp = layer_artist.layer.get_component(self.state.x_att)
             y_comp = layer_artist.layer.get_component(self.state.y_att)
