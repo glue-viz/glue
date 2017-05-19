@@ -43,7 +43,7 @@ packages for Glue that you can distribute to users separately, and you can also
 make use of the Glue framework in your own application to provide data linking
 capabilities.
 
-To see how glue compares with other open-source and commercial data visualization 
+To see how glue compares with other open-source and commercial data visualization
 solutions, you can view  `this comparison table <https://docs.google.com/spreadsheets/d/1NvvS471KSMir26P3ANyQnvn8n-j6IJLdlAAijMA2dD0/edit?usp=sharing>`_.
 
 In the following sections, we cover the different ways of using Glue from the
@@ -131,6 +131,21 @@ Developing Glue
 
    developer_guide/developer_guide.rst
 
+Acknowledging glue
+------------------
+
+If you use glue for research presented in a publication, please consider citing
+the following two references:
+
+* `Beaumont et al. (2015), Hackable User Interfaces In Astronomy with
+  Glue <http://adsabs.harvard.edu/abs/2015ASPC..495..101B>`_
+
+* `Robitaille et al (2017) glueviz v0.10: multidimensional data exploration
+  <https://zenodo.org/record/293197>`_
+
+The first is a conference proceedings describing glue, while the second is a
+software itself.
+
 Publications
 ------------
 
@@ -138,6 +153,8 @@ Publications
   visualization in astronomy <http://dx.doi.org/10.1002/asna.201211705>`_
 * `Beaumont et al. (2015), Hackable User Interfaces In Astronomy with
   Glue <http://adsabs.harvard.edu/abs/2015ASPC..495..101B>`_
+* `Robitaille et al (2017) glueviz v0.10: multidimensional data exploration
+  <https://zenodo.org/record/293197>`_
 
 API
 ---
