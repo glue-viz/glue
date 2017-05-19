@@ -41,16 +41,23 @@ class ComponentIDComboHelper(HubListener):
         Show numeric components
     categorical : bool, optional
         Show categorical components
+    pixel_coord : bool, optional
+        Show pixel coordinate components
+    world_coord : bool, optional
+        Show world coordinate components
     """
 
     def __init__(self, component_id_combo, data_collection=None, data=None,
-                 visible=True, numeric=True, categorical=True, default_index=0):
+                 visible=True, numeric=True, categorical=True,
+                 pixel_coord=False, world_coord=False, default_index=0,):
 
         super(ComponentIDComboHelper, self).__init__()
 
         self._visible = visible
         self._numeric = numeric
         self._categorical = categorical
+        self._pixel_coord = pixel_coord
+        self._world_coord = world_coord
         self._component_id_combo = component_id_combo
 
         if data is None:
@@ -101,6 +108,24 @@ class ComponentIDComboHelper(HubListener):
     @categorical.setter
     def categorical(self, value):
         self._categorical = value
+        self.refresh()
+
+    @property
+    def pixel_coord(self):
+        return self._pixel_coord
+
+    @pixel_coord.setter
+    def pixel_coord(self, value):
+        self._pixel_coord = value
+        self.refresh()
+
+    @property
+    def world_coord(self):
+        return self._world_coord
+
+    @world_coord.setter
+    def world_coord(self, value):
+        self._world_coord = value
         self.refresh()
 
     def append_data(self, data, refresh=True):
@@ -187,7 +212,10 @@ class ComponentIDComboHelper(HubListener):
             component_ids = []
             for cid in all_component_ids:
                 comp = data.get_component(cid)
-                if (comp.numeric and self.numeric) or (comp.categorical and self.categorical):
+                if ((comp.numeric and self.numeric) or
+                        (comp.categorical and self.categorical) or
+                        (cid in data.pixel_component_ids and self.pixel_coord) or
+                        (cid in data.world_component_ids and self.world_coord)):
                     component_ids.append(cid)
 
             label_data.extend([(cid.label, cid) for cid in component_ids])
