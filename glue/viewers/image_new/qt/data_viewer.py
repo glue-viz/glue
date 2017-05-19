@@ -7,6 +7,7 @@ from glue.utils import defer_draw
 
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.image_new.qt.layer_style_editor import ImageLayerStyleEditor
+from glue.viewers.image_new.qt.layer_style_editor_subset import ImageLayerSubsetStyleEditor
 from glue.viewers.image_new.layer_artist import ImageLayerArtist, ImageSubsetLayerArtist
 from glue.viewers.image_new.qt.options_widget import ImageOptionsWidget
 from glue.viewers.image_new.state import ImageViewerState
@@ -21,7 +22,8 @@ class ImageViewer(MatplotlibDataViewer):
 
     LABEL = '2D Image'
     _toolbar_cls = MatplotlibViewerToolbar
-    _layer_style_widget_cls = ImageLayerStyleEditor
+    _layer_style_widget_cls = {ImageLayerArtist: ImageLayerStyleEditor,
+                               ImageSubsetLayerArtist: ImageLayerSubsetStyleEditor}
     _state_cls = ImageViewerState
     _options_cls = ImageOptionsWidget
     _data_artist_cls = ImageLayerArtist

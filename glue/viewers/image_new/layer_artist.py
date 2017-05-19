@@ -22,6 +22,8 @@ class ImageLayerArtist(MatplotlibLayerArtist):
         super(ImageLayerArtist, self).__init__(axes, viewer_state,
                                                layer_state=layer_state, layer=layer)
 
+        self.reset_cache()
+
         # Watch for changes in the viewer state which would require the
         # layers to be redrawn
         self._viewer_state.add_global_callback(self._update_image)
@@ -53,8 +55,6 @@ class ImageLayerArtist(MatplotlibLayerArtist):
         else:
             self.composite_image = self.axes._composite_image
 
-        self.reset_cache()
-
     def reset_cache(self):
         self._last_viewer_state = {}
         self._last_layer_state = {}
@@ -70,8 +70,10 @@ class ImageLayerArtist(MatplotlibLayerArtist):
         else:
             self._enabled = True
 
-        if image.ndim > 2:
-            image = image[self._viewer_state.numpy_slice]
+        slices, transpose = self._viewer_state.numpy_slice_and_transpose
+        image = image[slices]
+        if transpose:
+            image = image.transpose()
 
         self.composite.set(self.uuid, array=image)
 
@@ -123,8 +125,6 @@ class ImageLayerArtist(MatplotlibLayerArtist):
         self._last_viewer_state.update(self._viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
 
-        print('CHANGED', changed)
-
         if force or any(prop in changed for prop in ('layer', 'attribute', 'slices')):
             self._update_image_data()
             force = True  # make sure scaling and visual attributes are updated
@@ -150,8 +150,10 @@ class ImageSubsetLayerArtist(MatplotlibLayerArtist):
 
     def __init__(self, axes, viewer_state, layer_state=None, layer=None):
 
-        super(ImageLayerArtist, self).__init__(axes, viewer_state,
-                                               layer_state=layer_state, layer=layer)
+        super(ImageSubsetLayerArtist, self).__init__(axes, viewer_state,
+                                                     layer_state=layer_state, layer=layer)
+
+        self.reset_cache()
 
         # Watch for changes in the viewer state which would require the
         # layers to be redrawn
@@ -167,22 +169,18 @@ class ImageSubsetLayerArtist(MatplotlibLayerArtist):
         self.axes.set_xlim(-0.5, self.layer.shape[1] - 0.5)
         self.axes.set_ylim(-0.5, self.layer.shape[0] - 0.5)
 
-        self.reset_cache()
-
     def reset_cache(self):
         self._last_viewer_state = {}
         self._last_layer_state = {}
 
     def _update_image_data(self):
 
-        try:
-            mask = self.layer.to_mask()
-        except (IncompatibleAttribute, IndexError):
-            # The following includes a call to self.clear()
-            self.disable_invalid_attributes(self.state.attribute)
-            return
-        else:
-            self._enabled = True
+        mask = self.layer.to_mask()
+
+        slices, transpose = self._viewer_state.numpy_slice_and_transpose
+        mask = mask[slices]
+        if transpose:
+            mask = mask.transpose()
 
         r, g, b = color2rgb(self.state.color)
         mask = np.dstack((r * mask, g * mask, b * mask, mask * .5))
@@ -190,24 +188,22 @@ class ImageSubsetLayerArtist(MatplotlibLayerArtist):
 
         self.mpl_image.set_data(mask)
 
-        self.composite_image.invalidate_cache()
-
         self.redraw()
 
     @defer_draw
     def _update_visual_attributes(self):
 
+        # TODO: deal with color using a colormap instead of having to change data
+
         self.mpl_image.set_visible(self.state.visible)
         self.mpl_image.set_zorder(self.state.zorder)
-
-        self.composite_image.invalidate_cache()
+        self.mpl_image.set_alpha(self.state.alpha)
 
         self.redraw()
 
     def _update_image(self, force=False, **kwargs):
 
-        if (self.state.attribute is None or
-            self.state.layer is None):
+        if self.state.layer is None:
             return
 
         # Figure out which attributes are different from before. Ideally we shouldn't
@@ -232,15 +228,17 @@ class ImageSubsetLayerArtist(MatplotlibLayerArtist):
         self._last_viewer_state.update(self._viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
 
-        if force or any(prop in changed for prop in ('layer', 'attribute')):
+        if force or any(prop in changed for prop in ('layer', 'attribute', 'color')):
             self._update_image_data()
             force = True  # make sure scaling and visual attributes are updated
 
-        if force or any(prop in changed for prop in ('zorder', 'visible')):
+        if force or any(prop in changed for prop in ('zorder', 'visible', 'alpha')):
             self._update_visual_attributes()
 
     @defer_draw
     def update(self):
+
+        # TODO: determine why this gets called when changing the transparency slider
 
         self._update_image(force=True)
 

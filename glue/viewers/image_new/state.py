@@ -52,7 +52,7 @@ class ImageViewerState(MatplotlibDataViewerState):
             self.slices = (0,) * self.reference_data.ndim
 
     @property
-    def numpy_slice(self):
+    def numpy_slice_and_transpose(self):
         if self.reference_data is None:
             return None
         slices = []
@@ -61,7 +61,8 @@ class ImageViewerState(MatplotlibDataViewerState):
                 slices.append(slice(None))
             else:
                 slices.append(self.slices[i])
-        return slices
+        transpose = self.y_att.axis > self.x_att.axis
+        return slices, transpose
 
 
 class ImageLayerState(MatplotlibLayerState):
@@ -81,3 +82,7 @@ class ImageLayerState(MatplotlibLayerState):
 
     def flip_limits(self):
         self.attribute_helper.flip_limits()
+
+
+class ImageSubsetLayerState(MatplotlibLayerState):
+    pass
