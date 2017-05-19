@@ -78,6 +78,10 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
         self._layer_artist_container.on_empty(lambda: self.close(warn=False))
         self._layer_artist_container.on_changed(self.update_window_title)
 
+    @property
+    def selected_layer(self):
+        return self._view.layer_list.current_artist()
+
     def remove_layer(self, layer):
         self._layer_artist_container.pop(layer)
 
