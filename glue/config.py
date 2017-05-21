@@ -356,20 +356,64 @@ class ColormapRegistry(Registry):
     """
 
     def default_members(self):
+        """
+        Convert all matplotlib colormap names from its abbreviated .name
+        attribute and add a new [name,cmap] pair for each one.
+        """
+        import re
         import matplotlib.cm as cm
+        from matplotlib.colors import Colormap
+
+        abbrevs = ['Rd', 'Yl', 'Bu',
+                   'Or', 'Br', 'Gy', 'Pi',
+                   'Pu', 'PR', 'Gn', 'BG',
+                   'YG', 'bwr', 'brg']
+        colnames = ['Red', 'Yellow', 'Blue',
+                    'Orange', 'Brown', 'Gray', 'Pink',
+                    'Purple', 'Purple', 'Green', 'BlueGreen',
+                    'YellowGreen', 'Blue-White-Red', 'Blue-Red-Green']
+        colmapper = dict(zip(abbrevs, colnames))
         members = []
-        members.append(['Gray', cm.gray])
-        members.append(['Purple-Blue', cm.PuBu])
-        members.append(['Yellow-Green-Blue', cm.YlGnBu])
-        members.append(['Yellow-Orange-Red', cm.YlOrRd])
-        members.append(['Red-Purple', cm.RdPu])
-        members.append(['Blue-Green', cm.BuGn])
-        members.append(['Hot', cm.hot])
-        members.append(['Red-Blue', cm.RdBu])
-        members.append(['Red-Yellow-Blue', cm.RdYlBu])
-        members.append(['Purple-Orange', cm.PuOr])
-        members.append(['Purple-Green', cm.PRGn])
+
+        for cmap in dir(cm):
+            mpl_cmap = getattr(cm, cmap)
+
+            if not isinstance(mpl_cmap, Colormap):
+                continue
+
+            mpl_cmap_name = mpl_cmap.name
+
+            # Change suffix of the reversed colormaps
+            mpl_cmap_name = re.sub(r'_r$', ' (reversed)', mpl_cmap_name)
+
+            for abbr, colname in colmapper.iteritems():
+                # First check that the colname is not in the cmap name:
+                # Skips cmaps like "Oranges" and "Purples" so that
+                # the abbreviations "Or" and "Pu" do not get replaced
+                if not re.match(r'{}'.format(colname), mpl_cmap_name):
+                    # Replace abbr with colname and add a hyphen
+                    mpl_cmap_name = re.sub('{}'.format(abbr),
+                                           '{}-'.format(colname),
+                                           mpl_cmap_name)
+
+                    # Replace hyphens with spaces when it is followed
+                    # by a space or is the terminal character, then
+                    # strip whitespace from the right (added when it is
+                    # the terminal character).
+                    mpl_cmap_name = re.sub('-?( |$)',
+                                           ' ',
+                                           mpl_cmap_name).rstrip()
+                    # Add space between closed name and digit
+                    mpl_cmap_name = re.sub(r'(?<=[a-z])(?=\d)',
+                                           ' ',
+                                           mpl_cmap_name)
+
+            # Make sure each name is capitalized.
+            mpl_cmap_name = mpl_cmap_name[0].upper() + mpl_cmap_name[1:]
+            members.append([mpl_cmap_name, cmap])
+
         return members
+
 
     def add(self, label, cmap):
         """
