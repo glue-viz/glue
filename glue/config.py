@@ -386,7 +386,7 @@ class ColormapRegistry(Registry):
             # Change suffix of the reversed colormaps
             mpl_cmap_name = re.sub(r'_r$', ' (reversed)', mpl_cmap_name)
 
-            for abbr, colname in colmapper.iteritems():
+            for (abbr, colname) in colmapper.items():
                 # First check that the colname is not in the cmap name:
                 # Skips cmaps like "Oranges" and "Purples" so that
                 # the abbreviations "Or" and "Pu" do not get replaced
