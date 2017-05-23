@@ -13,7 +13,7 @@ v0.11.0 (unreleased)
   of number of lines and in terms of the number of connections/callbacks
   that need to be set up manually. [#1278]
 
-v0.10.4 (unreleased)
+v0.10.4 (2017-05-23)
 --------------------
 
 * Fixed a bug that caused merged datasets to crash viewers (because
