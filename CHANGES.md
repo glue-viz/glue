@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.10.4 (unreleased)
+v0.10.4 (2017-05-23)
 --------------------
 
 * Fixed a bug that caused merged datasets to crash viewers (because
