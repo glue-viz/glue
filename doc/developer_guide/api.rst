@@ -44,6 +44,8 @@ Core Data
 .. automodapi:: glue.core.fitters
    :no-inheritance-diagram:
 
+.. automodapi:: glue.core.state_objects
+   :no-inheritance-diagram:
 
 User Interface
 ==============
@@ -52,6 +54,12 @@ User Interface
    :no-inheritance-diagram:
 
 .. automodapi:: glue.viewers.common.qt.data_viewer
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.viewers.common.mpl_state
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.viewers.common.qt.mpl_data_viewer
    :no-inheritance-diagram:
 
 .. automodapi:: glue.viewers.scatter.qt.viewer_widget

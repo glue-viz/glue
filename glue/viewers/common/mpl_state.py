@@ -6,6 +6,8 @@ from glue.core.state_objects import State
 
 from glue.utils import defer_draw
 
+__all__ = ['MatplotlibDataViewerState', 'MatplotlibLayerState']
+
 
 class DeferredDrawCallbackProperty(CallbackProperty):
     """
