@@ -300,6 +300,7 @@ autoclass_content = 'both'
 nitpick_ignore = [('py:class', 'object'), ('py:class', 'str'),
                   ('py:class', 'list'), ('py:obj', 'numpy array'),
                   ('py:obj', 'integer'), ('py:obj', 'Callable'),
+                  ('py:obj', 'list'),
                   ('py:class', 'PySide.QtGui.QMainWindow'),
                   ('py:class', 'PySide.QtGui.QWidget'),
                   ('py:class', 'PyQt4.QtGui.QTextEdit'),
@@ -346,7 +347,8 @@ nitpick_ignore = [('py:class', 'object'), ('py:class', 'str'),
                   ('py:mod', 'glue.viewers.scatter'),
                   ('py:mod', 'glue.viewers.common'),
                   ('py:mod', 'glue.viewers.common.qt.mouse_mode'),
-                  ('py:mod', 'glue.dialogs.custom_component')
+                  ('py:mod', 'glue.dialogs.custom_component'),
+                  ('py:class', 'glue.external.echo.core.HasCallbackProperties')
               ]
 
 # coax Sphinx into treating descriptors as attributes

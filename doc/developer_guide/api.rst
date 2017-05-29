@@ -14,6 +14,9 @@ Core Data
 .. automodapi:: glue.core.component_link
    :no-inheritance-diagram:
 
+.. automodapi:: glue.core.coordinates
+   :no-inheritance-diagram:
+
 .. automodapi:: glue.core.data
    :no-inheritance-diagram:
 
@@ -41,6 +44,8 @@ Core Data
 .. automodapi:: glue.core.fitters
    :no-inheritance-diagram:
 
+.. automodapi:: glue.core.state_objects
+   :no-inheritance-diagram:
 
 User Interface
 ==============
@@ -51,13 +56,23 @@ User Interface
 .. automodapi:: glue.viewers.common.qt.data_viewer
    :no-inheritance-diagram:
 
+.. automodapi:: glue.viewers.common.mpl_state
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.viewers.common.qt.mpl_data_viewer
+   :no-inheritance-diagram:
+
 .. automodapi:: glue.viewers.scatter.qt.viewer_widget
    :no-inheritance-diagram:
 
 .. automodapi:: glue.viewers.image.qt.viewer_widget
    :no-inheritance-diagram:
 
-.. automodapi:: glue.viewers.histogram.qt.viewer_widget
+.. automodapi:: glue.viewers.histogram.state
+   :no-inheritance-diagram:
+   :inherited-members:
+
+.. automodapi:: glue.viewers.histogram.qt.data_viewer
    :no-inheritance-diagram:
 
 .. automodapi:: glue.app.qt.application
@@ -135,5 +150,3 @@ Utilities
 
 .. automodapi:: glue.utils.qt.widget_properties
    :no-inheritance-diagram:
-
-
