@@ -7,7 +7,7 @@ import numpy as np
 from glue.utils import unbroadcast, broadcast_to
 
 
-__all__ = ['Coordinates', 'WCSCoordinates']
+__all__ = ['Coordinates', 'WCSCoordinates', 'coordinates_from_header', 'coordinates_from_wcs']
 
 
 class Coordinates(object):

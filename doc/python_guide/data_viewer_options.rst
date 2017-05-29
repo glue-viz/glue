@@ -65,22 +65,15 @@ Here are the settings associated with each data viewer:
     ~ImageWidget.rgb_mode
     ~ImageWidget.slice
 
-.. currentmodule:: glue.viewers.histogram.qt.data_viewer
+Histogram Viewer
+----------------
 
-:class:`Histogram Viewer <HistogramViewer>`
----------------------------------------------
-
-.. autosummary::
-
-    ~HistogramWidget.xmin
-    ~HistogramWidget.xmax
-    ~HistogramWidget.normed
-    ~HistogramWidget.autoscale
-    ~HistogramWidget.cumulative
-    ~HistogramWidget.nbins
-    ~HistogramWidget.xlog
-    ~HistogramWidget.ylog
-
+The :class:`~glue.viewers.histogram.qt.data_viewer.HistogramViewer` class has a
+``state`` attribute which is an instance of
+:class:`~glue.viewers.histogram.state.HistogramViewerState`. To modify any settings
+in the viewer, set the appropriate attributes on ``state``, for example
+``state.x_min``. See :class:`~glue.viewers.histogram.state.HistogramViewerState`
+to find out the full list of available attributes.
 
 Customizing Plots with Matplotlib
 =================================
