@@ -54,8 +54,10 @@ class ComponentIDComboHelper(HubListener):
         self._component_id_combo = component_id_combo
 
         if data is None:
+            self._manual_data = False
             self._data = []
         else:
+            self._manual_data = True
             self._data = [data]
 
         self._data_collection = data_collection
@@ -103,6 +105,10 @@ class ComponentIDComboHelper(HubListener):
 
     def append_data(self, data, refresh=True):
 
+        if self._manual_data:
+            raise Exception("Cannot change data in ComponentIDComboHelper "
+                            "initialized from a single dataset")
+
         if isinstance(data, Subset):
             data = data.data
 
@@ -120,6 +126,11 @@ class ComponentIDComboHelper(HubListener):
                 self.refresh()
 
     def remove_data(self, data):
+
+        if self._manual_data:
+            raise Exception("Cannot change data in ComponentIDComboHelper "
+                            "initialized from a single dataset")
+
         if data in self._data:
             self._data.remove(data)
             self.refresh()
@@ -133,6 +144,11 @@ class ComponentIDComboHelper(HubListener):
         datasets : list
             The list of :class:`~glue.core.data.Data` objects to add
         """
+
+        if self._manual_data:
+            raise Exception("Cannot change data in ComponentIDComboHelper "
+                            "initialized from a single dataset")
+
         try:
             self._data.clear()
         except AttributeError:  # PY2

@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import pytest
 from mock import MagicMock
 
 from glue.core import Data, DataCollection
@@ -61,6 +62,54 @@ def test_component_id_combo_helper():
     helper.remove_data(data1)
 
     assert combo_as_string(combo) == ""
+
+
+
+def test_component_id_combo_helper_nocollection():
+
+    # Make sure that we can use use ComponentIDComboHelper without any
+    # data collection.
+
+    combo = QtWidgets.QComboBox()
+
+    data = Data(x=[1, 2, 3], y=[2, 3, 4], z=['a','b','c'], label='data1')
+
+    helper = ComponentIDComboHelper(combo, data=data)
+
+    assert combo_as_string(combo) == "x:y:z"
+
+    helper.categorical = False
+
+    assert combo_as_string(combo) == "x:y"
+
+    helper.numeric = False
+
+    assert combo_as_string(combo) == ""
+
+    helper.categorical = True
+
+    assert combo_as_string(combo) == "z"
+
+    helper.numeric = True
+
+    assert combo_as_string(combo) == "x:y:z"
+
+    data2 = Data(a=[1, 2, 3], b=['a', 'b', 'c'], label='data2')
+
+    with pytest.raises(Exception) as exc:
+        helper.append_data(data2)
+    assert exc.value.args[0] == ("Cannot change data in ComponentIDComboHelper "
+                                 "initialized from a single dataset")
+
+    with pytest.raises(Exception) as exc:
+        helper.remove_data(data2)
+    assert exc.value.args[0] == ("Cannot change data in ComponentIDComboHelper "
+                                 "initialized from a single dataset")
+
+    with pytest.raises(Exception) as exc:
+        helper.set_multiple_data([data2])
+    assert exc.value.args[0] == ("Cannot change data in ComponentIDComboHelper "
+                                 "initialized from a single dataset")
 
 
 def test_component_id_combo_helper_init():
