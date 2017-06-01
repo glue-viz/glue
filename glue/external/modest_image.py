@@ -1,3 +1,7 @@
+"""
+Modification of Chris Beaumont's mpl-modest-image package to allow the use of
+set_extent.
+"""
 from __future__ import print_function, division
 
 import matplotlib
@@ -6,7 +10,11 @@ rcParams = matplotlib.rcParams
 import matplotlib.image as mi
 import matplotlib.colors as mcolors
 import matplotlib.cbook as cbook
+from matplotlib.transforms import IdentityTransform, Affine2D
+
 import numpy as np
+
+IDENTITY_TRANSFORM = IdentityTransform()
 
 
 class ModestImage(mi.AxesImage):
@@ -29,13 +37,10 @@ class ModestImage(mi.AxesImage):
     """
 
     def __init__(self, *args, **kwargs):
-        if 'extent' in kwargs and kwargs['extent'] is not None:
-            raise NotImplementedError("ModestImage does not support extents")
-
         self._full_res = None
-        self._sx, self._sy = None, None
-        self._bounds = None
+        self._full_extent = kwargs.get('extent', None)
         super(ModestImage, self).__init__(*args, **kwargs)
+        self.invalidate_cache()
 
     def set_data(self, A):
         """
@@ -54,41 +59,117 @@ class ModestImage(mi.AxesImage):
                 (self._A.ndim == 3 and self._A.shape[-1] not in (3, 4))):
                 raise TypeError("Invalid dimensions for image data")
 
+        self.invalidate_cache()
+
+    def invalidate_cache(self):
+        self._bounds = None
         self._imcache = None
         self._rgbacache = None
         self._oldxslice = None
         self._oldyslice = None
         self._sx, self._sy = None, None
+        self._pixel2world_cache = None
+        self._world2pixel_cache = None
+
+    def set_extent(self, extent):
+        self._full_extent = extent
+        self.invalidate_cache()
+        mi.AxesImage.set_extent(self, extent)
 
     def get_array(self):
         """Override to return the full-resolution array"""
         return self._full_res
 
-    def _scale_to_res(self):
-        """ Change self._A and _extent to render an image whose
-        resolution is matched to the eventual rendering."""
+    @property
+    def _pixel2world(self):
 
-        ax = self.axes
-        shp = self._full_res.shape
-        x0, x1, sx, y0, y1, sy = extract_matched_slices(ax, shp)
-        # have we already calculated what we need?
-        if (self._bounds is not None
-            and sx >= self._sx and sy >= self._sy
-            and x0 >= self._bounds[0] and x1 <= self._bounds[1]
-            and y0 >= self._bounds[2] and y1 <= self._bounds[3]):
+        if self._pixel2world_cache is None:
+
+            # Pre-compute affine transforms to convert between the 'world'
+            # coordinates of the axes (what is shown by the axis labels) to
+            # 'pixel' coordinates in the underlying array.
+
+            extent = self._full_extent
+
+            if extent is None:
+
+                self._pixel2world_cache = IDENTITY_TRANSFORM
+
+            else:
+
+                self._pixel2world_cache = Affine2D()
+
+                self._pixel2world.translate(+0.5, +0.5)
+
+                self._pixel2world.scale((extent[1] - extent[0]) / self._full_res.shape[1],
+                                        (extent[3] - extent[2]) / self._full_res.shape[0])
+
+                self._pixel2world.translate(extent[0], extent[2])
+
+            self._world2pixel_cache = None
+
+        return self._pixel2world_cache
+
+    @property
+    def _world2pixel(self):
+        if self._world2pixel_cache is None:
+            self._world2pixel_cache = self._pixel2world.inverted()
+        return self._world2pixel_cache
+
+    def _scale_to_res(self):
+        """
+        Change self._A and _extent to render an image whose resolution is
+        matched to the eventual rendering.
+        """
+
+        # Find out how we need to slice the array to make sure we match the
+        # resolution of the display. We pass self._world2pixel which matters
+        # for cases where the extent has been set.
+        x0, x1, sx, y0, y1, sy = extract_matched_slices(axes=self.axes,
+                                                        shape=self._full_res.shape,
+                                                        transform=self._world2pixel)
+
+        # Check whether we've already calculated what we need, and if so just
+        # return without doing anything further.
+        if (self._bounds is not None and
+                sx >= self._sx and sy >= self._sy and
+                x0 >= self._bounds[0] and x1 <= self._bounds[1] and
+                y0 >= self._bounds[2] and y1 <= self._bounds[3]):
             return
+
+        # Slice the array using the slices determined previously to optimally
+        # match the display
         self._A = self._full_res[y0:y1:sy, x0:x1:sx]
         self._A = cbook.safe_masked_invalid(self._A)
-        if self.origin == 'upper':
-            self.set_extent([x0 - .5, x1 - .5, y1 - .5, y0 - .5])
+
+        # We now determine the extent of the subset of the image, by determining
+        # it first in pixel space, and converting it to the 'world' coordinates.
+
+        # See https://github.com/matplotlib/matplotlib/issues/8693 for a
+        # demonstration of why origin='upper' and extent=None needs to be
+        # special-cased.
+
+        if self.origin == 'upper' and self._full_extent is None:
+            xmin, xmax, ymin, ymax = x0 - .5, x1 - .5, y1 - .5, y0 - .5
         else:
-            self.set_extent([x0 - .5, x1 - .5, y0 - .5, y1 - .5])
+            xmin, xmax, ymin, ymax = x0 - .5, x1 - .5, y0 - .5, y1 - .5
+
+        xmin, ymin, xmax, ymax = self._pixel2world.transform([(xmin, ymin), (xmax, ymax)]).ravel()
+
+        mi.AxesImage.set_extent(self, [xmin, xmax, ymin, ymax])
+        # self.set_extent([xmin, xmax, ymin, ymax])
+
+        # Finally, we cache the current settings to avoid re-computing similar
+        # arrays in future.
         self._sx = sx
         self._sy = sy
         self._bounds = (x0, x1, y0, y1)
+
         self.changed()
 
     def draw(self, renderer, *args, **kwargs):
+        if self._full_res.shape is None:
+            return
         self._scale_to_res()
         super(ModestImage, self).draw(renderer, *args, **kwargs)
 
@@ -109,10 +190,11 @@ def main():
     ax.set_aspect('equal')
     artist.norm.vmin = -1
     artist.norm.vmax = 1
+#    artist.set_extent([0.0, 5.0, 0.0, 5.0])
 
     ax.add_artist(artist)
-    ax.set_xlim(0, 1000)
-    ax.set_ylim(0, 1000)
+#    ax.set_xlim(0, 1000)
+#    ax.set_ylim(0, 1000)
 
     t0 = time()
     plt.gcf().canvas.draw()
@@ -132,7 +214,6 @@ def imshow(axes, X, cmap=None, norm=None, aspect=None,
 
     Unlike matplotlib version, must explicitly specify axes
     """
-
     if not axes._hold:
         axes.cla()
     if norm is not None:
@@ -140,8 +221,8 @@ def imshow(axes, X, cmap=None, norm=None, aspect=None,
     if aspect is None:
         aspect = rcParams['image.aspect']
     axes.set_aspect(aspect)
-    im = ModestImage(axes, cmap, norm, interpolation, origin, extent,
-                     filternorm=filternorm,
+    im = ModestImage(axes, cmap=cmap, norm=norm, interpolation=interpolation,
+                     origin=origin, extent=extent, filternorm=filternorm,
                      filterrad=filterrad, resample=resample, **kwargs)
 
     im.set_data(X)
@@ -170,8 +251,7 @@ def imshow(axes, X, cmap=None, norm=None, aspect=None,
 
     return im
 
-
-def extract_matched_slices(ax, shape):
+def extract_matched_slices(axes=None, shape=None, extent=None, transform=None):
     """Determine the slice parameters to use, matched to the screen.
 
     :param ax: Axes object to query. It's extent and pixel size
@@ -186,22 +266,36 @@ def extract_matched_slices(ax, shape):
     Indexing the full resolution array as array[y0:y1:sy, x0:x1:sx] returns
     a view well-matched to the axes' resolution and extent
     """
-    ext = (ax.transAxes.transform([(1, 1)]) - ax.transAxes.transform([(0, 0)]))[0]
-    xlim, ylim = ax.get_xlim(), ax.get_ylim()
-    dx, dy = xlim[1] - xlim[0], ylim[1] - ylim[0]
 
-    def _clip(val, hi):
-        return int(max(min(val, hi), 0))
+    # Find extent in display pixels (this gives the resolution we need
+    # to sample the array to)
+    ext = (axes.transAxes.transform([(1, 1)]) - axes.transAxes.transform([(0, 0)]))[0]
 
-    y0 = _clip(min(ylim) - 5, shape[0])
-    y1 = _clip(max(ylim) + 5, shape[0])
-    x0 = _clip(min(xlim) - 5, shape[1])
-    x1 = _clip(max(xlim) + 5, shape[1])
+    # Find the extent of the axes in 'world' coordinates
+    xlim, ylim = axes.get_xlim(), axes.get_ylim()
 
-    sy = int(max(1, min((y1 - y0) / 5., np.ceil(abs(dy / ext[1])))))
-    sx = int(max(1, min((x1 - x0) / 5., np.ceil(abs(dx / ext[0])))))
+    # Transform the limits to pixel coordinates
+    ind0 = transform.transform([min(xlim), min(ylim)])
+    ind1 = transform.transform([max(xlim), max(ylim)])
+
+    def _clip(val, lo, hi):
+        return int(max(min(val, hi), lo))
+
+    # Determine the range of pixels to extract from the array, including a 5
+    # pixel margin all around. We ensure that the shape of the resulting array
+    # will always be at least (1, 1) even if there is really no overlap, to
+    # avoid issues.
+    y0 = _clip(ind0[1] - 5, 0, shape[0] - 1)
+    y1 = _clip(ind1[1] + 5, 1, shape[0])
+    x0 = _clip(ind0[0] - 5, 0, shape[1] - 1)
+    x1 = _clip(ind1[0] + 5, 1, shape[1])
+
+    # Determine the strides that can be used when extracting the array
+    sy = int(max(1, min((y1 - y0) / 5., np.ceil(abs((ind1[1] - ind0[1]) / ext[1])))))
+    sx = int(max(1, min((x1 - x0) / 5., np.ceil(abs((ind1[0] - ind0[0]) / ext[0])))))
 
     return x0, x1, sx, y0, y1, sy
+
 
 if __name__ == "__main__":
     main()
