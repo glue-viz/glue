@@ -4,6 +4,9 @@ Full changelog
 v0.11.0 (unreleased)
 --------------------
 
+* Updated ComponentIDComboHelper so that it can work with single datasets
+  that aren't necessarily attached to a DataCollection. [#1296]
+
 * Updated bundled version of echo to include fixes to avoid circular
   references, which in turn caused some callback functions to not be
   cleaned up. [#1281]

@@ -216,7 +216,7 @@ script:
   - if [ $DOC_TRIGGER ]; then cat doc/warnings.log; fi
   # make sure stderr was empty, i.e. no warnings
   - if [ $DOC_TRIGGER ]; then test ! -s doc/warnings.log; fi
-  - if [ $DOC_TRIGGER ]; then linkchecker --ignore-url=".*fontawesome_webfont.*" doc/_build/html; fi
+  - if [ $DOC_TRIGGER ]; then linkchecker --ignore-url=".*fontawesome.*" doc/_build/html; fi
 
 after_success:
 

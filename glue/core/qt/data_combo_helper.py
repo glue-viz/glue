@@ -29,9 +29,12 @@ class ComponentIDComboHelper(HubListener):
     component_id_combo : Qt combo widget
         The Qt widget for the component ID combo box
     data_collection : :class:`~glue.core.DataCollection`
-        The data collection to which the datasets belong - this is needed
-        because if a dataset is removed from the data collection, we want to
-        remove it here.
+        The data collection to which the datasets belong - if specified,
+        this is used to remove datasets from the combo when they are removed
+        from the data collection.
+    data : :class:`~glue.core.Data`
+        If specified, set up the combo for this dataset only and don't allow
+        datasets to be added/removed
     visible : bool, optional
         Only show visible components
     numeric : bool, optional
@@ -40,22 +43,34 @@ class ComponentIDComboHelper(HubListener):
         Show categorical components
     """
 
-    def __init__(self, component_id_combo, data_collection, visible=True,
-                 numeric=True, categorical=True, default_index=0):
+    def __init__(self, component_id_combo, data_collection=None, data=None,
+                 visible=True, numeric=True, categorical=True, default_index=0):
 
         super(ComponentIDComboHelper, self).__init__()
-
-        if data_collection.hub is None:
-            raise ValueError("Hub on data collection is not set")
 
         self._visible = visible
         self._numeric = numeric
         self._categorical = categorical
         self._component_id_combo = component_id_combo
-        self._data = []
+
+        if data is None:
+            self._manual_data = False
+            self._data = []
+        else:
+            self._manual_data = True
+            self._data = [data]
+
         self._data_collection = data_collection
-        self.hub = data_collection.hub
+        if data_collection is not None:
+            if data_collection.hub is None:
+                raise ValueError("Hub on data collection is not set")
+            else:
+                self.hub = data_collection.hub
+
         self.default_index = default_index
+
+        if data is not None:
+            self.refresh()
 
     def clear(self):
         self._data.clear()
@@ -90,6 +105,10 @@ class ComponentIDComboHelper(HubListener):
 
     def append_data(self, data, refresh=True):
 
+        if self._manual_data:
+            raise Exception("Cannot change data in ComponentIDComboHelper "
+                            "initialized from a single dataset")
+
         if isinstance(data, Subset):
             data = data.data
 
@@ -107,6 +126,11 @@ class ComponentIDComboHelper(HubListener):
                 self.refresh()
 
     def remove_data(self, data):
+
+        if self._manual_data:
+            raise Exception("Cannot change data in ComponentIDComboHelper "
+                            "initialized from a single dataset")
+
         if data in self._data:
             self._data.remove(data)
             self.refresh()
@@ -120,6 +144,11 @@ class ComponentIDComboHelper(HubListener):
         datasets : list
             The list of :class:`~glue.core.data.Data` objects to add
         """
+
+        if self._manual_data:
+            raise Exception("Cannot change data in ComponentIDComboHelper "
+                            "initialized from a single dataset")
+
         try:
             self._data.clear()
         except AttributeError:  # PY2
@@ -188,9 +217,10 @@ class ComponentIDComboHelper(HubListener):
         hub.subscribe(self, ComponentsChangedMessage,
                       handler=nonpartial(self.refresh),
                       filter=lambda msg: msg.data in self._data)
-        hub.subscribe(self, DataCollectionDeleteMessage,
-                      handler=lambda msg: self.remove_data(msg.data),
-                      filter=lambda msg: msg.sender is self._data_collection)
+        if self._data_collection is not None:
+            hub.subscribe(self, DataCollectionDeleteMessage,
+                          handler=lambda msg: self.remove_data(msg.data),
+                          filter=lambda msg: msg.sender is self._data_collection)
 
     def unregister(self, hub):
         hub.unsubscribe_all(self)
