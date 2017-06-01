@@ -185,16 +185,12 @@ def main():
 
     # try switching between
     artist = ModestImage(ax, data=data)
-    #artist = mi.AxesImage(ax, data=data)
 
     ax.set_aspect('equal')
     artist.norm.vmin = -1
     artist.norm.vmax = 1
-#    artist.set_extent([0.0, 5.0, 0.0, 5.0])
 
     ax.add_artist(artist)
-#    ax.set_xlim(0, 1000)
-#    ax.set_ylim(0, 1000)
 
     t0 = time()
     plt.gcf().canvas.draw()
@@ -251,7 +247,9 @@ def imshow(axes, X, cmap=None, norm=None, aspect=None,
 
     return im
 
-def extract_matched_slices(axes=None, shape=None, extent=None, transform=None):
+
+def extract_matched_slices(axes=None, shape=None, extent=None,
+                           transform=IDENTITY_TRANSFORM):
     """Determine the slice parameters to use, matched to the screen.
 
     :param ax: Axes object to query. It's extent and pixel size
