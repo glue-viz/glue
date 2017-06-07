@@ -129,7 +129,7 @@ before_install:
 
   # Install ci-helpers and set up conda
   - git clone git://github.com/astropy/ci-helpers.git
-  - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
+  - source ci-helpers/travis/setup_conda.sh
 
   # setup tools to trigger mac buildbot
   - if [ $TRAVIS_PULL_REQUEST == false && $APP_TRIGGER ]; then source .setup_app_trigger.sh; fi
