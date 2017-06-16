@@ -272,6 +272,9 @@ class BaseTestMatplotlibDataViewer(object):
         viewer_state = self.viewer.state
         axes = self.viewer.axes
 
+        if axes.get_adjustable() == 'datalim':
+            pytest.xfail()
+
         # Make sure that the viewer state and matplotlib viewer limits and log
         # settings are in sync. We start by modifying the state and making sure
         # that the axes follow.

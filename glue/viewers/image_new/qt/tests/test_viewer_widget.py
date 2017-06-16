@@ -27,11 +27,15 @@ DATA = os.path.join(os.path.dirname(__file__), 'data')
 
 
 class TestImageCommon(BaseTestMatplotlibDataViewer):
+
     def init_data(self):
         return Data(label='d1', x=np.arange(12).reshape((3, 4)), y=np.ones((3, 4)))
+
     viewer_cls = ImageViewer
 
-
+    @pytest.mark.skip()
+    def test_double_add_ignored(self):
+        pass
 
 class TestImageViewer(object):
 
@@ -207,5 +211,5 @@ class TestImageViewer(object):
 
         layer_state = viewer1.state.layers[2]
         assert layer_state.visible
-        assert layer_state.attribute.label == 'b' 
+        assert layer_state.attribute.label == 'b'
         assert layer_state.color == 'b'
