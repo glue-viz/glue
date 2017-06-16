@@ -38,25 +38,7 @@ class ImageViewer(MatplotlibDataViewer):
     _state_cls = ImageViewerState
     _options_cls = ImageOptionsWidget
 
-    def _scatter_artist(self, axes, state, layer=None):
-        if len(self._layer_artist_container) == 0:
-            QMessageBox.critical(self, "Error", "Can only add a scatter plot "
-                                 "overlay once an image is present",
-                                 buttons=QMessageBox.Ok)
-            return None
-        return ScatterLayerArtist(axes, state, layer=layer)
-
-    def _data_artist_cls(self, axes, state, layer=None):
-        if layer.ndim == 1:
-            return self._scatter_artist(axes, state, layer=layer)
-        else:
-            return ImageLayerArtist(axes, state, layer=layer)
-
-    def _subset_artist_cls(self, axes, state, layer=None):
-        if layer.ndim == 1:
-            return self._scatter_artist(axes, state, layer=layer)
-        else:
-            return ImageSubsetLayerArtist(axes, state, layer=layer)
+    # NOTE: _data_artist_cls and _subset_artist_cls are implemented as methods
 
     tools = ['select:rectangle', 'select:xrange',
              'select:yrange', 'select:circle',
@@ -121,3 +103,23 @@ class ImageViewer(MatplotlibDataViewer):
 
             mode = EditSubsetMode()
             mode.update(self._data, subset_state, focus_data=layer_artist.layer)
+
+    def _scatter_artist(self, axes, state, layer=None):
+        if len(self._layer_artist_container) == 0:
+            QMessageBox.critical(self, "Error", "Can only add a scatter plot "
+                                 "overlay once an image is present",
+                                 buttons=QMessageBox.Ok)
+            return None
+        return ScatterLayerArtist(axes, state, layer=layer)
+
+    def _data_artist_cls(self, axes, state, layer=None):
+        if layer.ndim == 1:
+            return self._scatter_artist(axes, state, layer=layer)
+        else:
+            return ImageLayerArtist(axes, state, layer=layer)
+
+    def _subset_artist_cls(self, axes, state, layer=None):
+        if layer.ndim == 1:
+            return self._scatter_artist(axes, state, layer=layer)
+        else:
+            return ImageSubsetLayerArtist(axes, state, layer=layer)
