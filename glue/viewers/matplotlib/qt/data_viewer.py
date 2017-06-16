@@ -115,6 +115,10 @@ class MatplotlibDataViewer(DataViewer):
 
         # Create layer artist and add to container
         layer = self._data_artist_cls(self._axes, self.state, layer=data)
+
+        if layer is None:
+            return False
+
         self._layer_artist_container.append(layer)
         layer.update()
 

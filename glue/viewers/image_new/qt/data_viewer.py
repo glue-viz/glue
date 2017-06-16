@@ -2,6 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 from astropy.wcs import WCS
 
+from qtpy.QtWidgets import QMessageBox
+
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core import Data
@@ -9,6 +11,8 @@ from glue.utils import defer_draw
 
 from glue.core.coordinates import WCSCoordinates
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
+from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
+from glue.viewers.scatter.layer_artist import ScatterLayerArtist
 from glue.viewers.image_new.qt.layer_style_editor import ImageLayerStyleEditor
 from glue.viewers.image_new.qt.layer_style_editor_subset import ImageLayerSubsetStyleEditor
 from glue.viewers.image_new.layer_artist import ImageLayerArtist, ImageSubsetLayerArtist
@@ -29,11 +33,30 @@ class ImageViewer(MatplotlibDataViewer):
     LABEL = '2D Image'
     _toolbar_cls = MatplotlibViewerToolbar
     _layer_style_widget_cls = {ImageLayerArtist: ImageLayerStyleEditor,
-                               ImageSubsetLayerArtist: ImageLayerSubsetStyleEditor}
+                               ImageSubsetLayerArtist: ImageLayerSubsetStyleEditor,
+                               ScatterLayerArtist: ScatterLayerStyleEditor}
     _state_cls = ImageViewerState
     _options_cls = ImageOptionsWidget
-    _data_artist_cls = ImageLayerArtist
-    _subset_artist_cls = ImageSubsetLayerArtist
+
+    def _scatter_artist(self, axes, state, layer=None):
+        if len(self._layer_artist_container) == 0:
+            QMessageBox.critical(self, "Error", "Can only add a scatter plot "
+                                 "overlay once an image is present",
+                                 buttons=QMessageBox.Ok)
+            return None
+        return ScatterLayerArtist(axes, state, layer=layer)
+
+    def _data_artist_cls(self, axes, state, layer=None):
+        if layer.ndim == 1:
+            return self._scatter_artist(axes, state, layer=layer)
+        else:
+            return ImageLayerArtist(axes, state, layer=layer)
+
+    def _subset_artist_cls(self, axes, state, layer=None):
+        if layer.ndim == 1:
+            return self._scatter_artist(axes, state, layer=layer)
+        else:
+            return ImageSubsetLayerArtist(axes, state, layer=layer)
 
     tools = ['select:rectangle', 'select:xrange',
              'select:yrange', 'select:circle',
