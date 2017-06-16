@@ -20,9 +20,6 @@ class CompositeArray(object):
 
         self.axes = ax
 
-        # We create an image artist that remains invisible for now
-        self.image = ax.imshow([[0]], interpolation='nearest', origin='lower')
-
         # We keep a dictionary of layers. The key should be the UUID of the
         # layer artist, and the values should be dictionaries that contain
         # 'zorder', 'visible', 'array', 'color', and 'alpha'.
@@ -128,6 +125,9 @@ class CompositeArray(object):
                 plane = plane[0, 0]
 
             img += plane
+
+        if img is None:
+            img = np.zeros(self.shape + (4,))
 
         img = np.clip(img, 0, 1)
 
