@@ -7,12 +7,19 @@ import numpy as np
 
 from matplotlib.transforms import TransformedBbox
 from matplotlib.colors import ColorConverter, Colormap
-from astropy.visualization import LinearStretch, ManualInterval, ContrastBiasStretch
+from astropy.visualization import (LinearStretch, SqrtStretch, AsinhStretch,
+                                   LogStretch, ManualInterval, ContrastBiasStretch)
 
 __all__ = ['CompositeArray']
 
 COLOR_CONVERTER = ColorConverter()
 
+STRETCHES = {
+    'linear': LinearStretch,
+    'sqrt': SqrtStretch,
+    'asinh': AsinhStretch,
+    'log': LogStretch
+}
 
 class CompositeArray(object):
 
@@ -40,7 +47,7 @@ class CompositeArray(object):
                              'clim': (0, 1),
                              'contrast': 1,
                              'bias': 0.5,
-                             'stretch': LinearStretch()}
+                             'stretch': 'linear'}
 
     def deallocate(self, uuid):
         self.layers.pop(uuid)
@@ -93,7 +100,7 @@ class CompositeArray(object):
             else:
                 scalar = False
 
-            data = layer['stretch'](contrast_bias(interval(array_sub)))
+            data = STRETCHES[layer['stretch']]()(contrast_bias(interval(array_sub)))
 
             if isinstance(layer['color'], Colormap):
 

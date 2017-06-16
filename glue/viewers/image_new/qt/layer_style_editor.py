@@ -32,10 +32,10 @@ class ImageLayerStyleEditor(QtWidgets.QWidget):
 
         update_combobox(self.ui.combodata_percentile, percentiles)
 
-        stretches = [('Linear', LinearStretch),
-                     ('Square Root', SqrtStretch),
-                     ('Arcsinh', AsinhStretch),
-                     ('Logarithmic', LogStretch)]
+        stretches = [('Linear', 'linear'),
+                     ('Square Root', 'sqrt'),
+                     ('Arcsinh', 'asinh'),
+                     ('Logarithmic', 'log')]
 
         update_combobox(self.ui.combodata_stretch, stretches)
 

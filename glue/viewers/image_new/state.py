@@ -109,7 +109,7 @@ class ImageLayerState(MatplotlibLayerState):
     contrast = DeferredDrawCallbackProperty(1)
     bias = DeferredDrawCallbackProperty(0.5)
     cmap = DeferredDrawCallbackProperty()
-    stretch = DeferredDrawCallbackProperty(LinearStretch)
+    stretch = DeferredDrawCallbackProperty('linear')
 
     def __init__(self, **kwargs):
         super(ImageLayerState, self).__init__(**kwargs)
