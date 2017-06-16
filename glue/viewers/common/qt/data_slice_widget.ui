@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>294</width>
-    <height>88</height>
+    <width>310</width>
+    <height>107</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,16 +17,32 @@
    <property name="spacing">
     <number>0</number>
    </property>
-   <property name="margin">
+   <property name="leftMargin">
     <number>0</number>
    </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="text_label">
+     <property name="text">
+      <string>Main label</string>
+     </property>
+    </widget>
+   </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <property name="spacing">
       <number>10</number>
      </property>
      <item>
-      <widget class="QSlider" name="slider">
+      <widget class="QSlider" name="value_slice_center">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -181,7 +197,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="label">
+      <widget class="QLineEdit" name="valuetext_slider_label">
        <property name="maximumSize">
         <size>
          <width>50</width>
@@ -194,7 +210,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="text_unit">
+      <widget class="QLabel" name="text_slider_unit">
        <property name="text">
         <string>TextLabel</string>
        </property>
@@ -218,7 +234,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QCheckBox" name="checkbox_world">
+      <widget class="QCheckBox" name="bool_use_world">
        <property name="text">
         <string>Show real coordinates for slices</string>
        </property>
@@ -246,7 +262,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QLabel" name="label_warning">
+    <widget class="QLabel" name="text_warning">
      <property name="styleSheet">
       <string notr="true">color: rgb(255, 33, 28)</string>
      </property>

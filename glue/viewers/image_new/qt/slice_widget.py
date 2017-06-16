@@ -2,8 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from qtpy import QtWidgets
-from qtpy.QtCore import Qt
+from glue.core.coordinates import Coordinates
+from glue.viewers.common.qt.data_slice_widget import SliceWidget
 
 __all__ = ['MultiSliceWidgetHelper']
 
@@ -45,7 +45,7 @@ class MultiSliceWidgetHelper(object):
     def sync_state_from_sliders(self, *args):
         slices = []
         for i, slider in enumerate(self._sliders):
-            slices.append(slider.value())
+            slices.append(slider.state.slice_center)
         self.viewer_state.slices = tuple(slices)
 
     def sync_sliders_from_state(self, *args):
@@ -60,10 +60,26 @@ class MultiSliceWidgetHelper(object):
         if self.data.ndim != len(self._sliders):
             self._clear()
             for i in range(self.data.ndim):
-                slider = QtWidgets.QSlider(Qt.Horizontal)
-                slider.setMinimum(0)
-                slider.setMaximum(self.data.shape[i] - 1)
-                slider.valueChanged.connect(self.sync_state_from_sliders)
+
+                # TODO: For now we simply pass a single set of world coordinates,
+                # but we will need to generalize this in future. We deliberately
+                # check the type of data.coords here since we want to treat
+                # subclasses differently.
+                if type(self.data.coords) != Coordinates:
+                    world = self.data.coords.world_axis(self.data, i)
+                    world_unit = self.data.coords.world_axis_unit(i)
+                    world_warning = len(self.data.coords.dependent_axes(i)) > 1
+                else:
+                    world = None
+                    world_unit = None
+                    world_warning = False
+
+                slider = SliceWidget(self.data.get_world_component_id(i).label,
+                                     hi=self.data.shape[i] - 1, world=world,
+                                     world_unit=world_unit, world_warning=world_warning)
+
+                self.slider_state = slider.state
+                self.slider_state.add_callback('slice_center', self.sync_state_from_sliders)
                 self._sliders.append(slider)
                 self.layout.addWidget(slider)
 
@@ -75,7 +91,7 @@ class MultiSliceWidgetHelper(object):
                 slider.setEnabled(False)
             else:
                 slider.setEnabled(True)
-                slider.setValue(self.viewer_state.slices[i])
+                slider.state.slice_center = self.viewer_state.slices[i]
 
 
 
