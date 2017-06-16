@@ -44,6 +44,8 @@ class ImageViewerState(MatplotlibDataViewerState):
 
     def update_priority(self, name):
         if name == 'layers':
+            return 3
+        elif name == 'reference_data':
             return 2
         elif name.endswith(('_min', '_max')):
             return 0

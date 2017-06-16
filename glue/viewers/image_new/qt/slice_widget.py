@@ -4,6 +4,7 @@ import numpy as np
 
 from glue.core.coordinates import Coordinates
 from glue.viewers.common.qt.data_slice_widget import SliceWidget
+from glue.utils.decorators import avoid_circular
 
 __all__ = ['MultiSliceWidgetHelper']
 
@@ -42,12 +43,14 @@ class MultiSliceWidgetHelper(object):
 
         self._slices = []
 
+    @avoid_circular
     def sync_state_from_sliders(self, *args):
         slices = []
         for i, slider in enumerate(self._sliders):
             slices.append(slider.state.slice_center)
         self.viewer_state.slices = tuple(slices)
 
+    @avoid_circular
     def sync_sliders_from_state(self, *args):
 
         if self.data is None or self.viewer_state.x_att is None or self.viewer_state.y_att is None:
@@ -89,13 +92,11 @@ class MultiSliceWidgetHelper(object):
         # Disable sliders that correspond to visible axes and sync position
 
         for i, slider in enumerate(self._sliders):
-
             if i == self.viewer_state.x_att.axis or i == self.viewer_state.y_att.axis:
                 slider.setEnabled(False)
             else:
                 slider.setEnabled(True)
                 slider.state.slice_center = self.viewer_state.slices[i]
-
 
 
 if __name__ == "__main__":

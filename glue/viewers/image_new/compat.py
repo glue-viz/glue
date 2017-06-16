@@ -1,5 +1,6 @@
 import uuid
 
+import numpy as np
 from glue.viewers.image_new.state import ImageLayerState, ImageSubsetLayerState
 from glue.viewers.scatter.state import ScatterLayerState
 
@@ -17,7 +18,6 @@ class DS9Compat(object):
         for k, v in rec.items():
             setattr(result, k, v)
         return result
-
 
 
 def update_image_viewer_state(rec, context):
@@ -46,17 +46,20 @@ def update_image_viewer_state(rec, context):
 
         # TODO: add an id method to unserializer
 
+        x_index = properties['slice'].index('x')
+        y_index = properties['slice'].index('y')
+
         viewer_state['x_att_world'] = str(uuid.uuid4())
-        context.register_object(viewer_state['x_att_world'], data.world_component_ids[1])
+        context.register_object(viewer_state['x_att_world'], data.world_component_ids[x_index])
 
         viewer_state['y_att_world'] = str(uuid.uuid4())
-        context.register_object(viewer_state['y_att_world'], data.world_component_ids[0])
+        context.register_object(viewer_state['y_att_world'], data.world_component_ids[y_index])
 
         viewer_state['x_att'] = str(uuid.uuid4())
-        context.register_object(viewer_state['x_att'], data.pixel_component_ids[1])
+        context.register_object(viewer_state['x_att'], data.pixel_component_ids[x_index])
 
         viewer_state['y_att'] = str(uuid.uuid4())
-        context.register_object(viewer_state['y_att'], data.pixel_component_ids[0])
+        context.register_object(viewer_state['y_att'], data.pixel_component_ids[y_index])
 
         viewer_state['x_min'] = 0
         viewer_state['x_max'] = data.shape[0]
@@ -64,8 +67,7 @@ def update_image_viewer_state(rec, context):
         viewer_state['y_max'] = data.shape[1]
 
         # Slicing with cubes
-        if len(properties['slice']) > 2:
-            raise NotImplementedError()
+        viewer_state['slices'] = [s if np.isreal(s) else 0 for s in properties['slice']]
 
         # RGB mode
         if properties['rgb_mode']:
