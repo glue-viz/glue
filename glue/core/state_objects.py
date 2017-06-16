@@ -359,8 +359,6 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
         else:
             self._common_n_bin = None
 
-        print(self._cache)
-
     def _apply_common_n_bin(self):
         for att in self._cache:
             cmp = self.data.get_component(att)

@@ -110,6 +110,7 @@ class ImageLayerState(MatplotlibLayerState):
     bias = DeferredDrawCallbackProperty(0.5)
     cmap = DeferredDrawCallbackProperty()
     stretch = DeferredDrawCallbackProperty('linear')
+    global_sync = DeferredDrawCallbackProperty(True)
 
     def __init__(self, **kwargs):
         super(ImageLayerState, self).__init__(**kwargs)
@@ -118,6 +119,17 @@ class ImageLayerState(MatplotlibLayerState):
                                                            lower='v_min', upper='v_max')
         if self.cmap is None:
             self.cmap = colormaps.members[0][1]
+
+        self.add_callback('global_sync', self._update_syncing)
+        self._update_syncing()
+
+    def _update_syncing(self, *args):
+        if self.global_sync:
+            self._sync_color.enable_syncing()
+            self._sync_alpha.enable_syncing()
+        else:
+            self._sync_color.disable_syncing()
+            self._sync_alpha.disable_syncing()
 
     def flip_limits(self):
         self.attribute_helper.flip_limits()
