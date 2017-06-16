@@ -107,8 +107,8 @@ class MatplotlibDataViewer(DataViewer):
     @defer_draw
     def add_data(self, data):
 
-        if data in self._layer_artist_container:
-            return True
+        # if data in self._layer_artist_container:
+        #     return True
 
         if data not in self.session.data_collection:
             raise IncompatibleDataException("Data not in DataCollection")

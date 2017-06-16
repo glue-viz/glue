@@ -25,8 +25,8 @@ from glue.app.qt.layer_tree_widget import PlotAction, LayerTreeWidget
 from glue.app.qt.preferences import PreferencesDialog
 from glue.viewers.matplotlib.qt.widget import defer_draw
 from glue.viewers.common.qt.data_viewer import DataViewer
-from glue.viewers.image.qt import ImageWidget
 from glue.viewers.scatter.qt import ScatterViewer
+from glue.viewers.image_new.qt import ImageViewer
 from glue.utils import nonpartial
 from glue.utils.qt import (pick_class, GlueTabBar,
                            set_cursor_cm, messagebox_on_error, load_ui)
@@ -677,8 +677,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         if data and data.ndim == 1 and ScatterViewer in qt_client.members:
             default = ScatterViewer
-        elif data and data.ndim > 1 and ImageWidget in qt_client.members:
-            default = ImageWidget
+        elif data and data.ndim > 1 and ImageViewer in qt_client.members:
+            default = ImageViewer
         else:
             default = None
 
