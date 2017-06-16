@@ -140,3 +140,7 @@ class CompositeArray(object):
     @property
     def ndim(self):
         return 2
+
+    @property
+    def size(self):
+        return np.product(self.shape)

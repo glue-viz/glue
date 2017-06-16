@@ -42,8 +42,6 @@ class ContrastBiasMode(MouseMode):
         x = 1.0 * x / dx
         y = 1.0 * y / dy
 
-        print(self.viewer.selected_layer.state.bias, x, (1-y) * 10)
-
         self.viewer.selected_layer.state.bias = x
         self.viewer.selected_layer.state.contrast = (1 - y) * 10
 
