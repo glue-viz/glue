@@ -337,7 +337,6 @@ class LayerArtistWidget(QtWidgets.QWidget):
             self.layer_options_layout.setCurrentWidget(self.empty)
 
 
-
 class QtLayerArtistContainer(LayerArtistContainer):
 
     """A subclass of LayerArtistContainer that dispatches to a
@@ -351,7 +350,6 @@ class QtLayerArtistContainer(LayerArtistContainer):
         self.model.modelReset.connect(nonpartial(self._notify))
 
     def append(self, artist):
-        self._check_duplicate(artist)
         self.model.add_artist(0, artist)
         artist.zorder = max(a.zorder for a in self.artists) + 1
         assert self.artists[0] is artist
