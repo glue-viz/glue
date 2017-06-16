@@ -21,7 +21,7 @@ class MatplotlibDataViewer(DataViewer):
     _toolbar_cls = MatplotlibViewerToolbar
     _state_cls = MatplotlibDataViewerState
 
-    def __init__(self, session, parent=None):
+    def __init__(self, session, parent=None, wcs=None):
 
         super(MatplotlibDataViewer, self).__init__(session, parent)
 
@@ -32,7 +32,7 @@ class MatplotlibDataViewer(DataViewer):
         # TODO: shouldn't have to do this
         self.central_widget = self.mpl_widget
 
-        self.figure, self._axes = init_mpl(self.mpl_widget.canvas.fig)
+        self.figure, self._axes = init_mpl(self.mpl_widget.canvas.fig, wcs=wcs)
 
         # Set up the state which will contain everything needed to represent
         # the current state of the viewer

@@ -1,10 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
+from astropy.wcs import WCS
+
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core import Data
 from glue.utils import defer_draw
 
+from glue.core.coordinates import WCSCoordinates
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.image_new.qt.layer_style_editor import ImageLayerStyleEditor
 from glue.viewers.image_new.qt.layer_style_editor_subset import ImageLayerSubsetStyleEditor
@@ -36,9 +39,13 @@ class ImageViewer(MatplotlibDataViewer):
              'select:yrange', 'select:circle',
              'select:polygon', 'image:contrast_bias']
 
-    def __init__(self, *args, **kwargs):
-        super(ImageViewer, self).__init__(*args, **kwargs)
+    def __init__(self, session, parent=None):
+        super(ImageViewer, self).__init__(session, parent=parent, wcs=True)
         self.state.add_callback('aspect', self.set_aspect)
+        self.state.add_callback('x_att', self.set_wcs)
+        self.state.add_callback('y_att', self.set_wcs)
+        self.state.add_callback('slices', self.set_wcs)
+        self.state.add_callback('reference_data', self.set_wcs)
         self.axes._composite = CompositeArray(self.axes)
         self.axes._composite_image = imshow(self.axes, self.axes._composite,
                                             origin='lower', interpolation='nearest')
@@ -46,6 +53,13 @@ class ImageViewer(MatplotlibDataViewer):
     def set_aspect(self, *args):
         self.axes.set_aspect(self.state.aspect)
         self.axes.figure.canvas.draw()
+
+    def set_wcs(self, *args):
+        if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
+            return
+        ref_coords = self.state.reference_data.coords
+        if isinstance(ref_coords, WCSCoordinates):
+            self.axes.reset_wcs(ref_coords.wcs, slices=self.state.wcsaxes_slice)
 
     def apply_roi(self, roi):
 

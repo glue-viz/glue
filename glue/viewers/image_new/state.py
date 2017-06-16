@@ -66,6 +66,20 @@ class ImageViewerState(MatplotlibDataViewerState):
         transpose = self.y_att.axis > self.x_att.axis
         return slices, transpose
 
+    @property
+    def wcsaxes_slice(self):
+        if self.reference_data is None:
+            return None
+        slices = []
+        for i in range(self.reference_data.ndim):
+            if i == self.x_att.axis:
+                slices.append('x')
+            elif i == self.y_att.axis:
+                slices.append('y')
+            else:
+                slices.append(self.slices[i])
+        return slices[::-1]
+
     def flip_x(self):
         self.x_att_helper.flip_limits()
 
