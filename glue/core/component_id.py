@@ -8,7 +8,7 @@ from glue.core.component_link import BinaryComponentLink
 from glue.core.subset import InequalitySubsetState
 
 
-__all__ = ['PixelComponentID', 'ComponentID', 'PixelComponentID', 'ComponentIDDict', 'ComponentIDList']
+__all__ = ['ComponentID', 'PixelComponentID', 'ComponentIDDict', 'ComponentIDList']
 
 # access to ComponentIDs via .item[name]
 

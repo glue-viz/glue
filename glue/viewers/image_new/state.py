@@ -15,6 +15,8 @@ class ImageViewerState(MatplotlibDataViewerState):
 
     x_att = DeferredDrawCallbackProperty()
     y_att = DeferredDrawCallbackProperty()
+    x_att_world = DeferredDrawCallbackProperty()
+    y_att_world = DeferredDrawCallbackProperty()
     aspect = DeferredDrawCallbackProperty('equal')
     reference_data = DeferredDrawCallbackProperty()
     slices = DeferredDrawCallbackProperty()
@@ -23,6 +25,9 @@ class ImageViewerState(MatplotlibDataViewerState):
     def __init__(self, **kwargs):
 
         super(ImageViewerState, self).__init__(**kwargs)
+
+        self.add_callback('x_att_world', self._update_x_att)
+        self.add_callback('y_att_world', self._update_y_att)
 
         self.limits_cache = {}
 
@@ -36,6 +41,14 @@ class ImageViewerState(MatplotlibDataViewerState):
 
         self.add_callback('reference_data', self.set_default_slices)
         self.add_callback('layers', self.set_reference_data)
+
+    def _update_x_att(self, *args):
+        index = self.reference_data.world_component_ids.index(self.x_att_world)
+        self.x_att = self.reference_data.pixel_component_ids[index]
+
+    def _update_y_att(self, *args):
+        index = self.reference_data.world_component_ids.index(self.y_att_world)
+        self.y_att = self.reference_data.pixel_component_ids[index]
 
     def set_reference_data(self, *args):
         # TODO: make sure this doesn't get called for changes *in* the layers

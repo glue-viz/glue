@@ -41,25 +41,37 @@ class ImageViewer(MatplotlibDataViewer):
 
     def __init__(self, session, parent=None):
         super(ImageViewer, self).__init__(session, parent=parent, wcs=True)
-        self.state.add_callback('aspect', self.set_aspect)
-        self.state.add_callback('x_att', self.set_wcs)
-        self.state.add_callback('y_att', self.set_wcs)
-        self.state.add_callback('slices', self.set_wcs)
-        self.state.add_callback('reference_data', self.set_wcs)
+        self.state.add_callback('aspect', self._set_aspect)
+        self.state.add_callback('x_att', self._set_wcs)
+        self.state.add_callback('y_att', self._set_wcs)
+        self.state.add_callback('slices', self._set_wcs)
+        self.state.add_callback('reference_data', self._set_wcs)
         self.axes._composite = CompositeArray(self.axes)
         self.axes._composite_image = imshow(self.axes, self.axes._composite,
                                             origin='lower', interpolation='nearest')
 
-    def set_aspect(self, *args):
+    @defer_draw
+    def _update_axes(self, *args):
+
+        if self.state.x_att_world is not None:
+            self.axes.set_xlabel(self.state.x_att_world.label)
+
+        if self.state.y_att_world is not None:
+            self.axes.set_ylabel(self.state.y_att_world.label)
+
+        self.axes.figure.canvas.draw()
+
+    def _set_aspect(self, *args):
         self.axes.set_aspect(self.state.aspect)
         self.axes.figure.canvas.draw()
 
-    def set_wcs(self, *args):
+    def _set_wcs(self, *args):
         if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
             return
         ref_coords = self.state.reference_data.coords
         if isinstance(ref_coords, WCSCoordinates):
             self.axes.reset_wcs(ref_coords.wcs, slices=self.state.wcsaxes_slice)
+        self._update_axes()
 
     def apply_roi(self, roi):
 

@@ -107,14 +107,14 @@
         <widget class="QComboBox" name="combodata_aspect"/>
        </item>
        <item row="0" column="2" colspan="3">
-        <widget class="QComboBox" name="combodata_x_att">
+        <widget class="QComboBox" name="combodata_x_att_world">
          <property name="sizeAdjustPolicy">
           <enum>QComboBox::AdjustToMinimumContentsLength</enum>
          </property>
         </widget>
        </item>
        <item row="2" column="2" colspan="3">
-        <widget class="QComboBox" name="combodata_y_att">
+        <widget class="QComboBox" name="combodata_y_att_world">
          <property name="sizeAdjustPolicy">
           <enum>QComboBox::AdjustToMinimumContentsLength</enum>
          </property>
