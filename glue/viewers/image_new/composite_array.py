@@ -17,7 +17,7 @@ COLOR_CONVERTER = ColorConverter()
 STRETCHES = {
     'linear': LinearStretch,
     'sqrt': SqrtStretch,
-    'asinh': AsinhStretch,
+    'arcsinh': AsinhStretch,
     'log': LogStretch
 }
 

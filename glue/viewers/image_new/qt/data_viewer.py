@@ -18,6 +18,7 @@ from glue.viewers.image_new.qt.layer_style_editor_subset import ImageLayerSubset
 from glue.viewers.image_new.layer_artist import ImageLayerArtist, ImageSubsetLayerArtist
 from glue.viewers.image_new.qt.options_widget import ImageOptionsWidget
 from glue.viewers.image_new.state import ImageViewerState
+from glue.viewers.image_new.compat import update_image_viewer_state
 
 from glue.external.modest_image import imshow
 from glue.viewers.image_new.composite_array import CompositeArray
@@ -38,6 +39,8 @@ class ImageViewer(MatplotlibDataViewer):
     _state_cls = ImageViewerState
     _options_cls = ImageOptionsWidget
 
+    update_viewer_state = update_image_viewer_state
+
     # NOTE: _data_artist_cls and _subset_artist_cls are implemented as methods
 
     tools = ['select:rectangle', 'select:xrange',
@@ -46,6 +49,7 @@ class ImageViewer(MatplotlibDataViewer):
 
     def __init__(self, session, parent=None):
         super(ImageViewer, self).__init__(session, parent=parent, wcs=True)
+        self.axes.set_adjustable('datalim')
         self.state.add_callback('aspect', self._set_aspect)
         self.state.add_callback('x_att', self._set_wcs)
         self.state.add_callback('y_att', self._set_wcs)

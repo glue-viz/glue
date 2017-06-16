@@ -53,6 +53,9 @@ class MultiSliceWidgetHelper(object):
         if self.data is None or self.viewer_state.x_att is None or self.viewer_state.y_att is None:
             return
 
+        if self.viewer_state.x_att is self.viewer_state.y_att:
+            return
+
         # TODO: figure out why there are no current circular calls (normally
         # we should need to add @avoid_circular)
 

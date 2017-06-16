@@ -1,12 +1,26 @@
 import uuid
 
-from .state import ImageLayerState
+from glue.viewers.image_new.state import ImageLayerState, ImageSubsetLayerState
+from glue.viewers.scatter.state import ScatterLayerState
 
 STATE_CLASS = {}
 STATE_CLASS['ImageLayerArtist'] = ImageLayerState
+STATE_CLASS['ScatterLayerArtist'] = ScatterLayerState
+STATE_CLASS['SubsetImageLayerArtist'] = ImageSubsetLayerState
 
 
-def update_viewer_state(rec, context):
+class DS9Compat(object):
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        result = cls()
+        for k, v in rec.items():
+            setattr(result, k, v)
+        return result
+
+
+
+def update_image_viewer_state(rec, context):
     """
     Given viewer session information, make sure the session information is
     compatible with the current version of the viewers, and if not, update
@@ -25,14 +39,37 @@ def update_viewer_state(rec, context):
         # TODO: could generalize this into a mapping
         properties = rec.pop('properties')
         viewer_state = rec['state']['values']
-        viewer_state['x_min'] = properties['xmin']
-        viewer_state['x_max'] = properties['xmax']
-        viewer_state['y_min'] = properties['ymin']
-        viewer_state['y_max'] = properties['ymax']
-        viewer_state['x_log'] = properties['xlog']
-        viewer_state['y_log'] = properties['ylog']
-        viewer_state['x_att'] = properties['xatt']
-        viewer_state['y_att'] = properties['yatt']
+        viewer_state['color_mode'] = 'st__Colormaps'
+        viewer_state['reference_data'] = properties['data']
+
+        data = context.object(properties['data'])
+
+        # TODO: add an id method to unserializer
+
+        viewer_state['x_att_world'] = str(uuid.uuid4())
+        context.register_object(viewer_state['x_att_world'], data.world_component_ids[1])
+
+        viewer_state['y_att_world'] = str(uuid.uuid4())
+        context.register_object(viewer_state['y_att_world'], data.world_component_ids[0])
+
+        viewer_state['x_att'] = str(uuid.uuid4())
+        context.register_object(viewer_state['x_att'], data.pixel_component_ids[1])
+
+        viewer_state['y_att'] = str(uuid.uuid4())
+        context.register_object(viewer_state['y_att'], data.pixel_component_ids[0])
+
+        viewer_state['x_min'] = 0
+        viewer_state['x_max'] = data.shape[0]
+        viewer_state['y_min'] = 0
+        viewer_state['y_max'] = data.shape[1]
+
+        # Slicing with cubes
+        if len(properties['slice']) > 2:
+            raise NotImplementedError()
+
+        # RGB mode
+        if properties['rgb_mode']:
+            raise NotImplementedError()
 
         layer_states = []
 
@@ -44,13 +81,22 @@ def update_viewer_state(rec, context):
                 value = layer.pop(prop)
                 value = context.object(value)
                 setattr(state, prop, value)
+            state.attribute = context.object(properties['attribute'])
+            if 'norm' in layer:
+                norm = context.object(layer['norm'])
+                state.bias = norm.bias
+                state.contrast = norm.contrast
+                state.stretch = norm.stretch
+                if norm.clip_hi is not None:
+                    state.percentile = norm.clip_hi
+                else:
+                    if norm.vmax is not None:
+                        state.v_min = norm.vmin
+                        state.v_max = norm.vmax
+                        state.percentile = 'Custom'
             context.register_object(state_id, state)
             layer['state'] = state_id
             layer_states.append(state)
-            layer.pop('lo', None)
-            layer.pop('hi', None)
-            layer.pop('nbins', None)
-            layer.pop('xlog', None)
 
         list_id = str(uuid.uuid4())
         context.register_object(list_id, layer_states)

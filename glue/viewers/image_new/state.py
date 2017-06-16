@@ -6,7 +6,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
                                            DeferredDrawCallbackProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
-from astropy.visualization import LinearStretch
+from glue.utils import defer_draw
 
 __all__ = ['ImageViewerState', 'ImageLayerState']
 
@@ -42,10 +42,20 @@ class ImageViewerState(MatplotlibDataViewerState):
         self.add_callback('reference_data', self.set_default_slices)
         self.add_callback('layers', self.set_reference_data)
 
+    def update_priority(self, name):
+        if name == 'layers':
+            return 2
+        elif name.endswith(('_min', '_max')):
+            return 0
+        else:
+            return 1
+
+    @defer_draw
     def _update_x_att(self, *args):
         index = self.reference_data.world_component_ids.index(self.x_att_world)
         self.x_att = self.reference_data.pixel_component_ids[index]
 
+    @defer_draw
     def _update_y_att(self, *args):
         index = self.reference_data.world_component_ids.index(self.y_att_world)
         self.y_att = self.reference_data.pixel_component_ids[index]
@@ -122,6 +132,14 @@ class ImageLayerState(MatplotlibLayerState):
 
         self.add_callback('global_sync', self._update_syncing)
         self._update_syncing()
+
+    def update_priority(self, name):
+        if name == 'attribute':
+            return 2
+        elif name.endswith(('_min', '_max')):
+            return 0
+        else:
+            return 1
 
     def _update_syncing(self, *args):
         if self.global_sync:
