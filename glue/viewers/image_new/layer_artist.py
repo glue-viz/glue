@@ -5,7 +5,7 @@ import numpy as np
 
 from glue.utils import defer_draw
 
-from glue.viewers.image_new.state import ImageLayerState
+from glue.viewers.image_new.state import ImageLayerState, ImageSubsetLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 from glue.utils import color2rgb
@@ -139,7 +139,7 @@ class ImageLayerArtist(MatplotlibLayerArtist):
 
 class ImageSubsetLayerArtist(MatplotlibLayerArtist):
 
-    _layer_state_cls = ImageLayerState
+    _layer_state_cls = ImageSubsetLayerState
 
     def __init__(self, axes, viewer_state, layer_state=None, layer=None):
 
