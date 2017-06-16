@@ -62,8 +62,6 @@ class ImageViewer(MatplotlibDataViewer):
             if not isinstance(layer_artist.layer, Data):
                 continue
 
-            print(roi)
-
             x_comp = layer_artist.layer.get_component(self.state.x_att)
             y_comp = layer_artist.layer.get_component(self.state.y_att)
 
