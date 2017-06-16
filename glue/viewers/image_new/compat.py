@@ -70,12 +70,25 @@ def update_image_viewer_state(rec, context):
         viewer_state['slices'] = [s if np.isreal(s) else 0 for s in properties['slice']]
 
         # RGB mode
-        if properties['rgb_mode']:
-            raise NotImplementedError()
+        for layer in rec['layers'][:]:
+            if layer['_type'].split('.')[-1] == 'RGBImageLayerArtist':
+                for icolor, color in enumerate('rgb'):
+                    new_layer = {}
+                    new_layer['_type'] = 'glue.viewers.image_new.layer_artist.ImageLayerArtist'
+                    new_layer['layer'] = layer['layer']
+                    new_layer['attribute'] = layer[color]
+                    new_layer['norm'] = layer[color + 'norm']
+                    new_layer['zorder'] = layer['zorder']
+                    new_layer['visible'] = layer['color_visible'][icolor]
+                    new_layer['color'] = color
+                    rec['layers'].append(new_layer)
+                rec['layers'].remove(layer)
+                viewer_state['color_mode'] = 'st__One color per layer'
 
         layer_states = []
 
         for layer in rec['layers']:
+
             state_id = str(uuid.uuid4())
             state_cls = STATE_CLASS[layer['_type'].split('.')[-1]]
             state = state_cls(layer=context.object(layer.pop('layer')))
@@ -83,7 +96,10 @@ def update_image_viewer_state(rec, context):
                 value = layer.pop(prop)
                 value = context.object(value)
                 setattr(state, prop, value)
-            state.attribute = context.object(properties['attribute'])
+            if 'attribute' in layer:
+                state.attribute = context.object(layer['attribute'])
+            else:
+                state.attribute = context.object(properties['attribute'])
             if 'norm' in layer:
                 norm = context.object(layer['norm'])
                 state.bias = norm.bias
@@ -96,6 +112,9 @@ def update_image_viewer_state(rec, context):
                         state.v_min = norm.vmin
                         state.v_max = norm.vmax
                         state.percentile = 'Custom'
+            if 'color' in layer:
+                state.global_sync = False
+                state.color = layer['color']
             context.register_object(state_id, state)
             layer['state'] = state_id
             layer_states.append(state)

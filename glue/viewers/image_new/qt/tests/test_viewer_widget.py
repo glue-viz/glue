@@ -145,3 +145,67 @@ class TestImageViewer(object):
 
         layer_state = viewer3.state.layers[1]
         assert layer_state.visible
+
+    @pytest.mark.parametrize('protocol', [0])
+    def test_session_cube_back_compat(self, protocol):
+
+        filename = os.path.join(DATA, 'image_cube_v{0}.glu'.format(protocol))
+
+        with open(filename, 'r') as f:
+            session = f.read()
+
+        state = GlueUnSerializer.loads(session)
+
+        ga = state.object('__main__')
+
+        dc = ga.session.data_collection
+
+        assert len(dc) == 1
+
+        assert dc[0].label == 'array'
+
+        viewer1 = ga.viewers[0][0]
+
+        assert len(viewer1.state.layers) == 1
+
+        assert viewer1.state.x_att_world is dc[0].id['World 2']
+        assert viewer1.state.y_att_world is dc[0].id['World 1']
+        assert viewer1.state.slices == [2, 0, 0, 1]
+
+    @pytest.mark.parametrize('protocol', [0])
+    def test_session_rgb_back_compat(self, protocol):
+
+        filename = os.path.join(DATA, 'image_rgb_v{0}.glu'.format(protocol))
+
+        with open(filename, 'r') as f:
+            session = f.read()
+
+        state = GlueUnSerializer.loads(session)
+
+        ga = state.object('__main__')
+
+        dc = ga.session.data_collection
+
+        assert len(dc) == 1
+
+        assert dc[0].label == 'rgbcube'
+
+        viewer1 = ga.viewers[0][0]
+
+        assert len(viewer1.state.layers) == 3
+        assert viewer1.state.color_mode == 'One color per layer'
+
+        layer_state = viewer1.state.layers[0]
+        assert layer_state.visible
+        assert layer_state.attribute.label == 'a'
+        assert layer_state.color == 'r'
+
+        layer_state = viewer1.state.layers[1]
+        assert not layer_state.visible
+        assert layer_state.attribute.label == 'c'
+        assert layer_state.color == 'g'
+
+        layer_state = viewer1.state.layers[2]
+        assert layer_state.visible
+        assert layer_state.attribute.label == 'b' 
+        assert layer_state.color == 'b'
