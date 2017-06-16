@@ -82,7 +82,8 @@ class ImageLayerArtist(MatplotlibLayerArtist):
                            color=color,
                            contrast=self.state.contrast,
                            bias=self.state.bias,
-                           alpha=self.state.alpha)
+                           alpha=self.state.alpha,
+                           stretch=self.state.stretch())
 
         self.composite_image.invalidate_cache()
 
@@ -121,7 +122,7 @@ class ImageLayerArtist(MatplotlibLayerArtist):
             self._update_image_data()
             force = True  # make sure scaling and visual attributes are updated
 
-        if force or any(prop in changed for prop in ('v_min', 'v_max', 'contrast', 'bias', 'alpha', 'color_mode', 'cmap', 'color', 'zorder', 'visible')):
+        if force or any(prop in changed for prop in ('v_min', 'v_max', 'contrast', 'bias', 'alpha', 'color_mode', 'cmap', 'color', 'zorder', 'visible', 'stretch')):
             self._update_visual_attributes()
 
     @defer_draw

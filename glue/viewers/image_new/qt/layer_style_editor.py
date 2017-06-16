@@ -2,6 +2,9 @@ import os
 
 from qtpy import QtWidgets
 
+from astropy.visualization import (LinearStretch, SqrtStretch,
+                                   LogStretch, AsinhStretch)
+
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
 from glue.utils.qt import load_ui, update_combobox
 from glue.core.qt.data_combo_helper import ComponentIDComboHelper
@@ -20,14 +23,21 @@ class ImageLayerStyleEditor(QtWidgets.QWidget):
                           'contrast': dict(value_range=(-5, 15)),
                           'bias': dict(value_range=(-2, 3))}
 
-        labels = [('Min/Max', 100),
-                  ('99.5%', 99.5),
-                  ('99%', 99),
-                  ('95%', 95),
-                  ('90%', 90),
-                  ('Custom', 'Custom')]
+        percentiles = [('Min/Max', 100),
+                       ('99.5%', 99.5),
+                       ('99%', 99),
+                       ('95%', 95),
+                       ('90%', 90),
+                       ('Custom', 'Custom')]
 
-        update_combobox(self.ui.combodata_percentile, labels)
+        update_combobox(self.ui.combodata_percentile, percentiles)
+
+        stretches = [('Linear', LinearStretch),
+                     ('Square Root', SqrtStretch),
+                     ('Arcsinh', AsinhStretch),
+                     ('Logarithmic', LogStretch)]
+
+        update_combobox(self.ui.combodata_stretch, stretches)
 
         autoconnect_callbacks_to_qt(layer.state, self.ui, connect_kwargs)
 

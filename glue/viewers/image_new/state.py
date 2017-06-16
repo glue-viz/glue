@@ -6,6 +6,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
                                            DeferredDrawCallbackProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
+from astropy.visualization import LinearStretch
 
 __all__ = ['ImageViewerState', 'ImageLayerState']
 
@@ -81,6 +82,7 @@ class ImageLayerState(MatplotlibLayerState):
     contrast = DeferredDrawCallbackProperty(1)
     bias = DeferredDrawCallbackProperty(0.5)
     cmap = DeferredDrawCallbackProperty()
+    stretch = DeferredDrawCallbackProperty(LinearStretch)
 
     def __init__(self, **kwargs):
         super(ImageLayerState, self).__init__(**kwargs)
