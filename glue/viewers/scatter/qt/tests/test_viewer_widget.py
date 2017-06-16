@@ -15,7 +15,7 @@ from glue import core
 from glue.core.component_id import ComponentID
 from glue.core.tests.util import simple_session
 from glue.utils.qt import combo_as_string
-from glue.viewers.common.qt.tests.test_mpl_data_viewer import BaseTestMatplotlibDataViewer
+from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.core.state import GlueUnSerializer
 
 from ..data_viewer import ScatterViewer
