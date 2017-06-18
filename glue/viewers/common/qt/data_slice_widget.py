@@ -33,7 +33,7 @@ class SliceWidget(QtWidgets.QWidget):
 
         self.state = SliceState()
         self.state.label = label
-        self.state.slice_center = 0.5 * (lo + hi)
+        self.state.slice_center = (lo + hi) // 2
 
         self._world = np.asarray(world)
         self._world_warning = world_warning
