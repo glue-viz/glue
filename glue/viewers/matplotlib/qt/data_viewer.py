@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+from qtpy.QtCore import Qt
+
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.common.viz_client import init_mpl, update_appearance_from_settings
@@ -67,6 +69,11 @@ class MatplotlibDataViewer(DataViewer):
         # And vice-versa when layer states are removed from the viewer state, we
         # need to keep the layer_artist_container in sync
         self.state.add_callback('layers', nonpartial(self._sync_layer_artist_container))
+
+        self.central_widget.resize(600, 400)
+        self.resize(self.central_widget.size())
+        self.statusBar().setSizeGripEnabled(False)
+        self.setFocusPolicy(Qt.StrongFocus)
 
     def _sync_state_layers(self):
         # Remove layer state objects that no longer have a matching layer

@@ -4,7 +4,7 @@ import pytest
 import numpy as np
 
 from glue.core import Data
-from glue.viewers.image.qt import ImageWidget
+from glue.viewers.image_new.qt import ImageViewer
 from glue.core.tests.util import simple_session
 from glue.tests.helpers import requires_matplotlib_ge_14
 
@@ -25,14 +25,16 @@ def test_resample_on_zoom():
     data = Data(x=np.random.random((2048, 2048)), label='image')
     session.data_collection.append(data)
 
-    image = ImageWidget(session=session)
+    image = ImageViewer(session=session)
     image.add_data(data)
 
     image.show()
 
+    device_ratio = image.axes.figure.canvas.devicePixelRatio()
+
     image.axes.figure.canvas.key_press_event('o')
-    image.axes.figure.canvas.button_press_event(200, 200, 1)
-    image.axes.figure.canvas.motion_notify_event(400, 210)
-    image.axes.figure.canvas.button_release_event(400, 210, 1)
+    image.axes.figure.canvas.button_press_event(200 * device_ratio, 200 * device_ratio, 1)
+    image.axes.figure.canvas.motion_notify_event(400 * device_ratio, 210 * device_ratio)
+    image.axes.figure.canvas.button_release_event(400 * device_ratio, 210 * device_ratio, 1)
 
     return image.axes.figure
