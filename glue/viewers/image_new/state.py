@@ -154,10 +154,19 @@ class ImageLayerState(MatplotlibLayerState):
             self.cmap = colormaps.members[0][1]
 
         self.add_callback('global_sync', self._update_syncing)
+        self.add_callback('layer', self._update_attribute)
+
         self._update_syncing()
+        self._update_attribute()
+
+    def _update_attribute(self, *args):
+        if self.layer is not None:
+            self.attribute = self.layer.visible_components[0]
 
     def update_priority(self, name):
-        if name == 'attribute':
+        if name == 'layer':
+            return 3
+        elif name == 'attribute':
             return 2
         elif name.endswith(('_min', '_max')):
             return 0

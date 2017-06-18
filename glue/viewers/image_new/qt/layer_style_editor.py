@@ -39,12 +39,12 @@ class ImageLayerStyleEditor(QtWidgets.QWidget):
 
         update_combobox(self.ui.combodata_stretch, stretches)
 
-        autoconnect_callbacks_to_qt(layer.state, self.ui, connect_kwargs)
-
         self.attribute_helper = ComponentIDComboHelper(self.ui.combodata_attribute,
                                                        layer.data_collection)
 
         self.attribute_helper.append_data(layer.layer)
+
+        autoconnect_callbacks_to_qt(layer.state, self.ui, connect_kwargs)
 
         layer._viewer_state.add_callback('color_mode', self._update_color_mode)
 
