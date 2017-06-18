@@ -54,6 +54,10 @@ def update_combobox(combo, labeldata, default_index=0):
         if data is current or data == current:
             index = i
     combo.blockSignals(False)
+
+    if default_index < 0:
+        default_index = combo.count() + default_index
+
     if index is None:
         index = min(default_index, combo.count() - 1)
     combo.setCurrentIndex(index)

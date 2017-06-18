@@ -35,12 +35,12 @@ class ImageOptionsWidget(QtWidgets.QWidget):
         self.x_att_helper = ComponentIDComboHelper(self.ui.combodata_x_att_world,
                                                    session.data_collection,
                                                    numeric=False, categorical=False,
-                                                   visible=False, world_coord=True, default_index=0)
+                                                   visible=False, world_coord=True, default_index=-1)
 
         self.y_att_helper = ComponentIDComboHelper(self.ui.combodata_y_att_world,
                                                    session.data_collection,
                                                    numeric=False, categorical=False,
-                                                   visible=False, world_coord=True, default_index=1)
+                                                   visible=False, world_coord=True, default_index=-2)
 
         self.viewer_state = viewer_state
 
