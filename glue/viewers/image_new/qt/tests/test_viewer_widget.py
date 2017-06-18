@@ -157,12 +157,29 @@ class TestImageViewer(object):
         assert len(self.viewer.layers) == 2
         assert len(self.image1.subsets) == 1
 
-        print(self.image1.subsets[0].to_mask())
-
         assert_allclose(self.image1.subsets[0].to_mask(), [[0, 1], [0, 0]])
 
         state = self.image1.subsets[0].subset_state
         assert isinstance(state, RoiSubsetState)
+
+    def test_identical(self):
+
+        # Check what happens if we set both attributes to the same coordinates
+
+        self.viewer.add_data(self.image2)
+
+        assert self.viewer.state.x_att_world is self.image2.id['Apple']
+        assert self.viewer.state.y_att_world is self.image2.id['Banana']
+
+        self.viewer.state.y_att_world = self.image2.id['Apple']
+
+        assert self.viewer.state.x_att_world is self.image2.id['Banana']
+        assert self.viewer.state.y_att_world is self.image2.id['Apple']
+
+        self.viewer.state.x_att_world = self.image2.id['Apple']
+
+        assert self.viewer.state.x_att_world is self.image2.id['Apple']
+        assert self.viewer.state.y_att_world is self.image2.id['Banana']
 
 
 class TestSessions(object):

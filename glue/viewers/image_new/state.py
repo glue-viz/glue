@@ -26,8 +26,8 @@ class ImageViewerState(MatplotlibDataViewerState):
 
         super(ImageViewerState, self).__init__(**kwargs)
 
-        self.add_callback('x_att_world', self._update_x_att)
-        self.add_callback('y_att_world', self._update_y_att)
+        self.add_callback('x_att_world', self._update_x_att, priority=500)
+        self.add_callback('y_att_world', self._update_y_att, priority=500)
 
         self.limits_cache = {}
 
@@ -41,6 +41,9 @@ class ImageViewerState(MatplotlibDataViewerState):
 
         self.add_callback('reference_data', self.set_default_slices)
         self.add_callback('layers', self.set_reference_data)
+
+        self.add_callback('x_att_world', self._on_xatt_world_change, priority=1000)
+        self.add_callback('y_att_world', self._on_yatt_world_change, priority=1000)
 
     def update_priority(self, name):
         if name == 'layers':
@@ -61,6 +64,24 @@ class ImageViewerState(MatplotlibDataViewerState):
     def _update_y_att(self, *args):
         index = self.reference_data.world_component_ids.index(self.y_att_world)
         self.y_att = self.reference_data.pixel_component_ids[index]
+
+    @defer_draw
+    def _on_xatt_world_change(self, *args):
+        if self.x_att_world == self.y_att_world:
+            world_ids = self.reference_data.world_component_ids
+            if self.x_att_world == world_ids[-1]:
+                self.y_att_world = world_ids[-2]
+            else:
+                self.y_att_world = world_ids[-1]
+
+    @defer_draw
+    def _on_yatt_world_change(self, *args):
+        if self.y_att_world == self.x_att_world:
+            world_ids = self.reference_data.world_component_ids
+            if self.y_att_world == world_ids[-1]:
+                self.x_att_world = world_ids[-2]
+            else:
+                self.x_att_world = world_ids[-1]
 
     def set_reference_data(self, *args):
         # TODO: make sure this doesn't get called for changes *in* the layers

@@ -44,24 +44,8 @@ class ImageOptionsWidget(QtWidgets.QWidget):
 
         self.viewer_state = viewer_state
 
-        self.slice_helper = MultiSliceWidgetHelper(viewer_state=self.viewer_state, widget=self.ui.slice_tab)
-
-        self.viewer_state.add_callback('x_att_world', self.on_xatt_change, priority=1000)
-        self.viewer_state.add_callback('y_att_world', self.on_yatt_change, priority=1000)
-
-    def on_xatt_change(self, *args):
-        if self.viewer_state.x_att_world == self.viewer_state.y_att_world:
-            if self.combodata_x_att_world.currentIndex() == 0:
-                self.combodata_y_att_world.setCurrentIndex(1)
-            else:
-                self.combodata_y_att_world.setCurrentIndex(0)
-
-    def on_yatt_change(self, *args):
-        if self.viewer_state.y_att == self.viewer_state.x_att_world:
-            if self.combodata_y_att_world.currentIndex() == 0:
-                self.combodata_x_att_world.setCurrentIndex(1)
-            else:
-                self.combodata_x_att_world.setCurrentIndex(0)
+        self.slice_helper = MultiSliceWidgetHelper(viewer_state=self.viewer_state,
+                                                   widget=self.ui.slice_tab)
 
     def _update_combo_data(self, *args):
         self.x_att_helper.set_multiple_data([self.viewer_state.reference_data])
