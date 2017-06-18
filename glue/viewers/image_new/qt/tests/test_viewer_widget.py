@@ -9,7 +9,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 
-from glue.core import Data
+from glue.core import Data, Coordinates
 from glue.core.roi import RectangularROI
 from glue.core.subset import RoiSubsetState, AndState
 from glue import core
@@ -37,27 +37,135 @@ class TestImageCommon(BaseTestMatplotlibDataViewer):
     def test_double_add_ignored(self):
         pass
 
+
+class MyCoords(Coordinates):
+    def axis_label(self, i):
+        return ['Banana', 'Apple'][i]
+
+
 class TestImageViewer(object):
 
     def setup_method(self, method):
 
-        self.data1 = Data(label='d1', a=[[1, 2], [3, 4]], b=[[5, 6], [7, 8]])
-        self.data2 = Data(label='d12', x=[[2, 1], [1, 1]], b=[[3, 3], [2, 2]])
+        self.coords = MyCoords()
+        self.image1 = Data(label='image1', x=[[1, 2], [3, 4]], y=[[4, 5], [2, 3]])
+        self.image2 = Data(label='image2', a=[[3, 3], [2, 2]], b=[[4, 4], [3, 2]], coords=self.coords)
+        self.catalog = Data(label='catalog', c=[1, 3, 2], d=[4, 3, 3])
 
         self.session = simple_session()
         self.hub = self.session.hub
 
         self.data_collection = self.session.data_collection
-        self.data_collection.append(self.data1)
-        self.data_collection.append(self.data2)
+        self.data_collection.append(self.image1)
+        self.data_collection.append(self.image2)
+        self.data_collection.append(self.catalog)
 
         self.viewer = ImageViewer(self.session)
 
         self.data_collection.register_to_hub(self.hub)
         self.viewer.register_to_hub(self.hub)
 
+        self.options_widget = self.viewer.options_widget()
+
+
     def teardown_method(self, method):
         self.viewer.close()
+
+    def test_basic(self):
+
+        # Check defaults when we add data
+
+        self.viewer.add_data(self.image1)
+
+        assert combo_as_string(self.options_widget.ui.combodata_x_att_world) == 'World 0:World 1'
+        assert combo_as_string(self.options_widget.ui.combodata_x_att_world) == 'World 0:World 1'
+
+        assert self.viewer.axes.get_xlabel() == 'World 1'
+        assert self.viewer.state.x_att_world is self.image1.id['World 1']
+        assert self.viewer.state.x_att is self.image1.pixel_component_ids[1]
+        # TODO: make sure limits are deterministic then update this
+        # assert self.viewer.state.x_min == -0.5
+        # assert self.viewer.state.x_max == +1.5
+
+        assert self.viewer.axes.get_ylabel() == 'World 0'
+        assert self.viewer.state.y_att_world is self.image1.id['World 0']
+        assert self.viewer.state.y_att is self.image1.pixel_component_ids[0]
+        # TODO: make sure limits are deterministic then update this
+        # assert self.viewer.state.y_min == -0.5
+        # assert self.viewer.state.y_max == +1.5
+
+        assert not self.viewer.state.x_log
+        assert not self.viewer.state.y_log
+
+        assert len(self.viewer.state.layers) == 1
+
+    def test_custom_coords(self):
+
+        # Check defaults when we add data with coordinates
+
+        self.viewer.add_data(self.image2)
+
+        assert combo_as_string(self.options_widget.ui.combodata_x_att_world) == 'Banana:Apple'
+        assert combo_as_string(self.options_widget.ui.combodata_x_att_world) == 'Banana:Apple'
+
+        assert self.viewer.axes.get_xlabel() == 'Apple'
+        assert self.viewer.state.x_att_world is self.image2.id['Apple']
+        assert self.viewer.state.x_att is self.image2.pixel_component_ids[1]
+        assert self.viewer.axes.get_ylabel() == 'Banana'
+        assert self.viewer.state.y_att_world is self.image2.id['Banana']
+        assert self.viewer.state.y_att is self.image2.pixel_component_ids[0]
+
+    def test_flip(self):
+
+        self.viewer.add_data(self.image1)
+
+        x_min_start = self.viewer.state.x_min
+        x_max_start = self.viewer.state.x_max
+
+        self.options_widget.button_flip_x.click()
+
+        assert self.viewer.state.x_min == x_max_start
+        assert self.viewer.state.x_max == x_min_start
+
+        y_min_start = self.viewer.state.y_min
+        y_max_start = self.viewer.state.y_max
+
+        self.options_widget.button_flip_y.click()
+
+        assert self.viewer.state.y_min == y_max_start
+        assert self.viewer.state.y_max == y_min_start
+
+    def test_combo_updates_with_component_add(self):
+        self.viewer.add_data(self.image1)
+        self.image1.add_component([[9, 9], [8, 8]], 'z')
+        assert self.viewer.state.x_att_world is self.image1.id['World 1']
+        assert self.viewer.state.y_att_world is self.image1.id['World 0']
+        # TODO: there should be an easier way to do this
+        layer_style_editor = self.viewer._view.layout_style_widgets[self.viewer.layers[0]]
+        assert combo_as_string(layer_style_editor.ui.combodata_attribute) == 'x:y:z'
+
+    def test_apply_roi(self):
+
+        self.viewer.add_data(self.image1)
+
+        roi = RectangularROI(0.4, 1.6, -0.6, 0.6)
+
+        assert len(self.viewer.layers) == 1
+
+        self.viewer.apply_roi(roi)
+
+        assert len(self.viewer.layers) == 2
+        assert len(self.image1.subsets) == 1
+
+        print(self.image1.subsets[0].to_mask())
+
+        assert_allclose(self.image1.subsets[0].to_mask(), [[0, 1], [0, 0]])
+
+        state = self.image1.subsets[0].subset_state
+        assert isinstance(state, RoiSubsetState)
+
+
+class TestSessions(object):
 
     @pytest.mark.parametrize('protocol', [0])
     def test_session_back_compat(self, protocol):
