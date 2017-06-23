@@ -111,8 +111,15 @@ class CompositeArray(object):
                 plane = layer['color'](data)
 
                 # Use traditional alpha compositing
-                img *= (1 - layer['alpha'])
-                plane = plane * layer['alpha']
+                plane[:, :, 0] = plane[:, :, 0] * layer['alpha'] * plane[:, :, 3]
+                plane[:, :, 1] = plane[:, :, 1] * layer['alpha'] * plane[:, :, 3]
+                plane[:, :, 2] = plane[:, :, 2] * layer['alpha'] * plane[:, :, 3]
+
+                img[:, :, 0] *= (1 - plane[:, :, 3])
+                img[:, :, 1] *= (1 - plane[:, :, 3])
+                img[:, :, 2] *= (1 - plane[:, :, 3])
+                img[:, :, 3] = 1
+
 
             else:
 
