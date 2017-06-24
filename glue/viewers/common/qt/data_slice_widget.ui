@@ -197,7 +197,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="valuetext_slider_label">
+      <widget class="QLineEdit" name="text_slider_label">
        <property name="maximumSize">
         <size>
          <width>50</width>

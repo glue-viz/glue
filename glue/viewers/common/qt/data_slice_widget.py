@@ -67,9 +67,9 @@ class SliceWidget(QtWidgets.QWidget):
         self.value_slice_center.setMaximum(hi)
         self.value_slice_center.valueChanged.connect(nonpartial(self.set_label_from_slider))
 
-        self.valuetext_slider_label.setMinimumWidth(80)
-        self.state.slider_label = self.value_slice_center.value()
-        self.valuetext_slider_label.editingFinished.connect(nonpartial(self.set_slider_from_label))
+        self.text_slider_label.setMinimumWidth(80)
+        self.state.slider_label = str(self.value_slice_center.value())
+        self.text_slider_label.editingFinished.connect(nonpartial(self.set_slider_from_label))
 
         self._play_timer = QtCore.QTimer()
         self._play_timer.setInterval(500)
@@ -112,14 +112,15 @@ class SliceWidget(QtWidgets.QWidget):
         else:
             self.text_warning.hide()
             self.state.slider_unit = ''
-        self.state.slider_label = value
+        self.state.slider_label = str(value)
 
     def set_slider_from_label(self):
-        text = self.valuetext_slider_label.text()
+        print('set_slider_from_label')
+        text = self.text_slider_label.text()
         if self.state.use_world:
             # Don't want to assume world is sorted, pick closest value
             value = np.argmin(np.abs(self._world - float(text)))
-            self.state.slider_label = self._world[value]
+            self.state.slider_label = str(self._world[value])
         else:
             value = int(text)
         self.value_slice_center.setValue(value)
