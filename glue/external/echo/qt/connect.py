@@ -51,7 +51,13 @@ def connect_text(instance, prop, widget):
         setattr(instance, prop, val)
 
     def update_widget(val):
-        widget.setText(val)
+        if hasattr(widget, 'editingFinished'):
+            widget.blockSignals(True)
+            widget.setText(val)
+            widget.blockSignals(False)
+            widget.editingFinished.emit()
+        else:
+            widget.setText(val)
 
     add_callback(instance, prop, update_widget)
 

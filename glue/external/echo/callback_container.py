@@ -17,7 +17,7 @@ class CallbackContainer(object):
     def __init__(self):
         self.callbacks = []
 
-    def _wrap(self, value):
+    def _wrap(self, value, priority=0):
         """
         Given a function/method, this will automatically wrap a method using
         weakref to avoid circular references.
@@ -33,7 +33,12 @@ class CallbackContainer(object):
             # and instance.
 
             value = (weakref.ref(value.__func__),
-                     weakref.ref(value.__self__, self._auto_remove))
+                     weakref.ref(value.__self__, self._auto_remove),
+                     priority)
+
+        else:
+
+            value = (value, priority)
 
         return value
 
@@ -47,21 +52,25 @@ class CallbackContainer(object):
     def __contains__(self, value):
         if self.is_bound_method(value):
             for callback in self.callbacks[:]:
-                if isinstance(callback, tuple) and value.__func__ is callback[0]() and value.__self__ is callback[1]():
+                if len(callback) == 3 and value.__func__ is callback[0]() and value.__self__ is callback[1]():
                     return True
             else:
                 return False
         else:
-            return value in self.callbacks
+            for callback in self.callbacks[:]:
+                if len(callback) == 2 and value is callback[0]:
+                    return True
+            else:
+                return False
 
     def __iter__(self):
-        for callback in self.callbacks:
-            if isinstance(callback, tuple):
+        for callback in sorted(self.callbacks, key=lambda x: x[-1], reverse=True):
+            if len(callback) == 3:
                 func = callback[0]()
                 inst = callback[1]()
                 yield partial(func, inst)
             else:
-                yield callback
+                yield callback[0]
 
     def __len__(self):
         return len(self.callbacks)
@@ -70,14 +79,15 @@ class CallbackContainer(object):
     def is_bound_method(func):
         return hasattr(func, '__func__') and getattr(func, '__self__', None) is not None
 
-    def append(self, value):
-        self.callbacks.append(self._wrap(value))
+    def append(self, value, priority=0):
+        self.callbacks.append(self._wrap(value, priority=priority))
 
     def remove(self, value):
         if self.is_bound_method(value):
             for callback in self.callbacks[:]:
-                if isinstance(callback, tuple) and value.__func__ is callback[0]() and value.__self__ is callback[1]():
+                if len(callback) == 3 and value.__func__ is callback[0]() and value.__self__ is callback[1]():
                     self.callbacks.remove(callback)
         else:
-            if value in self.callbacks:
-                self.callbacks.remove(value)
+            for callback in self.callbacks[:]:
+                if len(callback) == 2 and value is callback[0]:
+                    self.callbacks.remove(callback)
