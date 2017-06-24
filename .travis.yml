@@ -29,6 +29,7 @@ env:
     - NO_CFG_FILES=false
     - QT_PKG=pyqt5
     - SETUP_XVFB=True
+    - SPHINX_VERSION=1.5
     # Note that we need to specify requests 2.9 because of a bug in the version check in linkchecker, and we can't use conda since requests 2.9 won't exist for e.g. Python 3.6
     - CONDA_DEPENDENCIES="nomkl pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole"
     - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli plotly spectral-cube requests==2.9 glue-vispy-viewers"
