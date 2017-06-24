@@ -469,6 +469,7 @@ class ImageClient(VizClient):
                     return a
             return None
 
+        zorder = None
         result = None
         layer = self.display_data
         if enable:
@@ -480,15 +481,22 @@ class ImageClient(VizClient):
             a.r = a.g = a.b = self.display_attribute
 
             with self.artists.ignore_empty():
-                self.artists.pop(layer)
+                old_layer_artists = self.artists.pop(layer)
+                zorder = old_layer_artists[0].zorder
                 self.artists.append(a)
             result = a
         else:
             with self.artists.ignore_empty():
                 for artist in list(self.artists):
                     if isinstance(artist, RGBImageLayerBase):
+                        zorder = artist.zorder
                         self.artists.remove(artist)
                 result = self.add_layer(layer)
+
+        # We need to make sure we preserve the zorder from the original layer
+        # if any existed.
+        if zorder is not None:
+            result.zorder = zorder
 
         self._update_data_plot()
         self._redraw()

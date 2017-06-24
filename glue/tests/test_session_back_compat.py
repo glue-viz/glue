@@ -165,3 +165,29 @@ def test_load_pixel_components_07():
 
     assert isinstance(ga.data_collection[0].pixel_component_ids[0], PixelComponentID)
     assert isinstance(ga.data_collection[0].pixel_component_ids[1], PixelComponentID)
+
+
+@requires_qt
+def test_load_rgb():
+
+    # This loads a session file where we opened an image, changed to RGB mode
+    # and changed back. This caused ratt/gatt/batt to be set but there was a bug
+    # that meant that if the mode was changed to monochromatic to save, there
+    # was an error when trying to set ratt/gatt/batt because the combo data
+    # hadn't been set yet.
+
+    with open(os.path.join(DATA, 'rgb.glu'), 'r') as f:
+        content = f.read()
+
+    state = GlueUnSerializer.loads(content)
+
+    ga = state.object('__main__')
+
+    data = ga.data_collection[0]
+    viewer = ga.viewers[0][0]
+
+    assert not viewer.rgb_mode
+    assert viewer.attribute is data.id['image']
+    assert viewer.ratt is data.id['image']
+    assert viewer.gatt is data.id['image']
+    assert viewer.batt is data.id['image']

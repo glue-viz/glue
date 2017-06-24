@@ -59,6 +59,14 @@ v0.10.1 (2017-03-16)
 * Renamed package to glue-core, since glueviz is now a meta-package (no need
   for a new major version since this change should be seamless to users).
 
+v0.10.1 (unreleased)
+--------------------
+
+* Fixed compatibility with old session files. [#1243, #1246]
+
+* Fixed a bug that caused subsets to disappear behind the image when
+  toggling RGB mode on/off in image viewer. [#1246]
+
 v0.10.0 (2017-02-14)
 --------------------
 
