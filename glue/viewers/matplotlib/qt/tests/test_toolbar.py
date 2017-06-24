@@ -7,7 +7,7 @@ from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.mouse_mode import MouseMode
 from glue.core.tests.util import simple_session
 
-from ..mpl_toolbar import MatplotlibViewerToolbar
+from ..toolbar import MatplotlibViewerToolbar
 
 
 class MouseModeTest(MouseMode):
