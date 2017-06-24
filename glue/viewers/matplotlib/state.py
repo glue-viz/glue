@@ -21,26 +21,42 @@ class DeferredDrawCallbackProperty(CallbackProperty):
 
 
 class MatplotlibDataViewerState(State):
+    """
+    A base class that includes common attributes for viewers based on
+    Matplotlib.
+    """
 
-    x_min = DeferredDrawCallbackProperty()
-    x_max = DeferredDrawCallbackProperty()
+    x_min = DeferredDrawCallbackProperty(docstring='Lower limit of the visible x range')
+    x_max = DeferredDrawCallbackProperty(docstring='Upper limit of the visible x range')
 
-    y_min = DeferredDrawCallbackProperty()
-    y_max = DeferredDrawCallbackProperty()
+    y_min = DeferredDrawCallbackProperty(docstring='Lower limit of the visible y range')
+    y_max = DeferredDrawCallbackProperty(docstring='Upper limit of the visible y range')
 
-    x_log = DeferredDrawCallbackProperty(False)
-    y_log = DeferredDrawCallbackProperty(False)
+    x_log = DeferredDrawCallbackProperty(False, docstring='Whether the x axis is logarithmic')
+    y_log = DeferredDrawCallbackProperty(False, docstring='Whether the x axis is logarithmic')
 
-    layers = ListCallbackProperty()
+    layers = ListCallbackProperty(docstring='A collection of all layers in the viewer')
 
 
 class MatplotlibLayerState(State):
+    """
+    A base class that includes common attributes for all layers in viewers based
+    on Matplotlib.
+    """
 
-    layer = DeferredDrawCallbackProperty()
-    color = DeferredDrawCallbackProperty()
-    alpha = DeferredDrawCallbackProperty()
-    zorder = DeferredDrawCallbackProperty(0)
-    visible = DeferredDrawCallbackProperty(True)
+    layer = DeferredDrawCallbackProperty(docstring='The Data or Subset '
+                                                   'represented by the layer')
+    color = DeferredDrawCallbackProperty(docstring='The color used to display '
+                                                   'the data')
+    alpha = DeferredDrawCallbackProperty(docstring='The transparency used to '
+                                                   'display the data')
+    zorder = DeferredDrawCallbackProperty(0, docstring='A value used to indicate '
+                                                       'which layers are shown in '
+                                                       'front of which (larger '
+                                                       'zorder values are on top '
+                                                       'of other layers)')
+    visible = DeferredDrawCallbackProperty(True, docstring='Whether the layer '
+                                                           'is currently visible')
 
     def __init__(self, viewer_state=None, **kwargs):
 

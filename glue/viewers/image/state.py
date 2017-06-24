@@ -10,17 +10,31 @@ from glue.utils import defer_draw
 
 __all__ = ['ImageViewerState', 'ImageLayerState']
 
+# Define shortcut for readability
+DDCProperty = DeferredDrawCallbackProperty
+
 
 class ImageViewerState(MatplotlibDataViewerState):
 
-    x_att = DeferredDrawCallbackProperty()
-    y_att = DeferredDrawCallbackProperty()
-    x_att_world = DeferredDrawCallbackProperty()
-    y_att_world = DeferredDrawCallbackProperty()
-    aspect = DeferredDrawCallbackProperty('equal')
-    reference_data = DeferredDrawCallbackProperty()
-    slices = DeferredDrawCallbackProperty()
-    color_mode = DeferredDrawCallbackProperty('Colormaps')
+    x_att = DDCProperty(docstring='The component ID giving the pixel component '
+                                  'shown on the x axis')
+    y_att = DDCProperty(docstring='The component ID giving the pixel component '
+                                  'shown on the y axis')
+    x_att_world = DDCProperty(docstring='The component ID giving the world component '
+                                        'shown on the x axis')
+    y_att_world = DDCProperty(docstring='The component ID giving the world component '
+                                        'shown on the y axis')
+    aspect = DDCProperty('equal', docstring='Whether to enforce square pixels (``equal``) '
+                                            'or fill the axes (``auto``)')
+    reference_data = DDCProperty(docstring='The dataset that is used to define the '
+                                           'available pixel/world components, and '
+                                           'which defines the coordinate frame in '
+                                           'which the images are shown')
+    slices = DDCProperty(docstring='The current slice along all dimensions')
+    color_mode = DDCProperty('Colormaps', docstring='Whether each layer can have '
+                                                    'its own colormap (``Colormaps``) or '
+                                                    'whether each layer is assigned '
+                                                    'a single color (``One color per layer``)')
 
     def __init__(self, **kwargs):
 
@@ -135,15 +149,21 @@ class ImageViewerState(MatplotlibDataViewerState):
 
 class ImageLayerState(MatplotlibLayerState):
 
-    attribute = DeferredDrawCallbackProperty()
-    v_min = DeferredDrawCallbackProperty()
-    v_max = DeferredDrawCallbackProperty()
-    percentile = DeferredDrawCallbackProperty(100)
-    contrast = DeferredDrawCallbackProperty(1)
-    bias = DeferredDrawCallbackProperty(0.5)
-    cmap = DeferredDrawCallbackProperty()
-    stretch = DeferredDrawCallbackProperty('linear')
-    global_sync = DeferredDrawCallbackProperty(True)
+    attribute = DDCProperty(docstring='The attribute shown in the layer')
+    v_min = DDCProperty(docstring='The lower level shown')
+    v_max = DDCProperty(docstring='The upper leven shown')
+    percentile = DDCProperty(100, docstring='The percentile value used to '
+                                            'automatically calculate levels')
+    contrast = DDCProperty(1, docstring='The contrast of the layer')
+    bias = DDCProperty(0.5, docstring='A constant value that is added to the '
+                                      'layer before rendering')
+    cmap = DDCProperty(docstring='The colormap used to render the layer')
+    stretch = DDCProperty('linear', docstring='The stretch used to render the layer, '
+                                              'whcih should be one of ``linear``',
+                                              '``sqrt``, ``log``, or ``arcsinh``')
+    global_sync = DDCProperty(True, docstring='Whether the color and transparency ',
+                                              'should be synced with the global '
+                                              'color and transparency for the data')
 
     def __init__(self, **kwargs):
         super(ImageLayerState, self).__init__(**kwargs)
