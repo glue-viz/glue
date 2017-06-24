@@ -1,7 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
-from contextlib import contextmanager
+import weakref
 from weakref import WeakKeyDictionary
+from contextlib import contextmanager
 
 from .callback_container import CallbackContainer
 
@@ -120,7 +121,7 @@ class CallbackProperty(object):
         """
         self._disabled[instance] = False
 
-    def add_callback(self, instance, func, echo_old=False):
+    def add_callback(self, instance, func, echo_old=False, priority=0):
         """
         Add a callback to a specific instance that manages this property
 
@@ -134,12 +135,15 @@ class CallbackProperty(object):
             If `True`, the callback function will be invoked with both the old
             and new values of the property, as ``func(old, new)``. If `False`
             (the default), will be invoked as ``func(new)``
+        priority : int, optional
+            This can optionally be used to force a certain order of execution of
+            callbacks (larger values indicate a higher priority).
         """
 
         if echo_old:
-            self._2arg_callbacks.setdefault(instance, CallbackContainer()).append(func)
+            self._2arg_callbacks.setdefault(instance, CallbackContainer()).append(func, priority=priority)
         else:
-            self._callbacks.setdefault(instance, CallbackContainer()).append(func)
+            self._callbacks.setdefault(instance, CallbackContainer()).append(func, priority=priority)
 
     def remove_callback(self, instance, func):
         """
@@ -195,7 +199,7 @@ class HasCallbackProperties(object):
         if self.is_callback_property(attribute):
             self.notify_global(**{attribute: value})
 
-    def add_callback(self, name, callback, echo_old=False):
+    def add_callback(self, name, callback, echo_old=False, priority=0):
         """
         Add a callback that gets triggered when a callback property of the
         class changes.
@@ -210,10 +214,13 @@ class HasCallbackProperties(object):
             If `True`, the callback function will be invoked with both the old
             and new values of the property, as ``callback(old, new)``. If `False`
             (the default), will be invoked as ``callback(new)``
+        priority : int, optional
+            This can optionally be used to force a certain order of execution of
+            callbacks (larger values indicate a higher priority).
         """
         if self.is_callback_property(name):
             prop = getattr(type(self), name)
-            prop.add_callback(self, callback, echo_old=echo_old)
+            prop.add_callback(self, callback, echo_old=echo_old, priority=priority)
         else:
             raise TypeError("attribute '{0}' is not a callback property".format(name))
 
@@ -270,7 +277,7 @@ class HasCallbackProperties(object):
                 yield name, getattr(type(self), name)
 
 
-def add_callback(instance, prop, callback, echo_old=False):
+def add_callback(instance, prop, callback, echo_old=False, priority=0):
     """
     Attach a callback function to a property in an instance
 
@@ -286,6 +293,9 @@ def add_callback(instance, prop, callback, echo_old=False):
         If `True`, the callback function will be invoked with both the old
         and new values of the property, as ``func(old, new)``. If `False`
         (the default), will be invoked as ``func(new)``
+    priority : int, optional
+        This can optionally be used to force a certain order of execution of
+        callbacks (larger values indicate a higher priority).
 
     Examples
     --------
@@ -305,7 +315,7 @@ def add_callback(instance, prop, callback, echo_old=False):
     p = getattr(type(instance), prop)
     if not isinstance(p, CallbackProperty):
         raise TypeError("%s is not a CallbackProperty" % prop)
-    p.add_callback(instance, callback, echo_old=echo_old)
+    p.add_callback(instance, callback, echo_old=echo_old, priority=priority)
 
 
 def remove_callback(instance, prop, callback):
@@ -472,10 +482,10 @@ class keep_in_sync(object):
 
     def __init__(self, instance1, prop1, instance2, prop2):
 
-        self.instance1 = instance1
+        self.instance1 = weakref.ref(instance1, self.disable_syncing)
         self.prop1 = prop1
 
-        self.instance2 = instance2
+        self.instance2 = weakref.ref(instance2, self.disable_syncing)
         self.prop2 = prop2
 
         self._syncing = False
@@ -485,19 +495,21 @@ class keep_in_sync(object):
     def prop1_from_prop2(self, value):
         if not self._syncing:
             self._syncing = True
-            setattr(self.instance1, self.prop1, getattr(self.instance2, self.prop2))
+            setattr(self.instance1(), self.prop1, getattr(self.instance2(), self.prop2))
             self._syncing = False
 
     def prop2_from_prop1(self, value):
         if not self._syncing:
             self._syncing = True
-            setattr(self.instance2, self.prop2, getattr(self.instance1, self.prop1))
+            setattr(self.instance2(), self.prop2, getattr(self.instance1(), self.prop1))
             self._syncing = False
 
-    def enable_syncing(self):
-        add_callback(self.instance1, self.prop1, self.prop2_from_prop1)
-        add_callback(self.instance2, self.prop2, self.prop1_from_prop2)
+    def enable_syncing(self, *args):
+        add_callback(self.instance1(), self.prop1, self.prop2_from_prop1)
+        add_callback(self.instance2(), self.prop2, self.prop1_from_prop2)
 
-    def disable_syncing(self):
-        remove_callback(self.instance1, self.prop1, self.prop2_from_prop1)
-        remove_callback(self.instance2, self.prop2, self.prop1_from_prop2)
+    def disable_syncing(self, *args):
+        if self.instance1() is not None:
+            remove_callback(self.instance1(), self.prop1, self.prop2_from_prop1)
+        if self.instance2() is not None:
+            remove_callback(self.instance2(), self.prop2, self.prop1_from_prop2)
