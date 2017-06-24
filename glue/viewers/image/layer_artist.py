@@ -5,7 +5,7 @@ import numpy as np
 
 from glue.utils import defer_draw
 
-from glue.viewers.image_new.state import ImageLayerState
+from glue.viewers.image.state import ImageLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 from glue.utils import color2rgb

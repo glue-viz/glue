@@ -7,7 +7,7 @@ from qtpy import QtWidgets
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
 from glue.utils.qt import load_ui
 from glue.core.qt.data_combo_helper import ComponentIDComboHelper
-from glue.viewers.image_new.qt.slice_widget import MultiSliceWidgetHelper
+from glue.viewers.image.qt.slice_widget import MultiSliceWidgetHelper
 
 __all__ = ['ImageOptionsWidget']
 

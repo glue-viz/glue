@@ -1,7 +1,7 @@
 import uuid
 
 import numpy as np
-from glue.viewers.image_new.state import ImageLayerState, ImageSubsetLayerState
+from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState
 from glue.viewers.scatter.state import ScatterLayerState
 
 STATE_CLASS = {}
@@ -74,7 +74,7 @@ def update_image_viewer_state(rec, context):
             if layer['_type'].split('.')[-1] == 'RGBImageLayerArtist':
                 for icolor, color in enumerate('rgb'):
                     new_layer = {}
-                    new_layer['_type'] = 'glue.viewers.image_new.layer_artist.ImageLayerArtist'
+                    new_layer['_type'] = 'glue.viewers.image.layer_artist.ImageLayerArtist'
                     new_layer['layer'] = layer['layer']
                     new_layer['attribute'] = layer[color]
                     new_layer['norm'] = layer[color + 'norm']

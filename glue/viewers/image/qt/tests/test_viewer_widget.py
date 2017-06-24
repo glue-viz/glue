@@ -18,7 +18,7 @@ from glue.core.tests.util import simple_session
 from glue.utils.qt import combo_as_string
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.core.state import GlueUnSerializer
-from glue.viewers.image_new.state import ImageLayerState, ImageSubsetLayerState
+from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState
 from glue.viewers.scatter.state import ScatterLayerState
 
 from ..data_viewer import ImageViewer

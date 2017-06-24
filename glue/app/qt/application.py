@@ -26,7 +26,7 @@ from glue.app.qt.preferences import PreferencesDialog
 from glue.viewers.matplotlib.qt.widget import defer_draw
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.scatter.qt import ScatterViewer
-from glue.viewers.image_new.qt import ImageViewer
+from glue.viewers.image.qt import ImageViewer
 from glue.utils import nonpartial
 from glue.utils.qt import (pick_class, GlueTabBar,
                            set_cursor_cm, messagebox_on_error, load_ui)

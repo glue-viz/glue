@@ -8,7 +8,7 @@ from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.external.modest_image import imshow
 
 # Import the mouse mode to make sure it gets registered
-from glue.viewers.image_new.contrast_mouse_mode import ContrastBiasMode  # noqa
+from glue.viewers.image.contrast_mouse_mode import ContrastBiasMode  # noqa
 
 __all__ = ['StandaloneImageViewer']
 

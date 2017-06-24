@@ -13,18 +13,18 @@ from glue.core.coordinates import WCSCoordinates
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
-from glue.viewers.image_new.qt.layer_style_editor import ImageLayerStyleEditor
-from glue.viewers.image_new.qt.layer_style_editor_subset import ImageLayerSubsetStyleEditor
-from glue.viewers.image_new.layer_artist import ImageLayerArtist, ImageSubsetLayerArtist
-from glue.viewers.image_new.qt.options_widget import ImageOptionsWidget
-from glue.viewers.image_new.state import ImageViewerState
-from glue.viewers.image_new.compat import update_image_viewer_state
+from glue.viewers.image.qt.layer_style_editor import ImageLayerStyleEditor
+from glue.viewers.image.qt.layer_style_editor_subset import ImageLayerSubsetStyleEditor
+from glue.viewers.image.layer_artist import ImageLayerArtist, ImageSubsetLayerArtist
+from glue.viewers.image.qt.options_widget import ImageOptionsWidget
+from glue.viewers.image.state import ImageViewerState
+from glue.viewers.image.compat import update_image_viewer_state
 
 from glue.external.modest_image import imshow
-from glue.viewers.image_new.composite_array import CompositeArray
+from glue.viewers.image.composite_array import CompositeArray
 
 # Import the mouse mode to make sure it gets registered
-from glue.viewers.image_new.contrast_mouse_mode import ContrastBiasMode  # noqa
+from glue.viewers.image.contrast_mouse_mode import ContrastBiasMode  # noqa
 
 __all__ = ['ImageViewer']
 

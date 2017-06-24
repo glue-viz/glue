@@ -17,7 +17,7 @@ glue.qt.glue_application.GlueApplication -> glue.app.qt.application.GlueApplicat
 glue_vispy_viewers.common.toolbar.PatchedElementSubsetState -> glue.core.subset.ElementSubsetState
 glue.viewers.histogram.qt.viewer_widget.HistogramWidget -> glue.viewers.histogram.qt.data_viewer.HistogramViewer
 glue.viewers.scatter.qt.viewer_widget.ScatterWidget -> glue.viewers.scatter.qt.data_viewer.ScatterViewer
-glue.viewers.image.qt.viewer_widget.ImageWidget -> glue.viewers.image_new.qt.data_viewer.ImageViewer
-glue.viewers.image.layer_artist.ImageLayerArtist -> glue.viewers.image_new.layer_artist.ImageLayerArtist
-glue.viewers.image.layer_artist.SubsetImageLayerArtist -> glue.viewers.image_new.layer_artist.ImageSubsetLayerArtist
-glue.viewers.image.ds9norm.DS9Normalize -> glue.viewers.image_new.compat.DS9Compat
+glue.viewers.image.qt.viewer_widget.ImageWidget -> glue.viewers.image.qt.data_viewer.ImageViewer
+glue.viewers.image.layer_artist.ImageLayerArtist -> glue.viewers.image.layer_artist.ImageLayerArtist
+glue.viewers.image.layer_artist.SubsetImageLayerArtist -> glue.viewers.image.layer_artist.ImageSubsetLayerArtist
+glue.viewers.image.ds9norm.DS9Normalize -> glue.viewers.image.compat.DS9Compat

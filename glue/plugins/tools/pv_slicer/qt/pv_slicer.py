@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 
 from glue.viewers.common.qt.mouse_mode import PathMode
-from glue.viewers.image_new.qt import StandaloneImageViewer
+from glue.viewers.image.qt import StandaloneImageViewer
 from glue.viewers.matplotlib.qt.widget import defer_draw
 from glue.external.echo import add_callback
 from glue.config import viewer_tool

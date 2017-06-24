@@ -4,7 +4,7 @@ import pytest
 import numpy as np
 
 from glue.core import Data
-from glue.viewers.image_new.qt import ImageViewer
+from glue.viewers.image.qt import ImageViewer
 from glue.core.tests.util import simple_session
 from glue.tests.helpers import requires_matplotlib_ge_14
 
