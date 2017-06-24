@@ -57,7 +57,7 @@ class ImageViewer(MatplotlibDataViewer):
         self.state.add_callback('y_att', self._set_wcs)
         self.state.add_callback('slices', self._set_wcs)
         self.state.add_callback('reference_data', self._set_wcs)
-        self.axes._composite = CompositeArray(self.axes)
+        self.axes._composite = CompositeArray()
         self.axes._composite_image = imshow(self.axes, self.axes._composite,
                                             origin='lower', interpolation='nearest')
 

@@ -5,7 +5,6 @@ from __future__ import absolute_import
 
 import numpy as np
 
-from matplotlib.transforms import TransformedBbox
 from matplotlib.colors import ColorConverter, Colormap
 from astropy.visualization import (LinearStretch, SqrtStretch, AsinhStretch,
                                    LogStretch, ManualInterval, ContrastBiasStretch)
@@ -23,9 +22,7 @@ STRETCHES = {
 
 class CompositeArray(object):
 
-    def __init__(self, ax, **kwargs):
-
-        self.axes = ax
+    def __init__(self, **kwargs):
 
         # We keep a dictionary of layers. The key should be the UUID of the
         # layer artist, and the values should be dictionaries that contain
@@ -33,10 +30,6 @@ class CompositeArray(object):
         self.layers = {}
 
         self._first = True
-
-        # ax.set_ylim((df[y].min(), df[y].max()))
-        # ax.set_xlim((df[x].min(), df[x].max()))
-        # self.set_array([[1, 1], [1, 1]])
 
     def allocate(self, uuid):
         self.layers[uuid] = {'zorder': 0,
