@@ -9,7 +9,7 @@ from glue.core.roi import RectangularROI
 from glue.core import Data, Coordinates
 from glue.core.tests.util import simple_session
 from glue.tests.helpers import requires_astropy
-from glue.viewers.image.qt import ImageWidget
+from glue.viewers.image.qt import ImageViewer
 
 from ..spectrum_tool import Extractor, ConstraintsWidget, FitSettingsWidget, SpectrumTool, CollapseContext
 
@@ -41,7 +41,7 @@ class BaseTestSpectrumTool(object):
         session = simple_session()
         session.data_collection.append(self.data)
 
-        self.image = ImageWidget(session)
+        self.image = ImageViewer(session)
         self.image.add_data(self.data)
         self.image.data = self.data
         self.image.attribute = self.data.id['x']

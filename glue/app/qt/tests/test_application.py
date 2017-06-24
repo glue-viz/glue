@@ -20,7 +20,7 @@ from glue.core.data_collection import DataCollection
 from glue.core.tests.test_state import Cloner, containers_equal, doubler, clone
 from glue.tests.helpers import requires_ipython
 from glue.utils.qt import process_dialog
-from glue.viewers.image.qt import ImageWidget
+from glue.viewers.image.qt import ImageViewer
 from glue.viewers.scatter.qt import ScatterViewer
 from glue.viewers.histogram.qt import HistogramViewer
 
@@ -168,7 +168,7 @@ class TestGlueApplication(object):
 
             self.app.choose_new_data_viewer(data=d2)
             args, kwargs = pc.call_args
-            assert kwargs['default'] is ImageWidget
+            assert kwargs['default'] is ImageViewer
 
     def test_drop_load_data(self):
         m = QtCore.QMimeData()
