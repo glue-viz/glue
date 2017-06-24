@@ -23,6 +23,8 @@ class MatplotlibDataViewer(DataViewer):
     _toolbar_cls = MatplotlibViewerToolbar
     _state_cls = MatplotlibDataViewerState
 
+    allow_duplicate_data = False
+
     def __init__(self, session, parent=None, wcs=None):
 
         super(MatplotlibDataViewer, self).__init__(session, parent)
@@ -114,8 +116,8 @@ class MatplotlibDataViewer(DataViewer):
     @defer_draw
     def add_data(self, data):
 
-        # if data in self._layer_artist_container:
-        #     return True
+        if not self.allow_duplicate_data and data in self._layer_artist_container:
+            return True
 
         if data not in self.session.data_collection:
             raise IncompatibleDataException("Data not in DataCollection")

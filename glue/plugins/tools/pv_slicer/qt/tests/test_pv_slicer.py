@@ -74,13 +74,13 @@ class TestStandaloneImageViewer(object):
         assert len(self.w._axes.images) == 1
 
 
-class MockImageWidget(object):
+class MockImageViewer(object):
 
     def __init__(self, slice, data):
         self.slice = slice
         self.data = data
         self.wcs = None
-        self.client = MagicMock()
+        self.state = MagicMock()
 
 
 class TestPVSliceWidget(object):
@@ -89,8 +89,8 @@ class TestPVSliceWidget(object):
 
         self.d = Data(x=np.zeros((2, 3, 4)))
         self.slc = (0, 'y', 'x')
-        self.image = MockImageWidget(self.slc, self.d)
-        self.w = PVSliceWidget(image=np.zeros((3, 4)), wcs=None, image_client=self.image.client)
+        self.image = MockImageViewer(self.slc, self.d)
+        self.w = PVSliceWidget(image=np.zeros((3, 4)), wcs=None, image_viewer=self.image)
 
     def test_basic(self):
         pass

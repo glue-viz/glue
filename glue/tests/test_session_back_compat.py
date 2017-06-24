@@ -121,7 +121,7 @@ def test_load_viewers_04():
     assert len(ga.viewers[0]) == 3
     labels = sorted([x.LABEL for x in ga.viewers[0]])
 
-    assert labels == ['1D Histogram', '2D Image Viewer', '2D Scatter Plot']
+    assert labels == ['1D Histogram', '2D Image', '2D Scatter']
 
     viewers = {}
     for x in ga.viewers[0]:
@@ -132,20 +132,18 @@ def test_load_viewers_04():
     assert h.position == (0, 535)
     assert h.state.x_att.label == 'b'
 
-    i = viewers['2D Image Viewer']
+    i = viewers['2D Image']
     assert i.viewer_size == (562, 513)
     assert i.position == (672, 0)
-    assert i.attribute.label == "image"
+    assert i.state.layers[0].attribute.label == "image"
 
-    s = viewers['2D Scatter Plot']
+    s = viewers['2D Scatter']
     assert s.viewer_size == (670, 512)
     assert s.position == (0, 0)
-    assert s.xatt.label == 'b'
-    assert s.yatt.label == 'a'
-    assert s.xlog
-    assert not s.ylog
-    assert not s.xflip
-    assert s.yflip
+    assert s.state.x_att.label == 'b'
+    assert s.state.y_att.label == 'a'
+    assert s.state.x_log
+    assert not s.state.y_log
 
 
 @requires_qt

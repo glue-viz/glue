@@ -61,9 +61,9 @@ class TestSpectrumTool(BaseTestSpectrumTool):
         self.build_spectrum()
         self.tool.widget = MagicMock()
         self.tool.widget.isVisible.return_value = True
-        self.tool.reset = MagicMock()
-        self.image.client.slice = ('x', 1, 'y')
-        assert self.tool.reset.call_count > 0
+        self.tool.hide = MagicMock()
+        self.image.state.x_att_world = self.data.world_component_ids[0]
+        assert self.tool.hide.call_count > 0
 
 
 class Test3DExtractor(object):

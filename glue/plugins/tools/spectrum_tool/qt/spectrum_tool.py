@@ -334,7 +334,7 @@ class CollapseContext(SpectrumContext):
                                     rng)
 
         agg = Aggregate(self.data, self.viewer_state.layers[0].attribute,
-                        self.main.profile_axis, self.viewer_state.slices, rng)
+                        self.main.profile_axis, self.viewer_state.wcsaxes_slice[::-1], rng)
 
         im = func(agg)
         self._agg = im
@@ -819,6 +819,8 @@ class SpectrumTool(object):
         l.setStretchFactor(tabs, 0)
 
     def _connect(self):
+
+        print('CONNECT')
         add_callback(self.viewer_state, 'x_att',
                      self.reset)
         add_callback(self.viewer_state, 'y_att',
@@ -854,19 +856,8 @@ class SpectrumTool(object):
     def _toggle_menu(self, active):
         self._tabs.setVisible(active)
 
-    def _check_invalidate(self, slc_old, slc_new):
-        """
-        If we change the orientation of the slice,
-        reset and hide the profile viewer
-        """
-        if self.profile_axis is None or not self.enabled:
-            return
-
-        if (slc_old.index('x') != slc_new.index('x') or
-                slc_old.index('y') != slc_new.index('y')):
-            self.reset()
-
     def reset(self, *args):
+        print("RESET")
         self.hide()
         self.mouse_mode.clear()
         self._relim_requested = True

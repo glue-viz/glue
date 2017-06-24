@@ -41,6 +41,8 @@ class ImageViewer(MatplotlibDataViewer):
 
     update_viewer_state = update_image_viewer_state
 
+    allow_duplicate_data = True
+
     # NOTE: _data_artist_cls and _subset_artist_cls are implemented as methods
 
     tools = ['select:rectangle', 'select:xrange',
