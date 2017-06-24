@@ -36,34 +36,25 @@ Plot Options
 
 Here are the settings associated with each data viewer:
 
-.. currentmodule:: glue.viewers.scatter.qt.viewer_widget
+Scatter Viewer
+--------------
 
-:class:`Scatter Plots <ScatterViewer>`
---------------------------------------
+The :class:`~glue.viewers.scatter.qt.data_viewer.ScatterViewer` class has a
+``state`` attribute which is an instance of
+:class:`~glue.viewers.scatter.state.ScatterViewerState`. To modify any settings
+in the viewer, set the appropriate attributes on ``state``, for example
+``state.x_min``. See :class:`~glue.viewers.scatter.state.ScatterViewerState`
+to find out the full list of available attributes.
 
-.. autosummary::
-    ~ScatterViewer.xlog
-    ~ScatterViewer.ylog
-    ~ScatterViewer.xflip
-    ~ScatterViewer.yflip
-    ~ScatterViewer.xmin
-    ~ScatterViewer.xmax
-    ~ScatterViewer.ymin
-    ~ScatterViewer.ymax
-    ~ScatterViewer.hidden
-    ~ScatterViewer.xatt
-    ~ScatterViewer.yatt
+Image Viewer
+------------
 
-.. currentmodule:: glue.viewers.image.qt.viewer_widget
-
-:class:`Image Viewer <ImageWidget>`
-------------------------------------
-
-.. autosummary::
-    ~ImageWidget.data
-    ~ImageWidget.attribute
-    ~ImageWidget.rgb_mode
-    ~ImageWidget.slice
+The :class:`~glue.viewers.image.qt.data_viewer.ImageViewer` class has a
+``state`` attribute which is an instance of
+:class:`~glue.viewers.image.state.ImageViewerState`. To modify any settings
+in the viewer, set the appropriate attributes on ``state``, for example
+``state.x_min``. See :class:`~glue.viewers.image.state.ImageViewerState`
+to find out the full list of available attributes.
 
 Histogram Viewer
 ----------------

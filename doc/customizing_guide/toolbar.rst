@@ -146,8 +146,8 @@ attribute on viewers:
 
 .. code:: python
 
-    >>> from glue.viewers.image.qt import ImageWidget
-    >>> ImageWidget.tools
+    >>> from glue.viewers.image.qt import ImageViewer
+    >>> ImageViewer.tools
     ['select:rectangle', 'select:xrange', 'select:yrange',
      'select:circle', 'select:polygon', 'image:colormap']
 
@@ -157,8 +157,8 @@ can therefore simply do e.g.:
 
 .. code:: python
 
-    from glue.viewers.image.qt import ImageWidget
-    ImageWidget.tools.append('custom_tool')
+    from glue.viewers.image.qt import ImageViewer
+    ImageViewer.tools.append('custom_tool')
 
 Including toolbars in custom viewers
 ------------------------------------

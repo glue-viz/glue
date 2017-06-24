@@ -5,7 +5,7 @@ from mock import MagicMock
 from numpy.testing import assert_allclose
 
 from glue.core import Data
-from glue.viewers.image.qt import StandaloneImageWidget
+from glue.viewers.image.qt import StandaloneImageViewer
 from glue.tests.helpers import requires_astropy, requires_scipy
 
 from ..pv_slicer import _slice_from_path, _slice_label, _slice_index, PVSliceWidget
@@ -56,11 +56,11 @@ def test_slice_index():
     assert _slice_index(d, (0, 'y', 0, 'x')) == 2
 
 
-class TestStandaloneImageWidget(object):
+class TestStandaloneImageViewer(object):
 
     def setup_method(self, method):
         im = np.random.random((3, 3))
-        self.w = StandaloneImageWidget(im)
+        self.w = StandaloneImageViewer(im)
 
     def test_set_cmap(self):
         cm_mode = self.w.toolbar.tools['image:colormap']
