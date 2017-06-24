@@ -81,11 +81,6 @@
    </item>
    <item row="1" column="4">
     <widget class="QToolButton" name="button_flip_x">
-     <property name="font">
-      <font>
-       <pointsize>14</pointsize>
-      </font>
-     </property>
      <property name="styleSheet">
       <string notr="true">padding: 0px</string>
      </property>
@@ -103,11 +98,6 @@
    </item>
    <item row="3" column="4">
     <widget class="QToolButton" name="button_flip_y">
-     <property name="font">
-      <font>
-       <pointsize>14</pointsize>
-      </font>
-     </property>
      <property name="styleSheet">
       <string notr="true">padding: 0px</string>
      </property>

@@ -45,11 +45,6 @@
    </item>
    <item row="2" column="0" colspan="2">
     <widget class="QCheckBox" name="bool_link_other">
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Link properties with other similar layers</string>
      </property>
