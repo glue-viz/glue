@@ -64,7 +64,6 @@ def test_optional_dependency_not_imported():
     """
     optional_deps = categories[3:]
     deps = [dep.module for cateogry, deps in optional_deps for dep in deps]
-    deps.extend(['astropy'])
 
     code = """
 class ImportDenier(object):
