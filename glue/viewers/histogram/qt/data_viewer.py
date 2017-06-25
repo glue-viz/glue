@@ -30,8 +30,6 @@ class HistogramViewer(MatplotlibDataViewer):
     _data_artist_cls = HistogramLayerArtist
     _subset_artist_cls = HistogramLayerArtist
 
-    update_viewer_state = update_histogram_viewer_state
-
     tools = ['select:xrange']
 
     def __init__(self, session, parent=None):
@@ -94,3 +92,7 @@ class HistogramViewer(MatplotlibDataViewer):
 
             mode = EditSubsetMode()
             mode.update(self._data, subset_state, focus_data=layer_artist.layer)
+
+    @staticmethod
+    def update_viewer_state(rec, context):
+        return update_histogram_viewer_state(rec, context)

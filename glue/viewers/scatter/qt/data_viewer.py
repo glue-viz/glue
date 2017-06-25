@@ -27,8 +27,6 @@ class ScatterViewer(MatplotlibDataViewer):
     _data_artist_cls = ScatterLayerArtist
     _subset_artist_cls = ScatterLayerArtist
 
-    update_viewer_state = update_scatter_viewer_state
-
     tools = ['select:rectangle', 'select:xrange',
              'select:yrange', 'select:circle',
              'select:polygon']
@@ -90,3 +88,7 @@ class ScatterViewer(MatplotlibDataViewer):
 
             mode = EditSubsetMode()
             mode.update(self._data, subset_state, focus_data=layer_artist.layer)
+
+    @staticmethod
+    def update_viewer_state(rec, context):
+        return update_scatter_viewer_state(rec, context)

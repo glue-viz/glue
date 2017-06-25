@@ -39,8 +39,6 @@ class ImageViewer(MatplotlibDataViewer):
     _state_cls = ImageViewerState
     _options_cls = ImageOptionsWidget
 
-    update_viewer_state = update_image_viewer_state
-
     allow_duplicate_data = True
 
     # NOTE: _data_artist_cls and _subset_artist_cls are implemented as methods
@@ -129,3 +127,7 @@ class ImageViewer(MatplotlibDataViewer):
             return self._scatter_artist(axes, state, layer=layer)
         else:
             return ImageSubsetLayerArtist(axes, state, layer=layer)
+
+    @staticmethod
+    def update_viewer_state(rec, context):
+        return update_image_viewer_state(rec, context)
