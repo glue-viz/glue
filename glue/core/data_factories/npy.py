@@ -31,9 +31,8 @@ def npy_reader(filename, format='auto', auto_merge=False, **kwargs):
     import numpy as np
     npy_data = np.load(filename)
 
-    if not hasattr(npy_data.dtype, 'names'):
-        raise ValueError("Numpy save file loading currently only supports structured"
-                         " arrays, e.g., with specified names.")
+    if isinstance(npy_data.dtype.names, type(None)):
+        npy_data = from_unstructured_array(npy_data)
 
     d = Data()
     for name in npy_data.dtype.names:
@@ -42,6 +41,22 @@ def npy_reader(filename, format='auto', auto_merge=False, **kwargs):
 
     return d
 
+def from_unstructured_array(arr):
+    """
+    Copy an unstructured (and therefore of a single dtype) numpy array to a structured array
+    of the same shape.
+
+    Parameters
+    ----------
+    arr: numpy.ndarray
+    """
+    import numpy as np
+
+    # creates an zero filled array with same shape and dtype as input array, field name is set to 'array'
+    unstructured_array = np.core.records.recarray(arr.shape, names=['array'], formats=arr.dtype) 
+    unstructured_array['array'] = arr
+
+    return unstructured_array
 
 def is_npz(filename):
     """
@@ -74,9 +89,8 @@ def npz_reader(filename, format='auto', auto_merge=False, **kwargs):
         d = Data(label=groupname)
         arr = npy_data[groupname]
 
-        if not hasattr(arr.dtype, 'names'):
-            raise ValueError("Numpy save file loading currently only supports structured"
-                             " arrays, e.g., with specified names.")
+        if isinstance(arr.dtype.names, type(None)):
+            arr = from_unstructured_array(arr)
 
         for name in arr.dtype.names:
             comp = Component.autotyped(arr[name])
