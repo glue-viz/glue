@@ -4,7 +4,7 @@ from glue.core.data import Data, Component
 from glue.config import data_factory
 from glue.core.data_factories.helpers import has_extension
 
-__all__ = ['is_npy', 'npy_reader', 'is_npz', 'npz_reader']
+__all__ = ['is_npy', 'npy_reader', 'is_npz', 'npz_reader', 'from_unstructured_array']
 
 # TODO: implement support for regular arrays, e.g., not just structured arrays?
 
