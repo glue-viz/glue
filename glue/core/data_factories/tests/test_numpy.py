@@ -20,6 +20,31 @@ def test_npy_load(tmpdir):
         assert_array_equal(data['ra'], data2['ra'])
         assert_array_equal(data['dec'], data2['dec'])
 
+def test_unstruc_npy_load(tmpdir):
+    data = np.array([[152.2352, -21.513], [21.412, 35.1341]], dtype='f8')
+
+    with open(tmpdir.join('test.npy').strpath, 'wb') as f:
+        np.save(f, data)
+        f.seek(0)
+
+        data2 = df.load_data(f.name)
+        assert_array_equal(data, data2['array'])
+
+def test_unstruc_npz_load(tmpdir):
+    data1 = np.array([[152.2352, -21.513], [21.412, 35.1341]], dtype='f8')
+    data2 = np.array([[15.2352, -2.513], [2.412, 3.1341]], dtype='f8')
+
+    with open(tmpdir.join('test.npz').strpath, 'wb') as f:
+        np.savez(f, data1=data1, data2=data2)
+        f.seek(0)
+
+        data_loaded = df.load_data(f.name)
+        arr = data_loaded[0]
+        assert_array_equal(data1, arr['array'])
+
+        arr = data_loaded[1]
+        assert_array_equal(data2, arr['array'])
+
 def test_npz_load(tmpdir):
     data1 = np.array([("a",152.2352,-21.513), ("b",21.412,35.1341)],
                      dtype=[('name','|S1'),('ra','f8'),('dec','f8')])
