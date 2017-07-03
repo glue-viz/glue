@@ -159,7 +159,7 @@ class ImageSubsetLayerArtist(MatplotlibLayerArtist):
 
         self.mpl_image = self.axes.imshow([[0.]],
                                           origin='lower', interpolation='nearest',
-                                          vmin=0, vmax=1)
+                                          vmin=0, vmax=1, aspect=self._viewer_state.aspect)
 
     def reset_cache(self):
         self._last_viewer_state = {}

@@ -181,6 +181,30 @@ class TestImageViewer(object):
         assert self.viewer.state.x_att_world is self.image2.id['Apple']
         assert self.viewer.state.y_att_world is self.image2.id['Banana']
 
+    def test_aspect_subset(self):
+
+        self.viewer.add_data(self.image1)
+
+        assert self.viewer.state.aspect == 'equal'
+        assert self.viewer.axes.get_aspect() == 'equal'
+
+        self.viewer.state.aspect = 'auto'
+
+        self.data_collection.new_subset_group('s1', self.image1.id['x'] > 0.)
+
+        assert len(self.viewer.state.layers) == 2
+
+        assert self.viewer.state.aspect == 'auto'
+        assert self.viewer.axes.get_aspect() == 'auto'
+
+        self.viewer.state.aspect = 'equal'
+
+        self.data_collection.new_subset_group('s2', self.image1.id['x'] > 1.)
+
+        assert len(self.viewer.state.layers) == 3
+
+        assert self.viewer.state.aspect == 'equal'
+        assert self.viewer.axes.get_aspect() == 'equal'
 
 class TestSessions(object):
 
