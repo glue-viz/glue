@@ -30,7 +30,10 @@ def test_resample_on_zoom():
 
     image.show()
 
-    device_ratio = image.axes.figure.canvas.devicePixelRatio()
+    try:
+        device_ratio = image.axes.figure.canvas.devicePixelRatio()
+    except AttributeError:
+        device_ratio = 1.
 
     image.axes.figure.canvas.key_press_event('o')
     image.axes.figure.canvas.button_press_event(200 * device_ratio, 200 * device_ratio, 1)
