@@ -72,9 +72,10 @@ class ImageViewer(MatplotlibDataViewer):
 
     def _set_aspect(self, *args):
         self.axes.set_aspect(self.state.aspect)
-        ny, nx = self.axes._composite.shape
-        self.axes.set_xlim(-0.5, nx - 0.5)
-        self.axes.set_ylim(-0.5, ny - 0.5)
+        if self.axes._composite.shape is not None:
+            ny, nx = self.axes._composite.shape
+            self.axes.set_xlim(-0.5, nx - 0.5)
+            self.axes.set_ylim(-0.5, ny - 0.5)
         self.axes.figure.canvas.draw()
 
     def _set_wcs(self, *args):
@@ -84,6 +85,7 @@ class ImageViewer(MatplotlibDataViewer):
         if isinstance(ref_coords, WCSCoordinates):
             self.axes.reset_wcs(ref_coords.wcs, slices=self.state.wcsaxes_slice)
         self._update_axes()
+        self._set_aspect()
 
     def apply_roi(self, roi):
 
