@@ -820,7 +820,6 @@ class SpectrumTool(object):
 
     def _connect(self):
 
-        print('CONNECT')
         add_callback(self.viewer_state, 'x_att',
                      self.reset)
         add_callback(self.viewer_state, 'y_att',
@@ -857,7 +856,6 @@ class SpectrumTool(object):
         self._tabs.setVisible(active)
 
     def reset(self, *args):
-        print("RESET")
         self.hide()
         self.mouse_mode.clear()
         self._relim_requested = True
