@@ -6,10 +6,13 @@ import os
 
 import pytest
 
+from astropy.wcs import WCS
+
 import numpy as np
 from numpy.testing import assert_allclose
 
-from glue.core import Data, Coordinates
+from glue.core import Data
+from glue.core.coordinates import Coordinates, WCSCoordinates
 from glue.core.roi import RectangularROI
 from glue.core.subset import RoiSubsetState, AndState
 from glue import core
@@ -51,6 +54,7 @@ class TestImageViewer(object):
         self.image1 = Data(label='image1', x=[[1, 2], [3, 4]], y=[[4, 5], [2, 3]])
         self.image2 = Data(label='image2', a=[[3, 3], [2, 2]], b=[[4, 4], [3, 2]], coords=self.coords)
         self.catalog = Data(label='catalog', c=[1, 3, 2], d=[4, 3, 3])
+        self.hypercube = Data(label='hypercube', x=np.arange(120).reshape((2, 3, 4, 5)))
 
         self.session = simple_session()
         self.hub = self.session.hub
@@ -59,6 +63,7 @@ class TestImageViewer(object):
         self.data_collection.append(self.image1)
         self.data_collection.append(self.image2)
         self.data_collection.append(self.catalog)
+        self.data_collection.append(self.hypercube)
 
         self.viewer = ImageViewer(self.session)
 
@@ -205,6 +210,48 @@ class TestImageViewer(object):
 
         assert self.viewer.state.aspect == 'equal'
         assert self.viewer.axes.get_aspect() == 'equal'
+
+    def test_hypercube(self):
+
+        # Check defaults when we add data
+
+        self.viewer.add_data(self.hypercube)
+
+        assert combo_as_string(self.options_widget.ui.combodata_x_att_world) == 'World 0:World 1:World 2:World 3'
+        assert combo_as_string(self.options_widget.ui.combodata_x_att_world) == 'World 0:World 1:World 2:World 3'
+
+        assert self.viewer.axes.get_xlabel() == 'World 3'
+        assert self.viewer.state.x_att_world is self.hypercube.id['World 3']
+        assert self.viewer.state.x_att is self.hypercube.pixel_component_ids[3]
+        # TODO: make sure limits are deterministic then update this
+        # assert self.viewer.state.x_min == -0.5
+        # assert self.viewer.state.x_max == +1.5
+
+        assert self.viewer.axes.get_ylabel() == 'World 2'
+        assert self.viewer.state.y_att_world is self.hypercube.id['World 2']
+        assert self.viewer.state.y_att is self.hypercube.pixel_component_ids[2]
+        # TODO: make sure limits are deterministic then update this
+        # assert self.viewer.state.y_min == -0.5
+        # assert self.viewer.state.y_max == +1.5
+
+        assert not self.viewer.state.x_log
+        assert not self.viewer.state.y_log
+
+        assert len(self.viewer.state.layers) == 1
+
+    def test_hypercube_world(self):
+
+        # Check defaults when we add data
+
+        wcs = WCS(naxis=4)
+        hypercube2 = Data()
+        hypercube2.coords = WCSCoordinates(wcs=wcs)
+        hypercube2.add_component(np.random.random((2, 3, 4, 5)), 'a')
+
+        self.data_collection.append(hypercube2)
+
+        self.viewer.add_data(hypercube2)
+
 
 class TestSessions(object):
 
