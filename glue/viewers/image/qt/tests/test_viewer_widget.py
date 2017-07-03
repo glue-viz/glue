@@ -203,8 +203,6 @@ class TestSessions(object):
         assert dc[0].label == 'data1'
         assert dc[1].label == 'data2'
 
-        delta = 0.3419913419913423
-
         viewer1 = ga.viewers[0][0]
 
         assert len(viewer1.state.layers) == 3
@@ -212,8 +210,8 @@ class TestSessions(object):
         assert viewer1.state.x_att_world is dc[0].id['World 1']
         assert viewer1.state.y_att_world is dc[0].id['World 0']
 
-        assert_allclose(viewer1.state.x_min, -delta)
-        assert_allclose(viewer1.state.x_max, 2 + delta)
+        assert viewer1.state.x_min < 0.
+        assert viewer1.state.x_max > 2.
         assert_allclose(viewer1.state.y_min, 0)
         assert_allclose(viewer1.state.y_max, 2)
 
@@ -240,8 +238,8 @@ class TestSessions(object):
         assert viewer2.state.x_att_world is dc[0].id['World 1']
         assert viewer2.state.y_att_world is dc[0].id['World 0']
 
-        assert_allclose(viewer2.state.x_min, -delta)
-        assert_allclose(viewer2.state.x_max, 2 + delta)
+        assert viewer2.state.x_min < 0.
+        assert viewer2.state.x_max > 2.
         assert_allclose(viewer2.state.y_min, 0)
         assert_allclose(viewer2.state.y_max, 2)
 
@@ -261,8 +259,8 @@ class TestSessions(object):
         assert viewer3.state.x_att_world is dc[0].id['World 1']
         assert viewer3.state.y_att_world is dc[0].id['World 0']
 
-        assert_allclose(viewer3.state.x_min, -delta)
-        assert_allclose(viewer3.state.x_max, 2 + delta)
+        assert viewer3.state.x_min < 0.
+        assert viewer3.state.x_max > 2.
         assert_allclose(viewer3.state.y_min, 0)
         assert_allclose(viewer3.state.y_max, 2)
 
