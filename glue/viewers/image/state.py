@@ -54,6 +54,9 @@ class ImageViewerState(MatplotlibDataViewerState):
         self.add_callback('reference_data', self.set_default_slices)
         self.add_callback('layers', self.set_reference_data)
 
+        self.add_callback('x_att', self._on_xatt_change, priority=500)
+        self.add_callback('y_att', self._on_yatt_change, priority=500)
+
         self.add_callback('x_att_world', self._update_att, priority=500)
         self.add_callback('y_att_world', self._update_att, priority=500)
 
@@ -76,10 +79,22 @@ class ImageViewerState(MatplotlibDataViewerState):
         # update both x_att and y_att otherwise could end up triggering image
         # slicing with two pixel components that are the same.
         with delay_callback(self, 'x_att', 'y_att'):
-            index = self.reference_data.world_component_ids.index(self.x_att_world)
-            self.x_att = self.reference_data.pixel_component_ids[index]
-            index = self.reference_data.world_component_ids.index(self.y_att_world)
-            self.y_att = self.reference_data.pixel_component_ids[index]
+            if self.x_att_world is not None:
+                index = self.reference_data.world_component_ids.index(self.x_att_world)
+                self.x_att = self.reference_data.pixel_component_ids[index]
+            if self.y_att_world is not None:
+                index = self.reference_data.world_component_ids.index(self.y_att_world)
+                self.y_att = self.reference_data.pixel_component_ids[index]
+
+    @defer_draw
+    def _on_xatt_change(self, *args):
+        if self.x_att is not None:
+            self.x_att_world = self.reference_data.world_component_ids[self.x_att.axis]
+
+    @defer_draw
+    def _on_yatt_change(self, *args):
+        if self.y_att is not None:
+            self.y_att_world = self.reference_data.world_component_ids[self.y_att.axis]
 
     @defer_draw
     def _on_xatt_world_change(self, *args):
