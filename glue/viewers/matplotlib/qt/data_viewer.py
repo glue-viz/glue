@@ -135,11 +135,12 @@ class MatplotlibDataViewer(DataViewer):
         for subset in data.subsets:
             self.add_subset(subset)
 
+        self.axes.figure.canvas.draw()
+
         return True
 
     @defer_draw
     def remove_data(self, data):
-
         for layer_artist in self.state.layers[::-1]:
             if isinstance(layer_artist.layer, Data):
                 if layer_artist.layer is data:
@@ -147,6 +148,7 @@ class MatplotlibDataViewer(DataViewer):
             else:
                 if layer_artist.layer.data is data:
                     self.state.layers.remove(layer_artist)
+        self.axes.figure.canvas.draw()
 
     @defer_draw
     def add_subset(self, subset):
@@ -161,6 +163,8 @@ class MatplotlibDataViewer(DataViewer):
         layer = self._subset_artist_cls(self._axes, self.state, layer=subset)
         self._layer_artist_container.append(layer)
         layer.update()
+
+        self.axes.figure.canvas.draw()
 
         return True
 
