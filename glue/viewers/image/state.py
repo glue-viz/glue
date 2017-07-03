@@ -7,6 +7,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawCallbackProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.utils import defer_draw
+from glue.external.echo import delay_callback
 
 __all__ = ['ImageViewerState', 'ImageLayerState']
 
@@ -40,9 +41,6 @@ class ImageViewerState(MatplotlibDataViewerState):
 
         super(ImageViewerState, self).__init__(**kwargs)
 
-        self.add_callback('x_att_world', self._update_x_att, priority=500)
-        self.add_callback('y_att_world', self._update_y_att, priority=500)
-
         self.limits_cache = {}
 
         self.x_att_helper = StateAttributeLimitsHelper(self, attribute='x_att',
@@ -55,6 +53,9 @@ class ImageViewerState(MatplotlibDataViewerState):
 
         self.add_callback('reference_data', self.set_default_slices)
         self.add_callback('layers', self.set_reference_data)
+
+        self.add_callback('x_att_world', self._update_att, priority=500)
+        self.add_callback('y_att_world', self._update_att, priority=500)
 
         self.add_callback('x_att_world', self._on_xatt_world_change, priority=1000)
         self.add_callback('y_att_world', self._on_yatt_world_change, priority=1000)
@@ -70,14 +71,15 @@ class ImageViewerState(MatplotlibDataViewerState):
             return 1
 
     @defer_draw
-    def _update_x_att(self, *args):
-        index = self.reference_data.world_component_ids.index(self.x_att_world)
-        self.x_att = self.reference_data.pixel_component_ids[index]
-
-    @defer_draw
-    def _update_y_att(self, *args):
-        index = self.reference_data.world_component_ids.index(self.y_att_world)
-        self.y_att = self.reference_data.pixel_component_ids[index]
+    def _update_att(self, *args):
+        # Need to delay the callbacks here to make sure that we get a chance to
+        # update both x_att and y_att otherwise could end up triggering image
+        # slicing with two pixel components that are the same.
+        with delay_callback(self, 'x_att', 'y_att'):
+            index = self.reference_data.world_component_ids.index(self.x_att_world)
+            self.x_att = self.reference_data.pixel_component_ids[index]
+            index = self.reference_data.world_component_ids.index(self.y_att_world)
+            self.y_att = self.reference_data.pixel_component_ids[index]
 
     @defer_draw
     def _on_xatt_world_change(self, *args):
