@@ -115,7 +115,15 @@ class SliceWidget(QtWidgets.QWidget):
         self.state.slider_label = str(value)
 
     def set_slider_from_label(self):
-        print('set_slider_from_label')
+
+        # Ignore recursive calls - we do this rather than ignore_callback
+        # below when setting slider_label, otherwise we might be stopping other
+        # subscribers to that event from being correctly updated
+        if getattr(self, '_in_set_slider_from_label', True):
+            return
+        else:
+            self._in_set_slider_from_label = True
+
         text = self.text_slider_label.text()
         if self.state.use_world:
             # Don't want to assume world is sorted, pick closest value
@@ -124,6 +132,8 @@ class SliceWidget(QtWidgets.QWidget):
         else:
             value = int(text)
         self.value_slice_center.setValue(value)
+
+        self._in_set_slider_from_label = False
 
     def _adjust_play(self, action):
         if action == 'stop':
