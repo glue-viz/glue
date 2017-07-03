@@ -119,7 +119,7 @@ class SliceWidget(QtWidgets.QWidget):
         # Ignore recursive calls - we do this rather than ignore_callback
         # below when setting slider_label, otherwise we might be stopping other
         # subscribers to that event from being correctly updated
-        if getattr(self, '_in_set_slider_from_label', True):
+        if getattr(self, '_in_set_slider_from_label', False):
             return
         else:
             self._in_set_slider_from_label = True
