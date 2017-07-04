@@ -20,7 +20,7 @@ class ImageLayerStyleEditor(QtWidgets.QWidget):
                           directory=os.path.dirname(__file__))
 
         connect_kwargs = {'alpha': dict(value_range=(0, 1)),
-                          'contrast': dict(value_range=(-5, 15)),
+                          'contrast': dict(value_range=(-2, 4)),
                           'bias': dict(value_range=(-2, 3))}
 
         percentiles = [('Min/Max', 100),

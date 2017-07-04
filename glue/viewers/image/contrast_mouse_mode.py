@@ -12,6 +12,7 @@ from glue.utils.qt import get_qapp
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui, cmap2pixmap
 from glue.viewers.common.qt.tool import Tool, CheckableTool
+from glue.external.echo import delay_callback
 from glue.config import viewer_tool
 from glue.viewers.common.qt.mouse_mode import MouseMode
 
@@ -34,7 +35,7 @@ class ContrastBiasMode(MouseMode):
         Update bias and contrast on Right Mouse button drag.
         """
 
-        if event.button != 3:  # RMB drag only
+        if event.button not in (1, 3):
             return
 
         x, y = event.x, event.y
@@ -42,7 +43,10 @@ class ContrastBiasMode(MouseMode):
         x = 1.0 * x / dx
         y = 1.0 * y / dy
 
-        self.viewer.selected_layer.state.bias = x
-        self.viewer.selected_layer.state.contrast = (1 - y) * 10
+        state = self.viewer.selected_layer.state
+
+        with delay_callback(state, 'bias', 'contrast'):
+            state.bias = x
+            state.contrast = (1 - y) * 10
 
         super(ContrastBiasMode, self).move(event)

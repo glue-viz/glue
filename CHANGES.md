@@ -4,6 +4,9 @@ Full changelog
 v0.11.0 (unreleased)
 --------------------
 
+* The image contrast and bias can now be set with the left click as well
+  as right click. [#1323]
+
 * Updated ComponentIDComboHelper so that it can work with single datasets
   that aren't necessarily attached to a DataCollection. [#1296]
 
