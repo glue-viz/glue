@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+from collections import defaultdict
+
 import numpy as np
 
 from glue.core import Subset
@@ -52,9 +54,21 @@ class State(HasCallbackProperties):
         properties : dict
             The dictionary containing attribute/value pairs.
         """
-        for name in sorted(properties, key=self._update_priority, reverse=True):
+
+        if len(properties) == 0:
+            return
+
+        # Group properties into priority so as to be able to update them in
+        # chunks and not fire off callback events between every single one.
+        groups = defaultdict(list)
+        for name in properties:
             if self.is_callback_property(name):
-                setattr(self, name, properties[name])
+                groups[self._update_priority(name)].append(name)
+
+        for priority in sorted(groups, reverse=True):
+            with delay_callback(self, *groups[priority]):
+                for name in groups[priority]:
+                    setattr(self, name, properties[name])
 
     def as_dict(self):
         """
