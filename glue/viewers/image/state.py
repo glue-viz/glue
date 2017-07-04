@@ -221,6 +221,11 @@ class ImageLayerState(MatplotlibLayerState):
     def flip_limits(self):
         self.attribute_helper.flip_limits()
 
+    def reset_contrast_bias(self):
+        with delay_callback(self, 'contrast', 'bias'):
+            self.contrast = 1
+            self.bias = 0.5
+
 
 class ImageSubsetLayerState(MatplotlibLayerState):
     pass
