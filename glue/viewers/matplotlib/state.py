@@ -33,7 +33,7 @@ class MatplotlibDataViewerState(State):
     y_max = DeferredDrawCallbackProperty(docstring='Upper limit of the visible y range')
 
     x_log = DeferredDrawCallbackProperty(False, docstring='Whether the x axis is logarithmic')
-    y_log = DeferredDrawCallbackProperty(False, docstring='Whether the x axis is logarithmic')
+    y_log = DeferredDrawCallbackProperty(False, docstring='Whether the y axis is logarithmic')
 
     layers = ListCallbackProperty(docstring='A collection of all layers in the viewer')
 
@@ -44,7 +44,8 @@ class MatplotlibLayerState(State):
     on Matplotlib.
     """
 
-    layer = DeferredDrawCallbackProperty(docstring='The Data or Subset '
+    layer = DeferredDrawCallbackProperty(docstring='The :class:`~glue.core.data.Data` '
+                                                   'or :class:`~glue.core.subset.Subset` '
                                                    'represented by the layer')
     color = DeferredDrawCallbackProperty(docstring='The color used to display '
                                                    'the data')

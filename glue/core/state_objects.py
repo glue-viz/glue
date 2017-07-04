@@ -33,14 +33,33 @@ class State(HasCallbackProperties):
         self.update_from_dict(kwargs)
 
     def update_from_state(self, state):
+        """
+        Update this state using the values from another state.
+
+        Parameters
+        ----------
+        state : `~glue.core.state_objects.State`
+            The state to use the values from
+        """
         self.update_from_dict(state.as_dict())
 
     def update_from_dict(self, properties):
-        for name in sorted(properties, key=self.update_priority, reverse=True):
+        """
+        Update this state using the values from a dictionary of attributes.
+
+        Parameters
+        ----------
+        properties : dict
+            The dictionary containing attribute/value pairs.
+        """
+        for name in sorted(properties, key=self._update_priority, reverse=True):
             if self.is_callback_property(name):
                 setattr(self, name, properties[name])
 
     def as_dict(self):
+        """
+        Return the current state as a dictionary of attribute/value pairs.
+        """
         properties = {}
         for name in dir(self):
             if self.is_callback_property(name):
@@ -50,7 +69,7 @@ class State(HasCallbackProperties):
     def __gluestate__(self, context):
         return {'values': dict((key, context.id(value)) for key, value in self.as_dict().items())}
 
-    def update_priority(self, name):
+    def _update_priority(self, name):
         return 0
 
     @classmethod

@@ -4,7 +4,7 @@ from glue.core import Data
 
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
-                                           DeferredDrawCallbackProperty)
+                                           DeferredDrawCallbackProperty as DDCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.external.echo import keep_in_sync
 
@@ -12,9 +12,12 @@ __all__ = ['ScatterViewerState', 'ScatterLayerState']
 
 
 class ScatterViewerState(MatplotlibDataViewerState):
+    """
+    A state class that includes all the attributes for a scatter viewer.
+    """
 
-    x_att = DeferredDrawCallbackProperty()
-    y_att = DeferredDrawCallbackProperty()
+    x_att = DDCProperty(docstring='The attribute to show on the x-axis')
+    y_att = DDCProperty(docstring='The attribute to show on the y-axis')
 
     def __init__(self, **kwargs):
 
@@ -32,7 +35,7 @@ class ScatterViewerState(MatplotlibDataViewerState):
                                                        log='y_log',
                                                        limits_cache=self.limits_cache)
 
-    def update_priority(self, name):
+    def _update_priority(self, name):
         if name == 'layers':
             return 2
         elif name.endswith(('_min', '_max', '_log')):
@@ -41,9 +44,15 @@ class ScatterViewerState(MatplotlibDataViewerState):
             return 1
 
     def flip_x(self):
+        """
+        Flip the x_min/x_max limits.
+        """
         self.x_att_helper.flip_limits()
 
     def flip_y(self):
+        """
+        Flip the y_min/y_max limits.
+        """
         self.y_att_helper.flip_limits()
 
     def _get_x_components(self):
@@ -64,8 +73,11 @@ class ScatterViewerState(MatplotlibDataViewerState):
 
 
 class ScatterLayerState(MatplotlibLayerState):
+    """
+    A state class that includes all the attributes for layers in a scatter plot.
+    """
 
-    size = DeferredDrawCallbackProperty()
+    size = DDCProperty(docstring="The size of the markers")
 
     def __init__(self, viewer_state=None, **kwargs):
 

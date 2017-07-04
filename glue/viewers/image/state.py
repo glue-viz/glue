@@ -4,18 +4,18 @@ from glue.core import Data
 from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
-                                           DeferredDrawCallbackProperty)
+                                           DeferredDrawCallbackProperty as DDCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.utils import defer_draw
 from glue.external.echo import delay_callback
 
 __all__ = ['ImageViewerState', 'ImageLayerState']
 
-# Define shortcut for readability
-DDCProperty = DeferredDrawCallbackProperty
-
 
 class ImageViewerState(MatplotlibDataViewerState):
+    """
+    A state class that includes all the attributes for an image viewer.
+    """
 
     x_att = DDCProperty(docstring='The component ID giving the pixel component '
                                   'shown on the x axis')
@@ -51,8 +51,8 @@ class ImageViewerState(MatplotlibDataViewerState):
                                                        lower='y_min', upper='y_max',
                                                        limits_cache=self.limits_cache)
 
-        self.add_callback('reference_data', self.set_default_slices)
-        self.add_callback('layers', self.set_reference_data)
+        self.add_callback('reference_data', self._set_default_slices)
+        self.add_callback('layers', self._set_reference_data)
 
         self.add_callback('x_att', self._on_xatt_change, priority=500)
         self.add_callback('y_att', self._on_yatt_change, priority=500)
@@ -63,7 +63,7 @@ class ImageViewerState(MatplotlibDataViewerState):
         self.add_callback('x_att_world', self._on_xatt_world_change, priority=1000)
         self.add_callback('y_att_world', self._on_yatt_world_change, priority=1000)
 
-    def update_priority(self, name):
+    def _update_priority(self, name):
         if name == 'layers':
             return 3
         elif name == 'reference_data':
@@ -114,7 +114,7 @@ class ImageViewerState(MatplotlibDataViewerState):
             else:
                 self.x_att_world = world_ids[-1]
 
-    def set_reference_data(self, *args):
+    def _set_reference_data(self, *args):
         # TODO: make sure this doesn't get called for changes *in* the layers
         # for list callbacks maybe just have an event for length change in list
         if self.reference_data is None:
@@ -123,7 +123,7 @@ class ImageViewerState(MatplotlibDataViewerState):
                     self.reference_data = layer.layer
                     return
 
-    def set_default_slices(self, *args):
+    def _set_default_slices(self, *args):
         # Need to make sure this gets called immediately when reference_data is changed
         if self.reference_data is None:
             self.slices = ()
@@ -132,6 +132,13 @@ class ImageViewerState(MatplotlibDataViewerState):
 
     @property
     def numpy_slice_and_transpose(self):
+        """
+        Returns slicing information usable by Numpy.
+
+        This returns two objects: the first is an object that can be used to
+        slice Numpy arrays and return a 2D array, and the second object is a
+        boolean indicating whether to transpose the result.
+        """
         if self.reference_data is None:
             return None
         slices = []
@@ -145,6 +152,12 @@ class ImageViewerState(MatplotlibDataViewerState):
 
     @property
     def wcsaxes_slice(self):
+        """
+        Returns slicing information usable by WCSAxes.
+
+        This returns an iterable of slices, and including ``'x'`` and ``'y'``
+        for the dimensions along which we are not slicing.
+        """
         if self.reference_data is None:
             return None
         slices = []
@@ -158,13 +171,22 @@ class ImageViewerState(MatplotlibDataViewerState):
         return slices[::-1]
 
     def flip_x(self):
+        """
+        Flip the x_min/x_max limits.
+        """
         self.x_att_helper.flip_limits()
 
     def flip_y(self):
+        """
+        Flip the y_min/y_max limits.
+        """
         self.y_att_helper.flip_limits()
 
 
 class ImageLayerState(MatplotlibLayerState):
+    """
+    A state class that includes all the attributes for data layers in an image plot.
+    """
 
     attribute = DDCProperty(docstring='The attribute shown in the layer')
     v_min = DDCProperty(docstring='The lower level shown')
@@ -176,7 +198,7 @@ class ImageLayerState(MatplotlibLayerState):
                                       'layer before rendering')
     cmap = DDCProperty(docstring='The colormap used to render the layer')
     stretch = DDCProperty('linear', docstring='The stretch used to render the layer, '
-                                              'whcih should be one of ``linear``'
+                                              'whcih should be one of ``linear``, '
                                               '``sqrt``, ``log``, or ``arcsinh``')
     global_sync = DDCProperty(True, docstring='Whether the color and transparency '
                                               'should be synced with the global '
@@ -200,7 +222,7 @@ class ImageLayerState(MatplotlibLayerState):
         if self.layer is not None:
             self.attribute = self.layer.visible_components[0]
 
-    def update_priority(self, name):
+    def _update_priority(self, name):
         if name == 'layer':
             return 3
         elif name == 'attribute':
@@ -219,8 +241,13 @@ class ImageLayerState(MatplotlibLayerState):
             self._sync_alpha.disable_syncing()
 
     def flip_limits(self):
+        """
+        Flip the image levels.
+        """
         self.attribute_helper.flip_limits()
 
 
 class ImageSubsetLayerState(MatplotlibLayerState):
-    pass
+    """
+    A state class that includes all the attributes for subset layers in an image plot.
+    """
