@@ -9,7 +9,7 @@ from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.utils import defer_draw
 from glue.external.echo import delay_callback
 
-__all__ = ['ImageViewerState', 'ImageLayerState']
+__all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState']
 
 
 class ImageViewerState(MatplotlibDataViewerState):
