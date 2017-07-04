@@ -67,7 +67,7 @@
    <item row="11" column="1" colspan="3">
     <widget class="QSlider" name="value_bias">
      <property name="maximum">
-      <number>100</number>
+      <number>1000</number>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -77,7 +77,7 @@
    <item row="10" column="1" colspan="3">
     <widget class="QSlider" name="value_contrast">
      <property name="maximum">
-      <number>100</number>
+      <number>1000</number>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
