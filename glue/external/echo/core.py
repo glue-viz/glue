@@ -174,10 +174,39 @@ class HasCallbackProperties(object):
     def __init__(self):
         from .list import ListCallbackProperty
         self._global_callbacks = CallbackContainer()
+        self._ignored_properties = set()
+        self._delayed_properties = {}
+        self._delay_global_calls = {}
         self._callback_wrappers = {}
         for prop_name, prop in self.iter_callback_properties():
             if isinstance(prop, ListCallbackProperty):
                 prop.add_callback(self, self._notify_global_lists)
+
+    def _ignore_global_callbacks(self, properties):
+        # This is to allow ignore_callbacks to work for global callbacks
+        self._ignored_properties.update(properties)
+
+    def _unignore_global_callbacks(self, properties):
+        # Once this is called, we simply remove properties from _ignored_properties
+        # and don't call the callbacks. This is used by ignore_callback
+        self._ignored_properties -= set(properties)
+
+    def _delay_global_callbacks(self, properties):
+        # This is to allow delay_callback to still have an effect in delaying
+        # global callbacks. We set _delayed_properties to a dictionary of the
+        # values at the point at which the callbacks are delayed.
+        self._delayed_properties.update(properties)
+
+    def _process_delayed_global_callbacks(self, properties):
+        # Once this is called, the global callbacks are called once each with
+        # a dictionary of the current values of properties that have been
+        # resumed.
+        kwargs = {}
+        for prop, new_value in properties.items():
+            old_value = self._delayed_properties.pop(prop)
+            if old_value != new_value:
+                kwargs[prop] = new_value
+        self._notify_global(**kwargs)
 
     def _notify_global_lists(self, *args):
         from .list import ListCallbackProperty
@@ -191,8 +220,12 @@ class HasCallbackProperties(object):
         self._notify_global(**properties)
 
     def _notify_global(self, **kwargs):
-        for callback in self._global_callbacks:
-            callback(**kwargs)
+        for prop in set(self._delayed_properties) | set(self._ignored_properties):
+            if prop in kwargs:
+                kwargs.pop(prop)
+        if len(kwargs) > 0:
+            for callback in self._global_callbacks:
+                callback(**kwargs)
 
     def __setattr__(self, attribute, value):
         super(HasCallbackProperties, self).__setattr__(attribute, value)
@@ -414,6 +447,8 @@ class delay_callback(object):
 
     def __enter__(self):
 
+        delay_props = {}
+
         for prop in self.props:
 
             p = getattr(type(self.instance), prop)
@@ -423,12 +458,20 @@ class delay_callback(object):
             if (self.instance, prop) not in self.delay_count:
                 self.delay_count[self.instance, prop] = 1
                 self.old_values[self.instance, prop] = p.__get__(self.instance)
+                delay_props[prop] = p.__get__(self.instance)
             else:
                 self.delay_count[self.instance, prop] += 1
 
             p.disable(self.instance)
 
+        if isinstance(self.instance, HasCallbackProperties):
+            self.instance._delay_global_callbacks(delay_props)
+
     def __exit__(self, *args):
+
+        resume_props = {}
+
+        notifications = []
 
         for prop in self.props:
 
@@ -444,7 +487,14 @@ class delay_callback(object):
                 p.enable(self.instance)
                 new = p.__get__(self.instance)
                 if old != new:
-                    p.notify(self.instance, old, new)
+                    notifications.append((p, (self.instance, old, new)))
+                resume_props[prop] = new
+
+        if isinstance(self.instance, HasCallbackProperties):
+            self.instance._process_delayed_global_callbacks(resume_props)
+
+        for p, args in notifications:
+            p.notify(*args)
 
 
 @contextmanager
@@ -481,12 +531,18 @@ def ignore_callback(instance, *props):
             raise TypeError("%s is not a CallbackProperty" % prop)
         p.disable(instance)
 
+    if isinstance(instance, HasCallbackProperties):
+        instance._ignore_global_callbacks(props)
+
     yield
 
     for prop in props:
         p = getattr(type(instance), prop)
         assert isinstance(p, CallbackProperty)
         p.enable(instance)
+
+    if isinstance(instance, HasCallbackProperties):
+        instance._unignore_global_callbacks(props)
 
 
 class keep_in_sync(object):
