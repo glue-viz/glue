@@ -37,16 +37,13 @@ class State(HasCallbackProperties):
 
     def update_from_dict(self, properties):
         for name in sorted(properties, key=self.update_priority, reverse=True):
-            if self.is_property(name):
+            if self.is_callback_property(name):
                 setattr(self, name, properties[name])
-
-    def is_property(self, name):
-        return isinstance(getattr(type(self), name, None), CallbackProperty)
 
     def as_dict(self):
         properties = {}
         for name in dir(self):
-            if self.is_property(name):
+            if self.is_callback_property(name):
                 properties[name] = getattr(self, name)
         return properties
 
