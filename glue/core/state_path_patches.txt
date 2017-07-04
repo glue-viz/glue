@@ -10,9 +10,13 @@ glue.clients.layer_artist.ScatterLayerArtist -> glue.viewers.scatter.layer_artis
 glue.clients.layer_artist.ImageLayerArtist -> glue.viewers.image.layer_artist.ImageLayerArtist
 glue.clients.layer_artist.HistogramLayerArtist -> glue.viewers.histogram.layer_artist.HistogramLayerArtist
 glue.clients.ds9norm.DS9Normalize -> glue.viewers.image.ds9norm.DS9Normalize
-glue.qt.widgets.scatter_widget.ScatterWidget -> glue.viewers.scatter.qt.ScatterWidget
-glue.qt.widgets.image_widget.ImageWidget -> glue.viewers.image.qt.ImageWidget
+glue.qt.widgets.scatter_widget.ScatterWidget -> glue.viewers.scatter.qt.ScatterViewer
+glue.qt.widgets.image_widget.ImageWidget -> glue.viewers.image.qt.data_viewer.ImageViewer
 glue.qt.widgets.histogram_widget.HistogramWidget -> glue.viewers.histogram.qt.data_viewer.HistogramViewer
 glue.qt.glue_application.GlueApplication -> glue.app.qt.application.GlueApplication
 glue_vispy_viewers.common.toolbar.PatchedElementSubsetState -> glue.core.subset.ElementSubsetState
 glue.viewers.histogram.qt.viewer_widget.HistogramWidget -> glue.viewers.histogram.qt.data_viewer.HistogramViewer
+glue.viewers.scatter.qt.viewer_widget.ScatterWidget -> glue.viewers.scatter.qt.data_viewer.ScatterViewer
+glue.viewers.image.qt.viewer_widget.ImageWidget -> glue.viewers.image.qt.data_viewer.ImageViewer
+glue.viewers.image.layer_artist.SubsetImageLayerArtist -> glue.viewers.image.layer_artist.ImageSubsetLayerArtist
+glue.viewers.image.ds9norm.DS9Normalize -> glue.viewers.image.compat.DS9Compat

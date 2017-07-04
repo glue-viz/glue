@@ -37,16 +37,13 @@ class State(HasCallbackProperties):
 
     def update_from_dict(self, properties):
         for name in sorted(properties, key=self.update_priority, reverse=True):
-            if self.is_property(name):
+            if self.is_callback_property(name):
                 setattr(self, name, properties[name])
-
-    def is_property(self, name):
-        return isinstance(getattr(type(self), name, None), CallbackProperty)
 
     def as_dict(self):
         properties = {}
         for name in dir(self):
-            if self.is_property(name):
+            if self.is_callback_property(name):
                 properties[name] = getattr(self, name)
         return properties
 
@@ -276,7 +273,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             percentile = self.percentile or 100
             log = self.log or False
 
-        if percentile == 'Custom' or self.data is None:
+        if percentile == 'Custom' or not hasattr(self, 'data') or self.data is None:
 
             self.set(percentile=percentile, log=log)
 
@@ -358,8 +355,6 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
             self._state.add_callback(common_n_bin_att, self._update_common_n_bin)
         else:
             self._common_n_bin = None
-
-        print(self._cache)
 
     def _apply_common_n_bin(self):
         for att in self._cache:

@@ -7,12 +7,12 @@ from glue.tests.helpers import requires_qt
 @requires_qt
 def test_default_clients():
 
-    from glue.viewers.image.qt import ImageWidget
-    from glue.viewers.scatter.qt import ScatterWidget
+    from glue.viewers.image.qt import ImageViewer
+    from glue.viewers.scatter.qt import ScatterViewer
     from glue.viewers.histogram.qt import HistogramViewer
 
-    assert ImageWidget in qt_client
-    assert ScatterWidget in qt_client
+    assert ImageViewer in qt_client
+    assert ScatterViewer in qt_client
     assert HistogramViewer in qt_client
 
 

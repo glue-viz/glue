@@ -233,14 +233,14 @@ def imshow(axes, X, cmap=None, norm=None, aspect=None,
     #    im.set_clim(vmin, vmax)
     if vmin is not None or vmax is not None:
         im.set_clim(vmin, vmax)
-    elif norm is None:
-        im.autoscale_None()
+    # elif norm is None:
+    #     im.autoscale_None()
 
     im.set_url(url)
 
     # update ax.dataLim, and, if autoscaling, set viewLim
     # to tightly fit the image, regardless of dataLim.
-    im.set_extent(im.get_extent())
+    # im.set_extent(im.get_extent())
 
     axes.images.append(im)
     im._remove_method = lambda h: axes.images.remove(h)

@@ -15,14 +15,14 @@ from glue.core.exceptions import IncompatibleAttribute
 from glue.core import Subset
 from glue.core.callback_property import add_callback, ignore_callback
 from glue.config import fit_plugin, viewer_tool
-from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
+from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.qt.mime import LAYERS_MIME_TYPE
 from glue.viewers.common.qt.mouse_mode import RoiMode
 from glue.utils.qt import load_ui
 from glue.core.qt.simpleforms import build_form_item
 from glue.utils.qt.widget_properties import CurrentComboProperty
 from glue.app.qt.mdi_area import GlueMdiSubWindow
-from glue.viewers.common.qt.mpl_widget import MplWidget
+from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.utils import nonpartial, Pointer
 from glue.utils.qt import Worker, messagebox_on_error
 from glue.core import roi as core_roi
@@ -154,7 +154,7 @@ class SpectrumContext(object):
     """
     Base class for different interaction contexts
     """
-    client = Pointer('main.client')
+    viewer_state = Pointer('main.viewer_state')
     data = Pointer('main.data')
     profile_axis = Pointer('main.profile_axis')
     canvas = Pointer('main.canvas')
@@ -224,13 +224,13 @@ class NavContext(SpectrumContext):
     """
 
     def _setup_grip(self):
-        def _set_client_from_grip(value):
-            """Update client.slice given grip value"""
+        def _set_state_from_grip(value):
+            """Update state.slices given grip value"""
             if not self.main.enabled:
                 return
 
-            slc = list(self.client.slice)
-            # client.slice stored in pixel coords
+            slc = list(self.viewer_state.slices)
+            # state.slices stored in pixel coords
             value = Extractor.world2pixel(
                 self.data,
                 self.profile_axis, value)
@@ -238,10 +238,10 @@ class NavContext(SpectrumContext):
 
             # prevent callback bouncing. Fixes #298
             with ignore_callback(self.grip, 'value'):
-                self.client.slice = tuple(slc)
+                self.viewer_state.slices = tuple(slc)
 
-        def _set_grip_from_client(slc):
-            """Update grip.value given client.slice"""
+        def _set_grip_from_state(slc):
+            """Update grip.value given state.slices"""
             if not self.main.enabled:
                 return
 
@@ -251,14 +251,14 @@ class NavContext(SpectrumContext):
 
             # If pix2world not monotonic, this can trigger infinite recursion.
             # Avoid by disabling callback loop
-            # XXX better to specifically ignore _set_client_from_grip
-            with ignore_callback(self.client, 'slice'):
+            # XXX better to specifically ignore _set_state_from_grip
+            with ignore_callback(self.viewer_state, 'slices'):
                 self.grip.value = val
 
         self.grip = self.main.profile.new_value_grip()
 
-        add_callback(self.client, 'slice', _set_grip_from_client)
-        add_callback(self.grip, 'value', _set_client_from_grip)
+        add_callback(self.viewer_state, 'slices', _set_grip_from_state)
+        add_callback(self.grip, 'value', _set_state_from_grip)
 
     def _connect(self):
         pass
@@ -333,12 +333,13 @@ class CollapseContext(SpectrumContext):
                                     self.profile_axis,
                                     rng)
 
-        agg = Aggregate(self.data, self.client.display_attribute,
-                        self.main.profile_axis, self.client.slice, rng)
+        agg = Aggregate(self.data, self.viewer_state.layers[0].attribute,
+                        self.main.profile_axis, self.viewer_state.wcsaxes_slice[::-1], rng)
 
         im = func(agg)
         self._agg = im
-        self.client.override_image(im)
+        # TODO: reinstate this?
+        # self.client.override_image(im)
 
     @messagebox_on_error("Failed to export projection")
     def _choose_save(self):
@@ -361,7 +362,7 @@ class CollapseContext(SpectrumContext):
 
         from astropy.io import fits
 
-        data = self.client.display_data
+        data = self.viewer_state.reference_data
         if data is None:
             raise RuntimeError("Cannot save projection -- no data to visualize")
 
@@ -382,7 +383,7 @@ class CollapseContext(SpectrumContext):
 
         lo, hi = self.grip.range
         history = ('Created by Glue. %s projection over channels %i-%i of axis %i. Slice=%s' %
-                   (self.aggregator_label, lo, hi, self.main.profile_axis, self.client.slice))
+                   (self.aggregator_label, lo, hi, self.main.profile_axis, self.viewer_state.slices))
 
         header.add_history(history)
 
@@ -683,11 +684,6 @@ class SpectrumExtractorMode(RoiMode):
         self._release_callback = self._tool._update_profile
         self._move_callback = self._tool._move_profile
         self._roi_callback = None
-        add_callback(viewer.client, 'display_data', self._display_data_hook)
-
-    def _display_data_hook(self, data):
-        if data is not None:
-            self.enabled = data.ndim == 3
 
     def menu_actions(self):
 
@@ -746,13 +742,14 @@ class SpectrumTool(object):
     *collapse context* lets the users collapse a section of a cube to a 2D image
     """
 
-    def __init__(self, image_widget, mouse_mode):
+    def __init__(self, image_viewer, mouse_mode):
         self._relim_requested = True
 
-        self.image_widget = image_widget
+        self.image_viewer = image_viewer
+        self.viewer_state = self.image_viewer.state
+
         self._build_main_widget()
 
-        self.client = self.image_widget.client
         self.profile = ProfileViewer(self.canvas.fig)
         self.axes = self.profile.axes
 
@@ -762,7 +759,7 @@ class SpectrumTool(object):
         self._setup_ctxbar()
 
         self._connect()
-        w = self.image_widget.session.application.add_widget(self,
+        w = self.image_viewer.session.application.add_widget(self,
                                                              label='Profile')
         w.close()
 
@@ -822,9 +819,11 @@ class SpectrumTool(object):
         l.setStretchFactor(tabs, 0)
 
     def _connect(self):
-        add_callback(self.client, 'slice',
-                     self._check_invalidate,
-                     echo_old=True)
+
+        add_callback(self.viewer_state, 'x_att',
+                     self.reset)
+        add_callback(self.viewer_state, 'y_att',
+                     self.reset)
 
         def _on_tab_change(index):
             for i, ctx in enumerate(self._contexts):
@@ -856,32 +855,23 @@ class SpectrumTool(object):
     def _toggle_menu(self, active):
         self._tabs.setVisible(active)
 
-    def _check_invalidate(self, slc_old, slc_new):
-        """
-        If we change the orientation of the slice,
-        reset and hide the profile viewer
-        """
-        if self.profile_axis is None or not self.enabled:
-            return
-
-        if (slc_old.index('x') != slc_new.index('x') or
-                slc_old.index('y') != slc_new.index('y')):
-            self.reset()
-
-    def reset(self):
+    def reset(self, *args):
         self.hide()
         self.mouse_mode.clear()
         self._relim_requested = True
 
     @property
     def data(self):
-        return self.client.display_data
+        return self.viewer_state.reference_data
 
     @property
     def profile_axis(self):
         # XXX make this settable
         # defaults to the non-xy axis with the most channels
-        slc = self.client.slice
+        try:
+            slc = self.viewer_state.wcsaxes_slice[::-1]
+        except AttributeError:
+            return None
         candidates = [i for i, s in enumerate(slc) if s not in ['x', 'y']]
         return max(candidates, key=lambda i: self.data.shape[i])
 
@@ -890,10 +880,10 @@ class SpectrumTool(object):
             ctx.recenter(self.axes.get_xlim())
 
     def _extract_subset_profile(self, subset):
-        slc = self.client.slice
+        slc = self.viewer_state.slices
         try:
             x, y = Extractor.subset_spectrum(subset,
-                                             self.client.display_attribute,
+                                             self.viewer_state.display_attribute,
                                              slc,
                                              self.profile_axis)
         except IncompatibleAttribute:
@@ -903,8 +893,8 @@ class SpectrumTool(object):
 
     def _update_from_roi(self, roi):
         data = self.data
-        att = self.client.display_attribute
-        slc = self.client.slice
+        att = self.viewer_state.layers[0].attribute
+        slc = self.viewer_state.wcsaxes_slice[::-1]
 
         if data is None or att is None:
             return
@@ -947,8 +937,8 @@ class SpectrumTool(object):
         self.axes.figure.canvas.draw()
         self.show()
 
-    def _move_below_image_widget(self):
-        rect = self.image_widget.frameGeometry()
+    def _move_below_image_viewer(self):
+        rect = self.image_viewer.frameGeometry()
         pos = rect.bottomLeft()
         self._mdi_wrapper.setGeometry(pos.x(), pos.y(),
                                       rect.width(), 300)
@@ -956,7 +946,7 @@ class SpectrumTool(object):
     def show(self):
         if self.widget.isVisible():
             return
-        self._move_below_image_widget()
+        self._move_below_image_viewer()
         self.widget.show()
 
     def hide(self):
@@ -964,7 +954,3 @@ class SpectrumTool(object):
 
     def _get_modes(self, axes):
         return [self.mouse_mode]
-
-    def _display_data_hook(self, data):
-        if data is not None:
-            self.mouse_mode.enabled = data.ndim > 2

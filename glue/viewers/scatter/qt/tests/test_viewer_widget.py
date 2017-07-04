@@ -2,344 +2,303 @@
 
 from __future__ import absolute_import, division, print_function
 
-from distutils.version import LooseVersion  # pylint:disable=W0611
+import os
 
 import pytest
-from mock import patch
-from matplotlib import __version__ as mpl_version  # pylint:disable=W0611
 
+from numpy.testing import assert_allclose
+
+from glue.core import Data
+from glue.core.roi import RectangularROI
+from glue.core.subset import RoiSubsetState, AndState
 from glue import core
+from glue.core.component_id import ComponentID
 from glue.core.tests.util import simple_session
-from glue.viewers.common.qt.mpl_widget import MplCanvas
+from glue.utils.qt import combo_as_string
+from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
+from glue.core.state import GlueUnSerializer
 
-from ..viewer_widget import ScatterWidget
+from ..data_viewer import ScatterViewer
+
+DATA = os.path.join(os.path.dirname(__file__), 'data')
 
 
-class TestScatterWidget(object):
+class TestScatterCommon(BaseTestMatplotlibDataViewer):
+    def init_data(self):
+        return Data(label='d1', x=[3.4, 2.3, -1.1, 0.3], y=['a', 'b', 'c', 'a'])
+    viewer_cls = ScatterViewer
+
+
+class TestScatterViewer(object):
 
     def setup_method(self, method):
-        s = simple_session()
-        self.hub = s.hub
-        self.d1 = core.Data(x=[1, 2, 3], y=[2, 3, 4],
-                            z=[3, 4, 5], w=[4, 5, 6])
-        self.d1.label = 'd1'
-        self.d2 = core.Data(x=[1, 2, 3], y=[2, 3, 4],
-                            z=[3, 4, 5], w=[4, 5, 6])
-        self.d2.label = 'd2'
-        self.data = [self.d1, self.d2]
-        self.collect = s.data_collection
-        self.collect.append(self.data)
-        self.widget = ScatterWidget(s)
-        self.session = s
-        self.connect_to_hub()
+
+        self.data = Data(label='d1', x=[3.4, 2.3, -1.1, 0.3],
+                         y=[3.2, 3.3, 3.4, 3.5], z=['a', 'b', 'c', 'a'])
+        self.data_2d = Data(label='d2', a=[[1, 2], [3, 4]], b=[[5, 6], [7, 8]])
+
+        self.session = simple_session()
+        self.hub = self.session.hub
+
+        self.data_collection = self.session.data_collection
+        self.data_collection.append(self.data)
+        self.data_collection.append(self.data_2d)
+
+        self.viewer = ScatterViewer(self.session)
+
+        self.data_collection.register_to_hub(self.hub)
+        self.viewer.register_to_hub(self.hub)
 
     def teardown_method(self, method):
-        self.assert_widget_synced()
+        self.viewer.close()
 
-    def assert_widget_synced(self):
-        cl = self.widget.client
-        w = self.widget
-        assert abs(w.xmin - cl.xmin) < 1e-3
-        assert abs(w.xmax - cl.xmax) < 1e-3
-        assert w.xlog == cl.xlog
-        assert w.ylog == cl.ylog
-        assert w.xflip == cl.xflip
-        assert w.yflip == cl.yflip
-        assert abs(w.ymin - cl.ymin) < 1e-3
-        assert abs(w.ymax - cl.ymax) < 1e-3
+    def test_basic(self):
 
-    def connect_to_hub(self):
-        self.widget.register_to_hub(self.hub)
-        self.collect.register_to_hub(self.hub)
+        viewer_state = self.viewer.state
 
-    def add_layer_via_hub(self):
-        layer = self.data[0]
-        layer.label = 'Test Layer'
-        self.collect.append(layer)
-        return layer
+        # Check defaults when we add data
+        self.viewer.add_data(self.data)
 
-    def add_layer_via_method(self, index=0):
-        layer = self.data[index]
-        self.widget.add_data(layer)
-        return layer
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'x:y:z'
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_y_att) == 'x:y:z'
 
-    def plot_data(self, layer):
-        """ Return the data bounds for a given layer (data or subset)
-        Output format: [xmin, xmax], [ymin, ymax]
-        """
-        client = self.widget.client
-        x, y = client.artists[layer][0].get_data()
-        assert x.size > 0
-        assert y.size > 0
-        xmin = x.min()
-        xmax = x.max()
-        ymin = y.min()
-        ymax = y.max()
-        return [xmin, xmax], [ymin, ymax]
+        assert viewer_state.x_att is self.data.id['x']
+        assert viewer_state.x_min == -1.1
+        assert viewer_state.x_max == 3.4
 
-    def plot_limits(self):
-        """ Return the plot limits
-        Output format [xmin, xmax], [ymin, ymax]
-        """
-        ax = self.widget.client.axes
-        xlim = ax.get_xlim()
-        ylim = ax.get_ylim()
-        return xlim, ylim
+        assert viewer_state.y_att is self.data.id['y']
+        assert viewer_state.y_min == 3.2
+        assert viewer_state.y_max == 3.5
 
-    def assert_layer_inside_limits(self, layer):
-        """Assert that points of a layer are within plot limits """
-        xydata = self.plot_data(layer)
-        xylimits = self.plot_limits()
-        assert xydata[0][0] >= xylimits[0][0]
-        assert xydata[1][0] >= xylimits[1][0]
-        assert xydata[0][1] <= xylimits[0][1]
-        assert xydata[1][1] <= xylimits[1][1]
+        assert not viewer_state.x_log
+        assert not viewer_state.y_log
 
-    def is_layer_present(self, layer):
-        return self.widget.client.is_layer_present(layer)
+        assert len(viewer_state.layers) == 1
 
-    def is_layer_visible(self, layer):
-        return self.widget.client.is_visible(layer)
+        # Change to categorical component and check new values
 
-    def test_rescaled_on_init(self):
-        layer = self.add_layer_via_method()
-        self.assert_layer_inside_limits(layer)
+        viewer_state.y_att = self.data.id['z']
 
-    def test_hub_data_add_is_ignored(self):
-        layer = self.add_layer_via_hub()
-        assert not self.widget.client.is_layer_present(layer)
+        assert viewer_state.x_att is self.data.id['x']
+        assert viewer_state.x_min == -1.1
+        assert viewer_state.x_max == 3.4
 
-    def test_valid_add_data_via_method(self):
-        layer = self.add_layer_via_method()
-        assert self.is_layer_present(layer)
+        assert viewer_state.y_att is self.data.id['z']
+        assert viewer_state.y_min == -0.5
+        assert viewer_state.y_max == 2.5
 
-    def test_add_first_data_updates_combos(self):
-        self.add_layer_via_method()
-        xatt = str(self.widget.ui.xAxisComboBox.currentText())
-        yatt = str(self.widget.ui.yAxisComboBox.currentText())
-        assert xatt is not None
-        assert yatt is not None
+        assert not viewer_state.x_log
+        assert not viewer_state.y_log
 
-    def test_flip_x(self):
-        self.add_layer_via_method()
-        self.widget.xflip = True
-        assert self.widget.client.xflip
-        self.widget.xflip = False
-        assert not self.widget.client.xflip
+    def test_flip(self):
 
-    def test_flip_y(self):
-        self.add_layer_via_method()
-        self.widget.yflip = True
-        assert self.widget.client.yflip
-        self.widget.yflip = False
-        assert not self.widget.client.yflip
+        viewer_state = self.viewer.state
 
-    def test_log_x(self):
-        self.add_layer_via_method()
-        self.widget.xlog = True
-        assert self.widget.client.xlog
-        self.widget.xlog = False
-        assert not self.widget.client.xlog
+        self.viewer.add_data(self.data)
 
-    def test_log_y(self):
-        self.widget.ylog = True
-        assert self.widget.client.ylog
-        self.widget.ylog = False
-        assert not self.widget.client.ylog
+        assert viewer_state.x_min == -1.1
+        assert viewer_state.x_max == 3.4
 
-    def test_double_add_ignored(self):
-        self.add_layer_via_method()
-        nobj = self.widget.ui.xAxisComboBox.count()
-        self.add_layer_via_method()
-        assert self.widget.ui.xAxisComboBox.count() == nobj
+        self.viewer.options_widget().button_flip_x.click()
 
-    def test_subsets_dont_duplicate_fields(self):
-        layer = self.add_layer_via_method()
-        nobj = self.widget.ui.xAxisComboBox.count()
-        subset = layer.new_subset()
-        subset.register()
-        assert self.widget.ui.xAxisComboBox.count() == nobj
+        assert viewer_state.x_min == 3.4
+        assert viewer_state.x_max == -1.1
 
-    def test_correct_title_single_data(self):
-        ct = self.widget.client.layer_count
-        assert ct == 0
-        layer = self.add_layer_via_method()
-        ct = self.widget.client.layer_count
-        assert ct == 1
-        assert len(layer.label) > 0
-        assert self.widget.windowTitle() == layer.label
+        assert viewer_state.y_min == 3.2
+        assert viewer_state.y_max == 3.5
 
-    def test_title_updates_with_label_change(self):
-        layer = self.add_layer_via_method()
-        assert layer.hub is self.hub
-        layer.label = "changed label"
-        assert self.widget.windowTitle() == layer.label
+        self.viewer.options_widget().button_flip_y.click()
 
-    def test_title_updates_with_second_data(self):
-        l1 = self.add_layer_via_method(0)
-        l2 = self.add_layer_via_method(1)
-        expected = '%s | %s' % (l1.label, l2.label)
-        self.widget.windowTitle() == expected
+        assert viewer_state.y_min == 3.5
+        assert viewer_state.y_max == 3.2
 
-    def test_second_data_add_preserves_plot_variables(self):
-        self.add_layer_via_method(0)
-        self.widget.ui.xAxisComboBox.setCurrentIndex(3)
-        self.widget.ui.yAxisComboBox.setCurrentIndex(2)
-        self.add_layer_via_method(1)
+    def test_remove_data(self):
+        self.viewer.add_data(self.data)
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'x:y:z'
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_y_att) == 'x:y:z'
+        self.data_collection.remove(self.data)
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == ''
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_y_att) == ''
 
-        assert self.widget.ui.xAxisComboBox.currentIndex() == 3
-        assert self.widget.ui.yAxisComboBox.currentIndex() == 2
+    def test_update_component_updates_title(self):
+        self.viewer.add_data(self.data)
+        assert self.viewer.windowTitle() == '2D Scatter'
+        self.viewer.state.x_att = self.data.id['y']
+        assert self.viewer.windowTitle() == '2D Scatter'
 
-    def test_set_limits(self):
-        self.add_layer_via_method(0)
-        w = self.widget
-        c = self.widget.client
-        ax = self.widget.client.axes
+    def test_combo_updates_with_component_add(self):
+        self.viewer.add_data(self.data)
+        self.data.add_component([3, 4, 1, 2], 'a')
+        assert self.viewer.state.x_att is self.data.id['x']
+        assert self.viewer.state.y_att is self.data.id['y']
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'x:y:z:a'
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_y_att) == 'x:y:z:a'
 
-        print(w.xmin, w.xmax, w.ymin, w.ymax)
-        print(c.xmin, c.xmax, c.ymin, c.ymax)
-        print(ax.get_xlim(), ax.get_ylim())
+    def test_nonnumeric_first_component(self):
+        # regression test for #208. Shouldn't complain if
+        # first component is non-numerical
+        data = core.Data()
+        data.add_component(['a', 'b', 'c'], label='c1')
+        data.add_component([1, 2, 3], label='c2')
+        self.data_collection.append(data)
+        self.viewer.add_data(data)
 
-        self.widget.xmax = 20
-        print(w.xmin, w.xmax, w.ymin, w.ymax)
-        print(c.xmin, c.xmax, c.ymin, c.ymax)
-        print(ax.get_xlim(), ax.get_ylim())
+    def test_apply_roi(self):
 
-        self.widget.xmin = 10
-        print(w.xmin, w.xmax, w.ymin, w.ymax)
-        print(c.xmin, c.xmax, c.ymin, c.ymax)
-        print(ax.get_xlim(), ax.get_ylim())
+        self.viewer.add_data(self.data)
 
-        self.widget.ymax = 40
-        print(w.xmin, w.xmax, w.ymin, w.ymax)
-        print(c.xmin, c.xmax, c.ymin, c.ymax)
-        print(ax.get_xlim(), ax.get_ylim())
+        roi = RectangularROI(0, 3, 3.25, 3.45)
 
-        self.widget.ymin = 30
-        print(w.xmin, w.xmax, w.ymin, w.ymax)
-        print(c.xmin, c.xmax, c.ymin, c.ymax)
-        print(ax.get_xlim(), ax.get_ylim())
+        assert len(self.viewer.layers) == 1
 
-        assert self.widget.client.axes.get_xlim() == (10, 20)
-        assert self.widget.client.axes.get_ylim() == (30, 40)
-        assert float(self.widget.ui.xmin.text()) == 10
-        assert float(self.widget.ui.xmax.text()) == 20
-        assert float(self.widget.ui.ymin.text()) == 30
-        assert float(self.widget.ui.ymax.text()) == 40
+        self.viewer.apply_roi(roi)
 
-    def test_widget_props_synced_with_client(self):
+        assert len(self.viewer.layers) == 2
+        assert len(self.data.subsets) == 1
 
-        self.widget.client.xmax = 100
-        assert self.widget.xmax == 100
-        self.widget.client.ymax = 200
-        assert self.widget.ymax == 200
+        assert_allclose(self.data.subsets[0].to_mask(), [0, 1, 0, 0])
 
-        self.widget.client.xmin = 10
-        assert self.widget.xmin == 10
+        state = self.data.subsets[0].subset_state
+        assert isinstance(state, RoiSubsetState)
 
-        self.widget.client.ymin = 30
-        assert self.widget.ymin == 30
+    def test_apply_roi_categorical(self):
 
-    @pytest.mark.xfail("LooseVersion(mpl_version) <= LooseVersion('1.1.0')")
-    def test_labels_sync_with_plot_limits(self):
-        """For some reason, manually calling draw() doesnt trigger the
-        draw_event in MPL 1.1.0. Ths functionality nevertheless seems
-        to work when actually using Glue"""
+        viewer_state = self.viewer.state
 
-        self.add_layer_via_method(0)
-        self.widget.client.axes.set_xlim((3, 4))
-        self.widget.client.axes.set_ylim((5, 6))
+        self.viewer.add_data(self.data)
 
-        # call MPL draw to force render, not Glue draw
-        super(MplCanvas, self.widget.client.axes.figure.canvas).draw()
+        viewer_state.y_att = self.data.id['z']
 
-        assert float(self.widget.ui.xmin.text()) == 3
-        assert float(self.widget.ui.xmax.text()) == 4
-        assert float(self.widget.ui.ymin.text()) == 5
-        assert float(self.widget.ui.ymax.text()) == 6
+        roi = RectangularROI(0, 3, -0.4, 0.3)
 
-    def assert_component_present(self, label):
-        ui = self.widget.ui
-        for combo in [ui.xAxisComboBox, ui.yAxisComboBox]:
-            atts = [combo.itemText(i) for i in range(combo.count())]
-            assert label in atts
+        assert len(self.viewer.layers) == 1
 
-    def test_component_change_syncs_with_combo(self):
-        l1 = self.add_layer_via_method()
-        l1.add_component(l1[l1.components[0]], 'testing')
-        self.assert_component_present('testing')
+        self.viewer.apply_roi(roi)
 
-    def test_swap_axes(self):
-        self.add_layer_via_method()
-        cl = self.widget.client
-        cl.xlog, cl.xflip = True, True
-        cl.ylog, cl.yflip = False, False
+        assert len(self.viewer.layers) == 2
+        assert len(self.data.subsets) == 1
 
-        x, y = cl.xatt, cl.yatt
+        assert_allclose(self.data.subsets[0].to_mask(), [0, 0, 0, 1])
 
-        self.widget.ui.swapAxes.click()
-        assert (cl.xlog, cl.xflip) == (False, False)
-        assert (cl.ylog, cl.yflip) == (True, True)
-        assert (cl.xatt, cl.yatt) == (y, x)
+        state = self.data.subsets[0].subset_state
+        assert isinstance(state, AndState)
 
-    def test_hidden(self):
-        self.add_layer_via_method()
-        xcombo = self.widget.ui.xAxisComboBox
+    def test_axes_labels(self):
 
-        self.widget.hidden = False
-        assert xcombo.count() == 4
-        self.widget.hidden = True
-        assert xcombo.count() == 6
-        self.widget.hidden = False
-        assert xcombo.count() == 4
+        viewer_state = self.viewer.state
 
-    def test_add_subset_preserves_plot_variables(self):
-        self.add_layer_via_method(0)
-        print(self.widget.client.layer_count)
+        self.viewer.add_data(self.data)
 
-        self.widget.ui.xAxisComboBox.setCurrentIndex(3)
-        self.widget.ui.yAxisComboBox.setCurrentIndex(2)
-        assert self.widget.ui.xAxisComboBox.currentIndex() == 3
-        assert self.widget.ui.yAxisComboBox.currentIndex() == 2
+        assert self.viewer.axes.get_xlabel() == 'x'
+        assert self.viewer.axes.get_ylabel() == 'y'
 
-        s = self.data[1].new_subset(label='new')
-        self.widget.add_subset(s)
+        viewer_state.x_log = True
 
-        assert self.widget.ui.xAxisComboBox.currentIndex() == 3
-        assert self.widget.ui.yAxisComboBox.currentIndex() == 2
+        assert self.viewer.axes.get_xlabel() == 'Log x'
+        assert self.viewer.axes.get_ylabel() == 'y'
 
-    def test_title_synced_if_data_removed(self):
-        # regression test for #517
-        n0 = self.widget.windowTitle()
-        self.add_layer_via_method(0)
-        n1 = self.widget.windowTitle()
-        assert n1 != n0
-        l2 = self.add_layer_via_method(1)
-        n2 = self.widget.windowTitle()
-        assert n2 != n1
-        self.widget.remove_layer(l2)
-        assert self.widget.windowTitle() == n1
+        viewer_state.x_att = self.data.id['y']
+
+        assert self.viewer.axes.get_xlabel() == 'y'
+        assert self.viewer.axes.get_ylabel() == 'y'
+
+        viewer_state.y_log = True
+
+        assert self.viewer.axes.get_xlabel() == 'y'
+        assert self.viewer.axes.get_ylabel() == 'Log y'
+
+    def test_component_replaced(self):
+
+        # regression test for 508 - if a component ID is replaced, we should
+        # make sure that the component ID is selected if the old component ID
+        # was selected
+
+        self.viewer.add_data(self.data)
+        self.viewer.state.x_att = self.data.components[0]
+        test = ComponentID('test')
+        self.data.update_id(self.viewer.state.x_att, test)
+        assert self.viewer.state.x_att is test
+        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'test:y:z'
+
+    @pytest.mark.parametrize('protocol', [0])
+    def test_session_back_compat(self, protocol):
+
+        filename = os.path.join(DATA, 'scatter_v{0}.glu'.format(protocol))
+
+        with open(filename, 'r') as f:
+            session = f.read()
+
+        state = GlueUnSerializer.loads(session)
+
+        ga = state.object('__main__')
+
+        dc = ga.session.data_collection
+
+        assert len(dc) == 1
+
+        assert dc[0].label == 'basic'
+
+        viewer1 = ga.viewers[0][0]
+        assert len(viewer1.state.layers) == 3
+        assert viewer1.state.x_att is dc[0].id['a']
+        assert viewer1.state.y_att is dc[0].id['b']
+        assert_allclose(viewer1.state.x_min, -1.04)
+        assert_allclose(viewer1.state.x_max, 1.04)
+        assert_allclose(viewer1.state.y_min, 1.98)
+        assert_allclose(viewer1.state.y_max, 3.02)
+        assert not viewer1.state.x_log
+        assert not viewer1.state.y_log
+        assert viewer1.state.layers[0].visible
+        assert viewer1.state.layers[1].visible
+        assert viewer1.state.layers[2].visible
+
+        viewer2 = ga.viewers[0][1]
+        assert len(viewer2.state.layers) == 3
+        assert viewer2.state.x_att is dc[0].id['a']
+        assert viewer2.state.y_att is dc[0].id['c']
+        assert_allclose(viewer2.state.x_min, 9.5e-6)
+        assert_allclose(viewer2.state.x_max, 1.05)
+        assert_allclose(viewer2.state.y_min, 0.38)
+        assert_allclose(viewer2.state.y_max, 5.25)
+        assert viewer2.state.x_log
+        assert viewer2.state.y_log
+        assert viewer2.state.layers[0].visible
+        assert not viewer2.state.layers[1].visible
+        assert viewer2.state.layers[2].visible
+
+        viewer3 = ga.viewers[0][2]
+        assert len(viewer3.state.layers) == 3
+        assert viewer3.state.x_att is dc[0].id['b']
+        assert viewer3.state.y_att is dc[0].id['a']
+        assert_allclose(viewer3.state.x_min, 0)
+        assert_allclose(viewer3.state.x_max, 5)
+        assert_allclose(viewer3.state.y_min, -5)
+        assert_allclose(viewer3.state.y_max, 5)
+        assert not viewer3.state.x_log
+        assert not viewer3.state.y_log
+        assert viewer3.state.layers[0].visible
+        assert viewer3.state.layers[1].visible
+        assert not viewer3.state.layers[2].visible
 
     def test_save_svg(self, tmpdir):
         # Regression test for a bug in AxesCache that caused SVG saving to
         # fail (because renderer.buffer_rgba did not exist)
+        self.viewer.add_data(self.data)
         filename = tmpdir.join('test.svg').strpath
-        self.widget.client.axes.figure.savefig(filename)
+        self.viewer.axes.figure.savefig(filename)
 
+    def test_2d(self):
 
-class TestDrawCount(TestScatterWidget):
+        viewer_state = self.viewer.state
 
-    def patch_draw(self):
-        return patch('glue.viewers.common.qt.mpl_widget.MplCanvas.draw')
+        self.viewer.add_data(self.data_2d)
 
-    def test_xatt_redraws_once(self):
-        self.add_layer_via_method()
-        with self.patch_draw() as draw:
-            self.widget.yatt = self.widget.xatt
-        assert draw.call_count == 1
+        assert viewer_state.x_att is self.data_2d.id['a']
+        assert viewer_state.x_min == 1
+        assert viewer_state.x_max == 4
 
-    def test_swap_redraws_once(self):
-        self.add_layer_via_method()
-        with self.patch_draw() as draw:
-            self.widget.swap_axes()
-        assert draw.call_count == 1
+        assert viewer_state.y_att is self.data_2d.id['b']
+        assert viewer_state.y_min == 5
+        assert viewer_state.y_max == 8
+
+        assert len(self.viewer.layers[0].mpl_artists) == 1

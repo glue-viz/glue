@@ -11,10 +11,10 @@ v0.11.0 (unreleased)
   references, which in turn caused some callback functions to not be
   cleaned up. [#1281]
 
-* Rewrote the histogram viewer to use the new state infrastructure. This
-  significantly simplifies the actual histogram viewer code both in terms
-  of number of lines and in terms of the number of connections/callbacks
-  that need to be set up manually. [#1278]
+* Rewrote the histogram, scatter, and image viewers to use the new state
+  infrastructure. This significantly simplifies the actual histogram viewer code
+  both in terms of number of lines and in terms of the number of
+  connections/callbacks that need to be set up manually. [#1278, #1289]
 
 v0.10.4 (2017-05-23)
 --------------------

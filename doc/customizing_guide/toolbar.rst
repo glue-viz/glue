@@ -146,8 +146,8 @@ attribute on viewers:
 
 .. code:: python
 
-    >>> from glue.viewers.image.qt import ImageWidget
-    >>> ImageWidget.tools
+    >>> from glue.viewers.image.qt import ImageViewer
+    >>> ImageViewer.tools
     ['select:rectangle', 'select:xrange', 'select:yrange',
      'select:circle', 'select:polygon', 'image:colormap']
 
@@ -157,8 +157,8 @@ can therefore simply do e.g.:
 
 .. code:: python
 
-    from glue.viewers.image.qt import ImageWidget
-    ImageWidget.tools.append('custom_tool')
+    from glue.viewers.image.qt import ImageViewer
+    ImageViewer.tools.append('custom_tool')
 
 Including toolbars in custom viewers
 ------------------------------------
@@ -187,7 +187,7 @@ we defined above). There are currently two main classes available for toolbars:
 * :class:`~glue.viewers.common.qt.toolbar.BasicToolbar`: this is the most basic
   kind of toolbar - it comes with no tools by default.
 
-* :class:`~glue.viewers.common.qt.mpl_toolbar.MatplotlibViewerToolbar`: this is
+* :class:`~glue.viewers.matplotlib.qt.toolbar.MatplotlibViewerToolbar`: this is
   a subclass of :class:`~glue.viewers.common.qt.toolbar.BasicToolbar` that
   includes the standard Matplotlib buttons by default (home, zoom, pan, etc.).
   This toolbar can only be used if your data viewer includes a Matplotlib canvas

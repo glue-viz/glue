@@ -15,7 +15,7 @@ from glue import core
 from glue.core.component_id import ComponentID
 from glue.core.tests.util import simple_session
 from glue.utils.qt import combo_as_string
-from glue.viewers.common.qt.tests.test_mpl_data_viewer import BaseTestMatplotlibDataViewer
+from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.core.state import GlueUnSerializer
 
 from ..data_viewer import HistogramViewer
@@ -117,9 +117,9 @@ class TestHistogramViewer(object):
 
     def test_update_component_updates_title(self):
         self.viewer.add_data(self.data)
-        self.viewer.windowTitle() == 'x'
+        assert self.viewer.windowTitle() == '1D Histogram'
         self.viewer.state.x_att = self.data.id['y']
-        self.viewer.windowTitle() == 'y'
+        assert self.viewer.windowTitle() == '1D Histogram'
 
     def test_combo_updates_with_component_add(self):
         self.viewer.add_data(self.data)

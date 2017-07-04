@@ -1,16 +1,19 @@
 from __future__ import absolute_import, division, print_function
 
+from qtpy.QtCore import Qt
+
 from glue.viewers.common.qt.data_viewer import DataViewer
-from glue.viewers.common.qt.mpl_widget import MplWidget
+from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.common.viz_client import init_mpl, update_appearance_from_settings
 from glue.external.echo import add_callback
 from glue.utils import nonpartial, defer_draw
 from glue.utils.decorators import avoid_circular
-from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
-from glue.viewers.common.mpl_state import MatplotlibDataViewerState
+from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
+from glue.viewers.matplotlib.state import MatplotlibDataViewerState
 from glue.core import message as msg
 from glue.core import Data
 from glue.core.exceptions import IncompatibleDataException
+from glue.core.state import lookup_class_with_patches
 
 __all__ = ['MatplotlibDataViewer']
 
@@ -20,7 +23,9 @@ class MatplotlibDataViewer(DataViewer):
     _toolbar_cls = MatplotlibViewerToolbar
     _state_cls = MatplotlibDataViewerState
 
-    def __init__(self, session, parent=None):
+    allow_duplicate_data = False
+
+    def __init__(self, session, parent=None, wcs=None):
 
         super(MatplotlibDataViewer, self).__init__(session, parent)
 
@@ -31,7 +36,7 @@ class MatplotlibDataViewer(DataViewer):
         # TODO: shouldn't have to do this
         self.central_widget = self.mpl_widget
 
-        self.figure, self._axes = init_mpl(self.mpl_widget.canvas.fig)
+        self.figure, self._axes = init_mpl(self.mpl_widget.canvas.fig, wcs=wcs)
 
         # Set up the state which will contain everything needed to represent
         # the current state of the viewer
@@ -66,6 +71,11 @@ class MatplotlibDataViewer(DataViewer):
         # And vice-versa when layer states are removed from the viewer state, we
         # need to keep the layer_artist_container in sync
         self.state.add_callback('layers', nonpartial(self._sync_layer_artist_container))
+
+        self.central_widget.resize(600, 400)
+        self.resize(self.central_widget.size())
+        self.statusBar().setSizeGripEnabled(False)
+        self.setFocusPolicy(Qt.StrongFocus)
 
     def _sync_state_layers(self):
         # Remove layer state objects that no longer have a matching layer
@@ -106,7 +116,7 @@ class MatplotlibDataViewer(DataViewer):
     @defer_draw
     def add_data(self, data):
 
-        if data in self._layer_artist_container:
+        if not self.allow_duplicate_data and data in self._layer_artist_container:
             return True
 
         if data not in self.session.data_collection:
@@ -114,6 +124,10 @@ class MatplotlibDataViewer(DataViewer):
 
         # Create layer artist and add to container
         layer = self._data_artist_cls(self._axes, self.state, layer=data)
+
+        if layer is None:
+            return False
+
         self._layer_artist_container.append(layer)
         layer.update()
 
@@ -121,11 +135,12 @@ class MatplotlibDataViewer(DataViewer):
         for subset in data.subsets:
             self.add_subset(subset)
 
+        self.axes.figure.canvas.draw()
+
         return True
 
     @defer_draw
     def remove_data(self, data):
-
         for layer_artist in self.state.layers[::-1]:
             if isinstance(layer_artist.layer, Data):
                 if layer_artist.layer is data:
@@ -133,6 +148,7 @@ class MatplotlibDataViewer(DataViewer):
             else:
                 if layer_artist.layer.data is data:
                     self.state.layers.remove(layer_artist)
+        self.axes.figure.canvas.draw()
 
     @defer_draw
     def add_subset(self, subset):
@@ -147,6 +163,8 @@ class MatplotlibDataViewer(DataViewer):
         layer = self._subset_artist_cls(self._axes, self.state, layer=subset)
         self._layer_artist_container.append(layer)
         layer.update()
+
+        self.axes.figure.canvas.draw()
 
         return True
 
@@ -219,3 +237,40 @@ class MatplotlibDataViewer(DataViewer):
     def unregister(self, hub):
         super(MatplotlibDataViewer, self).unregister(hub)
         hub.unsubscribe_all(self)
+
+    def __gluestate__(self, context):
+        return dict(state=self.state.__gluestate__(context),
+                    session=context.id(self._session),
+                    size=self.viewer_size,
+                    pos=self.position,
+                    layers=list(map(context.do, self.layers)),
+                    _protocol=1)
+
+    def update_viewer_state(rec, context):
+        pass
+
+    @classmethod
+    @defer_draw
+    def __setgluestate__(cls, rec, context):
+
+        if rec.get('_protocol', 0) < 1:
+            cls.update_viewer_state(rec, context)
+
+        session = context.object(rec['session'])
+        viewer = cls(session)
+        viewer.register_to_hub(session.hub)
+        viewer.viewer_size = rec['size']
+        x, y = rec['pos']
+        viewer.move(x=x, y=y)
+
+        viewer_state = cls._state_cls.__setgluestate__(rec['state'], context)
+        viewer.state.update_from_state(viewer_state)
+
+        # Restore layer artists
+        for l in rec['layers']:
+            cls = lookup_class_with_patches(l.pop('_type'))
+            layer_state = context.object(l['state'])
+            layer_artist = cls(viewer.axes, viewer.state, layer_state=layer_state)
+            viewer._layer_artist_container.append(layer_artist)
+
+        return viewer

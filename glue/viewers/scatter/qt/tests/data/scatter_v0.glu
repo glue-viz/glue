@@ -1,0 +1,449 @@
+{
+  "Component": {
+    "_type": "glue.core.component.Component",
+    "data": {
+      "_type": "numpy.ndarray",
+      "data": "k05VTVBZAQBGAHsnZGVzY3InOiAnPGY4JywgJ2ZvcnRyYW5fb3JkZXInOiBGYWxzZSwgJ3NoYXBlJzogKDMsKSwgfSAgICAgICAgICAgIAoAAAAAAADwP5qZmZmZmck/AAAAAAAA8L8="
+    },
+    "units": ""
+  },
+  "Component_0": {
+    "_type": "glue.core.component.Component",
+    "data": {
+      "_type": "numpy.ndarray",
+      "data": "k05VTVBZAQBGAHsnZGVzY3InOiAnPGk4JywgJ2ZvcnRyYW5fb3JkZXInOiBGYWxzZSwgJ3NoYXBlJzogKDMsKSwgfSAgICAgICAgICAgIAoDAAAAAAAAAAIAAAAAAAAAAgAAAAAAAAA="
+    },
+    "units": ""
+  },
+  "Component_1": {
+    "_type": "glue.core.component.Component",
+    "data": {
+      "_type": "numpy.ndarray",
+      "data": "k05VTVBZAQBGAHsnZGVzY3InOiAnPGY4JywgJ2ZvcnRyYW5fb3JkZXInOiBGYWxzZSwgJ3NoYXBlJzogKDMsKSwgfSAgICAgICAgICAgIAoAAAAAAAAQQJqZmZmZmdk/AAAAAAAAFEA="
+    },
+    "units": ""
+  },
+  "CoordinateComponent": {
+    "_type": "glue.core.component.CoordinateComponent",
+    "axis": 0,
+    "world": false
+  },
+  "CoordinateComponentLink": {
+    "_type": "glue.core.component_link.CoordinateComponentLink",
+    "coords": "Coordinates",
+    "frm": [
+      "World 0"
+    ],
+    "index": 0,
+    "pix2world": false,
+    "to": [
+      "Pixel Axis 0 [x]"
+    ]
+  },
+  "CoordinateComponentLink_0": {
+    "_type": "glue.core.component_link.CoordinateComponentLink",
+    "coords": "Coordinates",
+    "frm": [
+      "Pixel Axis 0 [x]"
+    ],
+    "index": 0,
+    "pix2world": true,
+    "to": [
+      "World 0"
+    ]
+  },
+  "CoordinateComponent_0": {
+    "_type": "glue.core.component.CoordinateComponent",
+    "axis": 0,
+    "world": true
+  },
+  "Coordinates": {
+    "_type": "glue.core.coordinates.Coordinates"
+  },
+  "DataCollection": {
+    "_protocol": 3,
+    "_type": "glue.core.data_collection.DataCollection",
+    "cids": [
+      "a",
+      "Pixel Axis 0 [x]",
+      "World 0",
+      "b",
+      "c"
+    ],
+    "components": [
+      "Component",
+      "CoordinateComponent",
+      "CoordinateComponent_0",
+      "Component_0",
+      "Component_1"
+    ],
+    "data": [
+      "basic"
+    ],
+    "groups": [
+      "Subset 1_0",
+      "Subset 2_0"
+    ],
+    "links": [
+      "CoordinateComponentLink",
+      "CoordinateComponentLink_0"
+    ],
+    "subset_group_count": 2
+  },
+  "Pixel Axis 0 [x]": {
+    "_type": "glue.core.component_id.PixelComponentID",
+    "axis": 0,
+    "hidden": true,
+    "label": "Pixel Axis 0 [x]"
+  },
+  "PolygonalROI": {
+    "_type": "glue.core.roi.PolygonalROI",
+    "vx": [
+      0.010048309178743997,
+      0.22106280193236705,
+      0.22106280193236705,
+      0.010048309178743997,
+      0.010048309178743997
+    ],
+    "vy": [
+      1.9849289099526066,
+      1.9849289099526066,
+      2.167298578199052,
+      2.167298578199052,
+      1.9849289099526066
+    ]
+  },
+  "PolygonalROI_0": {
+    "_type": "glue.core.roi.PolygonalROI",
+    "vx": [
+      -1.04,
+      0.4521739130434783,
+      0.4521739130434783,
+      -1.04,
+      -1.04
+    ],
+    "vy": [
+      1.9997156398104265,
+      1.9997156398104265,
+      2.2806635071090047,
+      2.2806635071090047,
+      1.9997156398104265
+    ]
+  },
+  "RoiSubsetState": {
+    "_type": "glue.core.subset.RoiSubsetState",
+    "roi": "PolygonalROI",
+    "xatt": "a",
+    "yatt": "b"
+  },
+  "RoiSubsetState_0": {
+    "_type": "glue.core.subset.RoiSubsetState",
+    "roi": "PolygonalROI_0",
+    "xatt": "a",
+    "yatt": "b"
+  },
+  "ScatterWidget": {
+    "_type": "glue.viewers.scatter.qt.viewer_widget.ScatterWidget",
+    "layers": [
+      {
+        "_type": "glue.viewers.scatter.layer_artist.ScatterLayerArtist",
+        "layer": "basic",
+        "visible": true,
+        "xatt": "a",
+        "yatt": "b",
+        "zorder": 1
+      },
+      {
+        "_type": "glue.viewers.scatter.layer_artist.ScatterLayerArtist",
+        "layer": "Subset 1",
+        "visible": true,
+        "xatt": "a",
+        "yatt": "b",
+        "zorder": 2
+      },
+      {
+        "_type": "glue.viewers.scatter.layer_artist.ScatterLayerArtist",
+        "layer": "Subset 2",
+        "visible": true,
+        "xatt": "a",
+        "yatt": "b",
+        "zorder": 3
+      }
+    ],
+    "pos": [
+      0,
+      0
+    ],
+    "properties": {
+      "hidden": false,
+      "xatt": "a",
+      "xflip": false,
+      "xlog": false,
+      "xmax": 1.04,
+      "xmin": -1.04,
+      "yatt": "b",
+      "yflip": false,
+      "ylog": false,
+      "ymax": 3.02,
+      "ymin": 1.98
+    },
+    "session": "Session",
+    "size": [
+      600,
+      400
+    ]
+  },
+  "ScatterWidget_0": {
+    "_type": "glue.viewers.scatter.qt.viewer_widget.ScatterWidget",
+    "layers": [
+      {
+        "_type": "glue.viewers.scatter.layer_artist.ScatterLayerArtist",
+        "layer": "basic",
+        "visible": true,
+        "xatt": "a",
+        "yatt": "c",
+        "zorder": 1
+      },
+      {
+        "_type": "glue.viewers.scatter.layer_artist.ScatterLayerArtist",
+        "layer": "Subset 1",
+        "visible": false,
+        "xatt": "a",
+        "yatt": "c",
+        "zorder": 2
+      },
+      {
+        "_type": "glue.viewers.scatter.layer_artist.ScatterLayerArtist",
+        "layer": "Subset 2",
+        "visible": true,
+        "xatt": "a",
+        "yatt": "c",
+        "zorder": 3
+      }
+    ],
+    "pos": [
+      600,
+      0
+    ],
+    "properties": {
+      "hidden": false,
+      "xatt": "a",
+      "xflip": false,
+      "xlog": true,
+      "xmax": 1.05,
+      "xmin": 9.5e-06,
+      "yatt": "c",
+      "yflip": false,
+      "ylog": true,
+      "ymax": 5.25,
+      "ymin": 0.38
+    },
+    "session": "Session",
+    "size": [
+      600,
+      400
+    ]
+  },
+  "ScatterWidget_1": {
+    "_type": "glue.viewers.scatter.qt.viewer_widget.ScatterWidget",
+    "layers": [
+      {
+        "_type": "glue.viewers.scatter.layer_artist.ScatterLayerArtist",
+        "layer": "basic",
+        "visible": true,
+        "xatt": "b",
+        "yatt": "a",
+        "zorder": 1
+      },
+      {
+        "_type": "glue.viewers.scatter.layer_artist.ScatterLayerArtist",
+        "layer": "Subset 1",
+        "visible": true,
+        "xatt": "b",
+        "yatt": "a",
+        "zorder": 2
+      },
+      {
+        "_type": "glue.viewers.scatter.layer_artist.ScatterLayerArtist",
+        "layer": "Subset 2",
+        "visible": false,
+        "xatt": "b",
+        "yatt": "a",
+        "zorder": 3
+      }
+    ],
+    "pos": [
+      0,
+      400
+    ],
+    "properties": {
+      "hidden": false,
+      "xatt": "b",
+      "xflip": false,
+      "xlog": false,
+      "xmax": 5.0,
+      "xmin": 0.0,
+      "yatt": "a",
+      "yflip": true,
+      "ylog": false,
+      "ymax": 5.0,
+      "ymin": -5.0
+    },
+    "session": "Session",
+    "size": [
+      600,
+      400
+    ]
+  },
+  "Session": {
+    "_type": "glue.core.session.Session"
+  },
+  "Subset 1": {
+    "_type": "glue.core.subset_group.GroupedSubset",
+    "group": "Subset 1_0",
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes",
+      "alpha": 0.5,
+      "color": "#e31a1c",
+      "linestyle": "solid",
+      "linewidth": 1,
+      "marker": "o",
+      "markersize": 7
+    }
+  },
+  "Subset 1_0": {
+    "_type": "glue.core.subset_group.SubsetGroup",
+    "label": "Subset 1",
+    "state": "RoiSubsetState",
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes",
+      "alpha": 0.5,
+      "color": "#e31a1c",
+      "linestyle": "solid",
+      "linewidth": 1,
+      "marker": "o",
+      "markersize": 7
+    },
+    "subsets": [
+      "Subset 1"
+    ]
+  },
+  "Subset 2": {
+    "_type": "glue.core.subset_group.GroupedSubset",
+    "group": "Subset 2_0",
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes",
+      "alpha": 0.5,
+      "color": "#33a02c",
+      "linestyle": "solid",
+      "linewidth": 1,
+      "marker": "o",
+      "markersize": 7
+    }
+  },
+  "Subset 2_0": {
+    "_type": "glue.core.subset_group.SubsetGroup",
+    "label": "Subset 2",
+    "state": "RoiSubsetState_0",
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes",
+      "alpha": 0.5,
+      "color": "#33a02c",
+      "linestyle": "solid",
+      "linewidth": 1,
+      "marker": "o",
+      "markersize": 7
+    },
+    "subsets": [
+      "Subset 2"
+    ]
+  },
+  "World 0": {
+    "_type": "glue.core.component_id.ComponentID",
+    "hidden": true,
+    "label": "World 0"
+  },
+  "__main__": {
+    "_type": "glue.app.qt.application.GlueApplication",
+    "data": "DataCollection",
+    "plugins": [
+      "glue.viewers.scatter"
+    ],
+    "session": "Session",
+    "tab_names": [
+      "Tab 1"
+    ],
+    "viewers": [
+      [
+        "ScatterWidget",
+        "ScatterWidget_0",
+        "ScatterWidget_1"
+      ]
+    ]
+  },
+  "a": {
+    "_type": "glue.core.component_id.ComponentID",
+    "hidden": false,
+    "label": "a"
+  },
+  "b": {
+    "_type": "glue.core.component_id.ComponentID",
+    "hidden": false,
+    "label": "b"
+  },
+  "basic": {
+    "_key_joins": [],
+    "_protocol": 5,
+    "_type": "glue.core.data.Data",
+    "components": [
+      [
+        "a",
+        "Component"
+      ],
+      [
+        "Pixel Axis 0 [x]",
+        "CoordinateComponent"
+      ],
+      [
+        "World 0",
+        "CoordinateComponent_0"
+      ],
+      [
+        "b",
+        "Component_0"
+      ],
+      [
+        "c",
+        "Component_1"
+      ]
+    ],
+    "coords": "Coordinates",
+    "label": "basic",
+    "primary_owner": [
+      "a",
+      "Pixel Axis 0 [x]",
+      "World 0",
+      "b",
+      "c"
+    ],
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes",
+      "alpha": 0.8,
+      "color": "0.35",
+      "linestyle": "solid",
+      "linewidth": 1,
+      "marker": "o",
+      "markersize": 3
+    },
+    "subsets": [
+      "Subset 1",
+      "Subset 2"
+    ],
+    "uuid": "dde080dc-a65a-4988-bed9-c0cb90ff91a8"
+  },
+  "c": {
+    "_type": "glue.core.component_id.ComponentID",
+    "hidden": false,
+    "label": "c"
+  }
+}

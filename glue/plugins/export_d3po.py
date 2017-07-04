@@ -59,7 +59,7 @@ def save_scatter(plot, index):
     """ Convert a single glue scatter plot to a D3PO plot
 
     :param plot: Glue scatter plot
-    :class:`~glue.viewers.scatter.qt.ScatterWidget`
+    :class:`~glue.viewers.scatter.qt.ScatterViewer`
     :param index: 1D index of plot on the page
     :type index: int
 
@@ -303,10 +303,10 @@ initialize('states.json', 'data.csv');
 """
 
 try:
-    from glue.viewers.scatter.qt import ScatterWidget
+    from glue.viewers.scatter.qt import ScatterViewer
     from glue.viewers.histogram.qt import HistogramViewer
 except ImportError:
     pass
 else:
-    DISPATCH[ScatterWidget] = save_scatter
+    DISPATCH[ScatterViewer] = save_scatter
     DISPATCH[HistogramViewer] = save_histogram

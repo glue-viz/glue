@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from glue.external.echo import keep_in_sync
 from glue.core.layer_artist import LayerArtistBase
-from glue.viewers.common.mpl_state import DeferredDrawCallbackProperty
+from glue.viewers.matplotlib.state import DeferredDrawCallbackProperty
 
 # TODO: should use the built-in class for this, though we don't need
 #       the _sync_style method, so just re-define here for now.
@@ -34,8 +34,8 @@ class MatplotlibLayerArtist(LayerArtistBase):
         self.zorder = self.state.zorder
         self.visible = self.state.visible
 
-        keep_in_sync(self, 'zorder', self.state, 'zorder')
-        keep_in_sync(self, 'visible', self.state, 'visible')
+        self._sync_zorder = keep_in_sync(self, 'zorder', self.state, 'zorder')
+        self._sync_visible = keep_in_sync(self, 'visible', self.state, 'visible')
 
     def clear(self):
         for artist in self.mpl_artists:

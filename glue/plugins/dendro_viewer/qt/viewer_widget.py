@@ -5,13 +5,13 @@ import os
 from qtpy import QtWidgets
 from glue import core
 from glue.plugins.dendro_viewer.client import DendroClient
-from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
+from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.viewers.common.qt.mouse_mode import PickMode
 from glue.utils.qt import load_ui
 from glue.utils.qt.widget_properties import (ButtonProperty, CurrentComboProperty,
                                        connect_bool_button, connect_current_combo)
 from glue.viewers.common.qt.data_viewer import DataViewer
-from glue.viewers.common.qt.mpl_widget import MplWidget, defer_draw
+from glue.viewers.matplotlib.qt.widget import MplWidget, defer_draw
 from glue.utils import nonpartial
 
 

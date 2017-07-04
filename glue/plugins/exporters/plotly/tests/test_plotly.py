@@ -9,7 +9,7 @@ from glue.core import Data, DataCollection
 pytest.importorskip('qtpy')
 
 from glue.app.qt import GlueApplication
-from glue.viewers.scatter.qt import ScatterWidget
+from glue.viewers.scatter.qt import ScatterViewer
 from glue.viewers.histogram.qt import HistogramViewer
 
 from ..export_plotly import build_plotly_call
@@ -29,9 +29,9 @@ class TestPlotly(object):
         d.style.markersize = 6
         d.style.color = '#ff0000'
         d.style.alpha = .4
-        v = app.new_data_viewer(ScatterWidget, data=d)
-        v.xatt = d.id['y']
-        v.yatt = d.id['x']
+        v = app.new_data_viewer(ScatterViewer, data=d)
+        v.state.x_att = d.id['y']
+        v.state.y_att = d.id['x']
 
         args, kwargs = build_plotly_call(app)
         data = args[0]['data'][0]
@@ -55,9 +55,9 @@ class TestPlotly(object):
         s.subset_state = d.id['x'] > 1
         s.style.marker = 's'
 
-        v = app.new_data_viewer(ScatterWidget, data=d)
-        v.xatt = d.id['x']
-        v.yatt = d.id['x']
+        v = app.new_data_viewer(ScatterViewer, data=d)
+        v.state.x_att = d.id['x']
+        v.state.y_att = d.id['x']
 
         args, kwargs = build_plotly_call(app)
         data = args[0]['data']
@@ -71,17 +71,17 @@ class TestPlotly(object):
 
         app = self.app
 
-        v = app.new_data_viewer(ScatterWidget, data=self.data)
+        v = app.new_data_viewer(ScatterViewer, data=self.data)
 
-        v.xlog = True
-        v.xmin = 10
-        v.xmax = 100
-        v.xatt = self.data.id['x']
+        v.state.x_log = True
+        v.state.x_min = 10
+        v.state.x_max = 100
+        v.state.x_att = self.data.id['x']
 
-        v.ylog = False
-        v.ymin = 2
-        v.ymax = 4
-        v.yatt = self.data.id['y']
+        v.state.y_log = False
+        v.state.y_min = 2
+        v.state.y_max = 4
+        v.state.y_att = self.data.id['y']
 
         args, kwargs = build_plotly_call(app)
 
@@ -101,9 +101,9 @@ class TestPlotly(object):
         d.style.color = '#000000'
         v = app.new_data_viewer(HistogramViewer, data=d)
         v.component = d.id['y']
-        v.xmin = 0
-        v.xmax = 10
-        v.bins = 20
+        v.state.hist_x_min = 0
+        v.state.hist_x_max = 10
+        v.state.hist_n_bin = 20
 
         args, kwargs = build_plotly_call(app)
 

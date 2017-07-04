@@ -5,7 +5,7 @@ import numpy as np
 from glue.utils import defer_draw
 
 from glue.viewers.histogram.state import HistogramLayerState
-from glue.viewers.common.mpl_layer_artist import MatplotlibLayerArtist
+from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 
 

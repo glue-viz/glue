@@ -88,11 +88,11 @@ from glue import core
 
 from glue.viewers.common.viz_client import GenericMplClient
 
-from glue.viewers.common.qt.mpl_widget import MplWidget
+from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.utils.qt.widget_properties import (ValueProperty, ButtonProperty,
                                              CurrentComboProperty)
-from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
+from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.viewers.common.qt.mouse_mode import PolyMode, RectangleMode
 
 __all__ = ["AttributeInfo", "ViewerState", "UserDefinedFunction",

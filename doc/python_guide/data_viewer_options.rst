@@ -9,7 +9,7 @@ For example::
 
     from glue.core import Data, DataCollection
     from glue.app.qt.application import GlueApplication
-    from glue.viewers.scatter.qt import ScatterWidget
+    from glue.viewers.scatter.qt import ScatterViewer
     import numpy as np
 
     # create some data
@@ -20,7 +20,7 @@ For example::
     ga = GlueApplication(dc)
 
     # plot x vs y, flip the x axis, log-scale y axis
-    scatter = ga.new_data_viewer(ScatterWidget)
+    scatter = ga.new_data_viewer(ScatterViewer)
     scatter.add_data(d)
     scatter.xatt = d.id['x']
     scatter.yatt = d.id['y']
@@ -36,34 +36,25 @@ Plot Options
 
 Here are the settings associated with each data viewer:
 
-.. currentmodule:: glue.viewers.scatter.qt.viewer_widget
+Scatter Viewer
+--------------
 
-:class:`Scatter Plots <ScatterWidget>`
---------------------------------------
+The :class:`~glue.viewers.scatter.qt.data_viewer.ScatterViewer` class has a
+``state`` attribute which is an instance of
+:class:`~glue.viewers.scatter.state.ScatterViewerState`. To modify any settings
+in the viewer, set the appropriate attributes on ``state``, for example
+``state.x_min``. See :class:`~glue.viewers.scatter.state.ScatterViewerState`
+to find out the full list of available attributes.
 
-.. autosummary::
-    ~ScatterWidget.xlog
-    ~ScatterWidget.ylog
-    ~ScatterWidget.xflip
-    ~ScatterWidget.yflip
-    ~ScatterWidget.xmin
-    ~ScatterWidget.xmax
-    ~ScatterWidget.ymin
-    ~ScatterWidget.ymax
-    ~ScatterWidget.hidden
-    ~ScatterWidget.xatt
-    ~ScatterWidget.yatt
+Image Viewer
+------------
 
-.. currentmodule:: glue.viewers.image.qt.viewer_widget
-
-:class:`Image Viewer <ImageWidget>`
-------------------------------------
-
-.. autosummary::
-    ~ImageWidget.data
-    ~ImageWidget.attribute
-    ~ImageWidget.rgb_mode
-    ~ImageWidget.slice
+The :class:`~glue.viewers.image.qt.data_viewer.ImageViewer` class has a
+``state`` attribute which is an instance of
+:class:`~glue.viewers.image.state.ImageViewerState`. To modify any settings
+in the viewer, set the appropriate attributes on ``state``, for example
+``state.x_min``. See :class:`~glue.viewers.image.state.ImageViewerState`
+to find out the full list of available attributes.
 
 Histogram Viewer
 ----------------

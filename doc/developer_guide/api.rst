@@ -56,16 +56,24 @@ User Interface
 .. automodapi:: glue.viewers.common.qt.data_viewer
    :no-inheritance-diagram:
 
-.. automodapi:: glue.viewers.common.mpl_state
+.. automodapi:: glue.viewers.matplotlib.state
    :no-inheritance-diagram:
 
-.. automodapi:: glue.viewers.common.qt.mpl_data_viewer
+.. automodapi:: glue.viewers.matplotlib.qt.data_viewer
    :no-inheritance-diagram:
 
-.. automodapi:: glue.viewers.scatter.qt.viewer_widget
+.. automodapi:: glue.viewers.scatter.state
+   :no-inheritance-diagram:
+   :inherited-members:
+
+.. automodapi:: glue.viewers.scatter.qt.data_viewer
    :no-inheritance-diagram:
 
-.. automodapi:: glue.viewers.image.qt.viewer_widget
+.. automodapi:: glue.viewers.image.state
+   :no-inheritance-diagram:
+   :inherited-members:
+
+.. automodapi:: glue.viewers.image.qt.data_viewer
    :no-inheritance-diagram:
 
 .. automodapi:: glue.viewers.histogram.state
@@ -108,7 +116,7 @@ Viewers
    :no-inheritance-diagram:
    :inherited-members:
 
-.. automodapi:: glue.viewers.common.qt.mpl_toolbar
+.. automodapi:: glue.viewers.matplotlib.qt.toolbar
    :no-inheritance-diagram:
    :inherited-members:
 

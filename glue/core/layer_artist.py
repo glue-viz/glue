@@ -294,15 +294,8 @@ class LayerArtistContainer(object):
                 return True
         return False
 
-    def _check_duplicate(self, artist):
-        """Raise an error if this artist is a duplicate"""
-        if self._duplicate(artist):
-            raise ValueError("Already have an artist for this type "
-                             "and data")
-
     def append(self, artist):
         """Add a LayerArtist to this collection"""
-        self._check_duplicate(artist)
         self.artists.append(artist)
         artist.zorder = max(a.zorder for a in self.artists) + 1
         self._notify()

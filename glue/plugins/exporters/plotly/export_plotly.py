@@ -147,7 +147,7 @@ def export_scatter(viewer):
     """Export a scatter viewer to a list of
     plotly-formatted data dictionaries"""
     traces = []
-    xatt, yatt = viewer.xatt, viewer.yatt
+    xatt, yatt = viewer.state.x_att, viewer.state.y_att
     xcat = ycat = False
 
     for layer in viewer.layers:
@@ -171,10 +171,10 @@ def export_scatter(viewer):
 
         traces.append(trace)
 
-    xaxis = _axis(log=viewer.xlog, lo=viewer.xmin, hi=viewer.xmax,
-                  title=viewer.xatt.label, categorical=xcat)
-    yaxis = _axis(log=viewer.ylog, lo=viewer.ymin, hi=viewer.ymax,
-                  title=viewer.yatt.label, categorical=ycat)
+    xaxis = _axis(log=viewer.state.x_log, lo=viewer.state.x_min, hi=viewer.state.x_max,
+                  title=viewer.state.x_att.label, categorical=xcat)
+    yaxis = _axis(log=viewer.state.y_log, lo=viewer.state.y_min, hi=viewer.state.y_max,
+                  title=viewer.state.y_att.label, categorical=ycat)
 
     return traces, xaxis, yaxis
 
@@ -259,7 +259,7 @@ def can_save_plotly(application):
             if hasattr(viewer, '__plotly__'):
                 continue
 
-            if not isinstance(viewer, (ScatterWidget, HistogramViewer)):
+            if not isinstance(viewer, (ScatterViewer, HistogramViewer)):
                 raise ValueError("Plotly Export cannot handle viewer: %s"
                                  % type(viewer))
 
@@ -303,10 +303,10 @@ def save_plotly(application):
 DISPATCH = {}
 
 try:
-    from glue.viewers.scatter.qt import ScatterWidget
+    from glue.viewers.scatter.qt import ScatterViewer
     from glue.viewers.histogram.qt import HistogramViewer
 except ImportError:
     pass
 else:
-    DISPATCH[ScatterWidget] = export_scatter
+    DISPATCH[ScatterViewer] = export_scatter
     DISPATCH[HistogramViewer] = export_histogram

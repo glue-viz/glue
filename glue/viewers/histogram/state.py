@@ -4,7 +4,7 @@ import numpy as np
 
 from glue.core import Data
 
-from glue.viewers.common.mpl_state import (MatplotlibDataViewerState,
+from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
                                            DeferredDrawCallbackProperty)
 from glue.core.state_objects import (StateAttributeLimitsHelper,
@@ -37,7 +37,7 @@ class HistogramViewerState(MatplotlibDataViewerState):
     def update_priority(self, name):
         if name == 'layers':
             return 2
-        elif name.endswith(('_min', '_max', '_bin')):
+        elif name.endswith(('_min', '_max', '_bin', '_log')):
             return 0
         else:
             return 1

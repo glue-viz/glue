@@ -1,19 +1,19 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.utils import nonpartial
-from glue.viewers.common.qt.mpl_toolbar import MatplotlibViewerToolbar
+from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core import Data
 from glue.core.util import update_ticks
 from glue.core.roi import RangeROI
 from glue.utils import defer_draw
 
-from glue.viewers.common.qt.mpl_data_viewer import MatplotlibDataViewer
+from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.histogram.qt.layer_style_editor import HistogramLayerStyleEditor
 from glue.viewers.histogram.layer_artist import HistogramLayerArtist
 from glue.viewers.histogram.qt.options_widget import HistogramOptionsWidget
 from glue.viewers.histogram.state import HistogramViewerState
-from glue.viewers.histogram.compat import update_viewer_state
+from glue.viewers.histogram.compat import update_histogram_viewer_state
 
 from glue.core.state import lookup_class_with_patches
 
@@ -93,37 +93,6 @@ class HistogramViewer(MatplotlibDataViewer):
             mode = EditSubsetMode()
             mode.update(self._data, subset_state, focus_data=layer_artist.layer)
 
-    def __gluestate__(self, context):
-        return dict(state=self.state.__gluestate__(context),
-                    session=context.id(self._session),
-                    size=self.viewer_size,
-                    pos=self.position,
-                    layers=list(map(context.do, self.layers)),
-                    _protocol=1)
-
-    @classmethod
-    @defer_draw
-    def __setgluestate__(cls, rec, context):
-
-        if rec.get('_protocol', 0) < 1:
-            update_viewer_state(rec, context)
-
-        session = context.object(rec['session'])
-        viewer = cls(session)
-        viewer.register_to_hub(session.hub)
-        viewer.viewer_size = rec['size']
-        x, y = rec['pos']
-        viewer.move(x=x, y=y)
-
-        viewer_state = HistogramViewerState.__setgluestate__(rec['state'], context)
-
-        viewer.state.update_from_state(viewer_state)
-
-        # Restore layer artists
-        for l in rec['layers']:
-            cls = lookup_class_with_patches(l.pop('_type'))
-            layer_state = context.object(l['state'])
-            layer_artist = cls(viewer.axes, viewer.state, layer_state=layer_state)
-            viewer._layer_artist_container.append(layer_artist)
-
-        return viewer
+    @staticmethod
+    def update_viewer_state(rec, context):
+        return update_histogram_viewer_state(rec, context)
