@@ -2,10 +2,9 @@
 Programmatically configuring plots
 ==================================
 
-Plots in Glue are designed to be easily configured
-with Python. As much as possible, plot settings are
-controlled by simple properties on data viewer objects.
-For example::
+Plots in Glue are designed to be easily configured with Python. As much as
+possible, plot settings are controlled by simple properties on the ``state``
+attribute of data viewer objects. For example::
 
     from glue.core import Data, DataCollection
     from glue.app.qt.application import GlueApplication
@@ -22,10 +21,14 @@ For example::
     # plot x vs y, flip the x axis, log-scale y axis
     scatter = ga.new_data_viewer(ScatterViewer)
     scatter.add_data(d)
-    scatter.xatt = d.id['x']
-    scatter.yatt = d.id['y']
-    scatter.xflip = True
-    scatter.ylog = True
+
+    # Modify viewer-level options
+    scatter.state.x_att = d.id['x']
+    scatter.state.y_att = d.id['y']
+    scatter.state.y_log = True
+
+    # Modify settings for the (only) layer shown
+    scatter.state.layers[0].color = 'blue'
 
     # show the GUI
     ga.start()
@@ -34,37 +37,34 @@ For example::
 Plot Options
 ============
 
-Here are the settings associated with each data viewer:
+The ``state`` attribute for each viewer is an instance of a viewer state class.
+Each viewer state object then has a ``layers`` attribute that can be used to
+control individual layers in the plot (as shown above).
 
-Scatter Viewer
---------------
+The following table lists for each built-in viewer the classes defining the state
+for each viewer/layer type. By clicking on the name of the class, you will access
+a page from the API documentation which will list the available attributes.
 
-The :class:`~glue.viewers.scatter.qt.data_viewer.ScatterViewer` class has a
-``state`` attribute which is an instance of
-:class:`~glue.viewers.scatter.state.ScatterViewerState`. To modify any settings
-in the viewer, set the appropriate attributes on ``state``, for example
-``state.x_min``. See :class:`~glue.viewers.scatter.state.ScatterViewerState`
-to find out the full list of available attributes.
+=================== ========================= ======================= ========================
+Viewer              Viewer state              Data layer state        Subset layer state
+=================== ========================= ======================= ========================
+|scatter_viewer|    |scatter_viewer_state|    |scatter_layer_state|   |scatter_layer_state|
+|image_viewer|      |image_viewer_state|      |image_data_state|      |image_subset_state|
+|histogram_viewer|  |histogram_viewer_state|  |histogram_layer_state| |histogram_layer_state|
+=================== ========================= ======================= ========================
 
-Image Viewer
-------------
+.. |scatter_viewer| replace:: :class:`~glue.viewers.scatter.qt.data_viewer.ScatterViewer`
+.. |scatter_viewer_state| replace:: :class:`~glue.viewers.scatter.state.ScatterViewerState`
+.. |scatter_layer_state| replace:: :class:`~glue.viewers.scatter.state.ScatterLayerState`
 
-The :class:`~glue.viewers.image.qt.data_viewer.ImageViewer` class has a
-``state`` attribute which is an instance of
-:class:`~glue.viewers.image.state.ImageViewerState`. To modify any settings
-in the viewer, set the appropriate attributes on ``state``, for example
-``state.x_min``. See :class:`~glue.viewers.image.state.ImageViewerState`
-to find out the full list of available attributes.
+.. |image_viewer| replace:: :class:`~glue.viewers.image.qt.data_viewer.ImageViewer`
+.. |image_viewer_state| replace:: :class:`~glue.viewers.image.state.ImageViewerState`
+.. |image_data_state| replace:: :class:`~glue.viewers.image.state.ImageLayerState`
+.. |image_subset_state| replace:: :class:`~glue.viewers.image.state.ImageSubsetLayerState`
 
-Histogram Viewer
-----------------
-
-The :class:`~glue.viewers.histogram.qt.data_viewer.HistogramViewer` class has a
-``state`` attribute which is an instance of
-:class:`~glue.viewers.histogram.state.HistogramViewerState`. To modify any settings
-in the viewer, set the appropriate attributes on ``state``, for example
-``state.x_min``. See :class:`~glue.viewers.histogram.state.HistogramViewerState`
-to find out the full list of available attributes.
+.. |histogram_viewer| replace:: :class:`~glue.viewers.histogram.qt.data_viewer.HistogramViewer`
+.. |histogram_viewer_state| replace:: :class:`~glue.viewers.histogram.state.HistogramViewerState`
+.. |histogram_layer_state| replace:: :class:`~glue.viewers.histogram.state.HistogramLayerState`
 
 Customizing Plots with Matplotlib
 =================================
