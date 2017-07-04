@@ -34,7 +34,7 @@ class ContrastBiasMode(MouseMode):
         Update bias and contrast on Right Mouse button drag.
         """
 
-        if event.button != 3:  # RMB drag only
+        if event.button not in (1, 3):
             return
 
         x, y = event.x, event.y
