@@ -231,19 +231,19 @@ then set any settings appropriately in the application state. The following is
 an example of a custom preference pane::
 
     from glue.config import settings, preference_panes
-    from glue.external.qt import QtGui
+    from qtpy import QtWidgets
 
 
-    class MyPreferences(QtGui.QWidget):
+    class MyPreferences(QtWidgets.QWidget):
 
         def __init__(self, parent=None):
 
             super(MyPreferences, self).__init__(parent=parent)
 
-            self.layout = QtGui.QFormLayout()
+            self.layout = QtWidgets.QFormLayout()
 
-            self.option1 = QtGui.QLineEdit()
-            self.option2 = QtGui.QCheckBox()
+            self.option1 = QtWidgets.QLineEdit()
+            self.option2 = QtWidgets.QCheckBox()
 
             self.layout.addRow("Option 1", self.option1)
             self.layout.addRow("Option 2", self.option2)
