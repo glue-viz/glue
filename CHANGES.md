@@ -19,6 +19,11 @@ v0.11.0 (unreleased)
   both in terms of number of lines and in terms of the number of
   connections/callbacks that need to be set up manually. [#1278, #1289]
 
+v0.10.5 (unreleased)
+--------------------
+
+* Fix example of setting up a custom preferences pane. [#1326]
+
 v0.10.4 (2017-05-23)
 --------------------
 
