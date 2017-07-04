@@ -177,9 +177,9 @@ class HasCallbackProperties(object):
         self._callback_wrappers = {}
         for prop_name, prop in self.iter_callback_properties():
             if isinstance(prop, ListCallbackProperty):
-                prop.add_callback(self, self.notify_global_lists)
+                prop.add_callback(self, self._notify_global_lists)
 
-    def notify_global_lists(self, *args):
+    def _notify_global_lists(self, *args):
         from .list import ListCallbackProperty
         properties = {}
         for prop_name, prop in self.iter_callback_properties():
@@ -188,16 +188,16 @@ class HasCallbackProperties(object):
                 if callback_list is args[0]:
                     properties[prop_name] = callback_list
                     break
-        self.notify_global(**properties)
+        self._notify_global(**properties)
 
-    def notify_global(self, **kwargs):
+    def _notify_global(self, **kwargs):
         for callback in self._global_callbacks:
             callback(**kwargs)
 
     def __setattr__(self, attribute, value):
         super(HasCallbackProperties, self).__setattr__(attribute, value)
         if self.is_callback_property(attribute):
-            self.notify_global(**{attribute: value})
+            self._notify_global(**{attribute: value})
 
     def add_callback(self, name, callback, echo_old=False, priority=0):
         """
@@ -269,9 +269,20 @@ class HasCallbackProperties(object):
         self._global_callbacks.remove(callback)
 
     def is_callback_property(self, name):
+        """
+        Whether a property (identified by name) is a callback property.
+
+        Parameters
+        ----------
+        name : str
+            The name of the property to check
+        """
         return isinstance(getattr(type(self), name, None), CallbackProperty)
 
     def iter_callback_properties(self):
+        """
+        Iterator to loop over all callback properties.
+        """
         for name in dir(self):
             if self.is_callback_property(name):
                 yield name, getattr(type(self), name)
