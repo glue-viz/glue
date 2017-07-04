@@ -35,7 +35,7 @@ class ScatterViewerState(MatplotlibDataViewerState):
     def update_priority(self, name):
         if name == 'layers':
             return 2
-        elif name.endswith(('_min', '_max')):
+        elif name.endswith(('_min', '_max', '_log')):
             return 0
         else:
             return 1
