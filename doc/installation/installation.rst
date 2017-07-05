@@ -1,7 +1,7 @@
 .. _installation:
 
-Installing Glue
-===============
+Installing and running glue
+===========================
 
 Several installation methods for Glue are outlined in the sections below. If you
 run into issues, each page should provide relevant troubleshooting, and you can
@@ -18,15 +18,22 @@ If your problem is not described there, `open a new issue
    dependencies
    developer
 
-Running Glue
-------------
+Once glue is installed, you will be able to type::
 
-Installing glue from source will create a executable ``glue`` script
-that should be in your path. Running ``glue`` from the command line will
-start the program. Glue accepts a variety of command-line
-arguments. See ``glue --help`` for examples.
+    glue
 
-.. note:: On Windows, installation creates an executable ``glue.exe`` file
-          within the python script directory (e.g., ``C:\Python27\Scripts``).
-          Windows users can create a desktop shortcut for this file, and run
-          Glue by double clicking on the icon.
+in a terminal to start glue. Glue accepts a variety of command-line arguments.
+See ``glue --help`` for examples. If you used the Anaconda Navigator, you can
+also launch glue from the navigator, but be aware that errors may be hidden, so
+if you have any issues, try running glue from the command-line.
+
+You can also start glue with the ``-v`` option::
+
+    glue -v
+
+to get more verbose output, which may help diagnose issues.
+
+On Windows, installation creates an executable ``glue.exe`` file within the
+python script directory (e.g., ``C:\Python27\Scripts``). Windows users can
+create a desktop shortcut for this file, and run Glue by double clicking on the
+icon.
