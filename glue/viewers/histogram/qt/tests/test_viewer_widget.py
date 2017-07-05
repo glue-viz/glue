@@ -413,7 +413,7 @@ class TestHistogramViewer(object):
         self.viewer.state.x_att = self.data.id['z']
         assert self.viewer.state.hist_n_bin == 7
 
-    @pytest.mark.parametrize('protocol', [0])
+    @pytest.mark.parametrize('protocol', [0, 1])
     def test_session_back_compat(self, protocol):
 
         filename = os.path.join(DATA, 'histogram_v{0}.glu'.format(protocol))

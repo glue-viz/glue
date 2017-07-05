@@ -28,6 +28,13 @@ from glue.viewers.image.contrast_mouse_mode import ContrastBiasMode  # noqa
 
 __all__ = ['ImageViewer']
 
+IDENTITY_WCS = WCS(naxis=2)
+IDENTITY_WCS.wcs.ctype = ["X", "Y"]
+IDENTITY_WCS.wcs.crval = [0., 0.]
+IDENTITY_WCS.wcs.crpix = [1., 1.]
+IDENTITY_WCS.wcs.cdelt = [1., 1.]
+
+
 
 class ImageViewer(MatplotlibDataViewer):
 
@@ -84,6 +91,8 @@ class ImageViewer(MatplotlibDataViewer):
         ref_coords = self.state.reference_data.coords
         if isinstance(ref_coords, WCSCoordinates):
             self.axes.reset_wcs(ref_coords.wcs, slices=self.state.wcsaxes_slice)
+        else:
+            self.axes.reset_wcs(IDENTITY_WCS)
         self._update_axes()
         self._set_aspect()
 

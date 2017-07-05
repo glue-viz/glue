@@ -255,7 +255,7 @@ class TestImageViewer(object):
 
 class TestSessions(object):
 
-    @pytest.mark.parametrize('protocol', [0])
+    @pytest.mark.parametrize('protocol', [0, 1])
     def test_session_back_compat(self, protocol):
 
         filename = os.path.join(DATA, 'image_v{0}.glu'.format(protocol))
@@ -281,10 +281,16 @@ class TestSessions(object):
         assert viewer1.state.x_att_world is dc[0].id['World 1']
         assert viewer1.state.y_att_world is dc[0].id['World 0']
 
-        assert viewer1.state.x_min < 0.
-        assert viewer1.state.x_max > 2.
-        assert_allclose(viewer1.state.y_min, 0)
-        assert_allclose(viewer1.state.y_max, 2)
+        if protocol == 0:
+            assert viewer1.state.x_min < 0.
+            assert viewer1.state.x_max > 1.5
+            assert_allclose(viewer1.state.y_min, 0)
+            assert_allclose(viewer1.state.y_max, 2)
+        else:
+            assert_allclose(viewer1.state.x_min, -0.936)
+            assert_allclose(viewer1.state.x_max, +1.937)
+            assert_allclose(viewer1.state.y_min, -0.6121290)
+            assert_allclose(viewer1.state.y_max, +1.6121290)
 
         layer_state = viewer1.state.layers[0]
         assert isinstance(layer_state, ImageLayerState)
@@ -309,10 +315,17 @@ class TestSessions(object):
         assert viewer2.state.x_att_world is dc[0].id['World 1']
         assert viewer2.state.y_att_world is dc[0].id['World 0']
 
-        assert viewer2.state.x_min < 0.
-        assert viewer2.state.x_max > 2.
-        assert_allclose(viewer2.state.y_min, 0)
-        assert_allclose(viewer2.state.y_max, 2)
+        if protocol == 0:
+            assert viewer2.state.x_min < 0.
+            assert viewer2.state.x_max > 1.5
+            assert_allclose(viewer2.state.y_min, 0)
+            assert_allclose(viewer2.state.y_max, 2)
+        else:
+            assert_allclose(viewer1.state.x_min, -0.936)
+            assert_allclose(viewer1.state.x_max, +1.937)
+            assert_allclose(viewer1.state.y_min, -0.6121290)
+            assert_allclose(viewer1.state.y_max, +1.6121290)
+
 
         layer_state = viewer2.state.layers[0]
         assert layer_state.visible
@@ -330,10 +343,16 @@ class TestSessions(object):
         assert viewer3.state.x_att_world is dc[0].id['World 1']
         assert viewer3.state.y_att_world is dc[0].id['World 0']
 
-        assert viewer3.state.x_min < 0.
-        assert viewer3.state.x_max > 2.
-        assert_allclose(viewer3.state.y_min, 0)
-        assert_allclose(viewer3.state.y_max, 2)
+        if protocol == 0:
+            assert viewer3.state.x_min < 0.0
+            assert viewer3.state.x_max > 1.5
+            assert_allclose(viewer3.state.y_min, 0)
+            assert_allclose(viewer3.state.y_max, 2)
+        else:
+            assert_allclose(viewer1.state.x_min, -0.936)
+            assert_allclose(viewer1.state.x_max, +1.937)
+            assert_allclose(viewer1.state.y_min, -0.6121290)
+            assert_allclose(viewer1.state.y_max, +1.6121290)
 
         layer_state = viewer3.state.layers[0]
         assert layer_state.visible
@@ -344,7 +363,7 @@ class TestSessions(object):
         layer_state = viewer3.state.layers[1]
         assert layer_state.visible
 
-    @pytest.mark.parametrize('protocol', [0])
+    @pytest.mark.parametrize('protocol', [0, 1])
     def test_session_cube_back_compat(self, protocol):
 
         filename = os.path.join(DATA, 'image_cube_v{0}.glu'.format(protocol))
@@ -370,7 +389,7 @@ class TestSessions(object):
         assert viewer1.state.y_att_world is dc[0].id['World 1']
         assert viewer1.state.slices == [2, 0, 0, 1]
 
-    @pytest.mark.parametrize('protocol', [0])
+    @pytest.mark.parametrize('protocol', [0, 1])
     def test_session_rgb_back_compat(self, protocol):
 
         filename = os.path.join(DATA, 'image_rgb_v{0}.glu'.format(protocol))

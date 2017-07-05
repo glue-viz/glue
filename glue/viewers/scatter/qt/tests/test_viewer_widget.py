@@ -220,7 +220,7 @@ class TestScatterViewer(object):
         assert self.viewer.state.x_att is test
         assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'test:y:z'
 
-    @pytest.mark.parametrize('protocol', [0])
+    @pytest.mark.parametrize('protocol', [0, 1])
     def test_session_back_compat(self, protocol):
 
         filename = os.path.join(DATA, 'scatter_v{0}.glu'.format(protocol))

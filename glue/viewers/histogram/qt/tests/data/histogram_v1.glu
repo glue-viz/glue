@@ -1,0 +1,516 @@
+{
+  "CallbackList": {
+    "_type": "glue.external.echo.list.CallbackList",
+    "values": [
+      "HistogramLayerState",
+      "HistogramLayerState_0"
+    ]
+  },
+  "CallbackList_0": {
+    "_type": "glue.external.echo.list.CallbackList",
+    "values": [
+      "HistogramLayerState_1",
+      "HistogramLayerState_2"
+    ]
+  },
+  "CallbackList_1": {
+    "_type": "glue.external.echo.list.CallbackList",
+    "values": [
+      "HistogramLayerState_3",
+      "HistogramLayerState_4"
+    ]
+  },
+  "CallbackList_2": {
+    "_type": "glue.external.echo.list.CallbackList",
+    "values": [
+      "HistogramLayerState_5",
+      "HistogramLayerState_6"
+    ]
+  },
+  "Component": {
+    "_type": "glue.core.component.Component",
+    "data": {
+      "_type": "numpy.ndarray",
+      "data": "k05VTVBZAQBGAHsnZGVzY3InOiAnPGk4JywgJ2ZvcnRyYW5fb3JkZXInOiBGYWxzZSwgJ3NoYXBlJzogKDEwLCksIH0gICAgICAgICAgIAoAAAAAAAAAAAEAAAAAAAAAAgAAAAAAAAADAAAAAAAAAAQAAAAAAAAABQAAAAAAAAAGAAAAAAAAAAcAAAAAAAAACAAAAAAAAAAJAAAAAAAAAA=="
+    },
+    "units": ""
+  },
+  "Component_0": {
+    "_type": "glue.core.component.Component",
+    "data": {
+      "_type": "numpy.ndarray",
+      "data": "k05VTVBZAQBGAHsnZGVzY3InOiAnPGk4JywgJ2ZvcnRyYW5fb3JkZXInOiBGYWxzZSwgJ3NoYXBlJzogKDEwLCksIH0gICAgICAgICAgIAoAAAAAAAAAAAIAAAAAAAAABAAAAAAAAAAGAAAAAAAAAAgAAAAAAAAACgAAAAAAAAAMAAAAAAAAAA4AAAAAAAAAEAAAAAAAAAASAAAAAAAAAA=="
+    },
+    "units": ""
+  },
+  "CoordinateComponent": {
+    "_type": "glue.core.component.CoordinateComponent",
+    "axis": 0,
+    "world": false
+  },
+  "CoordinateComponentLink": {
+    "_type": "glue.core.component_link.CoordinateComponentLink",
+    "coords": "Coordinates",
+    "frm": [
+      "Pixel Axis 0 [x]"
+    ],
+    "index": 0,
+    "pix2world": true,
+    "to": [
+      "World 0"
+    ]
+  },
+  "CoordinateComponentLink_0": {
+    "_type": "glue.core.component_link.CoordinateComponentLink",
+    "coords": "Coordinates",
+    "frm": [
+      "World 0"
+    ],
+    "index": 0,
+    "pix2world": false,
+    "to": [
+      "Pixel Axis 0 [x]"
+    ]
+  },
+  "CoordinateComponentLink_1": {
+    "_type": "glue.core.component_link.CoordinateComponentLink",
+    "coords": "Coordinates",
+    "frm": [
+      "World 0"
+    ],
+    "index": 0,
+    "pix2world": false,
+    "to": [
+      "Pixel Axis 0 [x]"
+    ]
+  },
+  "CoordinateComponentLink_2": {
+    "_type": "glue.core.component_link.CoordinateComponentLink",
+    "coords": "Coordinates",
+    "frm": [
+      "Pixel Axis 0 [x]"
+    ],
+    "index": 0,
+    "pix2world": true,
+    "to": [
+      "World 0"
+    ]
+  },
+  "CoordinateComponent_0": {
+    "_type": "glue.core.component.CoordinateComponent",
+    "axis": 0,
+    "world": true
+  },
+  "Coordinates": {
+    "_type": "glue.core.coordinates.Coordinates"
+  },
+  "DataCollection": {
+    "_protocol": 3,
+    "_type": "glue.core.data_collection.DataCollection",
+    "cids": [
+      "a",
+      "Pixel Axis 0 [x]",
+      "World 0",
+      "b"
+    ],
+    "components": [
+      "Component",
+      "CoordinateComponent",
+      "CoordinateComponent_0",
+      "Component_0"
+    ],
+    "data": [
+      "data"
+    ],
+    "groups": [
+      "Subset 1"
+    ],
+    "links": [
+      "CoordinateComponentLink",
+      "CoordinateComponentLink_0",
+      "CoordinateComponentLink_1",
+      "CoordinateComponentLink_2"
+    ],
+    "subset_group_count": 1
+  },
+  "HistogramLayerState": {
+    "_type": "glue.viewers.histogram.state.HistogramLayerState",
+    "values": {
+      "alpha": 0.8,
+      "color": "st__0.35",
+      "layer": "data",
+      "visible": true,
+      "zorder": 2
+    }
+  },
+  "HistogramLayerState_0": {
+    "_type": "glue.viewers.histogram.state.HistogramLayerState",
+    "values": {
+      "alpha": 0.5,
+      "color": "st__#e31a1c",
+      "layer": "Subset 1_0",
+      "visible": false,
+      "zorder": 3
+    }
+  },
+  "HistogramLayerState_1": {
+    "_type": "glue.viewers.histogram.state.HistogramLayerState",
+    "values": {
+      "alpha": 0.8,
+      "color": "st__0.35",
+      "layer": "data",
+      "visible": true,
+      "zorder": 2
+    }
+  },
+  "HistogramLayerState_2": {
+    "_type": "glue.viewers.histogram.state.HistogramLayerState",
+    "values": {
+      "alpha": 0.5,
+      "color": "st__#e31a1c",
+      "layer": "Subset 1_0",
+      "visible": true,
+      "zorder": 3
+    }
+  },
+  "HistogramLayerState_3": {
+    "_type": "glue.viewers.histogram.state.HistogramLayerState",
+    "values": {
+      "alpha": 0.8,
+      "color": "st__0.35",
+      "layer": "data",
+      "visible": true,
+      "zorder": 2
+    }
+  },
+  "HistogramLayerState_4": {
+    "_type": "glue.viewers.histogram.state.HistogramLayerState",
+    "values": {
+      "alpha": 0.5,
+      "color": "st__#e31a1c",
+      "layer": "Subset 1_0",
+      "visible": true,
+      "zorder": 3
+    }
+  },
+  "HistogramLayerState_5": {
+    "_type": "glue.viewers.histogram.state.HistogramLayerState",
+    "values": {
+      "alpha": 0.8,
+      "color": "st__0.35",
+      "layer": "data",
+      "visible": true,
+      "zorder": 2
+    }
+  },
+  "HistogramLayerState_6": {
+    "_type": "glue.viewers.histogram.state.HistogramLayerState",
+    "values": {
+      "alpha": 0.5,
+      "color": "st__#e31a1c",
+      "layer": "Subset 1_0",
+      "visible": true,
+      "zorder": 3
+    }
+  },
+  "HistogramViewer": {
+    "_protocol": 1,
+    "_type": "glue.viewers.histogram.qt.data_viewer.HistogramViewer",
+    "layers": [
+      {
+        "_type": "glue.viewers.histogram.layer_artist.HistogramLayerArtist",
+        "state": "HistogramLayerState"
+      },
+      {
+        "_type": "glue.viewers.histogram.layer_artist.HistogramLayerArtist",
+        "state": "HistogramLayerState_0"
+      }
+    ],
+    "pos": [
+      664,
+      475
+    ],
+    "session": "Session",
+    "size": [
+      663,
+      473
+    ],
+    "state": {
+      "values": {
+        "common_n_bin": true,
+        "cumulative": false,
+        "hist_n_bin": 6,
+        "hist_x_max": 9.0,
+        "hist_x_min": 0.0,
+        "layers": "CallbackList",
+        "normalize": false,
+        "x_att": "a",
+        "x_log": false,
+        "x_max": 9.0,
+        "x_min": 0.0,
+        "y_log": false,
+        "y_max": 2.4,
+        "y_min": 0
+      }
+    }
+  },
+  "HistogramViewer_0": {
+    "_protocol": 1,
+    "_type": "glue.viewers.histogram.qt.data_viewer.HistogramViewer",
+    "layers": [
+      {
+        "_type": "glue.viewers.histogram.layer_artist.HistogramLayerArtist",
+        "state": "HistogramLayerState_1"
+      },
+      {
+        "_type": "glue.viewers.histogram.layer_artist.HistogramLayerArtist",
+        "state": "HistogramLayerState_2"
+      }
+    ],
+    "pos": [
+      0,
+      475
+    ],
+    "session": "Session",
+    "size": [
+      664,
+      473
+    ],
+    "state": {
+      "values": {
+        "common_n_bin": true,
+        "cumulative": false,
+        "hist_n_bin": 8,
+        "hist_x_max": 16.0,
+        "hist_x_min": 2.0,
+        "layers": "CallbackList_0",
+        "normalize": false,
+        "x_att": "b",
+        "x_log": false,
+        "x_max": 16.0,
+        "x_min": 2.0,
+        "y_log": false,
+        "y_max": 1.2,
+        "y_min": 0
+      }
+    }
+  },
+  "HistogramViewer_1": {
+    "_protocol": 1,
+    "_type": "glue.viewers.histogram.qt.data_viewer.HistogramViewer",
+    "layers": [
+      {
+        "_type": "glue.viewers.histogram.layer_artist.HistogramLayerArtist",
+        "state": "HistogramLayerState_3"
+      },
+      {
+        "_type": "glue.viewers.histogram.layer_artist.HistogramLayerArtist",
+        "state": "HistogramLayerState_4"
+      }
+    ],
+    "pos": [
+      664,
+      0
+    ],
+    "session": "Session",
+    "size": [
+      663,
+      475
+    ],
+    "state": {
+      "values": {
+        "common_n_bin": true,
+        "cumulative": false,
+        "hist_n_bin": 10,
+        "hist_x_max": 9.0,
+        "hist_x_min": 0.0,
+        "layers": "CallbackList_1",
+        "normalize": true,
+        "x_att": "a",
+        "x_log": false,
+        "x_max": 9.0,
+        "x_min": 0.0,
+        "y_log": true,
+        "y_max": 0.7407407407407407,
+        "y_min": 0.037037037037037035
+      }
+    }
+  },
+  "HistogramViewer_2": {
+    "_protocol": 1,
+    "_type": "glue.viewers.histogram.qt.data_viewer.HistogramViewer",
+    "layers": [
+      {
+        "_type": "glue.viewers.histogram.layer_artist.HistogramLayerArtist",
+        "state": "HistogramLayerState_5"
+      },
+      {
+        "_type": "glue.viewers.histogram.layer_artist.HistogramLayerArtist",
+        "state": "HistogramLayerState_6"
+      }
+    ],
+    "pos": [
+      0,
+      0
+    ],
+    "session": "Session",
+    "size": [
+      664,
+      475
+    ],
+    "state": {
+      "values": {
+        "common_n_bin": true,
+        "cumulative": true,
+        "hist_n_bin": 4,
+        "hist_x_max": 10.0,
+        "hist_x_min": -1.0,
+        "layers": "CallbackList_2",
+        "normalize": false,
+        "x_att": "a",
+        "x_log": false,
+        "x_max": 10.0,
+        "x_min": -1.0,
+        "y_log": false,
+        "y_max": 12.0,
+        "y_min": 0
+      }
+    }
+  },
+  "Pixel Axis 0 [x]": {
+    "_type": "glue.core.component_id.PixelComponentID",
+    "axis": 0,
+    "hidden": true,
+    "label": "Pixel Axis 0 [x]"
+  },
+  "RangeSubsetState": {
+    "_type": "glue.core.subset.RangeSubsetState",
+    "att": "a",
+    "hi": 4.5,
+    "lo": 1.5
+  },
+  "Session": {
+    "_type": "glue.core.session.Session"
+  },
+  "Subset 1": {
+    "_type": "glue.core.subset_group.SubsetGroup",
+    "label": "Subset 1",
+    "state": "RangeSubsetState",
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes",
+      "alpha": 0.5,
+      "color": "#e31a1c",
+      "linestyle": "solid",
+      "linewidth": 1,
+      "marker": "o",
+      "markersize": 7
+    },
+    "subsets": [
+      "Subset 1_0"
+    ]
+  },
+  "Subset 1_0": {
+    "_type": "glue.core.subset_group.GroupedSubset",
+    "group": "Subset 1",
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes",
+      "alpha": 0.5,
+      "color": "#e31a1c",
+      "linestyle": "solid",
+      "linewidth": 1,
+      "marker": "o",
+      "markersize": 7
+    }
+  },
+  "World 0": {
+    "_type": "glue.core.component_id.ComponentID",
+    "hidden": true,
+    "label": "World 0"
+  },
+  "__main__": {
+    "_type": "glue.app.qt.application.GlueApplication",
+    "data": "DataCollection",
+    "plugins": [
+      "glue_vispy_viewers.scatter",
+      "glue.plugins.coordinate_helpers",
+      "glue.plugins.exporters.plotly",
+      "glue.viewers.table",
+      "glue.core.data_exporters",
+      "glue_medical",
+      "glue.plugins.tools.pv_slicer",
+      "specviz.app",
+      "glue.viewers.scatter",
+      "glue.viewers.histogram",
+      "glue_vispy_viewers.volume",
+      "glue.plugins.tools.spectrum_tool",
+      "glue.plugins.export_d3po",
+      "glue.viewers.image"
+    ],
+    "session": "Session",
+    "tab_names": [
+      "Tab 1"
+    ],
+    "viewers": [
+      [
+        "HistogramViewer",
+        "HistogramViewer_0",
+        "HistogramViewer_1",
+        "HistogramViewer_2"
+      ]
+    ]
+  },
+  "a": {
+    "_type": "glue.core.component_id.ComponentID",
+    "hidden": false,
+    "label": "a"
+  },
+  "b": {
+    "_type": "glue.core.component_id.ComponentID",
+    "hidden": false,
+    "label": "b"
+  },
+  "data": {
+    "_key_joins": [],
+    "_protocol": 5,
+    "_type": "glue.core.data.Data",
+    "components": [
+      [
+        "a",
+        "Component"
+      ],
+      [
+        "Pixel Axis 0 [x]",
+        "CoordinateComponent"
+      ],
+      [
+        "World 0",
+        "CoordinateComponent_0"
+      ],
+      [
+        "b",
+        "Component_0"
+      ]
+    ],
+    "coords": "Coordinates",
+    "label": "data",
+    "primary_owner": [
+      "a",
+      "Pixel Axis 0 [x]",
+      "World 0",
+      "b"
+    ],
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes",
+      "alpha": 0.8,
+      "color": "0.35",
+      "linestyle": "solid",
+      "linewidth": 1,
+      "marker": "o",
+      "markersize": 3
+    },
+    "subsets": [
+      "Subset 1_0"
+    ],
+    "uuid": "103f82ee-7731-4816-b207-164b683762d2"
+  }
+}
