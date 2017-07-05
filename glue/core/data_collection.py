@@ -44,6 +44,8 @@ class DataCollection(HubListener):
         self.extend(as_list(data or []))
         self._sg_count = 0
 
+        self._link_manager.register_to_hub(self.hub)
+
     @property
     def data(self):
         """ The :class:`~glue.core.data.Data` objects in the collection """

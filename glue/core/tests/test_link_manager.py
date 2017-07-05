@@ -249,12 +249,12 @@ class TestLinkManager(object):
 
         dc = DataCollection([d1, d2])
 
-        n_links = len(dc.links)
+        assert len(dc.links) == 6
 
         dc.add_link(LinkSame(d1.id['x'], d2.id['a']))
 
-        assert len(dc.links) == n_links + 1
+        assert len(dc.links) == 7
 
         # Removing dataset should remove related links
         dc.remove(d1)
-        assert len(dc.links) == n_links
+        assert len(dc.links) == 2
