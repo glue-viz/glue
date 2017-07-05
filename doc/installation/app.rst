@@ -1,3 +1,5 @@
+:orphan:
+
 Standalone Application
 ======================
 

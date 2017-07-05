@@ -3,8 +3,6 @@
 Installing Glue
 ===============
 
-.. _anaconda:
-
 Several installation methods for Glue are outlined in the sections below. If you
 run into issues, each page should provide relevant troubleshooting, and you can
 also check the :ref:`known-issues` page which collects some more general issues.
@@ -16,7 +14,6 @@ If your problem is not described there, `open a new issue
 
    conda
    pip
-   app
    qt
    dependencies
    developer

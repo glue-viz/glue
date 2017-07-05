@@ -1,6 +1,6 @@
 
-Anaconda Python Distribution
-============================
+Anaconda Python Distribution (Recommended)
+==========================================
 
 **Platforms:** MacOS X, Linux, and Windows
 
@@ -17,10 +17,10 @@ below.
 Command-line installation
 -------------------------
 
-Installing glue using the ``conda`` command from the command-line is the recommended
-way to install glue, because errors are more easily visible in case you run into
-any issues with the installation process. Once Anaconda (or simply ``conda``) is
-installed, open a terminal, and type:
+We recommend installing glue using the ``conda`` command on the command-line
+rather than using the :ref:`anaconda_gui`, because errors are more visible on
+the command-line if you run into any issues during the installation. Once
+Anaconda (or Miniconda) is installed, open a terminal, and type::
 
     conda install -c glueviz glueviz
 
@@ -80,22 +80,19 @@ version of dependencies required by glue and that required by other packages.
 The easiest way to avoid this is to install glue in a separate environment. To
 do this, first create an environment in which you will install glue::
 
-    conda create -n glueviz python
+    conda create -n glueviz-env python
 
 This will create an environment called ``glueviz`` in which Python will be
 installed. You only need to create the environment once. Once created, you can
 switch to the environment with::
 
-    source activate glueviz
+    source activate glueviz-env
 
 Then, install glue as indicated in :ref:`anaconda_cli` using::
 
     conda install -c glueviz glueviz
 
 Whenever you open a new terminal, if you want to run glue you should then
-remember to switch to the ``glueviz`` environment using::
-
-    source activate glueviz
-
-If you want to update glue, run the installation command again inside the
-environment.
+remember to switch to the ``glueviz-env`` environment using the ``source
+activate`` command above. If you want to update glue, run the installation
+command again inside the environment.

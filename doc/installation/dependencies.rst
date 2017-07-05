@@ -1,7 +1,7 @@
 .. _glue-deps:
 
-Dependencies
-============
+Full list of dependencies
+=========================
 
 Glue has the following required dependencies:
 

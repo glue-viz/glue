@@ -1,3 +1,5 @@
+.. _installing-qt:
+
 Installing PyQt or PySide
 =========================
 
