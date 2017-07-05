@@ -5,16 +5,16 @@ Installing Glue
 
 .. _anaconda:
 
-Several installation methods for Glue are outlined below. If you run into
-issues, you can always check the :ref:`known-issues` page, and if your problem
-is not described there, `open a new issue
+Several installation methods for Glue are outlined in the sections below. If you
+run into issues, each page should provide relevant troubleshooting, and you can
+also check the :ref:`known-issues` page which collects some more general issues.
+If your problem is not described there, `open a new issue
 <https://github.com/glue-viz/glue/issues>`_ on GitHub.
 
 .. toctree::
    :maxdepth: 1
 
    conda
-   conda_navigator
    pip
    app
    qt
