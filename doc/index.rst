@@ -59,7 +59,7 @@ Using the Glue application
 .. toctree::
    :maxdepth: 2
 
-   installation.rst
+   installation/installation.rst
    getting_started/index.rst
    gui_guide/index.rst
    gui_guide/3d_viewers.rst
