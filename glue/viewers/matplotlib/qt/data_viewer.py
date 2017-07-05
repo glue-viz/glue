@@ -5,7 +5,7 @@ from qtpy.QtCore import Qt
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.common.viz_client import init_mpl, update_appearance_from_settings
-from glue.external.echo import add_callback
+from glue.external.echo import add_callback, delay_callback
 from glue.utils import nonpartial, defer_draw
 from glue.utils.decorators import avoid_circular
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
@@ -98,9 +98,9 @@ class MatplotlibDataViewer(DataViewer):
 
     @avoid_circular
     def limits_from_mpl(self):
-        # TODO: delay callbacks here
-        self.state.x_min, self.state.x_max = self.axes.get_xlim()
-        self.state.y_min, self.state.y_max = self.axes.get_ylim()
+        with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
+            self.state.x_min, self.state.x_max = self.axes.get_xlim()
+            self.state.y_min, self.state.y_max = self.axes.get_ylim()
 
     @avoid_circular
     def limits_to_mpl(self):
