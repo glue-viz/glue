@@ -10,7 +10,7 @@ from ..data import Data, Component
 from ..data_collection import DataCollection
 from ..link_manager import (LinkManager, accessible_links, discover_links,
                             find_dependents)
-
+from ..link_helpers import LinkSame
 
 comp = Component(data=np.array([1, 2, 3]))
 
@@ -191,7 +191,6 @@ class TestLinkManager(object):
     def test_derived_links_correctwith_mergers(self):
         """When the link manager merges components, links that depend on the
         merged components remain functional"""
-        from ..link_helpers import LinkSame
 
         d1 = Data(x=[[1, 2], [3, 4]])
         d2 = Data(u=[[5, 6], [7, 8]])
@@ -212,7 +211,6 @@ class TestLinkManager(object):
 
     def test_binary_links_correct_with_mergers(self):
         """Regression test. BinaryComponentLinks should work after mergers"""
-        from ..link_helpers import LinkSame
 
         d1 = Data(x=[1, 2, 3], y=[2, 3, 4])
         d2 = Data(u=[2, 3, 4], v=[3, 4, 5])
@@ -227,7 +225,6 @@ class TestLinkManager(object):
 
     def test_complex_links_correct_with_mergers(self):
         """Regression test. multi-level links should work after mergers"""
-        from ..link_helpers import LinkSame
 
         d1 = Data(x=[1, 2, 3], y=[2, 3, 4])
         d2 = Data(u=[2, 3, 4], v=[3, 4, 5])
@@ -244,3 +241,20 @@ class TestLinkManager(object):
         # assert x not in d1.components
 
         np.testing.assert_array_equal(d1['z'], [8, 10, 12])
+
+    def test_remove_data_removes_links(self):
+
+        d1 = Data(x=[[1, 2], [3, 4]], label='image')
+        d2 = Data(a=[1, 2, 3], b=[4, 5, 6], label='catalog')
+
+        dc = DataCollection([d1, d2])
+
+        assert len(dc.links) == 6
+
+        dc.add_link(LinkSame(d1.id['x'], d2.id['a']))
+
+        assert len(dc.links) == 7
+
+        # Removing dataset should remove related links
+        dc.remove(d1)
+        assert len(dc.links) == 2

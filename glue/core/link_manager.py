@@ -20,6 +20,8 @@ from __future__ import absolute_import, division, print_function
 import logging
 
 from glue.external import six
+from glue.core.hub import HubListener
+from glue.core.message import DataCollectionDeleteMessage
 from glue.core.contracts import contract
 from glue.core.link_helpers import LinkCollection
 from glue.core.component_link import ComponentLink
@@ -116,7 +118,7 @@ def find_dependents(data, link):
     return dependents
 
 
-class LinkManager(object):
+class LinkManager(HubListener):
 
     """A helper class to generate and store ComponentLinks,
     and compute which components are accesible from which data sets
@@ -124,6 +126,21 @@ class LinkManager(object):
 
     def __init__(self):
         self._links = set()
+
+    def register_to_hub(self, hub):
+        hub.subscribe(self, DataCollectionDeleteMessage,
+                      handler=self._data_removed)
+
+    def _data_removed(self, msg):
+        remove = []
+        for link in self._links:
+            ids = set(link.get_from_ids()) | set([link.get_to_id()])
+            for cid in ids:
+                if cid.parent is msg.data:
+                    remove.append(link)
+                    break
+        for link in remove:
+            self.remove_link(link)
 
     def add_link(self, link):
         """
