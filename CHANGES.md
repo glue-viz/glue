@@ -24,6 +24,9 @@ v0.10.5 (unreleased)
 
 * Fix example of setting up a custom preferences pane. [#1326]
 
+* Fix a bug that caused links to not get removed if associated datasets
+  were removed. [#1329]
+
 v0.10.4 (2017-05-23)
 --------------------
 
