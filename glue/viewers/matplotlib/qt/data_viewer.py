@@ -230,7 +230,7 @@ class MatplotlibDataViewer(DataViewer):
                       self._update_appearance_from_settings,
                       filter=is_appearance_settings)
 
-    def _update_appearance_from_settings(self, message):
+    def _update_appearance_from_settings(self, message=None):
         update_appearance_from_settings(self.axes)
         self.axes.figure.canvas.draw()
 

@@ -85,6 +85,7 @@ class ImageViewer(MatplotlibDataViewer):
             self.axes.set_ylim(-0.5, ny - 0.5)
         self.axes.figure.canvas.draw()
 
+    @defer_draw
     def _set_wcs(self, *args):
         if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
             return
@@ -93,6 +94,7 @@ class ImageViewer(MatplotlibDataViewer):
             self.axes.reset_wcs(ref_coords.wcs, slices=self.state.wcsaxes_slice)
         else:
             self.axes.reset_wcs(IDENTITY_WCS)
+        self._update_appearance_from_settings()
         self._update_axes()
         self._set_aspect()
 
