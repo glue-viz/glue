@@ -557,6 +557,8 @@ class keep_in_sync(object):
 
         self._syncing = False
 
+        self.enabled = False
+
         self.enable_syncing()
 
     def prop1_from_prop2(self, value):
@@ -572,11 +574,17 @@ class keep_in_sync(object):
             self._syncing = False
 
     def enable_syncing(self, *args):
+        if self.enabled:
+            return
         add_callback(self.instance1(), self.prop1, self.prop2_from_prop1)
         add_callback(self.instance2(), self.prop2, self.prop1_from_prop2)
+        self.enabled = True
 
     def disable_syncing(self, *args):
+        if not self.enabled:
+            return
         if self.instance1() is not None:
             remove_callback(self.instance1(), self.prop1, self.prop2_from_prop1)
         if self.instance2() is not None:
             remove_callback(self.instance2(), self.prop2, self.prop1_from_prop2)
+        self.enabled = False

@@ -36,12 +36,17 @@ class HistogramViewerState(MatplotlibDataViewerState):
                                                'all numerical components')
 
     def __init__(self, **kwargs):
-        super(HistogramViewerState, self).__init__(**kwargs)
+
+        super(HistogramViewerState, self).__init__()
+
         self.x_att_helper = StateAttributeLimitsHelper(self, 'x_att', lower='x_min',
                                                        upper='x_max', log='x_log')
+
         self.hist_helper = StateAttributeHistogramHelper(self, 'x_att', lower='hist_x_min',
                                                          upper='hist_x_max', n_bin='hist_n_bin',
                                                          common_n_bin='common_n_bin')
+
+        self.update_from_dict(kwargs)
 
     def _update_priority(self, name):
         if name == 'layers':

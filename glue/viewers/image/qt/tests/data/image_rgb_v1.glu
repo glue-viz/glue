@@ -1,0 +1,434 @@
+{
+  "CallbackList": {
+    "_type": "glue.external.echo.list.CallbackList",
+    "values": [
+      "ImageLayerState",
+      "ImageLayerState_0",
+      "ImageLayerState_1"
+    ]
+  },
+  "Component": {
+    "_type": "glue.core.component.Component",
+    "data": {
+      "_type": "numpy.ndarray",
+      "data": "k05VTVBZAQBGAHsnZGVzY3InOiAnPGk4JywgJ2ZvcnRyYW5fb3JkZXInOiBGYWxzZSwgJ3NoYXBlJzogKDIsIDIpLCB9ICAgICAgICAgIAoAAAAAAAAAAAEAAAAAAAAAAgAAAAAAAAADAAAAAAAAAA=="
+    },
+    "units": ""
+  },
+  "Component_0": {
+    "_type": "glue.core.component.Component",
+    "data": {
+      "_type": "numpy.ndarray",
+      "data": "k05VTVBZAQBGAHsnZGVzY3InOiAnPGk4JywgJ2ZvcnRyYW5fb3JkZXInOiBGYWxzZSwgJ3NoYXBlJzogKDIsIDIpLCB9ICAgICAgICAgIAoIAAAAAAAAAAkAAAAAAAAACgAAAAAAAAALAAAAAAAAAA=="
+    },
+    "units": ""
+  },
+  "Component_1": {
+    "_type": "glue.core.component.Component",
+    "data": {
+      "_type": "numpy.ndarray",
+      "data": "k05VTVBZAQBGAHsnZGVzY3InOiAnPGk4JywgJ2ZvcnRyYW5fb3JkZXInOiBGYWxzZSwgJ3NoYXBlJzogKDIsIDIpLCB9ICAgICAgICAgIAoEAAAAAAAAAAUAAAAAAAAABgAAAAAAAAAHAAAAAAAAAA=="
+    },
+    "units": ""
+  },
+  "CoordinateComponent": {
+    "_type": "glue.core.component.CoordinateComponent",
+    "axis": 0,
+    "world": false
+  },
+  "CoordinateComponentLink": {
+    "_type": "glue.core.component_link.CoordinateComponentLink",
+    "coords": "Coordinates",
+    "frm": [
+      "Pixel Axis 0 [y]",
+      "Pixel Axis 1 [x]"
+    ],
+    "index": 0,
+    "pix2world": true,
+    "to": [
+      "World 0"
+    ]
+  },
+  "CoordinateComponentLink_0": {
+    "_type": "glue.core.component_link.CoordinateComponentLink",
+    "coords": "Coordinates",
+    "frm": [
+      "Pixel Axis 0 [y]",
+      "Pixel Axis 1 [x]"
+    ],
+    "index": 1,
+    "pix2world": true,
+    "to": [
+      "World 1"
+    ]
+  },
+  "CoordinateComponentLink_1": {
+    "_type": "glue.core.component_link.CoordinateComponentLink",
+    "coords": "Coordinates",
+    "frm": [
+      "World 0",
+      "World 1"
+    ],
+    "index": 1,
+    "pix2world": false,
+    "to": [
+      "Pixel Axis 1 [x]"
+    ]
+  },
+  "CoordinateComponentLink_2": {
+    "_type": "glue.core.component_link.CoordinateComponentLink",
+    "coords": "Coordinates",
+    "frm": [
+      "Pixel Axis 0 [y]",
+      "Pixel Axis 1 [x]"
+    ],
+    "index": 0,
+    "pix2world": true,
+    "to": [
+      "World 0"
+    ]
+  },
+  "CoordinateComponentLink_3": {
+    "_type": "glue.core.component_link.CoordinateComponentLink",
+    "coords": "Coordinates",
+    "frm": [
+      "World 0",
+      "World 1"
+    ],
+    "index": 0,
+    "pix2world": false,
+    "to": [
+      "Pixel Axis 0 [y]"
+    ]
+  },
+  "CoordinateComponentLink_4": {
+    "_type": "glue.core.component_link.CoordinateComponentLink",
+    "coords": "Coordinates",
+    "frm": [
+      "Pixel Axis 0 [y]",
+      "Pixel Axis 1 [x]"
+    ],
+    "index": 1,
+    "pix2world": true,
+    "to": [
+      "World 1"
+    ]
+  },
+  "CoordinateComponentLink_5": {
+    "_type": "glue.core.component_link.CoordinateComponentLink",
+    "coords": "Coordinates",
+    "frm": [
+      "World 0",
+      "World 1"
+    ],
+    "index": 1,
+    "pix2world": false,
+    "to": [
+      "Pixel Axis 1 [x]"
+    ]
+  },
+  "CoordinateComponentLink_6": {
+    "_type": "glue.core.component_link.CoordinateComponentLink",
+    "coords": "Coordinates",
+    "frm": [
+      "World 0",
+      "World 1"
+    ],
+    "index": 0,
+    "pix2world": false,
+    "to": [
+      "Pixel Axis 0 [y]"
+    ]
+  },
+  "CoordinateComponent_0": {
+    "_type": "glue.core.component.CoordinateComponent",
+    "axis": 1,
+    "world": false
+  },
+  "CoordinateComponent_1": {
+    "_type": "glue.core.component.CoordinateComponent",
+    "axis": 0,
+    "world": true
+  },
+  "CoordinateComponent_2": {
+    "_type": "glue.core.component.CoordinateComponent",
+    "axis": 1,
+    "world": true
+  },
+  "Coordinates": {
+    "_type": "glue.core.coordinates.Coordinates"
+  },
+  "DataCollection": {
+    "_protocol": 3,
+    "_type": "glue.core.data_collection.DataCollection",
+    "cids": [
+      "a",
+      "Pixel Axis 0 [y]",
+      "Pixel Axis 1 [x]",
+      "World 0",
+      "World 1",
+      "c",
+      "b"
+    ],
+    "components": [
+      "Component",
+      "CoordinateComponent",
+      "CoordinateComponent_0",
+      "CoordinateComponent_1",
+      "CoordinateComponent_2",
+      "Component_0",
+      "Component_1"
+    ],
+    "data": [
+      "rgbcube"
+    ],
+    "groups": [],
+    "links": [
+      "CoordinateComponentLink",
+      "CoordinateComponentLink_0",
+      "CoordinateComponentLink_1",
+      "CoordinateComponentLink_2",
+      "CoordinateComponentLink_3",
+      "CoordinateComponentLink_4",
+      "CoordinateComponentLink_5",
+      "CoordinateComponentLink_6"
+    ],
+    "subset_group_count": 0
+  },
+  "ImageLayerState": {
+    "_type": "glue.viewers.image.state.ImageLayerState",
+    "values": {
+      "alpha": 0.8,
+      "attribute": "a",
+      "bias": 0.5,
+      "cmap": "LinearSegmentedColormap",
+      "color": "st__r",
+      "contrast": 1.0,
+      "global_sync": false,
+      "layer": "rgbcube",
+      "percentile": "st__Custom",
+      "stretch": "st__linear",
+      "v_max": 5.0,
+      "v_min": -5.0,
+      "visible": true,
+      "zorder": 2
+    }
+  },
+  "ImageLayerState_0": {
+    "_type": "glue.viewers.image.state.ImageLayerState",
+    "values": {
+      "alpha": 0.8,
+      "attribute": "c",
+      "bias": 0.5,
+      "cmap": "LinearSegmentedColormap",
+      "color": "st__g",
+      "contrast": 1.0,
+      "global_sync": false,
+      "layer": "rgbcube",
+      "percentile": 99,
+      "stretch": "st__linear",
+      "v_max": 10.985,
+      "v_min": 8.015,
+      "visible": false,
+      "zorder": 3
+    }
+  },
+  "ImageLayerState_1": {
+    "_type": "glue.viewers.image.state.ImageLayerState",
+    "values": {
+      "alpha": 0.8,
+      "attribute": "b",
+      "bias": 0.5,
+      "cmap": "LinearSegmentedColormap",
+      "color": "st__b",
+      "contrast": 1.0,
+      "global_sync": false,
+      "layer": "rgbcube",
+      "percentile": "st__Custom",
+      "stretch": "st__arcsinh",
+      "v_max": 3,
+      "v_min": 0,
+      "visible": true,
+      "zorder": 4
+    }
+  },
+  "ImageViewer": {
+    "_protocol": 1,
+    "_type": "glue.viewers.image.qt.data_viewer.ImageViewer",
+    "layers": [
+      {
+        "_type": "glue.viewers.image.layer_artist.ImageLayerArtist",
+        "state": "ImageLayerState"
+      },
+      {
+        "_type": "glue.viewers.image.layer_artist.ImageLayerArtist",
+        "state": "ImageLayerState_0"
+      },
+      {
+        "_type": "glue.viewers.image.layer_artist.ImageLayerArtist",
+        "state": "ImageLayerState_1"
+      }
+    ],
+    "pos": [
+      0,
+      0
+    ],
+    "session": "Session",
+    "size": [
+      600,
+      400
+    ],
+    "state": {
+      "values": {
+        "aspect": "st__equal",
+        "color_mode": "st__One color per layer",
+        "layers": "CallbackList",
+        "reference_data": "rgbcube",
+        "slices": [
+          0,
+          0
+        ],
+        "x_att": "Pixel Axis 1 [x]",
+        "x_att_world": "World 1",
+        "x_log": false,
+        "x_max": 2.5253556681900653,
+        "x_min": -1.4613891239424421,
+        "y_att": "Pixel Axis 0 [y]",
+        "y_att_world": "World 0",
+        "y_log": false,
+        "y_max": 1.555040949314538,
+        "y_min": -0.5351753331368783
+      }
+    }
+  },
+  "LinearSegmentedColormap": {
+    "_type": "matplotlib.colors.LinearSegmentedColormap",
+    "cmap": "gray"
+  },
+  "Pixel Axis 0 [y]": {
+    "_type": "glue.core.component_id.PixelComponentID",
+    "axis": 0,
+    "hidden": true,
+    "label": "Pixel Axis 0 [y]"
+  },
+  "Pixel Axis 1 [x]": {
+    "_type": "glue.core.component_id.PixelComponentID",
+    "axis": 1,
+    "hidden": true,
+    "label": "Pixel Axis 1 [x]"
+  },
+  "Session": {
+    "_type": "glue.core.session.Session"
+  },
+  "World 0": {
+    "_type": "glue.core.component_id.ComponentID",
+    "hidden": true,
+    "label": "World 0"
+  },
+  "World 1": {
+    "_type": "glue.core.component_id.ComponentID",
+    "hidden": true,
+    "label": "World 1"
+  },
+  "__main__": {
+    "_type": "glue.app.qt.application.GlueApplication",
+    "data": "DataCollection",
+    "plugins": [
+      "glue.core.data_exporters",
+      "glue.viewers.image",
+      "glue.viewers.scatter",
+      "glue_vispy_viewers.volume",
+      "glue_medical",
+      "glue.plugins.tools.pv_slicer",
+      "glue.plugins.coordinate_helpers",
+      "glue.viewers.table",
+      "glue_vispy_viewers.scatter",
+      "glue.plugins.export_d3po",
+      "glue.viewers.histogram",
+      "glue.plugins.tools.spectrum_tool",
+      "glue.plugins.exporters.plotly",
+      "specviz.app"
+    ],
+    "session": "Session",
+    "tab_names": [
+      "Tab 1"
+    ],
+    "viewers": [
+      [
+        "ImageViewer"
+      ]
+    ]
+  },
+  "a": {
+    "_type": "glue.core.component_id.ComponentID",
+    "hidden": false,
+    "label": "a"
+  },
+  "b": {
+    "_type": "glue.core.component_id.ComponentID",
+    "hidden": false,
+    "label": "b"
+  },
+  "c": {
+    "_type": "glue.core.component_id.ComponentID",
+    "hidden": false,
+    "label": "c"
+  },
+  "rgbcube": {
+    "_key_joins": [],
+    "_protocol": 5,
+    "_type": "glue.core.data.Data",
+    "components": [
+      [
+        "a",
+        "Component"
+      ],
+      [
+        "Pixel Axis 0 [y]",
+        "CoordinateComponent"
+      ],
+      [
+        "Pixel Axis 1 [x]",
+        "CoordinateComponent_0"
+      ],
+      [
+        "World 0",
+        "CoordinateComponent_1"
+      ],
+      [
+        "World 1",
+        "CoordinateComponent_2"
+      ],
+      [
+        "c",
+        "Component_0"
+      ],
+      [
+        "b",
+        "Component_1"
+      ]
+    ],
+    "coords": "Coordinates",
+    "label": "rgbcube",
+    "primary_owner": [
+      "a",
+      "Pixel Axis 0 [y]",
+      "Pixel Axis 1 [x]",
+      "World 0",
+      "World 1",
+      "c",
+      "b"
+    ],
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes",
+      "alpha": 0.8,
+      "color": "0.35",
+      "linestyle": "solid",
+      "linewidth": 1,
+      "marker": "o",
+      "markersize": 3
+    },
+    "subsets": [],
+    "uuid": "d2fdde54-ab42-4370-9670-4b9906da51f2"
+  }
+}
