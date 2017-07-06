@@ -204,19 +204,24 @@ class ImageLayerState(MatplotlibLayerState):
                                               'should be synced with the global '
                                               'color and transparency for the data')
 
-    def __init__(self, **kwargs):
-        super(ImageLayerState, self).__init__(**kwargs)
+    def __init__(self, layer=None, **kwargs):
+
+        super(ImageLayerState, self).__init__(layer=layer)
+
         self.attribute_helper = StateAttributeLimitsHelper(self, attribute='attribute',
                                                            percentile='percentile',
                                                            lower='v_min', upper='v_max')
-        if self.cmap is None:
-            self.cmap = colormaps.members[0][1]
 
         self.add_callback('global_sync', self._update_syncing)
         self.add_callback('layer', self._update_attribute)
 
-        self._update_syncing()
-        self._update_attribute()
+        if layer is not None:
+            self._update_attribute()
+
+        self.update_from_dict(kwargs)
+
+        if self.cmap is None:
+            self.cmap = colormaps.members[0][1]
 
     def _update_attribute(self, *args):
         if self.layer is not None:

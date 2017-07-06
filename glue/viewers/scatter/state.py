@@ -21,7 +21,7 @@ class ScatterViewerState(MatplotlibDataViewerState):
 
     def __init__(self, **kwargs):
 
-        super(ScatterViewerState, self).__init__(**kwargs)
+        super(ScatterViewerState, self).__init__()
 
         self.limits_cache = {}
 
@@ -34,6 +34,8 @@ class ScatterViewerState(MatplotlibDataViewerState):
                                                        lower='y_min', upper='y_max',
                                                        log='y_log',
                                                        limits_cache=self.limits_cache)
+
+        self.update_from_dict(kwargs)
 
     def _update_priority(self, name):
         if name == 'layers':
