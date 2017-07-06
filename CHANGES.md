@@ -22,6 +22,8 @@ v0.11.0 (unreleased)
 v0.10.5 (unreleased)
 --------------------
 
+* Silence qtconsole warnings at startup. [#1331]
+
 * Fix example of setting up a custom preferences pane. [#1326]
 
 * Fix a bug that caused links to not get removed if associated datasets

@@ -15,10 +15,9 @@ Usage:
 from __future__ import absolute_import, division, print_function
 
 # must import these first, to set up Qt properly
-from qtpy import QtWidgets
+from qtpy import QtWidgets, QtCore, PYQT5
 
 from IPython import get_ipython
-from IPython.terminal.interactiveshell import TerminalInteractiveShell
 
 from ipykernel.inprocess.ipkernel import InProcessInteractiveShell
 from ipykernel.connect import get_connection_file
@@ -215,6 +214,19 @@ def glue_terminal(**kwargs):
     Keyword arguments will be added to the namespace of the shell.
     """
 
+    # TODO: remove following workaround once no longer needed
+    # We need to hide warnings emitted by qtconsole due to a bug in the case
+    # where no banner is present: https://github.com/jupyter/qtconsole/pull/224
+    def handler(msg_type, msg_log_context, msg_string):
+        if msg_string == "QTextCursor::setPosition: Position '-1' out of range":
+            pass
+        elif msg_string == "QTextCursor::setPosition: Position '10' out of range":
+            pass
+        else:
+            print(msg_string)
+    if PYQT5:
+        QtCore.qInstallMessageHandler(handler)
+
     kwargs['howto'] = howto
     shell = get_ipython()
 
@@ -226,7 +238,7 @@ def glue_terminal(**kwargs):
     # TODO: if glue is launched from a qtconsole or a notebook, we should in
     # principle be able to use the connected_console function above, but this
     # doesn't behave quite right and requires further investigation.
-    
+
     # Note however that if we do this, then we need to avoid polluting the
     # namespace of the original IPython console, as described in this issue:
     # https://github.com/glue-viz/glue/issues/1209
