@@ -168,7 +168,9 @@ def process_dialog(delay=0, accept=False, reject=False, function=None):
     def wrapper():
         from glue.utils.qt import get_qapp
         app = get_qapp()
-        dialog = app.focusWidget().window()
+        # Make sure that any window/dialog that needs to be shown is shown
+        app.processEvents()
+        dialog = app.activeWindow()
         function(dialog)
 
     timer = QtCore.QTimer()
