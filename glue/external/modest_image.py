@@ -240,7 +240,8 @@ def imshow(axes, X, cmap=None, norm=None, aspect=None,
 
     # update ax.dataLim, and, if autoscaling, set viewLim
     # to tightly fit the image, regardless of dataLim.
-    # im.set_extent(im.get_extent())
+    if extent is not None:
+        im.set_extent(extent)
 
     axes.images.append(im)
     im._remove_method = lambda h: axes.images.remove(h)

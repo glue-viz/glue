@@ -14,9 +14,7 @@ from numpy.testing import assert_allclose
 from glue.core import Data
 from glue.core.coordinates import Coordinates, WCSCoordinates
 from glue.core.roi import RectangularROI
-from glue.core.subset import RoiSubsetState, AndState
-from glue import core
-from glue.core.component_id import ComponentID
+from glue.core.subset import RoiSubsetState
 from glue.core.tests.util import simple_session
 from glue.utils.qt import combo_as_string
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
@@ -289,8 +287,8 @@ class TestSessions(object):
         else:
             assert viewer1.state.x_min < -0.5
             assert viewer1.state.x_max > 1.5
-            assert viewer1.state.x_min < -0.5
-            assert viewer1.state.x_max > 1.5
+            assert viewer1.state.y_min <= -0.5
+            assert viewer1.state.y_max >= 1.5
 
         layer_state = viewer1.state.layers[0]
         assert isinstance(layer_state, ImageLayerState)
@@ -321,11 +319,10 @@ class TestSessions(object):
             assert_allclose(viewer2.state.y_min, 0)
             assert_allclose(viewer2.state.y_max, 2)
         else:
-            assert viewer1.state.x_min < -0.5
-            assert viewer1.state.x_max > 1.5
-            assert viewer1.state.x_min < -0.5
-            assert viewer1.state.x_max > 1.5
-
+            assert viewer2.state.x_min < -0.5
+            assert viewer2.state.x_max > 1.5
+            assert viewer2.state.y_min <= -0.5
+            assert viewer2.state.y_max >= 1.5
 
         layer_state = viewer2.state.layers[0]
         assert layer_state.visible
@@ -349,10 +346,10 @@ class TestSessions(object):
             assert_allclose(viewer3.state.y_min, 0)
             assert_allclose(viewer3.state.y_max, 2)
         else:
-            assert viewer1.state.x_min < -0.5
-            assert viewer1.state.x_max > 1.5
-            assert viewer1.state.x_min < -0.5
-            assert viewer1.state.x_max > 1.5
+            assert viewer3.state.x_min < -0.5
+            assert viewer3.state.x_max > 1.5
+            assert viewer3.state.y_min <= -0.5
+            assert viewer3.state.y_max >= 1.5
 
         layer_state = viewer3.state.layers[0]
         assert layer_state.visible

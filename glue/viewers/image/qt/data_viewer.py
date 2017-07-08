@@ -77,12 +77,32 @@ class ImageViewer(MatplotlibDataViewer):
 
         self.axes.figure.canvas.draw()
 
+    @defer_draw
+    def add_data(self, data):
+        result = super(ImageViewer, self).add_data(data)
+        # If this is the first layer (or the first after all layers were)
+        # removed, set the WCS for the axes and the aspect (which also sets)
+        # the limits.
+        if len(self.layers) == 1:
+            self._set_wcs()
+            self._set_aspect()
+        return result
+
+
+    @defer_draw
     def _set_aspect(self, *args):
         self.axes.set_aspect(self.state.aspect)
         if self.axes._composite.shape is not None:
             ny, nx = self.axes._composite.shape
             self.axes.set_xlim(-0.5, nx - 0.5)
             self.axes.set_ylim(-0.5, ny - 0.5)
+            # FIXME: for a reason I don't quite understand, dataLim doesn't
+            # get updated immediately here, which means that there are then
+            # issues in the first draw of the image (the limits are such that
+            # only part of the image is shown). We just set dataLim manually
+            # to avoid this issue.
+            self.axes.dataLim.intervalx = self.axes.get_xlim()
+            self.axes.dataLim.intervaly = self.axes.get_ylim()
         self.axes.figure.canvas.draw()
 
     @defer_draw
@@ -96,7 +116,6 @@ class ImageViewer(MatplotlibDataViewer):
             self.axes.reset_wcs(IDENTITY_WCS)
         self._update_appearance_from_settings()
         self._update_axes()
-        self._set_aspect()
 
     def apply_roi(self, roi):
 

@@ -30,27 +30,6 @@ warnings.filterwarnings('ignore', '.*Attempting to set identical left==right', U
 warnings.filterwarnings('ignore', '.*Attempting to set identical bottom==top', UserWarning)
 
 
-def defer_draw(func):
-    """
-    Decorator that globally defers all MplCanvas draw requests until
-    function exit.
-
-    If an MplCanvas instance's draw method is invoked multiple times,
-    it will only be called once after the wrapped function returns.
-    """
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            MplCanvas.draw = DeferredMethod(MplCanvas.draw)
-            result = func(*args, **kwargs)
-        finally:
-            MplCanvas.draw.execute_deferred_calls()
-            MplCanvas.draw = MplCanvas.draw.original_method
-        return result
-
-    return wrapper
-
-
 class MplCanvas(FigureCanvas):
 
     """Class to represent the FigureCanvas widget"""
