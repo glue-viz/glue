@@ -100,8 +100,8 @@ class TestPolynomialFitter(object):
 
     def test_fit(self):
         f = PolynomialFitter()
-        result = f.build_and_fit([1, 2, 3], [2, 3, 4])
-        expected = np.polyfit([1, 2, 3], [2, 3, 4], 3)
+        result = f.build_and_fit([1, 2, 3, 4, 5, 6], [2, 3, 4, 4, 3, 4])
+        expected = np.polyfit([1, 2, 3, 4, 5, 6], [2, 3, 4, 4, 3, 4], 3)
         np.testing.assert_array_equal(result, expected)
 
     def test_predict(self):

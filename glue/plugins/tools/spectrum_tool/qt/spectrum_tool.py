@@ -387,7 +387,10 @@ class CollapseContext(SpectrumContext):
 
         header.add_history(history)
 
-        fits.writeto(pth, self._agg, header, clobber=True)
+        try:
+            fits.writeto(pth, self._agg, header, overwrite=True)
+        except TypeError:
+            fits.writeto(pth, self._agg, header, clobber=True)
 
 
 class ConstraintsWidget(QtWidgets.QWidget):

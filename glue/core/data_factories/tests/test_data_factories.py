@@ -218,7 +218,10 @@ def test_data_reload_no_file():
         d = df.load_data(fname)
 
     # file no longer exists
-    d._load_log.reload()
+    with warnings.catch_warnings(record=True) as w:
+        d._load_log.reload()
+    assert len(w) == 1
+    assert str(w[0].message).startswith('Could not reload')
 
     assert_array_equal(d['a'], [0, 2, 3, 5, 7])
 
@@ -231,7 +234,11 @@ def test_data_reload_shape_change():
         coords_old = d.coords
         with open(fname, 'w') as f2:
             f2.write('#a, b\n0, 0\n0, 0\n0, 0\n0, 0')
-        d._load_log.reload()
+
+        with warnings.catch_warnings(record=True) as w:
+            d._load_log.reload()
+        assert len(w) == 1
+        assert str(w[0].message) == 'Cannot refresh data -- data shape changed'
 
     assert_array_equal(d['a'], [0, 2, 3, 5, 7])
     assert d.coords is coords_old
@@ -262,7 +269,11 @@ def test_file_watch_os_error():
     with make_file(b'test', 'csv') as fname:
         fw = df.FileWatcher(fname, cb)
 
-    fw.check_for_changes()
+    with warnings.catch_warnings(record=True) as w:
+        fw.check_for_changes()
+    assert len(w) == 1
+    assert str(w[0].message).startswith('Cannot access')
+
     assert cb.call_count == 0
 
 
