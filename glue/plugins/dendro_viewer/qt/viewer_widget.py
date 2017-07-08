@@ -11,8 +11,8 @@ from glue.utils.qt import load_ui
 from glue.utils.qt.widget_properties import (ButtonProperty, CurrentComboProperty,
                                        connect_bool_button, connect_current_combo)
 from glue.viewers.common.qt.data_viewer import DataViewer
-from glue.viewers.matplotlib.qt.widget import MplWidget, defer_draw
-from glue.utils import nonpartial
+from glue.viewers.matplotlib.qt.widget import MplWidget
+from glue.utils import nonpartial, defer_draw
 
 
 class DendroWidget(DataViewer):
