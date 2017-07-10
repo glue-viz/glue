@@ -26,8 +26,9 @@ class EditSubsetMode(object):
     def __init__(self):
         self.mode = ReplaceMode
         self.data_collection = None
+        self.edit_subset = []
 
-    def _combine_data(self, data, new_state, add_if_empty=False):
+    def _combine_data(self, new_state):
         """ Dispatches to the combine method of mode attribute.
 
         The behavior is dependent on the mode it dispatches to.
@@ -36,20 +37,13 @@ class EditSubsetMode(object):
 
         :param edit_subset: The current edit_subset
         :param new_state: The new SubsetState
-        :param add_if_empty: If True and a data set has no subsets,
-                             a new one will be added and assigned
-                             using new-state
         """
-        empty = data.edit_subset is None or data.edit_subset == []
-        if add_if_empty and empty:
+        if self.edit_subset == []:
             if self.data_collection is None:
                 raise RuntimeError("Must set data_collection before "
                                    "calling update")
-            data.edit_subset = self.data_collection.new_subset_group()
-        if empty and not add_if_empty:
-            logging.getLogger(__name__).info("Ignoring subset update")
-            return
-        subs = data.edit_subset
+            self.edit_subset = self.data_collection.new_subset_group()
+        subs = self.edit_subset
         for s in as_list(subs):
             self.mode(s, new_state)
 
@@ -73,15 +67,8 @@ class EditSubsetMode(object):
         """
         logging.getLogger(__name__).debug("Update subset for %s", d)
 
-        if isinstance(d, Data):
-            self._combine_data(d, new_state, add_if_empty=d is focus_data)
-        elif isinstance(d, DataCollection):
-            no_editable = all(data.edit_subset is None or
-                              data.edit_subset == []
-                              for data in d)
-            for data in d:
-                doadd = data is focus_data and no_editable
-                self._combine_data(data, new_state, add_if_empty=doadd)
+        if isinstance(d, (Data, DataCollection)):
+            self._combine_data(new_state)
         else:
             raise TypeError("input must be a Data or DataCollection: %s" %
                             type(d))
