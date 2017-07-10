@@ -10,7 +10,7 @@ import os
 from qtpy import QtCore, QtWidgets, QtGui
 from qtpy.QtCore import Qt
 
-from glue.core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode
+from glue.core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode, EditSubsetMode
 from glue.config import single_subset_action
 from glue import core
 from glue.dialogs.link_editor.qt import LinkEditor
@@ -472,13 +472,8 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
 
     def _update_editable_subset(self):
         """Update edit subsets to match current selection"""
-        layers = self.selected_layers()
-        layers.extend(s for l in layers
-                      if isinstance(l, core.SubsetGroup)
-                      for s in l.subsets)
-
-        for data in self.data_collection:
-            data.edit_subset = [s for s in data.subsets if s in layers]
+        mode = EditSubsetMode()
+        mode.edit_subset = [s for s in self.selected_layers() if isinstance(s, core.SubsetGroup)]
 
     def _create_component(self):
         dialog = CustomComponentWidget(self.data_collection)

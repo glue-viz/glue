@@ -71,23 +71,16 @@ class ScatterViewer(MatplotlibDataViewer):
         # cmd = command.ApplyROI(client=self.client, roi=roi)
         # self._session.command_stack.do(cmd)
 
-        # TODO Does subset get applied to all data or just visible data?
+        x_comp = self.state.x_att.parent.get_component(self.state.x_att)
+        y_comp = self.state.y_att.parent.get_component(self.state.y_att)
 
-        for layer_artist in self._layer_artist_container:
+        subset_state = x_comp.subset_from_roi(self.state.x_att, roi,
+                                              other_comp=y_comp,
+                                              other_att=self.state.y_att,
+                                              coord='x')
 
-            if not isinstance(layer_artist.layer, Data):
-                continue
-
-            x_comp = layer_artist.layer.get_component(self.state.x_att)
-            y_comp = layer_artist.layer.get_component(self.state.y_att)
-
-            subset_state = x_comp.subset_from_roi(self.state.x_att, roi,
-                                                  other_comp=y_comp,
-                                                  other_att=self.state.y_att,
-                                                  coord='x')
-
-            mode = EditSubsetMode()
-            mode.update(self._data, subset_state, focus_data=layer_artist.layer)
+        mode = EditSubsetMode()
+        mode.update(self._data, subset_state)
 
     @staticmethod
     def update_viewer_state(rec, context):

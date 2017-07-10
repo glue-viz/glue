@@ -3,12 +3,14 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+from collections import Counter
 
 import pytest
 
 from numpy.testing import assert_equal, assert_allclose
 
-from glue.core import Data
+from glue.core.message import SubsetUpdateMessage
+from glue.core import HubListener, Data
 from glue.core.roi import XRangeROI
 from glue.core.subset import RangeSubsetState, CategoricalROISubsetState
 from glue import core
@@ -17,6 +19,7 @@ from glue.core.tests.util import simple_session
 from glue.utils.qt import combo_as_string
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.core.state import GlueUnSerializer
+from glue.app.qt.layer_tree_widget import LayerTreeWidget
 
 from ..data_viewer import HistogramViewer
 
@@ -495,3 +498,49 @@ class TestHistogramViewer(object):
         assert viewer4.state.layers[1].visible
         assert viewer4.state.cumulative
         assert not viewer4.state.normalize
+
+    def test_apply_roi_single(self):
+
+        # Regression test for a bug that caused mode.update to be called
+        # multiple times and resulted in all other viewers receiving many
+        # messages regarding subset updates (this occurred when multiple)
+        # datasets were present.
+
+        layer_tree = LayerTreeWidget()
+        layer_tree.set_checkable(False)
+        layer_tree.setup(self.data_collection)
+        layer_tree.bind_selection_to_edit_subset()
+
+        class Client(HubListener):
+
+            def __init__(self, *args, **kwargs):
+                super(Client, self).__init__(*args, **kwargs)
+                self.count = Counter()
+
+            def ping(self, message):
+                self.count[message.sender] += 1
+
+            def register_to_hub(self, hub):
+                hub.subscribe(self, SubsetUpdateMessage, handler=self.ping)
+
+        d1 = Data(a=[1, 2, 3], label='d1')
+        d2 = Data(b=[1, 2, 3], label='d2')
+        d3 = Data(c=[1, 2, 3], label='d3')
+        d4 = Data(d=[1, 2, 3], label='d4')
+
+        self.data_collection.append(d1)
+        self.data_collection.append(d2)
+        self.data_collection.append(d3)
+        self.data_collection.append(d4)
+
+        client = Client()
+        client.register_to_hub(self.hub)
+
+        self.viewer.add_data(d1)
+        self.viewer.add_data(d3)
+
+        roi = XRangeROI(2.5, 3.5)
+        self.viewer.apply_roi(roi)
+
+        for subset in client.count:
+            assert client.count[subset] == 1

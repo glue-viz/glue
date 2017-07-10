@@ -20,7 +20,7 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
     """
     window_closed = QtCore.Signal()
     _toolbar_cls = MatplotlibViewerToolbar
-    tools = ['image:contrast_bias', 'image:colormap']
+    tools = ['image:contrast', 'image:colormap']
 
     def __init__(self, image=None, wcs=None, parent=None, **kwargs):
         """
