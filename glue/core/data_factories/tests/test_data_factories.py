@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import warnings
 
+import sys
 import pytest
 import numpy as np
 from mock import MagicMock
@@ -212,6 +213,7 @@ def test_data_reload():
     assert d.coords is not coords_old
 
 
+@pytest.mark.skipif(sys.platform.startswith('win'), reason='file deletion doesn\'t work on Windows')
 def test_data_reload_no_file():
     data = b'#a, b\n0, 1\n2, 3\n3, 4\n5, 6\n7, 8'
     with make_file(data, '.csv') as fname:
@@ -264,6 +266,7 @@ def test_file_watch():
 
 
 @requires_qt
+@pytest.mark.skipif(sys.platform.startswith('win'), reason='file deletion doesn\'t work on Windows')
 def test_file_watch_os_error():
     cb = MagicMock()
     with make_file(b'test', 'csv') as fname:
