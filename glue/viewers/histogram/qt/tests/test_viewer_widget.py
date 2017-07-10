@@ -12,7 +12,7 @@ from numpy.testing import assert_equal, assert_allclose
 from glue.core.message import SubsetUpdateMessage
 from glue.core import HubListener, Data
 from glue.core.roi import XRangeROI
-from glue.core.subset import RangeSubsetState
+from glue.core.subset import RangeSubsetState, CategoricalROISubsetState
 from glue import core
 from glue.core.component_id import ComponentID
 from glue.core.tests.util import simple_session
