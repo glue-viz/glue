@@ -80,18 +80,13 @@ class HistogramViewer(MatplotlibDataViewer):
 
         roi_new = RangeROI(min=lo, max=hi, orientation='x')
 
-        for layer_artist in self._layer_artist_container:
+        x_comp = self.state.x_att.parent.get_component(self.state.x_att)
 
-            if not isinstance(layer_artist.layer, Data):
-                continue
+        subset_state = x_comp.subset_from_roi(self.state.x_att, roi_new,
+                                              coord='x')
 
-            x_comp = layer_artist.layer.get_component(self.state.x_att)
-
-            subset_state = x_comp.subset_from_roi(self.state.x_att, roi_new,
-                                                  coord='x')
-
-            mode = EditSubsetMode()
-            mode.update(self._data, subset_state, focus_data=layer_artist.layer)
+        mode = EditSubsetMode()
+        mode.update(self._data, subset_state)
 
     @staticmethod
     def update_viewer_state(rec, context):

@@ -38,7 +38,7 @@ class EditSubsetMode(object):
         :param edit_subset: The current edit_subset
         :param new_state: The new SubsetState
         """
-        if self.edit_subset == []:
+        if not self.edit_subset:
             if self.data_collection is None:
                 raise RuntimeError("Must set data_collection before "
                                    "calling update")

@@ -3,11 +3,18 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from glue.config import CFG_DIR as CFG_DIR_ORIG
+from glue.core.edit_subset_mode import EditSubsetMode, ReplaceMode
 
 
 def pytest_addoption(parser):
     parser.addoption("--no-optional-skip", action="store_true",
                      help="don't skip any tests with optional dependencies")
+
+
+def pytest_runtest_setup(item):
+    mode = EditSubsetMode()
+    mode.mode = ReplaceMode
+    mode.edit_subset = []
 
 
 def pytest_configure(config):

@@ -6,7 +6,7 @@ import numpy as np
 from qtpy import QtCore, QtGui
 from glue.utils.qt import get_qapp
 from qtpy.QtCore import Qt
-from glue.core import Data, DataCollection, Session
+from glue.core import Data, DataCollection
 from glue.utils.qt import qt4_to_mpl_color
 from glue.app.qt import GlueApplication
 
@@ -194,8 +194,7 @@ def test_table_widget(tmpdir):
     # We specify that we are editing the second subset, and use a 'not' logical
     # operation to remove the currently selected line from the second subset.
 
-    d.edit_subset = [d.subsets[1]]
-
+    subset_mode.edit_subset = [d.subsets[1]]
     subset_mode.mode = AndNotMode
 
     press_key(Qt.Key_Enter)
@@ -215,7 +214,7 @@ def test_table_widget(tmpdir):
 
     subset_mode.mode = OrMode
 
-    d.edit_subset = [d.subsets[0]]
+    subset_mode.edit_subset = [d.subsets[0]]
 
     press_key(Qt.Key_Enter)
 
@@ -229,7 +228,7 @@ def test_table_widget(tmpdir):
 
     subset_mode.mode = ReplaceMode
 
-    d.edit_subset = None
+    subset_mode.edit_subset = None
 
     press_key(Qt.Key_Enter)
 

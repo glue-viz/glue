@@ -9,6 +9,7 @@ from qtpy.QtTest import QTest
 from qtpy import QtWidgets
 from glue import core
 from glue.tests import example_data
+from glue.core.edit_subset_mode import EditSubsetMode
 
 from ..layer_tree_widget import (LayerTreeWidget, Clipboard, PlotAction)
 
@@ -195,25 +196,26 @@ class TestLayerTree(object):
         assert sub.subset_state is not dummy_state
 
     def test_single_selection_updates_editable(self):
+        mode = EditSubsetMode()
         self.widget.bind_selection_to_edit_subset()
-        layer = self.add_layer()
+        self.add_layer()
         grp1 = self.collect.new_subset_group()
         grp2 = self.collect.new_subset_group()
-        assert layer.edit_subset[0].group is not grp1
+        assert mode.edit_subset[0] is not grp1
         self.select_layers(grp1)
-        assert layer.edit_subset[0].group is grp1
+        assert mode.edit_subset[0] is grp1
 
     def test_multi_selection_updates_editable(self):
         """Selection disables edit_subset for all other data"""
+        mode = EditSubsetMode()
         self.widget.bind_selection_to_edit_subset()
-        layer = self.add_layer()
-        layer2 = self.add_layer()
+        self.add_layer()
+        self.add_layer()
         grps = [self.collect.new_subset_group() for _ in range(3)]
         self.select_layers(*grps[:2])
-        selected = [s.group for s in layer.edit_subset + layer2.edit_subset]
-        assert grps[0] in selected
-        assert grps[1] in selected
-        assert grps[2] not in selected
+        assert grps[0] in mode.edit_subset
+        assert grps[1] in mode.edit_subset
+        assert grps[2] not in mode.edit_subset
 
     def test_selection_updates_on_data_add(self):
         layer = self.add_layer()
