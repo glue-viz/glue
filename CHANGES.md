@@ -19,6 +19,12 @@ v0.11.0 (unreleased)
   both in terms of number of lines and in terms of the number of
   connections/callbacks that need to be set up manually. [#1278, #1289]
 
+* Updated EditSubsetMode so that Data objects no longer have an edit_subset
+  attribute - instead, the current list of subsets being edited is kept in
+  EditSubsetMode itself. We also update the subset state only once on each
+  subset group, rather than once per dataset, which avoids doing the same
+  update to each dataset multiple times. [#1338]
+
 v0.10.5 (unreleased)
 --------------------
 
