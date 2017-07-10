@@ -330,13 +330,10 @@ class TestScatterViewer(object):
             def register_to_hub(self, hub):
                 hub.subscribe(self, SubsetUpdateMessage, handler=self.ping)
 
-        self.data_collection.remove(self.data)
-        self.data_collection.remove(self.data_2d)
-
-        d1 = Data(a=[1, 2, 3], label='d1')
-        d2 = Data(b=[1, 2, 3], label='d2')
-        d3 = Data(c=[1, 2, 3], label='d3')
-        d4 = Data(d=[1, 2, 3], label='d4')
+        d1 = Data(a=[1, 2, 3], label='d3')
+        d2 = Data(b=[1, 2, 3], label='d4')
+        d3 = Data(c=[1, 2, 3], label='d5')
+        d4 = Data(d=[1, 2, 3], label='d6')
 
         self.data_collection.append(d1)
         self.data_collection.append(d2)
@@ -347,6 +344,7 @@ class TestScatterViewer(object):
         client.register_to_hub(self.hub)
 
         self.viewer.add_data(d1)
+        self.viewer.add_data(d3)
 
         roi = XRangeROI(2.5, 3.5)
         self.viewer.apply_roi(roi)
