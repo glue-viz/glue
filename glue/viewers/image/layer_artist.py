@@ -46,7 +46,11 @@ class ImageLayerArtist(MatplotlibLayerArtist):
 
     def get_image_data(self):
 
+        # FIXME: we should disable the layer if the image cannot be shown
+        # on the same grid as the reference data.
+
         try:
+            # FIXME: is the following slow? Should slide at same time?
             image = self.layer[self.state.attribute]
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
