@@ -181,7 +181,15 @@ class ImageSubsetLayerArtist(MatplotlibLayerArtist):
         return mask
 
     def _update_image_data(self):
-        data = self._get_image_data()
+
+        try:
+            data = self._get_image_data()
+        except IncompatibleAttribute:
+            self.disable_invalid_attributes(self.state.attribute)
+            data = np.zeros(self.layer.shape)
+        else:
+            self._enabled = True
+
         self.mpl_image.set_data(data)
         self.mpl_image.set_extent([-0.5, data.shape[1] - 0.5, -0.5, data.shape[0] - 0.5])
         self.redraw()
