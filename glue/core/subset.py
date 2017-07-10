@@ -328,11 +328,11 @@ class Subset(object):
         """
         mask = np.short(self.to_mask())
         if format == 'fits':
+            from astropy.io import fits
             try:
-                from astropy.io import fits
+                fits.writeto(file_name, mask, overwrite=True)
+            except TypeError:
                 fits.writeto(file_name, mask, clobber=True)
-            except ImportError:
-                raise ImportError("Cannot write mask -- requires astropy")
         else:
             raise AttributeError("format not supported: %s" % format)
 
@@ -341,8 +341,6 @@ class Subset(object):
         try:
             from astropy.io import fits
             mask = fits.open(file_name)[0].data
-        except ImportError:
-            raise ImportError("Cannot read mask -- requires astropy")
         except IOError:
             raise IOError("Could not read %s (not a fits file?)" % file_name)
         ind = np.where(mask.flat)[0]

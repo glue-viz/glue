@@ -46,4 +46,7 @@ def fits_writer(data, filename):
         hdu = fits.ImageHDU(values, name=cid.label)
         hdus.append(hdu)
 
-    hdus.writeto(filename, clobber=True)
+    try:
+        hdus.writeto(filename, overwrite=True)
+    except TypeError:
+        hdus.writeto(filename, clobber=True)

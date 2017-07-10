@@ -238,7 +238,7 @@ def test_categorical_component():
     c = CategoricalComponent(['a','b','c','a','b'], categories=['a','b','c'])
     c2 = clone(c)
     assert isinstance(c2, CategoricalComponent)
-    np.testing.assert_array_equal(c.data, [0, 1, 2, 0, 1])
+    np.testing.assert_array_equal(c.codes, [0, 1, 2, 0, 1])
     np.testing.assert_array_equal(c.labels, ['a','b','c','a','b'])
     np.testing.assert_array_equal(c.categories, ['a','b','c'])
 

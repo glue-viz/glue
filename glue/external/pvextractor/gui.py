@@ -335,8 +335,11 @@ class PVSlicer(object):
         if self.pv_slice is None:
             return
 
-        from astropy.io import fits
-        self.pv_slice.writeto(plot_name, clobber=True)
+        try:
+            self.pv_slice.writeto(plot_name, overwrite=True)
+        except TypeError:
+            self.pv_slice.writeto(plot_name, clobber=True)
+
         print("Saved file to: ", plot_name)
 
         self.set_file_status('saved', filename=plot_name)

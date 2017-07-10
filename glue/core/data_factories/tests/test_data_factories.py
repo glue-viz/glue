@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import warnings
 
+import sys
 import pytest
 import numpy as np
 from mock import MagicMock
@@ -212,13 +213,17 @@ def test_data_reload():
     assert d.coords is not coords_old
 
 
+@pytest.mark.skipif(sys.platform.startswith('win'), reason='file deletion doesn\'t work on Windows')
 def test_data_reload_no_file():
     data = b'#a, b\n0, 1\n2, 3\n3, 4\n5, 6\n7, 8'
     with make_file(data, '.csv') as fname:
         d = df.load_data(fname)
 
     # file no longer exists
-    d._load_log.reload()
+    with warnings.catch_warnings(record=True) as w:
+        d._load_log.reload()
+    assert len(w) == 1
+    assert str(w[0].message).startswith('Could not reload')
 
     assert_array_equal(d['a'], [0, 2, 3, 5, 7])
 
@@ -231,7 +236,11 @@ def test_data_reload_shape_change():
         coords_old = d.coords
         with open(fname, 'w') as f2:
             f2.write('#a, b\n0, 0\n0, 0\n0, 0\n0, 0')
-        d._load_log.reload()
+
+        with warnings.catch_warnings(record=True) as w:
+            d._load_log.reload()
+        assert len(w) == 1
+        assert str(w[0].message) == 'Cannot refresh data -- data shape changed'
 
     assert_array_equal(d['a'], [0, 2, 3, 5, 7])
     assert d.coords is coords_old
@@ -257,12 +266,17 @@ def test_file_watch():
 
 
 @requires_qt
+@pytest.mark.skipif(sys.platform.startswith('win'), reason='file deletion doesn\'t work on Windows')
 def test_file_watch_os_error():
     cb = MagicMock()
     with make_file(b'test', 'csv') as fname:
         fw = df.FileWatcher(fname, cb)
 
-    fw.check_for_changes()
+    with warnings.catch_warnings(record=True) as w:
+        fw.check_for_changes()
+    assert len(w) == 1
+    assert str(w[0].message).startswith('Cannot access')
+
     assert cb.call_count == 0
 
 

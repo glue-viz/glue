@@ -64,9 +64,12 @@ def pandas_read_table(path, **kwargs):
     """
     import pandas as pd
     try:
-        from pandas.parser import CParserError
+        from pandas.io.common import CParserError
     except ImportError:  # pragma: no cover
-        from pandas._parser import CParserError
+        try:
+            from pandas.parser import CParserError
+        except ImportError:  # pragma: no cover
+            from pandas._parser import CParserError
 
     # iterate over common delimiters to search for best option
     delimiters = kwargs.pop('delimiter', [None] + list(',|\t '))

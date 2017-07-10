@@ -5,19 +5,17 @@ import pytest
 from ..misc import as_variable_name, file_format, DeferredMethod, nonpartial, lookup_class, as_list
 
 
-def test_as_variable_name():
-    def check(input, expected):
-        assert as_variable_name(input) == expected
+INPUT_EXPECTED = [('x', 'x'),
+                  ('x2', 'x2'),
+                  ('2x', '_2x'),
+                  ('x!', 'x_'),
+                  ('x y z', 'x_y_z'),
+                  ('_XY', '_XY')]
 
-    tests = [('x', 'x'),
-             ('x2', 'x2'),
-             ('2x', '_2x'),
-             ('x!', 'x_'),
-             ('x y z', 'x_y_z'),
-             ('_XY', '_XY')
-             ]
-    for input, expected in tests:
-        yield check, input, expected
+
+@pytest.mark.parametrize(('input', 'expected'), INPUT_EXPECTED)
+def test_as_variable_name(input, expected):
+    assert as_variable_name(input) == expected
 
 
 class TestFileFormat(object):
