@@ -188,7 +188,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
         self._last_viewer_state.update(self._viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
 
-        if 'reference_data' in changed:
+        if 'reference_data' in changed or 'layer' in changed:
             self._update_compatibility()
 
         if force or any(prop in changed for prop in ('layer', 'attribute',
@@ -226,10 +226,6 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
         self.mpl_image = self.axes.imshow([[0.]],
                                           origin='lower', interpolation='nearest',
                                           vmin=0, vmax=1, aspect=self._viewer_state.aspect)
-
-    def reset_cache(self):
-        self._last_viewer_state = {}
-        self._last_layer_state = {}
 
     def _get_image_data(self):
 
@@ -303,7 +299,7 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
         self._last_viewer_state.update(self._viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
 
-        if 'reference_data' in changed:
+        if 'reference_data' in changed or 'layer' in changed:
             self._update_compatibility()
 
         if force or any(prop in changed for prop in ('layer', 'attribute', 'color',
