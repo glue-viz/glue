@@ -24,6 +24,7 @@ from glue.core.state import GlueUnSerializer
 from glue.app.qt.layer_tree_widget import LayerTreeWidget
 from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState
+from glue.core.link_helpers import LinkSame
 
 from ..data_viewer import ImageViewer
 
@@ -53,7 +54,8 @@ class TestImageViewer(object):
 
         self.coords = MyCoords()
         self.image1 = Data(label='image1', x=[[1, 2], [3, 4]], y=[[4, 5], [2, 3]])
-        self.image2 = Data(label='image2', a=[[3, 3], [2, 2]], b=[[4, 4], [3, 2]], coords=self.coords)
+        self.image2 = Data(label='image2', a=[[3, 3], [2, 2]], b=[[4, 4], [3, 2]],
+                           coords=self.coords)
         self.catalog = Data(label='catalog', c=[1, 3, 2], d=[4, 3, 3])
         self.hypercube = Data(label='hypercube', x=np.arange(120).reshape((2, 3, 4, 5)))
 
@@ -72,7 +74,6 @@ class TestImageViewer(object):
         self.viewer.register_to_hub(self.hub)
 
         self.options_widget = self.viewer.options_widget()
-
 
     def teardown_method(self, method):
         self.viewer.close()
@@ -298,6 +299,60 @@ class TestImageViewer(object):
 
         for subset in client.count:
             assert client.count[subset] == 1
+
+    def test_disable_incompatible(self):
+
+        # Test to make sure that image and image subset layers are disabled if
+        # their pixel coordinates are not compatible with the ones of the
+        # reference data.
+
+        self.viewer.add_data(self.image1)
+        self.viewer.add_data(self.image2)
+
+        assert self.viewer.state.reference_data is self.image1
+
+        self.data_collection.new_subset_group()
+
+        assert len(self.viewer.layers) == 4
+
+        # Only the two layers associated with the reference data should be enabled
+        for layer_artist in self.viewer.layers:
+            if layer_artist.layer in (self.image1, self.image1.subsets[0]):
+                assert layer_artist.enabled
+            else:
+                assert not layer_artist.enabled
+
+        py1, px1 = self.image1.pixel_component_ids
+        py2, px2 = self.image2.pixel_component_ids
+
+        link1 = LinkSame(px1, px2)
+        self.data_collection.add_link(link1)
+
+        # One link isn't enough, second dataset layers are still not enabled
+
+        for layer_artist in self.viewer.layers:
+            if layer_artist.layer in (self.image1, self.image1.subsets[0]):
+                assert layer_artist.enabled
+            else:
+                assert not layer_artist.enabled
+
+        link2 = LinkSame(py1, py2)
+        self.data_collection.add_link(link2)
+
+        # All layers should now be enabled
+
+        for layer_artist in self.viewer.layers:
+            assert layer_artist.enabled
+
+        self.data_collection.remove_link(link2)
+
+        # We should now be back to the original situation
+
+        for layer_artist in self.viewer.layers:
+            if layer_artist.layer in (self.image1, self.image1.subsets[0]):
+                assert layer_artist.enabled
+            else:
+                assert not layer_artist.enabled
 
 
 class TestSessions(object):
