@@ -63,9 +63,12 @@ class HubCallbackContainer(object):
 
         # Called when weakref detects that the instance on which a method was
         # defined has been garbage collected.
+        remove = []
         for key, value in self.callbacks.items():
             if value[1] is method_instance or value[3] is method_instance:
-                self.callbacks.pop(key)
+                remove.append(key)
+        for key in remove:
+            self.callbacks.pop(key)
 
     def __contains__(self, message_class):
         return message_class in self.callbacks
