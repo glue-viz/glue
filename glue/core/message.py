@@ -123,11 +123,8 @@ class DataAddComponentMessage(DataMessage):
         self.component_id = component_id
 
 
-class DataRemoveComponentMessage(DataMessage):
-
-    def __init__(self, sender, component_id, tag=None):
-        super(DataRemoveComponentMessage, self).__init__(sender, tag=tag)
-        self.component_id = component_id
+class DataRemoveComponentMessage(DataAddComponentMessage):
+    pass
 
 
 class ComponentsChangedMessage(DataMessage):
