@@ -1,12 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
 import logging
+from weakref import WeakKeyDictionary
 from inspect import getmro
 from collections import defaultdict
 
 from glue.core.exceptions import InvalidSubscriber, InvalidMessage
 from glue.core.message import Message
-
+from glue.core.hub_callback_container import HubCallbackContainer
 
 __all__ = ['Hub', 'HubListener']
 
@@ -37,7 +38,7 @@ class Hub(object):
         to the new hub object.
         """
         # Dictionary of subscriptions
-        self._subscriptions = defaultdict(dict)
+        self._subscriptions = WeakKeyDictionary()
 
         from glue.core.data import Data
         from glue.core.subset import Subset
@@ -107,7 +108,10 @@ class Hub(object):
         if not handler:
             handler = subscriber.notify
 
-        self._subscriptions[subscriber][message_class] = (filter, handler)
+        if subscriber not in self._subscriptions:
+            self._subscriptions[subscriber] = HubCallbackContainer()
+
+        self._subscriptions[subscriber][message_class] = handler, filter
 
     def is_subscribed(self, subscriber, message):
         """
@@ -121,12 +125,14 @@ class Hub(object):
             True if the subscriber/message pair have been subscribed to the hub
 
         """
-        return subscriber in self._subscriptions and \
-            message in self._subscriptions[subscriber]
+        return (subscriber in self._subscriptions and
+                message in self._subscriptions[subscriber])
 
     def get_handler(self, subscriber, message):
+        if subscriber is None:
+            return None
         try:
-            return self._subscriptions[subscriber][message][1]
+            return self._subscriptions[subscriber][message][0]
         except KeyError:
             return None
 
@@ -160,13 +166,14 @@ class Hub(object):
             # subscriptions to message or its superclasses
             messages = [msg for msg in subscriptions.keys() if
                         issubclass(type(message), msg)]
+
             if len(messages) == 0:
                 continue
 
             # narrow to the most-specific message
             candidate = max(messages, key=_mro_count)
 
-            test, handler = subscriptions[candidate]
+            handler, test = subscriptions[candidate]
             if test(message):
                 yield subscriber, handler
 
