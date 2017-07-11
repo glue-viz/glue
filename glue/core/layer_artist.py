@@ -83,6 +83,11 @@ class LayerArtistBase(PropertySetMixin):
 
         self._disabled_reason = ''  # A string explaining why this layer is disabled.
 
+    def enable(self):
+        self._disabled_reason = ''
+        self._enabled = True
+        self.redraw()
+
     def disable(self, reason):
         """
         Disable the layer for a particular reason.
