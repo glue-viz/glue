@@ -9,9 +9,12 @@ from glue.viewers.image.state import ImageLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 from glue.utils import color2rgb
+from glue.core.link_manager import is_equivalent_cid
+from glue.core import HubListener
+from glue.core.message import ComponentsChangedMessage
 
 
-class ImageLayerArtist(MatplotlibLayerArtist):
+class ImageLayerArtist(MatplotlibLayerArtist, HubListener):
 
     _layer_state_cls = ImageLayerState
 
@@ -40,14 +43,53 @@ class ImageLayerArtist(MatplotlibLayerArtist):
         self.composite.set(self.uuid, array=self.get_image_data)
         self.composite_image = self.axes._composite_image
 
+        self.data_collection.hub.subscribe(self, ComponentsChangedMessage,
+                                           handler=self._update_compatibility,
+                                           filter=lambda msg: msg.sender is self.layer)
+
+    def _update_compatibility(self, *args, **kwargs):
+        """
+        Determine compatibility of data with reference data. For the data to be
+        compatible with the reference data, the number of dimensions has to
+        match and the pixel component IDs have to be equivalent.
+        """
+
+        if self.layer is self._viewer_state.reference_data:
+            if not self.enabled:
+                self.enable()
+            return
+
+        # Check whether the pixel component IDs of the dataset are equivalent
+        # to that of the reference dataset. In future this is where we could
+        # allow for these to be different and implement reprojection.
+        if self.layer.ndim != self._viewer_state.reference_data.ndim:
+            self.disable('Data dimensions do not match reference data')
+            return
+
+        # Determine whether pixel component IDs are equivalent
+
+        pids = self.layer.pixel_component_ids
+        pids_ref = self._viewer_state.reference_data.pixel_component_ids
+
+        for i in range(self.layer.ndim):
+            if not is_equivalent_cid(self.layer, pids[i], pids_ref[i]):
+                self.disable('Pixel component IDs do not match. You can try '
+                             'fixing this by linking the pixel component IDs '
+                             'of this dataset with those of the reference '
+                             'dataset.')
+                return
+
+        if not self.enabled:
+            self.enable()
+
     def reset_cache(self):
         self._last_viewer_state = {}
         self._last_layer_state = {}
 
     def get_image_data(self):
 
-        # FIXME: we should disable the layer if the image cannot be shown
-        # on the same grid as the reference data.
+        if not self.enabled:
+            return None
 
         try:
             # FIXME: is the following slow? Should slide at same time?
@@ -55,8 +97,7 @@ class ImageLayerArtist(MatplotlibLayerArtist):
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self.state.attribute)
-            image = np.zeros(self.layer.shape)
-            # TODO: Is this enough?
+            return None
         else:
             self._enabled = True
 
@@ -106,7 +147,6 @@ class ImageLayerArtist(MatplotlibLayerArtist):
         # then we could consider simplifying this. Until then, we manually keep track
         # of which properties have changed.
 
-
         changed = set()
 
         if not force:
@@ -121,6 +161,9 @@ class ImageLayerArtist(MatplotlibLayerArtist):
 
         self._last_viewer_state.update(self._viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
+
+        if 'reference_data' in changed:
+            self._update_compatibility()
 
         if force or any(prop in changed for prop in ('layer', 'attribute', 'slices', 'x_att', 'y_att')):
             self._update_image_data()
