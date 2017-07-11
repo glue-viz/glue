@@ -27,6 +27,11 @@ from glue.core.link_helpers import LinkCollection
 from glue.core.component_link import ComponentLink
 from glue.core.data import Data
 from glue.core.component import DerivedComponent
+from glue.core.exceptions import IncompatibleAttribute
+
+
+__all__ = ['accessible_links', 'discover_links', 'find_dependents',
+           'LinkManager', 'is_equivalent_cid']
 
 
 def accessible_links(cids, links):
@@ -42,8 +47,7 @@ def accessible_links(cids, links):
     """
     cids = set(cids)
     return [l for l in links if
-             set(l.get_from_ids()) <= cids]
-
+            set(l.get_from_ids()) <= cids]
 
 
 def discover_links(data, links):
@@ -155,7 +159,7 @@ class LinkManager(HubListener):
             for l in link:
                 self.add_link(l)
         else:
-            if not link.inverse in self._links:
+            if link.inverse not in self._links:
                 self._links.add(link)
 
     @contract(link=ComponentLink)
@@ -224,3 +228,43 @@ class LinkManager(HubListener):
 
     def __contains__(self, item):
         return item in self._links
+
+
+def _find_identical_reference_cid(data, cid):
+    """
+    Given a dataset and a component ID, return the equivalent component ID that
+    truly belongs to the dataset (not via a link). Returns None if there is
+    no strictly identical component in the dataset.
+    """
+    try:
+        target_comp = data.get_component(cid)
+    except IncompatibleAttribute:
+        return None
+    if isinstance(target_comp, DerivedComponent):
+        if target_comp.link.identity:
+            updated_cid = target_comp.link.get_from_ids()[0]
+            return _find_identical_reference_cid(data, updated_cid)
+        else:
+            return None
+    else:
+        return cid
+
+
+def is_equivalent_cid(data, cid1, cid2):
+    """
+    Convenience function to determine if two component IDs in a dataset are
+    equivalent.
+
+    Parameters
+    ----------
+    data : `~glue.core.Data`
+        The data object in which to check for the component IDs
+    cid1, cid2 : `~glue.core.ComponentID`
+        The two component IDs to compare
+    """
+
+    # Dereference the component IDs to find base component ID
+    cid1 = _find_identical_reference_cid(data, cid1)
+    cid2 = _find_identical_reference_cid(data, cid2)
+
+    return cid1 is cid2

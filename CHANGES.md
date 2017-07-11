@@ -4,6 +4,9 @@ Full changelog
 v0.11.0 (unreleased)
 --------------------
 
+* Added a function is_equivalent_cid that can be used to determine whether
+  two component IDs in a dataset are equivalent.
+
 * The image contrast and bias can now be set with the left click as well
   as right click. [#1323]
 
