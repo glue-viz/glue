@@ -32,17 +32,17 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
         self.state.data_collection = self._viewer_state.data_collection
         self.data_collection = self._viewer_state.data_collection
 
-        def is_data_object(message):
-            if isinstance(self.layer, Data):
-                return message.sender is self.layer
-            else:
-                return message.sender is self.layer.data
-
         self.data_collection.hub.subscribe(self, ComponentsChangedMessage,
                                            handler=self._update_compatibility,
-                                           filter=is_data_object)
+                                           filter=self._is_data_object)
 
         self._update_compatibility()
+
+    def _is_data_object(self, message):
+        if isinstance(self.layer, Data):
+            return message.sender is self.layer
+        else:
+            return message.sender is self.layer.data
 
     def reset_cache(self):
         self._last_viewer_state = {}
