@@ -4,6 +4,9 @@ Full changelog
 v0.11.0 (unreleased)
 --------------------
 
+* Fix a bug that caused no messages to be emitted when components were
+  removed from Data objects, and add a new DataRemoveComponentMesssage.
+
 * Fix a long-standing bug which caused performance issues after linking
   coordinate or derived components between datasets.
 
