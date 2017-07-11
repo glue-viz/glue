@@ -409,7 +409,7 @@ class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
     def register_to_hub(self, hub):
         for msg in [m.DataCollectionDeleteMessage,
                     m.SubsetDeleteMessage]:
-            hub.subscribe(self, msg, lambda x: self.invalidate())
+            hub.subscribe(self, msg, self.invalidate)
 
         hub.subscribe(self, m.DataCollectionAddMessage, self._on_add_data)
         hub.subscribe(self, m.SubsetCreateMessage, self._on_add_subset)
@@ -424,7 +424,7 @@ class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
         idx = self.subsets_index(len(self.data_collection.subset_groups) - 1)
         self.new_item.emit(idx)
 
-    def invalidate(self):
+    def invalidate(self, *args):
         self.root = DataCollectionItem(self.data_collection)
         self._items.clear()
         if not PYQT5:

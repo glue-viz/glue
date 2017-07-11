@@ -195,8 +195,8 @@ class MatplotlibDataViewer(DataViewer):
     def _has_data_or_subset(self, x):
         return x.sender in self._layer_artist_container.layers
 
-    def _remove_data(self, data):
-        self.remove_data(data)
+    def _remove_data(self, message):
+        self.remove_data(message.data)
 
     def _is_appearance_settings(self, msg):
         return ('BACKGROUND_COLOR' in msg.settings

@@ -30,9 +30,8 @@ env:
     - QT_PKG=pyqt5
     - SETUP_XVFB=True
     - SPHINX_VERSION=1.5
-    # Note that we need to specify requests 2.9 because of a bug in the version check in linkchecker, and we can't use conda since requests 2.9 won't exist for e.g. Python 3.6
     - CONDA_DEPENDENCIES="nomkl pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole"
-    - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli plotly spectral-cube requests==2.9 glue-vispy-viewers"
+    - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli plotly spectral-cube"
     - REMOVE_INSTALL_REQUIRES=0
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
     - secure: "SU9BYH8d9eNigypG3lC83s0NY6Mq9AHGKXyEGeXDtz1npJIC1KHdzPMP1v1K3dzCgl1p6ReMXPjZMCENyfNkad/xvzTzGk0Nu/4BjihrUPV6+ratVeLpv0JLm8ikh8q+sZURkdtzUOlds+Hfn5ku4LdpT87tcKHY9TINAGA34ZM="
@@ -126,7 +125,9 @@ before_install:
   - if [[ $QT_PKG == pyqt5 ]]; then export CONDA_DEPENDENCIES="pyqt=5 "$CONDA_DEPENDENCIES; fi
 
   # Documentation dependencies
-  - if [ $DOC_TRIGGER ]; then export PIP_DEPENDENCIES="sphinx-automodapi numpydoc linkchecker "$PIP_DEPENDENCIES; fi
+  # Note that we need to specify requests 2.9 because of a bug in the version check in linkchecker,
+  # and we can't use conda since requests 2.9 won't exist for e.g. Python 3.6
+  - if [ $DOC_TRIGGER ]; then export PIP_DEPENDENCIES="sphinx-automodapi numpydoc linkchecker requests==2.9 "$PIP_DEPENDENCIES; fi
 
   # Install ci-helpers and set up conda
   - git clone git://github.com/astropy/ci-helpers.git
