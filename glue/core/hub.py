@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import logging
+from contextlib import contextmanager
 from weakref import WeakKeyDictionary
 from inspect import getmro
 from collections import defaultdict
@@ -39,6 +40,9 @@ class Hub(object):
         """
         # Dictionary of subscriptions
         self._subscriptions = WeakKeyDictionary()
+
+        self._paused = False
+        self._queue = []
 
         from glue.core.data import Data
         from glue.core.subset import Subset
@@ -177,15 +181,30 @@ class Hub(object):
             if test(message):
                 yield subscriber, handler
 
+    @contextmanager
+    def delay_callbacks(self):
+        self._paused = True
+        try:
+            yield
+        finally:
+            self._paused = False
+            # TODO: could de-duplicate messages here
+            for message in self._queue:
+                self.broadcast(message)
+            self._queue = []
+
     def broadcast(self, message):
         """Broadcasts a message to all subscribed objects.
 
         :param message: The message to broadcast
         :type message: :class:`~glue.core.message.Message`
         """
-        logging.getLogger(__name__).info("Broadcasting %s", message)
-        for subscriber, handler in self._find_handlers(message):
-            handler(message)
+        if self._paused:
+            self._queue.append(message)
+        else:
+            logging.getLogger(__name__).info("Broadcasting %s", message)
+            for subscriber, handler in self._find_handlers(message):
+                handler(message)
 
     def __getstate__(self):
         """ Return a picklable representation of the hub

@@ -4,6 +4,10 @@ Full changelog
 v0.11.0 (unreleased)
 --------------------
 
+* Made it possible to delay callbacks from the Hub using the
+  ``Hub.delay_callbacks`` context manager. Also fixed the Hub so that
+  it uses weak references to classes and methods wherever possible.
+
 * Added a new method DataCollection.remove_link to match existing
   DataCollection.add_link.
 

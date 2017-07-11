@@ -130,10 +130,12 @@ class LinkManager(HubListener):
 
     def __init__(self):
         self._links = set()
+        self.hub = None
 
     def register_to_hub(self, hub):
-        hub.subscribe(self, DataCollectionDeleteMessage,
-                      handler=self._data_removed)
+        self.hub = hub
+        self.hub.subscribe(self, DataCollectionDeleteMessage,
+                           handler=self._data_removed)
 
     def _data_removed(self, msg):
         remove = []
@@ -208,8 +210,13 @@ class LinkManager(HubListener):
         for m in missing_links:
             to_remove.extend(find_dependents(data, m))
 
-        for r in to_remove:
-            data.remove_component(r)
+        if getattr(data, 'hub', None) is None:
+            for r in to_remove:
+                data.remove_component(r)
+        else:
+            with data.hub.delay_callbacks():
+                for r in to_remove:
+                    data.remove_component(r)
 
     def _add_deriveable_components(self, data):
         """Find and add any DerivedComponents that a data object can
