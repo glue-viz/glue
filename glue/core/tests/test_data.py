@@ -260,8 +260,11 @@ class TestData(object):
         assert hub.broadcast.call_count == 1
 
     def test_remove_component(self):
+        hub = MagicMock(spec_set=Hub)
+        self.data.register_to_hub(hub)
         self.data.remove_component(self.comp_id)
-        assert not self.comp_id in self.data.components
+        assert self.comp_id not in self.data.components
+        assert hub.broadcast.call_count == 2
 
     def test_get_component(self):
         assert self.data.get_component(self.comp_id) is self.comp

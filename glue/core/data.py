@@ -177,10 +177,11 @@ class Data(object):
         """
         if component_id in self._components:
             self._components.pop(component_id)
-            msg = DataRemoveComponentMessage(self, component_id)
-            self.hub.broadcast(msg)
-            msg = ComponentsChangedMessage(self)
-            self.hub.broadcast(msg)
+            if self.hub:
+                msg = DataRemoveComponentMessage(self, component_id)
+                self.hub.broadcast(msg)
+                msg = ComponentsChangedMessage(self)
+                self.hub.broadcast(msg)
 
     @contract(other='isinstance(Data)',
               cid='cid_like',

@@ -51,6 +51,7 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
     def _update_image(self, force=False, **kwargs):
         raise NotImplementedError()
 
+    @defer_draw
     def _update_compatibility(self, *args, **kwargs):
         """
         Determine compatibility of data with reference data. For the data to be
