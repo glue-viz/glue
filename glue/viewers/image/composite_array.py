@@ -86,6 +86,9 @@ class CompositeArray(object):
             else:
                 array = layer['array']
 
+            if array is None:
+                continue
+
             array_sub = array[view]
             if np.isscalar(array_sub):
                 scalar = True
