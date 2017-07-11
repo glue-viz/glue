@@ -4,6 +4,9 @@ Full changelog
 v0.11.0 (unreleased)
 --------------------
 
+* Fix a long-standing bug which caused performance issues after linking
+  coordinate or derived components between datasets.
+
 * Added a function is_equivalent_cid that can be used to determine whether
   two component IDs in a dataset are equivalent.
 

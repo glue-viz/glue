@@ -97,7 +97,11 @@ class Component(object):
         """
         Whether or not the datatype is numeric
         """
-        return np.can_cast(self.data.dtype, np.complex)
+        # We need to be careful here to not just access self.data since that
+        # would force the computation of the whole component in the case of
+        # derived components, so instead we specifically only get the first
+        # element.
+        return np.can_cast(self[(0,) * self.ndim].dtype, np.complex)
 
     @property
     def categorical(self):
@@ -334,6 +338,14 @@ class CoordinateComponent(Component):
     @classmethod
     def __setgluestate__(cls, rec, context):
         return cls(None, rec['axis'], rec['world'])
+
+    @property
+    def numeric(self):
+        return True
+
+    @property
+    def categorical(self):
+        return False
 
 
 class CategoricalComponent(Component):
