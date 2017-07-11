@@ -135,6 +135,22 @@ class DataCollection(HubListener):
         for d in self._data:
             self._link_manager.update_data_components(d)
 
+    def remove_link(self, links):
+        """
+        Remove one or more links from the data collection.
+
+        This will auto-update the components in each data set
+
+        :param links:
+           The links to remove. A scalar or list of
+           :class:`~glue.core.component_link.ComponentLink`
+           instances, or a :class:`~glue.core.link_helpers.LinkCollection`
+        """
+        self._link_manager.remove_link(links)
+        for d in self._data:
+            self._link_manager.update_data_components(d)
+
+
     def _merge_link(self, link):
         pass
 

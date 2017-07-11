@@ -164,8 +164,12 @@ class LinkManager(HubListener):
 
     @contract(link=ComponentLink)
     def remove_link(self, link):
-        logging.getLogger(__name__).debug('removing link %s', link)
-        self._links.remove(link)
+        if isinstance(link, (LinkCollection, list)):
+            for l in link:
+                self.remove_link(l)
+        else:
+            logging.getLogger(__name__).debug('removing link %s', link)
+            self._links.remove(link)
 
     @contract(data=Data)
     def update_data_components(self, data):

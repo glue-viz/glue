@@ -200,14 +200,19 @@ class TestDataCollection(object):
         cid2 = ComponentID('b')
         cid3 = ComponentID('c')
 
-        dummy = lambda x: None
-        links = ComponentLink([cid1], cid2, dummy)
-        dc.add_link(links)
+        links1 = ComponentLink([cid1], cid2, lambda x: None)
+        dc.add_link(links1)
         assert cid2 in d.components
 
-        links = ComponentLink([cid2], cid3, dummy)
-        dc.add_link(links)
+        links2 = ComponentLink([cid2], cid3, lambda x: None)
+        dc.add_link(links2)
         assert cid3 in d.components
+
+        dc.remove_link(links2)
+        assert cid3 not in d.components
+
+        dc.remove_link(links1)
+        assert cid2 not in d.components
 
     def test_merge_links(self):
         """Trivial links should be merged, discarding the duplicate ID"""

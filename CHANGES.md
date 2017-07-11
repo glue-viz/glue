@@ -4,6 +4,9 @@ Full changelog
 v0.11.0 (unreleased)
 --------------------
 
+* Added a new method DataCollection.remove_link to match existing
+  DataCollection.add_link.
+
 * Fix a bug that caused no messages to be emitted when components were
   removed from Data objects, and add a new DataRemoveComponentMesssage.
 
