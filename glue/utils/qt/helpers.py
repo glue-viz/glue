@@ -53,7 +53,6 @@ def update_combobox(combo, labeldata, default_index=0):
         combo.addItem(label, userData=data)
         if data is current or data == current:
             index = i
-    combo.blockSignals(False)
 
     if default_index < 0:
         default_index = combo.count() + default_index
@@ -62,11 +61,13 @@ def update_combobox(combo, labeldata, default_index=0):
         index = min(default_index, combo.count() - 1)
     combo.setCurrentIndex(index)
 
+    combo.blockSignals(False)
+
     # We need to force emit this, otherwise if the index happens to be the
     # same as before, even if the data is different, callbacks won't be
-    # called.
-    if idx == index or idx == -1:
-        combo.currentIndexChanged.emit(index)
+    # called. So we block the signals until just before now then always call
+    # callback manually.
+    combo.currentIndexChanged.emit(index)
 
 
 class GlueTabBar(QtWidgets.QTabBar):
