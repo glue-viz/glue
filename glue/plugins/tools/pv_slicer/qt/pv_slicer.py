@@ -125,9 +125,8 @@ class PVSliceWidget(StandaloneImageViewer):
 
     @defer_draw
     def _draw_crosshairs(self, event):
-        pass
-        # x, y, _ = self._pos_in_parent(event)
-        # self._parent.show_crosshairs(x, y)
+        x, y, _ = self._pos_in_parent(event)
+        self._parent.show_crosshairs(x, y)
 
     @defer_draw
     def _on_move(self, event):
@@ -147,7 +146,7 @@ class PVSliceWidget(StandaloneImageViewer):
             ydata = event.ydata
 
         # Find position slice where cursor is
-        ind = np.clip(xdata, 0, self._im_array.shape[1] - 1)
+        ind = int(round(np.clip(xdata, 0, self._im_array.shape[1] - 1)))
 
         # Find pixel coordinate in input image for this slice
         x = self._x[ind]
