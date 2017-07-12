@@ -71,6 +71,22 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
         self._im = imshow(self._axes, image, cmap='gray', **kwargs)
         self._im_array = image
         self._wcs = wcs
+
+        if 'extent' in kwargs:
+            self.axes.set_xlim(kwargs['extent'][:2])
+            self.axes.set_ylim(kwargs['extent'][2:])
+        else:
+            ny, nx = image.shape
+            self.axes.set_xlim(-0.5, nx - 0.5)
+            self.axes.set_ylim(-0.5, ny - 0.5)
+        # FIXME: for a reason I don't quite understand, dataLim doesn't
+        # get updated immediately here, which means that there are then
+        # issues in the first draw of the image (the limits are such that
+        # only part of the image is shown). We just set dataLim manually
+        # to avoid this issue. This is also done in ImageViewer.
+        self.axes.dataLim.intervalx = self.axes.get_xlim()
+        self.axes.dataLim.intervaly = self.axes.get_ylim()
+
         self._redraw()
 
     @property
