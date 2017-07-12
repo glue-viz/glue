@@ -21,7 +21,8 @@ from glue.icons.qt import layer_artist_icon
 from glue.core.qt.mime import LAYERS_MIME_TYPE
 from glue.utils import nonpartial
 from glue.utils.qt import PythonListModel, PyMimeData
-
+from glue.core.hub import HubListener
+from glue.core.message import Message
 
 class LayerArtistModel(PythonListModel):
 
@@ -169,13 +170,13 @@ class LayerArtistModel(PythonListModel):
         return self.artists[row]
 
 
-class LayerArtistView(QtWidgets.QListView):
+class LayerArtistView(QtWidgets.QListView, HubListener):
 
     """A list view into an artist model. The zorder
     of each artist can be shuffled by dragging and dropping
     items. Right-clicking brings up a menu to edit style or delete"""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, hub=None):
         super(LayerArtistView, self).__init__(parent)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
@@ -190,13 +191,15 @@ class LayerArtistView(QtWidgets.QListView):
         self._actions = {}
         self._create_actions()
 
-        self._timer = QtCore.QTimer(self)
-        self._timer.timeout.connect(nonpartial(self._update_viewport))
-        self._timer.start(1000)
+        # Update when any message is emitted which would indicate a change in
+        # data collection content, colors, labels, etc. It's easier to simply
+        # listen to all events since the viewport update is fast.
+        self.hub = hub
+        self.hub.subscribe(self, Message, self._update_viewport)
 
-    def _update_viewport(self):
-        # We have to do this here to make sure we always get the latest
-        # viewport instance.
+    def _update_viewport(self, *args):
+        # This forces the widget containing the list view to update/redraw,
+        # reflecting any changes in color/labels/content
         self.viewport().update()
 
     def rowsInserted(self, index, start, end):
@@ -283,16 +286,18 @@ class LayerArtistWidget(QtWidgets.QWidget):
     options for the layer artists.
     """
 
-    def __init__(self, parent=None, layer_style_widget_cls=None):
+    def __init__(self, parent=None, layer_style_widget_cls=None, hub=None):
 
         super(LayerArtistWidget, self).__init__(parent=parent)
+
+        self.hub = None
 
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
 
         self.layer_style_widget_cls = layer_style_widget_cls
 
-        self.layer_list = LayerArtistView(parent=self)
+        self.layer_list = LayerArtistView(parent=self, hub=hub)
         self.layout.addWidget(self.layer_list)
 
         self.layer_options = QtWidgets.QWidget()

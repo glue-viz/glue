@@ -4,6 +4,11 @@ Full changelog
 v0.11.0 (unreleased)
 --------------------
 
+* Get rid of QTimers for updating the data collection and layer artist
+  lists, and instead refresh whenever a message is sent from the hub
+  (which results in immediate changes rather than waiting up to a
+   second for things to change). [#1343]
+
 * Made it possible to delay callbacks from the Hub using the
   ``Hub.delay_callbacks`` context manager. Also fixed the Hub so that
   it uses weak references to classes and methods wherever possible. [#1339]
