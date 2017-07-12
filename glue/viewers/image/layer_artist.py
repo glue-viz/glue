@@ -113,6 +113,11 @@ class ImageLayerArtist(BaseImageLayerArtist):
         self.composite.set(self.uuid, array=self.get_image_data)
         self.composite_image = self.axes._composite_image
 
+    def enable(self):
+        if hasattr(self, 'composite_image'):
+            self.composite_image.invalidate_cache()
+        super(ImageLayerArtist, self).enable()
+
     def get_image_data(self):
 
         if not self._compatible_with_reference_data:
