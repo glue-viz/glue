@@ -44,7 +44,7 @@ v0.11.0 (unreleased)
 
 * Remove the ability to create a new viewer by right-clicking on the canvas,
   since this causes confusion when trying to control-click to paste in the
-  IPython terminal.
+  IPython terminal. [#1342]
 
 v0.10.5 (unreleased)
 --------------------
