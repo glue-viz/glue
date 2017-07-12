@@ -41,7 +41,7 @@ class MultiSliceWidgetHelper(object):
         for s in self._sliders:
             s.close()
 
-        self._slices = []
+        self._sliders = []
 
     @avoid_circular
     def sync_state_from_sliders(self, *args):
