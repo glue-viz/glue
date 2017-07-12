@@ -59,6 +59,11 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
         match and the pixel component IDs have to be equivalent.
         """
 
+        if self._viewer_state.reference_data is None:
+            self._compatible_with_reference_data = False
+            self.disable('No reference data defined')
+            return
+
         if self.layer is self._viewer_state.reference_data:
             self._compatible_with_reference_data = True
             self.enable()
@@ -112,6 +117,11 @@ class ImageLayerArtist(BaseImageLayerArtist):
         self.composite.allocate(self.uuid)
         self.composite.set(self.uuid, array=self.get_image_data)
         self.composite_image = self.axes._composite_image
+
+    def enable(self):
+        if hasattr(self, 'composite_image'):
+            self.composite_image.invalidate_cache()
+        super(ImageLayerArtist, self).enable()
 
     def get_image_data(self):
 

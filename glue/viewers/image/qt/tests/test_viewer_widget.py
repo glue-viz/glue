@@ -38,6 +38,18 @@ class TestImageCommon(BaseTestMatplotlibDataViewer):
 
     viewer_cls = ImageViewer
 
+    def setup_method(self, method):
+        # Some of the tests rely on seeing whether the viewer updates if we
+        # change the color of the data, so we temporarily set it so that
+        # global_sync is True in each layer (otherwise changing the color of)
+        # a dataset has no effect on the image viewer specifically. We change
+        # it back in teardown_method.
+        ImageLayerState.global_sync._default = True
+        return super(TestImageCommon, self).setup_method(method)
+
+    def teardown_method(self, method):
+        ImageLayerState.global_sync._default = False
+
     @pytest.mark.skip()
     def test_double_add_ignored(self):
         pass
@@ -353,6 +365,44 @@ class TestImageViewer(object):
                 assert layer_artist.enabled
             else:
                 assert not layer_artist.enabled
+
+    def test_change_reference_data(self, capsys):
+
+        # Test to make sure everything works fine if we change the reference data.
+
+        self.viewer.add_data(self.image1)
+        self.viewer.add_data(self.image2)
+
+        assert self.viewer.state.reference_data is self.image1
+        assert self.viewer.state.x_att_world is self.image1.world_component_ids[-1]
+        assert self.viewer.state.y_att_world is self.image1.world_component_ids[-2]
+        assert self.viewer.state.x_att is self.image1.pixel_component_ids[-1]
+        assert self.viewer.state.y_att is self.image1.pixel_component_ids[-2]
+
+        self.viewer.state.reference_data = self.image2
+
+        assert self.viewer.state.reference_data is self.image2
+        assert self.viewer.state.x_att_world is self.image2.world_component_ids[-1]
+        assert self.viewer.state.y_att_world is self.image2.world_component_ids[-2]
+        assert self.viewer.state.x_att is self.image2.pixel_component_ids[-1]
+        assert self.viewer.state.y_att is self.image2.pixel_component_ids[-2]
+
+        self.viewer.state.reference_data = self.image1
+
+        assert self.viewer.state.reference_data is self.image1
+        assert self.viewer.state.x_att_world is self.image1.world_component_ids[-1]
+        assert self.viewer.state.y_att_world is self.image1.world_component_ids[-2]
+        assert self.viewer.state.x_att is self.image1.pixel_component_ids[-1]
+        assert self.viewer.state.y_att is self.image1.pixel_component_ids[-2]
+
+        # Some exceptions used to happen during callbacks, and these show up
+        # in stderr but don't interrupt the code, so we make sure here that
+        # nothing was printed to stdout nor stderr.
+
+        out, err = capsys.readouterr()
+
+        assert out.strip() == ""
+        assert err.strip() == ""
 
 
 class TestSessions(object):

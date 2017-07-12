@@ -44,8 +44,6 @@ class CompositeArray(object):
 
     def deallocate(self, uuid):
         self.layers.pop(uuid)
-        if len(self.layers) == 0:
-            self.shape = None
 
     def set(self, uuid, **kwargs):
         for key, value in kwargs.items():
@@ -105,16 +103,17 @@ class CompositeArray(object):
                 # Compute colormapped image
                 plane = layer['color'](data)
 
+                alpha_plane = layer['alpha'] * plane[:, :, 3]
+
                 # Use traditional alpha compositing
-                plane[:, :, 0] = plane[:, :, 0] * layer['alpha'] * plane[:, :, 3]
-                plane[:, :, 1] = plane[:, :, 1] * layer['alpha'] * plane[:, :, 3]
-                plane[:, :, 2] = plane[:, :, 2] * layer['alpha'] * plane[:, :, 3]
+                plane[:, :, 0] = plane[:, :, 0] * alpha_plane
+                plane[:, :, 1] = plane[:, :, 1] * alpha_plane
+                plane[:, :, 2] = plane[:, :, 2] * alpha_plane
 
-                img[:, :, 0] *= (1 - plane[:, :, 3])
-                img[:, :, 1] *= (1 - plane[:, :, 3])
-                img[:, :, 2] *= (1 - plane[:, :, 3])
+                img[:, :, 0] *= (1 - alpha_plane)
+                img[:, :, 1] *= (1 - alpha_plane)
+                img[:, :, 2] *= (1 - alpha_plane)
                 img[:, :, 3] = 1
-
 
             else:
 
@@ -136,7 +135,10 @@ class CompositeArray(object):
             img += plane
 
         if img is None:
-            img = np.zeros(self.shape + (4,))
+            if self.shape is None:
+                return None
+            else:
+                img = np.zeros(self.shape + (4,))
 
         img = np.clip(img, 0, 1)
 

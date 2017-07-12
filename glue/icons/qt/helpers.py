@@ -45,15 +45,15 @@ def layer_artist_icon(artist):
 
     # TODO: need a test for this
 
-    from glue.viewers.image.layer_artist import ImageLayerArtist
+    from glue.viewers.scatter.layer_artist import ScatterLayerArtist
 
     if not artist.enabled:
         bm = QtGui.QBitmap(icon_path('glue_delete'))
-    elif isinstance(artist, ImageLayerArtist):
-        bm = QtGui.QBitmap(icon_path('glue_image'))
-    else:
+    elif isinstance(artist, ScatterLayerArtist):
         bm = QtGui.QBitmap(icon_path(POINT_ICONS.get(artist.layer.style.marker,
                                                      'glue_circle_point')))
+    else:
+        bm = QtGui.QBitmap(icon_path('glue_box_point'))
     color = mpl_to_qt4_color(artist.layer.style.color)
 
     pm = tint_pixmap(bm, color)
