@@ -353,10 +353,14 @@ class ManualDataComboHelper(BaseDataComboHelper):
         self.refresh()
 
     def append_data(self, data):
+        if data in self._datasets:
+            return
         self._datasets.append(data)
         self.refresh()
 
     def remove_data(self, data):
+        if data not in self._datasets:
+            return
         self._datasets.remove(data)
         self.refresh()
 
