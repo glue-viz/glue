@@ -4,6 +4,23 @@ Full changelog
 v0.11.0 (unreleased)
 --------------------
 
+* Made it possible to delay callbacks from the Hub using the
+  ``Hub.delay_callbacks`` context manager. Also fixed the Hub so that
+  it uses weak references to classes and methods wherever possible. [#1339]
+
+* Added a new method DataCollection.remove_link to match existing
+  DataCollection.add_link. [#1339]
+
+* Fix a bug that caused no messages to be emitted when components were
+  removed from Data objects, and add a new DataRemoveComponentMesssage.
+  [#1339]
+
+* Fix a long-standing bug which caused performance issues after linking
+  coordinate or derived components between datasets. [#1339]
+
+* Added a function is_equivalent_cid that can be used to determine whether
+  two component IDs in a dataset are equivalent. [#1339]
+
 * The image contrast and bias can now be set with the left click as well
   as right click. [#1323]
 

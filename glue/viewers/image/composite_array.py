@@ -56,15 +56,14 @@ class CompositeArray(object):
 
     @property
     def shape(self):
-        if len(self.layers) > 0:
-            first_layer = list(self.layers.values())[0]
-            if callable(first_layer['array']):
-                array = first_layer['array']()
+        for layer in self.layers.values():
+            if callable(layer['array']):
+                array = layer['array']()
             else:
-                array = first_layer['array']
-            return array.shape
-        else:
-            return None
+                array = layer['array']
+            if array is not None:
+                return array.shape
+        return None
 
     def __getitem__(self, view):
 
@@ -85,6 +84,9 @@ class CompositeArray(object):
                 array = layer['array']()
             else:
                 array = layer['array']
+
+            if array is None:
+                continue
 
             array_sub = array[view]
             if np.isscalar(array_sub):

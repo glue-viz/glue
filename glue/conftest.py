@@ -1,9 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import sys
 
 from glue.config import CFG_DIR as CFG_DIR_ORIG
 from glue.core.edit_subset_mode import EditSubsetMode, ReplaceMode
+
+STDERR_ORIGINAL = sys.stderr
 
 
 def pytest_addoption(parser):
@@ -15,6 +18,10 @@ def pytest_runtest_setup(item):
     mode = EditSubsetMode()
     mode.mode = ReplaceMode
     mode.edit_subset = []
+
+
+def pytest_runtest_teardown(item, nextitem):
+    sys.stderr = STDERR_ORIGINAL
 
 
 def pytest_configure(config):

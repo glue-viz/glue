@@ -5,20 +5,21 @@ import numpy as np
 
 from glue.utils import defer_draw
 
-from glue.viewers.image.state import ImageLayerState
+from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 from glue.utils import color2rgb
+from glue.core.link_manager import is_equivalent_cid
+from glue.core import Data, HubListener
+from glue.core.message import ComponentsChangedMessage
 
 
-class ImageLayerArtist(MatplotlibLayerArtist):
-
-    _layer_state_cls = ImageLayerState
+class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
 
     def __init__(self, axes, viewer_state, layer_state=None, layer=None):
 
-        super(ImageLayerArtist, self).__init__(axes, viewer_state,
-                                               layer_state=layer_state, layer=layer)
+        super(BaseImageLayerArtist, self).__init__(axes, viewer_state,
+                                                   layer_state=layer_state, layer=layer)
 
         self.reset_cache()
 
@@ -31,6 +32,78 @@ class ImageLayerArtist(MatplotlibLayerArtist):
         self.state.data_collection = self._viewer_state.data_collection
         self.data_collection = self._viewer_state.data_collection
 
+        self.data_collection.hub.subscribe(self, ComponentsChangedMessage,
+                                           handler=self._update_compatibility,
+                                           filter=self._is_data_object)
+
+        self._update_compatibility()
+
+    def _is_data_object(self, message):
+        if isinstance(self.layer, Data):
+            return message.sender is self.layer
+        else:
+            return message.sender is self.layer.data
+
+    def reset_cache(self):
+        self._last_viewer_state = {}
+        self._last_layer_state = {}
+
+    def _update_image(self, force=False, **kwargs):
+        raise NotImplementedError()
+
+    @defer_draw
+    def _update_compatibility(self, *args, **kwargs):
+        """
+        Determine compatibility of data with reference data. For the data to be
+        compatible with the reference data, the number of dimensions has to
+        match and the pixel component IDs have to be equivalent.
+        """
+
+        if self.layer is self._viewer_state.reference_data:
+            self._compatible_with_reference_data = True
+            self.enable()
+            return
+
+        # Check whether the pixel component IDs of the dataset are equivalent
+        # to that of the reference dataset. In future this is where we could
+        # allow for these to be different and implement reprojection.
+        if self.layer.ndim != self._viewer_state.reference_data.ndim:
+            self._compatible_with_reference_data = False
+            self.disable('Data dimensions do not match reference data')
+            return
+
+        # Determine whether pixel component IDs are equivalent
+
+        pids = self.layer.pixel_component_ids
+        pids_ref = self._viewer_state.reference_data.pixel_component_ids
+
+        if isinstance(self.layer, Data):
+            data = self.layer
+        else:
+            data = self.layer.data
+
+        for i in range(data.ndim):
+            if not is_equivalent_cid(data, pids[i], pids_ref[i]):
+                self._compatible_with_reference_data = False
+                self.disable('Pixel component IDs do not match. You can try '
+                             'fixing this by linking the pixel component IDs '
+                             'of this dataset with those of the reference '
+                             'dataset.')
+                return
+
+        self._compatible_with_reference_data = True
+        self.enable()
+
+
+class ImageLayerArtist(BaseImageLayerArtist):
+
+    _layer_state_cls = ImageLayerState
+
+    def __init__(self, axes, viewer_state, layer_state=None, layer=None):
+
+        super(ImageLayerArtist, self).__init__(axes, viewer_state,
+                                               layer_state=layer_state, layer=layer)
+
         # We use a custom object to deal with the compositing of images, and we
         # store it as a private attribute of the axes to make sure it is
         # accessible for all layer artists.
@@ -40,14 +113,10 @@ class ImageLayerArtist(MatplotlibLayerArtist):
         self.composite.set(self.uuid, array=self.get_image_data)
         self.composite_image = self.axes._composite_image
 
-    def reset_cache(self):
-        self._last_viewer_state = {}
-        self._last_layer_state = {}
-
     def get_image_data(self):
 
-        # FIXME: we should disable the layer if the image cannot be shown
-        # on the same grid as the reference data.
+        if not self._compatible_with_reference_data:
+            return None
 
         try:
             # FIXME: is the following slow? Should slide at same time?
@@ -55,8 +124,7 @@ class ImageLayerArtist(MatplotlibLayerArtist):
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self.state.attribute)
-            image = np.zeros(self.layer.shape)
-            # TODO: Is this enough?
+            return None
         else:
             self._enabled = True
 
@@ -95,8 +163,7 @@ class ImageLayerArtist(MatplotlibLayerArtist):
 
     def _update_image(self, force=False, **kwargs):
 
-        if (self.state.attribute is None or
-            self.state.layer is None):
+        if self.state.attribute is None or self.state.layer is None:
             return
 
         # Figure out which attributes are different from before. Ideally we shouldn't
@@ -105,7 +172,6 @@ class ImageLayerArtist(MatplotlibLayerArtist):
         # If we can solve this so that _update_histogram is really only called once
         # then we could consider simplifying this. Until then, we manually keep track
         # of which properties have changed.
-
 
         changed = set()
 
@@ -122,11 +188,18 @@ class ImageLayerArtist(MatplotlibLayerArtist):
         self._last_viewer_state.update(self._viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
 
-        if force or any(prop in changed for prop in ('layer', 'attribute', 'slices', 'x_att', 'y_att')):
+        if 'reference_data' in changed or 'layer' in changed:
+            self._update_compatibility()
+
+        if force or any(prop in changed for prop in ('layer', 'attribute',
+                                                     'slices', 'x_att', 'y_att')):
             self._update_image_data()
             force = True  # make sure scaling and visual attributes are updated
 
-        if force or any(prop in changed for prop in ('v_min', 'v_max', 'contrast', 'bias', 'alpha', 'color_mode', 'cmap', 'color', 'zorder', 'visible', 'stretch')):
+        if force or any(prop in changed for prop in ('v_min', 'v_max', 'contrast',
+                                                     'bias', 'alpha', 'color_mode',
+                                                     'cmap', 'color', 'zorder',
+                                                     'visible', 'stretch')):
             self._update_visual_attributes()
 
     @defer_draw
@@ -141,33 +214,18 @@ class ImageLayerArtist(MatplotlibLayerArtist):
         self.redraw()
 
 
-class ImageSubsetLayerArtist(MatplotlibLayerArtist):
+class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
-    _layer_state_cls = ImageLayerState
+    _layer_state_cls = ImageSubsetLayerState
 
     def __init__(self, axes, viewer_state, layer_state=None, layer=None):
 
         super(ImageSubsetLayerArtist, self).__init__(axes, viewer_state,
                                                      layer_state=layer_state, layer=layer)
 
-        self.reset_cache()
-
-        # Watch for changes in the viewer state which would require the
-        # layers to be redrawn
-        self._viewer_state.add_global_callback(self._update_image)
-        self.state.add_global_callback(self._update_image)
-
-        # TODO: following is temporary
-        self.state.data_collection = self._viewer_state.data_collection
-        self.data_collection = self._viewer_state.data_collection
-
         self.mpl_image = self.axes.imshow([[0.]],
                                           origin='lower', interpolation='nearest',
                                           vmin=0, vmax=1, aspect=self._viewer_state.aspect)
-
-    def reset_cache(self):
-        self._last_viewer_state = {}
-        self._last_layer_state = {}
 
     def _get_image_data(self):
 
@@ -186,13 +244,18 @@ class ImageSubsetLayerArtist(MatplotlibLayerArtist):
 
     def _update_image_data(self):
 
-        try:
-            data = self._get_image_data()
-        except IncompatibleAttribute:
-            self.disable_invalid_attributes(self.state.attribute)
-            data = np.zeros(self.layer.shape)
+        if self._compatible_with_reference_data:
+
+            try:
+                data = self._get_image_data()
+            except IncompatibleAttribute:
+                self.disable_invalid_attributes(self.state.attribute)
+                data = np.array([[np.nan]])
+            else:
+                self._enabled = True
+
         else:
-            self._enabled = True
+            data = np.array([[np.nan]])
 
         self.mpl_image.set_data(data)
         self.mpl_image.set_extent([-0.5, data.shape[1] - 0.5, -0.5, data.shape[0] - 0.5])
@@ -236,7 +299,11 @@ class ImageSubsetLayerArtist(MatplotlibLayerArtist):
         self._last_viewer_state.update(self._viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
 
-        if force or any(prop in changed for prop in ('layer', 'attribute', 'color', 'x_att', 'y_att', 'slices')):
+        if 'reference_data' in changed or 'layer' in changed:
+            self._update_compatibility()
+
+        if force or any(prop in changed for prop in ('layer', 'attribute', 'color',
+                                                     'x_att', 'y_att', 'slices')):
             self._update_image_data()
             force = True  # make sure scaling and visual attributes are updated
 

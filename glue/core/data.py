@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from glue.external import six
-from glue.core.message import (DataUpdateMessage,
+from glue.core.message import (DataUpdateMessage, DataRemoveComponentMessage,
                                DataAddComponentMessage, NumericalDataChangedMessage,
                                SubsetCreateMessage, ComponentsChangedMessage,
                                ComponentReplacedMessage)
@@ -177,6 +177,11 @@ class Data(object):
         """
         if component_id in self._components:
             self._components.pop(component_id)
+            if self.hub:
+                msg = DataRemoveComponentMessage(self, component_id)
+                self.hub.broadcast(msg)
+                msg = ComponentsChangedMessage(self)
+                self.hub.broadcast(msg)
 
     @contract(other='isinstance(Data)',
               cid='cid_like',
@@ -407,7 +412,7 @@ class Data(object):
             self._shape = component.shape
             self._create_pixel_and_world_components()
 
-        if self.hub and (not is_present):
+        if self.hub and not is_present:
             msg = DataAddComponentMessage(self, component_id)
             self.hub.broadcast(msg)
             msg = ComponentsChangedMessage(self)

@@ -10,7 +10,8 @@ __all__ = ['Message', 'ErrorMessage', 'SubsetMessage', 'SubsetCreateMessage',
            'DataAddComponentMessage', 'DataUpdateMessage',
            'DataCollectionMessage', 'DataCollectionActiveChange',
            'DataCollectionActiveDataChange', 'DataCollectionAddMessage',
-           'DataCollectionDeleteMessage', 'ApplicationClosedMessage']
+           'DataCollectionDeleteMessage', 'ApplicationClosedMessage',
+           'DataRemoveComponentMessage']
 
 
 class Message(object):
@@ -120,6 +121,13 @@ class DataAddComponentMessage(DataMessage):
 
     def __init__(self, sender, component_id, tag=None):
         super(DataAddComponentMessage, self).__init__(sender, tag=tag)
+        self.component_id = component_id
+
+
+class DataRemoveComponentMessage(DataMessage):
+
+    def __init__(self, sender, component_id, tag=None):
+        super(DataRemoveComponentMessage, self).__init__(sender, tag=tag)
         self.component_id = component_id
 
 

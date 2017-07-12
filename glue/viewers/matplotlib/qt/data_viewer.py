@@ -189,46 +189,49 @@ class MatplotlibDataViewer(DataViewer):
     def options_widget(self):
         return self.options
 
+    def _subset_has_data(self, x):
+        return x.sender.data in self._layer_artist_container.layers
+
+    def _has_data_or_subset(self, x):
+        return x.sender in self._layer_artist_container.layers
+
+    def _remove_data(self, message):
+        self.remove_data(message.data)
+
+    def _is_appearance_settings(self, msg):
+        return ('BACKGROUND_COLOR' in msg.settings
+                or 'FOREGROUND_COLOR' in msg.settings)
+
     def register_to_hub(self, hub):
 
         super(MatplotlibDataViewer, self).register_to_hub(hub)
 
-        def subset_has_data(x):
-            return x.sender.data in self._layer_artist_container.layers
-
-        def has_data_or_subset(x):
-            return x.sender in self._layer_artist_container.layers
-
         hub.subscribe(self, msg.SubsetCreateMessage,
                       handler=self._add_subset,
-                      filter=subset_has_data)
+                      filter=self._subset_has_data)
 
         hub.subscribe(self, msg.SubsetUpdateMessage,
                       handler=self._update_subset,
-                      filter=has_data_or_subset)
+                      filter=self._has_data_or_subset)
 
         hub.subscribe(self, msg.SubsetDeleteMessage,
                       handler=self._remove_subset,
-                      filter=has_data_or_subset)
+                      filter=self._has_data_or_subset)
 
         hub.subscribe(self, msg.NumericalDataChangedMessage,
                       handler=self._update_subset,
-                      filter=has_data_or_subset)
+                      filter=self._has_data_or_subset)
 
         hub.subscribe(self, msg.DataCollectionDeleteMessage,
-                      handler=lambda x: self.remove_data(x.data))
+                      handler=self._remove_data)
 
         # hub.subscribe(self, msg.ComponentsChangedMessage,
         #               handler=self._update_data,
         #               filter=has_data)
 
-        def is_appearance_settings(msg):
-            return ('BACKGROUND_COLOR' in msg.settings
-                    or 'FOREGROUND_COLOR' in msg.settings)
-
         hub.subscribe(self, msg.SettingsChangeMessage,
                       self._update_appearance_from_settings,
-                      filter=is_appearance_settings)
+                      filter=self._is_appearance_settings)
 
     def _update_appearance_from_settings(self, message=None):
         update_appearance_from_settings(self.axes)

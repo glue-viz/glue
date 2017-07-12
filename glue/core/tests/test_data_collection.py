@@ -12,7 +12,7 @@ from ..component_link import ComponentLink
 from ..data import Data, Component, ComponentID, DerivedComponent
 from ..data_collection import DataCollection
 from ..hub import HubListener
-from ..message import (Message, DataCollectionAddMessage,
+from ..message import (Message, DataCollectionAddMessage, DataRemoveComponentMessage,
                        DataCollectionDeleteMessage,
                        ComponentsChangedMessage)
 
@@ -142,7 +142,8 @@ class TestDataCollection(object):
         assert link in dc._link_manager
 
     def test_catch_data_add_component_message(self):
-        """DerviedAttributes added to a dataset in a collection
+        """
+        DerviedAttributes added to a dataset in a collection
         should generate messages that the collection catches.
         """
         d = Data()
@@ -199,14 +200,19 @@ class TestDataCollection(object):
         cid2 = ComponentID('b')
         cid3 = ComponentID('c')
 
-        dummy = lambda x: None
-        links = ComponentLink([cid1], cid2, dummy)
-        dc.add_link(links)
+        links1 = ComponentLink([cid1], cid2, lambda x: None)
+        dc.add_link(links1)
         assert cid2 in d.components
 
-        links = ComponentLink([cid2], cid3, dummy)
-        dc.add_link(links)
+        links2 = ComponentLink([cid2], cid3, lambda x: None)
+        dc.add_link(links2)
         assert cid3 in d.components
+
+        dc.remove_link(links2)
+        assert cid3 not in d.components
+
+        dc.remove_link(links1)
+        assert cid2 not in d.components
 
     def test_merge_links(self):
         """Trivial links should be merged, discarding the duplicate ID"""
@@ -366,3 +372,22 @@ class TestDataCollection(object):
         dc.merge(x, y)
         assert dc[0].visible_components[0] is x.id['x']
         assert dc[0].visible_components[1] is y.id['y']
+
+    def test_remove_component_message(self):
+
+        # Regression test to make sure that removing a component emits the
+        # appropriate messages.
+
+        data = Data(x=[1, 2, 3], y=[4, 5, 6])
+        self.dc.append(data)
+
+        remove_id = data.id['y']
+
+        data.remove_component(remove_id)
+
+        msg = self.log.messages[-2]
+        assert isinstance(msg, DataRemoveComponentMessage)
+        assert msg.component_id is remove_id
+
+        msg = self.log.messages[-1]
+        assert isinstance(msg, ComponentsChangedMessage)
