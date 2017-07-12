@@ -148,11 +148,6 @@ install:
   # Uninstall PyQt if we are using PySide
   - if [ $QT_PKG == pyside ]; then conda remove --no-pin --force pyqt sip || true; fi
 
-  - if [[ $QT_PKG == pyqt5 ]]; then
-      export QT_QPA_PLATFORM_PLUGIN_PATH=$HOME/miniconda/envs/test/lib/qt5/plugins/platforms;
-      export QT_DEBUG_PLUGINS=1;
-    fi
-
   # Uninstall any version of Qt if QT_PKG is False, and remove all qt
   # sub-directories
   - if [[ $QT_PKG == False ]]; then
