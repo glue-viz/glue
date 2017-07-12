@@ -59,6 +59,11 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
         match and the pixel component IDs have to be equivalent.
         """
 
+        if self._viewer_state.reference_data is None:
+            self._compatible_with_reference_data = False
+            self.disable('No reference data defined')
+            return
+
         if self.layer is self._viewer_state.reference_data:
             self._compatible_with_reference_data = True
             self.enable()
