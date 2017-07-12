@@ -215,6 +215,8 @@ class ImageLayerState(MatplotlibLayerState):
         self.add_callback('global_sync', self._update_syncing)
         self.add_callback('layer', self._update_attribute)
 
+        self._update_syncing()
+
         if layer is not None:
             self._update_attribute()
 
@@ -232,6 +234,8 @@ class ImageLayerState(MatplotlibLayerState):
             return 3
         elif name == 'attribute':
             return 2
+        elif name == 'global_sync':
+            return 1.5
         elif name.endswith(('_min', '_max')):
             return 0
         else:
