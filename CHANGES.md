@@ -42,6 +42,10 @@ v0.11.0 (unreleased)
   subset group, rather than once per dataset, which avoids doing the same
   update to each dataset multiple times. [#1338]
 
+* Remove the ability to create a new viewer by right-clicking on the canvas,
+  since this causes confusion when trying to control-click to paste in the
+  IPython terminal.
+
 v0.10.5 (unreleased)
 --------------------
 

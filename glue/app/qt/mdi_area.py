@@ -62,12 +62,6 @@ class GlueMdiArea(QtWidgets.QMdiArea):
 
         event.accept()
 
-    def mousePressEvent(self, event):
-        """Right mouse press in the MDI area opens a new data viewer"""
-        if event.button() != Qt.RightButton:
-            return
-        self._application.choose_new_data_viewer()
-
     def close(self):
         self.closeAllSubWindows()
         super(GlueMdiArea, self).close()
