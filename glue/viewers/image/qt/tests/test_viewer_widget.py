@@ -354,6 +354,44 @@ class TestImageViewer(object):
             else:
                 assert not layer_artist.enabled
 
+    def test_change_reference_data(self, capsys):
+
+        # Test to make sure everything works fine if we change the reference data.
+
+        self.viewer.add_data(self.image1)
+        self.viewer.add_data(self.image2)
+
+        assert self.viewer.state.reference_data is self.image1
+        assert self.viewer.state.x_att_world is self.image1.world_component_ids[-1]
+        assert self.viewer.state.y_att_world is self.image1.world_component_ids[-2]
+        assert self.viewer.state.x_att is self.image1.pixel_component_ids[-1]
+        assert self.viewer.state.y_att is self.image1.pixel_component_ids[-2]
+
+        self.viewer.state.reference_data = self.image2
+
+        assert self.viewer.state.reference_data is self.image2
+        assert self.viewer.state.x_att_world is self.image2.world_component_ids[-1]
+        assert self.viewer.state.y_att_world is self.image2.world_component_ids[-2]
+        assert self.viewer.state.x_att is self.image2.pixel_component_ids[-1]
+        assert self.viewer.state.y_att is self.image2.pixel_component_ids[-2]
+
+        self.viewer.state.reference_data = self.image1
+
+        assert self.viewer.state.reference_data is self.image1
+        assert self.viewer.state.x_att_world is self.image1.world_component_ids[-1]
+        assert self.viewer.state.y_att_world is self.image1.world_component_ids[-2]
+        assert self.viewer.state.x_att is self.image1.pixel_component_ids[-1]
+        assert self.viewer.state.y_att is self.image1.pixel_component_ids[-2]
+
+        # Some exceptions used to happen during callbacks, and these show up
+        # in stderr but don't interrupt the code, so we make sure here that
+        # nothing was printed to stdout nor stderr.
+
+        out, err = capsys.readouterr()
+
+        assert out.strip() == ""
+        assert err.strip() == ""
+
 
 class TestSessions(object):
 

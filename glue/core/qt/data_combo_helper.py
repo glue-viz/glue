@@ -334,6 +334,24 @@ class ManualDataComboHelper(BaseDataComboHelper):
         self._datasets = []
         self.hub = data_collection.hub
 
+    def set_multiple_data(self, datasets):
+        """
+        Add multiple datasets to the combo in one go (and clear any previous datasets).
+
+        Parameters
+        ----------
+        datasets : list
+            The list of :class:`~glue.core.data.Data` objects to add
+        """
+
+        try:
+            self._datasets.clear()
+        except AttributeError:  # PY2
+            self._datasets[:] = []
+        for data in datasets:
+            self._datasets.append(data)
+        self.refresh()
+
     def append_data(self, data):
         self._datasets.append(data)
         self.refresh()
