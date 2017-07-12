@@ -17,12 +17,18 @@ class PVSlicerMode(PathMode):
     tool_tip = ('Extract a slice from an arbitrary path\n'
                 '  ENTER accepts the path\n'
                 '  ESCAPE clears the path')
+    status_tip = 'Draw a path then press ENTER to extract slice, or press ESC to cancel'
     shortcut = 'P'
 
     def __init__(self, viewer, **kwargs):
         super(PVSlicerMode, self).__init__(viewer, **kwargs)
         self._roi_callback = self._extract_callback
         self._slice_widget = None
+        self.viewer.state.add_callback('reference_data', self._on_reference_data_change)
+
+    def _on_reference_data_change(self, reference_data):
+        if reference_data is not None:
+            self.enabled = reference_data.ndim == 3
 
     def _clear_path(self):
         self.clear()
