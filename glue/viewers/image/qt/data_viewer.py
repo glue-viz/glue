@@ -161,3 +161,15 @@ class ImageViewer(MatplotlibDataViewer):
     @staticmethod
     def update_viewer_state(rec, context):
         return update_image_viewer_state(rec, context)
+
+    @defer_draw
+    def show_crosshairs(self, x, y):
+
+        if getattr(self, '_crosshairs', None) is not None:
+            self._crosshairs.remove()
+
+        self._crosshairs, = self.axes.plot([x], [y], '+', ms=12,
+                                           mfc='none', mec='#d32d26',
+                                           mew=1, zorder=100)
+
+        self.axes.figure.canvas.draw()

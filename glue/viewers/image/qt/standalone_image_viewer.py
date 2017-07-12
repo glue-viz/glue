@@ -155,3 +155,7 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
             self.toolbar.add_tool(mode)
 
         self.addToolBar(self.toolbar)
+
+    def set_status(self, message):
+        sb = self.statusBar()
+        sb.showMessage(message)
