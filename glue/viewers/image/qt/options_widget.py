@@ -31,14 +31,11 @@ class ImageOptionsWidget(QtWidgets.QWidget):
         autoconnect_callbacks_to_qt(viewer_state, self.ui)
 
         self.ref_data_helper = QtComboHelper(self.ui.combonew_reference_data,
-                                             viewer_state, 'reference_data',
-                                             '_reference_data_choices')
+                                             viewer_state, 'reference_data')
         self.x_att_world_helper = QtComboHelper(self.ui.combonew_x_att_world,
-                                                viewer_state, 'x_att_world',
-                                                '_x_att_world_choices')
+                                                viewer_state, 'x_att_world')
         self.y_att_world_helper = QtComboHelper(self.ui.combonew_y_att_world,
-                                                viewer_state, 'y_att_world',
-                                                '_y_att_world_choices')
+                                                viewer_state, 'y_att_world')
 
         self.viewer_state = viewer_state
 

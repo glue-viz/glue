@@ -105,7 +105,7 @@ class TestImageViewer(object):
         self.viewer.add_data(self.image1)
 
         assert combo_as_string(self.options_widget.ui.combonew_x_att_world) == 'World 0:World 1'
-        assert combo_as_string(self.options_widget.ui.combonew_x_att_world) == 'World 0:World 1'
+        assert combo_as_string(self.options_widget.ui.combonew_y_att_world) == 'World 0:World 1'
 
         assert self.viewer.axes.get_xlabel() == 'World 1'
         assert self.viewer.state.x_att_world is self.image1.id['World 1']

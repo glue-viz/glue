@@ -139,6 +139,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
             self._enabled = True
 
         slices, transpose = self._viewer_state.numpy_slice_and_transpose
+
         image = image[slices]
         if transpose:
             image = image.transpose()
@@ -171,6 +172,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
 
         self.redraw()
 
+    @defer_draw
     def _update_image(self, force=False, **kwargs):
 
         if self.state.attribute is None or self.state.layer is None:

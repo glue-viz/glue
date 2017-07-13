@@ -17,52 +17,28 @@ __all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
 
 class ComboHelper(HubListener):
 
-    def __init__(self, state, selection_property, choices_property, default_index=0):
+    def __init__(self, state, selection_property):
 
         self.state = state
         self.selection_property = selection_property
-        self.choices_property = choices_property
-        self.default_index = default_index
-
-        self.state.add_callback(self.choices_property, self._choices_updated, priority=10000)
 
     @property
     def selection(self):
         return getattr(self.state, self.selection_property)
 
     @selection.setter
-    def selection(self, value):
-        return setattr(self.state, self.selection_property, value)
+    def selection(self, selection):
+        return setattr(self.state, self.selection_property, selection)
 
     @property
     def choices(self):
-        return getattr(self.state, self.choices_property)
+        prop = getattr(type(self.state), self.selection_property)
+        return prop.get_choices(self.state)
 
     @choices.setter
-    def choices(self, value):
-        return setattr(self.state, self.choices_property, value)
-
-    def _choices_updated(self, choices):
-        """
-        Update the selection based on the new choices
-        """
-
-        if not self.choices:
-            self.selection = None
-            return
-
-        # TODO: try and generalize this selection to choices relation
-        if self.selection in set(x[1] for x in self.choices):
-            return
-
-        if self.default_index < 0:
-            index = len(self.choices) + self.default_index
-        else:
-            index = self.default_index
-
-        index = min(index, len(self.choices) - 1)
-
-        self.selection = self.choices[index][1]
+    def choices(self, choices):
+        prop = getattr(type(self.state), self.selection_property)
+        return prop.set_choices(self.state, choices)
 
 
 class ComponentIDComboHelper(ComboHelper):
@@ -95,14 +71,12 @@ class ComponentIDComboHelper(ComboHelper):
         Show world coordinate components
     """
 
-    def __init__(self, state, selection_property, choices_property,
+    def __init__(self, state, selection_property,
                  data_collection=None, data=None,
                  visible=True, numeric=True, categorical=True,
-                 pixel_coord=False, world_coord=False, default_index=0,):
+                 pixel_coord=False, world_coord=False):
 
-        super(ComponentIDComboHelper, self).__init__(state, selection_property,
-                                                     choices_property,
-                                                     default_index=default_index)
+        super(ComponentIDComboHelper, self).__init__(state, selection_property)
 
         self._visible = visible
         self._numeric = numeric
@@ -297,8 +271,8 @@ class BaseDataComboHelper(ComboHelper):
         The Qt widget for the data combo box
     """
 
-    def __init__(self, state, selection_property, choices_property):
-        super(BaseDataComboHelper, self).__init__(state, selection_property, choices_property)
+    def __init__(self, state, selection_property):
+        super(BaseDataComboHelper, self).__init__(state, selection_property)
         self._component_id_helpers = []
         self.state.add_callback(self.selection_property, self.refresh_component_ids)
 
@@ -353,9 +327,9 @@ class ManualDataComboHelper(BaseDataComboHelper):
         remove it here.
     """
 
-    def __init__(self, state, selection_property, choices_property, data_collection=None):
+    def __init__(self, state, selection_property, data_collection=None):
 
-        super(ManualDataComboHelper, self).__init__(state, selection_property, choices_property)
+        super(ManualDataComboHelper, self).__init__(state, selection_property)
 
         self._datasets = []
 
@@ -423,9 +397,9 @@ class DataCollectionComboHelper(BaseDataComboHelper):
         The data collection with which to stay in sync
     """
 
-    def __init__(self, state, selection_property, choices_property, data_collection):
+    def __init__(self, state, selection_property, data_collection):
 
-        super(DataCollectionComboHelper, self).__init__(state, selection_property, choices_property)
+        super(DataCollectionComboHelper, self).__init__(state, selection_property)
 
         if data_collection.hub is None:
             raise ValueError("Hub on data collection is not set")

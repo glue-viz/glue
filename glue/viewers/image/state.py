@@ -4,7 +4,8 @@ from glue.core import Data
 from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
-                                           DeferredDrawCallbackProperty as DDCProperty)
+                                           DeferredDrawCallbackProperty as DDCProperty,
+                                           DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.utils import defer_draw
 from glue.external.echo import delay_callback
@@ -18,24 +19,20 @@ class ImageViewerState(MatplotlibDataViewerState):
     A state class that includes all the attributes for an image viewer.
     """
 
-    _x_att_world_choices = DDCProperty()
-    _y_att_world_choices = DDCProperty()
-    _reference_data_choices = DDCProperty()
-
     x_att = DDCProperty(docstring='The component ID giving the pixel component '
                                   'shown on the x axis')
     y_att = DDCProperty(docstring='The component ID giving the pixel component '
                                   'shown on the y axis')
-    x_att_world = DDCProperty(docstring='The component ID giving the world component '
-                                        'shown on the x axis')
-    y_att_world = DDCProperty(docstring='The component ID giving the world component '
-                                        'shown on the y axis')
+    x_att_world = DDSCProperty(docstring='The component ID giving the world component '
+                                         'shown on the x axis', default_index=-1)
+    y_att_world = DDSCProperty(docstring='The component ID giving the world component '
+                                         'shown on the y axis', default_index=-2)
     aspect = DDCProperty('equal', docstring='Whether to enforce square pixels (``equal``) '
                                             'or fill the axes (``auto``)')
-    reference_data = DDCProperty(docstring='The dataset that is used to define the '
-                                           'available pixel/world components, and '
-                                           'which defines the coordinate frame in '
-                                           'which the images are shown')
+    reference_data = DDSCProperty(docstring='The dataset that is used to define the '
+                                            'available pixel/world components, and '
+                                            'which defines the coordinate frame in '
+                                            'which the images are shown')
     slices = DDCProperty(docstring='The current slice along all dimensions')
     color_mode = DDCProperty('Colormaps', docstring='Whether each layer can have '
                                                     'its own colormap (``Colormaps``) or '
@@ -56,23 +53,18 @@ class ImageViewerState(MatplotlibDataViewerState):
                                                        lower='y_min', upper='y_max',
                                                        limits_cache=self.limits_cache)
 
-        self.ref_data_helper = ManualDataComboHelper(self, 'reference_data',
-                                                     '_reference_data_choices')
+        self.ref_data_helper = ManualDataComboHelper(self, 'reference_data')
 
         self.xw_att_helper = ComponentIDComboHelper(self, 'x_att_world',
-                                                    '_x_att_world_choices',
                                                     numeric=False, categorical=False,
-                                                    visible=False, world_coord=True,
-                                                    default_index=-1)
+                                                    visible=False, world_coord=True)
 
         self.yw_att_helper = ComponentIDComboHelper(self, 'y_att_world',
-                                                    '_y_att_world_choices',
                                                     numeric=False, categorical=False,
-                                                    visible=False, world_coord=True,
-                                                    default_index=-2)
+                                                    visible=False, world_coord=True)
 
-        self.add_callback('reference_data', self._reference_data_changed)
-        self.add_callback('layers', self._layers_changed)
+        self.add_callback('reference_data', self._reference_data_changed, priority=1000)
+        self.add_callback('layers', self._layers_changed, priority=1000)
 
         self.add_callback('x_att', self._on_xatt_change, priority=500)
         self.add_callback('y_att', self._on_yatt_change, priority=500)

@@ -19,17 +19,25 @@ __all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
 
 class QtComboHelper(object):
 
-    def __init__(self, combo, state, selection_property, choices_property):
+    def __init__(self, combo, state, selection_property):
         self.combo = combo
         self.state = state
         self.selection_property = selection_property
-        self.choices_property = choices_property
         self.state.add_callback(selection_property, self._selection_changed)
         self.state.add_callback(selection_property, self._choices_changed)
 
+    @property
+    def selection(self):
+        return getattr(self.state, self.selection_property)
+
+    @property
+    def choices(self):
+        prop = getattr(type(self.state), self.selection_property)
+        return prop.get_choices(self.state)
+
     def _choices_changed(self, *args):
 
-        choices = getattr(self.state, self.choices_property)
+        choices = self.choices
 
         self.combo.blockSignals(True)
 
@@ -58,7 +66,7 @@ class QtComboHelper(object):
         self.combo.currentIndexChanged.emit(index)
 
     def _selection_changed(self, *args):
-        index = self.combo.findData(getattr(self.state, self.selection_property))
+        index = self.combo.findData(self.selection)
         if self.combo.currentIndex() != index:
             self.combo.setCurrentIndex(index)
 
