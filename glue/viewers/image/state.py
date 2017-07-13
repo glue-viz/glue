@@ -8,6 +8,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.utils import defer_draw
 from glue.external.echo import delay_callback
+from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 
 __all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState']
 
@@ -16,6 +17,10 @@ class ImageViewerState(MatplotlibDataViewerState):
     """
     A state class that includes all the attributes for an image viewer.
     """
+
+    _x_att_world_choices = DDCProperty()
+    _y_att_world_choices = DDCProperty()
+    _reference_data_choices = DDCProperty()
 
     x_att = DDCProperty(docstring='The component ID giving the pixel component '
                                   'shown on the x axis')
@@ -51,8 +56,23 @@ class ImageViewerState(MatplotlibDataViewerState):
                                                        lower='y_min', upper='y_max',
                                                        limits_cache=self.limits_cache)
 
-        self.add_callback('reference_data', self._set_default_slices)
-        self.add_callback('layers', self._set_reference_data)
+        self.ref_data_helper = ManualDataComboHelper(self, 'reference_data',
+                                                     '_reference_data_choices')
+
+        self.xw_att_helper = ComponentIDComboHelper(self, 'x_att_world',
+                                                    '_x_att_world_choices',
+                                                    numeric=False, categorical=False,
+                                                    visible=False, world_coord=True,
+                                                    default_index=-1)
+
+        self.yw_att_helper = ComponentIDComboHelper(self, 'y_att_world',
+                                                    '_y_att_world_choices',
+                                                    numeric=False, categorical=False,
+                                                    visible=False, world_coord=True,
+                                                    default_index=-2)
+
+        self.add_callback('reference_data', self._reference_data_changed)
+        self.add_callback('layers', self._layers_changed)
 
         self.add_callback('x_att', self._on_xatt_change, priority=500)
         self.add_callback('y_att', self._on_yatt_change, priority=500)
@@ -62,6 +82,36 @@ class ImageViewerState(MatplotlibDataViewerState):
 
         self.add_callback('x_att_world', self._on_xatt_world_change, priority=1000)
         self.add_callback('y_att_world', self._on_yatt_world_change, priority=1000)
+
+    def _reference_data_changed(self, *args):
+        with delay_callback(self, 'x_att_world', 'y_att_world', 'slices'):
+            self._update_combo_att()
+            self._set_default_slices()
+
+    def _layers_changed(self, *args):
+        self._update_combo_ref_data()
+        self._set_reference_data()
+
+    def _update_combo_ref_data(self, *args):
+        datasets = []
+        for layer in self.layers:
+            if isinstance(layer.layer, Data):
+                if layer.layer not in datasets:
+                    datasets.append(layer.layer)
+            else:
+                if layer.layer.data not in datasets:
+                    datasets.append(layer.layer.data)
+        self.ref_data_helper.set_multiple_data(datasets)
+
+    def _update_combo_att(self, *args):
+        with delay_callback(self, 'x_att_world', 'y_att_world'):
+            if self.reference_data is None:
+                self.xw_att_helper.set_multiple_data([])
+                self.yw_att_helper.set_multiple_data([])
+            else:
+                self.xw_att_helper.set_multiple_data([self.reference_data])
+                self.yw_att_helper.set_multiple_data([self.reference_data])
+
 
     def _update_priority(self, name):
         if name == 'layers':
@@ -98,7 +148,7 @@ class ImageViewerState(MatplotlibDataViewerState):
 
     @defer_draw
     def _on_xatt_world_change(self, *args):
-        if self.x_att_world == self.y_att_world:
+        if self.x_att_world is not None and self.x_att_world == self.y_att_world:
             world_ids = self.reference_data.world_component_ids
             if self.x_att_world == world_ids[-1]:
                 self.y_att_world = world_ids[-2]
@@ -107,7 +157,7 @@ class ImageViewerState(MatplotlibDataViewerState):
 
     @defer_draw
     def _on_yatt_world_change(self, *args):
-        if self.y_att_world == self.x_att_world:
+        if self.y_att_world is not None and self.y_att_world == self.x_att_world:
             world_ids = self.reference_data.world_component_ids
             if self.y_att_world == world_ids[-1]:
                 self.x_att_world = world_ids[-2]

@@ -76,7 +76,7 @@ class State(HasCallbackProperties):
         """
         properties = {}
         for name in dir(self):
-            if self.is_callback_property(name):
+            if self.is_callback_property(name) and not name.startswith('_'):
                 properties[name] = getattr(self, name)
         return properties
 
