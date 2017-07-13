@@ -4,7 +4,7 @@ from mock import MagicMock
 
 from qtpy.QtCore import Qt
 from qtpy import PYQT5
-from glue.core import Data
+from glue.core import Data, Hub
 from glue.core.layer_artist import MatplotlibLayerArtist as _LayerArtist
 
 from ..layer_artist_model import LayerArtistModel, LayerArtistView
@@ -217,7 +217,8 @@ class TestLayerArtistView(object):
 
     def setup_method(self, method):
         self.model, self.artists = setup_model(2)
-        self.view = LayerArtistView()
+        self.hub = Hub()
+        self.view = LayerArtistView(hub=self.hub)
         self.view.setModel(self.model)
 
     def test_current_row(self):

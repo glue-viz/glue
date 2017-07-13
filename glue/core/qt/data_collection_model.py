@@ -12,8 +12,8 @@ from glue.core.qt.mime import LAYERS_MIME_TYPE
 from glue.icons.qt import layer_icon
 
 from glue.core.qt.style_dialog import StyleDialog
-from glue.utils import nonpartial
 from glue.utils.qt import PyMimeData
+from glue.core.message import Message
 
 DATA_IDX = 0
 SUBSET_IDX = 1
@@ -449,30 +449,18 @@ class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
         return [LAYERS_MIME_TYPE]
 
 
-class DataCollectionView(QtWidgets.QTreeView):
+class DataCollectionView(QtWidgets.QTreeView, HubListener):
     selection_changed = QtCore.Signal()
 
     def __init__(self, parent=None):
         super(DataCollectionView, self).__init__(parent)
         self.doubleClicked.connect(self._edit)
 
-        # this keeps the full-row of the selection bar in-sync
-        self.pressed.connect(nonpartial(self._update_viewport))
-
         # only edit label on model.new_item
         self.setItemDelegate(LabeledDelegate())
         self.setEditTriggers(self.NoEditTriggers)
 
         self.setIconSize(QtCore.QSize(16, 16))
-
-        self._timer = QtCore.QTimer(self)
-        self._timer.timeout.connect(nonpartial(self._update_viewport))
-        self._timer.start(1000)
-
-    def _update_viewport(self):
-        # We have to do this here to make sure we always get the latest
-        # viewport instance.
-        self.viewport().update()
 
     def selected_layers(self):
         idxs = self.selectedIndexes()
@@ -510,6 +498,16 @@ class DataCollectionView(QtWidgets.QTreeView):
         self.setDragEnabled(True)
         self.setDropIndicatorShown(True)
         self.setDragDropMode(QtWidgets.QAbstractItemView.DragOnly)
+
+        # Update when any message is emitted which would indicate a change in
+        # data collection content, colors, labels, etc. It's easier to simply
+        # listen to all events since the viewport update is fast.
+        data_collection.hub.subscribe(self, Message, handler=self._update_viewport)
+
+    def _update_viewport(self, *args, **kwargs):
+        # This forces the widget containing the list view to update/redraw,
+        # reflecting any changes in color/labels/content
+        self.viewport().update()
 
     def edit_label(self, index):
         if not (self._model.flags(index) & Qt.ItemIsEditable):
