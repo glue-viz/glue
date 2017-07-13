@@ -415,9 +415,6 @@ class TestImageViewer(object):
     @pytest.mark.parametrize('wcs', [False, True])
     def test_change_reference_data_dimensionality(self, capsys, wcs):
 
-        if wcs:
-            pytest.xfail()
-
         # Regression test for a bug that caused an exception when changing
         # the dimensionality of the reference data
 
