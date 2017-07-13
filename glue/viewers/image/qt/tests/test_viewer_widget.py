@@ -71,6 +71,12 @@ class TestImageViewer(object):
         self.catalog = Data(label='catalog', c=[1, 3, 2], d=[4, 3, 3])
         self.hypercube = Data(label='hypercube', x=np.arange(120).reshape((2, 3, 4, 5)))
 
+        # Create data versions with WCS coordinates
+        self.image1_wcs = Data(label='image1_wcs', x=self.image1['x'],
+                               coords=WCSCoordinates(wcs=WCS(naxis=2)))
+        self.hypercube_wcs = Data(label='hypercube_wcs', x=self.hypercube['x'],
+                                  coords=WCSCoordinates(wcs=WCS(naxis=4)))
+
         self.session = simple_session()
         self.hub = self.session.hub
 
@@ -79,6 +85,8 @@ class TestImageViewer(object):
         self.data_collection.append(self.image2)
         self.data_collection.append(self.catalog)
         self.data_collection.append(self.hypercube)
+        self.data_collection.append(self.image1_wcs)
+        self.data_collection.append(self.hypercube_wcs)
 
         self.viewer = ImageViewer(self.session)
 
@@ -404,6 +412,55 @@ class TestImageViewer(object):
         assert out.strip() == ""
         assert err.strip() == ""
 
+    @pytest.mark.parametrize('wcs', [False, True])
+    def test_change_reference_data_dimensionality(self, capsys, wcs):
+
+        if wcs:
+            pytest.xfail()
+
+        # Regression test for a bug that caused an exception when changing
+        # the dimensionality of the reference data
+
+        if wcs:
+            first = self.image1_wcs
+            second = self.hypercube_wcs
+        else:
+            first = self.image1
+            second = self.hypercube
+
+        self.viewer.add_data(first)
+        self.viewer.add_data(second)
+
+        assert self.viewer.state.reference_data is first
+        assert self.viewer.state.x_att_world is first.world_component_ids[-1]
+        assert self.viewer.state.y_att_world is first.world_component_ids[-2]
+        assert self.viewer.state.x_att is first.pixel_component_ids[-1]
+        assert self.viewer.state.y_att is first.pixel_component_ids[-2]
+
+        self.viewer.state.reference_data = second
+
+        assert self.viewer.state.reference_data is second
+        assert self.viewer.state.x_att_world is second.world_component_ids[-1]
+        assert self.viewer.state.y_att_world is second.world_component_ids[-2]
+        assert self.viewer.state.x_att is second.pixel_component_ids[-1]
+        assert self.viewer.state.y_att is second.pixel_component_ids[-2]
+
+        self.viewer.state.reference_data = first
+
+        assert self.viewer.state.reference_data is first
+        assert self.viewer.state.x_att_world is first.world_component_ids[-1]
+        assert self.viewer.state.y_att_world is first.world_component_ids[-2]
+        assert self.viewer.state.x_att is first.pixel_component_ids[-1]
+        assert self.viewer.state.y_att is first.pixel_component_ids[-2]
+
+        # Some exceptions used to happen during callbacks, and these show up
+        # in stderr but don't interrupt the code, so we make sure here that
+        # nothing was printed to stdout nor stderr.
+
+        out, err = capsys.readouterr()
+
+        assert out.strip() == ""
+        assert err.strip() == ""
 
 class TestSessions(object):
 

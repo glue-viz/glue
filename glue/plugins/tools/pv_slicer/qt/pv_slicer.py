@@ -17,12 +17,18 @@ class PVSlicerMode(PathMode):
     tool_tip = ('Extract a slice from an arbitrary path\n'
                 '  ENTER accepts the path\n'
                 '  ESCAPE clears the path')
+    status_tip = 'Draw a path then press ENTER to extract slice, or press ESC to cancel'
     shortcut = 'P'
 
     def __init__(self, viewer, **kwargs):
         super(PVSlicerMode, self).__init__(viewer, **kwargs)
         self._roi_callback = self._extract_callback
         self._slice_widget = None
+        self.viewer.state.add_callback('reference_data', self._on_reference_data_change)
+
+    def _on_reference_data_change(self, reference_data):
+        if reference_data is not None:
+            self.enabled = reference_data.ndim == 3
 
     def _clear_path(self):
         self.clear()
@@ -125,9 +131,8 @@ class PVSliceWidget(StandaloneImageViewer):
 
     @defer_draw
     def _draw_crosshairs(self, event):
-        pass
-        # x, y, _ = self._pos_in_parent(event)
-        # self._parent.show_crosshairs(x, y)
+        x, y, _ = self._pos_in_parent(event)
+        self._parent.show_crosshairs(x, y)
 
     @defer_draw
     def _on_move(self, event):
@@ -147,7 +152,7 @@ class PVSliceWidget(StandaloneImageViewer):
             ydata = event.ydata
 
         # Find position slice where cursor is
-        ind = np.clip(xdata, 0, self._im_array.shape[1] - 1)
+        ind = int(round(np.clip(xdata, 0, self._im_array.shape[1] - 1)))
 
         # Find pixel coordinate in input image for this slice
         x = self._x[ind]
