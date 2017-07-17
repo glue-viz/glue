@@ -487,16 +487,10 @@ class TestSessions(object):
         assert viewer1.state.x_att_world is dc[0].id['World 1']
         assert viewer1.state.y_att_world is dc[0].id['World 0']
 
-        if protocol == 0:
-            assert viewer1.state.x_min < 0.
-            assert viewer1.state.x_max > 1.5
-            assert_allclose(viewer1.state.y_min, 0)
-            assert_allclose(viewer1.state.y_max, 2)
-        else:
-            assert viewer1.state.x_min < -0.5
-            assert viewer1.state.x_max > 1.5
-            assert viewer1.state.y_min <= -0.5
-            assert viewer1.state.y_max >= 1.5
+        assert viewer1.state.x_min < -0.5
+        assert viewer1.state.x_max > 1.5
+        assert viewer1.state.y_min <= -0.5
+        assert viewer1.state.y_max >= 1.5
 
         layer_state = viewer1.state.layers[0]
         assert isinstance(layer_state, ImageLayerState)
@@ -521,16 +515,10 @@ class TestSessions(object):
         assert viewer2.state.x_att_world is dc[0].id['World 1']
         assert viewer2.state.y_att_world is dc[0].id['World 0']
 
-        if protocol == 0:
-            assert viewer2.state.x_min < 0.
-            assert viewer2.state.x_max > 1.5
-            assert_allclose(viewer2.state.y_min, 0)
-            assert_allclose(viewer2.state.y_max, 2)
-        else:
-            assert viewer2.state.x_min < -0.5
-            assert viewer2.state.x_max > 1.5
-            assert viewer2.state.y_min <= -0.5
-            assert viewer2.state.y_max >= 1.5
+        assert viewer2.state.x_min < -0.5
+        assert viewer2.state.x_max > 1.5
+        assert viewer2.state.y_min <= -0.5
+        assert viewer2.state.y_max >= 1.5
 
         layer_state = viewer2.state.layers[0]
         assert layer_state.visible
@@ -548,16 +536,10 @@ class TestSessions(object):
         assert viewer3.state.x_att_world is dc[0].id['World 1']
         assert viewer3.state.y_att_world is dc[0].id['World 0']
 
-        if protocol == 0:
-            assert viewer3.state.x_min < 0.0
-            assert viewer3.state.x_max > 1.5
-            assert_allclose(viewer3.state.y_min, 0)
-            assert_allclose(viewer3.state.y_max, 2)
-        else:
-            assert viewer3.state.x_min < -0.5
-            assert viewer3.state.x_max > 1.5
-            assert viewer3.state.y_min <= -0.5
-            assert viewer3.state.y_max >= 1.5
+        assert viewer3.state.x_min < -0.5
+        assert viewer3.state.x_max > 1.5
+        assert viewer3.state.y_min <= -0.5
+        assert viewer3.state.y_max >= 1.5
 
         layer_state = viewer3.state.layers[0]
         assert layer_state.visible
