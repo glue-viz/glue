@@ -1,8 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.echo import CallbackProperty, ListCallbackProperty, keep_in_sync
+from glue.external.echo import (CallbackProperty, ListCallbackProperty,
+                                SelectionCallbackProperty, keep_in_sync)
 
-from glue.core.state_objects import State, SelectionCallbackProperty
+from glue.core.state_objects import State
 
 from glue.utils import defer_draw
 

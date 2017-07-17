@@ -10,7 +10,7 @@ from glue.external.echo import (delay_callback, CallbackProperty,
                                 HasCallbackProperties, CallbackList)
 from glue.core.state import saver, loader
 
-__all__ = ['State', 'StateAttributeCacheHelper', 'SelectionCallbackProperty',
+__all__ = ['State', 'StateAttributeCacheHelper',
            'StateAttributeLimitsHelper', 'StateAttributeSingleValueHelper']
 
 
@@ -22,42 +22,6 @@ def _save_callback_list(items, context):
 @loader(CallbackList)
 def _load_callback_list(rec, context):
     return [context.object(obj) for obj in rec['values']]
-
-
-class SelectionCallbackProperty(CallbackProperty):
-
-    def __init__(self, default_index=0, **kwargs):
-        super(SelectionCallbackProperty, self).__init__(**kwargs)
-        self.default_index = default_index
-        self._choices = WeakKeyDictionary()
-
-    def get_choices(self, instance):
-        return self._choices[instance]
-
-    def set_choices(self, instance, choices):
-        self._choices[instance] = choices
-        self._choices_updated(instance, choices)
-
-    def _choices_updated(self, instance, choices):
-
-        if not choices:
-            self.__set__(instance, None)
-            return
-
-        selection = self.__get__(instance)
-
-        # TODO: try and generalize this selection to choices relation
-        if selection in set(x[1] for x in choices):
-            return
-
-        if self.default_index < 0:
-            index = len(choices) + self.default_index
-        else:
-            index = self.default_index
-
-        index = min(index, len(choices) - 1)
-
-        self.__set__(instance, choices[index][1])
 
 
 class State(HasCallbackProperties):

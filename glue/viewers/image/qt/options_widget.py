@@ -6,7 +6,6 @@ from qtpy import QtWidgets
 
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
 from glue.utils.qt import load_ui
-from glue.core.qt.data_combo_helper import QtComboHelper
 from glue.viewers.image.qt.slice_widget import MultiSliceWidgetHelper
 
 __all__ = ['ImageOptionsWidget']
@@ -29,13 +28,6 @@ class ImageOptionsWidget(QtWidgets.QWidget):
         self.ui.combotext_color_mode.addItem("One color per layer")
 
         autoconnect_callbacks_to_qt(viewer_state, self.ui)
-
-        self.ref_data_helper = QtComboHelper(self.ui.combonew_reference_data,
-                                             viewer_state, 'reference_data')
-        self.x_att_world_helper = QtComboHelper(self.ui.combonew_x_att_world,
-                                                viewer_state, 'x_att_world')
-        self.y_att_world_helper = QtComboHelper(self.ui.combonew_y_att_world,
-                                                viewer_state, 'y_att_world')
 
         self.viewer_state = viewer_state
 

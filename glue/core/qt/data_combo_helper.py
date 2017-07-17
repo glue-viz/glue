@@ -12,63 +12,10 @@ from glue.core.message import (ComponentsChangedMessage,
 from glue.utils import nonpartial
 from glue.utils.qt import update_combobox
 from glue.utils.qt.widget_properties import CurrentComboDataProperty
+from glue.external.echo.qt.connect import _find_combo_data
 
 __all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
            'DataCollectionComboHelper']
-
-
-class QtComboHelper(object):
-
-    def __init__(self, combo, state, selection_property):
-        self.combo = combo
-        self.state = state
-        self.selection_property = selection_property
-        self.state.add_callback(selection_property, self._selection_changed)
-        self.state.add_callback(selection_property, self._choices_changed)
-
-    @property
-    def selection(self):
-        return getattr(self.state, self.selection_property)
-
-    @property
-    def choices(self):
-        prop = getattr(type(self.state), self.selection_property)
-        return prop.get_choices(self.state)
-
-    def _choices_changed(self, *args):
-
-        choices = self.choices
-
-        self.combo.blockSignals(True)
-
-        self.combo.clear()
-
-        if len(choices) == 0:
-            return
-
-        combo_model = self.combo.model()
-
-        for index, (label, data) in enumerate(choices):
-
-            self.combo.addItem(label, userData=data)
-
-            # We interpret None data as being disabled rows (used for headers)
-            if data is None:
-                item = combo_model.item(index)
-                palette = self.combo.palette()
-                item.setFlags(item.flags() & ~(Qt.ItemIsSelectable | Qt.ItemIsEnabled))
-                item.setData(palette.color(QtGui.QPalette.Disabled, QtGui.QPalette.Text))
-
-        self._selection_changed()
-
-        self.combo.blockSignals(False)
-
-        self.combo.currentIndexChanged.emit(index)
-
-    def _selection_changed(self, *args):
-        index = self.combo.findData(self.selection)
-        if self.combo.currentIndex() != index:
-            self.combo.setCurrentIndex(index)
 
 
 class ComponentIDComboHelper(HubListener):
