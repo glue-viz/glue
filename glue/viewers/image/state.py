@@ -45,11 +45,11 @@ class ImageViewerState(MatplotlibDataViewerState):
 
         self.limits_cache = {}
 
-        self.x_att_helper = StateAttributeLimitsHelper(self, attribute='x_att',
+        self.x_lim_helper = StateAttributeLimitsHelper(self, attribute='x_att',
                                                        lower='x_min', upper='x_max',
                                                        limits_cache=self.limits_cache)
 
-        self.y_att_helper = StateAttributeLimitsHelper(self, attribute='y_att',
+        self.y_lim_helper = StateAttributeLimitsHelper(self, attribute='y_att',
                                                        lower='y_min', upper='y_max',
                                                        limits_cache=self.limits_cache)
 
@@ -216,13 +216,13 @@ class ImageViewerState(MatplotlibDataViewerState):
         """
         Flip the x_min/x_max limits.
         """
-        self.x_att_helper.flip_limits()
+        self.x_lim_helper.flip_limits()
 
     def flip_y(self):
         """
         Flip the y_min/y_max limits.
         """
-        self.y_att_helper.flip_limits()
+        self.y_lim_helper.flip_limits()
 
 
 class ImageLayerState(MatplotlibLayerState):
