@@ -10,7 +10,7 @@ from glue.external.echo import (delay_callback, CallbackProperty,
                                 HasCallbackProperties, CallbackList)
 from glue.core.state import saver, loader
 
-__all__ = ['State', 'StateAttributeCacheHelper',
+__all__ = ['State', 'StateAttributeCacheHelper', 'SelectionCallbackProperty',
            'StateAttributeLimitsHelper', 'StateAttributeSingleValueHelper']
 
 
