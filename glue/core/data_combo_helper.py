@@ -2,6 +2,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import weakref
+
 from glue.core import Subset
 from glue.core.hub import HubListener
 from glue.core.message import (ComponentsChangedMessage,
@@ -19,8 +21,12 @@ class ComboHelper(HubListener):
 
     def __init__(self, state, selection_property):
 
-        self.state = state
+        self._state = weakref.ref(state)
         self.selection_property = selection_property
+
+    @property
+    def state(self):
+        return self._state()
 
     @property
     def selection(self):
@@ -214,7 +220,7 @@ class ComponentIDComboHelper(ComboHelper):
         if value is not None:
             self.register_to_hub(value)
 
-    def refresh(self):
+    def refresh(self, *args):
 
         choices = []
 
@@ -244,17 +250,20 @@ class ComponentIDComboHelper(ComboHelper):
 
         self.choices = choices
 
+    def _filter_msg(self, msg):
+        return msg.data in self._data or msg.sender in self._data_collection
+
     def register_to_hub(self, hub):
         hub.subscribe(self, ComponentReplacedMessage,
-                      handler=nonpartial(self.refresh),
-                      filter=lambda msg: msg.data in self._data)
+                      handler=self.refresh)
         hub.subscribe(self, ComponentsChangedMessage,
-                      handler=nonpartial(self.refresh),
-                      filter=lambda msg: msg.data in self._data)
+                      handler=self.refresh)
         if self._data_collection is not None:
             hub.subscribe(self, DataCollectionDeleteMessage,
-                          handler=lambda msg: self.remove_data(msg.data),
-                          filter=lambda msg: msg.sender is self._data_collection)
+                          handler=self._remove_data)
+
+    def _remove_data(self, msg):
+        self.remove_data(msg.data)
 
     def unregister(self, hub):
         hub.unsubscribe_all(self)

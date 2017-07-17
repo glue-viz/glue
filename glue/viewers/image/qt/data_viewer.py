@@ -54,8 +54,8 @@ class ImageViewer(MatplotlibDataViewer):
              'select:yrange', 'select:circle',
              'select:polygon', 'image:contrast_bias']
 
-    def __init__(self, session, parent=None):
-        super(ImageViewer, self).__init__(session, parent=parent, wcs=True)
+    def __init__(self, session, parent=None, state=None):
+        super(ImageViewer, self).__init__(session, parent=parent, wcs=True, state=state)
         self.axes.set_adjustable('datalim')
         self.state.add_callback('aspect', self._set_aspect)
         self.state.add_callback('x_att', self._set_wcs)

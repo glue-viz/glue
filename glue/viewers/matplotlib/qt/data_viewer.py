@@ -25,7 +25,7 @@ class MatplotlibDataViewer(DataViewer):
 
     allow_duplicate_data = False
 
-    def __init__(self, session, parent=None, wcs=None):
+    def __init__(self, session, parent=None, wcs=None, state=None):
 
         super(MatplotlibDataViewer, self).__init__(session, parent)
 
@@ -40,7 +40,7 @@ class MatplotlibDataViewer(DataViewer):
 
         # Set up the state which will contain everything needed to represent
         # the current state of the viewer
-        self.state = self._state_cls()
+        self.state = state or self._state_cls()
         self.state.data_collection = session.data_collection
 
         # Set up the options widget, which will include options that control the
@@ -260,14 +260,14 @@ class MatplotlibDataViewer(DataViewer):
             cls.update_viewer_state(rec, context)
 
         session = context.object(rec['session'])
-        viewer = cls(session)
+
+        viewer_state = cls._state_cls.__setgluestate__(rec['state'], context)
+
+        viewer = cls(session, state=viewer_state)
         viewer.register_to_hub(session.hub)
         viewer.viewer_size = rec['size']
         x, y = rec['pos']
         viewer.move(x=x, y=y)
-
-        viewer_state = cls._state_cls.__setgluestate__(rec['state'], context)
-        viewer.state.update_from_state(viewer_state)
 
         # Restore layer artists
         for l in rec['layers']:

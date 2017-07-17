@@ -32,8 +32,8 @@ class HistogramViewer(MatplotlibDataViewer):
 
     tools = ['select:xrange']
 
-    def __init__(self, session, parent=None):
-        super(HistogramViewer, self).__init__(session, parent)
+    def __init__(self, session, parent=None, state=None):
+        super(HistogramViewer, self).__init__(session, parent, state=state)
         self.state.add_callback('x_att', nonpartial(self._update_axes))
         self.state.add_callback('x_log', nonpartial(self._update_axes))
         self.state.add_callback('normalize', nonpartial(self._update_axes))
