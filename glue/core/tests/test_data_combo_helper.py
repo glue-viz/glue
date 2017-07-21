@@ -5,17 +5,16 @@ from mock import MagicMock
 
 from glue.core import Data, DataCollection
 from glue.core.component_id import ComponentID
-from glue.utils.qt import combo_as_string
 from glue.external.echo.core import SelectionCallbackProperty
 from glue.core.state_objects import State
 
 from ..data_combo_helper import (ComponentIDComboHelper, ManualDataComboHelper,
                                  DataCollectionComboHelper)
 
+
 def selection_choices(state, property):
     items = [x[0] for x in getattr(type(state), property).get_choices(state)]
     return ":".join(items)
-
 
 
 class ExampleState(State):
@@ -72,7 +71,6 @@ def test_component_id_combo_helper():
     helper.remove_data(data1)
 
     assert selection_choices(state, 'combo') == ""
-
 
 
 def test_component_id_combo_helper_nocollection():
@@ -188,6 +186,44 @@ def test_component_id_combo_helper_replaced():
     callback.reset_mock()
 
     assert selection_choices(state, 'combo') == "new:y"
+
+
+def test_component_id_combo_helper_add():
+
+    # Make sure that when adding a component, and if a data collection is not
+    # present, the choices still get updated
+
+    callback = MagicMock()
+
+    state = ExampleState()
+    state.add_callback('combo', callback)
+
+    dc = DataCollection([])
+
+    helper = ComponentIDComboHelper(state, 'combo')
+
+    assert selection_choices(state, 'combo') == ""
+
+    data1 = Data(x=[1, 2, 3], y=[2, 3, 4], label='data1')
+
+    callback.reset_mock()
+
+    dc.append(data1)
+    helper.append_data(data1)
+
+    callback.assert_called_once_with(0)
+    callback.reset_mock()
+
+    assert selection_choices(state, 'combo') == "x:y"
+
+    data1.add_component([7, 8, 9], 'z')
+
+    # Should get notification since choices have changed
+    callback.assert_called_once_with(0)
+    callback.reset_mock()
+
+    assert selection_choices(state, 'combo') == "x:y:z"
+
 
 
 def test_manual_data_combo_helper():
