@@ -1,4 +1,5 @@
-# Non-Qt-specific versions of the combo helpers
+# Combo helpers independent of GUI framework - these operate on
+# SelectionCallbackProperty objects.
 
 from __future__ import absolute_import, division, print_function
 
@@ -18,6 +19,19 @@ __all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
 
 
 class ComboHelper(HubListener):
+    """
+    Base class for any combo helper represented by a SelectionCallbackProperty.
+
+    This stores the state and selection property and exposes the ``state``,
+    ``selection`` and ``choices`` properties.
+
+    Parameters
+    ----------
+    state : :class:`~glue.core.state_objects.State`
+        The state to which the selection property belongs
+    selection_property : :class:`~glue.external.echo.core.SelectionCallbackProperty`
+        The selection property representing the combo.
+    """
 
     def __init__(self, state, selection_property):
 
@@ -26,10 +40,16 @@ class ComboHelper(HubListener):
 
     @property
     def state(self):
+        """
+        The state to which the selection property belongs.
+        """
         return self._state()
 
     @property
     def selection(self):
+        """
+        The current selected value.
+        """
         return getattr(self.state, self.selection_property)
 
     @selection.setter
@@ -38,6 +58,9 @@ class ComboHelper(HubListener):
 
     @property
     def choices(self):
+        """
+        The current valid choices for the combo.
+        """
         prop = getattr(type(self.state), self.selection_property)
         return prop.get_choices(self.state)
 
@@ -49,20 +72,23 @@ class ComboHelper(HubListener):
 
 class ComponentIDComboHelper(ComboHelper):
     """
-    The purpose of this class is to set up a combo showing componentIDs for
-    one or more datasets, and to update these componentIDs if needed, for
-    example if new components are added to a dataset, or if componentIDs are
-    renamed.
+    The purpose of this class is to set up a combo (represented by a
+    SelectionCallbackProperty) showing componentIDs for one or more datasets, and to
+    update these componentIDs if needed, for example if new components are added
+    to a dataset, or if componentIDs are renamed. This is a GUI
+    framework-independent implementation.
 
     Parameters
     ----------
-    component_id_combo : Qt combo widget
-        The Qt widget for the component ID combo box
-    data_collection : :class:`~glue.core.DataCollection`
+    state : :class:`~glue.core.state_objects.State`
+        The state to which the selection property belongs
+    selection_property : :class:`~glue.external.echo.core.SelectionCallbackProperty`
+        The selection property representing the combo.
+    data_collection : :class:`~glue.core.DataCollection`, optional
         The data collection to which the datasets belong - if specified,
         this is used to remove datasets from the combo when they are removed
         from the data collection.
-    data : :class:`~glue.core.Data`
+    data : :class:`~glue.core.Data`, optional
         If specified, set up the combo for this dataset only and don't allow
         datasets to be added/removed
     visible : bool, optional
@@ -276,8 +302,10 @@ class BaseDataComboHelper(ComboHelper):
 
     Parameters
     ----------
-    data_combo : Qt combo widget
-        The Qt widget for the data combo box
+    state : :class:`~glue.core.state_objects.State`
+        The state to which the selection property belongs
+    selection_property : :class:`~glue.external.echo.core.SelectionCallbackProperty`
+        The selection property representing the combo.
     """
 
     def __init__(self, state, selection_property):
@@ -328,8 +356,10 @@ class ManualDataComboHelper(BaseDataComboHelper):
 
     Parameters
     ----------
-    data_combo : Qt combo widget
-        The Qt widget for the data combo box
+    state : :class:`~glue.core.state_objects.State`
+        The state to which the selection property belongs
+    selection_property : :class:`~glue.external.echo.core.SelectionCallbackProperty`
+        The selection property representing the combo.
     data_collection : :class:`~glue.core.DataCollection`
         The data collection to which the datasets belong - this is needed
         because if a dataset is removed from the data collection, we want to
@@ -400,8 +430,10 @@ class DataCollectionComboHelper(BaseDataComboHelper):
 
     Parameters
     ----------
-    data_combo : Qt combo widget
-        The Qt widget for the data combo box
+    state : :class:`~glue.core.state_objects.State`
+        The state to which the selection property belongs
+    selection_property : :class:`~glue.external.echo.core.SelectionCallbackProperty`
+        The selection property representing the combo.
     data_collection : :class:`~glue.core.DataCollection`
         The data collection with which to stay in sync
     """
