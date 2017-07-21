@@ -12,7 +12,7 @@ from glue.core.message import (ComponentsChangedMessage,
                                DataCollectionDeleteMessage,
                                DataUpdateMessage,
                                ComponentReplacedMessage)
-from glue.external.echo import delay_callback
+from glue.external.echo import delay_callback, ChoiceSeparator
 from glue.utils import nonpartial
 
 __all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
@@ -71,6 +71,20 @@ class ComboHelper(HubListener):
             prop = getattr(type(self.state), self.selection_property)
             return prop.set_choices(self.state, choices)
 
+    @property
+    def display(self):
+        """
+        The current display function for the combo (the function that relates
+        the Python objects to the display label)
+        """
+        prop = getattr(type(self.state), self.selection_property)
+        return prop.get_display_func(self.state)
+
+    @display.setter
+    def display(self, display):
+        prop = getattr(type(self.state), self.selection_property)
+        return prop.set_display_func(self.state, display)
+
 
 class ComponentIDComboHelper(ComboHelper):
     """
@@ -111,6 +125,8 @@ class ComponentIDComboHelper(ComboHelper):
                  pixel_coord=False, world_coord=False):
 
         super(ComponentIDComboHelper, self).__init__(state, selection_property)
+
+        self.display = lambda x: x.label
 
         self._visible = visible
         self._numeric = numeric
@@ -256,9 +272,9 @@ class ComponentIDComboHelper(ComboHelper):
 
             if len(self._data) > 1:
                 if data.label is None or data.label == '':
-                    choices.append(("Untitled Data", None))
+                    choices.append(ChoiceSeparator('Untitled Data'))
                 else:
-                    choices.append((data.label, None))
+                    choices.append(ChoiceSeparator(data.label))
 
             if self.visible:
                 all_component_ids = data.visible_components
@@ -274,7 +290,7 @@ class ComponentIDComboHelper(ComboHelper):
                         (cid in data.world_component_ids and self.world_coord)):
                     component_ids.append(cid)
 
-            choices.extend([(cid.label, cid) for cid in component_ids])
+            choices.extend(component_ids)
 
         self.choices = choices
 
@@ -315,7 +331,11 @@ class BaseDataComboHelper(ComboHelper):
     """
 
     def __init__(self, state, selection_property, data_collection=None):
+
         super(BaseDataComboHelper, self).__init__(state, selection_property)
+
+        self.display = lambda x: x.label
+
         self._component_id_helpers = []
         self.state.add_callback(self.selection_property, self.refresh_component_ids)
 
@@ -330,7 +350,7 @@ class BaseDataComboHelper(ComboHelper):
             self.hub = None
 
     def refresh(self):
-        self.choices = [(data.label, data) for data in self._datasets]
+        self.choices = [data for data in self._datasets]
         self.refresh_component_ids()
 
     def refresh_component_ids(self, *args):

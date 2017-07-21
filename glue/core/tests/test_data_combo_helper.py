@@ -13,7 +13,7 @@ from ..data_combo_helper import (ComponentIDComboHelper, ManualDataComboHelper,
 
 
 def selection_choices(state, property):
-    items = [x[0] for x in getattr(type(state), property).get_choices(state)]
+    items = getattr(type(state), property).get_choice_labels(state)
     return ":".join(items)
 
 
