@@ -12,6 +12,7 @@ from glue.core.message import (ComponentsChangedMessage,
                                DataCollectionDeleteMessage,
                                DataUpdateMessage,
                                ComponentReplacedMessage)
+from glue.external.echo import delay_callback
 from glue.utils import nonpartial
 
 __all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
@@ -66,8 +67,9 @@ class ComboHelper(HubListener):
 
     @choices.setter
     def choices(self, choices):
-        prop = getattr(type(self.state), self.selection_property)
-        return prop.set_choices(self.state, choices)
+        with delay_callback(self.state, self.selection_property):
+            prop = getattr(type(self.state), self.selection_property)
+            return prop.set_choices(self.state, choices)
 
 
 class ComponentIDComboHelper(ComboHelper):
@@ -306,12 +308,26 @@ class BaseDataComboHelper(ComboHelper):
         The state to which the selection property belongs
     selection_property : :class:`~glue.external.echo.core.SelectionCallbackProperty`
         The selection property representing the combo.
+    data_collection : :class:`~glue.core.DataCollection`
+        The data collection to which the datasets belong - this is needed
+        because if a dataset is removed from the data collection, we want to
+        remove it here.
     """
 
-    def __init__(self, state, selection_property):
+    def __init__(self, state, selection_property, data_collection=None):
         super(BaseDataComboHelper, self).__init__(state, selection_property)
         self._component_id_helpers = []
         self.state.add_callback(self.selection_property, self.refresh_component_ids)
+
+        self._data_collection = data_collection
+
+        if data_collection is not None:
+            if data_collection.hub is None:
+                raise ValueError("Hub on data collection is not set")
+            else:
+                self.hub = data_collection.hub
+        else:
+            self.hub = None
 
     def refresh(self):
         self.choices = [(data.label, data) for data in self._datasets]
@@ -368,18 +384,10 @@ class ManualDataComboHelper(BaseDataComboHelper):
 
     def __init__(self, state, selection_property, data_collection=None):
 
-        super(ManualDataComboHelper, self).__init__(state, selection_property)
+        super(ManualDataComboHelper, self).__init__(state, selection_property,
+                                                    data_collection=data_collection)
 
         self._datasets = []
-
-        self._data_collection = data_collection
-        if data_collection is not None:
-            if data_collection.hub is None:
-                raise ValueError("Hub on data collection is not set")
-            else:
-                self.hub = data_collection.hub
-        else:
-            self.hub = None
 
     def set_multiple_data(self, datasets):
         """
@@ -440,14 +448,11 @@ class DataCollectionComboHelper(BaseDataComboHelper):
 
     def __init__(self, state, selection_property, data_collection):
 
-        super(DataCollectionComboHelper, self).__init__(state, selection_property)
-
-        if data_collection.hub is None:
-            raise ValueError("Hub on data collection is not set")
+        super(DataCollectionComboHelper, self).__init__(state, selection_property,
+                                                        data_collection=data_collection)
 
         self._datasets = data_collection
-        if self.hub is not None:
-            self.register_to_hub(self.hub)
+
         self.refresh()
 
     def register_to_hub(self, hub):
