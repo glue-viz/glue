@@ -1,15 +1,21 @@
 from __future__ import absolute_import, division, print_function
 
+import os
+
+import pytest
 from mock import MagicMock, patch
 
 from glue.tests.helpers import requires_ipython, IPYTHON_INSTALLED
 
+
+CIRCLECI = os.environ.get('CIRCLECI', 'false') == 'true'
 
 if IPYTHON_INSTALLED:
     from ..terminal import glue_terminal
 
 
 @requires_ipython
+@pytest.mark.skipif(CIRCLECI, reason='IPython terminal tests tend to hang on CircleCI')
 class TestTerminal(object):
     def test_mpl_non_interactive(self):
         """IPython v0.12 sometimes turns on mpl interactive. Ensure
