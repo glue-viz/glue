@@ -8,7 +8,8 @@ from .connect import (connect_checkable_button,
                       connect_combo_text,
                       connect_float_text,
                       connect_text,
-                      connect_button)
+                      connect_button,
+                      connect_combo_selection)
 
 __all__ = ['autoconnect_callbacks_to_qt']
 
@@ -20,6 +21,7 @@ HANDLERS['text'] = connect_text
 HANDLERS['combodata'] = connect_combo_data
 HANDLERS['combotext'] = connect_combo_text
 HANDLERS['button'] = connect_button
+HANDLERS['combodatasel'] = connect_combo_selection
 
 
 def autoconnect_callbacks_to_qt(instance, widget, connect_kwargs={}):

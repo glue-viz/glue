@@ -6,10 +6,15 @@ from __future__ import absolute_import, division, print_function
 import math
 from functools import partial
 
-from .. import add_callback
+from qtpy import QtGui
+from qtpy.QtCore import Qt
+
+from ..core import add_callback
+from ..selection import SelectionCallbackProperty, ChoiceSeparator
 
 __all__ = ['connect_checkable_button', 'connect_text', 'connect_combo_data',
-           'connect_combo_text', 'connect_float_text', 'connect_value']
+           'connect_combo_text', 'connect_float_text', 'connect_value',
+           'connect_combo_selection']
 
 
 def connect_checkable_button(instance, prop, widget):
@@ -270,8 +275,10 @@ def _find_combo_data(widget, value):
 
     Raises a ValueError if data is not found
     """
+    # Here we check that the result is True, because some classes may overload
+    # == and return other kinds of objects whether true or false.
     for idx in range(widget.count()):
-        if widget.itemData(idx) == value:
+        if widget.itemData(idx) is value or (widget.itemData(idx) == value) is True:
             return idx
     else:
         raise ValueError("%s not found in combo box" % (value,))
@@ -288,3 +295,70 @@ def _find_combo_text(widget, value):
         raise ValueError("%s not found in combo box" % value)
     else:
         return i
+
+
+def connect_combo_selection(instance, prop, widget, display=str):
+
+    if not isinstance(getattr(type(instance), prop), SelectionCallbackProperty):
+        raise TypeError('connect_combo_selection requires a SelectionCallbackProperty')
+
+    def update_widget(value):
+
+        # Update choices in the combo box
+
+        combo_data = [widget.itemData(idx) for idx in range(widget.count())]
+
+        choices = getattr(type(instance), prop).get_choices(instance)
+        choice_labels = getattr(type(instance), prop).get_choice_labels(instance)
+
+        if combo_data == choices:
+            choices_updated = False
+        else:
+
+            widget.blockSignals(True)
+            widget.clear()
+
+            if len(choices) == 0:
+                return
+
+            combo_model = widget.model()
+
+            for index, (label, choice) in enumerate(zip(choice_labels, choices)):
+
+                widget.addItem(label, userData=choice)
+
+                # We interpret None data as being disabled rows (used for headers)
+                if isinstance(choice, ChoiceSeparator):
+                    item = combo_model.item(index)
+                    palette = widget.palette()
+                    item.setFlags(item.flags() & ~(Qt.ItemIsSelectable | Qt.ItemIsEnabled))
+                    item.setData(palette.color(QtGui.QPalette.Disabled, QtGui.QPalette.Text))
+
+            choices_updated = True
+
+        # Update current selection
+        try:
+            idx = _find_combo_data(widget, value)
+        except ValueError:
+            if value is None:
+                idx = -1
+            else:
+                raise
+
+        if idx == widget.currentIndex() and not choices_updated:
+            return
+
+        widget.setCurrentIndex(idx)
+        widget.blockSignals(False)
+        widget.currentIndexChanged.emit(idx)
+
+    def update_prop(idx):
+        if idx == -1:
+            setattr(instance, prop, None)
+        else:
+            setattr(instance, prop, widget.itemData(idx))
+
+    add_callback(instance, prop, update_widget)
+    widget.currentIndexChanged.connect(update_prop)
+
+    update_widget(getattr(instance, prop))
