@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 from collections import defaultdict
-from weakref import WeakKeyDictionary
 
 import numpy as np
 
@@ -217,7 +216,7 @@ class StateAttributeCacheHelper(object):
             raise AttributeError(attribute)
 
     def __setattr__(self, attribute, value):
-        if attribute.startswith('_') or not attribute in self._attribute_lookup:
+        if attribute.startswith('_') or attribute not in self._attribute_lookup:
             return object.__setattr__(self, attribute, value)
         else:
             return setattr(self._state, self._attribute_lookup[attribute], value)
@@ -292,7 +291,6 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
                 # Otherwise, we force the recalculation or the fetching from
                 # cache of the limits based on the current attribute
                 self._update_attribute()
-
 
     def update_values(self, use_default_modifiers=False, **properties):
 

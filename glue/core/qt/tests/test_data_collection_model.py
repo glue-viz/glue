@@ -33,11 +33,11 @@ class TestDataCollectionModel(object):
         model = self.make_model(1, 5)
         assert model.rowCount(model.subsets_index()) == 5
 
-    def test_row_count_single_subset(self):
+    def test_row_count_single_subset1(self):
         model = self.make_model(2, 1)
         assert model.rowCount(model.subsets_index(0)) == 2
 
-    def test_row_count_single_subset(self):
+    def test_row_count_single_subset2(self):
         model = self.make_model(2, 1)
         s = model.subsets_index(0)
 
