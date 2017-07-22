@@ -5,7 +5,7 @@ from mock import MagicMock
 
 from glue.core import Data, DataCollection
 from glue.core.component_id import ComponentID
-from glue.external.echo.core import SelectionCallbackProperty
+from glue.external.echo.selection import SelectionCallbackProperty
 from glue.core.state_objects import State
 
 from ..data_combo_helper import (ComponentIDComboHelper, ManualDataComboHelper,

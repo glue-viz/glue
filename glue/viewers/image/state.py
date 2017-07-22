@@ -41,7 +41,7 @@ class ImageViewerState(MatplotlibDataViewerState):
 
     def __init__(self, **kwargs):
 
-        super(ImageViewerState, self).__init__(**kwargs)
+        super(ImageViewerState, self).__init__()
 
         self.limits_cache = {}
 
@@ -75,6 +75,8 @@ class ImageViewerState(MatplotlibDataViewerState):
         self.add_callback('x_att_world', self._on_xatt_world_change, priority=1000)
         self.add_callback('y_att_world', self._on_yatt_world_change, priority=1000)
 
+        self.update_from_dict(kwargs)
+
     def _reference_data_changed(self, *args):
         with delay_callback(self, 'x_att_world', 'y_att_world', 'slices'):
             self._update_combo_att()
@@ -103,7 +105,6 @@ class ImageViewerState(MatplotlibDataViewerState):
             else:
                 self.xw_att_helper.set_multiple_data([self.reference_data])
                 self.yw_att_helper.set_multiple_data([self.reference_data])
-
 
     def _update_priority(self, name):
         if name == 'layers':
