@@ -61,10 +61,10 @@ def update_image_viewer_state(rec, context):
         viewer_state['y_att'] = str(uuid.uuid4())
         context.register_object(viewer_state['y_att'], data.pixel_component_ids[y_index])
 
-        viewer_state['x_min'] = 0
-        viewer_state['x_max'] = data.shape[0]
-        viewer_state['y_min'] = 0
-        viewer_state['y_max'] = data.shape[1]
+        viewer_state['x_min'] = -0.5
+        viewer_state['x_max'] = data.shape[1] - 0.5
+        viewer_state['y_min'] = -0.5
+        viewer_state['y_max'] = data.shape[0] - 0.5
 
         # Slicing with cubes
         viewer_state['slices'] = [s if np.isreal(s) else 0 for s in properties['slice']]

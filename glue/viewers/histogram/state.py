@@ -13,6 +13,7 @@ from glue.core.state_objects import (StateAttributeLimitsHelper,
                                      StateAttributeHistogramHelper)
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.data_combo_helper import ComponentIDComboHelper
+from glue.utils import defer_draw
 
 __all__ = ['HistogramViewerState', 'HistogramLayerState']
 
@@ -42,12 +43,12 @@ class HistogramViewerState(MatplotlibDataViewerState):
 
         super(HistogramViewerState, self).__init__()
 
-        self.x_lim_helper = StateAttributeLimitsHelper(self, 'x_att', lower='x_min',
-                                                       upper='x_max', log='x_log')
-
         self.hist_helper = StateAttributeHistogramHelper(self, 'x_att', lower='hist_x_min',
                                                          upper='hist_x_max', n_bin='hist_n_bin',
                                                          common_n_bin='common_n_bin')
+
+        self.x_lim_helper = StateAttributeLimitsHelper(self, 'x_att', lower='x_min',
+                                                       upper='x_max', log='x_log')
 
         self.add_callback('layers', self._layers_changed)
 
@@ -119,10 +120,17 @@ class HistogramViewerState(MatplotlibDataViewerState):
             return np.linspace(self.hist_x_min, self.hist_x_max,
                                self.hist_n_bin + 1)
 
+    @defer_draw
     def _layers_changed(self, *args):
-        layers = [layer_state.layer for layer_state in self.layers
-                  if isinstance(layer_state.layer, Data)]
-        self.x_att_helper.set_multiple_data(layers)
+        datasets = []
+        for layer in self.layers:
+            if isinstance(layer.layer, Data):
+                if layer.layer not in datasets:
+                    datasets.append(layer.layer)
+            else:
+                if layer.layer.data not in datasets:
+                    datasets.append(layer.layer.data)
+        self.x_att_helper.set_multiple_data(datasets)
 
 
 class HistogramLayerState(MatplotlibLayerState):

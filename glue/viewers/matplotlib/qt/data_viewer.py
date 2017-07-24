@@ -5,7 +5,7 @@ from qtpy.QtCore import Qt
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.common.viz_client import init_mpl, update_appearance_from_settings
-from glue.external.echo import add_callback, delay_callback
+from glue.external.echo import delay_callback
 from glue.utils import nonpartial, defer_draw
 from glue.utils.decorators import avoid_circular
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
@@ -25,6 +25,7 @@ class MatplotlibDataViewer(DataViewer):
 
     allow_duplicate_data = False
 
+    @defer_draw
     def __init__(self, session, parent=None, wcs=None, state=None):
 
         super(MatplotlibDataViewer, self).__init__(session, parent)
@@ -48,16 +49,20 @@ class MatplotlibDataViewer(DataViewer):
         self.options = self._options_cls(viewer_state=self.state,
                                          session=session)
 
-        add_callback(self.state, 'x_min', nonpartial(self.limits_to_mpl))
-        add_callback(self.state, 'x_max', nonpartial(self.limits_to_mpl))
-        add_callback(self.state, 'y_min', nonpartial(self.limits_to_mpl))
-        add_callback(self.state, 'y_max', nonpartial(self.limits_to_mpl))
+        self.state.add_callback('x_min', nonpartial(self.limits_to_mpl))
+        self.state.add_callback('x_max', nonpartial(self.limits_to_mpl))
+        self.state.add_callback('y_min', nonpartial(self.limits_to_mpl))
+        self.state.add_callback('y_max', nonpartial(self.limits_to_mpl))
 
-        self.axes.callbacks.connect('xlim_changed', nonpartial(self.limits_from_mpl))
-        self.axes.callbacks.connect('ylim_changed', nonpartial(self.limits_from_mpl))
+        self.limits_to_mpl()
 
         self.state.add_callback('x_log', nonpartial(self.update_x_log))
         self.state.add_callback('y_log', nonpartial(self.update_y_log))
+
+        self.update_x_log()
+
+        self.axes.callbacks.connect('xlim_changed', nonpartial(self.limits_from_mpl))
+        self.axes.callbacks.connect('ylim_changed', nonpartial(self.limits_from_mpl))
 
         self.axes.set_autoscale_on(False)
 
@@ -96,16 +101,20 @@ class MatplotlibDataViewer(DataViewer):
     def update_y_log(self):
         self.axes.set_yscale('log' if self.state.y_log else 'linear')
 
+    @defer_draw
     @avoid_circular
     def limits_from_mpl(self):
         with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
             self.state.x_min, self.state.x_max = self.axes.get_xlim()
             self.state.y_min, self.state.y_max = self.axes.get_ylim()
 
+    @defer_draw
     @avoid_circular
     def limits_to_mpl(self):
-        self.axes.set_xlim(self.state.x_min, self.state.x_max)
-        self.axes.set_ylim(self.state.y_min, self.state.y_max)
+        if self.state.x_min is not None and self.state.x_max is not None:
+            self.axes.set_xlim(self.state.x_min, self.state.x_max)
+        if self.state.y_min is not None and self.state.y_max is not None:
+            self.axes.set_ylim(self.state.y_min, self.state.y_max)
         self.axes.figure.canvas.draw()
 
     # TODO: shouldn't need this!

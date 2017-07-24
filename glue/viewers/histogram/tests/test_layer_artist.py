@@ -29,7 +29,7 @@ class TestHistogramLayerArtist(object):
 
         ax = plt.subplot(1, 1, 1)
 
-        self.data = Data(x=[1, 2, 3])
+        self.data = Data(x=[1, 2, 3], y=[2, 3, 4])
         self.subset = self.data.new_subset()
         self.subset.subset_state = self.data.id['x'] > 1
 
@@ -40,6 +40,7 @@ class TestHistogramLayerArtist(object):
 
         self.artist = HistogramLayerArtist(ax, self.viewer_state, layer=self.subset)
         self.layer_state = self.artist.state
+        self.viewer_state.layers.append(self.layer_state)
 
         self.call_counter = CallCounter()
         sys.setprofile(self.call_counter)
@@ -53,7 +54,7 @@ class TestHistogramLayerArtist(object):
         assert self.call_counter['_scale_histogram'] == 0
 
         # attribute
-        self.viewer_state.x_att = self.data.id['x']
+        self.viewer_state.x_att = self.data.id['y']
         assert self.call_counter['_calculate_histogram'] == 1
         assert self.call_counter['_scale_histogram'] == 1
 
