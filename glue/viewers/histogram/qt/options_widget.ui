@@ -162,7 +162,7 @@
     <widget class="QLineEdit" name="valuetext_x_min"/>
    </item>
    <item row="0" column="3" colspan="4">
-    <widget class="QComboBox" name="combodatasel_x_att">
+    <widget class="QComboBox" name="combosel_x_att">
      <property name="sizeAdjustPolicy">
       <enum>QComboBox::AdjustToMinimumContentsLength</enum>
      </property>

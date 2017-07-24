@@ -21,7 +21,7 @@ HANDLERS['text'] = connect_text
 HANDLERS['combodata'] = connect_combo_data
 HANDLERS['combotext'] = connect_combo_text
 HANDLERS['button'] = connect_button
-HANDLERS['combodatasel'] = connect_combo_selection
+HANDLERS['combosel'] = connect_combo_selection
 
 
 def autoconnect_callbacks_to_qt(instance, widget, connect_kwargs={}):

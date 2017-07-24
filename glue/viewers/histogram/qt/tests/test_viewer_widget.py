@@ -59,7 +59,7 @@ class TestHistogramViewer(object):
         # Check defaults when we add data
         self.viewer.add_data(self.data)
 
-        assert combo_as_string(self.viewer.options_widget().ui.combodatasel_x_att) == 'x:y'
+        assert combo_as_string(self.viewer.options_widget().ui.combosel_x_att) == 'x:y'
 
         assert viewer_state.x_att is self.data.id['x']
         assert viewer_state.x_min == -1.1
@@ -114,9 +114,9 @@ class TestHistogramViewer(object):
 
     def test_remove_data(self):
         self.viewer.add_data(self.data)
-        assert combo_as_string(self.viewer.options_widget().ui.combodatasel_x_att) == 'x:y'
+        assert combo_as_string(self.viewer.options_widget().ui.combosel_x_att) == 'x:y'
         self.data_collection.remove(self.data)
-        assert combo_as_string(self.viewer.options_widget().ui.combodatasel_x_att) == ''
+        assert combo_as_string(self.viewer.options_widget().ui.combosel_x_att) == ''
 
     def test_update_component_updates_title(self):
         self.viewer.add_data(self.data)
@@ -128,7 +128,7 @@ class TestHistogramViewer(object):
         self.viewer.add_data(self.data)
         self.data.add_component([3, 4, 1, 2], 'z')
         assert self.viewer.state.x_att is self.data.id['x']
-        assert combo_as_string(self.viewer.options_widget().ui.combodatasel_x_att) == 'x:y:z'
+        assert combo_as_string(self.viewer.options_widget().ui.combosel_x_att) == 'x:y:z'
 
     def test_nonnumeric_first_component(self):
         # regression test for #208. Shouldn't complain if
@@ -402,7 +402,7 @@ class TestHistogramViewer(object):
         test = ComponentID('test')
         self.data.update_id(self.viewer.state.x_att, test)
         assert self.viewer.state.x_att is test
-        assert combo_as_string(self.viewer.options_widget().ui.combodatasel_x_att) == 'test:y'
+        assert combo_as_string(self.viewer.options_widget().ui.combosel_x_att) == 'test:y'
 
     def test_nbin_override_persists_over_numerical_attribute_change(self):
 
